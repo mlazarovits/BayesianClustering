@@ -242,7 +242,7 @@ class PointCollection{
 	}
 
 
-	void FillGaus(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1, unsigned long long seed = 123){
+	void FillGaus1D(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1, unsigned long long seed = 123){
 		if((int)mean.size() != dim || (int)sigma.size() != dim || mean.size() != sigma.size()){
 			cout << "Please provide consistent parameters and dimensionality. Mean: " << mean.size() << " sigma: " << sigma.size() << " dimensions: " << dim << endl;
 			return;
