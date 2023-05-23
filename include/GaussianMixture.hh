@@ -23,8 +23,11 @@ class GaussianMixture : public BasePDFMixture{
 		int m_n;
 		//number of clusters k needs to be user specified
 		int m_k;
+		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		vector<double> m_mus;
 		vector<Matrix> m_covs;
+		vector<double> m_coeffs;
+		//posterior matrix of n data pts for k clusters
 		Matrix m_post;		
 
 
