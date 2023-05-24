@@ -17,19 +17,28 @@ class Matrix{
 		void InitRandom(double min, double max);	
 		void SetDims(int x_dim, int y_dim);
 		void SetEntry(double val, int i, int j);
-		double GetEntry(int i, int j);
-		double det();
+		double at(int i, int j) const;
+		double det() const;
 		double det(int n);
-		Matrix transpose();
-		void GetCofactor(Matrix& temp, int p, int q);
-		vector<int> GetDims();
-		Matrix mult(const Matrix& mat);
+		void transpose(Matrix& mat) const;
+		void GetCofactor(Matrix& temp, int p, int q, int n);
+		vector<int> GetDims() const;
+		Matrix mult(const Matrix& mat) const;
+		bool square() const { return _square; }
+		void adjoint(Matrix& adj);
+		void inverse(Matrix& inv);
+		//clear
+		void clear();
 		//update entries
 		//add entries
-		//clear
 	private:
 		int m_Xdim;
 		int m_Ydim;
-		vector<vector<double> m_entries;
-		void Matrix::subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n);
+		vector<vector<double>> m_entries;
+		//void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n);
 		double m_det;
+		bool _square;
+};
+
+
+#endif
