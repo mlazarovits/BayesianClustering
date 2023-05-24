@@ -19,7 +19,9 @@ class Matrix{
 		void SetEntry(double val, int i, int j);
 		double GetEntry(int i, int j);
 		double det();
+		double det(int n);
 		Matrix transpose();
+		void GetCofactor(Matrix& temp, int p, int q);
 		vector<int> GetDims();
 		Matrix mult(const Matrix& mat);
 		//update entries
@@ -30,3 +32,4 @@ class Matrix{
 		int m_Ydim;
 		vector<vector<double> m_entries;
 		void Matrix::subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n);
+		double m_det;
