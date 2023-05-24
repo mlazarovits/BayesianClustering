@@ -35,7 +35,7 @@ cov.SetEntry(0.6,1,1);
 //n data points
 int n = 100;
 //eventually make a PointCollection
-vector<vector<double>> pts = rs.SampleNDimGaussian(
+//vector<vector<double>> pts = rs.SampleNDimGaussian(
 
 
 

@@ -12,6 +12,12 @@ class Point{
 	public:
 		Point() = default;
 		
+		Point(const int d){
+			_nDim = d;
+			for(int i = 0; i < _nDim; i++) _value.push_back(-1);	
+			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
+		}
+		
 		//copy constructor
 		Point(const Point &p){
 			_nDim = p.Dim();
@@ -22,7 +28,7 @@ class Point{
 		}
 
 		Point(const vector<double>& x){
-		_nDim = (int)x.size();
+			_nDim = (int)x.size();
 			for(int i = 0; i < _nDim; i++) _value.push_back(x[i]);	
 			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
 		}

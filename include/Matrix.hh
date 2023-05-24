@@ -18,15 +18,15 @@ class Matrix{
 		void SetDims(int x_dim, int y_dim);
 		void SetEntry(double val, int i, int j);
 		double at(int i, int j) const;
-		double det() const;
-		double det(int n);
-		void transpose(Matrix& mat) const;
 		void GetCofactor(Matrix& temp, int p, int q, int n);
 		vector<int> GetDims() const;
 		Matrix mult(const Matrix& mat) const;
+		double det() const;
+		double det(int n);
 		bool square() const { return _square; }
+		void transpose(const Matrix& mat);
 		void adjoint(Matrix& adj);
-		void inverse(Matrix& inv);
+		void invert(Matrix& inv);
 		//clear
 		void clear();
 		//update entries

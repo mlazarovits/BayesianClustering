@@ -56,23 +56,39 @@ double RandomSample::FlatGausScaled(){
 }
 
 //normal distribution with specified mean and sigma
-double randomsample::gaussian(double x, double mu, double sigma){
+double RandomSample::Gaussian(double x, double mu, double sigma){
 	double x_scaled = x - mu;
 	return 1./(sigma*sqrt(2.*acos(-1)))*exp(-(x_scaled*x_scaled)/(2.*sigma*sigma));
 }
-//n-dim normal distribution with specified mean and sigma
-double RandomSample::NDimGaussian(vector<double> x, vector<double> mu, Matrix sigma){
-	vector<double> x_scaled;
-	for(int i = 0; i < x.size(); i++)
-		x_scaled.push_back(x[i] - mu[i]);
+//n-dim normal distribution with specified mean (n x 1 matrix) and sigma (n x n matrix) for one n-dim point x
+double RandomSample::NDimGaussian(Point x, Matrix mu, Matrix sigma){
+	int dim = x.Dim();
+	Matrix mu_scaled = Matrix(x.Dim(),1);
+	for(int d = 0; d < dim; d++)
+		mu_scaled.SetEntry(x.Value(d) - mu.at(d,0), d, 0);
 	double det = sigma.det();
 	//invert sigma then multiply by x_scaled*sigma*x_scaledT
-	return 1./(sigma*sqrt(2.*acos(-1)))*exp(-(x_scaled*x_scaled)/(2.*sigma*sigma));
+	Matrix sigInv;
+	sigInv.invert(sigma);
+	Matrix muT;
+	muT.transpose(mu_scaled);
+	//should only be 1x1 matrix - one entry
+	Matrix expon = muT.mult(sigInv.mult(mu_scaled));
+	
+	return 1./(det*sqrt(2.*acos(-1)))*exp(-0.5*expon.at(0,0));
 }
 
 //get random x value according to flat distribuion
 double RandomSample::SampleFlat(){
 	return _xmin + (_xmax - _xmin)*rand();
+}
+
+//get random n-dim x value according to flat distribuion
+Point RandomSample::SampleNDimFlat(int dim){
+	Point x = Point(dim);
+	for(int i = 0; i < dim; i++)
+		x.SetValue(_xmin + (_xmax - _xmin)*rand(), i);
+	return x
 }
 
 void RandomSample::SetRange(double xmin, double xmax){
@@ -107,29 +123,43 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 	return samples;
 }
 //return random double (xmin, xmax) according to n-dim Gaussian distribuion
-vector<double> RandomSample::SampleNDimGaussian(vector<double> mean, Matrix sigma, int Nsample){
+Matrix RandomSample::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
+	//need cholesky decomposition: takes sigma = LL^T
+	//returns Nsample normally distributed n-dim points (one point = x)
+	//x = L*y + mu for vectors x, y, mu and matrix L
+	//y ~ N(0,1) - set just like above with Gaussian(Y, 0, 1)
+	//do cholesky decomp in separate class (L is a class member)
+	//chol.Lmult(y+mu,x) fills n-dim vector x with L*y
+	
+	
+
+
+
+/*
 	//samples should be an n x d (n rows of d-dim data pts) matrix
-	Matrix samples;
-	if(sigma < 0){
-		cout << "Please input valid sigma > 0" << endl;
-		return samples;
-	}
-	double X, ran, R;
-	int dim = mean.size();
+	int dim = mean.GetDims()[0];
+	Matrix samples = Matrix(Nsample,dim);
+//	if(sigma < 0){
+//		cout << "Please input valid sigma > 0" << endl;
+//		return samples;
+//	}
+	Point X;
+	double ran, R;
 	for(int i = 0; i < Nsample; i++){
 		int Ntrial = 0;
-		samples.push_back({});
 		for(int d = 0; d < dim; d++){ 
 			Ntrial += 1;
 			X = SampleFlat();
-			R = Gaussian(X,mean,sigma)/FlatGausScaled();
+			R = NDimGaussian(X,mean,sigma)/FlatGausScaled();
 			ran = rand();
 			if(ran > R){ // reject if "die thrown" (random number) is above distribution
 				i -= 1; // decrease i and try again
 				continue;
 			} else // accept if "die" is below (within) distribution
-				samples[i].push_back(X);
+				samples.SetEntry(X,n,d);
 		}
 	}
 	return samples;
+*/
+
 }

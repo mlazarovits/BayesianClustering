@@ -91,7 +91,7 @@ void Matrix::GetCofactor(Matrix& temp, int p, int q, int n){
 
 
 //n is current dim of cofactor
-double Matrix::det(int n){
+double Matrix::det(int n = 0){
 	//if det has already been calculated, return result
 	if(m_det != -999){
 		return m_det;
@@ -100,6 +100,9 @@ double Matrix::det(int n){
 	if(!_square){
 		cout << "Error: non-square matrix, cannot calculate determinant." << m_Xdim << " " << m_Ydim << endl;
 		return -999;
+	}
+	if( n == 0){
+		n = m_Xdim;
 	}
 
 	//  Base case : if matrix contains single element
@@ -156,28 +159,29 @@ void Matrix::adjoint(Matrix& adj){
 }
 
 
-void Matrix::inverse(Matrix& inv){
+void Matrix::invert(Matrix& mat){
 	// Find determinant of m_entries[][]
-	if(!_square){
+	if(!mat.square()){
 		cout << "Error: non-square matrix, cannot calculate inverse." << m_Xdim << " " << m_Ydim << endl;
 		return;
 	}
-	inv.SetDims(m_Xdim, m_Ydim);
-	int det = this->det(m_Xdim);
+	vector<int> dims = mat.GetDims();
+	this->SetDims(dims[0],dims[1]);
+	int det = mat.det(dims[0]);
 	if (det == 0) {
-	    cout << "Singular matrix, can't find its inverse";
+	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
 	}
 	
 	// Find adjoint
-	Matrix adj = Matrix(m_Xdim, m_Ydim);
+	Matrix adj = Matrix(dims[0], dims[1]);
 	adjoint(adj);
 	
 	// Find Inverse using formula "inverse(A) =
 	// adj(A)/det(A)"
-	for (int i = 0; i < m_Xdim; i++)
-	    for (int j = 0; j < m_Ydim; j++)
-	        inv.SetEntry(adj.at(i,j) / float(det), i, j);
+	for (int i = 0; i < dims[0]; i++)
+	    for (int j = 0; j < dims[1]; j++)
+	        this->SetEntry(adj.at(i,j) / float(det), i, j);
 	
 }
 
@@ -244,13 +248,13 @@ Matrix Matrix::mult(const Matrix& mat) const{
 }
 
 
-void Matrix::transpose(Matrix& mat) const{
-	mat.clear();
-	mat.SetDims(m_Ydim, m_Xdim);
+void Matrix::transpose(const Matrix& mat){
+	this->clear();
+	this->SetDims(m_Ydim, m_Xdim);
 
 	for(int i = 0; i < m_Xdim; i++){
 		for(int j = 0; j < m_Ydim; j++){
-			mat.SetEntry(m_entries[j][i],i,j);
+			this->SetEntry(mat.at(j,i),i,j);
 		}
 	}
 }

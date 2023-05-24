@@ -23,12 +23,12 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
 
 #specify what to make
-#all: newToyBezier.x
+all: testGMM.x
 
 #executables
-#toyBezier.x: $(SRCDIR)toyBezier.C $(OBJ_FILES) $(HH_FILES)
-#	$(CXX) $(CXXFLAGS) -o toyBezier.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-#	touch toyBezier.x
+testGMM.x: $(SRCDIR)testGMM.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o testGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch testGMM.x
 
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh

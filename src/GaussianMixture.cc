@@ -7,7 +7,8 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-
+//k = # of clusters
+//n = # of data pts
 GaussianMixture::GaussianMixture(){ 
 	m_k = 0;
 	m_n = 0;
@@ -26,11 +27,12 @@ void GaussianMixture::Initialize(){
 	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
 	for(int k = 0; k < m_k; k++){
-		m_mus.push_back(randy.SampleFlat());	
+		m_mus.push_back(Matrix(m_dim,1));
+		m_mus[k].InitRandom(-5,5);
 		m_covs.push_back(Matrix(m_k));
 		m_covs[k].InitRandom(0.,100.);
 		m_coeffs.push_back(randy.SampleFlat());
-		}
+	}
 }
 
 
@@ -38,22 +40,22 @@ void GaussianMixture::Initialize(){
 void GaussianMixture::CalculatePosterior(){
 	//each kth vector is a cluster of n data points
 	double val;
-	vector<vector<double>> gaus;
+	Matrix gaus;
 	vector<double> norms;
 	//calculate norms for each data pt (summed over k)
 	for(int	n = 0; n < m_n; n++){
 		double norm = 0.;
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
-			gaus.push_back(Gaus(m_x[n],m_mu[k],m_cov[k]));
-			norm += m_coeff[k]*gaus[n][k];
+			gaus.SetEntry(Gaus(m_x.at(n),m_mus[k],m_covs[k]),n,k);
+			norm += m_coeffs[k]*gaus.at(n,k);
 		}
 		norms.push_back(norm);
 	}
 	//calculate posterior for each data pt n in each cluster k
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
-			val = m_coeff[k]*gaus[n][k]/norms[n];
+			val = m_coeffs[k]*gaus.at(n,k)/norms[n];
 			m_post.SetEntry(val,n,k);		
 		}
 	}
@@ -68,18 +70,20 @@ void GaussianMixture::UpdateParameters(){
 	for(int k = 0; k < m_k; k++){
 		norms.push_back(0.);
 		for(int n = 0; n < m_n; n++){
-			norms[k] += m_post[n][k];
+			norms[k] += m_post.at(n,k);
 
 		}
 	}
 	//set new means 	
+	double mu;
 	for(int k = 0; k < m_k; k++){
-		m_mu[k] = 0;
 		for(int d = 0; d < m_dim; d++){
+			mu = 0;
 			for(int n = 0; n < m_n; n++){
-				m_mu[k][d] += m_post[n][k]*x[n][d]/norms[k];
+				mu += m_post.at(n,k)*m_x.at(n).Value(d)/norms[k];
 			}
-			m_coeff[k] = norms[k]/m_n;
+			m_mus[k].SetEntry(mu, d, 0);
+			m_coeffs[k] = norms[k]/m_n;
 		}
 	}
 
@@ -88,7 +92,9 @@ void GaussianMixture::UpdateParameters(){
 		for(int d0 = 0; d0 < m_dim; d0++){
 			for(int d1 = 0; d1 < m_dim; d1++){
 				for(int n = 0; n < m_n; n++){
-					m_cov.SetEntry(m_post[n][k]*(x[n][d0] - m_mu[k])*(x[n][d1] - m_mu[k][d1])/norms[k],d0,d1);
+			/* redo this - needs to be set as a matrix that is weighted by the post
+					m_covs[k].SetEntry(m_post.at(n,k)*(m_x.at(n).Value(d0) - m_mus[k].at(d1,0))*(m_x.at(n).Value(d1) - m_mus[k].at(d1,0)/norms[k],d0,d1),);
+			*/
 
 				}
 			}
@@ -103,43 +109,51 @@ void GaussianMixture::UpdateParameters(){
 
 
 
-void GaussianMixture::EvalLogLH(){
+void GaussianMixture::EvalLogL(){
+//debug
+/*
 	double logLH = 0;
 	double sum_k;
 	for(int n = 0; n < m_n; n++){
 		sum_k = 0;
 		for(int k = 0; k < m_k; k++){
-			sum_k += m_coeff[k]*Gaus(x[n],m_mu[k],m_cov[k]);
+			sum_k += m_coeffs[k]*Gaus(m_x[n],m_mus[k],m_covs[k]);
 		} 
 		
 		logLH += log(sum_k);
 	}
 	return logLH;
+*/
 }
 
 
 
-}
+
 
 
 //consider doing this for whole class or moving Gaus function to more general class
 //gaussian for one data point
-double GaussianMixture:Gaus(vector<double> x, vector<double> mu, Matrix cov){
+double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov){
 	double det = cov.det();
-	int dim = x.size();
-	if(x.size() != mu.size(){
-		cout << "Error: x and mu length do not match." << x.size() << " " << mu.size() << endl;
+	int dim = x.Dim();
+	if(dim != mu.GetDims()[0]){
+		cout << "Error: x and mu length do not match." << dim << " " << mu.GetDims()[0] << endl;
+		return 0;
 	}
-	Matrix mu = Matrix();
-	mu.SetDims(1,m_Xdim);
-	for(int d = 0; d < dim; d++){
-		mu.SetEntry(x[d] - mu,0,d);
+	if(mu.GetDims()[0] != cov.GetDims()[0]){
+		cout << "Error: covariance and mu dimensions do not match." << cov.GetDims()[0] << " " << mu.GetDims()[0] << endl;
+		return 0;
 	}
-	Matrix muT = mu.transpose();
+	if(!cov.square()){
+		cout << "Error: non-square covariance matrix." << endl;
+		return 0;
+	}
+	Matrix muT;
+	mu.transpose(muT);
 	double coeff = 1/(pow(det,0.5)*pow(2*acos(-1),0.5*dim));
 	//should only be 1 element matrix
-	double expon = muT.mult(cov.mult(mu)).GetEntry(0,0);
+	double expon = muT.mult(cov.mult(mu)).at(0,0);
 
-	return coeff*exp(-0.5*exp);
+	return coeff*exp(-0.5*expon);
 }
 
