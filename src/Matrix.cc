@@ -47,7 +47,7 @@ Matrix::~Matrix(){
 	}
 }
 
-void Matrix::InitRandom(double min = 0., double max = 1.){
+void Matrix::InitRandom(double min, double max){
 	RandomSample rs;
 	//TODO: set range by data
 	rs.SetRange(min, max);
@@ -58,6 +58,25 @@ void Matrix::InitRandom(double min = 0., double max = 1.){
 	}		
 }
 
+void Matrix::InitRandomSym(double min, double max){
+	RandomSample rs;
+	//TODO: set range by data
+	rs.SetRange(min, max);
+	if(!_square){
+		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix)" << endl;
+		return;
+	}
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			if(i <= j){
+				m_entries[i][j] = rs.SampleFlat();
+			}
+			else if(i > j){
+				m_entries[i][j] = m_entries[j][i];
+			}
+		}
+	}	
+}
 void Matrix::SetDims(int x_dim, int y_dim){
 	m_Xdim = x_dim;
 	m_Ydim = y_dim;
@@ -70,7 +89,7 @@ void Matrix::SetEntry(double val, int i, int j){
 }
 
 
-void Matrix::GetCofactor(Matrix& temp, int p, int q, int n){
+void Matrix::GetCofactor(Matrix& temp, int p, int q, int n) const{
 	int i = 0, j = 0;
 	//int n = temp.GetDims()[0];
 	// Looping for each element of the matrix
@@ -91,11 +110,11 @@ void Matrix::GetCofactor(Matrix& temp, int p, int q, int n){
 
 
 //n is current dim of cofactor
-double Matrix::det(int n = 0){
+double Matrix::det(int n) const{
 	//if det has already been calculated, return result
-	if(m_det != -999){
-		return m_det;
-	}
+//	if(m_det != -999){
+//		return m_det;
+//	}
 	double D = 0; // Initialize result
 	if(!_square){
 		cout << "Error: non-square matrix, cannot calculate determinant." << m_Xdim << " " << m_Ydim << endl;
@@ -122,7 +141,7 @@ double Matrix::det(int n = 0){
 	    // terms are to be added with alternate sign
 	    sign = -sign;
 	}
-	m_det = D;	
+//	m_det = D;	
 	return D;
 
 }
@@ -259,6 +278,7 @@ void Matrix::transpose(const Matrix& mat){
 	}
 }
 			
+//clear
 void Matrix::clear(){
 	for(int i = 0; i < m_Xdim; i++){
 		m_entries[i].clear();
@@ -266,10 +286,60 @@ void Matrix::clear(){
 	m_entries.clear();
 }
 
+void Matrix::cholesky(Matrix& mat){
+	//check if matrix is square, posdef + symmetric
+	if(!mat.square()){
+		cout << "Error: matrix is not square." << endl;
+		return;
+	}
+	if(!mat.symmetric()){
+		cout << "Error: matrix is not symmetric." << endl;
+		return;
+	}
+	if(!mat.posdef()){
+		cout << "Error: matrix is not positive-definite." << endl;
+		return;
+	}
+	double sum;
+	int k;
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = i; j < m_Ydim; j++){
+			for(sum = mat.at(i,j), k = i - 1; k >= 0; k--) cout << "i: " << i << " j: " << j << " k: " << k << endl;
+		}
+	} 
+			
+
+	
 
 
 
-//update entries
-//add entries
-//clear
 
+}
+
+
+bool Matrix::symmetric() const{
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			if(i < j) break; //only need to look at one half of the matrix
+			if(m_entries[i][j] != m_entries[j][i]){
+				return false;
+			}
+		}
+	}
+	return true;
+
+}
+
+
+bool Matrix::posdef() const{
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			if(m_entries[i][j] <= 0){
+				return false;
+			}
+		}
+	}
+	return true;
+
+
+}
