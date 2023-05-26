@@ -27,13 +27,22 @@ cout << "Free sha-va-ca-doo!" << endl;
 RandomSample rs(123);
 rs.SetRange(0.,1.);
 //2D Gauss
-vector<double> mu = {0.1, 0.4}
+vector<double> mu = {0.1, 0.4};
 Matrix cov = Matrix(2,2);
 //with diagonal covariance matrix
 cov.SetEntry(0.5,0,0);
 cov.SetEntry(0.6,1,1);
 //n data points
 int n = 100;
+
+//test Cholesky decomp
+//create symmetric matrix
+int N = 3;
+Matrix mat = Matrix(N,N);
+mat.InitRandomSym();
+Matrix L = Matrix(N,N);
+L.cholesky(mat);
+
 //eventually make a PointCollection
 //vector<vector<double>> pts = rs.SampleNDimGaussian(
 

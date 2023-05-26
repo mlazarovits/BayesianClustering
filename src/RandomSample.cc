@@ -88,7 +88,7 @@ Point RandomSample::SampleNDimFlat(int dim){
 	Point x = Point(dim);
 	for(int i = 0; i < dim; i++)
 		x.SetValue(_xmin + (_xmax - _xmin)*rand(), i);
-	return x
+	return x;
 }
 
 void RandomSample::SetRange(double xmin, double xmax){

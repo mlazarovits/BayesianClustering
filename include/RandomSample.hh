@@ -21,7 +21,7 @@ class RandomSample{
 		double FlatGausScaled();
 		double Gaussian(double x, double mu, double sigma);
 		double SampleFlat();
-		Point RandomSample::SampleNDimFlat(int dim)
+		Point SampleNDimFlat(int dim);
 		void SetRange(double xmin, double xmax);
 		std::vector<double> SampleGaussian(double mean, double sigma, int Nsample);
 		double NDimGaussian(Point x, Matrix mu, Matrix sigma);

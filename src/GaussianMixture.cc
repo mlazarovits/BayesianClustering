@@ -149,7 +149,7 @@ double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov
 		return 0;
 	}
 	Matrix muT;
-	mu.transpose(muT);
+	muT.transpose(mu);
 	double coeff = 1/(pow(det,0.5)*pow(2*acos(-1),0.5*dim));
 	//should only be 1 element matrix
 	double expon = muT.mult(cov.mult(mu)).at(0,0);
