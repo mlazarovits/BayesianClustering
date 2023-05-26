@@ -304,16 +304,30 @@ void Matrix::cholesky(Matrix& mat){
 	int k;
 	for(int i = 0; i < m_Xdim; i++){
 		for(int j = i; j < m_Ydim; j++){
-			for(sum = mat.at(i,j), k = i - 1; k >= 0; k--) cout << "i: " << i << " j: " << j << " k: " << k << endl;
+			//copy mat into L
+			m_entries[i][j] = mat.at(i,j);
+			for(sum = mat.at(i,j), k = i - 1; k >= 0; k--){
+				cout << "mat: " << mat.at(i,j) << " sum: " << sum << " minus: " << m_entries[i][k] << " times " << m_entries[j][k] << endl;
+				sum -= m_entries[i][k]*m_entries[j][k]; //m_entries = L 
+			}
+			if(i == j){
+				if(sum <= 0.0){
+					cout << "mat not posdef." << endl;
+					mat.print();	
+					return;
+				}
+				m_entries[i][i] = sqrt(sum);
+			}
+			else{
+				m_entries[j][i] = sum/m_entries[i][i];
+			}
 		}
 	} 
-			
-
+	//set upper-triangular part to 0 - L should be lower-triangular
+	for(int i = 0; i < m_Xdim; i++)
+		for(int j = 0; j < i; j++)
+			m_entries[j][i] = 0.;
 	
-
-
-
-
 }
 
 
@@ -342,4 +356,14 @@ bool Matrix::posdef() const{
 	return true;
 
 
+}
+
+
+void Matrix::print() const{
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			cout << m_entries[i][j] << " ";
+		}
+		cout << endl;
+	}
 }

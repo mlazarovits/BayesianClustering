@@ -33,6 +33,7 @@ class Matrix{
 		void cholesky(Matrix& mat);
 		//clear
 		void clear();
+		void print() const;
 		//update entries
 		//add entries
 	private:
