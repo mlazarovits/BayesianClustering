@@ -1,5 +1,6 @@
 #include "RandomSample.hh"
 #include "Matrix.hh"
+#include "PointCollection.hh"
 #include <iostream>
 #include <vector>
 
@@ -126,18 +127,28 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 	}
 	return samples;
 }
-//return random double (xmin, xmax) according to n-dim Gaussian distribuion
+//return Nsample random d-dim points (xmin, xmax) according to n-dim Gaussian distribuion
 Matrix RandomSample::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	//need cholesky decomposition: takes sigma = LL^T
 	//returns Nsample normally distributed n-dim points (one point = x)
 	//x = L*y + mu for vectors x, y, mu and matrix L
-	//y ~ N(0,1) - set just like above with Gaussian(Y, 0, 1)
-	//do cholesky decomp in separate class (L is a class member)
-	//chol.Lmult(y+mu,x) fills n-dim vector x with L*y
 	Matrix L = sigma.cholesky();	
-	
+	int d = mean.GetDims()[0];
 
 
+	//aggregate points
+	PointCollection pc;
+	for(int n = 0; n < Nsample; n++){
+		//y_i ~ N(0,1)
+		vector<double> y = SampleGaussian(0,1,d);
+		Matrix mat_y(y);
+		//L*y	
+		Matrix Ly = Matrix(d,1);
+		Ly.mult(L,mat_y);	
+		//L*y + mu
+		//for(int i = 0; i < d; i++)
+		//pc += pt;
+	}
 
 /*
 	//samples should be an n x d (n rows of d-dim data pts) matrix
@@ -165,5 +176,5 @@ Matrix RandomSample::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	}
 	return samples;
 */
-
+	return L;
 }

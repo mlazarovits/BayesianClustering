@@ -11,6 +11,7 @@ class Matrix{
 		Matrix();
 		Matrix(int dim);
 		Matrix(int x_dim, int y_dim);
+		Matrix(vector<double> in);
 		//constructor from inputs
 		virtual ~Matrix();
 

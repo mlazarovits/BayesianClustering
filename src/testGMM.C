@@ -39,13 +39,13 @@ int n = 100;
 //create symmetric matrix
 int N = 3;
 Matrix mat = Matrix(N,N);
-mat.InitRandomSym();
-Matrix L = Matrix(N,N);
-L.cholesky(mat);
+mat.InitRandomSymPosDef();
+Matrix L = mat.cholesky();
+
 
 //eventually make a PointCollection
-//vector<vector<double>> pts = rs.SampleNDimGaussian(
-
+RandomSample rs;
+Matrix test = rs.SampleNDimGaussian();
 
 
 

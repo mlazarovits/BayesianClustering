@@ -39,6 +39,17 @@ Matrix::Matrix(int x_dim, int y_dim){
 	}		
 }
 
+Matrix::Matrix(vector<double> in){
+	m_Xdim = (int)in.size();
+	m_Ydim = 1;
+
+	m_entries.push_back({});
+	for(int i = 0; i < m_Xdim; i++)
+		m_entries[0].push_back(in[i]);
+	
+} 
+
+
 //constructor from inputs
 
 Matrix::~Matrix(){
