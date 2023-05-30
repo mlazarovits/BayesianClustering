@@ -134,6 +134,7 @@ void GaussianMixture::EvalLogL(){
 //consider doing this for whole class or moving Gaus function to more general class
 //gaussian for one data point
 double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov){
+	/*
 	double det = cov.det();
 	int dim = x.Dim();
 	if(dim != mu.GetDims()[0]){
@@ -155,5 +156,8 @@ double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov
 	double expon = muT.mult(cov.mult(mu)).at(0,0);
 
 	return coeff*exp(-0.5*expon);
+	*/
+	return 0.;
+
 }
 
