@@ -22,7 +22,7 @@ class Matrix{
 		double at(int i, int j) const;
 		void GetCofactor(Matrix& temp, int p, int q, int n) const;
 		vector<int> GetDims() const;
-		Matrix mult(const Matrix& mat) const;
+		void mult(const Matrix& mat1, const Matrix& mat2);
 		//double det() const;
 		double det(int n = 0) const;
 		bool square() const { return _square; }

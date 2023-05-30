@@ -91,7 +91,7 @@ void Matrix::InitRandomSymPosDef(double min, double max){
 		}
 	}
 	Matrix sym(m_Xdim, m_Ydim);
-	sym = A_T.mult(A);
+	sym.mult(A_T,A);
 	for(int i = 0; i < m_Xdim; i++){
 		for(int j = 0; j < m_Ydim; j++){
 			m_entries[i][j] = sym.at(i,j);
@@ -267,24 +267,26 @@ double Matrix::at(int i, int j) const{
 }
 
 
-Matrix Matrix::mult(const Matrix& mat) const{
+void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 	double val;
-	vector<int> dims = mat.GetDims();
-	Matrix ret(m_Xdim, dims[1]);
-	if(dims[0] != m_Ydim){
-		cout << "Error: matrices have incompatible dimensions. " << dims[0] << " " << m_Ydim << endl;
-		return ret;
+	vector<int> dims1 = mat1.GetDims();
+	vector<int> dims2 = mat2.GetDims();
+	//clear current matrix to be filled with mutliplied matrix
+	if(dims1[1] != dims2[0]){
+		cout << "Error: matrices have incompatible dimensions. " << dims1[1] << " " << dims2[0] << endl;
+		return;
 	}
-	for(int i = 0; i < m_Xdim; i++){
-		for(int j = 0; j < m_Ydim; j++){
+	clear();
+	SetDims(dims1[0],dims2[1]);
+	for(int i = 0; i < dims1[0]; i++){
+		for(int j = 0; j < dims2[1]; j++){
 			val = 0;
-			for(int k = 0; k < dims[0]; k++){
-				val += m_entries[i][k] * mat.at(k,j);
+			for(int k = 0; k < dims2[0]; k++){
+				val += mat1.at(i,k) * mat2.at(k,j);
 			}
-			ret.SetEntry(val,i,j);
+			m_entries[i][j] = val;
 		}
 	}
-	return ret;
 }
 
 
