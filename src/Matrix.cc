@@ -77,6 +77,27 @@ void Matrix::InitRandomSym(double min, double max){
 		}
 	}	
 }
+void Matrix::InitRandomSymPosDef(double min, double max){
+	if(!_square){
+		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix)" << endl;
+		return;
+	}
+	Matrix A = Matrix(m_Xdim, m_Ydim);
+	Matrix A_T = Matrix(m_Xdim, m_Ydim);
+	A.InitRandom(min,max);
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			A_T.SetEntry(A.at(i,j),j,i);
+		}
+	}
+	Matrix sym(m_Xdim, m_Ydim);
+	sym = A_T.mult(A);
+	for(int i = 0; i < m_Xdim; i++){
+		for(int j = 0; j < m_Ydim; j++){
+			m_entries[i][j] = sym.at(i,j);
+		}
+	}
+}
 void Matrix::SetDims(int x_dim, int y_dim){
 	m_Xdim = x_dim;
 	m_Ydim = y_dim;
@@ -296,23 +317,22 @@ void Matrix::cholesky(Matrix& mat){
 		cout << "Error: matrix is not symmetric." << endl;
 		return;
 	}
-	if(!mat.posdef()){
-		cout << "Error: matrix is not positive-definite." << endl;
-		return;
-	}
 	double sum;
 	int k;
 	for(int i = 0; i < m_Xdim; i++){
+	//	cout << "i: " << i << endl;
 		for(int j = i; j < m_Ydim; j++){
 			//copy mat into L
 			m_entries[i][j] = mat.at(i,j);
+		//	cout << " 	j: " << j << endl;
 			for(sum = mat.at(i,j), k = i - 1; k >= 0; k--){
-				cout << "mat: " << mat.at(i,j) << " sum: " << sum << " minus: " << m_entries[i][k] << " times " << m_entries[j][k] << endl;
+		//cout << "		k: " << k << endl;
+		//cout << "i: " << i << " j: " << j << " k: " << k << endl;
 				sum -= m_entries[i][k]*m_entries[j][k]; //m_entries = L 
 			}
 			if(i == j){
 				if(sum <= 0.0){
-					cout << "mat not posdef." << endl;
+					cout << "mat not posdef. " << sum << endl;
 					mat.print();	
 					return;
 				}
@@ -321,12 +341,15 @@ void Matrix::cholesky(Matrix& mat){
 			else{
 				m_entries[j][i] = sum/m_entries[i][i];
 			}
+			//	cout << "	sum: " << sum << endl;
+		//cout << "L_ji = " << m_entries[j][i] << " for j: " << j << " i: " << i << endl;
 		}
 	} 
 	//set upper-triangular part to 0 - L should be lower-triangular
 	for(int i = 0; i < m_Xdim; i++)
 		for(int j = 0; j < i; j++)
 			m_entries[j][i] = 0.;
+	//print();
 	
 }
 
@@ -345,18 +368,6 @@ bool Matrix::symmetric() const{
 }
 
 
-bool Matrix::posdef() const{
-	for(int i = 0; i < m_Xdim; i++){
-		for(int j = 0; j < m_Ydim; j++){
-			if(m_entries[i][j] <= 0){
-				return false;
-			}
-		}
-	}
-	return true;
-
-
-}
 
 
 void Matrix::print() const{

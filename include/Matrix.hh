@@ -16,6 +16,7 @@ class Matrix{
 
 		void InitRandom(double min = 0, double max = 0);	
 		void InitRandomSym(double min = 0, double max = 1.);
+		void InitRandomSymPosDef(double min = 0, double max = 1.);
 		void SetDims(int x_dim, int y_dim);
 		void SetEntry(double val, int i, int j);
 		double at(int i, int j) const;
@@ -26,7 +27,6 @@ class Matrix{
 		double det(int n = 0) const;
 		bool square() const { return _square; }
 		bool symmetric() const;
-		bool posdef() const;
 		void transpose(const Matrix& mat);
 		void adjoint(Matrix& adj);
 		void invert(Matrix& inv);
