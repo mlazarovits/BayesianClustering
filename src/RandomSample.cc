@@ -62,6 +62,7 @@ double RandomSample::Gaussian(double x, double mu, double sigma){
 }
 //n-dim normal distribution with specified mean (n x 1 matrix) and sigma (n x n matrix) for one n-dim point x
 double RandomSample::NDimGaussian(Point x, Matrix mu, Matrix sigma){
+	/*
 	int dim = x.Dim();
 	Matrix mu_scaled = Matrix(x.Dim(),1);
 	for(int d = 0; d < dim; d++)
@@ -76,7 +77,10 @@ double RandomSample::NDimGaussian(Point x, Matrix mu, Matrix sigma){
 	Matrix expon = muT.mult(sigInv.mult(mu_scaled));
 	
 	return 1./(det*sqrt(2.*acos(-1)))*exp(-0.5*expon.at(0,0));
+	*/
+	return 0.;
 }
+
 
 //get random x value according to flat distribuion
 double RandomSample::SampleFlat(){
@@ -130,7 +134,7 @@ Matrix RandomSample::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	//y ~ N(0,1) - set just like above with Gaussian(Y, 0, 1)
 	//do cholesky decomp in separate class (L is a class member)
 	//chol.Lmult(y+mu,x) fills n-dim vector x with L*y
-	
+	Matrix L = sigma.cholesky();	
 	
 
 
