@@ -30,7 +30,7 @@ class Matrix{
 		void transpose(const Matrix& mat);
 		void adjoint(Matrix& adj);
 		void invert(Matrix& inv);
-		void cholesky(Matrix& mat);
+		Matrix cholesky();
 		//clear
 		void clear();
 		void print() const;

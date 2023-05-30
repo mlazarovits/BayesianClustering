@@ -307,15 +307,16 @@ void Matrix::clear(){
 	m_entries.clear();
 }
 
-void Matrix::cholesky(Matrix& mat){
+Matrix Matrix::cholesky(){
 	//check if matrix is square, posdef + symmetric
-	if(!mat.square()){
+	Matrix L = Matrix(m_Xdim, m_Ydim);
+	if(!_square){
 		cout << "Error: matrix is not square." << endl;
-		return;
+		return L;
 	}
-	if(!mat.symmetric()){
+	if(!symmetric()){
 		cout << "Error: matrix is not symmetric." << endl;
-		return;
+		return L;
 	}
 	double sum;
 	int k;
@@ -323,23 +324,23 @@ void Matrix::cholesky(Matrix& mat){
 	//	cout << "i: " << i << endl;
 		for(int j = i; j < m_Ydim; j++){
 			//copy mat into L
-			m_entries[i][j] = mat.at(i,j);
+			L.SetEntry(m_entries[i][j],i,j);
 		//	cout << " 	j: " << j << endl;
-			for(sum = mat.at(i,j), k = i - 1; k >= 0; k--){
+			for(sum = m_entries[i][j], k = i - 1; k >= 0; k--){
 		//cout << "		k: " << k << endl;
 		//cout << "i: " << i << " j: " << j << " k: " << k << endl;
-				sum -= m_entries[i][k]*m_entries[j][k]; //m_entries = L 
+				sum -= L.at(i,k)*L.at(j,k);  
 			}
 			if(i == j){
 				if(sum <= 0.0){
 					cout << "mat not posdef. " << sum << endl;
-					mat.print();	
-					return;
+					print();	
+					return L;
 				}
-				m_entries[i][i] = sqrt(sum);
+				L.SetEntry(sqrt(sum),i,i);
 			}
 			else{
-				m_entries[j][i] = sum/m_entries[i][i];
+				L.SetEntry(sum/L.at(i,i),j,i);
 			}
 			//	cout << "	sum: " << sum << endl;
 		//cout << "L_ji = " << m_entries[j][i] << " for j: " << j << " i: " << i << endl;
@@ -348,8 +349,9 @@ void Matrix::cholesky(Matrix& mat){
 	//set upper-triangular part to 0 - L should be lower-triangular
 	for(int i = 0; i < m_Xdim; i++)
 		for(int j = 0; j < i; j++)
-			m_entries[j][i] = 0.;
+			L.SetEntry(0.,j,i);
 	//print();
+	return L;
 	
 }
 
