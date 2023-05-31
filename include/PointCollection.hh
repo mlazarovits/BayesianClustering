@@ -240,7 +240,7 @@ class PointCollection{
 		for(int i = 0; i < high.GetNPoints(); i++) _pts.push_back(high.at(i));
 	
 	}
-
+/*
 
 	void FillGaus1D(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1, unsigned long long seed = 123){
 		if((int)mean.size() != dim || (int)sigma.size() != dim || mean.size() != sigma.size()){
@@ -277,7 +277,7 @@ class PointCollection{
 		}	
 	}	
 
-
+*/
 	private:
 		int _nDim = 0;
 		vector<Point> _pts;
