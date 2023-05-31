@@ -24,6 +24,10 @@ class Matrix{
 		void GetCofactor(Matrix& temp, int p, int q, int n) const;
 		vector<int> GetDims() const;
 		void mult(const Matrix& mat1, const Matrix& mat2);
+		//add two matrices and store result in this
+		void add(const Matrix& mat1, const Matrix& mat2);
+		//add mat to this
+		void add(const Matrix& mat);
 		//double det() const;
 		double det(int n = 0) const;
 		bool square() const { return _square; }

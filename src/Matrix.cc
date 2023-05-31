@@ -393,3 +393,40 @@ void Matrix::print() const{
 		cout << endl;
 	}
 }
+
+
+
+
+void Matrix::add(const Matrix& mat1, const Matrix& mat2){
+	//check dims are compatible
+	vector<int> dims1 = mat1.GetDims();
+	vector<int> dims2 = mat2.GetDims();
+	if(dims1[0] != dims2[0] || dims1[1] != dims2[1]){
+		cout << "Error: matrix dimensions are not compatible for addition." << endl;
+		return;
+	}
+	SetDims(dims1[0],dims1[1]);
+	for(int i = 0; i < dims1[0]; i++){
+		for(int j = 0; j < dims1[1]; j++){
+			m_entries[i][j] = mat1.at(i,j) + mat2.at(i,j);
+		}
+	}
+}
+
+
+
+void Matrix::add(const Matrix& mat){
+	//check dims are compatible
+	vector<int> dims1 = mat.GetDims();
+	if(dims1[0] != m_Xdim || dims1[1] != m_Ydim){
+		cout << "Error: matrix dimensions are not compatible for addition." << endl;
+		return;
+	}
+	for(int i = 0; i < dims1[0]; i++){
+		for(int j = 0; j < dims1[1]; j++){
+			m_entries[i][j] += mat.at(i,j);
+		}
+	}
+	
+}
+
