@@ -23,30 +23,28 @@ int main(int argc, char *argv[]){
 
 cout << "Free sha-va-ca-doo!" << endl;
 
+
+
 //sample gaussians to simulate data
-RandomSample rs(123);
-rs.SetRange(0.,1.);
-//2D Gauss
-vector<double> mu = {0.1, 0.4};
-Matrix cov = Matrix(2,2);
-//with diagonal covariance matrix
-cov.SetEntry(0.5,0,0);
-cov.SetEntry(0.6,1,1);
-//n data points
-int n = 100;
-
-//test Cholesky decomp
-//create symmetric matrix
 int N = 3;
-Matrix mat = Matrix(N,N);
-mat.InitRandomSymPosDef();
-Matrix L = mat.cholesky();
-
-
-//eventually make a PointCollection
 RandomSample rs;
-Matrix test = rs.SampleNDimGaussian();
+rs.SetRange(0.,1.);
+//n data points
+int Nsample = 10;
 
+//create symmetric matrix
+Matrix sigma = Matrix(N,N);
+sigma.InitRandomSymPosDef();
+Matrix mu = Matrix(N,1);
+mu.InitRandom();
+
+
+Matrix mat;
+mat.SampleNDimGaussian(mu,sigma,Nsample);
+////eventually make a PointCollection
+
+
+cout << "end" << endl;
 
 
 

@@ -10,7 +10,9 @@ class Matrix{
 		//set dimensionality
 		Matrix();
 		Matrix(int dim);
-		Matrix(int x_dim, int y_dim);
+		//x_dim = # pts (rows), y_dim = dimensionality (cols)
+		//fill y-dim first (cols) then x-dim (rows) for each y
+		Matrix(int row, int col);
 		Matrix(vector<double> in);
 		//constructor from inputs
 		virtual ~Matrix();
@@ -18,8 +20,10 @@ class Matrix{
 		void InitRandom(double min = 0, double max = 0);	
 		void InitRandomSym(double min = 0, double max = 1.);
 		void InitRandomSymPosDef(double min = 0, double max = 1.);
-		Matrix SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample);
-		void SetDims(int x_dim, int y_dim);
+		void InitEmpty();
+		//fills this matrix with data pts from n-dim gaus
+		void SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample);
+		void SetDims(int row, int col);
 		void SetEntry(double val, int i, int j);
 		double at(int i, int j) const;
 		void GetCofactor(Matrix& temp, int p, int q, int n) const;
@@ -44,10 +48,9 @@ class Matrix{
 		//update entries
 		//add entries
 	private:
-		int m_Xdim;
-		int m_Ydim;
+		int m_row;
+		int m_col;
 		vector<vector<double>> m_entries;
-		//void subMatrix(int mat[N][N], int temp[N][N], int p, int q, int n);
 		double m_det;
 		bool _square;
 };
