@@ -9,9 +9,7 @@ class Matrix{
 	public:
 		//set dimensionality
 		Matrix();
-		Matrix(int dim);
 		//x_dim = # pts (rows), y_dim = dimensionality (cols)
-		//fill y-dim first (cols) then x-dim (rows) for each y
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
 		//constructor from inputs
@@ -51,7 +49,6 @@ class Matrix{
 		int m_row;
 		int m_col;
 		vector<vector<double>> m_entries;
-		double m_det;
 		bool _square;
 };
 

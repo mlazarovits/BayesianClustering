@@ -8,27 +8,16 @@ using std::endl;
 
 
 Matrix::Matrix(){
-	m_det = -999;
-	_square = false;
+cout << "empty ctr" << endl;
+	_square = true;
 	m_row = 0;
 	m_col = 0;
+cout << "empty ctr - end" << endl;
 }
 
-Matrix::Matrix(int dim){
-	m_det = -999;
-	_square = true;
-	m_row = dim;
-	m_col = dim;
-	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back(0.);
-		}
-	}		
-}
 
 Matrix::Matrix(int row, int col){
-	m_det = -999;
+cout << "matrix ctr" << endl;
 	m_row = row;
 	m_col = col;
 	if(m_row == m_col) _square = true;
@@ -36,39 +25,47 @@ Matrix::Matrix(int row, int col){
 		m_entries.push_back({});
 		for(int j = 0; j < m_col; j++){
 			m_entries[i].push_back(0.);
+			cout << "	i: " << i << " j: " << j << endl;
 		}
 	}		
+cout << "matrix ctr - end" << endl;
 }
 
 Matrix::Matrix(vector<double> in){
+cout << "matrix ctr" << endl;
 	m_row = 1;
 	m_col = (int)in.size();
 
 	m_entries.push_back({});
-	for(int j = 0; j < m_col; j++)
+	for(int j = 0; j < m_col; j++){
 		m_entries[0].push_back(in[j]);
-	
+			cout << "	j: " << j << endl;
+	}
+cout << "matrix ctr - end" << endl;
 } 
 
 
 //constructor from inputs
 
 Matrix::~Matrix(){
-	for(int i = 0; i < m_entries.size(); i++){
-		m_entries[i].clear();
-	}
+//	for(int i = 0; i < m_entries.size(); i++){
+//		m_entries[i].clear();
+//	}
 
 }
 
 void Matrix::InitRandom(double min, double max){
+	cout << "InitRandom" << endl;
 	RandomSample rs;
 	//TODO: set range by data
 	rs.SetRange(min, max);
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
 			m_entries[i][j] = rs.SampleFlat();
+			cout << "	i: " << i << " j: " << j << endl;
 		}
 	}		
+	cout << "InitRandom - end" << endl;
 }
 
 void Matrix::InitRandomSym(double min, double max){
@@ -91,25 +88,46 @@ void Matrix::InitRandomSym(double min, double max){
 	}	
 }
 void Matrix::InitRandomSymPosDef(double min, double max){
+	cout << "InitRandomSymPosDef" << endl;
 	if(!_square){
-		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix)" << endl;
+		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix). Rows: " << m_row << " cols: " << m_col << endl;
 		return;
 	}
+cout << "m_entries size: " << m_entries.size() << endl;
 	Matrix A = Matrix(m_row, m_col);
-	Matrix A_T = Matrix(m_row, m_col);
+	Matrix A_T;
 	A.InitRandom(min,max);
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			A_T.SetEntry(A.at(i,j),j,i);
-		}
-	}
-	Matrix sym(m_row, m_col);
-	sym.mult(A_T,A);
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m_entries[i][j] = sym.at(i,j);
-		}
-	}
+	A_T.transpose(A);
+//	for(int i = 0; i < m_row; i++){
+//		for(int j = 0; j < m_col; j++){
+//			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << endl;
+//			A_T.SetEntry(A.at(i,j),j,i);
+//			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << " A_T: " << A_T.at(i,j) << endl;
+//		}
+//	}
+	cout << "A" << endl;
+	//A.print();
+	cout << "A_T" << endl;
+//	A_T.print();
+	//Matrix sym(m_row, m_col);
+	//sym.mult(A_T,A);
+	//cout << "sym" << endl;
+	//sym.print();
+	this->mult(A_T,A);
+
+//	double val;
+//	for(int i = 0; i < m_row; i++){
+//	cout << "m_entries row " << i << " size: " << m_entries[i].size() << endl;
+//		for(int j = 0; j < m_col; j++){
+//			cout << "i: " << i << " j: " << j << " m_entries: " << m_entries[i][j] << endl;
+//			val = 0;
+//			for(int k = 0; k < m_row; k++){
+//				val += A_T.at(i,k)*A.at(k,j);
+//			}
+//			m_entries[i][j] = val;
+//		}
+//	}
+	cout << "InitRandomSymPosDef - end" << endl;
 }
 void Matrix::InitEmpty(){
 	if(m_entries.size() > 0){
@@ -301,8 +319,12 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 		cout << "Error: matrices have incompatible dimensions. " << dims1[1] << " " << dims2[0] << endl;
 		return;
 	}
-	clear();
-	SetDims(dims1[0],dims2[1]);
+	if(m_row != 0 and m_col != 0){
+		if(m_row != dims1[0] or m_col != dims2[1]){
+			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims." << endl;
+			return;
+		}
+	}
 	
 	for(int i = 0; i < dims1[0]; i++){
 		for(int j = 0; j < dims2[1]; j++){
@@ -317,12 +339,13 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 
 
 void Matrix::transpose(const Matrix& mat){
-	this->clear();
-	this->SetDims(m_col, m_row);
-
+	clear();
+	SetDims(m_col, m_row);
+	InitEmpty();
+	
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
-			this->SetEntry(mat.at(j,i),i,j);
+			m_entries[i][j] = mat.at(j,i);
 		}
 	}
 }
@@ -408,8 +431,11 @@ PointCollection Matrix::MatToPoints(){
 
 Matrix Matrix::cholesky(){
 cout << "cholesky" << endl;
+	cout << "rows: " << m_row << " cols: " << m_col << endl;
 	//check if matrix is square, posdef + symmetric
 	Matrix L = Matrix(m_row, m_col);
+	return L;
+	cout << "made L" << endl;
 	if(!_square){
 		cout << "Error: matrix is not square." << endl;
 		return L;
@@ -420,8 +446,10 @@ cout << "cholesky" << endl;
 	}
 	double sum;
 	int k;
+	cout << "start for loops" << endl;
 	for(int i = 0; i < m_row; i++){
 		for(int j = i; j < m_col; j++){
+			cout << "1 - i: " << i << " j: " << j << " m_entries: " << m_entries[i][j] << endl;
 			//copy mat into L
 			L.SetEntry(m_entries[i][j],i,j);
 			for(sum = m_entries[i][j], k = i - 1; k >= 0; k--){
@@ -433,9 +461,11 @@ cout << "cholesky" << endl;
 					print();	
 					return L;
 				}
+				cout << "i: " << i << " j: " << j << " L: " << sqrt(sum) << endl;
 				L.SetEntry(sqrt(sum),i,i);
 			}
 			else{
+				cout << "i: " << i << " j: " << j << " L: " << sqrt(sum)/L.at(i,i) << endl;
 				L.SetEntry(sum/L.at(i,i),j,i);
 			}
 		}
@@ -455,7 +485,7 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	//returns Nsample normally distributed n-dim points (one point = x)
 	//x = L*y + mu for vectors x, y, mu and matrix L
 	cout << "SampleNDimGaussian" << endl;
-	//int d = mean.GetDims()[0];
+	int d = mean.GetDims()[0];
 	//cout << "dim: " << d << endl;
 //	
 	//SetDims(d,Nsample);
@@ -465,18 +495,18 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 //	//aggregate points
 //	cout << "Sampling " << Nsample << " " << d << "-dim data points from multidim gaussian." << endl;
 	//int n = 0;
-//	Matrix L = sigma.cholesky();	
+	sigma.print();
+	Matrix L = sigma.cholesky();	
+	//cout << "0,0: " << L.at(0,0) << endl;
+	L.print();
 	RandomSample rs;
 	rs.SetRange(0.,1.);
-	vector<double> y = {0., 1., 2.};
-//	y = rs.SampleGaussian(0.,1.,3);
-	cout << "y size: " << y.size() << endl;
+	vector<double> y;
+//	cout << "y size: " << y.size() << endl;
 	//for(int n = 0; n < Nsample; n++){
 		//y_i ~ N(0,1)
-//		RandomSample rs;
-//		rs.SetRange(0.,1.);
 //		cout << "1" << endl;
-//		y = rs.SampleGaussian(0.,1.,3);
+		y = rs.SampleGaussian(0.,1.,d);
 //		cout << "2" << endl;
 //		Matrix mat_y(y);
 		//cout << "3" << endl;

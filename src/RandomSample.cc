@@ -90,14 +90,7 @@ void RandomSample::SetRange(double xmin, double xmax){
 vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsample){
 	cout << "RandomSample::SampleGaussian with " << Nsample << " samples" << endl;
 	vector<double> samples;
-	//vector<double> test = {0., 1.};
-	//test.emplace_back(0);
-	//cout << "emplaced back 1" << endl;
-	//test.emplace_back(1);
-	//cout << "emplaced back 2" << endl;
-	//test.emplace_back(2);
-	//cout << "pushed back 3" << endl;
-/*
+//cout << "samples size: " << samples.size() << endl;
 	if(sigma < 0){
 		cout << "Please input valid sigma > 0" << endl;
 		return samples;
@@ -107,22 +100,16 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 
 	for(int i = 0; i < Nsample; i++){
 		Ntrial += 1;
-cout << "i: " << i << endl;
 		X = i;//SampleFlat();
-cout << "X: " << &X << " " << &samples << endl;
 		R = Gaussian(X,mean,sigma)/FlatGausScaled();
 		ran = rand();
 		if(ran > R){ // reject if "die thrown" (random number) is above distribution
 			i -= 1; // decrease i and try again
 			continue;
 		} else{ // accept if "die" is below (within) distribution
-		cout << "accept1: " << samples.size() << " X: " << &ran << endl;
 			samples.push_back(X);
-		cout << "accept2: " << samples.size()  << " i: " << i << " " << &samples[i] << endl;
 		}
-cout << "\n" << endl;
 	}
-*/
 	cout << "RandomSample::SampleGaussian - end" << endl;
 
 	return samples;
