@@ -29,7 +29,7 @@ void GaussianMixture::Initialize(){
 	for(int k = 0; k < m_k; k++){
 		m_mus.push_back(Matrix(m_dim,1));
 		m_mus[k].InitRandom(-5,5);
-		m_covs.push_back(Matrix(m_k));
+		m_covs.push_back(Matrix(m_k,m_k));
 		m_covs[k].InitRandom(0.,100.);
 		m_coeffs.push_back(randy.SampleFlat());
 	}

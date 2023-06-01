@@ -88,19 +88,16 @@ void RandomSample::SetRange(double xmin, double xmax){
 
 //return random double (xmin, xmax) according to Gaussian distribuion
 vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsample){
-	cout << "RandomSample::SampleGaussian with " << Nsample << " samples" << endl;
 	vector<double> samples;
-//cout << "samples size: " << samples.size() << endl;
 	if(sigma < 0){
 		cout << "Please input valid sigma > 0" << endl;
 		return samples;
 	}
 	double X, ran, R;
 	int Ntrial = 0;
-
 	for(int i = 0; i < Nsample; i++){
 		Ntrial += 1;
-		X = i;//SampleFlat();
+		X = SampleFlat();
 		R = Gaussian(X,mean,sigma)/FlatGausScaled();
 		ran = rand();
 		if(ran > R){ // reject if "die thrown" (random number) is above distribution
@@ -110,7 +107,5 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 			samples.push_back(X);
 		}
 	}
-	cout << "RandomSample::SampleGaussian - end" << endl;
-
 	return samples;
 }

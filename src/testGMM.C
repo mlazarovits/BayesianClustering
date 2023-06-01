@@ -28,33 +28,25 @@ cout << "Free sha-va-ca-doo!" << endl;
 //sample gaussians to simulate data
 int N = 3;
 ////n data points
-int Nsample = 10;
+int Nsample = 5;
 //RandomSample rs;
 //rs.SetRange(0.,1.);
 
 //create symmetric matrix
-cout << "init sigma" << endl;
 Matrix sigma = Matrix(N,N);
-cout << "fill sigma" << endl;
 sigma.InitRandomSymPosDef();
-cout << "init mu" << endl;
 Matrix mu = Matrix(N,1);
-cout << "fill mu" << endl;
-//mu.InitRandom();
+mu.InitRandom();
 
-
+//sample points from an n-dim gaussian
 Matrix mat;
 mat.SampleNDimGaussian(mu,sigma,Nsample);
-
-//crases with SampleNDimGaussian + Matrix sigma = Matrix(N,N); + sigma.InitRandomSymPosDef();
-
 
 
 ////eventually make a PointCollection
 
 
 
-cout << "end" << endl;
 
 
 
