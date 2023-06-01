@@ -240,6 +240,27 @@ class PointCollection{
 		for(int i = 0; i < high.GetNPoints(); i++) _pts.push_back(high.at(i));
 	
 	}
+	
+	double max(int d = 0){
+		double max = -999;
+		for(int i = 0; i < GetNPoints(); i++){
+			if(_pts[i].Value(d) > max)
+				max = _pts[i].Value(d);
+		} 
+		return max;
+
+	}
+
+	double min(int d = 0){
+		double min = 999;
+		for(int i = 0; i < GetNPoints(); i++){
+			if(_pts[i].Value(d) < min)
+				min = _pts[i].Value(d);
+		} 
+		return min;
+
+	}
+
 /*
 
 	void FillGaus1D(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1, unsigned long long seed = 123){

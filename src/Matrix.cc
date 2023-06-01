@@ -47,8 +47,8 @@ Matrix::~Matrix(){
 
 }
 
-void Matrix::InitRandom(double min, double max){
-	RandomSample rs;
+void Matrix::InitRandom(double min, double max, unsigned long long seed){
+	RandomSample rs(seed);
 	//TODO: set range by data
 	rs.SetRange(min, max);
 	for(int i = 0; i < m_row; i++){
@@ -58,8 +58,8 @@ void Matrix::InitRandom(double min, double max){
 	}		
 }
 
-void Matrix::InitRandomSym(double min, double max){
-	RandomSample rs;
+void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
+	RandomSample rs(seed);
 	//TODO: set range by data
 	rs.SetRange(min, max);
 	if(!_square){
@@ -77,15 +77,16 @@ void Matrix::InitRandomSym(double min, double max){
 		}
 	}	
 }
-void Matrix::InitRandomSymPosDef(double min, double max){
+void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed){
 	if(!_square){
 		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix). Rows: " << m_row << " cols: " << m_col << endl;
 		return;
 	}
 	Matrix A = Matrix(m_row, m_col);
-	Matrix A_T = Matrix(m_col, m_row);
-	A.InitRandom(min,max);
+	Matrix A_T;// = Matrix(m_col, m_row);
+	A.InitRandom(min,max,seed);
 	A_T.transpose(A);
+cout << "A_T: " << A_T.GetDims()[0] << " " << A_T.GetDims()[1] << endl;
 //	for(int i = 0; i < m_row; i++){
 //		for(int j = 0; j < m_col; j++){
 //			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << endl;
@@ -193,14 +194,14 @@ double Matrix::det(int n) const{
 }
 
 // Function to get adjoint of m_entries[N][N] in adj[N][N].
-void Matrix::adjoint(Matrix& adj){
+void Matrix::adjoint(const Matrix& mat){
 	if(!_square){
 		cout << "Error: non-square matrix, cannot calculate adjoint." << m_row << " " << m_col << endl;
 		return;
 	}
 
 	if (m_row == 1) {
-	    adj.SetEntry(1,0,0);
+	    m_entries[0][0] = 1;
 	    return;
 	}
 	
@@ -212,27 +213,28 @@ void Matrix::adjoint(Matrix& adj){
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			// Get cofactor of m_entries[i][j]
-			GetCofactor(temp, i, j, N);
-			
+			mat.GetCofactor(temp, i, j, N);
 			// sign of adj[j][i] positive if sum of row and column indexes is even.
 			sign = ((i + j) % 2 == 0) ? 1 : -1;
 			
 			// Interchanging rows and columns to get the transpose of the cofactor matrix
-			adj.SetEntry((sign) * (temp.det(N - 1)), j, i);
+			m_entries[j][i] = (sign) * (temp.det(N - 1));
 		}
 	}
 }
 
 
-void Matrix::invert(Matrix& mat){
+void Matrix::invert(const Matrix& mat){
+cout << "invert" << endl;
 	// Find determinant of m_entries[][]
 	if(!mat.square()){
 		cout << "Error: non-square matrix, cannot calculate inverse." << m_row << " " << m_col << endl;
 		return;
 	}
 	vector<int> dims = mat.GetDims();
-	this->SetDims(dims[0],dims[1]);
-	int det = mat.det(dims[0]);
+	SetDims(dims[0],dims[1]);	
+	InitEmpty();
+	double det = mat.det(dims[0]);
 	if (det == 0) {
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
@@ -240,14 +242,15 @@ void Matrix::invert(Matrix& mat){
 	
 	// Find adjoint
 	Matrix adj = Matrix(dims[0], dims[1]);
-	adjoint(adj);
-	
+	adj.adjoint(mat);
+cout << "det: " << det << endl;
+adj.Print();	
 	// Find Inverse using formula "inverse(A) =
 	// adj(A)/det(A)"
 	for (int i = 0; i < dims[0]; i++)
 	    for (int j = 0; j < dims[1]; j++)
-	        this->SetEntry(adj.at(i,j) / float(det), i, j);
-	
+	        m_entries[i][j] = adj.at(i,j)/det;
+cout << "invert - end" << endl;
 }
 
 
@@ -291,14 +294,14 @@ double Matrix::at(int i, int j) const{
 	return m_entries[i][j];
 }
 
-
+//multiply two matrices and store result in this matrix
 void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 	double val;
 	vector<int> dims1 = mat1.GetDims();
 	vector<int> dims2 = mat2.GetDims();
 	//clear current matrix to be filled with mutliplied matrix
 	if(dims1[1] != dims2[0]){
-		cout << "Matrix::mult error: matrices have incompatible dimensions. mat1: " << dims1[0] << " x  " << dims1[1] << " mat2: " << dims2[0] << " x " << dims2[1] << endl;
+		cout << "Matrix::mult error: matrices have incompatible dimensions. mat1: " << dims1[0] << " x " << dims1[1] << " mat2: " << dims2[0] << " x " << dims2[1] << endl;
 		return;
 	}
 	if(m_row != 0 and m_col != 0){
@@ -322,7 +325,7 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 
 void Matrix::transpose(const Matrix& mat){
 	clear();
-	SetDims(m_col, m_row);
+	SetDims(mat.GetDims()[1], mat.GetDims()[0]);
 	InitEmpty();
 	
 	for(int i = 0; i < m_row; i++){
@@ -414,6 +417,7 @@ PointCollection Matrix::MatToPoints(){
 	return pc;
 }
 
+//from Numerical Recipes 3rd Ed., Ch. 2.9
 Matrix Matrix::cholesky(){
 	//check if matrix is square, posdef + symmetric
 	Matrix L = Matrix(m_row, m_col);
@@ -455,6 +459,7 @@ Matrix Matrix::cholesky(){
 	
 }
 
+//from Numerical Recipes 3rd Ed., Ch. 7.4
 //return Nsample random d-dim points (xmin, xmax) according to n-dim Gaussian distribuion
 void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	//need cholesky decomposition: takes sigma = LL^T

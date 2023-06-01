@@ -13,7 +13,7 @@ class GaussianMixture : public BasePDFMixture{
 		GaussianMixture(int k);
 		virtual ~GaussianMixture(){ };
 	
-		void Initialize();
+		void Initialize(unsigned long long seed = 111);
 		//E-step
 		void CalculatePosterior();
 		//M-step
@@ -22,14 +22,6 @@ class GaussianMixture : public BasePDFMixture{
 		void EvalLogL();
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
 	private:
-		//data to fit
-		PointCollection m_x;
-		//TODO: need to initialize dim from data
-		int m_dim;
-		//TODO: number of data points - also need to init from data
-		int m_n;
-		//number of clusters k needs to be user specified
-		int m_k;
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k
 		vector<Matrix> m_mus;

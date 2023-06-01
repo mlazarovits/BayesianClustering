@@ -7,8 +7,8 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-//k = # of clusters
-//n = # of data pts
+//k = # of clusters (cols)
+//n = # of data pts (rows)
 GaussianMixture::GaussianMixture(){ 
 	m_k = 0;
 	m_n = 0;
@@ -21,16 +21,18 @@ GaussianMixture::GaussianMixture(int k){
 }
 
 //don't forget to include weights (eventually)
-void GaussianMixture::Initialize(){
+void GaussianMixture::Initialize(unsigned long long seed){
 	//randomly initialize mean, covariance + mixing coeff.
-	RandomSample randy;
+	RandomSample randy(seed);
 	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
+	double mu_lower = m_x.min()-0.1;
+	double mu_upper = m_x.max()+0.1;
 	for(int k = 0; k < m_k; k++){
 		m_mus.push_back(Matrix(m_dim,1));
-		m_mus[k].InitRandom(-5,5);
-		m_covs.push_back(Matrix(m_k,m_k));
-		m_covs[k].InitRandom(0.,100.);
+		m_mus[k].InitRandom(mu_lower,mu_upper);
+		m_covs.push_back(Matrix(m_dim,m_dim));
+		m_covs[k].InitRandom(0.,fabs(mu_lower)+fabs(mu_upper));
 		m_coeffs.push_back(randy.SampleFlat());
 	}
 }
@@ -40,18 +42,22 @@ void GaussianMixture::Initialize(){
 void GaussianMixture::CalculatePosterior(){
 	//each kth vector is a cluster of n data points
 	double val;
-	Matrix gaus;
+	Matrix gaus = Matrix(m_n,m_k);
 	vector<double> norms;
 	//calculate norms for each data pt (summed over k)
-	for(int	n = 0; n < m_n; n++){
+	for(int	n = 0; n < 1; n++){
 		double norm = 0.;
-		for(int k = 0; k < m_k; k++){
+		for(int k = 0; k < 1; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
-			gaus.SetEntry(Gaus(m_x.at(n),m_mus[k],m_covs[k]),n,k);
-			norm += m_coeffs[k]*gaus.at(n,k);
+		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
+			double g = Gaus(m_x.at(n),m_mus[k],m_covs[k]);
+			cout << "n: " << n << " k: " << k << " gaus: " << g << endl;
+		//	gaus.SetEntry(Gaus(m_x.at(n),m_mus[k],m_covs[k]),n,k);
+		//	norm += m_coeffs[k]*gaus.at(n,k);
 		}
-		norms.push_back(norm);
+		//norms.push_back(norm);
 	}
+/*
 	//calculate posterior for each data pt n in each cluster k
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
@@ -59,6 +65,7 @@ void GaussianMixture::CalculatePosterior(){
 			m_post.SetEntry(val,n,k);		
 		}
 	}
+*/
 }
 
 
@@ -134,30 +141,40 @@ void GaussianMixture::EvalLogL(){
 //consider doing this for whole class or moving Gaus function to more general class
 //gaussian for one data point
 double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov){
-	/*
 	double det = cov.det();
 	int dim = x.Dim();
 	if(dim != mu.GetDims()[0]){
-		cout << "Error: x and mu length do not match." << dim << " " << mu.GetDims()[0] << endl;
+		cout << "Error: x and mu length do not match. " << dim << " " << mu.GetDims()[0] << endl;
 		return 0;
 	}
 	if(mu.GetDims()[0] != cov.GetDims()[0]){
-		cout << "Error: covariance and mu dimensions do not match." << cov.GetDims()[0] << " " << mu.GetDims()[0] << endl;
+		cout << "Error: covariance and mu dimensions do not match. " << cov.GetDims()[0] << " " << mu.GetDims()[0] << endl;
 		return 0;
 	}
 	if(!cov.square()){
 		cout << "Error: non-square covariance matrix." << endl;
 		return 0;
 	}
-	Matrix muT;
+	Matrix muT;// = Matrix(mu.GetDims()[1], mu.GetDims()[0]);
 	muT.transpose(mu);
+	Matrix cov_inv;
+	cov_inv.invert(cov);
+	cov_inv.Print();	
+
 	double coeff = 1/(pow(det,0.5)*pow(2*acos(-1),0.5*dim));
 	//should only be 1 element matrix
-	double expon = muT.mult(cov.mult(mu)).at(0,0);
-
+	//muT*cov*mu = 1xd * dxd * dx1
+	Matrix mat_expon = Matrix(1,1);
+	Matrix cov_mu = Matrix(m_dim,1);
+	cov_mu.mult(cov_inv,mu);
+cout << "multiplied cov * mu " << cov_mu.at(0,0) << endl;
+	cov_mu.Print();
+	mat_expon.mult(muT,cov_mu);
+cout << "multiplied muT * cov*mu " << mat_expon.at(0,0) << endl;
+	mat_expon.Print();
+	double expon = mat_expon.at(0,0);
+cout << "g: " << coeff << endl;
 	return coeff*exp(-0.5*expon);
-	*/
-	return 0.;
 
 }
 

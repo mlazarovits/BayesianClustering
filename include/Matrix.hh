@@ -15,9 +15,10 @@ class Matrix{
 		//constructor from inputs
 		virtual ~Matrix();
 
-		void InitRandom(double min = 0, double max = 0);	
-		void InitRandomSym(double min = 0, double max = 1.);
-		void InitRandomSymPosDef(double min = 0, double max = 1.);
+		void InitRandom(double min = 0, double max = 1., unsigned long long seed = 123);
+		void InitRandomSym(double min = 0, double max = 1., unsigned long long seed = 123);
+		void InitRandomSymPos(double min = 0, double max = 1., unsigned long long seed = 123);
+		void InitRandomSymPosDef(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitEmpty();
 		//fills this matrix with data pts from n-dim gaus
 		void SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample);
@@ -36,8 +37,8 @@ class Matrix{
 		bool square() const { return _square; }
 		bool symmetric() const;
 		void transpose(const Matrix& mat);
-		void adjoint(Matrix& adj);
-		void invert(Matrix& inv);
+		void adjoint(const Matrix& mat);
+		void invert(const Matrix& mat);
 		Matrix cholesky();
 		PointCollection MatToPoints();
 		//clear
