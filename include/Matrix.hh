@@ -9,7 +9,7 @@ class Matrix{
 	public:
 		//set dimensionality
 		Matrix();
-		//x_dim = # pts (rows), y_dim = dimensionality (cols)
+		//x_dim = dim (rows), y_dim = # points (cols)
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
 		//constructor from inputs
@@ -42,7 +42,7 @@ class Matrix{
 		PointCollection MatToPoints();
 		//clear
 		void clear();
-		void print() const;
+		void Print() const;
 		//update entries
 		//add entries
 	private:

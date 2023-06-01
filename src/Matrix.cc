@@ -96,7 +96,7 @@ void Matrix::InitRandomSymPosDef(double min, double max){
 	//Matrix sym(m_row, m_col);
 	//sym.mult(A_T,A);
 	//cout << "sym" << endl;
-	//sym.print();
+	//sym.Print();
 	this->mult(A_T,A);
 //	double val;
 //	for(int i = 0; i < m_row; i++){
@@ -355,7 +355,7 @@ bool Matrix::symmetric() const{
 
 }
 
-void Matrix::print() const{
+void Matrix::Print() const{
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
 			cout << m_entries[i][j] << " ";
@@ -403,10 +403,13 @@ void Matrix::add(const Matrix& mat){
 
 PointCollection Matrix::MatToPoints(){
 	PointCollection pc;
-	for(int i = 0; i < m_row; i++){
-		Point pt = Point(m_entries[i]);
+	for(int j = 0; j < m_col; j++){
+		vector<double> val;
+		for(int i = 0; i < m_row; i++){
+			val.push_back(m_entries[i][j]);
+		}
+		Point pt = Point(val);
 		pc += pt;
-		
 	}
 	return pc;
 }
@@ -434,7 +437,7 @@ Matrix Matrix::cholesky(){
 			if(i == j){
 				if(sum <= 0.0){
 					cout << "mat not posdef. " << sum << endl;
-					print();	
+					Print();	
 					return L;
 				}
 				L.SetEntry(sqrt(sum),i,i);
@@ -458,7 +461,7 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	//returns Nsample normally distributed n-dim points (one point = x)
 	//x = L*y + mu for vectors x, y, mu and matrix L
 	int d = mean.GetDims()[0];
-	SetDims(Nsample,d);
+	SetDims(d,Nsample);
 	InitEmpty();
 //	//aggregate points
 	Matrix L = sigma.cholesky();	
@@ -476,7 +479,7 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 		Ly_mu.add(mean);
 		//add point to mat
 		for(int j = 0; j < d; j++)
-			m_entries[n][j] = Ly_mu.at(j,0);
+			m_entries[j][n] = Ly_mu.at(j,0);
 	}
 	cout << "Sampled " << Nsample << " " << d << "-dimensional points from a multidim Gaussian via cholesky decomposition." << endl;
 }
