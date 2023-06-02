@@ -36,6 +36,8 @@ sigma.InitRandomSymPosDef();
 Matrix mu = Matrix(N,1);
 mu.InitRandom();
 
+
+
 ////sample points from an n-dim gaussian for one cluster
 Matrix mat;
 mat.SampleNDimGaussian(mu,sigma,Nsample);
@@ -62,7 +64,7 @@ pc += mat2.MatToPoints();
 GaussianMixture gmm = GaussianMixture(2);
 gmm.AddData(pc);
 //run EM algo
-//Initialize - randomize parameters 
+Initialize - randomize parameters 
 gmm.Initialize();
 //E-step 
 gmm.CalculatePosterior();

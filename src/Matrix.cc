@@ -114,7 +114,7 @@ cout << "A_T: " << A_T.GetDims()[0] << " " << A_T.GetDims()[1] << endl;
 }
 void Matrix::InitEmpty(){
 	if(m_entries.size() > 0){
-		cout << "Matrix already initialized." << endl;
+	//	cout << "Matrix already initialized." << endl;
 		return;
 	}
 	for(int i = 0; i < m_row; i++){
@@ -225,7 +225,6 @@ void Matrix::adjoint(const Matrix& mat){
 
 
 void Matrix::invert(const Matrix& mat){
-cout << "invert" << endl;
 	// Find determinant of m_entries[][]
 	if(!mat.square()){
 		cout << "Error: non-square matrix, cannot calculate inverse." << m_row << " " << m_col << endl;
@@ -243,14 +242,12 @@ cout << "invert" << endl;
 	// Find adjoint
 	Matrix adj = Matrix(dims[0], dims[1]);
 	adj.adjoint(mat);
-cout << "det: " << det << endl;
-adj.Print();	
+//	adj.Print();	
 	// Find Inverse using formula "inverse(A) =
 	// adj(A)/det(A)"
 	for (int i = 0; i < dims[0]; i++)
 	    for (int j = 0; j < dims[1]; j++)
 	        m_entries[i][j] = adj.at(i,j)/det;
-cout << "invert - end" << endl;
 }
 
 
