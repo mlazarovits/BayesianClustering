@@ -18,8 +18,8 @@ class GaussianMixture : public BasePDFMixture{
 		void CalculatePosterior();
 		//M-step
 		void UpdateParameters();
-		//eval
-		void EvalLogL();
+		//eval - returns log-likelihood value at given iteration
+		double EvalLogL();
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
 	private:
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
@@ -29,9 +29,10 @@ class GaussianMixture : public BasePDFMixture{
 		vector<Matrix> m_covs;
 		//1 mixing param for each cluster k
 		vector<double> m_coeffs;
-		//posterior matrix of n data pts for k clusters
+		//posterior matrix of n data pts for k clusters, post_nk = gamma(z_nk)
 		Matrix m_post;		
-
+		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
+		vector<double> m_norms;
 
 
 };

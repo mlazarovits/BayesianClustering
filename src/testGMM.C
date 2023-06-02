@@ -36,8 +36,6 @@ sigma.InitRandomSymPosDef();
 Matrix mu = Matrix(N,1);
 mu.InitRandom();
 
-
-
 ////sample points from an n-dim gaussian for one cluster
 Matrix mat;
 mat.SampleNDimGaussian(mu,sigma,Nsample);
@@ -55,38 +53,40 @@ mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 pc += mat2.MatToPoints();
 //pc.Print();
 
-//cout << "mean of cluster 1" << endl;
-//mu.Print();
-//cout << "mean of cluster 2" << endl;
-//mu2.Print();
+cout << "mean of cluster 1" << endl;
+mu.Print();
+cout << "mean of cluster 2" << endl;
+mu2.Print();
 
 //create GMM model
-GaussianMixture gmm = GaussianMixture(2);
+int k = 2; //number of clusters for GMM (may or may not be true irl)
+GaussianMixture gmm = GaussianMixture(k);
 gmm.AddData(pc);
 //run EM algo
-Initialize - randomize parameters 
+
+//Initialize - randomize parameters 
 gmm.Initialize();
-//E-step 
+
+cout << "iteration #1" << endl;
+//E-step: calculate posterior 
 gmm.CalculatePosterior();
 
-//get new GMM parameters
+//M-step: get new GMM parameters
+gmm.UpdateParameters();
+
+//calculate LogL for convergence test
+cout << "log-likelihood: " << gmm.EvalLogL() << endl;
+
+cout << "\n" << endl;
+cout << "iteration #2" << endl;
+//repeat
+gmm.CalculatePosterior();
+gmm.UpdateParameters();
+cout << "log-likelihood: " << gmm.EvalLogL() << endl;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//need to write viz stuff
+//2D and 3D
 
 
 

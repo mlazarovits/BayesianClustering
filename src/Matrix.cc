@@ -9,6 +9,7 @@ using std::endl;
 
 Matrix::Matrix(){
 	_square = true;
+	_id = false;
 	m_row = 0;
 	m_col = 0;
 }
@@ -17,6 +18,7 @@ Matrix::Matrix(){
 Matrix::Matrix(int row, int col){
 	m_row = row;
 	m_col = col;
+	_id = false;
 	if(m_row == m_col) _square = true;
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
@@ -29,6 +31,7 @@ Matrix::Matrix(int row, int col){
 Matrix::Matrix(vector<double> in){
 	m_row = (int)in.size();
 	m_col = 1;
+	_id = false;
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
 		for(int j = 0; j < m_col; j++){
@@ -48,6 +51,10 @@ Matrix::~Matrix(){
 }
 
 void Matrix::InitRandom(double min, double max, unsigned long long seed){
+	if(m_entries.size() < 0){
+		cout << "Need dimensions to init." << endl;
+		return;
+	}
 	RandomSample rs(seed);
 	//TODO: set range by data
 	rs.SetRange(min, max);
@@ -59,6 +66,10 @@ void Matrix::InitRandom(double min, double max, unsigned long long seed){
 }
 
 void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
+	if(m_entries.size() < 0){
+		cout << "Need dimensions to init." << endl;
+		return;
+	}
 	RandomSample rs(seed);
 	//TODO: set range by data
 	rs.SetRange(min, max);
@@ -78,6 +89,10 @@ void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
 	}	
 }
 void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed){
+	if(m_entries.size() < 0){
+		cout << "Need dimensions to init." << endl;
+		return;
+	}
 	if(!_square){
 		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix). Rows: " << m_row << " cols: " << m_col << endl;
 		return;
@@ -86,7 +101,6 @@ void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed
 	Matrix A_T;// = Matrix(m_col, m_row);
 	A.InitRandom(min,max,seed);
 	A_T.transpose(A);
-cout << "A_T: " << A_T.GetDims()[0] << " " << A_T.GetDims()[1] << endl;
 //	for(int i = 0; i < m_row; i++){
 //		for(int j = 0; j < m_col; j++){
 //			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << endl;
@@ -127,11 +141,29 @@ void Matrix::InitEmpty(){
 }
 
 
+void Matrix::InitIdentity(){
+	if(m_entries.size() < 0){
+		cout << "Need dimensions to init." << endl;
+		return;
+	}
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			if(i == j)	
+				m_entries[i][j] = 1.;
+			else
+				m_entries[i][j] = 0.;
+		}
+	}	
+	_id = true;
+
+}
+
 void Matrix::SetDims(int row, int col){
 	m_row = row;
 	m_col = col;
 	if(m_row == m_col) _square = true;
-	//if m_entries.size() < 1 need to InitEmpty()
+	if(m_entries.size() < 1)
+		InitEmpty();
 }
 
 
@@ -168,6 +200,10 @@ double Matrix::det(int n) const{
 		cout << "Error: non-square matrix, cannot calculate determinant." << m_row << " " << m_col << endl;
 		return -999;
 	}
+	//det(I) = 1
+	if(_id){
+		return 1.;
+	}
 	if( n == 0){
 		n = m_row;
 	}
@@ -195,6 +231,14 @@ double Matrix::det(int n) const{
 
 // Function to get adjoint of m_entries[N][N] in adj[N][N].
 void Matrix::adjoint(const Matrix& mat){
+	if(m_row == 0 && m_col == 0){
+		SetDims(mat.GetDims()[0],mat.GetDims()[1]);
+		InitEmpty();
+	}
+	if(m_row != mat.GetDims()[0] || m_col != mat.GetDims()[1]){
+		cout << "Error: dimensions of this matrix do not match mat (matrix given for adjoint calculation." << endl;
+		return;
+	}
 	if(!_square){
 		cout << "Error: non-square matrix, cannot calculate adjoint." << m_row << " " << m_col << endl;
 		return;
@@ -234,6 +278,11 @@ void Matrix::invert(const Matrix& mat){
 	SetDims(dims[0],dims[1]);	
 	InitEmpty();
 	double det = mat.det(dims[0]);
+	//inverse of identity is itself
+	if(mat.identity()){
+		InitIdentity();
+		return;
+	}
 	if (det == 0) {
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
@@ -291,6 +340,16 @@ double Matrix::at(int i, int j) const{
 	return m_entries[i][j];
 }
 
+
+//multiply mat by factor and store in this
+void Matrix::mult(const Matrix& mat, double factor){
+	SetDims(mat.GetDims()[0], mat.GetDims()[1]);
+	InitEmpty();
+	for(int i = 0; i < m_row; i++)
+		for(int j = 0; j < m_col; j++)
+			m_entries[i][j] = factor*mat.at(i,j);
+}
+
 //multiply two matrices and store result in this matrix
 void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 	double val;
@@ -306,6 +365,10 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims." << endl;
 			return;
 		}
+	}
+	else{
+		SetDims(dims1[0],dims2[1]);
+		InitEmpty();
 	}
 	
 	for(int i = 0; i < dims1[0]; i++){
@@ -485,3 +548,6 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	}
 	cout << "Sampled " << Nsample << " " << d << "-dimensional points from a multidim Gaussian via cholesky decomposition." << endl;
 }
+
+
+

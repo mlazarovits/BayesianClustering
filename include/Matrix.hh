@@ -20,6 +20,8 @@ class Matrix{
 		void InitRandomSymPos(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitRandomSymPosDef(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitEmpty();
+		//initializes identity matrix
+		void InitIdentity();
 		//fills this matrix with data pts from n-dim gaus
 		void SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample);
 		void SetDims(int row, int col);
@@ -27,7 +29,10 @@ class Matrix{
 		double at(int i, int j) const;
 		void GetCofactor(Matrix& temp, int p, int q, int n) const;
 		vector<int> GetDims() const;
+		//multiplies mat1*mat2 and stores result in this
 		void mult(const Matrix& mat1, const Matrix& mat2);
+		//multiplies mat by factor and stores in this
+		void mult(const Matrix& mat, double factor);
 		//add two matrices and store result in this
 		void add(const Matrix& mat1, const Matrix& mat2);
 		//add mat to this
@@ -35,6 +40,7 @@ class Matrix{
 		//double det() const;
 		double det(int n = 0) const;
 		bool square() const { return _square; }
+		bool identity() const { return _id; }
 		bool symmetric() const;
 		void transpose(const Matrix& mat);
 		void adjoint(const Matrix& mat);
@@ -51,6 +57,7 @@ class Matrix{
 		int m_col;
 		vector<vector<double>> m_entries;
 		bool _square;
+		bool _id;
 };
 
 
