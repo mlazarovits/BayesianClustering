@@ -25,6 +25,14 @@ class BasePDFMixture{
 		
 		}
 		
+		PointCollection GetData() const{
+			return m_x;
+		}
+	
+		Matrix GetPosterior() const{
+			return m_post;
+		}
+
 		//data to fit
 		PointCollection m_x;
 		//TODO: need to initialize dim from data

@@ -145,7 +145,6 @@ cout << "new means" << endl;
 
 	}
 
-
 }
 
 

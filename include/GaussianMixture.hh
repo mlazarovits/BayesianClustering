@@ -29,8 +29,6 @@ class GaussianMixture : public BasePDFMixture{
 		vector<Matrix> m_covs;
 		//1 mixing param for each cluster k
 		vector<double> m_coeffs;
-		//posterior matrix of n data pts for k clusters, post_nk = gamma(z_nk)
-		Matrix m_post;		
 		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
 		vector<double> m_norms;
 
