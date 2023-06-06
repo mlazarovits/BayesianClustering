@@ -18,7 +18,7 @@ class Matrix{
 		void InitRandom(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitRandomSym(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitRandomSymPos(double min = 0, double max = 1., unsigned long long seed = 123);
-		void InitRandomSymPosDef(double min = 0, double max = 1., unsigned long long seed = 123);
+		void InitRandomSymPosDef(double min = 0, double max = 1., unsigned long long seed = 333);
 		void InitEmpty();
 		//initializes identity matrix
 		void InitIdentity();

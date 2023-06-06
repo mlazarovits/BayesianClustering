@@ -33,7 +33,7 @@ void GaussianMixture::Initialize(unsigned long long seed){
 		m_mus.push_back(Matrix(m_dim,1));
 		m_mus[k].InitRandom(mu_lower,mu_upper,seed+k);
 		cout << "k: " << k << endl;
-		m_mus[k].Print();
+	//	m_mus[k].Print();
 		m_covs.push_back(Matrix(m_dim,m_dim));
 		//m_covs[k].InitRandomSymPosDef(0.,sqrt(fabs(mu_lower)+fabs(mu_upper)),seed+k);
 		m_covs[k].InitIdentity();

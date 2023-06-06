@@ -101,6 +101,7 @@ void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed
 	Matrix A_T;// = Matrix(m_col, m_row);
 	A.InitRandom(min,max,seed);
 	A_T.transpose(A);
+	
 //	for(int i = 0; i < m_row; i++){
 //		for(int j = 0; j < m_col; j++){
 //			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << endl;
@@ -531,14 +532,13 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 //	//aggregate points
 	Matrix L = sigma.cholesky();	
 	RandomSample rs;
-	rs.SetRange(0.,1.);
 	vector<double> y;
 	for(int n = 0; n < Nsample; n++){
-		//y_i ~ N(0,1)
+		//y_i ~ N(0,1) - takes d independent samples from N(0,1)
 		y = rs.SampleGaussian(0.,1.,d);
 		Matrix mat_y(y);
-		//L*y	
 		Matrix Ly_mu = Matrix(d,1);
+		//L*y	
 		Ly_mu.mult(L,mat_y);	
 		//L*y + mu
 		Ly_mu.add(mean);
