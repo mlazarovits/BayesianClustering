@@ -23,7 +23,7 @@ class GaussianMixture : public BasePDFMixture{
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
 		
 		//fill vectors with parameters
-		void GetParameters(vector<Matrix> mus, vector<Matrix> covs);
+		void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
 
 	private:
 		//parameters (mu, sigma, and mixing coeffs) for k clusters

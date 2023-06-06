@@ -2,6 +2,8 @@
 #include "RandomSample.hh"
 #include "PointCollection.hh"
 #include <iostream>
+#include <Eigen/Dense>
+
 
 using std::cout;
 using std::endl;
@@ -41,7 +43,22 @@ Matrix::Matrix(vector<double> in){
 } 
 
 
-//constructor from inputs
+//copy constructor
+Matrix::Matrix(const Matrix& mat){
+	m_row = mat.GetDims()[0];
+	m_col = mat.GetDims()[1];
+
+	_square = mat.square();
+	_id = mat.identity();
+
+	for(int i = 0; i < m_row; i++){
+		m_entries.push_back({});
+		for(int j = 0; j < m_col; j++){
+			m_entries[i].push_back( mat.at(i,j) );
+		}
+	}
+}	
+
 
 Matrix::~Matrix(){
 //	for(int i = 0; i < m_entries.size(); i++){
@@ -550,4 +567,32 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 }
 
 
+//fill vals + vecs vectors
+void Matrix::eigenCalc(vector<double> vals, vector<Matrix> vecs){
+	vals.clear();
+	vecs.clear();
 
+	Eigen::MatrixXd m(m_row, m_col);
+
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			m(i,j) = m_entries[i][j];
+		}
+	}
+
+	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(m);
+	if( eigensolver.info() != Eigen::Success){
+		cout << "eigenCalc Error: not able to calculate eigenvalues/vectors." << endl;
+		return;
+	}
+ 
+	cout << "eigensolver" << endl;
+	cout << eigensolver.eigenvalues()[0] << endl;	
+
+
+
+
+
+
+
+}

@@ -24,6 +24,7 @@ void GaussianMixture::Initialize(unsigned long long seed){
 	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
+cout << "GMM Init" << endl;
 	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
 	double mu_lower = m_x.min()-0.1;
@@ -33,12 +34,13 @@ void GaussianMixture::Initialize(unsigned long long seed){
 		m_mus.push_back(Matrix(m_dim,1));
 		m_mus[k].InitRandom(mu_lower,mu_upper,seed+k);
 		cout << "k: " << k << endl;
-	//	m_mus[k].Print();
+		cout << "mu" << endl;
+		m_mus[k].Print();
 		m_covs.push_back(Matrix(m_dim,m_dim));
-		//m_covs[k].InitRandomSymPosDef(0.,sqrt(fabs(mu_lower)+fabs(mu_upper)),seed+k);
 		m_covs[k].InitIdentity();
+cout << "cov" << endl;
+m_covs[k].Print();
 		m_coeffs.push_back(randy.SampleFlat());
-		//m_coeffs.push_back((0.3*k + 0.7*(1-k)));
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
 		m_norms.push_back(0.);
@@ -120,29 +122,53 @@ cout << "new means" << endl;
 
 
 
-
+cout << "new covs" << endl;
 
 //sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
-	for(int k = 0; k < m_k; k++){
+	for(int k = 0; k < 1; k++){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
+		Matrix new_cov = Matrix(m_dim,m_dim);
 		for(int n = 0; n < m_n; n++){
+			Matrix cov_k = Matrix(m_dim, m_dim);
+
 			//construct x - mu
 			Matrix x_mat = Matrix(m_x.at(n).Value());
 			Matrix x_min_mu;
 			x_min_mu.mult(m_mus[k],-1.);
 			x_min_mu.add(x_mat);
-			
+		cout << "x - mu" << endl;
+		x_min_mu.Print();
+
+	
 			//transpose x - mu
 			Matrix x_min_muT;
 			x_min_muT.transpose(x_min_mu);
-			//overwrites m_covs[k]
+		cout << "(x - mu)T" << endl;
+		x_min_muT.Print();
 			//(x_n - mu_k)*(x_n - mu_k)T
-			m_covs[k].mult(x_min_mu,x_min_muT);
+			cov_k.mult(x_min_mu,x_min_muT);
+		cout << "(x_n - mu_k)*(x_n - mu_k)T" << endl;
+		cov_k.Print();
 			//weighting by posterior gamma(z_nk)
-			m_covs[k].mult(m_covs[k],m_post.at(n,k));
+			cov_k.mult(cov_k,m_post.at(n,k));
+		cout << "gam(z_nk)*(x_n - mu_k)*(x_n - mu_k)T" << endl;
+		cov_k.Print();
+		cout << "gam(z_nk) = " << m_post.at(n,k) << endl;	
+			//sum over n
+			new_cov.add(cov_k);
+			cout << "running sum" << endl;
+			new_cov.Print();
+		cout << "\n" << endl;
 		}	
-	
-
+		//normalize by N_k
+		new_cov.mult(new_cov,1./m_norms[k]);
+		//overwrites m_covs[k]
+		m_covs[k] = new_cov;
+	cout << "k: " << k << endl;	
+	m_covs[k].Print();
+	cout << "new" << endl;
+	new_cov.Print();
+		
 	}
 
 }
@@ -231,10 +257,11 @@ double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov
 
 
 //fill vectors with params for each cluster
-void GaussianMixture::GetParameters(vector<Matrix> mus, vector<Matrix> covs){
+void GaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
 	mus.clear();
 	covs.clear();
-	
+cout << "GMM" << endl;
+m_covs[0].Print();	
 	mus = m_mus;
 	covs = m_covs;
 }

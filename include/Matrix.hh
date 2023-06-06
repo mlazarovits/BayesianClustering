@@ -12,9 +12,9 @@ class Matrix{
 		//x_dim = dim (rows), y_dim = # points (cols)
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
-		//constructor from inputs
+		//copy constructor
+		Matrix(const Matrix& mat);
 		virtual ~Matrix();
-
 		void InitRandom(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitRandomSym(double min = 0, double max = 1., unsigned long long seed = 123);
 		void InitRandomSymPos(double min = 0, double max = 1., unsigned long long seed = 123);
@@ -46,6 +46,7 @@ class Matrix{
 		void adjoint(const Matrix& mat);
 		void invert(const Matrix& mat);
 		Matrix cholesky();
+		void eigenCalc(vector<double> vals, vector<Matrix> vecs);
 		PointCollection MatToPoints();
 		//clear
 		void clear();
