@@ -5,6 +5,9 @@ ROOTGLIBS   = $(shell root-config --glibs)
 #set c(xx)flags and libraries
 CXXFLAGS    = $(ROOTCFLAGS)
 
+#add eigen include path
+CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
+
 GLIBS       = $(ROOTGLIBS)
 #specify compiler
 CXX         = g++
