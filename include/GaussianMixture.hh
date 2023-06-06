@@ -21,6 +21,10 @@ class GaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
+		
+		//fill vectors with parameters
+		void GetParameters(vector<Matrix> mus, vector<Matrix> covs);
+
 	private:
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k
