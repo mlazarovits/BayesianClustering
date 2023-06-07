@@ -32,6 +32,10 @@ class BasePDFMixture{
 		Matrix GetPosterior() const{
 			return m_post;
 		}
+		
+		int GetNClusters() const{
+			return m_k;
+		}
 
 		//data to fit
 		PointCollection m_x;

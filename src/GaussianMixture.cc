@@ -125,7 +125,7 @@ cout << "new means" << endl;
 cout << "new covs" << endl;
 
 //sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
-	for(int k = 0; k < 1; k++){
+	for(int k = 0; k < m_k; k++){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix new_cov = Matrix(m_dim,m_dim);
 		for(int n = 0; n < m_n; n++){
