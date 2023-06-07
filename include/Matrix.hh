@@ -46,7 +46,7 @@ class Matrix{
 		void adjoint(const Matrix& mat);
 		void invert(const Matrix& mat);
 		Matrix cholesky();
-		void eigenCalc(vector<double> vals, vector<Matrix> vecs);
+		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
 		//clear
 		void clear();

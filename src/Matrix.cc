@@ -568,13 +568,14 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 
 
 //fill vals + vecs vectors
-void Matrix::eigenCalc(vector<double> vals, vector<Matrix> vecs){
+void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
 	vals.clear();
 	vecs.clear();
 
 	Eigen::MatrixXd m(m_row, m_col);
 
 	for(int i = 0; i < m_row; i++){
+		vecs.push_back( Matrix(m_row,1) );
 		for(int j = 0; j < m_col; j++){
 			m(i,j) = m_entries[i][j];
 		}
@@ -586,23 +587,16 @@ void Matrix::eigenCalc(vector<double> vals, vector<Matrix> vecs){
 		return;
 	}
  
-	cout << "eigensolver" << endl;
-	cout << "values: " << eigensolver.eigenvalues() << endl;	
-	cout << "vectors: " << eigensolver.eigenvectors() << endl;
-	cout << endl;	
-	cout << "values: " << eigensolver.eigenvalues()(0) << endl;	
-	cout << "vectors: " << eigensolver.eigenvectors()(0) << endl;
 	//columns are eigenvectors
 	for(int d = 0; d < m_row; d++){
-		vecs[d] = Matrix(m_row,1);
-		//vecs[d].SetEntry(eigensolver.eigenvectors()(0)(0),0,0);
+		for(int j = 0; j < m_col; j++){
+			vecs[d].SetEntry(eigensolver.eigenvectors()(d,j),j,0);
+		}
 		vals.push_back(eigensolver.eigenvalues()(d));
 	}
 
-
-
-
-
-
-
 }
+
+
+
+

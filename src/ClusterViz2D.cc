@@ -85,14 +85,19 @@ void ClusterViz2D::AddPlot(string plotName){
 		c_y = mus[k].at(1,0);
 		r_x = covs[k].at(0,0);
 		r_y = covs[k].at(1,1);
-cout << "k: " << k << endl;	
+		
+		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
-		covs[k].Print();	
 		covs[k].eigenCalc(eigenVals, eigenVecs);
-
+		//take direction of largest eigenvalue
+		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+		
+		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
+cout << "theta: " << theta << endl;
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y);//0.,0,360, theta);
-		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y);//0.,0,360, theta);
+		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		circle->SetLineColor(gStyle->GetColorPalette(k*19+10)); 
 		circle->SetLineWidth(5);
 	   	circle->SetFillStyle(0);
