@@ -587,7 +587,17 @@ void Matrix::eigenCalc(vector<double> vals, vector<Matrix> vecs){
 	}
  
 	cout << "eigensolver" << endl;
-	cout << eigensolver.eigenvalues()[0] << endl;	
+	cout << "values: " << eigensolver.eigenvalues() << endl;	
+	cout << "vectors: " << eigensolver.eigenvectors() << endl;
+	cout << endl;	
+	cout << "values: " << eigensolver.eigenvalues()(0) << endl;	
+	cout << "vectors: " << eigensolver.eigenvectors()(0) << endl;
+	//columns are eigenvectors
+	for(int d = 0; d < m_row; d++){
+		vecs[d] = Matrix(m_row,1);
+		//vecs[d].SetEntry(eigensolver.eigenvectors()(0)(0),0,0);
+		vals.push_back(eigensolver.eigenvalues()(d));
+	}
 
 
 
