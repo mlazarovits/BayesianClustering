@@ -28,7 +28,7 @@ ClusterViz2D::ClusterViz2D(GaussianMixture* model) :
 
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
-	TCanvas* m_cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
 	m_model->GetParameters(mus,covs);
 	vector<double> x, y, z;
@@ -53,12 +53,13 @@ void ClusterViz2D::AddPlot(string plotName){
 
 	//get palette colors for circles
 	SetPalette(m_model->GetNClusters());
-	//gStyle->SetPalette(100,m_palette);
 	auto cols = TColor::GetPalette();
 	cout << "first color: " << cols[0] << endl;
 	cout << "last color: " << cols[49] << endl;
-
-
+	cout << "m pal first: " << m_palette[0] << endl;
+	cout << "m pal last: " << m_palette[99] << endl;
+	
+	cv->Update();
 
 	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
 	gr_data->SetTitle(("GMM EM Clustering "+plotName).c_str());
@@ -122,7 +123,7 @@ void ClusterViz2D::AddPlot(string plotName){
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		circle->SetLineColor(cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))]);
-		//circle->SetLineColor(pal[k*98]);
+	//	circle->SetLineColor(m_palette[int(double(k) / double(m_model->GetNClusters() - 1)*(100 - 1))]);
 	cout << "k: " << k << endl;	
 	cout << "cols - circle color idx: " << int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1)) << endl;
 	cout << "cols - circle color: " << cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))] << endl;
@@ -139,7 +140,7 @@ void ClusterViz2D::AddPlot(string plotName){
 
 
 	cout << "first color: " << cols[0] << endl;
-	m_cvs.push_back(m_cv);
+	m_cvs.push_back(cv);
 
 }
 
@@ -153,6 +154,7 @@ void ClusterViz2D::Write(string fname){
 	TFile* f = TFile::Open((fname+".root").c_str(),"RECREATE");	
 	cout << "Writing plot to: " << fname << ".root" << endl;
 	f->cd();
+	SetPalette(m_model->GetNClusters());
 	for(int i = 0; i < m_cvs.size(); i++){
 		m_cvs[i]->Write();
 	}
@@ -199,13 +201,6 @@ void ClusterViz2D::SetPalette(int k){
 		green.push_back(0.52);
 		blue.push_back(0.96);
 		
-		red.push_back(1.0);
-		green.push_back(0.0);
-		blue.push_back(0.0);
-		
-		red.push_back(0.0);
-		green.push_back(0.0);
-		blue.push_back(1.0);
 
 		//where to switch colors
 		stops.push_back(0.0);
@@ -241,9 +236,7 @@ void ClusterViz2D::SetPalette(int k){
 	}
 
 	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
-	gStyle->cd();
 	for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
-	cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
-	return; 
+	//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
 }
 
