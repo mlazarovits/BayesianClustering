@@ -19,6 +19,7 @@ class ClusterViz2D : public ClusterVizBase{
 		void SetPalette(int k);
 
 	private:
+		Int_t m_palette[100];
 		vector<TCanvas*> m_cvs; 
 };
 
