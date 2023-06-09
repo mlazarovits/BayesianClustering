@@ -26,12 +26,12 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
 
 #specify what to make
-all: testGMM.x
+all: GMM.x
 
 #executables
-testGMM.x: $(SRCDIR)testGMM.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o testGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch testGMM.x
+GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o GMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch GMM.x
 
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
