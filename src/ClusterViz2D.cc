@@ -16,13 +16,15 @@
 using std::string;
 
 //check for 2D data
-ClusterViz2D::ClusterViz2D(GaussianMixture* model) : 
-	ClusterVizBase{ model }{
+ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname) : 
+	ClusterVizBase{ model, fname }{
 	if(m_model->GetData().Dim() != 2){
 		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
 		return;
 	}
 	m_post = m_model->GetPosterior();
+	m_fname = fname;
+	cout << "Writing plot to: " << m_fname << ".root" << endl;
 }
 
 
@@ -99,8 +101,8 @@ void ClusterViz2D::AddPlot(string plotName){
 		vector<double> eigenVals;
 		covs[k].eigenCalc(eigenVals, eigenVecs);
 	
-		r_x = sqrt(covs[k].at(0,0));
-		r_y = sqrt(covs[k].at(1,0));
+		r_x = sqrt(eigenVals[0]);
+		r_y = sqrt(eigenVals[1]);
 	
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
@@ -108,24 +110,23 @@ void ClusterViz2D::AddPlot(string plotName){
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
 	
-		cout << "eigen" << endl;
-		for(int i = 0; i < eigenVals.size(); i++){
-			cout << "val: " << eigenVals[i] << endl;
-			cout << "vec:" << endl;
-			eigenVecs[i].Print();
+	//	cout << "eigen" << endl;
+	//	for(int i = 0; i < eigenVals.size(); i++){
+	//		cout << "val: " << eigenVals[i] << endl;
+	//		cout << "vec:" << endl;
+	//		eigenVecs[i].Print();
 
 
-		}
-		cout << "cov" << endl;
-		covs[k].Print();
-	
-		cout << "k: " << k << " theta: " << theta << " (rad)" << endl;
+	//	}
+	//
+	//	cout << "k: " << k << " theta: " << theta << " (rad)" << endl;
 		//convert to degrees
 		theta = 180*theta/acos(-1);
-		
-	//	if(theta < 0) theta = -(90+theta);
+	
+			
+		if(theta < 0) theta = -(90+theta);
+		else theta += 90; //get in ROOT's weird angle definition
 
-		cout << "k: " << k << " theta: " << theta << " (deg)" << endl;
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		circle->SetLineColor(cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))]);
@@ -150,9 +151,8 @@ void ClusterViz2D::AddPlot(string plotName){
 
 
 
-void ClusterViz2D::Write(string fname){
-	TFile* f = TFile::Open((fname+".root").c_str(),"RECREATE");	
-	cout << "Writing plot to: " << fname << ".root" << endl;
+void ClusterViz2D::Write(){
+	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_model->GetNClusters());
 	for(int i = 0; i < m_cvs.size(); i++){
