@@ -3,6 +3,7 @@
 #include "ClusterViz2D.hh"
 #include <iostream>
 
+
 #include <TStyle.h>
 #include <TAxis.h>
 #include <TCanvas.h>
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]){
 
 
 cout << "Free sha-va-ca-doo!" << endl;
+
 
 
 //dimensionality
@@ -103,46 +105,70 @@ mu2.Print();
 int k = 2; //number of clusters for GMM (may or may not be true irl)
 GaussianMixture gmm = GaussianMixture(k);
 gmm.AddData(pc);
+ClusterViz2D cv2D = ClusterViz2D(&gmm);
 //run EM algo
 
 //Initialize - randomize parameters 
 gmm.Initialize();
 
-//////////ITERATION 1//////////
-cout << "iteration #1" << endl;
-//E-step: calculate posterior 
-gmm.CalculatePosterior();
+////////////ITERATION 1//////////
+//cout << "iteration #1" << endl;
+////E-step: calculate posterior 
+//gmm.CalculatePosterior();
+//cv2D.UpdatePosterior();
+////M-step: get new GMM parameters
+//gmm.UpdateParameters();
+//
+////calculate LogL for convergence test
+//cout << "log-likelihood: " << gmm.EvalLogL() << endl;
+////viz stuff
+//cv2D.AddPlot("it1");
+//
+//cv2D.Write();
 
-//M-step: get new GMM parameters
-gmm.UpdateParameters();
 
-//calculate LogL for convergence test
-cout << "log-likelihood: " << gmm.EvalLogL() << endl;
-//viz stuff
-//1D(?), 2D and 3D
-ClusterViz2D cv2D = ClusterViz2D(&gmm);
-cv2D.AddPlot("it1");
-
-/*
 //////////ITERATION 2//////////
-cout << "\n" << endl;
-cout << "iteration #2" << endl;
-//repeat
-gmm.CalculatePosterior();
-gmm.UpdateParameters();
-cout << "log-likelihood: " << gmm.EvalLogL() << endl;
-
-gStyle->SetPalette(kCandy);
-cv2D.UpdatePosterior();
-cv2D.AddPlot("it2");
-*/
-
-cv2D.Write();
+//cout << "\n" << endl;
+//cout << "iteration #2" << endl;
+////repeat
+//gmm.CalculatePosterior();
+//gmm.UpdateParameters();
+//cout << "log-likelihood: " << gmm.EvalLogL() << endl;
+//
+//cv2D.UpdatePosterior();
+//cv2D.AddPlot("it2");
 
 
-
-
-
+//loop
+int nIts = 50;
+double dLogL, newLogL, oldLogL;
+double LogLThresh = 0.0001;
+double it = 0;
+for(int it = 0; it < nIts; it++){
+	cout << "\n" << endl;
+	cout << "iteration #" << it << endl;
+	oldLogL = gmm.EvalLogL();
+	
+	//E step
+	gmm.CalculatePosterior();
+	//M step
+	gmm.UpdateParameters();
+	
+	//Plot
+	cv2D.UpdatePosterior();
+	cv2D.AddPlot("it"+std::to_string(it));
+	cv2D.Write();
+	
+	//Check for convergence
+	cout << "log-likelihood: " << gmm.EvalLogL() << endl;
+	newLogL = gmm.EvalLogL();
+	dLogL = fabs(oldLogL - newLogL);
+	if(dLogL < LogLThresh){
+		cout << "Reached convergence at iteration " << it << endl;
+		break;
+	}
+	
+}
 
 
 

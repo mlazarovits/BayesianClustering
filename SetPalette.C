@@ -20,13 +20,18 @@ void SetPalette(){
 	if(k == 2){
 		//[0,1] values are R, G or B/255.
 		//first color = light blue
+		red.push_back(1.0);
+		green.push_back(0.0);
+		blue.push_back(0.0);
+		
 		red.push_back(0.52);
 		green.push_back(0.79);
 		blue.push_back(0.96);
+	
 		//second color = light pink
-		red.push_back(0.89);
-		green.push_back(0.52);
-		blue.push_back(0.96);
+		//red.push_back(0.89);
+		//green.push_back(0.52);
+		//blue.push_back(0.96);
 		
 		//where to switch colors
 		stops.push_back(0.0);
@@ -66,7 +71,6 @@ void SetPalette(){
 	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
 	for (int i=0;i<nColors;i++) palette[i] = fi+i;
 	
-//	gStyle->SetPalette(100,palette);
 
 
 

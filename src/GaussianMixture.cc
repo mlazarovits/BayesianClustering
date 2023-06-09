@@ -260,8 +260,6 @@ double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov
 void GaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
 	mus.clear();
 	covs.clear();
-cout << "GMM" << endl;
-m_covs[0].Print();	
 	mus = m_mus;
 	covs = m_covs;
 }

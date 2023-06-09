@@ -40,24 +40,11 @@ void ClusterViz2D::AddPlot(string plotName){
 		//w_i ~ 1 = class 1
 		//w_i ~ 0 = class 0 to match class to idx
 		z.push_back(m_post.at(i,1.));	
-		if(i == 10){
-		cout << "point #" << i << ": (" << x[i] << "," << y[i] << "," << z[i] << ")" << endl;
-		cout << "cluster 1: " << m_post.at(i,0) << " cluster 2: " << m_post.at(i,1) << endl;
-		cout << "mu cluster 1:" << endl;
-		mus[0].Print();
-		cout << "mu cluster 2:" << endl;
-		mus[1].Print();
-		
-		}
 	}
 
 	//get palette colors for circles
 	SetPalette(m_model->GetNClusters());
 	auto cols = TColor::GetPalette();
-	cout << "first color: " << cols[0] << endl;
-	cout << "last color: " << cols[49] << endl;
-	cout << "m pal first: " << m_palette[0] << endl;
-	cout << "m pal last: " << m_palette[99] << endl;
 	
 	cv->Update();
 
@@ -106,29 +93,43 @@ void ClusterViz2D::AddPlot(string plotName){
 	for(int k = 0; k < m_model->GetNClusters(); k++){
 		c_x = mus[k].at(0,0);
 		c_y = mus[k].at(1,0);
-		r_x = covs[k].at(0,0);
-		r_y = covs[k].at(1,1);
 		
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
 		covs[k].eigenCalc(eigenVals, eigenVecs);
+	
+		r_x = sqrt(covs[k].at(0,0));
+		r_y = sqrt(covs[k].at(1,0));
+	
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
+	
+		cout << "eigen" << endl;
+		for(int i = 0; i < eigenVals.size(); i++){
+			cout << "val: " << eigenVals[i] << endl;
+			cout << "vec:" << endl;
+			eigenVecs[i].Print();
+
+
+		}
+		cout << "cov" << endl;
+		covs[k].Print();
+	
+		cout << "k: " << k << " theta: " << theta << " (rad)" << endl;
 		//convert to degrees
 		theta = 180*theta/acos(-1);
+		
+	//	if(theta < 0) theta = -(90+theta);
+
+		cout << "k: " << k << " theta: " << theta << " (deg)" << endl;
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		circle->SetLineColor(cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))]);
-	//	circle->SetLineColor(m_palette[int(double(k) / double(m_model->GetNClusters() - 1)*(100 - 1))]);
-	cout << "k: " << k << endl;	
-	cout << "cols - circle color idx: " << int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1)) << endl;
-	cout << "cols - circle color: " << cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))] << endl;
-	cout << "mu" << endl;
-	mus[k].Print();
+	
 		circle->SetLineWidth(5);
 	   	circle->SetFillStyle(0);
 		circle_bkg->SetLineColor(0); 
@@ -139,7 +140,6 @@ void ClusterViz2D::AddPlot(string plotName){
 	}
 
 
-	cout << "first color: " << cols[0] << endl;
 	m_cvs.push_back(cv);
 
 }
