@@ -33,13 +33,13 @@ cout << "GMM Init" << endl;
 	for(int k = 0; k < m_k; k++){
 		m_mus.push_back(Matrix(m_dim,1));
 		m_mus[k].InitRandom(mu_lower,mu_upper,seed+k);
-		cout << "k: " << k << endl;
-		cout << "mu" << endl;
-		m_mus[k].Print();
+	//	cout << "k: " << k << endl;
+	//	cout << "mu" << endl;
+	//	m_mus[k].Print();
 		m_covs.push_back(Matrix(m_dim,m_dim));
 		m_covs[k].InitIdentity();
-cout << "cov" << endl;
-m_covs[k].Print();
+//cout << "cov" << endl;
+//m_covs[k].Print();
 		m_coeffs.push_back(randy.SampleFlat());
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
@@ -98,7 +98,7 @@ void GaussianMixture::UpdateParameters(){
 			m_norms[k] += m_post.at(n,k);
 		}
 	}
-cout << "new means" << endl;
+//cout << "new means" << endl;
 	//set new means 	
 	for(int k = 0; k < m_k; k++){
 		m_coeffs[k] = m_norms[k]/m_n;
@@ -116,13 +116,13 @@ cout << "new means" << endl;
 		}
 		//normalized by sum of posteriors for cluster k
 		m_mus[k].mult(m_mus[k],1./m_norms[k]);
-		cout << "k: " << k << endl;
-		m_mus[k].Print();
+		//cout << "k: " << k << endl;
+		//m_mus[k].Print();
 	}
 
 
 
-cout << "new covs" << endl;
+//cout << "new covs" << endl;
 
 //sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
 	for(int k = 0; k < m_k; k++){
@@ -136,38 +136,38 @@ cout << "new covs" << endl;
 			Matrix x_min_mu;
 			x_min_mu.mult(m_mus[k],-1.);
 			x_min_mu.add(x_mat);
-		cout << "x - mu" << endl;
-		x_min_mu.Print();
+	//	cout << "x - mu" << endl;
+//		x_min_mu.Print();
 
 	
 			//transpose x - mu
 			Matrix x_min_muT;
 			x_min_muT.transpose(x_min_mu);
-		cout << "(x - mu)T" << endl;
-		x_min_muT.Print();
+	//	cout << "(x - mu)T" << endl;
+	//	x_min_muT.Print();
 			//(x_n - mu_k)*(x_n - mu_k)T
 			cov_k.mult(x_min_mu,x_min_muT);
-		cout << "(x_n - mu_k)*(x_n - mu_k)T" << endl;
-		cov_k.Print();
+	//	cout << "(x_n - mu_k)*(x_n - mu_k)T" << endl;
+	//	cov_k.Print();
 			//weighting by posterior gamma(z_nk)
 			cov_k.mult(cov_k,m_post.at(n,k));
-		cout << "gam(z_nk)*(x_n - mu_k)*(x_n - mu_k)T" << endl;
-		cov_k.Print();
-		cout << "gam(z_nk) = " << m_post.at(n,k) << endl;	
+	//	cout << "gam(z_nk)*(x_n - mu_k)*(x_n - mu_k)T" << endl;
+	//	cov_k.Print();
+	//	cout << "gam(z_nk) = " << m_post.at(n,k) << endl;	
 			//sum over n
 			new_cov.add(cov_k);
-			cout << "running sum" << endl;
-			new_cov.Print();
-		cout << "\n" << endl;
+	//		cout << "running sum" << endl;
+	//		new_cov.Print();
+	//	cout << "\n" << endl;
 		}	
 		//normalize by N_k
 		new_cov.mult(new_cov,1./m_norms[k]);
 		//overwrites m_covs[k]
 		m_covs[k] = new_cov;
-	cout << "k: " << k << endl;	
-	m_covs[k].Print();
-	cout << "new" << endl;
-	new_cov.Print();
+//	cout << "k: " << k << endl;	
+//	m_covs[k].Print();
+//	cout << "new" << endl;
+//	new_cov.Print();
 		
 	}
 
