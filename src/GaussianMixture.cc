@@ -24,7 +24,6 @@ void GaussianMixture::Initialize(unsigned long long seed){
 	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
-cout << "GMM Init" << endl;
 	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
 	double mu_lower = m_x.min()-0.1;
