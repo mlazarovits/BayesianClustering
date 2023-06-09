@@ -16,8 +16,10 @@ class ClusterViz2D : public ClusterVizBase{
 		
 		void AddPlot(string plotName = "test");
 		void Write(string fname = "test");
+		void SetPalette(int k);
 
-
+	private:
+		vector<TCanvas*> m_cvs; 
 };
 
 #endif

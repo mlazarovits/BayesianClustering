@@ -1,5 +1,7 @@
 #include "ClusterViz2D.hh"
 #include "GaussianMixture.hh"
+
+#include <TColor.h>
 #include <TROOT.h>
 #include <TH2D.h>
 #include <TMarker.h>
@@ -26,15 +28,37 @@ ClusterViz2D::ClusterViz2D(GaussianMixture* model) :
 
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
-	m_cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	TCanvas* m_cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	vector<Matrix> mus, covs;
+	m_model->GetParameters(mus,covs);
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points.at(i).Value(0.));
 		y.push_back(m_points.at(i).Value(1.));
 		//just using one value of cluster weights - only works for 2 cluster models
-		z.push_back(m_post.at(i,0.));	
-		if(i == 10)cout << "point #" << i << ": (" << x[i] << "," << y[i] << "," << z[i] << ")" << endl;
+		//weight for column 1 used because
+		//w_i ~ 1 = class 1
+		//w_i ~ 0 = class 0 to match class to idx
+		z.push_back(m_post.at(i,1.));	
+		if(i == 10){
+		cout << "point #" << i << ": (" << x[i] << "," << y[i] << "," << z[i] << ")" << endl;
+		cout << "cluster 1: " << m_post.at(i,0) << " cluster 2: " << m_post.at(i,1) << endl;
+		cout << "mu cluster 1:" << endl;
+		mus[0].Print();
+		cout << "mu cluster 2:" << endl;
+		mus[1].Print();
+		
+		}
 	}
+
+
+	//get palette colors for circles
+	SetPalette(m_model->GetNClusters());
+	//gStyle->SetPalette(100,pal);
+	auto cols = TColor::GetPalette();
+	cout << "first color: " << cols[0] << endl;
+	cout << "last color: " << cols[49] << endl;
+
 
 
 	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
@@ -67,6 +91,7 @@ void ClusterViz2D::AddPlot(string plotName){
 	circlePad->SetFrameFillStyle(4000);
 	circlePad->Draw();
 
+
 	//draw data	
 	graphPad->cd();
 	gr_data->Draw("PCOLZ"); //PCOLZ draws color palette
@@ -75,11 +100,9 @@ void ClusterViz2D::AddPlot(string plotName){
 	circlePad->cd();
 	//draw hist to place ellispes
 	hist->Draw("axis");
-
+	int color_idx;
 	//set coords for parameter circles
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
-	vector<Matrix> mus, covs;
-	m_model->GetParameters(mus,covs);
 	for(int k = 0; k < m_model->GetNClusters(); k++){
 		c_x = mus[k].at(0,0);
 		c_y = mus[k].at(1,0);
@@ -95,10 +118,17 @@ void ClusterViz2D::AddPlot(string plotName){
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
-cout << "theta: " << theta << endl;
-		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y);//0.,0,360, theta);
+		//convert to degrees
+		theta = 180*theta/acos(-1);
+		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
-		circle->SetLineColor(gStyle->GetColorPalette(k*19+10)); 
+		circle->SetLineColor(cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))]);
+		//circle->SetLineColor(pal[k*98]);
+	cout << "k: " << k << endl;	
+	cout << "cols - circle color idx: " << int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1)) << endl;
+	cout << "cols - circle color: " << cols[int(double(k) / double(m_model->GetNClusters() - 1)*(cols.GetSize() - 1))] << endl;
+	cout << "mu" << endl;
+	mus[k].Print();
 		circle->SetLineWidth(5);
 	   	circle->SetFillStyle(0);
 		circle_bkg->SetLineColor(0); 
@@ -109,7 +139,8 @@ cout << "theta: " << theta << endl;
 	}
 
 
-
+	cout << "first color: " << cols[0] << endl;
+	m_cvs.push_back(m_cv);
 
 }
 
@@ -123,8 +154,9 @@ void ClusterViz2D::Write(string fname){
 	TFile* f = TFile::Open((fname+".root").c_str(),"RECREATE");	
 	cout << "Writing plot to: " << fname << ".root" << endl;
 	f->cd();
-
-		m_cv->Write();
+	for(int i = 0; i < m_cvs.size(); i++){
+		m_cvs[i]->Write();
+	}
 
 	f->Close();
 
@@ -135,4 +167,53 @@ void ClusterViz2D::Write(string fname){
 
 }
 
+
+
+
+void ClusterViz2D::SetPalette(int k){
+
+	//create color palette - max number of clusters = 10
+	//additional ones need to be added by hand here
+
+	Int_t palette[100]; //number of entries needs to match nColors
+	//number of gradients in the palette
+	int nColors = 100;
+	//set color palette
+	vector<double> stops, red, green, blue;
+	//number of end point colors
+	int nMainColors = k;
+
+	if(k < 2){
+		cout << "Error: please give at least 2 clusters for palette creation." << endl;
+		return;
+	}
+
+	if(k == 2){
+		//[0,1] values are R, G or B/255.
+		//first color = light blue
+		//red.push_back(0.0);
+		//green.push_back(0.0);
+		//blue.push_back(0.31);
+		red.push_back(0.52);
+		green.push_back(0.79);
+		blue.push_back(0.96);
+		//second color = light pink
+		red.push_back(0.89);
+		green.push_back(0.52);
+		blue.push_back(0.96);
+
+		//where to switch colors
+		stops.push_back(0.0);
+		stops.push_back(0.5);
+		stops.push_back(1.0);
+
+	}
+
+
+	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
+	for (int i=0;i<nColors;i++) palette[i] = fi+i;
+
+
+	return; 
+}
 
