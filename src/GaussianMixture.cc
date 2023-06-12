@@ -194,67 +194,6 @@ double GaussianMixture::EvalLogL(){
 
 
 
-
-//consider doing this for whole class or moving Gaus function to more general class
-//gaussian for one data point
-double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov){
-	double det = cov.det();
-	int dim = x.Dim();
-	if(dim != mu.GetDims()[0]){
-		cout << "Error: x and mu length do not match. " << dim << " " << mu.GetDims()[0] << endl;
-		return 0;
-	}
-	if(mu.GetDims()[0] != cov.GetDims()[0]){
-		cout << "Error: covariance and mu dimensions do not match. " << cov.GetDims()[0] << " " << mu.GetDims()[0] << endl;
-		return 0;
-	}
-	if(!cov.square()){
-		cout << "Error: non-square covariance matrix." << endl;
-		return 0;
-	}
-	//construct x - mu
-	Matrix x_mat = Matrix(x.Value());
-	Matrix x_min_mu;
-	x_min_mu.mult(mu,-1.);
-	x_min_mu.add(x_mat);
-//	cout << "	x - mu:" << endl;
-//	x_min_mu.Print();
-
-	//transpose x - mu
-	Matrix x_min_muT;
-	x_min_muT.transpose(x_min_mu);
-	Matrix cov_inv;
-//	cout << "	cov:" << endl;
-//	cov.Print();
-	cov_inv.invert(cov);
-//	cout << "	cov_inv:" << endl;
-//	cov_inv.Print();
-
-	double coeff = 1/(pow(det,0.5)*pow(2*acos(-1),0.5*dim));
-	//should only be 1 element matrix
-	//muT*cov*mu = 1xd * dxd * dx1
-	Matrix mat_expon = Matrix(1,1);
-	Matrix cov_mu = Matrix(m_dim,1);
-
-	cov_mu.mult(cov_inv,x_min_mu);
-//	cout << "	cov_inv*(x-mu):" << endl;
-//	cov_mu.Print();
-
-	mat_expon.mult(x_min_muT,cov_mu);
-//	cout << "	(x-mu)T*cov_inv*(x-mu):" << endl;
-//	mat_expon.Print();
-
-
-	double expon = mat_expon.at(0,0);
-//	cout << "	x:";
-//	x.Print();
-//	cout << "	expon: " << expon << endl;
-	return coeff*exp(-0.5*expon);
-
-}
-
-
-
 //fill vectors with params for each cluster
 void GaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
 	mus.clear();
