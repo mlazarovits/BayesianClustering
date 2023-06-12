@@ -1,1 +1,395 @@
+#include <boost/math/special_functions/digamma.hpp>
 #include "VarGaussianMixture.hh"
+
+
+
+VarGaussianMixture::VarGaussianMixture(){
+	m_k = 0;
+	m_n = 0;
+	m_dim = 0;
+
+
+};
+
+
+VarGaussianMixture::VarGaussianMixture(int k){
+	m_k = k;
+	m_n = 0;
+	m_dim = 0;
+
+
+};
+
+
+
+void VarGaussianMixture::Initialize(unsigned long long seed){
+	if(m_dim == 0){
+		cout << "VarGaussianMixture Initialize - Error: data has not been set." << endl;
+		return;
+	}
+
+
+	//alpha > 0
+	m_alpha0 = 1e-3;
+	
+	//beta > 0
+	RandomSample rs;
+	m_beta0 = rs.SampleFlat();
+
+	//m > 0
+	m_mean0 = Matrix(m_dim,1);
+	m_mean.InitRandom();
+
+	m_meanBeta0 = Matrix(m_dim, 1);
+	m_meanBeta0.mult(m_mean0, m_beta0);
+
+	//W <- R in dxd space (posdef)
+	m_W0inv = Matrix(m_dim, m_dim);
+	m_W0inv.InitRandomPosDef();
+	//need W0 inverse for parameter calculation
+	m_W0inv.invert(m_W0inv);
+
+	//nu > d - 1
+	rs.SetRange(m_dim - 1, 20.);
+	m_nu0 = rs.SampleFlat();
+
+	m_post.SetDims(m_n, m_k);
+
+	m_Elam.clear();
+	m_Epi.clear();
+	for(int k = 0; k < m_k; k++){
+		m_Elam.push_back(0.);
+		m_Epi.push_back(0.);
+	}
+
+};
+
+
+
+void VarGaussianMixture::CalculateExpectations(){
+	//calculate alpha_hat
+	double alpha_hat = 0.;
+	//alpha_hat = sum_k alpha_k
+	for(int k = 0; k < m_k; k++)
+		alpha_hat += m_alphas[k];
+	
+	//calculate Elam (10.65) and Epi (10.66)
+	for(int k = 0; k < m_k; k++){
+ 		digam = 0;
+		for(int d = 0; d < m_dim; d++)
+			digam += digamma((m_nus[k] + 1 - d)/2)
+		//calculating E_lam = E[ln|lambda_k|] (eq. 10.66)
+		m_Elam[k] = digam + d*log(2) + log(m_W[k].det());
+		E_pi = digamma(m_alpha[k]) - digamma(alpha_hat);
+		
+	}
+
+
+
+
+
+}
+
+
+
+
+//E-step
+//E[z_nk] = r_nk
+//(10.46) ln(rho_nk) = E[ln(pi_k)] + 1/2E[ln|lambda_k|] - D/2*ln(2pi) - 1/2E[(x_n - mu_k)Tlambda_k(x_n - mu_k)]
+//(10.49) r_nk = rho_nk/sum_k rho_nk
+//(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
+void VarGaussianMixture::CalculatePosterior(){
+	//calculate necessary expectation values for E-step and ELBO
+	CalculateExpectations();
+
+	double E_mu_lam, digam, post, norm;
+	vector<double> post_norms;
+	Matrix x_mat, x_min_m, x_min_mT;
+	for(int n = 0; n < m_n; n++){
+		norm = 0.;
+		for(int k = 0; k < m_k; k++){
+			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
+			x_min_m = Matrix(m_dim,1);
+			x_min_m.mult(m_means[k],-1.);
+			x_mat = Matrix(m_x.at(n).Value());
+			x_min_m.add(x_mat);		
+			x_min_mT = Matrix(1, m_dim);
+			x_min_mT.transpose(x_min_m);
+			//full term
+			Matrix tmp = Matrix(1,1);
+			tmp.mult(x_min_mT,m_W[k]);
+			tmp.mult(tmp,x_min_m);
+			
+			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*tmp.at(0,0);	
+
+			//gives ln(rho_nk)
+			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam
+			post = exp(post);
+		
+			norm += post;
+			
+			//need to normalize
+			m_post.SetEntry(post, n, k);
+
+		}
+		post_norms.push_back(norm);
+
+	}
+
+	//normalize
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++)
+			m_post.SetEntry(m_post.at(n,k)/post_norms[k],n,k);
+
+
+};
+
+
+
+//M-step
+void VarGaussianMixture::UpdateParameters(){
+	//responsibility statistics
+	
+	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
+	m_norms.clear();
+	for(int k = 0; k < m_k; k++){
+		m_norms.push_back(0.);
+		for(int n = 0; n < m_n; n++){
+			m_norms[k] += m_post.at(n,k);
+		}
+	}
+
+	//this is for x_k (eq. 10.52) - k dx1 matrices
+	for(int k = 0; k < m_k; k++){
+		//clear and overwrite m_mu[k]
+		m_mus[k].clear();
+		m_mus[k].InitEmpty();
+		for(int n = 0; n < m_n; n++){
+			//add data pt x_n,
+			Matrix x = Matrix(m_x.at(n).Value());
+			//weighted by posterior value gamma(z_nk),
+			x.mult(x,m_post.at(n,k));
+			//to new mu for cluster k
+			m_mus[k].add(x);
+		}
+		//normalized by sum of posteriors for cluster k
+		m_mus[k].mult(m_mus[k],1./m_norms[k]);
+	}
+	
+	//this is for S_k (eq.10.53) - k dxd matrices
+	for(int k = 0; k < m_k; k++){
+		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
+		Matrix new_cov = Matrix(m_dim,m_dim);
+		for(int n = 0; n < m_n; n++){
+			Matrix cov_k = Matrix(m_dim, m_dim);
+
+			//construct x - mu
+			Matrix x_mat = Matrix(m_x.at(n).Value());
+			Matrix x_min_mu;
+			x_min_mu.mult(m_mus[k],-1.);
+			x_min_mu.add(x_mat);
+			
+			//transpose x - mu
+			Matrix x_min_muT;
+			x_min_muT.transpose(x_min_mu);
+			
+			//(x_n - mu_k)*(x_n - mu_k)T
+			cov_k.mult(x_min_mu,x_min_muT);
+			
+			//weighting by posterior gamma(z_nk)
+			cov_k.mult(cov_k,m_post.at(n,k));
+			
+			//sum over n
+			new_cov.add(cov_k);
+		}	
+		//normalize by N_k
+		new_cov.mult(new_cov,1./m_norms[k]);
+		//overwrites m_covs[k]
+		m_covs[k] = new_cov;
+	}
+
+
+	//now update variational distribution parameters
+	//updating based on first step (sub-0 params)
+	m_betas.clear();
+	m_alphas.clear();
+	m_nus.clear();
+	double prefactor;
+	for(int k = 0; k < m_k; k++){
+		//betas - eq. 10.60
+		m_betas[k] = m_beta0 + m_norms[k];
+	
+		//alphas - eq. 10.58
+		m_alphas[k] = m_alpha0 + m_norms[k];
+
+		//nus - eq. 10.63
+		m_nus[k] = m_nu0 + m_norms[k];
+
+		//means - eq. 10.61
+		m_means[k].clear();
+		m_means[k].InitEmpty();
+		//N_k*bar{x}_k
+		m_means[k].mult(m_mus[k],m_norms[k]);
+		//m_meanBeta0 + N_k*bar{x}_k
+		m_means[k].add(m_meanBeta0);
+		//normalize by 1/beta
+		m_means[k].mult(m_means[k],1./m_betas[k]);
+
+		//Ws - eq. 10.62
+		//caluclated for W inverse
+		//beta0*N_k/(beta0 + N_k)*(bar{x}_k - m0)(bar{x}_k - m0)T
+		m_W[k].clear();
+		m_W[k].InitEmpty();
+		
+		//bar{x}_k - m0
+		Matrix x_min_mean = Matrix(m_dim, 1);
+		x_min_mean.mult(m_mean0,-1.);
+		x_min_mean.add(x_min_mean,m_mus[k]);
+		Matrix x_min_meanT = Matrix(1, m_dim);
+		x_min_meanT.transpose(x_min_mean);
+		//(bar{x}_k - m0)(bar{x}_k - m0)T
+		m_W[k].mult(x_min_mean, x_min_meanT);
+		prefactor = m_beta0*m_norms[k]/(m_beta0 + m_norms[k]);
+		m_W[k].mult(m_W[k], prefactor);
+		//N_k*S_k
+		Matrix scaledS = Matrix(m_dim, m_dim);
+		scaledS.mult(m_covs[k],m_norms[k]);
+		//add first two terms to last term
+		m_W[k].add(scaledS);
+		m_W[k].add(m_W0inv);
+		//invert (calculated for W_k inverse)
+		m_W[k].invert(m_W[k]);
+
+	}
+
+};
+
+
+
+//calculates ELBO
+//(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
+double VarGaussianMixture::EvalLogL(){
+	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam, ret;
+
+	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
+	E_p_all = 0;
+	for(int k = 0; k < m_k; k++){
+		//(x_n - m_k)
+		mu_min_m = Matrix(m_dim,1);
+		mu_min_m.mult(m_means[k],-1.);
+		mu_min_m.add(m_mus[k]);		
+		mu_min_mT = Matrix(1, m_dim);
+		mu_min_mT.transpose(mu_min_m);
+		//(x_n - m_k)T*W_k*(x_n - m_k)
+		Matrix tmp_x_mu = Matrix(1,1);
+		tmp_x_mu.mult(mu_min_mT,m_W[k]);
+		tmp_x_mu.mult(tmp,mu_min_m);
+		//tr(S_k*W_k)
+		//S_k*W_k = dxd matrix
+		Matrix tmp_S_W = Matrix(m_dim, m_dim);
+		tmp_S_W.mult(m_covs[k],m_W[k]);
+			
+		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*tmp_x_mu.at(0,0) - m_dim*log(2*acos(-1)));
+
+	}
+
+	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(r_nk)
+	E_p_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++)
+			E_p_Z += m_post.at(n,k)*log(m_post.at(n,k));
+	
+	//E[ln(p(pi))] = ln(C(alpha)) + (alpha_0 - 1)*sum_k m_Epi[k]
+	E_p_pi = 0;
+	for(int k = 0; k < m_k; k++)
+		E_p_pi += m_Epi[k];
+	E_p_pi *= (m_alphas0 - 1)
+	//TODO - code up Dirichlet C(alpha)
+
+
+
+	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
+	E_p_muLam = 0;
+	Matrix tmp, tmpT;
+	for(int k = 0; k < m_k; k++){
+		tmp.mult(m_mean0,-1);
+		tmp.add(tmp,m_means[k]);
+		tmpT.transpose(tmp);
+		//TODO - this may not work - may need separate Matrix
+		tmp.mult(m_W[k]);
+		tmp.mult(tmpT);
+
+		E_p_muLam += 0.5*(m_dim*log(m_beta0/(2*acos(-1))) + m_Elam[k] - m_dim*m_beta0/m_betas[k] - m_beta0*m_nus[k]*tmp.at(0,0));
+		E_p_muLam += (m_nu0 - m_dim - 1)/2.*m_Elam[k];
+		
+		tmp.clear();
+		tmp.SetDims(m_dim, m_dim);
+		tmp.mult(m_W0inv,m_W[k]);	
+	
+		E_p_muLam += 0.5*m_nus[k]*tmp.trace();
+	}
+	//TODO - B(W,nu) + add to E_p_muLam
+	
+
+	ret = 0.5*E_p_all;
+
+
+
+
+
+	double E_mu_lam, E_lam, E_pi, digam, post, norm;
+	vector<double> post_norms;
+	Matrix x_mat, x_min_m, x_min_mT;
+	for(int n = 0; n < m_n; n++){
+		norm = 0.;
+		for(int k = 0; k < m_k; k++){
+			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
+			x_min_m = Matrix(m_dim,1);
+			x_min_m.mult(m_means[k],-1.);
+			x_mat = Matrix(m_x.at(n).Value());
+			x_min_m.add(x_mat);		
+			x_min_mT = Matrix(1, m_dim);
+			x_min_mT.transpose(x_min_m);
+			//full term
+			Matrix tmp = Matrix(1,1);
+			tmp.mult(x_min_mT,m_W[k]);
+			tmp.mult(tmp,x_min_m);
+			
+			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*tmp.at(0,0);	
+
+ 			digam = 0;
+			for(int d = 0; d < m_dim; d++)
+				digam += digamma((m_nus[k] + 1 - d)/2)
+			E_lam = digam + d*log(2) + log( m_W[k].det() );
+
+			E_pi = digamma(m_alpha[k]) - digamma(alpha_hat);
+
+			//gives ln(rho_nk)
+			post = E_pi + 0.5*E_lam - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam
+
+			post = exp(post);
+		
+			norm += post;
+			
+			//need to normalize
+			m_post.SetEntry(post, n, k);
+
+		}
+		post_norms.push_back(norm);
+
+	}
+
+
+
+
+
+
+
+
+
+
+} //end ELBO
+
+
+
+
