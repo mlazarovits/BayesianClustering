@@ -599,4 +599,13 @@ void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
 
 
 
-
+double Matrix::trace(){
+	double tr = 0;
+	for(int i = 0; i < m_rows; i++){
+		for(int j = 0; j < m_cols; j++){
+			if(i == j)
+				tr += m_entries[i][j];
+		}
+	}
+	return tr;
+}

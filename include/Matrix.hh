@@ -45,6 +45,7 @@ class Matrix{
 		void transpose(const Matrix& mat);
 		void adjoint(const Matrix& mat);
 		void invert(const Matrix& mat);
+		double trace();
 		Matrix cholesky();
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
