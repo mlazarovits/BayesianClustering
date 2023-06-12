@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
    		return 0;
   	}
 
-	fname = "plots/"+fname
+	fname = "plots/"+fname;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	
@@ -128,8 +128,7 @@ int main(int argc, char *argv[]){
 	GaussianMixture gmm = GaussianMixture(k);
 	gmm.AddData(pc);
 	ClusterViz2D cv2D = ClusterViz2D(&gmm);
-	////////run EM algo////////
-	
+
 	//Initialize - randomize parameters 
 	gmm.Initialize();
 	
@@ -138,6 +137,7 @@ int main(int argc, char *argv[]){
 	double dLogL, newLogL, oldLogL;
 	double LogLThresh = 0.0005;
 	double it = 0;
+	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
 		oldLogL = gmm.EvalLogL();
 		

@@ -22,6 +22,10 @@ GaussianMixture::GaussianMixture(int k){
 //don't forget to include weights (eventually)
 void GaussianMixture::Initialize(unsigned long long seed){
 	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
+	if(m_dim == 0){
+		cout << "GaussianMixture Initialize - Error: data has not been set." << endl;
+		return;
+	}
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
 	//TODO: should use data to set the range on the possible parameter values
@@ -64,9 +68,7 @@ void GaussianMixture::CalculatePosterior(){
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
 		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
-//			cout << "n: " << n << " k: " << k << endl;
 			double g = Gaus(m_x.at(n),m_mus[k],m_covs[k]);
-//		cout << "n: " << n << " k: " << k << " coef: " << m_coeffs[k] << " gaus: " << g << endl;
 			gaus.SetEntry(g,n,k);
 			norm += m_coeffs[k]*gaus.at(n,k);
 		}
@@ -76,11 +78,9 @@ void GaussianMixture::CalculatePosterior(){
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			val = m_coeffs[k]*gaus.at(n,k)/post_norms[n];
-		//	cout << "k: " << k << " n: " << n << " coeff: " << m_coeffs[k] << " gaus: " << gaus.at(n,k) << " norm: " << norms[n] << " val: " << val << endl;
 			m_post.SetEntry(val,n,k);		
 		}
 	}
-	//m_post.Print();
 }
 
 
@@ -98,13 +98,14 @@ void GaussianMixture::UpdateParameters(){
 		}
 	}
 //cout << "new means" << endl;
-	//set new means 	
+	//set new means + mixing coeffs
+	m_coeffs.clear();	
 	for(int k = 0; k < m_k; k++){
-		m_coeffs[k] = m_norms[k]/m_n;
+		//overwrite and recalculate mixing coefficients
+		m_coeffs.push_back(m_norms[k]/m_n);
 		//clear and overwrite m_mu[k]
 		m_mus[k].clear();
 		m_mus[k].InitEmpty();
-		//check above does what we want (clear the entries and reset an empty matrix)
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
 			Matrix x = Matrix(m_x.at(n).Value());
