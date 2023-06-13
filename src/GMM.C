@@ -16,7 +16,6 @@ using std::endl;
 int main(int argc, char *argv[]){
 	
 	string fname;// = "test";
-	int nSamples = 100;
 	bool hprint = false;
 	//dimensionality
 	int N = 2;
@@ -45,14 +44,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--nSamples", 10) == 0){
      			i++;
     	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"-n", 2) == 0){
-     			i++;
-    	 		nSamples = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nSamples", 10) == 0){
-     			i++;
-    	 		nSamples = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-d", 2) == 0){
      			i++;
