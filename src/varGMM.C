@@ -16,12 +16,11 @@ using std::endl;
 int main(int argc, char *argv[]){
 	
 	string fname;// = "test";
-	int nSamples = 100;
 	bool hprint = false;
 	//dimensionality
 	int N = 2;
 	//n data points
-	int Nsample = 500;
+	int Nsample = 2;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -45,14 +44,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--nSamples", 10) == 0){
      			i++;
     	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"-n", 2) == 0){
-     			i++;
-    	 		nSamples = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nSamples", 10) == 0){
-     			i++;
-    	 		nSamples = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-d", 2) == 0){
      			i++;
@@ -131,14 +122,24 @@ int main(int argc, char *argv[]){
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
-
+cout << "\n" << endl;
+cout << "START ITERATION 1" << endl;
+//iteration 1
 	//E step
 	vgmm.CalculatePosterior();
-cout << "posterior first entry: " << vgmm.GetPosterior().at(0,0) << endl;	
 	//M step
 	vgmm.UpdateParameters();
-
-
+	double elbo = vgmm.EvalLogL();
+cout << "ELBO - iteration 1: " << elbo << endl;
+cout << "\n \n" << endl;
+cout << "START ITERATION 2" << endl;	
+//iteration 2
+	//E step
+	vgmm.CalculatePosterior();
+	//M step
+	vgmm.UpdateParameters();
+	elbo = vgmm.EvalLogL();
+cout << "ELBO - iteration 2: " << elbo << endl;
 /*
 	//loop
 	int nIts = 50;

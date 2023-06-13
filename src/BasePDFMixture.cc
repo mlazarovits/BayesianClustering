@@ -64,13 +64,20 @@ double BasePDFMixture::Dir_C(vector<double> alphas){
 
 
 double BasePDFMixture::Wish_B(Matrix W, double nu){
+//	cout << "		Wishard B" << endl;
 	int d = W.GetDims()[0];
 	double det = W.det();
 	double pi = acos(-1);
-
+	//cout << "			det: " << det << endl;
+	//cout << "			nu: " << nu << endl;
 	double gam = 1;
-	for(int i = 1; i < d+1; i++)
+	//double arg;
+	for(int i = 1; i < d+1; i++){
+	//cout << "			gam: " << gam << endl;
+	//arg = (nu + 1 - i)/2.;
+	//cout << "			gam arg: " << arg << endl;
 		gam *= tgamma( (nu + 1 - i)/2. );
+	}
 	
 	gam *= pow(pi, d*(d-1)/4.);
 	gam *= pow(2,nu*d/2.);
@@ -81,17 +88,21 @@ double BasePDFMixture::Wish_B(Matrix W, double nu){
 
 
 double BasePDFMixture::Wish_H(Matrix W, double nu){
+	//cout << "	Wishart H" << endl;
 	int d = W.GetDims()[0];
 	double E_lam = 0;
 	double det = W.det();
-
+	double B;
 	for(int i = 1; i < d+1; i++)
 		E_lam += digamma( (nu + 1 - i)/2. );
+	//cout << "		digam: " << E_lam << endl;
 	E_lam += d*log(2);
+	//cout << "		det: " << det << endl;
 	E_lam += log(det);
+	B = Wish_B(W,nu);
+	//cout << "		B: " << B << endl;
 
-
-	return -log(Wish_B(W, nu)) - ((nu - d - 1)/2.)*E_lam + (nu*d)/2.;
+	return -log(B) - ((nu - d - 1)/2.)*E_lam + (nu*d)/2.;
 };
 
 

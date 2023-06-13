@@ -34,10 +34,9 @@ class VarGaussianMixture : public BasePDFMixture{
 		void CalculateExpectations();
 	private:
 		//hyperparameters
-		//initial values of parameters
-		double m_beta0, m_nu0;
-		vector<double> m_alpha0;
-		Matrix m_W0, m_W0inv, m_mean0, m_meanBeta0;	
+		//initial values of parameters for k clusters
+		vector<double> m_betas0, m_nus0, m_alphas0;
+		vector<Matrix> m_Ws0, m_Ws0inv, m_means0, m_meanBetas0;	
 	
 		//parameters
 		//k concentrations parameters for each Dirichlet prior on mixing coeff
