@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 	vgmm.CalculatePosterior();
 cout << "posterior first entry: " << vgmm.GetPosterior().at(0,0) << endl;	
 	//M step
-//	gmm.UpdateParameters();
+	vgmm.UpdateParameters();
 
 
 /*

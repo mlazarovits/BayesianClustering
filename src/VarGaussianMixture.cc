@@ -68,6 +68,13 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_nus.push_back(m_nu0);
 	}
 
+	//init responsibility statistics
+	for(int k = 0; k < m_k; k++){
+		m_norms.push_back(0.);
+		m_mus.push_back(Matrix(m_dim,1));
+		m_covs.push_back(Matrix(m_dim,m_dim));
+	}
+
 
 };
 
@@ -149,14 +156,12 @@ void VarGaussianMixture::CalculatePosterior(){
 void VarGaussianMixture::UpdateParameters(){
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
-	m_norms.clear();
 	for(int k = 0; k < m_k; k++){
-		m_norms.push_back(0.);
+		m_norms[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			m_norms[k] += m_post.at(n,k);
 		}
 	}
-/*
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices
 	for(int k = 0; k < m_k; k++){
@@ -207,6 +212,7 @@ void VarGaussianMixture::UpdateParameters(){
 		m_covs[k] = new_cov;
 	}
 
+/*
 
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
