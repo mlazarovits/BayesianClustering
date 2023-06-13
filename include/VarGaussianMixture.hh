@@ -13,6 +13,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		void Initialize(unsigned long long seed = 111);
 
 		void InitAlpha(double a){
+			m_alpha0.clear();
 			for(int k = 0; k < m_k; k++)
 				m_alpha0.push_back(a);
 		}
@@ -31,19 +32,12 @@ class VarGaussianMixture : public BasePDFMixture{
 	protected:
 		//pre-E step (don't have a million for loops)
 		void CalculateExpectations();
-
-
 	private:
 		//hyperparameters
-		//number of clusters - can change
-		int m_k;
-		//number of data points - doesn't change
-		int m_n;
 		//initial values of parameters
 		double m_beta0, m_nu0;
 		vector<double> m_alpha0;
-		Matrix m_W0inv, m_mean0;
-		Matrix m_meanBeta0;	
+		Matrix m_W0, m_W0inv, m_mean0, m_meanBeta0;	
 	
 		//parameters
 		//k concentrations parameters for each Dirichlet prior on mixing coeff

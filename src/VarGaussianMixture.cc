@@ -7,8 +7,6 @@ VarGaussianMixture::VarGaussianMixture(){
 	m_k = 0;
 	m_n = 0;
 	m_dim = 0;
-
-
 };
 
 
@@ -16,8 +14,6 @@ VarGaussianMixture::VarGaussianMixture(int k){
 	m_k = k;
 	m_n = 0;
 	m_dim = 0;
-
-
 };
 
 
@@ -31,32 +27,30 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 	//alpha > 0
 	for(int k = 0; k < m_k; k++){
-		m_alpha0.push_back(1e-3);
+		m_alpha0.push_back(1);
 	}
 	
 	RandomSample rs;
 	rs.SetRange(0.,20.);
 	//beta > 0
 	m_beta0 = rs.SampleFlat();
-
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
 	m_mean0.InitRandom();
-
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);
 
 	//W <- R in dxd space - is a covariance matrix
-	m_W0inv = Matrix(m_dim, m_dim);
-	m_W0inv.InitRandomSymPosDef();
+	m_W0 = Matrix(m_dim, m_dim);
+	m_W0.InitRandomSymPosDef();
 	//need W0 inverse for parameter calculation
-	m_W0inv.invert(m_W0inv);
+	m_W0inv.invert(m_W0);
 
 	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, 20.);
 	m_nu0 = rs.SampleFlat();
-
 	m_post.SetDims(m_n, m_k);
+	
 
 	m_Elam.clear();
 	m_Epi.clear();
@@ -70,7 +64,7 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_alphas.push_back(m_alpha0[0]);
 		m_betas.push_back(m_beta0);
 		m_means.push_back(m_mean0);
-		m_Ws.push_back(m_W0inv);
+		m_Ws.push_back(m_W0);
 		m_nus.push_back(m_nu0);
 	}
 
@@ -97,9 +91,6 @@ void VarGaussianMixture::CalculateExpectations(){
 		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
 		
 	}
-
-
-
 }
 
 
@@ -114,8 +105,7 @@ void VarGaussianMixture::CalculatePosterior(){
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 
-/*
-	double E_mu_lam, digam, post, norm;
+	double E_mu_lam, post, norm;
 	vector<double> post_norms;
 	Matrix x_mat, x_min_m, x_min_mT;
 	for(int n = 0; n < m_n; n++){
@@ -129,38 +119,34 @@ void VarGaussianMixture::CalculatePosterior(){
 			x_min_mT = Matrix(1, m_dim);
 			x_min_mT.transpose(x_min_m);
 			//full term
-			Matrix tmp = Matrix(1,1);
-			tmp.mult(x_min_mT,m_Ws[k]);
-			tmp.mult(tmp,x_min_m);
-			
-			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*tmp.at(0,0);	
+			Matrix transp_W = Matrix(1,m_dim);
+			transp_W.mult(x_min_mT,m_Ws[k]);
+			Matrix full = Matrix(1,1);
+			full.mult(transp_W,x_min_m);
+			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
 
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
 			post = exp(post);
 		
 			norm += post;
-			
 			//need to normalize
 			m_post.SetEntry(post, n, k);
-
 		}
 		post_norms.push_back(norm);
-
 	}
-
 	//normalize
-	for(int n = 0; n < m_n; n++)
-		for(int k = 0; k < m_k; k++)
+	for(int n = 0; n < m_n; n++){
+		for(int k = 0; k < m_k; k++){
 			m_post.SetEntry(m_post.at(n,k)/post_norms[k],n,k);
-*/
+		}
+	}
 };
 
 
 
 //M-step
 void VarGaussianMixture::UpdateParameters(){
-/*
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	m_norms.clear();
@@ -170,6 +156,7 @@ void VarGaussianMixture::UpdateParameters(){
 			m_norms[k] += m_post.at(n,k);
 		}
 	}
+/*
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices
 	for(int k = 0; k < m_k; k++){
