@@ -13,7 +13,8 @@ class VarGaussianMixture : public BasePDFMixture{
 		void Initialize(unsigned long long seed = 111);
 
 		void InitAlpha(double a){
-			m_alpha0 = a;
+			for(int k = 0; k < m_k; k++)
+				m_alpha0.push_back(a);
 		}
 
 
@@ -24,7 +25,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 	
-		//UPDATE - fill vectors with estimated parameters
+		//TODO - UPDATE - fill vectors with estimated parameters
 		void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
 
 	protected:
@@ -39,7 +40,8 @@ class VarGaussianMixture : public BasePDFMixture{
 		//number of data points - doesn't change
 		int m_n;
 		//initial values of parameters
-		double m_beta0, m_nu0, m_alpha0;
+		double m_beta0, m_nu0;
+		vector<double> m_alpha0;
 		Matrix m_W0inv, m_mean0;
 		Matrix m_meanBeta0;	
 	
@@ -53,7 +55,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		//k dxd matrices - covariance matrix of normal distribution that occurs in the construction of a Wishart distribution
 		//G_i = (g1_i, ..., gp_i)T ~ N_p(0, W)
 		//S = GG_T ~ W_p(V,n) for n degrees of freedom
-		vector<Matrix> m_W;
+		vector<Matrix> m_Ws;
 		//k degrees of freedom for NW
 		vector<double> m_nus;
 
