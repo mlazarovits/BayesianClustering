@@ -35,9 +35,10 @@ GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
 	touch GMM.x
 
 #executables
-varGMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
+varGMM.x: $(SRCDIR)varGMM.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o varGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch GMM.x
+	touch varGMM.x
+
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
 	$(CXX) $(CXXFLAGS) -c $< -o $@
