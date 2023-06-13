@@ -66,8 +66,8 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 
 //for use in ELBO + E-step
+//posterior calculation uses these expectation values - need to calculate first
 void VarGaussianMixture::CalculateExpectations(){
-/*
 	//calculate alpha_hat
 	double alpha_hat = 0.;
 	//alpha_hat = sum_k alpha_k
@@ -75,18 +75,16 @@ void VarGaussianMixture::CalculateExpectations(){
 		alpha_hat += m_alphas[k];
 	
 	//calculate Elam (10.65) and Epi (10.66)
+	double digam;
 	for(int k = 0; k < m_k; k++){
  		digam = 0;
 		for(int d = 0; d < m_dim; d++)
-			digam += digamma((m_nus[k] + 1 - d)/2)
-		//calculating E_lam = E[ln|lambda_k|] (eq. 10.66)
-		m_Elam[k] = digam + d*log(2) + log(m_W[k].det());
-		E_pi = digamma(m_alpha[k]) - digamma(alpha_hat);
+			digam += digamma((m_nus[k] + 1 - d)/2);
+		m_Elam[k] = digam + m_dim*log(2) + log(m_W[k].det());
+		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
 		
 	}
 
-
-*/
 
 
 }
