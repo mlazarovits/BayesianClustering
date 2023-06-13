@@ -7,7 +7,8 @@ CXXFLAGS    = $(ROOTCFLAGS)
 
 #add eigen include path
 CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
-
+#add digamma include path
+CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.81.0_1/include
 GLIBS       = $(ROOTGLIBS)
 #specify compiler
 CXX         = g++
