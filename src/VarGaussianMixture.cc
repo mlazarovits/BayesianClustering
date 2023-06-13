@@ -1,7 +1,7 @@
 #include <boost/math/special_functions/digamma.hpp>
 #include "VarGaussianMixture.hh"
 
-
+using boost::math::digamma;
 
 VarGaussianMixture::VarGaussianMixture(){
 	m_k = 0;
@@ -38,18 +38,18 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
-	m_mean.InitRandom();
+	m_mean0.InitRandom();
 
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);
 
-	//W <- R in dxd space (posdef)
+	//W <- R in dxd space - is a covariance matrix
 	m_W0inv = Matrix(m_dim, m_dim);
-	m_W0inv.InitRandomPosDef();
+	m_W0inv.InitRandomSymPosDef();
 	//need W0 inverse for parameter calculation
 	m_W0inv.invert(m_W0inv);
 
-	//nu > d - 1
+	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, 20.);
 	m_nu0 = rs.SampleFlat();
 
@@ -65,8 +65,9 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 };
 
 
-
+//for use in ELBO + E-step
 void VarGaussianMixture::CalculateExpectations(){
+/*
 	//calculate alpha_hat
 	double alpha_hat = 0.;
 	//alpha_hat = sum_k alpha_k
@@ -85,7 +86,7 @@ void VarGaussianMixture::CalculateExpectations(){
 	}
 
 
-
+*/
 
 
 }
@@ -99,6 +100,7 @@ void VarGaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void VarGaussianMixture::CalculatePosterior(){
+/*
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 
@@ -141,15 +143,15 @@ void VarGaussianMixture::CalculatePosterior(){
 		for(int k = 0; k < m_k; k++)
 			m_post.SetEntry(m_post.at(n,k)/post_norms[k],n,k);
 
-
+*/
 };
 
 
 
 //M-step
 void VarGaussianMixture::UpdateParameters(){
+/*
 	//responsibility statistics
-	
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	m_norms.clear();
 	for(int k = 0; k < m_k; k++){
@@ -261,7 +263,7 @@ void VarGaussianMixture::UpdateParameters(){
 		m_W[k].invert(m_W[k]);
 
 	}
-
+*/
 };
 
 
@@ -269,6 +271,7 @@ void VarGaussianMixture::UpdateParameters(){
 //calculates ELBO
 //(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
 double VarGaussianMixture::EvalLogL(){
+	/*
 	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam, ret;
 
 	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
@@ -292,12 +295,13 @@ double VarGaussianMixture::EvalLogL(){
 		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*tmp_x_mu.at(0,0) - m_dim*log(2*acos(-1)));
 
 	}
+	E_p_all *= 0.5;
 
-	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(r_nk)
+	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(m_Epi[k])
 	E_p_Z = 0;
 	for(int n = 0; n < m_n; n++)
 		for(int k = 0; k < m_k; k++)
-			E_p_Z += m_post.at(n,k)*log(m_post.at(n,k));
+			E_p_Z += m_post.at(n,k)*m_Epi[k];
 	
 	//E[ln(p(pi))] = ln(C(alpha)) + (alpha_0 - 1)*sum_k m_Epi[k]
 	E_p_pi = 0;
@@ -329,66 +333,36 @@ double VarGaussianMixture::EvalLogL(){
 		E_p_muLam += 0.5*m_nus[k]*tmp.trace();
 	}
 	//TODO - B(W,nu) + add to E_p_muLam
+
+
+	//E[ln(q(Z)]
+	E_q_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++)
+			E_q_Z += m_post.at(n,k)*log(m_post.at(n,k));	
+
+	//E[ln(q(pi))]
+	E_q_pi = 0;
+	for(int k = 0; k < m_k; k++){
+		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
+		//TODO - add C(alpha) to E_q_pi
+	}
+
 	
-
-	ret = 0.5*E_p_all;
-
-
-
-
-
-	double E_mu_lam, E_lam, E_pi, digam, post, norm;
-	vector<double> post_norms;
-	Matrix x_mat, x_min_m, x_min_mT;
-	for(int n = 0; n < m_n; n++){
-		norm = 0.;
-		for(int k = 0; k < m_k; k++){
-			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
-			x_min_m = Matrix(m_dim,1);
-			x_min_m.mult(m_means[k],-1.);
-			x_mat = Matrix(m_x.at(n).Value());
-			x_min_m.add(x_mat);		
-			x_min_mT = Matrix(1, m_dim);
-			x_min_mT.transpose(x_min_m);
-			//full term
-			Matrix tmp = Matrix(1,1);
-			tmp.mult(x_min_mT,m_W[k]);
-			tmp.mult(tmp,x_min_m);
-			
-			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*tmp.at(0,0);	
-
- 			digam = 0;
-			for(int d = 0; d < m_dim; d++)
-				digam += digamma((m_nus[k] + 1 - d)/2)
-			E_lam = digam + d*log(2) + log( m_W[k].det() );
-
-			E_pi = digamma(m_alpha[k]) - digamma(alpha_hat);
-
-			//gives ln(rho_nk)
-			post = E_pi + 0.5*E_lam - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam
-
-			post = exp(post);
-		
-			norm += post;
-			
-			//need to normalize
-			m_post.SetEntry(post, n, k);
-
-		}
-		post_norms.push_back(norm);
+	//E[ln(q(mu, lam))]
+	E_q_muLam = 0;
+	for(int k = 0; k < m_k; k++){
+		E_q_muLam += 0.5*( m_Elam[k] + m_dim/2.*log(m_betas[k]/(2*acos(-1))) - m_dim/2.  )
+		//TODO - subtract H[q(lam)] from above term
 
 	}
 
+	ret = E_p_all + E_p_Z + E_p_pi + E_p_muLam - E_q_Z - E_q_pi - E_q_muLam;
+
+*/
 
 
-
-
-
-
-
-
-
-} //end ELBO
+}; //end ELBO
 
 
 
