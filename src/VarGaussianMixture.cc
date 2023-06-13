@@ -98,7 +98,6 @@ void VarGaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void VarGaussianMixture::CalculatePosterior(){
-/*
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 
@@ -123,7 +122,7 @@ void VarGaussianMixture::CalculatePosterior(){
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*tmp.at(0,0);	
 
 			//gives ln(rho_nk)
-			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam
+			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
 			post = exp(post);
 		
 			norm += post;
@@ -141,7 +140,6 @@ void VarGaussianMixture::CalculatePosterior(){
 		for(int k = 0; k < m_k; k++)
 			m_post.SetEntry(m_post.at(n,k)/post_norms[k],n,k);
 
-*/
 };
 
 
