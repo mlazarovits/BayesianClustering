@@ -152,7 +152,7 @@ void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed
 //creates an empty matrix
 void Matrix::InitEmpty(){
 	if(m_entries.size() > 0){
-	//	cout << "Matrix already initialized." << endl;
+	//	cout << "Matrix already initialized: " << m_entries.size() << endl;
 		return;
 	}
 	for(int i = 0; i < m_row; i++){
