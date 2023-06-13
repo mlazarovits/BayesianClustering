@@ -212,7 +212,6 @@ void VarGaussianMixture::UpdateParameters(){
 		m_covs[k] = new_cov;
 	}
 
-/*
 
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
@@ -224,8 +223,8 @@ void VarGaussianMixture::UpdateParameters(){
 		//betas - eq. 10.60
 		m_betas[k] = m_beta0 + m_norms[k];
 	
-		//alphas - eq. 10.58
-		m_alphas[k] = m_alpha0 + m_norms[k];
+		//alphas - eq. 10.58 (all the same in vector)
+		m_alphas[k] = m_alpha0[0] + m_norms[k];
 
 		//nus - eq. 10.63
 		m_nus[k] = m_nu0 + m_norms[k];
@@ -261,12 +260,12 @@ void VarGaussianMixture::UpdateParameters(){
 		scaledS.mult(m_covs[k],m_norms[k]);
 		//add first two terms to last term
 		m_Ws[k].add(scaledS);
+		//add W0inv
 		m_Ws[k].add(m_W0inv);
 		//invert (calculated for W_k inverse)
 		m_Ws[k].invert(m_Ws[k]);
 
 	}
-*/
 };
 
 
