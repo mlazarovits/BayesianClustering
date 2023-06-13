@@ -66,7 +66,7 @@ Matrix::~Matrix(){
 //	}
 
 }
-
+//creates a random matrix
 void Matrix::InitRandom(double min, double max, unsigned long long seed){
 	if(m_entries.size() < 0){
 		cout << "Need dimensions to init." << endl;
@@ -82,6 +82,7 @@ void Matrix::InitRandom(double min, double max, unsigned long long seed){
 	}		
 }
 
+//creates a symmetric random matrix
 void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
 	if(m_entries.size() < 0){
 		cout << "Need dimensions to init." << endl;
@@ -105,6 +106,9 @@ void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
 		}
 	}	
 }
+
+
+//creates a random symmetric positive definite matrix
 void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed){
 	if(m_entries.size() < 0){
 		cout << "Need dimensions to init." << endl;
@@ -144,6 +148,8 @@ void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed
 //		}
 //	}
 }
+
+//creates an empty matrix
 void Matrix::InitEmpty(){
 	if(m_entries.size() > 0){
 	//	cout << "Matrix already initialized." << endl;
@@ -158,7 +164,7 @@ void Matrix::InitEmpty(){
 
 }
 
-
+//creates the identity matrix
 void Matrix::InitIdentity(){
 	if(m_entries.size() < 0){
 		cout << "Need dimensions to init." << endl;
@@ -601,8 +607,8 @@ void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
 
 double Matrix::trace(){
 	double tr = 0;
-	for(int i = 0; i < m_rows; i++){
-		for(int j = 0; j < m_cols; j++){
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
 			if(i == j)
 				tr += m_entries[i][j];
 		}
