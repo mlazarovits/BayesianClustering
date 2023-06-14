@@ -13,9 +13,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		void Initialize(unsigned long long seed = 111);
 
 		void InitAlpha(double a){
-			m_alpha0.clear();
-			for(int k = 0; k < m_k; k++)
-				m_alpha0.push_back(a);
+			m_alpha0 = a;
 		}
 
 
@@ -35,8 +33,8 @@ class VarGaussianMixture : public BasePDFMixture{
 	private:
 		//hyperparameters
 		//initial values of parameters for k clusters
-		vector<double> m_betas0, m_nus0, m_alphas0;
-		vector<Matrix> m_Ws0, m_Ws0inv, m_means0, m_meanBetas0;	
+		double m_beta0, m_nu0, m_alpha0;
+		Matrix m_W0, m_W0inv, m_mean0, m_meanBeta0;	
 	
 		//parameters
 		//k concentrations parameters for each Dirichlet prior on mixing coeff
@@ -56,9 +54,9 @@ class VarGaussianMixture : public BasePDFMixture{
 		//k normalization factors
 		vector<double> m_norms;
 		//k weighted means - dx1 each
-		vector<Matrix> m_mus;
+		vector<Matrix> m_xbars;
 		//k weighted covariance matrices - dxd each
-		vector<Matrix> m_covs;
+		vector<Matrix> m_Ss;
 
 		//expectation values - used in ELBO + calculated in an earlier step
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)

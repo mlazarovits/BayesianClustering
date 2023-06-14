@@ -48,6 +48,15 @@ double BasePDFMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov)
 
 
 
+double BasePDFMixture::Dir_C(double alpha, int k){
+	double alpha_hat = k*alpha;
+	
+	double norm = pow(tgamma(alpha),k);
+	return tgamma(alpha_hat)/norm;
+
+};
+
+
 double BasePDFMixture::Dir_C(vector<double> alphas){
 	double alpha_hat = 0;
 	int k = (int)alphas.size();

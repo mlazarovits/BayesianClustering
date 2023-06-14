@@ -26,37 +26,31 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 
 	//alpha > 0
-	for(int k = 0; k < m_k; k++){
-		m_alphas0.push_back(1);
-	}
+		//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
+	m_alpha0 = 1;
 	
+	//beta > 0
 	RandomSample rs;
 	rs.SetRange(0.,20.);
-	//beta > 0
-	for(int k = 0; k < m_k; k++){
-		m_betas0.push_back(rs.SampleFlat());
-	}
+	m_beta0 = rs.SampleFlat();
+	
 	//m > 0
-	for(int k = 0; k < m_k; k++){
-		m_means0.push_back(Matrix(m_dim,1));
-		m_means0[k].InitRandom();
-		m_meanBetas0.push_back(Matrix(m_dim, 1));
-		m_meanBetas0[k].mult(m_means0[k], m_betas0[k]);
-	}
+	m_mean0 = Matrix(m_dim,1);
+	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
+	m_mean0.InitEmpty();
+	m_meanBeta0 = Matrix(m_dim, 1);
+	m_meanBeta0.mult(m_mean0, m_beta0);
+	
 	//W <- R in dxd space - is a covariance matrix
-	for(int k = 0; k < m_k; k++){
-		m_Ws0.push_back(Matrix(m_dim, m_dim));
-		m_Ws0[k].InitRandomSymPosDef();
-		//need W0 inverse for parameter calculation
-		m_Ws0inv.push_back(Matrix(m_dim,m_dim));
-		m_Ws0inv.invert(m_Ws0);
-	}
+	m_W0 = Matrix(m_dim, m_dim);
+	m_W0.InitRandomSymPosDef();
+	//need W0 inverse for parameter calculation
+	m_W0inv = Matrix(m_dim,m_dim);
+	m_W0inv.invert(m_W0);
 
 	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, 20.);
-	for(int k = 0; k < m_k; k++){
-		m_nus0.push_back(rs.SampleFlat());
-	}
+	m_nu0 = rs.SampleFlat();
 	m_post.SetDims(m_n, m_k);
 	
 
@@ -67,20 +61,41 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_Epi.push_back(0.);
 	}
 
-	//init parameters with sub0 values
+	//init parameters randomly
+	rs.SetRange(0.,1.);
 	for(int k = 0; k < m_k; k++){
-		m_alphas.push_back(m_alphas0[k]);
-		m_betas.push_back(m_betas0[k]);
-		m_means.push_back(m_means0[k]);
-		m_Ws.push_back(m_Ws0[k]);
-		m_nus.push_back(m_nus0[k]);
+		m_alphas.push_back(m_alpha0);
 	}
+
+	rs.SetRange(0.,20.);
+	for(int k = 0; k < m_k; k++){
+		m_betas.push_back(rs.SampleFlat());
+	}
+	
+	Matrix mat;
+	double mean_lower = m_x.min()-0.1;
+	double mean_upper = m_x.max()+0.1;
+	for(int k = 0; k < m_k; k++){
+		mat = Matrix(m_dim, 1);
+		mat.InitRandom(mean_lower, mean_upper, seed+k);
+		m_means.push_back(mat);
+		mat.clear();
+	}
+	for(int k = 0; k < m_k; k++){
+		mat = Matrix(m_dim, m_dim);
+		mat.InitIdentity();
+		m_Ws.push_back(mat);
+		mat.clear();
+	}
+	rs.SetRange(0.,20.);
+	for(int k = 0; k < m_k; k++)
+		m_nus.push_back(rs.SampleFlat());
 
 	//init responsibility statistics
 	for(int k = 0; k < m_k; k++){
 		m_norms.push_back(0.);
-		m_mus.push_back(Matrix(m_dim,1));
-		m_covs.push_back(Matrix(m_dim,m_dim));
+		m_xbars.push_back(Matrix(m_dim,1));
+		m_Ss.push_back(Matrix(m_dim,m_dim));
 	}
 
 
@@ -184,32 +199,32 @@ cout << "UPDATE PARAMETERS - M STEP" << endl;
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices
 	for(int k = 0; k < m_k; k++){
-		//clear and overwrite m_mu[k]
-		m_mus[k].clear();
-		m_mus[k].InitEmpty();
+		//clear and overwrite m_xbar[k]
+		m_xbars[k].clear();
+		m_xbars[k].InitEmpty();
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
 			Matrix x = Matrix(m_x.at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
-			m_mus[k].add(x);
+			m_xbars[k].add(x);
 		}
 		//normalized by sum of posteriors for cluster k
-		m_mus[k].mult(m_mus[k],1./m_norms[k]);
+		m_xbars[k].mult(m_xbars[k],1./m_norms[k]);
 	}
 	
 	//this is for S_k (eq.10.53) - k dxd matrices
 	for(int k = 0; k < m_k; k++){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
-		Matrix new_cov = Matrix(m_dim,m_dim);
+		Matrix new_S = Matrix(m_dim,m_dim);
 		for(int n = 0; n < m_n; n++){
-			Matrix cov_k = Matrix(m_dim, m_dim);
+			Matrix S_k = Matrix(m_dim, m_dim);
 
 			//construct x - mu
 			Matrix x_mat = Matrix(m_x.at(n).Value());
 			Matrix x_min_mu;
-			x_min_mu.mult(m_mus[k],-1.);
+			x_min_mu.mult(m_xbars[k],-1.);
 			x_min_mu.add(x_mat);
 			
 			//transpose x - mu
@@ -217,18 +232,18 @@ cout << "UPDATE PARAMETERS - M STEP" << endl;
 			x_min_muT.transpose(x_min_mu);
 			
 			//(x_n - mu_k)*(x_n - mu_k)T
-			cov_k.mult(x_min_mu,x_min_muT);
+			S_k.mult(x_min_mu,x_min_muT);
 			
 			//weighting by posterior gamma(z_nk)
-			cov_k.mult(cov_k,m_post.at(n,k));
+			S_k.mult(S_k,m_post.at(n,k));
 			
 			//sum over n
-			new_cov.add(cov_k);
+			new_S.add(S_k);
 		}	
 		//normalize by N_k
-		new_cov.mult(new_cov,1./m_norms[k]);
-		//overwrites m_covs[k]
-		m_covs[k] = new_cov;
+		new_S.mult(new_S,1./m_norms[k]);
+		//overwrites m_Ss[k]
+		m_Ss[k] = new_S;
 	}
 
 
@@ -240,23 +255,23 @@ cout << "UPDATE PARAMETERS - M STEP" << endl;
 	double prefactor;
 	for(int k = 0; k < m_k; k++){
 		//betas - eq. 10.60
-		m_betas[k] = m_betas0[k] + m_norms[k];
+		m_betas[k] = m_beta0 + m_norms[k];
 	
 		//alphas - eq. 10.58 (all the same in vector)
-		m_alphas[k] = m_alpha0[k] + m_norms[k];
-	cout << "old nu: " << m_nus[k] << endl;
-		cout << "N_k: " << m_norms[k] << endl;
+		m_alphas[k] = m_alpha0 + m_norms[k];
+	//cout << "old nu: " << m_nus[k] << endl;
+	//	cout << "N_k: " << m_norms[k] << endl;
 		//nus - eq. 10.63
-		m_nus[k] = m_nus0[k] + m_norms[k];
-	cout << "new nu: " << m_nus[k] << endl;
+		m_nus[k] = m_nu0 + m_norms[k];
+	//cout << "new nu: " << m_nus[k] << endl;
 
 		//means - eq. 10.61
 		m_means[k].clear();
 		m_means[k].InitEmpty();
 		//N_k*bar{x}_k
-		m_means[k].mult(m_mus[k],m_norms[k]);
+		m_means[k].mult(m_xbars[k],m_norms[k]);
 		//m_meanBeta0 + N_k*bar{x}_k
-		m_means[k].add(m_meanBetas0[k]);
+		m_means[k].add(m_meanBeta0);
 		//normalize by 1/beta
 		m_means[k].mult(m_means[k],1./m_betas[k]);
 
@@ -267,21 +282,21 @@ cout << "UPDATE PARAMETERS - M STEP" << endl;
 		m_Ws[k].InitEmpty();		
 		//bar{x}_k - m0
 		Matrix x_min_mean = Matrix(m_dim, 1);
-		x_min_mean.mult(m_means0[k],-1.);
-		x_min_mean.add(x_min_mean,m_mus[k]);
+		x_min_mean.mult(m_mean0,-1.);
+		x_min_mean.add(x_min_mean,m_xbars[k]);
 		Matrix x_min_meanT = Matrix(1, m_dim);
 		x_min_meanT.transpose(x_min_mean);
 		//(bar{x}_k - m0)(bar{x}_k - m0)T
 		m_Ws[k].mult(x_min_mean, x_min_meanT);
-		prefactor = m_betas0[k]*m_norms[k]/(m_betas0[k] + m_norms[k]);
+		prefactor = m_beta0*m_norms[k]/(m_beta0 + m_norms[k]);
 		m_Ws[k].mult(m_Ws[k], prefactor);
 		//N_k*S_k
 		Matrix scaledS = Matrix(m_dim, m_dim);
-		scaledS.mult(m_covs[k],m_norms[k]);
+		scaledS.mult(m_Ss[k],m_norms[k]);
 		//add first two terms to last term
 		m_Ws[k].add(scaledS);
 		//add W0inv
-		m_Ws[k].add(m_Ws0inv[k]);
+		m_Ws[k].add(m_W0inv);
 		//invert (calculated for W_k inverse)
 		m_Ws[k].invert(m_Ws[k]);
 
@@ -305,20 +320,20 @@ double VarGaussianMixture::EvalLogL(){
 	E_p_all = 0;
 	for(int k = 0; k < m_k; k++){
 		//(x_n - m_k)
-		Matrix mu_min_m = Matrix(m_dim,1);
-		mu_min_m.mult(m_means[k],-1.);
-		mu_min_m.add(m_mus[k]);		
-		Matrix mu_min_mT = Matrix(1, m_dim);
-		mu_min_mT.transpose(mu_min_m);
+		Matrix xbar_min_m = Matrix(m_dim,1);
+		xbar_min_m.mult(m_means[k],-1.);
+		xbar_min_m.add(m_xbars[k]);		
+		Matrix xbar_min_mT = Matrix(1, m_dim);
+		xbar_min_mT.transpose(xbar_min_m);
 		//(x_n - m_k)T*W_k*(x_n - m_k)
-		Matrix muT_x_W = Matrix(1,m_dim);
-		muT_x_W.mult(mu_min_mT,m_Ws[k]);
+		Matrix xbarT_x_W = Matrix(1,m_dim);
+		xbarT_x_W.mult(xbar_min_mT,m_Ws[k]);
 		Matrix full = Matrix(1,1);
-		full.mult(muT_x_W,mu_min_m);
+		full.mult(xbarT_x_W,xbar_min_m);
 		//tr(S_k*W_k)
 		//S_k*W_k = dxd matrix
 		Matrix tmp_S_W = Matrix(m_dim, m_dim);
-		tmp_S_W.mult(m_covs[k],m_Ws[k]);
+		tmp_S_W.mult(m_Ss[k],m_Ws[k]);
 			
 		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*full.at(0,0) - m_dim*log(2*acos(-1)));
 
@@ -335,8 +350,8 @@ double VarGaussianMixture::EvalLogL(){
 	E_p_pi = 0;
 	for(int k = 0; k < m_k; k++)
 		E_p_pi += m_Epi[k];
-	E_p_pi *= (m_alpha0[0] - 1);
-	E_p_pi += log( Dir_C(m_alpha0) );
+	E_p_pi *= (m_alpha0 - 1);
+	E_p_pi += log( Dir_C(m_alpha0,m_k) );
 
 
 	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))

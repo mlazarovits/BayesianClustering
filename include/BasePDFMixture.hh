@@ -45,6 +45,8 @@ class BasePDFMixture{
 
 
 		//Dirichlet coefficient (eq. B.23)
+		double Dir_C(double alpha, int k);
+		//Dirichlet coefficient (eq. B.23)
 		double Dir_C(vector<double> alphas);
 
 		//Wishart entropy normalization (eq. B.79)
