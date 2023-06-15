@@ -1,5 +1,5 @@
 #include "ClusterViz2D.hh"
-#include "GaussianMixture.hh"
+#include "BasePDFMixture.hh"
 
 #include <TColor.h>
 #include <TROOT.h>
@@ -16,7 +16,17 @@
 using std::string;
 
 //check for 2D data
-ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname) : 
+ClusterViz2D::ClusterViz2D(BasePDFMixture* model, string fname) : 
+	ClusterVizBase{ model, fname }{
+	if(m_model->GetData().Dim() != 2){
+		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+		return;
+	}
+	m_post = m_model->GetPosterior();
+	m_fname = fname;
+}
+/*
+ClusterViz2D::ClusterViz2D(VarGaussianMixture* model, string fname) : 
 	ClusterVizBase{ model, fname }{
 	if(m_model->GetData().Dim() != 2){
 		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
@@ -26,8 +36,7 @@ ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname) :
 	m_fname = fname;
 	cout << "Writing plot to: " << m_fname << ".root" << endl;
 }
-
-
+*/
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
@@ -83,7 +92,9 @@ void ClusterViz2D::AddPlot(string plotName){
 
 	//draw data	
 	graphPad->cd();
+	gr_data->GetZaxis()->SetRangeUser(0.,1.);
 	gr_data->Draw("PCOLZ"); //PCOLZ draws color palette
+	gr_data->GetZaxis()->SetRangeUser(0.,1.);
 	graphPad->SetTheta(90);
 	graphPad->SetPhi(-360);	
 	circlePad->cd();
@@ -152,6 +163,7 @@ void ClusterViz2D::AddPlot(string plotName){
 
 
 void ClusterViz2D::Write(){
+	cout << "Writing plot(s) to: " << m_fname << ".root" << endl;
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_model->GetNClusters());
@@ -160,11 +172,6 @@ void ClusterViz2D::Write(){
 	}
 
 	f->Close();
-
-
-
-
-
 
 }
 

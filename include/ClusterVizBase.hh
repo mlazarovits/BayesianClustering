@@ -3,7 +3,8 @@
 
 #include <TGraph.h>
 #include <TCanvas.h>
-#include "GaussianMixture.hh"
+#include "BasePDFMixture.hh"
+//#include "GaussianMixture.hh"
 #include "PointCollection.hh"
 #include <string>
 #include <vector>
@@ -15,7 +16,7 @@ class ClusterVizBase{
 	public:
 		ClusterVizBase(){ 
 		};
-		ClusterVizBase(GaussianMixture* model, string fname = "test"){
+		ClusterVizBase(BasePDFMixture* model, string fname = "test"){
 			m_model = model;
 			m_fname = fname;
 			m_points = m_model->GetData();
@@ -36,7 +37,7 @@ class ClusterVizBase{
 
 	
 	protected:
-		GaussianMixture* m_model;
+		BasePDFMixture* m_model;
 		Matrix m_post;
 		PointCollection m_points;	
 		int m_n; //number of points

@@ -87,7 +87,6 @@ double BasePDFMixture::Wish_lnB(Matrix W, double nu){
 
 
 double BasePDFMixture::Wish_H(Matrix W, double nu){
-	cout << "	Wishart H" << endl;
 	int d = W.GetDims()[0];
 	double E_lam = 0;
 	double det = W.det();

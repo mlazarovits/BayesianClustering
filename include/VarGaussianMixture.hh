@@ -24,7 +24,6 @@ class VarGaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 	
-		//TODO - UPDATE - fill vectors with estimated parameters
 		void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
 
 	protected:

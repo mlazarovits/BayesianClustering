@@ -122,6 +122,7 @@ int main(int argc, char *argv[]){
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
+/*
 cout << "\n" << endl;
 cout << "START ITERATION 1" << endl;
 //iteration 1
@@ -131,13 +132,10 @@ cout << "START ITERATION 1" << endl;
 	//M step
 	vgmm.UpdateParameters();
 	double elbo = vgmm.EvalLogL();
-cout << "ELBO - iteration 1: " << elbo << endl;
-/*
 	int it = 0;
 	cv2D.AddPlot("it"+std::to_string(it));
 
 
-cout << "START ITERATION 2" << endl;	
 //iteration 2
 	it++;
 	//E step
@@ -147,13 +145,11 @@ cout << "START ITERATION 2" << endl;
 	//M step
 	vgmm.UpdateParameters();
 	elbo = vgmm.EvalLogL();
+cout << "ELBO - iteration 2: " << elbo << endl;
 	cv2D.AddPlot("it"+std::to_string(it));
 	cv2D.Write();
-cout << "ELBO - iteration 2: " << elbo << endl;
-
 */
 
-/*
 	//loop
 	int nIts = 50;
 	double dLogL, newLogL, oldLogL;
@@ -164,14 +160,14 @@ cout << "ELBO - iteration 2: " << elbo << endl;
 		oldLogL = gmm.EvalLogL();
 		
 		//E step
-		gmm.CalculatePosterior();
+		vgmm.CalculatePosterior();
 		//M step
-		gmm.UpdateParameters();
+		vgmm.UpdateParameters();
 		
 		//Plot
-		cv2D.UpdatePosterior();
-		cv2D.AddPlot("it"+std::to_string(it));
-		cv2D.Write();
+	//	cv2D.UpdatePosterior();
+	//	cv2D.AddPlot("it"+std::to_string(it));
+	//	cv2D.Write();
 		
 		//Check for convergence
 		cout << "iteration #" << it << " log-likelihood: " << gmm.EvalLogL() << endl;
@@ -185,7 +181,7 @@ cout << "ELBO - iteration 2: " << elbo << endl;
 		
 	}
 	vector<Matrix> mus, covs;
-	gmm.GetParameters(mus,covs);
+	vgmm.GetParameters(mus,covs);
 	
 	cout << "Estimated parameters" << endl;
 	cout << "mean 1" << endl;
@@ -199,5 +195,4 @@ cout << "ELBO - iteration 2: " << elbo << endl;
 	cout << "covs" << endl;
 	covs[1].Print();
 
-*/
 }

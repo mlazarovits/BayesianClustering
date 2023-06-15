@@ -65,7 +65,6 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 	rs.SetRange(m_dim-1,m_dim+2);
 	for(int k = 0; k < m_k; k++){
 		m_alphas.push_back(rs.SampleFlat());
-		cout << "k: " << k << " first alpha: " << m_alphas[k] << endl; 
 	}
 
 	for(int k = 0; k < m_k; k++){
@@ -153,17 +152,16 @@ void VarGaussianMixture::CalculatePosterior(){
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
-		if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
+//		if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
-			if(n == 0) cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " post: " << post << " exp(post): " << exp(post) << endl;	
+//			if(n == 0) cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " post: " << post << " exp(post): " << exp(post) << endl;	
 			post = exp(post);
 			//if(n < 10) cout << "k: " << k << " n: " << n << " post: " << post << endl;
 			norm += post;
 			//need to normalize
 			m_post.SetEntry(post, n, k);
 		}
-		if(n == 0) cout << "n: " << n << " norm: " << norm << endl;
 		post_norms.push_back(norm);
 	}
 //cout << "posterior pre-norm" << endl;	
@@ -183,16 +181,14 @@ void VarGaussianMixture::CalculatePosterior(){
 
 //M-step
 void VarGaussianMixture::UpdateParameters(){
-cout << "UPDATE PARAMETERS - M STEP" << endl;
+//cout << "UPDATE PARAMETERS - M STEP" << endl;
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			m_norms[k] += m_post.at(n,k);
-			if(n <10 ) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << endl;
 		}
-		cout << "k: " << k << " norm_k: " << m_norms[k] << endl;
 	}
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices
@@ -257,7 +253,6 @@ cout << "UPDATE PARAMETERS - M STEP" << endl;
 	
 		//alphas - eq. 10.58 (all the same in vector)
 		m_alphas[k] = m_alpha0 + m_norms[k];
-		cout << "k: " << k << " new alpha: " << m_alphas[k] << " norm: " << m_norms[k] << endl;
 	//cout << "old nu: " << m_nus[k] << endl;
 	//	cout << "N_k: " << m_norms[k] << endl;
 		//nus - eq. 10.63
@@ -381,11 +376,9 @@ double VarGaussianMixture::EvalLogL(){
 	//E[ln(q(pi))]
 	E_q_pi = 0;
 	for(int k = 0; k < m_k; k++){
-		cout << "k: " << k << " alpha_k: " << m_alphas[k] << " Epi_k: " << m_Epi[k] << endl;
 		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
 	}
 	double dir_norm = Dir_lnC(m_alphas);
-cout << "Dir norm: " << dir_norm << " log: " << log(dir_norm) << endl;
 	E_q_pi += dir_norm;
 	
 	//E[ln(q(mu, lam))]
