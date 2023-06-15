@@ -15,7 +15,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname;// = "test";
+	string fname = "test";
 	bool hprint = false;
 	//dimensionality
 	int N = 2;
@@ -128,13 +128,13 @@ cout << "\n" << endl;
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
 	vgmm.AddData(pc);
-	ClusterViz2D cv2D = ClusterViz2D(&vgmm);
+	ClusterViz2D cv2D = ClusterViz2D(&vgmm, fname);
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
 	//loop
 	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.01;
+	double LogLThresh = 0.0001;
 	double it = 0;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
@@ -155,10 +155,8 @@ cout << "\n" << endl;
 			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
 			return -1;
 		}
-		cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
-cout << "\n" << endl;
 		dLogL = fabs(oldLogL - newLogL);
-		cout << "dLogL: " << dLogL << endl;
+		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;

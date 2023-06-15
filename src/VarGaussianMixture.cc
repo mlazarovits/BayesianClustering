@@ -133,7 +133,7 @@ void VarGaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void VarGaussianMixture::CalculatePosterior(){
-cout << "CALCULATE POSTERIOR - E STEP" << endl;
+//cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 	double E_mu_lam, post, norm;
@@ -155,12 +155,12 @@ cout << "CALCULATE POSTERIOR - E STEP" << endl;
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
-		if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
+		//if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
-			if(n == 0){ cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << " W: " <<  endl;
-			m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_x.at(n).Print();
-			}	
+		//	if(n == 0){ cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << " W: " <<  endl;
+		//	m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_x.at(n).Print();
+			//}	
 			post = exp(post);
 			norm += post;
 			//need to normalize
@@ -174,7 +174,8 @@ cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			m_post.SetEntry(m_post.at(n,k)/post_norms[n],n,k);
-			if(n == 0) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
+		//uncomment here to check posterior values
+		//	if(n == 0) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
 //cout << "posterior normed" << endl;	
@@ -260,7 +261,7 @@ void VarGaussianMixture::CalculateRStatistics(){
 
 //M-step
 void VarGaussianMixture::UpdateParameters(){
-cout << "UPDATE PARAMETERS - M STEP" << endl;
+//cout << "UPDATE PARAMETERS - M STEP" << endl;
 	CalculateRStatistics();
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
