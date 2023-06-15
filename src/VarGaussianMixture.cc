@@ -61,10 +61,9 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_Epi.push_back(0.);
 	}
 
-	//init parameters randomly
-	rs.SetRange(m_dim-1,m_dim+2);
+	//init parameters from alpha0
 	for(int k = 0; k < m_k; k++){
-		m_alphas.push_back(rs.SampleFlat());
+		m_alphas.push_back(m_alpha0);
 	}
 
 	for(int k = 0; k < m_k; k++){
@@ -131,6 +130,7 @@ void VarGaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void VarGaussianMixture::CalculatePosterior(){
+cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 	double E_mu_lam, post, norm;
@@ -152,10 +152,10 @@ void VarGaussianMixture::CalculatePosterior(){
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
-//		if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
+		if(n == 30){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
-//			if(n == 0) cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " post: " << post << " exp(post): " << exp(post) << endl;	
+			if(n == 30) cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << endl;	
 			post = exp(post);
 			//if(n < 10) cout << "k: " << k << " n: " << n << " post: " << post << endl;
 			norm += post;
@@ -181,12 +181,13 @@ void VarGaussianMixture::CalculatePosterior(){
 
 //M-step
 void VarGaussianMixture::UpdateParameters(){
-//cout << "UPDATE PARAMETERS - M STEP" << endl;
+cout << "UPDATE PARAMETERS - M STEP" << endl;
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms[k] = 0;
 		for(int n = 0; n < m_n; n++){
+			if(n == 30 && isnan(m_post.at(n,k))) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 			m_norms[k] += m_post.at(n,k);
 		}
 	}
@@ -249,8 +250,9 @@ void VarGaussianMixture::UpdateParameters(){
 	double prefactor;
 	for(int k = 0; k < m_k; k++){
 		//betas - eq. 10.60
+cout << "k: " << k << " old beta: " << m_betas[k] << endl;	
 		m_betas[k] = m_beta0 + m_norms[k];
-	
+cout << "k: " << k << " new beta: " << m_betas[k] << " norm: " << m_norms[k] << endl;	
 		//alphas - eq. 10.58 (all the same in vector)
 		m_alphas[k] = m_alpha0 + m_norms[k];
 	//cout << "old nu: " << m_nus[k] << endl;
@@ -321,7 +323,7 @@ double VarGaussianMixture::EvalLogL(){
 		//S_k*W_k = dxd matrix
 		Matrix tmp_S_W = Matrix(m_dim, m_dim);
 		tmp_S_W.mult(m_Ss[k],m_Ws[k]);
-			
+	cout << "k: " << k << " norm: " << m_norms[k] << " Elam: " << m_Elam[k] << " m_dim: " << m_dim << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " trace: " << tmp_S_W.trace() << " full: " << full.at(0,0) << endl;		
 		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*full.at(0,0) - m_dim*log(2*acos(-1)));
 
 	}
@@ -370,9 +372,10 @@ double VarGaussianMixture::EvalLogL(){
 	//E[ln(q(Z)]
 	E_q_Z = 0;
 	for(int n = 0; n < m_n; n++)
-		for(int k = 0; k < m_k; k++)
-			E_q_Z += m_post.at(n,k)*log(m_post.at(n,k));	
-
+		for(int k = 0; k < m_k; k++){
+			if(m_post.at(n,k) == 0) E_q_Z += 0;	
+			else E_q_Z += m_post.at(n,k)*log(m_post.at(n,k));	
+		}
 	//E[ln(q(pi))]
 	E_q_pi = 0;
 	for(int k = 0; k < m_k; k++){
@@ -393,7 +396,6 @@ double VarGaussianMixture::EvalLogL(){
 		E_q_muLam += 0.5*( m_Elam[k] + m_dim/2.*log(m_betas[k]/(2*acos(-1))) - m_dim/2. );
 		E_q_muLam -= H;
 	}
-/*
 	cout << "E_p_all: " << E_p_all << endl;
 	cout << "E_p_Z: " << E_p_Z << endl;
 	cout << "E_p_pi: " << E_p_pi << endl;
@@ -401,7 +403,9 @@ double VarGaussianMixture::EvalLogL(){
 	cout << "E_q_Z: " <<  E_q_Z << endl;
 	cout << "E_q_pi: " << E_q_pi << endl;
 	cout << "E_q_muLam: " <<  E_q_muLam << endl;
-*/
+
+
+
 	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam - E_q_Z - E_q_pi - E_q_muLam;
 	
 

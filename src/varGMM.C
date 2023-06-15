@@ -2,7 +2,7 @@
 #include "RandomSample.hh"
 #include "ClusterViz2D.hh"
 #include <iostream>
-
+#include <cmath>
 
 #include <TStyle.h>
 #include <TAxis.h>
@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
 	//n data points
 	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
+	int nIts = 50; //number of iterations to run EM algorithm
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -37,12 +38,12 @@ int main(int argc, char *argv[]){
      			i++;
     	 		fname = string(argv[i]);
    		}
-		if(strncmp(argv[i],"-n", 2) == 0){
+		if(strncmp(argv[i],"-n", 3) == 0){
      			i++;
     	 		Nsample = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"--nSamples", 10) == 0){
-     			i++;
+			i++;
     	 		Nsample = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-d", 2) == 0){
@@ -61,16 +62,25 @@ int main(int argc, char *argv[]){
      			i++;
     	 		k = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--nIterations", 13) == 0){
+     			i++;
+    	 		nIts = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"-it", 5) == 0){
+			i++;
+    	 		nIts = std::atoi(argv[i]);
+   		}
 	
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
-   		cout << "   --help(-h)            print options" << endl;
-   		cout << "   --ouput(-o) [file]    output root file (in test/)" << endl;
-   		cout << "   --nSamples(-n) [n]    sets number of data points to simulate per cluster (default = 500)" << endl;
-   		cout << "   --nDims(-d) [d]       sets dimensionality of data (default = 2)" << endl;
-   		cout << "   --nClusters(-k) [k]   sets number of clusters in GMM (default = 2)" << endl;
+   		cout << "   --help(-h)                    print options" << endl;
+   		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
+   		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
+   		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
+   		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
+   		cout << "   --nIterations(-it) [nIts]   sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -81,6 +91,7 @@ int main(int argc, char *argv[]){
 	
 	
 	
+cout << nIts << " iterations " << Nsample << " samples" << endl;
 	
 	/////SIMULATE DATA//////
 	//create symmetric matrix
@@ -112,7 +123,7 @@ int main(int argc, char *argv[]){
 	mu2.Print();
 	cout << "cov 1" << endl;
 	sigma2.Print();
-	
+cout << "\n" << endl;	
 	
 	
 	//create GMM model
@@ -122,42 +133,14 @@ int main(int argc, char *argv[]){
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
-/*
-cout << "\n" << endl;
-cout << "START ITERATION 1" << endl;
-//iteration 1
-	//E step
-	vgmm.CalculatePosterior();
-	cv2D.UpdatePosterior();
-	//M step
-	vgmm.UpdateParameters();
-	double elbo = vgmm.EvalLogL();
-	int it = 0;
-	cv2D.AddPlot("it"+std::to_string(it));
-
-
-//iteration 2
-	it++;
-	//E step
-	vgmm.CalculatePosterior();
-	cv2D.UpdatePosterior();
-	cv2D.UpdatePosterior();
-	//M step
-	vgmm.UpdateParameters();
-	elbo = vgmm.EvalLogL();
-cout << "ELBO - iteration 2: " << elbo << endl;
-	cv2D.AddPlot("it"+std::to_string(it));
-	cv2D.Write();
-*/
-
 	//loop
-	int nIts = 50;
 	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.0005;
+	double LogLThresh = 0.0001;
 	double it = 0;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
-		oldLogL = gmm.EvalLogL();
+		cout << "eval old logL" << endl;
+		oldLogL = vgmm.EvalLogL();
 		
 		//E step
 		vgmm.CalculatePosterior();
@@ -170,8 +153,13 @@ cout << "ELBO - iteration 2: " << elbo << endl;
 	//	cv2D.Write();
 		
 		//Check for convergence
-		cout << "iteration #" << it << " log-likelihood: " << gmm.EvalLogL() << endl;
-		newLogL = gmm.EvalLogL();
+cout << "eval new logL" << endl;
+		newLogL = vgmm.EvalLogL();
+		if(isnan(newLogL)){
+			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
+			return -1;
+		}
+		cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
 		dLogL = fabs(oldLogL - newLogL);
 		cout << "dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
@@ -195,4 +183,5 @@ cout << "ELBO - iteration 2: " << elbo << endl;
 	cout << "covs" << endl;
 	covs[1].Print();
 
+cout << nIts << " iterations " << Nsample << " samples" << endl;
 }
