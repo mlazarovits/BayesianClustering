@@ -29,6 +29,8 @@ class VarGaussianMixture : public BasePDFMixture{
 	protected:
 		//pre-E step (don't have a million for loops)
 		void CalculateExpectations();
+		//pre-M step
+		void CalculateRStatistics();
 	private:
 		//hyperparameters
 		//initial values of parameters for k clusters

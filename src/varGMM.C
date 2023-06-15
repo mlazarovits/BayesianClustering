@@ -91,7 +91,6 @@ int main(int argc, char *argv[]){
 	
 	
 	
-cout << nIts << " iterations " << Nsample << " samples" << endl;
 	
 	/////SIMULATE DATA//////
 	//create symmetric matrix
@@ -124,7 +123,7 @@ cout << nIts << " iterations " << Nsample << " samples" << endl;
 	cout << "cov 1" << endl;
 	sigma2.Print();
 cout << "\n" << endl;	
-	
+
 	
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
@@ -135,11 +134,10 @@ cout << "\n" << endl;
 	vgmm.Initialize();
 	//loop
 	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.0001;
+	double LogLThresh = 0.01;
 	double it = 0;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
-		cout << "eval old logL" << endl;
 		oldLogL = vgmm.EvalLogL();
 		
 		//E step
@@ -148,18 +146,17 @@ cout << "\n" << endl;
 		vgmm.UpdateParameters();
 		
 		//Plot
-	//	cv2D.UpdatePosterior();
-	//	cv2D.AddPlot("it"+std::to_string(it));
-	//	cv2D.Write();
+		cv2D.UpdatePosterior();
+		cv2D.AddPlot("it"+std::to_string(it));
 		
 		//Check for convergence
-cout << "eval new logL" << endl;
 		newLogL = vgmm.EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
 			return -1;
 		}
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
+cout << "\n" << endl;
 		dLogL = fabs(oldLogL - newLogL);
 		cout << "dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
@@ -168,6 +165,7 @@ cout << "eval new logL" << endl;
 		}
 		
 	}
+	cv2D.Write();
 	vector<Matrix> mus, covs;
 	vgmm.GetParameters(mus,covs);
 	
@@ -183,5 +181,5 @@ cout << "eval new logL" << endl;
 	cout << "covs" << endl;
 	covs[1].Print();
 
-cout << nIts << " iterations " << Nsample << " samples" << endl;
+
 }
