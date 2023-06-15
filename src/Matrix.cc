@@ -11,7 +11,6 @@ using std::endl;
 
 Matrix::Matrix(){
 	_square = true;
-	_id = false;
 	m_row = 0;
 	m_col = 0;
 }
@@ -20,7 +19,6 @@ Matrix::Matrix(){
 Matrix::Matrix(int row, int col){
 	m_row = row;
 	m_col = col;
-	_id = false;
 	if(m_row == m_col) _square = true;
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
@@ -33,7 +31,6 @@ Matrix::Matrix(int row, int col){
 Matrix::Matrix(vector<double> in){
 	m_row = (int)in.size();
 	m_col = 1;
-	_id = false;
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
 		for(int j = 0; j < m_col; j++){
@@ -49,7 +46,6 @@ Matrix::Matrix(const Matrix& mat){
 	m_col = mat.GetDims()[1];
 
 	_square = mat.square();
-	_id = mat.identity();
 
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
@@ -178,7 +174,6 @@ void Matrix::InitIdentity(){
 				m_entries[i][j] = 0.;
 		}
 	}	
-	_id = true;
 
 }
 
@@ -223,10 +218,6 @@ double Matrix::det(int n) const{
 	if(!_square){
 		cout << "Error: non-square matrix, cannot calculate determinant." << m_row << " " << m_col << endl;
 		return -999;
-	}
-	//det(I) = 1
-	if(_id){
-		return 1.;
 	}
 	if( n == 0){
 		n = m_row;
@@ -291,9 +282,9 @@ void Matrix::adjoint(const Matrix& mat){
 	}
 }
 
-
+//invert mat and store in this
 void Matrix::invert(const Matrix& mat){
-	// Find determinant of m_entries[][]
+	cout << "Invert" << endl;
 	if(!mat.square()){
 		cout << "Error: non-square matrix, cannot calculate inverse." << m_row << " " << m_col << endl;
 		return;
@@ -302,11 +293,6 @@ void Matrix::invert(const Matrix& mat){
 	SetDims(dims[0],dims[1]);	
 	InitEmpty();
 	double det = mat.det(dims[0]);
-	//inverse of identity is itself
-	if(mat.identity()){
-		InitIdentity();
-		return;
-	}
 	if (det == 0) {
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
@@ -315,7 +301,6 @@ void Matrix::invert(const Matrix& mat){
 	// Find adjoint
 	Matrix adj = Matrix(dims[0], dims[1]);
 	adj.adjoint(mat);
-//	adj.Print();	
 	// Find Inverse using formula "inverse(A) =
 	// adj(A)/det(A)"
 	for (int i = 0; i < dims[0]; i++)
@@ -503,7 +488,7 @@ PointCollection Matrix::MatToPoints(){
 
 //from Numerical Recipes 3rd Ed., Ch. 2.9
 Matrix Matrix::cholesky(){
-	//check if matrix is square, posdef + symmetric
+	//check if matrix is square, symmetric
 	Matrix L = Matrix(m_row, m_col);
 	if(!_square){
 		cout << "Error: matrix is not square." << endl;

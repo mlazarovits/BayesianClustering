@@ -40,7 +40,6 @@ class Matrix{
 		//double det() const;
 		double det(int n = 0) const;
 		bool square() const { return _square; }
-		bool identity() const { return _id; }
 		bool symmetric() const;
 		void transpose(const Matrix& mat);
 		void adjoint(const Matrix& mat);
@@ -59,7 +58,6 @@ class Matrix{
 		int m_col;
 		vector<vector<double>> m_entries;
 		bool _square;
-		bool _id;
 };
 
 
