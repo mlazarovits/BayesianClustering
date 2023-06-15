@@ -48,70 +48,57 @@ double BasePDFMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov)
 
 
 
-double BasePDFMixture::Dir_C(double alpha, int k){
+double BasePDFMixture::Dir_lnC(double alpha, int k){
 	double alpha_hat = k*alpha;
 	
-	double norm = pow(tgamma(alpha),k);
-	return tgamma(alpha_hat)/norm;
+	double norm = lgamma(alpha)*k;
+	return lgamma(alpha_hat) - norm;
 
 };
 
-
-double BasePDFMixture::Dir_C(vector<double> alphas){
+//returns ln(C(alpha))
+double BasePDFMixture::Dir_lnC(vector<double> alphas){
 	double alpha_hat = 0;
+	double norm = 0;
 	int k = (int)alphas.size();
 	
-	double norm = 1;
 	for(int i = 0; i < k; i++){
 		alpha_hat += alphas[i];
-		norm *= tgamma(alphas[i]);
+		norm += lgamma(alphas[i]);
 	}
-	return tgamma(alpha_hat)/norm;
+	return lgamma(alpha_hat) - norm;
 
 };
 
 
-
-double BasePDFMixture::Wish_B(Matrix W, double nu){
-//	cout << "		Wishard B" << endl;
+//log of B from Wishart distribution
+double BasePDFMixture::Wish_lnB(Matrix W, double nu){
 	int d = W.GetDims()[0];
 	double det = W.det();
 	double pi = acos(-1);
-	//cout << "			det: " << det << endl;
-	//cout << "			nu: " << nu << endl;
-	double gam = 1;
-	//double arg;
-	for(int i = 1; i < d+1; i++){
-	//cout << "			gam: " << gam << endl;
-	//arg = (nu + 1 - i)/2.;
-	//cout << "			gam arg: " << arg << endl;
-		gam *= tgamma( (nu + 1 - i)/2. );
-	}
+	double lgam = 0;
+	for(int i = 0; i < d; i++)
+		lgam += lgamma( (nu + 1 - i)/2.);
 	
-	gam *= pow(pi, d*(d-1)/4.);
-	gam *= pow(2,nu*d/2.);
 
-	return pow(det,-nu/2.)/gam;
+	return -(nu/2.)*log(det) - (nu*d/2.)*log(2) - (d*(d-1)/4.)*log(pi) - lgam; 
 
 };
 
 
 double BasePDFMixture::Wish_H(Matrix W, double nu){
-	//cout << "	Wishart H" << endl;
+	cout << "	Wishart H" << endl;
 	int d = W.GetDims()[0];
 	double E_lam = 0;
 	double det = W.det();
-	double B;
+	double lnB;
 	for(int i = 1; i < d+1; i++)
 		E_lam += digamma( (nu + 1 - i)/2. );
-	//cout << "		digam: " << E_lam << endl;
 	E_lam += d*log(2);
-	//cout << "		det: " << det << endl;
 	E_lam += log(det);
-	B = Wish_B(W,nu);
-	//cout << "		B: " << B << endl;
+	lnB = Wish_lnB(W,nu);
 
-	return -log(B) - ((nu - d - 1)/2.)*E_lam + (nu*d)/2.;
+	return -lnB - ((nu - d - 1)/2.)*E_lam + (nu*d)/2.;
 };
 
 

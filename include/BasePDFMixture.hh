@@ -19,6 +19,7 @@ class BasePDFMixture{
 		//log likelihood
 		virtual double EvalLogL() = 0;
 
+
 		//some stuff for BHC
 
 		void AddData(const PointCollection& pc){
@@ -39,18 +40,24 @@ class BasePDFMixture{
 		int GetNClusters() const{
 			return m_k;
 		}
+
+
+		//to get parameters for (var)GMM
+		virtual void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs) = 0;
+		//for other mixture models, add the function with the corresponding arguments here
+
 		
 		//gaussian for one data point
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
 
 
-		//Dirichlet coefficient (eq. B.23)
-		double Dir_C(double alpha, int k);
-		//Dirichlet coefficient (eq. B.23)
-		double Dir_C(vector<double> alphas);
+		//ln of Dirichlet coefficient (eq. B.23)
+		double Dir_lnC(double alpha, int k);
+		//ln of Dirichlet coefficient (eq. B.23)
+		double Dir_lnC(vector<double> alphas);
 
-		//Wishart entropy normalization (eq. B.79)
-		double Wish_B(Matrix W, double nu);
+		//log of Wishart entropy normalization (eq. B.79)
+		double Wish_lnB(Matrix W, double nu);
 
 		//Wishart entropy (eq. B.82)
 		double Wish_H(Matrix W, double nu);

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 	//dimensionality
 	int N = 2;
 	//n data points
-	int Nsample = 2;
+	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]){
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
 	vgmm.AddData(pc);
-//	ClusterViz2D cv2D = ClusterViz2D(&gmm);
+	ClusterViz2D cv2D = ClusterViz2D(&vgmm);
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
@@ -127,19 +127,32 @@ cout << "START ITERATION 1" << endl;
 //iteration 1
 	//E step
 	vgmm.CalculatePosterior();
+	cv2D.UpdatePosterior();
 	//M step
 	vgmm.UpdateParameters();
 	double elbo = vgmm.EvalLogL();
 cout << "ELBO - iteration 1: " << elbo << endl;
-cout << "\n \n" << endl;
+/*
+	int it = 0;
+	cv2D.AddPlot("it"+std::to_string(it));
+
+
 cout << "START ITERATION 2" << endl;	
 //iteration 2
+	it++;
 	//E step
 	vgmm.CalculatePosterior();
+	cv2D.UpdatePosterior();
+	cv2D.UpdatePosterior();
 	//M step
 	vgmm.UpdateParameters();
 	elbo = vgmm.EvalLogL();
+	cv2D.AddPlot("it"+std::to_string(it));
+	cv2D.Write();
 cout << "ELBO - iteration 2: " << elbo << endl;
+
+*/
+
 /*
 	//loop
 	int nIts = 50;
