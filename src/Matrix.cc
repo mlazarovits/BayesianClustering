@@ -284,7 +284,6 @@ void Matrix::adjoint(const Matrix& mat){
 
 //invert mat and store in this
 void Matrix::invert(const Matrix& mat){
-	cout << "Invert" << endl;
 	if(!mat.square()){
 		cout << "Error: non-square matrix, cannot calculate inverse." << m_row << " " << m_col << endl;
 		return;
