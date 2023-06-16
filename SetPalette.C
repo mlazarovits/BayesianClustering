@@ -1,7 +1,7 @@
-void SetPalette(){
+void SetPalette(int k = 2){
 
 
-	int k = 2;
+	//int k = 2;
 	cout << "Using palette for " << k << " clusters." << endl;
 
 	//number of gradients in the palette
