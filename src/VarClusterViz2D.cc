@@ -56,7 +56,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 
 	//sage green
 	Int_t ci = TColor::GetFreeColorIndex();
-	TColor marker_color = TColor(ci,0.61, 0.69, 0.53);  
+	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
 	
 	TGraph* gr_data = new TGraph(m_n, &x[0], &y[0]);
 	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
@@ -68,7 +68,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	gr_data->GetXaxis()->SetTitle("x");
 	gr_data->GetYaxis()->SetTitle("y");
 
-
+/*
 	TH1F* hist = gr_data->GetHistogram();
 	//to turn off hist axes
 	hist->GetXaxis()->SetLabelSize(0.);
@@ -77,24 +77,26 @@ void VarClusterViz2D::AddPlot(string plotName){
 	hist->GetYaxis()->SetTickLength(0.);
 	hist->SetFillStyle(4000);
 	
-
+*/
 	//one pad
 	TPad* graphPad = new TPad("graph pad", "graph pad",0.0,0.0,1.0,1.0);
 	graphPad->Draw();
-
+/*
 	//another pad - draw on top
 	TPad* circlePad = new TPad("circle pad", "circle pad",0.0,0.0,1.0,1.0);
 	circlePad->SetFillStyle(4000);
 	circlePad->SetFrameFillStyle(4000);
 	circlePad->Draw();
 
-
+*/
 	//draw data	
 	graphPad->cd();
-	gr_data->Draw("p"); //PCOLZ draws color palette
-	circlePad->cd();
+	gr_data->Draw("ap"); //PCOLZ draws color palette
+//	circlePad->cd();
 	//draw hist to place ellispes
-	hist->Draw("axis");
+//	hist->Draw("axis");
+
+
 	int color_idx;
 	//set coords for parameter circles
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
@@ -141,7 +143,6 @@ void VarClusterViz2D::AddPlot(string plotName){
 		circle_bkg->Draw();
 		circle->Draw();
 	}
-
 
 	m_cvs.push_back(cv);
 
