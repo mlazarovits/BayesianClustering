@@ -19,7 +19,10 @@ class BasePDFMixture{
 		//log likelihood
 		virtual double EvalLogL() = 0;
 
-
+		//fill vectors with estimated parameters
+		virtual void GetGausParameters(vector<Matrix>& mus, vector<Matrix>& covs) = 0;
+		virtual void GetDirichletParameters(vector<double>& alphas) = 0;
+		virtual void GetMixingCoeffs(vector<double>& pis) = 0;
 
 		//some stuff for BHC
 
@@ -27,7 +30,6 @@ class BasePDFMixture{
 			m_x = pc; 
 			m_n = pc.GetNPoints();
 			m_dim = pc.Dim();
-		
 		}
 		
 		PointCollection GetData() const{

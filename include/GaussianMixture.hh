@@ -22,8 +22,20 @@ class GaussianMixture : public BasePDFMixture{
 		double EvalLogL();
 		
 		//fill vectors with estimated parameters
-		void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
+		void GetGausParameters(vector<Matrix>& mus, vector<Matrix>& covs){
+			mus.clear();
+			covs.clear();
+			mus = m_mus;
+			covs = m_covs;
+		};
+		//fill vectors with estimated parameters
+		void GetMixingCoeffs(vector<double>& pis){
+			pis.clear();
+			pis = m_coeffs;
+		};
 
+		//empty b/c doesn't exist in this model
+		void GetDirichletParameters(vector<double>& alphas){ };
 	private:
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k

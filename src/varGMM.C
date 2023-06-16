@@ -1,6 +1,6 @@
 #include "VarGaussianMixture.hh"
 #include "RandomSample.hh"
-#include "ClusterViz2D.hh"
+#include "VarClusterViz2D.hh"
 #include <iostream>
 #include <cmath>
 
@@ -128,7 +128,7 @@ cout << "\n" << endl;
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
 	vgmm.AddData(pc);
-	ClusterViz2D cv2D = ClusterViz2D(&vgmm, fname);
+	VarClusterViz2D cv2D = VarClusterViz2D(&vgmm, fname);
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
@@ -165,19 +165,17 @@ cout << "\n" << endl;
 	}
 	cv2D.Write();
 	vector<Matrix> mus, covs;
-	vgmm.GetParameters(mus,covs);
-	
+	vector<double> pis;
+	vgmm.GetGausParameters(mus,covs);
+	vgmm.GetMixingCoeffs(pis);
 	cout << "Estimated parameters" << endl;
-	cout << "mean 1" << endl;
-	mus[0].Print();
-	cout << "covs 1" << endl;
-	covs[0].Print();
-	
-	
-	cout << "mean 2" << endl;
-	mus[1].Print();
-	cout << "covs" << endl;
-	covs[1].Print();
+	for(int i = 0; i < k; i++){
+		cout << "mean " << i+1 << endl;
+		mus[i].Print();
+		cout << "covs " << i+1 << endl;
+		covs[i].Print();
+		cout << "mixing coeff " << i+1 << " " << pis[i] << endl;
+	}
 
 
 }

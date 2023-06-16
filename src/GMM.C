@@ -119,6 +119,7 @@ int main(int argc, char *argv[]){
 	GaussianMixture gmm = GaussianMixture(k);
 	gmm.AddData(pc);
 	ClusterViz2D cv2D = ClusterViz2D(&gmm);
+	
 
 	//Initialize - randomize parameters 
 	gmm.Initialize();
@@ -131,7 +132,6 @@ int main(int argc, char *argv[]){
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
 		oldLogL = gmm.EvalLogL();
-		
 		//E step
 		gmm.CalculatePosterior();
 		//M step
@@ -140,7 +140,6 @@ int main(int argc, char *argv[]){
 		//Plot
 		cv2D.UpdatePosterior();
 		cv2D.AddPlot("it"+std::to_string(it));
-		cv2D.Write();
 		
 		//Check for convergence
 		cout << "iteration #" << it << " log-likelihood: " << gmm.EvalLogL() << endl;
@@ -153,8 +152,9 @@ int main(int argc, char *argv[]){
 		}
 		
 	}
+	cv2D.Write();
 	vector<Matrix> mus, covs;
-	gmm.GetParameters(mus,covs);
+	gmm.GetGausParameters(mus,covs);
 	
 	cout << "Estimated parameters" << endl;
 	cout << "mean 1" << endl;

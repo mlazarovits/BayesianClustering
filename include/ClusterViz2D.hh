@@ -2,7 +2,7 @@
 #define	CLUSTERVIZ2D_HH
 
 #include "ClusterVizBase.hh"
-#include "GaussianMixture.hh"
+#include "BasePDFMixture.hh"
 #include <TGraph2D.h>
 #include <string.h>
 
@@ -11,18 +11,18 @@ using std::string;
 class ClusterViz2D{
 	public:
 		ClusterViz2D(){ };
-		ClusterViz2D(GaussianMixture* model, string fname = "test");
+		ClusterViz2D(BasePDFMixture* model, string fname = "test");
 		virtual ~ClusterViz2D(){ };
 		
 		void AddPlot(string plotName = "test");
 		void UpdatePosterior(){
 			m_post = m_model->GetPosterior();
-		}	
+		}
 		void Write();
 		void SetPalette(int k);
 
 	private:
-		GaussianMixture* m_model;
+		BasePDFMixture* m_model;
 		Matrix m_post;
 		PointCollection m_points;	
 		int m_n; //number of points

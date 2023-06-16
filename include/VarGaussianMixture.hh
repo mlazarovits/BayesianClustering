@@ -24,7 +24,23 @@ class VarGaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 	
-		void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs,vector<double>& avg_pis);
+		void GetGausParameters(vector<Matrix>& mus, vector<Matrix>& covs){
+			mus.clear();
+			covs.clear();
+			mus = m_xbars;
+			covs = m_Ss;
+		};
+		void GetDirichletParameters(vector<double>& alphas){
+			alphas.clear();
+			alphas = m_alphas;
+		};
+		//E[pi_k] = (alpha_k + N_k)/(K*alpha_0 + N)
+		void GetMixingCoeffs(vector<double>& pis){
+			pis.clear();
+			for(int k = 0; k < m_k; k++){
+				pis.push_back((m_alphas[k] + m_norms[k])/(m_k*m_alpha0 + m_n));
+			}
+		};
 
 
 	protected:

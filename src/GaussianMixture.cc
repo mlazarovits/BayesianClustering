@@ -192,14 +192,3 @@ double GaussianMixture::EvalLogL(){
 }
 
 
-
-
-
-//fill vectors with params for each cluster
-void GaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
-	mus.clear();
-	covs.clear();
-	mus = m_mus;
-	covs = m_covs;
-}
-

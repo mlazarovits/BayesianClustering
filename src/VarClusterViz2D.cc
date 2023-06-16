@@ -18,7 +18,7 @@ using std::string;
 
 //check for 2D data
 VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){ 
-	if(m_model->GetData().Dim() != 2){
+	if(model->GetData().Dim() != 2){
 		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
 		return;
 	}
@@ -35,17 +35,19 @@ void VarClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
-	vector<double> pis, pi_alpha;
-	double pi_alpha_norm = 0;
-	m_model->GetParameters(mus,covs, pis);
+	vector<double> pis;
+	double pi_norm = 0;
+	m_model->GetGausParameters(mus,covs);
+	m_model->GetMixingCoeffs(pis);
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points.at(i).Value(0.));
 		y.push_back(m_points.at(i).Value(1.));
 	}
 	for(int k = 0; k < m_k; k++){
-		pi_alpha_norm += pis[k];
+		pi_norm += pis[k];
 	}
+	for(int k = 0; k < m_k; k++) pis[k] /= pi_norm;
 	//get palette colors for circles
 	SetPalette(m_k);
 	auto cols = TColor::GetPalette();
@@ -132,7 +134,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	
 		circle->SetLineWidth(5);
 		//sets transparency normalized to sum
-	   	circle->SetFillColorAlpha(col,pis[k]/pi_alpha_norm);
+	   	circle->SetFillColorAlpha(col,pis[k]/pi_norm);
 		circle_bkg->SetLineColor(0); 
 		circle_bkg->SetLineWidth(8);
 	   	circle_bkg->SetFillStyle(0);

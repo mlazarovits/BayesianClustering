@@ -1,5 +1,5 @@
 #include "ClusterViz2D.hh"
-#include "GaussianMixture.hh"
+#include "BasePDFMixture.hh"
 
 #include <TColor.h>
 #include <TROOT.h>
@@ -16,21 +16,20 @@
 using std::string;
 
 //check for 2D data
-ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname){ 
-	if(m_model->GetData().Dim() != 2){
+ClusterViz2D::ClusterViz2D(BasePDFMixture* model, string fname){ 
+	if(model->GetData().Dim() != 2){
 		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
 		return;
 	}
-	if(m_model->GetNClusters() != 2){
+	if(model->GetNClusters() != 2){
 		cout << "ClusterViz2D Error: can only visualize results with 2 clusters." << endl;
 		return;
 	}
 	m_model = model;
-	m_fname = fname;
+	m_post = m_model->GetPosterior();
 	m_points = m_model->GetData();
 	m_n = m_points.GetNPoints();
 	m_k = m_model->GetNClusters();
-	m_post = m_model->GetPosterior();
 	m_fname = fname;
 }
 
@@ -38,7 +37,7 @@ void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
-	m_model->GetParameters(mus,covs);
+	m_model->GetGausParameters(mus,covs);
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points.at(i).Value(0.));
