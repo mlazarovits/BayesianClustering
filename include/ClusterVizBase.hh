@@ -37,6 +37,7 @@ class ClusterVizBase{
 
 	
 	protected:
+		Int_t m_palette[100];
 		BasePDFMixture* m_model;
 		Matrix m_post;
 		PointCollection m_points;	

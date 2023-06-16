@@ -1,6 +1,7 @@
-#include "ClusterViz2D.hh"
-#include "GaussianMixture.hh"
+#include "VarClusterViz2D.hh"
+#include "VarGaussianMixture.hh"
 
+#include <TGraph.h>
 #include <TColor.h>
 #include <TROOT.h>
 #include <TH2D.h>
@@ -16,13 +17,9 @@
 using std::string;
 
 //check for 2D data
-ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname){ 
+VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){ 
 	if(m_model->GetData().Dim() != 2){
-		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
-		return;
-	}
-	if(m_model->GetNClusters() != 2){
-		cout << "ClusterViz2D Error: can only visualize results with 2 clusters." << endl;
+		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
 		return;
 	}
 	m_model = model;
@@ -34,47 +31,48 @@ ClusterViz2D::ClusterViz2D(GaussianMixture* model, string fname){
 	m_fname = fname;
 }
 
-void ClusterViz2D::AddPlot(string plotName){
+void VarClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
-	m_model->GetParameters(mus,covs);
+	vector<double> pis, pi_alpha;
+	double pi_alpha_norm = 0;
+	m_model->GetParameters(mus,covs, pis);
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points.at(i).Value(0.));
 		y.push_back(m_points.at(i).Value(1.));
-		//just using one value of cluster weights - only works for 2 cluster models
-		//weight for column 1 used because
-		//w_i ~ 1 = class 1
-		//w_i ~ 0 = class 0 to match class to idx
-		z.push_back(m_post.at(i,1));	
 	}
-
+	for(int k = 0; k < m_k; k++){
+		pi_alpha_norm += pis[k];
+	}
 	//get palette colors for circles
 	SetPalette(m_k);
 	auto cols = TColor::GetPalette();
 	
 	cv->Update();
 
-	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
-	gr_data->SetTitle(("GMM EM Clustering "+plotName).c_str());
-	gr_data->SetName(("GMM EM Clustering "+plotName).c_str());
-	gr_data->SetMarkerStyle(20);
+	//sage green
+	Int_t ci = TColor::GetFreeColorIndex();
+	TColor marker_color = TColor(ci,0.61, 0.69, 0.53);  
+	
+	TGraph* gr_data = new TGraph(m_n, &x[0], &y[0]);
+	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
+	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
+	gr_data->SetMarkerStyle(24);
 	gr_data->SetMarkerSize(0.95);
-
-
-	TH2D* hist = gr_data->GetHistogram();
-	//to turn off hist axes
-	hist->SetTitle("");
+	gr_data->SetMarkerColor(ci);
 	//can extend x/y axes so points aren't on border
+	gr_data->GetXaxis()->SetTitle("x");
+	gr_data->GetYaxis()->SetTitle("y");
+
+
+	TH1F* hist = gr_data->GetHistogram();
+	//to turn off hist axes
 	hist->GetXaxis()->SetLabelSize(0.);
 	hist->GetXaxis()->SetTickLength(0.);
-	hist->GetXaxis()->SetTitle("x");
-	hist->GetYaxis()->SetTitle("y");
-	hist->GetYaxis()->SetTitleOffset(1.5);
 	hist->GetYaxis()->SetLabelSize(0.);
 	hist->GetYaxis()->SetTickLength(0.);
-	hist->GetZaxis()->SetRangeUser(0.,1.);
 	hist->SetFillStyle(4000);
 	
 
@@ -92,9 +90,6 @@ void ClusterViz2D::AddPlot(string plotName){
 	//draw data	
 	graphPad->cd();
 	gr_data->Draw("p"); //PCOLZ draws color palette
-	//rotate pad to view 3D graph in 2D plane
-	graphPad->SetTheta(90);
-	graphPad->SetPhi(-360);	
 	circlePad->cd();
 	//draw hist to place ellispes
 	hist->Draw("axis");
@@ -102,6 +97,10 @@ void ClusterViz2D::AddPlot(string plotName){
 	//set coords for parameter circles
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
 	for(int k = 0; k < m_k; k++){
+		//if mean mixing coefficient value is indistinguishable from zero, don't draw
+		if(pis[k] < 1e-6)
+			continue; 
+
 		c_x = mus[k].at(0,0);
 		c_y = mus[k].at(1,0);
 		
@@ -118,6 +117,7 @@ void ClusterViz2D::AddPlot(string plotName){
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
+	
 		//convert to degrees
 		theta = 180*theta/acos(-1);
 	
@@ -127,10 +127,12 @@ void ClusterViz2D::AddPlot(string plotName){
 
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
-		circle->SetLineColor(cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))]);
+		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
+		circle->SetLineColor(col);
 	
 		circle->SetLineWidth(5);
-	   	circle->SetFillStyle(0);
+		//sets transparency normalized to sum
+	   	circle->SetFillColorAlpha(col,pis[k]/pi_alpha_norm);
 		circle_bkg->SetLineColor(0); 
 		circle_bkg->SetLineWidth(8);
 	   	circle_bkg->SetFillStyle(0);
@@ -149,7 +151,7 @@ void ClusterViz2D::AddPlot(string plotName){
 
 
 
-void ClusterViz2D::Write(){
+void VarClusterViz2D::Write(){
 	cout << "Writing plot(s) to: " << m_fname << ".root" << endl;
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
@@ -165,7 +167,7 @@ void ClusterViz2D::Write(){
 
 
 
-void ClusterViz2D::SetPalette(int k){
+void VarClusterViz2D::SetPalette(int k){
 	gStyle->cd();
 
 	//create color palette - max number of clusters = 10
@@ -200,9 +202,6 @@ void ClusterViz2D::SetPalette(int k){
 		stops.push_back(0.0);
 		stops.push_back(0.5);
 		stops.push_back(1.0);
-	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
-	for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
-	//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
 
 	}
 
@@ -230,13 +229,10 @@ void ClusterViz2D::SetPalette(int k){
 		stops.push_back(0.6666);
 		stops.push_back(1.0);
 
-		
-
-		Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
-		for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
-		//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
-	
 	}
 
+	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
+	for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
+	//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
 }
 

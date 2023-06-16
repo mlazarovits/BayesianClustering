@@ -1,18 +1,18 @@
-#ifndef CLUSTERVIZ2D_HH
-#define	CLUSTERVIZ2D_HH
+#ifndef VIZCLUSTERVIZ2D_HH
+#define	VIZCLUSTERVIZ2D_HH
 
-#include "ClusterVizBase.hh"
-#include "GaussianMixture.hh"
-#include <TGraph2D.h>
+#include "VarGaussianMixture.hh"
+#include <TCanvas.h>
 #include <string.h>
 
 using std::string;
 
-class ClusterViz2D{
+class VarClusterViz2D{
 	public:
-		ClusterViz2D(){ };
-		ClusterViz2D(GaussianMixture* model, string fname = "test");
-		virtual ~ClusterViz2D(){ };
+		VarClusterViz2D(){ };
+		VarClusterViz2D(VarGaussianMixture* model, string fname = "test");
+		//VarClusterViz2D(VarGaussianMixture* model, string fname = "test");
+		virtual ~VarClusterViz2D(){ };
 		
 		void AddPlot(string plotName = "test");
 		void UpdatePosterior(){
@@ -22,7 +22,7 @@ class ClusterViz2D{
 		void SetPalette(int k);
 
 	private:
-		GaussianMixture* m_model;
+		VarGaussianMixture* m_model;
 		Matrix m_post;
 		PointCollection m_points;	
 		int m_n; //number of points
