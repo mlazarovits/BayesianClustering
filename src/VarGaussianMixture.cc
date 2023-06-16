@@ -465,9 +465,17 @@ double VarGaussianMixture::EvalLogL(){
 
 
 
-void VarGaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
+void VarGaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs, vector<double>& avg_pis){
+
 	mus.clear();
 	covs.clear();
 	mus = m_xbars;
 	covs = m_Ss;
+	avg_pis.clear();
+	//get mean value of mixing coefficient posterior distribution
+	//for dirichlet, E[pi_k] = (alpha_k + N_k)/(K*alpha_0 + N) (Bishop eq. 10.69 - nice)
+	for(int k = 0; k < m_k; k++){
+		avg_pis.push_back((m_alphas[k]+m_norms[k])/(m_k*m_alpha0 + m_n));
+	}
 };
+

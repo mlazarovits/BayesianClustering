@@ -20,6 +20,7 @@ class BasePDFMixture{
 		virtual double EvalLogL() = 0;
 
 
+
 		//some stuff for BHC
 
 		void AddData(const PointCollection& pc){
@@ -42,11 +43,6 @@ class BasePDFMixture{
 		}
 
 
-		//to get parameters for (var)GMM
-		virtual void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs) = 0;
-		//for other mixture models, add the function with the corresponding arguments here
-
-		
 		//gaussian for one data point
 		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
 
