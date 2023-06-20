@@ -113,16 +113,6 @@ int main(int argc, char *argv[]){
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 	pc += mat2.MatToPoints();
 	
-	cout << "Original parameters" << endl;
-	cout << "mean 1" << endl;
-	mu.Print();
-	cout << "cov 1" << endl;
-	sigma.Print();
-	cout << "mean 2" << endl;
-	mu2.Print();
-	cout << "cov 1" << endl;
-	sigma2.Print();
-cout << "\n" << endl;	
 
 	
 	//create GMM model
@@ -177,5 +167,15 @@ cout << "\n" << endl;
 		cout << "mixing coeff " << i+1 << " " << pis[i] << endl;
 	}
 
+	cout << "Original parameters" << endl;
+	cout << "mean 1" << endl;
+	mu.Print();
+	cout << "cov 1" << endl;
+	sigma.Print();
+	cout << "mean 2" << endl;
+	mu2.Print();
+	cout << "cov 1" << endl;
+	sigma2.Print();
+cout << "\n" << endl;	
 
 }

@@ -16,56 +16,45 @@ void SetPalette(int k = 2){
 		return;
 	}
 
-	//2 clusters
-	if(k == 2){
-		//[0,1] values are R, G or B/255.
-		//first color = light blue
-		red.push_back(1.0);
-		green.push_back(0.0);
-		blue.push_back(0.0);
-		
-		red.push_back(0.52);
-		green.push_back(0.79);
-		blue.push_back(0.96);
+	//[0,1] values are R, G or B/255.
+	//first color = light blue
+	red.push_back(0.52);
+	green.push_back(0.79);
+	blue.push_back(0.96);
+	//second color = light pink
+	red.push_back(0.89);
+	green.push_back(0.52);
+	blue.push_back(0.96);
+
+	//third color = light green
+	red.push_back(0.52);
+	green.push_back(0.95);
+	blue.push_back(0.79);
+
+	//fourth color = light purple
+	red.push_back(0.67);
+	green.push_back(0.52);
+	blue.push_back(0.95);
+
+	//fifth color = light orange
+	red.push_back(0.95);
+	green.push_back(0.796);
+	blue.push_back(0.52);
+
+	//sixth color = light yellow
+	red.push_back(0.95);
+	green.push_back(0.89);
+	blue.push_back(0.52);
+
 	
-		//second color = light pink
-		//red.push_back(0.89);
-		//green.push_back(0.52);
-		//blue.push_back(0.96);
-		
-		//where to switch colors
-		stops.push_back(0.0);
-		stops.push_back(0.5);
-		stops.push_back(1.0);
-
-	}
-
-	//3 clusters
-	if(k == 3){
-		//[0,1] values are R, G or B/255.
-		//first color = light blue
-		red.push_back(0.52);
-		green.push_back(0.79);
-		blue.push_back(0.96);
-		
-		//second color = light pink
-		red.push_back(0.89);
-		green.push_back(0.52);
-		blue.push_back(0.96);
-		
-		//third color = light green
-		red.push_back(0.52);
-		green.push_back(0.95);
-		blue.push_back(0.79);
-		
-		//where to switch colors
-		stops.push_back(0.0);
-		stops.push_back(0.3333);
-		stops.push_back(0.6666);
-		stops.push_back(1.0);
-
-	}
-
+	//where to switch colors
+	stops.push_back(0.0);
+	stops.push_back(0.16666);
+	stops.push_back(0.33333);
+	stops.push_back(0.5);
+	stops.push_back(0.66666);
+	stops.push_back(0.83333);
+	stops.push_back(1.0);
 
 	Int_t palette[100];
 	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);

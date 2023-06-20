@@ -1,6 +1,7 @@
 #include "VarClusterViz2D.hh"
 #include "VarGaussianMixture.hh"
 
+#include <TSystem.h>
 #include <TGraph.h>
 #include <TColor.h>
 #include <TROOT.h>
@@ -45,13 +46,12 @@ void VarClusterViz2D::AddPlot(string plotName){
 		y.push_back(m_points.at(i).Value(1.));
 	}
 	for(int k = 0; k < m_k; k++){
+		cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];
 	}
-	for(int k = 0; k < m_k; k++) pis[k] /= pi_norm;
 	//get palette colors for circles
 	SetPalette(m_k);
 	auto cols = TColor::GetPalette();
-	
 	cv->Update();
 
 	//sage green
@@ -63,7 +63,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetMarkerStyle(24);
 	gr_data->SetMarkerSize(0.95);
-	gr_data->SetMarkerColor(ci);
+	gr_data->SetMarkerColorAlpha(ci,1);
 	//can extend x/y axes so points aren't on border
 	gr_data->GetXaxis()->SetTitle("x");
 	gr_data->GetYaxis()->SetTitle("y");
@@ -102,7 +102,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
-		if(pis[k] < 1e-6)
+		if(pis[k]/pi_norm < 0.01)
 			continue; 
 
 		c_x = mus[k].at(0,0);
@@ -132,16 +132,18 @@ void VarClusterViz2D::AddPlot(string plotName){
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
+		circle->SetFillColorAlpha(col,pis[k]/pi_norm);
 		circle->SetLineColor(col);
-	
 		circle->SetLineWidth(5);
 		//sets transparency normalized to sum
-	   	circle->SetFillColorAlpha(col,pis[k]/pi_norm);
+		cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
+	   	circle->SetFillStyle(1001);
+
 		circle_bkg->SetLineColor(0); 
 		circle_bkg->SetLineWidth(8);
 	   	circle_bkg->SetFillStyle(0);
 		circle_bkg->Draw();
-		circle->Draw();
+		circle->Draw("f");
 	}
 
 	m_cvs.push_back(cv);
@@ -159,8 +161,15 @@ void VarClusterViz2D::Write(){
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_k);
+
+	//out folder does not exist
+	if(gSystem->AccessPathName(m_fname.c_str())){
+		gSystem->Exec(("mkdir "+m_fname).c_str());
+	}
+	
 	for(int i = 0; i < m_cvs.size(); i++){
 		m_cvs[i]->Write();
+		m_cvs[i]->SaveAs((m_fname+"/cv_"+std::to_string(i)+".pdf").c_str());
 	}
 
 	f->Close();
@@ -188,51 +197,45 @@ void VarClusterViz2D::SetPalette(int k){
 		return;
 	}
 
-	//2 clusters
-	if(k == 2){
-		//[0,1] values are R, G or B/255.
-		//first color = light blue
-		red.push_back(0.52);
-		green.push_back(0.79);
-		blue.push_back(0.96);
-		//second color = light pink
-		red.push_back(0.89);
-		green.push_back(0.52);
-		blue.push_back(0.96);
-		
+	//[0,1] values are R, G or B/255.
+	//first color = light blue
+	red.push_back(0.52);
+	green.push_back(0.79);
+	blue.push_back(0.96);
+	//second color = light pink
+	red.push_back(0.89);
+	green.push_back(0.52);
+	blue.push_back(0.96);
 
-		//where to switch colors
-		stops.push_back(0.0);
-		stops.push_back(0.5);
-		stops.push_back(1.0);
+	//third color = light green
+	red.push_back(0.52);
+	green.push_back(0.95);
+	blue.push_back(0.79);
 
-	}
+	//fourth color = light purple
+	red.push_back(0.67);
+	green.push_back(0.52);
+	blue.push_back(0.95);
 
-	//3 clusters
-	if(k == 3){
-		//[0,1] values are R, G or B/255.
-		//first color = light blue
-		red.push_back(0.52);
-		green.push_back(0.79);
-		blue.push_back(0.96);
-		
-		//second color = light pink
-		red.push_back(0.89);
-		green.push_back(0.52);
-		blue.push_back(0.96);
-		
-		//third color = light green
-		red.push_back(0.52);
-		green.push_back(0.95);
-		blue.push_back(0.79);
-		
-		//where to switch colors
-		stops.push_back(0.0);
-		stops.push_back(0.3333);
-		stops.push_back(0.6666);
-		stops.push_back(1.0);
+	//fifth color = light orange
+	red.push_back(0.95);
+	green.push_back(0.796);
+	blue.push_back(0.52);
 
-	}
+	//sixth color = light yellow
+	red.push_back(0.95);
+	green.push_back(0.89);
+	blue.push_back(0.52);
+
+	
+	//where to switch colors
+	stops.push_back(0.0);
+	stops.push_back(0.16666);
+	stops.push_back(0.33333);
+	stops.push_back(0.5);
+	stops.push_back(0.66666);
+	stops.push_back(0.83333);
+	stops.push_back(1.0);
 
 	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
 	for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
