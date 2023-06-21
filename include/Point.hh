@@ -64,6 +64,7 @@ class Point{
 		vector<double> Value() const{return _value;}
 		//return value at dimension d
 		double Value(int d) const{return _value[d];}
+		double at(int d) const{return _value[d];}
 		
 		void SetValue(double v, int d){
 			if(d > _value.size()){
