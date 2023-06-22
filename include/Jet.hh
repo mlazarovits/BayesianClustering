@@ -23,8 +23,16 @@ class Jet{
 		//return element i in four vector
 		double mom_at(int i){ return m_momvec.at(i); }
 		double space_at(int i){ return m_spacevec.at(i); }
-		//have scaling function
-		void scale(double s);
+	
+		//scale momentum
+		void scaleMom(double s){
+			m_px *= s;
+			m_py *= s;
+			m_pz *= s;
+			m_E *= s;
+			m_kt2 *= s*s;
+		 };
+
 		//boost function
 		//transverse energy
 		double Et() const{ return (m_kt2==0) ? 0.0 : m_E/sqrt(1.0+m_pz*m_pz/m_kt2); } 
@@ -56,6 +64,8 @@ class Jet{
 			if(phi < 0.0) m_phi = phi + 2*acos(-1);
 			else if(phi >= 2*acos(-1)) m_phi = phi - 2*acos(-1);
 			else m_phi = phi; }
+
+		void SetEnergy(double enr){ m_E = enr; }
 		
 		void SetRecHitId(unsigned int id){ m_rhId = id; }
 		unsigned int rhId(){ return m_rhId; }
