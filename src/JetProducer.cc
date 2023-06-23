@@ -48,8 +48,9 @@ JetProducer::JetProducer(TFile* file){
 
 //ctor from rec hit collection - integrating into ntuplizer
 
+
 //make ctor that simulates rechits
 
-
+//ctor for alice's pixels
 
 
