@@ -43,6 +43,15 @@ class VarGaussianMixture : public BasePDFMixture{
 		};
 
 
+		//get responsibilities for point n
+		void GetPointPosterior(int n, vector<double>& r){
+			r.clear();
+			for(int k = 0; k < m_k; k++){
+				r.push_back(m_post.at(n,k));
+			}
+		};
+
+
 	protected:
 		//pre-E step (don't have a million for loops)
 		void CalculateExpectations();
