@@ -32,24 +32,30 @@ JetProducer::JetProducer(TFile* file){
 		base->GetEntry(i);
 		//TODO: switch to base->nRHs when that's in the ntuples
 		nRHs = (int)base->ERH_time->size();
+		m_rechits.push_back({});
 		for(int r = 0; r < nRHs; r++){
-			//jt = Jet(base->ERH_x->at(r), base->ERH_y->at(r), base->ERH_z->at(r), base->ERH_time->at(r));
+	
+			//add tof = d_pv to time to get correct RH time
+			//jt = Jet(base->ERH_x, base->ERH_y, base->ERH_z, base->ERH_time+base->ERH_TOF);
+			
 			jt.SetEnergy(base->ERH_energy->at(r));
 			jt.SetEta(base->ERH_eta->at(r));
 			jt.SetPhi(base->ERH_phi->at(r));
 			jt.SetRecHitId(base->ERH_ID->at(r));
-		
-			m_rechits.push_back(jt);
+	
+			m_rechits[i].push_back(jt);
 		}
 	}
 	file->Close();
 }
 
 
-//ctor from rec hit collection - integrating into ntuplizer
+//ctor from rec hit collection - integrating into ntuplizer - in CMSSW
 
 
-//make ctor that simulates rechits
+//make ctor that simulates rechits - see src/varGMM.C
+
+
 
 //ctor for alice's pixels
 

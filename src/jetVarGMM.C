@@ -1,4 +1,6 @@
-#include "Jet.hh"
+#include "JetProducer.hh"
+
+#include <TFile.h>
 #include <iostream>
 #include <cmath>
 #include<string>
@@ -85,35 +87,30 @@ int main(int argc, char *argv[]){
 	
 	
 	/////GET DATA FROM NTUPLE//////
-	//vector<Jet> jets = jetmaker(file) //gets rechits to cluster into jets (rec hit -> Jet)
+	string in_file = "gmsb_AODSIM_KUCMSNtuplizer_v3.root";
+	TFile* file = TFile::Open(in_file.c_str());
+	JetProducer prod(file);
+	vector<vector<Jet>> jets = prod.GetRecHits();
+	cout << jets.size() << " events" << endl;
+	cout << jets[0].size() << " rechits in first event" << endl;
 	//clusterTree = jetcluster(jets, maxdepth = d)
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)
 	//write finalJets to same file (space, time, momentum, energy)
 
 
 
-	
+
 /*	
-	/////SIMULATE DATA//////
-	//create symmetric matrix
-	Matrix sigma = Matrix(N,N);
-	sigma.InitRandomSymPosDef();
-	Matrix mu = Matrix(N,1);
-	mu.InitRandom();
-	////sample points from an n-dim gaussian for one cluster
-	Matrix mat;
-	mat.SampleNDimGaussian(mu,sigma,Nsample);
-	PointCollection pc = mat.MatToPoints();
-	
-	//sample points for another cluster
-	Matrix sigma2 = Matrix(N,N);
-	sigma2.InitRandomSymPosDef(0.,1.,111);
-	Matrix mu2 = Matrix(N,1);
-	mu2.InitRandom(0.,1.,112);
-	
-	Matrix mat2;
-	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
-	pc += mat2.MatToPoints();
+	//put jets into algorithm friendly format - point collection
+	PointCollection points;
+	VarGaussianMixture vgmm(m_maxK);
+	//match points to jets by idx
+	int n_pts = jet.GetConstituents();
+	for(int i = 0; i < n_pts; i++){
+		points += jets[i].four_space();
+		jets[i].SetUserIdx(i);
+	}
+
 	
 
 	

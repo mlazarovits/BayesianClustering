@@ -19,12 +19,12 @@ class JetProducer{
 		//ctor for alice's pixels
 
 
-		//returns rec hits (jets)
-		vector<Jet> GetRecHits(){ return m_rechits; }
+		//returns vector of rec hits (as Jets) for each event (vector of vectors)
+		vector<vector<Jet>> GetRecHits(){ return m_rechits; }
 
 	private:
 		//individual rec hits (jets)
-		vector<Jet> m_rechits;
+		vector<vector<Jet>> m_rechits;
 
 
 
