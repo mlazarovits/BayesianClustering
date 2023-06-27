@@ -52,6 +52,31 @@ class VarGaussianMixture : public BasePDFMixture{
 		};
 
 
+		//assign point n to cluster k based on max entry in row r_n
+		int GetMaxPointAssignment(int n){
+			int max_post = 0;
+			int max_k = 0;
+			for(int k = 0; k < m_k; k++)
+				if(m_post.at(n,k) > max_post){
+					max_post = m_post.at(n,k);
+					max_k = k;
+				}
+			return max_k;
+		}
+
+		int GetNClusters(double thresh){
+			int cnt = 0;
+			vector<double> pis;
+			GetMixingCoeffs(pis);
+			for(int k = 0; k < m_k; k++){
+				if(pis[k] > thresh)
+					cnt++;
+		
+			}
+			return cnt;
+		}
+
+
 	protected:
 		//pre-E step (don't have a million for loops)
 		void CalculateExpectations();

@@ -27,7 +27,7 @@ VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){
 	m_fname = fname;
 	m_points = m_model->GetData();
 	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters();
+	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
 	m_fname = fname;
 }

@@ -31,6 +31,7 @@ JetProducer::JetProducer(TFile* file){
 	for(int i = 0; i < nEvents; i++){
 		base->GetEntry(i);
 		//TODO: switch to base->nRHs when that's in the ntuples
+		if(i == 0)cout << "Event #: " << base->event << " i: " << i << endl;
 		nRHs = (int)base->ERH_time->size();
 		m_rechits.push_back({});
 		for(int r = 0; r < nRHs; r++){

@@ -1,4 +1,6 @@
 #include "JetProducer.hh"
+#include "JetClusterizer.hh"
+
 
 #include <TFile.h>
 #include <iostream>
@@ -93,7 +95,29 @@ int main(int argc, char *argv[]){
 	vector<vector<Jet>> jets = prod.GetRecHits();
 	cout << jets.size() << " events" << endl;
 	cout << jets[0].size() << " rechits in first event" << endl;
-	//clusterTree = jetcluster(jets, maxdepth = d)
+	
+	//combine rechits in eta-phi area
+	vector<Jet> rechits = jets[0];
+	Jet testjet;
+	double etaMax = 0.5;
+	double etaMin = -etaMax;  
+	double phiMax = 2.;
+	double phiMin = -2.8;
+	for(int i = 0; i < rechits.size(); i++){
+		if(fabs(rechits[i].eta()) > etaMax || fabs(rechits[i].eta()) < etaMin)
+			continue;
+		if(fabs(rechits[i].phi()) > phiMax || fabs(rechits[i].phi()) < phiMin)
+			continue;
+		testjet.add(rechits[i]);
+	}
+
+	//cluster jets for 1 event
+	//JetClusterizer jc = JetClusterizer(jets[0]);
+	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
+	//jc.FindSubjets(testjet);
+
+
+		
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)
 	//write finalJets to same file (space, time, momentum, energy)
 

@@ -13,11 +13,14 @@ class Jet{
 		Jet(Point pt, bool mom = true);
 		virtual ~Jet();
 
+		bool operator==(Jet& j) const;
+		bool operator!=(Jet& j) const;
+
 		//return four vector for clustering
 		Point four_mom(){ return m_momvec; }
 		Point four_space(){ return m_spacevec; }
 
-		void SetFourMom(Point pt);
+	//	void SetFourMom(Point pt);
 		void SetFourPos(Point pt);
 
 		//return element i in four vector
@@ -32,6 +35,10 @@ class Jet{
 			m_E *= s;
 			m_kt2 *= s*s;
 		 };
+
+
+		//add subjets/pixels to jet
+		void add(Jet& jt);
 
 		//boost function
 		//transverse energy
@@ -70,14 +77,22 @@ class Jet{
 		void SetRecHitId(unsigned int id){ m_rhId = id; }
 		unsigned int rhId(){ return m_rhId; }
 
+		//set user idx info
+		void SetUserIdx(int i){ m_idx = i; }
+		int GetUserIdx(){ return m_idx; }
+
 		//parents in cluster
-		void GetParents(Jet& p1, Jet& p2);
+		void GetParents(Jet& p1, Jet& p2) const;
+		void SetParents(Jet* p1, Jet* p2){ m_parent1 = p1; m_parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
 
 		//children in cluster
-		void GetBaby(Jet& child);
+		void GetBaby(Jet& child) const;
 
-		//constituents in jet (clustered or unclustered)
-		void GetSubjets(vector<Jet>& subjets, int depth = 0);
+		//constituents (point four vectors) in jet (clustered or unclustered)
+		void GetConstituents(PointCollection& pts, int depth = 0) const;
+		
+		//subjets (jets) in jet (clustered or unclustered)
+		void GetSubJets(vector<Jet>& subjets, int depth = 0) const;
 
 		//this has jet?
 		bool Has(Jet& jet);
@@ -88,7 +103,18 @@ class Jet{
 		double GetJetTime(){ return 0.; }
 
 		//check IR + collinear safety?
+	protected:
+		void SetBaby(Jet* child){ m_child = child; }
 
+		void RecalcKT2(){ m_kt2 = m_px*m_px + m_py*m_py; }
+		void RecalcPhi(){ if (m_kt2 == 0.0) {
+			m_phi = 0.0; } 
+			else {
+			  m_phi = atan2(m_py,m_px);
+			}
+			if (m_phi < 0.0) {m_phi += 2*acos(-1);}
+			if (m_phi >= 2*acos(-1)) {m_phi -= 2*acos(-1);} 
+		}
 	private:
 		//momentum four vector
 		double m_E;
@@ -104,6 +130,11 @@ class Jet{
 		double m_y;
 		double m_z;
 		Point m_spacevec;
+
+		PointCollection m_space_vec_coll;
+		PointCollection m_mom_vec_coll;
+
+		int nPix;
 
 		double m_eta;
 		double m_phi;
@@ -128,8 +159,8 @@ class Jet{
 
 		Jet* m_child;
 
-
-
+		//user idx info
+		int m_idx;
 
 
 
