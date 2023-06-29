@@ -1,9 +1,10 @@
 #ifndef JETPRODUCER_HH
 #define JETPRODUCER_HH
 
-#include "Jet.hh"
+#include "JetPoint.hh"
 #include "TFile.h"
 #include "TTree.h"
+#include "ReducedBase.hh"
 
 class JetProducer{
 	public:
@@ -16,17 +17,18 @@ class JetProducer{
 		
 		//make ctor that simulates rechits
 		
-		//ctor for alice's pixels
-
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
-		vector<vector<Jet>> GetRecHits(){ return m_rechits; }
-
+		void GetRecHits(vector<vector<JetPoint>>& rhs);
+		void GetRecHits(vector<JetPoint>& rhs, int evt)
+;
+		void GetPrimaryVertex(Point& vtx, int evt);
 	private:
 		//individual rec hits (jets)
-		vector<vector<Jet>> m_rechits;
-
-
+		//vector<vector<JetPoint>> m_rechits;
+		ReducedBase* m_base = nullptr;
+		int m_nEvts;
+		TFile* m_file;
 
 
 

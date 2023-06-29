@@ -89,32 +89,43 @@ int main(int argc, char *argv[]){
 	
 	
 	/////GET DATA FROM NTUPLE//////
-	string in_file = "gmsb_AODSIM_KUCMSNtuplizer_v3.root";
+	string in_file = "gmsb_AODSIM_KUCMSNtuplizer_v4.root";
 	TFile* file = TFile::Open(in_file.c_str());
 	JetProducer prod(file);
-	vector<vector<Jet>> jets = prod.GetRecHits();
-	cout << jets.size() << " events" << endl;
-	cout << jets[0].size() << " rechits in first event" << endl;
-	
-	//combine rechits in eta-phi area
-	vector<Jet> rechits = jets[0];
+	vector<JetPoint> rhs;
+	int evt = 0;
+	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
+	Point vtx;
+	prod.GetPrimaryVertex(vtx, evt);
+	prod.GetRecHits(rhs,0);
+	cout << rhs.size() << " rechits in first event" << endl;
+
+	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testjet;
+	//set PV for momentum direction calculations
+	testjet.SetVertex(vtx);
 	double etaMax = 0.5;
 	double etaMin = -etaMax;  
 	double phiMax = 2.;
 	double phiMin = -2.8;
-	for(int i = 0; i < rechits.size(); i++){
-		if(fabs(rechits[i].eta()) > etaMax || fabs(rechits[i].eta()) < etaMin)
+	for(int i = 0; i < rhs.size(); i++){
+		if(rhs[i].eta() > etaMax || rhs[i].eta() < etaMin)
 			continue;
-		if(fabs(rechits[i].phi()) > phiMax || fabs(rechits[i].phi()) < phiMin)
+		if(rhs[i].phi() > phiMax || rhs[i].phi() < phiMin)
 			continue;
-		testjet.add(rechits[i]);
+			testjet.add(rhs[i]);
 	}
 
+	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;
+
 	//cluster jets for 1 event
-	//JetClusterizer jc = JetClusterizer(jets[0]);
+	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
-	//jc.FindSubjets(testjet);
+	double logLthresh = 0.001;
+	int maxIt = 50;
+	int maxK = 3;
+	bool viz = true;
+	jc.FindSubjets(testjet, logLthresh, maxIt, maxK, viz);
 
 
 		

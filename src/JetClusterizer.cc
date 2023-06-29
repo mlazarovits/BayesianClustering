@@ -2,7 +2,7 @@
 #include "VarClusterViz2D.hh"
 
 JetClusterizer::JetClusterizer(){
-	m_maxK = 0;
+	m_nJets = 0;
 };
 
 JetClusterizer::JetClusterizer(vector<Jet> jets){
@@ -47,20 +47,22 @@ void JetClusterizer::Cluster(){
 
 
 //crack open Jet and get underlying points
-vector<Jet> JetClusterizer::FindSubjets(Jet jet, double LogLthresh, int maxNit, bool viz){
+vector<Jet> JetClusterizer::FindSubjets(Jet jet, double LogLthresh, int maxNit, int maxK, bool viz){
 	//initialize vector of subjets
 	vector<Jet> subjets;
+	vector<JetPoint> rhs;
 
 	PointCollection points;
-	VarGaussianMixture vgmm(m_maxK);
-	//match points to jets by idx
-	jet.GetConstituents(points);
+	VarGaussianMixture vgmm(maxK);
+	jet.GetPointConstituents(points);
+	jet.GetConstituents(rhs);
 	int n_pts = points.GetNPoints();
+cout << n_pts << " constituents to cluster" << endl;	
 	
 	vgmm.AddData(points);
 	vgmm.Initialize();
 	VarClusterViz2D cv2D;
-	string fname = "test"; 
+	string fname = "jetTest"; 
 	if(viz) cv2D = VarClusterViz2D(&vgmm, fname);
 	//loop
 	double dLogL, newLogL, oldLogL;
@@ -85,24 +87,33 @@ vector<Jet> JetClusterizer::FindSubjets(Jet jet, double LogLthresh, int maxNit, 
 			return subjets;
 		}
 		dLogL = fabs(oldLogL - newLogL);
-	//	cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-	//	if(dLogL < LogLThresh){
-	//		cout << "Reached convergence at iteration " << it << endl;
-	//		break;
-	//	}
-		
+		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(dLogL < LogLthresh){
+			if(viz)
+			cout << "Reached convergence at iteration " << it << endl;
+			break;
+		}
 	}
 	if(viz)	cv2D.Write();
 	int nsubjets = vgmm.GetNClusters(LogLthresh*10.);
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
 	//assign points to found subjets (clusters)
-	for(int k = 0; k < nsubjets; k++)
+	for(int k = 0; k < nsubjets; k++){
 		subjets.push_back(Jet());
-	//for(int n = 0; n < m_n; 
+	}
+	for(int n = 0; n < n_pts; n++){
+		//find k where post_nk is max for point n:
+		//postMax = 0;
+		//postMax_k = 0;
+		//for(int k = 0; k < nsubjets; k++){
+		//	if(post.at(n,k) > postMax) postMax_k = k;
+		//}
+		//assign point n to subjet k - subjets[postMax_k] += rh[n];
+	}
 	
-
 	return subjets;
+
 }
 
 

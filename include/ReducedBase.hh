@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Jun 22 15:17:29 2023 by ROOT version 6.26/06
+// Wed Jun 28 15:47:39 2023 by ROOT version 6.26/06
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: gmsb_AODSIM_KUCMSNtuplizer_v3.root
+// found on file: gmsb_AODSIM_KUCMSNtuplizer_v4.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBase_h
 #define ReducedBase_h
@@ -123,7 +123,7 @@ public :
    vector<float>   *Photon_sieip;
    vector<float>   *Photon_sipip;
    vector<float>   *Photon_x_calo;
-   //vector<float>   *Photon_y-calo;
+   vector<float>   *Photon_y_calo;
    vector<float>   *Photon_z_calo;
    vector<float>   *Electron_energy;
    vector<float>   *Electron_eta;
@@ -155,6 +155,9 @@ public :
    vector<float>   *ERH_eta;
    vector<bool>    *ERH_isOOT;
    vector<float>   *ERH_phi;
+   vector<float>   *ERH_x;
+   vector<float>   *ERH_y;
+   vector<float>   *ERH_z;
 
    // List of branches
    TBranch        *b_event;   //!
@@ -256,7 +259,7 @@ public :
    TBranch        *b_Photon_sieip;   //!
    TBranch        *b_Photon_sipip;   //!
    TBranch        *b_Photon_x_calo;   //!
-   //TBranch        *b_Photon_y-calo;   //!
+   TBranch        *b_Photon_y_calo;   //!
    TBranch        *b_Photon_z_calo;   //!
    TBranch        *b_Electron_energy;   //!
    TBranch        *b_Electron_eta;   //!
@@ -288,6 +291,9 @@ public :
    TBranch        *b_ERH_eta;   //!
    TBranch        *b_ERH_isOOT;   //!
    TBranch        *b_ERH_phi;   //!
+   TBranch        *b_ERH_x;   //!
+   TBranch        *b_ERH_y;   //!
+   TBranch        *b_ERH_z;   //!
 
    ReducedBase(TTree *tree=0);
    virtual ~ReducedBase();
@@ -307,12 +313,12 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("gmsb_AODSIM_KUCMSNtuplizer_v3.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("gmsb_AODSIM_KUCMSNtuplizer_v4.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("gmsb_AODSIM_KUCMSNtuplizer_v3.root");
+         f = new TFile("gmsb_AODSIM_KUCMSNtuplizer_v4.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("gmsb_AODSIM_KUCMSNtuplizer_v3.root:/tree");
-      dir->GetObject("ReducedBase",tree);
+      TDirectory * dir = (TDirectory*)f->Get("gmsb_AODSIM_KUCMSNtuplizer_v4.root:/tree");
+      dir->GetObject("llpgtree",tree);
 
    }
    Init(tree);
@@ -434,7 +440,7 @@ inline void ReducedBase::Init(TTree *tree)
    Photon_sieip = 0;
    Photon_sipip = 0;
    Photon_x_calo = 0;
-   //Photon_y-calo = 0;
+   Photon_y_calo = 0;
    Photon_z_calo = 0;
    Electron_energy = 0;
    Electron_eta = 0;
@@ -466,6 +472,9 @@ inline void ReducedBase::Init(TTree *tree)
    ERH_eta = 0;
    ERH_isOOT = 0;
    ERH_phi = 0;
+   ERH_x = 0;
+   ERH_y = 0;
+   ERH_z = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -571,7 +580,7 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_sieip", &Photon_sieip, &b_Photon_sieip);
    fChain->SetBranchAddress("Photon_sipip", &Photon_sipip, &b_Photon_sipip);
    fChain->SetBranchAddress("Photon_x_calo", &Photon_x_calo, &b_Photon_x_calo);
-   //fChain->SetBranchAddress("Photon_y-calo", &Photon_y-calo, &b_Photon_y-calo);
+   fChain->SetBranchAddress("Photon_y_calo", &Photon_y_calo, &b_Photon_y_calo);
    fChain->SetBranchAddress("Photon_z_calo", &Photon_z_calo, &b_Photon_z_calo);
    fChain->SetBranchAddress("Electron_energy", &Electron_energy, &b_Electron_energy);
    fChain->SetBranchAddress("Electron_eta", &Electron_eta, &b_Electron_eta);
@@ -603,6 +612,9 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("ERH_eta", &ERH_eta, &b_ERH_eta);
    fChain->SetBranchAddress("ERH_isOOT", &ERH_isOOT, &b_ERH_isOOT);
    fChain->SetBranchAddress("ERH_phi", &ERH_phi, &b_ERH_phi);
+   fChain->SetBranchAddress("ERH_x", &ERH_x, &b_ERH_x);
+   fChain->SetBranchAddress("ERH_y", &ERH_y, &b_ERH_y);
+   fChain->SetBranchAddress("ERH_z", &ERH_z, &b_ERH_z);
    Notify();
 }
 
@@ -632,3 +644,4 @@ inline Int_t ReducedBase::Cut(Long64_t entry)
 // returns -1 otherwise.
    return 1;
 }
+//#endif // #ifdef ReducedBase_cxx

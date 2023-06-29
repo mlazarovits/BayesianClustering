@@ -20,7 +20,8 @@ using std::string;
 //check for 2D data
 VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){ 
 	if(model->GetData().Dim() != 2){
-		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << model->GetData().Dim() << "." << endl;
+		m_n = 0;
 		return;
 	}
 	m_model = model;
@@ -29,10 +30,25 @@ VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){
 	m_n = m_points.GetNPoints();
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
-	m_fname = fname;
 }
 
+VarClusterViz2D::VarClusterViz2D(const VarClusterViz2D& viz){ 
+	m_model = viz.m_model;
+	if(m_model->GetData().Dim() != 2){
+		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+		m_n = 0;
+		return;
+	}
+	m_fname = viz.m_fname;
+	m_points = m_model->GetData();
+	m_n = m_points.GetNPoints();
+	m_k = m_model->GetNClusters(0.);
+	m_post = m_model->GetPosterior();
+}
 void VarClusterViz2D::AddPlot(string plotName){
+	if(m_n == 0){
+		return;
+	}
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
@@ -157,6 +173,9 @@ void VarClusterViz2D::AddPlot(string plotName){
 
 
 void VarClusterViz2D::Write(){
+	if(m_n == 0){
+		return;
+	}
 	cout << "Writing plot(s) to: " << m_fname << ".root" << endl;
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();

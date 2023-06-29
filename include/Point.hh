@@ -10,8 +10,12 @@ using std::endl;
 
 class Point{
 	public:
-		Point() = default;
+		//Point() = default;
 		
+		Point(){
+			_nDim = 0;
+		}
+
 		Point(const int d){
 			_nDim = d;
 			for(int i = 0; i < _nDim; i++) _value.push_back(-1);	

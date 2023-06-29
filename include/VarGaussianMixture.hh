@@ -76,6 +76,7 @@ class VarGaussianMixture : public BasePDFMixture{
 			return cnt;
 		}
 
+		void SetK(int k){ m_k = k; }
 
 	protected:
 		//pre-E step (don't have a million for loops)

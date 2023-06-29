@@ -1,31 +1,40 @@
 #ifndef JET_HH
 #define JET_HH
 
-#include "Point.hh"
+#include <math.h>
 #include "Matrix.hh"
+#include "JetPoint.hh"
+#include "Point.hh"
 
 //point with more physics aspects - ecal cell
 class Jet{
-
 	public:
 		Jet();
-		//Jet(double E, double px, double py, double pz);
-		Jet(Point pt, bool mom = true);
-		virtual ~Jet();
+		Jet(JetPoint rh);
+		Jet(JetPoint rh, Point vtx);
+		Jet(vector<JetPoint> rhs, Point vtx);
+		virtual ~Jet();		
 
 		bool operator==(Jet& j) const;
 		bool operator!=(Jet& j) const;
 
 		//return four vector for clustering
-		Point four_mom(){ return m_momvec; }
-		Point four_space(){ return m_spacevec; }
+		Point four_mom(){ return m_p; }
+		Point four_space(){ return m_space; }
 
-	//	void SetFourMom(Point pt);
+		void SetFourMom(Point pt);
 		void SetFourPos(Point pt);
+		void SetVertex(Point vtx){
+			if(vtx.Dim() != 3){
+				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
+				return;
+			}
+			m_vtx = vtx;
+		}
 
 		//return element i in four vector
-		double mom_at(int i){ return m_momvec.at(i); }
-		double space_at(int i){ return m_spacevec.at(i); }
+		double p(int i){ return m_p.at(i); }
+		double x(int i){ return m_space.at(i); }
 	
 		//scale momentum
 		void scaleMom(double s){
@@ -37,8 +46,80 @@ class Jet{
 		 };
 
 
+		vector<JetPoint> GetJetPoints() const{return m_rhs;}
+		PointCollection GetJetPoints_space() const{
+			PointCollection pc;
+			for(int i = 0; i < m_nRHs; i++) pc += m_rhs[i].four_space();
+			return pc;
+		}
+		
+		PointCollection GetJetPoints_mom() const{
+			PointCollection pc;
+			//for(int i = 0; i < m_nRHs; i++) pc += m_rhs[i].four_mom();
+			return pc;
+		}
+
 		//add subjets/pixels to jet
 		void add(Jet& jt);
+		void add(JetPoint& rh);
+		
+		//constituents (jet points) in jet (clustered or unclustered)
+		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = m_rhs; }
+		void GetPointConstituents(PointCollection& pc) const{
+			pc.Clear();
+			for(int i = 0; i < (int)m_rhs.size(); i++){
+				pc += m_rhs[i].four_space();
+			}
+		}
+		int GetNConstituents() const{return (int)m_rhs.size(); }	
+		
+		//parents in cluster
+		void GetParents(Jet& p1, Jet& p2) const;
+		void SetParents(Jet* p1, Jet* p2){ m_parent1 = p1; m_parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
+
+		//children in cluster
+		void GetBaby(Jet& child) const;
+
+		
+		//subjets (jets) in jet (clustered or unclustered)
+		void GetSubJets(vector<Jet>& subjets, int depth = 0) const;
+
+		//this has jet?
+		bool Has(Jet& jet) const;
+		//this has rh?
+		bool Has(JetPoint& rh) const;
+		
+		void SetEta(double eta){ m_eta = eta; }
+		void SetPhi(double phi){ 
+			m_phi = setPhi_negPiToPi(phi);
+		}
+
+		//sets phi [0,2pi]
+		double setPhi_02pi(double phi){
+			if(phi < 0.0) return phi + 2*acos(-1);
+			else if(phi >= 2*acos(-1)) return phi - 2*acos(-1);
+			return phi; 
+		}
+
+		//wraps phi around pi, [-pi,pi]
+		double setPhi_negPiToPi(double phi){
+ 			double pi = acos(-1);
+			double o2pi = 1./(2*pi);
+			if(fabs(phi) <= pi)
+				return phi;
+			double n = std::round(phi * o2pi);
+			return phi - n * double(2.* pi);
+
+		}
+
+		void SetEnergy(double enr){ m_E = enr; }
+		
+		void SetPt(double pt){ m_kt2 = pt*pt; }
+
+		//set user idx info
+		void SetUserIdx(int i){ m_idx = i; }
+		int GetUserIdx(){ return m_idx; }
+		
 
 		//boost function
 		//transverse energy
@@ -65,44 +146,14 @@ class Jet{
 		//eta
 		double eta() const{return m_eta;}
 		double phi() const{return m_phi;}
-
-		void SetEta(double eta){ m_eta = eta; }
-		void SetPhi(double phi){ 
-			if(phi < 0.0) m_phi = phi + 2*acos(-1);
-			else if(phi >= 2*acos(-1)) m_phi = phi - 2*acos(-1);
-			else m_phi = phi; }
-
-		void SetEnergy(double enr){ m_E = enr; }
 		
-		void SetRecHitId(unsigned int id){ m_rhId = id; }
-		unsigned int rhId(){ return m_rhId; }
-
-		//set user idx info
-		void SetUserIdx(int i){ m_idx = i; }
-		int GetUserIdx(){ return m_idx; }
-
-		//parents in cluster
-		void GetParents(Jet& p1, Jet& p2) const;
-		void SetParents(Jet* p1, Jet* p2){ m_parent1 = p1; m_parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
-
-		//children in cluster
-		void GetBaby(Jet& child) const;
-
-		//constituents (point four vectors) in jet (clustered or unclustered)
-		void GetConstituents(PointCollection& pts, int depth = 0) const;
-		
-		//subjets (jets) in jet (clustered or unclustered)
-		void GetSubJets(vector<Jet>& subjets, int depth = 0) const;
-
-		//this has jet?
-		bool Has(Jet& jet);
-
 		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = m_mu; cov = m_cov; }
 	
 		//define jet time from cluster parameters
 		double GetJetTime(){ return 0.; }
 
 		//check IR + collinear safety?
+	
 	protected:
 		void SetBaby(Jet* child){ m_child = child; }
 
@@ -112,8 +163,20 @@ class Jet{
 			else {
 			  m_phi = atan2(m_py,m_px);
 			}
-			if (m_phi < 0.0) {m_phi += 2*acos(-1);}
-			if (m_phi >= 2*acos(-1)) {m_phi -= 2*acos(-1);} 
+			m_phi = setPhi_negPiToPi(m_phi);
+		}
+		
+		void RecalcEta(){
+			if(m_pz == 0){
+				m_theta = 0;
+				m_eta = m_maxRap;
+			}
+			else{
+				m_theta = atan2(m_kt2 , m_pz);
+				if(m_theta < 0) m_theta += acos(-1);
+				m_eta = -log(tan(m_theta/2.));
+			}
+
 		}
 	private:
 		//momentum four vector
@@ -122,19 +185,22 @@ class Jet{
 		double m_py;
 		double m_pz;
 		double m_kt2;
-		Point m_momvec;
+		Point m_p;
 
 		//spatial four vector
 		double m_t;
 		double m_x;
 		double m_y;
 		double m_z;
-		Point m_spacevec;
+		Point m_space;
 
-		PointCollection m_space_vec_coll;
-		PointCollection m_mom_vec_coll;
+		//vertex from which momemtum direction is calculated
+		Point m_vtx;
 
-		int nPix;
+		//rec hits (JetPoints) in jet
+		vector<JetPoint> m_rhs;
+
+		int m_nRHs;
 
 		double m_eta;
 		double m_phi;
@@ -144,9 +210,6 @@ class Jet{
 		//default values - have yet to be calculated or set
 		double m_invalid_phi = -100.0;
 		double m_invalid_eta = -1e200;
-
-		//rechit info
-		unsigned int m_rhId;
 
 
 		//cluster params - modeling jet as gaussian in time, space + energy
@@ -158,13 +221,9 @@ class Jet{
 		Jet* m_parent2;
 
 		Jet* m_child;
-
-		//user idx info
+	
+		//user index	
 		int m_idx;
-
-
-
-
 
 
 };

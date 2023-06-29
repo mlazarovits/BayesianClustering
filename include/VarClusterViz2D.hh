@@ -9,17 +9,32 @@ using std::string;
 
 class VarClusterViz2D{
 	public:
-		VarClusterViz2D(){ };
+		VarClusterViz2D(){
+			m_model = nullptr;
+			m_post = Matrix();
+			m_points = PointCollection();	
+			m_n = 0; //number of points
+			m_k = 0; //number of clusters
+			m_fname = "";	
+			m_cvs = {}; 
+		}
+		VarClusterViz2D(const VarClusterViz2D& viz);
 		VarClusterViz2D(VarGaussianMixture* model, string fname = "test");
 		//VarClusterViz2D(VarGaussianMixture* model, string fname = "test");
 		virtual ~VarClusterViz2D(){ };
 		
 		void AddPlot(string plotName = "test");
-		void UpdatePosterior(){
+		void UpdatePosterior(){  
+			if(m_n == 0){
+				return;
+			}
 			m_post = m_model->GetPosterior();
 		}	
 		void Write();
 		void SetPalette(int k);
+
+		VarGaussianMixture* GetModel(){ return m_model; }
+		string GetFileName(){ return m_fname; }
 
 	private:
 		VarGaussianMixture* m_model;
