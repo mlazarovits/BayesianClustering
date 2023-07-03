@@ -102,14 +102,12 @@ cout << n_pts << " constituents to cluster" << endl;
 	for(int k = 0; k < nsubjets; k++){
 		subjets.push_back(Jet());
 	}
+	int k_assign;
 	for(int n = 0; n < n_pts; n++){
 		//find k where post_nk is max for point n:
-		//postMax = 0;
-		//postMax_k = 0;
-		//for(int k = 0; k < nsubjets; k++){
-		//	if(post.at(n,k) > postMax) postMax_k = k;
-		//}
+		k_assign = vgmm.GetMaxPointAssignment(n);
 		//assign point n to subjet k - subjets[postMax_k] += rh[n];
+		subjets[k_assign].add(rhs[n]);
 	}
 	
 	return subjets;
