@@ -51,6 +51,7 @@ class Matrix{
 		//clear
 		void clear();
 		void Print() const;
+		void reset(){ clear(); InitEmpty(); }
 		//update entries
 		//add entries
 	private:
