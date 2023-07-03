@@ -56,7 +56,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	double pi_norm = 0;
 	m_model->GetGausParameters(mus,covs);
 	m_model->GetMixingCoeffs(pis);
-	vector<double> x, y, z;
+	vector<double> x, y;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points.at(i).Value(0.));
 		y.push_back(m_points.at(i).Value(1.));
@@ -136,6 +136,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+		//probably should use atan2
 		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
 	
 		//convert to degrees
