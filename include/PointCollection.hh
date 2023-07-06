@@ -110,7 +110,7 @@ class PointCollection{
 		int Dim() const{ return _nDim; }
 		
 		//check if point is in this collection
-		bool Has(Point& pt){		
+		bool Has(Point& pt) const{		
 		//cout << "PointCollection::Has" << endl;
 		//cout << "size for for loop:" << (int)_pts.size() << endl;
 			for(int p = 0; p < (int)_pts.size(); p++){
@@ -260,6 +260,9 @@ class PointCollection{
 		return min;
 
 	}
+
+	
+
 
 /*
 

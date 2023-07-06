@@ -58,8 +58,50 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 	jet.GetConstituents(rhs);
 	int n_pts = points.GetNPoints();
 cout << n_pts << " constituents to cluster" << endl;	
+
+	//normalize points
+	//find max/min in each dim
+	double etaMin = points.min(0);
+	double etaMax = points.max(0);
+	double phiMin = points.min(1);
+	double phiMax = points.max(1);
+	double tMin = points.min(2);
+	double tMax = points.max(2);
 	
-	vgmm.AddData(points);
+cout << "tMin: " << tMin << " tMax: " << tMax << endl;
+
+	Matrix matPts = Matrix(3, points.GetNPoints());
+	matPts.PointsToMat(points);
+	//translate by -xmin - lower bound to 0
+	Matrix minTrans = Matrix(3,points.GetNPoints());	
+	for(int i = 0; i < points.GetNPoints(); i++){
+		minTrans.SetEntry(-etaMin,0,i);
+		minTrans.SetEntry(-phiMin,1,i);
+		minTrans.SetEntry(-tMin,2,i);
+	}
+
+	//scale by xmax-xmin - normalize to 1
+	Matrix normScale = Matrix(3,3);	
+	normScale.InitEmpty();
+	normScale.SetEntry(1./(etaMax-etaMin),0,0);
+	normScale.SetEntry(1./(phiMax-phiMin),1,1);
+	normScale.SetEntry(1./(tMax-tMin),2,2);
+	//translate first
+	matPts.add(minTrans);
+	
+	//then scale
+	matPts.mult(normScale,matPts);
+
+	PointCollection transfPts = matPts.MatToPoints();
+
+	//cout << "points" << endl;
+	//points.Print();
+
+	//cout << "transfPoints" << endl;
+	//transfPts.Print();
+
+	//vgmm.AddData(points);
+	vgmm.AddData(transfPts);
 	vgmm.Initialize();
 	VarClusterViz3D cv3D;
 	string fname = "jetTest"; 
@@ -95,7 +137,7 @@ cout << n_pts << " constituents to cluster" << endl;
 			break;
 		}
 	}
-	if(viz)	cv3D.Write();
+	//if(viz)	cv3D.Write();
 	int nsubjets = vgmm.GetNClusters(LogLthresh*10.);
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
@@ -164,7 +206,7 @@ cout << n_pts << " constituents to cluster" << endl;
 			break;
 		}
 	}
-	if(viz)	cv3D.Write();
+	//if(viz)	cv3D.Write();
 	int nsubjets = vgmm.GetNClusters(LogLthresh*10.);
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)

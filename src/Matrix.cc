@@ -599,3 +599,16 @@ double Matrix::trace(){
 	}
 	return tr;
 }
+
+
+//stores pc as mat in this
+void Matrix::PointsToMat(PointCollection& pc){
+	m_col = pc.GetNPoints();
+	m_row = pc.Dim();
+	
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			m_entries[i][j] = pc.at(j).at(i);
+		}
+	}
+}

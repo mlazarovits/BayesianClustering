@@ -58,17 +58,17 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 	m_model->GetMixingCoeffs(pis);
 	vector<double> x, y;
 	double time = m_points.at(i).Value(2);
-//	for(int i = 0; i < m_n; i++){
+	for(int j = 0; j < m_n; j++){
 		//eta
-		x.push_back(m_points.at(i).Value(0));
+		x.push_back(m_points.at(j).Value(0));
 		//phi
-		y.push_back(m_points.at(i).Value(1));
-//	}
+		y.push_back(m_points.at(j).Value(1));
+	}
 	for(int k = 0; k < m_k; k++){
 	//	cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];	
 	}
-	
+
 	string cvName = "cv_"+plotName+"_"+std::to_string(i);
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
@@ -80,8 +80,9 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 	//sage green
 	Int_t ci = TColor::GetFreeColorIndex();
 	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
-	
 
+	
+cout << "n pts: " << x.size() << endl;
 	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
 	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
@@ -89,46 +90,41 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 	gr_data->SetMarkerSize(0.95);
 	gr_data->SetMarkerColorAlpha(ci,1);
 	//can extend x/y axes so points aren't on border
-	gr_data->GetXaxis()->SetTitle("eta");
-	gr_data->GetYaxis()->SetTitle("phi");
+	gr_data->GetXaxis()->SetTitle("eta-norm");
+	gr_data->GetYaxis()->SetTitle("phi-norm");
 
-	double xmax, ymax, zmax, xmin, ymin, zmin;
-	xmax = gr_data->GetXaxis()->GetXmax();
-	ymax = gr_data->GetYaxis()->GetXmax();
-
-	xmin = gr_data->GetXaxis()->GetXmin();
-	ymin = gr_data->GetYaxis()->GetXmin();
+/*
 	TH1F* hist = gr_data->GetHistogram();
-	
 	//to turn off hist axes
 	hist->GetXaxis()->SetLabelSize(0.);
 	hist->GetXaxis()->SetTickLength(0.);
 	hist->GetYaxis()->SetLabelSize(0.);
 	hist->GetYaxis()->SetTickLength(0.);
 	hist->SetFillStyle(4000);
-	
-
+*/
 	//one pad
 	TPad* graphPad = new TPad("graph pad", "graph pad",0.0,0.0,1.0,1.0);
 	graphPad->Draw();
-	
+
+/*
 	//another pad - draw on top
 	TPad* circlePad = new TPad("circle pad", "circle pad",0.0,0.0,1.0,1.0);
 	circlePad->SetFillStyle(4000);
 	circlePad->SetFrameFillStyle(4000);
 	circlePad->Draw();
+*/
 	//draw data	
 	graphPad->cd();
-	gr_data->Draw("p"); //PCOLZ draws color palette
+	gr_data->Draw("ap");
 
-	circlePad->cd();
+
+//	circlePad->cd();
 	//draw hist to place ellispes
-	hist->Draw("axis");
-
+//	hist->Draw("axis");
 	int color_idx;
 	//set coords for parameter circles
 	double x0, y0, z0, c_x, c_y, r_x, r_y, theta;
-	for(int k = 0; k < m_k; k++){
+	for(int k = 0; k < 1; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
 		if(pis[k]/pi_norm < 0.01)
 			continue; 
@@ -136,12 +132,13 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
-		
+cout << "time: " << time << endl;
+	cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << endl;	
 		//calculate mean of 2D ellipse profile
 		Matrix A11 = Matrix(2,2);
 		A11.SetEntry(covs[k].at(0,0),0,0);
-		A11.SetEntry(covs[k].at(1,0),1,0);
 		A11.SetEntry(covs[k].at(0,1),0,1);
+		A11.SetEntry(covs[k].at(1,0),1,0);
 		A11.SetEntry(covs[k].at(1,1),1,1);
 		Matrix A11inv = Matrix(2,2);
 		A11inv.invert(A11);	
@@ -164,24 +161,44 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 
 		//calculate covariance matrix for 2D ellipse -> (x - mu)T*sigma*(x - mu) = 1
 		Matrix sigma = Matrix(2,2);
-		sigma.mult(A11, 1./( (time - z0)*A22 - A21_A11inv_A12.at(0,0) ) );
+		sigma.mult(A11, 1./(1. - (time - z0)*(time - z0)*(A22 - A21_A11inv_A12.at(0,0) )) );
+cout << "A11inv_A12" << endl;
+A11inv_A12.Print();
+
+cout << "k: " << k << endl;
+		cout << "A11" << endl;
+		A11.Print();
+
+		cout << "sigma scaling factor: " << 1./(1. - (time - z0)*(time - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
+		cout << "(time - z0)^2: " << (time - z0)*(time - z0) << endl;
+		cout << "A22 - A21_A11inv_A12: " << (A22 - A21_A11inv_A12.at(0,0)) << endl;
+		
+		cout << "sigma" << endl;
+		sigma.Print();
+
+		cout << "cov" << endl;
+		covs[k].Print();
 
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
 		sigma.eigenCalc(eigenVals, eigenVecs);
+	//	covs[k].eigenCalc(eigenVals, eigenVecs);
 	
 		r_x = sqrt(eigenVals[0]);
 		r_y = sqrt(eigenVals[1]);
-	
-		return;
+cout << "sigma - eigenVals 0: " << eigenVals[0] << " eigenVals 1: " << eigenVals[1] << endl;
+
+cout << "c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-		//probably should use atan2
 		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-		
+	
+	//	c_x = x0;
+	//	c_y = y0;
+	
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
@@ -192,11 +209,13 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 		cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
 	   	circle->SetFillStyle(1001);
 
+	cout << "\n" << endl;
+
 		circle_bkg->SetLineColor(0); 
 		circle_bkg->SetLineWidth(8);
 	   	circle_bkg->SetFillStyle(0);
-		circle_bkg->Draw();
-		
+		//circle_bkg->Draw();
+		circle->Draw("f");
 	}
 	m_cvs.push_back(cv);
 
@@ -231,9 +250,12 @@ void VarClusterViz3D::AddAnimationPlots(string dirname){
 	//}
 
 	//write series of plots in time
+	cout << "Writing plot(s) to: ./" << m_fname << "/" << dirname << endl;
 	for(int i = 0; i < m_cvs.size(); i++){
-		m_cvs[i]->Write();
-		m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_"+std::to_string(i)+".pdf").c_str());
+		if(i < 10)
+			m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_pt0"+std::to_string(i)+".gif").c_str());
+		else
+			m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_pt"+std::to_string(i)+".gif").c_str());
 	}
 	m_cvs.clear();
 	

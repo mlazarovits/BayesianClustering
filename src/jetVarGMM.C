@@ -108,12 +108,15 @@ int main(int argc, char *argv[]){
 	double etaMin = -etaMax;  
 	double phiMax = 2.;
 	double phiMin = -2.8;
+	int nRhs = 0;
 	for(int i = 0; i < rhs.size(); i++){
+//		if(nRhs > 10) break;
 		if(rhs[i].eta() > etaMax || rhs[i].eta() < etaMin)
 			continue;
 		if(rhs[i].phi() > phiMax || rhs[i].phi() < phiMin)
 			continue;
 			testjet.add(rhs[i]);
+		nRhs++;
 	}
 
 	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;

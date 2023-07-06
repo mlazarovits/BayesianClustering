@@ -48,6 +48,7 @@ class Matrix{
 		Matrix cholesky();
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
+		void PointsToMat(PointCollection& pc);
 		//clear
 		void clear();
 		void Print() const;
