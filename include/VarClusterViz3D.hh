@@ -22,8 +22,12 @@ class VarClusterViz3D{
 		VarClusterViz3D(VarGaussianMixture* model, string fname = "test");
 		//VarClusterViz3D(VarGaussianMixture* model, string fname = "test");
 		virtual ~VarClusterViz3D(){ };
-		
-		void AddPlot(string plotName = "test");
+	
+		//add plot at specified t (z) value	
+		//time window?
+		//void AddPlot(double t, string plotName = "test");
+		void AddPlot(int i, string plotName = "test");
+		void AddAnimationPlots(string dirName = "test");
 		void UpdatePosterior(){  
 			if(m_n == 0){
 				return;

@@ -122,10 +122,10 @@ int main(int argc, char *argv[]){
 	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
 	double logLthresh = 0.001;
-	int maxIt = 50;
+	int maxIt = 1;
 	int maxK = 3;
 	bool viz = true;
-	jc.FindSubjets(testjet, logLthresh, maxIt, maxK, viz);
+	jc.FindSubjets_etaPhi(testjet, logLthresh, maxIt, maxK, viz);
 
 
 		

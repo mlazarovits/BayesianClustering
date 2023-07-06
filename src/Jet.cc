@@ -186,6 +186,8 @@ void Jet::add(JetPoint& rh){
 		cout << "Error: must provide 3 dimensional spatial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
+	//direction between ECAL position and vertex:q
+
 	Point dir = Point({m_x - m_vtx.at(0), m_y - m_vtx.at(1), m_z - m_vtx.at(3)});
 
 	//theta is calculated between beamline (z-dir) and x-y vector	

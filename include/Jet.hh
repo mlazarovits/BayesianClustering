@@ -47,11 +47,6 @@ class Jet{
 
 
 		vector<JetPoint> GetJetPoints() const{return m_rhs;}
-		PointCollection GetJetPoints_space() const{
-			PointCollection pc;
-			for(int i = 0; i < m_nRHs; i++) pc += m_rhs[i].four_space();
-			return pc;
-		}
 		
 		PointCollection GetJetPoints_mom() const{
 			PointCollection pc;
@@ -69,6 +64,12 @@ class Jet{
 			pc.Clear();
 			for(int i = 0; i < (int)m_rhs.size(); i++){
 				pc += m_rhs[i].four_space();
+			}
+		}
+		void GetEtaPhiConstituents(PointCollection& pc) const{
+			pc.Clear();
+			for(int i = 0; i < (int)m_rhs.size(); i++){
+				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
 			}
 		}
 		int GetNConstituents() const{return (int)m_rhs.size(); }	
@@ -150,7 +151,9 @@ class Jet{
 		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = m_mu; cov = m_cov; }
 	
 		//define jet time from cluster parameters
-		double GetJetTime(){ return 0.; }
+		double GetJetTime() const{ return 0.; }
+	
+		Point GetVertex() const{return m_vtx; }
 
 		//check IR + collinear safety?
 	

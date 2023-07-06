@@ -2,7 +2,7 @@
 #include "VarGaussianMixture.hh"
 
 #include <TSystem.h>
-#include <TGraph2D.h>
+#include <TGraph.h>
 #include <TF3.h>
 #include <TColor.h>
 #include <TROOT.h>
@@ -46,27 +46,32 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
 }
-void VarClusterViz3D::AddPlot(string plotName){
+
+void VarClusterViz3D::AddPlot(int i, string plotName){
 	if(m_n == 0){
 		return;
 	}
-	string cvName = "cv_"+plotName;
-	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
 	vector<double> pis;
 	double pi_norm = 0;
 	m_model->GetGausParameters(mus,covs);
 	m_model->GetMixingCoeffs(pis);
-	vector<double> x, y, z;
-	for(int i = 0; i < m_n; i++){
-		x.push_back(m_points.at(i).Value(0.));
-		y.push_back(m_points.at(i).Value(1.));
-		z.push_back(m_points.at(i).Value(2.));
-	}
+	vector<double> x, y;
+	double time = m_points.at(i).Value(2);
+//	for(int i = 0; i < m_n; i++){
+		//eta
+		x.push_back(m_points.at(i).Value(0));
+		//phi
+		y.push_back(m_points.at(i).Value(1));
+//	}
 	for(int k = 0; k < m_k; k++){
-		cout << "k: " << k << " pi: " << pis[k] << endl;
-		pi_norm += pis[k];
+	//	cout << "k: " << k << " pi: " << pis[k] << endl;
+		pi_norm += pis[k];	
 	}
+	
+	string cvName = "cv_"+plotName+"_"+std::to_string(i);
+	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	
 	//get palette colors for circles
 	SetPalette(m_k);
 	auto cols = TColor::GetPalette();
@@ -76,18 +81,25 @@ void VarClusterViz3D::AddPlot(string plotName){
 	Int_t ci = TColor::GetFreeColorIndex();
 	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
 	
-	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
+
+	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
 	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetMarkerStyle(24);
 	gr_data->SetMarkerSize(0.95);
 	gr_data->SetMarkerColorAlpha(ci,1);
 	//can extend x/y axes so points aren't on border
-	gr_data->GetXaxis()->SetTitle("x");
-	gr_data->GetYaxis()->SetTitle("y");
+	gr_data->GetXaxis()->SetTitle("eta");
+	gr_data->GetYaxis()->SetTitle("phi");
 
-/*
+	double xmax, ymax, zmax, xmin, ymin, zmin;
+	xmax = gr_data->GetXaxis()->GetXmax();
+	ymax = gr_data->GetYaxis()->GetXmax();
+
+	xmin = gr_data->GetXaxis()->GetXmin();
+	ymin = gr_data->GetYaxis()->GetXmin();
 	TH1F* hist = gr_data->GetHistogram();
+	
 	//to turn off hist axes
 	hist->GetXaxis()->SetLabelSize(0.);
 	hist->GetXaxis()->SetTickLength(0.);
@@ -95,111 +107,83 @@ void VarClusterViz3D::AddPlot(string plotName){
 	hist->GetYaxis()->SetTickLength(0.);
 	hist->SetFillStyle(4000);
 	
-*/
+
 	//one pad
 	TPad* graphPad = new TPad("graph pad", "graph pad",0.0,0.0,1.0,1.0);
 	graphPad->Draw();
-/*
+	
 	//another pad - draw on top
 	TPad* circlePad = new TPad("circle pad", "circle pad",0.0,0.0,1.0,1.0);
 	circlePad->SetFillStyle(4000);
 	circlePad->SetFrameFillStyle(4000);
 	circlePad->Draw();
-
-*/
 	//draw data	
 	graphPad->cd();
-	gr_data->Draw("ap"); //PCOLZ draws color palette
-//	circlePad->cd();
-	//draw hist to place ellispes
-//	hist->Draw("axis");
+	gr_data->Draw("p"); //PCOLZ draws color palette
 
+	circlePad->cd();
+	//draw hist to place ellispes
+	hist->Draw("axis");
 
 	int color_idx;
 	//set coords for parameter circles
-	double c_x, c_y, c_z, r_x, r_y, r_z, alpha, beta, gamma;
-	string eqn, func_x, func_y, func_z;
-	Matrix A = Matrix(3,3);
-	Matrix R = Matrix(3,3);
-	Matrix R_T = Matrix(3,3);
-	Matrix Rx = Matrix(3,3);
-	Matrix Ry = Matrix(3,3);
-	Matrix Rz = Matrix(3,3);
+	double x0, y0, z0, c_x, c_y, r_x, r_y, theta;
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
 		if(pis[k]/pi_norm < 0.01)
 			continue; 
 
-		c_x = mus[k].at(0,0);
-		c_y = mus[k].at(1,0);
-		c_z = mus[k].at(2,0);
-
-		func_x = "(x - "+std::to_string(c_x)+")";
-		func_y = "(y - "+std::to_string(c_y)+")";
-		func_z = "(z - "+std::to_string(c_z)+")";
+		x0 = mus[k].at(0,0);
+		y0 = mus[k].at(1,0);
+		z0 = mus[k].at(2,0);
 		
+		//calculate mean of 2D ellipse profile
+		Matrix A11 = Matrix(2,2);
+		A11.SetEntry(covs[k].at(0,0),0,0);
+		A11.SetEntry(covs[k].at(1,0),1,0);
+		A11.SetEntry(covs[k].at(0,1),0,1);
+		A11.SetEntry(covs[k].at(1,1),1,1);
+		Matrix A11inv = Matrix(2,2);
+		A11inv.invert(A11);	
+
+		Matrix A12 = Matrix(2,1);
+		A12.SetEntry(covs[k].at(0,2),0,0);
+		A12.SetEntry(covs[k].at(1,2),1,0);
+		Matrix A21 = Matrix(1,2);
+		A21.SetEntry(covs[k].at(2,0),0,0);
+		A21.SetEntry(covs[k].at(2,1),0,1);
+		double A22 = covs[k].at(2,2);
+
+		Matrix A11inv_A12 = Matrix(2,1);
+		A11inv_A12.mult(A11inv,A12);
+		Matrix A21_A11inv_A12 = Matrix(1,1);
+		A21_A11inv_A12.mult(A21,A11inv_A12);
+
+		c_x = x0 - (time - z0)*A11inv_A12.at(0,0);
+		c_y = y0 - (time - z0)*A11inv_A12.at(1,0);
+
+		//calculate covariance matrix for 2D ellipse -> (x - mu)T*sigma*(x - mu) = 1
+		Matrix sigma = Matrix(2,2);
+		sigma.mult(A11, 1./( (time - z0)*A22 - A21_A11inv_A12.at(0,0) ) );
+
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
-		covs[k].eigenCalc(eigenVals, eigenVecs);
+		sigma.eigenCalc(eigenVals, eigenVecs);
 	
 		r_x = sqrt(eigenVals[0]);
 		r_y = sqrt(eigenVals[1]);
-		r_z = sqrt(eigenVals[2]);
-		
-		//alpha = arccos(-z2/sqrt(1 - z3^2))
-		alpha = acos(eigenVecs[2].at(1,0)/sqrt(1 - eigenVecs[2].at(2,0)));
-		//beta = arccos(z3)
-		beta = acos(eigenVecs[2].at(2,0));
-		//gamma = arccos(y3/sqrt(1 - z3^2))
-		gamma = acos(eigenVecs[1].at(2,0)/sqrt(1 - eigenVecs[2].at(2,0)));
-
-
-		//rotate radius matrix A => R_T*A*R
-		A.reset();
-		R.reset();
-		Rx.reset();
-		Ry.reset();
-		Rz.reset();
-
-		//construct A matrix - diagonal with entries being inverse squares of axes
-		A.SetEntry(1./(r_x*r_x), 0, 0);
-		A.SetEntry(1./(r_y*r_y), 1, 1);
-		A.SetEntry(1./(r_z*r_z), 2, 2);
-		
-		//construct rotation matrix from euler angles - R = Rz(gam)*Ry(beta)*Rx(alpha)
-		Rz.SetEntry(cos(gamma), 0, 0);
-		Rz.SetEntry(-sin(gamma), 0, 1);
-		Rz.SetEntry(sin(gamma), 1, 0);
-		Rz.SetEntry(cos(gamma), 1, 1);
-		Rz.SetEntry(1, 2, 2);
-
-		Ry.SetEntry(cos(beta), 0, 0);
-		Ry.SetEntry(-sin(beta), 2, 0);
-		Ry.SetEntry(sin(beta), 0, 2);
-		Ry.SetEntry(cos(beta), 2, 2);
-		Ry.SetEntry(1, 1, 1);
-
-		Rx.SetEntry(cos(alpha), 1, 1);
-		Rx.SetEntry(-sin(alpha), 1, 2);
-		Rx.SetEntry(sin(alpha), 2, 1);
-		Rx.SetEntry(cos(alpha), 2, 2);
-		Rx.SetEntry(1, 0, 0);
 	
-	
-		R.mult(Rz,Ry);
-		R.mult(R,Rx);
-
-		A.mult(R_T,A);
-		A.mult(A,R);	
-
-		eqn  = func_x+"*( "+std::to_string(A.at(0,0))+"*"+func_x+" + "+std::to_string(A.at(0,1))+"*"+func_y+" + "+std::to_string(A.at(0,2))+"*"+func_z+" ) + "; 
-		eqn += func_y+"*( "+std::to_string(A.at(1,0))+"*"+func_x+" + "+std::to_string(A.at(1,1))+"*"+func_y+" + "+std::to_string(A.at(1,2))+"*"+func_z+" ) + ";
-		eqn += func_z+"*( "+std::to_string(A.at(2,0))+"*"+func_x+" + "+std::to_string(A.at(2,1))+"*"+func_y+" + "+std::to_string(A.at(2,2))+"*"+func_z+" ) = 1";
-
-		TF3* circle = new TF3(("cluster_"+std::to_string(k)).c_str(),eqn.c_str());
-		//TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
-		//TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
+		return;
+		//take direction of largest eigenvalue
+		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+		
+		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+		//probably should use atan2
+		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+		
+		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
+		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
 		circle->SetFillColorAlpha(col,pis[k]/pi_norm);
 		circle->SetLineColor(col);
@@ -208,28 +192,65 @@ void VarClusterViz3D::AddPlot(string plotName){
 		cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
 	   	circle->SetFillStyle(1001);
 
-		//circle_bkg->SetLineColor(0); 
-		//circle_bkg->SetLineWidth(8);
-	   	//circle_bkg->SetFillStyle(0);
-		//circle_bkg->Draw();
-		circle->Draw("f");
+		circle_bkg->SetLineColor(0); 
+		circle_bkg->SetLineWidth(8);
+	   	circle_bkg->SetFillStyle(0);
+		circle_bkg->Draw();
+		
 	}
-
 	m_cvs.push_back(cv);
 
 }
 
 
+void VarClusterViz3D::AddAnimationPlots(string dirname){
+	//out folder does not exist
+	//ie) dirname = it_0
+	if(gSystem->AccessPathName((m_fname+"/"+dirname).c_str())){
+		gSystem->Exec(("mkdir -p "+m_fname+"/"+dirname).c_str());
+	}
+
+	//get max + min time
+	double tMax = -999;
+	double tMin = 999;
+	for(int i = 0; i < m_points.GetNPoints(); i++){
+		if(m_points.at(i).Value(2) > tMax)
+			tMax = m_points.at(i).Value(2);
+		if(m_points.at(i).Value(2) < tMin)
+			tMin = m_points.at(i).Value(2);
+	}
+	double deltaT = 0.1;
+	//nsteps = deltaT*(tMax - tMin)
+	//loop through points
+	for(int i = 0; i < m_n; i++){
+		AddPlot(i, dirname+"_pt"+std::to_string(i));
+	}
+	//loop through iterations of time
+	//for(int t = tMin; t < tMax+deltaT; t += deltaT){
+	//	AddPlot(t, dirname+"_tEq"+std::to_string(t));
+	//}
+
+	//write series of plots in time
+	for(int i = 0; i < m_cvs.size(); i++){
+		m_cvs[i]->Write();
+		m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_"+std::to_string(i)+".pdf").c_str());
+	}
+	m_cvs.clear();
+	
+	
+
+	
 
 
 
+}
 
 
 void VarClusterViz3D::Write(){
 	if(m_n == 0){
 		return;
 	}
-	cout << "Writing plot(s) to: " << m_fname << ".root" << endl;
+	cout << "Writing plot(s) to: ./" << m_fname << "/" << endl;
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_k);

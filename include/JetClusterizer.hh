@@ -22,7 +22,9 @@ class JetClusterizer{
 		void Cluster();
 
 		//just runs varGMM over given jets
-		vector<Jet> FindSubjets(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
+		vector<Jet> FindSubjets_XYZ(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
+		//just runs varGMM over given jets
+		vector<Jet> FindSubjets_etaPhi(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	
 

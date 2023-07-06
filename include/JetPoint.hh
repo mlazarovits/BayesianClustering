@@ -24,7 +24,6 @@ class JetPoint{
 		double x(int i) const{ return m_vec.at(i); }
 
 
-		//eta
 		double eta() const{return m_eta;}
 		double phi() const{return m_phi;}
 		double Eta() const{return m_eta;}
@@ -38,6 +37,11 @@ class JetPoint{
 		double theta() const{return m_theta;}
 		double Theta() const{return m_theta;}
 
+		double time() const{return m_t;}
+		double x() const{return m_x;}
+		double y() const{return m_y;}
+		double z() const{return m_z;}
+	
 		void SetEta(double eta){ m_eta = eta; }
 		void SetPhi(double phi){ 
 			m_phi = setPhi_negPiToPi(phi);
