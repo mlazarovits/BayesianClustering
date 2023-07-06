@@ -31,6 +31,7 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 	m_n = m_points.GetNPoints();
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
+	m_deltaT = 0.1;
 }
 
 VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){ 
@@ -45,9 +46,10 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_n = m_points.GetNPoints();
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
+	m_deltaT = 0.1;
 }
 
-void VarClusterViz3D::AddPlot(int i, string plotName){
+void VarClusterViz3D::AddPlot(double t, string plotName){
 	if(m_n == 0){
 		return;
 	}
@@ -57,19 +59,20 @@ void VarClusterViz3D::AddPlot(int i, string plotName){
 	m_model->GetGausParameters(mus,covs);
 	m_model->GetMixingCoeffs(pis);
 	vector<double> x, y;
-	double time = m_points.at(i).Value(2);
-	for(int j = 0; j < m_n; j++){
+	for(int i = 0; i < m_n; i++){
+		//round time to nearest deltaT decimal place and plot if 0 < round(time) < t 
+		if(std::ceil(m_points.at(i).Value(2) / m_deltaT) * m_deltaT > t) continue;
 		//eta
-		x.push_back(m_points.at(j).Value(0));
+		x.push_back(m_points.at(i).Value(0));
 		//phi
-		y.push_back(m_points.at(j).Value(1));
+		y.push_back(m_points.at(i).Value(1));
 	}
 	for(int k = 0; k < m_k; k++){
 	//	cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];	
 	}
 
-	string cvName = "cv_"+plotName+"_"+std::to_string(i);
+	string cvName = "cv_"+plotName+"_tEq"+std::to_string(t).substr(0,3);
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
 	//get palette colors for circles
@@ -132,7 +135,7 @@ cout << "n pts: " << x.size() << endl;
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
-cout << "time: " << time << endl;
+cout << "time: " << t << endl;
 	cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << endl;	
 		//calculate mean of 2D ellipse profile
 		Matrix A11 = Matrix(2,2);
@@ -156,12 +159,12 @@ cout << "time: " << time << endl;
 		Matrix A21_A11inv_A12 = Matrix(1,1);
 		A21_A11inv_A12.mult(A21,A11inv_A12);
 
-		c_x = x0 - (time - z0)*A11inv_A12.at(0,0);
-		c_y = y0 - (time - z0)*A11inv_A12.at(1,0);
+		c_x = x0 - (t - z0)*A11inv_A12.at(0,0);
+		c_y = y0 - (t - z0)*A11inv_A12.at(1,0);
 
 		//calculate covariance matrix for 2D ellipse -> (x - mu)T*sigma*(x - mu) = 1
 		Matrix sigma = Matrix(2,2);
-		sigma.mult(A11, 1./(1. - (time - z0)*(time - z0)*(A22 - A21_A11inv_A12.at(0,0) )) );
+		sigma.mult(A11, 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0) )) );
 cout << "A11inv_A12" << endl;
 A11inv_A12.Print();
 
@@ -169,8 +172,8 @@ cout << "k: " << k << endl;
 		cout << "A11" << endl;
 		A11.Print();
 
-		cout << "sigma scaling factor: " << 1./(1. - (time - z0)*(time - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
-		cout << "(time - z0)^2: " << (time - z0)*(time - z0) << endl;
+		cout << "sigma scaling factor: " << 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
+		cout << "(t - z0)^2: " << (t - z0)*(t - z0) << endl;
 		cout << "A22 - A21_A11inv_A12: " << (A22 - A21_A11inv_A12.at(0,0)) << endl;
 		
 		cout << "sigma" << endl;
@@ -230,24 +233,19 @@ void VarClusterViz3D::AddAnimationPlots(string dirname){
 	}
 
 	//get max + min time
-	double tMax = -999;
-	double tMin = 999;
-	for(int i = 0; i < m_points.GetNPoints(); i++){
-		if(m_points.at(i).Value(2) > tMax)
-			tMax = m_points.at(i).Value(2);
-		if(m_points.at(i).Value(2) < tMin)
-			tMin = m_points.at(i).Value(2);
-	}
-	double deltaT = 0.1;
-	//nsteps = deltaT*(tMax - tMin)
-	//loop through points
-	for(int i = 0; i < m_n; i++){
-		AddPlot(i, dirname+"_pt"+std::to_string(i));
-	}
+	double tMax = m_points.max(2);
+	double tMin = m_points.min(2);
+	//nsteps = m_deltaT*(tMax - tMin)
 	//loop through iterations of time
-	//for(int t = tMin; t < tMax+deltaT; t += deltaT){
-	//	AddPlot(t, dirname+"_tEq"+std::to_string(t));
-	//}
+	int idx = std::to_string(m_deltaT).find("1")+1;
+	cout << "deltaT: " << m_deltaT << endl;
+	double t = tMin;
+	while(t < tMax){
+	//for(int t = tMin; t < tMax+m_deltaT; t += m_deltaT){
+		cout << "t: " << t << endl;
+		AddPlot(t, dirname+"_tEq"+std::to_string(t).substr(0,idx));
+		t += m_deltaT;
+	}
 
 	//write series of plots in time
 	cout << "Writing plot(s) to: ./" << m_fname << "/" << dirname << endl;

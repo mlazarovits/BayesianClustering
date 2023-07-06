@@ -25,8 +25,7 @@ class VarClusterViz3D{
 	
 		//add plot at specified t (z) value	
 		//time window?
-		//void AddPlot(double t, string plotName = "test");
-		void AddPlot(int i, string plotName = "test");
+		void AddPlot(double t, string plotName = "test");
 		void AddAnimationPlots(string dirName = "test");
 		void UpdatePosterior(){  
 			if(m_n == 0){
@@ -46,6 +45,7 @@ class VarClusterViz3D{
 		PointCollection m_points;	
 		int m_n; //number of points
 		int m_k; //number of clusters
+		double m_deltaT; //time slices for individual plots
 		string m_fname;	
 		vector<TCanvas*> m_cvs; 
 		Int_t m_palette[100];
