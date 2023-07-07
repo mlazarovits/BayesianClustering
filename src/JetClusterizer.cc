@@ -132,8 +132,9 @@ cout << "tMin: " << tMin << " tMax: " << tMax << endl;
 		dLogL = fabs(oldLogL - newLogL);
 		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(dLogL < LogLthresh){
-			if(viz)
-			cout << "Reached convergence at iteration " << it << endl;
+			if(viz){
+				cout << "Reached convergence at iteration " << it << endl;
+			}
 			break;
 		}
 	}

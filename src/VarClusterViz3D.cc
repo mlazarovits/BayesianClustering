@@ -18,6 +18,7 @@
 
 using std::string;
 
+
 //check for 2D data
 VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){ 
 	if(model->GetData().Dim() != 3){
@@ -50,6 +51,7 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 }
 
 void VarClusterViz3D::AddPlot(double t, string plotName){
+gErrorIgnoreLevel = kWarning;
 	if(m_n == 0){
 		return;
 	}
@@ -71,7 +73,6 @@ void VarClusterViz3D::AddPlot(double t, string plotName){
 	//	cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];	
 	}
-
 	string cvName = "cv_"+plotName+"_tEq"+std::to_string(t).substr(0,3);
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
@@ -85,7 +86,7 @@ void VarClusterViz3D::AddPlot(double t, string plotName){
 	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
 
 	
-cout << "n pts: " << x.size() << endl;
+//cout << "n pts: " << x.size() << endl;
 	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
 	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
@@ -95,6 +96,7 @@ cout << "n pts: " << x.size() << endl;
 	//can extend x/y axes so points aren't on border
 	gr_data->GetXaxis()->SetTitle("eta-norm");
 	gr_data->GetYaxis()->SetTitle("phi-norm");
+
 
 /*
 	TH1F* hist = gr_data->GetHistogram();
@@ -119,6 +121,8 @@ cout << "n pts: " << x.size() << endl;
 	//draw data	
 	graphPad->cd();
 	gr_data->Draw("ap");
+	gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
+	gr_data->GetXaxis()->SetLimits(-0.1,1.1);
 
 
 //	circlePad->cd();
@@ -127,7 +131,7 @@ cout << "n pts: " << x.size() << endl;
 	int color_idx;
 	//set coords for parameter circles
 	double x0, y0, z0, c_x, c_y, r_x, r_y, theta;
-	for(int k = 0; k < 1; k++){
+	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
 		if(pis[k]/pi_norm < 0.01)
 			continue; 
@@ -135,8 +139,8 @@ cout << "n pts: " << x.size() << endl;
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
-cout << "time: " << t << endl;
-	cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << endl;	
+//cout << "k: " << k << endl;
+//cout << "time: " << t << endl;
 		//calculate mean of 2D ellipse profile
 		Matrix A11 = Matrix(2,2);
 		A11.SetEntry(covs[k].at(0,0),0,0);
@@ -165,22 +169,21 @@ cout << "time: " << t << endl;
 		//calculate covariance matrix for 2D ellipse -> (x - mu)T*sigma*(x - mu) = 1
 		Matrix sigma = Matrix(2,2);
 		sigma.mult(A11, 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0) )) );
-cout << "A11inv_A12" << endl;
-A11inv_A12.Print();
+//cout << "A11inv_A12" << endl;
+//A11inv_A12.Print();
 
-cout << "k: " << k << endl;
-		cout << "A11" << endl;
-		A11.Print();
+	//	cout << "A11" << endl;
+	//	A11.Print();
 
-		cout << "sigma scaling factor: " << 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
-		cout << "(t - z0)^2: " << (t - z0)*(t - z0) << endl;
-		cout << "A22 - A21_A11inv_A12: " << (A22 - A21_A11inv_A12.at(0,0)) << endl;
-		
-		cout << "sigma" << endl;
-		sigma.Print();
+	//	cout << "sigma scaling factor: " << 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
+	//	cout << "(t - z0)^2: " << (t - z0)*(t - z0) << endl;
+	//	cout << "A22 - A21_A11inv_A12: " << (A22 - A21_A11inv_A12.at(0,0)) << endl;
+	//	
+	//	cout << "sigma" << endl;
+	//	sigma.Print();
 
-		cout << "cov" << endl;
-		covs[k].Print();
+	//	cout << "cov" << endl;
+	//	covs[k].Print();
 
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
@@ -190,9 +193,21 @@ cout << "k: " << k << endl;
 	
 		r_x = sqrt(eigenVals[0]);
 		r_y = sqrt(eigenVals[1]);
-cout << "sigma - eigenVals 0: " << eigenVals[0] << " eigenVals 1: " << eigenVals[1] << endl;
+//cout << "sigma - eigenVals 0: " << eigenVals[0] << " eigenVals 1: " << eigenVals[1] << endl;
 
-cout << "c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
+	vector<Matrix> eigenVecs0;
+	vector<double> eigenVals0;
+	covs[k].eigenCalc(eigenVals0, eigenVecs0);
+
+	double rx0 = eigenVals[0];
+	double ry0 = eigenVals[1];
+	double rz0 = eigenVals[2];
+if(k == 0 && t == 0.6){
+cout << "k: " << k << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
+cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
+cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
+covs[k].Print();
+}
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 		
@@ -209,10 +224,10 @@ cout << "c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y 
 		circle->SetLineColor(col);
 		circle->SetLineWidth(5);
 		//sets transparency normalized to sum
-		cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
+	//	cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
 	   	circle->SetFillStyle(1001);
 
-	cout << "\n" << endl;
+	///cout << "\n" << endl;
 
 		circle_bkg->SetLineColor(0); 
 		circle_bkg->SetLineWidth(8);
@@ -238,23 +253,24 @@ void VarClusterViz3D::AddAnimationPlots(string dirname){
 	//nsteps = m_deltaT*(tMax - tMin)
 	//loop through iterations of time
 	int idx = std::to_string(m_deltaT).find("1")+1;
-	cout << "deltaT: " << m_deltaT << endl;
 	double t = tMin;
+	vector<string> tlabels;
 	while(t < tMax){
 	//for(int t = tMin; t < tMax+m_deltaT; t += m_deltaT){
-		cout << "t: " << t << endl;
 		AddPlot(t, dirname+"_tEq"+std::to_string(t).substr(0,idx));
+		tlabels.push_back(std::to_string(t).substr(0,idx).replace(1,1,"p"));
 		t += m_deltaT;
 	}
 
+
 	//write series of plots in time
-	cout << "Writing plot(s) to: ./" << m_fname << "/" << dirname << endl;
+	cout << "Writing plots and gif to: ./" << m_fname << "/" << dirname << endl;
 	for(int i = 0; i < m_cvs.size(); i++){
-		if(i < 10)
-			m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_pt0"+std::to_string(i)+".gif").c_str());
-		else
-			m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_pt"+std::to_string(i)+".gif").c_str());
+		m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_tEq"+tlabels[i]+".gif").c_str());
 	}
+	gSystem->cd((m_fname+"/"+dirname).c_str());
+	gSystem->Exec(("convert -delay 50 -loop 1 *.gif "+dirname+".gif").c_str());
+	gSystem->cd("../../");
 	m_cvs.clear();
 	
 	
