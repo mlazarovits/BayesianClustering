@@ -53,7 +53,11 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 	rs.SetRange(m_dim - 1, m_dim+2);
 	m_nu0 = rs.SampleFlat();
 	m_post.SetDims(m_n, m_k);
-	
+
+	if(m_k < 1){
+		cout << "Error: need to specify maximum number of clusters (k) expected. Please set this with SetK(k)." << endl;
+		return;
+	}	
 
 	m_Elam.clear();
 	m_Epi.clear();
@@ -69,7 +73,7 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 	rs.SetRange(0.,1.);
 	for(int k = 0; k < m_k; k++){
-		m_betas.push_back(k*rs.SampleFlat() + 0.1);//rs.SampleFlat());
+		m_betas.push_back(m_beta0);//k*rs.SampleFlat() + 0.1);//rs.SampleFlat());
 	}
 	
 	Matrix mat;
@@ -78,16 +82,16 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		mat = Matrix(m_dim, 1);
 		mat.InitRandom(mean_lower, mean_upper, seed+k);
-		m_means.push_back(mat);
+		m_means.push_back(mat);//m_mean0);
 		mat.clear();
 	}
 	for(int k = 0; k < m_k; k++){
 		mat = Matrix(m_dim, m_dim);
-		mat.InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
-		m_Ws.push_back(mat);
+		mat.InitIdentity();//InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
+		m_Ws.push_back(mat);//m_W0);
 		mat.clear();
 	}
-	rs.SetRange(m_dim,m_dim*1.5);
+	rs.SetRange(m_dim-1,m_dim*1.5);
 	//rs.SetRange(m_dim-1,m_dim+2.);
 	for(int k = 0; k < m_k; k++)
 		m_nus.push_back(rs.SampleFlat());
@@ -136,8 +140,10 @@ void VarGaussianMixture::CalculatePosterior(){
 //cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
-	double E_mu_lam, post, norm;
+	double E_mu_lam, post, norm, expon;
 	vector<double> post_norms;
+	vector<double> rho; //r_nk = ln(p_nk)/sum_j ln(p_nj)
+	double rhoMax = 0; //subtract ln(p_nk)_max from every exponent in denom + norm to avoid numerical blow ups
 	Matrix x_mat, x_min_m, x_min_mT;
 	for(int n = 0; n < m_n; n++){
 		norm = 0;
@@ -155,27 +161,36 @@ void VarGaussianMixture::CalculatePosterior(){
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
-		//if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
-		//	if(n == 0){ cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << " W: " <<  endl;
-		//	m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_x.at(n).Print();
-			//}	
-			post = exp(post);
-			norm += post;
+	//		if(n < 5){ cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << " W: " <<  endl; m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_x.at(n).Print();}	
+			//find max ln(p_nk)
+			rho.push_back(post);
+			//if(fabs(post) > fabs(rhoMax)) rhoMax = post;
+			//post = exp(post);
+			//norm += post;
 			//need to normalize
-			m_post.SetEntry(post, n, k);
+			//m_post.SetEntry(post, n, k);
 		}
-		post_norms.push_back(norm);
+		double rhoMax = *std::max_element(rho.begin(),rho.end());
+		double rhoMin = *std::min_element(rho.begin(), rho.end());
+		//sum norms and subtract rhoMax
+		for(int k = 0; k < m_k; k++){
+			rho[k] = (rho[k] - rhoMin)/(rhoMax - rhoMin);
+			norm += exp(rho[k]);		
+	//	if(n < 5) cout << "rhoMax: " << rhoMax << " rhoMin: " << rhoMin << " rho[k] transf: " << rho[k] << " norm: " << norm << endl;
+		}
+		for(int k = 0; k < m_k; k++)
+			m_post.SetEntry(exp(rho[k])/norm, n, k);
+		rho.clear();
 	}
 //cout << "posterior pre-norm" << endl;	
 	//m_post.Print();
 	//normalize
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
-			m_post.SetEntry(m_post.at(n,k)/post_norms[n],n,k);
 		//uncomment here to check posterior values
-		//	if(n == 0) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
+//			if(n < 5) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << endl;//" norm: " << post_norms[n] << endl;
 		}
 	}
 //cout << "posterior normed" << endl;	
@@ -373,11 +388,12 @@ double VarGaussianMixture::EvalLogL(){
 		//S_k*W_k = dxd matrix
 		Matrix tmp_S_W = Matrix(m_dim, m_dim);
 		tmp_S_W.mult(m_Ss[k],m_Ws[k]);
-//	cout << "k: " << k << " norm: " << m_norms[k] << " Elam: " << m_Elam[k] << " m_dim: " << m_dim << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " trace: " << tmp_S_W.trace() << " full: " << full.at(0,0) << endl;		
+	//cout << "k: " << k << " norm: " << m_norms[k] << " Elam: " << m_Elam[k] << " m_dim: " << m_dim << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " trace: " << tmp_S_W.trace() << " full: " << full.at(0,0) << endl;		
 		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*full.at(0,0) - m_dim*log(2*acos(-1)));
 
 	}
 	E_p_all *= 0.5;
+//cout << "E_p_all done" << endl;
 
 	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(m_Epi[k])
 	E_p_Z = 0;
@@ -392,6 +408,7 @@ double VarGaussianMixture::EvalLogL(){
 	E_p_pi *= (m_alpha0 - 1);
 	E_p_pi += Dir_lnC(m_alpha0,m_k);
 
+//cout << "E_p_pi done" << endl;
 
 	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
 	E_p_muLam = 0;
@@ -419,6 +436,7 @@ double VarGaussianMixture::EvalLogL(){
 	}
 	E_p_muLam += Wish_lnB(m_W0,m_nu0);
 
+//cout << "E_p_muLam done" << endl;
 	//E[ln(q(Z)]
 	E_q_Z = 0;
 	for(int n = 0; n < m_n; n++)
@@ -434,6 +452,7 @@ double VarGaussianMixture::EvalLogL(){
 	double dir_norm = Dir_lnC(m_alphas);
 	E_q_pi += dir_norm;
 	
+//cout << "E_q_pi done" << endl;
 	//E[ln(q(mu, lam))]
 	E_q_muLam = 0;
 	double H;
@@ -446,6 +465,7 @@ double VarGaussianMixture::EvalLogL(){
 		E_q_muLam += 0.5*( m_Elam[k] + m_dim/2.*log(m_betas[k]/(2*acos(-1))) - m_dim/2. );
 		E_q_muLam -= H;
 	}
+//cout << "E_q_muLam done" << endl;
 /*
 	cout << "E_p_all: " << E_p_all << endl;
 	cout << "E_p_Z: " << E_p_Z << endl;
