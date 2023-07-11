@@ -26,13 +26,14 @@ class VarClusterViz3D{
 		//add plot at specified t (z) value	
 		//time window?
 		void AddPlot(double t, string plotName = "test");
-		void AddAnimationPlots(string dirName = "test");
+		void AddAnimation(string dirName = "test");
 		void UpdatePosterior(){  
 			if(m_n == 0){
 				return;
 			}
 			m_post = m_model->GetPosterior();
 		}	
+		void SeeData();
 		void Write();
 		void SetPalette(int k);
 

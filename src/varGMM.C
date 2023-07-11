@@ -1,6 +1,7 @@
 #include "VarGaussianMixture.hh"
 #include "RandomSample.hh"
 #include "VarClusterViz2D.hh"
+#include "VarClusterViz3D.hh"
 #include <iostream>
 #include <cmath>
 
@@ -18,11 +19,12 @@ int main(int argc, char *argv[]){
 	string fname = "test";
 	bool hprint = false;
 	//dimensionality
-	int N = 2;
+	int N = 3;
 	//n data points
 	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
+	bool viz = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -70,6 +72,12 @@ int main(int argc, char *argv[]){
 			i++;
     	 		nIts = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"-v", 2) == 0){
+    	 		viz = true;
+   		}
+		if(strncmp(argv[i],"--viz", 5) == 0){
+    	 		viz = true;
+   		}
 	
 	}
 	if(hprint){
@@ -80,7 +88,8 @@ int main(int argc, char *argv[]){
    		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
-   		cout << "   --nIterations(-it) [nIts]   sets number of iterations for EM algorithm (default = 50)" << endl;
+   		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
+   		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -97,7 +106,7 @@ int main(int argc, char *argv[]){
 	Matrix sigma = Matrix(N,N);
 	sigma.InitRandomSymPosDef();
 	Matrix mu = Matrix(N,1);
-	mu.InitRandom();
+	mu.InitRandom(1121);
 	////sample points from an n-dim gaussian for one cluster
 	Matrix mat;
 	mat.SampleNDimGaussian(mu,sigma,Nsample);
@@ -113,19 +122,59 @@ int main(int argc, char *argv[]){
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 	pc += mat2.MatToPoints();
 	
+/*
+	//translate first
+	vector<double> shifts = pc.Center();
+	Matrix shift = Matrix(Nsample*k,N);
+	for(int i = 0; i < Nsample*k; i++){
+		for(int j = 0; j < N; j++){
+			shift.SetEntry(shifts[j], i, j);
+		}
+	}
+	//then scale
+	vector<double> scales = pc.Normalize();
+	Matrix scale = Matrix(N,N);
+	for(int i = 0; i < N; i++)
+		scale.SetEntry(1./scales[i],i,i);
+*/
 
-	
+
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
 	vgmm.AddData(pc);
-	VarClusterViz2D cv2D = VarClusterViz2D(&vgmm, fname);
 
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
+	VarClusterViz3D cv3D = VarClusterViz3D(&vgmm, fname);
+	
+
+	vector<Matrix> mus, covs;
+	vector<double> pis;
+	vector<Matrix> eigenVecs;
+	vector<double> eigenVals;
+	double theta;
+	sigma.eigenCalc(eigenVals, eigenVecs);
+	vgmm.GetGausParameters(mus,covs);
+	vgmm.GetMixingCoeffs(pis);
+	cout << "Initial Estimated parameters" << endl;
+	for(int i = 0; i < k; i++){
+		cout << "mean " << i+1 << endl;
+		mus[i].Print();
+		cout << "covs " << i+1 << endl;
+		covs[i].Print();
+		covs[i].eigenCalc(eigenVals, eigenVecs);
+		cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
+		//take direction of largest eigenvalue
+		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+		
+		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+		cout << "theta: " << theta << endl;
+	}
+
 	//loop
 	double dLogL, newLogL, oldLogL;
 	double LogLThresh = 0.0001;
-	double it = 0;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
 		oldLogL = vgmm.EvalLogL();
@@ -136,9 +185,32 @@ int main(int argc, char *argv[]){
 		vgmm.UpdateParameters();
 		
 		//Plot
-		cv2D.UpdatePosterior();
-		cv2D.AddPlot("it"+std::to_string(it));
+		cv3D.UpdatePosterior();
+		if(viz) cv3D.AddAnimation("it"+std::to_string(it));
+	//	cv3D.AddPlot("it"+std::to_string(it));
 		
+		mus.clear(); covs.clear();
+		pis.clear();
+		vgmm.GetGausParameters(mus,covs);
+		vgmm.GetMixingCoeffs(pis);
+		cout << "iteration #" << it << ": Estimated parameters" << endl;
+		for(int i = 0; i < 1; i++){
+			cout << "mean " << i+1 << endl;
+			mus[i].Print();
+			cout << "covs " << i+1 << endl;
+			covs[i].Print();
+			covs[i].eigenCalc(eigenVals, eigenVecs);
+			cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
+			//take direction of largest eigenvalue
+			int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+			
+			//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+			cout << "theta: " << theta << endl;
+			
+		}
+
+	
 		//Check for convergence
 		newLogL = vgmm.EvalLogL();
 		if(isnan(newLogL)){
@@ -149,33 +221,54 @@ int main(int argc, char *argv[]){
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
-			break;
+	//		break;
 		}
+		cout << "\n" << endl;
 		
 	}
-	cv2D.Write();
-	vector<Matrix> mus, covs;
-	vector<double> pis;
-	vgmm.GetGausParameters(mus,covs);
-	vgmm.GetMixingCoeffs(pis);
-	cout << "Estimated parameters" << endl;
+	cv3D.SeeData();
+	cv3D.Write();
+/*
+cout << "\n" << endl;	
+	cout << "Scaled + Translated Estimated parameters" << endl;
 	for(int i = 0; i < k; i++){
 		cout << "mean " << i+1 << endl;
+		mus[i].mult(scale,mus[i]);
+		for(int j = 0; j < N; j++)
+			mus[i].SetEntry(mus[i].at(j,0) + shift.at(j,0),j, 0);
+		
 		mus[i].Print();
 		cout << "covs " << i+1 << endl;
+		covs[i].mult(scale, covs[i]);
+		for(int j = 0; j < N; j++)
+			covs[i].SetEntry(covs[i].at(j,0) + shift.at(j,0),j, 0);
 		covs[i].Print();
 		cout << "mixing coeff " << i+1 << " " << pis[i] << endl;
 	}
+*/
 
+cout << "\n" << endl;	
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;
 	mu.Print();
 	cout << "cov 1" << endl;
 	sigma.Print();
+	
+	eigenVals.clear(); eigenVecs.clear();
+	sigma.eigenCalc(eigenVals, eigenVecs);
+	cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
+	//take direction of largest eigenvalue
+	int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+	
+	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+	theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+	cout << "theta: " << theta << endl;
 	cout << "mean 2" << endl;
 	mu2.Print();
-	cout << "cov 1" << endl;
+	cout << "cov 2" << endl;
 	sigma2.Print();
 cout << "\n" << endl;	
+
+	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
 
 }

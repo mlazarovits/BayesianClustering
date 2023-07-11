@@ -3,6 +3,7 @@
 
 #include <TSystem.h>
 #include <TGraph.h>
+#include <TGraph2D.h>
 #include <TF3.h>
 #include <TColor.h>
 #include <TROOT.h>
@@ -69,11 +70,14 @@ gErrorIgnoreLevel = kWarning;
 		//phi
 		y.push_back(m_points.at(i).Value(1));
 	}
+	//if no points - empty plot
+	if(x.size() == 0) return;
+
 	for(int k = 0; k < m_k; k++){
 	//	cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];	
 	}
-	string cvName = "cv_"+plotName+"_tEq"+std::to_string(t).substr(0,3);
+	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
 	//get palette colors for circles
@@ -85,8 +89,6 @@ gErrorIgnoreLevel = kWarning;
 	Int_t ci = TColor::GetFreeColorIndex();
 	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
 
-	
-//cout << "n pts: " << x.size() << endl;
 	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
 	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
 	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
@@ -121,8 +123,8 @@ gErrorIgnoreLevel = kWarning;
 	//draw data	
 	graphPad->cd();
 	gr_data->Draw("ap");
-	gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
-	gr_data->GetXaxis()->SetLimits(-0.1,1.1);
+	//gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
+	//gr_data->GetXaxis()->SetLimits(-0.1,1.1);
 
 
 //	circlePad->cd();
@@ -131,6 +133,9 @@ gErrorIgnoreLevel = kWarning;
 	int color_idx;
 	//set coords for parameter circles
 	double x0, y0, z0, c_x, c_y, r_x, r_y, theta;
+	double rx0;
+        double ry0;
+        double rz0;
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
 		if(pis[k]/pi_norm < 0.01)
@@ -139,74 +144,34 @@ gErrorIgnoreLevel = kWarning;
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
-//cout << "k: " << k << endl;
-//cout << "time: " << t << endl;
-		//calculate mean of 2D ellipse profile
-		Matrix A11 = Matrix(2,2);
-		A11.SetEntry(covs[k].at(0,0),0,0);
-		A11.SetEntry(covs[k].at(0,1),0,1);
-		A11.SetEntry(covs[k].at(1,0),1,0);
-		A11.SetEntry(covs[k].at(1,1),1,1);
-		Matrix A11inv = Matrix(2,2);
-		A11inv.invert(A11);	
 
-		Matrix A12 = Matrix(2,1);
-		A12.SetEntry(covs[k].at(0,2),0,0);
-		A12.SetEntry(covs[k].at(1,2),1,0);
-		Matrix A21 = Matrix(1,2);
-		A21.SetEntry(covs[k].at(2,0),0,0);
-		A21.SetEntry(covs[k].at(2,1),0,1);
-		double A22 = covs[k].at(2,2);
 
-		Matrix A11inv_A12 = Matrix(2,1);
-		A11inv_A12.mult(A11inv,A12);
-		Matrix A21_A11inv_A12 = Matrix(1,1);
-		A21_A11inv_A12.mult(A21,A11inv_A12);
-
-		c_x = x0 - (t - z0)*A11inv_A12.at(0,0);
-		c_y = y0 - (t - z0)*A11inv_A12.at(1,0);
-
-		//calculate covariance matrix for 2D ellipse -> (x - mu)T*sigma*(x - mu) = 1
-		Matrix sigma = Matrix(2,2);
-		sigma.mult(A11, 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0) )) );
-//cout << "A11inv_A12" << endl;
-//A11inv_A12.Print();
-
-	//	cout << "A11" << endl;
-	//	A11.Print();
-
-	//	cout << "sigma scaling factor: " << 1./(1. - (t - z0)*(t - z0)*(A22 - A21_A11inv_A12.at(0,0)) ) << endl;
-	//	cout << "(t - z0)^2: " << (t - z0)*(t - z0) << endl;
-	//	cout << "A22 - A21_A11inv_A12: " << (A22 - A21_A11inv_A12.at(0,0)) << endl;
-	//	
-	//	cout << "sigma" << endl;
-	//	sigma.Print();
-
-	//	cout << "cov" << endl;
-	//	covs[k].Print();
-
-		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
-		sigma.eigenCalc(eigenVals, eigenVecs);
-	//	covs[k].eigenCalc(eigenVals, eigenVecs);
+		covs[k].eigenCalc(eigenVals, eigenVecs);
 	
-		r_x = sqrt(eigenVals[0]);
-		r_y = sqrt(eigenVals[1]);
-//cout << "sigma - eigenVals 0: " << eigenVals[0] << " eigenVals 1: " << eigenVals[1] << endl;
-
-	vector<Matrix> eigenVecs0;
-	vector<double> eigenVals0;
-	covs[k].eigenCalc(eigenVals0, eigenVecs0);
-
-	double rx0 = eigenVals[0];
-	double ry0 = eigenVals[1];
-	double rz0 = eigenVals[2];
-if(k == 0 && t == 0.6){
-cout << "k: " << k << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
+		rx0 = 1./sqrt(eigenVals[0]);
+		ry0 = 1./sqrt(eigenVals[1]);
+		rz0 = 1./sqrt(eigenVals[2]);
+		
+		//project onto x-y plane
+		r_x = rx0*sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) );
+		r_y = ry0*sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) );
+		
+		c_x = x0;
+		c_y = y0;
+if(k == 0){ //&& t == 0.6){
+cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
 cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
+cout << "t-z0: " << (t - z0) << endl;
+cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
+cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
+cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
+cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
+cout << "rx0: " << 1./sqrt(rx0) << " ry0: " << 1./sqrt(ry0) << " rz0: " << 1./sqrt(rz0) << endl;
 covs[k].Print();
+cout << "\n" << endl;
 }
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
@@ -214,8 +179,6 @@ covs[k].Print();
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
 	
-	//	c_x = x0;
-	//	c_y = y0;
 	
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
@@ -240,7 +203,51 @@ covs[k].Print();
 }
 
 
-void VarClusterViz3D::AddAnimationPlots(string dirname){
+
+
+void VarClusterViz3D::SeeData(){
+	vector<double> x, y, z;
+	for(int i = 0; i < m_n; i++){
+		//eta
+		x.push_back(m_points.at(i).Value(0));
+		//phi
+		y.push_back(m_points.at(i).Value(1));
+		//time
+		z.push_back(m_points.at(i).Value(2));
+	}
+	
+if(m_n == 0 || x.size() == 0){
+	cout << "Error: no data to plot." << endl;
+	return;
+}
+	string cvName = "cv_data";//+plotName+"_tEq"+std::to_string(t).substr(0,3);
+	cout << "cvName: " << cvName << endl;
+	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	
+	//sage green
+	Int_t ci = TColor::GetFreeColorIndex();
+	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
+
+	
+//cout << "n pts: " << x.size() << endl;
+	TGraph2D* gr_data = new TGraph2D((int)x.size(), &x[0], &y[0], &z[0]);
+	gr_data->SetTitle("VarGMM EM Clustering - data only");
+	gr_data->SetName("VarGMM EM Clustering - data only");
+	gr_data->SetMarkerStyle(24);
+	gr_data->SetMarkerSize(0.95);
+	gr_data->SetMarkerColorAlpha(ci,1);
+	//can extend x/y axes so points aren't on border
+	gr_data->GetXaxis()->SetTitle("X");
+	gr_data->GetYaxis()->SetTitle("Y");
+	gr_data->GetZaxis()->SetTitle("Z");
+	
+	gr_data->Draw("p");
+
+	m_cvs.push_back(cv);
+
+}
+
+void VarClusterViz3D::AddAnimation(string dirname){
 	//out folder does not exist
 	//ie) dirname = it_0
 	if(gSystem->AccessPathName((m_fname+"/"+dirname).c_str())){
@@ -254,11 +261,20 @@ void VarClusterViz3D::AddAnimationPlots(string dirname){
 	//loop through iterations of time
 	int idx = std::to_string(m_deltaT).find("1")+1;
 	double t = tMin;
+	
 	vector<string> tlabels;
+	string label;
 	while(t < tMax){
-	//for(int t = tMin; t < tMax+m_deltaT; t += m_deltaT){
-		AddPlot(t, dirname+"_tEq"+std::to_string(t).substr(0,idx));
-		tlabels.push_back(std::to_string(t).substr(0,idx).replace(1,1,"p"));
+		string t_str = std::to_string(t);
+		std::size_t idx1 = t_str.find(".");
+		t_str.replace(idx1,1,"p");
+		t_str = t_str.substr(0,idx1+2);
+	//	if(std::to_string(t).find("-") != string::npos)
+	//		t_str = "m"+t_str;
+	//	else
+	//		t_str = "p"+t_str;
+		AddPlot(t, dirname+"_"+t_str);
+		tlabels.push_back(t_str);
 		t += m_deltaT;
 	}
 
@@ -268,11 +284,11 @@ void VarClusterViz3D::AddAnimationPlots(string dirname){
 	for(int i = 0; i < m_cvs.size(); i++){
 		m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_tEq"+tlabels[i]+".gif").c_str());
 	}
+	
 	gSystem->cd((m_fname+"/"+dirname).c_str());
 	gSystem->Exec(("convert -delay 50 -loop 1 *.gif "+dirname+".gif").c_str());
-	gSystem->cd("../../");
+	gSystem->cd("../../../");
 	m_cvs.clear();
-	
 	
 
 	
@@ -286,22 +302,16 @@ void VarClusterViz3D::Write(){
 	if(m_n == 0){
 		return;
 	}
-	cout << "Writing plot(s) to: ./" << m_fname << "/" << endl;
+	cout << "Writing plot(s) to: ./" << m_fname << ".root" << endl;
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_k);
-
-	//out folder does not exist
-	if(gSystem->AccessPathName(m_fname.c_str())){
-		gSystem->Exec(("mkdir "+m_fname).c_str());
-	}
-	
+	//write to root file
 	for(int i = 0; i < m_cvs.size(); i++){
 		m_cvs[i]->Write();
-		m_cvs[i]->SaveAs((m_fname+"/cv_"+std::to_string(i)+".pdf").c_str());
 	}
-
 	f->Close();
+
 
 }
 
