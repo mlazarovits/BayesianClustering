@@ -121,7 +121,7 @@ cout << "tMin: " << tMin << " tMax: " << tMax << endl;
 		//Plot
 		if(viz){
 			cv3D.UpdatePosterior();
-			cv3D.AddAnimationPlots("it"+std::to_string(it));
+			cv3D.AddAnimation("it"+std::to_string(it));
 		}
 		//Check for convergence
 		newLogL = vgmm.EvalLogL();
@@ -130,7 +130,7 @@ cout << "tMin: " << tMin << " tMax: " << tMax << endl;
 			return subjets;
 		}
 		dLogL = fabs(oldLogL - newLogL);
-		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << "\n" << endl;
 		if(dLogL < LogLthresh){
 			if(viz){
 				cout << "Reached convergence at iteration " << it << endl;
@@ -191,7 +191,7 @@ cout << n_pts << " constituents to cluster" << endl;
 		//Plot
 		if(viz){
 			cv3D.UpdatePosterior();
-			cv3D.AddAnimationPlots("it"+std::to_string(it));
+			cv3D.AddAnimation("it"+std::to_string(it));
 		}
 		//Check for convergence
 		newLogL = vgmm.EvalLogL();

@@ -137,7 +137,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		//probably should use atan2
-		theta = atan(eigenVecs[maxValIdx].at(1,0)/eigenVecs[maxValIdx].at(0,0));
+		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
 	
 		//convert to degrees
 		theta = 180*theta/acos(-1);
@@ -181,7 +181,7 @@ void VarClusterViz2D::Write(){
 	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
 	f->cd();
 	SetPalette(m_k);
-
+cout << "# cvs: " << m_cvs.size() << endl;
 	//out folder does not exist
 	if(gSystem->AccessPathName(m_fname.c_str())){
 		gSystem->Exec(("mkdir "+m_fname).c_str());
@@ -189,6 +189,9 @@ void VarClusterViz2D::Write(){
 	
 	for(int i = 0; i < m_cvs.size(); i++){
 		m_cvs[i]->Write();
+		if(i < 10)	
+		m_cvs[i]->SaveAs((m_fname+"/cv_0"+std::to_string(i)+".pdf").c_str());
+		else
 		m_cvs[i]->SaveAs((m_fname+"/cv_"+std::to_string(i)+".pdf").c_str());
 	}
 
