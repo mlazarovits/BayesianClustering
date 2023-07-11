@@ -261,47 +261,69 @@ class PointCollection{
 
 	}
 
+	//center all dimensions independently
+	vector<double> Center(){
+		vector<double>min;
+		for(int d = 0; d < _nDim; d++){
+			min.push_back(this->min(d));
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d) - min[d],d);
+			}
+		}
+		return min;
+	}
+	void Translate(vector<double> t){
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d) - t[d],d);
+			}
+		}
+
+	}
+	void Translate(double t){
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d) - t,d);
+			}
+		}
+
+	}
+
+
+	//normalize all dimensions indepedently
+	vector<double> Normalize(){
+		double min, max;
+		vector<double> scale;
+		for(int d = 0; d < _nDim; d++){
+			min = this->min(d);
+			max = this->max(d);
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d)/(max - min),d);
+			}
+			scale.push_back(1./(max - min));
+		}
+		return scale;
+	}
+	
+	void Scale(vector<double> s){
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d)/(s[d]),d);
+			}
+		}
+
+	}
+	void Scale(double s){
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d)/(s),d);
+			}
+		}
+
+	}
 	
 
 
-/*
-
-	void FillGaus1D(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1, unsigned long long seed = 123){
-		if((int)mean.size() != dim || (int)sigma.size() != dim || mean.size() != sigma.size()){
-			cout << "Please provide consistent parameters and dimensionality. Mean: " << mean.size() << " sigma: " << sigma.size() << " dimensions: " << dim << endl;
-			return;
-		}
-		_pts.clear();
-		
-		if(_nDim != 0 && dim != _nDim){
-			cout << "Error: dimensions provided " << dim << " are incompatible with existing dimensions " << _nDim << "." << endl;
-		return;
-		}
-		if(_nDim == 0) _nDim = dim;
-
-		RandomSample rs(seed);
-		rs.SetRange(0.,1.);
-		vector<vector<double>> dims(dim);
-		//sample each dimension independently
-		for(int d = 0; d < dim; d++){
-			if(sigma[d] < 0){
-				cout << "Please input valid sigma > 0" << endl;
-				return;
-			}
-			dims[d] = rs.SampleGaussian(mean[d], sigma[d], Nsample);
-		}
-		for(int i = 0; i < Nsample; i++){
-			VD x;
-			for(int d = 0; d < dim; d++){
-				x += dims[d][i];
-			}
-			_pts.push_back(Point(x));
-			x.clear();
-		
-		}	
-	}	
-
-*/
 	private:
 		int _nDim = 0;
 		vector<Point> _pts;
