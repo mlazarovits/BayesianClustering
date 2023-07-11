@@ -37,6 +37,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		//E[pi_k] = (alpha_k + N_k)/(K*alpha_0 + N)
 		void GetMixingCoeffs(vector<double>& pis){
 			pis.clear();
+			if(m_alphas.size() == 0 || m_norms.size() == 0) return;
 			for(int k = 0; k < m_k; k++){
 				pis.push_back((m_alphas[k] + m_norms[k])/(m_k*m_alpha0 + m_n));
 			}
@@ -68,6 +69,11 @@ class VarGaussianMixture : public BasePDFMixture{
 			int cnt = 0;
 			vector<double> pis;
 			GetMixingCoeffs(pis);
+			if(pis.size() == 0){ 
+				cout << "Error: initial Dirichlet parameters not set. Please call Initialize() on VarGaussianMixture." << endl;
+				return 0;
+			
+			}
 			for(int k = 0; k < m_k; k++){
 				if(pis[k] > thresh)
 					cnt++;
