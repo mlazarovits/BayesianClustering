@@ -391,6 +391,7 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 }
 
 
+
 void Matrix::transpose(const Matrix& mat){
 	clear();
 	SetDims(mat.GetDims()[1], mat.GetDims()[0]);
@@ -443,7 +444,7 @@ void Matrix::add(const Matrix& mat1, const Matrix& mat2){
 	vector<int> dims1 = mat1.GetDims();
 	vector<int> dims2 = mat2.GetDims();
 	if(dims1[0] != dims2[0] || dims1[1] != dims2[1]){
-		cout << "Error: matrix dimensions are not compatible for addition." << endl;
+		cout << "Error: matrix dimensions are not compatible for addition: " << dims1[0] << "x" << dims1[1] << " and " << dims2[0] << "x" << dims2[1] << endl;
 		return;
 	}
 	SetDims(dims1[0],dims1[1]);
@@ -460,7 +461,7 @@ void Matrix::add(const Matrix& mat){
 	//check dims are compatible
 	vector<int> dims1 = mat.GetDims();
 	if(dims1[0] != m_row || dims1[1] != m_col){
-		cout << "Error: matrix dimensions are not compatible for addition." << endl;
+		cout << "Error: matrix dimensions are not compatible for addition: " << dims1[0] << "x" << dims1[1] << " and " << m_row << "x" << m_col << endl;
 		return;
 	}
 	for(int i = 0; i < dims1[0]; i++){
@@ -605,6 +606,8 @@ double Matrix::trace(){
 void Matrix::PointsToMat(PointCollection& pc){
 	m_col = pc.GetNPoints();
 	m_row = pc.Dim();
+
+	InitEmpty();
 	
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){

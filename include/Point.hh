@@ -158,6 +158,23 @@ class Point{
 
 		}
 
+
+	
+	void Scale(double s){
+		for(int d = 0; d < _nDim; d++){
+				_value[d] *= s;
+			}
+		}
+
+
+	void Invert(){
+		for(int d = 0; d < _nDim; d++){
+				_value[d] = 1./_value[d];
+			}
+		}
+		
+
+
 	private:
 		int _nDim;
 		vector<double> _value;

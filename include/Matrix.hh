@@ -53,6 +53,19 @@ class Matrix{
 		void clear();
 		void Print() const;
 		void reset(){ clear(); InitEmpty(); }
+		//sets this to be a shift matrix
+		void PointToShift(const Point& pt){
+			if(pt.Dim() != m_row) return;
+			for(int i = 0; i < m_row; i++)
+				for(int j = 0; j < m_col; j++)
+					SetEntry(pt.at(i),i,j);
+		}
+		//sets this to be a scale matrix
+		void PointToScale(const Point& pt){
+			if(pt.Dim() != m_row) return;
+			for(int i = 0; i < m_row; i++)
+				SetEntry(pt.at(i),i,i);
+		}
 		//update entries
 		//add entries
 	private:

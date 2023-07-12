@@ -242,35 +242,41 @@ class PointCollection{
 	}
 	
 	double max(int d = 0){
-		double max = -999;
-		for(int i = 0; i < GetNPoints(); i++){
-			if(_pts[i].Value(d) > max)
-				max = _pts[i].Value(d);
-		} 
-		return max;
-
+		vector<double> pts; 
+		for(int i = 0; i < GetNPoints(); i++)
+			pts.push_back(_pts[i].Value(d));
+		return *std::max_element(pts.begin(), pts.end());
 	}
 
 	double min(int d = 0){
-		double min = 999;
-		for(int i = 0; i < GetNPoints(); i++){
-			if(_pts[i].Value(d) < min)
-				min = _pts[i].Value(d);
-		} 
-		return min;
-
+		vector<double> pts; 
+		for(int i = 0; i < GetNPoints(); i++)
+			pts.push_back(_pts[i].Value(d));
+		return *std::min_element(pts.begin(), pts.end());
 	}
 
 	//center all dimensions independently
-	vector<double> Center(){
-		vector<double>min;
+	//vector<double> Center(){
+	Point Center(){
+		//vector<double> min;
+		Point min = Point(_nDim);
 		for(int d = 0; d < _nDim; d++){
-			min.push_back(this->min(d));
+			//min.push_back(this->min(d));
+			min.SetValue(this->min(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
-				_pts[i].SetValue(_pts[i].at(d) - min[d],d);
+				_pts[i].SetValue(_pts[i].at(d) - min.at(d),d);
 			}
 		}
 		return min;
+	}
+	void Translate(Point t){
+		if(t.Dim() != _nDim) return;
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d) - t.at(d),d);
+			}
+		}
+
 	}
 	void Translate(vector<double> t){
 		for(int d = 0; d < _nDim; d++){
@@ -291,24 +297,36 @@ class PointCollection{
 
 
 	//normalize all dimensions indepedently
-	vector<double> Normalize(){
+	//vector<double> Normalize(){
+	Point Normalize(){
 		double min, max;
-		vector<double> scale;
+		//vector<double> scale;
+		Point scale = Point(_nDim);
 		for(int d = 0; d < _nDim; d++){
 			min = this->min(d);
 			max = this->max(d);
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d)/(max - min),d);
 			}
-			scale.push_back(1./(max - min));
+			//scale.push_back(1./(max - min));
+			scale.SetValue((max - min),d);
 		}
 		return scale;
 	}
 	
+	void Scale(Point s){
+		if(s.Dim() != _nDim) return;
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d)*(s.at(d)),d);
+			}
+		}
+
+	}
 	void Scale(vector<double> s){
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
-				_pts[i].SetValue(_pts[i].at(d)/(s[d]),d);
+				_pts[i].SetValue(_pts[i].at(d)*(s[d]),d);
 			}
 		}
 
@@ -316,7 +334,7 @@ class PointCollection{
 	void Scale(double s){
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
-				_pts[i].SetValue(_pts[i].at(d)/(s),d);
+				_pts[i].SetValue(_pts[i].at(d)*(s),d);
 			}
 		}
 
