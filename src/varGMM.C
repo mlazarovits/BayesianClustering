@@ -114,10 +114,10 @@ int main(int argc, char *argv[]){
 	
 	//sample points for another cluster
 	Matrix sigma2 = Matrix(N,N);
-//	sigma2.InitRandomSymPosDef(0.,1.,111);
-	sigma2.SetEntry(0.5,0,0);
-	sigma2.SetEntry(0.4,1,1);
-	sigma2.SetEntry(0.6,2,2);
+	sigma2.InitRandomSymPosDef(0.,1.,111);
+//	sigma2.SetEntry(0.5,0,0);
+//	sigma2.SetEntry(0.4,1,1);
+//	sigma2.SetEntry(0.6,2,2);
 	Matrix mu2 = Matrix(N,1);
 	mu2.InitRandom(0.,1.,112);
 	
@@ -278,5 +278,11 @@ cout << "\n" << endl;
 	cout << "cov 2" << endl;
 	sigma2.Print();
 	cout << "rx: " << sqrt(eigenVals[0]/scale.at(0)) << " ry: " << sqrt(eigenVals[1]/scale.at(1)) << " rz: " << sqrt(eigenVals[2]/scale.at(2)) << endl;
+	//take direction of largest eigenvalue
+	maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+	
+	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
+			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+			cout << "theta: " << theta << endl;
 	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
 }

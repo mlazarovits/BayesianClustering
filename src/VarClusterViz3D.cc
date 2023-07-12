@@ -183,12 +183,10 @@ gErrorIgnoreLevel = kWarning;
 
 		covs[k].eigenCalc(eigenVals, eigenVecs);
 	
-		
-	
+		//scale = 1/(max - min)
 		rx0 = sqrt(eigenVals[0]*m_scale.at(0));
 		ry0 = sqrt(eigenVals[1]*m_scale.at(1));
 		rz0 = sqrt(eigenVals[2]*m_scale.at(2));
-
 	
 		//project onto x-y plane
 		r_x = rx0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
@@ -197,20 +195,6 @@ gErrorIgnoreLevel = kWarning;
 		
 		c_x = x0;
 		c_y = y0;
-if(k == 1 && t == 0.6){
-cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
-cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
-cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
-cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl; 
-cout << "scale x: " << m_scale.at(0) << endl;
-cout << "t-z0: " << (t - z0) << endl;
-cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
-cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
-cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
-cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
-covs[k].Print();
-cout << "\n" << endl;
-}
 		//if rx or ry is nan -> ellipse doesn't exist at this value of t
 		if(isnan(r_x) || isnan(r_y)) continue;
 		//take direction of largest eigenvalue
@@ -233,7 +217,8 @@ covs[k].Print();
 cout << "theta: " << theta << endl;
 cout << "\n" << endl;
 }
-	
+		//convert to degrees
+		theta = 180*theta/acos(-1);	
 	
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
