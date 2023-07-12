@@ -34,6 +34,17 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
 	m_deltaT = 0.1;
+
+	//normalize data
+	m_shift = m_points.Center();
+	//want to apply same transformation to points: (x - shift)/scale
+	m_shift.Scale(-1);
+	m_scale = m_points.Normalize();
+	cout << "max - min (1/scale)" << endl;
+	m_scale.Print();
+	m_scale.Invert();
+	
+
 }
 
 VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){ 
@@ -49,6 +60,13 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
 	m_deltaT = 0.1;
+	
+	//normalize data
+	m_shift = m_points.Center();
+	//want to apply same transformation to points: (x - shift)/scale
+	m_shift.Scale(-1);
+	m_scale = m_points.Normalize();
+	m_scale.Invert();
 }
 
 void VarClusterViz3D::AddPlot(double t, string plotName){
@@ -60,6 +78,8 @@ gErrorIgnoreLevel = kWarning;
 	vector<double> pis;
 	double pi_norm = 0;
 	m_model->GetGausParameters(mus,covs);
+	//normalize params
+
 	m_model->GetMixingCoeffs(pis);
 	vector<double> x, y;
 	for(int i = 0; i < m_n; i++){
@@ -123,8 +143,8 @@ gErrorIgnoreLevel = kWarning;
 	//draw data	
 	graphPad->cd();
 	gr_data->Draw("ap");
-	//gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
-	//gr_data->GetXaxis()->SetLimits(-0.1,1.1);
+	gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
+	gr_data->GetXaxis()->SetLimits(-0.1,1.1);
 
 
 //	circlePad->cd();
@@ -136,48 +156,83 @@ gErrorIgnoreLevel = kWarning;
 	double rx0;
         double ry0;
         double rz0;
+	vector<Matrix> eigenVecs;
+	vector<double> eigenVals;
+	//scale first
+	Matrix mat_scale = Matrix(3, 3); //3D points
+	Matrix mat_shift = Matrix(3, 1); //only for mean
+	
+	
+	mat_scale.PointToScale(m_scale);
+	mat_shift.PointToShift(m_shift);
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
 		if(pis[k]/pi_norm < 0.01)
 			continue; 
 
+		//do same normalization transformation on parameters
+		//then shift -> mu'' = mu' - shift = scale*mu - shift
+		//shift mus[k]
+		mus[k].add(mat_shift);
+		//scale mus[k] => mu' = scale*mu
+		mus[k].mult(mat_scale,mus[k]);
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
 
 
-		vector<Matrix> eigenVecs;
-		vector<double> eigenVals;
 		covs[k].eigenCalc(eigenVals, eigenVecs);
 	
-		rx0 = 1./sqrt(eigenVals[0]);
-		ry0 = 1./sqrt(eigenVals[1]);
-		rz0 = 1./sqrt(eigenVals[2]);
 		
+	
+		rx0 = sqrt(eigenVals[0]*m_scale.at(0));
+		ry0 = sqrt(eigenVals[1]*m_scale.at(1));
+		rz0 = sqrt(eigenVals[2]*m_scale.at(2));
+
+	
 		//project onto x-y plane
-		r_x = rx0*sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) );
-		r_y = ry0*sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) );
+		r_x = rx0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
+		r_y = ry0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
+	
 		
 		c_x = x0;
 		c_y = y0;
-if(k == 0){ //&& t == 0.6){
+if(k == 1 && t == 0.6){
 cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
 cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
+cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl; 
+cout << "scale x: " << m_scale.at(0) << endl;
 cout << "t-z0: " << (t - z0) << endl;
 cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
 cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
 cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
 cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
-cout << "rx0: " << 1./sqrt(rx0) << " ry0: " << 1./sqrt(ry0) << " rz0: " << 1./sqrt(rz0) << endl;
 covs[k].Print();
 cout << "\n" << endl;
 }
+		//if rx or ry is nan -> ellipse doesn't exist at this value of t
+		if(isnan(r_x) || isnan(r_y)) continue;
 		//take direction of largest eigenvalue
 		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
+if(k == 1 && t == 0.6){
+cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
+cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
+cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
+cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl; 
+cout << "scale x: " << m_scale.at(0) << endl;
+cout << "t-z0: " << (t - z0) << endl;
+cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
+cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
+cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
+cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
+covs[k].Print();
+cout << "theta: " << theta << endl;
+cout << "\n" << endl;
+}
 	
 	
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);

@@ -97,6 +97,7 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_norms.push_back(0.);
 		m_xbars.push_back(Matrix(m_dim,1));
 		m_Ss.push_back(Matrix(m_dim,m_dim));
+		m_Ss[k].InitIdentity();
 	}
 
 

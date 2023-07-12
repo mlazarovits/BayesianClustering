@@ -50,6 +50,10 @@ class VarClusterViz3D{
 		string m_fname;	
 		vector<TCanvas*> m_cvs; 
 		Int_t m_palette[100];
+
+
+		Point m_scale;
+		Point m_shift;
 };
 
 #endif

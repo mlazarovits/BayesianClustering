@@ -84,6 +84,24 @@ class VarGaussianMixture : public BasePDFMixture{
 
 		void SetK(int k){ m_k = k; }
 
+		void ShiftGausParams(const Point& shift){
+			Matrix mat_shift = Matrix(m_dim, 1);
+			for(int i = 0; i < m_dim; i++)
+				mat_shift.SetEntry(shift.at(i),i,0);
+			for(int k = 0; k < m_k; k++)
+				m_xbars[k].add(mat_shift);
+		}
+		void ScaleGausParams(const Point& scale){
+			Matrix mat_scale = Matrix(m_dim,m_dim);
+			for(int i = 0; i < m_dim; i++)
+				mat_scale.SetEntry(scale.at(i),i,i);
+			for(int k = 0; k < m_k; k++){
+				m_xbars[k].mult(mat_scale,m_xbars[k]);
+				m_Ss[k].mult(mat_scale,m_Ss[k]);
+				m_Ss[k].mult(m_Ss[k],mat_scale);
+			}
+		}
+
 	protected:
 		//pre-E step (don't have a million for loops)
 		void CalculateExpectations();

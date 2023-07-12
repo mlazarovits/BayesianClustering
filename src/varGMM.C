@@ -114,31 +114,35 @@ int main(int argc, char *argv[]){
 	
 	//sample points for another cluster
 	Matrix sigma2 = Matrix(N,N);
-	sigma2.InitRandomSymPosDef(0.,1.,111);
+//	sigma2.InitRandomSymPosDef(0.,1.,111);
+	sigma2.SetEntry(0.5,0,0);
+	sigma2.SetEntry(0.4,1,1);
+	sigma2.SetEntry(0.6,2,2);
 	Matrix mu2 = Matrix(N,1);
 	mu2.InitRandom(0.,1.,112);
 	
 	Matrix mat2;
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 	pc += mat2.MatToPoints();
+	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
+
+	cout << "original: " << pc.at(0).Value(0) << endl;
+	//get normalization + centering factors
+//	Point shift = pc.Center();
+//	Point scale = pc.Normalize();
+
+//	cout << "transformed: " << pc.at(0).Value(0) << endl;
+//	cout << "point shift" << endl;
+//	shift.Print();
+//	cout << "point scale" << endl;
+//	scale.Print();
+
+	vector<Matrix> mus, covs;
+	vector<double> pis;
+	vector<Matrix> eigenVecs;
+	vector<double> eigenVals;
+	double theta;
 	
-/*
-	//translate first
-	vector<double> shifts = pc.Center();
-	Matrix shift = Matrix(Nsample*k,N);
-	for(int i = 0; i < Nsample*k; i++){
-		for(int j = 0; j < N; j++){
-			shift.SetEntry(shifts[j], i, j);
-		}
-	}
-	//then scale
-	vector<double> scales = pc.Normalize();
-	Matrix scale = Matrix(N,N);
-	for(int i = 0; i < N; i++)
-		scale.SetEntry(1./scales[i],i,i);
-*/
-
-
 	//create GMM model
 	VarGaussianMixture vgmm = VarGaussianMixture(k);
 	vgmm.AddData(pc);
@@ -148,33 +152,16 @@ int main(int argc, char *argv[]){
 	VarClusterViz3D cv3D = VarClusterViz3D(&vgmm, fname);
 	
 
-	vector<Matrix> mus, covs;
-	vector<double> pis;
-	vector<Matrix> eigenVecs;
-	vector<double> eigenVals;
-	double theta;
-	sigma.eigenCalc(eigenVals, eigenVecs);
-	vgmm.GetGausParameters(mus,covs);
-	vgmm.GetMixingCoeffs(pis);
-	cout << "Initial Estimated parameters" << endl;
-	for(int i = 0; i < k; i++){
-		cout << "mean " << i+1 << endl;
-		mus[i].Print();
-		cout << "covs " << i+1 << endl;
-		covs[i].Print();
-		covs[i].eigenCalc(eigenVals, eigenVecs);
-		cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
-		//take direction of largest eigenvalue
-		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
-		
-		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-		cout << "theta: " << theta << endl;
-	}
 
 	//loop
 	double dLogL, newLogL, oldLogL;
 	double LogLThresh = 0.0001;
+	vgmm.GetGausParameters(mus,covs);
+	cout << "Original parameters" << endl;
+	cout << "mu 1" << endl;
+	mus[0].Print();
+	cout << "cov 1" << endl;
+	covs[0].Print();
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
 		oldLogL = vgmm.EvalLogL();
@@ -191,10 +178,17 @@ int main(int argc, char *argv[]){
 		
 		mus.clear(); covs.clear();
 		pis.clear();
+
+		//inverse transform parameters back into original scale
+		//scale first
+	//	vgmm.ScaleGausParams(scale);
+		//then shift
+	//	vgmm.ShiftGausParams(shift);
+
 		vgmm.GetGausParameters(mus,covs);
 		vgmm.GetMixingCoeffs(pis);
 		cout << "iteration #" << it << ": Estimated parameters" << endl;
-		for(int i = 0; i < 1; i++){
+		for(int i = 0; i < k; i++){
 			cout << "mean " << i+1 << endl;
 			mus[i].Print();
 			cout << "covs " << i+1 << endl;
@@ -217,7 +211,8 @@ int main(int argc, char *argv[]){
 			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
 			return -1;
 		}
-		dLogL = fabs(oldLogL - newLogL);
+		//ELBO should not decrease with iterations, dLogL should always be negative
+		dLogL = oldLogL - newLogL;
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
@@ -228,25 +223,8 @@ int main(int argc, char *argv[]){
 	}
 	cv3D.SeeData();
 	cv3D.Write();
-/*
-cout << "\n" << endl;	
-	cout << "Scaled + Translated Estimated parameters" << endl;
-	for(int i = 0; i < k; i++){
-		cout << "mean " << i+1 << endl;
-		mus[i].mult(scale,mus[i]);
-		for(int j = 0; j < N; j++)
-			mus[i].SetEntry(mus[i].at(j,0) + shift.at(j,0),j, 0);
-		
-		mus[i].Print();
-		cout << "covs " << i+1 << endl;
-		covs[i].mult(scale, covs[i]);
-		for(int j = 0; j < N; j++)
-			covs[i].SetEntry(covs[i].at(j,0) + shift.at(j,0),j, 0);
-		covs[i].Print();
-		cout << "mixing coeff " << i+1 << " " << pis[i] << endl;
-	}
-*/
 
+	
 cout << "\n" << endl;	
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;
@@ -268,7 +246,37 @@ cout << "\n" << endl;
 	cout << "cov 2" << endl;
 	sigma2.Print();
 cout << "\n" << endl;	
-
+	cout << "Original transformed parameters" << endl;
+	Point scale = Point({8.645705, 8.672184, 6.790716});	
+	Matrix mat_scale_inv = Matrix(N,N);
+	for(int i = 0; i < N; i++)
+		mat_scale_inv.SetEntry(1./scale.at(i),i,i);
+//	Matrix mat_shift_mean_inv = Matrix(N, 1);
+//	for(int i = 0; i < N; i++){
+//		//x - z = x + (-z)
+//		cout << "shift: " << shift.at(i) << endl;
+//		mat_shift_mean_inv.SetEntry(-shift.at(i),i,0);
+//	}
+//	cout << "mean 1" << endl;
+//	//shift
+//	mu.add(mat_shift_mean_inv);	
+//	//scale
+//	mu.mult(mat_scale_inv,mu);	
+//	mu.Print();
+	eigenVals.clear();
+	eigenVecs.clear();
+	cout << "cov 1" << endl;
+	sigma.Print();
+	
+	cout << "mean 2" << endl;
+	//then shift
+	//scale first
+//	//shift
+//	//scale
+	mu2.Print();	
+	sigma2.eigenCalc(eigenVals, eigenVecs);
+	cout << "cov 2" << endl;
+	sigma2.Print();
+	cout << "rx: " << sqrt(eigenVals[0]/scale.at(0)) << " ry: " << sqrt(eigenVals[1]/scale.at(1)) << " rz: " << sqrt(eigenVals[2]/scale.at(2)) << endl;
 	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
-
 }
