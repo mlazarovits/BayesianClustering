@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 	////sample points from an n-dim gaussian for one cluster
 	Matrix mat;
 	mat.SampleNDimGaussian(mu,sigma,Nsample);
-	PointCollection pc = mat.MatToPoints();
+	PointCollection pc;// = mat.MatToPoints();
 	
 	//sample points for another cluster
 	Matrix sigma2 = Matrix(N,N);
@@ -120,6 +120,9 @@ int main(int argc, char *argv[]){
 //	sigma2.SetEntry(0.6,2,2);
 	Matrix mu2 = Matrix(N,1);
 	mu2.InitRandom(0.,1.,112);
+
+	cout << "original sigma2" << endl;
+	sigma2.Print();
 	
 	Matrix mat2;
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
@@ -267,6 +270,8 @@ cout << "\n" << endl;
 	eigenVecs.clear();
 	cout << "cov 1" << endl;
 	sigma.Print();
+	sigma.eigenCalc(eigenVals, eigenVecs);
+	cout << "rx: " << eigenVals[0] << " ry: " << eigenVals[1] << " rz: " << eigenVals[2] << endl;
 	
 	cout << "mean 2" << endl;
 	//then shift
@@ -274,15 +279,63 @@ cout << "\n" << endl;
 //	//shift
 //	//scale
 	mu2.Print();	
-	sigma2.eigenCalc(eigenVals, eigenVecs);
 	cout << "cov 2" << endl;
 	sigma2.Print();
-	cout << "rx: " << sqrt(eigenVals[0]/scale.at(0)) << " ry: " << sqrt(eigenVals[1]/scale.at(1)) << " rz: " << sqrt(eigenVals[2]/scale.at(2)) << endl;
+	sigma2.eigenCalc(eigenVals, eigenVecs);
 	//take direction of largest eigenvalue
 	maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
 	
+	//cout << "rx: " << sqrt(eigenVals[0]/scale.at(0)) << " ry: " << sqrt(eigenVals[1]/scale.at(1)) << " rz: " << sqrt(eigenVals[2]/scale.at(2)) << endl;
 	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
 			cout << "theta: " << theta << endl;
+
+		//use PointCollection sort
+		Point x_var = Point({sigma2.at(0,0),0,0});
+		Point y_var = Point({sigma2.at(1,1),1,0});
+		Point z_var = Point({sigma2.at(2,2),2,0});
+
+		PointCollection dims;
+		dims += x_var;
+		dims += y_var;
+		dims += z_var;
+
+		dims.Sort(0);
+
+		//match eigenvalue to dimension
+		//smallest eigenvalue
+		dims.at(0).SetValue(eigenVals[0],2);
+		dims.at(1).SetValue(eigenVals[1],2);
+		dims.at(2).SetValue(eigenVals[2],2);
+		
+		double eigenx, eigeny, eigenz;
+		//scale = 1/(max - min)
+		//rx0 = eigenvalue (point.at(2)) at point with dim_1 == 0
+		for(int d = 0; d < 3; d++){
+			if(dims.at(d).Value(1) == 0){	
+				eigenx = dims.at(d).Value(2);
+			}
+			if(dims.at(d).Value(1) == 1){	
+				eigeny = dims.at(d).Value(2);
+			}
+			if(dims.at(d).Value(1) == 2){	
+				eigenz = dims.at(d).Value(2);
+			}
+		}
+
+
+		cout << "eigenx: " << eigenx << " eigeny: " << eigeny << " eigenz: " << eigenz << endl; 
+	cout << "rx: " << sqrt(eigenx) << " ry: " << sqrt(eigeny) << " rz: " << sqrt(eigenz) << endl;
+
+
+
+
 	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
+
+
+
+
+
+
+
 }
