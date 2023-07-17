@@ -40,6 +40,33 @@ Matrix::Matrix(vector<double> in){
 } 
 
 
+Matrix::Matrix(Point pt){
+	m_rows = pt.Dim();
+	m_cols = 1;
+
+	for(int i = 0; i < m_row; i++){
+		m_entries.push_back({});
+		for(int j = 0; j < m_col; j++){
+			m_entries[i].push_back(pt.at(i));
+		}
+	}
+}
+
+Matrix::Matrix(PointCollection pts){
+	m_rows = pts.Dim();
+	m_cols = pts.GetNPoints();
+	InitEmpty();
+	
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			m_entries[i][j] = pts.at(j).at(i);
+		}
+	}
+
+}
+
+
+
 //copy constructor
 Matrix::Matrix(const Matrix& mat){
 	m_row = mat.GetDims()[0];

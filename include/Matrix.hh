@@ -12,6 +12,8 @@ class Matrix{
 		//x_dim = dim (rows), y_dim = # points (cols)
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
+		Matrix(Point pt);
+		Matrix(PointCollection pts);
 		//copy constructor
 		Matrix(const Matrix& mat);
 		virtual ~Matrix();
@@ -29,6 +31,7 @@ class Matrix{
 		double at(int i, int j) const;
 		void GetCofactor(Matrix& temp, int p, int q, int n) const;
 		vector<int> GetDims() const;
+		int Dim(int d) const{if(d == 0) return m_row; else if(d == 1) return m_col; else return -999;}
 		//multiplies mat1*mat2 and stores result in this
 		void mult(const Matrix& mat1, const Matrix& mat2);
 		//multiplies mat by factor and stores in this
