@@ -41,8 +41,8 @@ Matrix::Matrix(vector<double> in){
 
 
 Matrix::Matrix(Point pt){
-	m_rows = pt.Dim();
-	m_cols = 1;
+	m_row = pt.Dim();
+	m_col = 1;
 
 	for(int i = 0; i < m_row; i++){
 		m_entries.push_back({});
@@ -53,8 +53,8 @@ Matrix::Matrix(Point pt){
 }
 
 Matrix::Matrix(PointCollection pts){
-	m_rows = pts.Dim();
-	m_cols = pts.GetNPoints();
+	m_row = pts.Dim();
+	m_col = pts.GetNPoints();
 	InitEmpty();
 	
 	for(int i = 0; i < m_row; i++){
@@ -511,7 +511,7 @@ void Matrix::minus(const Matrix& mat){
 void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 	Matrix sub2;
 	sub2.mult(mat2, -1);
-	add(sub1, sub2);
+	add(mat1, sub2);
 
 
 
