@@ -268,10 +268,12 @@ cout << "\n" << endl;
 //	mu.Print();
 	eigenVals.clear();
 	eigenVecs.clear();
+	sigma.mult(mat_scale_inv, sigma);
+	sigma.mult(sigma, mat_scale_inv);
+	sigma.eigenCalc(eigenVals, eigenVecs);
 	cout << "cov 1" << endl;
 	sigma.Print();
-	sigma.eigenCalc(eigenVals, eigenVecs);
-	cout << "rx: " << eigenVals[0] << " ry: " << eigenVals[1] << " rz: " << eigenVals[2] << endl;
+	cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl;
 	
 	cout << "mean 2" << endl;
 	//then shift
@@ -280,6 +282,8 @@ cout << "\n" << endl;
 //	//scale
 	mu2.Print();	
 	cout << "cov 2" << endl;
+	sigma2.mult(mat_scale_inv, sigma2);
+	sigma2.mult(sigma2, mat_scale_inv);
 	sigma2.Print();
 	sigma2.eigenCalc(eigenVals, eigenVecs);
 	//take direction of largest eigenvalue
@@ -289,41 +293,9 @@ cout << "\n" << endl;
 	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
 			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
 			cout << "theta: " << theta << endl;
-
-		//use PointCollection sort
-		Point x_var = Point({sigma2.at(0,0),0,0});
-		Point y_var = Point({sigma2.at(1,1),1,0});
-		Point z_var = Point({sigma2.at(2,2),2,0});
-
-		PointCollection dims;
-		dims += x_var;
-		dims += y_var;
-		dims += z_var;
-
-		dims.Sort(0);
-
-		//match eigenvalue to dimension
-		//smallest eigenvalue
-		dims.at(0).SetValue(eigenVals[0],2);
-		dims.at(1).SetValue(eigenVals[1],2);
-		dims.at(2).SetValue(eigenVals[2],2);
-		
-		double eigenx, eigeny, eigenz;
-		//scale = 1/(max - min)
-		//rx0 = eigenvalue (point.at(2)) at point with dim_1 == 0
-		for(int d = 0; d < 3; d++){
-			if(dims.at(d).Value(1) == 0){	
-				eigenx = dims.at(d).Value(2);
-			}
-			if(dims.at(d).Value(1) == 1){	
-				eigeny = dims.at(d).Value(2);
-			}
-			if(dims.at(d).Value(1) == 2){	
-				eigenz = dims.at(d).Value(2);
-			}
-		}
-
-
+	double eigenx = eigenVals[0];
+	double eigeny = eigenVals[1];
+	double eigenz = eigenVals[2];
 		cout << "eigenx: " << eigenx << " eigeny: " << eigeny << " eigenz: " << eigenz << endl; 
 	cout << "rx: " << sqrt(eigenx) << " ry: " << sqrt(eigeny) << " rz: " << sqrt(eigenz) << endl;
 

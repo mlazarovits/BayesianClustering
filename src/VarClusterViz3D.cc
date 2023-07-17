@@ -34,7 +34,7 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 	m_k = m_model->GetNClusters(0.);
 	m_post = m_model->GetPosterior();
 	m_deltaT = 0.1;
-
+	
 	//normalize data
 	m_shift = m_points.Center();
 	//want to apply same transformation to points: (x - shift)/scale
@@ -43,7 +43,6 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 	cout << "max - min (1/scale)" << endl;
 	m_scale.Print();
 	m_scale.Invert();
-	
 
 }
 
@@ -158,6 +157,7 @@ gErrorIgnoreLevel = kWarning;
         double rz0;
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
+	double eigenx, eigeny, eigenz;
 	//scale first
 	Matrix mat_scale = Matrix(3, 3); //3D points
 	Matrix mat_shift = Matrix(3, 1); //only for mean
@@ -181,45 +181,83 @@ gErrorIgnoreLevel = kWarning;
 		z0 = mus[k].at(2,0);
 
 
+		//scale covs
+		covs[k].mult(mat_scale,covs[k]);
+		covs[k].mult(covs[k],mat_scale);
+
 		covs[k].eigenCalc(eigenVals, eigenVecs);
+		//eigenvalues are sorted on output, not associated with any particular dim
+		//need to associate them to dims based on relative size of var_ii
+
+		rx0 = sqrt(eigenVals[0]);
+		ry0 = sqrt(eigenVals[1]);
+		rz0 = sqrt(eigenVals[2]);
+		
+		vector<double> ell_x, ell_y;
+		double phi, theta;
+		for(int i = 0; i < 1000; i++){
+		//x-coord
+			phi = i*(2*acos(-1)/1000.);
+			theta = i*(acos(-1)/1000.);
+		ell_x.push_back( eigenVecs[0].at(0,0)*(rx0*cos(phi)*sin(theta) - x0) + eigenVecs[1].at(0,0)*(ry0*sin(phi)*sin(theta) - y0) + eigenVecs[2].at(0,0)*(rz0*cos(theta) - z0) );
+		ell_y.push_back( eigenVecs[0].at(1,0)*rx0*cos(phi)*sin(theta) + eigenVecs[1].at(1,0)*ry0*sin(phi)*sin(theta) + rz0*eigenVecs[2].at(1,0)*cos(theta) );
+
+		}
+	if(t == 0.5 && k == 1){ covs[k].Print();
+	 cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
+	 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
+	cout << "eigenvec 0" << endl; eigenVecs[0].Print(); cout << "eigenvec 1" << endl; eigenVecs[1].Print(); cout << "eigenvec 2" << endl; eigenVecs[2].Print();
+	}
+		TGraph* circle = new TGraph(1000, &ell_x[0], &ell_y[0]);
+		circle->SetLineColor(kRed);
+		circle->Draw("l");
 	
-		//scale = 1/(max - min)
-		rx0 = sqrt(eigenVals[0]*m_scale.at(0));
-		ry0 = sqrt(eigenVals[1]*m_scale.at(1));
-		rz0 = sqrt(eigenVals[2]*m_scale.at(2));
-	
-		//project onto x-y plane
+/*	
+		rx0 = sqrt(eigenx);
+		ry0 = sqrt(eigeny);
+		rz0 = sqrt(eigenz);
+			//project onto x-y plane
 		r_x = rx0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
 		r_y = ry0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
-	
 		
 		c_x = x0;
 		c_y = y0;
-		//if rx or ry is nan -> ellipse doesn't exist at this value of t
-		if(isnan(r_x) || isnan(r_y)) continue;
-		//take direction of largest eigenvalue
-		int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
+
+		//take direction of largest eigenvalue - always last one
+		int maxValIdx = 2; 
 		
 		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-		theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-if(k == 1 && t == 0.6){
+		theta = atan2(eigenVecs[maxValIdx].at(2,0),eigenVecs[maxValIdx].at(1,0));
+		//convert to degrees
+		theta = 180*theta/acos(-1);	
+if(t == std::ceil(z0 / m_deltaT) * m_deltaT - m_deltaT){
+//cout << "dims" << endl;
+//dims.Print();
 cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
 cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
-cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl; 
-cout << "scale x: " << m_scale.at(0) << endl;
+cout << "eigenx: " << eigenx << " eigeny: " << eigeny << " eigenz: " << eigenz << endl; 
+cout << "scale x: " << m_scale.at(0) << " scale y: " << m_scale.at(1) << " scale z: " << m_scale.at(2) << endl;
 cout << "t-z0: " << (t - z0) << endl;
 cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
 cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
 cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
 cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
 covs[k].Print();
+cout << "maxValIdx: " << maxValIdx << endl;
 cout << "theta: " << theta << endl;
+cout << "eigen vec 0: " << eigenVals[0] << endl;
+eigenVecs[0].Print();
+cout << "eigen vec 1: " << eigenVals[1] << endl;
+eigenVecs[1].Print();
+cout << "eigen vec 2: " << eigenVals[2] << endl;
+eigenVecs[2].Print();
 cout << "\n" << endl;
 }
-		//convert to degrees
-		theta = 180*theta/acos(-1);	
-	
+		//if rx or ry is nan -> ellipse doesn't exist at this value of t
+		if(isnan(r_x) || isnan(r_y)){ 
+			continue;
+		}
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
@@ -237,6 +275,10 @@ cout << "\n" << endl;
 	   	circle_bkg->SetFillStyle(0);
 		//circle_bkg->Draw();
 		circle->Draw("f");
+
+	*/
+
+
 	}
 	m_cvs.push_back(cv);
 
@@ -308,7 +350,7 @@ void VarClusterViz3D::AddAnimation(string dirname){
 		string t_str = std::to_string(t);
 		std::size_t idx1 = t_str.find(".");
 		t_str.replace(idx1,1,"p");
-		t_str = t_str.substr(0,idx1+2);
+		t_str = t_str.substr(0,idx1+3);
 	//	if(std::to_string(t).find("-") != string::npos)
 	//		t_str = "m"+t_str;
 	//	else
@@ -326,6 +368,7 @@ void VarClusterViz3D::AddAnimation(string dirname){
 	}
 	
 	gSystem->cd((m_fname+"/"+dirname).c_str());
+	gSystem->Exec(("rm "+dirname+".gif").c_str());
 	gSystem->Exec(("convert -delay 50 -loop 1 *.gif "+dirname+".gif").c_str());
 	gSystem->cd("../../../");
 	m_cvs.clear();
