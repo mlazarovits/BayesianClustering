@@ -1,5 +1,5 @@
-#ifndef CLUSTERTREE_HH
-#define CLUSTERTREE_HH
+#ifndef JETTREE_HH
+#define JETTREE_HH
 
 #include "Jet.hh"
 
@@ -11,28 +11,28 @@ class ClusterTree{
 		ClusterTree();
 		virtual ~ClusterTree();
 
-		void AddLayer(vector<Jet> jets);	
+		void AddLayer(vector<PointCollection> pcs);	
 	
-		//jets at depth i
-		vector<Jet> at(int i);
+		//clusters at depth i
+		vector<PointCollection> at(int i);
 
-		//jet j at depth i
-		Jet at(int i, int j);
+		//clusters at rk value
+		vector<PointCollection> at(double rk);
+
+		//cluster j at depth i
+		PointCollection at(int i, int j);
 
 		int GetNLayers();
-		int GetNJets();
+		int GetNClusters();
 
 		//removal functions?
 
-		//check clustertree is valid
-		//parents are in layer before, less or equal jets in successive layer, etc.
-		bool check_jet_in_layer(Jet& jet, int i);
-		void check_validity();
 
 	private:
-		//m_tree[i] = vector<jet> jets at depth i -> m_tree[i][j] = jet j at depth i
-		vector<vector<Jet>> m_tree;
-
+		//m_tree[i] = vector<cluster> clusters at depth i -> m_tree[i][j] = cluster j at depth i
+		vector<vector<PointCollection>> m_tree;
+		//posterior values, index matched to point collections
+		vector<double> m_rks;
 
 
 
