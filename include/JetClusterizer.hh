@@ -4,7 +4,7 @@
 #include "PointCollection.hh"
 #include "Jet.hh"
 #include "VarGaussianMixture.hh"
-#include "ClusterTree.hh"
+#include "JetTree.hh"
 
 using std::vector;
 
@@ -28,11 +28,11 @@ class JetClusterizer{
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	
 
-		ClusterTree GetTree() const{ return m_tree; }
+		JetTree GetTree() const{ return m_tree; }
 
 	private:
 		//BHC object
-		ClusterTree m_tree;
+		JetTree m_tree;
 		//jets to points
 		PointCollection m_points;
 		//running number of jets
