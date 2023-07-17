@@ -40,6 +40,10 @@ class Matrix{
 		void add(const Matrix& mat1, const Matrix& mat2);
 		//add mat to this
 		void add(const Matrix& mat);
+		//subtract two matrices and store result in this
+		void minus(const Matrix& mat1, const Matrix& mat2);
+		//minus mat from this
+		void minus(const Matrix& mat);
 		//double det() const;
 		double det(int n = 0) const;
 		bool square() const { return _square; }

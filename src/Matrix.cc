@@ -500,6 +500,23 @@ void Matrix::add(const Matrix& mat){
 }
 
 
+
+void Matrix::minus(const Matrix& mat){
+	Matrix sub;
+	sub.mult(mat,-1);
+	add(sub);
+}
+
+
+void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
+	Matrix sub2;
+	sub2.mult(mat2, -1);
+	add(sub1, sub2);
+
+
+
+}
+
 PointCollection Matrix::MatToPoints(){
 	PointCollection pc;
 	for(int j = 0; j < m_col; j++){
