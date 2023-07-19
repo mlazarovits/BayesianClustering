@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 	////sample points from an n-dim gaussian for one cluster
 	Matrix mat;
 	mat.SampleNDimGaussian(mu,sigma,Nsample);
-	PointCollection pc;// = mat.MatToPoints();
+	PointCollection pc = mat.MatToPoints();
 	
 	//sample points for another cluster
 	Matrix sigma2 = Matrix(N,N);
@@ -176,7 +176,8 @@ int main(int argc, char *argv[]){
 		
 		//Plot
 		cv3D.UpdatePosterior();
-		if(viz) cv3D.AddAnimation("it"+std::to_string(it));
+		if(viz) cv3D.WriteJson("it"+std::to_string(it));
+		//if(viz) cv3D.AddAnimation("it"+std::to_string(it));
 	//	cv3D.AddPlot("it"+std::to_string(it));
 		
 		mus.clear(); covs.clear();
@@ -196,14 +197,6 @@ int main(int argc, char *argv[]){
 			mus[i].Print();
 			cout << "covs " << i+1 << endl;
 			covs[i].Print();
-			covs[i].eigenCalc(eigenVals, eigenVecs);
-			cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
-			//take direction of largest eigenvalue
-			int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
-			
-			//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-			cout << "theta: " << theta << endl;
 			
 		}
 
@@ -235,71 +228,11 @@ cout << "\n" << endl;
 	cout << "cov 1" << endl;
 	sigma.Print();
 	
-	eigenVals.clear(); eigenVecs.clear();
-	sigma.eigenCalc(eigenVals, eigenVecs);
-	cout << "rx: " << sqrt(eigenVals[0]) << " ry: " << sqrt(eigenVals[1]) << " rz: " << sqrt(eigenVals[2]) << endl;
-	//take direction of largest eigenvalue
-	int maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
-	
-	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-	theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-	cout << "theta: " << theta << endl;
 	cout << "mean 2" << endl;
 	mu2.Print();
 	cout << "cov 2" << endl;
 	sigma2.Print();
 cout << "\n" << endl;	
-	cout << "Original transformed parameters" << endl;
-	Point scale = Point({8.645705, 8.672184, 6.790716});	
-	Matrix mat_scale_inv = Matrix(N,N);
-	for(int i = 0; i < N; i++)
-		mat_scale_inv.SetEntry(1./scale.at(i),i,i);
-//	Matrix mat_shift_mean_inv = Matrix(N, 1);
-//	for(int i = 0; i < N; i++){
-//		//x - z = x + (-z)
-//		cout << "shift: " << shift.at(i) << endl;
-//		mat_shift_mean_inv.SetEntry(-shift.at(i),i,0);
-//	}
-//	cout << "mean 1" << endl;
-//	//shift
-//	mu.add(mat_shift_mean_inv);	
-//	//scale
-//	mu.mult(mat_scale_inv,mu);	
-//	mu.Print();
-	eigenVals.clear();
-	eigenVecs.clear();
-	sigma.mult(mat_scale_inv, sigma);
-	sigma.mult(sigma, mat_scale_inv);
-	sigma.eigenCalc(eigenVals, eigenVecs);
-	cout << "cov 1" << endl;
-	sigma.Print();
-	cout << "eigenx: " << eigenVals[0] << " eigeny: " << eigenVals[1] << " eigenz: " << eigenVals[2] << endl;
-	
-	cout << "mean 2" << endl;
-	//then shift
-	//scale first
-//	//shift
-//	//scale
-	mu2.Print();	
-	cout << "cov 2" << endl;
-	sigma2.mult(mat_scale_inv, sigma2);
-	sigma2.mult(sigma2, mat_scale_inv);
-	sigma2.Print();
-	sigma2.eigenCalc(eigenVals, eigenVecs);
-	//take direction of largest eigenvalue
-	maxValIdx = std::distance(std::begin(eigenVals),std::max_element(std::begin(eigenVals),std::end(eigenVals)));
-	
-	//cout << "rx: " << sqrt(eigenVals[0]/scale.at(0)) << " ry: " << sqrt(eigenVals[1]/scale.at(1)) << " rz: " << sqrt(eigenVals[2]/scale.at(2)) << endl;
-	//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-			theta = atan2(eigenVecs[maxValIdx].at(1,0),eigenVecs[maxValIdx].at(0,0));
-			cout << "theta: " << theta << endl;
-	double eigenx = eigenVals[0];
-	double eigeny = eigenVals[1];
-	double eigenz = eigenVals[2];
-		cout << "eigenx: " << eigenx << " eigeny: " << eigeny << " eigenz: " << eigenz << endl; 
-	cout << "rx: " << sqrt(eigenx) << " ry: " << sqrt(eigeny) << " rz: " << sqrt(eigenz) << endl;
-
-
 
 
 	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
