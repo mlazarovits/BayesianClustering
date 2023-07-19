@@ -25,6 +25,7 @@ class VarClusterViz3D{
 	
 		//add plot at specified t (z) value	
 		//time window?
+		void WriteJson(string filename = "test");
 		void AddPlot(double t, string plotName = "test");
 		void AddAnimation(string dirName = "test");
 		void UpdatePosterior(){  

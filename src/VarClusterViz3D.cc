@@ -1,6 +1,7 @@
 #include "VarClusterViz3D.hh"
 #include "VarGaussianMixture.hh"
 
+#include "json/json.h"
 #include <TSystem.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
@@ -16,9 +17,9 @@
 #include <TAxis.h>
 #include <TEllipse.h>
 #include <string>
-
+#include <iostream>
+#include <fstream>
 using std::string;
-
 
 //check for 2D data
 VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){ 
@@ -36,13 +37,13 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 	m_deltaT = 0.1;
 	
 	//normalize data
-	m_shift = m_points.Center();
-	//want to apply same transformation to points: (x - shift)/scale
-	m_shift.Scale(-1);
-	m_scale = m_points.Normalize();
-	cout << "max - min (1/scale)" << endl;
-	m_scale.Print();
-	m_scale.Invert();
+	//m_shift = m_points.Center();
+	////want to apply same transformation to points: (x - shift)/scale
+	//m_shift.Scale(-1);
+	//m_scale = m_points.Normalize();
+	//cout << "max - min (1/scale)" << endl;
+	//m_scale.Print();
+	//m_scale.Invert();
 
 }
 
@@ -61,15 +62,36 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_deltaT = 0.1;
 	
 	//normalize data
-	m_shift = m_points.Center();
-	//want to apply same transformation to points: (x - shift)/scale
-	m_shift.Scale(-1);
-	m_scale = m_points.Normalize();
-	m_scale.Invert();
+	//m_shift = m_points.Center();
+	////want to apply same transformation to points: (x - shift)/scale
+	//m_shift.Scale(-1);
+	//m_scale = m_points.Normalize();
+	//m_scale.Invert();
 }
 
 void VarClusterViz3D::AddPlot(double t, string plotName){
-gErrorIgnoreLevel = kWarning;
+
+}
+
+
+
+
+void VarClusterViz3D::WriteJson(string filename){
+	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
+	Json::Value root;
+	Json::Value clusters;
+	Json::Value cluster;
+	Json::Value data;
+
+	Json::Value x(Json::arrayValue);
+	Json::Value y(Json::arrayValue);
+	Json::Value z(Json::arrayValue);
+
+	
+	Json::Value eigenVec_0(Json::arrayValue);
+	Json::Value eigenVec_1(Json::arrayValue);
+	Json::Value eigenVec_2(Json::arrayValue);
+	
 	if(m_n == 0){
 		return;
 	}
@@ -77,250 +99,94 @@ gErrorIgnoreLevel = kWarning;
 	vector<double> pis;
 	double pi_norm = 0;
 	m_model->GetGausParameters(mus,covs);
-	//normalize params
 
 	m_model->GetMixingCoeffs(pis);
-	vector<double> x, y;
 	for(int i = 0; i < m_n; i++){
-		//round time to nearest deltaT decimal place and plot if 0 < round(time) < t 
-		if(std::ceil(m_points.at(i).Value(2) / m_deltaT) * m_deltaT > t) continue;
 		//eta
-		x.push_back(m_points.at(i).Value(0));
+		x.append(m_points.at(i).Value(0));
 		//phi
-		y.push_back(m_points.at(i).Value(1));
+		y.append(m_points.at(i).Value(1));
+		z.append(m_points.at(i).Value(2));
 	}
+	data["x"] = x;
+	data["y"] = y;
+	data["z"] = z;
+
+	root["data"] = data;
 	//if no points - empty plot
-	if(x.size() == 0) return;
+//	if(x.size() == 0) return;
 
 	for(int k = 0; k < m_k; k++){
-	//	cout << "k: " << k << " pi: " << pis[k] << endl;
 		pi_norm += pis[k];	
 	}
-	string cvName = "cv_"+plotName;
-	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
-	//get palette colors for circles
-	SetPalette(m_k);
-	auto cols = TColor::GetPalette();
-	cv->Update();
-
-	//sage green
-	Int_t ci = TColor::GetFreeColorIndex();
-	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
-
-	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
-	gr_data->SetTitle(("VarGMM EM Clustering "+plotName).c_str());
-	gr_data->SetName(("VarGMM EM Clustering "+plotName).c_str());
-	gr_data->SetMarkerStyle(24);
-	gr_data->SetMarkerSize(0.95);
-	gr_data->SetMarkerColorAlpha(ci,1);
-	//can extend x/y axes so points aren't on border
-	gr_data->GetXaxis()->SetTitle("eta-norm");
-	gr_data->GetYaxis()->SetTitle("phi-norm");
-
-
-/*
-	TH1F* hist = gr_data->GetHistogram();
-	//to turn off hist axes
-	hist->GetXaxis()->SetLabelSize(0.);
-	hist->GetXaxis()->SetTickLength(0.);
-	hist->GetYaxis()->SetLabelSize(0.);
-	hist->GetYaxis()->SetTickLength(0.);
-	hist->SetFillStyle(4000);
-*/
-	//one pad
-	TPad* graphPad = new TPad("graph pad", "graph pad",0.0,0.0,1.0,1.0);
-	graphPad->Draw();
-
-/*
-	//another pad - draw on top
-	TPad* circlePad = new TPad("circle pad", "circle pad",0.0,0.0,1.0,1.0);
-	circlePad->SetFillStyle(4000);
-	circlePad->SetFrameFillStyle(4000);
-	circlePad->Draw();
-*/
-	//draw data	
-	graphPad->cd();
-	gr_data->Draw("ap");
-	gr_data->GetYaxis()->SetRangeUser(-0.1,1.1);
-	gr_data->GetXaxis()->SetLimits(-0.1,1.1);
-
-
-//	circlePad->cd();
-	//draw hist to place ellispes
-//	hist->Draw("axis");
-	int color_idx;
 	//set coords for parameter circles
-	double x0, y0, z0, c_x, c_y, r_x, r_y, deltaX, deltaY;
-	double theta2, theta1, theta0, phi2, phi1, phi0, theta, phi;
-	double ax_x, ax_y, ax_z;
-	double r_a, r_b, r_c;
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
-	double eigenx, eigeny, eigenz;
 	//scale first
-	Matrix mat_scale = Matrix(3, 3); //3D points
-	Matrix mat_shift = Matrix(3, 1); //only for mean
+	//Matrix mat_scale = Matrix(3, 3); //3D points
+	//Matrix mat_shift = Matrix(3, 1); //only for mean
 	
-	
-	mat_scale.PointToScale(m_scale);
-	mat_shift.PointToShift(m_shift);
+	double x0, y0, z0;	
+	//mat_scale.PointToScale(m_scale);
+	//mat_shift.PointToShift(m_shift);
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
-		if(pis[k]/pi_norm < 0.01)
-			continue; 
 
 		//do same normalization transformation on parameters
 		//then shift -> mu'' = mu' - shift = scale*mu - shift
 		//shift mus[k]
-		mus[k].add(mat_shift);
-		//scale mus[k] => mu' = scale*mu
-		mus[k].mult(mat_scale,mus[k]);
+	//	mus[k].add(mat_shift);
+	//	//scale mus[k] => mu' = scale*mu
+	//	mus[k].mult(mat_scale,mus[k]);
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
 
 
 		//scale covs
-		covs[k].mult(mat_scale,covs[k]);
-		covs[k].mult(covs[k],mat_scale);
-
+	//	covs[k].mult(mat_scale,covs[k]);
+	//	covs[k].mult(covs[k],mat_scale);
+	//	cout << "k: " << k << " scaled cov:" << endl;
+	//	covs[k].Print();
 		covs[k].eigenCalc(eigenVals, eigenVecs);
-		//eigenvalues are sorted on output, not associated with any particular dim
-		//need to associate them to dims based on relative size of var_ii
-
-		r_a = sqrt(eigenVals[0]);
-		r_b = sqrt(eigenVals[1]);
-		r_c = sqrt(eigenVals[2]);
-
-		//phi is angle in x-y plane: phi = arctan(y/x)
-		//take direction of largest eigenvalue (principle axis) - always last one
-		ax_x = eigenVecs[2].at(0,0);
-		ax_y = eigenVecs[2].at(1,0);
-		ax_z = eigenVecs[2].at(2,0);
-		phi2 = atan2(ax_y, ax_x);
-		//theta is angle from z-axis: theta = arccos(z/r), r = sqrt(x^2 + y^2 + z^2)
-		theta2 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
-		phi = phi2;
-		theta = theta2;
-
-		ax_x = eigenVecs[1].at(0,0);
-		ax_y = eigenVecs[1].at(1,0);
-		ax_z = eigenVecs[1].at(2,0);
-
-		theta1 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
-		phi1 = atan2(ax_y, ax_x);
-		ax_x = eigenVecs[0].at(0,0);
-		ax_y = eigenVecs[0].at(1,0);
-		ax_z = eigenVecs[0].at(2,0);
-
-		theta0 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
-		phi0 = atan2(ax_y, ax_x);
-
-		//calculate center shifts in x-y plane (based on angle from z-axis theta)
-		deltaX = cos(phi2)*sin(theta2);
-		deltaY = sin(phi2)*sin(theta2);
-	
-if(k == 1) cout << "deltaX2: " << deltaX << " deltaY2: " << deltaY << endl;
-		deltaX = cos(phi1)*sin(theta1);
-		deltaY = sin(phi1)*sin(theta1);
-	
-if(k == 1) cout << "deltaX1: " << deltaX << " deltaY1: " << deltaY << endl;
-		deltaX = cos(phi0)*sin(theta0);
-		deltaY = sin(phi0)*sin(theta0);
-	
-if(k == 1) cout << "deltaX0: " << deltaX << " deltaY0: " << deltaY << endl;
-
-		//project onto x-y plane
-		r_x = r_c*sqrt(1 - ((t - z0)*(t - z0))/(r_c*r_c) );
-		r_y = r_b*sqrt(1 - ((t - z0)*(t - z0))/(r_c*r_c) );
-		//r_y = fabs(tan(theta)*sin(phi)*r_c)*sqrt(1 - (t-z0)*(t-z0));
-		//r_x = fabs(tan(theta)*cos(phi)*r_c)*sqrt(1 - (t-z0)*(t-z0));
-	
-/*	
-		if(t > z0 + ax_z || t < z0 - ax_z){
-			r_y = 0;
-			r_x = 0;
-		}else{
-		if(t >= z0){
-			r_y *= ((ax_z + z0) - t);
-			r_x *= ((ax_z + z0) - t);
+		for(int i = 0; i < 3; i++){
+			eigenVec_0.append(eigenVecs[0].at(i,0));
+			eigenVec_1.append(eigenVecs[1].at(i,0));
+			eigenVec_2.append(eigenVecs[2].at(i,0));
 		}
-		else if(t < z0){
-			r_y *= (t - (z0 - ax_z));
-			r_x *= (t - (z0 - ax_z));
-		}
-		} 
-*/
-		//take x-components of all eigenvectors
-		///r_x = sqrt((1 - (t-z0)*(t - z0)))*(eigenVals[0]*eigenVecs[0].at(0,0) + eigenVals[1]*eigenVecs[1].at(0,0) + eigenVals[2]*eigenVecs[2].at(0,0));
-		///r_y = sqrt((1 - (t-z0)*(t - z0)))*(eigenVals[0]*eigenVecs[0].at(1,0) + eigenVals[1]*eigenVecs[1].at(1,0) + eigenVals[2]*eigenVecs[2].at(1,0));
-		//r_y = deltaY;
-		c_x = x0;// + deltaX;
-		c_y = y0;// + deltaY;
+cout << eigenVals[0] << " " << eigenVals[1] << " " << eigenVals[2] << endl;
 
-	//ellipse plotted is based off of ellipsoid principal axis - x+y axes correspond to x+y components of principal axis (approximation of true 1 sigma ellipsoid, which has x+y components from other axes) 
+	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
+		cluster["mixing_coeff_norm"] = pis[k]/pi_norm;
+	
+		cluster["mu_x"] = x0;
+		cluster["mu_y"] = y0;
+		cluster["mu_z"] = z0;
 
-if(k == 1){
-//cout << "dims" << endl;
-//dims.Print();
-cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
-cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
-cout << "r_a: " << r_a << " r_b: " << r_b << " r_c: " << r_c << endl;
-cout << "deltaX: " << deltaX << " deltaY: " << deltaY << endl;
-cout << "tan(theta)*sin(phi): " << tan(theta)*sin(phi) << " tan(theta)*cos(phi): " << tan(theta)*cos(phi) << endl;
-cout << "scale x: " << m_scale.at(0) << " scale y: " << m_scale.at(1) << " scale z: " << m_scale.at(2) << endl;
-cout << "t-z0: " << (t - z0) << endl;
-cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
-cout << "(t-z0)^2/r_c^2: " << (t - z0)*(t - z0)/(r_c*r_c)  << endl;
-cout << "1 - (t-z0)^2/r_c^2: " << 1 - (t - z0)*(t - z0)/(r_c*r_c)  << endl;
-cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(r_c*r_c) ) << endl;
-covs[k].Print();
-cout << "theta: " << theta << endl;
-cout << "eigen vec 0: " << eigenVals[0] << endl;
-eigenVecs[0].Print();
-cout << "eigen vec 1: " << eigenVals[1] << endl;
-eigenVecs[1].Print();
-cout << "eigen vec 2: " << eigenVals[2] << endl;
-eigenVecs[2].Print();
-cout << "\n" << endl;
-}
-		//if rx or ry is nan -> ellipse doesn't exist at this value of t
-		if(isnan(r_x) || isnan(r_y)){ 
-			continue;
-		}
-		//convert to degrees for plotting
-		phi = 180*phi/acos(-1);	
-		if(phi < 0) phi = -(90+phi);
-		else phi += 90;
-		//else phi += 90; //get in ROOT's weird angle definition
-		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, phi);
-		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, phi);
-		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
-		circle->SetFillColorAlpha(col,pis[k]/pi_norm);
-		circle->SetLineColor(col);
-		circle->SetLineWidth(5);
-		//sets transparency normalized to sum
-	//	cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
-	   	circle->SetFillStyle(1001);
-
-	///cout << "\n" << endl;
-
-		circle_bkg->SetLineColor(0); 
-		circle_bkg->SetLineWidth(8);
-	   	circle_bkg->SetFillStyle(0);
-		//circle_bkg->Draw();
-		circle->Draw("f");
+		cluster["eigenVal_0"] = eigenVals[0];	
+		cluster["eigenVal_1"] = eigenVals[1];	
+		cluster["eigenVal_2"] = eigenVals[2];	
+		
+		cluster["eigenVec_0"] = eigenVec_0;	
+		cluster["eigenVec_1"] = eigenVec_1;	
+		cluster["eigenVec_2"] = eigenVec_2;	
+	
+		clusters[std::to_string(k)] = cluster;
 
 
-
+		eigenVec_0.clear();
+		eigenVec_1.clear();
+		eigenVec_2.clear();
 	}
-	m_cvs.push_back(cv);
+	root["clusters"] = clusters;
+	Json::StreamWriterBuilder builder;
+	const std::string json_file = Json::writeString(builder, root);
+	std::ofstream file;
+	file.open(filename+".json");
+	file << json_file << endl;
 
 }
-
-
-
 
 void VarClusterViz3D::SeeData(){
 	vector<double> x, y, z;
