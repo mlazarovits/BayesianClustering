@@ -151,10 +151,10 @@ gErrorIgnoreLevel = kWarning;
 //	hist->Draw("axis");
 	int color_idx;
 	//set coords for parameter circles
-	double x0, y0, z0, c_x, c_y, r_x, r_y, theta;
-	double rx0;
-        double ry0;
-        double rz0;
+	double x0, y0, z0, c_x, c_y, r_x, r_y, deltaX, deltaY;
+	double theta2, theta1, theta0, phi2, phi1, phi0, theta, phi;
+	double ax_x, ax_y, ax_z;
+	double r_a, r_b, r_c;
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
 	double eigenx, eigeny, eigenz;
@@ -189,62 +189,93 @@ gErrorIgnoreLevel = kWarning;
 		//eigenvalues are sorted on output, not associated with any particular dim
 		//need to associate them to dims based on relative size of var_ii
 
-		rx0 = sqrt(eigenVals[0]);
-		ry0 = sqrt(eigenVals[1]);
-		rz0 = sqrt(eigenVals[2]);
-		
-		vector<double> ell_x, ell_y;
-		double phi, theta;
-		for(int i = 0; i < 1000; i++){
-		//x-coord
-			phi = i*(2*acos(-1)/1000.);
-			theta = i*(acos(-1)/1000.);
-		ell_x.push_back( eigenVecs[0].at(0,0)*(rx0*cos(phi)*sin(theta) - x0) + eigenVecs[1].at(0,0)*(ry0*sin(phi)*sin(theta) - y0) + eigenVecs[2].at(0,0)*(rz0*cos(theta) - z0) );
-		ell_y.push_back( eigenVecs[0].at(1,0)*rx0*cos(phi)*sin(theta) + eigenVecs[1].at(1,0)*ry0*sin(phi)*sin(theta) + rz0*eigenVecs[2].at(1,0)*cos(theta) );
+		r_a = sqrt(eigenVals[0]);
+		r_b = sqrt(eigenVals[1]);
+		r_c = sqrt(eigenVals[2]);
 
-		}
-	if(t == 0.5 && k == 1){ covs[k].Print();
-	 cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
-	 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
-	cout << "eigenvec 0" << endl; eigenVecs[0].Print(); cout << "eigenvec 1" << endl; eigenVecs[1].Print(); cout << "eigenvec 2" << endl; eigenVecs[2].Print();
-	}
-		TGraph* circle = new TGraph(1000, &ell_x[0], &ell_y[0]);
-		circle->SetLineColor(kRed);
-		circle->Draw("l");
+		//phi is angle in x-y plane: phi = arctan(y/x)
+		//take direction of largest eigenvalue (principle axis) - always last one
+		ax_x = eigenVecs[2].at(0,0);
+		ax_y = eigenVecs[2].at(1,0);
+		ax_z = eigenVecs[2].at(2,0);
+		phi2 = atan2(ax_y, ax_x);
+		//theta is angle from z-axis: theta = arccos(z/r), r = sqrt(x^2 + y^2 + z^2)
+		theta2 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
+		phi = phi2;
+		theta = theta2;
+
+		ax_x = eigenVecs[1].at(0,0);
+		ax_y = eigenVecs[1].at(1,0);
+		ax_z = eigenVecs[1].at(2,0);
+
+		theta1 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
+		phi1 = atan2(ax_y, ax_x);
+		ax_x = eigenVecs[0].at(0,0);
+		ax_y = eigenVecs[0].at(1,0);
+		ax_z = eigenVecs[0].at(2,0);
+
+		theta0 = acos(ax_z/sqrt(ax_x*ax_x + ax_y*ax_y + ax_z*ax_z));
+		phi0 = atan2(ax_y, ax_x);
+
+		//calculate center shifts in x-y plane (based on angle from z-axis theta)
+		deltaX = cos(phi2)*sin(theta2);
+		deltaY = sin(phi2)*sin(theta2);
+	
+if(k == 1) cout << "deltaX2: " << deltaX << " deltaY2: " << deltaY << endl;
+		deltaX = cos(phi1)*sin(theta1);
+		deltaY = sin(phi1)*sin(theta1);
+	
+if(k == 1) cout << "deltaX1: " << deltaX << " deltaY1: " << deltaY << endl;
+		deltaX = cos(phi0)*sin(theta0);
+		deltaY = sin(phi0)*sin(theta0);
+	
+if(k == 1) cout << "deltaX0: " << deltaX << " deltaY0: " << deltaY << endl;
+
+		//project onto x-y plane
+		r_x = r_c*sqrt(1 - ((t - z0)*(t - z0))/(r_c*r_c) );
+		r_y = r_b*sqrt(1 - ((t - z0)*(t - z0))/(r_c*r_c) );
+		//r_y = fabs(tan(theta)*sin(phi)*r_c)*sqrt(1 - (t-z0)*(t-z0));
+		//r_x = fabs(tan(theta)*cos(phi)*r_c)*sqrt(1 - (t-z0)*(t-z0));
 	
 /*	
-		rx0 = sqrt(eigenx);
-		ry0 = sqrt(eigeny);
-		rz0 = sqrt(eigenz);
-			//project onto x-y plane
-		r_x = rx0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
-		r_y = ry0*sqrt(1 - ((t - z0)*(t - z0))/(rz0*rz0) );
-		
-		c_x = x0;
-		c_y = y0;
+		if(t > z0 + ax_z || t < z0 - ax_z){
+			r_y = 0;
+			r_x = 0;
+		}else{
+		if(t >= z0){
+			r_y *= ((ax_z + z0) - t);
+			r_x *= ((ax_z + z0) - t);
+		}
+		else if(t < z0){
+			r_y *= (t - (z0 - ax_z));
+			r_x *= (t - (z0 - ax_z));
+		}
+		} 
+*/
+		//take x-components of all eigenvectors
+		///r_x = sqrt((1 - (t-z0)*(t - z0)))*(eigenVals[0]*eigenVecs[0].at(0,0) + eigenVals[1]*eigenVecs[1].at(0,0) + eigenVals[2]*eigenVecs[2].at(0,0));
+		///r_y = sqrt((1 - (t-z0)*(t - z0)))*(eigenVals[0]*eigenVecs[0].at(1,0) + eigenVals[1]*eigenVecs[1].at(1,0) + eigenVals[2]*eigenVecs[2].at(1,0));
+		//r_y = deltaY;
+		c_x = x0;// + deltaX;
+		c_y = y0;// + deltaY;
 
-		//take direction of largest eigenvalue - always last one
-		int maxValIdx = 2; 
-		
-		//theta = arctan(v(y)/v(x)) where v is the vector that corresponds to the largest eigenvalue
-		theta = atan2(eigenVecs[maxValIdx].at(2,0),eigenVecs[maxValIdx].at(1,0));
-		//convert to degrees
-		theta = 180*theta/acos(-1);	
-if(t == std::ceil(z0 / m_deltaT) * m_deltaT - m_deltaT){
+	//ellipse plotted is based off of ellipsoid principal axis - x+y axes correspond to x+y components of principal axis (approximation of true 1 sigma ellipsoid, which has x+y components from other axes) 
+
+if(k == 1){
 //cout << "dims" << endl;
 //dims.Print();
 cout << "k: " << k <<  " t: " << t << " c_x: " << c_x << " c_y: " << c_y << " r_x: " << r_x << " r_y: " << r_y << endl;
 cout << "x0: " << x0 << " y0: " << y0 << " z0: " << z0 << " pi: " << pis[k] << endl;	
-cout << "rx0: " << rx0 << " ry0: " << ry0 << " rz0: " << rz0 << endl;
-cout << "eigenx: " << eigenx << " eigeny: " << eigeny << " eigenz: " << eigenz << endl; 
+cout << "r_a: " << r_a << " r_b: " << r_b << " r_c: " << r_c << endl;
+cout << "deltaX: " << deltaX << " deltaY: " << deltaY << endl;
+cout << "tan(theta)*sin(phi): " << tan(theta)*sin(phi) << " tan(theta)*cos(phi): " << tan(theta)*cos(phi) << endl;
 cout << "scale x: " << m_scale.at(0) << " scale y: " << m_scale.at(1) << " scale z: " << m_scale.at(2) << endl;
 cout << "t-z0: " << (t - z0) << endl;
 cout << "(t-z0)^2: " << (t - z0)*(t - z0) << endl;
-cout << "(t-z0)^2/rz0^2: " << (t - z0)*(t - z0)/(rz0*rz0)  << endl;
-cout << "1 - (t-z0)^2/rz0^2: " << 1 - (t - z0)*(t - z0)/(rz0*rz0)  << endl;
-cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(rz0*rz0) ) << endl;
+cout << "(t-z0)^2/r_c^2: " << (t - z0)*(t - z0)/(r_c*r_c)  << endl;
+cout << "1 - (t-z0)^2/r_c^2: " << 1 - (t - z0)*(t - z0)/(r_c*r_c)  << endl;
+cout << "sqrt: " << sqrt(1 - (t - z0)*(t - z0)/(r_c*r_c) ) << endl;
 covs[k].Print();
-cout << "maxValIdx: " << maxValIdx << endl;
 cout << "theta: " << theta << endl;
 cout << "eigen vec 0: " << eigenVals[0] << endl;
 eigenVecs[0].Print();
@@ -258,8 +289,13 @@ cout << "\n" << endl;
 		if(isnan(r_x) || isnan(r_y)){ 
 			continue;
 		}
-		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
-		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
+		//convert to degrees for plotting
+		phi = 180*phi/acos(-1);	
+		if(phi < 0) phi = -(90+phi);
+		else phi += 90;
+		//else phi += 90; //get in ROOT's weird angle definition
+		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, phi);
+		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, phi);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
 		circle->SetFillColorAlpha(col,pis[k]/pi_norm);
 		circle->SetLineColor(col);
@@ -276,7 +312,6 @@ cout << "\n" << endl;
 		//circle_bkg->Draw();
 		circle->Draw("f");
 
-	*/
 
 
 	}
