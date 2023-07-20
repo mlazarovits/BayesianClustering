@@ -1,6 +1,6 @@
 #include "JetProducer.hh"
 #include "JetClusterizer.hh"
-
+#include "VarClusterViz3D.hh"
 
 #include <TFile.h>
 #include <iostream>
@@ -125,8 +125,8 @@ int main(int argc, char *argv[]){
 	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
 	double logLthresh = 0.001;
-	int maxIt = 10;
-	int maxK = 5;
+	int maxIt = 20;
+	int maxK = 8;
 	bool viz = true;
 	jc.FindSubjets_etaPhi(testjet, logLthresh, maxIt, maxK, viz);
 
@@ -136,83 +136,4 @@ int main(int argc, char *argv[]){
 	//write finalJets to same file (space, time, momentum, energy)
 
 
-
-
-/*	
-	//put jets into algorithm friendly format - point collection
-	PointCollection points;
-	VarGaussianMixture vgmm(m_maxK);
-	//match points to jets by idx
-	int n_pts = jet.GetConstituents();
-	for(int i = 0; i < n_pts; i++){
-		points += jets[i].four_space();
-		jets[i].SetUserIdx(i);
-	}
-
-	
-
-	
-	//create GMM model
-	VarGaussianMixture vgmm = VarGaussianMixture(k);
-	vgmm.AddData(pc);
-	VarClusterViz2D cv2D = VarClusterViz2D(&vgmm, fname);
-
-	//Initialize - randomize parameters 
-	vgmm.Initialize();
-	//loop
-	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.0001;
-	double it = 0;
-	////////run EM algo////////
-	for(int it = 0; it < nIts; it++){
-		oldLogL = vgmm.EvalLogL();
-		
-		//E step
-		vgmm.CalculatePosterior();
-		//M step
-		vgmm.UpdateParameters();
-		
-		//Plot
-		cv2D.UpdatePosterior();
-		cv2D.AddPlot("it"+std::to_string(it));
-		
-		//Check for convergence
-		newLogL = vgmm.EvalLogL();
-		if(isnan(newLogL)){
-			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
-			return -1;
-		}
-		dLogL = fabs(oldLogL - newLogL);
-		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(dLogL < LogLThresh){
-			cout << "Reached convergence at iteration " << it << endl;
-			break;
-		}
-		
-	}
-	cv2D.Write();
-	vector<Matrix> mus, covs;
-	vector<double> pis;
-	vgmm.GetGausParameters(mus,covs);
-	vgmm.GetMixingCoeffs(pis);
-	cout << "Estimated parameters" << endl;
-	for(int i = 0; i < k; i++){
-		cout << "mean " << i+1 << endl;
-		mus[i].Print();
-		cout << "covs " << i+1 << endl;
-		covs[i].Print();
-		cout << "mixing coeff " << i+1 << " " << pis[i] << endl;
-	}
-
-	cout << "Original parameters" << endl;
-	cout << "mean 1" << endl;
-	mu.Print();
-	cout << "cov 1" << endl;
-	sigma.Print();
-	cout << "mean 2" << endl;
-	mu2.Print();
-	cout << "cov 1" << endl;
-	sigma2.Print();
-cout << "\n" << endl;	
-*/
 }
