@@ -123,39 +123,20 @@ void VarClusterViz3D::WriteJson(string filename){
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
-	//scale first
-	//Matrix mat_scale = Matrix(3, 3); //3D points
-	//Matrix mat_shift = Matrix(3, 1); //only for mean
 	
 	double x0, y0, z0;	
-	//mat_scale.PointToScale(m_scale);
-	//mat_shift.PointToShift(m_shift);
 	for(int k = 0; k < m_k; k++){
-		//if mean mixing coefficient value is indistinguishable from zero, don't draw
-
-		//do same normalization transformation on parameters
-		//then shift -> mu'' = mu' - shift = scale*mu - shift
-		//shift mus[k]
-	//	mus[k].add(mat_shift);
-	//	//scale mus[k] => mu' = scale*mu
-	//	mus[k].mult(mat_scale,mus[k]);
 		x0 = mus[k].at(0,0);
 		y0 = mus[k].at(1,0);
 		z0 = mus[k].at(2,0);
 
 
-		//scale covs
-	//	covs[k].mult(mat_scale,covs[k]);
-	//	covs[k].mult(covs[k],mat_scale);
-	//	cout << "k: " << k << " scaled cov:" << endl;
-	//	covs[k].Print();
 		covs[k].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
 			eigenVec_0.append(eigenVecs[0].at(i,0));
 			eigenVec_1.append(eigenVecs[1].at(i,0));
 			eigenVec_2.append(eigenVecs[2].at(i,0));
 		}
-cout << eigenVals[0] << " " << eigenVals[1] << " " << eigenVals[2] << endl;
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
 		cluster["mixing_coeff_norm"] = pis[k]/pi_norm;
