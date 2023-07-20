@@ -139,6 +139,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
+		cout << "cluster: " << k << " pi: " << pis[k] << " pi_norm: " << pi_norm << " op: " << pis[k]/pi_norm << endl;
 		cluster["mixing_coeff_norm"] = pis[k]/pi_norm;
 	
 		cluster["mu_x"] = x0;
