@@ -78,9 +78,9 @@ parser.add_argument('--dir','-d',help='directory with json files')
 parser.add_argument('--json','-j',help='json file to plot')
 args = parser.parse_args()
 
-
 if args.dir is None and args.json is None:
 	print("Error: please provide either directory with jsons or single json file.")
+	exit()
 
 files = []
 if args.dir is not None:
