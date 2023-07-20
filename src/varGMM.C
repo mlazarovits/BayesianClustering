@@ -4,7 +4,7 @@
 #include "VarClusterViz3D.hh"
 #include <iostream>
 #include <cmath>
-
+#include <TSystem.h>
 #include <TStyle.h>
 #include <TAxis.h>
 #include <TCanvas.h>
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
+   		cout << "   --ouput(-o) [file]            output root file (in plots/)" << endl;
    		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
@@ -96,6 +96,9 @@ int main(int argc, char *argv[]){
   	}
 
 	fname = "plots/"+fname;
+	if(gSystem->AccessPathName((fname).c_str())){
+		gSystem->Exec(("mkdir -p "+fname).c_str());
+	}
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	
@@ -176,18 +179,11 @@ int main(int argc, char *argv[]){
 		
 		//Plot
 		cv3D.UpdatePosterior();
-		if(viz) cv3D.WriteJson("it"+std::to_string(it));
+		if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
 		//if(viz) cv3D.AddAnimation("it"+std::to_string(it));
-	//	cv3D.AddPlot("it"+std::to_string(it));
 		
 		mus.clear(); covs.clear();
 		pis.clear();
-
-		//inverse transform parameters back into original scale
-		//scale first
-	//	vgmm.ScaleGausParams(scale);
-		//then shift
-	//	vgmm.ShiftGausParams(shift);
 
 		vgmm.GetGausParameters(mus,covs);
 		vgmm.GetMixingCoeffs(pis);
@@ -217,8 +213,8 @@ int main(int argc, char *argv[]){
 		cout << "\n" << endl;
 		
 	}
-	cv3D.SeeData();
-	cv3D.Write();
+//	cv3D.SeeData();
+//	cv3D.Write();
 
 	
 cout << "\n" << endl;	
