@@ -190,8 +190,9 @@ class PointCollection{
 
 
 	//Randomly selects points 
-	PointCollection SelectPoints(int nIn, int nOut, unsigned long long seed = 123){
+	PointCollection SelectPoints(int nOut, unsigned long long seed = 123){
 		RandomSample rs(seed);
+		int nIn = (int)_pts.size(); 
 		rs.SetRange(0,nIn);
 		PointCollection out;
 		for(int i = 0; i < nOut; i++){
