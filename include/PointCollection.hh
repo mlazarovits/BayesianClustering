@@ -189,7 +189,7 @@ class PointCollection{
 
 
 
-	//Randomly selects points from in array, fills out array with selected points
+	//Randomly selects points 
 	PointCollection SelectPoints(int nIn, int nOut, unsigned long long seed = 123){
 		RandomSample rs(seed);
 		rs.SetRange(0,nIn);
