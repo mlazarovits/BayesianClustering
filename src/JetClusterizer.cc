@@ -137,9 +137,7 @@ cout << n_pts << " constituents to cluster" << endl;
 	
 	vgmm.AddData(points);
 	vgmm.Initialize();
-	VarClusterViz3D cv3D;
 	string fname = "jetTest"; 
-	if(viz) cv3D = VarClusterViz3D(&vgmm, fname);
 	//loop
 	double dLogL, newLogL, oldLogL;
 	////////run EM algo////////
@@ -151,11 +149,6 @@ cout << n_pts << " constituents to cluster" << endl;
 		//M step
 		vgmm.UpdateParameters();
 		
-		//Plot
-		if(viz){
-			cv3D.UpdatePosterior();
-			cv3D.AddAnimation("it"+std::to_string(it));
-		}
 		//Check for convergence
 		newLogL = vgmm.EvalLogL();
 		if(isnan(newLogL)){
@@ -170,7 +163,6 @@ cout << n_pts << " constituents to cluster" << endl;
 			break;
 		}
 	}
-	//if(viz)	cv3D.Write();
 	int nsubjets = vgmm.GetNClusters(LogLthresh*10.);
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
