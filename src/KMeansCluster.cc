@@ -2,13 +2,13 @@
 #include "RandomSample.hh"
 
 
-void KMeansCluster::Initialize(){
+void KMeansCluster::Initialize(unsigned long long seed){
 	if(m_k == 0){
 		cout << "Error: number of clusters hasn't been set yet (via ctor or SetNClusters())." << endl;
 		return;
 	}
 	//initialize means to be random points in data
-	PointCollection initpts = m_data->SelectPoints(m_k);		
+	PointCollection initpts = m_data->SelectPoints(m_k,seed);		
 	//create separate matrix for each mean
 	for(int k = 0; k < m_k; k++){
 		m_means.push_back(Matrix(initpts.at(k)));

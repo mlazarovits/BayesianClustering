@@ -13,7 +13,7 @@ class KMeansCluster : public BaseCluster{
 		//KMeansCluster();
 		virtual ~KMeansCluster(){ m_means.clear(); };
 
-		void Initialize();
+		void Initialize(unsigned long long seed = 123);
 
 		//E-step
 		void Estimate();

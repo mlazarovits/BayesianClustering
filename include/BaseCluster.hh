@@ -2,6 +2,8 @@
 #define BASECLUSTER_HH
 
 #include "PointCollection.hh"
+#include "Matrix.hh"
+
 
 class BaseCluster{
 	public:
@@ -10,11 +12,13 @@ class BaseCluster{
 		BaseCluster(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); m_k = 0; m_n = m_data->GetNPoints();}
 		virtual ~BaseCluster(){ };
 
-		virtual void Initialize() = 0;
+		virtual void Initialize(unsigned long long seed) = 0;
 		//E-step
 		virtual void Estimate() = 0;
 		//M-step
 		virtual void Update() = 0;
+		//for convergence
+		virtual double EvalLogL() = 0;
 
 		void SetNClusters(int k){ m_k = k; }
 		int GetNClusters(){ return m_k; }
@@ -28,5 +32,8 @@ class BaseCluster{
 		int m_dim;
 		//number of points
 		int m_n;
+		//posterior matrix of n data points for k clusters
+		Matrix m_post;
+
 };
 #endif

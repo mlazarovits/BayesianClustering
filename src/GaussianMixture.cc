@@ -1,5 +1,6 @@
 #include "GaussianMixture.hh"
 #include "RandomSample.hh"
+#include "Gaussian.hh"
 
 #include <iostream>
 #include <vector>
@@ -30,8 +31,8 @@ void GaussianMixture::Initialize(unsigned long long seed){
 	RandomSample randy(seed);
 	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
-	double mu_lower = m_x.min()-0.1;
-	double mu_upper = m_x.max()+0.1;
+	double mu_lower = m_data->min()-0.1;
+	double mu_upper = m_data->max()+0.1;
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
 		m_mus.push_back(Matrix(m_dim,1));
@@ -54,30 +55,32 @@ void GaussianMixture::Initialize(unsigned long long seed){
 }
 
 
-//E-step
-void GaussianMixture::CalculatePosterior(){
+//E-step - calculate posterior
+void GaussianMixture::Estimate(){
 	//each kth vector is a cluster of n data points
-	double val;
-	Matrix gaus = Matrix(m_n,m_k);
+	double val, g;
+	Matrix mat = Matrix(m_n,m_k);
 	//these are NOT N_k, they are the normalizations for the posterior gamma(z_nk)
 	//summed over k for each n (n entries)
 	vector<double> post_norms;
+	Gaussian gaus;
 	//calculate norms for each data pt (summed over k)
 	for(int	n = 0; n < m_n; n++){
 		double norm = 0.;
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
 		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
-			double g = Gaus(m_x.at(n),m_mus[k],m_covs[k]);
-			gaus.SetEntry(g,n,k);
-			norm += m_coeffs[k]*gaus.at(n,k);
+			gaus = Gaussian(m_mus[k],m_covs[k]);
+			g = gaus.Prob(m_data->at(n));
+			mat.SetEntry(g,n,k);
+			norm += m_coeffs[k]*mat.at(n,k);
 		}
 		post_norms.push_back(norm);
 	}
 	//calculate posterior for each data pt n in each cluster k
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
-			val = m_coeffs[k]*gaus.at(n,k)/post_norms[n];
+			val = m_coeffs[k]*mat.at(n,k)/post_norms[n];
 			m_post.SetEntry(val,n,k);		
 		}
 	}
@@ -85,9 +88,9 @@ void GaussianMixture::CalculatePosterior(){
 
 
 
-//M-step
+//M-step - update parameters
 //equations were derived from maximizing the posterior calculated in the E-step
-void GaussianMixture::UpdateParameters(){
+void GaussianMixture::Update(){
 	//re-calculate normalization (overwrites)
 	m_norms.clear();
 	//this is for N_k - k entries in this vector
@@ -108,7 +111,7 @@ void GaussianMixture::UpdateParameters(){
 		m_mus[k].InitEmpty();
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
-			Matrix x = Matrix(m_x.at(n).Value());
+			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
@@ -132,7 +135,7 @@ void GaussianMixture::UpdateParameters(){
 			Matrix cov_k = Matrix(m_dim, m_dim);
 
 			//construct x - mu
-			Matrix x_mat = Matrix(m_x.at(n).Value());
+			Matrix x_mat = Matrix(m_data->at(n).Value());
 			Matrix x_min_mu;
 			x_min_mu.mult(m_mus[k],-1.);
 			x_min_mu.add(x_mat);
@@ -180,10 +183,12 @@ void GaussianMixture::UpdateParameters(){
 double GaussianMixture::EvalLogL(){
 	double L;
 	double sum_k;
+	Gaussian gaus;
 	for(int n = 0; n < m_n; n++){
 		sum_k = 0;
 		for(int k = 0; k < m_k; k++){
-			sum_k += m_coeffs[k]*Gaus(m_x.at(n),m_mus[k],m_covs[k]);
+			gaus = Gaussian(m_mus[k], m_covs[k]);
+			sum_k += m_coeffs[k]*gaus.Prob(m_data->at(n));
 			
 		}
 		L += log(sum_k);

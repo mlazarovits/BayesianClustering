@@ -1,23 +1,23 @@
 #ifndef GAUSSIANMixture_HH
 #define GAUSSIANMixture_HH
-#include "BasePDFMixture.hh"
+#include "BaseCluster.hh"
 #include "Matrix.hh"
 #include "PointCollection.hh"
 #include <vector>
 using std::vector;
 
 
-class GaussianMixture : public BasePDFMixture{
+class GaussianMixture : public BaseCluster{
 	public:
 		GaussianMixture();
 		GaussianMixture(int k);
 		virtual ~GaussianMixture(){ };
 	
 		void Initialize(unsigned long long seed = 111);
-		//E-step
-		void CalculatePosterior();
-		//M-step
-		void UpdateParameters();
+		//E-step - calculates posterior
+		void Estimate();
+		//M-step - updates parameters
+		void Update();
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 		
