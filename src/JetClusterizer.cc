@@ -59,7 +59,7 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 	jet.GetConstituents(rhs);
 	int n_pts = points.GetNPoints();
 	
-	vgmm.AddData(points);
+	vgmm.AddData(&points);
 	vgmm.Initialize();
 	VarClusterViz3D cv3D;
 	string fname = "plots/jetTest/"; 
@@ -75,9 +75,9 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 		oldLogL = vgmm.EvalLogL();
 		
 		//E step
-		vgmm.CalculatePosterior();
+		vgmm.Estimate();
 		//M step
-		vgmm.UpdateParameters();
+		vgmm.Update();
 		
 		//Plot
 		if(viz){
@@ -135,7 +135,7 @@ vector<Jet> JetClusterizer::FindSubjets_XYZ(Jet jet, double LogLthresh, int maxN
 	int n_pts = points.GetNPoints();
 cout << n_pts << " constituents to cluster" << endl;	
 	
-	vgmm.AddData(points);
+	vgmm.AddData(&points);
 	vgmm.Initialize();
 	string fname = "jetTest"; 
 	//loop
@@ -145,9 +145,9 @@ cout << n_pts << " constituents to cluster" << endl;
 		oldLogL = vgmm.EvalLogL();
 		
 		//E step
-		vgmm.CalculatePosterior();
+		vgmm.Estimate();
 		//M step
-		vgmm.UpdateParameters();
+		vgmm.Update();
 		
 		//Check for convergence
 		newLogL = vgmm.EvalLogL();

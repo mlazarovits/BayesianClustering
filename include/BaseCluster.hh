@@ -24,6 +24,9 @@ class BaseCluster{
 		int GetNClusters(){ return m_k; }
 		void AddData(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); }
 		PointCollection* GetData(){ return m_data; }
+		Matrix GetPosterior() const{
+			return m_post;
+		}
 		
 		PointCollection* m_data;
 		//number of clusters
