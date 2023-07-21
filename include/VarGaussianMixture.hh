@@ -11,7 +11,10 @@ class VarGaussianMixture : public BasePDFMixture{
 		virtual ~VarGaussianMixture(){ };
 
 		void Initialize(unsigned long long seed = 111);
-
+	
+		//seed initial values for means
+		void SeedMeans();
+	
 		void InitAlpha(double a){
 			m_alpha0 = a;
 		}
@@ -107,6 +110,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		void CalculateExpectations();
 		//pre-M step
 		void CalculateRStatistics();
+		void Update(); //M-step without Rstats - used to seed
 	private:
 		//hyperparameters
 		//initial values of parameters for k clusters

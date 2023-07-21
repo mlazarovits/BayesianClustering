@@ -1,5 +1,7 @@
 #include <boost/math/special_functions/digamma.hpp>
 #include "VarGaussianMixture.hh"
+#include "KMeansCluster.hh"
+
 
 using boost::math::digamma;
 
@@ -38,9 +40,9 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 	m_mean0 = Matrix(m_dim,1);
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
 	m_mean0.InitEmpty();
+	
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);
-	
 	//W <- R in dxd space - is a covariance matrix
 	m_W0 = Matrix(m_dim, m_dim);
 	m_W0.InitIdentity();
@@ -94,14 +96,45 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 
 	//init responsibility statistics
 	for(int k = 0; k < m_k; k++){
-		m_norms.push_back(0.);
-		m_xbars.push_back(Matrix(m_dim,1));
+		//seed N_k to 1 - multiplicative factor in Update for Rstat quantities
+		m_norms.push_back(1.);
 		m_Ss.push_back(Matrix(m_dim,m_dim));
 		m_Ss[k].InitIdentity();
 	}
+	//to init xbars
+	SeedMeans();
+
+	//to init prior parameters without calculating Rstats from posterior
+	Update();
 
 
 };
+
+//used to seed bar{x}_k (statistic of observed data)
+void VarGaussianMixture::SeedMeans(){
+	//run k-means clustering on data to convergence
+	//get means for each cluster 
+	KMeansCluster kmc = KMeansCluster(&m_x);
+	kmc.SetNClusters(m_k);
+	kmc.Initialize();
+
+	//use number of points that change assignment at E-step to track convergence
+	int nit = 0;
+	int nchg = 999;
+	while(nchg > 0){
+
+		kmc.Estimate();
+		//check for convergence with number of points that 
+		//change assignment
+		nchg = kmc.GetNChange();
+		
+		kmc.Update();
+		nit++;
+	}
+	
+	kmc.GetMeans(m_xbars);
+}
+
 
 
 //for use in ELBO + E-step
@@ -258,12 +291,15 @@ void VarGaussianMixture::CalculateRStatistics(){
 }
 
 
+void VarGaussianMixture::UpdateParameters(){
+	CalculateRStatistics();
+	Update();
+}
 
 
 //M-step
-void VarGaussianMixture::UpdateParameters(){
+void VarGaussianMixture::Update(){
 //cout << "UPDATE PARAMETERS - M STEP" << endl;
-	CalculateRStatistics();
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
 //	m_betas.clear();
@@ -329,8 +365,8 @@ void VarGaussianMixture::UpdateParameters(){
 //if(k == 0) m_W0inv.Print();
 //if(k == 0) cout << "k: " << k << " 5 - W = (beta0*N_k)/(beta0 + N_k)*(x_n - m_0)(x_n - m_0)T + N_k*S_k + W0inv: " << endl;
 //if(k == 0) m_Ws[k].Print();
-		Matrix testW;
-		testW.invert(m_Ws[k]);
+		//Matrix testW;
+		//testW.invert(m_Ws[k]);
 		//invert (calculated for W_k inverse)
 		m_Ws[k].invert(m_Ws[k]);
 //if(k == 0)cout << "k: " << k << " new W: " << endl;
