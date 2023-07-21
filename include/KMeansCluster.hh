@@ -19,11 +19,12 @@ class KMeansCluster : public BaseCluster{
 		void Estimate();
 		//M-step
 		void Update();
+		//for convergence
+		double EvalLogL(){ return double(m_nchg); }
 
 		void GetMeans(vector<Matrix>& m){ m.clear(); m = m_means; }
 		void GetAssignments(vector<int>& a){ a.clear(); a = m_assigns; }	
 		int GetAssignment(int n){ if(n < m_data->GetNPoints()) return m_assigns[n]; else return -999.; }
-		int GetNChange(){return m_nchg;}
 	
 
 	private:
