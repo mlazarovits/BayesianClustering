@@ -8,7 +8,7 @@ class BasePDF{
 		BasePDF(){ };
 		virtual ~BasePDF(){ delete m_prior; }	
 
-		virtual double Prob(Point x) = 0;
+		virtual double Prob(const Point& x) = 0;
 		virtual void SetPrior(BasePDF* pdf){ m_prior = pdf; }
 
 		
