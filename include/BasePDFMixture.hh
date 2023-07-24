@@ -26,6 +26,8 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const Point& x);
 
 		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints();}
+		PointCollection* GetData(){ return m_data; }
+
 
 		//for EM algorithm
 		virtual void CalculatePosterior(Matrix& post) = 0;
@@ -43,7 +45,6 @@ class BasePDFMixture : public BasePDF{
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
 
 		virtual double EvalLogL() = 0;
-		virtual double EvalVariationalLogL() = 0;
 	
 		PointCollection* m_data;
 		//number of data points

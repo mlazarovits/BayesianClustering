@@ -21,7 +21,7 @@ class BaseCluster{
 		//for convergence
 		virtual double EvalLogL() = 0;
 
-		double Cluster(map<string, vector<Matrix>>& params){
+		double Cluster(BasePDFMixture* pdfmix){
 			//E step
 			Estimate();
 			//M step
@@ -30,7 +30,7 @@ class BaseCluster{
 			//Check for convergence
 			double newLogL = EvalLogL();
 			
-			params = GetModel();
+			pdfmix = GetModel();
 			return newLogL;
 		};
 
@@ -46,7 +46,7 @@ class BaseCluster{
 			return m_post;
 		}
 
-		virtual map<string, vector<Matrix>> GetModel() = 0;
+		BasePDFMixture* GetModel(){ return m_pdfmix; }
 
 		//model
 		BasePDFMixture* m_pdfmix;
@@ -61,5 +61,9 @@ class BaseCluster{
 		//posterior matrix of n data points for k clusters
 		Matrix m_post;
 
+		//1 mixing param for each cluster k
+		vector<double> m_coeffs;
+		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
+		vector<double> m_norms;
 };
 #endif
