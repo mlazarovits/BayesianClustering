@@ -10,12 +10,12 @@ class GaussianMixture : public BasePDFMixture{
 	//using BasePDFMixture::BasePDFMixture;
 
 	public:
-		GaussianMixture(){ m_k = 0; }
+		GaussianMixture(){ m_k = 0; m_seed = 123; }
 		GaussianMixture(int k);
 		virtual ~GaussianMixture(){ };
 
-		void InitParameters(){ };
-		void InitParameters(unsigned long long seed = 123);
+		void SetSeed(unsigned long long seed){m_seed = seed;}
+		void InitParameters();
 		//for EM algorithm
 		void CalculatePosterior(Matrix& post);
 		void UpdateParameters(const Matrix& post);
@@ -29,6 +29,7 @@ class GaussianMixture : public BasePDFMixture{
 		map<string, vector<Matrix>> GetPriorParameters(); 
 
 		double EvalLogL();
+		double EvalVariationalLogL();
 
 	private:
 		//model
@@ -53,6 +54,6 @@ class GaussianMixture : public BasePDFMixture{
 		vector<double> m_nus;
 
 
-
+		unsigned long long m_seed;
 };
 #endif

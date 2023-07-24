@@ -7,10 +7,10 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	for(int i = 0; i < k; k++){
 		m_model.push_back(new Gaussian());
 	}
-
+	m_seed = 123;
 }
 
-void GaussianMixture::InitParameters(unsigned long long seed){
+void GaussianMixture::InitParameters(){
 	m_n = m_data->GetNPoints();
 	//run k-means clustering on data to convergence to get means
 	//get means for each cluster 
@@ -35,7 +35,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 
 	//init covs to identity
 	//randomly initialize mixing coeffs
-	RandomSample randy(seed);
+	RandomSample randy(m_seed);
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
@@ -226,5 +226,12 @@ double GaussianMixture::EvalLogL(){
 		L += log(sum_k);
 	}
 	return L;
+
+}
+
+
+double GaussianMixture::EvalVariationalLogL(){
+
+
 
 }
