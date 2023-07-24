@@ -10,8 +10,10 @@ class Wishart : public BasePDF{
 		Wishart(const Matrix& W, double nu);
 		virtual ~Wishart(){ };
 
-		void SetParameters(Matrix W, double nu);
-		void GetParameters(Matrix& W, double& nu){ W = m_W; nu = m_nu; }
+		void SetParameters(Matrix W, double nu){ m_W = W; m_nu = nu; }
+		void InitParameters();
+		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
+		map<string, vector<Matrix>> GetParameters();
 
 		double Prob(const Matrix& x);
 		double Prob(const Point& x);

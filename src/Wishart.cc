@@ -1,5 +1,6 @@
 #include <boost/math/special_functions/digamma.hpp>
 #include "Wishart.hh"
+#include "RandomSample.hh"
 
 using boost::math::digamma;
 
@@ -61,4 +62,27 @@ double Wishart::H(){
 	E_lam += log(det);
 
 	return -lnB() - ((m_nu - m_dim - 1)/2.)*E_lam + (m_nu*m_dim)/2.;
+}
+
+
+
+void Wishart::InitParameters(){
+	//init W to identity
+	m_W.InitIdentity();
+	//nu > d - 1 (degrees of freedom)
+	RandomSample rs;
+	rs.SetRange(m_dim - 1, m_dim+2);
+	m_nu = rs.SampleFlat();
+
+}
+
+
+
+map<string, vector<Matrix>> Wishart::GetParameters(){
+	map<string, vector<Matrix>> ret;
+	ret["W"] = {m_W};
+	vector<double> nu = {m_nu};
+	ret["nu"] = {Matrix(nu)};
+
+
 }
