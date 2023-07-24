@@ -1,5 +1,5 @@
 #include "VarClusterViz3D.hh"
-#include "VarGaussianMixture.hh"
+#include "VarEMCluster.hh"
 
 #include "json/json.h"
 #include <TSystem.h>
@@ -22,18 +22,18 @@
 using std::string;
 
 //check for 2D data
-VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){ 
-	if(model->GetData().Dim() != 3){
-		cout << "VarClusterViz3D Error: dimensionality of data is not 2. Dimensionality is " << model->GetData().Dim() << "." << endl;
+VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){ 
+	if(algo->GetData()->Dim() != 3){
+		cout << "VarClusterViz3D Error: dimensionality of data is not 2-> Dimensionality is " << algo->GetData()->Dim() << "." << endl;
 		m_n = 0;
 		return;
 	}
-	m_model = model;
+	m_model = algo->GetModel();
 	m_fname = fname;
-	m_points = m_model->GetData();
-	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters(0.);
-	m_post = m_model->GetPosterior();
+	m_points = algo->GetData();
+	m_n = m_points->GetNPoints();
+	m_k = algo->GetNClusters();
+	m_post = algo->GetPosterior();
 	m_deltaT = 0.1;
 	
 	//normalize data
@@ -49,16 +49,16 @@ VarClusterViz3D::VarClusterViz3D(VarGaussianMixture* model, string fname){
 
 VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){ 
 	m_model = viz.m_model;
-	if(m_model->GetData().Dim() != 3){
-		cout << "VarClusterViz3D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+	if(m_model->GetData()->Dim() != 3){
+		cout << "VarClusterViz3D Error: dimensionality of data is not 2-> Dimensionality is " << m_model->GetData()->Dim() << "." << endl;
 		m_n = 0;
 		return;
 	}
 	m_fname = viz.m_fname;
-	m_points = m_model->GetData();
-	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters(0.);
-	m_post = m_model->GetPosterior();
+	m_points = viz.m_points;
+	m_n = viz.m_n;
+	m_k = viz.m_k;
+	m_post = viz.m_post;
 	m_deltaT = 0.1;
 	
 	//normalize data
@@ -96,17 +96,18 @@ void VarClusterViz3D::WriteJson(string filename){
 		return;
 	}
 	vector<Matrix> mus, covs;
-	vector<double> pis;
 	double pi_norm = 0;
-	m_model->GetGausParameters(mus,covs);
-
-	m_model->GetMixingCoeffs(pis);
+	map<string, vector<Matrix>> params;
+	params = m_model->GetParameters();
+	vector<Matrix> pis = params["pis"];
+	mus = params["mus"];
+	covs = params["covs"];
 	for(int i = 0; i < m_n; i++){
 		//eta
-		x.append(m_points.at(i).Value(0));
+		x.append(m_points->at(i).Value(0));
 		//phi
-		y.append(m_points.at(i).Value(1));
-		z.append(m_points.at(i).Value(2));
+		y.append(m_points->at(i).Value(1));
+		z.append(m_points->at(i).Value(2));
 	}
 	data["x"] = x;
 	data["y"] = y;
@@ -117,7 +118,7 @@ void VarClusterViz3D::WriteJson(string filename){
 //	if(x.size() == 0) return;
 
 	for(int k = 0; k < m_k; k++){
-		pi_norm += pis[k];	
+		pi_norm += pis[0].at(k,0);	
 	}
 	
 	//set coords for parameter circles
@@ -139,8 +140,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		cout << "cluster: " << k << " pi: " << pis[k] << " pi_norm: " << pi_norm << " op: " << pis[k]/pi_norm << endl;
-		cluster["mixing_coeff_norm"] = pis[k]/pi_norm;
+		cluster["mixing_coeff_norm"] = pis[0].at(k,0)/pi_norm;
 	
 		cluster["mu_x"] = x0;
 		cluster["mu_y"] = y0;
@@ -174,11 +174,11 @@ void VarClusterViz3D::SeeData(){
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		//eta
-		x.push_back(m_points.at(i).Value(0));
+		x.push_back(m_points->at(i).Value(0));
 		//phi
-		y.push_back(m_points.at(i).Value(1));
+		y.push_back(m_points->at(i).Value(1));
 		//time
-		z.push_back(m_points.at(i).Value(2));
+		z.push_back(m_points->at(i).Value(2));
 	}
 	
 if(m_n == 0 || x.size() == 0){
@@ -213,6 +213,7 @@ if(m_n == 0 || x.size() == 0){
 }
 
 void VarClusterViz3D::AddAnimation(string dirname){
+	/*
 	//out folder does not exist
 	//ie) dirname = it_0
 	if(gSystem->AccessPathName((m_fname+"/"+dirname).c_str())){
@@ -257,7 +258,7 @@ void VarClusterViz3D::AddAnimation(string dirname){
 	m_cvs.clear();
 	
 
-	
+	*/
 
 
 

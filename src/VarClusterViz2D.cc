@@ -1,5 +1,5 @@
 #include "VarClusterViz2D.hh"
-#include "VarGaussianMixture.hh"
+#include "GaussianMixture.hh"
 
 #include <TSystem.h>
 #include <TGraph.h>
@@ -18,32 +18,32 @@
 using std::string;
 
 //check for 2D data
-VarClusterViz2D::VarClusterViz2D(VarGaussianMixture* model, string fname){ 
-	if(model->GetData().Dim() != 2){
-		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << model->GetData().Dim() << "." << endl;
+VarClusterViz2D::VarClusterViz2D(VarEMCluster* algo, string fname){ 
+	if(algo->GetData()->Dim() != 2){
+		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << algo->GetData()->Dim() << "." << endl;
 		m_n = 0;
 		return;
 	}
-	m_model = model;
+	m_model = algo->GetModel();
 	m_fname = fname;
-	m_points = m_model->GetData();
-	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters(0.);
-	m_post = m_model->GetPosterior();
+	m_points = algo->GetData();
+	m_n = m_points->GetNPoints();
+	m_k = algo->GetNClusters();
+	m_post = algo->GetPosterior();
 }
 
 VarClusterViz2D::VarClusterViz2D(const VarClusterViz2D& viz){ 
 	m_model = viz.m_model;
-	if(m_model->GetData().Dim() != 2){
-		cout << "VarClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+	if(m_model->GetData()->Dim() != 2){
+		cout << "VarClusterViz2D Error: dimensionality of data is not 2-> Dimensionality is " << m_model->GetData()->Dim() << "." << endl;
 		m_n = 0;
 		return;
 	}
 	m_fname = viz.m_fname;
-	m_points = m_model->GetData();
-	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters(0.);
-	m_post = m_model->GetPosterior();
+	m_points = viz.m_points;
+	m_n = viz.m_n; 
+	m_k = viz.m_k;
+	m_post = viz.m_post;
 }
 void VarClusterViz2D::AddPlot(string plotName){
 	if(m_n == 0){
@@ -52,18 +52,21 @@ void VarClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
-	vector<double> pis;
 	double pi_norm = 0;
-	m_model->GetGausParameters(mus,covs);
-	m_model->GetMixingCoeffs(pis);
+	map<string, vector<Matrix>> params;
+	params = m_model->GetParameters();
+	vector<Matrix> pis = params["pis"];
+	mus = params["mus"];
+	covs = params["covs"];
+	//m_model->GetGausParameters(mus,covs);
+	//m_model->GetMixingCoeffs(pis);
 	vector<double> x, y;
 	for(int i = 0; i < m_n; i++){
-		x.push_back(m_points.at(i).Value(0.));
-		y.push_back(m_points.at(i).Value(1.));
+		x.push_back(m_points->at(i).Value(0.));
+		y.push_back(m_points->at(i).Value(1.));
 	}
 	for(int k = 0; k < m_k; k++){
-		cout << "k: " << k << " pi: " << pis[k] << endl;
-		pi_norm += pis[k];
+		pi_norm += pis[0].at(k,0);
 	}
 	//get palette colors for circles
 	SetPalette(m_k);
@@ -118,7 +121,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
-		if(pis[k]/pi_norm < 0.01)
+		if(pis[0].at(k,0)/pi_norm < 0.01)
 			continue; 
 
 		c_x = mus[k].at(0,0);
@@ -149,11 +152,10 @@ void VarClusterViz2D::AddPlot(string plotName){
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
-		circle->SetFillColorAlpha(col,pis[k]/pi_norm);
+		circle->SetFillColorAlpha(col,pis[0].at(k,0)/pi_norm);
 		circle->SetLineColor(col);
 		circle->SetLineWidth(5);
 		//sets transparency normalized to sum
-		cout << "k: " << k << " transparency: " << pis[k]/pi_norm << endl;
 	   	circle->SetFillStyle(1001);
 
 		circle_bkg->SetLineColor(0); 
