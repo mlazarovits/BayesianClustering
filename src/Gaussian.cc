@@ -1,7 +1,7 @@
 #include "Gaussian.hh"
 #include "Matrix.hh"
 
-Gaussian::Gaussian(){ }
+Gaussian::Gaussian(){ m_dim = 0; }
 
 Gaussian::Gaussian(Point mu, Matrix cov){
 	if(!cov.square()){ cout << "Error: non-square covariance." << endl; return;}
