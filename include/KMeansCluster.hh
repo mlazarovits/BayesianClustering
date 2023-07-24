@@ -23,6 +23,10 @@ class KMeansCluster : public BaseCluster{
 		double EvalLogL(){ return double(m_nchg); }
 
 		void GetMeans(vector<Matrix>& m){ m.clear(); m = m_means; }
+		map<string, vector<Matrix>> GetModel(){ map<string,vector<Matrix>> ret;
+			ret["means"] = m_means;
+			return ret;
+		 }
 		void GetAssignments(vector<int>& a){ a.clear(); for(int i = 0; i < m_n; i++) a.push_back(m_post.at(i,0)); }	
 		int GetAssignment(int n){ if(n < m_data->GetNPoints()) return m_post.at(n,0); else return -999.; }
 	
