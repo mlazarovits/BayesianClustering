@@ -51,4 +51,17 @@ double Gaussian::Prob(const Point& x){
 
 }
 
+void Gaussian::InitParameters(){
+	//init cov to identity and mean to 0
+	m_cov.InitIdentity();
+	m_mu.InitEmpty();
+}
 
+
+
+map<string, vector<Matrix>> Gaussian::GetParameters(){
+	map<string, vector<Matrix>> ret;
+	ret["mu"] = {m_mu};
+	ret["cov"] = {m_cov};
+	return ret;
+}

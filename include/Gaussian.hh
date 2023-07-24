@@ -11,8 +11,9 @@ class Gaussian : public BasePDF{
 		virtual ~Gaussian(){ };
 
 
-		void SetParameters(const Matrix& mu, const Matrix& cov){ m_mu = mu; m_cov = cov; }		
-		void GetParameters(Matrix& mu, Matrix& cov){ mu = m_mu; cov = m_cov; }		
+		void InitParameters();
+		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
+		map<string, vector<Matrix>> GetParameters();
 		
 		double Prob(const Point& x);
 
