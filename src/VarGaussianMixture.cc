@@ -1,7 +1,8 @@
 #include <boost/math/special_functions/digamma.hpp>
 #include "VarGaussianMixture.hh"
 #include "KMeansCluster.hh"
-
+#include "Dirichlet.hh"
+#include "Wishart.hh"
 
 using boost::math::digamma;
 
@@ -75,8 +76,8 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 	}
 	
 	Matrix mat;
-	double mean_lower = m_x.min()-0.1;
-	double mean_upper = m_x.max()+0.1;
+	double mean_lower = m_data->min()-0.1;
+	double mean_upper = m_data->max()+0.1;
 	for(int k = 0; k < m_k; k++){
 		mat = Matrix(m_dim, 1);
 		mat.InitRandom(mean_lower, mean_upper, seed+k);
@@ -102,38 +103,13 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_Ss[k].InitIdentity();
 	}
 	//to init xbars
-	SeedMeans();
+	SeedMeans(m_xbars);
 
 	//to init prior parameters without calculating Rstats from posterior
-	Update();
+	UpdatePriorParameters();
 
 
 };
-
-//used to seed bar{x}_k (statistic of observed data)
-void VarGaussianMixture::SeedMeans(){
-	//run k-means clustering on data to convergence
-	//get means for each cluster 
-	KMeansCluster kmc = KMeansCluster(&m_x);
-	kmc.SetNClusters(m_k);
-	kmc.Initialize();
-
-	//use number of points that change assignment at E-step to track convergence
-	int nit = 0;
-	int nchg = 999;
-	while(nchg > 0){
-
-		kmc.Estimate();
-		//check for convergence with number of points that 
-		//change assignment
-		nchg = kmc.GetNChange();
-		
-		kmc.Update();
-		nit++;
-	}
-	
-	kmc.GetMeans(m_xbars);
-}
 
 
 
@@ -161,12 +137,12 @@ void VarGaussianMixture::CalculateExpectations(){
 
 
 
-//E-step
+//E-step - calculate posterior
 //E[z_nk] = r_nk
 //(10.46) ln(rho_nk) = E[ln(pi_k)] + 1/2E[ln|lambda_k|] - D/2*ln(2pi) - 1/2E[(x_n - mu_k)Tlambda_k(x_n - mu_k)]
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
-void VarGaussianMixture::CalculatePosterior(){
+void VarGaussianMixture::Estimate(){
 //cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
@@ -179,7 +155,7 @@ void VarGaussianMixture::CalculatePosterior(){
 			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
 			x_min_m = Matrix(m_dim,1);
 			x_min_m.mult(m_means[k],-1.);
-			x_mat = Matrix(m_x.at(n).Value());
+			x_mat = Matrix(m_data->at(n).Value());
 			x_min_m.add(x_mat);		
 			x_min_mT = Matrix(1, m_dim);
 			x_min_mT.transpose(x_min_m);
@@ -189,11 +165,11 @@ void VarGaussianMixture::CalculatePosterior(){
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
-		//if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_x.at(n).Print();}
+		//if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_data->at(n).Print();}
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
 		//	if(n == 0){ cout << "k: " << k << " n: " << n << " Epi: " << m_Epi[k] << " Elam: " << m_Elam[k] << " E_muLam: " << E_mu_lam << " beta: " << m_betas[k] << " nu: " << m_nus[k]  << " post: " << post << " exp(post): " << exp(post) << " W: " <<  endl;
-		//	m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_x.at(n).Print();
+		//	m_Ws[k].Print(); cout << "m: " << endl; m_means[k].Print(); cout << "x: " << endl; m_data->at(n).Print();
 			//}	
 			post = exp(post);
 			norm += post;
@@ -240,7 +216,7 @@ void VarGaussianMixture::CalculateRStatistics(){
 		m_xbars[k].InitEmpty();
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
-			Matrix x = Matrix(m_x.at(n).Value());
+			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
@@ -262,7 +238,7 @@ void VarGaussianMixture::CalculateRStatistics(){
 			Matrix S_k = Matrix(m_dim, m_dim);
 
 			//construct x - mu
-			Matrix x_mat = Matrix(m_x.at(n).Value());
+			Matrix x_mat = Matrix(m_data->at(n).Value());
 			Matrix x_min_mu;
 			x_min_mu.mult(m_xbars[k],-1.);
 			x_min_mu.add(x_mat);
@@ -291,14 +267,14 @@ void VarGaussianMixture::CalculateRStatistics(){
 }
 
 
-void VarGaussianMixture::UpdateParameters(){
+void VarGaussianMixture::Update(){
 	CalculateRStatistics();
-	Update();
+	UpdatePriorParameters();
 }
 
 
 //M-step
-void VarGaussianMixture::Update(){
+void VarGaussianMixture::UpdatePriorParameters(){
 //cout << "UPDATE PARAMETERS - M STEP" << endl;
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
@@ -391,6 +367,9 @@ void VarGaussianMixture::Update(){
 //calculates ELBO
 //(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
 double VarGaussianMixture::EvalLogL(){
+	//DirichletPDF dir = new DirichletPDF();
+	//WishartPDF wish = new WishartPDF();
+
 	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam;
 	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
 	E_p_all = 0;
@@ -427,7 +406,9 @@ double VarGaussianMixture::EvalLogL(){
 	for(int k = 0; k < m_k; k++)
 		E_p_pi += m_Epi[k];
 	E_p_pi *= (m_alpha0 - 1);
-	E_p_pi += Dir_lnC(m_alpha0,m_k);
+	vector<double> alpha0s(m_alpha0, m_k);
+	Dirichlet* dir = new Dirichlet(alpha0s);
+	E_p_pi += dir->lnC();
 
 
 	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
@@ -454,7 +435,8 @@ double VarGaussianMixture::EvalLogL(){
 	
 		E_p_muLam += -0.5*m_nus[k]*tr.trace();
 	}
-	E_p_muLam += Wish_lnB(m_W0,m_nu0);
+	Wishart* wish = new Wishart(m_W0, m_nu0);
+	E_p_muLam += wish->lnB();
 
 	//E[ln(q(Z)]
 	E_q_Z = 0;
@@ -468,8 +450,10 @@ double VarGaussianMixture::EvalLogL(){
 	for(int k = 0; k < m_k; k++){
 		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
 	}
-	double dir_norm = Dir_lnC(m_alphas);
-	E_q_pi += dir_norm;
+	//TODO: TURN ON
+	Dirichlet* dir_k = new Dirichlet(m_alphas);
+	E_q_pi += dir_k->lnC();
+	//E_q_pi += dir_norm;
 	
 	//E[ln(q(mu, lam))]
 	E_q_muLam = 0;
@@ -478,7 +462,9 @@ double VarGaussianMixture::EvalLogL(){
 //	cout << "k: " << k << endl;
 //	cout << "	Elam: " << m_Elam[k] << endl;
 //	cout << "	beta: " << m_betas[k] << endl;
-	H = Wish_H(m_Ws[k], m_nus[k]);
+	//TODO: TURN ON
+	Wishart* wish_k = new Wishart(m_Ws[k], m_nus[k]);
+	H = wish_k->H();
 //	cout << "	Wish_H: " << H << endl;
 		E_q_muLam += 0.5*( m_Elam[k] + m_dim/2.*log(m_betas[k]/(2*acos(-1))) - m_dim/2. );
 		E_q_muLam -= H;

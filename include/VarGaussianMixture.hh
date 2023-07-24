@@ -1,9 +1,9 @@
 #ifndef VARGAUSSIANMIXTURE_HH
 #define VARGAUSSIANMIXTURE_HH
 
-#include "BasePDFMixture.hh"
+#include "BaseCluster.hh"
 
-class VarGaussianMixture : public BasePDFMixture{
+class VarGaussianMixture : public BaseCluster{
 
 	public:
 		VarGaussianMixture();
@@ -12,18 +12,16 @@ class VarGaussianMixture : public BasePDFMixture{
 
 		void Initialize(unsigned long long seed = 111);
 	
-		//seed initial values for means
-		void SeedMeans();
 	
 		void InitAlpha(double a){
 			m_alpha0 = a;
 		}
 
 
-		//E-step
-		void CalculatePosterior();
-		//M-step
-		void UpdateParameters();
+		//E-step - calculate posterior
+		void Estimate();
+		//M-step - update parameters based on posterior r_nk
+		void Update();
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 	
@@ -110,7 +108,7 @@ class VarGaussianMixture : public BasePDFMixture{
 		void CalculateExpectations();
 		//pre-M step
 		void CalculateRStatistics();
-		void Update(); //M-step without Rstats - used to seed
+		void UpdatePriorParameters(); //M-step without Rstats - used to seed
 	private:
 		//hyperparameters
 		//initial values of parameters for k clusters
