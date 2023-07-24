@@ -10,9 +10,9 @@ class Dirichlet : public BasePDF{
 		Dirichlet(vector<double> alphas){ m_alphas = alphas; m_dim = (int)m_alphas.size(); }
 		virtual ~Dirichlet(){ };
 
-
-		void SetParameters(vector<double> alphas){ m_alphas = alphas; m_dim = (int)m_alphas.size();}
-		void GetParameters(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }	
+		void InitParameters();
+		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
+		map<string, vector<Matrix>> GetParameters();
 		
 		double Prob(const Point& x);
 

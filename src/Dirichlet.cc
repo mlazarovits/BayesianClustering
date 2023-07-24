@@ -55,3 +55,20 @@ double Dirichlet::lnC(){
 	return lgamma(alpha_hat) - norm;
 
 }
+
+
+
+void Dirichlet::InitParameters(){
+	//init alphas to 1
+	for(int i = 0; i < m_dim; i++){
+		m_alphas.push_back(1.);
+	}
+}
+
+
+map<string, vector<Matrix>> Dirichlet::GetParameters(){
+	map<string, vector<Matrix>> ret;
+	ret["alphas"] = {Matrix(m_alphas)};
+	return ret;
+
+}
