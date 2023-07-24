@@ -1,4 +1,4 @@
-#include "VarGaussianMixture.hh"
+#include "GaussianMixture.hh"
 #include "RandomSample.hh"
 #include "VarClusterViz2D.hh"
 #include "VarClusterViz3D.hh"
@@ -150,9 +150,9 @@ int main(int argc, char *argv[]){
 	double theta;
 	
 	//create GMM model
-	VarGaussianMixture vgmm = VarGaussianMixture(k);
-	vgmm.AddData(pc);
-
+	GaussianMixture gmm = GaussianMixture(k);
+	gmm.SetData(&pc);
+/*
 	//Initialize - randomize parameters 
 	vgmm.Initialize();
 	VarClusterViz3D cv3D = VarClusterViz3D(&vgmm, fname);
@@ -173,9 +173,9 @@ int main(int argc, char *argv[]){
 		oldLogL = vgmm.EvalLogL();
 		
 		//E step
-		vgmm.CalculatePosterior();
+		vgmm.Estimate();
 		//M step
-		vgmm.UpdateParameters();
+		vgmm.Update();
 		
 		//Plot
 		cv3D.UpdatePosterior();
@@ -234,7 +234,7 @@ cout << "\n" << endl;
 	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
 
 
-
+*/
 
 
 

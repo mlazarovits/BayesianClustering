@@ -1,6 +1,7 @@
-#include "GaussianMixture.hh"
+#include "EMCluster.hh"
 #include "RandomSample.hh"
-#include "ClusterViz2D.hh"
+#include "GaussianMixture.hh"
+//#include "ClusterViz2D.hh"
 #include <iostream>
 
 
@@ -9,9 +10,10 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TFile.h>
-
+#include <string>
 using std::cout;
 using std::endl;
+using std::string;
 
 int main(int argc, char *argv[]){
 	
@@ -117,6 +119,17 @@ int main(int argc, char *argv[]){
 	
 	//create GMM model
 	GaussianMixture gmm = GaussianMixture(k);
+	gmm.SetData(&pc);
+	gmm.InitParameters();
+
+
+	//create EM algo
+	//EMCluster algo = EMCluster(k);
+	//set EM to take GMM
+	//run EM in for loop
+
+
+/*
 	gmm.AddData(&pc);
 	//ClusterViz2D cv2D = ClusterViz2D(&gmm);
 	
@@ -168,5 +181,5 @@ int main(int argc, char *argv[]){
 	cout << "covs" << endl;
 	covs[1].Print();
 
-
+*/
 }
