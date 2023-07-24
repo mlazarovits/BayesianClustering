@@ -17,7 +17,6 @@ class Gaussian : public BasePDF{
 		double Prob(const Point& x);
 
 	private:
-		int m_dim;
 		Matrix m_mu;
 		Matrix m_cov;
 

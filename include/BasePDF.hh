@@ -12,9 +12,7 @@ class BasePDF{
 		virtual void SetPrior(BasePDF* pdf){ m_prior = pdf; }
 
 		
-
-
-	private:
+		int m_dim;
 		BasePDF* m_prior;
 
 

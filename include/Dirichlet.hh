@@ -6,7 +6,7 @@
 
 class Dirichlet : public BasePDF{
 	public:
-		Dirichlet();
+		Dirichlet(){ m_dim = 0;}
 		Dirichlet(vector<double> alphas){ m_alphas = alphas; m_dim = (int)m_alphas.size(); }
 		virtual ~Dirichlet(){ };
 
@@ -19,7 +19,6 @@ class Dirichlet : public BasePDF{
 		double lnC();
 
 	private:
-		int m_dim;
 		//parameters
 		vector<double> m_alphas;
 
