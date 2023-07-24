@@ -1,62 +1,58 @@
 #include "GaussianMixture.hh"
-#include "RandomSample.hh"
 #include "Gaussian.hh"
+#include "KMeansCluster.hh"
 
-#include <iostream>
-#include <vector>
-using std::cout;
-using std::endl;
-using std::vector;
 
-//k = # of clusters (cols)
-//n = # of data pts (rows)
-GaussianMixture::GaussianMixture(){ 
-	m_k = 0;
-	m_n = 0;
-}
-
-GaussianMixture::GaussianMixture(int k){
-	m_k = k;
-	m_n = 0;
-}
-
-//don't forget to include weights (eventually)
-void GaussianMixture::Initialize(unsigned long long seed){
-	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
-	if(m_dim == 0){
-		cout << "GaussianMixture Initialize - Error: data has not been set." << endl;
-		return;
+GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
+	for(int i = 0; i < k; k++){
+		m_model.push_back(new Gaussian());
 	}
-	//randomly initialize mean, covariance + mixing coeff.
+
+}
+
+void GaussianMixture::InitParameters(unsigned long long seed){
+	m_n = m_data->GetNPoints();
+	//run k-means clustering on data to convergence to get means
+	//get means for each cluster 
+	KMeansCluster kmc = KMeansCluster(m_data);
+	kmc.SetNClusters(m_k);
+	kmc.Initialize();
+
+	//use number of points that change assignment at E-step to track convergence
+	int nit = 0;
+	int nchg = 999;
+	while(nchg > 0){
+		kmc.Estimate();
+		//check for convergence with number of points that 
+		//change assignment
+		nchg = (int)kmc.EvalLogL();
+		
+		kmc.Update();
+		nit++;
+	}
+	
+	kmc.GetMeans(m_mus);
+
+	//init covs to identity
+	//randomly initialize mixing coeffs
 	RandomSample randy(seed);
-	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
-	double mu_lower = m_data->min()-0.1;
-	double mu_upper = m_data->max()+0.1;
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
-		m_mus.push_back(Matrix(m_dim,1));
-		m_mus[k].InitRandom(mu_lower,mu_upper,seed+k);
-	//	cout << "k: " << k << endl;
-	//	cout << "mu" << endl;
-	//	m_mus[k].Print();
 		m_covs.push_back(Matrix(m_dim,m_dim));
 		m_covs[k].InitIdentity();
-//cout << "cov" << endl;
-//m_covs[k].Print();
-		m_coeffs.push_back(randy.SampleFlat());
-		//make sure sum_k m_coeffs[k] = 1
-		coeff_norm += m_coeffs[k];
-		m_norms.push_back(0.);
+		m_weights.push_back(randy.SampleFlat());
+		coeff_norm += m_weights[k];
 	}
-	//make sure sum_k m_coeffs[k] = 1
-	for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
-	m_post.SetDims(m_n, m_k);
+	//make sure sum_k m_weights[k] = 1
+	for(int k = 0; k < m_k; k++) m_weights[k] /= coeff_norm;
+
+
 }
 
 
-//E-step - calculate posterior
-void GaussianMixture::Estimate(){
+//for normal EM algorithm - no priors
+void GaussianMixture::CalculatePosterior(Matrix& post){
 	//each kth vector is a cluster of n data points
 	double val, g;
 	Matrix mat = Matrix(m_n,m_k);
@@ -73,39 +69,43 @@ void GaussianMixture::Estimate(){
 			gaus = Gaussian(m_mus[k],m_covs[k]);
 			g = gaus.Prob(m_data->at(n));
 			mat.SetEntry(g,n,k);
-			norm += m_coeffs[k]*mat.at(n,k);
+			norm += m_weights[k]*mat.at(n,k);
 		}
 		post_norms.push_back(norm);
 	}
 	//calculate posterior for each data pt n in each cluster k
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
-			val = m_coeffs[k]*mat.at(n,k)/post_norms[n];
-			m_post.SetEntry(val,n,k);		
+			val = m_weights[k]*mat.at(n,k)/post_norms[n];
+			post.SetEntry(val,n,k);		
 		}
 	}
+
 }
 
+//for variational EM algorithm, assuming conjugate priors on mu, cov, and mixing coeffs
+void GaussianMixture::CalculateVariationalPosterior(Matrix& post){
 
 
-//M-step - update parameters
-//equations were derived from maximizing the posterior calculated in the E-step
-void GaussianMixture::Update(){
+}
+
+//for normal EM algorithm - no priors, updates mu, cov, and mixing coeffs
+void GaussianMixture::UpdateParameters(const Matrix& post){
 	//re-calculate normalization (overwrites)
 	m_norms.clear();
 	//this is for N_k - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms.push_back(0.);
 		for(int n = 0; n < m_n; n++){
-			m_norms[k] += m_post.at(n,k);
+			m_norms[k] += post.at(n,k);
 		}
 	}
 //cout << "new means" << endl;
 	//set new means + mixing coeffs
-	m_coeffs.clear();	
+	m_weights.clear();	
 	for(int k = 0; k < m_k; k++){
 		//overwrite and recalculate mixing coefficients
-		m_coeffs.push_back(m_norms[k]/m_n);
+		m_weights.push_back(m_norms[k]/m_n);
 		//clear and overwrite m_mu[k]
 		m_mus[k].clear();
 		m_mus[k].InitEmpty();
@@ -113,7 +113,7 @@ void GaussianMixture::Update(){
 			//add data pt x_n,
 			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
-			x.mult(x,m_post.at(n,k));
+			x.mult(x,post.at(n,k));
 			//to new mu for cluster k
 			m_mus[k].add(x);
 		}
@@ -153,7 +153,7 @@ void GaussianMixture::Update(){
 	//	cout << "(x_n - mu_k)*(x_n - mu_k)T" << endl;
 	//	cov_k.Print();
 			//weighting by posterior gamma(z_nk)
-			cov_k.mult(cov_k,m_post.at(n,k));
+			cov_k.mult(cov_k,post.at(n,k));
 	//	cout << "gam(z_nk)*(x_n - mu_k)*(x_n - mu_k)T" << endl;
 	//	cov_k.Print();
 	//	cout << "gam(z_nk) = " << m_post.at(n,k) << endl;	
@@ -174,12 +174,43 @@ void GaussianMixture::Update(){
 		
 	}
 
+
 }
 
 
-//want to maximize
-//this is used to test for algorithm convergence
-//ln[p(X | mu, sigma, pi) = sum_n( ln[sum_k(pi_k*Gaus(x_n | mu_k, sigma_k))] )
+//for variational EM algorithm, assuming conjugate priors on mu, cov (normalWishart), and mixing coeffs (Dirichlet)
+//updates alpha (Dirichlet), W, nu (Wishart), beta, m (normal)
+void GaussianMixture::UpdateVariationalParameters(const Matrix& post){
+
+
+
+}
+
+map<string, vector<Matrix>> GaussianMixture::GetParameters(){
+	map<string, vector<Matrix>> params;
+
+	params["mu"] = m_mus;
+	params["cov"] = m_covs;
+	params["pi"] = {Matrix(m_weights)};
+	return params;
+}
+
+map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){
+	map<string, vector<Matrix>> params;
+
+	params["model:mu"] = m_mus;
+	params["model:cov"] = m_covs;
+	params["model:pi"] = {Matrix(m_weights)};
+	params["dirPrior:alphas"] = {Matrix(m_alphas)};
+	params["nwPrior:Ws"] = m_Ws;
+	params["nwPrior:nus"] = {Matrix(m_nus)};
+	params["nwPrior:ms"] = m_means;
+	params["nwPrior:betas"] = {Matrix(m_betas)};	
+	return params;
+}
+
+
+
 double GaussianMixture::EvalLogL(){
 	double L;
 	double sum_k;
@@ -187,13 +218,13 @@ double GaussianMixture::EvalLogL(){
 	for(int n = 0; n < m_n; n++){
 		sum_k = 0;
 		for(int k = 0; k < m_k; k++){
+			//matrix mu = params[k][0];
+			//matrix cov = params[k][1];
 			gaus = Gaussian(m_mus[k], m_covs[k]);
-			sum_k += m_coeffs[k]*gaus.Prob(m_data->at(n));
-			
+			sum_k += m_weights[k]*gaus.Prob(m_data->at(n));
 		}
 		L += log(sum_k);
 	}
 	return L;
+
 }
-
-

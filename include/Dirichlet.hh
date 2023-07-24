@@ -13,6 +13,8 @@ class Dirichlet : public BasePDF{
 		void InitParameters();
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		map<string, vector<Matrix>> GetParameters();
+
+		void SetAlphas(vector<double> alphas){ m_alphas = alphas; }
 		
 		double Prob(const Point& x);
 

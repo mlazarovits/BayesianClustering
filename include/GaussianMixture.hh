@@ -1,54 +1,58 @@
-#ifndef GAUSSIANMixture_HH
-#define GAUSSIANMixture_HH
-#include "BaseCluster.hh"
-#include "Matrix.hh"
-#include "PointCollection.hh"
-#include <vector>
-using std::vector;
+#ifndef GaussianMixture_HH
+#define GaussianMixture_HH
 
 
-class GaussianMixture : public BaseCluster{
+#include "BasePDFMixture.hh"
+#include "Gaussian.hh"
+
+class GaussianMixture : public BasePDFMixture{
+	//inheriting all constructors from base class
+	//using BasePDFMixture::BasePDFMixture;
+
 	public:
-		GaussianMixture();
+		GaussianMixture(){ m_k = 0; }
 		GaussianMixture(int k);
 		virtual ~GaussianMixture(){ };
-	
-		void Initialize(unsigned long long seed = 111);
-		//E-step - calculates posterior
-		void Estimate();
-		//M-step - updates parameters
-		void Update();
-		//eval - returns log-likelihood value at given iteration
-		double EvalLogL();
-		
-		//fill vectors with estimated parameters
-		void GetGausParameters(vector<Matrix>& mus, vector<Matrix>& covs){
-			mus.clear();
-			covs.clear();
-			mus = m_mus;
-			covs = m_covs;
-		};
-		//fill vectors with estimated parameters
-		void GetMixingCoeffs(vector<double>& pis){
-			pis.clear();
-			pis = m_coeffs;
-		};
 
-		//empty b/c doesn't exist in this model
-		void GetDirichletParameters(vector<double>& alphas){ };
+		void InitParameters(){ };
+		void InitParameters(unsigned long long seed = 123);
+		//for EM algorithm
+		void CalculatePosterior(Matrix& post);
+		void UpdateParameters(const Matrix& post);
+		//returns mu, cov, and mixing coeffs
+		map<string, vector<Matrix>> GetParameters(); 
+		
+		//for variational EM algorithm
+		void CalculateVariationalPosterior(Matrix& post);
+		void UpdateVariationalParameters(const Matrix& post);
+		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
+		map<string, vector<Matrix>> GetPriorParameters(); 
+
+		double EvalLogL();
+
 	private:
+		//model
+		vector<Gaussian*> m_gaus;
+
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k
 		vector<Matrix> m_mus;
 		//d x d matrix for each cluster k
 		vector<Matrix> m_covs;
-		//1 mixing param for each cluster k
-		vector<double> m_coeffs;
-		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
-		vector<double> m_norms;
+	
+		//parameters on conjugate prior
+		//k scaling parameters for NW (normal wishart) distribution
+		vector<double> m_betas;
+		//k dx1 means for normal component of NW
+		vector<Matrix> m_means;
+		//k dxd matrices - covariance matrix of normal distribution that occurs in the construction of a Wishart distribution
+		//G_i = (g1_i, ..., gp_i)T ~ N_p(0, W)
+		//S = GG_T ~ W_p(V,n) for n degrees of freedom
+		vector<Matrix> m_Ws;
+		//k degrees of freedom for NW
+		vector<double> m_nus;
+
 
 
 };
-
-
 #endif
