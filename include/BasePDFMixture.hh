@@ -43,6 +43,7 @@ class BasePDFMixture : public BasePDF{
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
 
 		virtual double EvalLogL() = 0;
+		virtual double EvalVariationalLogL() = 0;
 	
 		PointCollection* m_data;
 		//number of data points
