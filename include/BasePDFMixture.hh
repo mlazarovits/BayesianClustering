@@ -1,84 +1,64 @@
-#ifndef BASEPDFMIXTURE_HH
-#define BASEPDFMIXTURE_HH
+#ifndef BasePDFMixture_HH
+#define BasePDFMixture_HH
 
-#include "PointCollection.hh"
 #include "Matrix.hh"
+#include "BasePDF.hh"
+#include <vector>
+#include <map>
+#include <string>
+using std::vector;
+using std::map;
+using std::string;
 
-
-class BasePDFMixture{
+class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ };
+		BasePDFMixture(){ m_k = 0; m_n = 0; }
+		BasePDFMixture(int k){ m_k = k; 
+			for(int k = 0; k < m_k; k++){
+				m_weights.push_back(0.);
+				m_alphas.push_back(0.);
+			}
+			m_n = 0;
+		}
+
+		virtual ~BasePDFMixture(){ m_weights.clear(); m_alphas.clear(); m_model.clear(); }
+
+		double Prob(const Point& x);
+
+		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints();}
+
+		//for EM algorithm
+		virtual void CalculatePosterior(Matrix& post) = 0;
+		virtual void UpdateParameters(const Matrix& post) = 0;
+		//returns mu, cov, and mixing coeffs
+		virtual map<string, vector<Matrix>> GetParameters() = 0; 
 		
-		virtual ~BasePDFMixture(){ };
-		
-		virtual void Initialize(unsigned long long seed = 111) = 0;
-		//E-step
-		virtual void CalculatePosterior() = 0;
-		//M-step
-		virtual void UpdateParameters() = 0;
-		//log likelihood
+		//for variational EM algorithm
+		virtual void CalculateVariationalPosterior(Matrix& post) = 0;
+		virtual void UpdateVariationalParameters(const Matrix& post) = 0;
+		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
+		virtual map<string, vector<Matrix>> GetPriorParameters() = 0; 
+
+		void GetMixingCoeffs(vector<double>& weights){ weights.clear(); weights = m_weights; }	
+		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
+
 		virtual double EvalLogL() = 0;
-
-		//fill vectors with estimated parameters
-		virtual void GetGausParameters(vector<Matrix>& mus, vector<Matrix>& covs) = 0;
-		virtual void GetDirichletParameters(vector<double>& alphas) = 0;
-		virtual void GetMixingCoeffs(vector<double>& pis) = 0;
-
-		//some stuff for BHC
-
-		void AddData(const PointCollection& pc){
-			m_x = pc; 
-			m_n = pc.GetNPoints();
-			m_dim = pc.Dim();
-		}
-		
-		PointCollection GetData() const{
-			return m_x;
-		}
 	
-		Matrix GetPosterior() const{
-			return m_post;
-		}
-		
-		int GetNClusters() const{
-			return m_k;
-		}
-
-
-		//gaussian for one data point
-		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
-
-
-		//ln of Dirichlet coefficient (eq. B.23)
-		double Dir_lnC(double alpha, int k);
-		//ln of Dirichlet coefficient (eq. B.23)
-		double Dir_lnC(vector<double> alphas);
-
-		//log of Wishart entropy normalization (eq. B.79)
-		double Wish_lnB(Matrix W, double nu);
-
-		//Wishart entropy (eq. B.82)
-		double Wish_H(Matrix W, double nu);
-
-		//data to fit
-		PointCollection m_x;
-		//TODO: need to initialize dim from data
-		int m_dim;
-		//TODO: number of data points - also need to init from data
+		PointCollection* m_data;
+		//number of data points
 		int m_n;
-		//number of clusters k needs to be user specified
+		//number of components
 		int m_k;
-		//posterior matrix of n data pts for k clusters
-		Matrix m_post;		
+		//probabilistic model
+		vector<BasePDF*> m_model;
+		//mixture weights (probabilities sum to 1, multinomal dist.)
+		vector<double> m_weights;
+		//dirichlet (prior) parameters (on weights)
+		vector<double> m_alphas;
+		//normalization on posterior
+		vector<double> m_norms;
+
+
+
 };
-
-
-
-
-
-
-
-
-
-
 #endif
