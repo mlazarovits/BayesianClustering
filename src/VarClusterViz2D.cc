@@ -24,6 +24,7 @@ VarClusterViz2D::VarClusterViz2D(VarEMCluster* algo, string fname){
 		m_n = 0;
 		return;
 	}
+	m_algo = algo;
 	m_model = algo->GetModel();
 	m_fname = fname;
 	m_points = algo->GetData();

@@ -5,6 +5,7 @@
 #include <TCanvas.h>
 #include "BasePDFMixture.hh"
 //#include "GaussianMixture.hh"
+#include "BaseCluster.hh"
 #include "PointCollection.hh"
 #include <string>
 #include <vector>
@@ -16,11 +17,13 @@ class ClusterVizBase{
 	public:
 		ClusterVizBase(){ 
 		};
-		ClusterVizBase(BasePDFMixture* model, string fname = "test"){
-			m_model = model;
+		ClusterVizBase(BaseCluster* algo, string fname = "test"){
+			m_model = algo->GetModel();
 			m_fname = fname;
-			m_points = m_model->GetData();
-			m_n = m_points.GetNPoints();
+			m_points = algo->GetData();
+			m_n = m_points->GetNPoints();
+			m_k = algo->GetNClusters();
+			m_post = algo->GetPosterior();
 		};
 		virtual ~ClusterVizBase(){ 
 		//	cvs.clear();
@@ -28,20 +31,21 @@ class ClusterVizBase{
 		};
 	
 		void UpdatePosterior(){
-			m_post = m_model->GetPosterior();
+			m_post = m_algo->GetPosterior();
 		}	
 		virtual void AddPlot(string plotName = "test") = 0;
 		virtual void Write() = 0;
-		
-		//virtual void DrawGausParams() = 0;
+		virtual void SeeData() = 0;	
 
 	
-	protected:
+	//protected:
+		BaseCluster* m_algo;
 		Int_t m_palette[100];
 		BasePDFMixture* m_model;
 		Matrix m_post;
-		PointCollection m_points;	
+		PointCollection* m_points;	
 		int m_n; //number of points
+		int m_k; //number of clusters
 		string m_fname;	
 		vector<TCanvas*> m_cvs; 
 

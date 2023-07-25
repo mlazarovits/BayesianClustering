@@ -1,5 +1,7 @@
 #include "ClusterViz2D.hh"
 #include "BasePDFMixture.hh"
+#include "EMCluster.hh"
+#include "BaseCluster.hh"
 
 #include <TColor.h>
 #include <TROOT.h>
@@ -16,32 +18,37 @@
 using std::string;
 
 //check for 2D data
-ClusterViz2D::ClusterViz2D(BasePDFMixture* model, string fname){ 
-	if(model->GetData().Dim() != 2){
-		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << m_model->GetData().Dim() << "." << endl;
+ClusterViz2D::ClusterViz2D(EMCluster* algo, string fname) : ClusterVizBase(algo, fname){ 
+	if(algo->GetData()->Dim() != 2){
+		cout << "ClusterViz2D Error: dimensionality of data is not 2. Dimensionality is " << algo->GetData()->Dim() << "." << endl;
 		return;
 	}
-	if(model->GetNClusters() != 2){
+	if(algo->GetNClusters() != 2){
 		cout << "ClusterViz2D Error: can only visualize results with 2 clusters." << endl;
 		return;
 	}
-	m_model = model;
-	m_post = m_model->GetPosterior();
-	m_points = m_model->GetData();
-	m_n = m_points.GetNPoints();
-	m_k = m_model->GetNClusters();
-	m_fname = fname;
+	//m_model = algo->GetModel();
+	//m_fname = fname;
+	//m_points = algo->GetData();
+	//m_n = m_points->GetNPoints();
+	//m_k = algo->GetNClusters();
+	//m_post = algo->GetPosterior();
 }
 
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<Matrix> mus, covs;
-	m_model->GetGausParameters(mus,covs);
+	//m_model->GetGausParameters(mus,covs);
+	map<string, vector<Matrix>> params;
+	params = m_model->GetParameters();
+	vector<Matrix> pis = params["pis"];
+	mus = params["mus"];
+	covs = params["covs"];
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
-		x.push_back(m_points.at(i).Value(0.));
-		y.push_back(m_points.at(i).Value(1.));
+		x.push_back(m_points->at(i).Value(0.));
+		y.push_back(m_points->at(i).Value(1.));
 		//just using one value of cluster weights - only works for 2 cluster models
 		//weight for column 1 used because
 		//w_i ~ 1 = class 1
@@ -145,6 +152,42 @@ void ClusterViz2D::AddPlot(string plotName){
 
 
 
+void ClusterViz2D::SeeData(){
+	vector<double> x, y, z;
+	for(int i = 0; i < m_n; i++){
+		x.push_back(m_points->at(i).Value(0));
+		y.push_back(m_points->at(i).Value(1));
+	}
+	
+if(m_n == 0 || x.size() == 0){
+	cout << "Error: no data to plot." << endl;
+	return;
+}
+	string cvName = "cv_data";//+plotName+"_tEq"+std::to_string(t).substr(0,3);
+	cout << "cvName: " << cvName << endl;
+	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
+	
+	//sage green
+	Int_t ci = TColor::GetFreeColorIndex();
+	TColor* marker_color = new TColor(ci,0.61, 0.69, 0.53);  
+
+	
+//cout << "n pts: " << x.size() << endl;
+	TGraph* gr_data = new TGraph((int)x.size(), &x[0], &y[0]);
+	gr_data->SetTitle("GMM EM Clustering - data only");
+	gr_data->SetName("GMM EM Clustering - data only");
+	gr_data->SetMarkerStyle(24);
+	gr_data->SetMarkerSize(0.95);
+	gr_data->SetMarkerColorAlpha(ci,1);
+	//can extend x/y axes so points aren't on border
+	gr_data->GetXaxis()->SetTitle("X");
+	gr_data->GetYaxis()->SetTitle("Y");
+	
+	gr_data->Draw("ap");
+
+	m_cvs.push_back(cv);
+
+}
 
 
 

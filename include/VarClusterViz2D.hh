@@ -25,11 +25,11 @@ class VarClusterViz2D{
 		virtual ~VarClusterViz2D(){ };
 		
 		void AddPlot(string plotName = "test");
-		void UpdatePosterior(VarEMCluster* algo){  
+		void UpdatePosterior(){  
 			if(m_n == 0){
 				return;
 			}
-			m_post = algo->GetPosterior();
+			m_post = m_algo->GetPosterior();
 		}	
 		void Write();
 		void SetPalette(int k);
@@ -38,6 +38,7 @@ class VarClusterViz2D{
 		string GetFileName(){ return m_fname; }
 
 	private:
+		BaseCluster* m_algo;
 		BasePDFMixture* m_model;
 		Matrix m_post;
 		PointCollection* m_points;	
