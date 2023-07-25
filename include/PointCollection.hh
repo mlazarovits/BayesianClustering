@@ -193,7 +193,6 @@ class PointCollection{
 	PointCollection SelectPoints(int nOut, unsigned long long seed = 123){
 		RandomSample rs(seed);
 		int nIn = (int)_pts.size(); 
-		cout << "nIn " << nIn << endl;
 		rs.SetRange(0,nIn);
 		PointCollection out;
 		while(out.GetNPoints() < nOut){
