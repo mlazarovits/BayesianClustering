@@ -30,7 +30,7 @@ class KMeansCluster : public BaseCluster{
 		void GetAssignments(vector<int>& a){ a.clear(); for(int i = 0; i < m_n; i++) a.push_back(m_post.at(i,0)); }	
 		int GetAssignment(int n){ if(n < m_data->GetNPoints()) return m_post.at(n,0); else return -999.; }
 	
-
+		void GetCounts(vector<int>& c){ c.clear(); c = m_counts; }
 	private:
 		//parameters - means (1 per cluster)
 		vector<Matrix> m_means;

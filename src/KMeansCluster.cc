@@ -24,14 +24,15 @@ void KMeansCluster::Initialize(unsigned long long seed){
 void KMeansCluster::Estimate(){
 	double dmin, dist;
 	int kmin;
+	//reset stats
 	m_nchg = 0;
+	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
 		dmin = 999.;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance
-			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
-		dist = sqrt(dist);
+			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			//track mean and minimum distance to mean per point
 			if(dist < dmin){ dmin = dist; kmin = k; }
 		}

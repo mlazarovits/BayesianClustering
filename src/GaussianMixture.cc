@@ -2,7 +2,7 @@
 #include "GaussianMixture.hh"
 #include "Gaussian.hh"
 #include "KMeansCluster.hh"
-
+#include "ClusterViz2D.hh"
 
 using boost::math::digamma;
 
@@ -26,13 +26,13 @@ void GaussianMixture::InitParameters(){
 	while(nchg > 0){
 		kmc.Estimate();
 		kmc.Update();
+		nchg = (int)kmc.EvalLogL();
 		//check for convergence with number of points that 
 		//change assignment
-		nchg = (int)kmc.EvalLogL();
-		
-		kmc.Update();
 		nit++;
 	}
+	vector<int> cnts;
+	kmc.GetCounts(cnts);
 	kmc.GetMeans(m_xbars);
 	//init covs to identity
 	//randomly initialize mixing coeffs
@@ -44,10 +44,12 @@ void GaussianMixture::InitParameters(){
 		m_covs[k].InitIdentity();
 		m_weights.push_back(randy.SampleFlat());
 		coeff_norm += m_weights[k];
+		cout << "k: " << k << " mdim: " << m_dim << endl;
+		cout << "mean" << endl;
+		m_xbars[k].Print();
 	}
 	//make sure sum_k m_weights[k] = 1
 	for(int k = 0; k < m_k; k++) m_weights[k] /= coeff_norm;
-
 
 }
 
