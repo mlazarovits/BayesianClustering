@@ -26,7 +26,6 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 }
 
 double Gaussian::Prob(const Point& x){
-cout << "Gaussian Prob begin" << endl;
 	if(m_dim != x.Dim()){ cout << "Point dimensions incompatible." << endl; return -999;}
 
 	Point pt = Point(m_dim);
