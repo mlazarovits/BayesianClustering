@@ -42,7 +42,6 @@ void KMeansCluster::Estimate(){
 		//keep track of number of points assigned to cluster kmin
 		m_counts[kmin]++;
 	}
-
 }
 
 //M-step: update means

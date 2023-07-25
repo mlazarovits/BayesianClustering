@@ -7,7 +7,7 @@
 using boost::math::digamma;
 
 GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
-	for(int i = 0; i < k; k++){
+	for(int i = 0; i < k; i++){
 		m_model.push_back(new Gaussian());
 	}
 	m_seed = 123;
@@ -20,12 +20,12 @@ void GaussianMixture::InitParameters(){
 	KMeansCluster kmc = KMeansCluster(m_data);
 	kmc.SetNClusters(m_k);
 	kmc.Initialize();
-
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;
 	while(nchg > 0){
 		kmc.Estimate();
+		kmc.Update();
 		//check for convergence with number of points that 
 		//change assignment
 		nchg = (int)kmc.EvalLogL();
@@ -33,9 +33,7 @@ void GaussianMixture::InitParameters(){
 		kmc.Update();
 		nit++;
 	}
-	
 	kmc.GetMeans(m_xbars);
-
 	//init covs to identity
 	//randomly initialize mixing coeffs
 	RandomSample randy(m_seed);
