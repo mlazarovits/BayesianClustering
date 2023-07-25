@@ -3,6 +3,8 @@
 #include "Gaussian.hh"
 #include "KMeansCluster.hh"
 #include "ClusterViz2D.hh"
+#include "Dirichlet.hh"
+#include "Wishart.hh"
 
 using boost::math::digamma;
 
@@ -17,8 +19,7 @@ void GaussianMixture::InitParameters(){
 	m_n = m_data->GetNPoints();
 	//run k-means clustering on data to convergence to get means
 	//get means for each cluster 
-	KMeansCluster kmc = KMeansCluster(m_data);
-	kmc.SetNClusters(m_k);
+	KMeansCluster kmc = KMeansCluster(m_data, m_k);
 	kmc.Initialize();
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
@@ -34,23 +35,26 @@ void GaussianMixture::InitParameters(){
 	vector<int> cnts;
 	kmc.GetCounts(cnts);
 	kmc.GetMeans(m_xbars);
+
 	//init covs to identity
 	//randomly initialize mixing coeffs
 	RandomSample randy(m_seed);
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
+	map<string, Matrix> params;
 	for(int k = 0; k < m_k; k++){
 		m_covs.push_back(Matrix(m_dim,m_dim));
 		m_covs[k].InitIdentity();
-		m_weights.push_back(randy.SampleFlat());
+		m_weights[k] = randy.SampleFlat();
 		coeff_norm += m_weights[k];
-		cout << "k: " << k << " mdim: " << m_dim << endl;
-		cout << "mean" << endl;
-		m_xbars[k].Print();
+		
+		params["mean"] = m_xbars[k];
+		params["cov"] = m_covs[k];	
+	
+		m_model[k]->SetParameters(params);
 	}
 	//make sure sum_k m_weights[k] = 1
 	for(int k = 0; k < m_k; k++) m_weights[k] /= coeff_norm;
-
 }
 
 
@@ -139,6 +143,7 @@ void GaussianMixture::InitPriorParameters(){
 //for normal EM algorithm - no priors
 void GaussianMixture::CalculatePosterior(Matrix& post){
 	//each kth vector is a cluster of n data points
+	if(post.Dim(0) != m_n || post.Dim(1) != m_k){ cout << "GaussianMixture Error: post " << post.Dim(0) << " " << post.Dim(1) << " does not have the correct dimensions: " << m_n << " " << m_k << endl; return; }
 	double val, g;
 	Matrix mat = Matrix(m_n,m_k);
 	//these are NOT N_k, they are the normalizations for the posterior gamma(z_nk)
@@ -151,8 +156,8 @@ void GaussianMixture::CalculatePosterior(Matrix& post){
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
 		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
-			gaus = Gaussian(m_xbars[k],m_covs[k]);
-			g = gaus.Prob(m_data->at(n));
+			//gaus = Gaussian(m_xbars[k],m_covs[k]);
+			g = m_model[k]->Prob(m_data->at(n));
 			mat.SetEntry(g,n,k);
 			norm += m_weights[k]*mat.at(n,k);
 		}
@@ -165,7 +170,6 @@ void GaussianMixture::CalculatePosterior(Matrix& post){
 			post.SetEntry(val,n,k);		
 		}
 	}
-
 }
 
 //for variational EM algorithm, assuming conjugate priors on mu, cov, and mixing coeffs
@@ -252,6 +256,7 @@ void GaussianMixture::UpdateParameters(const Matrix& post){
 		}
 		//normalized by sum of posteriors for cluster k
 		m_xbars[k].mult(m_xbars[k],1./m_norms[k]);
+		m_model[k]->SetParameter("mean", m_xbars[k]); 
 		//cout << "k: " << k << endl;
 		//m_xbars[k].Print();
 	}
@@ -300,13 +305,13 @@ void GaussianMixture::UpdateParameters(const Matrix& post){
 		new_cov.mult(new_cov,1./m_norms[k]);
 		//overwrites m_covs[k]
 		m_covs[k] = new_cov;
+		m_model[k]->SetParameter("cov",m_covs[k]); 
 //	cout << "k: " << k << endl;	
 //	m_covs[k].Print();
 //	cout << "new" << endl;
 //	new_cov.Print();
 		
 	}
-
 
 }
 
@@ -341,7 +346,6 @@ void GaussianMixture::CalculateRStatistics(const Matrix& post){
 		m_xbars[k].clear();
 		m_xbars[k].InitEmpty();
 		for(int n = 0; n < m_n; n++){
-			//add data pt x_n,
 			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,post.at(n,k));
@@ -487,7 +491,7 @@ void GaussianMixture::UpdatePriorParameters(){
 map<string, vector<Matrix>> GaussianMixture::GetParameters(){
 	map<string, vector<Matrix>> params;
 
-	params["mu"] = m_xbars;
+	params["mean"] = m_xbars;
 	params["cov"] = m_covs;
 	params["pi"] = {Matrix(m_weights)};
 	return params;
@@ -510,16 +514,14 @@ map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){
 
 
 double GaussianMixture::EvalLogL(){
-	double L;
-	double sum_k;
-	Gaussian gaus;
+	double L, sum_k, prob;
 	for(int n = 0; n < m_n; n++){
 		sum_k = 0;
 		for(int k = 0; k < m_k; k++){
 			//matrix mu = params[k][0];
 			//matrix cov = params[k][1];
-			gaus = Gaussian(m_xbars[k], m_covs[k]);
-			sum_k += m_weights[k]*gaus.Prob(m_data->at(n));
+			prob = m_model[k]->Prob(m_data->at(n));
+			sum_k += m_weights[k]*prob;
 		}
 		L += log(sum_k);
 	}
@@ -546,4 +548,127 @@ void GaussianMixture::CalculateExpectations(){
 		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
 		
 	}
+}
+
+
+
+double GaussianMixture::EvalVariationalLogL(const Matrix& post){
+	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam;
+	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
+	E_p_all = 0;
+	for(int k = 0; k < m_k; k++){
+		//(x_n - m_k)
+		Matrix xbar_min_m = Matrix(m_dim,1);
+		xbar_min_m.mult(m_means[k],-1.);
+		xbar_min_m.add(m_xbars[k]);		
+		Matrix xbar_min_mT = Matrix(1, m_dim);
+		xbar_min_mT.transpose(xbar_min_m);
+		//(x_n - m_k)T*W_k*(x_n - m_k)
+		Matrix xbarT_x_W = Matrix(1,m_dim);
+		xbarT_x_W.mult(xbar_min_mT,m_Ws[k]);
+		Matrix full = Matrix(1,1);
+		full.mult(xbarT_x_W,xbar_min_m);
+		//tr(S_k*W_k)
+		//S_k*W_k = dxd matrix
+		Matrix tmp_S_W = Matrix(m_dim, m_dim);
+		tmp_S_W.mult(m_Ss[k],m_Ws[k]);
+//	cout << "k: " << k << " norm: " << m_norms[k] << " Elam: " << m_Elam[k] << " m_dim: " << m_dim << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " trace: " << tmp_S_W.trace() << " full: " << full.at(0,0) << endl;		
+		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/m_betas[k] - m_nus[k]*tmp_S_W.trace()  - m_nus[k]*full.at(0,0) - m_dim*log(2*acos(-1)));
+
+	}
+	E_p_all *= 0.5;
+
+	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(m_Epi[k])
+	E_p_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++)
+			E_p_Z += post.at(n,k)*m_Epi[k];
+	
+	//E[ln(p(pi))] = ln(C(alpha)) + (alpha_0 - 1)*sum_k m_Epi[k]
+	E_p_pi = 0;
+	for(int k = 0; k < m_k; k++)
+		E_p_pi += m_Epi[k];
+	E_p_pi *= (m_alpha0 - 1);
+	vector<double> alpha0s(m_alpha0, m_k);
+	Dirichlet* dir = new Dirichlet(alpha0s);
+	E_p_pi += dir->lnC();
+
+
+	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
+	E_p_muLam = 0;
+	Matrix tmp, tmpT;
+	for(int k = 0; k < m_k; k++){
+		//(m_k - m_0)
+		Matrix mk_min_m0 = Matrix(m_dim,1);
+		mk_min_m0.mult(m_mean0,-1.);
+		mk_min_m0.add(m_means[k]);		
+		Matrix mk_min_m0T = Matrix(1, m_dim);
+		mk_min_m0T.transpose(mk_min_m0);
+		//(m_k - m_0)T*W_k*(m_k - m_0)
+		Matrix mT_x_W = Matrix(1,m_dim);
+		mT_x_W.mult(mk_min_m0T,m_Ws[k]);
+		Matrix full = Matrix(1,1);
+		full.mult(mT_x_W,mk_min_m0);
+		
+		E_p_muLam += 0.5*(m_dim*log(m_beta0/(2*acos(-1))) + m_Elam[k] - m_dim*m_beta0/m_betas[k] - m_beta0*m_nus[k]*full.at(0,0));
+		E_p_muLam += (m_nu0 - m_dim - 1)/2.*m_Elam[k];
+		
+		Matrix tr = Matrix(m_dim,m_dim);
+		tr.mult(m_W0inv,m_Ws[k]);	
+	
+		E_p_muLam += -0.5*m_nus[k]*tr.trace();
+	}
+	Wishart* wish = new Wishart(m_W0, m_nu0);
+	E_p_muLam += wish->lnB();
+
+	//E[ln(q(Z)]
+	E_q_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++){
+			if(post.at(n,k) == 0) E_q_Z += 0;	
+			else E_q_Z += post.at(n,k)*log(post.at(n,k));	
+		}
+	//E[ln(q(pi))]
+	E_q_pi = 0;
+	for(int k = 0; k < m_k; k++){
+		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
+	}
+	//TODO: TURN ON
+	Dirichlet* dir_k = new Dirichlet(m_alphas);
+	E_q_pi += dir_k->lnC();
+	//E_q_pi += dir_norm;
+	
+	//E[ln(q(mu, lam))]
+	E_q_muLam = 0;
+	double H;
+	for(int k = 0; k < 1; k++){
+//	cout << "k: " << k << endl;
+//	cout << "	Elam: " << m_Elam[k] << endl;
+//	cout << "	beta: " << m_betas[k] << endl;
+	//TODO: TURN ON
+	Wishart* wish_k = new Wishart(m_Ws[k], m_nus[k]);
+	H = wish_k->H();
+//	cout << "	Wish_H: " << H << endl;
+		E_q_muLam += 0.5*( m_Elam[k] + m_dim/2.*log(m_betas[k]/(2*acos(-1))) - m_dim/2. );
+		E_q_muLam -= H;
+	}
+/*
+	cout << "E_p_all: " << E_p_all << endl;
+	cout << "E_p_Z: " << E_p_Z << endl;
+	cout << "E_p_pi: " << E_p_pi << endl;
+	cout << "E_p_muLam: " << E_p_muLam << endl;
+	cout << "E_q_Z: " <<  E_q_Z << endl;
+	cout << "E_q_pi: " << E_q_pi << endl;
+	cout << "E_q_muLam: " <<  E_q_muLam << endl;
+
+*/
+
+	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam - E_q_Z - E_q_pi - E_q_muLam;
+	
+
+
+
+
+
+
 }

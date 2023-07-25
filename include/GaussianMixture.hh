@@ -28,7 +28,7 @@ class GaussianMixture : public BasePDFMixture{
 		void CalculateExpectations();
 
 		double EvalLogL();
-		double EvalVariationalLogL();
+		double EvalVariationalLogL(const Matrix& post);
 
 	protected:
 		void CalculateRStatistics(const Matrix& post);

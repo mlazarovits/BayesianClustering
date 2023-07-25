@@ -1,7 +1,7 @@
 #include "EMCluster.hh"
 #include "RandomSample.hh"
 #include "GaussianMixture.hh"
-//#include "ClusterViz2D.hh"
+#include "ClusterViz2D.hh"
 #include <iostream>
 
 
@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
 	//n data points
 	int Nsample = 500;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
+	int nIts = 1;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -63,16 +64,25 @@ int main(int argc, char *argv[]){
      			i++;
     	 		k = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--nIterations", 13) == 0){
+     			i++;
+    	 		nIts = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"-it", 5) == 0){
+			i++;
+    	 		nIts = std::atoi(argv[i]);
+   		}
 	
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
-   		cout << "   --help(-h)            print options" << endl;
-   		cout << "   --ouput(-o) [file]    output root file (in test/)" << endl;
-   		cout << "   --nSamples(-n) [n]    sets number of data points to simulate per cluster (default = 500)" << endl;
-   		cout << "   --nDims(-d) [d]       sets dimensionality of data (default = 2)" << endl;
-   		cout << "   --nClusters(-k) [k]   sets number of clusters in GMM (default = 2)" << endl;
+   		cout << "   --help(-h)                    print options" << endl;
+   		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
+   		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
+   		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
+   		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
+   		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -116,49 +126,43 @@ int main(int argc, char *argv[]){
 	sigma2.Print();
 	
 	
-	
 	//create GMM model
-	GaussianMixture gmm = GaussianMixture(k);
-	gmm.SetData(&pc);
-	gmm.InitParameters();
+	GaussianMixture* gmm = new GaussianMixture(k);
+	gmm->SetData(&pc);
+	gmm->InitParameters();
 
 
 	//create EM algo
-	//EMCluster algo = EMCluster(k);
-	//set EM to take GMM
-	//run EM in for loop
+	EMCluster* algo = new EMCluster(gmm,k);
+	////set EM to take GMM
+	//algo->SetModel(gmm);
+	//need to init params and post matrix dims
+	algo->Initialize();
 
+	//viz object
+	ClusterViz2D cv2D = ClusterViz2D(algo);
+	cv2D.SeeData();
+	cv2D.Write();
 
-/*
-	gmm.AddData(&pc);
-	//ClusterViz2D cv2D = ClusterViz2D(&gmm);
-	
-
-	//Initialize - randomize parameters 
-	gmm.Initialize();
 	
 	//loop
-	int nIts = 50;
 	double dLogL, newLogL, oldLogL;
 	double LogLThresh = 0.0005;
-	double it = 0;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
-		oldLogL = gmm.EvalLogL();
-		//E step
-		gmm.Estimate();
-		//M step
-		gmm.Update();
+		oldLogL = algo->EvalLogL();
+		////run EM in for loop
+		algo->Estimate();
+		algo->Update();
 		
 		//Plot
 		//cv2D.UpdatePosterior();
 		//cv2D.AddPlot("it"+std::to_string(it));
 		
 		//Check for convergence
-		cout << "iteration #" << it << " log-likelihood: " << gmm.EvalLogL() << endl;
-		newLogL = gmm.EvalLogL();
+		newLogL = algo->EvalLogL();
 		dLogL = fabs(oldLogL - newLogL);
-		cout << "dLogL: " << dLogL << endl;
+		cout << "iteration #" << it << " dLogL: " << dLogL << endl;
 		if(dLogL < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;
@@ -166,20 +170,6 @@ int main(int argc, char *argv[]){
 		
 	}
 	//cv2D.Write();
-	vector<Matrix> mus, covs;
-	gmm.GetGausParameters(mus,covs);
 	
-	cout << "Estimated parameters" << endl;
-	cout << "mean 1" << endl;
-	mus[0].Print();
-	cout << "covs 1" << endl;
-	covs[0].Print();
-	
-	
-	cout << "mean 2" << endl;
-	mus[1].Print();
-	cout << "covs" << endl;
-	covs[1].Print();
 
-*/
 }
