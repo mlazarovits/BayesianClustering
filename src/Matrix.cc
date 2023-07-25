@@ -397,7 +397,7 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 	}
 	if(m_row != 0 and m_col != 0){
 		if(m_row != dims1[0] or m_col != dims2[1]){
-			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims." << endl;
+			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims (mult() doesn't change dimensions of this matrix)." << endl;
 			return;
 		}
 	}
