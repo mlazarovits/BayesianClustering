@@ -15,6 +15,13 @@ class Wishart : public BasePDF{
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		map<string, vector<Matrix>> GetParameters();
 
+		void SetParameters(map<string, Matrix> params){ 
+			if(params.find("W") == params.end()) cout << "Specify Wishart scale matrix with 'W'." << endl;
+			if(params.find("cov") == params.end()) cout << "Specify Wishart degrees of freedom with 'nu'." << endl;
+			m_nu = params["nu"].at(0,0);
+			m_W = params["W"];
+			m_params = params;	
+		}	
 		double Prob(const Matrix& x);
 		double Prob(const Point& x);
 

@@ -184,7 +184,6 @@ void Matrix::InitEmpty(){
 			m_entries[i].push_back(0.);
 		}
 	}		
-
 }
 
 //creates the identity matrix
@@ -193,6 +192,7 @@ void Matrix::InitIdentity(){
 		cout << "Need dimensions to init." << endl;
 		return;
 	}
+	if(m_row != m_col){ cout << "Matrix::InitEmpty - Non-square matrix." << endl; return;}
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
 			if(i == j)	
@@ -201,6 +201,7 @@ void Matrix::InitIdentity(){
 				m_entries[i][j] = 0.;
 		}
 	}	
+	_square = true;
 
 }
 

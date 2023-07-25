@@ -15,6 +15,13 @@ class Gaussian : public BasePDF{
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		map<string, vector<Matrix>> GetParameters();
 		
+		void SetParameters(map<string, Matrix> params){ 
+			if(params.find("mean") == params.end()) cout << "Specify Gaussian mean with 'mean'." << endl;
+			if(params.find("cov") == params.end()) cout << "Specify Gaussian covariance with 'cov'." << endl;
+			m_mu = params["mean"];
+			m_cov = params["cov"];
+			m_params = params;	
+		}	
 		double Prob(const Point& x);
 
 	private:
