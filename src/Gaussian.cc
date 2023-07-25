@@ -26,6 +26,7 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 }
 
 double Gaussian::Prob(const Point& x){
+cout << "Gaussian Prob begin" << endl;
 	if(m_dim != x.Dim()){ cout << "Point dimensions incompatible." << endl; return -999;}
 
 	Point pt = Point(m_dim);
@@ -35,17 +36,17 @@ double Gaussian::Prob(const Point& x){
 
 	Matrix x_min_mu = Matrix(x);
 	x_min_mu.minus(m_mu);
-
+	
 	Matrix x_min_muT;
 	x_min_muT.transpose(x_min_mu);
-
 	Matrix cov_inv;
 	cov_inv.invert(m_cov);
 
 	x_min_muT.mult(x_min_muT, cov_inv);
-	x_min_muT.mult(x_min_muT, x_min_mu);
+	Matrix mat_expon = Matrix(1,1);
+	mat_expon.mult(x_min_muT, x_min_mu);
 
-	double expon = -0.5*x_min_muT.at(0,0);
+	double expon = -0.5*mat_expon.at(0,0);
 
 	return exp(expon)/denom;	
 
