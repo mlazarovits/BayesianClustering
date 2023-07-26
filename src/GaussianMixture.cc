@@ -27,12 +27,15 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
-	//TODO: should use data to set the range on the possible parameter values
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
+		m_model[k]->SetDim(m_dim);
+
 		m_covs.push_back(Matrix(m_dim,m_dim));
 		m_covs[k].InitIdentity();
+		m_model[k]->SetParameter("cov",m_covs[k]);		
+
 		m_coeffs.push_back(randy.SampleFlat());
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
@@ -53,6 +56,8 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		nit++;
 	}
 	kmc.GetMeans(m_mus);
+	for(int k = 0; k < m_k; k++)
+	m_model[k]->SetParameter("mean",m_mus[k]);		
 
 	//make sure sum_k m_coeffs[k] = 1
 	for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
@@ -74,9 +79,8 @@ void GaussianMixture::CalculatePosterior(){
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
 		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
-//			cout << "n: " << n << " k: " << k << endl;
-			double g = Gaus(m_data->at(n),m_mus[k],m_covs[k]);
-//		cout << "n: " << n << " k: " << k << " coef: " << m_coeffs[k] << " gaus: " << g << endl;
+//			double g = Gaus(m_data->at(n),m_mus[k],m_covs[k]);
+			double g = m_model[k]->Prob(m_data->at(n));	
 			gaus.SetEntry(g,n,k);
 			norm += m_coeffs[k]*gaus.at(n,k);
 		}
@@ -86,11 +90,9 @@ void GaussianMixture::CalculatePosterior(){
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			val = m_coeffs[k]*gaus.at(n,k)/post_norms[n];
-		//	cout << "k: " << k << " n: " << n << " coeff: " << m_coeffs[k] << " gaus: " << gaus.at(n,k) << " norm: " << norms[n] << " val: " << val << endl;
 			m_post.SetEntry(val,n,k);		
 		}
 	}
-	//m_post.Print();
 }
 
 
@@ -107,7 +109,6 @@ void GaussianMixture::UpdateParameters(){
 			m_norms[k] += m_post.at(n,k);
 		}
 	}
-//cout << "new means" << endl;
 	//set new means 	
 	for(int k = 0; k < m_k; k++){
 		m_coeffs[k] = m_norms[k]/m_n;
@@ -125,13 +126,11 @@ void GaussianMixture::UpdateParameters(){
 		}
 		//normalized by sum of posteriors for cluster k
 		m_mus[k].mult(m_mus[k],1./m_norms[k]);
-		//cout << "k: " << k << endl;
-		//m_mus[k].Print();
+		m_model[k]->SetParameter("mean",m_mus[k]);		
 	}
 
 
 
-//cout << "new covs" << endl;
 
 //sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
 	for(int k = 0; k < m_k; k++){
@@ -141,42 +140,25 @@ void GaussianMixture::UpdateParameters(){
 			Matrix cov_k = Matrix(m_dim, m_dim);
 
 			//construct x - mu
-			Matrix x_mat = Matrix(m_data->at(n).Value());
-			Matrix x_min_mu;
-			x_min_mu.mult(m_mus[k],-1.);
-			x_min_mu.add(x_mat);
-	//	cout << "x - mu" << endl;
-//		x_min_mu.Print();
+			Matrix x_min_mu = Matrix(m_data->at(n).Value());
+			x_min_mu.minus(m_mus[k]);
 
 	
 			//transpose x - mu
 			Matrix x_min_muT;
 			x_min_muT.transpose(x_min_mu);
-	//	cout << "(x - mu)T" << endl;
-	//	x_min_muT.Print();
 			//(x_n - mu_k)*(x_n - mu_k)T
 			cov_k.mult(x_min_mu,x_min_muT);
-	//	cout << "(x_n - mu_k)*(x_n - mu_k)T" << endl;
-	//	cov_k.Print();
 			//weighting by posterior gamma(z_nk)
 			cov_k.mult(cov_k,m_post.at(n,k));
-	//	cout << "gam(z_nk)*(x_n - mu_k)*(x_n - mu_k)T" << endl;
-	//	cov_k.Print();
-	//	cout << "gam(z_nk) = " << m_post.at(n,k) << endl;	
 			//sum over n
 			new_cov.add(cov_k);
-	//		cout << "running sum" << endl;
-	//		new_cov.Print();
-	//	cout << "\n" << endl;
 		}	
 		//normalize by N_k
 		new_cov.mult(new_cov,1./m_norms[k]);
 		//overwrites m_covs[k]
 		m_covs[k] = new_cov;
-//	cout << "k: " << k << endl;	
-//	m_covs[k].Print();
-//	cout << "new" << endl;
-//	new_cov.Print();
+		m_model[k]->SetParameter("cov",m_covs[k]);		
 		
 	}
 
@@ -192,7 +174,7 @@ double GaussianMixture::EvalLogL(){
 	for(int n = 0; n < m_n; n++){
 		sum_k = 0;
 		for(int k = 0; k < m_k; k++){
-			sum_k += m_coeffs[k]*Gaus(m_data->at(n),m_mus[k],m_covs[k]);
+			sum_k += m_coeffs[k]*m_model[k]->Prob(m_data->at(n));
 			
 		}
 		L += log(sum_k);
@@ -203,74 +185,13 @@ double GaussianMixture::EvalLogL(){
 
 
 
-
-
-//consider doing this for whole class or moving Gaus function to more general class
-//gaussian for one data point
-double GaussianMixture::Gaus(const Point& x, const Matrix& mu, const Matrix& cov){
-	double det = cov.det();
-	int dim = x.Dim();
-	if(dim != mu.GetDims()[0]){
-		cout << "Error: x and mu length do not match. " << dim << " " << mu.GetDims()[0] << endl;
-		return 0;
-	}
-	if(mu.GetDims()[0] != cov.GetDims()[0]){
-		cout << "Error: covariance and mu dimensions do not match. " << cov.GetDims()[0] << " " << mu.GetDims()[0] << endl;
-		return 0;
-	}
-	if(!cov.square()){
-		cout << "Error: non-square covariance matrix." << endl;
-		return 0;
-	}
-	//construct x - mu
-	Matrix x_mat = Matrix(x.Value());
-	Matrix x_min_mu;
-	x_min_mu.mult(mu,-1.);
-	x_min_mu.add(x_mat);
-//	cout << "	x - mu:" << endl;
-//	x_min_mu.Print();
-
-	//transpose x - mu
-	Matrix x_min_muT;
-	x_min_muT.transpose(x_min_mu);
-	Matrix cov_inv;
-//	cout << "	cov:" << endl;
-//	cov.Print();
-	cov_inv.invert(cov);
-//	cout << "	cov_inv:" << endl;
-//	cov_inv.Print();
-
-	double coeff = 1/(pow(det,0.5)*pow(2*acos(-1),0.5*dim));
-	//should only be 1 element matrix
-	//muT*cov*mu = 1xd * dxd * dx1
-	Matrix mat_expon = Matrix(1,1);
-	Matrix cov_mu = Matrix(m_dim,1);
-
-	cov_mu.mult(cov_inv,x_min_mu);
-//	cout << "	cov_inv*(x-mu):" << endl;
-//	cov_mu.Print();
-
-	mat_expon.mult(x_min_muT,cov_mu);
-//	cout << "	(x-mu)T*cov_inv*(x-mu):" << endl;
-//	mat_expon.Print();
-
-
-	double expon = mat_expon.at(0,0);
-//	cout << "	x:";
-//	x.Print();
-//	cout << "	expon: " << expon << endl;
-	return coeff*exp(-0.5*expon);
-
-}
-
-
 map<string, vector<Matrix>> GaussianMixture::GetParameters(){ 
 	map<string, vector<Matrix>> params;
 	for(int k = 0; k < m_k; k++){
-		//params["means"].push_back(m_model[k]->GetParameter("mean"));
-		//params["covs"].push_back(m_model[k]->GetParameter("cov"));
-		params["means"].push_back(m_mus[k]);
-		params["covs"].push_back(m_covs[k]);
+		params["means"].push_back(m_model[k]->GetParameter("mean"));
+		params["covs"].push_back(m_model[k]->GetParameter("cov"));
+		//params["means"].push_back(m_mus[k]);
+		//params["covs"].push_back(m_covs[k]);
 	}
 		params["pis"] = {Matrix(m_weights)};
 	return params;

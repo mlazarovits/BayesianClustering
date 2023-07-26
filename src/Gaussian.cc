@@ -40,26 +40,31 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 }
 
 double Gaussian::Prob(const Point& x){
+
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
 
 	double det = m_cov.det();
-	double denom = sqrt(det)*pow(2*acos(-1),1/m_dim);
-
 	Matrix x_min_mu = Matrix(x);
 	x_min_mu.minus(m_mu);
-	
+	//transpose x - mu
 	Matrix x_min_muT;
 	x_min_muT.transpose(x_min_mu);
 	Matrix cov_inv;
 	cov_inv.invert(m_cov);
 
-	x_min_muT.mult(x_min_muT, cov_inv);
+	double coeff = 1./(pow(det,0.5)*pow(2*acos(-1),0.5*m_dim));
+	//should only be 1 element matrix
+	//muT*cov*mu = 1xd * dxd * dx1
 	Matrix mat_expon = Matrix(1,1);
-	mat_expon.mult(x_min_muT, x_min_mu);
+	Matrix cov_mu = Matrix(m_dim,1);
 
-	double expon = -0.5*mat_expon.at(0,0);
+	cov_mu.mult(cov_inv,x_min_mu);
 
-	return exp(expon)/denom;	
+	mat_expon.mult(x_min_muT,cov_mu);
+
+	double expon = mat_expon.at(0,0);
+	return coeff*exp(-0.5*expon);
+
 
 }
 

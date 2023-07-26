@@ -21,9 +21,6 @@ class GaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 		
-		//unsure if necessary
-		double Gaus(const Point& x, const Matrix& mu, const Matrix& cov);
-		
 		//fill vectors with parameters
 		//void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
 		//returns mu, cov, and mixing coeffs
