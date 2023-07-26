@@ -12,12 +12,10 @@ void KMeansCluster::Initialize(unsigned long long seed){
 	//create separate matrix for each mean
 	for(int k = 0; k < m_k; k++){
 		m_means.push_back(Matrix(initpts.at(k)));
+		//only keeps track of which cluster assigned to (only 1 col - not multiple for multiple clusters)
+		m_assigns.push_back(0);
+		m_counts.push_back(0);
 	}
-
-	//only keeps track of which cluster assigned to (only 1 col - not multiple for multiple clusters)
-	m_post = Matrix(m_n, 1);	
-	m_post.InitEmpty();
-	for(int k = 0; k < m_k; k++) m_counts.push_back(0);
 }
 
 //E-step: estimate assignments
@@ -37,9 +35,9 @@ void KMeansCluster::Estimate(){
 			if(dist < dmin){ dmin = dist; kmin = k; }
 		}
 		//track number of points that change assignments
-		if(kmin != m_post.at(n,0)) m_nchg++;
+		if(kmin != m_assigns[n]) m_nchg++;
 		//update assignment
-		m_post.SetEntry(kmin,n,0);
+		m_assigns[n] = kmin;
 		//keep track of number of points assigned to cluster kmin
 		m_counts[kmin]++;
 	}
@@ -53,8 +51,8 @@ void KMeansCluster::Update(){
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
 		for(int d = 0; d < m_dim; d++){
-			val = m_means[m_post.at(n,0)].at(d,0);
-			m_means[m_post.at(n,0)].SetEntry(val+m_data->at(n).Value(d),d,0);
+			val = m_means[m_assigns[n]].at(d,0);
+			m_means[m_assigns[n]].SetEntry(val+m_data->at(n).Value(d),d,0);
 		}
 	}
 	//normalize to get mean for each cluster
