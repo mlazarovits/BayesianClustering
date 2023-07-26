@@ -19,7 +19,7 @@ class BasePDF{
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		virtual map<string, vector<Matrix>> GetParameters() = 0;
 //		virtual void SetParameters(map<string, Matrix> params) = 0;
-		void SetParameter(string name, Matrix param){
+		void SetParameter(string name, const Matrix& param){
 			map<string, Matrix>::iterator it = m_params.find(name);
 			if(it != m_params.end()){
 				it->second = param;
