@@ -12,7 +12,6 @@ void KMeansCluster::Initialize(unsigned long long seed){
 	//create separate matrix for each mean
 	for(int k = 0; k < m_k; k++){
 		m_means.push_back(Matrix(initpts.at(k)));
-	m_means[k].Print();
 		//only keeps track of which cluster assigned to (only 1 col - not multiple for multiple clusters)
 		m_counts.push_back(0);
 	}
