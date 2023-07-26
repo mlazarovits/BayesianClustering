@@ -3,8 +3,8 @@
 
 #include "PointCollection.hh"
 #include "Jet.hh"
-#include "VarGaussianMixture.hh"
 #include "JetTree.hh"
+#include "GaussianMixture.hh"
 
 using std::vector;
 
@@ -21,6 +21,7 @@ class JetClusterizer{
 		//call recursively - runs everything (varGMM + BHC)
 		void Cluster();
 
+		GaussianMixture* FindSubjets(PointCollection* points, double LogLthresh, int maxNit, int maxK, bool viz);
 		//just runs varGMM over given jets
 		vector<Jet> FindSubjets_XYZ(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
 		//just runs varGMM over given jets

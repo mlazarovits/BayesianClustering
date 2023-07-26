@@ -46,38 +46,41 @@ void JetClusterizer::Cluster(){
 
 }
 
-//crack open Jet and get underlying points
-vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int maxNit, int maxK, bool viz){
-	//initialize vector of subjets
-	vector<Jet> subjets;
-	vector<JetPoint> rhs;
-	Point vtx = jet.GetVertex();
 
-	PointCollection points;
-	VarGaussianMixture vgmm(maxK);
-	jet.GetEtaPhiConstituents(points);
-	jet.GetConstituents(rhs);
-	int n_pts = points.GetNPoints();
+
+
+
+
+//crack open Jet and get underlying points
+GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double LogLthresh, int maxNit, int maxK, bool viz){
+
+	//create GMM model
+	GaussianMixture* gmm = new GaussianMixture(maxK);
+	gmm->SetData(points);
+	gmm->InitParameters();
+	gmm->InitPriorParameters();
+
+	//create EM algo
+	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
 	
-	vgmm.AddData(&points);
-	vgmm.Initialize();
+	map<string, vector<Matrix>> params;
+	
 	VarClusterViz3D cv3D;
 	string fname = "plots/jetTest/"; 
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
 	}
-	if(viz) cv3D = VarClusterViz3D(&vgmm, fname);
+	if(viz) cv3D = VarClusterViz3D(algo);
 	//loop
 	double dLogL, newLogL, oldLogL;
-	cout << "maxNit: " << maxNit << endl;
 	////////run EM algo////////
 	for(int it = 0; it < maxNit; it++){
-		oldLogL = vgmm.EvalLogL();
+		oldLogL = algo->EvalLogL();
 		
 		//E step
-		vgmm.Estimate();
+		algo->Estimate();
 		//M step
-		vgmm.Update();
+		algo->Update();
 		
 		//Plot
 		if(viz){
@@ -85,10 +88,10 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 			cv3D.WriteJson(fname+"it"+std::to_string(it));
 		}
 		//Check for convergence
-		newLogL = vgmm.EvalLogL();
+		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
-			return subjets;
+			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
 		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
@@ -100,9 +103,25 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 		}
 		if(viz) cout << "\n" << endl;
 	}
+	return gmm;
+}
+
+//crack open Jet and get underlying points
+vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int maxNit, int maxK, bool viz){
+
+	//initialize vector of subjets
+	vector<Jet> subjets;
+	vector<JetPoint> rhs;
+	Point vtx = jet.GetVertex();
+
+	PointCollection points;
+	jet.GetEtaPhiConstituents(points);
+	jet.GetConstituents(rhs);
+	int n_pts = points.GetNPoints();
+	
+	GaussianMixture* gmm = FindSubjets(&points, LogLthresh, maxNit, maxK, viz);
 	//if(viz)	cv3D.Write();
-	int nsubjets = vgmm.GetNClusters(LogLthresh*10.);
-	return subjets;
+	int nsubjets = gmm->GetNClusters(LogLthresh*10.);
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
 	//assign points to found subjets (clusters)
@@ -113,7 +132,7 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 	int k_assign;
 	for(int n = 0; n < n_pts; n++){
 		//find k where post_nk is max for point n:
-		k_assign = vgmm.GetMaxPointAssignment(n);
+		k_assign = gmm->GetMaxPointAssignment(n);
 		//assign point n to subjet k - subjets[postMax_k] += rh[n];
 		subjets[k_assign].add(rhs[n]);
 	}
@@ -124,6 +143,8 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 
 //crack open Jet and get underlying points
 vector<Jet> JetClusterizer::FindSubjets_XYZ(Jet jet, double LogLthresh, int maxNit, int maxK, bool viz){
+
+/*
 	//initialize vector of subjets
 	vector<Jet> subjets;
 	vector<JetPoint> rhs;
@@ -179,7 +200,7 @@ cout << n_pts << " constituents to cluster" << endl;
 	}
 	
 	return subjets;
-
+*/
 }
 
 
