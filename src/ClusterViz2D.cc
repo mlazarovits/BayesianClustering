@@ -27,23 +27,17 @@ ClusterViz2D::ClusterViz2D(EMCluster* algo, string fname) : ClusterVizBase(algo,
 		cout << "ClusterViz2D Error: can only visualize results with 2 clusters." << endl;
 		return;
 	}
-	//m_model = algo->GetModel();
-	//m_fname = fname;
-	//m_points = algo->GetData();
-	//m_n = m_points->GetNPoints();
-	//m_k = algo->GetNClusters();
-	//m_post = algo->GetPosterior();
 }
 
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
-	vector<Matrix> mus, covs;
+	vector<Matrix> mus, covs, pis;
 	//m_model->GetGausParameters(mus,covs);
 	map<string, vector<Matrix>> params;
 	params = m_model->GetParameters();
-	vector<Matrix> pis = params["pis"];
-	mus = params["mus"];
+	pis = params["pis"];
+	mus = params["means"];
 	covs = params["covs"];
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
@@ -54,7 +48,9 @@ void ClusterViz2D::AddPlot(string plotName){
 		//w_i ~ 1 = class 1
 		//w_i ~ 0 = class 0 to match class to idx
 		z.push_back(m_post.at(i,1));	
+
 	}
+	
 
 	//get palette colors for circles
 	SetPalette(m_k);
@@ -63,8 +59,8 @@ void ClusterViz2D::AddPlot(string plotName){
 	cv->Update();
 
 	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
-	gr_data->SetTitle(("GMM EM Clustering "+plotName).c_str());
-	gr_data->SetName(("GMM EM Clustering "+plotName).c_str());
+	gr_data->SetTitle(("EM Clustering "+plotName).c_str());
+	gr_data->SetName(("EM Clustering "+plotName).c_str());
 	gr_data->SetMarkerStyle(20);
 	gr_data->SetMarkerSize(0.95);
 
@@ -97,7 +93,7 @@ void ClusterViz2D::AddPlot(string plotName){
 
 	//draw data	
 	graphPad->cd();
-	gr_data->Draw("p"); //PCOLZ draws color palette
+	gr_data->Draw("pcolz"); //PCOLZ draws color palette
 	//rotate pad to view 3D graph in 2D plane
 	graphPad->SetTheta(90);
 	graphPad->SetPhi(-360);	

@@ -79,7 +79,6 @@ void GaussianMixture::CalculatePosterior(){
 		for(int k = 0; k < m_k; k++){
 		//fill posterior with values according to Bishop eq. (9.23)	
 		//gamma(z_nk) = pi_k*N(x_n | mu_k, sigma_k)/sum_{j=1}^K(pi_j*N(x_n | mu_j, sigma_j))
-//			double g = Gaus(m_data->at(n),m_mus[k],m_covs[k]);
 			double g = m_model[k]->Prob(m_data->at(n));	
 			gaus.SetEntry(g,n,k);
 			norm += m_coeffs[k]*gaus.at(n,k);
@@ -196,12 +195,3 @@ map<string, vector<Matrix>> GaussianMixture::GetParameters(){
 		params["pis"] = {Matrix(m_weights)};
 	return params;
 }; 
-/*
-//fill vectors with params for each cluster
-void GaussianMixture::GetParameters(vector<Matrix>& mus, vector<Matrix>& covs){
-	mus.clear();
-	covs.clear();
-	mus = m_mus;
-	covs = m_covs;
-}
-*/

@@ -33,7 +33,7 @@ VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){
 	m_points = algo->GetData();
 	m_n = m_points->GetNPoints();
 	m_k = algo->GetNClusters();
-	m_post = algo->GetPosterior();
+	m_post = m_model->GetPosterior();
 	m_deltaT = 0.1;
 	
 	//normalize data

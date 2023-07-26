@@ -23,7 +23,8 @@ class ClusterVizBase{
 			m_points = algo->GetData();
 			m_n = m_points->GetNPoints();
 			m_k = algo->GetNClusters();
-			m_post = algo->GetPosterior();
+			m_post = m_model->GetPosterior();
+			m_algo = algo;
 		};
 		virtual ~ClusterVizBase(){ 
 		//	cvs.clear();
@@ -31,7 +32,8 @@ class ClusterVizBase{
 		};
 	
 		void UpdatePosterior(){
-			m_post = m_algo->GetPosterior();
+			m_post = m_model->GetPosterior();
+		
 		}	
 		virtual void AddPlot(string plotName = "test") = 0;
 		virtual void Write() = 0;

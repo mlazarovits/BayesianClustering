@@ -31,7 +31,7 @@ class VarClusterViz3D{
 			if(m_n == 0){
 				return;
 			}
-			m_post = algo->GetPosterior();
+			m_post = m_model->GetPosterior();
 		}	
 		void SeeData();
 		void Write();

@@ -16,9 +16,6 @@ class ClusterViz2D : public ClusterVizBase{
 		virtual ~ClusterViz2D(){ };
 		
 		void AddPlot(string plotName = "test");
-		void UpdatePosterior(){
-			m_post = m_algo->GetPosterior();
-		}
 		void SeeData();
 		void Write();
 		void SetPalette(int k);

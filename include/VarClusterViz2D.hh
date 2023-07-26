@@ -29,7 +29,7 @@ class VarClusterViz2D{
 			if(m_n == 0){
 				return;
 			}
-			m_post = m_algo->GetPosterior();
+			m_post = m_model->GetPosterior();
 		}	
 		void Write();
 		void SetPalette(int k);
