@@ -31,7 +31,9 @@ void KMeansCluster::Estimate(){
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance
-			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
+			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
+			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
+			dist = sqrt(dist);
 			//track mean and minimum distance to mean per point
 			if(dist < dmin){ dmin = dist; kmin = k; }
 		}
@@ -54,8 +56,8 @@ void KMeansCluster::Update(){
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
 		for(int d = 0; d < m_dim; d++){
-		val = m_means[m_assigns[n]].at(d,0);
-		m_means[m_assigns[n]].SetEntry(val+m_data->at(n).Value(d),d,0);
+			val = m_means[m_assigns[n]].at(d,0);
+			m_means[m_assigns[n]].SetEntry(val+m_data->at(n).Value(d),d,0);
 		}
 	}
 	//normalize to get mean for each cluster
