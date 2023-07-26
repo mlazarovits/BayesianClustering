@@ -84,5 +84,5 @@ map<string, vector<Matrix>> Wishart::GetParameters(){
 	vector<double> nu = {m_nu};
 	ret["nu"] = {Matrix(nu)};
 
-
+	return ret;
 }
