@@ -37,6 +37,7 @@ class BasePDFMixture{
 		virtual map<string, vector<Matrix>> GetParameters() = 0; 
 		
 		//for variational EM algorithm
+		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)

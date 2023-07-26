@@ -118,87 +118,49 @@ int main(int argc, char *argv[]){
 	//sample points for another cluster
 	Matrix sigma2 = Matrix(N,N);
 	sigma2.InitRandomSymPosDef(0.,1.,111);
-//	sigma2.SetEntry(0.5,0,0);
-//	sigma2.SetEntry(0.4,1,1);
-//	sigma2.SetEntry(0.6,2,2);
 	Matrix mu2 = Matrix(N,1);
 	mu2.InitRandom(0.,1.,112);
 
-	cout << "original sigma2" << endl;
-	sigma2.Print();
 	
 	Matrix mat2;
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 	pc += mat2.MatToPoints();
-	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
 
-	cout << "original: " << pc.at(0).Value(0) << endl;
-	//get normalization + centering factors
-//	Point shift = pc.Center();
-//	Point scale = pc.Normalize();
-
-//	cout << "transformed: " << pc.at(0).Value(0) << endl;
-//	cout << "point shift" << endl;
-//	shift.Print();
-//	cout << "point scale" << endl;
-//	scale.Print();
-
-	vector<Matrix> mus, covs;
-	vector<double> pis;
-	vector<Matrix> eigenVecs;
-	vector<double> eigenVals;
-	double theta;
 	
 	//create GMM model
-	GaussianMixture gmm = GaussianMixture(k);
-	gmm.SetData(&pc);
-/*
-	//Initialize - randomize parameters 
-	vgmm.Initialize();
-	VarClusterViz3D cv3D = VarClusterViz3D(&vgmm, fname);
+	GaussianMixture* gmm = new GaussianMixture(k);
+	gmm->SetData(&pc);
+	gmm->InitParameters();
+	gmm->InitPriorParameters();
+
+	//create EM algo
+	VarEMCluster* algo = new VarEMCluster(gmm,k);
+
+	//viz object
+	VarClusterViz3D cv3D = VarClusterViz3D(algo);
+	cv3D.SeeData();
+
+	map<string, vector<Matrix>> params;
 	
-
-
 	//loop
 	double dLogL, newLogL, oldLogL;
 	double LogLThresh = 0.0001;
-	vgmm.GetGausParameters(mus,covs);
-	cout << "Original parameters" << endl;
-	cout << "mu 1" << endl;
-	mus[0].Print();
-	cout << "cov 1" << endl;
-	covs[0].Print();
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
-		oldLogL = vgmm.EvalLogL();
+		oldLogL = algo->EvalLogL();
 		
 		//E step
-		vgmm.Estimate();
+		algo->Estimate();
 		//M step
-		vgmm.Update();
+		algo->Update();
 		
 		//Plot
-		cv3D.UpdatePosterior();
-		if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
-		//if(viz) cv3D.AddAnimation("it"+std::to_string(it));
-		
-		mus.clear(); covs.clear();
-		pis.clear();
-
-		vgmm.GetGausParameters(mus,covs);
-		vgmm.GetMixingCoeffs(pis);
-		cout << "iteration #" << it << ": Estimated parameters" << endl;
-		for(int i = 0; i < k; i++){
-			cout << "mean " << i+1 << endl;
-			mus[i].Print();
-			cout << "covs " << i+1 << endl;
-			covs[i].Print();
-			
-		}
+		//cv3D.UpdatePosterior();
+		//if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
 
 	
 		//Check for convergence
-		newLogL = vgmm.EvalLogL();
+		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
 			return -1;
@@ -206,17 +168,26 @@ int main(int argc, char *argv[]){
 		//ELBO should not decrease with iterations, dLogL should always be negative
 		dLogL = oldLogL - newLogL;
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(dLogL < LogLThresh){
+		if(fabs(dLogL) < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
-	//		break;
+			break;
 		}
-		cout << "\n" << endl;
-		
 	}
-//	cv3D.SeeData();
-//	cv3D.Write();
+	cv3D.Write();
 
+	params = gmm->GetParameters();	
+	vector<Matrix> mus = params["means"];
+	vector<Matrix> covs = params["covs"];
 	
+	cout << "Estimated parameters" << endl;
+	cout << "mean 1" << endl;
+	mus[0].Print();
+	cout << "cov 1" << endl;
+	covs[0].Print();
+	cout << "mean 2" << endl;
+	mus[1].Print();
+	cout << "cov 2" << endl;
+	covs[1].Print();
 cout << "\n" << endl;	
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;
@@ -231,10 +202,8 @@ cout << "\n" << endl;
 cout << "\n" << endl;	
 
 
-	cout << "min z: " << pc.min(2) << " max z: " << pc.max(2) << endl;
 
 
-*/
 
 
 

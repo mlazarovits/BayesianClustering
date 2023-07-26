@@ -103,7 +103,9 @@ void VarGaussianMixture::Initialize(unsigned long long seed){
 		m_Ss[k].InitIdentity();
 	}
 	//to init xbars
-	SeedMeans(m_xbars);
+	//basepdf.InitParams();
+	//m_xbars = get means
+//	SeedMeans(m_xbars);
 
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();

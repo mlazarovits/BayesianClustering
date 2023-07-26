@@ -133,8 +133,6 @@ int main(int argc, char *argv[]){
 
 	//create EM algo
 	EMCluster* algo = new EMCluster(gmm,k);
-	////set EM to take GMM
-	//need to init params and post matrix dims
 
 	//viz object
 	ClusterViz2D cv2D = ClusterViz2D(algo);

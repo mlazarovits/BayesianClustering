@@ -1,61 +1,41 @@
-#ifndef GAUSSIANMixture_HH
-#define GAUSSIANMixture_HH
+#ifndef VARGAUSSIANMIXTURE_HH
+#define VARGAUSSIANMIXTURE_HH
+
 #include "BasePDFMixture.hh"
-#include "Matrix.hh"
-#include "PointCollection.hh"
-#include <vector>
-using std::vector;
 
+class VarGaussianMixture : public BasePDFMixture{
 
-class GaussianMixture : public BasePDFMixture{
 	public:
-		GaussianMixture();
-		GaussianMixture(int k);
-		virtual ~GaussianMixture(){ };
-	
-		void InitParameters(unsigned long long seed = 111);
-		//E-step
-		void CalculatePosterior();
-		//M-step
-		void UpdateParameters();
-		//eval - returns log-likelihood value at given iteration
-		double EvalLogL();
-		
-		//fill vectors with parameters
-		//void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
+		VarGaussianMixture(){ m_k = 0; m_seed = 123; }
+		VarGaussianMixture(int k);
+		virtual ~VarGaussianMixture(){ };
+
+		void SetSeed(unsigned long long seed){m_seed = seed;}
+		void InitParameters();
+		//for EM algorithm
+		void CalculatePosterior(Matrix& post);
+		void UpdateParameters(const Matrix& post);
 		//returns mu, cov, and mixing coeffs
 		map<string, vector<Matrix>> GetParameters(); 
- 
-
-			
-		//for variational EM algorithm
-		void InitPriorParameters(unsigned long long seed = 111);
-		void CalculateVariationalPosterior();
-		void CalculateExpectations();
-		void CalculateRStatistics();
-
-		void UpdateVariationalParameters();
-		void UpdatePriorParameters();
-		double EvalVariationalLogL();
-		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
-		virtual map<string, vector<Matrix>> GetPriorParameters(); 
-
 		
+		//for variational EM algorithm
+		void CalculateVariationalPosterior(Matrix& post);
+		void UpdateVariationalParameters(const Matrix& post);
+		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
+		map<string, vector<Matrix>> GetPriorParameters(); 
+
+		double EvalLogL();
 
 	private:
+		//model
+		vector<Gaussian*> m_gaus;
+
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k
 		vector<Matrix> m_mus;
 		//d x d matrix for each cluster k
 		vector<Matrix> m_covs;
-		//1 mixing param for each cluster k
-		vector<double> m_coeffs;
-		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
-		vector<double> m_norms;
-
-
-
-		//variational stuff
+	
 		//parameters on conjugate prior
 		//k scaling parameters for NW (normal wishart) distribution
 		vector<double> m_betas;
@@ -73,11 +53,12 @@ class GaussianMixture : public BasePDFMixture{
 		double m_beta0;
 		double m_nu0;
 		Matrix m_W0;
-		Matrix m_W0inv;
 		Matrix m_mean0;
-		Matrix m_meanBeta0;
+		unsigned long long m_seed;
 
 		//responsbility statistics
+		//k normalization factors
+		vector<double> m_norms;
 		//k weighted means - dx1 each
 		vector<Matrix> m_xbars;
 		//k weighted covariance matrices - dxd each
@@ -88,7 +69,14 @@ class GaussianMixture : public BasePDFMixture{
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
 
+
+
 };
 
 
 #endif
+
+
+
+
+

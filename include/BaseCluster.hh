@@ -8,12 +8,10 @@
 class BaseCluster{
 	public:
 		BaseCluster(){ m_k = 0; m_dim = 0; m_n = 0;}
-		BaseCluster(int k){ m_k = k; m_dim = 0; m_n = 0;}
-		BaseCluster(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); m_k = 0; m_n = m_data->GetNPoints();}
-		BaseCluster(BasePDFMixture* pdf){ m_pdfmix = pdf; }
+		BaseCluster(PointCollection* pc, int k){ m_k = k; m_data = pc; m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); }
+		BaseCluster(BasePDFMixture* pdf, int k){ m_pdfmix = pdf; m_k = k; m_data = m_pdfmix->GetData(); m_dim = m_data->Dim(); m_n = m_data->GetNPoints();}
 		virtual ~BaseCluster(){ };
 
-		virtual void Initialize(unsigned long long seed) = 0;
 		//E-step
 		virtual void Estimate() = 0;
 		//M-step
@@ -21,6 +19,8 @@ class BaseCluster{
 		//for convergence
 		virtual double EvalLogL() = 0;
 
+		void SetData(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); m_k = 0; m_n = m_data->GetNPoints();}
+		
 		double Cluster(BasePDFMixture* pdfmix){
 			//E step
 			Estimate();
@@ -36,15 +36,9 @@ class BaseCluster{
 
 		void GetParameters(){ };
 
-		void SetPDF(BasePDFMixture* pdf){ m_pdfmix = pdf; }
-
 		void SetNClusters(int k){ m_k = k; }
 		int GetNClusters(){ return m_k; }
-		void AddData(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); }
 		PointCollection* GetData(){ return m_data; }
-		Matrix GetPosterior() const{
-			return m_post;
-		}
 
 		BasePDFMixture* GetModel(){ return m_pdfmix; }
 
@@ -59,7 +53,7 @@ class BaseCluster{
 		//number of points
 		int m_n;
 		//posterior matrix of n data points for k clusters
-		Matrix m_post;
+//		Matrix m_post;
 
 		//1 mixing param for each cluster k
 		vector<double> m_coeffs;
