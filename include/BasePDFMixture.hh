@@ -10,7 +10,7 @@ using std::vector;
 using std::map;
 using std::string;
 
-class BasePDFMixture : public BasePDF{
+class BasePDFMixture{
 	public:
 		BasePDFMixture(){ m_k = 0; m_n = 0; }
 		BasePDFMixture(int k){ m_k = k; 
@@ -21,23 +21,24 @@ class BasePDFMixture : public BasePDF{
 			m_n = 0;
 		}
 
+		virtual void InitParameters(unsigned long long seed = 123) = 0;
 		virtual ~BasePDFMixture(){ m_weights.clear(); m_alphas.clear(); m_model.clear(); }
 
 		double Prob(const Point& x);
 
-		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints();}
+		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); }
 		PointCollection* GetData(){ return m_data; }
 
 
 		//for EM algorithm
-		virtual void CalculatePosterior(Matrix& post) = 0;
-		virtual void UpdateParameters(const Matrix& post) = 0;
+		virtual void CalculatePosterior() = 0;
+		virtual void UpdateParameters() = 0;
 		//returns mu, cov, and mixing coeffs
 		virtual map<string, vector<Matrix>> GetParameters() = 0; 
 		
 		//for variational EM algorithm
-		virtual void CalculateVariationalPosterior(Matrix& post) = 0;
-		virtual void UpdateVariationalParameters(const Matrix& post) = 0;
+		virtual void CalculateVariationalPosterior() = 0;
+		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
 		virtual map<string, vector<Matrix>> GetPriorParameters() = 0; 
 
@@ -45,7 +46,15 @@ class BasePDFMixture : public BasePDF{
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
 
 		virtual double EvalLogL() = 0;
+		virtual double EvalVariationalLogL() = 0;
+
+		int Dim(){ return m_dim; }
 	
+		Matrix GetPosterior() const{
+			return m_post;
+		}
+		
+
 		PointCollection* m_data;
 		//number of data points
 		int m_n;
@@ -59,6 +68,9 @@ class BasePDFMixture : public BasePDF{
 		vector<double> m_alphas;
 		//normalization on posterior
 		vector<double> m_norms;
+		Matrix m_post;
+	
+		int m_dim;
 
 
 

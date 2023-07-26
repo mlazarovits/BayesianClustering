@@ -131,19 +131,16 @@ int main(int argc, char *argv[]){
 	gmm->SetData(&pc);
 	gmm->InitParameters();
 
-
 	//create EM algo
 	EMCluster* algo = new EMCluster(gmm,k);
 	////set EM to take GMM
-	//algo->SetModel(gmm);
 	//need to init params and post matrix dims
-	algo->Initialize();
 
 	//viz object
 	ClusterViz2D cv2D = ClusterViz2D(algo);
 	cv2D.SeeData();
-	cv2D.Write();
-
+	
+	map<string, vector<Matrix>> params;
 	
 	//loop
 	double dLogL, newLogL, oldLogL;
@@ -156,8 +153,8 @@ int main(int argc, char *argv[]){
 		algo->Update();
 		
 		//Plot
-		//cv2D.UpdatePosterior();
-		//cv2D.AddPlot("it"+std::to_string(it));
+		cv2D.UpdatePosterior();
+		cv2D.AddPlot("it"+std::to_string(it));
 		
 		//Check for convergence
 		newLogL = algo->EvalLogL();
@@ -167,9 +164,30 @@ int main(int argc, char *argv[]){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;
 		}
-		
 	}
-	//cv2D.Write();
+	cv2D.Write();
 	
+	params = gmm->GetParameters();	
+	vector<Matrix> mus = params["means"];
+	vector<Matrix> covs = params["covs"];
 
+	cout << "Estimated parameters" << endl;
+	cout << "mean 1" << endl;
+	mus[0].Print();
+	cout << "cov 1" << endl;
+	covs[0].Print();
+	cout << "mean 2" << endl;
+	mus[1].Print();
+	cout << "cov 2" << endl;
+	covs[1].Print();
+
+	cout << "Original parameters" << endl;
+	cout << "mean 1" << endl;
+	mu.Print();
+	cout << "cov 1" << endl;
+	sigma.Print();
+	cout << "mean 2" << endl;
+	mu2.Print();
+	cout << "cov 2" << endl;
+	sigma2.Print();
 }
