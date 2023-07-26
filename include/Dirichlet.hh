@@ -13,13 +13,15 @@ class Dirichlet : public BasePDF{
 		void InitParameters();
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		map<string, vector<Matrix>> GetParameters();
-
+/*
 		void SetParameters(map<string, Matrix> params){ 
 			if(params.find("alpha") == params.end()) cout << "Specify Dirichlet alphas with 'alpha'." << endl;
 			for(int i = 0; i < m_dim; i++) m_alphas.push_back(params["alpha"].at(i,0));
 			m_params = params;	
 		}	
-
+*/
+		void UpdateParameters(){ for(int i = 0; i < m_dim; i++) m_alphas.push_back(m_params["alpha"].at(i,0)); }
+		
 		void SetAlphas(vector<double> alphas){ m_alphas = alphas; }
 		
 		double Prob(const Point& x);
