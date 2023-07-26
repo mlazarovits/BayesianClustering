@@ -27,7 +27,7 @@ class VarClusterViz3D{
 		void WriteJson(string filename = "test");
 		void AddPlot(double t, string plotName = "test");
 		void AddAnimation(string dirName = "test");
-		void UpdatePosterior(VarEMCluster* algo){  
+		void UpdatePosterior(){  
 			if(m_n == 0){
 				return;
 			}
