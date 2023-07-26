@@ -42,10 +42,6 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 double Gaussian::Prob(const Point& x){
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
 
-cout << "gaus Prob" << endl;
-cout << "mu dim: " << m_mu.Dim(0) << " cov dim: " << m_cov.Dim(0) << endl;
-
-
 	double det = m_cov.det();
 	double denom = sqrt(det)*pow(2*acos(-1),1/m_dim);
 
