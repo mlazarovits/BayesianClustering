@@ -88,10 +88,12 @@ double Gaussian::ConjugateEvidence(const Point& x){
 	//prior should be normal inverse wishart
 	Matrix mean = m_prior->GetParameter("mean");
 	Matrix scalemat = m_prior->GetParameter("scalemat");
+	//check that these parameters exist
+	if(mean.empty() || scalemat.empty()){ cout << "Error: incorrect prior specified. Needs to be Normal inverse-Wishart." << endl; return -1.; }
+
+
 	double dof = m_prior->GetParameter("dof").at(0,0);
 	double scale = m_prior->GetParameter("scale").at(0,0);
-
-	//check that these parameters exist
 
 	scalemat.mult(scalemat,(scale + 1)/scale*(dof - m_dim + 1));
 
