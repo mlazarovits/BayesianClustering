@@ -23,16 +23,17 @@ class MergeTree : public BaseTree{
 		node* Get(int i){ return _nodes[i]; }
 
 		void Merge(node *l, node *r){
-			//CalculateMerge(): calculate p_lr (posterior from these two nodes)
+			//double v = CalculateMerge(l, r): calculate p_lr (posterior from these two nodes)
 			//combine points from l + r into one pc
-			//construct new node x, assign p_lr as val and pc as points
+			//construct new node x, assign v (posterior) as val and pc as points, calculate and set d_k, need to set prob_tk
+				//pass by reference from CalculateMerge? return and recalculate posterior here?
 			//remove nodes l and r
 			//insert x into tree
 		
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
-		double CalculateMerge(node *l, node* r, BasePDFMixture* model);
+		double CalculateMerge(node *l, node* r);
 		
 
 		void RemoveMerge(node *l, node *r){
