@@ -17,7 +17,7 @@ class Wishart : public BasePDF{
 			m_nu = m_params["nu"].at(0,0);
 			m_W = m_params["W"];
 		}	
-		double ConjugateEvidence() { };
+		double ConjugateEvidence(const Point& x) { };
 		double Prob(const Matrix& x);
 		double Prob(const Point& x);
 

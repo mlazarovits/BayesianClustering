@@ -17,7 +17,7 @@ class BasePDF{
 
 		virtual void InitParameters() = 0;
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
-		virtual map<string, vector<Matrix>> GetParameters() = 0;
+		virtual map<string, Matrix> GetParameters(){ return m_params; }
 //		virtual void SetParameters(map<string, Matrix> params) = 0;
 		void SetParameter(string name, const Matrix& param){
 			map<string, Matrix>::iterator it = m_params.find(name);
@@ -37,10 +37,13 @@ class BasePDF{
 		int Dim(){ return m_dim; }
 		int m_dim;
 
+		void SetPrior(BasePDF* p){ m_prior = p; }
+		BasePDF* GetPrior(){ return m_prior; }
+		virtual double ConjugateEvidence(const Point& x) = 0;
+
 		map<string, Matrix> m_params;
 
-
-
+		BasePDF* m_prior;
 
 
 

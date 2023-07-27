@@ -1,12 +1,17 @@
 #include "Gaussian.hh"
 #include "Matrix.hh"
+#include "MultivarT.hh"
+
 
 Gaussian::Gaussian(){ 
 	m_params["mean"] = {}; m_params["cov"] = {};
-	m_dim = 0; m_params["mean"] = {}; m_params["cov"] = {}; }
+	m_dim = 0; m_params["mean"] = {}; m_params["cov"] = {}; 
+	m_prior = nullptr;
+}
 
 Gaussian::Gaussian(int d) : BasePDF(d){ 
 	m_params["mean"] = {}; m_params["cov"] = {};
+	m_prior = nullptr;
 }
 
 Gaussian::Gaussian(Point mu, Matrix cov){
@@ -40,7 +45,6 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 }
 
 double Gaussian::Prob(const Point& x){
-
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
 
 	double det = m_cov.det();
@@ -75,10 +79,24 @@ void Gaussian::InitParameters(){
 }
 
 
+double Gaussian::ConjugateEvidence(const Point& x){
+//assuming conjugate prior - for multidim gaussian with unknown mean + variance (precision) is normal inverse wishart (normal wishart)
+	if(m_prior == nullptr){
+		return -999;
+	}
 
-map<string, vector<Matrix>> Gaussian::GetParameters(){
-	map<string, vector<Matrix>> ret;
-	ret["mu"] = {m_mu};
-	ret["cov"] = {m_cov};
-	return ret;
+	//prior should be normal inverse wishart
+	Matrix mean = m_prior->GetParameter("mean");
+	Matrix scalemat = m_prior->GetParameter("scalemat");
+	double dof = m_prior->GetParameter("dof").at(0,0);
+	double scale = m_prior->GetParameter("scale").at(0,0);
+
+	//check that these parameters exist
+
+	scalemat.mult(scalemat,(scale + 1)/scale*(dof - m_dim + 1));
+
+	//make distribution parameters
+	MultivarT* dist = new MultivarT(mean,scalemat,dof - m_dim + 1); 
+
+	return dist->Prob(x);
 }
