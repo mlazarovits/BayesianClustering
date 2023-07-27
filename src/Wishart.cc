@@ -76,13 +76,3 @@ void Wishart::InitParameters(){
 
 }
 
-
-
-map<string, vector<Matrix>> Wishart::GetParameters(){
-	map<string, vector<Matrix>> ret;
-	ret["W"] = {m_W};
-	vector<double> nu = {m_nu};
-	ret["nu"] = {Matrix(nu)};
-
-	return ret;
-}

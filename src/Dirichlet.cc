@@ -66,6 +66,3 @@ void Dirichlet::InitParameters(){
 }
 
 
-map<string, Matrix> Dirichlet::GetParameters(){
-	return m_params;
-}

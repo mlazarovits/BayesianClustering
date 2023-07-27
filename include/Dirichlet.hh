@@ -11,8 +11,6 @@ class Dirichlet : public BasePDF{
 		virtual ~Dirichlet(){ };
 
 		void InitParameters();
-		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
-		map<string, Matrix> GetParameters();
 		void UpdateParameters(){ for(int i = 0; i < m_dim; i++) m_alphas.push_back(m_params["alpha"].at(i,0)); }
 		
 		void SetAlphas(vector<double> alphas){ m_alphas = alphas; }
