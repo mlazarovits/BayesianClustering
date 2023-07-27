@@ -66,9 +66,6 @@ void Dirichlet::InitParameters(){
 }
 
 
-map<string, vector<Matrix>> Dirichlet::GetParameters(){
-	map<string, vector<Matrix>> ret;
-	ret["alphas"] = {Matrix(m_alphas)};
-	return ret;
-
+map<string, Matrix> Dirichlet::GetParameters(){
+	return m_params;
 }
