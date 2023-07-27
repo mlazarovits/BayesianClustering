@@ -49,6 +49,6 @@ double MultivarT::Prob(const Point& x){
 	matT.mult(matT,scale_inv);
 	factor.mult(matT,mat);
 
-	return prefactor*(1 + (1./m_dof)*factor.at(0,0));
+	return prefactor*pow(1 + (1./m_dof)*factor.at(0,0), -(m_dof + m_dim)/2.);
 }
 
