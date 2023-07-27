@@ -54,7 +54,19 @@ class BasePDFMixture{
 		Matrix GetPosterior() const{
 			return m_post;
 		}
-		
+
+		int GetNClusters(){ return m_k; }		
+
+		int GetMaxPointAssignment(int n){
+			int max_post = 0;
+			int max_k = 0;
+			for(int k = 0; k < m_k; k++)
+				if(m_post.at(n,k) > max_post){
+					max_post = m_post.at(n,k);
+					max_k = k;
+				}
+			return max_k;
+		}
 
 		PointCollection* m_data;
 		//number of data points

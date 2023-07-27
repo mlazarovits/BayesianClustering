@@ -121,7 +121,8 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 	
 	GaussianMixture* gmm = FindSubjets(&points, LogLthresh, maxNit, maxK, viz);
 	//if(viz)	cv3D.Write();
-	int nsubjets = gmm->GetNClusters(LogLthresh*10.);
+	//int nsubjets = gmm->GetNClusters(LogLthresh*10.);
+	int nsubjets = gmm->GetNClusters();
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
 	//assign points to found subjets (clusters)
