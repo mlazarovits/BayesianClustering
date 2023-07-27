@@ -56,6 +56,7 @@ class Matrix{
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
 		void PointsToMat(PointCollection& pc);
+		bool empty(){ if(m_row == 0 && m_col == 0) return true; else return false; }
 		//clear
 		void clear();
 		void Print() const;
