@@ -15,7 +15,10 @@ class Dirichlet : public BasePDF{
 		
 		void SetAlphas(vector<double> alphas){ m_alphas = alphas; }
 		
+		BasePDF* mult(BasePDF* p1){ return nullptr; }
+		
 		double Prob(const Point& x);
+		double Prob(const PointCollection& x){ return -1.; }
 
 		double lnC();
 		double ConjugateEvidence(const Point& x){ };

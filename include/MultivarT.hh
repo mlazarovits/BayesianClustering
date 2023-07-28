@@ -13,6 +13,7 @@ class MultivarT : BasePDF{
 
 		void InitParameters();
 		double Prob(const Point& x);
+		double Prob(const PointCollection& x){ return -1.; }
 		void UpdateParameters(){ m_mean = m_params["mean"]; m_scale = m_params["scale"]; m_dof = m_params["m_dof"].at(0,0); }	
 
 		double ConjugateEvidence(const Point& x){ return -1.; }

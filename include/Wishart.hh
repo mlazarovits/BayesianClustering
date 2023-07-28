@@ -13,6 +13,7 @@ class Wishart : public BasePDF{
 		void SetParameters(Matrix W, double nu){ m_W = W; m_nu = nu; }
 		void InitParameters();
 		
+		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		void UpdateParameters(){ 
 			m_nu = m_params["nu"].at(0,0);
 			m_W = m_params["W"];
@@ -20,6 +21,7 @@ class Wishart : public BasePDF{
 		double ConjugateEvidence(const Point& x) { };
 		double Prob(const Matrix& x);
 		double Prob(const Point& x);
+		double Prob(const PointCollection& x){ return -1.; }
 
 		double lnB();
 		double H(); //entropy
