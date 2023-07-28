@@ -17,6 +17,7 @@ class MultivarT : BasePDF{
 		void UpdateParameters(){ m_mean = m_params["mean"]; m_scale = m_params["scale"]; m_dof = m_params["m_dof"].at(0,0); }	
 
 		double ConjugateEvidence(const Point& x){ return -1.; }
+		double ConjugateEvidence(const PointCollection& x){ return -1.; }
 		BasePDF* Posterior(){ };
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
