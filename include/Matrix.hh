@@ -56,6 +56,10 @@ class Matrix{
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
 		void PointsToMat(PointCollection& pc);
+		void PointToMat(const Point& pc);
+		void mean(const PointCollection& data);
+		void scatter(const PointCollection& data);
+
 		bool empty(){ if(m_row == 0 && m_col == 0) return true; else return false; }
 		//clear
 		void clear();

@@ -630,3 +630,65 @@ void Matrix::PointsToMat(PointCollection& pc){
 		}
 	}
 }
+//stores pc as mat in this
+void Matrix::PointToMat(const Point& pc){
+	m_col = 1;
+	m_row = pc.Dim();
+
+	InitEmpty();
+	
+	for(int i = 0; i < m_row; i++){
+			m_entries[i][0] = pc.at(i);
+	}
+}
+
+
+
+void Matrix::mean(const PointCollection& data){
+	int n = data.GetNPoints();
+	int d = data.Dim();
+	vector<double> m;
+	m_col = 1;
+	m_row = d;
+	for(int j = 0; j < d; j++) m.push_back(0.);
+	for(int j = 0; j < d; j++){
+		for(int i = 0; i < n; i++){
+			m[j] += data.at(i).at(j); 
+		}
+	}
+	for(int j = 0; j < d; j++) m[j] = m[j]/double(n);
+	m_entries.clear();
+	m_entries.push_back(m);
+}
+
+
+
+
+void Matrix::scatter(const PointCollection& data){
+	int n = data.GetNPoints();
+	int d = data.Dim();
+	m_row = d;
+	m_col = d;
+
+	Matrix m = Matrix(d, 1);
+	Matrix mT = Matrix(1, d);
+	m.mean(data);
+	mT.transpose(m);
+	
+	Matrix pt = Matrix(d,1);
+	Matrix ptT = Matrix(1,d);
+	Matrix pt_ptT = Matrix(d,d);
+	for(int i = 0; i < n; i++){
+		pt.PointToMat(data.at(i));
+		ptT.transpose(pt);
+		pt_ptT.mult(pt,ptT);
+		add((*this),pt_ptT);
+	}	
+	
+	pt_ptT.InitEmpty();
+	pt_ptT.mult(m,mT);
+	pt_ptT.mult(pt_ptT,n);
+
+	minus(pt_ptT);
+
+}
