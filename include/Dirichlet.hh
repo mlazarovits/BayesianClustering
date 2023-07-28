@@ -19,6 +19,7 @@ class Dirichlet : public BasePDF{
 		
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x){ return -1.; }
+		BasePDF* Posterior(){ };
 
 		double lnC();
 		double ConjugateEvidence(const Point& x){ };

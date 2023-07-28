@@ -39,6 +39,7 @@ class BasePDF{
 		int m_dim;
 
 		virtual BasePDF* mult(BasePDF* p1) = 0;
+
 	
 		void SetPrefactor(double p){ m_prefactor = p; }	
 
@@ -52,6 +53,12 @@ class BasePDF{
 
 		double m_prefactor;
 
+		double multidim_gam(double x){
+			double pi = acos(-1);
+			double prod = 1;
+			for(int i = 0; i < m_dim; i++) prod *= tgamma(x + (1 - i)/2.);
+			return pow(pi,m_dim*(m_dim - 1)/4)*prod;
+		}	
 
 
 };

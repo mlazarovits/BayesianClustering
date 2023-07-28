@@ -73,33 +73,34 @@ double Gaussian::Prob(const Point& x){
 }
 
 double Gaussian::Prob(const PointCollection& x){
-	int n = x.GetNPoints();
-	m_prefactor = pow(m_prefactor, n);
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
-
-	double expon = 0;
-
-	Matrix x_min_mu, x_min_muT, mat_expon, cov_mu;
-	Matrix cov_inv;
+	int n = x.GetNPoints();
+	double prefactor = pow(m_prefactor, n);
+	Matrix m = Matrix(m_dim,1);
+	m.mean(x);
+	Matrix scatter = Matrix(m_dim, m_dim);
+	scatter.scatter(x);
+	//from Bishop 4.196
+	Matrix cov_scatter = Matrix(m_dim, m_dim);
+	Matrix cov_inv = Matrix(m_dim, m_dim);
 	cov_inv.invert(m_cov);
-	for(int i = 0; i < n; i++){
-		x_min_mu = Matrix(x.at(i));
-		x_min_mu.minus(m_mu);
-		//transpose x - mu
-		x_min_muT.transpose(x_min_mu);
-
-		//should only be 1 element matrix
-		//muT*cov*mu = 1xd * dxd * dx1
-		mat_expon = Matrix(1,1);
-		cov_mu = Matrix(m_dim,1);
-
-		cov_mu.mult(cov_inv,x_min_mu);
-		mat_expon.mult(x_min_muT,cov_mu);
+	cov_scatter.mult(cov_inv, scatter);
 	
-		expon += mat_expon.at(0,0);
-	}
+	double trace = cov_scatter.trace();
+	prefactor *= exp(-n/2*trace);
 	
-	return m_prefactor*exp(-0.5*expon);
+	m.mult(m,sqrt(n));
+
+	//N/2(mu - mean)*covinv*(mu - mean);
+	Gaussian* prob = new Gaussian(m,m_cov);
+	Matrix p = Matrix(m_dim, 1);
+	p.mult(m_mu,sqrt(n));
+	Point pt = Point(m_dim);
+	for(int i = 0; i < m_dim; i++) pt.SetValue(p.at(i,0),i);
+
+	prob->SetPrefactor(prefactor);
+	return prob->Prob(pt);
+
 
 }
 
@@ -134,6 +135,116 @@ double Gaussian::ConjugateEvidence(const Point& x){
 	return dist->Prob(x);
 }
 
+double Gaussian::ConjugateEvidence(const PointCollection& x){
+	//assuming conjugate prior - for multidim gaussian with unknown mean + variance (precision) is normal inverse wishart (normal wishart)
+	if(m_prior == nullptr){
+		return -999;
+	}
+	int n = x.GetNPoints();
+	Matrix xbar = Matrix(m_dim, 1);
+	xbar.mean(x);
+
+	//prior should be normal inverse wishart
+	Matrix m0 = m_prior->GetParameter("mean");
+	Matrix S0 = m_prior->GetParameter("scalemat");
+	//check that these parameters exist
+	double nu0 = m_prior->GetParameter("dof").at(0,0);
+	double beta0 = m_prior->GetParameter("scale").at(0,0);
+	if(m0.empty() || S0.empty()){ cout << "Error: incorrect prior specified. Needs to be Normal inverse-Wishart." << endl; return -1.; }
+
+	//from Bishop
+	//using posterior parameters in eqns (4.209) - (4.214)
+	Matrix Sn = Matrix(m_dim, m_dim);
+	Matrix mn = Matrix(m_dim, 1);
+	double beta_n = beta0 + n;
+	double nu_n = nu0 + n;
+
+	//posterior mean of normal part of NIW
+	mn.mult(m0,beta0/beta_n);
+	Matrix xbar_scaled;
+	xbar_scaled.mult(xbar, n/beta_n);
+	mn.add(mn,xbar_scaled);
+
+	//posterior scale of wishart part of NIW
+	Matrix S = Matrix(m_dim, m_dim);
+	
+	Matrix xmat, xmatT, xmat_xmatT;
+	for(int i = 0; i < n; i++){
+		xmat.PointToMat(x.at(i));
+		xmatT.transpose(xmat);
+		xmat_xmatT.mult(xmat,xmatT);
+		S.add(S,xmat_xmatT);
+	}
+
+	Sn.add(S0,S);
+	Matrix m0T;
+	Matrix m0_m0T = Matrix(m_dim, m_dim);
+	m0T.transpose(m0);
+	m0_m0T.mult(m0,m0T);
+	m0_m0T.mult(m0_m0T,beta0);
+	Sn.add(Sn,m0_m0T);
+
+	Matrix mnT = Matrix(1, m_dim);
+	Matrix mn_mnT = Matrix(m_dim, m_dim);
+	mnT.transpose(mn);
+	mn_mnT.mult(mn,mnT);
+	mn_mnT.mult(mn_mnT,beta_n);
+	Sn.add(Sn,mn_mnT);
+
+	//create evidence from Bishop (5.29)
+	double pi = acos(-1);
+	double ret = pow(pi,-n*m_dim/2);
+	ret *= pow(beta0/beta_n,m_dim/2);
+	double det0 = S0.det();
+	double detn = Sn.det();
+	ret *= pow(det0,nu0/2)*pow(detn,nu_n/2);
+
+	ret *= multidim_gam(nu_n/2);
+	ret /= multidim_gam(nu0/2);	
+
+	return ret;	
+}
 
 
+Gaussian* Gaussian::mult(BasePDF* p1){ 
+	//check that p1 is a Gaussian by looking at parameters
+	Matrix mu2 = p1->GetParameter("mean");
+	Matrix mu1 = m_mu;
 
+	Matrix cov2 = p1->GetParameter("cov");
+	cov2.invert(cov2);
+	Matrix cov1 = Matrix(m_dim, m_dim);
+	cov1.invert(m_cov);
+	
+
+	Gaussian* ret = new Gaussian(m_dim);
+	if(mu2.empty() || cov2.empty()){ cout << "Error: input must be same as derived class (Gaussian)" << endl; return ret; }
+
+	//form from: https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf (Ch. 8.1.8)
+	Matrix new_cov = Matrix(m_dim, m_dim);
+	new_cov.add(cov1,cov2);
+	
+	Matrix new_mu1 = Matrix(m_dim, 1);
+	Matrix new_mu2 = Matrix(m_dim, 1);
+	Matrix new_mu = Matrix(m_dim, 1);
+	
+	new_mu1.mult(cov1,mu1);
+	new_mu2.mult(cov2,mu2);
+
+	new_mu.add(new_mu1, new_mu2);
+	new_mu.mult(new_cov,new_mu);
+
+	//use added covariances in this distribution
+	Gaussian* gaus_coeff = new Gaussian(mu2, new_cov);
+	//then invert added covariances for overall distribution
+	new_cov.invert(new_cov); 
+
+	Point x = mu1.MatToPoints().at(0);
+	double coeff = gaus_coeff->Prob(x);	
+
+	ret->SetParameter("mean",new_mu);
+	ret->SetParameter("cov",new_cov);
+	ret->SetPrefactor(coeff);
+
+	return ret;	
+};

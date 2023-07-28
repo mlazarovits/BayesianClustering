@@ -14,6 +14,8 @@ class NormalInvWishart : public BasePDF{
 		double Prob(const Point& x);
 		double Prob(const Matrix& mu, const Matrix& cov);		
 
+		BasePDF* mult(BasePDF* p1){ };
+		BasePDF* Posterior(){ };
 		void InitParameters();
 
 		void UpdateParameters();
@@ -26,11 +28,5 @@ class NormalInvWishart : public BasePDF{
 		double m_dof;
 		double m_scale;
 
-		double multidim_gam(double x){
-			double pi = acos(-1);
-			double prod = 1;
-			for(int i = 0; i < m_dim; i++) prod *= tgamma(x + (1 - i)/2.);
-			return pow(pi,m_dim*(m_dim - 1)/4)*prod;
-		}	
 };
 #endif
