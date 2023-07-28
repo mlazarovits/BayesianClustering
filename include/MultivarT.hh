@@ -15,7 +15,9 @@ class MultivarT : BasePDF{
 		double Prob(const Point& x);
 		void UpdateParameters(){ m_mean = m_params["mean"]; m_scale = m_params["scale"]; m_dof = m_params["m_dof"].at(0,0); }	
 
-		double ConjugateEvidence(const Point& x){ };
+		double ConjugateEvidence(const Point& x){ return -1.; }
+
+		BasePDF* mult(BasePDF* p1){ return nullptr; }
 
 	private:
 		Matrix m_mean;
