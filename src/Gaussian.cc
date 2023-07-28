@@ -31,6 +31,7 @@ Gaussian::Gaussian(Point mu, Matrix cov){
 
 	m_params["mean"] = m_mu;
 	m_params["cov"] = m_cov;	
+	m_prefactor = 1./(pow(m_cov.det(),0.5)*pow(2*acos(-1),0.5*m_dim));
 }
 
 Gaussian::Gaussian(Matrix mu, Matrix cov){
@@ -42,12 +43,12 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 	m_cov = cov;
 	m_params["mean"] = m_mu;
 	m_params["cov"] = m_cov;	
+	m_prefactor = 1./(pow(m_cov.det(),0.5)*pow(2*acos(-1),0.5*m_dim));
 }
 
 double Gaussian::Prob(const Point& x){
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
 
-	double det = m_cov.det();
 	Matrix x_min_mu = Matrix(x);
 	x_min_mu.minus(m_mu);
 	//transpose x - mu
@@ -56,7 +57,6 @@ double Gaussian::Prob(const Point& x){
 	Matrix cov_inv;
 	cov_inv.invert(m_cov);
 
-	double coeff = 1./(pow(det,0.5)*pow(2*acos(-1),0.5*m_dim));
 	//should only be 1 element matrix
 	//muT*cov*mu = 1xd * dxd * dx1
 	Matrix mat_expon = Matrix(1,1);
@@ -67,8 +67,39 @@ double Gaussian::Prob(const Point& x){
 	mat_expon.mult(x_min_muT,cov_mu);
 
 	double expon = mat_expon.at(0,0);
-	return coeff*exp(-0.5*expon);
+	return m_prefactor*exp(-0.5*expon);
 
+
+}
+
+double Gaussian::Prob(const PointCollection& x){
+	int n = x.GetNPoints();
+	m_prefactor = pow(m_prefactor, n);
+	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
+
+	double expon = 0;
+
+	Matrix x_min_mu, x_min_muT, mat_expon, cov_mu;
+	Matrix cov_inv;
+	cov_inv.invert(m_cov);
+	for(int i = 0; i < n; i++){
+		x_min_mu = Matrix(x.at(i));
+		x_min_mu.minus(m_mu);
+		//transpose x - mu
+		x_min_muT.transpose(x_min_mu);
+
+		//should only be 1 element matrix
+		//muT*cov*mu = 1xd * dxd * dx1
+		mat_expon = Matrix(1,1);
+		cov_mu = Matrix(m_dim,1);
+
+		cov_mu.mult(cov_inv,x_min_mu);
+		mat_expon.mult(x_min_muT,cov_mu);
+	
+		expon += mat_expon.at(0,0);
+	}
+	
+	return m_prefactor*exp(-0.5*expon);
 
 }
 
@@ -102,3 +133,7 @@ double Gaussian::ConjugateEvidence(const Point& x){
 
 	return dist->Prob(x);
 }
+
+
+
+
