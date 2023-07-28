@@ -337,37 +337,6 @@ void Matrix::invert(const Matrix& mat){
 
 
 
-
-/*
-double Matrix::det(){
-	if(!_square){
-		cout << "Matrix not square, determinant cannot be found." << m_row << " " << m_col << endl;
-		return 0.;
-	}
-	int det = 0;
-	Matrix submatrix = Matrix(m_row, m_col);
-	if (n == 2)
-	return ((m_entries[0][0] * m_entries[1][1]) - (m_entries[1][0] * m_entries[0][1]));
-	else {
-	   for (int x = 0; x < n; x++) {
-	      int subi = 0;
-	      for (int i = 1; i < n; i++) {
-	         int subj = 0;
-	         for (int j = 0; j < n; j++) {
-	            if (j == x)
-	            continue;
-	            submatrix[subi][subj] = m_entries[i][j];
-	            subj++;
-	         }
-	         subi++;
-	      }
-	      det = det + (pow(-1, x) * matrix[0][x] * determinant( submatrix, n - 1 ));
-	   }
-	}
-	return det;
-}
-*/
-
 vector<int> Matrix::GetDims() const{
 	return {m_row, m_col};
 }
@@ -517,6 +486,7 @@ void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 
 
 }
+
 
 PointCollection Matrix::MatToPoints(){
 	PointCollection pc;
