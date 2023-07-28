@@ -301,6 +301,30 @@ class PointCollection{
 	}
 	
 
+	Point mean() const{
+		Point m = Point(_nDim);
+		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
+		for(int i = 0; i < (int)_pts.size(); i++){
+			for(int d = 0; d < _nDim; d++){
+				m.SetValue(m.at(d)+_pts[i].at(d),d);
+			}
+		}
+		for(int d = 0; d < _nDim; d++) m.SetValue(m.at(d)/(double)_pts.size(),d);
+	}
+
+	Point stddev() const{
+		Point sd = Point(_nDim);
+		Point m = mean();
+		double val;
+		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
+		for(int i = 0; i < (int)_pts.size(); i++){
+			for(int d = 0; d < _nDim; d++){
+				val = pow(_pts[i].at(d) - m.at(d),2);
+				sd.SetValue(sd.at(d)+val,d);
+			}
+		}
+		for(int d = 0; d < _nDim; d++) sd.SetValue(sqrt(sd.at(d)/(double)_pts.size()),d);
+	}
 
 	private:
 		int _nDim = 0;
