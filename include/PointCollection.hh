@@ -41,13 +41,6 @@ class PointCollection{
 		}
 
 
-//		PointCollection& operator =(const PointCollection& pts){
-//			_pts.clear();
-//			_nDim = pts.Dim();
-//			for(int i = 0; i < pts.GetNPoints(); i++) _pts.push_back(pts[i]);
-//			return *this;
-//		}
-
 		//add only unique points
 		PointCollection& operator +=(PointCollection pts){
 			//cout << "PointCollection+=PointCollection" << endl;
@@ -70,27 +63,7 @@ class PointCollection{
 			return *this;
 		}
 		
-/*
-		PointCollection& operator +=(Point& pt){
-//			cout << "PointCollection+=Point&" << endl;
-				if(!this->Has(pt)){
-//					cout << "unique point:" << endl;
-//					cout << pt.Value(0) << endl;
-					_pts.push_back(&pt);
-				}
-				else
-				return *this;
-			if(_nDim == 0) _nDim = pt.Dim();
-			return *this;
-		}
-	
-		Point operator[](int i) const{
-			return _pts[i];
-		}	
-
-*/
-	
-		Point& at(int i){
+		const Point& at(int i) const{
 			return _pts.at(i);
 		}
 		
@@ -110,7 +83,7 @@ class PointCollection{
 		int Dim() const{ return _nDim; }
 		
 		//check if point is in this collection
-		bool Has(Point& pt) const{		
+		bool Has(const Point& pt) const{		
 		//cout << "PointCollection::Has" << endl;
 		//cout << "size for for loop:" << (int)_pts.size() << endl;
 			for(int p = 0; p < (int)_pts.size(); p++){
@@ -120,21 +93,7 @@ class PointCollection{
 			}
 			return false;
 		}
-/*
-		bool Has(Point* pt) const{		
-		cout << "PointCollection::Has" << endl;
-		cout << "size for for loop:" << (int)_pts.size() << endl;
-			for(int p = 0; p < (int)_pts.size(); p++){
-				bool eq = (_pts[p] == pt);
-				cout << "looking at point #" << p << " match? " << eq << endl;
-				if(_pts[p] == pt){
-				cout << "same point: " << pt->Value(0) << " " << _pts[p]->Value(0) << endl;
-					return true;
-				}
-			}
-			return false;
-		}
-*/
+		
 		//add only unique points
 		void AddPoint(Point& pt){
 		//cout << "addpoint: " << &pt << endl;

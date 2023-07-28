@@ -51,7 +51,7 @@ class MergeTree : public BaseTree{
 
 
 	protected:
-		void AddLeaf(double val, Point* pt = nullptr){
+		void AddLeaf(double val, const Point* pt = nullptr){
 			node* x = (node*)malloc(sizeof *x);
 			x->l = _z; x->r = _z;
 			x->val = val;
