@@ -310,6 +310,7 @@ class PointCollection{
 			}
 		}
 		for(int d = 0; d < _nDim; d++) m.SetValue(m.at(d)/(double)_pts.size(),d);
+		return m;
 	}
 
 	Point stddev() const{
@@ -323,6 +324,7 @@ class PointCollection{
 				sd.SetValue(sd.at(d)+val,d);
 			}
 		}
+		return sd;
 		for(int d = 0; d < _nDim; d++) sd.SetValue(sqrt(sd.at(d)/(double)_pts.size()),d);
 	}
 
