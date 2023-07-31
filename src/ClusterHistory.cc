@@ -13,21 +13,21 @@ ClusterHistory::~ClusterHistory(){
 
 
 
-void ClusterHistory::AddLayer(vector<PointCollection> pcs, double rk){
+void ClusterHistory::AddLayer(vector<PointCollection*> pcs, double rk){
 	m_tree.push_back(pcs);
 	m_rks.push_back(rk);
 }
 
-vector<PointCollection> ClusterHistory::at(int i){
+vector<PointCollection*> ClusterHistory::at(int i){
 	return m_tree[i];
 }
 
-PointCollection ClusterHistory::at(int i, int j){
+PointCollection* ClusterHistory::at(int i, int j){
 	return m_tree[i][j];
 }
 
 //return clusters at depth given by posterior value
-vector<PointCollection> ClusterHistory::at(double rk){
+vector<PointCollection*> ClusterHistory::at(double rk){
 	auto it = std::find(m_rks.begin(), m_rks.end(), rk);
 	
 	return m_tree[it - m_rks.begin()];

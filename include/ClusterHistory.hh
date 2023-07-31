@@ -19,16 +19,16 @@ class ClusterHistory{
 		//init tree stack with leaf nodes (connected to null, external termination nodes)
 		void Init();
 
-		void AddLayer(vector<PointCollection> pcs, double rk);	
+		void AddLayer(vector<PointCollection*> pcs, double rk);	
 	
 		//clusters at depth i
-		vector<PointCollection> at(int i);
+		vector<PointCollection*> at(int i);
 
 		//clusters at rk value
-		vector<PointCollection> at(double rk);
+		vector<PointCollection*> at(double rk);
 
 		//cluster j at depth i
-		PointCollection at(int i, int j);
+		PointCollection* at(int i, int j);
 
 		int GetNLayers();
 		int GetNClusters();
@@ -42,7 +42,7 @@ class ClusterHistory{
 
 	private:
 		//m_tree[i] = vector<cluster> clusters at depth i -> m_tree[i][j] = cluster j at depth i
-		vector<vector<PointCollection>> m_tree;
+		vector<vector<PointCollection*>> m_tree;
 		//posterior values, index matched to point collections
 		vector<double> m_rks;
 
