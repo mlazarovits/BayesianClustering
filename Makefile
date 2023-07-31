@@ -32,7 +32,7 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
 
 #specify what to make
-all: GMM.x varGMM.x jetVarGMM.x
+all: GMM.x varGMM.x jetVarGMM.x varGMM_BHC.x
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
@@ -42,6 +42,10 @@ GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
 varGMM.x: $(SRCDIR)varGMM.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o varGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch varGMM.x
+
+varGMM_BHC.x: $(SRCDIR)varGMM_BHC.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o varGMM_BHC.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch varGMM_BHC.x
 
 jetVarGMM.x: $(SRCDIR)jetVarGMM.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o jetVarGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
