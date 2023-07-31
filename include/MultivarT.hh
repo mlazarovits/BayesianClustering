@@ -18,7 +18,7 @@ class MultivarT : BasePDF{
 
 		double ConjugateEvidence(const Point& x){ return -1.; }
 		double ConjugateEvidence(const PointCollection& x){ return -1.; }
-		BasePDF* Posterior(){ };
+		BasePDF* Posterior(){ return nullptr; }
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 
