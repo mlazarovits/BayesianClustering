@@ -13,11 +13,22 @@ class MergeTree : public BaseTree{
 	public:
 		MergeTree(){ _alpha = 0; }
 
-		MergeTree(vector<double> vals, PointCollection* pc){
+		MergeTree(PointCollection* pc){
 			//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
-			for(int i = 0; i < (int)vals.size(); i++){
-				AddLeaf(vals[i], &pc->at(i));	
+			for(int i = 0; i < pc->GetNPoints(); i++){
+				AddLeaf(&pc->at(i));	
 			}
+			NodeSort(_roots);
+		}
+
+		//copy constructor
+		MergeTree(const MergeTree& tree){
+			_alpha = tree._alpha;
+			_roots = tree._roots;
+			//mixture model
+			_mix_model = tree._mix_model;
+			_model = tree._model;
+			_prior = tree._prior;	
 		}
 
 		virtual ~MergeTree(){ _roots.clear(); }
@@ -29,8 +40,8 @@ class MergeTree : public BaseTree{
 			double p = CalculateMerge(l, r); 		
 			//combine points from l + r into one pc
 			PointCollection* newpts;
-			newpts->add(*l->points);
-			newpts->add(*r->points);
+			newpts->AddPoints(*l->points);
+			newpts->AddPoints(*r->points);
 			//construct new node x
 			struct node *x = (struct node*)malloc(sizeof *x);
 			//assign v (posterior) as val and pc as points
@@ -46,7 +57,6 @@ class MergeTree : public BaseTree{
 			Remove(l, r);
 			//insert x into tree
 			Insert(x);
-		
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
@@ -86,11 +96,13 @@ class MergeTree : public BaseTree{
 
 
 	protected:
-		void AddLeaf(double val, const Point* pt = nullptr){
+		void AddLeaf(const Point* pt = nullptr){
+			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
 			x->l = _z; x->r = _z;
-			x->val = val;
-			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
+			//x->val = val;
+			//if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
+			x->val = 1.;	
 			x->d = _alpha; 
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)
@@ -100,20 +112,23 @@ class MergeTree : public BaseTree{
 		
 		}
 
+		//TEST
+		//insert sort for adding one node
 		void InsertSort(node* x, vector<node*> nodes){
 			int n = (int)nodes.size();
 			double v = x->val;
-			for(int i = 0; i < n; i++){
+			for(int i = 1; i < n; i++){
 				int j = i;
 				while(nodes[j-1]->val > v){
 					nodes[j] = nodes[j-1]; j--;
 				}
 				nodes[j] = x;
+				break;
 			}
 		}
 
 		//quicksort for nodes
-		void NodeSort(unsigned long long seed = 123){
+		void NodeSort(vector<node*> nodes, unsigned long long seed = 123){
 			int N = _roots.size();
 			if(N < 2) return;
 			RandomSample rs(seed);	
@@ -121,26 +136,27 @@ class MergeTree : public BaseTree{
 			vector<node*> low;
 			vector<node*> same;
 			vector<node*> high;
-/*	
 			rs.SetRange(0,N);
 			int idx = rs.SampleFlat();		
-			node* pivot = _roots[idx];
+			node* pivot = nodes[idx];
+			double v;
 			for(int i = 0; i < N; i++){
-				if( pivot.ge(_pts[i], d) )
-					low += _pts[i];
-				else if( pivot.eq(_pts[i], d) )
-					same += _pts[i];
+				v = pivot->val;
+				if( v > _roots[i]->val )
+					low.push_back(nodes[i]);
+				if( v == _roots[i]->val )
+					same.push_back(nodes[i]);
 				else
-					high += _pts[i];
+					high.push_back(nodes[i]);
 			}
-			low.Sort(d);
-			high.Sort(d);
+			NodeSort(low);
+			NodeSort(same);
+			NodeSort(high);
 	
-			_pts.clear();
-			for(int i = 0; i < low.GetNPoints(); i++) _pts.push_back(low.at(i));
-			for(int i = 0; i < same.GetNPoints(); i++) _pts.push_back(same.at(i));
-			for(int i = 0; i < high.GetNPoints(); i++) _pts.push_back(high.at(i));
-*/
+			_roots.clear();
+			for(int i = 0; i < (int)low.size(); i++) _roots.push_back(low.at(i));
+			for(int i = 0; i < (int)same.size(); i++) _roots.push_back(same.at(i));
+			for(int i = 0; i < (int)high.size(); i++) _roots.push_back(high.at(i));
 
 		}
 

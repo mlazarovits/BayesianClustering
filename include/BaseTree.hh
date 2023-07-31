@@ -19,7 +19,8 @@ class BaseTree{
 			double d;
 			//probability of being in tree T_k p(D_k | T_k)
 			double prob_tk;
-			//node id? int idx;
+			//idxs of nodes that comprise this (init to -1 for leaves)
+			pair<int, int> idxs;
 		};
 
 		node* _head, *_z, *_t;

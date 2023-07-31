@@ -10,8 +10,8 @@ double MergeTree::CalculateMerge(node *l, node* r){
 	double d = _alpha*tgamma(n) + l->d*r->d;
 	double pi = _alpha*tgamma(n)/d;
 	PointCollection* points;
-	points->add(*l->points);
-	points->add(*r->points);
+	points->AddPoints(*l->points);
+	points->AddPoints(*r->points);
 
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from ConjugateEvidence();
