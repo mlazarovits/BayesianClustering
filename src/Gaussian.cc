@@ -4,18 +4,16 @@
 
 
 Gaussian::Gaussian(){ 
-	m_params["mean"] = {}; m_params["cov"] = {};
-	m_dim = 0; m_params["mean"] = {}; m_params["cov"] = {}; 
+	m_dim = 0; m_params["mean"] = Matrix(); m_params["cov"] = Matrix(); 
 	m_prior = nullptr;
 }
 
 Gaussian::Gaussian(int d) : BasePDF(d){ 
-	m_params["mean"] = {}; m_params["cov"] = {};
+	m_params["mean"] = Matrix(d,1); m_params["cov"] = Matrix(d,d);
 	m_prior = nullptr;
 }
 
 Gaussian::Gaussian(Point mu, Matrix cov){
-	m_params["mean"] = {}; m_params["cov"] = {};
 	if(!cov.square()){ cout << "Error: non-square covariance." << endl; return;}
 	if(!cov.symmetric()){ cout << "Error: non-symmetric covariance." << endl; return; }
 	m_dim = mu.Dim();
@@ -112,7 +110,6 @@ void Gaussian::InitParameters(){
 
 
 double Gaussian::ConjugateEvidence(const Point& x){
-cout << "Gaussian::ConjugateEvidence" << endl;
 //assuming conjugate prior - for multidim gaussian with unknown mean + variance (precision) is normal inverse wishart (normal wishart)
 	if(m_prior == nullptr){
 		return -999;
