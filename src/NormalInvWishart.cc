@@ -1,14 +1,14 @@
 #include "NormalInvWishart.hh"
 
 NormalInvWishart::NormalInvWishart(){ 
-	m_params["mean"] = {}; m_params["scalemat"] = {};
-	m_dim = 0; m_params["scale"] = {}; m_params["dof"] = {}; 
+	m_params["mean"] = Matrix(); m_params["scalemat"] = Matrix();
+	m_dim = 0; m_params["scale"] = Matrix(1,1); m_params["dof"] = Matrix(1,1); 
 	m_prior = nullptr;
 }
 
 NormalInvWishart::NormalInvWishart(int d) : BasePDF(d){
-	m_params["mean"] = {}; m_params["scalemat"] = {};
-	m_params["scale"] = {}; m_params["dof"] = {}; 
+	m_params["mean"] = Matrix(d,d); m_params["scalemat"] = Matrix(d,1);
+	m_dim = 0; m_params["scale"] = Matrix(1,1); m_params["dof"] = Matrix(1,1); 
 	m_prior = nullptr;
 
 }
@@ -28,6 +28,7 @@ NormalInvWishart::NormalInvWishart(Matrix scalemat, Matrix mean, double dof, dou
 	m_params["mean"] = m_mean;
 	m_params["scalemat"] = m_scalemat;	
 	vector<double> dofs, scales;
+	dofs.push_back(dof); scales.push_back(scale);
 	m_params["dof"] = Matrix(dofs);
 	m_params["scale"] = Matrix(scales);
 
