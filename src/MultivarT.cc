@@ -3,9 +3,10 @@
 using boost::math::tgamma;
 
 MultivarT::MultivarT(int d) : BasePDF(d){
-	m_params["mean"] = {};
-	m_params["scale_mat"] = {};
-	m_params["dof"] = {};
+	m_params["mean"] = Matrix(d,1);
+	m_params["scale_mat"] = Matrix(d,d);
+	m_params["dof"] = Matrix(1,1);
+	m_prior = nullptr;
 }
 
 MultivarT::MultivarT(Matrix mean, Matrix scale, double dof){
@@ -32,7 +33,7 @@ void MultivarT::InitParameters(){
 
 double MultivarT::Prob(const Point& x){
 	//undefined case
-	if(m_dof <= 1) return -999;
+	if(m_dof <= 1){ cout << "MultivarT dof not >1: " << m_dof << endl; return -1; }
 
 	double pi = acos(-1);
 	double det = m_scale.det();
