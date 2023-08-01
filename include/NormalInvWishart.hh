@@ -8,7 +8,7 @@ class NormalInvWishart : public BasePDF{
 	public:
 		NormalInvWishart();
 		NormalInvWishart(int d);
-		NormalInvWishart(Matrix mean, Matrix scalemat, double dof, double scale);
+		NormalInvWishart(Matrix scalemat, Matrix mean, double dof, double scale);
 		virtual ~NormalInvWishart(){ };
 
 		double Prob(const Point& x);

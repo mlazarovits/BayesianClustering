@@ -13,7 +13,7 @@ NormalInvWishart::NormalInvWishart(int d) : BasePDF(d){
 
 }
 
-NormalInvWishart::NormalInvWishart(Matrix mean, Matrix scalemat, double dof, double scale){
+NormalInvWishart::NormalInvWishart(Matrix scalemat, Matrix mean, double dof, double scale){
 	if(!scalemat.square()){ cout << "Error: non-square covariance." << endl; return;}
 	if(!scalemat.symmetric()){ cout << "Error: non-symmetric covariance." << endl; return; }
 	if(m_dim == 0) m_dim = mean.Dim(0);
