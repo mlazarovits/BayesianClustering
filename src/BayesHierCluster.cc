@@ -15,7 +15,7 @@ BayesHierCluster::BayesHierCluster(const PointCollection* pc){
 	m_nclusters = (int)m_pts.size();
 }
 
-void BayesHierCluster::SetClusterPDF(BasePDF* pdf){
+void BayesHierCluster::SetModel(BasePDF* pdf){
 	m_pdf = pdf;
 }
 

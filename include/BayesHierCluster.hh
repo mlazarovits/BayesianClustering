@@ -15,7 +15,7 @@ class BayesHierCluster{
 		virtual ~BayesHierCluster(){ };
 		
 		void Init();
-		void SetClusterPDF(BasePDF* pdf);
+		void SetModel(BasePDF* pdf);
 
 		//get clusters at specified rk cut-off
 		vector<PointCollection*> GetClusters(double rk);	
