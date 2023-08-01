@@ -5,7 +5,12 @@
 
 class BaseTree{
 	public:
-		BaseTree(){ }
+		BaseTree(){ 
+			_z = (struct node*) malloc(sizeof *_z);
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->idx = -1;
+			_head = (struct node*)malloc(sizeof *_head);
+			_head->r = _z; _head->val = 0;
+		}
 		virtual ~BaseTree(){ delete _head; delete _z; delete _t; };
 		//node structure
 		struct node{
@@ -19,6 +24,8 @@ class BaseTree{
 			double d;
 			//probability of being in tree T_k p(D_k | T_k)
 			double prob_tk;
+			//index of node - 0 < idx < npts
+			int idx;
 			//idxs of nodes that comprise this (init to -1 for leaves)
 			pair<int, int> idxs;
 		};
