@@ -12,15 +12,17 @@ class NormalInvWishart : public BasePDF{
 		virtual ~NormalInvWishart(){ };
 
 		double Prob(const Point& x);
+		double Prob(const PointCollection& x){ return -1; }
 		double Prob(const Matrix& mu, const Matrix& cov);		
 
-		BasePDF* mult(BasePDF* p1){ };
-		BasePDF* Posterior(){ };
+		BasePDF* mult(BasePDF* p1){ return nullptr; }
+		BasePDF* Posterior(){ return nullptr; }
 		void InitParameters();
 
 		void UpdateParameters();
 
-		double ConjugateEvidence(){ };
+		double ConjugateEvidence(const Point& x){ return -1;}
+		double ConjugateEvidence(const PointCollection& x){ return -1;}
 	private:
 		//params
 		Matrix m_mean;
