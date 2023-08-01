@@ -112,6 +112,7 @@ void Gaussian::InitParameters(){
 
 
 double Gaussian::ConjugateEvidence(const Point& x){
+cout << "Gaussian::ConjugateEvidence" << endl;
 //assuming conjugate prior - for multidim gaussian with unknown mean + variance (precision) is normal inverse wishart (normal wishart)
 	if(m_prior == nullptr){
 		return -999;
