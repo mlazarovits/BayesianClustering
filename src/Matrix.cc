@@ -647,18 +647,15 @@ void Matrix::PointToMat(const Point& pc){
 void Matrix::mean(const PointCollection& data){
 	int n = data.GetNPoints();
 	int d = data.Dim();
-	vector<double> m;
 	m_col = 1;
 	m_row = d;
-	for(int j = 0; j < d; j++) m.push_back(0.);
+	InitEmpty();
 	for(int j = 0; j < d; j++){
 		for(int i = 0; i < n; i++){
-			m[j] += data.at(i).at(j); 
+			m_entries[j][0] += data.at(i).at(j); 
 		}
 	}
-	for(int j = 0; j < d; j++) m[j] = m[j]/double(n);
-	m_entries.clear();
-	m_entries.push_back(m);
+	for(int j = 0; j < d; j++) m_entries[j][0] = m_entries[j][0]/double(n);
 }
 
 
