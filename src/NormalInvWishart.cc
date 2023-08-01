@@ -18,8 +18,8 @@ NormalInvWishart::NormalInvWishart(Matrix scalemat, Matrix mean, double dof, dou
 	if(!scalemat.symmetric()){ cout << "Error: non-symmetric covariance." << endl; return; }
 	if(m_dim == 0) m_dim = mean.Dim(0);
 	if(m_dim != scalemat.Dim(0)){ cout << "Error: mean and covariance dimensions not compatible." << endl; return; }
-	if(m_scale <= 0){ cout << "Error: scale is less than or equal to zero." << endl; return; }
-	if(m_dof <= m_dim - 1){ cout << "Error: dof is less than or equal to dims." << endl; return; }
+	if(scale <= 0){ cout << "Error: scale is less than or equal to zero." << endl; return; }
+	if(dof <= m_dim - 1){ cout << "Error: dof is less than or equal to dims." << endl; return; }
 
 	m_mean = mean;
 	m_scalemat = scalemat;
