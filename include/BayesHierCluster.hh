@@ -4,24 +4,24 @@
 #include "PointCollection.hh"
 #include "BasePDF.hh"
 #include "ClusterHistory.hh"
-#include "SearchTree.hh"
+#include "NodeList.hh"
 #include "MergeTree.hh"
 
 using std::vector;
 class BayesHierCluster{
 	public:
 		BayesHierCluster();
-		BayesHierCluster(PointCollection* pc);
+		BayesHierCluster(const PointCollection* pc);
 		virtual ~BayesHierCluster(){ };
 		
 		void Init();
 		void SetClusterPDF(BasePDF* pdf);
 
 		//get clusters at specified rk cut-off
-		vector<PointCollection> GetClusters(double rk);	
+		vector<PointCollection*> GetClusters(double rk);	
 
 		//get clusters at specified depth
-		vector<PointCollection> GetClusters(int d);	
+		vector<PointCollection*> GetClusters(int d);	
 		
 		//cluster trees (points in pc)
 		//might need arg for recursion
@@ -32,7 +32,7 @@ class BayesHierCluster{
 	private:
 		int m_nclusters;
 
-		PointCollection* m_pts;
+		vector<PointCollection*> m_pts;
 		BasePDF* m_pdf; //p(x | theta)
 
 		//clustering history
@@ -42,16 +42,10 @@ class BayesHierCluster{
 		MergeTree m_mergeTree;
 
 		//tracks posterior values
-		SearchTree m_searchTree;
+		NodeList _list;
 
 		//dirichlet param
 		double m_alpha;
-
-		//weighting params: pi (multinomial)
-		vector<double> m_pi;
-
-		//d_k for recursive prior computation 
-		vector<double> m_d;
 
 
 };

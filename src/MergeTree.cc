@@ -3,7 +3,7 @@
 
 
 //assuming Dirichlet Process Model (sets priors)
-double MergeTree::CalculateMerge(node *l, node* r){
+node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
@@ -19,7 +19,13 @@ double MergeTree::CalculateMerge(node *l, node* r){
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
 
-	double r_k = pi*p_dk_h1/p_dk_tk;
-		
-	return r_k;
+	double rk = pi*p_dk_h1/p_dk_tk;
+	
+	struct node* x = (struct node*)malloc(sizeof *x);
+	x->points = points;
+	x->val = rk;
+	x->d = d;
+	x->prob_tk = p_dk_tk;
+
+	return x;
 }

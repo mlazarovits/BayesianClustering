@@ -5,18 +5,18 @@
 #include "BasePDFMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
-
+#include "NodeList.hh"
 
 using node = BaseTree::node;
 
 class MergeTree : public BaseTree{
 	public:
-		MergeTree(){ _alpha = 0; }
+		MergeTree() : BaseTree(){ _alpha = 0; }
 
 		MergeTree(PointCollection* pc){
 			//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			for(int i = 0; i < pc->GetNPoints(); i++){
-				AddLeaf(&pc->at(i));	
+				AddLeaf(&pc->at(i));
 			}
 			NodeSort(_roots);
 		}
@@ -35,32 +35,22 @@ class MergeTree : public BaseTree{
 
 		node* Get(int i){ return _roots[i]; }
 
-		void Merge(node *l, node *r){
+		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
-			double p = CalculateMerge(l, r); 		
-			//combine points from l + r into one pc
-			PointCollection* newpts;
-			newpts->AddPoints(*l->points);
-			newpts->AddPoints(*r->points);
-			//construct new node x
-			struct node *x = (struct node*)malloc(sizeof *x);
-			//assign v (posterior) as val and pc as points
-			x->val = p;
-			x->points = newpts;
-			//calculate and set d_k
-			x->d = _alpha*tgamma(newpts->GetNPoints()) + l->d*r->d;
-			//need to set prob_tk
-				//pass by reference from CalculateMerge? return and recalculate posterior here?
+			struct node* x = CalculateMerge(l, r); 		
 			x->l = l;
 			x->r = r;
+			//set index to lower branch
+			x->idx = x->l->idx;
 			//remove nodes l and r
 			Remove(l, r);
 			//insert x into tree
 			Insert(x);
+			return x;
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
-		double CalculateMerge(node *l, node* r);
+		node* CalculateMerge(node *l, node* r);
 		
 
 		void Remove(node *l, node *r){
@@ -100,10 +90,10 @@ class MergeTree : public BaseTree{
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
 			x->l = _z; x->r = _z;
-			//x->val = val;
 			//if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
+			x->idx = -1;	
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)
 			x->prob_tk = _model->ConjugateEvidence(*pt);
