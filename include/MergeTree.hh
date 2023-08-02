@@ -8,30 +8,32 @@
 #include "NodeList.hh"
 
 using node = BaseTree::node;
-
 class MergeTree : public BaseTree{
 	public:
 		MergeTree() : BaseTree(){ _alpha = 0; }
 
-		MergeTree(PointCollection* pc){
-			//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
+		MergeTree(PointCollection* pc, BasePDF* model) : BaseTree(){
+		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
+			_model = model; _prior = model->GetPrior(); 
 			for(int i = 0; i < pc->GetNPoints(); i++){
 				AddLeaf(&pc->at(i));
 			}
-			NodeSort(_roots);
+		//	NodeSort(_roots);
 		}
 
 		//copy constructor
 		MergeTree(const MergeTree& tree){
+			_head = tree._head;
+			_z = tree._z;
+			_t = tree._t;
 			_alpha = tree._alpha;
 			_roots = tree._roots;
 			//mixture model
-			_mix_model = tree._mix_model;
 			_model = tree._model;
 			_prior = tree._prior;	
 		}
 
-		virtual ~MergeTree(){ _roots.clear(); }
+		virtual ~MergeTree(){  }
 
 		node* Get(int i){ return _roots[i]; }
 
@@ -77,12 +79,10 @@ class MergeTree : public BaseTree{
 			//insert node into tree (vector)
 			//call insert sort
 			_roots.push_back(x);
-			InsertSort(x, _roots);
 		}
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
-		void SetModel(BasePDF* m){ _model = m; _prior = m->GetPrior(); }
 
 
 	protected:
@@ -90,33 +90,20 @@ class MergeTree : public BaseTree{
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
 			x->l = _z; x->r = _z;
-			//if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
+			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
 			x->idx = -1;	
-			//initialize probability of subtree to be null hypothesis for leaf
-			//p(D_k | T_k) = p(D_k | H_1^k)
+			//////initialize probability of subtree to be null hypothesis for leaf
+			//////p(D_k | T_k) = p(D_k | H_1^k)
+			if(_model == nullptr) cout << "null" << endl;
 			x->prob_tk = _model->ConjugateEvidence(*pt);
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			_roots.push_back(x);
-		
 		}
 
-		//TEST
-		//insert sort for adding one node
-		void InsertSort(node* x, vector<node*> nodes){
-			int n = (int)nodes.size();
-			double v = x->val;
-			for(int i = 1; i < n; i++){
-				int j = i;
-				while(nodes[j-1]->val > v){
-					nodes[j] = nodes[j-1]; j--;
-				}
-				nodes[j] = x;
-				break;
-			}
-		}
 
+/*
 		//quicksort for nodes
 		void NodeSort(vector<node*> nodes, unsigned long long seed = 123){
 			int N = _roots.size();
@@ -149,14 +136,13 @@ class MergeTree : public BaseTree{
 			for(int i = 0; i < (int)high.size(); i++) _roots.push_back(high.at(i));
 
 		}
+	*/
 
 	private:
 		//keep list of nodes since tree is built bottom up
 		vector<node*> _roots;
 		//Dirichlet prior parameter
 		double _alpha;
-		//mixture model
-		BasePDFMixture* _mix_model;
 		BasePDF* _model;
 		BasePDF* _prior;	
 

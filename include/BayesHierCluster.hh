@@ -11,12 +11,9 @@ using std::vector;
 class BayesHierCluster{
 	public:
 		BayesHierCluster();
-		BayesHierCluster(const PointCollection* pc);
+		BayesHierCluster(PointCollection* pc, BasePDF* model);
 		virtual ~BayesHierCluster(){ };
 		
-		void Init();
-		void SetModel(BasePDF* pdf);
-
 		//get clusters at specified rk cut-off
 		vector<PointCollection*> GetClusters(double rk);	
 
