@@ -9,7 +9,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
 	double d = _alpha*tgamma(n) + l->d*r->d;
 	double pi = _alpha*tgamma(n)/d;
-	PointCollection* points;
+	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
 

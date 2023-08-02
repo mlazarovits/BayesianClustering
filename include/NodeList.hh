@@ -32,18 +32,13 @@ class NodeList{
 
 		//inserts x after t	
 		void insertafter(listnode* t, listnode* x){
-			x = (struct listnode*) malloc(sizeof *x);
 			x->next = t->next; t->next = x;
-		}
-
-		void insert(listnode* x){
-			insertafter(_head, x); 
 		}
 
 		void insert(node* x){
 			struct listnode* y = (struct listnode*)malloc(sizeof *y);
 			y->node = x;
-			insert(y);	
+			insertafter(_head,y);	
 		}
 
 		void push(node* x){
@@ -102,22 +97,33 @@ class NodeList{
  
 
 		struct listnode* merge(struct listnode* a, struct listnode* b){
+			cout << "NodeList::merge" << endl;
 			struct listnode* c;
+			cout << "NodeList::merge 1" << endl;
 			c = _z;
+			cout << "NodeList::merge 2 " << a->node->val << endl;
 			do
 				if(a->node->val <= b->node->val){
+			cout << "NodeList::merge 3" << endl;
 					c->next = a; c = a; a = a->next;
+			cout << "NodeList::merge 4" << endl;
 				}
 				else{
+			cout << "NodeList::merge 5" << endl;
 					c->next = b; c = b; b = b->next;
+			cout << "NodeList::merge 6" << endl;
 				}
 			while(c != _z);
+			cout << "NodeList::merge 7" << endl;
 			c = _z->next; _z->next = _z;
+			cout << "NodeList::merge - end" << endl;
 			return c;
 		}
 
 
 		struct listnode* mergesort(listnode* c){
+			cout << "NodeList::mergesort" << endl;
+			cout << "c post: " << c->node->val << endl;
 			struct listnode* a, *b;
 			if(c->next != _z){
 				a = c; b = c->next->next->next;
@@ -125,8 +131,10 @@ class NodeList{
 					c = c->next; b = b->next->next;
 				}
 				b = c->next; c->next = _z;
+				cout << "NodeList::mergesort - end 1" << endl;
 				return merge(mergesort(a), mergesort(b));
 			}	
+			cout << "NodeList::mergesort - end 2" << endl;
 			return c;
 		}
 		
