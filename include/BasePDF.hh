@@ -57,8 +57,8 @@ class BasePDF{
 		double multidim_gam(double x){
 			double pi = acos(-1);
 			double prod = 1;
-			for(int i = 0; i < m_dim; i++) prod *= tgamma(x + (1 - i)/2.);
-			return pow(pi,m_dim*(m_dim - 1)/4)*prod;
+			for(int i = 1; i < m_dim+1; i++) prod *= tgamma(x + (1 - i)/2.); 
+			return pow(pi,m_dim*(m_dim - 1)/4.)*prod;
 		}	
 
 
