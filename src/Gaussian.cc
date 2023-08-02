@@ -246,7 +246,7 @@ double Gaussian::ConjugateEvidence(const PointCollection& x){
 
 	ret *= multidim_gam(nu_n/2);
 //cout << "gam_d(nu_n/2) " << multidim_gam(nu_n/2) << endl;
-	cout << "ret 5: " << ret << endl;
+//	cout << "ret 5: " << ret << endl;
 //cout << "gam_d(nu_0/2) " << multidim_gam(nu0/2) << endl;
 	ret /= multidim_gam(nu0/2);	
 
