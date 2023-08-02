@@ -11,7 +11,11 @@ class NodeList{
 		NodeList(){
 			_head = (struct listnode*)malloc(sizeof *_head);
 			_z = (struct listnode*)malloc(sizeof *_z);
-			_head->next = _z; _z->next = _z;
+			_head->next = _z; _z->next = _z; 
+			node* h = (node*)malloc(sizeof* h); h->val = 0;
+			_head->node = h;
+			node* z = (node*)malloc(sizeof* z); z->val = -999;
+			_z->node = z; 
 		}		
 
 		NodeList(const NodeList& nodes){
@@ -97,33 +101,34 @@ class NodeList{
  
 
 		struct listnode* merge(struct listnode* a, struct listnode* b){
-			cout << "NodeList::merge" << endl;
 			struct listnode* c;
-			cout << "NodeList::merge 1" << endl;
+			//cout << "NodeList::merge 1" << endl;
 			c = _z;
-			cout << "NodeList::merge 2 " << a->node->val << endl;
-			do
-				if(a->node->val <= b->node->val){
-			cout << "NodeList::merge 3" << endl;
-					c->next = a; c = a; a = a->next;
-			cout << "NodeList::merge 4" << endl;
-				}
-				else{
-			cout << "NodeList::merge 5" << endl;
-					c->next = b; c = b; b = b->next;
-			cout << "NodeList::merge 6" << endl;
-				}
-			while(c != _z);
-			cout << "NodeList::merge 7" << endl;
-			c = _z->next; _z->next = _z;
-			cout << "NodeList::merge - end" << endl;
+			//cout << "NodeList::merge 2 " << a->node->val << endl;
+			do{
+			//	cout << "begin do-while loop - a: " << a->node->val << " b: " << b->node->val << endl;
+				if(a->node->val >= b->node->val){
+			//cout << "NodeList::merge 3" << endl;
+      				c->next = a; c = a; a = a->next;
+			//cout << "NodeList::merge 4" << endl;
+      			}
+      			else{
+			//cout << "NodeList::merge 5" << endl;
+      				c->next = b; c = b; b = b->next;
+			//cout << "NodeList::merge 6" << endl;
+      			}
+			//cout << "NodeList::merge 7" << endl;
+      		}while(c != _z);
+			//cout << "NodeList::merge 8" << endl;
+      		c = _z->next; _z->next = _z;
+			//cout << "NodeList::merge - end" << endl;
 			return c;
 		}
 
 
 		struct listnode* mergesort(listnode* c){
-			cout << "NodeList::mergesort" << endl;
-			cout << "c post: " << c->node->val << endl;
+			//cout << "NodeList::mergesort" << endl;
+			//cout << "c post: " << c->node->val << endl;
 			struct listnode* a, *b;
 			if(c->next != _z){
 				a = c; b = c->next->next->next;
@@ -131,16 +136,24 @@ class NodeList{
 					c = c->next; b = b->next->next;
 				}
 				b = c->next; c->next = _z;
-				cout << "NodeList::mergesort - end 1" << endl;
-				return merge(mergesort(a), mergesort(b));
-			}	
-			cout << "NodeList::mergesort - end 2" << endl;
+				//cout << "NodeList::mergesort - end 1" << endl;
+		      	return merge(mergesort(a), mergesort(b));
+		      }	
+			//cout << "NodeList::mergesort - end 2 - c->next: " << c->next->node->val << endl;
 			return c;
 		}
 		
 
 		void sort(){
-			_head = mergesort(_head);
+		//struct listnode* c = _head->next;
+		//cout << "unsorted" << endl;	
+		//int i = 0;
+		//while(c != _z){ cout << i << " " << c->node->val << endl; i++; c = c->next; } 
+		_head = mergesort(_head->next);
+		//cout << "sorted" << endl;	
+		//struct listnode* g = _head;
+		//i = 0;
+		//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
 		}
 
 		private:
