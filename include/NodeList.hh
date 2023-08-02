@@ -12,9 +12,9 @@ class NodeList{
 			_head = (struct listnode*)malloc(sizeof *_head);
 			_z = (struct listnode*)malloc(sizeof *_z);
 			_head->next = _z; _z->next = _z; 
-			node* h = (node*)malloc(sizeof* h); h->val = 0;
+			node* h = (node*)malloc(sizeof* h); h->val = 999; //sort high to low
 			_head->node = h;
-			node* z = (node*)malloc(sizeof* z); z->val = -999;
+			node* z = (node*)malloc(sizeof* z); z->val = -999; //sort high to low
 			_z->node = z; 
 		}		
 
@@ -68,21 +68,19 @@ class NodeList{
 
 		//pops off top node and removes then impossible nodes (merges with one of the parents of given merge)
 		node* fullpop(){
-			node *x;
-			struct listnode *t, *c;
-			t = _head->next; _head->next = t->next;
-			x = t->node;
+			node *x = pop();
+			struct listnode *c;
 			c = _head->next;
 			while(c != _z){
-				if(c->next->node->l ==  x->l || c->next->node->r == x->r){
+				if(c->next->node->l == x->l || c->next->node->r == x->r){
 					deletenext(c);	
 				}
+				//update c to next listnode
+				else c = c->next;
 			}
-			free(t);
 			return x;	
-
 		}
-
+		
 
 		//TODO: check
 		void merge(const NodeList& list1, const NodeList& list2){
@@ -149,11 +147,18 @@ class NodeList{
 		//cout << "unsorted" << endl;	
 		//int i = 0;
 		//while(c != _z){ cout << i << " " << c->node->val << endl; i++; c = c->next; } 
-		_head = mergesort(_head->next);
+		_head = mergesort(_head);
 		//cout << "sorted" << endl;	
 		//struct listnode* g = _head;
 		//i = 0;
 		//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
+		}
+
+
+		void Print(){
+		struct listnode* g = _head->next;
+		int i = 1;
+		while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
 		}
 
 		private:
