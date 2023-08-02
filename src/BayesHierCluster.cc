@@ -8,28 +8,22 @@ using node = BaseTree::node;
 BayesHierCluster::BayesHierCluster(){ m_nclusters = 999; }
 
 
-BayesHierCluster::BayesHierCluster(const PointCollection* pc){
+BayesHierCluster::BayesHierCluster(BasePDF* model){
+	m_pdf = model;
+	m_mergeTree = MergeTree(m_pdf);
+}
+
+void BayesHierCluster::AddData(PointCollection* pc){
 	for(int i = 0; i < pc->GetNPoints(); i++){
 		m_pts.push_back(new PointCollection(pc->at(i)));
 	}
 	m_nclusters = (int)m_pts.size();
-}
-
-void BayesHierCluster::SetModel(BasePDF* pdf){
-	m_pdf = pdf;
+	m_mergeTree.AddData(pc);
 }
 
 void BayesHierCluster::SetAlpha(double a){
 	m_alpha = a;
-}
-
-void BayesHierCluster::Init(){
-	PointCollection* pts = new PointCollection();
-	for(int i = 0; i < (int)m_pts.size(); i++) pts->AddPoints(*m_pts[i]);
-	m_mergeTree = MergeTree(pts);
 	m_mergeTree.SetAlpha(m_alpha);
-	//make sure prior within model is set
-	m_mergeTree.SetModel(m_pdf);
 }
 
 vector<PointCollection*> BayesHierCluster::GetClusters(double rk){
@@ -54,35 +48,54 @@ void BayesHierCluster::Cluster(){
 	m_nclusters = (int)m_pts.size(); //needs to be updated
 
 
-
 	//construct rk list (NodeList)
 	//start algorithm with all combinations - O(n^2)
 	for(int i = 0; i < m_nclusters; i++){
-		for(int j = 0; j < m_nclusters; j++){
-			if( i > j ) break; //don't double count
+		for(int j = i; j < m_nclusters; j++){
 			if(i == j) continue;
 
 			//get subtrees i, j	
 			di = m_mergeTree.Get(i);
 			dj = m_mergeTree.Get(j);
-
 			//calculate posterior for potential merge
 			node *x = m_mergeTree.CalculateMerge(di, dj);
-
-			//insert into search tree
+			cout << "i: " << i << " j: " << j << " r_ij: " << x->val << " points" << endl;
+		//	//insert into search tree
 			_list.insert(x);	
-			
 		}
 	}
 	//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
-	//merge corresponding subtrees in merge tree: merge = x (node)
-	//remove subtrees from list
+	_list.sort();
+cout << "pre pop" << endl;
+_list.Print();
 	//remove all combinations containing one subtree from list
+	node* max = _list.fullpop();
+cout << "max merge rk: " << max->val << endl;
+cout << "post pop" << endl;
+_list.Print();
+	//merge corresponding subtrees in merge tree: merge = x (node)
+	m_mergeTree.Insert(max);
+	m_mergeTree.Remove(max->l);
+	m_mergeTree.Remove(max->r);
+		
+	//add depth to history
+//	m_clusterHist.AddLayer(m_pts, rk_max);
+	
 	//for all nodes in merge tree:
-	//if node == x: skip
-	//add rk to list (insertion sort)
-	//repeat from first step
- 
+	NodeList _list1;
+	for(int i = 0; i < m_mergeTree.GetNPoints(); i++){
+		di = m_mergeTree.Get(i);
+		if(di == max) continue;
+		node* x = m_mergeTree.CalculateMerge(di, max);
+		_list1.insert(x);
+	}
+cout << "list1" << endl;
+	_list1.sort();
+	_list1.Print();
+	_list.merge(_list1);
+	cout << "merging" << endl;
+	_list.Print();
+	return;
 
 /*
 	while(m_nclusters > 1){
@@ -90,8 +103,6 @@ void BayesHierCluster::Cluster(){
 		//update current rk value for merge
 		rk_max_old = rk_max;
 
-		//add depth to history
-		m_clusterHist.AddLayer(m_pts, rk_max);
 		
 		//find max posterior in search tree, get idxs of nodes to merge
 		pair<int, int> idxs_merge = m_searchTree.search(rk_max);

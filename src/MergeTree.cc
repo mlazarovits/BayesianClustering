@@ -26,6 +26,8 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->val = rk;
 	x->d = d;
 	x->prob_tk = p_dk_tk;
+	x->l = l;
+	x->r = r;
 
 	return x;
 }

@@ -12,13 +12,9 @@ class MergeTree : public BaseTree{
 	public:
 		MergeTree() : BaseTree(){ _alpha = 0; }
 
-		MergeTree(PointCollection* pc, BasePDF* model) : BaseTree(){
+		MergeTree(BasePDF* model) : BaseTree(){
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			_model = model; _prior = model->GetPrior(); 
-			for(int i = 0; i < pc->GetNPoints(); i++){
-				AddLeaf(&pc->at(i));
-			}
-		//	NodeSort(_roots);
 		}
 
 		//copy constructor
@@ -35,53 +31,53 @@ class MergeTree : public BaseTree{
 
 		virtual ~MergeTree(){  }
 
+		void AddData(PointCollection* pc){
+		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
+			for(int i = 0; i < pc->GetNPoints(); i++){
+				AddLeaf(&pc->at(i));
+			}
+		//	NodeSort(_roots);
+		}
+		
 		node* Get(int i){ return _roots[i]; }
 
 		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
 			struct node* x = CalculateMerge(l, r); 		
-			x->l = l;
-			x->r = r;
 			//set index to lower branch
 			x->idx = x->l->idx;
 			//remove nodes l and r
-			Remove(l, r);
+			Remove(l);
+			Remove(r);
 			//insert x into tree
-			Insert(x);
+			_roots.push_back(x);
 			return x;
+		}
+
+		void Insert(node* x){
+			_roots.push_back(x);
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
 		
 
-		void Remove(node *l, node *r){
+		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
 			auto it = find(_roots.begin(), _roots.end(), l);
 			int idx;
 			// If element was found
-			if (it != _roots.end()) 
+			if (it != _roots.end()){ 
 				idx = it - _roots.begin();
+			}
 			else
-				idx = -1;
-		
-			_roots.erase(_roots.begin(),_roots.begin()+idx);
-			it = find(_roots.begin(), _roots.end(), r);
-			// If element was found
-			if (it != _roots.end()) 
-				idx = it - _roots.begin();
-			else
-				idx = -1;
-			_roots.erase(_roots.begin(),_roots.begin()+idx);
-		}
-
-		void Insert(node *x){
-			//insert node into tree (vector)
-			//call insert sort
-			_roots.push_back(x);
+				return;
+			_roots.erase(_roots.begin()+idx);
 		}
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
+
+		int GetNPoints(){ return (int)_roots.size(); }	
 
 
 

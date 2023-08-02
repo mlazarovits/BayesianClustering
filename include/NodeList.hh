@@ -83,10 +83,11 @@ class NodeList{
 		
 
 		//TODO: check
-		void merge(const NodeList& list1, const NodeList& list2){
-			struct listnode* a = list1._head;
-			struct listnode* b = list2._head;
-			struct listnode* c = _head;	
+		void merge(const NodeList& list){
+			struct listnode* a = list._head;
+//			struct listnode* c = _head;	
+			_head = merge(_head, a);
+		/*
 			if(c->next != _z){
 				a = c; b = c->next->next->next;
 				while(b != _z){
@@ -95,7 +96,9 @@ class NodeList{
 				b = c->next; c->next = _z;
 				_head = merge(mergesort(a), mergesort(b));
 			}	
+		*/
 		}
+
  
 
 		struct listnode* merge(struct listnode* a, struct listnode* b){
