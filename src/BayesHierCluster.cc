@@ -27,11 +27,23 @@ void BayesHierCluster::SetAlpha(double a){
 }
 
 vector<PointCollection*> BayesHierCluster::GetClusters(double rk){
-	return m_clusterHist.at(rk);
+	vector<PointCollection*> pts;
+	vector<node*> nodes = m_clusterHist.at(rk);
+	for(int i = 0; i < (int)nodes.size(); i++){
+		pts.push_back(new PointCollection());
+		pts[i]->AddPoints(*nodes[i]->points);
+	}
+	return pts;
 }
 
 vector<PointCollection*> BayesHierCluster::GetClusters(int d){
-	return m_clusterHist.at(d);
+	vector<PointCollection*> pts;
+	vector<node*> nodes = m_clusterHist.at(d);
+	for(int i = 0; i < (int)nodes.size(); i++){
+		pts.push_back(new PointCollection());
+		pts[i]->AddPoints(*nodes[i]->points);
+	}
+	return pts;
 }
 
 
@@ -79,9 +91,9 @@ _list.Print();
 	m_mergeTree.Remove(max->r);
 		
 	//add depth to history
-//	m_clusterHist.AddLayer(m_pts, rk_max);
+	m_clusterHist.AddLayer(m_mergeTree.Get(), rk_max);
 	
-	//for all nodes in merge tree:
+	//for all nodes in merge tree: check against newly formed cluster
 	NodeList _list1;
 	for(int i = 0; i < m_mergeTree.GetNPoints(); i++){
 		di = m_mergeTree.Get(i);
@@ -96,7 +108,9 @@ cout << "list1" << endl;
 	cout << "merging" << endl;
 	_list.Print();
 	return;
-
+//add recursion -> run until 1 cluster
+	//input: mergetree + nodelist
+//check ClusterHistory after
 /*
 	while(m_nclusters > 1){
 		rk_max = -999;
