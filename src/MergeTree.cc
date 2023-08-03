@@ -28,6 +28,8 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->prob_tk = p_dk_tk;
 	x->l = l;
 	x->r = r;
+	cout << "MergeTree::CalculateMerge - merging " << l->name << " + " << r->name << " val: " << rk << endl;	
+	x->name = "("+l->name + "+"  + r->name+")";
 
 	return x;
 }
