@@ -2,6 +2,11 @@
 #include "RandomSample.hh"
 #include "VarClusterViz2D.hh"
 #include "VarClusterViz3D.hh"
+#include "BayesHierCluster.hh"
+#include "Gaussian.hh"
+#include "NormalInvWishart.hh"
+
+
 #include <iostream>
 #include <cmath>
 #include <TSystem.h>
@@ -126,7 +131,32 @@ int main(int argc, char *argv[]){
 	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
 	pc += mat2.MatToPoints();
 
+
 	
+	//create Gaussian model with conjugate prior
+	Gaussian* gaus = new Gaussian(N);
+	//set prior parameters - default for now
+	Matrix W = Matrix(N,N);
+	W.InitIdentity();
+	Matrix m = Matrix(N,1);
+	m.InitEmpty();
+	double dof = N + 0.1; //dof > D - 1
+	double scale = 0.5;
+	NormalInvWishart* prior = new NormalInvWishart(W, m, dof, scale);
+	gaus->SetPrior(prior);
+	
+	//Bayesian Hierarchical Clustering algo
+	BayesHierCluster* bhc = new BayesHierCluster(gaus);
+
+	bhc->SetAlpha(1.);
+	bhc->AddData(&pc);
+	bhc->Cluster();
+
+
+cout << "end" << endl;	
+
+
+/*	
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(k);
 	gmm->SetData(&pc);
@@ -188,7 +218,8 @@ int main(int argc, char *argv[]){
 	mus[1].Print();
 	cout << "cov 2" << endl;
 	covs[1].Print();
-cout << "\n" << endl;	
+	cout << "\n" << endl;	
+
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;
 	mu.Print();
@@ -199,8 +230,7 @@ cout << "\n" << endl;
 	mu2.Print();
 	cout << "cov 2" << endl;
 	sigma2.Print();
-cout << "\n" << endl;	
-
+*/
 
 
 
