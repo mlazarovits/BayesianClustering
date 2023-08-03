@@ -30,6 +30,9 @@ int main(int argc, char *argv[]){
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	bool viz = false;
+	//for dirichlet prior in BHC
+	double alpha = 1;
+	unsigned long long seed = 112;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -83,6 +86,14 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
    		}
+		if(strncmp(argv[i],"-a", 2) == 0){
+			i++;
+    	 		alpha = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--alpha", 7) == 0){
+			i++;
+    	 		alpha = std::stod(argv[i]);
+   		}
 	
 	}
 	if(hprint){
@@ -93,6 +104,7 @@ int main(int argc, char *argv[]){
    		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
+   		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
@@ -110,26 +122,27 @@ int main(int argc, char *argv[]){
 	
 	
 	/////SIMULATE DATA//////
-	//create symmetric matrix
-	Matrix sigma = Matrix(N,N);
-	sigma.InitRandomSymPosDef();
-	Matrix mu = Matrix(N,1);
-	mu.InitRandom(1121);
-	////sample points from an n-dim gaussian for one cluster
-	Matrix mat;
-	mat.SampleNDimGaussian(mu,sigma,Nsample);
-	PointCollection pc = mat.MatToPoints();
+	PointCollection pc = PointCollection();
+	for(int i = 0; i < k; i++){
+		//create symmetric matrix
+		Matrix sigma = Matrix(N,N);
+		sigma.InitRandomSymPosDef(0.,1.,seed+i);
+		Matrix mu = Matrix(N,1);
+		mu.InitRandom(0.,1.,seed+i);
+		////sample points from an n-dim gaussian for one cluster
+		Matrix mat;
+		mat.SampleNDimGaussian(mu,sigma,Nsample);
+		pc += mat.MatToPoints();
+	}
 	
 	//sample points for another cluster
-	Matrix sigma2 = Matrix(N,N);
-	sigma2.InitRandomSymPosDef(0.,1.,111);
-	Matrix mu2 = Matrix(N,1);
-	mu2.InitRandom(0.,1.,112);
-
-	
-	Matrix mat2;
-	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
-	pc += mat2.MatToPoints();
+	//Matrix sigma2 = Matrix(N,N);
+	//sigma2.InitRandomSymPosDef(0.,1.,111);
+	//Matrix mu2 = Matrix(N,1);
+	//mu2.InitRandom(0.,1.,112);
+	//Matrix mat2;
+	//mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
+	//pc += mat2.MatToPoints();
 
 
 	
@@ -148,7 +161,7 @@ int main(int argc, char *argv[]){
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(gaus);
 
-	bhc->SetAlpha(1.);
+	bhc->SetAlpha(alpha);
 	bhc->AddData(&pc);
 	bhc->Cluster();
 
