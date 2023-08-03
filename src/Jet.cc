@@ -246,10 +246,8 @@ void Jet::GetBaby(Jet& child) const{
 }
 
 
-//set after clustering
+//TODO: set after clustering
 void Jet::GetSubJets(vector<Jet>& subjets, int depth) const{
-
-
 
 
 }
