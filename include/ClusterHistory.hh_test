@@ -1,13 +1,13 @@
 #ifndef ClusterHistory_HH
 #define ClusterHistory_HH
 
-#include "SearchTree.hh"
+#include "BaseTree.hh"
 #include "Jet.hh"
 #include <vector>
 
 
 using std::vector;
-using node = SearchTree::node;
+using node = BaseTree::node;
 
 //this class keeps track of the cluster (merge) history
 class ClusterHistory{
