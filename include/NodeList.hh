@@ -84,8 +84,7 @@ class NodeList{
 
 		//TODO: check
 		void merge(const NodeList& list){
-			struct listnode* a = list._head;
-//			struct listnode* c = _head;	
+			struct listnode* a = list._head->next;
 			_head = merge(_head, a);
 		/*
 			if(c->next != _z){
