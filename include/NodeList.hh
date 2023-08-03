@@ -72,10 +72,8 @@ class NodeList{
 			struct listnode *c;
 			c = _head;
 			while(c != _z){
-				cout << "looking at node: " << c->next->node->name << endl;
 				//remove nodes whose parents (either l or r) are in the max merge
 				if(c->next->node->l == x->l || c->next->node->r == x->r || c->next->node->l == x->r || c->next->node->r == x->l){
-				cout << "deleting listnode: " << c->next->node->name << " val: " << c->next->node->val << endl;
 					deletenext(c);	
 				}
 				//update c to next listnode
