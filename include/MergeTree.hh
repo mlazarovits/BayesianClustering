@@ -41,6 +41,8 @@ class MergeTree : public BaseTree{
 		
 		node* Get(int i){ return _roots[i]; }
 
+		vector<node*> Get(){ return _roots; }
+
 		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
 			struct node* x = CalculateMerge(l, r); 		
