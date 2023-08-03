@@ -250,14 +250,6 @@ double Gaussian::ConjugateEvidence(const PointCollection& x){
 //cout << "gam_d(nu_0/2) " << multidim_gam(nu0/2) << endl;
 	ret /= multidim_gam(nu0/2);	
 
-if(isinf(ret)){
-cout << "Gaussian conjugate evidence is inf" << endl;
-cout << "detn: " << detn << " nu_n/2: " << nu_n/2. << endl;
-cout << "pow(det0,nu0/2) " << pow(det0,nu0/2) << endl;
-cout << "pow(detn,nu_n/2) " << pow(detn,nu_n/2) << endl;
-cout << "gam_d(nu_n/2) " << multidim_gam(nu_n/2) << endl;
-cout << "gam_d(nu_0/2) " << multidim_gam(nu0/2) << endl;
-} 
 //cout << "Gaussian::ConjugateEvidence - end: " << ret << endl;
 	return ret;	
 }

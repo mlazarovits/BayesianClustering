@@ -71,7 +71,8 @@ class NodeList{
 			node *x = pop();
 			struct listnode *c;
 			c = _head;
-			while(c != _z){
+			while(c->next != _z){
+				//cout << "looking at node: " << c->next->node->val << endl;
 				//remove nodes whose parents (either l or r) are in the max merge
 				if(c->next->node->l == x->l || c->next->node->r == x->r || c->next->node->l == x->r || c->next->node->r == x->l){
 					deletenext(c);	

@@ -28,8 +28,10 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->prob_tk = p_dk_tk;
 	x->l = l;
 	x->r = r;
-	cout << "MergeTree::CalculateMerge - merging " << l->name << " + " << r->name << " val: " << rk << endl;	
-	x->name = "("+l->name + "+"  + r->name+")";
+	
+//	if(isnan(rk)) cout << "rk is nan - pi " << pi << " p_dk_h1: " << p_dk_h1 << " p_dk_tk: " << p_dk_tk << endl;
+	//cout << "MergeTree::CalculateMerge - merging " << l->name << " + " << r->name << " val: " << rk << endl;	
+//	x->name = "("+l->name + "+"  + r->name+")";
 
 	return x;
 }

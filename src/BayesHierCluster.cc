@@ -76,25 +76,40 @@ void BayesHierCluster::Cluster(){
 		}
 	}
 
+	vector<node*> nodes;
+
 	//loop over possible merges
-	//while(it < 3){
 	while(m_mergeTree.GetNClusters() > 1){
-	cout << "iteration: " << it << endl;
+//	cout << "iteration: " << it << endl;
+	nodes = m_mergeTree.GetClusters();
+//	for(int i = 0; i < (int)nodes.size(); i++){
+//		cout << "cluster " << i << " rk: " << nodes[i]->val << endl;
+//		nodes[i]->points->Print();
+//
+//	}
+
+
 	//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 	_list.sort();
-cout << "pre pop" << endl;
-_list.Print();
+//cout << "pre pop" << endl;
+//_list.Print();
 	//remove all combinations containing one subtree from list
 	node* max = _list.fullpop();
-cout << "max merge rk: " << max->val << endl;
-cout << "post pop" << endl;
-_list.Print();
+//cout << "max merge rk: " << max->val << endl;
+//if rk < 0.5: cut tree
+if(max->val < 0.5){
+	cout << "reached min rk = 0.5 - final iteration: " << it <<  " - " << m_mergeTree.GetNClusters() << " clusters" << endl;
+	break;
+}
+//cout << "post pop" << endl;
+//_list.Print();
 	//merge corresponding subtrees in merge tree: merge = x (node)
 	m_mergeTree.Insert(max);
 	m_mergeTree.Remove(max->l);
 	m_mergeTree.Remove(max->r);
-	cout << "n roots in merge tree: " << m_mergeTree.GetNClusters() << endl;
-		
+	//cout << "n clusters in merge tree: " << m_mergeTree.GetNClusters() << endl;
+
+
 	//add depth to history
 	//m_clusterHist.AddLayer(m_mergeTree.Get(), rk_max);
 	
@@ -104,22 +119,22 @@ _list.Print();
 		di = m_mergeTree.Get(i);
 		if(di == max) continue;
 		node* x = m_mergeTree.CalculateMerge(di, max);
+		if(isnan(x->val)){  return; }
 		_list1.insert(x);
 	}
-cout << "list1" << endl;
+//cout << "list1" << endl;
 	_list1.sort();
-	_list1.Print();
+	//_list1.Print();
 	_list.merge(_list1);
-	cout << "merging" << endl;
-	_list.Print();
+	//cout << "merging" << endl;
+	//_list.Print();
 	it++;
-	cout << "\n" << endl;
+//	cout << "\n" << endl;
 }
 	
+	cout << "final iteration: " << it <<  " - " << m_mergeTree.GetNClusters() << " clusters" << endl;
 
 	return;
-//add recursion -> run until 1 cluster
-	//input: mergetree + nodelist
 //check ClusterHistory after
 }
 

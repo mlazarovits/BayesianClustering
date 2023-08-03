@@ -23,7 +23,7 @@ class MergeTree : public BaseTree{
 			_z = tree._z;
 			_t = tree._t;
 			_alpha = tree._alpha;
-			_roots = tree._roots;
+			_clusters = tree._clusters;
 			//mixture model
 			_model = tree._model;
 			_prior = tree._prior;	
@@ -35,29 +35,28 @@ class MergeTree : public BaseTree{
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			for(int i = 0; i < pc->GetNPoints(); i++){
 				AddLeaf(&pc->at(i));
+		//		_clusters[i]->name = std::to_string(i);
 			}
-		//	NodeSort(_roots);
+		//	NodeSort(_clusters);
 		}
 		
-		node* Get(int i){ return _roots[i]; }
+		node* Get(int i){ return _clusters[i]; }
 
-		vector<node*> Get(){ return _roots; }
+		vector<node*> GetClusters(){ return _clusters; }
 
 		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
-			struct node* x = CalculateMerge(l, r); 		
-			//set index to lower branch
-			x->idx = x->l->idx;
+			struct node* x = CalculateMerge(l, r); 	
 			//remove nodes l and r
 			Remove(l);
 			Remove(r);
 			//insert x into tree
-			_roots.push_back(x);
+			_clusters.push_back(x);
 			return x;
 		}
 
 		void Insert(node* x){
-			_roots.push_back(x);
+			_clusters.push_back(x);
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
@@ -66,20 +65,20 @@ class MergeTree : public BaseTree{
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
-			auto it = find(_roots.begin(), _roots.end(), l);
+			auto it = find(_clusters.begin(), _clusters.end(), l);
 			int idx;
 			// If element was found
-			if (it != _roots.end()){ 
-				idx = it - _roots.begin();
+			if (it != _clusters.end()){ 
+				idx = it - _clusters.begin();
 			}
 			else
 				return;
-			_roots.erase(_roots.begin()+idx);
+			_clusters.erase(_clusters.begin()+idx);
 		}
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
-		int GetNPoints(){ return (int)_roots.size(); }	
+		int GetNClusters(){ return (int)_clusters.size(); }	
 
 
 
@@ -91,54 +90,18 @@ class MergeTree : public BaseTree{
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
-			x->idx = -1;	
 			//////initialize probability of subtree to be null hypothesis for leaf
 			//////p(D_k | T_k) = p(D_k | H_1^k)
 			if(_model == nullptr) cout << "null" << endl;
 			x->prob_tk = _model->ConjugateEvidence(*pt);
 			if(pt != nullptr) x->points = new PointCollection(*pt);
-			_roots.push_back(x);
+			_clusters.push_back(x);
 		}
 
-
-/*
-		//quicksort for nodes
-		void NodeSort(vector<node*> nodes, unsigned long long seed = 123){
-			int N = _roots.size();
-			if(N < 2) return;
-			RandomSample rs(seed);	
-			
-			vector<node*> low;
-			vector<node*> same;
-			vector<node*> high;
-			rs.SetRange(0,N);
-			int idx = rs.SampleFlat();		
-			node* pivot = nodes[idx];
-			double v;
-			for(int i = 0; i < N; i++){
-				v = pivot->val;
-				if( v > _roots[i]->val )
-					low.push_back(nodes[i]);
-				if( v == _roots[i]->val )
-					same.push_back(nodes[i]);
-				else
-					high.push_back(nodes[i]);
-			}
-			NodeSort(low);
-			NodeSort(same);
-			NodeSort(high);
-	
-			_roots.clear();
-			for(int i = 0; i < (int)low.size(); i++) _roots.push_back(low.at(i));
-			for(int i = 0; i < (int)same.size(); i++) _roots.push_back(same.at(i));
-			for(int i = 0; i < (int)high.size(); i++) _roots.push_back(high.at(i));
-
-		}
-	*/
 
 	private:
 		//keep list of nodes since tree is built bottom up
-		vector<node*> _roots;
+		vector<node*> _clusters;
 		//Dirichlet prior parameter
 		double _alpha;
 		BasePDF* _model;
