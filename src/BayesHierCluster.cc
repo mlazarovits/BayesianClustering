@@ -28,22 +28,25 @@ void BayesHierCluster::SetAlpha(double a){
 
 vector<PointCollection*> BayesHierCluster::GetClusters(double rk){
 	vector<PointCollection*> pts;
-	vector<node*> nodes = m_clusterHist.at(rk);
+/*
+	//vector<node*> nodes = m_clusterHist.at(rk);
 	for(int i = 0; i < (int)nodes.size(); i++){
 		pts.push_back(new PointCollection());
 		pts[i]->AddPoints(*nodes[i]->points);
 	}
+*/
 	return pts;
 }
 
 vector<PointCollection*> BayesHierCluster::GetClusters(int d){
 	vector<PointCollection*> pts;
-	vector<node*> nodes = m_clusterHist.at(d);
+/*
+//	vector<node*> nodes = m_clusterHist.at(d);
 	for(int i = 0; i < (int)nodes.size(); i++){
 		pts.push_back(new PointCollection());
 		pts[i]->AddPoints(*nodes[i]->points);
 	}
-	return pts;
+*/	return pts;
 }
 
 

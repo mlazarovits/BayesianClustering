@@ -3,7 +3,7 @@
 
 #include "PointCollection.hh"
 #include "BasePDF.hh"
-#include "ClusterHistory.hh"
+//#include "ClusterHistory.hh"
 #include "NodeList.hh"
 #include "MergeTree.hh"
 
@@ -35,7 +35,7 @@ class BayesHierCluster{
 		BasePDF* m_pdf; //p(x | theta)
 
 		//clustering history
-		ClusterHistory m_clusterHist;
+//		ClusterHistory m_clusterHist;
 		
 		//calculates and tracks merges
 		MergeTree m_mergeTree;
