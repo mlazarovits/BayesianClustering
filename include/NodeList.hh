@@ -70,9 +70,12 @@ class NodeList{
 		node* fullpop(){
 			node *x = pop();
 			struct listnode *c;
-			c = _head->next;
+			c = _head;
 			while(c != _z){
-				if(c->next->node->l == x->l || c->next->node->r == x->r){
+				cout << "looking at node: " << c->next->node->name << endl;
+				//remove nodes whose parents (either l or r) are in the max merge
+				if(c->next->node->l == x->l || c->next->node->r == x->r || c->next->node->l == x->r || c->next->node->r == x->l){
+				cout << "deleting listnode: " << c->next->node->name << " val: " << c->next->node->val << endl;
 					deletenext(c);	
 				}
 				//update c to next listnode
@@ -82,20 +85,9 @@ class NodeList{
 		}
 		
 
-		//TODO: check
 		void merge(const NodeList& list){
 			struct listnode* a = list._head->next;
 			_head = merge(_head, a);
-		/*
-			if(c->next != _z){
-				a = c; b = c->next->next->next;
-				while(b != _z){
-					c = c->next; b = b->next->next;
-				}
-				b = c->next; c->next = _z;
-				_head = merge(mergesort(a), mergesort(b));
-			}	
-		*/
 		}
 
  
