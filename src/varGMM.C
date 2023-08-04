@@ -135,6 +135,7 @@ int main(int argc, char *argv[]){
 
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,k);
+	algo->SetThresh(0.);
 
 	//viz object
 	VarClusterViz3D cv3D = VarClusterViz3D(algo);
@@ -143,7 +144,7 @@ int main(int argc, char *argv[]){
 	
 	//loop
 	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.0001;
+	double LogLThresh = 0.1;
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
 		oldLogL = algo->EvalLogL();
@@ -174,20 +175,18 @@ int main(int argc, char *argv[]){
 	}
 	cv3D.Write();
 
-	vector<map<string, Matrix>> params = gmm->GetParameters();	
-	vector<map<string, Matrix>> clusters;
-	for(int i = 0; i < k; i++) clusters.push_back(params[i]);
+	vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
 
 	cout << "Estimated parameters" << endl;
-	cout << "mean 1" << endl;
-	clusters[0]["mean"].Print();
-	cout << "cov 1" << endl;
-	clusters[0]["cov"].Print();
-	cout << "mean 2" << endl;
-	clusters[1]["mean"].Print();
-	cout << "cov 2" << endl;
-	clusters[1]["cov"].Print();
-cout << "\n" << endl;	
+	for(int i = 0; i < k; i++){
+		cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
+		cout << "mean " << i << endl;
+		params[i]["mean"].Print();
+		cout << "cov " << i << endl;
+		params[i]["cov"].Print();
+	}
+	
+	cout << "\n" << endl;	
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;
 	mu.Print();

@@ -16,8 +16,11 @@ class VarEMCluster : public BaseCluster{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 		
-
-
+		//set threshold for E[pi] cutoff
+		void SetThresh(double t){ _thresh = t; }
+		
+	private:
+		double _thresh = 0;
 
 
 
