@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
 	//n data points
 	int Nsample = 500;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
-	int nIts = 1;
+	int nIts = 10;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
