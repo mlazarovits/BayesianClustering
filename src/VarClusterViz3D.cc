@@ -36,15 +36,6 @@ VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){
 	m_post = m_model->GetPosterior();
 	m_deltaT = 0.1;
 	
-	//normalize data
-	//m_shift = m_points.Center();
-	////want to apply same transformation to points: (x - shift)/scale
-	//m_shift.Scale(-1);
-	//m_scale = m_points.Normalize();
-	//cout << "max - min (1/scale)" << endl;
-	//m_scale.Print();
-	//m_scale.Invert();
-
 }
 
 VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){ 
@@ -60,13 +51,6 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_k = viz.m_k;
 	m_post = viz.m_post;
 	m_deltaT = 0.1;
-	
-	//normalize data
-	//m_shift = m_points.Center();
-	////want to apply same transformation to points: (x - shift)/scale
-	//m_shift.Scale(-1);
-	//m_scale = m_points.Normalize();
-	//m_scale.Invert();
 }
 
 void VarClusterViz3D::AddPlot(double t, string plotName){
@@ -97,11 +81,10 @@ void VarClusterViz3D::WriteJson(string filename){
 	}
 	vector<Matrix> mus, covs;
 	double pi_norm = 0;
-	map<string, vector<Matrix>> params;
-	params = m_model->GetParameters();
-	vector<Matrix> pis = params["pis"];
-	mus = params["mus"];
-	covs = params["covs"];
+	vector<map<string, Matrix>> cluster_params;
+	vector<map<string, Matrix>> params = m_model->GetParameters();
+	for(int i = 0; i < m_k; i++) cluster_params.push_back(params[i]);
+
 	for(int i = 0; i < m_n; i++){
 		//eta
 		x.append(m_points->at(i).Value(0));
@@ -117,9 +100,8 @@ void VarClusterViz3D::WriteJson(string filename){
 	//if no points - empty plot
 //	if(x.size() == 0) return;
 
-	for(int k = 0; k < m_k; k++){
-		pi_norm += pis[0].at(k,0);	
-	}
+	for(int k = 0; k < m_k; k++)
+		pi_norm += cluster_params[k]["pi"].at(0,0);
 	
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
@@ -127,12 +109,11 @@ void VarClusterViz3D::WriteJson(string filename){
 	
 	double x0, y0, z0;	
 	for(int k = 0; k < m_k; k++){
-		x0 = mus[k].at(0,0);
-		y0 = mus[k].at(1,0);
-		z0 = mus[k].at(2,0);
+		x0 = cluster_params[k]["mean"].at(0,0);
+		y0 = cluster_params[k]["mean"].at(1,0);
+		z0 = cluster_params[k]["mean"].at(2,0);
 
-
-		covs[k].eigenCalc(eigenVals, eigenVecs);
+		cluster_params[k]["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
 			eigenVec_0.append(eigenVecs[0].at(i,0));
 			eigenVec_1.append(eigenVecs[1].at(i,0));
@@ -140,7 +121,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		cluster["mixing_coeff_norm"] = pis[0].at(k,0)/pi_norm;
+		cluster["mixing_coeff_norm"] = cluster_params[k]["pi"].at(0,0)/pi_norm;
 	
 		cluster["mu_x"] = x0;
 		cluster["mu_y"] = y0;

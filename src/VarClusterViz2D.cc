@@ -52,22 +52,18 @@ void VarClusterViz2D::AddPlot(string plotName){
 	}
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
-	vector<Matrix> mus, covs;
 	double pi_norm = 0;
-	map<string, vector<Matrix>> params;
-	params = m_model->GetParameters();
-	vector<Matrix> pis = params["pis"];
-	mus = params["mus"];
-	covs = params["covs"];
-	//m_model->GetGausParameters(mus,covs);
-	//m_model->GetMixingCoeffs(pis);
-	vector<double> x, y;
+	vector<map<string, Matrix>> clusters;
+	vector<map<string, Matrix>> params = m_model->GetParameters();
+	for(int i = 0; i < m_k; i++) clusters.push_back(params[i]);
+
+	vector<double> x, y;	
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points->at(i).Value(0.));
 		y.push_back(m_points->at(i).Value(1.));
 	}
 	for(int k = 0; k < m_k; k++){
-		pi_norm += pis[0].at(k,0);
+		pi_norm += clusters[k]["pi"].at(0,0);
 	}
 	//get palette colors for circles
 	SetPalette(m_k);
@@ -122,16 +118,16 @@ void VarClusterViz2D::AddPlot(string plotName){
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
 	for(int k = 0; k < m_k; k++){
 		//if mean mixing coefficient value is indistinguishable from zero, don't draw
-		if(pis[0].at(k,0)/pi_norm < 0.01)
+		if(clusters[k]["pi"].at(0,0)/pi_norm < 0.01)
 			continue; 
 
-		c_x = mus[k].at(0,0);
-		c_y = mus[k].at(1,0);
+		c_x = clusters[k]["mean"].at(0,0);
+		c_y = clusters[k]["mean"].at(1,0);
 		
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
-		covs[k].eigenCalc(eigenVals, eigenVecs);
+		clusters[k]["cov"].eigenCalc(eigenVals, eigenVecs);
 	
 		r_x = sqrt(eigenVals[0]);
 		r_y = sqrt(eigenVals[1]);
@@ -153,7 +149,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		auto col = cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))];
-		circle->SetFillColorAlpha(col,pis[0].at(k,0)/pi_norm);
+		circle->SetFillColorAlpha(col,clusters[k]["pi"].at(0,0)/pi_norm);
 		circle->SetLineColor(col);
 		circle->SetLineWidth(5);
 		//sets transparency normalized to sum

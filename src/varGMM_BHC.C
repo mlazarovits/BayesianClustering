@@ -135,16 +135,6 @@ int main(int argc, char *argv[]){
 		pc += mat.MatToPoints();
 	}
 	
-	//sample points for another cluster
-	//Matrix sigma2 = Matrix(N,N);
-	//sigma2.InitRandomSymPosDef(0.,1.,111);
-	//Matrix mu2 = Matrix(N,1);
-	//mu2.InitRandom(0.,1.,112);
-	//Matrix mat2;
-	//mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
-	//pc += mat2.MatToPoints();
-
-
 	
 	//create Gaussian model with conjugate prior
 	Gaussian* gaus = new Gaussian(N);
@@ -165,8 +155,6 @@ int main(int argc, char *argv[]){
 	bhc->AddData(&pc);
 	bhc->Cluster();
 
-
-cout << "end" << endl;	
 
 
 /*	

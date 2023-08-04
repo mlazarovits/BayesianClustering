@@ -24,7 +24,7 @@ class GaussianMixture : public BasePDFMixture{
 		//fill vectors with parameters
 		//void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
 		//returns mu, cov, and mixing coeffs
-		map<string, vector<Matrix>> GetParameters(); 
+		vector<map<string, Matrix>> GetParameters(); 
  
 
 			
@@ -48,11 +48,6 @@ class GaussianMixture : public BasePDFMixture{
 		vector<Matrix> m_mus;
 		//d x d matrix for each cluster k
 		vector<Matrix> m_covs;
-		//1 mixing param for each cluster k
-		vector<double> m_coeffs;
-		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
-		vector<double> m_norms;
-
 
 
 		//variational stuff

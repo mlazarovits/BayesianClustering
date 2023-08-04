@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
 	ClusterViz2D cv2D = ClusterViz2D(algo);
 	cv2D.SeeData();
 	
-	map<string, vector<Matrix>> params;
+	vector<map<string, Matrix>> params;
 	
 	//loop
 	double dLogL, newLogL, oldLogL;
@@ -166,18 +166,18 @@ int main(int argc, char *argv[]){
 	cv2D.Write();
 	
 	params = gmm->GetParameters();	
-	vector<Matrix> mus = params["means"];
-	vector<Matrix> covs = params["covs"];
+	vector<map<string, Matrix>> clusters;
+	for(int i = 0; i < k; i++) clusters.push_back(params[i]);
 
 	cout << "Estimated parameters" << endl;
 	cout << "mean 1" << endl;
-	mus[0].Print();
+	clusters[0]["mean"].Print();
 	cout << "cov 1" << endl;
-	covs[0].Print();
+	clusters[0]["cov"].Print();
 	cout << "mean 2" << endl;
-	mus[1].Print();
+	clusters[1]["mean"].Print();
 	cout << "cov 2" << endl;
-	covs[1].Print();
+	clusters[1]["cov"].Print();
 
 	cout << "Original parameters" << endl;
 	cout << "mean 1" << endl;

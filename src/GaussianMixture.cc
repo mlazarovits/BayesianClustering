@@ -40,7 +40,8 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		m_covs[k].InitIdentity();
 		m_model[k]->SetParameter("cov",m_covs[k]);		
 
-		m_coeffs.push_back(randy.SampleFlat());
+
+		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
 		m_norms.push_back(0.);
@@ -60,6 +61,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		nit++;
 	}
 	kmc.GetMeans(m_mus);
+
 	for(int k = 0; k < m_k; k++)
 	m_model[k]->SetParameter("mean",m_mus[k]);		
 
@@ -113,11 +115,14 @@ void GaussianMixture::UpdateParameters(){
 		}
 	}
 	//set new means 	
+	Matrix mu = Matrix(m_dim, 1);
 	for(int k = 0; k < m_k; k++){
 		m_coeffs[k] = m_norms[k]/m_n;
 		//clear and overwrite m_mu[k]
-		m_mus[k].clear();
-		m_mus[k].InitEmpty();
+		mu.clear();
+		mu.InitEmpty();
+		//m_mus[k].clear();
+		//m_mus[k].initempty();
 		//check above does what we want (clear the entries and reset an empty matrix)
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
@@ -125,11 +130,13 @@ void GaussianMixture::UpdateParameters(){
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
-			m_mus[k].add(x);
+			mu.add(x);
+			//m_mus[k].add(x);
 		}
 		//normalized by sum of posteriors for cluster k
-		m_mus[k].mult(m_mus[k],1./m_norms[k]);
-		m_model[k]->SetParameter("mean",m_mus[k]);		
+		mu.mult(mu,1./m_norms[k]);
+		//m_mus[k].mult(m_mus[k],1./m_norms[k]);
+		m_model[k]->SetParameter("mean",mu);		
 	}
 
 
@@ -160,9 +167,9 @@ void GaussianMixture::UpdateParameters(){
 		//normalize by N_k
 		new_cov.mult(new_cov,1./m_norms[k]);
 		//overwrites m_covs[k]
-		m_covs[k] = new_cov;
-		m_model[k]->SetParameter("cov",m_covs[k]);		
-		
+		//m_covs[k] = new_cov;
+		//m_model[k]->SetParameter("cov",m_covs[k]);		
+		m_model[k]->SetParameter("cov",new_cov);		
 	}
 
 }
@@ -188,15 +195,21 @@ double GaussianMixture::EvalLogL(){
 
 
 
-map<string, vector<Matrix>> GaussianMixture::GetParameters(){ 
-	map<string, vector<Matrix>> params;
+vector<map<string, Matrix>> GaussianMixture::GetParameters(){ 
+	vector<map<string, Matrix>> params;
 	for(int k = 0; k < m_k; k++){
-		params["means"].push_back(m_model[k]->GetParameter("mean"));
-		params["covs"].push_back(m_model[k]->GetParameter("cov"));
-		//params["means"].push_back(m_mus[k]);
-		//params["covs"].push_back(m_covs[k]);
+		map<string, Matrix> p;
+		vector<double> pi = {m_coeffs[k]};
+		p["mean"] = m_model[k]->GetParameter("mean");
+		p["cov"] = m_model[k]->GetParameter("cov");
+		p["pi"] = Matrix(pi);
+//		params["means"].push_back(m_model[k]->GetParameter("mean"));
+//		params["covs"].push_back(m_model[k]->GetParameter("cov"));
+		params.push_back(p);
+		p.clear();
+		pi.clear();
 	}
-		params["pis"] = {Matrix(m_coeffs)};
+		//params["pis"] = {Matrix(m_coeffs)};
 	return params;
 };
 
@@ -204,7 +217,6 @@ map<string, vector<Matrix>> GaussianMixture::GetParameters(){
 
 map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){ 
 	map<string, vector<Matrix>> params;
-	params["pis"] = {Matrix(m_coeffs)};
 	params["Ws"] = m_Ws;
 	params["ms"] = m_means;
 	params["nus"] = {Matrix(m_nus)};

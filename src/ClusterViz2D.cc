@@ -32,13 +32,10 @@ ClusterViz2D::ClusterViz2D(EMCluster* algo, string fname) : ClusterVizBase(algo,
 void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
-	vector<Matrix> mus, covs, pis;
-	//m_model->GetGausParameters(mus,covs);
-	map<string, vector<Matrix>> params;
-	params = m_model->GetParameters();
-	pis = params["pis"];
-	mus = params["means"];
-	covs = params["covs"];
+	vector<map<string, Matrix>> clusters;
+	vector<map<string, Matrix>> params = m_model->GetParameters();
+	for(int i = 0; i < m_k; i++) clusters.push_back(params[i]);
+
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){
 		x.push_back(m_points->at(i).Value(0.));
@@ -104,13 +101,13 @@ void ClusterViz2D::AddPlot(string plotName){
 	//set coords for parameter circles
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
 	for(int k = 0; k < m_k; k++){
-		c_x = mus[k].at(0,0);
-		c_y = mus[k].at(1,0);
+		c_x = clusters[k]["mean"].at(0,0);
+		c_y = clusters[k]["mean"].at(1,0);
 		
 		//calculate eigenvalues + vectors for orientation (angle) of ellipse
 		vector<Matrix> eigenVecs;
 		vector<double> eigenVals;
-		covs[k].eigenCalc(eigenVals, eigenVecs);
+		clusters[k]["cov"].eigenCalc(eigenVals, eigenVecs);
 	
 		r_x = sqrt(eigenVals[0]);
 		r_y = sqrt(eigenVals[1]);
