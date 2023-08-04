@@ -15,14 +15,14 @@ class BasePDFMixture{
 		BasePDFMixture(){ m_k = 0; m_n = 0; }
 		BasePDFMixture(int k){ m_k = k; 
 			for(int k = 0; k < m_k; k++){
-				m_weights.push_back(0.);
+				m_coeffs.push_back(0.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
 		}
 
 		virtual void InitParameters(unsigned long long seed = 123) = 0;
-		virtual ~BasePDFMixture(){ m_weights.clear(); m_alphas.clear(); m_model.clear(); }
+		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear(); m_model.clear(); }
 
 		double Prob(const Point& x);
 
@@ -43,8 +43,13 @@ class BasePDFMixture{
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
 		virtual map<string, vector<Matrix>> GetPriorParameters() = 0; 
 
-		void GetMixingCoeffs(vector<double>& weights){ weights.clear(); weights = m_weights; }	
+		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
+
+
+		void RemoveClusters(double thresh){
+			
+		};
 
 		virtual double EvalLogL() = 0;
 		virtual double EvalVariationalLogL() = 0;
@@ -75,9 +80,9 @@ class BasePDFMixture{
 		int m_k;
 		//probabilistic model
 		vector<BasePDF*> m_model;
-		//mixture weights (probabilities sum to 1, multinomal dist.)
-		vector<double> m_weights;
-		//dirichlet (prior) parameters (on weights)
+		//mixture coeffs (probabilities sum to 1, multinomal dist.)
+		vector<double> m_coeffs;
+		//dirichlet (prior) parameters (on coeffs)
 		vector<double> m_alphas;
 		//normalization on posterior
 		vector<double> m_norms;

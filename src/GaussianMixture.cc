@@ -26,7 +26,7 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	}
 }
 
-//don't forget to include weights (eventually)
+//don't forget to include coeffs (eventually)
 void GaussianMixture::InitParameters(unsigned long long seed){
 	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
 	//randomly initialize mean, covariance + mixing coeff.
@@ -196,7 +196,7 @@ map<string, vector<Matrix>> GaussianMixture::GetParameters(){
 		//params["means"].push_back(m_mus[k]);
 		//params["covs"].push_back(m_covs[k]);
 	}
-		params["pis"] = {Matrix(m_weights)};
+		params["pis"] = {Matrix(m_coeffs)};
 	return params;
 };
 
@@ -204,7 +204,7 @@ map<string, vector<Matrix>> GaussianMixture::GetParameters(){
 
 map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){ 
 	map<string, vector<Matrix>> params;
-	params["pis"] = {Matrix(m_weights)};
+	params["pis"] = {Matrix(m_coeffs)};
 	params["Ws"] = m_Ws;
 	params["ms"] = m_means;
 	params["nus"] = {Matrix(m_nus)};
