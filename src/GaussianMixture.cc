@@ -212,7 +212,7 @@ vector<map<string, Matrix>> GaussianMixture::GetParameters(){
 
 
 
-map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){ 
+vector<map<string, Matrix>> GaussianMixture::GetPriorParameters(){ 
 	vector<map<string, Matrix>> params;
 	for(int k = 0; k < m_k; k++){
 		map<string, Matrix> p;
@@ -220,10 +220,10 @@ map<string, vector<Matrix>> GaussianMixture::GetPriorParameters(){
 		p["mean"] = m_model[k]->GetParameter("mean");
 		p["cov"] = m_model[k]->GetParameter("cov");
 		p["pi"] = Matrix(pi);
-		p["scalemat"] = m_model[k]->GetPrior()->GetParamter("scalemat");
-		p["mean"] = m_model[k]->GetPrior()->GetParamter("mean");
-		p["scale"] = m_model[k]->GetPrior()->GetParamter("scale");
-		p["dof"] = m_model[k]->GetPrior()->GetParamter("dof");
+		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
+		p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
+		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
+		p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
 		vector<double> alpha = {m_alphas[k]};
 		p["alpha"] = Matrix(alpha);
 		

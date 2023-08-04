@@ -41,7 +41,7 @@ class BasePDFMixture{
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
-		virtual map<string, vector<Matrix>> GetPriorParameters() = 0; 
+		virtual vector<map<string, Matrix>> GetPriorParameters() = 0; 
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }

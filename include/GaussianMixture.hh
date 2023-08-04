@@ -38,7 +38,7 @@ class GaussianMixture : public BasePDFMixture{
 		void UpdatePriorParameters();
 		double EvalVariationalLogL();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
-		virtual map<string, vector<Matrix>> GetPriorParameters(); 
+		vector<map<string, Matrix>> GetPriorParameters(); 
 
 		
 
