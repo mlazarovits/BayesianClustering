@@ -12,6 +12,7 @@ class Matrix{
 		//x_dim = dim (rows), y_dim = # points (cols)
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
+		Matrix(double pt);
 		Matrix(Point pt);
 		Matrix(PointCollection pts);
 		//copy constructor

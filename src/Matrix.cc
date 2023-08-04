@@ -40,6 +40,14 @@ Matrix::Matrix(vector<double> in){
 } 
 
 
+Matrix::Matrix(double pt){
+	m_row = 1;
+	m_col = 1;
+	m_entries.push_back({});
+	m_entries[0].push_back(pt);
+
+}
+
 Matrix::Matrix(Point pt){
 	m_row = pt.Dim();
 	m_col = 1;
