@@ -27,10 +27,8 @@ NormalInvWishart::NormalInvWishart(Matrix scalemat, Matrix mean, double dof, dou
 	m_scale = scale;
 	m_params["mean"] = m_mean;
 	m_params["scalemat"] = m_scalemat;	
-	vector<double> dofs, scales;
-	dofs.push_back(dof); scales.push_back(scale);
-	m_params["dof"] = Matrix(dofs);
-	m_params["scale"] = Matrix(scales);
+	m_params["dof"] = Matrix(dof);
+	m_params["scale"] = Matrix(scale);
 
 }
 
@@ -78,6 +76,6 @@ void NormalInvWishart::InitParameters(){
 void NormalInvWishart::UpdateParameters(){ 
 	m_mean = m_params["mean"];
 	m_scalemat = m_params["scale_mat"];
-	m_dof = m_params["m_dof"].at(0,0);
-	m_scale = m_params["m_scale"].at(0,0);
+	m_dof = m_params["dof"].at(0,0);
+	m_scale = m_params["scale"].at(0,0);
 };
