@@ -34,7 +34,7 @@ class BasePDFMixture{
 		virtual void CalculatePosterior() = 0;
 		virtual void UpdateParameters() = 0;
 		//returns mu, cov, and mixing coeffs
-		virtual map<string, vector<Matrix>> GetParameters() = 0; 
+		virtual vector<map<string, Matrix>> GetParameters() = 0; 
 		
 		//for variational EM algorithm
 		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
