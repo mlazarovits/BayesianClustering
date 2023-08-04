@@ -46,10 +46,9 @@ class BasePDFMixture{
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
 
+		BasePDF* GetModel(int k){ return m_model[k]; }
+		void RemoveModel(int k){ m_model.erase(m_model.begin()+k); }
 
-		void RemoveClusters(double thresh){
-			
-		};
 
 		virtual double EvalLogL() = 0;
 		virtual double EvalVariationalLogL() = 0;

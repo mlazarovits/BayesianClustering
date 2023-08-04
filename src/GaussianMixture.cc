@@ -216,7 +216,7 @@ vector<map<string, Matrix>> GaussianMixture::GetPriorParameters(){
 		map<string, Matrix> p;
 		p["mean"] = m_model[k]->GetParameter("mean");
 		p["cov"] = m_model[k]->GetParameter("cov");
-		p["pi"] = Matrix(m_coeffs[k]);
+		p["pi"] = Matrix((m_alphas[k] + m_norms[k])/(k*m_alpha0 + m_n));
 		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
 		p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
 		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
