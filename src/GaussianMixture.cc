@@ -199,13 +199,11 @@ vector<map<string, Matrix>> GaussianMixture::GetParameters(){
 	vector<map<string, Matrix>> params;
 	for(int k = 0; k < m_k; k++){
 		map<string, Matrix> p;
-		vector<double> pi = {m_coeffs[k]};
 		p["mean"] = m_model[k]->GetParameter("mean");
 		p["cov"] = m_model[k]->GetParameter("cov");
-		p["pi"] = Matrix(pi);
+		p["pi"] = Matrix(m_coeffs[k]);
 		params.push_back(p);
 		p.clear();
-		pi.clear();
 	}
 	return params;
 };
@@ -216,20 +214,17 @@ vector<map<string, Matrix>> GaussianMixture::GetPriorParameters(){
 	vector<map<string, Matrix>> params;
 	for(int k = 0; k < m_k; k++){
 		map<string, Matrix> p;
-		vector<double> pi = {m_coeffs[k]};
 		p["mean"] = m_model[k]->GetParameter("mean");
 		p["cov"] = m_model[k]->GetParameter("cov");
-		p["pi"] = Matrix(pi);
+		p["pi"] = Matrix(m_coeffs[k]);
 		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
 		p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
 		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
 		p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
-		vector<double> alpha = {m_alphas[k]};
-		p["alpha"] = Matrix(alpha);
+		p["alpha"] = Matrix(m_alphas[k]);
 		
 		params.push_back(p);
 		p.clear();
-		pi.clear();
 	}
 	return params;
 };
@@ -242,6 +237,9 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 		return;
 	}
 
+	//assuming conjugate prior - normal inverse wishart
+	for(int k = 0; k < m_k; k++) m_model[k]->SetPrior(new NormalInvWishart());	
+
 
 	//alpha > 0
 		//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
@@ -251,7 +249,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	RandomSample rs;
 	rs.SetRange(0.,1.);
 	m_beta0 = rs.SampleFlat();
-cout << "Mbeta0: " << m_beta0 << endl;	
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
@@ -280,6 +277,7 @@ cout << "Mbeta0: " << m_beta0 << endl;
 	}
 
 	//init parameters from alpha0
+	//assuming a Dirichlet prior on the multinomial (categorical) assignment distribution (over latent variable z - sets pis)
 	for(int k = 0; k < m_k; k++){
 		m_alphas.push_back(m_alpha0);
 	}
@@ -287,6 +285,7 @@ cout << "Mbeta0: " << m_beta0 << endl;
 	rs.SetRange(0.,1.);
 	for(int k = 0; k < m_k; k++){
 		m_betas.push_back(k*rs.SampleFlat() + 0.1);//rs.SampleFlat());
+		m_model[k]->GetPrior()->SetParameter("scale",Matrix(m_betas[k]));		
 	}
 	
 	Matrix mat;
@@ -296,18 +295,22 @@ cout << "Mbeta0: " << m_beta0 << endl;
 		mat = Matrix(m_dim, 1);
 		mat.InitRandom(mean_lower, mean_upper, seed+k);
 		m_means.push_back(mat);
+		m_model[k]->GetPrior()->SetParameter("mean",m_means[k]);		
 		mat.clear();
 	}
 	for(int k = 0; k < m_k; k++){
 		mat = Matrix(m_dim, m_dim);
 		mat.InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
 		m_Ws.push_back(mat);
+		m_model[k]->GetPrior()->SetParameter("scalemat",m_Ws[k]);		
 		mat.clear();
 	}
 	rs.SetRange(m_dim,m_dim*1.5);
 	//rs.SetRange(m_dim-1,m_dim+2.);
-	for(int k = 0; k < m_k; k++)
+	for(int k = 0; k < m_k; k++){
 		m_nus.push_back(rs.SampleFlat());
+		m_model[k]->GetPrior()->SetParameter("dof",Matrix(m_nus[k]));	
+	}
 
 	//init responsibility statistics
 	for(int k = 0; k < m_k; k++){
@@ -315,7 +318,7 @@ cout << "Mbeta0: " << m_beta0 << endl;
 		m_norms[k] = 1.;
 		m_Ss.push_back(Matrix(m_dim,m_dim));
 		m_Ss[k].InitIdentity();
-		//m_mus[k].InitRandom(mean_lower,mean_upper,seed+k);
+		m_model[k]->SetParameter("cov",m_Ss[k]);
 	}
 	//to init xbars
 	//m_xbars = get means
@@ -334,6 +337,7 @@ cout << "Mbeta0: " << m_beta0 << endl;
 		nit++;
 	}
 	kmc.GetMeans(m_xbars);
+	for(int k = 0; k < m_k; k++) m_model[k]->SetParameter("mean",m_xbars[k]);
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
@@ -374,12 +378,15 @@ void GaussianMixture::CalculateVariationalPosterior(){
 //cout << "CALCULATE POSTERIOR - E STEP" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
-	double E_mu_lam, post, norm;
+	double E_mu_lam, post, norm, beta, nu;
 	vector<double> post_norms;
 	Matrix x_mat, x_min_m, x_min_mT;
 	for(int n = 0; n < m_n; n++){
 		norm = 0;
 		for(int k = 0; k < m_k; k++){
+			nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+			beta = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
+	if(n == 0 && k == 0) cout << "beta: " << beta << " m_beta: " << m_betas[k] << endl;
 			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
 			x_min_m = Matrix(m_dim,1);
 			x_min_m.mult(m_means[k],-1.);
@@ -392,6 +399,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			transp_W.mult(x_min_mT,m_Ws[k]);
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
+			//E_mu_lam = m_dim/beta + nu*full.at(0,0);	
 			E_mu_lam = m_dim/m_betas[k] + m_nus[k]*full.at(0,0);	
 		//if(n == 0){ cout << "k: " << k << " beta: " << m_betas[k] << " nu: " << m_nus[k] << " full: " << full.at(0,0) << " x_n: " << endl; m_data->at(n).Print();}
 			//gives ln(rho_nk)
@@ -436,28 +444,43 @@ void GaussianMixture::CalculateRStatistics(){
 //cout << "k: " << k << " norm: " << m_norms[k] << endl;
 	}
 
+
+
+
+
+
+
+
+
 	//this is for x_k (eq. 10.52) - k dx1 matrices
+	Matrix mu = Matrix(m_dim, 1);
 	for(int k = 0; k < m_k; k++){
 //if(k == 0) cout << "k: " << k << " old x_bar: " << endl;
 //if(k == 0) m_xbars[k].Print();
 		//clear and overwrite m_xbar[k]
-		m_mus[k].clear();
-		m_mus[k].InitEmpty();
+		mu.clear();
+		mu.InitEmpty();
+		//m_mus[k].clear();
+		//m_mus[k].InitEmpty();
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
 			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
-			m_mus[k].add(x);
+			mu.add(x);
+			//m_mus[k].add(x);
 		}
 		//normalized by sum of posteriors for cluster k
-		m_mus[k].mult(m_mus[k],1./m_norms[k]);
-		m_model[k]->SetParameter("mean",m_mus[k]);
+		mu.mult(mu,1./m_norms[k]);
+		//m_mus[k].mult(m_mus[k],1./m_norms[k]);
+		m_model[k]->SetParameter("mean",mu);		
 //if(k == 0) cout << "k: " << k << " new x_bar: " << endl;
 //if(k == 0) m_xbars[k].Print();
 	}
 	
+
+
 	//this is for S_k (eq.10.53) - k dxd matrices
 	for(int k = 0; k < m_k; k++){
 //if(k == 0)cout << "k: " << k << " old S: " << endl;
@@ -489,8 +512,8 @@ void GaussianMixture::CalculateRStatistics(){
 		//normalize by N_k
 		new_S.mult(new_S,1./m_norms[k]);
 		//overwrites m_Ss[k]
-		m_Ss[k] = new_S;
-		m_model[k]->SetParameter("cov",m_Ss[k]);
+//		m_Ss[k] = new_S;
+		m_model[k]->SetParameter("cov",new_S);
 //if(k == 0) cout << "k: " << k << " new S: " << endl;
 //if(k == 0) m_Ss[k].Print();
 	}
