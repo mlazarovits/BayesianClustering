@@ -62,13 +62,19 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
-	
+	algo->SetThresh(0.01);
+
 	map<string, vector<Matrix>> params;
 	
 	VarClusterViz3D cv3D;
 	string fname = "plots/jetTest/"; 
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
+	}
+	else{
+		gSystem->Exec(("rm -rf "+fname).c_str());
+		gSystem->Exec(("mkdir -p "+fname).c_str());
+
 	}
 	if(viz) cv3D = VarClusterViz3D(algo);
 	//loop
