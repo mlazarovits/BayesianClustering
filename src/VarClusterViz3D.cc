@@ -145,10 +145,12 @@ void VarClusterViz3D::WriteJson(string filename){
 	root["clusters"] = clusters;
 	Json::StreamWriterBuilder builder;
 	const std::string json_file = Json::writeString(builder, root);
+
+
 	std::ofstream file;
 	file.open(filename+".json");
 	file << json_file << endl;
-
+	cout << "Writing to: " << filename << ".json" << endl;
 }
 
 void VarClusterViz3D::SeeData(){
@@ -194,72 +196,10 @@ if(m_n == 0 || x.size() == 0){
 }
 
 void VarClusterViz3D::AddAnimation(string dirname){
-	/*
-	//out folder does not exist
-	//ie) dirname = it_0
-	if(gSystem->AccessPathName((m_fname+"/"+dirname).c_str())){
-		gSystem->Exec(("mkdir -p "+m_fname+"/"+dirname).c_str());
-	}
-
-	//get max + min time
-	double tMax = m_points.max(2);
-	double tMin = m_points.min(2);
-	//nsteps = m_deltaT*(tMax - tMin)
-	//loop through iterations of time
-	int idx = std::to_string(m_deltaT).find("1")+1;
-	double t = tMin;
-	
-	vector<string> tlabels;
-	string label;
-	while(t < tMax){
-		string t_str = std::to_string(t);
-		std::size_t idx1 = t_str.find(".");
-		t_str.replace(idx1,1,"p");
-		t_str = t_str.substr(0,idx1+3);
-	//	if(std::to_string(t).find("-") != string::npos)
-	//		t_str = "m"+t_str;
-	//	else
-	//		t_str = "p"+t_str;
-		AddPlot(t, dirname+"_"+t_str);
-		tlabels.push_back(t_str);
-		t += m_deltaT;
-	}
-
-
-	//write series of plots in time
-	cout << "Writing plots and gif to: ./" << m_fname << "/" << dirname << endl;
-	for(int i = 0; i < m_cvs.size(); i++){
-		m_cvs[i]->SaveAs((m_fname+"/"+dirname+"/cv_tEq"+tlabels[i]+".gif").c_str());
-	}
-	
-	gSystem->cd((m_fname+"/"+dirname).c_str());
-	gSystem->Exec(("rm "+dirname+".gif").c_str());
-	gSystem->Exec(("convert -delay 50 -loop 1 *.gif "+dirname+".gif").c_str());
-	gSystem->cd("../../../");
-	m_cvs.clear();
-	
-
-	*/
-
-
-
 }
 
 
 void VarClusterViz3D::Write(){
-	if(m_n == 0){
-		return;
-	}
-	cout << "Writing plot(s) to: ./" << m_fname << ".root" << endl;
-	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
-	f->cd();
-	SetPalette(m_k);
-	//write to root file
-	for(int i = 0; i < m_cvs.size(); i++){
-		m_cvs[i]->Write();
-	}
-	f->Close();
-
 
 }
 
