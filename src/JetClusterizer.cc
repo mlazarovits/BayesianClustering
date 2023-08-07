@@ -101,7 +101,6 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 			}
 			break;
 		}
-		if(viz) cout << "\n" << endl;
 	}
 	return gmm;
 }
