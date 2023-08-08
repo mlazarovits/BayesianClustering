@@ -18,6 +18,21 @@ void KMeansCluster::Initialize(unsigned long long seed){
 	for(int n = 0; n < m_n; n++) 
 		m_assigns.push_back(0);
 }
+void KMeansCluster::Initialize(const PointCollection& pc){
+	if(m_k == 0){
+		cout << "Error: number of clusters hasn't been set yet (via ctor or SetNClusters())." << endl;
+		return;
+	}
+	//initialize from given points
+	//create separate matrix for each mean
+	for(int k = 0; k < m_k; k++){
+		m_means.push_back(Matrix(pc.at(k)));
+		//only keeps track of which cluster assigned to (only 1 col - not multiple for multiple clusters)
+		m_counts.push_back(0);
+	}
+	for(int n = 0; n < m_n; n++) 
+		m_assigns.push_back(0);
+}
 
 //E-step: estimate assignments
 void KMeansCluster::Estimate(){

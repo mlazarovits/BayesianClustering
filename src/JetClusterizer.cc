@@ -52,21 +52,22 @@ void JetClusterizer::Cluster(){
 
 
 //crack open Jet and get underlying points
-GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double LogLthresh, int maxNit, int maxK, bool viz){
+GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double LogLthresh, int maxNit, int maxK, bool viz, PointCollection* seeds){
 
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(maxK);
-	gmm->SetData(points);
-	gmm->InitParameters();
-	gmm->InitPriorParameters();
 
+	gmm->SetData(points);
+	if(seeds != nullptr) gmm->InitParameters(*seeds);
+	else gmm->InitParameters();
+	gmm->InitPriorParameters();
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
-	algo->SetThresh(0.01);
+	algo->SetThresh(0.1);
+	
 
 	map<string, vector<Matrix>> params;
 	
-	VarClusterViz3D cv3D;
 	string fname = "plots/jetTest/"; 
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
@@ -76,7 +77,12 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 		gSystem->Exec(("mkdir -p "+fname).c_str());
 
 	}
+	VarClusterViz3D cv3D;
 	if(viz) cv3D = VarClusterViz3D(algo);
+		if(viz){
+			cv3D.UpdatePosterior();
+			cv3D.WriteJson(fname+"it0");
+		}
 	//loop
 	double dLogL, newLogL, oldLogL;
 	////////run EM algo////////
@@ -91,7 +97,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 		//Plot
 		if(viz){
 			cv3D.UpdatePosterior();
-			cv3D.WriteJson(fname+"it"+std::to_string(it));
+			cv3D.WriteJson(fname+"it"+std::to_string(it+1));
 		}
 		//Check for convergence
 		newLogL = algo->EvalLogL();
@@ -108,6 +114,18 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 			break;
 		}
 	}
+	if(viz){
+		vector<map<string, Matrix>> params = gmm->GetPriorParameters();
+		for(int i = 0; i < (int)params.size(); i++){
+			cout << "Estimated parameters for cluster " << i << " with weight: " << params[i]["pi"].at(0,0) << endl;
+			cout << "mean" << endl;
+			params[i]["mean"].Print();
+			cout << "cov" << endl;
+			params[i]["cov"].Print();
+		}
+
+	}
+
 	return gmm;
 }
 
@@ -120,14 +138,31 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 	Point vtx = jet.GetVertex();
 
 	PointCollection points;
-	jet.GetEtaPhiConstituents(points);
+	jet.GetEtaPhiEConstituents(points);
 	jet.GetConstituents(rhs);
 	int n_pts = points.GetNPoints();
 	
-	GaussianMixture* gmm = FindSubjets(&points, LogLthresh, maxNit, maxK, viz);
-	//if(viz)	cv3D.Write();
-	//int nsubjets = gmm->GetNClusters(LogLthresh*10.);
+	//find maxK points with biggest energy - 4th dim
+	points.Sort(3);
+	PointCollection seeds;
+	PointCollection newpts;
+	vector<double> pt;
+	for(int k = 0; k < points.GetNPoints(); k++){
+		//discard energy dimension
+		pt.push_back(points.at(k).at(0));
+		pt.push_back(points.at(k).at(1));
+		pt.push_back(points.at(k).at(2));
+
+		if(k >= points.GetNPoints() - maxK) seeds += Point(pt);
+		newpts += Point(pt);
+		pt.clear();
+	}
+	points.Clear();
+	
+	GaussianMixture* gmm = FindSubjets(&newpts, LogLthresh, maxNit, maxK, viz);
+	//GaussianMixture* gmm = FindSubjets(&newpts, LogLthresh, maxNit, maxK, viz, &seeds);
 	int nsubjets = gmm->GetNClusters();
+
 
 	//TODO: consider edge case where r_nk = r_nk' for all k == k' (all k entries for a point are equal)
 	//assign points to found subjets (clusters)
