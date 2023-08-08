@@ -32,6 +32,7 @@ class VarClusterViz3D{
 				return;
 			}
 			m_post = m_model->GetPosterior();
+			m_k = m_model->GetNClusters();
 		}	
 		void SeeData();
 		void Write();
