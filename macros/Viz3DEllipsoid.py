@@ -26,7 +26,7 @@ def plot_json(jsonfile, dataonly = False):
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, color = 'rgba(132,242,201,1.)', line=dict(
+			size = 4, color = 'rgba(132,242,201,0.8)', line=dict(
 				color = 'rgba(132, 242, 201, 1.)', width = 30))))
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
