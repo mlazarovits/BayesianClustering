@@ -16,6 +16,7 @@ void VarEMCluster::Estimate(){
 void VarEMCluster::Update(){
 	m_pdfmix->UpdateVariationalParameters();
 	//if weights (m_coeffs) are below some threshold, remove cluster
+/*
 	double pi;
 	for(int k = 0; k < m_k; k++){
 		pi = m_pdfmix->GetPriorParameters()[k]["pi"].at(0,0);
@@ -26,7 +27,11 @@ void VarEMCluster::Update(){
 			k--; //make sure to check following model
 		}
 	}
-
+	for(int k = 0; k < m_k; k++){ 
+		pi = m_pdfmix->GetPriorParameters()[k]["pi"].at(0,0);
+		cout << "k: " << k << " pi: " << pi << " thresh: " << _thresh << " " <<  m_pdfmix->GetNClusters() << " clusters" << endl;
+	}
+*/
 }
 
 

@@ -87,6 +87,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 	double dLogL, newLogL, oldLogL;
 	////////run EM algo////////
 	for(int it = 0; it < maxNit; it++){
+		cout << "old ELBO" << endl;
 		oldLogL = algo->EvalLogL();
 		
 		//E step
@@ -100,6 +101,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 			cv3D.WriteJson(fname+"it"+std::to_string(it+1));
 		}
 		//Check for convergence
+		cout << "new ELBO" << endl;
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
@@ -113,6 +115,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 			}
 			break;
 		}
+		if(viz) cout << "\n" << endl;
 	}
 //	if(viz){
 //		vector<map<string, Matrix>> params = gmm->GetPriorParameters();

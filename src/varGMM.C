@@ -105,27 +105,23 @@ int main(int argc, char *argv[]){
 	
 	
 	/////SIMULATE DATA//////
-	//create symmetric matrix
-	Matrix sigma = Matrix(N,N);
-	sigma.InitRandomSymPosDef();
-	Matrix mu = Matrix(N,1);
-	mu.InitRandom(1121);
-	////sample points from an n-dim gaussian for one cluster
-	Matrix mat;
-	mat.SampleNDimGaussian(mu,sigma,Nsample);
-	PointCollection pc = mat.MatToPoints();
-	
-	//sample points for another cluster
-	Matrix sigma2 = Matrix(N,N);
-	sigma2.InitRandomSymPosDef(0.,1.,111);
-	Matrix mu2 = Matrix(N,1);
-	mu2.InitRandom(0.,1.,112);
-
-	
-	Matrix mat2;
-	mat2.SampleNDimGaussian(mu2,sigma2,Nsample);
-	pc += mat2.MatToPoints();
-
+	PointCollection pc;
+	cout << "Original parameters" << endl;
+	for(int i = 0; i < 2; i++){
+		//create symmetric matrix
+		Matrix sigma = Matrix(N,N);
+		//sigma.InitRandomSymPosDef(0., 1., 111+i);
+		sigma.InitIdentity();
+		Matrix mu = Matrix(N,1);
+		mu.InitRandom(0., 10., 1121+i);
+		cout << "mean " << i << endl;
+		mu.Print();
+		cout << "\n" << endl;	
+		////sample points from an n-dim gaussian for one cluster
+		Matrix mat;
+		mat.SampleNDimGaussian(mu,sigma,Nsample);
+		pc += mat.MatToPoints();
+	}	
 	
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(k);
@@ -155,8 +151,8 @@ int main(int argc, char *argv[]){
 		algo->Update();
 		
 		//Plot
-		//cv3D.UpdatePosterior();
-		//if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
+		cv3D.UpdatePosterior();
+		if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
 
 	
 		//Check for convergence
@@ -167,7 +163,7 @@ int main(int argc, char *argv[]){
 		}
 		//ELBO should not decrease with iterations, dLogL should always be negative
 		dLogL = oldLogL - newLogL;
-		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 		if(fabs(dLogL) < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;
@@ -176,7 +172,6 @@ int main(int argc, char *argv[]){
 	cv3D.Write();
 
 	vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
-
 	cout << "Estimated parameters" << endl;
 	for(int i = 0; i < k; i++){
 		cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
@@ -185,19 +180,6 @@ int main(int argc, char *argv[]){
 		cout << "cov " << i << endl;
 		params[i]["cov"].Print();
 	}
-	
-	cout << "\n" << endl;	
-	cout << "Original parameters" << endl;
-	cout << "mean 1" << endl;
-	mu.Print();
-	cout << "cov 1" << endl;
-	sigma.Print();
-	
-	cout << "mean 2" << endl;
-	mu2.Print();
-	cout << "cov 2" << endl;
-	sigma2.Print();
-cout << "\n" << endl;	
 
 
 

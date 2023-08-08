@@ -30,6 +30,7 @@ class GaussianMixture : public BasePDFMixture{
 			
 		//for variational EM algorithm
 		void InitPriorParameters(unsigned long long seed = 111);
+		void InitParameters(const PointCollection& pc);
 		void CalculateVariationalPosterior();
 		void CalculateExpectations();
 		void CalculateRStatistics();
@@ -43,6 +44,7 @@ class GaussianMixture : public BasePDFMixture{
 		
 
 	private:
+		/*
 		//parameters (mu, sigma, and mixing coeffs) for k clusters
 		//d-length vector (d x 1 matrix) for each cluster k
 		vector<Matrix> m_mus;
@@ -62,6 +64,7 @@ class GaussianMixture : public BasePDFMixture{
 		vector<Matrix> m_Ws;
 		//k degrees of freedom for NW
 		vector<double> m_nus;
+		*/
 
 		//initial parameters
 		double m_alpha0;
@@ -72,11 +75,13 @@ class GaussianMixture : public BasePDFMixture{
 		Matrix m_mean0;
 		Matrix m_meanBeta0;
 
+		/*
 		//responsbility statistics
 		//k weighted means - dx1 each
 		vector<Matrix> m_xbars;
 		//k weighted covariance matrices - dxd each
 		vector<Matrix> m_Ss;
+		*/
 
 		//expectation values - used in ELBO + calculated in an earlier step
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
