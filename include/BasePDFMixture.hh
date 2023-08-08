@@ -16,6 +16,7 @@ class BasePDFMixture{
 		BasePDFMixture(int k){ m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
+				m_norms.push_back(0.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
@@ -62,6 +63,7 @@ class BasePDFMixture{
 		int GetNClusters(){ return m_k; }		
 
 		int GetMaxPointAssignment(int n){
+			if(m_post.empty()) return -1;
 			int max_post = 0;
 			int max_k = 0;
 			for(int k = 0; k < m_k; k++)
