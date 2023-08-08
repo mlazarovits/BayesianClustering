@@ -66,10 +66,10 @@ def plot_json(jsonfile):
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 	
 		#add ellipsoids
-		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale="aggrnyl", surfacecolor=y1, cmin=y1.min(), cmax=y1.max())),
+		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale="aggrnyl", surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
 	
 	fig = go.Figure(gr_arr)
-	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname)
+	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
 	return fig
 
 
