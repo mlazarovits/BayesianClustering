@@ -72,6 +72,12 @@ class Jet{
 				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
 			}
 		}
+		void GetEtaPhiEConstituents(PointCollection& pc) const{
+			pc.Clear();
+			for(int i = 0; i < (int)m_rhs.size(); i++){
+				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time(), m_rhs[i].energy()});
+			}
+		}
 		int GetNConstituents() const{return (int)m_rhs.size(); }	
 		
 		//parents in cluster
