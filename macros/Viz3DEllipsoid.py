@@ -6,7 +6,7 @@ import argparse
 import os
 
 
-def plot_json(jsonfile):
+def plot_json(jsonfile, dataonly = False):
 	#read json file
 	with open(jsonfile,'r') as file:
 		json_obj = json.load(file)
@@ -26,8 +26,13 @@ def plot_json(jsonfile):
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, color = 'rgba(132,242,201,0.5)', line=dict(
+			size = 4, color = 'rgba(132,242,201,1.)', line=dict(
 				color = 'rgba(132, 242, 201, 1.)', width = 30))))
+	if dataonly is True:
+		fig = go.Figure(gr_arr)
+		fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
+		return fig
+	
 	
 	for i in range(nClusters):
 		idx = str(i)
@@ -76,6 +81,7 @@ def plot_json(jsonfile):
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir','-d',help='directory with json files')
 parser.add_argument('--json','-j',help='json file to plot')
+parser.add_argument('--data',help='plot data only',action='store_true')
 args = parser.parse_args()
 
 if args.dir is None and args.json is None:
@@ -101,7 +107,7 @@ if args.json is not None:
 for f in files:
 	if ".json" not in f:
 		continue
-	fig = plot_json(args.dir+"/"+f)
+	fig = plot_json(args.dir+"/"+f,args.data)
 	if args.dir is not None:
 		name = f[:f.find(".json")]
 		print("Writing to",args.dir+"/"+name+".pdf")
