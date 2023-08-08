@@ -13,7 +13,10 @@ class KMeansCluster : public BaseCluster{
 		//KMeansCluster();
 		virtual ~KMeansCluster(){ m_means.clear(); };
 
+		//init from randomly selected points
 		void Initialize(unsigned long long seed = 123);
+		//init means from given points
+		void Initialize(const PointCollection& pc);
 
 		//E-step
 		void Estimate();
