@@ -82,7 +82,7 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<Matrix> mus, covs;
 	double pi_norm = 0;
 	vector<map<string, Matrix>> cluster_params;
-	vector<map<string, Matrix>> params = m_model->GetParameters();
+	vector<map<string, Matrix>> params = m_model->GetPriorParameters();
 	for(int i = 0; i < m_k; i++) cluster_params.push_back(params[i]);
 
 	for(int i = 0; i < m_n; i++){
