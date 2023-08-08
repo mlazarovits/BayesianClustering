@@ -63,7 +63,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 	gmm->InitPriorParameters();
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
-	algo->SetThresh(0.1);
+	//algo->SetThresh(0.);
 	
 
 	map<string, vector<Matrix>> params;
@@ -78,10 +78,10 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 
 	}
 	VarClusterViz3D cv3D;
-	if(viz) cv3D = VarClusterViz3D(algo);
-		if(viz){
-			cv3D.UpdatePosterior();
-			cv3D.WriteJson(fname+"it0");
+	if(viz){ cv3D = VarClusterViz3D(algo);
+		cv3D.UpdatePosterior();
+		cv3D.WriteJson(fname+"it0");
+		cout << "initial ELBO: " << algo->EvalLogL() << endl;
 		}
 	//loop
 	double dLogL, newLogL, oldLogL;
@@ -102,29 +102,29 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double Log
 		//Check for convergence
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
-			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
+			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
 			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
-		if(viz) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(viz) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(fabs(dLogL) < LogLthresh){
 			if(viz){
-				cout << "Reached convergence at iteration " << it << endl;
+				cout << "Reached convergence at iteration " << it+1 << endl;
 			}
 			break;
 		}
 	}
-	if(viz){
-		vector<map<string, Matrix>> params = gmm->GetPriorParameters();
-		for(int i = 0; i < (int)params.size(); i++){
-			cout << "Estimated parameters for cluster " << i << " with weight: " << params[i]["pi"].at(0,0) << endl;
-			cout << "mean" << endl;
-			params[i]["mean"].Print();
-			cout << "cov" << endl;
-			params[i]["cov"].Print();
-		}
-
-	}
+//	if(viz){
+//		vector<map<string, Matrix>> params = gmm->GetPriorParameters();
+//		for(int i = 0; i < (int)params.size(); i++){
+//			cout << "Estimated parameters for cluster " << i << " with weight: " << params[i]["pi"].at(0,0) << endl;
+//			cout << "mean" << endl;
+//			params[i]["mean"].Print();
+//			cout << "cov" << endl;
+//			params[i]["cov"].Print();
+//		}
+//
+//	}
 
 	return gmm;
 }
@@ -185,10 +185,10 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double LogLthresh, int m
 //crack open Jet and get underlying points
 vector<Jet> JetClusterizer::FindSubjets_XYZ(Jet jet, double LogLthresh, int maxNit, int maxK, bool viz){
 
-/*
 	//initialize vector of subjets
 	vector<Jet> subjets;
 	vector<JetPoint> rhs;
+/*
 
 	PointCollection points;
 	VarGaussianMixture vgmm(maxK);
@@ -239,9 +239,9 @@ cout << n_pts << " constituents to cluster" << endl;
 		//assign point n to subjet k - subjets[postMax_k] += rh[n];
 		subjets[k_assign].add(rhs[n]);
 	}
+*/
 	
 	return subjets;
-*/
 }
 
 
