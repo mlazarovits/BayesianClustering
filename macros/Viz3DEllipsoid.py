@@ -112,5 +112,7 @@ for f in files:
 		name = f[:f.find(".json")]
 		print("Writing to",args.dir+"/"+name+".pdf")
 		fig.write_image(args.dir+"/"+name+".pdf")
+	if args.data:
+		break
 fig.show()
 os.system("convert -delay 50 -loop 1 "+args.dir+"/*.pdf "+args.dir+"/total.gif");
