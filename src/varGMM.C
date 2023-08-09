@@ -110,12 +110,13 @@ int main(int argc, char *argv[]){
 	for(int i = 0; i < 2; i++){
 		//create symmetric matrix
 		Matrix sigma = Matrix(N,N);
-		//sigma.InitRandomSymPosDef(0., 1., 111+i);
-		sigma.InitIdentity();
+		sigma.InitRandomSymPosDef(0., 1., 111+i);
 		Matrix mu = Matrix(N,1);
 		mu.InitRandom(0., 10., 1121+i);
 		cout << "mean " << i << endl;
 		mu.Print();
+		cout << "cov " << i << endl;
+		sigma.Print();	
 		cout << "\n" << endl;	
 		////sample points from an n-dim gaussian for one cluster
 		Matrix mat;
@@ -128,10 +129,10 @@ int main(int argc, char *argv[]){
 	gmm->SetData(&pc);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
-
+	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,k);
-	algo->SetThresh(0.);
+	algo->SetThresh(1.);
 
 	//viz object
 	VarClusterViz3D cv3D = VarClusterViz3D(algo);
@@ -139,12 +140,12 @@ int main(int argc, char *argv[]){
 
 	
 	//loop
-	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.1;
+	double dLogL, newLogL;
+	double LogLThresh = 0.001;
+	double oldLogL = algo->EvalLogL();
 	////////run EM algo////////
 	for(int it = 0; it < nIts; it++){
-		oldLogL = algo->EvalLogL();
-		
+		//cout << "------------- it #" << it << " BEGIN -------------" << endl;
 		//E step
 		algo->Estimate();
 		//M step
@@ -164,6 +165,16 @@ int main(int argc, char *argv[]){
 		//ELBO should not decrease with iterations, dLogL should always be negative
 		dLogL = oldLogL - newLogL;
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
+		oldLogL = newLogL;
+	//cout << "Estimated parameters" << endl;
+	//vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
+	//for(int i = 0; i < k; i++){
+	//	cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
+	//	cout << "mean " << i << endl;
+	//	params[i]["mean"].Print();
+	//	cout << "cov " << i << endl;
+	//	params[i]["cov"].Print();
+	//}
 		if(fabs(dLogL) < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;
@@ -173,14 +184,13 @@ int main(int argc, char *argv[]){
 
 	vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
 	cout << "Estimated parameters" << endl;
-	for(int i = 0; i < k; i++){
+	for(int i = 0; i < gmm->GetNClusters(); i++){
 		cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
 		cout << "mean " << i << endl;
 		params[i]["mean"].Print();
 		cout << "cov " << i << endl;
 		params[i]["cov"].Print();
 	}
-
 
 
 

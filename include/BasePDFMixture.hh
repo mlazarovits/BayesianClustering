@@ -45,10 +45,32 @@ class BasePDFMixture{
 		virtual vector<map<string, Matrix>> GetPriorParameters() = 0; 
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
-		void GetDirichletParams(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
+		void GetDirichletParameters(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
-		void RemoveModel(int k){ m_model.erase(m_model.begin()+k); m_k--; }
+		void RemoveModel(int k){
+			//erase model
+			m_model.erase(m_model.begin()+k); 
+			//erase corresponding dirichlet param
+			m_alphas.erase(m_alphas.begin()+k);
+			//erase corresponding number of associated points (N_k)
+			m_norms.erase(m_norms.begin()+k);
+			//don't need to update m_coeffs - only used for normal EM algorithm
+			//update number of clusters
+			m_k--; }
+
+		//removes components that do not contribute to overall likelihood
+		void UpdateMixture(double thresh){
+			for(int k = 0; k < m_k; k++){
+				if(m_alphas[k] < thresh){
+					cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
+					//remove model + update number of clusters
+					RemoveModel(k);
+					k--; //make sure to check following model
+				}
+			}
+
+		}
 
 
 		virtual double EvalLogL() = 0;
