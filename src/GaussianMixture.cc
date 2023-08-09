@@ -35,7 +35,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
 		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
-		m_norms[k] = m_n/m_k;
+		m_norms[k] = double(m_n)/double(m_k);
 		m_model[k]->SetDim(m_dim);
 		Matrix cov = Matrix(m_dim, m_dim);
 		cov.InitIdentity();
@@ -253,6 +253,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	RandomSample rs;
 	rs.SetRange(0.,1.);
 	m_beta0 = rs.SampleFlat();
+	cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
@@ -270,6 +271,8 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, m_dim+2);
 	m_nu0 = rs.SampleFlat();
+	cout << "nu0: " << m_nu0 << endl;
+
 	m_post.SetDims(m_n, m_k);
 	
 	m_Elam.clear();
@@ -284,11 +287,12 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
-
+cout << "INIT PRIOR PARAMS" << endl;
 	rs.SetRange(0.,1.);
 	//init beta_k
 	for(int k = 0; k < m_k; k++){
 		m_model[k]->GetPrior()->SetParameter("scale",Matrix(k*rs.SampleFlat() + 0.1));
+		cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;
 	}
 	double mean_lower = m_data->min()-0.1;
 	double mean_upper = m_data->max()+0.1;
@@ -298,6 +302,8 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 		mat.InitRandom(mean_lower, mean_upper, seed+k);
 		m_model[k]->GetPrior()->SetParameter("mean",mat);		
 		mat.clear();
+		cout << "k: " << k << " mean: " << endl;
+		m_model[k]->GetPrior()->GetParameter("mean").Print();
 	}
 	//init W_k
 	for(int k = 0; k < m_k; k++){
@@ -305,15 +311,20 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 		mat.InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
 		m_model[k]->GetPrior()->SetParameter("scalemat",mat);		
 		mat.clear();
+		cout << "k: " << k << " scalemat: " << endl;
+		m_model[k]->GetPrior()->GetParameter("scalemat").Print();
 	}
 	//init nu_k
 	rs.SetRange(m_dim,m_dim*1.5);
 	//rs.SetRange(m_dim-1,m_dim+2.);
 	for(int k = 0; k < m_k; k++){
 		m_model[k]->GetPrior()->SetParameter("dof",Matrix(rs.SampleFlat()));	
+		cout << "k: " << k << " dof: " << m_model[k]->GetPrior()->GetParameter("dof").at(0,0) << endl;
 	}
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
+
+
 }
 
 
@@ -521,7 +532,7 @@ void GaussianMixture::UpdateVariationalParameters(){
 
 //M-step
 void GaussianMixture::UpdatePriorParameters(){
-//cout << "UPDATE PARAMETERS - M STEP" << endl;
+cout << "UPDATE PARAMETERS - M STEP" << endl;
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
 	for(int k = 0; k < m_k; k++){
@@ -531,14 +542,17 @@ void GaussianMixture::UpdatePriorParameters(){
 		
 		//alphas - eq. 10.58 (all the same in vector)
 		m_alphas[k] = m_alpha0 + m_norms[k];
-		
+		//cout << "k: " << k << " norm: " << m_norms[k] << endl;	
+		//cout << "k: " << k << " alpha: " << m_alphas[k] << endl;	
+	
 		//betas - eq. 10.60
 		double new_scale = m_beta0 + m_norms[k];
-		m_model[k]->GetPrior()->SetParameter("scale", new_scale);
-	
+		m_model[k]->GetPrior()->SetParameter("scale", Matrix(new_scale));
+		//cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;	
 		//nus - eq. 10.63
 		double new_dof = m_nu0 + m_norms[k];
 		m_model[k]->GetPrior()->SetParameter("dof", Matrix(new_dof));
+		//cout << "k: " << k << " dof: " << m_model[k]->GetPrior()->GetParameter("dof").at(0,0) << endl;	
 		
 		Matrix new_mean = Matrix(m_dim, 1);
 		//means - eq. 10.61
@@ -549,6 +563,10 @@ void GaussianMixture::UpdatePriorParameters(){
 		//normalize by 1/beta
 		new_mean.mult(new_mean,1./new_scale);
 		m_model[k]->GetPrior()->SetParameter("mean", new_mean);
+		//cout << "k: " << k << " mean: " << endl; 
+		//m_model[k]->GetPrior()->GetParameter("mean").Print();	
+		//cout << "k: " << k << " xbar: " << endl;
+		//mu.Print();
 
 		//Ws - eq. 10.62
 		//caluclated for W inverse
@@ -556,23 +574,35 @@ void GaussianMixture::UpdatePriorParameters(){
 		Matrix new_scalemat = Matrix(m_dim, m_dim);
 		//bar{x}_k - m0
 		Matrix x_min_mean = Matrix(m_dim, 1);
-		x_min_mean.minus(mu, new_mean);
+		x_min_mean.minus(mu, m_mean0);
 		Matrix x_min_meanT = Matrix(1, m_dim);
 		x_min_meanT.transpose(x_min_mean);
 		//(bar{x}_k - m0)(bar{x}_k - m0)T
 		new_scalemat.mult(x_min_mean, x_min_meanT);
+		//cout << "xxT" << endl;
+		//new_scalemat.Print();
 		double prefactor = m_beta0*m_norms[k]/(m_beta0 + m_norms[k]);
 		new_scalemat.mult(new_scalemat, prefactor);
+		//cout << "(b*N)/(b + N)*xxT" << endl;
+		//new_scalemat.Print();
 		//N_k*S_k
 		Matrix scaledS = Matrix(m_dim, m_dim);
 		scaledS.mult(cov,m_norms[k]);
 		//add first two terms to last term
 		new_scalemat.add(scaledS);
+		//cout << "N*S + (b*N)/(b + N)*xxT" << endl;
+		//new_scalemat.Print();
 		//add W0inv
 		new_scalemat.add(m_W0inv);
+		//cout << "W-1 + N*S + (b*N)/(b + N)*xxT" << endl;
+		//new_scalemat.Print();
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
 		m_model[k]->GetPrior()->SetParameter("scalemat", new_scalemat);
+		//cout << "k: " << k << " cov: " << endl;
+		//cov.Print();
+		//cout << "k: " << k << " scalemat: " << endl; 
+		//m_model[k]->GetPrior()->GetParameter("scalemat").Print();	
 
 	}
 };
