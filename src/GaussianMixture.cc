@@ -282,7 +282,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//init parameters from alpha0
 	//assuming a Dirichlet prior on the multinomial (categorical) assignment distribution (over latent variable z - sets pis)
 	for(int k = 0; k < m_k; k++){
-		m_alphas.push_back(m_alpha0);
+		m_alphas[k] = m_alpha0;
 	}
 
 	rs.SetRange(0.,1.);
@@ -641,7 +641,7 @@ double GaussianMixture::EvalVariationalLogL(){
 	for(int k = 0; k < m_k; k++)
 		E_p_pi += m_Epi[k];
 	E_p_pi *= (m_alpha0 - 1);
-	vector<double> alpha0s(m_alpha0, m_k);
+	vector<double> alpha0s(m_k, m_alpha0);
 	Dirichlet* dir = new Dirichlet(alpha0s);
 	E_p_pi += dir->lnC();
 //	cout << "E_p_pi: " << E_p_pi << endl;
@@ -721,7 +721,6 @@ double GaussianMixture::EvalVariationalLogL(){
 	cout << "E_q_Z: " <<  E_q_Z << endl;
 	cout << "E_q_pi: " << E_q_pi << endl;
 	cout << "E_q_muLam: " <<  E_q_muLam << endl;
-
 */
 
 
