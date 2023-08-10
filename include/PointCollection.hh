@@ -259,6 +259,8 @@ class PointCollection{
 	//normalize all dimensions indepedently
 	//vector<double> Normalize(){
 	Point Normalize(){
+		//translate first
+		Center();
 		double min, max;
 		//vector<double> scale;
 		Point scale = Point(_nDim);
