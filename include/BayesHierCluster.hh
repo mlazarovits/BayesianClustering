@@ -11,7 +11,7 @@ using std::vector;
 class BayesHierCluster{
 	public:
 		BayesHierCluster();
-		BayesHierCluster(BasePDF* model);
+		BayesHierCluster(double alpha);
 		virtual ~BayesHierCluster(){ };
 	
 		void AddData(PointCollection* pc);
@@ -32,7 +32,6 @@ class BayesHierCluster{
 		int m_nclusters;
 
 		vector<PointCollection*> m_pts;
-		BasePDF* m_pdf; //p(x | theta)
 
 		//clustering history
 //		ClusterHistory m_clusterHist;

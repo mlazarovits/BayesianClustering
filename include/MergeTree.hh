@@ -2,7 +2,8 @@
 #define MergeTree_HH
 
 #include "BaseTree.hh"
-#include "BasePDFMixture.hh"
+#include "VarEMCluster.hh"
+#include "GaussianMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
 #include "NodeList.hh"
@@ -12,9 +13,8 @@ class MergeTree : public BaseTree{
 	public:
 		MergeTree() : BaseTree(){ _alpha = 0; }
 
-		MergeTree(BasePDF* model) : BaseTree(){
-		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
-			_model = model; _prior = model->GetPrior(); 
+		MergeTree(double alpha) : BaseTree(){
+			_alpha = alpha;
 		}
 
 		//copy constructor
@@ -24,9 +24,6 @@ class MergeTree : public BaseTree{
 			_t = tree._t;
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
-			//mixture model
-			_model = tree._model;
-			_prior = tree._prior;	
 		}
 
 		virtual ~MergeTree(){  }
@@ -35,9 +32,7 @@ class MergeTree : public BaseTree{
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			for(int i = 0; i < pc->GetNPoints(); i++){
 				AddLeaf(&pc->at(i));
-		//		_clusters[i]->name = std::to_string(i);
 			}
-		//	NodeSort(_clusters);
 		}
 		
 		node* Get(int i){ return _clusters[i]; }
@@ -90,12 +85,38 @@ class MergeTree : public BaseTree{
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
-			//////initialize probability of subtree to be null hypothesis for leaf
-			//////p(D_k | T_k) = p(D_k | H_1^k)
-			if(_model == nullptr) cout << "null" << endl;
-			x->prob_tk = _model->ConjugateEvidence(*pt);
+			//initialize probability of subtree to be null hypothesis for leaf
+			//p(D_k | T_k) = p(D_k | H_1^k)
+			x->prob_tk = Evidence(x);//_model->ConjugateEvidence(*pt);
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			_clusters.push_back(x);
+		}
+
+		//runs varEM to get Evidence (ELBO) for given GMM
+		double Evidence(node* x){
+			int k;
+			//if leaf node (ie r == _z && l == _z) -> set k = 1
+			if(x->l == _z && x->r == _z) k = 1;
+			//number of clusters in node x = k_l + k_r for left and right nodes
+			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+
+			x->model = new GaussianMixture(k); //p(x | theta)
+			x->model->SetData(x->points);
+			x->model->InitParameters();
+			x->model->InitPriorParameters();
+			
+			VarEMCluster* algo = new VarEMCluster(x->model, k);	
+			algo->SetThresh(1.);
+			//cluster
+			double oldLogL = algo->EvalLogL();
+			double LogLThresh = 0.01;
+			double newLogL, dLogL; 
+			while(dLogL < LogLThresh){
+				newLogL = algo->Cluster();
+				dLogL = newLogL - oldLogL;
+				oldLogL = newLogL;
+			}
+			return newLogL;
 		}
 
 
@@ -104,8 +125,6 @@ class MergeTree : public BaseTree{
 		vector<node*> _clusters;
 		//Dirichlet prior parameter
 		double _alpha;
-		BasePDF* _model;
-		BasePDF* _prior;	
 
 
 };

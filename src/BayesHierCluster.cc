@@ -8,9 +8,8 @@ using node = BaseTree::node;
 BayesHierCluster::BayesHierCluster(){ m_nclusters = 999; }
 
 
-BayesHierCluster::BayesHierCluster(BasePDF* model){
-	m_pdf = model;
-	m_mergeTree = MergeTree(m_pdf);
+BayesHierCluster::BayesHierCluster(double alpha){
+	m_mergeTree = MergeTree(alpha);
 }
 
 void BayesHierCluster::AddData(PointCollection* pc){
