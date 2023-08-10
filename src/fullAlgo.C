@@ -134,108 +134,12 @@ int main(int argc, char *argv[]){
 		mat.SampleNDimGaussian(mu,sigma,Nsample);
 		pc += mat.MatToPoints();
 	}
-	
-	
-	//create Gaussian model with conjugate prior
-	Gaussian* gaus = new Gaussian(N);
-	//set prior parameters - default for now
-	Matrix W = Matrix(N,N);
-	W.InitIdentity();
-	Matrix m = Matrix(N,1);
-	m.InitEmpty();
-	double dof = N + 0.1; //dof > D - 1
-	double scale = 0.5;
-	NormalInvWishart* prior = new NormalInvWishart(W, m, dof, scale);
-	gaus->SetPrior(prior);
+
 	
 	//Bayesian Hierarchical Clustering algo
-	BayesHierCluster* bhc = new BayesHierCluster(gaus);
-
-	bhc->SetAlpha(alpha);
+	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->AddData(&pc);
 	bhc->Cluster();
-
-
-
-/*	
-	//create GMM model
-	GaussianMixture* gmm = new GaussianMixture(k);
-	gmm->SetData(&pc);
-	gmm->InitParameters();
-	gmm->InitPriorParameters();
-
-	//create EM algo
-	VarEMCluster* algo = new VarEMCluster(gmm,k);
-
-	//viz object
-	VarClusterViz3D cv3D = VarClusterViz3D(algo);
-	cv3D.SeeData();
-
-	map<string, vector<Matrix>> params;
-	
-	//loop
-	double dLogL, newLogL, oldLogL;
-	double LogLThresh = 0.0001;
-	////////run EM algo////////
-	for(int it = 0; it < nIts; it++){
-		oldLogL = algo->EvalLogL();
-		
-		//E step
-		algo->Estimate();
-		//M step
-		algo->Update();
-		
-		//Plot
-		//cv3D.UpdatePosterior();
-		//if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
-
-	
-		//Check for convergence
-		newLogL = algo->EvalLogL();
-		if(isnan(newLogL)){
-			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
-			return -1;
-		}
-		//ELBO should not decrease with iterations, dLogL should always be negative
-		dLogL = oldLogL - newLogL;
-		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(fabs(dLogL) < LogLThresh){
-			cout << "Reached convergence at iteration " << it << endl;
-			break;
-		}
-	}
-	cv3D.Write();
-
-	params = gmm->GetParameters();	
-	vector<Matrix> mus = params["means"];
-	vector<Matrix> covs = params["covs"];
-	
-	cout << "Estimated parameters" << endl;
-	cout << "mean 1" << endl;
-	mus[0].Print();
-	cout << "cov 1" << endl;
-	covs[0].Print();
-	cout << "mean 2" << endl;
-	mus[1].Print();
-	cout << "cov 2" << endl;
-	covs[1].Print();
-	cout << "\n" << endl;	
-
-	cout << "Original parameters" << endl;
-	cout << "mean 1" << endl;
-	mu.Print();
-	cout << "cov 1" << endl;
-	sigma.Print();
-	
-	cout << "mean 2" << endl;
-	mu2.Print();
-	cout << "cov 2" << endl;
-	sigma2.Print();
-*/
-
-
-
-
 
 
 
