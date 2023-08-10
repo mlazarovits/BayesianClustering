@@ -166,15 +166,6 @@ int main(int argc, char *argv[]){
 		dLogL = oldLogL - newLogL;
 		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 		oldLogL = newLogL;
-	//cout << "Estimated parameters" << endl;
-	//vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
-	//for(int i = 0; i < k; i++){
-	//	cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
-	//	cout << "mean " << i << endl;
-	//	params[i]["mean"].Print();
-	//	cout << "cov " << i << endl;
-	//	params[i]["cov"].Print();
-	//}
 		if(fabs(dLogL) < LogLThresh){
 			cout << "Reached convergence at iteration " << it << endl;
 			break;
@@ -182,14 +173,16 @@ int main(int argc, char *argv[]){
 	}
 	cv3D.Write();
 
-	vector<map<string, Matrix>> params = gmm->GetPriorParameters();	
 	cout << "Estimated parameters" << endl;
+	map<string, Matrix> params;
 	for(int i = 0; i < gmm->GetNClusters(); i++){
-		cout << "weight " << i << ": " << params[i]["pi"].at(0,0) << endl;
+		params = gmm->GetPriorParameters(i);	
+		cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
 		cout << "mean " << i << endl;
-		params[i]["mean"].Print();
+		params["mean"].Print();
 		cout << "cov " << i << endl;
-		params[i]["cov"].Print();
+		params["cov"].Print();
+		params.clear();
 	}
 
 

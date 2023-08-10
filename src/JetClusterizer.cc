@@ -121,13 +121,16 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double thr
 		oldLogL = newLogL;
 	}
 	if(viz){
-		vector<map<string, Matrix>> params = gmm->GetPriorParameters();
-		for(int i = 0; i < (int)params.size(); i++){
-			cout << "Estimated parameters for cluster " << i << " with norm: " << params[i]["alpha"].at(0,0) - a << " and weight: " << params[i]["pi"].at(0,0) << endl;
-			cout << "mean" << endl;
-			params[i]["mean"].Print();
-			cout << "cov" << endl;
-			params[i]["cov"].Print();
+		cout << "Estimated parameters" << endl;
+		map<string, Matrix> params;
+		for(int i = 0; i < gmm->GetNClusters(); i++){
+			params = gmm->GetPriorParameters(i);	
+			cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
+			cout << "mean " << i << endl;
+			params["mean"].Print();
+			cout << "cov " << i << endl;
+			params["cov"].Print();
+			params.clear();
 		}
 
 	}
