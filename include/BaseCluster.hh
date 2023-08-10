@@ -21,7 +21,7 @@ class BaseCluster{
 
 		void SetData(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); m_k = 0; m_n = m_data->GetNPoints();}
 		
-		double Cluster(BasePDFMixture* pdfmix){
+		double Cluster(){
 			//E step
 			Estimate();
 			//M step
@@ -30,7 +30,7 @@ class BaseCluster{
 			//Check for convergence
 			double newLogL = EvalLogL();
 			
-			pdfmix = GetModel();
+			m_pdfmix = GetModel();
 			return newLogL;
 		};
 
