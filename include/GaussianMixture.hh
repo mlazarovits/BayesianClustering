@@ -67,7 +67,6 @@ class GaussianMixture : public BasePDFMixture{
 		*/
 
 		//initial parameters
-		double m_alpha0;
 		double m_beta0;
 		double m_nu0;
 		Matrix m_W0;

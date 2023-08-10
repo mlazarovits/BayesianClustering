@@ -12,14 +12,18 @@ using std::string;
 
 class BasePDFMixture{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; }
-		BasePDFMixture(int k){ m_k = k; 
+		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.;}
+		BasePDFMixture(int k){ 
+			m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
 				m_norms.push_back(0.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
+			//alpha > 0
+			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
+			m_alpha0 = 0.1;
 		}
 
 		virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -46,6 +50,8 @@ class BasePDFMixture{
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParameters(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
+		void SetDirichletParameter(double alpha){ m_alpha0 = alpha; }
+		void SetAlpha(double alpha){  m_alpha0 = alpha; }
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		void RemoveModel(int k){
@@ -107,6 +113,8 @@ class BasePDFMixture{
 		vector<double> m_coeffs;
 		//dirichlet (prior) parameters (on coeffs)
 		vector<double> m_alphas;
+		//initial alpha
+		double m_alpha0;
 		//normalization on posterior
 		vector<double> m_norms;
 		Matrix m_post;

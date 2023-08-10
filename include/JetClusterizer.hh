@@ -21,11 +21,11 @@ class JetClusterizer{
 		//call recursively - runs everything (varGMM + BHC)
 		void Cluster();
 
-		GaussianMixture* FindSubjets(PointCollection* points, double LogLthresh, int maxNit, int maxK, bool viz, PointCollection* seeds = nullptr);
+		GaussianMixture* FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds = nullptr);
 		//just runs varGMM over given jets
-		vector<Jet> FindSubjets_XYZ(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
+		vector<Jet> FindSubjets_XYZ(Jet jet, double thresh = 1., int maxNit = 1, int maxK = 10, bool viz = false, double a = 0.1);
 		//just runs varGMM over given jets
-		vector<Jet> FindSubjets_etaPhi(Jet jet, double LogLthresh = 0.0001, int maxNit = 1, int maxK = 10, bool viz = false);
+		vector<Jet> FindSubjets_etaPhi(Jet jet, double thresh = 1., int maxNit = 1, int maxK = 10, bool viz = false, double a = 0.1);
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	
 
