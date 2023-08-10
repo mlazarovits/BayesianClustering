@@ -9,6 +9,8 @@ void KMeansCluster::Initialize(unsigned long long seed){
 	}
 	//initialize means to be random points in data
 	PointCollection initpts = m_data->SelectPoints(m_k,seed);		
+	//cout << "KMeans starting points" << endl;
+	//initpts.Print();
 	//create separate matrix for each mean
 	for(int k = 0; k < m_k; k++){
 		m_means.push_back(Matrix(initpts.at(k)));

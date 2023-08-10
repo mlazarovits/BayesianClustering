@@ -80,7 +80,6 @@ void VarClusterViz3D::WriteJson(string filename){
 		return;
 	}
 	vector<Matrix> mus, covs;
-	double pi_norm = 0;
 	vector<map<string, Matrix>> cluster_params;
 	vector<map<string, Matrix>> params = m_model->GetPriorParameters();
 	for(int i = 0; i < m_k; i++) cluster_params.push_back(params[i]);
@@ -100,9 +99,6 @@ void VarClusterViz3D::WriteJson(string filename){
 	//if no points - empty plot
 //	if(x.size() == 0) return;
 
-	for(int k = 0; k < m_k; k++)
-		pi_norm += cluster_params[k]["pi"].at(0,0);
-	
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
@@ -121,8 +117,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		cluster["mixing_coeff_norm"] = cluster_params[k]["pi"].at(0,0)/pi_norm;
-	
+		cluster["mixing_coeff_norm"] = cluster_params[k]["pi"].at(0,0);
 		cluster["mu_x"] = x0;
 		cluster["mu_y"] = y0;
 		cluster["mu_z"] = z0;

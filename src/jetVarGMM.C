@@ -21,7 +21,8 @@ int main(int argc, char *argv[]){
 	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
-	double logLthresh = 0.001;
+	double thresh = 1.;
+	double alpha = 1.;
 	bool viz = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -76,7 +77,23 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
    		}
+		if(strncmp(argv[i],"-t", 2) == 0){
+			i++;
+    	 		thresh = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--thresh", 8) == 0){
+			i++;
+    	 		thresh = std::stod(argv[i]);
+   		}
 	
+		if(strncmp(argv[i],"-a", 2) == 0){
+			i++;
+    	 		alpha = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--alpha", 7) == 0){
+			i++;
+    	 		alpha = std::stod(argv[i]);
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -86,7 +103,9 @@ int main(int argc, char *argv[]){
    		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
-   		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
+   		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
+   		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
+		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
@@ -130,10 +149,11 @@ int main(int argc, char *argv[]){
 
 	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;
 
+	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
 	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
-	jc.FindSubjets_etaPhi(testjet, logLthresh, nIts, k, viz);
+	jc.FindSubjets_etaPhi(testjet, thresh, nIts, k, viz, alpha);
 
 
 		
