@@ -3,6 +3,7 @@
 
 #include "Matrix.hh"
 #include "BasePDF.hh"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -82,17 +83,6 @@ class BasePDFMixture : public BasePDF{
 
 		virtual double EvalLogL() = 0;
 		virtual double EvalVariationalLogL() = 0;
-
-		//approximated by ELBO from variational EM
-		double ConjugateEvidence(const Point& x){
-			return EvalVariationalLogL();
-		}
-		double ConjugateEvidence(const PointCollection& x){
-			return EvalVariationalLogL();
-		}
-		double ConjugateEvidence(){
-			return EvalVariationalLogL();
-		}
 
 		int Dim(){ return m_dim; }
 	

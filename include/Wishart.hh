@@ -19,8 +19,6 @@ class Wishart : public BasePDF{
 			m_W = m_params["W"];
 		}	
 		BasePDF* Posterior(){ return nullptr; }
-		double ConjugateEvidence(const Point& x) { return -1; }
-		double ConjugateEvidence(const PointCollection& x) { return -1; }
 		double Prob(const Matrix& x);
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x){ return -1.; }

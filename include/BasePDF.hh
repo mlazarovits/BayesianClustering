@@ -46,8 +46,6 @@ class BasePDF{
 
 		void SetPrior(BasePDF* p){ m_prior = p; }
 		BasePDF* GetPrior(){ return m_prior; }
-		virtual double ConjugateEvidence(const Point& x) = 0;
-		virtual double ConjugateEvidence(const PointCollection& x) = 0;
 
 		map<string, Matrix> m_params;
 

@@ -22,8 +22,6 @@ class Dirichlet : public BasePDF{
 		BasePDF* Posterior(){ return nullptr; }
 
 		double lnC();
-		double ConjugateEvidence(const Point& x){ return -1; }
-		double ConjugateEvidence(const PointCollection& x){ return -1; }
 
 	private:
 		//parameters

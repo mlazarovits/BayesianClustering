@@ -11,13 +11,11 @@ class MultivarT : BasePDF{
 		MultivarT(Matrix mean, Matrix scale, double dof);
 		virtual ~MultivarT(){ };
 
-		void InitParameters();
+		void InitParameters(unsigned long long seed = 123);
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x){ return -1.; }
 		void UpdateParameters(){ m_mean = m_params["mean"]; m_scale = m_params["scale"]; m_dof = m_params["m_dof"].at(0,0); }	
 
-		double ConjugateEvidence(const Point& x){ return -1.; }
-		double ConjugateEvidence(const PointCollection& x){ return -1.; }
 		BasePDF* Posterior(){ return nullptr; }
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }

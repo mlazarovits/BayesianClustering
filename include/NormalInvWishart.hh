@@ -21,8 +21,6 @@ class NormalInvWishart : public BasePDF{
 
 		void UpdateParameters();
 
-		double ConjugateEvidence(const Point& x){ return -1;}
-		double ConjugateEvidence(const PointCollection& x){ return -1;}
 	private:
 		//params
 		Matrix m_mean;
