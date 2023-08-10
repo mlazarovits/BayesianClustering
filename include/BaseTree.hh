@@ -2,12 +2,13 @@
 #define BaseTree_HH
 
 #include "PointCollection.hh"
+#include "BasePDFMixture.hh" 
 
 class BaseTree{
 	public:
 		BaseTree(){
 			_z = (struct node*) malloc(sizeof *_z);
-			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1;
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr;
 			_head = (struct node*)malloc(sizeof *_head);
 			_head->r = _z; _head->val = 0;
 		}
@@ -23,6 +24,8 @@ class BaseTree{
 			double val;
 			//factor in prior
 			double d;
+			//model of cluster
+			BasePDFMixture* model;
 			//probability of being in tree T_k p(D_k | T_k)
 			double prob_tk;
 			//for debugging - making sure correct merges are happening	
