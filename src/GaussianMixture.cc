@@ -49,7 +49,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
-	kmc.Initialize();
+	kmc.Initialize(seed);
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;
@@ -70,8 +70,6 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix S = Matrix(m_dim,m_dim);
 		Matrix mu = m_model[k]->GetParameter("mean");
-//	cout << "k: " << k << " mu:" << endl;
-//	mu.Print();
 		for(int n = 0; n < m_n; n++){
 			//construct x - mu
 			Matrix x_mat = Matrix(m_data->at(n));
@@ -284,10 +282,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//assuming conjugate prior - normal inverse wishart
 	for(int k = 0; k < m_k; k++){m_model[k]->SetDim(m_dim); m_model[k]->SetPrior(new NormalInvWishart(m_dim));}	
 
-	//alpha > 0
-		//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
-	m_alpha0 = 0.1;
-	
 	//beta > 0
 	RandomSample rs;
 	rs.SetRange(0.,1.);
@@ -718,7 +712,7 @@ double GaussianMixture::EvalVariationalLogL(){
 		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
 		Matrix mu = m_model[k]->GetParameter("mean");
 		Matrix cov = m_model[k]->GetParameter("cov");
-		//cout << "k: " << k << " scale: " << scale << " dof: " << nu << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << endl;
+		////cout << "k: " << k << " scale: " << scale << " dof: " << nu << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << endl;
 	//	cout << "m" << endl;
 	//	mean.Print();
 	//	cout << "W" << endl;
