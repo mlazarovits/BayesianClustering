@@ -33,8 +33,7 @@ void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<map<string, Matrix>> clusters;
-	vector<map<string, Matrix>> params = m_model->GetParameters();
-	for(int i = 0; i < m_k; i++) clusters.push_back(params[i]);
+	for(int i = 0; i < m_k; i++) clusters.push_back(m_model->GetParameters(i));
 
 	vector<double> x, y, z;
 	for(int i = 0; i < m_n; i++){

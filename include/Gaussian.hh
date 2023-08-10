@@ -13,7 +13,7 @@ class Gaussian : public BasePDF{
 		virtual ~Gaussian(){ };
 
 
-		void InitParameters();
+		void InitParameters(unsigned long long seed = 123);
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		void UpdateParameters(){ m_mu = m_params["mean"]; m_cov = m_params["cov"]; }	
 		double ConjugateEvidence(const Point& x);
@@ -22,7 +22,7 @@ class Gaussian : public BasePDF{
 		double Prob(const PointCollection& x);
 		NormalInvWishart* Posterior();
 
-		Gaussian* mult(BasePDF* p1); 
+		Gaussian* mult(Gaussian* p1); 
 
 
 	private:

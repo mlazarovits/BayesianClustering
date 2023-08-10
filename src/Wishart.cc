@@ -66,7 +66,7 @@ double Wishart::H(){
 
 
 
-void Wishart::InitParameters(){
+void Wishart::InitParameters(unsigned long long seed){
 	//init W to identity
 	m_W.InitIdentity();
 	//nu > d - 1 (degrees of freedom)

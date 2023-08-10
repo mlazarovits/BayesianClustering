@@ -102,7 +102,7 @@ double Gaussian::Prob(const PointCollection& x){
 
 }
 
-void Gaussian::InitParameters(){
+void Gaussian::InitParameters(unsigned long long seed){
 	//init cov to identity and mean to 0
 	m_cov.InitIdentity();
 	m_mu.InitEmpty();
@@ -255,7 +255,7 @@ double Gaussian::ConjugateEvidence(const PointCollection& x){
 }
 
 
-Gaussian* Gaussian::mult(BasePDF* p1){ 
+Gaussian* Gaussian::mult(Gaussian* p1){ 
 	//check that p1 is a Gaussian by looking at parameters
 	Matrix mu2 = p1->GetParameter("mean");
 	Matrix mu1 = m_mu;
@@ -267,7 +267,6 @@ Gaussian* Gaussian::mult(BasePDF* p1){
 	
 
 	Gaussian* ret = new Gaussian(m_dim);
-	if(mu2.empty() || cov2.empty()){ cout << "Error: input must be same as derived class (Gaussian)" << endl; return ret; }
 
 	//form from: https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf (Ch. 8.1.8)
 	Matrix new_cov = Matrix(m_dim, m_dim);

@@ -22,9 +22,8 @@ class GaussianMixture : public BasePDFMixture{
 		double EvalLogL();
 		
 		//fill vectors with parameters
-		//void GetParameters(vector<Matrix>& mus, vector<Matrix>& covs);
-		//returns mu, cov, and mixing coeffs
-		vector<map<string, Matrix>> GetParameters(); 
+		//returns mu, cov, and mixing coeffs for cluster k
+		map<string, Matrix> GetParameters(int k); 
  
 
 			
@@ -38,8 +37,8 @@ class GaussianMixture : public BasePDFMixture{
 		void UpdateVariationalParameters();
 		void UpdatePriorParameters();
 		double EvalVariationalLogL();
-		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
-		vector<map<string, Matrix>> GetPriorParameters(); 
+		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
+		map<string, Matrix> GetPriorParameters(int k); 
 
 		
 

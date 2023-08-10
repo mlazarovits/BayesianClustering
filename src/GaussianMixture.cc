@@ -39,7 +39,6 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		m_norms[k] = double(m_n)/double(m_k);
 		m_model[k]->SetDim(m_dim);
 
-		//TODO: test normal EM with m_coeffs[k] = m_norms[k]/m_n - make sure parameters actually change
 		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
@@ -236,38 +235,28 @@ double GaussianMixture::EvalLogL(){
 
 
 
-vector<map<string, Matrix>> GaussianMixture::GetParameters(){ 
-	vector<map<string, Matrix>> params;
-	for(int k = 0; k < m_k; k++){
-		map<string, Matrix> p;
-		p["mean"] = m_model[k]->GetParameter("mean");
-		p["cov"] = m_model[k]->GetParameter("cov");
-		p["pi"] = Matrix(m_coeffs[k]);
-		params.push_back(p);
-		p.clear();
-	}
-	return params;
+map<string, Matrix> GaussianMixture::GetParameters(int k){ 
+	map<string, Matrix> p;
+	p["mean"] = m_model[k]->GetParameter("mean");
+	p["cov"] = m_model[k]->GetParameter("cov");
+	p["pi"] = Matrix(m_coeffs[k]);
+	return p;
 };
 
 
 
-vector<map<string, Matrix>> GaussianMixture::GetPriorParameters(){ 
-	vector<map<string, Matrix>> params;
-	for(int k = 0; k < m_k; k++){
-		map<string, Matrix> p;
-		p["mean"] = m_model[k]->GetParameter("mean");
-		p["cov"] = m_model[k]->GetParameter("cov");
-		p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n));
-		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
-		p["m"] = m_model[k]->GetPrior()->GetParameter("mean");
-		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
-		p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
-		p["alpha"] = Matrix(m_alphas[k]);
-		
-		params.push_back(p);
-		p.clear();
-	}
-	return params;
+map<string, Matrix> GaussianMixture::GetPriorParameters(int k){ 
+	map<string, Matrix> p;
+	p["mean"] = m_model[k]->GetParameter("mean");
+	p["cov"] = m_model[k]->GetParameter("cov");
+	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n));
+	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
+	p["m"] = m_model[k]->GetPrior()->GetParameter("mean");
+	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
+	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
+	p["alpha"] = Matrix(m_alphas[k]);
+	
+	return p;
 };
 
 
@@ -286,7 +275,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	RandomSample rs;
 	rs.SetRange(0.,1.);
 	m_beta0 = rs.SampleFlat();
-//	cout << "beta0: " << m_beta0 << endl;
+	cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
@@ -304,7 +293,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, m_dim+2);
 	m_nu0 = rs.SampleFlat();
-//	cout << "nu0: " << m_nu0 << endl;
+	cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);
 	

@@ -66,7 +66,7 @@ double NormalInvWishart::Prob(const Matrix& mu, const Matrix& cov){
 
 
 
-void NormalInvWishart::InitParameters(){ 
+void NormalInvWishart::InitParameters(unsigned long long seed){ 
 	m_mean.InitEmpty();
 	m_scalemat.InitIdentity();
 	m_scale = 1.;

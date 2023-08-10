@@ -17,7 +17,7 @@ class NormalInvWishart : public BasePDF{
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		BasePDF* Posterior(){ return nullptr; }
-		void InitParameters();
+		void InitParameters(unsigned long long seed = 123);
 
 		void UpdateParameters();
 

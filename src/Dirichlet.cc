@@ -58,7 +58,7 @@ double Dirichlet::lnC(){
 
 
 
-void Dirichlet::InitParameters(){
+void Dirichlet::InitParameters(unsigned long long seed){
 	//init alphas to 1
 	for(int i = 0; i < m_dim; i++){
 		m_alphas.push_back(1.);

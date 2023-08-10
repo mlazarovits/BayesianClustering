@@ -11,7 +11,7 @@ class Wishart : public BasePDF{
 		virtual ~Wishart(){ };
 
 		void SetParameters(Matrix W, double nu){ m_W = W; m_nu = nu; }
-		void InitParameters();
+		void InitParameters(unsigned long long seed = 123);
 		
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		void UpdateParameters(){ 

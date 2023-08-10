@@ -10,7 +10,7 @@ using std::vector;
 using std::map;
 using std::string;
 
-class BasePDFMixture{
+class BasePDFMixture : public BasePDF{
 	public:
 		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.;}
 		BasePDFMixture(int k){ 
@@ -26,10 +26,11 @@ class BasePDFMixture{
 			m_alpha0 = 0.1;
 		}
 
-		virtual void InitParameters(unsigned long long seed = 123) = 0;
+		//virtual void InitParameters(unsigned long long seed = 123) = 0;
 		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear(); m_model.clear(); }
 
 		double Prob(const Point& x);
+		double Prob(const PointCollection& x);
 
 		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); }
 		PointCollection* GetData(){ return m_data; }
@@ -38,15 +39,15 @@ class BasePDFMixture{
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
 		virtual void UpdateParameters() = 0;
-		//returns mu, cov, and mixing coeffs
-		virtual vector<map<string, Matrix>> GetParameters() = 0; 
+		//returns mu, cov, and mixing coeffs for cluster k
+		virtual map<string, Matrix> GetParameters(int k) = 0; 
 		
 		//for variational EM algorithm
 		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
-		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart)
-		virtual vector<map<string, Matrix>> GetPriorParameters() = 0; 
+		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
+		virtual map<string, Matrix> GetPriorParameters(int k) = 0; 
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParameters(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
@@ -81,6 +82,17 @@ class BasePDFMixture{
 
 		virtual double EvalLogL() = 0;
 		virtual double EvalVariationalLogL() = 0;
+
+		//approximated by ELBO from variational EM
+		double ConjugateEvidence(const Point& x){
+			return EvalVariationalLogL();
+		}
+		double ConjugateEvidence(const PointCollection& x){
+			return EvalVariationalLogL();
+		}
+		double ConjugateEvidence(){
+			return EvalVariationalLogL();
+		}
 
 		int Dim(){ return m_dim; }
 	

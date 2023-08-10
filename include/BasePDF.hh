@@ -16,7 +16,7 @@ class BasePDF{
 		virtual double Prob(const Point& x) = 0;
 		virtual double Prob(const PointCollection& x) = 0;
 
-		virtual void InitParameters() = 0;
+		virtual void InitParameters(unsigned long long seed = 123) = 0;
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
 		virtual map<string, Matrix> GetParameters(){ return m_params; }
 //		virtual void SetParameters(map<string, Matrix> params) = 0;
@@ -40,8 +40,6 @@ class BasePDF{
 	
 		int Dim(){ return m_dim; }
 		int m_dim;
-
-		virtual BasePDF* mult(BasePDF* p1) = 0;
 
 	
 		void SetPrefactor(double p){ m_prefactor = p; }	
