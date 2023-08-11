@@ -8,9 +8,9 @@ class BaseTree{
 	public:
 		BaseTree(){
 			_z = (struct node*) malloc(sizeof *_z);
-			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr;
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1;
 			_head = (struct node*)malloc(sizeof *_head);
-			_head->r = _z; _head->val = 0;
+			_head->r = _z; _head->val = 0; _head->color = 999;
 		}
 		virtual ~BaseTree(){ delete _head; delete _z; }
 		//node structure
@@ -28,8 +28,15 @@ class BaseTree{
 			BasePDFMixture* model;
 			//probability of being in tree T_k p(D_k | T_k)
 			double prob_tk;
+			//color for plotting -> maps to color map
+			int color;
 			//for debugging - making sure correct merges are happening	
 			//std::string name;
+		};
+		struct listnode{
+			//posterior value in here
+			node* node;
+			struct listnode* next;
 		};
 
 		node* _head, *_z, *_t;

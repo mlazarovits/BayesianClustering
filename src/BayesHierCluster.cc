@@ -1,6 +1,6 @@
 #include "BayesHierCluster.hh"
 #include "BaseTree.hh"
-#include "NodeList.hh"
+#include "NodeStack.hh"
 #include "MergeTree.hh"
 
 
@@ -36,7 +36,7 @@ vector<node*> BayesHierCluster::Cluster(){
 
 	//while(m_mergeTree.GetNPoints() > 1){
 	int m_npts = m_mergeTree.GetNClusters();
-	//construct rk list (NodeList)
+	//construct rk list (NodeStack)
 	//start algorithm with all combinations - O(n^2)
 	for(int i = 0; i < m_npts; i++){
 		for(int j = i; j < m_npts; j++){
@@ -89,7 +89,7 @@ cout << "Made first r_k list" << endl;
 		//cout << "n clusters in merge tree: " << m_mergeTree.GetNClusters() << endl;
 		
 		//for all nodes in merge tree: check against newly formed cluster
-		NodeList _list1;
+		NodeStack _list1;
 		for(int i = 0; i < m_mergeTree.GetNClusters(); i++){
 			di = m_mergeTree.Get(i);
 			if(di == max) continue;

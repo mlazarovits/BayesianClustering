@@ -6,15 +6,16 @@
 #include "GaussianMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
-#include "NodeList.hh"
+#include "NodeStack.hh"
 
 using node = BaseTree::node;
 class MergeTree : public BaseTree{
 	public:
-		MergeTree() : BaseTree(){ _alpha = 0; }
+		MergeTree() : BaseTree(){ _alpha = 0; _c = -1; }
 
 		MergeTree(double alpha) : BaseTree(){
 			_alpha = alpha;
+			_c = -1;
 		}
 
 		//copy constructor
@@ -24,9 +25,10 @@ class MergeTree : public BaseTree{
 			_t = tree._t;
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
+			_c = tree._c;
 		}
 
-		virtual ~MergeTree(){  }
+		virtual ~MergeTree(){ _c = 0; }
 
 		void AddData(PointCollection* pc){
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
@@ -41,7 +43,9 @@ class MergeTree : public BaseTree{
 
 		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
-			struct node* x = CalculateMerge(l, r); 	
+			struct node* x = CalculateMerge(l, r);
+			//increment color counter
+			_c++; 	
 			//remove nodes l and r
 			Remove(l);
 			Remove(r);
@@ -89,6 +93,7 @@ class MergeTree : public BaseTree{
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)
 			x->prob_tk = Evidence(x);//_model->ConjugateEvidence(*pt);
+			x->color = _c;
 			_clusters.push_back(x);
 		}
 
@@ -134,7 +139,7 @@ class MergeTree : public BaseTree{
 		vector<node*> _clusters;
 		//Dirichlet prior parameter
 		double _alpha;
-
+		int _c;
 
 };
 #endif

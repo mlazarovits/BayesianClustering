@@ -3,7 +3,7 @@
 
 #include "PointCollection.hh"
 #include "BasePDF.hh"
-#include "NodeList.hh"
+#include "NodeStack.hh"
 #include "MergeTree.hh"
 #include "BaseTree.hh"
 
@@ -35,7 +35,7 @@ class BayesHierCluster{
 		MergeTree m_mergeTree;
 
 		//tracks posterior values
-		NodeList _list;
+		NodeStack _list;
 
 		//dirichlet param
 		double m_alpha;
