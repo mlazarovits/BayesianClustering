@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --ouput(-o) [file]            output root file (in plots/)" << endl;
+   		cout << "   --output(-o) [file]           output root file (in plots/)" << endl;
    		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
@@ -124,6 +124,10 @@ int main(int argc, char *argv[]){
 		sigma.InitRandomSymPosDef(0.,1.,seed+i);
 		Matrix mu = Matrix(N,1);
 		mu.InitRandom(0.,1.,seed+i);
+		cout << "mean " << i << endl;
+		mu.Print();
+		cout << "cov " << i << endl;
+		sigma.Print();
 		////sample points from an n-dim gaussian for one cluster
 		Matrix mat;
 		mat.SampleNDimGaussian(mu,sigma,Nsample);
@@ -135,10 +139,10 @@ int main(int argc, char *argv[]){
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->AddData(&pc);
 	vector<node*> tree = bhc->Cluster();
+	cout << tree.size() << " final node(s)" << endl;
 
-	//viz stuff for full algo
-	FullViz3D plots = FullViz3D(tree);
-	//input: vector of nodes
-	//output: plot	
-
+	if(viz){
+		FullViz3D plots = FullViz3D(tree);
+		plots.Write(fname);
+	}
 }

@@ -15,7 +15,6 @@ void VarEMCluster::Estimate(){
 //equations were derived from maximizing the posterior calculated in the E-step
 void VarEMCluster::Update(){
 	m_pdfmix->UpdateVariationalParameters();
-	//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 
 
 }
