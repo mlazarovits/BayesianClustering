@@ -22,11 +22,7 @@ class VarClusterViz3D{
 		VarClusterViz3D(VarEMCluster* algo, string fname = "test");
 		virtual ~VarClusterViz3D(){ };
 	
-		//add plot at specified t (z) value	
-		//time window?
 		void WriteJson(string filename = "test");
-		void AddPlot(double t, string plotName = "test");
-		void AddAnimation(string dirName = "test");
 		void UpdatePosterior(){  
 			if(m_n == 0){
 				return;
@@ -35,7 +31,6 @@ class VarClusterViz3D{
 			m_k = m_model->GetNClusters();
 		}	
 		void SeeData();
-		void Write();
 		void SetPalette(int k);
 
 		BasePDFMixture* GetModel(){ return m_model; }

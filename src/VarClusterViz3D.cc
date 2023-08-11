@@ -53,9 +53,6 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	m_deltaT = 0.1;
 }
 
-void VarClusterViz3D::AddPlot(double t, string plotName){
-
-}
 
 
 
@@ -189,13 +186,6 @@ if(m_n == 0 || x.size() == 0){
 
 }
 
-void VarClusterViz3D::AddAnimation(string dirname){
-}
-
-
-void VarClusterViz3D::Write(){
-
-}
 
 
 
