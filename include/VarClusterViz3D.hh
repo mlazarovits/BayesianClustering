@@ -1,13 +1,14 @@
 #ifndef VIZCLUSTERVIZ3D_HH
 #define	VIZCLUSTERVIZ3D_HH
 
+#include "ClusterVizBase.hh"
 #include "VarEMCluster.hh"
 #include <TCanvas.h>
 #include <string.h>
 
 using std::string;
 
-class VarClusterViz3D{
+class VarClusterViz3D : public ClusterVizBase{
 	public:
 		VarClusterViz3D(){
 			m_model = nullptr;
@@ -21,6 +22,9 @@ class VarClusterViz3D{
 		VarClusterViz3D(const VarClusterViz3D& viz);
 		VarClusterViz3D(VarEMCluster* algo, string fname = "test");
 		virtual ~VarClusterViz3D(){ };
+
+		void Write(){ };
+		void AddPlot(string filename = "test"){ };
 	
 		void WriteJson(string filename = "test");
 		void UpdatePosterior(){  
