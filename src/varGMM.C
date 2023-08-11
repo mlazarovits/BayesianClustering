@@ -171,7 +171,6 @@ int main(int argc, char *argv[]){
 			break;
 		}
 	}
-	cv3D.Write();
 
 	cout << "Estimated parameters" << endl;
 	map<string, Matrix> params;
