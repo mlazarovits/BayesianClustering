@@ -16,6 +16,13 @@ using std::string;
 class ClusterVizBase{
 	public:
 		ClusterVizBase(){ 
+			m_model = nullptr;
+			m_post = Matrix();
+			m_points = new PointCollection();	
+			m_n = 0; //number of points
+			m_k = 0; //number of clusters
+			m_fname = "";	
+			m_cvs = {}; 
 		};
 		ClusterVizBase(BaseCluster* algo, string fname = "test"){
 			m_model = algo->GetModel();

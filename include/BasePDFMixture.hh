@@ -69,9 +69,10 @@ class BasePDFMixture : public BasePDF{
 
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
+		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 			for(int k = 0; k < m_k; k++){
 				if(m_alphas[k] < thresh){
-					cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
+					//cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
 					k--; //make sure to check following model

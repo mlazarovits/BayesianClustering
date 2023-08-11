@@ -34,7 +34,6 @@ class BaseCluster{
 			return newLogL;
 		};
 
-		void GetParameters(){ };
 
 		void SetNClusters(int k){ m_k = k; }
 		int GetNClusters(){ return m_k; }

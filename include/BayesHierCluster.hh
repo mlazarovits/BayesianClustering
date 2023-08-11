@@ -3,10 +3,11 @@
 
 #include "PointCollection.hh"
 #include "BasePDF.hh"
-//#include "ClusterHistory.hh"
 #include "NodeList.hh"
 #include "MergeTree.hh"
+#include "BaseTree.hh"
 
+using node = BaseTree::node;
 using std::vector;
 class BayesHierCluster{
 	public:
@@ -16,26 +17,20 @@ class BayesHierCluster{
 	
 		void AddData(PointCollection* pc);
 	
-		//get clusters at specified rk cut-off
-		vector<PointCollection*> GetClusters(double rk);	
 
-		//get clusters at specified depth
-		vector<PointCollection*> GetClusters(int d);	
 		
 		//cluster trees (points in pc)
 		//might need arg for recursion
 		//void Cluster(const vector<PointCollection>& pc);
-		void Cluster();
+		vector<node*> Cluster();
 
 		void SetAlpha(double a);
 	private:
-		int m_nclusters;
+		//int m_nclusters;
 
 		vector<PointCollection*> m_pts;
+		vector<node*> _clusters;
 
-		//clustering history
-//		ClusterHistory m_clusterHist;
-		
 		//calculates and tracks merges
 		MergeTree m_mergeTree;
 

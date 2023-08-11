@@ -1,11 +1,6 @@
-#include "GaussianMixture.hh"
-#include "RandomSample.hh"
-#include "VarClusterViz2D.hh"
-#include "VarClusterViz3D.hh"
 #include "BayesHierCluster.hh"
-#include "Gaussian.hh"
-#include "NormalInvWishart.hh"
-
+#include "BaseTree.hh"
+#include "FullViz3D.hh"
 
 #include <iostream>
 #include <cmath>
@@ -18,7 +13,7 @@
 
 using std::cout;
 using std::endl;
-
+using node = BaseTree::node;
 int main(int argc, char *argv[]){
 	
 	string fname = "test";
@@ -139,8 +134,11 @@ int main(int argc, char *argv[]){
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->AddData(&pc);
-	bhc->Cluster();
+	vector<node*> tree = bhc->Cluster();
 
-
+	//viz stuff for full algo
+	FullViz3D plots = FullViz3D(tree);
+	//input: vector of nodes
+	//output: plot	
 
 }
