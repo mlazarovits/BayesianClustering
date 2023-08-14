@@ -98,5 +98,44 @@ Json::Value FullViz3D::WriteNode(node* node){
 
 
 
+void FullViz3D::orderTree(node* node, int level, map<int, NodeStack> &map){
+	if(node->val == -1) return;
+	map[level].push(node);
+	
+	orderTree(node->l, level + 1, map);
+	orderTree(node->r, level + 1, map);
+
+}
 
 
+void FullViz3D::WriteTree(node* root){
+	Json::Value levels;
+	Json::Value clusters;
+	map<int, NodeStack> tree_map;
+	orderTree(root, 0, tree_map);	
+
+	//write a json for each level, adding leaves (1 point clusters) from previous level to next
+	for (int i = 0; i < tree_map.size(); i++)
+	   {
+	       cout << "Level " << i << ": " << endl;
+	     	tree_map[i].Print();
+		//for each node in tree_map[i] (NodeStack):
+		node* t = tree_map[i].pop();
+		while(t->val != -1){ 
+		      clusters["cluster_"+std::to_string(node)] = WriteNode(node)	
+		      t = tree_map[i].pop();	
+		}
+		levels["level_"+std::to_string(tree_map[i])] = clusters;
+		 
+	   }
+/*
+	_root["levels"] = levels;	
+	Json::StreamWriterBuilder builder;
+	const std::string json_file = Json::writeString(builder, _root);
+
+	std::ofstream file;
+	file.open(filename+".json");
+	file << json_file << endl;
+	cout << "Writing to: " << filename << ".json" << endl;
+*/
+}

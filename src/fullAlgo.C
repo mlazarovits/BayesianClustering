@@ -134,7 +134,9 @@ int main(int argc, char *argv[]){
 		pc += mat.MatToPoints();
 	}
 
-	
+	cout << "DATA" << endl;
+	pc.Print();
+cout << "\n" << endl;	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->AddData(&pc);
