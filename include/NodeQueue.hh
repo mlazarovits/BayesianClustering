@@ -1,3 +1,5 @@
+#ifndef NodeQueue_HH
+#define NodeQueue_HH
 #include "BaseTree.hh"
 
 using node = BaseTree::node;
@@ -7,13 +9,15 @@ class NodeQueue{
 		NodeQueue(){
 			_head = (listnode*)malloc(sizeof *_head);
 			_tail = (listnode*)malloc(sizeof *_tail);
-			
+			_none = (listnode*)malloc(sizeof *_none);
+		
 			//end delimiter
 			_z = (node*)malloc(sizeof *_z);
 			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1;
-	
-			_head->node = _z;
-			_tail->node = _z;
+			_none->node = _z;
+			_none->next = _none;	
+
+			_head = _tail = _none;
 					
 		};
 		virtual ~NodeQueue(){ };
@@ -25,16 +29,25 @@ class NodeQueue{
 
 		//put element at top 
 		void put(node* node){
-			t = (listnode*)malloc(sizeof *t);
-			t->node = node; t->next = _head->next;
-			_head->next = t;
-			
+			listnode* t = (listnode*)malloc(sizeof *t);
+			t->node = node;
+			//if empty
+			if(empty()){
+				_head = _tail =  t; 
+				return;
+			}
+			//put new node at end
+			t->next = _none;
+			_tail->next = t;	
+			_tail = t;
 		};
 	
-		//get element behind _tail	
+		//get _head
 		node* get(){
-			listnode* t = _head->next;
-			_head->next = t->next;
+			if(empty()) return nullptr;
+			listnode* t = _head;
+			_head = _head->next;
+			if(_head == _none) _tail = _none;
 			node* x = t->node;
 			free(t);
 			return x;
@@ -42,10 +55,21 @@ class NodeQueue{
 		};
 
 
-		bool empty(){ return _head == _tail; }
+		bool empty(){ return _head == _none; }
+
+
+		void Print(){
+			listnode* t = (listnode*)malloc(sizeof *t);
+			t = _head;
+			while(t != _none){
+				cout << t->node->val << endl;
+				t = t->next;
+			}
+
+		}
 
 	private:
-		listnode* _head, _tail;
+		listnode* _head, *_tail, *_none;
 		node* _z;
 };
 #endif
