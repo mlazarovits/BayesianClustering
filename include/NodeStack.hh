@@ -147,7 +147,8 @@ class NodeStack{
 		void Print(){
 			listnode* g = _head->next;
 			int i = 1;
-			while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
+			//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
+			while(g != _z){ cout << "cluster " << i << endl; g->node->points->Print(); i++; g = g->next; } 
 		}
 
 		private:
