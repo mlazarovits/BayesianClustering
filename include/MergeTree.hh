@@ -1,21 +1,26 @@
 #ifndef MergeTree_HH
 #define MergeTree_HH
 
-#include "BaseTree.hh"
 #include "VarEMCluster.hh"
 #include "GaussianMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
 #include "NodeStack.hh"
 
-using node = BaseTree::node;
-class MergeTree : public BaseTree{
+//using node = BaseTree::node;
+class MergeTree : BaseTree{
 	public:
-		MergeTree() : BaseTree(){ _alpha = 0; _c = -1; }
+		MergeTree(){ 
+		cout << "empty ctor - z val: " << _z->val << ": " <<  _z << endl;
+		_alpha = 0; _c = -1; 
+		cout << "empty ctor end - z val: " << _z->val << ": " <<  _z << endl;
+		}
 
-		MergeTree(double alpha) : BaseTree(){
+		MergeTree(double alpha){
+		cout << "alpha ctor - z val: " << _z->val << ": " <<  _z << endl;
 			_alpha = alpha;
 			_c = -1;
+		cout << "alpha ctor end - z val: " << _z->val << ": " << _z << endl;
 		}
 
 		//copy constructor
@@ -30,7 +35,11 @@ class MergeTree : public BaseTree{
 
 		virtual ~MergeTree(){ _c = 0; }
 
+
+		double zval(){ cout << _z << " "; return _z->val; }
+
 		void AddData(PointCollection* pc){
+		cout << "AddData - z val: " << _z->val << endl;
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			for(int i = 0; i < pc->GetNPoints(); i++){
 				AddLeaf(&pc->at(i));
@@ -40,11 +49,12 @@ class MergeTree : public BaseTree{
 		node* Get(int i){ return _clusters[i]; }
 
 		vector<node*> GetClusters(){ return _clusters; }
-
+/*
+//not actually called
 		node* Merge(node *l, node *r){
 			//calculate p_lr (posterior from these two nodes)
 			struct node* x = CalculateMerge(l, r);
-			//increment color counter
+		//increment color counter
 			_c++; 	
 			//remove nodes l and r
 			Remove(l);
@@ -53,7 +63,7 @@ class MergeTree : public BaseTree{
 			_clusters.push_back(x);
 			return x;
 		}
-
+	*/
 		void Insert(node* x){
 			_clusters.push_back(x);
 		}
@@ -85,7 +95,12 @@ class MergeTree : public BaseTree{
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
+			cout << "z val: " << _z->val << endl;
 			x->l = _z; x->r = _z;
+			cout << "add leaf" << endl;
+			pt->Print();
+			cout << "add leaf with left val: " << x->l->val << endl;
+			cout << "add leaf with right val: " << x->r->val << endl;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 

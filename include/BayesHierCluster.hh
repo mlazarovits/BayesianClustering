@@ -5,9 +5,9 @@
 #include "BasePDF.hh"
 #include "NodeStack.hh"
 #include "MergeTree.hh"
-#include "BaseTree.hh"
+//#include "BaseTree.hh"
 
-using node = BaseTree::node;
+//using node = BaseTree::node;
 using std::vector;
 class BayesHierCluster{
 	public:
@@ -32,7 +32,7 @@ class BayesHierCluster{
 		vector<node*> _clusters;
 
 		//calculates and tracks merges
-		MergeTree m_mergeTree;
+		MergeTree *m_mergeTree;
 
 		//tracks posterior values
 		NodeStack _list;

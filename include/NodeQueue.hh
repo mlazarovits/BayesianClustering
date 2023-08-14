@@ -33,7 +33,8 @@ class NodeQueue{
 			t->node = node;
 			//if empty
 			if(empty()){
-				_head = _tail =  t; 
+				t->next = _none;
+				_head = _tail = t; 
 				return;
 			}
 			//put new node at end
