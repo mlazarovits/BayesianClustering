@@ -148,6 +148,10 @@ cout << "max: " << nLevels << " levels" << endl;
 			node* n = tree_maps[t][l].pop();
 			int j = 0;
 			while(n->val != -999){ 
+				//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
+				if(n->points->GetNPoints() == 1 && l < tree_maps[t].rbegin()->first){
+					tree_maps[t][l+1].push(n);
+				}
 				clusters["cluster_"+std::to_string(j)] = WriteNode(n);
 				n = tree_maps[t][l].pop();
 				j++;	
