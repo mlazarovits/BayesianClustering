@@ -20,15 +20,14 @@ Json::Value FullViz3D::WriteNode(node* node){
 	Json::Value subcluster;
 	Json::Value data;
 
+	Json::Value color(Json::arrayValue);
 	Json::Value x(Json::arrayValue);
 	Json::Value y(Json::arrayValue);
 	Json::Value z(Json::arrayValue);
-	Json::Value color;
 	
 	Json::Value eigenVec_0(Json::arrayValue);
 	Json::Value eigenVec_1(Json::arrayValue);
 	Json::Value eigenVec_2(Json::arrayValue);
-	
 	
 	int kmax = node->model->GetNClusters();
 	BasePDFMixture* model = node->model;
@@ -36,21 +35,31 @@ Json::Value FullViz3D::WriteNode(node* node){
 	if(points->GetNPoints() == 0){
 		return cluster;
 	}
-	for(int i = 0; i < points->GetNPoints(); i++){
-		//eta
-		x.append(points->at(i).Value(0));
-		//phi
-		y.append(points->at(i).Value(1));
-		z.append(points->at(i).Value(2));
-	}
-	data["x"] = x;
-	data["y"] = y;
-	data["z"] = z;
-	data["color"] = node->color;
 
+
+
+	
+			for(int i = 0; i < points->GetNPoints(); i++){
+				//eta
+				x.append(points->at(i).Value(0));
+				//phi
+				y.append(points->at(i).Value(1));
+				z.append(points->at(i).Value(2));
+			}
+			data["x"] = x;
+			data["y"] = y;
+			data["z"] = z;
 	cluster["data"] = data;
-	//if no points - empty plot
-//	if(x.size() == 0) return;
+	
+/*
+	for(int i = 0; i < points->GetNPoints(); i++){
+		color.append(c);	
+	}
+	if(node->points->GetNPoints() == 1)
+		data["color"] = -1;
+	else
+		data["color"] = c;
+*/
 
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
@@ -107,35 +116,74 @@ void FullViz3D::orderTree(node* node, int level, map<int, NodeStack> &map){
 
 }
 
+//level{ tree_0{ }, tree_1{ }, ...}
+Json::Value FullViz3D::WriteLevels(){
+	Json::Value level;
+	Json::Value trees;
+	Json::Value clusters;
+	int nTrees = (int)_nodes.size();
 
-void FullViz3D::WriteTree(node* root){
-	Json::Value levels;
+	//create a node - level map for each tree
+	vector<map<int, NodeStack>> tree_maps;
+	for(int i = 0; i < nTrees; i++){
+		map<int, NodeStack> tree_map;
+		orderTree(_nodes[i], 0, tree_map);
+		tree_maps.push_back(tree_map);	
+	}
+    auto pr = std::max_element(tree_maps.begin(), tree_maps.end(), [](const auto &x, const auto &y) {
+                    return x.rbegin()->first < y.rbegin()->first;
+                });
+	int nLevels = 4;//pr->rbegin()->first;
+cout << "max: " << nLevels << " levels" << endl;
+	//write a json for each level per tree
+	for(int l = 0; l < nLevels+1; l++){
+		cout << "Level " << l << ": " << endl;
+		for(int t = 0; t < nTrees; t++){
+			cout << "Tree " << t << ": " << endl;
+			if(l > tree_maps[t].rbegin()->first){
+				continue;
+			}
+
+		     	tree_maps[t][l].Print();
+			node* n = tree_maps[t][l].pop();
+			int j = 0;
+			while(n->val != -999){ 
+				clusters["cluster_"+std::to_string(j)] = WriteNode(n);
+				n = tree_maps[t][l].pop();
+				j++;	
+			}
+			trees["tree_"+std::to_string(t)] = clusters;
+		}
+		level["level_"+std::to_string(l)] = trees;
+		//reset trees Json object so values aren't carried over to unfilled levels
+		trees.clear();
+	}
+	_root["levels"] = level;
+	return level;
+}
+
+Json::Value FullViz3D::WriteTree(node* root){
+	Json::Value level;
 	Json::Value clusters;
 	map<int, NodeStack> tree_map;
 	orderTree(root, 0, tree_map);	
 
-	//write a json for each level, adding leaves (1 point clusters) from previous level to next
 	for (int i = 0; i < tree_map.size(); i++)
-	   {
-	       cout << "Level " << i << ": " << endl;
-	     	tree_map[i].Print();
-		//for each node in tree_map[i] (NodeStack):
-		node* t = tree_map[i].pop();
-		while(t->val != -1){ 
-		      clusters["cluster_"+std::to_string(node)] = WriteNode(node)	
-		      t = tree_map[i].pop();	
+		{
+		     cout << "Level " << i << ": " << endl;
+		     tree_map[i].Print();
+		     //for each node in tree_map[i] (NodeStack):
+		     node* t = tree_map[i].pop();
+		     int j = 0;
+		     while(t->val != -999){ 
+		     	clusters["cluster_"+std::to_string(j)] = WriteNode(t);
+		     	t = tree_map[i].pop();
+		     	j++;	
+		     }
+		     level["clusters_level_"+std::to_string(i)] = clusters;
 		}
-		levels["level_"+std::to_string(tree_map[i])] = clusters;
-		 
-	   }
-/*
-	_root["levels"] = levels;	
-	Json::StreamWriterBuilder builder;
-	const std::string json_file = Json::writeString(builder, _root);
 
-	std::ofstream file;
-	file.open(filename+".json");
-	file << json_file << endl;
-	cout << "Writing to: " << filename << ".json" << endl;
-*/
+	Json::Value levels;
+	levels["levels"] = level;
+	return levels;
 }
