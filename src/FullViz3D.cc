@@ -133,7 +133,7 @@ Json::Value FullViz3D::WriteLevels(){
     auto pr = std::max_element(tree_maps.begin(), tree_maps.end(), [](const auto &x, const auto &y) {
                     return x.rbegin()->first < y.rbegin()->first;
                 });
-	int nLevels = 4;//pr->rbegin()->first;
+	int nLevels = pr->rbegin()->first;
 cout << "max: " << nLevels << " levels" << endl;
 	//write a json for each level per tree
 	for(int l = 0; l < nLevels+1; l++){
@@ -157,7 +157,7 @@ cout << "max: " << nLevels << " levels" << endl;
 			}
 			trees["tree_"+std::to_string(t)] = clusters;
 			//reset trees Json object so values aren't carried over to unfilled levels
-			clusters.clear();
+			//clusters.clear();
 		}
 		levels["level_"+std::to_string(l)] = trees;
 	}
