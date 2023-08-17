@@ -142,7 +142,7 @@ Json::Value FullViz3D::WriteLevels(){
 		//	cout << "Tree " << t << ": " << endl;
 			//only write if level exists in tree
 			if(l <= tree_maps[t].rbegin()->first){
-		     		tree_maps[t][l].Print();
+		     		//tree_maps[t][l].Print();
 				node* n = tree_maps[t][l].pop();
 				int j = 0;
 				while(n->val != -999){ 
