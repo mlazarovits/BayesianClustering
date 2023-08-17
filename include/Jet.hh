@@ -60,7 +60,7 @@ class Jet{
 		
 		//constituents (jet points) in jet (clustered or unclustered)
 		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = m_rhs; }
-		void GetPointConstituents(PointCollection& pc) const{
+		void GetXYZConstituents(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)m_rhs.size(); i++){
 				pc += m_rhs[i].four_space();
