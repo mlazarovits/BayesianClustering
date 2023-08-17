@@ -17,16 +17,13 @@ class MergeTree : BDATA
 (0.580332,1.479676,2.369276)aseTree{
 	public:
 		MergeTree(){ 
-		cout << "empty ctor - z val: " << _z->val << ": " <<  _z << endl;
-		_alpha = 0; _c = -1; 
-		cout << "empty ctor end - z val: " << _z->val << ": " <<  _z << endl;
+		_alpha = 0; _c = -1; _thresh = 0.; 
 		}
 
 		MergeTree(double alpha){
-		cout << "alpha ctor - z val: " << _z->val << ": " <<  _z << endl;
 			_alpha = alpha;
 			_c = -1;
-		cout << "alpha ctor end - z val: " << _z->val << ": " << _z << endl;
+			_thresh = 1.;
 		}
 
 		//copy constructor
@@ -37,15 +34,14 @@ class MergeTree : BDATA
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
 			_c = tree._c;
+			_thresh = tree._thresh;
 		}
 
 		virtual ~MergeTree(){ _c = 0; }
 
-
-		double zval(){ cout << _z << " "; return _z->val; }
+		void SetThresh(double t){ _thresh = t; }
 
 		void AddData(PointCollection* pc){
-		cout << "AddData - z val: " << _z->val << endl;
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
 			for(int i = 0; i < pc->GetNPoints(); i++){
 				AddLeaf(&pc->at(i));
@@ -55,28 +51,13 @@ class MergeTree : BDATA
 		node* Get(int i){ return _clusters[i]; }
 
 		vector<node*> GetClusters(){ return _clusters; }
-/*
-//not actually called
-		node* Merge(node *l, node *r){
-			//calculate p_lr (posterior from these two nodes)
-			struct node* x = CalculateMerge(l, r);
-		//increment color counter
-			_c++; 	
-			//remove nodes l and r
-			Remove(l);
-			Remove(r);
-			//insert x into tree
-			_clusters.push_back(x);
-			return x;
-		}
-	*/
+		
 		void Insert(node* x){
 			_clusters.push_back(x);
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
-		
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
@@ -136,7 +117,7 @@ class MergeTree : BDATA
 		//	x->model->GetData()->Print();
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
-			algo->SetThresh(1.);
+			algo->SetThresh(_thresh);
 			
 			//cluster
 			double oldLogL = algo->EvalLogL();
@@ -161,6 +142,8 @@ class MergeTree : BDATA
 		//Dirichlet prior parameter
 		double _alpha;
 		int _c;
+		//threshold on variational EM
+		double _thresh;
 
 };
 #endif
