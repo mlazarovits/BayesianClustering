@@ -7,16 +7,16 @@ import os
 
 
 class JsonPlotter:
-	def __init__(jsonfile):
+	def __init__(self, jsonfile):
 		#read json file
 		with open(jsonfile,'r') as file:
 			self.json_obj = json.load(file)
 		self.jsonfile = jsonfile
 
-	def buildColorDict():
+	def buildColorDict(self):
 		colors = {}
-		#leaf color - kind of transparent
-		colors[-1] = 'rgba(0, 0, 0, 0.5)'
+		#leaf color - hollow points
+		colors[-1] = 'rgba(0, 0, 0, 0.)'
 		#light green
 		colors[0] = 'rgba(173, 226, 209, 1.)'
 		#light red
@@ -34,7 +34,7 @@ class JsonPlotter:
 	
 	
 	
-	def plot_json(dataonly = False):
+	def plot_json(self, dataonly = False):
 		levels = self.json_obj['levels']
 		nLevels = len(levels)
 		print("json has",nLevels,"levels")
@@ -45,30 +45,21 @@ class JsonPlotter:
 		for l in range(nLevels):
 			fig = self.plot_level(l, plotname+'_level'+str(l))
 			figs.append(fig)
-	
-	
-		#make sure arr is flat
 		return figs
 			
 	
 	
-	def plot_level(l, filename):
+	def plot_level(self, l, filename):
 		#get level l for each tree -> will return clusters_level_l for each tree
 		#if tree has less levels than l, plot all data in tree as leaves
-		level = self.json_object["levels"]["level_"+str(l)]
+		level = self.json_obj["levels"]["level_"+str(l)]
 		nTrees = len(level)
 	
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
 			tree = level["tree_"+str(t)]
-			#if tree is empty as this level, plot last level (all points as leaves)
-			if len(tree) < 1:
-				level = self.json_object["levels"]["level_"+str(minLevel)] #last level
-				tree = level["tree_"+str(t)]
-			self.plot_tree(tree)	
-			minLevel = l
-		gr_arr.append(plot_tree(tree)) 
+			gr_arr.append(self.plot_tree(level, t))	
 	
 		
 		#make sure arr is flat
@@ -80,20 +71,21 @@ class JsonPlotter:
 	
 		
 	
-	def plot_tree(tree):
+	def plot_tree(self, level, t):
+		tree = level["tree_"+str(t)]
 		nClusters = len(tree)
 
 		gr_arr = []
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
-			gr_arr.append(plot_cluster(cluster, t))
+			gr_arr.append(self.plot_cluster(cluster, t))
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
 		return gr_arr
 	
 	
-	def plot_cluster(cluster, c, dataonly = False):
+	def plot_cluster(self, cluster, c, dataonly = False):
 		#update axis names
 		data = cluster['data']
 		x = data['x']
@@ -102,7 +94,7 @@ class JsonPlotter:
 		
 		gr_arr = []
 	
-		colors = buildColorDict()
+		colors = self.buildColorDict()
 		
 		#leaf
 		if(len(x) == 1):
@@ -110,7 +102,6 @@ class JsonPlotter:
 		else:
 			cl = c	
 	
-		
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				size = 4, color = colors[cl], line=dict(
@@ -165,7 +156,6 @@ class JsonPlotter:
 		
 			#add ellipsoids
 			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
-			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale="aggrnyl", surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
 		
 		return gr_arr
 
@@ -184,7 +174,8 @@ def main():
 		exit()
 
 	f = args.json	
-	figs = plot_json(f,args.data)
+	jp = JsonPlotter(f)	
+	figs = jp.plot_json(args.data)
 	name = f[:f.find(".json")]
 	print("Writing to directory",name)
 	if(os.path.exists(name)):
