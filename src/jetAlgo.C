@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
 	double thresh = 1.;
 	double alpha = 1.;
 	bool viz = false;
+	int verb = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -71,11 +72,16 @@ int main(int argc, char *argv[]){
 			i++;
     	 		nIts = std::atoi(argv[i]);
    		}
-		if(strncmp(argv[i],"-v", 2) == 0){
-    	 		viz = true;
-   		}
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
+   		}
+		if(strncmp(argv[i],"--verbosity", 11) == 0){
+    	 		i++;
+			verb = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"-v", 2) == 0){
+    	 		i++;
+			verb = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-t", 2) == 0){
 			i++;
@@ -106,7 +112,8 @@ int main(int argc, char *argv[]){
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
-   		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --verbosity(-v) [verb]            set verbosity (default = 0)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -154,7 +161,7 @@ int main(int argc, char *argv[]){
 	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
 //	jc.FindSubjets_etaPhi(testjet, thresh, nIts, k, viz, alpha);
-	jc.Cluster(testjet);
+	jc.Cluster(testjet, alpha, thresh, viz, verb);
 
 		
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)
