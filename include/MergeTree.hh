@@ -76,12 +76,12 @@ class MergeTree : BaseTree{
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
-			cout << "z val: " << _z->val << endl;
+			//cout << "z val: " << _z->val << endl;
 			x->l = _z; x->r = _z;
-			cout << "add leaf" << endl;
-			pt->Print();
-			cout << "add leaf with left val: " << x->l->val << endl;
-			cout << "add leaf with right val: " << x->r->val << endl;
+			//cout << "add leaf" << endl;
+			//pt->Print();
+			//cout << "add leaf with left val: " << x->l->val << endl;
+			//cout << "add leaf with right val: " << x->r->val << endl;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
