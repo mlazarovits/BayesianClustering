@@ -8,13 +8,7 @@
 #include "NodeStack.hh"
 
 //using node = BaseTree::node;
-class MergeTree : BDATA
-(0.504315,0.882420,1.097047)
-(0.249523,-0.069064,-0.501077)
-(0.799247,1.714346,2.391901)
-(0.314927,0.822628,1.321417)
-(0.085644,0.038067,0.008893)
-(0.580332,1.479676,2.369276)aseTree{
+class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
 		_alpha = 0; _c = -1; _thresh = 0.; 
