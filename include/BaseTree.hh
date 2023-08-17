@@ -7,12 +7,10 @@
 class BaseTree{
 	public:
 		BaseTree(){
-			if(_z != nullptr) cout << "BaseTree ctor - " << _z->val << " " << _z << endl;
 			_z = (struct node*) malloc(sizeof *_z);
 			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1; _z->points = nullptr;
 			_head = (struct node*)malloc(sizeof *_head);
 			_head->r = _z; _head->val = 0; _head->color = 999;
-			cout << "BaseTree ctor end - " << _z->val << " " << _z << endl;
 		}
 		virtual ~BaseTree(){ delete _head; delete _z; }
 		//node structure
