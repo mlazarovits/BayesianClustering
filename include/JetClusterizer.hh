@@ -20,7 +20,7 @@ class JetClusterizer{
 
 		//runs everything (varGMM + BHC)
 		//change to run over generic points (or vector of rhs)
-		void Cluster(Jet jet);
+		void Cluster(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0);
 
 		GaussianMixture* FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds = nullptr);
 		//just runs varGMM over given jets

@@ -17,16 +17,14 @@ JetClusterizer::JetClusterizer(vector<Jet> jets){
 
 JetClusterizer::~JetClusterizer(){ }
 
-void JetClusterizer::Cluster(Jet jet){
+void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int verb){
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
-	double alpha = 0.1;
-	double thresh = 1.;
-	bool viz = false;
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->SetThresh(thresh);
 	bhc->AddData(points);
+	bhc->SetVerbosity(verb);
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 	if(viz){
@@ -35,10 +33,10 @@ void JetClusterizer::Cluster(Jet jet){
 		plots.Write(fname);
 	}
 	//get parameters from subjets - GMM components
-	if(viz) cout << tree.size() << " jets found." << endl;
+	if(verb > 0) cout << tree.size() << " jets found." << endl;
 	for(int n = 0; n < (int)tree.size(); n++){
 		BasePDFMixture* model = tree[n]->model;
-		if(viz){
+		if(verb > 1){
 			cout << model->GetNClusters() << " subjets found in jet " << n << endl;
 			cout << "Estimated subjet parameters" << endl;
 			map<string, Matrix> params;
