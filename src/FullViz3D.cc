@@ -134,12 +134,12 @@ Json::Value FullViz3D::WriteLevels(){
                     return x.rbegin()->first < y.rbegin()->first;
                 });
 	int nLevels = pr->rbegin()->first;
-cout << "max: " << nLevels << " levels" << endl;
+//cout << "max: " << nLevels << " levels" << endl;
 	//write a json for each level per tree
 	for(int l = 0; l < nLevels+1; l++){
-		cout << "Level " << l << ": " << endl;
+	//	cout << "Level " << l << ": " << endl;
 		for(int t = 0; t < nTrees; t++){
-			cout << "Tree " << t << ": " << endl;
+		//	cout << "Tree " << t << ": " << endl;
 			//only write if level exists in tree
 			if(l <= tree_maps[t].rbegin()->first){
 		     		tree_maps[t][l].Print();
