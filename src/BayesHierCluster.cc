@@ -3,28 +3,29 @@
 #include "MergeTree.hh"
 
 
-BayesHierCluster::BayesHierCluster(){  }
+BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; }
 
 
 BayesHierCluster::BayesHierCluster(double alpha){
-	m_mergeTree = new MergeTree(alpha);
-	cout << "BHC ctor - end: " << m_mergeTree->zval() << endl;
+	_mergeTree = new MergeTree(alpha);
+	_verb = 0;
+	_thresh = 1;
+	_mergeTree->SetThresh(_thresh);
 }
 
+
 void BayesHierCluster::AddData(PointCollection* pc){
-	cout << "BHC AddData: " << m_mergeTree->zval() << endl;
-	m_mergeTree->AddData(pc);
-	cout << "BHC AddData - end: " << m_mergeTree->zval() << endl;
+	_mergeTree->AddData(pc);
 }
 
 void BayesHierCluster::SetAlpha(double a){
-	m_alpha = a;
-	m_mergeTree->SetAlpha(m_alpha);
+	_alpha = a;
+	_mergeTree->SetAlpha(_alpha);
 }
 
 
 vector<node*> BayesHierCluster::Cluster(){
-	cout << "BHC::Cluster" << endl;
+	if(_verb > 0)cout << "BHC::Cluster" << endl;
 	int n;
 	node* di; node* dj;
 	double rk;
@@ -35,8 +36,8 @@ vector<node*> BayesHierCluster::Cluster(){
 
 	int it = 0;
 
-	//while(m_mergeTree->GetNPoints() > 1){
-	int m_npts = m_mergeTree->GetNClusters();
+	//while(_mergeTree->GetNPoints() > 1){
+	int m_npts = _mergeTree->GetNClusters();
 	//construct rk list (NodeStack)
 	//start algorithm with all combinations - O(n^2)
 	for(int i = 0; i < m_npts; i++){
@@ -44,24 +45,23 @@ vector<node*> BayesHierCluster::Cluster(){
 			if(i == j) continue;
 			
 			//get subtrees i, j	
-			di = m_mergeTree->Get(i);
-			dj = m_mergeTree->Get(j);
+			di = _mergeTree->Get(i);
+			dj = _mergeTree->Get(j);
 			//calculate posterior for potential merge
-			node *x = m_mergeTree->CalculateMerge(di, dj);
+			node *x = _mergeTree->CalculateMerge(di, dj);
 		//	//insert into search tree
 			_list.insert(x);	
 		}
 	}
-cout << "Made first r_k list" << endl;
 	vector<node*> nodes;
 
 	//loop over possible merges
-	while(m_mergeTree->GetNClusters() > 1){
-		cout << "---------- iteration: " << it << " ----------" << endl;
-		nodes = m_mergeTree->GetClusters();
+	while(_mergeTree->GetNClusters() > 1){
+		if(_verb > 0) cout << "---------- iteration: " << it << " ----------" << endl;
+		nodes = _mergeTree->GetClusters();
 		for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-			cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl;
+		if(_verb > 0)	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl;
 			map<string, Matrix> params;
 
 		}
@@ -76,12 +76,13 @@ cout << "Made first r_k list" << endl;
 		//cout << "max merge rk: " << max->val << endl;
 		//if rk < 0.5: cut tree
 		if(max->val < 0.5){
-			cout << "reached min rk = 0.5 - final iteration: " << it <<  " - " << m_mergeTree->GetNClusters() << " clusters" << endl;
+			if(_verb > 0) cout << "reached min rk = 0.5 - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
 			break;
 		}
 		//cout << "post pop" << endl;
 		//_list.Print();
 		//merge corresponding subtrees in merge tree: merge = x (node)
+		if(_verb == 2){
 		cout << "merging clusters" << endl;
 		max->points->Print();	
 		cout << "removing cluster - left" << endl;
@@ -97,19 +98,19 @@ cout << "Made first r_k list" << endl;
 			if(max->r->l->val != -1) max->r->l->points->Print();
 			cout << "right - right subtree val " << max->r->r->val << endl;
 			if(max->r->r->val != -1) max->r->r->points->Print();
-
-		m_mergeTree->Insert(max);
-		m_mergeTree->Remove(max->l);
-		m_mergeTree->Remove(max->r);
-		//cout << "n clusters in merge tree: " << m_mergeTree->GetNClusters() << endl;
+		}
+		_mergeTree->Insert(max);
+		_mergeTree->Remove(max->l);
+		_mergeTree->Remove(max->r);
+		//cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
 		
 		//for all nodes in merge tree: check against newly formed cluster
 		NodeStack _list1;
-		for(int i = 0; i < m_mergeTree->GetNClusters(); i++){
-			di = m_mergeTree->Get(i);
+		for(int i = 0; i < _mergeTree->GetNClusters(); i++){
+			di = _mergeTree->Get(i);
 			if(di == max) continue;
-			node* x = m_mergeTree->CalculateMerge(di, max);
-			if(isnan(x->val)){  return m_mergeTree->GetClusters(); }
+			node* x = _mergeTree->CalculateMerge(di, max);
+			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
 			_list1.insert(x);
 		}
 		//cout << "list1" << endl;
@@ -122,11 +123,11 @@ cout << "Made first r_k list" << endl;
 		//cout << "\n" << endl;
 	}
 	
-	cout << "---------- final iteration: " << it <<  " - " << m_mergeTree->GetNClusters() << " clusters ----------" << endl;
-	nodes = m_mergeTree->GetClusters();
+	if(_verb > 0) cout << "---------- final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters ----------" << endl;
+	nodes = _mergeTree->GetClusters();
 	for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-			cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << endl;
+			if(_verb > 0) cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << endl;
 			map<string, Matrix> params;
 		//	for(int k = 0; k < kmax; k++){
 		//		params = nodes[i]->model->GetParameters(k);
@@ -138,7 +139,7 @@ cout << "Made first r_k list" << endl;
 
 	}
 
-	return m_mergeTree->GetClusters();
+	return _mergeTree->GetClusters();
 }
 
 

@@ -17,7 +17,9 @@ class BayesHierCluster{
 	
 		void AddData(PointCollection* pc);
 	
-
+		void SetVerbosity(int verb){ _verb = verb; }
+		
+		void SetThresh(double t){ _thresh = t; _mergeTree->SetThresh(_thresh); }
 		
 		//cluster trees (points in pc)
 		//might need arg for recursion
@@ -32,14 +34,18 @@ class BayesHierCluster{
 		vector<node*> _clusters;
 
 		//calculates and tracks merges
-		MergeTree *m_mergeTree;
+		MergeTree *_mergeTree;
 
 		//tracks posterior values
 		NodeStack _list;
 
 		//dirichlet param
-		double m_alpha;
+		double _alpha;
 
+		//threshold for varEM
+		double _thresh;
+		//verbosity
+		int _verb;
 
 };
 #endif
