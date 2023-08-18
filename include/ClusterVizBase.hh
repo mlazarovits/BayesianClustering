@@ -23,6 +23,7 @@ class ClusterVizBase{
 			m_k = 0; //number of clusters
 			m_fname = "";	
 			m_cvs = {}; 
+			_verb = 0;
 		};
 		ClusterVizBase(BaseCluster* algo, string fname = "test"){
 			m_model = algo->GetModel();
@@ -32,6 +33,7 @@ class ClusterVizBase{
 			m_k = algo->GetNClusters();
 			m_post = m_model->GetPosterior();
 			m_algo = algo;
+			_verb = 0;
 		};
 		virtual ~ClusterVizBase(){ 
 		//	cvs.clear();
@@ -46,6 +48,7 @@ class ClusterVizBase{
 		virtual void Write() = 0;
 		virtual void SeeData() = 0;	
 
+		void SetVerbosity(int v){ _verb = v; }
 	
 	//protected:
 		BaseCluster* m_algo;
@@ -56,7 +59,8 @@ class ClusterVizBase{
 		int m_n; //number of points
 		int m_k; //number of clusters
 		string m_fname;	
-		vector<TCanvas*> m_cvs; 
+		vector<TCanvas*> m_cvs;
+		int _verb; 
 
 
 
