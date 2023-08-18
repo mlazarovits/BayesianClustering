@@ -274,7 +274,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//beta > 0
 	RandomSample rs;
 	rs.SetRange(0.,1.);
-	m_beta0 = rs.SampleFlat();
+	m_beta0 = 0.001;//rs.SampleFlat();
 	//cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
@@ -292,7 +292,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 
 	//nu > d - 1 (degrees of freedom)
 	rs.SetRange(m_dim - 1, m_dim+2);
-	m_nu0 = rs.SampleFlat();
+	m_nu0 = (m_dim - 1) + 0.001;//rs.SampleFlat();
 	//cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);
