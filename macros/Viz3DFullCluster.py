@@ -97,11 +97,11 @@ class JsonPlotter:
 	def plot_tree(self, level, t):
 		tree = level["tree_"+str(t)]
 		nClusters = len(tree)
-		print("Tree",t,"has",nClusters,"clusters")
+		#print("Tree",t,"has",nClusters,"clusters")
 		gr_arr = []
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
-			gr_arr.append(self.plot_cluster(cluster, c%16))
+			gr_arr.append(self.plot_cluster(cluster, t))
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
@@ -206,7 +206,7 @@ def main():
 		os.system("rm -rf "+name)	
 	os.mkdir(name)
 	for f, fig in enumerate(figs):
-		fig.write_image(name+"/level_"+f".pdf")
+		fig.write_image(name+"/level_"+str(f)+".pdf")
 		if f < 10:	
 			fig.show()
 
