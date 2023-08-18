@@ -30,6 +30,7 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 	if(viz){
 		string fname = "plots/jettest";
 		FullViz3D plots = FullViz3D(tree);
+		plots.SetVerbosity(verb);
 		plots.Write(fname);
 	}
 	//get parameters from subjets - GMM components
