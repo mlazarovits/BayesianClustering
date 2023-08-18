@@ -88,7 +88,7 @@ class MergeTree : BaseTree{
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)
-			x->prob_tk = Evidence(x);//_model->ConjugateEvidence(*pt);
+			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			x->color = _c;
 			_clusters.push_back(x);
 		}

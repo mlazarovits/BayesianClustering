@@ -28,8 +28,9 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double p_dk_h1 = Evidence(x);
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
-
 	double rk = pi*p_dk_h1/p_dk_tk;
+//cout << "pi: " << pi << " p_dk_h1: " << p_dk_h1 << " l->prob_tk: " << l->prob_tk << " l->d: " << l->d << " r->prob_tk: " << r->prob_tk << " r->d: " << r->d << " d: " << d << " p_dk_tk: " << p_dk_tk << " rk: " << rk << " points " << endl;
+//points->Print();
 	
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
