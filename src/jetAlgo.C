@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
-	double alpha = 1.;
+	double alpha = 0.1;
 	bool viz = false;
 	int verb = 0;
 	for(int i = 0; i < argc; i++){
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
-   		cout << "   --verbosity(-v) [verb]            set verbosity (default = 0)" << endl;
+   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;

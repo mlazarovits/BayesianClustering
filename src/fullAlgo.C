@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
 	//for dirichlet prior in BHC
 	double alpha = 1;
 	unsigned long long seed = 112;
+	int verb = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -75,8 +76,13 @@ int main(int argc, char *argv[]){
 			i++;
     	 		nIts = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--verbosity", 11) == 0){
+    	 		i++;
+			verb = std::atoi(argv[i]);
+   		}
 		if(strncmp(argv[i],"-v", 2) == 0){
-    	 		viz = true;
+    	 		i++;
+			verb = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
@@ -101,7 +107,8 @@ int main(int argc, char *argv[]){
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
-   		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -139,6 +146,7 @@ int main(int argc, char *argv[]){
 cout << "\n" << endl;	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
+	bhc->SetVerbosity(verb);
 	bhc->AddData(&pc);
 	vector<node*> tree = bhc->Cluster();
 	cout << tree.size() << " final node(s)" << endl;

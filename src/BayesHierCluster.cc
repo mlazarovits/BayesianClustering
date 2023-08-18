@@ -69,14 +69,15 @@ vector<node*> BayesHierCluster::Cluster(){
 
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
+		//if(_verb > 0){
 		//cout << "pre pop" << endl;
-		//_list.Print();
+		//_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
 		//cout << "max merge rk: " << max->val << endl;
 		//if rk < 0.5: cut tree
 		if(max->val < 0.5){
-			if(_verb > 0) cout << "reached min rk = 0.5 - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
+			if(_verb > 0) cout << "reached min rk = " << max->val << " <  0.5 - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
 			break;
 		}
 		//cout << "post pop" << endl;

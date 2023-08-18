@@ -28,7 +28,7 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 	if(viz){
-		string fname = "plots/test";
+		string fname = "plots/jettest";
 		FullViz3D plots = FullViz3D(tree);
 		plots.Write(fname);
 	}
