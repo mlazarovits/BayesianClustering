@@ -24,8 +24,8 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 		x->color = _c;
 	}
 	//null hypothesis - all points in one cluster
-	//calculate p(dk | null) from Evidence() = ELBO from Variational EM algorithm
-	double p_dk_h1 = Evidence(x);
+	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
+	double p_dk_h1 = exp(Evidence(x));
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
 	double rk = pi*p_dk_h1/p_dk_tk;
