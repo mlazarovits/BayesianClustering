@@ -16,7 +16,7 @@ class JsonPlotter:
 	def buildColorDict(self):
 		colors = {}
 		#leaf color - hollow points
-		colors[-1] = 'rgba(0, 0, 0, 0.)'
+		colors[-1] = 'rgba(0, 0, 0, 0.1)'
 		#light green
 		colors[0] = 'rgba(173, 226, 209, 1.)'
 		#light red
@@ -29,6 +29,30 @@ class JsonPlotter:
 		colors[4] = 'rgba(255, 205, 162, 1.)'
 		#light pink
 		colors[5] = 'rgba(221, 178, 214, 1.)'
+		#dark green
+		colors[6] = 'rgba(51, 99, 84, 1.)'
+		#dark red
+		colors[7] = 'rgba(135, 61, 89, 1.)'
+		#dark blue
+		colors[8] = 'rgba(39, 129, 143, 1.)'
+		#dark purple
+		colors[9] = 'rgba(39, 55, 105, 1.)' 
+		#dark orange
+		colors[10] = 'rgba(156, 92, 36, 1.)'
+		#dark pink
+		colors[11] = 'rgba(138, 48, 123, 1.)'
+		#dark magenta
+		colors[12] = 'rgba(136, 48, 138, 1.)'
+		#light magenta
+		colors[13] = 'rgba(188, 119, 189, 1.)'
+		#dark yellow
+		colors[14] = 'rgba(148, 129, 34, 1.)'
+		#light yellow-green
+		colors[15] = 'rgba(187, 201, 123, 1.)'
+		#light blue-green
+		colors[16] = 'rgba(123, 201, 174, 1.)'
+		#dark blue-green
+		colors[17] = 'rgba(33, 99, 76, 1.)'
 		return colors
 	
 	
@@ -58,7 +82,6 @@ class JsonPlotter:
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
-			tree = level["tree_"+str(t)]
 			gr_arr.append(self.plot_tree(level, t))	
 	
 		
@@ -74,11 +97,11 @@ class JsonPlotter:
 	def plot_tree(self, level, t):
 		tree = level["tree_"+str(t)]
 		nClusters = len(tree)
-
+		print("Tree",t,"has",nClusters,"clusters")
 		gr_arr = []
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
-			gr_arr.append(self.plot_cluster(cluster, t))
+			gr_arr.append(self.plot_cluster(cluster, c%16))
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
@@ -105,7 +128,7 @@ class JsonPlotter:
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				size = 4, color = colors[cl], line=dict(
-					color = colors[cl], width = 30))))
+					color = colors[cl], width = 30)), showlegend=False))
 		if dataonly is True:
 			return gr_arr
 		
@@ -184,7 +207,8 @@ def main():
 	os.mkdir(name)
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+f".pdf")
-		fig.show()
+		if f < 10:	
+			fig.show()
 
 if __name__ == "__main__":
 	main()
