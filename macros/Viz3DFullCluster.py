@@ -58,14 +58,18 @@ class JsonPlotter:
 	
 	
 	
-	def plot_json(self, dataonly = False):
+	def plot_json(self, dataonly = False, numlevels = 0):
 		levels = self.json_obj['levels']
-		nLevels = len(levels)
-		print("json has",nLevels,"levels")
-		
+			
 		plotname = self.jsonfile[:self.jsonfile.find(".json")]
 		
 		figs = []
+		if numlevels > 0:
+			nLevels = numlevels
+			print("plotting",nLevels,"levels")
+		else:
+			nLevels = len(levels)
+			print("json has",nLevels,"levels")
 		for l in range(nLevels):
 			fig = self.plot_level(l, plotname+'_level'+str(l))
 			figs.append(fig)
@@ -123,7 +127,7 @@ class JsonPlotter:
 		if(len(x) == 1):
 			cl = -1
 		else:
-			cl = c	
+			cl = c % 16	
 	
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -186,6 +190,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--json','-j',help='json file to plot')
 	parser.add_argument('--data',help='plot data only',action='store_true')
+	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0)
 	args = parser.parse_args()
 	
 	if args.json is None:
@@ -198,7 +203,7 @@ def main():
 
 	f = args.json	
 	jp = JsonPlotter(f)	
-	figs = jp.plot_json(args.data)
+	figs = jp.plot_json(args.data, int(args.nlevels))
 	name = f[:f.find(".json")]
 	print("Writing to directory",name)
 	if(os.path.exists(name)):
