@@ -57,12 +57,11 @@ vector<node*> BayesHierCluster::Cluster(){
 
 	//loop over possible merges
 	while(_mergeTree->GetNClusters() > 1){
-		if(_verb > 0) cout << "---------- iteration: " << it << " ----------" << endl;
+		if(_verb > 1) cout << "---------- iteration: " << it << " ----------" << endl;
 		nodes = _mergeTree->GetClusters();
 		for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-		if(_verb > 0)	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl;
-			map<string, Matrix> params;
+		if(_verb > 1)	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl;
 
 		}
 
@@ -83,7 +82,7 @@ vector<node*> BayesHierCluster::Cluster(){
 		//cout << "post pop" << endl;
 		//_list.Print();
 		//merge corresponding subtrees in merge tree: merge = x (node)
-		if(_verb == 2){
+		if(_verb > 2){
 		cout << "merging clusters" << endl;
 		max->points->Print();	
 		cout << "removing cluster - left" << endl;
@@ -128,16 +127,7 @@ vector<node*> BayesHierCluster::Cluster(){
 	nodes = _mergeTree->GetClusters();
 	for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-			if(_verb > 0) cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << endl;
-			map<string, Matrix> params;
-		//	for(int k = 0; k < kmax; k++){
-		//		params = nodes[i]->model->GetParameters(k);
-		//		cout << "mean " << k << endl;
-		//		params["mean"].Print();
-		//		cout << "cov " << k << endl;
-		//		params["cov"].Print();
-		//	}
-
+			if(_verb > 0) cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << " and " << nodes[i]->points->GetNPoints() << " points" << endl;	
 	}
 
 	return _mergeTree->GetClusters();

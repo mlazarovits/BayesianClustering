@@ -272,9 +272,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){m_model[k]->SetDim(m_dim); m_model[k]->SetPrior(new NormalInvWishart(m_dim));}	
 
 	//beta > 0
-	RandomSample rs;
-	rs.SetRange(0.,1.);
-	m_beta0 = 0.001;//rs.SampleFlat();
+	m_beta0 = 0.001;
 	//cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
@@ -291,8 +289,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv.invert(m_W0);
 
 	//nu > d - 1 (degrees of freedom)
-	rs.SetRange(m_dim - 1, m_dim+2);
-	m_nu0 = (m_dim - 1) + 0.001;//rs.SampleFlat();
+	m_nu0 = (m_dim - 1) + 0.01;
 	//cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);
@@ -309,39 +306,39 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
-	rs.SetRange(0.,1.);
-	//init beta_k
-	for(int k = 0; k < m_k; k++){
-		m_model[k]->GetPrior()->SetParameter("scale",Matrix(k*rs.SampleFlat() + 0.1));
-	//	cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;
-	}
-	double mean_lower = m_data->min()-0.1;
-	double mean_upper = m_data->max()+0.1;
-	//init m_k 
-	for(int k = 0; k < m_k; k++){
-		Matrix mat = Matrix(m_dim, 1);
-		mat.InitRandom(mean_lower, mean_upper, seed+k);
-		m_model[k]->GetPrior()->SetParameter("mean",mat);		
-		mat.clear();
-	//	cout << "k: " << k << " mean: " << endl;
-	//	m_model[k]->GetPrior()->GetParameter("mean").Print();
-	}
-	//init W_k
-	for(int k = 0; k < m_k; k++){
-		Matrix mat = Matrix(m_dim, m_dim);
-		mat.InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
-		m_model[k]->GetPrior()->SetParameter("scalemat",mat);		
-		mat.clear();
-		//cout << "k: " << k << " scalemat: " << endl;
-		//m_model[k]->GetPrior()->GetParameter("scalemat").Print();
-	}
-	//init nu_k
-	rs.SetRange(m_dim,m_dim*1.5);
-	//rs.SetRange(m_dim-1,m_dim+2.);
-	for(int k = 0; k < m_k; k++){
-		m_model[k]->GetPrior()->SetParameter("dof",Matrix(rs.SampleFlat()));	
-		//cout << "k: " << k << " dof: " << m_model[k]->GetPrior()->GetParameter("dof").at(0,0) << endl;
-	}
+	//rs.SetRange(0.,1.);
+	////init beta_k
+	//for(int k = 0; k < m_k; k++){
+	//	m_model[k]->GetPrior()->SetParameter("scale",Matrix(k*rs.SampleFlat() + 0.1));
+	////	cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;
+	//}
+	//double mean_lower = m_data->min()-0.1;
+	//double mean_upper = m_data->max()+0.1;
+	////init m_k 
+	//for(int k = 0; k < m_k; k++){
+	//	Matrix mat = Matrix(m_dim, 1);
+	//	mat.InitRandom(mean_lower, mean_upper, seed+k);
+	//	m_model[k]->GetPrior()->SetParameter("mean",mat);		
+	//	mat.clear();
+	////	cout << "k: " << k << " mean: " << endl;
+	////	m_model[k]->GetPrior()->GetParameter("mean").Print();
+	//}
+	////init W_k
+	//for(int k = 0; k < m_k; k++){
+	//	Matrix mat = Matrix(m_dim, m_dim);
+	//	mat.InitRandomSymPosDef(0.,1.,seed+k);//InitIdentity();
+	//	m_model[k]->GetPrior()->SetParameter("scalemat",mat);		
+	//	mat.clear();
+	//	//cout << "k: " << k << " scalemat: " << endl;
+	//	//m_model[k]->GetPrior()->GetParameter("scalemat").Print();
+	//}
+	////init nu_k
+	//rs.SetRange(m_dim,m_dim*1.5);
+	////rs.SetRange(m_dim-1,m_dim+2.);
+	//for(int k = 0; k < m_k; k++){
+	//	m_model[k]->GetPrior()->SetParameter("dof",Matrix(rs.SampleFlat()));	
+	//	//cout << "k: " << k << " dof: " << m_model[k]->GetPrior()->GetParameter("dof").at(0,0) << endl;
+	//}
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 

@@ -106,7 +106,20 @@ class MergeTree : BaseTree{
 			x->model->SetData(x->points);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
-			
+			/*
+			cout << "Initial prior parameters" << endl;
+			map<string, Matrix> params;
+			for(int i = 0; i < x->model->GetNClusters(); i++){
+				params = x->model->GetPriorParameters(i);	
+				cout << "mean " << i << endl;
+				params["m"].Print();
+				cout << "Gaus scale " << i << ": " << params["scale"].at(0,0) << endl;
+				cout << "dof " << i << ": " << params["dof"].at(0,0) << endl;
+				cout << "scalemat " << i << endl;
+				params["scalemat"].Print();
+				params.clear();
+		}
+			*/
 		//	cout << "data" << endl;
 		//	x->model->GetData()->Print();
 
