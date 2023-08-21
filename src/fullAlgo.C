@@ -153,6 +153,7 @@ cout << "\n" << endl;
 
 	if(viz){
 		FullViz3D plots = FullViz3D(tree);
+		plots.SetVerbosity(verb);
 		plots.Write(fname);
 	}
 }
