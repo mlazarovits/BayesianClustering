@@ -27,9 +27,7 @@ double Wishart::Prob(const Matrix& x){
 	double det_w = m_W.det();
 	double pi = acos(-1);
 
-	double gam_p = pow(pi, m_dim*(m_dim - 1)/4.);
-	for(int i = 0; i < m_dim; i++)
-		gam_p *= tgamma( m_nu/2. - (i - 1)/2.);
+	double gam_p = multidim_gam(m_nu/2.);
 
 	Matrix W_inv_mult_x;
 	W_inv_mult_x.invert(m_W);

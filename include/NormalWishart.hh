@@ -13,7 +13,7 @@ class NormalWishart : public BasePDF{
 
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x){ return -1; }
-		double Prob(const Matrix& mu, const Matrix& cov);		
+		double Prob(const Matrix& mu, const Matrix& precision);		
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		BasePDF* Posterior(){ return nullptr; }
