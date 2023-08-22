@@ -119,6 +119,8 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	for(int i = 0; i < m_nEvts; i++){
 		if(i == evt){
 			m_base->GetEntry(i);
+			//make sure photon number is in vector
+			if(pho >= (int)m_base->Photon_rhIds->size()) return;
 			nRHs = (int)m_base->Photon_rhIds->at(pho).size();
 			nRHs_evt = (int)m_base->ERH_ID->size();
 			unsigned long long id;

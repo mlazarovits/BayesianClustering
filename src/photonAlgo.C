@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
 	double alpha = 0.1;
 	bool viz = false;
 	int verb = 0;
+	int npho = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -102,6 +103,14 @@ int main(int argc, char *argv[]){
 			i++;
     	 		alpha = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"-p", 2) == 0){
+    	 		i++;
+			npho = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"--photon", 8) == 0){
+    	 		i++;
+			npho = std::atoi(argv[i]);
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -116,6 +125,7 @@ int main(int argc, char *argv[]){
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
+   		cout << "   --photon(-p) [npho   ]        set photon number to analyze (default = 0)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -134,8 +144,9 @@ int main(int argc, char *argv[]){
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
-	prod.GetRecHits(rhs,0,0);
+	prod.GetRecHits(rhs,0,npho);
 	cout << rhs.size() << " rechits in first photon in first event" << endl;
+	if(rhs.size() < 1) return -1;
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
@@ -146,6 +157,7 @@ int main(int argc, char *argv[]){
 	}
 
 	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
+
 
 	PointCollection* pc = new PointCollection();
 	testpho.GetEtaPhiConstituents(*pc);
