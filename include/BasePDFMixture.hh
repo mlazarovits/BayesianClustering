@@ -44,6 +44,7 @@ class BasePDFMixture : public BasePDF{
 		virtual map<string, Matrix> GetParameters(int k) = 0; 
 		
 		//for variational EM algorithm
+		virtual void SetPriorParameters(map<string, Matrix> params) = 0;
 		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
