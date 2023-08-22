@@ -23,6 +23,7 @@ def plot_json(jsonfile, dataonly = False):
 	z = data['z']
 	
 	gr_arr = []
+
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -71,7 +72,7 @@ def plot_json(jsonfile, dataonly = False):
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 	
 		#add ellipsoids
-		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale="aggrnyl", surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
+		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=['rgba(132, 242, 201, 1.)','rgba(132, 242, 201, 1.)'], surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
 	
 	fig = go.Figure(gr_arr)
 	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
@@ -89,6 +90,7 @@ if args.dir is None and args.json is None:
 	exit()
 
 files = []
+outname = ''
 if args.dir is not None:
 	#sort files by iteration
 	it_to_file = {}
@@ -100,6 +102,8 @@ if args.dir is not None:
 	it_to_file = dict(sorted(it_to_file.items()))
 	for j in it_to_file:
 		files.append(it_to_file[j])
+	outname += args.dir+'/'
+
 
 if args.json is not None:
 	files.append(args.json)
@@ -107,7 +111,7 @@ if args.json is not None:
 for f in files:
 	if ".json" not in f:
 		continue
-	fig = plot_json(args.dir+"/"+f,args.data)
+	fig = plot_json(outname+f,args.data)
 	if args.dir is not None:
 		name = f[:f.find(".json")]
 		print("Writing to",args.dir+"/"+name+".pdf")
@@ -115,4 +119,5 @@ for f in files:
 	if args.data:
 		break
 fig.show()
-os.system("convert -delay 50 -loop 1 "+args.dir+"/*.pdf "+args.dir+"/total.gif");
+if args.dir is not None:
+	os.system("convert -delay 50 -loop 1 "+args.dir+"/*.pdf "+args.dir+"/total.gif");
