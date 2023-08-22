@@ -127,7 +127,9 @@ class JsonPlotter:
 		if(len(x) == 1):
 			cl = -1
 		else:
-			cl = c % 16	
+			cl = c
+		if cl > 17:
+			cl = cl % 16	
 	
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -180,7 +182,7 @@ class JsonPlotter:
 			y2 = new_points[1, :] + y0
 			z2 = new_points[2, :] + z0
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
-		
+
 			#add ellipsoids
 			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
 		
