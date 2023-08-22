@@ -1,5 +1,8 @@
 #include "PhotonProducer.hh"
 #include "VarClusterViz3D.hh"
+#include "Jet.hh"
+#include "GaussianMixture.hh"
+#include "VarEMCluster.hh"
 
 #include <TFile.h>
 #include <iostream>
@@ -131,36 +134,25 @@ int main(int argc, char *argv[]){
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
-	prod.GetRecHits(rhs,0);
-	cout << rhs.size() << " rechits in first event" << endl;
+	prod.GetRecHits(rhs,0,0);
+	cout << rhs.size() << " rechits in first photon in first event" << endl;
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
 	//set PV for momentum direction calculations
 	testpho.SetVertex(vtx);
-	double etaMax = 0.5;
-	double etaMin = -etaMax;  
-	double phiMax = 2.;
-	double phiMin = -2.8;
-	int nRhs = 0;
 	for(int i = 0; i < rhs.size(); i++){
-//		if(nRhs > 10) break;
-		if(rhs[i].eta() > etaMax || rhs[i].eta() < etaMin)
-			continue;
-		if(rhs[i].phi() > phiMax || rhs[i].phi() < phiMin)
-			continue;
-			testjet.add(rhs[i]);
-		nRhs++;
+		testpho.add(rhs[i]);
 	}
 
 	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
 
 	PointCollection* pc = new PointCollection();
-	testpho.GetEtaPhiConstituents(pc);
+	testpho.GetEtaPhiConstituents(*pc);
 	
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(k);
-	gmm->SetData(&pc);
+	gmm->SetData(pc);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
 	
