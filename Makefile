@@ -32,7 +32,7 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
 
 #specify what to make
-all: GMM.x varGMM.x jetAlgo.x fullAlgo.x
+all: GMM.x varGMM.x jetAlgo.x fullAlgo.x photonAlgo.x
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
@@ -51,6 +51,9 @@ jetAlgo.x: $(SRCDIR)jetAlgo.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o jetAlgo.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch jetAlgo.x
 
+photonAlgo.x: $(SRCDIR)photonAlgo.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o photonAlgo.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch photonAlgo.x
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
 	$(CXX) $(CXXFLAGS) -c $< -o $@
