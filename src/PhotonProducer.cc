@@ -32,25 +32,31 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 	rhs.clear();
 	for(int i = 0; i < m_nEvts; i++){
 		m_base->GetEntry(i);
-		//TODO: switch to m_base->nRHs when that's in the ntuples
-		nRHs = (int)m_base->ERH_time->size();
-		rhs.push_back({});
+		nRHs = (int)m_base->Photon_rhIds->size();
+		nRHs_evt = (int)m_base->ERH_ID->size();
+		unsigned long long id;
 		for(int r = 0; r < nRHs; r++){
 			//add tof = d_pv to time to get correct RH time
 			//t = rh_time - d_rh/c + d_pv/c
-			rh = JetPoint(m_base->ERH_x->at(r), m_base->ERH_y->at(r), m_base->ERH_z->at(r), m_base->ERH_time->at(r)+m_base->ERH_TOF->at(r));
-			
-			rh.SetEnergy(m_base->ERH_energy->at(r));
-			rh.SetEta(m_base->ERH_eta->at(r));
-			rh.SetPhi(m_base->ERH_phi->at(r));
-			rh.SetRecHitId(m_base->ERH_ID->at(r));
-	
-			rhs[i].push_back(rh);
+			id = m_base->Photon_rhIds->at(r);
+			rh.SetRecHitId(id);
+			for(int j = 0; j < nRHs_evt; j++){
+				if(m_base->ERH_ID->at(j) == id){
+					rh = JetPoint(m_base->ERH_x->at(j), m_base->ERH_y->at(j), m_base->ERH_z->at(j), m_base->ERH_time->at(j)+m_base->ERH_TOF->at(j));
+					rh.SetEnergy(m_base->ERH_energy->at(j));
+					rh.SetEta(m_base->ERH_eta->at(j));
+					rh.SetPhi(m_base->ERH_phi->at(j));
+					rhs.push_back(rh);
+					break;
+				}
+				else continue;
+			}
+		
 		}
 	}
 }
 
-
+//get rechits for all photons in an event
 void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	JetPoint rh;
 	double x, y, z, t, E, eta, phi;
@@ -65,13 +71,59 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	for(int i = 0; i < m_nEvts; i++){
 		if(i == evt){
 			m_base->GetEntry(i);
-			nRHs = (int)m_base->Photon_rhIds->size();
+			nphotons = (int)m_base->Photon_rhIds->size();
+			nRHs_evt = (int)m_base->ERH_ID->size();
+			
+			for(int p = 0; p < nphotons; p++){
+				nRHs = (int)m_base->Photon_rhIds->at(p)->size();
+				unsigned long long id;
+				for(int r = 0; r < nRHs; r++){
+					//add tof = d_pv to time to get correct RH time
+					//t = rh_time - d_rh/c + d_pv/c
+					id = m_base->Photon_rhIds->at(p)->at(r);
+					rh.SetRecHitId(id);
+					for(int j = 0; j < nRHs_evt; j++){
+						if(m_base->ERH_ID->at(j) == id){
+							rh = JetPoint(m_base->ERH_x->at(j), m_base->ERH_y->at(j), m_base->ERH_z->at(j), m_base->ERH_time->at(j)+m_base->ERH_TOF->at(j));
+							rh.SetEnergy(m_base->ERH_energy->at(j));
+							rh.SetEta(m_base->ERH_eta->at(j));
+							rh.SetPhi(m_base->ERH_phi->at(j));
+							rhs.push_back(rh);
+							break;
+						}
+						else continue;
+					}
+				}
+			}
+			return;
+		}
+		else continue;
+	}
+}
+
+//get rec hits for a particular photon for an event
+void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
+	JetPoint rh;
+	double x, y, z, t, E, eta, phi;
+	unsigned long id;
+	int nRHs;
+	rhs.clear();
+	double etaMax = 0.5;
+	double etaMin = -etaMax;  
+	double phiMax = 2.;
+	double phiMin = -2.8;
+	int cnt = 0;
+	for(int i = 0; i < m_nEvts; i++){
+		if(i == evt){
+			m_base->GetEntry(i);
+			nphotons = (int)m_base->Photon_rhIds->size();
+			nRHs = (int)m_base->Photon_rhIds->at(pho)->size();
 			nRHs_evt = (int)m_base->ERH_ID->size();
 			unsigned long long id;
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
 				//t = rh_time - d_rh/c + d_pv/c
-				id = m_base->Photon_rhIds->at(r);
+				id = m_base->Photon_rhIds->at(pho)->at(r);
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
 					if(m_base->ERH_ID->at(j) == id){
@@ -84,13 +136,9 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					}
 					else continue;
 				}
-				
-	
-			
 		
 			}
 			return;
-
 		}
 		else continue;
 	}
@@ -116,7 +164,6 @@ void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
 }
 
 
-//make ctor that simulates rechits - see src/varGMM.C
 
 
 
