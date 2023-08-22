@@ -11,12 +11,11 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _c = -1; _thresh = 0.; 
+		_alpha = 0; _thresh = 0.; 
 		}
 
 		MergeTree(double alpha){
 			_alpha = alpha;
-			_c = -1;
 			_thresh = 1.;
 		}
 
@@ -27,11 +26,10 @@ class MergeTree : BaseTree{
 			_t = tree._t;
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
-			_c = tree._c;
 			_thresh = tree._thresh;
 		}
 
-		virtual ~MergeTree(){ _c = 0; }
+		virtual ~MergeTree(){ }
 
 		void SetThresh(double t){ _thresh = t; }
 
@@ -89,20 +87,19 @@ class MergeTree : BaseTree{
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
-			x->color = _c;
 			_clusters.push_back(x);
 		}
 
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
-		//	cout << "MergeTree::Evidence" << endl;
 			int k;
 			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-			//cout << "max k: " << k << endl;
+		
 			x->model = new GaussianMixture(k); //p(x | theta)
+			x->model->SetAlpha(0.5);
 			x->model->SetData(x->points);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
@@ -148,7 +145,6 @@ class MergeTree : BaseTree{
 		vector<node*> _clusters;
 		//Dirichlet prior parameter
 		double _alpha;
-		int _c;
 		//threshold on variational EM
 		double _thresh;
 
