@@ -2,7 +2,7 @@
 #define GAUSSIAN_HH
 #include "BasePDF.hh"
 #include "Matrix.hh"
-#include "NormalInvWishart.hh"
+#include "NormalWishart.hh"
 
 class Gaussian : public BasePDF{
 	public:
@@ -18,7 +18,7 @@ class Gaussian : public BasePDF{
 		void UpdateParameters(){ m_mu = m_params["mean"]; m_cov = m_params["cov"]; }	
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x);
-		NormalInvWishart* Posterior();
+		NormalWishart* Posterior();
 
 		Gaussian* mult(Gaussian* p1); 
 

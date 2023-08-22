@@ -25,7 +25,13 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetParameters(int k); 
  
+		void SetPriorParameters(map<string, Matrix> params){
+			m_beta0 = params["scale"].at(0,0);
+			m_nu0 = params["dof"].at(0,0);
+			m_W0 = params["scalemat"];
+			m_mean0 = params["mean"];
 
+		}
 			
 		//for variational EM algorithm
 		void InitPriorParameters(unsigned long long seed = 111);
