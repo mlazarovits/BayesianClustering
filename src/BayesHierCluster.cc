@@ -43,7 +43,6 @@ vector<node*> BayesHierCluster::Cluster(){
 	for(int i = 0; i < m_npts; i++){
 		for(int j = i; j < m_npts; j++){
 			if(i == j) continue;
-			
 			//get subtrees i, j	
 			di = _mergeTree->Get(i);
 			dj = _mergeTree->Get(j);

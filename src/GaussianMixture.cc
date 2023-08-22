@@ -26,8 +26,8 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	}
 }
 
-//don't forget to include coeffs (eventually)
 void GaussianMixture::InitParameters(unsigned long long seed){
+//cout << "GaussianMixture::InitParameters alpha0 = " << m_alpha0 << endl;
 //	cout << "Gaussian Mixture Model with " << m_k << " clusters for " << m_n << " " << m_dim << "-dimensional points." << endl;
 	//cout << "InitParameters" << endl;
 	//randomly initialize mean, covariance + mixing coeff.
@@ -272,7 +272,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){m_model[k]->SetDim(m_dim); m_model[k]->SetPrior(new NormalInvWishart(m_dim));}	
 
 	//beta > 0
-	m_beta0 = 0.001;
+	m_beta0 = 0.01;
 	//cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
@@ -289,7 +289,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv.invert(m_W0);
 
 	//nu > d - 1 (degrees of freedom)
-	m_nu0 = (m_dim - 1) + 0.01;
+	m_nu0 = (m_dim - 1) + 10.;
 	//cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);

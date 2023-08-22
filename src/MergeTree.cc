@@ -18,11 +18,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->d = d;
 	x->l = l;
 	x->r = r;
-	if(x->r->color != -1)
-		x->color = x->r->color;
-	else{
-		x->color = _c;
-	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
 	double p_dk_h1 = exp(Evidence(x));

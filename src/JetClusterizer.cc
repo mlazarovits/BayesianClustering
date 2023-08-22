@@ -37,30 +37,19 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 	if(verb > 0) cout << tree.size() << " jets found." << endl;
 	for(int n = 0; n < (int)tree.size(); n++){
 		BasePDFMixture* model = tree[n]->model;
-		if(verb > 2){
+		if(verb > 1){
 			cout << model->GetNClusters() << " subjets found in jet " << n << endl;
 			cout << "Estimated prior parameters" << endl;
 			map<string, Matrix> params;
 			for(int i = 0; i < model->GetNClusters(); i++){
 				params = model->GetPriorParameters(i);	
-				cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
+				cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha " << params["alpha"].at(0,0) << endl;
 				cout << "mean " << i << endl;
 				params["m"].Print();
-				cout << "Gaus scale " << i << endl;
-				params["scale"].Print();
-				cout << "dof " << i << ": " << params["dof"].at(0,0) << endl;
+				cout << "Gaus scale " << params["scale"].at(0,0) << endl;
+				cout << "dof " << params["dof"].at(0,0) << endl;
 				cout << "scalemat " << i << endl;
 				params["scalemat"].Print();
-				params.clear();
-			}
-		}
-		if(verb > 1){
-			cout << model->GetNClusters() << " subjets found in jet " << n << endl;
-			cout << "Estimated subjet parameters" << endl;
-			map<string, Matrix> params;
-			for(int i = 0; i < model->GetNClusters(); i++){
-				params = model->GetPriorParameters(i);	
-				cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
 				cout << "mean " << i << endl;
 				params["mean"].Print();
 				cout << "cov " << i << endl;
