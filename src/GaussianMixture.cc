@@ -64,19 +64,26 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	kmc.GetMeans(mus);
 	for(int k = 0; k < m_k; k++)
 		m_model[k]->SetParameter("mean",mus[k]);		
+	
+
+	vector<PointCollection*> pcs;
+	kmc.GetAssignments(pcs);
+
+
 	//seed covariance matrix from data + kmeans means 
 	for(int k = 0; k < m_k; k++){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix S = Matrix(m_dim,m_dim);
 		Matrix mu = m_model[k]->GetParameter("mean");
-		for(int n = 0; n < m_n; n++){
+		//calculate standard deviation per cluster
+		for(int n = 0; n < pcs[k]->GetNPoints(); n++){
 			//construct x - mu
-			Matrix x_mat = Matrix(m_data->at(n));
+			Matrix x_mat = Matrix(pcs[k]->at(n));
 			//cout << "n: " << n << " k: " << k << endl;
 			//cout << "mu:" << endl;
 			//mu.Print();
 			//cout << "x:" << endl;
-			//x_mat.Print();
+		//	x_mat.Print();
 			Matrix x_min_mu = Matrix(m_dim, 1);
 			x_min_mu.minus(x_mat,mu);
 			//cout << "x - mu" << endl;
@@ -95,11 +102,15 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		}	
 		//cout << "sum_n (x - mu)*(x - mu)T" << endl;	
 		//S.Print();
-		//normalize by m_n - assuming posterior values are all 1/m_k to seed => cancels with m_norms[k]
-		S.mult(S,1./m_n);
+		//normalize by number of points in cluster (in this case r_nk = 1 or 0 s.t. for N_k = sum_n 1 = number of points in cluster)
+		S.mult(S,1./double(pcs[k]->GetNPoints()));
 		//cout << "1/n(sum_n (x - mu)*(x - mu)T)" << endl;	
-		//S.Print();
+		cout << "Initial covariance for cluster " << k << endl;
+		S.Print();
+		cout << "Initial mean for cluster " << k << endl;
+		m_model[k]->GetParameter("mean").Print();
 		m_model[k]->SetParameter("cov",S);
+		cout << "\n" << endl;
 	}
 
 	//cout << "kmeans" << endl;
@@ -312,47 +323,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 
 }
 
-
-//for initializing k-means with given means
-void GaussianMixture::InitParameters(const PointCollection& pc){
-	//init responsibility statistics
-	Matrix mat;
-	RandomSample rs;
-	
-	for(int k = 0; k < m_k; k++){
-		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
-		m_norms[k] = m_n/m_k;
-		mat = Matrix(m_dim, m_dim);
-		mat.InitIdentity();
-		m_model[k]->SetParameter("cov",mat);
-	}
-	//to init xbars
-	//m_xbars = get means
-	//init means
-	KMeansCluster kmc = KMeansCluster(m_data, m_k);
-	kmc.Initialize(pc);
-	//use number of points that change assignment at E-step to track convergence
-	int nit = 0;
-	int nchg = 999;
-	while(nchg > 0){
-		kmc.Estimate();
-		kmc.Update();
-		nchg = (int)kmc.EvalLogL();
-		//check for convergence with number of points that 
-		//change assignment
-		nit++;
-	}
-	vector<Matrix> xbars;
-	kmc.GetMeans(xbars);
-	for(int k = 0; k < m_k; k++) m_model[k]->SetParameter("mean",xbars[k]);
-	
-	//rs.SetRange(0.,1.);
-	//double coeff_norm = 0;
-	//for(int k = 0; k < m_k; k++){ m_coeffs[k] = rs.SampleFlat(); coeff_norm += m_coeffs[k]; }	
-	//for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
-
-
-}
 
 
 

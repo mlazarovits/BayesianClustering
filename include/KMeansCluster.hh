@@ -30,8 +30,12 @@ class KMeansCluster : public BaseCluster{
 			ret["means"] = m_means;
 			return ret;
 		 }
-		void GetAssignments(vector<int>& a){ a.clear(); a = m_assigns; }	
+		//get assignments for each point
+		void GetAssignments(vector<int>& a){ a.clear(); a = m_assigns; }
+		//get number of assignments per cluster	
 		int GetAssignment(int n){ if(n < m_data->GetNPoints()) return m_assigns[n]; else return -999.; }
+		//get points separated into point collections for each cluster
+		void GetAssignments(vector<PointCollection*>& pcs);
 	
 		void GetCounts(vector<int>& c){ c.clear(); c = m_counts; }
 	private:

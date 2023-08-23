@@ -87,3 +87,19 @@ void KMeansCluster::Update(){
 		}
 	}
 }
+
+
+void KMeansCluster::GetAssignments(vector<PointCollection*>& pcs){
+	pcs.clear();
+	//push back k point collections of m_counts[k] points
+	for(int k = 0; k < m_k; k++){
+		pcs.push_back(new PointCollection());
+	}
+	int kass;
+	for(int n = 0; n < m_n; n++){
+		kass = m_assigns[n];
+		pcs[kass]->AddPoint(m_data->at(n));	
+	}
+
+
+}
