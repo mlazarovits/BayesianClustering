@@ -139,7 +139,7 @@ class JsonPlotter:
 			return gr_arr
 		
 		#don't plot subclusters for clusters with points less than minPoints
-		minPoints = 2
+		minPoints = 3
 		if(len(x) < minPoints):
 			return gr_arr
 		
@@ -149,9 +149,9 @@ class JsonPlotter:
 			subcluster = cluster['subclusters']['subcluster_'+idx]
 			#should be subcluster_i	
 			
-			a = subcluster['eigenVal_0']
-			b = subcluster['eigenVal_1']
-			c = subcluster['eigenVal_2']
+			a = round(subcluster['eigenVal_0'], 10)
+			b = round(subcluster['eigenVal_1'], 10)
+			c = round(subcluster['eigenVal_2'], 10)
 			
 			op = subcluster['mixing_coeff_norm']
 			
@@ -161,10 +161,10 @@ class JsonPlotter:
 			x0 = subcluster['mu_x'] 
 			y0 = subcluster['mu_y']
 			z0 = subcluster['mu_z']
-			
-			x1 = a * np.cos(u) * np.sin(v) 
-			y1 = b * np.sin(u) * np.sin(v) 
-			z1 = c * np.cos(v)
+		
+			x1 = np.sqrt(a) * np.cos(u) * np.sin(v) 
+			y1 = np.sqrt(b) * np.sin(u) * np.sin(v) 
+			z1 = np.sqrt(c) * np.cos(v)
 			# points on the ellipsoid
 			points = np.stack([t.flatten() for t in [x1, y1, z1]])
 			

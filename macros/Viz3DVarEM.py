@@ -45,14 +45,14 @@ def plot_json(jsonfile, dataonly = False):
 		
 		# compute ellipsoid coordinates on standard basis
 		# e1=(1, 0, 0), e2=(0, 1, 0), e3=(0, 0, 1)
-		u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
+		u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:40j]
 		x0 = clusters[idx]['mu_x'] 
 		y0 = clusters[idx]['mu_y']
 		z0 = clusters[idx]['mu_z']
 		
-		x1 = a * np.cos(u) * np.sin(v) 
-		y1 = b * np.sin(u) * np.sin(v) 
-		z1 = c * np.cos(v)
+		x1 = np.sqrt(a) * np.cos(u) * np.sin(v) 
+		y1 = np.sqrt(b) * np.sin(u) * np.sin(v) 
+		z1 = np.sqrt(c) * np.cos(v)
 		# points on the ellipsoid
 		points = np.stack([t.flatten() for t in [x1, y1, z1]])
 		
@@ -63,7 +63,7 @@ def plot_json(jsonfile, dataonly = False):
 		v3 = clusters[idx]['eigenVec_2']
 		# 3x3 transformation matrix
 		T = np.array([v1, v2, v3])
-		
+	
 		# transform coordinates to the new orthonormal basis
 		new_points = T @ points
 		x2 = new_points[0, :] + x0
@@ -73,6 +73,13 @@ def plot_json(jsonfile, dataonly = False):
 	
 		#add ellipsoids
 		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=['rgba(132, 242, 201, 1.)','rgba(132, 242, 201, 1.)'], surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
+
+		#draw means
+		#print("cluster",idx,"mean - x",x0,"y",y0,"z",z0)
+		print("cluster",idx,"eigenvals - a",a,"b",b,"c",c)
+		gr_arr.append(go.Scatter3d(x=[x0],y=[y0],z=[z0],mode='markers',marker=dict(
+			size = 4, color = 'rgba(0,0,0,1.)', line=dict(
+				color = 'rgba(0, 0, 0, 1.)', width = 30))))
 	
 	fig = go.Figure(gr_arr)
 	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
