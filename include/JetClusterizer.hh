@@ -18,6 +18,10 @@ class JetClusterizer{
 		JetClusterizer(Jet jet);
 		virtual ~JetClusterizer();
 
+		//set point smear
+		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
+		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
+
 		//runs everything (varGMM + BHC)
 		//change to run over generic points (or vector of rhs)
 		void Cluster(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0, string fname = "");
@@ -42,9 +46,9 @@ class JetClusterizer{
 		int m_nJets;
 		vector<Jet> m_newJets;
 		vector<Jet> m_oldJets;
+		Matrix _data_smear;
 
-
-
+		map<string, Matrix> _params;
 
 };
 #endif

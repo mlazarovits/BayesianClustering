@@ -13,7 +13,7 @@ using std::string;
 
 class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.;}
+		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0;}
 		BasePDFMixture(int k){ 
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
@@ -24,18 +24,21 @@ class BasePDFMixture : public BasePDF{
 			m_n = 0;
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
-			m_alpha0 = 0.1;
+			m_alpha0 = 0.1; _verb = 0;
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
 		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear(); m_model.clear(); }
 
+		void SetVerbosity(int v){ _verb = v; }
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x);
 
 		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); }
 		PointCollection* GetData(){ return m_data; }
 
+		//estimates data points as Gaussians with mean = pt and covariance = set here
+		void SetDataSmear(const Matrix& cov){ _data_cov = cov; }
 
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
@@ -125,6 +128,9 @@ class BasePDFMixture : public BasePDF{
 	
 		int m_dim;
 
+		int _verb;
+		//data smear
+		Matrix _data_cov;
 
 
 };

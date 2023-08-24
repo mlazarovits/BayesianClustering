@@ -11,12 +11,12 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _thresh = 0.; 
+		_alpha = 0; _thresh = 0.; _verb = 0; 
 		}
 
 		MergeTree(double alpha){
 			_alpha = alpha;
-			_thresh = 1.;
+			_thresh = 1.; _verb = 0;
 		}
 
 		//copy constructor
@@ -27,6 +27,7 @@ class MergeTree : BaseTree{
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
 			_thresh = tree._thresh;
+			_verb = tree._verb;
 		}
 
 		virtual ~MergeTree(){ }
@@ -69,6 +70,11 @@ class MergeTree : BaseTree{
 		int GetNClusters(){ return (int)_clusters.size(); }	
 
 
+		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
+
+		void SetVerbosity(int v){ _verb = v; }
+
+		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
 
 	protected:
 		void AddLeaf(const Point* pt = nullptr){
@@ -99,10 +105,17 @@ class MergeTree : BaseTree{
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 		
 			x->model = new GaussianMixture(k); //p(x | theta)
+			x->model->SetVerbosity(_verb);
 			x->model->SetAlpha(0.5);
 			x->model->SetData(x->points);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
+
+			if(!_params.empty()) x->model->SetPriorParameters(_params);
+
+
+			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
+
 			/*
 			cout << "Initial prior parameters" << endl;
 			map<string, Matrix> params;
@@ -148,5 +161,8 @@ class MergeTree : BaseTree{
 		//threshold on variational EM
 		double _thresh;
 
+		Matrix _data_smear;
+		int _verb;
+		map<string, Matrix> _params;
 };
 #endif

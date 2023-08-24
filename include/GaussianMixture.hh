@@ -21,18 +21,25 @@ class GaussianMixture : public BasePDFMixture{
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
 
-		//estimates data points as Gaussians with mean = pt and covariance = set here
-		void SetDataSmear(const Matrix& cov){ _data_cov = cov; }
-		
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetParameters(int k); 
+
+		void SetVerbosity(int v){ _verb = v; }
  
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
 			m_nu0 = params["dof"].at(0,0);
 			m_W0 = params["scalemat"];
 			m_mean0 = params["mean"];
+			if(_verb > 0){
+				cout << "GaussianMixture::SetPriorParameters - setting prior parameters" << endl;
+				cout << "beta0 = " << m_beta0 << " nu0 = " << m_nu0 << endl;
+				cout << "W0 = " << endl;
+				m_W0.Print();
+				cout << "m0 = " << endl;
+				m_mean0.Print();
+			}
 
 		}
 			
@@ -64,8 +71,6 @@ class GaussianMixture : public BasePDFMixture{
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
 
-		//data smear
-		Matrix _data_cov;
 
 };
 

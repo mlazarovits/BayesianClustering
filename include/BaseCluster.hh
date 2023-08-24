@@ -20,7 +20,7 @@ class BaseCluster{
 		virtual double EvalLogL() = 0;
 
 		void SetData(PointCollection* pc){ m_data = pc; m_dim = m_data->Dim(); m_k = 0; m_n = m_data->GetNPoints();}
-		
+
 		double Cluster(){
 			//E step
 			Estimate();
@@ -58,5 +58,6 @@ class BaseCluster{
 		vector<double> m_coeffs;
 		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
 		vector<double> m_norms;
+
 };
 #endif

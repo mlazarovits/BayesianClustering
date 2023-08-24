@@ -5,9 +5,7 @@
 #include "BasePDF.hh"
 #include "NodeStack.hh"
 #include "MergeTree.hh"
-//#include "BaseTree.hh"
 
-//using node = BaseTree::node;
 using std::vector;
 class BayesHierCluster{
 	public:
@@ -20,7 +18,9 @@ class BayesHierCluster{
 		void SetVerbosity(int verb){ _verb = verb; }
 		
 		void SetThresh(double t){ _thresh = t; _mergeTree->SetThresh(_thresh); }
-		
+		void SetDataSmear(const Matrix& cov){ _mergeTree->SetDataSmear(cov); }		
+		void SetPriorParameters(map<string, Matrix> params){ _mergeTree->SetPriorParameters(params); }		
+
 		//cluster trees (points in pc)
 		//might need arg for recursion
 		//void Cluster(const vector<PointCollection>& pc);
