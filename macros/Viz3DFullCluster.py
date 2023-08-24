@@ -212,11 +212,20 @@ def main():
 		#remake files
 		os.system("rm -rf "+name)	
 	os.mkdir(name)
+	files = []
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+str(f)+".pdf")
-		if f < 10:	
+		files.append(name+"/level_"+str(f)+".pdf")
+		if f < 11:	
 			fig.show()
+	gifcmd = "convert -delay 50 -loop 1 -reverse "
+	for f in files:
+		gifcmd += f+" "
 
-	os.system("convert -delay 50 -loop 1 "+name+"/*.pdf "+name+"/total.gif");
+
+	gifcmd += name+"/total.gif"
+
+	if args.nlevels == 0:
+		os.system(gifcmd)
 if __name__ == "__main__":
 	main()
