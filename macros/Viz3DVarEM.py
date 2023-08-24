@@ -110,7 +110,7 @@ if args.dir is not None:
 	outname += args.dir+'/'
 
 if len(args.dir) < 1:
-	return
+	exit()
 
 if args.json is not None:
 	files.append(args.json)
