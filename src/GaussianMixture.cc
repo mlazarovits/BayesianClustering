@@ -34,6 +34,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	RandomSample randy(seed);
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
+	double norm_norm = 0;
 	for(int k = 0; k < m_k; k++){
 		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
 		m_norms[k] = double(m_n)/double(m_k);
@@ -42,10 +43,14 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
+		norm_norm += m_norms[k];
 	}
 	//make sure sum_k m_coeffs[k] = 1
 	for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
 	
+	//for(int k = 0; k < m_k; k++){ m_norms[k] *= double(m_n)/norm_norm;}
+	//for(int k = 0; k < m_k; k++) cout << "k: " << k << " Nk: " << m_norms[k] << endl;
+
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
 	kmc.Initialize(seed);
@@ -66,55 +71,12 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		m_model[k]->SetParameter("mean",mus[k]);		
 	
 
-	vector<PointCollection*> pcs;
-	kmc.GetAssignments(pcs);
-
-
-	//seed covariance matrix from data + kmeans means 
+	//seed covariance matrix from identity 
 	for(int k = 0; k < m_k; k++){
-		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix S = Matrix(m_dim,m_dim);
-		Matrix mu = m_model[k]->GetParameter("mean");
-		//calculate standard deviation per cluster
-		for(int n = 0; n < pcs[k]->GetNPoints(); n++){
-			//construct x - mu
-			Matrix x_mat = Matrix(pcs[k]->at(n));
-			//cout << "n: " << n << " k: " << k << endl;
-			//cout << "mu:" << endl;
-			//mu.Print();
-			//cout << "x:" << endl;
-		//	x_mat.Print();
-			Matrix x_min_mu = Matrix(m_dim, 1);
-			x_min_mu.minus(x_mat,mu);
-			//cout << "x - mu" << endl;
-			//x_min_mu.Print();	
-			//transpose x - mu
-			Matrix x_min_muT = Matrix(1, m_dim);
-			x_min_muT.transpose(x_min_mu);
-		
-			Matrix S_k = Matrix(m_dim, m_dim);	
-			//(x_n - mu_k)*(x_n - mu_k)T
-			S_k.mult(x_min_mu,x_min_muT);
-			//cout << "(x - mu)*(x - mu)T" << endl;	
-			//S_k.Print();
-			//sum over n
-			S.add(S_k);
-		}	
-		//cout << "sum_n (x - mu)*(x - mu)T" << endl;	
-		//S.Print();
-		//normalize by number of points in cluster (in this case r_nk = 1 or 0 s.t. for N_k = sum_n 1 = number of points in cluster)
-		S.mult(S,1./double(pcs[k]->GetNPoints()));
-		//cout << "1/n(sum_n (x - mu)*(x - mu)T)" << endl;	
-		cout << "Initial covariance for cluster " << k << endl;
-		S.Print();
-		cout << "Initial mean for cluster " << k << endl;
-		m_model[k]->GetParameter("mean").Print();
+		S.InitIdentity();
 		m_model[k]->SetParameter("cov",S);
-		cout << "\n" << endl;
 	}
-
-	//cout << "kmeans" << endl;
-	//for(int k = 0; k < m_k; k++){ cout << "mean " << k << endl; mus[k].Print(); cout << "cov " << k << endl; m_model[k]->GetParameter("cov").Print(); }
 
 	m_post.SetDims(m_n, m_k);
 }
@@ -283,7 +245,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){m_model[k]->SetDim(m_dim); m_model[k]->SetPrior(new NormalWishart(m_dim));}	
 
 	//beta > 0
-	m_beta0 = 0.01;
+	m_beta0 = 1e-3;
 	//cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
@@ -300,7 +262,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv.invert(m_W0);
 
 	//nu > d - 1 (degrees of freedom)
-	m_nu0 = (m_dim - 1) + 10.;
+	m_nu0 = (m_dim - 1) + 1e-3;
 	//cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);
@@ -319,7 +281,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	}
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
-
 
 }
 
@@ -406,17 +367,16 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			E_mu_lam = m_dim/scale + dof*full.at(0,0);	
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
-		//	if(n == 3 && k == 0){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << endl;
 		//	cout << "x - m[k]" << endl;
 		//	x_min_m.Print();
 		//	cout << "W[k]:" << endl;
 		//	scalemat.Print();
 		//	cout << "(x - m[k])T*W[k]*(x - m[k])" << endl; full.Print();
-		//}	
 			post = exp(post);
 			norm += post;
 			//need to normalize
 			m_post.SetEntry(post, n, k);
+		//	if(n == 3){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
 		}
 		post_norms.push_back(norm);
 	}
@@ -427,7 +387,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		for(int k = 0; k < m_k; k++){
 			m_post.SetEntry(m_post.at(n,k)/post_norms[n],n,k);
 		//uncomment here to check posterior values
-	//		if(n == 3) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
+		//	if(n == 3) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
 //cout << "posterior normed" << endl;	
@@ -464,6 +424,7 @@ void GaussianMixture::CalculateRStatistics(){
 			//cout << "x" << endl;
 			//x.Print();
 			//weighted by posterior value gamma(z_nk),
+		//	if(n == 3) cout << "mu calc - post: " << m_post.at(n,k) << endl;
 			x.mult(x,m_post.at(n,k));
 			//cout << "post*x" << endl;
 			//x.Print();
@@ -513,7 +474,7 @@ void GaussianMixture::CalculateRStatistics(){
 			//S_k.Print();
 			//weighting by posterior r_nk
 			S_k.mult(S_k,m_post.at(n,k));
-			//cout << "post: " << m_post.at(n,k) << endl;
+		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
 			//cout << "post*(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();
 			//sum over n
@@ -527,6 +488,7 @@ void GaussianMixture::CalculateRStatistics(){
 //		cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
 //		S.Print();
 		m_model[k]->SetParameter("cov",S);
+	//	if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
 	}
 
 }
