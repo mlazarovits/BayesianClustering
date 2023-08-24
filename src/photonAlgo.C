@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	bool viz = false;
 	int verb = 0;
 	int npho = 0;
+	int evt = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -112,6 +113,14 @@ int main(int argc, char *argv[]){
     	 		i++;
 			npho = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"-e", 2) == 0){
+    	 		i++;
+			evt = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"--event", 7) == 0){
+    	 		i++;
+			evt = std::atoi(argv[i]);
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -126,13 +135,15 @@ int main(int argc, char *argv[]){
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --photon(-p) [npho   ]        set photon number to analyze (default = 0)" << endl;
+   		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
+   		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
   	}
 
 	fname = "plots/"+fname;
+	fname += "_evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k);
 	cout << "Free sha-va-ca-doo!" << endl;
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
@@ -145,7 +156,6 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(in_file.c_str());
 	PhotonProducer prod(file);
 	vector<JetPoint> rhs;
-	int evt = 0;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
@@ -153,7 +163,6 @@ int main(int argc, char *argv[]){
 	cout << rhs.size() << " rechits in first photon in first event" << endl;
 	if(rhs.size() < 1) return -1;
 
-	fname += "evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k);
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
@@ -226,11 +235,11 @@ int main(int argc, char *argv[]){
 		params["mean"].Print();
 		cout << "cov " << i << endl;
 		params["cov"].Print();
-		cout << "scale " << i << ": " << params["scale"].at(0,0) << " dof " << i << ": " << params["dof"].at(0,0) << endl;
-		cout << "m " << i << endl;
-		params["m"].Print();
-		cout << "scalemat " << i << endl;
-		params["scalemat"].Print();
+		//cout << "scale " << i << ": " << params["scale"].at(0,0) << " dof " << i << ": " << params["dof"].at(0,0) << endl;
+		//cout << "m " << i << endl;
+		//params["m"].Print();
+		//cout << "scalemat " << i << endl;
+		//params["scalemat"].Print();
 		params.clear();
 	}
 
