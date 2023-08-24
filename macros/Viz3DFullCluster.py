@@ -217,5 +217,6 @@ def main():
 		if f < 10:	
 			fig.show()
 
+	os.system("convert -delay 50 -loop 1 "+name+"/*.pdf "+name+"/total.gif");
 if __name__ == "__main__":
 	main()
