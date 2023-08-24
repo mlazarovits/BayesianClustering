@@ -5,7 +5,9 @@
 #include <TFile.h>
 #include <iostream>
 #include <cmath>
-#include<string>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 using std::string;
 using std::cout;
@@ -13,18 +15,15 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname = "test";
+	string fname = "testjet";
 	bool hprint = false;
-	//dimensionality
-	int N = 2;
-	//n data points
-	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
 	double alpha = 0.1;
 	bool viz = false;
 	int verb = 0;
+	int evt = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -39,22 +38,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
     	 		fname = string(argv[i]);
-   		}
-		if(strncmp(argv[i],"-n", 3) == 0){
-     			i++;
-    	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nSamples", 10) == 0){
-			i++;
-    	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"-d", 2) == 0){
-     			i++;
-    	 		N = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nDims", 6) == 0){
-     			i++;
-    	 		N = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-k", 2) == 0){
      			i++;
@@ -100,26 +83,49 @@ int main(int argc, char *argv[]){
 			i++;
     	 		alpha = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"-e", 2) == 0){
+    	 		i++;
+			evt = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"--event", 7) == 0){
+    	 		i++;
+			evt = std::atoi(argv[i]);
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
-   		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
-   		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
+   		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
   	}
 
 	fname = "plots/"+fname;
+	string a_string;
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(3) << alpha;
+	a_string = stream.str();
+	int idx = a_string.find(".");
+	a_string.replace(idx,1,"p");	
+
+	string t_string;
+	stream.str("");
+	stream << std::fixed << std::setprecision(3) << thresh;
+	t_string = stream.str();
+	idx = t_string.find(".");
+	t_string.replace(idx,1,"p");	
+
+
+	fname += "_evt"+std::to_string(evt)+"_kmax"+std::to_string(k)+"_alpha"+a_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	
@@ -128,11 +134,10 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(in_file.c_str());
 	JetProducer prod(file);
 	vector<JetPoint> rhs;
-	int evt = 0;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
-	prod.GetRecHits(rhs,0);
+	prod.GetRecHits(rhs,evt);
 	cout << rhs.size() << " rechits in first event" << endl;
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets

@@ -8,7 +8,9 @@
 #include <TFile.h>
 #include <iostream>
 #include <cmath>
-#include<string>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 using std::string;
 using std::cout;
@@ -18,10 +20,6 @@ int main(int argc, char *argv[]){
 	
 	string fname = "testphoton";
 	bool hprint = false;
-	//dimensionality
-	int N = 2;
-	//n data points
-	int Nsample = 50;
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
@@ -44,22 +42,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
     	 		fname = string(argv[i]);
-   		}
-		if(strncmp(argv[i],"-n", 3) == 0){
-     			i++;
-    	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nSamples", 10) == 0){
-			i++;
-    	 		Nsample = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"-d", 2) == 0){
-     			i++;
-    	 		N = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nDims", 6) == 0){
-     			i++;
-    	 		N = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-k", 2) == 0){
      			i++;
@@ -127,8 +109,6 @@ int main(int argc, char *argv[]){
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
-   		cout << "   --nSamples(-n) [n]            sets number of data points to simulate per cluster (default = 500)" << endl;
-   		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
@@ -137,18 +117,33 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
-   		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
+   		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
    		return 0;
   	}
 
 	fname = "plots/"+fname;
-	fname += "_evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k);
+	string a_string;
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(3) << alpha;
+	a_string = stream.str();
+	int idx = a_string.find(".");
+	a_string.replace(idx,1,"p");	
+
+	string t_string;
+	stream.str("");
+	stream << std::fixed << std::setprecision(3) << thresh;
+	t_string = stream.str();
+	idx = t_string.find(".");
+	t_string.replace(idx,1,"p");	
+
+
+	fname += "_evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k)+"_alpha"+a_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
 	}
-	
+
 	
 	
 	/////GET DATA FROM NTUPLE//////
@@ -183,6 +178,7 @@ int main(int argc, char *argv[]){
 	gmm->SetData(pc);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
+	gmm->SetAlpha(alpha);
 	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,k);
