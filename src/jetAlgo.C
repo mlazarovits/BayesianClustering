@@ -166,7 +166,7 @@ int main(int argc, char *argv[]){
 	JetClusterizer jc;
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
 //	jc.FindSubjets_etaPhi(testjet, thresh, nIts, k, viz, alpha);
-	jc.Cluster(testjet, alpha, thresh, viz, verb);
+	jc.Cluster(testjet, alpha, thresh, viz, verb, fname);
 
 		
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)

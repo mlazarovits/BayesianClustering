@@ -17,7 +17,7 @@ JetClusterizer::JetClusterizer(vector<Jet> jets){
 
 JetClusterizer::~JetClusterizer(){ }
 
-void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int verb){
+void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int verb, string fname){
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
 	//Bayesian Hierarchical Clustering algo
@@ -28,7 +28,7 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 	if(viz){
-		string fname = "plots/jettest";
+		if(fname.empty()) fname = "plots/jettest";
 		FullViz3D plots = FullViz3D(tree);
 		plots.SetVerbosity(verb);
 		plots.Write(fname);
