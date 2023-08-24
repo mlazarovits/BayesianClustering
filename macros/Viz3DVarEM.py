@@ -27,8 +27,8 @@ def plot_json(jsonfile, dataonly = False):
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, color = 'rgba(132,242,201,0.8)', line=dict(
-				color = 'rgba(132, 242, 201, 1.)', width = 30))))
+			size = 4, color = 'rgba(132,242,201,1.)', line=dict(
+				color = 'rgba(132, 242, 201, 1.)', width = 30)), showlegend = False))
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
@@ -72,14 +72,12 @@ def plot_json(jsonfile, dataonly = False):
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 	
 		#add ellipsoids
-		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=['rgba(132, 242, 201, 1.)','rgba(132, 242, 201, 1.)'], surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False)),
+		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=['rgba(132, 242, 201, 1.)','rgba(132, 242, 201, 1.)'], surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
 
 		#draw means
-		#print("cluster",idx,"mean - x",x0,"y",y0,"z",z0)
-		print("cluster",idx,"eigenvals - a",a,"b",b,"c",c)
 		gr_arr.append(go.Scatter3d(x=[x0],y=[y0],z=[z0],mode='markers',marker=dict(
-			size = 4, color = 'rgba(0,0,0,1.)', line=dict(
-				color = 'rgba(0, 0, 0, 1.)', width = 30))))
+			size = 4, color = 'rgba(0,0,0,1.)', symbol='x', line=dict(
+				color = 'rgba(0, 0, 0, 1.)', width = 30)), showlegend = False))
 	
 	fig = go.Figure(gr_arr)
 	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
@@ -111,9 +109,12 @@ if args.dir is not None:
 		files.append(it_to_file[j])
 	outname += args.dir+'/'
 
+if len(args.dir) < 1:
+	return
 
 if args.json is not None:
 	files.append(args.json)
+
 
 for f in files:
 	if ".json" not in f:
