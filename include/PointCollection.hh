@@ -95,7 +95,7 @@ class PointCollection{
 		}
 		
 		//add only unique points
-		void AddPoint(Point& pt){
+		void AddPoint(const Point& pt){
 		//cout << "addpoint: " << &pt << endl;
 		//pt.Print();
 		if(_nDim == 0) _nDim = pt.Dim();

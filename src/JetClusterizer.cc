@@ -76,8 +76,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double thr
 
 	gmm->SetData(points);
 	gmm->SetAlpha(a);
-	if(seeds != nullptr) gmm->InitParameters(*seeds);
-	else gmm->InitParameters();
+	gmm->InitParameters();
 	gmm->InitPriorParameters();
 
 

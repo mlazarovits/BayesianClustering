@@ -4,6 +4,7 @@
 #include "GaussianMixture.hh"
 #include "VarEMCluster.hh"
 
+#include "TSystem.h"
 #include <TFile.h>
 #include <iostream>
 #include <cmath>
@@ -15,7 +16,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname = "test";
+	string fname = "testphoton";
 	bool hprint = false;
 	//dimensionality
 	int N = 2;
@@ -133,6 +134,10 @@ int main(int argc, char *argv[]){
 
 	fname = "plots/"+fname;
 	cout << "Free sha-va-ca-doo!" << endl;
+	if(gSystem->AccessPathName((fname).c_str())){
+		gSystem->Exec(("mkdir -p "+fname).c_str());
+	}
+	
 	
 	
 	/////GET DATA FROM NTUPLE//////
@@ -144,9 +149,11 @@ int main(int argc, char *argv[]){
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
-	prod.GetRecHits(rhs,0,npho);
+	prod.GetRecHits(rhs,evt,npho);
 	cout << rhs.size() << " rechits in first photon in first event" << endl;
 	if(rhs.size() < 1) return -1;
+
+	fname += "evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k);
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
@@ -170,7 +177,7 @@ int main(int argc, char *argv[]){
 	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,k);
-	algo->SetThresh(1.);
+	algo->SetThresh(thresh);
 
 	//viz object
 	VarClusterViz3D cv3D = VarClusterViz3D(algo);
@@ -214,11 +221,16 @@ int main(int argc, char *argv[]){
 	map<string, Matrix> params;
 	for(int i = 0; i < gmm->GetNClusters(); i++){
 		params = gmm->GetPriorParameters(i);	
-		cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
+		cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << endl;
 		cout << "mean " << i << endl;
 		params["mean"].Print();
 		cout << "cov " << i << endl;
 		params["cov"].Print();
+		cout << "scale " << i << ": " << params["scale"].at(0,0) << " dof " << i << ": " << params["dof"].at(0,0) << endl;
+		cout << "m " << i << endl;
+		params["m"].Print();
+		cout << "scalemat " << i << endl;
+		params["scalemat"].Print();
 		params.clear();
 	}
 

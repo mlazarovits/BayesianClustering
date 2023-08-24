@@ -111,11 +111,6 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	unsigned long id;
 	int nRHs, nRHs_evt;
 	rhs.clear();
-	double etaMax = 0.5;
-	double etaMin = -etaMax;  
-	double phiMax = 2.;
-	double phiMin = -2.8;
-	int cnt = 0;
 	for(int i = 0; i < m_nEvts; i++){
 		if(i == evt){
 			m_base->GetEntry(i);

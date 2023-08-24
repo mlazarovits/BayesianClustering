@@ -35,7 +35,6 @@ class GaussianMixture : public BasePDFMixture{
 			
 		//for variational EM algorithm
 		void InitPriorParameters(unsigned long long seed = 111);
-		void InitParameters(const PointCollection& pc);
 		void CalculateVariationalPosterior();
 		void CalculateExpectations();
 		void CalculateRStatistics();

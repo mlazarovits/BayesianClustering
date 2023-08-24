@@ -98,12 +98,14 @@ void VarClusterViz3D::WriteJson(string filename){
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
-	
+
+
 	double x0, y0, z0;	
 	for(int k = 0; k < m_k; k++){
 		x0 = cluster_params[k]["mean"].at(0,0);
 		y0 = cluster_params[k]["mean"].at(1,0);
 		z0 = cluster_params[k]["mean"].at(2,0);
+
 
 		cluster_params[k]["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){

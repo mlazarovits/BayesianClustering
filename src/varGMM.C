@@ -112,7 +112,8 @@ int main(int argc, char *argv[]){
 		Matrix sigma = Matrix(N,N);
 		sigma.InitRandomSymPosDef(0., 1., 111+i);
 		Matrix mu = Matrix(N,1);
-		mu.InitRandom(0., 10., 1121+i);
+//		mu.InitRandom(0., 10., 1121+i);
+		mu.InitRandom(0., 10., 1121+i+1);
 		cout << "mean " << i << endl;
 		mu.Print();
 		cout << "cov " << i << endl;
@@ -176,11 +177,16 @@ int main(int argc, char *argv[]){
 	map<string, Matrix> params;
 	for(int i = 0; i < gmm->GetNClusters(); i++){
 		params = gmm->GetPriorParameters(i);	
-		cout << "weight " << i << ": " << params["pi"].at(0,0) << endl;
+		cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << endl;
 		cout << "mean " << i << endl;
 		params["mean"].Print();
 		cout << "cov " << i << endl;
 		params["cov"].Print();
+		cout << "scale " << i << ": " << params["scale"].at(0,0) << " dof " << i << ": " << params["dof"].at(0,0) << endl;
+		cout << "m " << i << endl;
+		params["m"].Print();
+		cout << "scalemat " << i << endl;
+		params["scalemat"].Print();
 		params.clear();
 	}
 
