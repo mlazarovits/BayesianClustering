@@ -20,6 +20,9 @@ class GaussianMixture : public BasePDFMixture{
 		void UpdateParameters();
 		//eval - returns log-likelihood value at given iteration
 		double EvalLogL();
+
+		//estimates data points as Gaussians with mean = pt and covariance = set here
+		void SetDataSmear(const Matrix& cov){ _data_cov = cov; }
 		
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
@@ -60,6 +63,9 @@ class GaussianMixture : public BasePDFMixture{
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
+
+		//data smear
+		Matrix _data_cov;
 
 };
 

@@ -486,10 +486,14 @@ void GaussianMixture::CalculateRStatistics(){
 		S.mult(S,1./m_norms[k]);
 		//cout << "m_norm: " << m_norms[k] << endl;
 //		cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
+		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
+		if(!_data_cov.empty()) S.add(_data_cov);
+
 //		S.Print();
 		m_model[k]->SetParameter("cov",S);
 	//	if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
 	}
+
 
 }
 
