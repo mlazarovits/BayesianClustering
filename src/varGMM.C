@@ -130,6 +130,9 @@ int main(int argc, char *argv[]){
 	gmm->SetData(&pc);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
+
+
+
 	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,k);
