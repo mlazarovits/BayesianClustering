@@ -17,7 +17,6 @@ int main(int argc, char *argv[]){
 	
 	string fname = "testjet";
 	bool hprint = false;
-	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
 	double alpha = 0.1;
@@ -38,14 +37,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
     	 		fname = string(argv[i]);
-   		}
-		if(strncmp(argv[i],"-k", 2) == 0){
-     			i++;
-    	 		k = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--nClusters", 11) == 0){
-     			i++;
-    	 		k = std::atoi(argv[i]);
    		}
 		if(strncmp(argv[i],"--nIterations", 13) == 0){
      			i++;
@@ -97,7 +88,6 @@ int main(int argc, char *argv[]){
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
-   		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
@@ -125,7 +115,10 @@ int main(int argc, char *argv[]){
 	t_string.replace(idx,1,"p");	
 
 
-	fname += "_evt"+std::to_string(evt)+"_kmax"+std::to_string(k)+"_alpha"+a_string+"_thresh"+t_string;
+	string extra = "";
+	extra = "_dofplus10";
+
+	fname += "_evt"+std::to_string(evt)+"_alpha"+a_string+"_thresh"+t_string+extra;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	
@@ -161,9 +154,21 @@ int main(int argc, char *argv[]){
 
 	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;
 
+	map<string, Matrix> params;
+	params["scale"] = Matrix(0.001);
+	params["dof"] = Matrix(3 - 1 + 10.);
+	Matrix mat = Matrix(3, 3);
+	mat.InitIdentity();
+	Matrix mean = Matrix(3, 1);
+	mat.InitEmpty();
+	params["scalemat"] = mat;
+	params["m"] = mean;
+	
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
 	JetClusterizer jc;
+	jc.SetPriorParameters(params);
+	//jc.SetDataSmear();
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
 //	jc.FindSubjets_etaPhi(testjet, thresh, nIts, k, viz, alpha);
 	jc.Cluster(testjet, alpha, thresh, viz, verb, fname);

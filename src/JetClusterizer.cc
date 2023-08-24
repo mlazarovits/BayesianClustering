@@ -25,6 +25,8 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 	bhc->SetThresh(thresh);
 	bhc->AddData(points);
 	bhc->SetVerbosity(verb);
+	if(!_params.empty()) bhc->SetPriorParameters(_params);
+	if(!_data_smear.empty()) bhc->SetDataSmear(_data_smear);
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 	if(viz){
