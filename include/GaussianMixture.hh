@@ -25,7 +25,6 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetParameters(int k); 
 
-		void SetVerbosity(int v){ _verb = v; }
  
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
