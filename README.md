@@ -7,7 +7,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- this is also the case for the variational EM algorithm, except once the prior parameters are set, the parameters are updated to seed the algorithm (initial M0-step, then alternate between E-M)
 - if you are having trouble with the variational GMM, play around with the initial values of the parameters
 	- it helps if $\beta_k$ and $\nu_k$ are the same order of magnitude 
-- default initial values of the Gaussian priors are set to:
+- default initial values of the Gaussian prior (Normal-Wishart) are set to:
 	- $\beta_0 = 0.001$
 	- $\vec{m}_0 = \vec{0}$
 	- $\nu_0 = (D - 1) + 0.001$
@@ -29,7 +29,9 @@ There are muliple visualization classes:
 - `Jet` is 1 cluster unit (it can be anything, doesn't have to be a physics jet)
 	- it can be composite (made up of multiple Jets) or singular (ie one rechit)
 	- these are the units that are clustered in `JetCluster` 
-- `Cluster` calls the specified model (either Gaussian Mixture or Bayesian Gaussian Mixture) and runs the corresponding EM algorithm to find the cluster parameters
-	- TODO: eventually will introduct Bayesian Hierarchical clustering to combine jets into cluster hierarchy and use varGMM EM to re-estimate clusters at each step
+- `Cluster` calls the full algorithm and runs the corresponding EM algorithm to find the cluster parameters
+- `FindSubjets` only calls the variational EM algorithm with Gaussian mixture model
+	- can be done in $\eta - \phi$ space or $X - Y - Z$ space, both with a time dimension
+
 
 
