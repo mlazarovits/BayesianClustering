@@ -1,23 +1,23 @@
-#include "JetClusterizer.hh"
+#include "Clusterizer.hh"
 #include "VarClusterViz3D.hh"
 #include "BayesHierCluster.hh"
 #include "FullViz3D.hh"
 #include <TSystem.h>
 
-JetClusterizer::JetClusterizer(){
+Clusterizer::Clusterizer(){
 	m_nJets = 0;
 };
 
-JetClusterizer::JetClusterizer(vector<Jet> jets){
+Clusterizer::Clusterizer(vector<Jet> jets){
 	//add jet info to pointcollection
 	//match jets to points by index
 	m_oldJets = jets;
 }
 
 
-JetClusterizer::~JetClusterizer(){ }
+Clusterizer::~Clusterizer(){ }
 
-void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int verb, string fname){
+void Clusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int verb, string fname){
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
 	//Bayesian Hierarchical Clustering algo
@@ -69,7 +69,7 @@ void JetClusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int
 
 
 //crack open Jet and get underlying points
-GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds){
+GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds){
 
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(maxK);
@@ -157,7 +157,7 @@ GaussianMixture* JetClusterizer::FindSubjets(PointCollection* points, double thr
 
 
 //crack open Jet and get underlying points
-vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
+vector<Jet> Clusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
 	vector<Jet> subjets;
 	//vector<JetPoint> rhs;
 	//jet.GetConstituents(rhs);
@@ -168,24 +168,6 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNi
 	jet.GetEtaPhiConstituents(*points);
 	int n_pts = points->GetNPoints();
 
-	/*	
-	//find maxK points with biggest energy - 4th dim
-	points.Sort(3);
-	PointCollection seeds;
-	PointCollection newpts;
-	vector<double> pt;
-	for(int k = 0; k < points.GetNPoints(); k++){
-		//discard energy dimension
-		pt.push_back(points.at(k).at(0));
-		pt.push_back(points.at(k).at(1));
-		pt.push_back(points.at(k).at(2));
-
-		if(k >= points.GetNPoints() - maxK) seeds += Point(pt);
-		newpts += Point(pt);
-		pt.clear();
-	}
-	points.Clear();
-	*/
 	GaussianMixture* gmm = FindSubjets(points, thresh, maxNit, maxK, viz, a);
 	int nsubjets = gmm->GetNClusters();
 
@@ -195,7 +177,7 @@ vector<Jet> JetClusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNi
 }
 
 //crack open Jet and get underlying points
-vector<Jet> JetClusterizer::FindSubjets_XYZ(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
+vector<Jet> Clusterizer::FindSubjets_XYZ(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
 	vector<Jet> subjets;
 
 	//initialize vector of subjets

@@ -1,5 +1,5 @@
-#ifndef JETCLUSTERIZER_HH
-#define JETCLUSTERIZER_HH
+#ifndef CLUSTERIZER_HH
+#define CLUSTERIZER_HH
 
 #include "PointCollection.hh"
 #include "Jet.hh"
@@ -10,13 +10,13 @@ using std::vector;
 
 //this class is a wrapper for the clustering algorithms (see: fastjet::ClusterSequence)
 //should b a recursive implementation
-class JetClusterizer{
+class Clusterizer{
 	public:
-		JetClusterizer();
-		JetClusterizer(vector<Jet> jets);
-		JetClusterizer(vector<JetPoint> rhs);
-		JetClusterizer(Jet jet);
-		virtual ~JetClusterizer();
+		Clusterizer();
+		Clusterizer(vector<Jet> jets);
+		Clusterizer(vector<JetPoint> rhs);
+		Clusterizer(Jet jet);
+		virtual ~Clusterizer();
 
 		//set point smear
 		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
