@@ -97,6 +97,8 @@ if args.dir is None and args.json is None:
 files = []
 outname = ''
 if args.dir is not None:
+	if len(args.dir) < 1:
+		exit()
 	#sort files by iteration
 	it_to_file = {}
 	for j in os.listdir(args.dir):
@@ -109,8 +111,6 @@ if args.dir is not None:
 		files.append(it_to_file[j])
 	outname += args.dir+'/'
 
-if len(args.dir) < 1:
-	exit()
 
 if args.json is not None:
 	files.append(args.json)
