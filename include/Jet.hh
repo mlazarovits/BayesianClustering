@@ -72,10 +72,15 @@ class Jet{
 				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
 			}
 		}
-		void GetEtaPhiEConstituents(PointCollection& pc) const{
+		void GetEtaPhiConstituents_Eweighted(PointCollection& pc) const{
 			pc.Clear();
+			double E;
+			Point pt;
 			for(int i = 0; i < (int)m_rhs.size(); i++){
-				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time(), m_rhs[i].energy()});
+				E = m_rhs[i].E();	
+				pt = Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time(), m_rhs[i].energy()});
+				pt.Scale(E);
+				pc += pt;
 			}
 		}
 		int GetNConstituents() const{return (int)m_rhs.size(); }	
