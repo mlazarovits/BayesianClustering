@@ -159,6 +159,7 @@ GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh
 //crack open Jet and get underlying points
 vector<Jet> Clusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
 	vector<Jet> subjets;
+	//for creating new jets and assigning RHs
 	//vector<JetPoint> rhs;
 	//jet.GetConstituents(rhs);
 	//Point vtx = jet.GetVertex();
@@ -185,24 +186,6 @@ vector<Jet> Clusterizer::FindSubjets_XYZ(Jet jet, double thresh, int maxNit, int
 	jet.GetXYZConstituents(*points);
 	int n_pts = points->GetNPoints();
 
-	/*	
-	//find maxK points with biggest energy - 4th dim
-	points.Sort(3);
-	PointCollection seeds;
-	PointCollection newpts;
-	vector<double> pt;
-	for(int k = 0; k < points.GetNPoints(); k++){
-		//discard energy dimension
-		pt.push_back(points.at(k).at(0));
-		pt.push_back(points.at(k).at(1));
-		pt.push_back(points.at(k).at(2));
-
-		if(k >= points.GetNPoints() - maxK) seeds += Point(pt);
-		newpts += Point(pt);
-		pt.clear();
-	}
-	points.Clear();
-	*/
 	GaussianMixture* gmm = FindSubjets(points, thresh, maxNit, maxK, viz, a);
 	int nsubjets = gmm->GetNClusters();
 
