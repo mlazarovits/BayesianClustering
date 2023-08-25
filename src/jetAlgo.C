@@ -1,5 +1,5 @@
 #include "JetProducer.hh"
-#include "JetClusterizer.hh"
+#include "Clusterizer.hh"
 #include "VarClusterViz3D.hh"
 
 #include <TFile.h>
@@ -166,7 +166,7 @@ int main(int argc, char *argv[]){
 	
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
-	JetClusterizer jc;
+	Clusterizer jc;
 	jc.SetPriorParameters(params);
 	//jc.SetDataSmear();
 	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
