@@ -4,13 +4,14 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
+	- this is also the case for the variational EM algorithm, except once the prior parameters are set, the parameters are updated to seed the algorithm (initial M0-step, then alternate between E-M)
 - if you are having trouble with the variational GMM, play around with the initial values of the parameters
 	- it helps if $\beta_k$ and $\nu_k$ are the same order of magnitude 
 - default initial values of the Gaussian priors are set to:
 	- $\beta_0 = 0.001$
 	- $\vec{m}_0 = \vec{0}$
 	- $\nu_0 = (D - 1) + 0.001$
-	- $\W_0 = \mathbb{I}$
+	- $W_0 = \mathbb{I}$
 
 ### Formatting
 There are muliple visualization classes:
