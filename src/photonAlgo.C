@@ -1,8 +1,6 @@
 #include "PhotonProducer.hh"
-#include "VarClusterViz3D.hh"
 #include "Jet.hh"
-#include "GaussianMixture.hh"
-#include "VarEMCluster.hh"
+#include "Clusterizer.hh"
 
 #include "TSystem.h"
 #include <TFile.h>
@@ -170,73 +168,7 @@ int main(int argc, char *argv[]){
 	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
 
 
-	PointCollection* pc = new PointCollection();
-	testpho.GetEtaPhiConstituents(*pc);
-	
-	//create GMM model
-	GaussianMixture* gmm = new GaussianMixture(k);
-	gmm->SetData(pc);
-	gmm->InitParameters();
-	gmm->InitPriorParameters();
-	gmm->SetAlpha(alpha);
-	
-	//create EM algo
-	VarEMCluster* algo = new VarEMCluster(gmm,k);
-	algo->SetThresh(thresh);
-
-	//viz object
-	VarClusterViz3D cv3D = VarClusterViz3D(algo);
-	cv3D.SeeData();
-
-	
-	//loop
-	double dLogL, newLogL;
-	double LogLThresh = 0.001;
-	double oldLogL = algo->EvalLogL();
-	////////run EM algo////////
-	for(int it = 0; it < nIts; it++){
-		//cout << "------------- it #" << it << " BEGIN -------------" << endl;
-		//E step
-		algo->Estimate();
-		//M step
-		algo->Update();
-		
-		//Plot
-		cv3D.UpdatePosterior();
-		if(viz) cv3D.WriteJson(fname+"/it"+std::to_string(it));
-
-	
-		//Check for convergence
-		newLogL = algo->EvalLogL();
-		if(isnan(newLogL)){
-			cout << "iteration #" << it << " log-likelihood: " << newLogL << endl;
-			return -1;
-		}
-		//ELBO should not decrease with iterations, dLogL should always be negative
-		dLogL = oldLogL - newLogL;
-		cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
-		oldLogL = newLogL;
-		if(fabs(dLogL) < LogLThresh){
-			cout << "Reached convergence at iteration " << it << endl;
-			break;
-		}
-	}
-
-	cout << "Estimated parameters" << endl;
-	map<string, Matrix> params;
-	for(int i = 0; i < gmm->GetNClusters(); i++){
-		params = gmm->GetPriorParameters(i);	
-		cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << endl;
-		cout << "mean " << i << endl;
-		params["mean"].Print();
-		cout << "cov " << i << endl;
-		params["cov"].Print();
-		//cout << "scale " << i << ": " << params["scale"].at(0,0) << " dof " << i << ": " << params["dof"].at(0,0) << endl;
-		//cout << "m " << i << endl;
-		//params["m"].Print();
-		//cout << "scalemat " << i << endl;
-		//params["scalemat"].Print();
-		params.clear();
-	}
+	Clusterizer* algo = new Clusterizer();
+	algo->FindSubjets(testpho, alpha, thresh, viz, verb, k, fname); 
 
 }
