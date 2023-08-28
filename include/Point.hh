@@ -95,8 +95,8 @@ class Point{
 		}
 		
 		void SetWeight(double w){ _weight = w; }
-		double Weight(){ return _weight; }	
-		double w(){ return _weight; }
+		double Weight() const{ return _weight; }	
+		double w() const{ return _weight; }
 
 		vector<double> Rank() const{return _rank;}
 		//return rank at dimension d
