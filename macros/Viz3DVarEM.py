@@ -21,13 +21,16 @@ def plot_json(jsonfile, dataonly = False):
 	x = data['x']
 	y = data['y']
 	z = data['z']
+	#weights - colors
+	w = data['w']
 	
 	gr_arr = []
 
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, color = 'rgba(132,242,201,1.)', line=dict(
+			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = "Plotly3", showscale = True, line=dict(
+			#size = 4, color = 'rgba(132,242,201,1.)', line=dict(
 				color = 'rgba(132, 242, 201, 1.)', width = 30)), showlegend = False))
 	if dataonly is True:
 		fig = go.Figure(gr_arr)

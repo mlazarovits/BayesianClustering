@@ -67,6 +67,7 @@ void VarClusterViz3D::WriteJson(string filename){
 	Json::Value x(Json::arrayValue);
 	Json::Value y(Json::arrayValue);
 	Json::Value z(Json::arrayValue);
+	Json::Value w(Json::arrayValue);
 
 	
 	Json::Value eigenVec_0(Json::arrayValue);
@@ -85,11 +86,15 @@ void VarClusterViz3D::WriteJson(string filename){
 		x.append(m_points->at(i).Value(0));
 		//phi
 		y.append(m_points->at(i).Value(1));
+		//time
 		z.append(m_points->at(i).Value(2));
+		//weight
+		w.append(m_points->at(i).Weight());
 	}
 	data["x"] = x;
 	data["y"] = y;
 	data["z"] = z;
+	data["w"] = w;
 
 	root["data"] = data;
 	//if no points - empty plot
