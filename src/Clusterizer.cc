@@ -30,7 +30,7 @@ void Clusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int ve
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 	if(viz){
-		if(fname.empty()) fname = "plots/jettest";
+		if(fname.empty()) fname = "plots/test";
 		FullViz3D plots = FullViz3D(tree);
 		plots.SetVerbosity(verb);
 		plots.Write(fname);
@@ -66,18 +66,18 @@ void Clusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int ve
 
 
 
-
-
 //crack open Jet and get underlying points
-GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds){
-
+void Clusterizer::FindSubjets(Jet jet, double alpha, double thresh, bool viz, int verb, int maxK, string fname){
 	//create GMM model
+	PointCollection* points = new PointCollection();
+	jet.GetEtaPhiConstituents_Eweighted(*points);
+	
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 	
 	Point norm_scale = points->Normalize();
 
 	gmm->SetData(points);
-	gmm->SetAlpha(a);
+	gmm->SetAlpha(alpha);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
 
@@ -89,7 +89,7 @@ GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh
 
 	map<string, vector<Matrix>> params;
 	
-	string fname = "plots/jetTest/"; 
+	if(fname.empty()) fname = "plots/test";
 	if(gSystem->AccessPathName((fname).c_str())){
 		gSystem->Exec(("mkdir -p "+fname).c_str());
 	}
@@ -108,7 +108,8 @@ GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh
 	double LogLthresh = 0.01;
 	double oldLogL = algo->EvalLogL();
 	////////run EM algo////////
-	for(int it = 0; it < maxNit; it++){
+	//maximum of 50 iterations
+	for(int it = 0; it < 50; it++){
 	
 		//E step
 		algo->Estimate();
@@ -124,7 +125,7 @@ GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
-			return gmm;
+			return;
 		}
 		dLogL = oldLogL - newLogL;
 		if(viz) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
@@ -151,47 +152,11 @@ GaussianMixture* Clusterizer::FindSubjets(PointCollection* points, double thresh
 
 	}
 
-	return gmm;
 }
 
 
 
-//crack open Jet and get underlying points
-vector<Jet> Clusterizer::FindSubjets_etaPhi(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
-	vector<Jet> subjets;
-	//for creating new jets and assigning RHs
-	//vector<JetPoint> rhs;
-	//jet.GetConstituents(rhs);
-	//Point vtx = jet.GetVertex();
 
-	//initialize vector of subjets
-	PointCollection* points = new PointCollection();
-	jet.GetEtaPhiConstituents(*points);
-	int n_pts = points->GetNPoints();
-
-	GaussianMixture* gmm = FindSubjets(points, thresh, maxNit, maxK, viz, a);
-	int nsubjets = gmm->GetNClusters();
-
-
-	return subjets;
-
-}
-
-//crack open Jet and get underlying points
-vector<Jet> Clusterizer::FindSubjets_XYZ(Jet jet, double thresh, int maxNit, int maxK, bool viz, double a){
-	vector<Jet> subjets;
-
-	//initialize vector of subjets
-	PointCollection* points = new PointCollection();
-	jet.GetXYZConstituents(*points);
-	int n_pts = points->GetNPoints();
-
-	GaussianMixture* gmm = FindSubjets(points, thresh, maxNit, maxK, viz, a);
-	int nsubjets = gmm->GetNClusters();
-
-
-	return subjets;
-}
 
 
 

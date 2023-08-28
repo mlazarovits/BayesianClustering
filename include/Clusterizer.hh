@@ -5,7 +5,8 @@
 #include "Jet.hh"
 #include "JetTree.hh"
 #include "GaussianMixture.hh"
-
+#include <string>
+using std::string;
 using std::vector;
 
 //this class is a wrapper for the clustering algorithms (see: fastjet::ClusterSequence)
@@ -26,11 +27,8 @@ class Clusterizer{
 		//change to run over generic points (or vector of rhs)
 		void Cluster(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0, string fname = "");
 
-		GaussianMixture* FindSubjets(PointCollection* points, double thresh, int maxNit, int maxK, bool viz, double a, PointCollection* seeds = nullptr);
 		//just runs varGMM over given jets
-		vector<Jet> FindSubjets_XYZ(Jet jet, double thresh = 1., int maxNit = 1, int maxK = 10, bool viz = false, double a = 0.1);
-		//just runs varGMM over given jets
-		vector<Jet> FindSubjets_etaPhi(Jet jet, double thresh = 1., int maxNit = 1, int maxK = 10, bool viz = false, double a = 0.1);
+		void FindSubjets(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0, int maxK = 2, string fname = "");
 
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	
