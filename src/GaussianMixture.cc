@@ -57,7 +57,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;
-	while(nchg > 0){
+	while(nchg > 0 && nit < 50){
 		kmc.Estimate();
 		kmc.Update();
 		nchg = (int)kmc.EvalLogL();
@@ -122,7 +122,7 @@ void GaussianMixture::UpdateParameters(){
 	for(int k = 0; k < m_k; k++){
 		m_norms.push_back(0.);
 		for(int n = 0; n < m_n; n++){
-			m_norms[k] += m_post.at(n,k);
+			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
 		}
 	}
 	//set new means + coeffs	
@@ -142,6 +142,8 @@ void GaussianMixture::UpdateParameters(){
 			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
+			//weighted by previously defined weight
+			x.mult(x,m_data->at(n).w());
 			//to new mu for cluster k
 			mu.add(x);
 			//m_mus[k].add(x);
@@ -165,7 +167,6 @@ void GaussianMixture::UpdateParameters(){
 			//construct x - mu
 			Matrix x_min_mu = Matrix(m_data->at(n).Value());
 			x_min_mu.minus(mu);
-
 	
 			//transpose x - mu
 			Matrix x_min_muT;
@@ -174,6 +175,8 @@ void GaussianMixture::UpdateParameters(){
 			cov_k.mult(x_min_mu,x_min_muT);
 			//weighting by posterior gamma(z_nk)
 			cov_k.mult(cov_k,m_post.at(n,k));
+			//weighting by previously defined weight
+			cov_k.mult(cov_k,m_data->at(n).w());
 			//sum over n
 			new_cov.add(cov_k);
 		}	
