@@ -109,3 +109,32 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 	}
 	return samples;
 }
+
+
+int RandomSample::SampleCategorical(vector<double> weights){
+	vector<double> probs;
+	double norm = 0.;
+	for(int n = 0; n < (int)weights.size(); n++) norm += weights[n];
+	for(int n = 0; n < (int)weights.size(); n++) probs.push_back(weights[n]/norm); 
+
+	int nCats = (int)weights.size();
+	
+	//convert values to CDF
+	vector<double> CDF_vals;
+	double sum = 0;
+	//first CDF = 0; last CDF = 1
+	for(int k = 0; k < nCats; k++){ CDF_vals.push_back(sum); sum += probs[k]; }
+
+	SetRange(0., 1.);
+	double r = SampleFlat();
+
+	//find category with largest CDF value whose CDF value is less than or equal to r 
+	int k_final;
+	for(int k = 0; k < nCats; k++){
+		if(CDF_vals[k] <= r) k_final = k;
+		else break;
+	} 
+
+	return k_final;
+
+}

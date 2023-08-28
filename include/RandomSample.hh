@@ -22,10 +22,7 @@ class RandomSample{
 		Point SampleNDimFlat(int dim);
 		void SetRange(double xmin, double xmax);
 		vector<double> SampleGaussian(double mean, double sigma, int Nsample);
-		//PointCollection SampleGaussian(vector<double> mean, vector<double> sigma, int Nsample, int dim = 1);
-		//std::vector<double> SelectPoints(vector<double> in, int nIn, int nOut);	
-		//vector<pair<double,double>> SelectPairs(vector<pair<double,double>> in, int nIn, int nOut);
-		//vector<map<double,double>> SelectMultiDimPairs(vector<map<double,double>> in, int nIn, int nOut);
+		int SampleCategorical(vector<double> weights);
 
 		double _xmax = 5;
 		double _xmin = -5;
