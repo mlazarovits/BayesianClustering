@@ -78,7 +78,7 @@ class Jet{
 			Point pt;
 			for(int i = 0; i < (int)m_rhs.size(); i++){
 				E = m_rhs[i].E();	
-				pt = Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time(), m_rhs[i].energy()});
+				pt = Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
 				pt.Scale(E);
 				pc += pt;
 			}
