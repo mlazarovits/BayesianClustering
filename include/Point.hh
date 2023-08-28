@@ -14,12 +14,14 @@ class Point{
 		
 		Point(){
 			_nDim = 0;
+			_weight = 1.;
 		}
 
 		Point(const int d){
 			_nDim = d;
 			for(int i = 0; i < _nDim; i++) _value.push_back(-1);	
 			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
+			_weight = 1.;
 		}
 		
 		//copy constructor
@@ -29,12 +31,14 @@ class Point{
 			_rank.clear();
 			_value = p.Value();
 			_rank = p.Rank();	
+			_weight = p._weight;
 		}
 
 		Point(const vector<double>& x){
 			_nDim = (int)x.size();
 			for(int i = 0; i < _nDim; i++) _value.push_back(x[i]);	
 			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
+			_weight = 1.;
 		}
 		
 		
@@ -44,6 +48,7 @@ class Point{
 			_rank.clear();
 			_value = p.Value();
 			_rank = p.Rank();	
+			_weight = 1.;
 			return *this;
 		}
 		bool operator == (const Point& pt2) const{
@@ -89,6 +94,10 @@ class Point{
 			return;
 		}
 		
+		void SetWeight(double w){ _weight = w; }
+		double Weight(){ return _weight; }	
+		double w(){ return _weight; }
+
 		vector<double> Rank() const{return _rank;}
 		//return rank at dimension d
 		double Rank(int d) const{return _rank[d];}
@@ -179,7 +188,7 @@ class Point{
 		int _nDim;
 		vector<double> _value;
 		vector<double> _rank;
-
+		double _weight;
 
 
 
