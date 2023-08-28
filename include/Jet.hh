@@ -60,6 +60,7 @@ class Jet{
 		
 		//constituents (jet points) in jet (clustered or unclustered)
 		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = m_rhs; }
+		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)m_rhs.size(); j++) energies.push_back(m_rhs[j].E()); }
 		void GetXYZConstituents(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)m_rhs.size(); i++){
@@ -72,17 +73,7 @@ class Jet{
 				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
 			}
 		}
-		void GetEtaPhiConstituents_Eweighted(PointCollection& pc) const{
-			pc.Clear();
-			double E;
-			Point pt;
-			for(int i = 0; i < (int)m_rhs.size(); i++){
-				E = m_rhs[i].E();	
-				pt = Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
-				pt.Scale(E);
-				pc += pt;
-			}
-		}
+		
 		int GetNConstituents() const{return (int)m_rhs.size(); }	
 		
 		//parents in cluster
