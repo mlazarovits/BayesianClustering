@@ -101,7 +101,7 @@ void Clusterizer::FindSubjets(Jet jet, double alpha, double thresh, bool viz, in
 	VarClusterViz3D cv3D;
 	if(viz){ cv3D = VarClusterViz3D(algo);
 		cv3D.UpdatePosterior();
-		cv3D.WriteJson(fname+"it0");
+		cv3D.WriteJson(fname+"/it0");
 		}
 	//loop
 	double dLogL, newLogL;
@@ -119,7 +119,7 @@ void Clusterizer::FindSubjets(Jet jet, double alpha, double thresh, bool viz, in
 		//Plot
 		if(viz){
 			cv3D.UpdatePosterior();
-			cv3D.WriteJson(fname+"it"+std::to_string(it+1));
+			cv3D.WriteJson(fname+"/it"+std::to_string(it+1));
 		}
 		//Check for convergence
 		newLogL = algo->EvalLogL();
