@@ -17,7 +17,7 @@ class KMeansCluster : public BaseCluster{
 		void Initialize(unsigned long long seed = 123);
 		//init means from given points
 		void Initialize(const PointCollection& pc);
-		void Initialize_pp();
+		void Initialize_pp(unsigned long long seed = 123);
 
 		//E-step
 		void Estimate();
