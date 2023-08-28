@@ -36,6 +36,54 @@ void KMeansCluster::Initialize(const PointCollection& pc){
 		m_assigns.push_back(0);
 }
 
+
+//kmeans++ initialization
+void KMeansCluster::Initialize_pp(){
+	//randomly select first point
+	Point c = m_data->SelectPoints(1).at(0);
+	PointCollection* means = new PointCollection();
+	PointCollection* pts = new PointCollection;
+	means->AddPoint(c);
+
+	for(int i = 0; i < m_n; i++){
+		if(m_data->at(i) == c) continue;
+		pts->AddPoint(m_data->at(i));
+	}
+
+	RandomSample rs;
+	int nit = 0;
+	while(means->GetNPoints() < m_k){
+		//calculate distance of all other points from c
+		vector<double> dist;
+		double d;
+		for(int i = 0; i < pts->GetNPoints(); i++){
+			d = 0;
+			for(int j = 0; j < m_dim; j++) d += pow(pts->at(i).Value(j) - c.Value(j),2);
+			d *= pts->at(i).w();
+			dist.push_back(d);
+		}
+
+		int idx = rs.SampleCategorical(dist);
+		means->AddPoint(pts->at(idx));
+		c = pts->at(idx);
+		pts->Remove(idx);
+
+	}
+	//cout << "centers" << endl;
+	double N = 0;
+	for(int k = 0; k < m_k; k++){ 
+	//	cout << "k: " << k << endl; means->at(k).Print(); 
+		m_means.push_back(Matrix(means->at(k)));
+		m_counts.push_back(0);
+	}
+	for(int n = 0; n < m_n; n++) N += m_data->at(n).w();
+ 
+cout << "total norm: " << N << endl;
+	
+	for(int n = 0; n < m_n; n++) 
+		m_assigns.push_back(0);
+}
+
 //E-step: estimate assignments
 void KMeansCluster::Estimate(){
 	double dmin, dist;
@@ -50,16 +98,18 @@ void KMeansCluster::Estimate(){
 			//calculate euclidean distance
 			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
-			dist = sqrt(dist);
+		//	dist = sqrt(dist);
+			dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
 			if(dist < dmin){ dmin = dist; kmin = k; }
 		}
 		//track number of points that change assignments
-		if(kmin != m_assigns[n]) m_nchg++;
+		if(kmin != m_assigns[n]) m_nchg++; //+= m_data->at(n).w();//m_nchg++; 
 		//update assignment
 		m_assigns[n] = kmin;
 		//keep track of number of points assigned to cluster kmin
-		m_counts[kmin]++;
+		//unweighted data -> w = 1
+		m_counts[kmin] += m_data->at(n).w();
 	}
 }
 
@@ -69,12 +119,14 @@ void KMeansCluster::Update(){
 		m_means[k].clear();
 		m_means[k].InitEmpty();
 	}
-	double val;
+	double val, w;
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
 		for(int d = 0; d < m_dim; d++){
 			val = m_means[m_assigns[n]].at(d,0);
-			m_means[m_assigns[n]].SetEntry(val+m_data->at(n).Value(d),d,0);
+			//unweighted data -> w = 1
+			w = m_data->at(n).w();
+			m_means[m_assigns[n]].SetEntry(val + w*m_data->at(n).Value(d),d,0);
 		}
 	}
 	//normalize to get mean for each cluster
@@ -85,6 +137,8 @@ void KMeansCluster::Update(){
 				m_means[k].SetEntry(val/m_counts[k],d,0);
 			}
 		}
+	//	cout << "k: " << k << " counts: " << m_counts[k] << " mean: " << endl;
+	//	m_means[k].Print();
 	}
 }
 

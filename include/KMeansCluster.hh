@@ -17,6 +17,7 @@ class KMeansCluster : public BaseCluster{
 		void Initialize(unsigned long long seed = 123);
 		//init means from given points
 		void Initialize(const PointCollection& pc);
+		void Initialize_pp();
 
 		//E-step
 		void Estimate();
@@ -46,7 +47,7 @@ class KMeansCluster : public BaseCluster{
 		//number of points assigned to each cluster
 		vector<int> m_counts;
 		//number of points change assignment
-		int m_nchg;
+		double m_nchg;
 };
 
 #endif
