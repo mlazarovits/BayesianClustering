@@ -53,7 +53,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
-	kmc.Initialize(seed);
+	kmc.Initialize_pp(seed);
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;
@@ -410,7 +410,8 @@ void GaussianMixture::CalculateRStatistics(){
 		for(int n = 0; n < m_n; n++){
 			//if(k == 0) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 		//	if(n == 3) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
-			m_norms[k] += m_post.at(n,k);
+			//include data weights
+			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
 		}
 	}
 
@@ -429,6 +430,8 @@ void GaussianMixture::CalculateRStatistics(){
 			//weighted by posterior value gamma(z_nk),
 		//	if(n == 3) cout << "mu calc - post: " << m_post.at(n,k) << endl;
 			x.mult(x,m_post.at(n,k));
+			//weighted by previously defined weight
+			x.mult(x,m_data->at(n).w());
 			//cout << "post*x" << endl;
 			//x.Print();
 			//add to new mu for cluster k
@@ -477,6 +480,8 @@ void GaussianMixture::CalculateRStatistics(){
 			//S_k.Print();
 			//weighting by posterior r_nk
 			S_k.mult(S_k,m_post.at(n,k));
+			//weighted by previously defined weight
+			S_k.mult(S_k,m_data->at(n).w());
 		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
 			//cout << "post*(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();

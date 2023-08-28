@@ -2,6 +2,7 @@
 #include "VarClusterViz3D.hh"
 #include "BayesHierCluster.hh"
 #include "FullViz3D.hh"
+#include "KMeansCluster.hh"
 #include <TSystem.h>
 
 Clusterizer::Clusterizer(){
@@ -70,12 +71,16 @@ void Clusterizer::Cluster(Jet jet, double alpha, double thresh, bool viz, int ve
 void Clusterizer::FindSubjets(Jet jet, double alpha, double thresh, bool viz, int verb, int maxK, string fname){
 	//create GMM model
 	PointCollection* points = new PointCollection();
-	jet.GetEtaPhiConstituents_Eweighted(*points);
+	jet.GetEtaPhiConstituents(*points);
+
+	vector<double> weights;
+	jet.GetEnergies(weights);
 	
+	points->SetWeights(weights);
+	fname += "_Eweighted";
+
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 	
-	Point norm_scale = points->Normalize();
-
 	gmm->SetData(points);
 	gmm->SetAlpha(alpha);
 	gmm->InitParameters();
@@ -151,7 +156,6 @@ void Clusterizer::FindSubjets(Jet jet, double alpha, double thresh, bool viz, in
 		}
 
 	}
-
 }
 
 
