@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
 	bool viz = false;
 	int verb = 0;
 	int evt = 0;
+	bool weighted = false;
+	bool smeared = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -82,6 +84,12 @@ int main(int argc, char *argv[]){
     	 		i++;
 			evt = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--weight", 8) == 0){
+    	 		weighted = true;
+   		}
+		if(strncmp(argv[i],"--smear", 7) == 0){
+    	 		smeared = true;
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -92,6 +100,8 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
+   		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
@@ -163,16 +173,30 @@ int main(int argc, char *argv[]){
 	mat.InitEmpty();
 	params["scalemat"] = mat;
 	params["m"] = mean;
+
+
+	//create data smear matrix - smear in eta/phi
+	Matrix smear = Matrix(3,3);
+	double dphi = acos(-1)/360.; //1 degree in radians
+	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	//diagonal matrix
+	smear.SetEntry(deta,0,0);
+	smear.SetEntry(dphi,1,1);
+	smear.SetEntry(0.,2,2); //no smear in time	
+
 	
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
-	Clusterizer jc;
-	jc.SetPriorParameters(params);
-	//jc.SetDataSmear();
-	//calculate subjets for all rechits in a eta-phi area - pretend they have been merged into a jet
-//	jc.FindSubjets_etaPhi(testjet, thresh, nIts, k, viz, alpha);
-	jc.Cluster(testjet, alpha, thresh, viz, verb, fname);
-
+	Clusterizer* algo = new Clusterizer();
+	algo->SetAlpha(alpha);
+	algo->SetThresh(thresh);
+	algo->SetVerbosity(verb);
+	if(weighted) algo->SetWeighted(weighted);
+	if(smeared) algo->SetDataSmear(smear);
+	
+	if(viz)	algo->Cluster(testjet, fname); 
+	else algo->Cluster(testjet);
+	
 		
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)
 	//write finalJets to same file (space, time, momentum, energy)
