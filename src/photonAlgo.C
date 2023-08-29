@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
 	int evt = 0;
 	bool weighted = false;
 	bool smeared = false;
+	bool skim = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -109,6 +110,10 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smeared = true;
    		}
+		if(strncmp(argv[i],"--skim", 6) == 0){
+    	 		skim = true;
+   		}
+
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -125,6 +130,7 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
    		return 0;
@@ -171,19 +177,27 @@ int main(int argc, char *argv[]){
 
 	TFile* file = TFile::Open(in_file.c_str());
 	PhotonProducer prod(file);
+	if(skim){
+		cout << "Skimming photons + subclusters" << endl;
+		prod.Skim();
+		return 0;
+	}
+
+
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
-	Point vtx;
-	prod.GetPrimaryVertex(vtx, evt);
 	prod.GetRecHits(rhs,evt,npho);
 	cout << rhs.size() << " rechits in first photon in first event" << endl;
 	if(rhs.size() < 1) return -1;
 
 
+
+
+
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
 	//set PV for momentum direction calculations
-	testpho.SetVertex(vtx);
+	//testpho.SetVertex(vtx);
 	for(int i = 0; i < rhs.size(); i++){
 		testpho.add(rhs[i]);
 	}
@@ -205,7 +219,7 @@ int main(int argc, char *argv[]){
 	algo->SetThresh(thresh);
 	algo->SetVerbosity(verb);
 	algo->SetMaxNClusters(k);
-	if(weighted) algo->SetWeighted(weighted);
+	algo->SetWeighted(weighted);
 	if(smeared) algo->SetDataSmear(smear);
 	
 	if(viz)	algo->FindSubjets(testpho, fname); 

@@ -1,5 +1,9 @@
 #include "PhotonProducer.hh"
+#include "Clusterizer.hh"
+#include "Matrix.hh"
 
+#include "TH1D.h"
+#include "TH2D.h"
 PhotonProducer::PhotonProducer(){ };
 
 
@@ -167,15 +171,111 @@ void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
 //make cluster param histograms
 void PhotonProducer::Skim(){
 	TFile* ofile = new TFile("plots/photon_skims.root","RECREATE");
+	
+
+	vector<TH1D*> TH1D_hists;
+	//subcluster energy - average
+	TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,1000.);
+	TH1D_hists.push_back(e_avg);
+	//subcluster energy - median
+	TH1D* e_med = new TH1D("e_med","e_med",50,0.,1000.);
+	TH1D_hists.push_back(e_med);
+	//space slope
+	TH1D* slope_space = new TH1D("slope_space","slope_space",50,-10,10);
+	TH1D_hists.push_back(slope_space);
+	//eta-time slope
+	TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-10,10);
+	TH1D_hists.push_back(slope_etaT);
+	//phi-time slop
+	TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-10,10);
+	TH1D_hists.push_back(slope_phiT);
+	//mean time - center in t
+	TH1D* time_center = new TH1D("time_center","time_center",50,-10,10);
+	TH1D_hists.push_back(time_center);
+	//mean eta - center in eta
+	TH1D* eta_center = new TH1D("eta_center","eta_center",50,-10,10);
+	TH1D_hists.push_back(eta_center);
+	//mean phi - center in phi
+	TH1D* phi_center = new TH1D("phi_center","phi_center",50,-10,10);
+	TH1D_hists.push_back(phi_center);
+	
+	//# of subclusters
+	TH1I* nSubClusters = new TH1I("nSubClusters","nSubClusters",10,0,10.);
+	//# of subclusters vs. photon reco energy
+	TH2D* e_nSubClusters = new TH2D("e_nSubClusters","e_nSubClusters",50,0.,1000.,10,0.,10.);	
+
+	
 
 	int nPho;
+	//create data smear matrix - smear in eta/phi
+	Matrix smear = Matrix(3,3);
+	double dphi = acos(-1)/360.; //1 degree in radians
+	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	//diagonal matrix
+	smear.SetEntry(deta,0,0);
+	smear.SetEntry(dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
+	
+	Clusterizer* algo = new Clusterizer();
+	algo->SetAlpha(0.1);
+	algo->SetThresh(2.);
+	algo->SetMaxNClusters(5);
+	algo->SetWeighted(true);
+	//algo->SetDataSmear(smear);
+
+	vector<JetPoint> rhs;
+
+	GaussianMixture* gmm = new GaussianMixture();
+	
+	map<string, Matrix> params;
+
+	int nclusters;
+	vector<double> eigenvals;
+	vector<Matrix> eigenvecs;
 	for(int i = 0; i < m_nEvts; i++){
 		m_base->GetEntry(i);
-		//nPho = m_base->
+		nPho = (int)m_base->Photon_energy->size();
+		for(int p = 0; p < nPho; p++){
+			//find subclusters for each photon
+			GetRecHits(rhs, i, p);
+	
+			gmm = algo->FindSubjets(Jet(rhs));
+			
+			nclusters = gmm->GetNClusters();
+			nSubClusters->Fill(nclusters);
+			e_nSubClusters->Fill(m_base->Photon_energy->at(p), nclusters);
+			
+			for(int k = 0; k < nclusters; k++){
+				params = gmm->GetParameters(k);
+				eta_center->Fill(params["mean"].at(0,0));
+				phi_center->Fill(params["mean"].at(1,0));
+				time_center->Fill(params["mean"].at(2,0));
+		
+				//calculate slopes from eigenvectors
+				params["cov"].eigenCalc(eigenvals, eigenvecs);
+				
+				//largest eigenvalue is last
+				//phi/eta
+				slope_space->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
+        			//eta/time
+				slope_etaT->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
+				//phi/time
+				slope_phiT->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
+
+			}
+
+	
+			rhs.clear();
+			eigenvals.clear();
+			eigenvecs.clear();
+		}
 
 	}
 
-
+	ofile->cd();
+	for(int i = 0; i < (int)TH1D_hists.size(); i++) TH1D_hists[i]->Write();
+	nSubClusters->Write();
+	e_nSubClusters->Write();
 
 
 
