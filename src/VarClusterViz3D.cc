@@ -148,7 +148,7 @@ void VarClusterViz3D::WriteJson(string filename){
 	std::ofstream file;
 	file.open(filename+".json");
 	file << json_file << endl;
-	cout << "Writing to: " << filename << ".json" << endl;
+	if(_verb > 0) cout << "Writing to: " << filename << ".json" << endl;
 }
 
 void VarClusterViz3D::SeeData(){
@@ -167,7 +167,6 @@ if(m_n == 0 || x.size() == 0){
 	return;
 }
 	string cvName = "cv_data";//+plotName+"_tEq"+std::to_string(t).substr(0,3);
-	cout << "cvName: " << cvName << endl;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	
 	//sage green
