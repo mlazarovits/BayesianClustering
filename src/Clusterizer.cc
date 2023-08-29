@@ -103,7 +103,6 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		vector<double> weights;
 		jet.GetEnergies(weights);
 		points->SetWeights(weights);
-		if(!fname.empty()) fname += "_Eweighted";
 	}
 
 	GaussianMixture* gmm = new GaussianMixture(_maxK);
@@ -125,19 +124,10 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 
 	map<string, vector<Matrix>> params;
 	bool viz = false;
-
-	
 	if(!fname.empty()){
 		viz = true;
-		if(gSystem->AccessPathName((fname).c_str())){
-			gSystem->Exec(("mkdir -p "+fname).c_str());
-		}
-		else{
-			gSystem->Exec(("rm -rf "+fname).c_str());
-			gSystem->Exec(("mkdir -p "+fname).c_str());
-
-		}
 	}
+
 	VarClusterViz3D cv3D;
 	cv3D.SetVerbosity(_verb);
 	if(viz){ cv3D = VarClusterViz3D(algo);

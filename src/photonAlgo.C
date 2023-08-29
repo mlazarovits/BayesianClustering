@@ -16,9 +16,9 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname = "testphoton";
+	string fname = "photon";
 	bool hprint = false;
-	int k = 2; //number of clusters for GMM (may or may not be true irl)
+	int k = 5; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
 	double alpha = 0.1;
@@ -26,6 +26,8 @@ int main(int argc, char *argv[]){
 	int verb = 0;
 	int npho = 0;
 	int evt = 0;
+	bool weighted = false;
+	bool smeared = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -101,6 +103,12 @@ int main(int argc, char *argv[]){
     	 		i++;
 			evt = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--weight", 8) == 0){
+    	 		weighted = true;
+   		}
+		if(strncmp(argv[i],"--smear", 7) == 0){
+    	 		smeared = true;
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -112,6 +120,8 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
+   		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
@@ -138,11 +148,22 @@ int main(int argc, char *argv[]){
 
 	fname += "_evt"+std::to_string(evt)+"_pho"+std::to_string(npho)+"_kmax"+std::to_string(k)+"_alpha"+a_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
-	if(gSystem->AccessPathName((fname).c_str())){
-		gSystem->Exec(("mkdir -p "+fname).c_str());
-	}
 
 	
+	if(weighted) fname += "_Eweighted";
+	if(smeared) fname += "_DataSmear";
+	
+	if(viz){
+		if(gSystem->AccessPathName((fname).c_str())){
+			gSystem->Exec(("mkdir -p "+fname).c_str());
+		}
+		else{
+			gSystem->Exec(("rm -rf "+fname).c_str());
+			gSystem->Exec(("mkdir -p "+fname).c_str());
+
+		}
+		cout << "Writing to directory: " << fname << endl;
+	}
 	
 	/////GET DATA FROM NTUPLE//////
 	string in_file = "gmsb_AODSIM_KUCMSNtuplizer_v4.root";
@@ -167,8 +188,24 @@ int main(int argc, char *argv[]){
 
 	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
 
+	//create data smear matrix - smear in eta/phi
+	Matrix smear = Matrix(3,3);
+	double dphi = acos(-1)/360.; //1 degree in radians
+	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	//diagonal matrix
+	smear.SetEntry(deta,0,0);
+	smear.SetEntry(dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
+
 
 	Clusterizer* algo = new Clusterizer();
-	algo->FindSubjets(testpho, alpha, thresh, viz, verb, k, fname); 
-
+	algo->SetAlpha(alpha);
+	algo->SetThresh(thresh);
+	algo->SetVerbosity(verb);
+	algo->SetMaxNClusters(k);
+	if(weighted) algo->SetWeighted(weighted);
+	if(smeared) algo->SetDataSmear(smear);
+	
+	if(viz)	algo->FindSubjets(testpho, fname); 
+	else algo->FindSubjets(testpho);
 }
