@@ -94,7 +94,7 @@ void Clusterizer::Cluster(Jet jet, string fname){
 
 
 //crack open Jet and get underlying points
-void Clusterizer::FindSubjets(Jet jet, string fname){
+GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	//create GMM model
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
@@ -156,7 +156,7 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
-			return;
+			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
 		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
@@ -182,6 +182,8 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		}
 
 	}
+
+	return gmm;
 }
 
 
