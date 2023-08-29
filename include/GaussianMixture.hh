@@ -54,7 +54,9 @@ class GaussianMixture : public BasePDFMixture{
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
 		map<string, Matrix> GetPriorParameters(int k); 
 
-		
+		//ie gets subcluster average - returns average weight per subcluster
+		void GetAvgWeights(vector<double>& v){ v.clear(); for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]); } 
+
 
 	private:
 		//initial parameters

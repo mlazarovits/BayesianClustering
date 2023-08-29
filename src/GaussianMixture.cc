@@ -117,12 +117,13 @@ void GaussianMixture::CalculatePosterior(){
 //equations were derived from maximizing the posterior calculated in the E-step
 void GaussianMixture::UpdateParameters(){
 	//re-calculate normalization (overwrites)
-	m_norms.clear();
 	//this is for N_k - k entries in this vector
 	for(int k = 0; k < m_k; k++){
-		m_norms.push_back(0.);
+		m_norms[k] = 0;
+		m_norms_unwt[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
+			m_norms_unwt[k] += m_post.at(n,k);
 		}
 	}
 	//set new means + coeffs	
@@ -408,11 +409,13 @@ void GaussianMixture::CalculateRStatistics(){
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms[k] = 0;
+		m_norms_unwt[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			//if(k == 0) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 		//	if(n == 3) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 			//include data weights
 			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
+			m_norms_unwt[k] += m_post.at(n,k);
 		}
 	}
 
