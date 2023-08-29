@@ -33,7 +33,7 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 	for(int i = 0; i < m_nEvts; i++){
 		m_base->GetEntry(i);
 		nphotons = (int)m_base->Photon_rhIds->size();
-		nRHs_evt = (int)m_base->ERH_ID->size();
+		nRHs_evt = (int)m_base->ECALRecHit_ID->size();
 		rhs.push_back({});
 		for(int p = 0; p < nphotons; p++){
 			nRHs = (int)m_base->Photon_rhIds->at(p).size();
@@ -44,11 +44,11 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 				id = m_base->Photon_rhIds->at(p).at(r);
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
-					if(m_base->ERH_ID->at(j) == id){
-						rh = JetPoint(m_base->ERH_x->at(j), m_base->ERH_y->at(j), m_base->ERH_z->at(j), m_base->ERH_time->at(j)+m_base->ERH_TOF->at(j));
-						rh.SetEnergy(m_base->ERH_energy->at(j));
-						rh.SetEta(m_base->ERH_eta->at(j));
-						rh.SetPhi(m_base->ERH_phi->at(j));
+					if(m_base->ECALRecHit_ID->at(j) == id){
+						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
+						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
+						rh.SetEta(m_base->ECALRecHit_eta->at(j));
+						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
 						rhs[i].push_back(rh);
 						break;
 					}
@@ -75,7 +75,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		if(i == evt){
 			m_base->GetEntry(i);
 			nphotons = (int)m_base->Photon_rhIds->size();
-			nRHs_evt = (int)m_base->ERH_ID->size();
+			nRHs_evt = (int)m_base->ECALRecHit_ID->size();
 			
 			for(int p = 0; p < nphotons; p++){
 				nRHs = (int)m_base->Photon_rhIds->at(p).size();
@@ -86,11 +86,11 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					id = m_base->Photon_rhIds->at(p).at(r);
 					rh.SetRecHitId(id);
 					for(int j = 0; j < nRHs_evt; j++){
-						if(m_base->ERH_ID->at(j) == id){
-							rh = JetPoint(m_base->ERH_x->at(j), m_base->ERH_y->at(j), m_base->ERH_z->at(j), m_base->ERH_time->at(j)+m_base->ERH_TOF->at(j));
-							rh.SetEnergy(m_base->ERH_energy->at(j));
-							rh.SetEta(m_base->ERH_eta->at(j));
-							rh.SetPhi(m_base->ERH_phi->at(j));
+						if(m_base->ECALRecHit_ID->at(j) == id){
+							rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
+							rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
+							rh.SetEta(m_base->ECALRecHit_eta->at(j));
+							rh.SetPhi(m_base->ECALRecHit_phi->at(j));
 							rhs.push_back(rh);
 							break;
 						}
@@ -117,7 +117,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 			//make sure photon number is in vector
 			if(pho >= (int)m_base->Photon_rhIds->size()) return;
 			nRHs = (int)m_base->Photon_rhIds->at(pho).size();
-			nRHs_evt = (int)m_base->ERH_ID->size();
+			nRHs_evt = (int)m_base->ECALRecHit_ID->size();
 			unsigned long long id;
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
@@ -125,11 +125,11 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				id = m_base->Photon_rhIds->at(pho).at(r);
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
-					if(m_base->ERH_ID->at(j) == id){
-						rh = JetPoint(m_base->ERH_x->at(j), m_base->ERH_y->at(j), m_base->ERH_z->at(j), m_base->ERH_time->at(j)+m_base->ERH_TOF->at(j));
-						rh.SetEnergy(m_base->ERH_energy->at(j));
-						rh.SetEta(m_base->ERH_eta->at(j));
-						rh.SetPhi(m_base->ERH_phi->at(j));
+					if(m_base->ECALRecHit_ID->at(j) == id){
+						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
+						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
+						rh.SetEta(m_base->ECALRecHit_eta->at(j));
+						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
 						rhs.push_back(rh);
 						break;
 					}
@@ -164,7 +164,19 @@ void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
 
 
 
+//make cluster param histograms
+void PhotonProducer::Skim(){
+	TFile* ofile = new TFile("plots/photon_skims.root","RECREATE");
+
+	int nPho;
+	for(int i = 0; i < m_nEvts; i++){
+		m_base->GetEntry(i);
+		//nPho = m_base->
+
+	}
 
 
 
 
+
+}

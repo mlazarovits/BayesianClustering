@@ -166,7 +166,9 @@ int main(int argc, char *argv[]){
 	}
 	
 	/////GET DATA FROM NTUPLE//////
-	string in_file = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_0/src/KUCMSNtupleizer/KUCMSNtupleizer/GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	fname += "_v6";
+
 	TFile* file = TFile::Open(in_file.c_str());
 	PhotonProducer prod(file);
 	vector<JetPoint> rhs;
