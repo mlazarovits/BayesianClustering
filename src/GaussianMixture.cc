@@ -53,7 +53,7 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
-	kmc.Initialize_pp(seed);
+	kmc.Initialize(seed);
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;
@@ -282,6 +282,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
+	if(_verb > 1) cout << "alpha0: " << m_alpha0 << endl;
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
@@ -525,7 +526,7 @@ void GaussianMixture::UpdatePriorParameters(){
 		
 		//alphas - eq. 10.58 (all the same in vector)
 		m_alphas[k] = m_alpha0 + m_norms[k];
-		//cout << "k: " << k << " norm: " << m_norms[k] << endl;	
+		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << endl;	
 		//cout << "k: " << k << " alpha: " << m_alphas[k] << endl;	
 	
 		//betas - eq. 10.60
