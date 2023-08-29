@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
 
 	
 	if(weighted) fname += "_Eweighted";
-	if(smeared) fname += "_DataSmear";
+	if(smeared) fname += "_EtaPhiSmear";
 	
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
