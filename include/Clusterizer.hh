@@ -20,15 +20,21 @@ class Clusterizer{
 		virtual ~Clusterizer();
 
 		//set point smear
-		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
+		void SetDataSmear(const Matrix& cov){ _data_smear = cov; _smeared = true; }
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
+		void SetAlpha(double a){ _alpha = a; }
+		void SetThresh(double t){_thresh = t; }
+		void SetVerbosity(int v){ _verb = v; }
+		void SetMaxNClusters(int k){ _maxK = k; }
+		void SetWeighted(bool w){_weighted = w; }
+		
 
 		//runs everything (varGMM + BHC)
 		//change to run over generic points (or vector of rhs)
-		void Cluster(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0, string fname = "");
+		void Cluster(Jet jet, string fname = "");
 
 		//just runs varGMM over given jets
-		void FindSubjets(Jet jet, double alpha = 0.1, double thresh = 1., bool viz = false, int verb = 0, int maxK = 2, string fname = "");
+		void FindSubjets(Jet jet, string fname = "");
 
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	
@@ -48,5 +54,11 @@ class Clusterizer{
 
 		map<string, Matrix> _params;
 
+		double _alpha;
+		double _thresh;
+		int _verb;
+		int _maxK;
+		bool _weighted;
+		bool _smeared;
 };
 #endif
