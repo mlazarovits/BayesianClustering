@@ -13,6 +13,7 @@ class Jet{
 		Jet(JetPoint rh);
 		Jet(JetPoint rh, Point vtx);
 		Jet(vector<JetPoint> rhs, Point vtx);
+		Jet(vector<JetPoint> rhs);
 		virtual ~Jet();		
 
 		bool operator==(Jet& j) const;
