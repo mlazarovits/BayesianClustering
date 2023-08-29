@@ -14,9 +14,9 @@ class NodeStack{
 			_z = (listnode*)malloc(sizeof *_z);
 			_head->next = _z; _z->next = _z; 
 			node* h = (node*)malloc(sizeof* h); h->val = 999; //sort high to low
-			_head->node = h;
+			_head->n = h;
 			node* z = (node*)malloc(sizeof* z); z->val = -999; //sort high to low
-			_z->node = z; 
+			_z->n = z; 
 		}		
 
 		NodeStack(const NodeStack& nodes){
@@ -37,13 +37,13 @@ class NodeStack{
 
 		void insert(node* x){
 			listnode* y = (listnode*)malloc(sizeof *y);
-			y->node = x;
+			y->n = x;
 			insertafter(_head,y);	
 		}
 
 		void push(node* x){
 			listnode* t = (listnode *)malloc(sizeof *t);
-			t->node = x; t->next = _head->next;
+			t->n = x; t->next = _head->next;
 			_head->next = t;
 		}
 
@@ -57,7 +57,7 @@ class NodeStack{
 			node *x;
 			listnode *t;
 			t = _head->next; _head->next = t->next;
-			x = t->node;
+			x = t->n;
 			free(t);
 			return x;	
 		}
@@ -70,7 +70,7 @@ class NodeStack{
 			while(c->next != _z){
 				//cout << "looking at node: " << c->next->node->val << endl;
 				//remove nodes whose parents (either l or r) are in the max merge
-				if(c->next->node->l == x->l || c->next->node->r == x->r || c->next->node->l == x->r || c->next->node->r == x->l){
+				if(c->next->n->l == x->l || c->next->n->r == x->r || c->next->n->l == x->r || c->next->n->r == x->l){
 					deletenext(c);	
 				}
 				//update c to next listnode
@@ -94,7 +94,7 @@ class NodeStack{
 			//cout << "NodeStack::merge 2 " << a->node->val << endl;
 			do{
 			//	cout << "begin do-while loop - a: " << a->node->val << " b: " << b->node->val << endl;
-				if(a->node->val >= b->node->val){
+				if(a->n->val >= b->n->val){
 			//cout << "NodeStack::merge 3" << endl;
       				c->next = a; c = a; a = a->next;
 			//cout << "NodeStack::merge 4" << endl;
@@ -148,7 +148,7 @@ class NodeStack{
 			listnode* g = _head->next;
 			int i = 1;
 			//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
-			while(g != _z){ cout << "cluster " << i << endl; g->node->points->Print(); i++; g = g->next; } 
+			while(g != _z){ cout << "cluster " << i << endl; g->n->points->Print(); i++; g = g->next; } 
 		}
 
 		private:

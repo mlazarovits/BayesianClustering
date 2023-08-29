@@ -35,7 +35,7 @@ class BaseTree{
 		};
 		struct listnode{
 			//posterior value in here
-			node* node;
+			node* n;
 			struct listnode* next;
 		};
 

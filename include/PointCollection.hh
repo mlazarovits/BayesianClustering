@@ -3,7 +3,7 @@
 
 #include "Point.hh"
 #include "RandomSample.hh"
-
+#include <algorithm>
 #include <vector>
 #include <iostream>
 using std::vector;
