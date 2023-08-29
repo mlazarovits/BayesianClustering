@@ -35,7 +35,6 @@ class VarClusterViz3D : public ClusterVizBase{
 			m_k = m_model->GetNClusters();
 		}	
 		void SeeData();
-		void SetPalette(int k);
 
 		BasePDFMixture* GetModel(){ return m_model; }
 		string GetFileName(){ return m_fname; }
