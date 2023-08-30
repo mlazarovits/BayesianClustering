@@ -38,6 +38,7 @@ class JetPoint{
 		double Theta() const{return m_theta;}
 
 		double time() const{return m_t;}
+		double t() const{return m_t;}
 		double x() const{return m_x;}
 		double y() const{return m_y;}
 		double z() const{return m_z;}
