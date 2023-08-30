@@ -152,6 +152,7 @@ class PointCollection{
 	PointCollection SelectPoints(int nOut, unsigned long long seed = 123){
 		RandomSample rs(seed);
 		int nIn = (int)_pts.size(); 
+		if(nOut > nIn) return *this;
 		rs.SetRange(0,nIn);
 		PointCollection out;
 		while(out.GetNPoints() < nOut){
