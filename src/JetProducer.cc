@@ -33,17 +33,17 @@ void JetProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 	for(int i = 0; i < m_nEvts; i++){
 		m_base->GetEntry(i);
 		//TODO: switch to m_base->nRHs when that's in the ntuples
-		nRHs = (int)m_base->ERH_time->size();
+		nRHs = (int)m_base->ECALRecHit_ID->size();
 		rhs.push_back({});
 		for(int r = 0; r < nRHs; r++){
 			//add tof = d_pv to time to get correct RH time
 			//t = rh_time - d_rh/c + d_pv/c
-			rh = JetPoint(m_base->ERH_x->at(r), m_base->ERH_y->at(r), m_base->ERH_z->at(r), m_base->ERH_time->at(r)+m_base->ERH_TOF->at(r));
+			rh = JetPoint(m_base->ECALRecHit_rhx->at(r), m_base->ECALRecHit_rhy->at(r), m_base->ECALRecHit_rhz->at(r), m_base->ECALRecHit_time->at(r)+m_base->ECALRecHit_TOF->at(r));
 			
-			rh.SetEnergy(m_base->ERH_energy->at(r));
-			rh.SetEta(m_base->ERH_eta->at(r));
-			rh.SetPhi(m_base->ERH_phi->at(r));
-			rh.SetRecHitId(m_base->ERH_ID->at(r));
+			rh.SetEnergy(m_base->ECALRecHit_energy->at(r));
+			rh.SetEta(m_base->ECALRecHit_eta->at(r));
+			rh.SetPhi(m_base->ECALRecHit_phi->at(r));
+			rh.SetRecHitId(m_base->ECALRecHit_ID->at(r));
 	
 			rhs[i].push_back(rh);
 		}
@@ -66,16 +66,16 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		if(i == evt){
 			m_base->GetEntry(i);
 			//TODO: switch to m_base->nRHs when that's in the ntuples
-			nRHs = (int)m_base->ERH_time->size();
+			nRHs = (int)m_base->ECALRecHit_ID->size();
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
 				//t = rh_time - d_rh/c + d_pv/c
-				rh = JetPoint(m_base->ERH_x->at(r), m_base->ERH_y->at(r), m_base->ERH_z->at(r), m_base->ERH_time->at(r)+m_base->ERH_TOF->at(r));
+				rh = JetPoint(m_base->ECALRecHit_rhx->at(r), m_base->ECALRecHit_rhy->at(r), m_base->ECALRecHit_rhz->at(r), m_base->ECALRecHit_time->at(r)+m_base->ECALRecHit_TOF->at(r));
 				
-				rh.SetEnergy(m_base->ERH_energy->at(r));
-				rh.SetEta(m_base->ERH_eta->at(r));
-				rh.SetPhi(m_base->ERH_phi->at(r));
-				rh.SetRecHitId(m_base->ERH_ID->at(r));
+				rh.SetEnergy(m_base->ECALRecHit_energy->at(r));
+				rh.SetEta(m_base->ECALRecHit_eta->at(r));
+				rh.SetPhi(m_base->ECALRecHit_phi->at(r));
+				rh.SetRecHitId(m_base->ECALRecHit_ID->at(r));
 	
 				rhs.push_back(rh);
 			
