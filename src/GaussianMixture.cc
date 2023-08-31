@@ -291,6 +291,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
+ 
 }
 
 
@@ -316,7 +317,7 @@ void GaussianMixture::CalculateExpectations(){
 		for(int d = 1; d < m_dim+1; d++){
 			digam += digamma((dof + 1 - d)/2.);
 		}
-	//	cout << "digam: " << digam << " d*ln2: " << m_dim*log(2) << " lndet: " << log(scalemat.det()) << endl;
+	//	cout << "k: " << k << " digam: " << digam << " d*ln2: " << m_dim*log(2) << " lndet: " << log(scalemat.det()) << " det: " << scalemat.det() << endl; scalemat.Print();
 		m_Elam[k] = digam + m_dim*log(2) + log(scalemat.det());
 		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
 	//	cout << "k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " det: " << scalemat.det() << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
@@ -353,26 +354,19 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
 			x_min_m = Matrix(m_dim,1);
 			x_mat = Matrix(m_data->at(n));
-			//if(n == 11){cout << "x" << endl;
-			//x_mat.Print();
-			//cout << "m[k]" << endl;
-			//mean.Print();}
+		//	if(k == 1){cout << "n: " << n << " x" << endl; x_mat.Print(); cout << "m[k]" << endl; mean.Print();}
 			x_min_m.minus(x_mat,mean);		
-			//if(n == 11){cout << "x - m[k]" << endl;
-			//x_min_m.Print();}
+			//if(n == 47){cout << "x - m[k]" << endl;x_min_m.Print();}
 			x_min_mT = Matrix(1, m_dim);
 			x_min_mT.transpose(x_min_m);
 			//full term
-			//if(n == 11){cout << "W[k]:" << endl;
-			//scalemat.Print();}
+			//if(n == 47){cout << "W[k]:" << endl; scalemat.Print();}
 			Matrix transp_W = Matrix(1,m_dim);
 			transp_W.mult(x_min_mT,scalemat);
-			//if(n == 11){cout << "(x - m[k])T*W[k]" << endl;
-			//transp_W.Print();}
+			//if(n == 47){cout << "(x - m[k])T*W[k]" << endl; transp_W.Print();}
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
-			//if(n == 11){cout << "(x - m[k])T*W[k]*(x - m[k])" << endl;
-			//full.Print();}
+			//if(n == 47){cout << "(x - m[k])T*W[k]*(x - m[k])" << endl; full.Print();}
 			E_mu_lam = m_dim/scale + dof*full.at(0,0);	
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
@@ -385,7 +379,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			norm += post;
 			//need to normalize
 			m_post.SetEntry(post, n, k);
-			//if(n == 11){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
+			//if(k == 1){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
 		}
 		post_norms.push_back(norm);
 	}
@@ -394,10 +388,11 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//normalize
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
+			//will lead to nan
+			if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			m_post.SetEntry(m_post.at(n,k)/post_norms[n],n,k);
-			if(isnan(m_post.at(n,k))) cout << "Entry at n: " << n << " k: " << k << " is nan." << endl;
 			//uncomment here to check posterior values
-			//if(n == 11) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
+			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
 //cout << "posterior normed" << endl;	
@@ -409,7 +404,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 
 
 void GaussianMixture::CalculateRStatistics(){
-	//cout << "Calculate RStats" << endl;
+//	cout << "Calculate RStats" << endl;
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
@@ -437,7 +432,7 @@ void GaussianMixture::CalculateRStatistics(){
 			//cout << "x" << endl;
 			//x.Print();
 			//weighted by posterior value gamma(z_nk),
-		//	if(n == 3) cout << "mu calc - post: " << m_post.at(n,k) << endl;
+			//if(k == 1) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << " data weight: " << m_data->at(n).w() << endl;
 			x.mult(x,m_post.at(n,k));
 			//weighted by previously defined weight
 			x.mult(x,m_data->at(n).w());
@@ -446,11 +441,11 @@ void GaussianMixture::CalculateRStatistics(){
 			//add to new mu for cluster k
 			mu.add(x);
 		}
-		//cout << "sum_n post*x" << endl;
+		//cout << "k: " << k << " sum_n post*x" << endl;
 		//mu.Print();
 		//normalized by sum of posteriors for cluster k
 		mu.mult(mu,1./m_norms[k]);
-		//cout << "m_norm: " << m_norms[k] << endl;
+		//cout << "k: " << k << " m_norm: " << m_norms[k] << endl;
 		//cout << "1/N[k]*(sum_n post*x)" << endl;
 		//mu.Print();
 		m_model[k]->SetParameter("mean",mu);		
@@ -524,6 +519,7 @@ void GaussianMixture::UpdateVariationalParameters(){
 //M-step
 void GaussianMixture::UpdatePriorParameters(){
 //cout << "UPDATE PARAMETERS - M STEP" << endl;
+
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
 	for(int k = 0; k < m_k; k++){
@@ -566,6 +562,8 @@ void GaussianMixture::UpdatePriorParameters(){
 		//bar{x}_k - m0
 		Matrix x_min_mean = Matrix(m_dim, 1);
 		x_min_mean.minus(mu, m_mean0);
+		//cout << "xbar" << endl;
+		//mu.Print();
 		Matrix x_min_meanT = Matrix(1, m_dim);
 		x_min_meanT.transpose(x_min_mean);
 		//(bar{x}_k - m0)(bar{x}_k - m0)T
@@ -731,10 +729,10 @@ double GaussianMixture::EvalVariationalLogL(){
 		Wishart* wish_k = new Wishart(scalemat, nu);
 		H = wish_k->H();
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
+
 	}
 
 	/*
-	cout << "E_q_muLam: " <<  E_q_muLam << endl;
 	cout << "E_p_all: " << E_p_all << endl;
 	cout << "E_p_Z: " << E_p_Z << endl;
 	cout << "E_p_pi: " << E_p_pi << endl;
