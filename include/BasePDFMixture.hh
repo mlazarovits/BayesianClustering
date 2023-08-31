@@ -19,6 +19,7 @@ class BasePDFMixture : public BasePDF{
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
 				m_norms.push_back(0.);
+				m_norms_unwt.push_back(0.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
@@ -34,7 +35,14 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x);
 
-		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); }
+		void SetData(PointCollection* data){
+			m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); 
+			if(data->GetNPoints() < m_k){
+				//remove extra models
+				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
+				m_k = data->GetNPoints();
+			}
+		}
 		PointCollection* GetData(){ return m_data; }
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
@@ -82,6 +90,8 @@ class BasePDFMixture : public BasePDF{
 					k--; //make sure to check following model
 				}
 			}
+			//cout if all clusters are removed
+			if(m_k < 1) cout << "Error: all clusters have been removed. Update threshold accordingly." << endl;
 
 		}
 
