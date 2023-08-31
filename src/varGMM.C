@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
 	int k = 2; //number of clusters for GMM (may or may not be true irl)
 	int nIts = 50; //number of iterations to run EM algorithm
 	bool viz = false;
+	bool verb = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -78,6 +79,14 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
    		}
+		if(strncmp(argv[i],"--verbosity", 11) == 0){
+    	 		i++;
+			verb = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"-v", 2) == 0){
+    	 		i++;
+			verb = std::atoi(argv[i]);
+   		}
 	
 	}
 	if(hprint){
@@ -89,7 +98,8 @@ int main(int argc, char *argv[]){
    		cout << "   --nDims(-d) [d]               sets dimensionality of data (default = 2)" << endl;
    		cout << "   --nClusters(-k) [k]           sets number of clusters in GMM (default = 2)" << endl;
    		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
-   		cout << "   --viz(-v)                     makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
+   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "Example: ./runGMM_EM.x -n 100 -o testViz.root" << endl;
 
    		return 0;
@@ -127,6 +137,7 @@ int main(int argc, char *argv[]){
 	
 	//create GMM model
 	GaussianMixture* gmm = new GaussianMixture(k);
+	gmm->SetVerbosity(verb);
 	gmm->SetData(&pc);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
@@ -140,6 +151,7 @@ int main(int argc, char *argv[]){
 
 	//viz object
 	VarClusterViz3D cv3D = VarClusterViz3D(algo);
+	cv3D.SetVerbosity(verb);
 	cv3D.SeeData();
 
 	
