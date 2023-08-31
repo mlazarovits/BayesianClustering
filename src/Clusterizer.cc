@@ -168,7 +168,7 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 		}
 		oldLogL = newLogL;
 	}
-	if(_verb > 0){
+	if(_verb > 1){
 		cout << "Estimated parameters" << endl;
 		map<string, Matrix> params;
 		for(int i = 0; i < gmm->GetNClusters(); i++){
