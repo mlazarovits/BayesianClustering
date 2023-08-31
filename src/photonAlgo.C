@@ -124,12 +124,12 @@ int main(int argc, char *argv[]){
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
-   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
-   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
-   		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
+   		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
