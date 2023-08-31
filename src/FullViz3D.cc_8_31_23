@@ -14,21 +14,20 @@ FullViz3D::FullViz3D(vector<node*> nodes){
 
 
 
-json FullViz3D::WriteNode(node* node){
-	
-	json subcluster = json::object();
-	json subclusters = json::object();
-	json cluster = json::object();
-	json data = json::object();
+Json::Value FullViz3D::WriteNode(node* node){
+	Json::Value cluster;
+	Json::Value subclusters;
+	Json::Value subcluster;
+	Json::Value data;
 
-	vector<double> color;
-	vector<double> x;
-	vector<double> y;
-	vector<double> z;
+	Json::Value color(Json::arrayValue);
+	Json::Value x(Json::arrayValue);
+	Json::Value y(Json::arrayValue);
+	Json::Value z(Json::arrayValue);
 	
-	vector<double> eigenVec_0;
-	vector<double> eigenVec_1;
-	vector<double> eigenVec_2;
+	Json::Value eigenVec_0(Json::arrayValue);
+	Json::Value eigenVec_1(Json::arrayValue);
+	Json::Value eigenVec_2(Json::arrayValue);
 	
 	int kmax = node->model->GetNClusters();
 	BasePDFMixture* model = node->model;
@@ -37,16 +36,17 @@ json FullViz3D::WriteNode(node* node){
 		return cluster;
 	}
 
-	for(int i = 0; i < points->GetNPoints(); i++){
-		//eta
-		x.push_back(points->at(i).Value(0));
-		//phi
-		y.push_back(points->at(i).Value(1));
-		z.push_back(points->at(i).Value(2));
-	}
-	data["x"] = x;
-	data["y"] = y;
-	data["z"] = z;
+	
+			for(int i = 0; i < points->GetNPoints(); i++){
+				//eta
+				x.append(points->at(i).Value(0));
+				//phi
+				y.append(points->at(i).Value(1));
+				z.append(points->at(i).Value(2));
+			}
+			data["x"] = x;
+			data["y"] = y;
+			data["z"] = z;
 	cluster["data"] = data;
 	
 
@@ -64,9 +64,9 @@ json FullViz3D::WriteNode(node* node){
 
 		cluster_params["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
-			eigenVec_0.push_back(eigenVecs[0].at(i,0));
-			eigenVec_1.push_back(eigenVecs[1].at(i,0));
-			eigenVec_2.push_back(eigenVecs[2].at(i,0));
+			eigenVec_0.append(eigenVecs[0].at(i,0));
+			eigenVec_1.append(eigenVecs[1].at(i,0));
+			eigenVec_2.append(eigenVecs[2].at(i,0));
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
@@ -106,12 +106,10 @@ void FullViz3D::orderTree(node* node, int level, map<int, NodeStack> &map){
 }
 
 //level{ tree_0{ }, tree_1{ }, ...}
-json FullViz3D::WriteLevels(){
-	json levels = json::object();
-	json trees = json::object();
-	json clusters = json::object();
-	
-	
+Json::Value FullViz3D::WriteLevels(){
+	Json::Value levels;
+	Json::Value trees;
+	Json::Value clusters;
 	int nTrees = (int)_nodes.size();
 
 	//create a node - level map for each tree
@@ -161,9 +159,9 @@ if(_verb > 2) cout << "max: " << nLevels << " levels" << endl;
 	return levels;
 }
 
-json FullViz3D::WriteTree(node* root){
-	json level = json::object();
-	json clusters = json::object();
+Json::Value FullViz3D::WriteTree(node* root){
+	Json::Value level;
+	Json::Value clusters;
 	map<int, NodeStack> tree_map;
 	orderTree(root, 0, tree_map);	
 
@@ -182,7 +180,7 @@ json FullViz3D::WriteTree(node* root){
 		     level["clusters_level_"+std::to_string(i)] = clusters;
 		}
 
-	json levels = json::object();
+	Json::Value levels;
 	levels["levels"] = level;
 	return levels;
 }
