@@ -79,7 +79,7 @@ void KMeansCluster::Initialize_pp(unsigned long long seed){
 	}
 	for(int n = 0; n < m_n; n++) N += m_data->at(n).w();
  
-cout << "total norm: " << N << endl;
+//cout << "total norm: " << N << endl;
 	
 	for(int n = 0; n < m_n; n++) 
 		m_assigns.push_back(0);
@@ -93,16 +93,17 @@ void KMeansCluster::Estimate(){
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 999.;
+		dmin = 1e6;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
-			//calculate euclidean distance
+			//calculate euclidean distance squared as optimization metric
 			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
 		//	dist = sqrt(dist);
 			dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
 			if(dist < dmin){ dmin = dist; kmin = k; }
+			//cout << "k: " << k << " current kmin: " << kmin << " dist: " << dist << " current dmin: " << dmin << endl;
 		}
 		//track number of points that change assignments
 		if(kmin != m_assigns[n]) m_nchg++; //+= m_data->at(n).w();//m_nchg++; 
