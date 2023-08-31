@@ -2,9 +2,8 @@
 #define JETPRODUCER_HH
 
 #include "JetPoint.hh"
-#include "TFile.h"
-#include "TTree.h"
 #include "ReducedBase.hh"
+#include "TFile.h"
 
 class JetProducer{
 	public:

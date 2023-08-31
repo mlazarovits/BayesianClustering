@@ -65,7 +65,6 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	for(int i = 0; i < m_nEvts; i++){
 		if(i == evt){
 			m_base->GetEntry(i);
-			//TODO: switch to m_base->nRHs when that's in the ntuples
 			nRHs = (int)m_base->ECALRecHit_ID->size();
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
