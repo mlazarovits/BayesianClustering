@@ -2,8 +2,9 @@
 #include "Clusterizer.hh"
 #include "Matrix.hh"
 
-#include "TH1D.h"
-#include "TH2D.h"
+#include <TFile.h>
+//#include <TH1D.h>
+#include <TH2D.h>
 PhotonProducer::PhotonProducer(){ };
 
 
@@ -49,10 +50,15 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
 					if(m_base->ECALRecHit_ID->at(j) == id){
+						//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
 						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
 						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
 						rh.SetEta(m_base->ECALRecHit_eta->at(j));
 						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+						
+						//cleaning cuts
+						if(!cleanRH(rh)) break;
+						
 						rhs[i].push_back(rh);
 						break;
 					}
@@ -91,10 +97,15 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					rh.SetRecHitId(id);
 					for(int j = 0; j < nRHs_evt; j++){
 						if(m_base->ECALRecHit_ID->at(j) == id){
+							//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
 							rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
 							rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
 							rh.SetEta(m_base->ECALRecHit_eta->at(j));
 							rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+							
+							//cleaning cuts
+							if(!cleanRH(rh)) break;
+						
 							rhs.push_back(rh);
 							break;
 						}
@@ -130,10 +141,15 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
 					if(m_base->ECALRecHit_ID->at(j) == id){
+						//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
 						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
 						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
 						rh.SetEta(m_base->ECALRecHit_eta->at(j));
 						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+						
+						//cleaning cuts
+						if(!cleanRH(rh)) break;
+						
 						rhs.push_back(rh);
 						break;
 					}
@@ -167,6 +183,52 @@ void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
 }
 
 
+void PhotonProducer::CleaningSkim(){
+	TFile* ofile = new TFile("plots/photon_cleaningSkims.root","RECREATE");
+	//rh time
+	TH1D* t_rh = new TH1D("t_rh","t_rh",50,-150, 150);
+	//rh time vs. rh e
+	TH2D* TvErh = new TH2D("TvErh","TvErh",50, -150, 150., 1000, 0., 1000);
+	TH2D* TvErh_lowE = new TH2D("TvErh_lowE","TvErh_lowE",50, -150, 150., 1000, 0., 10.);
+	TH2D* TvErh_bx = new TH2D("TvErh_bx","TvErh_bx",50, -150, 150., 100, 0., 1000);
+	TH2D* TvErh_cut = new TH2D("TvErh_cut","TvErh_cut",50, -100, 100., 1000, 0., 1000);
+
+	TH1D* phoE = new TH1D("phoE","phoE",1000, 0, 1000);
+
+	int nPho;
+	vector<JetPoint> rhs;
+	for(int i = 0; i < m_nEvts; i++){
+		m_base->GetEntry(i);
+		nPho = (int)m_base->Photon_energy->size();
+		for(int p = 0; p < nPho; p++){
+			phoE->Fill(m_base->Photon_energy->at(p));
+			//find subclusters for each photon
+			GetRecHits(rhs, i, p);
+			//cout << "evt #" << i << " photon #" << p << " nrhs: " << rhs.size() << endl;
+			for(int r = 0; r < (int)rhs.size(); r++){
+				t_rh->Fill(rhs[r].t());
+				TvErh->Fill(rhs[r].t(), rhs[r].E());
+				if(rhs[r].E() <= 10.0) TvErh_lowE->Fill(rhs[r].t(), rhs[r].E());
+				if(fabs(rhs[r].t()) < 25) TvErh_bx->Fill(rhs[r].t(), rhs[r].E());
+				if(rhs[r].E() < 3.0 && fabs(rhs[r].t()) > 50) continue;
+				TvErh_cut->Fill(rhs[r].t(), rhs[r].E());
+
+			}
+		}
+	}
+	
+	ofile->cd();
+	ofile->WriteTObject(t_rh);
+	ofile->WriteTObject(TvErh);
+	ofile->WriteTObject(TvErh_lowE);
+	ofile->WriteTObject(TvErh_bx);
+	ofile->WriteTObject(TvErh_cut);
+	ofile->WriteTObject(phoE);
+	ofile->Close();
+
+}
+
+
 
 //make cluster param histograms
 void PhotonProducer::Skim(){
@@ -177,9 +239,6 @@ void PhotonProducer::Skim(){
 	//subcluster energy - average
 	TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,1000.);
 	TH1D_hists.push_back(e_avg);
-	//subcluster energy - median
-	TH1D* e_med = new TH1D("e_med","e_med",50,0.,1000.);
-	TH1D_hists.push_back(e_med);
 	//space slope
 	TH1D* slope_space = new TH1D("slope_space","slope_space",50,-10,10);
 	TH1D_hists.push_back(slope_space);
@@ -218,19 +277,20 @@ void PhotonProducer::Skim(){
 	
 	Clusterizer* algo = new Clusterizer();
 	algo->SetAlpha(0.1);
-	algo->SetThresh(2.);
+	algo->SetThresh(1.);
 	algo->SetMaxNClusters(5);
-	algo->SetWeighted(true);
+	algo->SetWeighted(false);
+	algo->SetVerbosity(0);
 	//algo->SetDataSmear(smear);
 
-	vector<JetPoint> rhs;
 
 	GaussianMixture* gmm = new GaussianMixture();
 	
 	map<string, Matrix> params;
 
+	vector<JetPoint> rhs;
 	int nclusters;
-	vector<double> eigenvals;
+	vector<double> eigenvals, avg_Es;
 	vector<Matrix> eigenvecs;
 	for(int i = 0; i < m_nEvts; i++){
 		m_base->GetEntry(i);
@@ -245,6 +305,9 @@ void PhotonProducer::Skim(){
 			nSubClusters->Fill(nclusters);
 			e_nSubClusters->Fill(m_base->Photon_energy->at(p), nclusters);
 			
+			gmm->GetAvgWeights(avg_Es);		
+
+	
 			for(int k = 0; k < nclusters; k++){
 				params = gmm->GetParameters(k);
 				eta_center->Fill(params["mean"].at(0,0));
@@ -262,8 +325,9 @@ void PhotonProducer::Skim(){
 				//phi/time
 				slope_phiT->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
 
+				//average cluster energy
+				e_avg->Fill(avg_Es[k]);
 			}
-
 	
 			rhs.clear();
 			eigenvals.clear();
@@ -271,12 +335,9 @@ void PhotonProducer::Skim(){
 		}
 
 	}
-
 	ofile->cd();
 	for(int i = 0; i < (int)TH1D_hists.size(); i++) TH1D_hists[i]->Write();
 	nSubClusters->Write();
 	e_nSubClusters->Write();
-
-
 
 }
