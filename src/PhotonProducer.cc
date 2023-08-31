@@ -237,10 +237,10 @@ void PhotonProducer::Skim(){
 
 	vector<TH1D*> TH1D_hists;
 	//subcluster energy - average
-	TH1D* e_avg = new TH1D("e_avg","e_avg",100,0.,20.);
+	TH1D* e_avg = new TH1D("e_avg","e_avg",100,0.,50.);
 	TH1D_hists.push_back(e_avg);
 	//space slope
-	TH1D* slope_space = new TH1D("slope_space","slope_space",50,-15,15);
+	TH1D* slope_space = new TH1D("slope_space","slope_space",50,-30,30);
 	TH1D_hists.push_back(slope_space);
 	//eta-time slope
 	TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-2,2);
@@ -249,19 +249,19 @@ void PhotonProducer::Skim(){
 	TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
 	TH1D_hists.push_back(slope_phiT);
 	//mean time - center in t
-	TH1D* time_center = new TH1D("time_center","time_center",50,-50,50);
+	TH1D* time_center = new TH1D("time_center","time_center",50,-30,30);
 	TH1D_hists.push_back(time_center);
 	//mean eta - center in eta
-	TH1D* eta_center = new TH1D("eta_center","eta_center",50,-4,4);
+	TH1D* eta_center = new TH1D("eta_center","eta_center",50,-3.5,3.5);
 	TH1D_hists.push_back(eta_center);
 	//mean phi - center in phi
-	TH1D* phi_center = new TH1D("phi_center","phi_center",50,-3,3);
+	TH1D* phi_center = new TH1D("phi_center","phi_center",50,-3.5,3.5);
 	TH1D_hists.push_back(phi_center);
 	
 	//# of subclusters
-	TH1I* nSubClusters = new TH1I("nSubClusters","nSubClusters",10,0,7.);
+	TH1I* nSubClusters = new TH1I("nSubClusters","nSubClusters",7,0,7.);
 	//# of subclusters vs. photon reco energy
-	TH2D* e_nSubClusters = new TH2D("e_nSubClusters","e_nSubClusters",50,0.,1000.,10,0.,7.);	
+	TH2D* e_nSubClusters = new TH2D("e_nSubClusters","e_nSubClusters",50,0.,1000.,7,0.,7.);	
 
 	
 
@@ -279,7 +279,7 @@ void PhotonProducer::Skim(){
 	algo->SetAlpha(0.1);
 	algo->SetThresh(1.);
 	algo->SetMaxNClusters(5);
-	algo->SetWeighted(false);
+	algo->SetWeighted(true);
 	algo->SetVerbosity(0);
 	//algo->SetDataSmear(smear);
 
@@ -298,7 +298,7 @@ void PhotonProducer::Skim(){
 		for(int p = 0; p < nPho; p++){
 			//find subclusters for each photon
 			GetRecHits(rhs, i, p);
-			cout << "evt: " << i << " pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
+			cout << "evt: " << i << " of " << m_nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
 	
 			gmm = algo->FindSubjets(Jet(rhs));
 			
@@ -308,7 +308,7 @@ void PhotonProducer::Skim(){
 			
 			gmm->GetAvgWeights(avg_Es);		
 
-	
+
 			for(int k = 0; k < nclusters; k++){
 				params = gmm->GetParameters(k);
 				eta_center->Fill(params["mean"].at(0,0));
