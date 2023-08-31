@@ -38,14 +38,14 @@ class KMeansCluster : public BaseCluster{
 		//get points separated into point collections for each cluster
 		void GetAssignments(vector<PointCollection*>& pcs);
 	
-		void GetCounts(vector<int>& c){ c.clear(); c = m_counts; }
+		void GetCounts(vector<double>& c){ c.clear(); c = m_counts; }
 	private:
 		//parameters - means (1 per cluster)
 		vector<Matrix> m_means;
 		//assignment values
 		vector<int> m_assigns;
 		//number of points assigned to each cluster
-		vector<int> m_counts;
+		vector<double> m_counts;
 		//number of points change assignment
 		double m_nchg;
 };
