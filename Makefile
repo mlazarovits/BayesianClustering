@@ -13,6 +13,8 @@ GLIBS       = $(ROOTGLIBS)
 #add jsoncpp flags
 CXXFLAGS    += $(shell pkg-config --cflags /opt/homebrew/Cellar/jsoncpp/1.9.5/lib/pkgconfig/jsoncpp.pc)
 GLIBS       += $(shell pkg-config --libs /opt/homebrew/Cellar/jsoncpp/1.9.5/lib/pkgconfig/jsoncpp.pc)
+#add nlohmann-json flags
+CXXFLAGS   += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
 #specify compiler
 CXX         = g++
 

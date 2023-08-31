@@ -1,7 +1,7 @@
 #include "VarClusterViz3D.hh"
 #include "VarEMCluster.hh"
 
-#include "json/json.h"
+#include "nlohmann/json.hpp"
 #include <TSystem.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
@@ -20,7 +20,7 @@
 #include <iostream>
 #include <fstream>
 using std::string;
-
+using json = nlohmann::json;
 //check for 2D data
 VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){ 
 	if(algo->GetData()->Dim() != 3){
@@ -59,20 +59,19 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 
 void VarClusterViz3D::WriteJson(string filename){
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-	Json::Value root;
-	Json::Value clusters;
-	Json::Value cluster;
-	Json::Value data;
-
-	Json::Value x(Json::arrayValue);
-	Json::Value y(Json::arrayValue);
-	Json::Value z(Json::arrayValue);
-	Json::Value w(Json::arrayValue);
-
+	json root = json::object();
+	json clusters = json::object();
+	json cluster = json::object();
+	json data = json::object();
 	
-	Json::Value eigenVec_0(Json::arrayValue);
-	Json::Value eigenVec_1(Json::arrayValue);
-	Json::Value eigenVec_2(Json::arrayValue);
+	vector<double> x;
+	vector<double> y;
+	vector<double> z;
+	vector<double> w;
+
+	vector<double> eigenVec_0;
+	vector<double> eigenVec_1;
+	vector<double> eigenVec_2;
 	
 	if(m_n == 0){
 		return;
@@ -83,18 +82,18 @@ void VarClusterViz3D::WriteJson(string filename){
 
 	for(int i = 0; i < m_n; i++){
 		//eta
-		x.append(m_points->at(i).Value(0));
+		x.push_back(m_points->at(i).Value(0));
 		//phi
-		y.append(m_points->at(i).Value(1));
+		y.push_back(m_points->at(i).Value(1));
 		//time
-		z.append(m_points->at(i).Value(2));
+		z.push_back(m_points->at(i).Value(2));
 		//weight
-		w.append(m_points->at(i).Weight());
+		w.push_back(m_points->at(i).Weight());
 	}
-	data["x"] = x;
-	data["y"] = y;
-	data["z"] = z;
-	data["w"] = w;
+	data["x"] = json(x);
+	data["y"] = json(y);
+	data["z"] = json(z);
+	data["w"] = json(w);
 
 	root["data"] = data;
 	//if no points - empty plot
@@ -114,9 +113,9 @@ void VarClusterViz3D::WriteJson(string filename){
 
 		cluster_params[k]["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
-			eigenVec_0.append(eigenVecs[0].at(i,0));
-			eigenVec_1.append(eigenVecs[1].at(i,0));
-			eigenVec_2.append(eigenVecs[2].at(i,0));
+			eigenVec_0.push_back(eigenVecs[0].at(i,0));
+			eigenVec_1.push_back(eigenVecs[1].at(i,0));
+			eigenVec_2.push_back(eigenVecs[2].at(i,0));
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
@@ -129,9 +128,9 @@ void VarClusterViz3D::WriteJson(string filename){
 		cluster["eigenVal_1"] = eigenVals[1];	
 		cluster["eigenVal_2"] = eigenVals[2];	
 		
-		cluster["eigenVec_0"] = eigenVec_0;	
-		cluster["eigenVec_1"] = eigenVec_1;	
-		cluster["eigenVec_2"] = eigenVec_2;	
+		cluster["eigenVec_0"] = json(eigenVec_0);	
+		cluster["eigenVec_1"] = json(eigenVec_1);	
+		cluster["eigenVec_2"] = json(eigenVec_2);	
 	
 		clusters[std::to_string(k)] = cluster;
 
@@ -141,13 +140,11 @@ void VarClusterViz3D::WriteJson(string filename){
 		eigenVec_2.clear();
 	}
 	root["clusters"] = clusters;
-	Json::StreamWriterBuilder builder;
-	const std::string json_file = Json::writeString(builder, root);
-
-
+	
 	std::ofstream file;
 	file.open(filename+".json");
-	file << json_file << endl;
+	//4 space indent
+	file << std::setw(4) << root << endl;
 	if(_verb > 0) cout << "Writing to: " << filename << ".json" << endl;
 }
 
