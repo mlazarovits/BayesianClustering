@@ -179,6 +179,7 @@ int main(int argc, char *argv[]){
 	PhotonProducer prod(file);
 	if(skim){
 		cout << "Skimming photons + subclusters" << endl;
+		prod.CleaningSkim();
 		prod.Skim();
 		return 0;
 	}
