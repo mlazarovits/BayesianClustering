@@ -109,7 +109,8 @@ void GaussianMixture::CalculatePosterior(){
 	//calculate posterior for each data pt n in each cluster k
 	for(int	n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
-			val = m_coeffs[k]*gaus.at(n,k)/post_norms[n];
+			//weight by data weight
+			val = m_data->at(n).w()*m_coeffs[k]*gaus.at(n,k)/post_norms[n];
 			m_post.SetEntry(val,n,k);		
 		}
 	}
@@ -126,8 +127,9 @@ void GaussianMixture::UpdateParameters(){
 		m_norms[k] = 0;
 		m_norms_unwt[k] = 0;
 		for(int n = 0; n < m_n; n++){
-			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
-			m_norms_unwt[k] += m_post.at(n,k);
+			m_norms[k] += m_post.at(n,k);
+			//weighted in posterior calculation - need to unweight
+			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
 		}
 	}
 	//set new means + coeffs	
@@ -147,8 +149,6 @@ void GaussianMixture::UpdateParameters(){
 			Matrix x = Matrix(m_data->at(n).Value());
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
-			//weighted by previously defined weight
-			x.mult(x,m_data->at(n).w());
 			//to new mu for cluster k
 			mu.add(x);
 			//m_mus[k].add(x);
@@ -160,9 +160,7 @@ void GaussianMixture::UpdateParameters(){
 	}
 
 
-
-
-//sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
+	//sigma_k = 1/N_k sum_n(gamma(z_nk)*(x_n - mu_k)*(x_n - mu_k)T) for mu_k = mu^new_k
 	for(int k = 0; k < m_k; k++){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix new_cov = Matrix(m_dim,m_dim);
@@ -180,8 +178,6 @@ void GaussianMixture::UpdateParameters(){
 			cov_k.mult(x_min_mu,x_min_muT);
 			//weighting by posterior gamma(z_nk)
 			cov_k.mult(cov_k,m_post.at(n,k));
-			//weighting by previously defined weight
-			cov_k.mult(cov_k,m_data->at(n).w());
 			//sum over n
 			new_cov.add(cov_k);
 		}	
@@ -390,7 +386,8 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
 			if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
-			m_post.SetEntry(m_post.at(n,k)/post_norms[n],n,k);
+			//weight by data weight
+			m_post.SetEntry(m_data->at(n).w()*m_post.at(n,k)/post_norms[n],n,k);
 			//uncomment here to check posterior values
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
@@ -413,9 +410,10 @@ void GaussianMixture::CalculateRStatistics(){
 		for(int n = 0; n < m_n; n++){
 			//if(k == 0) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 			//if(n == 3) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
-			//include data weights
-			m_norms[k] += m_post.at(n,k)*m_data->at(n).w();
-			m_norms_unwt[k] += m_post.at(n,k);
+			
+			//weighted in posterior calculation - need to unweight
+			m_norms[k] += m_post.at(n,k);
+			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
 		}
 	}
 
@@ -434,8 +432,6 @@ void GaussianMixture::CalculateRStatistics(){
 			//weighted by posterior value gamma(z_nk),
 			//if(k == 1) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << " data weight: " << m_data->at(n).w() << endl;
 			x.mult(x,m_post.at(n,k));
-			//weighted by previously defined weight
-			x.mult(x,m_data->at(n).w());
 			//cout << "post*x" << endl;
 			//x.Print();
 			//add to new mu for cluster k
@@ -484,8 +480,6 @@ void GaussianMixture::CalculateRStatistics(){
 			//S_k.Print();
 			//weighting by posterior r_nk
 			S_k.mult(S_k,m_post.at(n,k));
-			//weighted by previously defined weight
-			S_k.mult(S_k,m_data->at(n).w());
 		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
 			//cout << "post*(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();
