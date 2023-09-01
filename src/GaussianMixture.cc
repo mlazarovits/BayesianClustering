@@ -38,7 +38,13 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
 		m_norms[k] = double(m_n)/double(m_k);
+		double w = 0;
+		for(int n = 0; n < m_n; n++){ w += m_data->at(n).w(); }
+		m_norms[k] *= w/double(m_n); 
+
+		m_norms_unwt[k] = double(m_n)/double(m_k);
 		m_model[k]->SetDim(m_dim);
+
 
 		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1

@@ -107,6 +107,7 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<double> avgs;
 	m_model->GetAvgWeights(avgs);
 
+
 	double x0, y0, z0;	
 	for(int k = 0; k < m_k; k++){
 		x0 = cluster_params[k]["mean"].at(0,0);

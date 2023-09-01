@@ -25,6 +25,7 @@ json FullViz3D::WriteNode(node* node){
 	vector<double> x;
 	vector<double> y;
 	vector<double> z;
+	vector<double> w;
 	
 	vector<double> eigenVec_0;
 	vector<double> eigenVec_1;
@@ -42,17 +43,23 @@ json FullViz3D::WriteNode(node* node){
 		x.push_back(points->at(i).Value(0));
 		//phi
 		y.push_back(points->at(i).Value(1));
+		//time
 		z.push_back(points->at(i).Value(2));
+		//weight
+		w.push_back(m_points->at(i).Weight());
 	}
 	data["x"] = x;
 	data["y"] = y;
 	data["z"] = z;
+	data["w"] = w;
 	cluster["data"] = data;
 	
 
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
+	vector<double> avgs;
+	m_model->GetAvgWeights(avgs);
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
@@ -82,6 +89,8 @@ json FullViz3D::WriteNode(node* node){
 		subcluster["eigenVec_0"] = eigenVec_0;	
 		subcluster["eigenVec_1"] = eigenVec_1;	
 		subcluster["eigenVec_2"] = eigenVec_2;	
+		
+		subcluster["color"] = avgs[k];
 	
 		subclusters["subcluster_"+std::to_string(k)] = subcluster;
 

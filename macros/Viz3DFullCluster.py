@@ -118,8 +118,12 @@ class JsonPlotter:
 		x = data['x']
 		y = data['y']
 		z = data['z']
+		w = data['w']
 		
 		gr_arr = []
+		
+		for k in range(nClusters):
+			w.append(clusters[str(k)]["color"])
 	
 		colors = self.buildColorDict()
 		
@@ -133,6 +137,7 @@ class JsonPlotter:
 	
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
+				#size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', line=dict(
 				size = 4, color = colors[cl], line=dict(
 					color = colors[cl], width = 30)), showlegend=False))
 		if dataonly is True:
@@ -183,8 +188,13 @@ class JsonPlotter:
 			z2 = new_points[2, :] + z0
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
+			#make ellipsoid color of average energy across points (responsibilities)
+			col = sample_colorscale("Plotly3",clusters[idx]["color"])
+			col = np.array([cl,cl]).flatten()
+		
 			#add ellipsoids
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[col,col], showscale = False)),
+			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
 		
 		return gr_arr
 

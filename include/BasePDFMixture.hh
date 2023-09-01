@@ -18,8 +18,8 @@ class BasePDFMixture : public BasePDF{
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
-				m_norms.push_back(0.);
-				m_norms_unwt.push_back(0.);
+				m_norms.push_back(1.);
+				m_norms_unwt.push_back(1.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
@@ -120,7 +120,7 @@ class BasePDFMixture : public BasePDF{
 		}
 		
 		//ie gets subcluster average energy (within subcluster) - returns average weight per subcluster
-		void GetAvgWeights(vector<double>& v){ v.clear(); for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]); } 
+		void GetAvgWeights(vector<double>& v){ v.clear(); for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]); }  
 
 		PointCollection* m_data;
 		//number of data points
