@@ -129,8 +129,8 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	}
 
 	VarClusterViz3D cv3D;
-	cv3D.SetVerbosity(_verb);
 	if(viz){ cv3D = VarClusterViz3D(algo);
+		cv3D.SetVerbosity(_verb);
 		cv3D.UpdatePosterior();
 		cv3D.WriteJson(fname+"/it0");
 		}
