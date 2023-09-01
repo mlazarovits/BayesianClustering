@@ -95,6 +95,7 @@ void VarClusterViz3D::WriteJson(string filename){
 	data["z"] = json(z);
 	data["w"] = json(w);
 
+
 	root["data"] = data;
 	//if no points - empty plot
 //	if(x.size() == 0) return;
@@ -103,6 +104,8 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
 
+	vector<double> avgs;
+	m_model->GetAvgWeights(avgs);
 
 	double x0, y0, z0;	
 	for(int k = 0; k < m_k; k++){
@@ -131,6 +134,8 @@ void VarClusterViz3D::WriteJson(string filename){
 		cluster["eigenVec_0"] = json(eigenVec_0);	
 		cluster["eigenVec_1"] = json(eigenVec_1);	
 		cluster["eigenVec_2"] = json(eigenVec_2);	
+
+		cluster["color"] = avgs[k];
 	
 		clusters[std::to_string(k)] = cluster;
 
