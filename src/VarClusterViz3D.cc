@@ -137,6 +137,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		cluster["eigenVec_2"] = json(eigenVec_2);	
 
 		cluster["color"] = avgs[k];
+
 	
 		clusters[std::to_string(k)] = cluster;
 
