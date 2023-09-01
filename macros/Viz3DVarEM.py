@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
-#from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import minmax_scale
 import json
 import argparse
 import os
@@ -31,6 +31,7 @@ def plot_json(jsonfile, dataonly = False):
 	
 	for k in range(nClusters):
 		w.append(clusters[str(k)]["color"])
+		print("min",min(w),"max",max(w))
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -81,7 +82,8 @@ def plot_json(jsonfile, dataonly = False):
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 		#make ellipsoid color of average energy across points (responsibilities)
-		cl = sample_colorscale("Plotly3",clusters[idx]["color"])
+		cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
+		cl = sample_colorscale("Plotly3",cl_w)
 		cl = np.array([cl,cl]).flatten()
 	
 		#add ellipsoids

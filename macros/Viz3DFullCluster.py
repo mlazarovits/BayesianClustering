@@ -189,7 +189,8 @@ class JsonPlotter:
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 			#make ellipsoid color of average energy across points (responsibilities)
-			col = sample_colorscale("Plotly3",clusters[idx]["color"])
+			cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
+			col = sample_colorscale("Plotly3",cl_w)
 			col = np.array([cl,cl]).flatten()
 		
 			#add ellipsoids
