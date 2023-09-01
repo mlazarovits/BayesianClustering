@@ -38,7 +38,6 @@ void Clusterizer::Cluster(Jet jet, string fname){
 		vector<double> weights;
 		jet.GetEnergies(weights);
 		points->SetWeights(weights);
-		fname += "_Eweighted";
 	}
 	
 	//Bayesian Hierarchical Clustering algo
@@ -160,7 +159,7 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 		}
 		dLogL = oldLogL - newLogL;
 		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(fabs(dLogL) < LogLthresh || dLogL > 0){
+		if(fabs(dLogL) < LogLthresh){// || dLogL > 0){
 			if(_verb > 0){
 				cout << "Reached convergence at iteration " << it+1 << endl;
 			}

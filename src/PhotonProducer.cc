@@ -27,6 +27,7 @@ PhotonProducer::PhotonProducer(TFile* file){
 	TTree* tree = (TTree*)file->Get("tree/llpgtree");
 	m_base = new ReducedBase(tree);
 	m_nEvts = m_base->fChain->GetEntries();
+
 }
 
 void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
@@ -129,6 +130,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	for(int i = 0; i < m_nEvts; i++){
 		if(i == evt){
 			m_base->GetEntry(i);
+			cout << (int)m_base->Photon_energy->size() << " nphotons in evt " << evt << endl;
 			//make sure photon number is in vector
 			if(pho >= (int)m_base->Photon_rhIds->size()) return;
 			nRHs = (int)m_base->Photon_rhIds->at(pho).size();
@@ -281,7 +283,7 @@ void PhotonProducer::Skim(){
 	algo->SetMaxNClusters(5);
 	algo->SetWeighted(true);
 	algo->SetVerbosity(0);
-	//algo->SetDataSmear(smear);
+//	algo->SetDataSmear(smear);
 
 
 	GaussianMixture* gmm = new GaussianMixture();

@@ -158,6 +158,10 @@ int main(int argc, char *argv[]){
 	
 	if(weighted) fname += "_Eweighted";
 	if(smeared) fname += "_EtaPhiSmear";
+
+	/////GET DATA FROM NTUPLE//////
+	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	fname += "_v6";
 	
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
@@ -171,9 +175,6 @@ int main(int argc, char *argv[]){
 		cout << "Writing to directory: " << fname << endl;
 	}
 	
-	/////GET DATA FROM NTUPLE//////
-	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
-	fname += "_v6";
 
 	TFile* file = TFile::Open(in_file.c_str());
 	PhotonProducer prod(file);
@@ -188,7 +189,7 @@ int main(int argc, char *argv[]){
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	prod.GetRecHits(rhs,evt,npho);
-	cout << rhs.size() << " rechits in first photon in first event" << endl;
+	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	if(rhs.size() < 1) return -1;
 
 
@@ -198,12 +199,12 @@ int main(int argc, char *argv[]){
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
 	//set PV for momentum direction calculations
-	//testpho.SetVertex(vtx);
+	Point vtx;
+	prod.GetPrimaryVertex(vtx, evt);
+	testpho.SetVertex(vtx);
 	for(int i = 0; i < rhs.size(); i++){
 		testpho.add(rhs[i]);
 	}
-
-	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
