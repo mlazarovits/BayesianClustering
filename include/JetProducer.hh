@@ -19,9 +19,10 @@ class JetProducer{
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		void GetRecHits(vector<vector<JetPoint>>& rhs);
-		void GetRecHits(vector<JetPoint>& rhs, int evt)
-;
+		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetPrimaryVertex(Point& vtx, int evt);
+
+		void Skim();
 	private:
 		//individual rec hits (jets)
 		//vector<vector<JetPoint>> m_rechits;

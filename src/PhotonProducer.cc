@@ -234,7 +234,7 @@ void PhotonProducer::CleaningSkim(){
 
 //make cluster param histograms
 void PhotonProducer::Skim(){
-	TFile* ofile = new TFile("plots/photon_skims.root","RECREATE");
+	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
 	
 
 	vector<TH1D*> TH1D_hists;
@@ -265,6 +265,8 @@ void PhotonProducer::Skim(){
 	//# of subclusters vs. photon reco energy
 	TH2D* e_nSubClusters = new TH2D("e_nSubClusters","e_nSubClusters",50,0.,1000.,7,0.,7.);	
 
+
+	//SEPARATE BY LLPID
 	
 
 	int nPho;
