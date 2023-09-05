@@ -25,7 +25,6 @@ void BayesHierCluster::SetAlpha(double a){
 
 
 vector<node*> BayesHierCluster::Cluster(){
-	if(_verb > 0)cout << "BHC::Cluster" << endl;
 	int n;
 	node* di; node* dj;
 	double rk;
