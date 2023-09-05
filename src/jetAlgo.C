@@ -15,7 +15,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname = "testjet";
+	string fname = "jet";
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
