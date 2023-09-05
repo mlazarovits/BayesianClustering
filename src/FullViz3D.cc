@@ -59,7 +59,7 @@ json FullViz3D::WriteNode(node* node){
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
 	vector<double> avgs;
-	m_model->GetAvgWeights(avgs);
+	model->GetAvgWeights(avgs);
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
