@@ -289,7 +289,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
-	if(_verb > 1) cout << "alpha0: " << m_alpha0 << endl;
+	if(_verb > 0) cout << "alpha0: " << m_alpha0 << endl;
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
@@ -499,7 +499,12 @@ void GaussianMixture::CalculateRStatistics(){
 		//cout << "m_norm: " << m_norms[k] << endl;
 		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
 		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
-		if(!_data_cov.empty()) S.add(_data_cov);
+	
+
+		
+
+		if(_smear) S.add(_data_cov);
+		
 
 //		S.Print();
 		m_model[k]->SetParameter("cov",S);

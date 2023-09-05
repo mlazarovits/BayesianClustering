@@ -44,11 +44,11 @@ void Clusterizer::Cluster(Jet jet, string fname){
 	BayesHierCluster* bhc = new BayesHierCluster(_alpha);
 
 	//set configs
+	if(_smeared) bhc->SetDataSmear(_data_smear);
 	bhc->SetThresh(_thresh);
 	bhc->AddData(points);
 	bhc->SetVerbosity(_verb);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
-	if(_smeared) bhc->SetDataSmear(_data_smear);
 
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)

@@ -195,11 +195,11 @@ int main(int argc, char *argv[]){
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = acos(-1)/360.; //1 degree in radians
-	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	double deta = dphi; //-log( tan(1./2) ); //pseudorap of 1 degree
 	//diagonal matrix
-	smear.SetEntry(deta,0,0);
-	smear.SetEntry(dphi,1,1);
-	smear.SetEntry(0.,2,2); //no smear in time	
+	smear.SetEntry(deta*deta,0,0);
+	smear.SetEntry(dphi*dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
 
 	
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;

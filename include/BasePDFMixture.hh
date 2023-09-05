@@ -13,7 +13,7 @@ using std::string;
 
 class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0;}
+		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false;}
 		BasePDFMixture(int k){ 
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
@@ -25,7 +25,7 @@ class BasePDFMixture : public BasePDF{
 			m_n = 0;
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
-			m_alpha0 = 0.1; _verb = 0;
+			m_alpha0 = 0.1; _verb = 0; _smear = false;
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -46,7 +46,7 @@ class BasePDFMixture : public BasePDF{
 		PointCollection* GetData(){ return m_data; }
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
-		void SetDataSmear(const Matrix& cov){ _data_cov = cov; }
+		void SetDataSmear(const Matrix& cov){ _data_cov = cov; _smear = true; }
 
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
@@ -120,7 +120,7 @@ class BasePDFMixture : public BasePDF{
 		}
 		
 		//ie gets subcluster average energy (within subcluster) - returns average weight per subcluster
-		void GetAvgWeights(vector<double>& v){ v.clear(); for(int k = 0; k < m_k; k++){ 
+		void GetAvgWeights(vector<double>& v){  v.clear(); for(int k = 0; k < m_k; k++){ 
 			//cout << "k: " << k << " m_norm: " << m_norms[k] << " m_norms_unwt: " << m_norms_unwt[k] << endl; 
 			v.push_back(m_norms[k]/m_norms_unwt[k]); }}  
 
@@ -147,7 +147,7 @@ class BasePDFMixture : public BasePDF{
 		int _verb;
 		//data smear
 		Matrix _data_cov;
-
+		bool _smear;
 
 };
 #endif
