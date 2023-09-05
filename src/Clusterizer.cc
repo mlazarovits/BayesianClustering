@@ -38,6 +38,12 @@ void Clusterizer::Cluster(Jet jet, string fname){
 		vector<double> weights;
 		jet.GetEnergies(weights);
 		points->SetWeights(weights);
+		//weights are in units GeV -> need to be in units N (number of points -> E = kN) - need to weight by transfer factor k
+		//such that the total effective number of events doesn't exceed the actual number of events (N)
+		//weight = GeV/N
+		double maxE = *std::max_element(weights.begin(), weights.end());
+		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= maxE;
+
 	}
 	
 	//Bayesian Hierarchical Clustering algo
