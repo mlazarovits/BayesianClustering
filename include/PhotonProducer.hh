@@ -2,10 +2,9 @@
 #define PHOTONPRODUCER_HH
 
 #include "JetPoint.hh"
-#include "ReducedBase.hh"
 #include <TFile.h>
-
-class PhotonProducer{
+#include "BaseProducer.hh"
+class PhotonProducer : public BaseProducer{
 	public:
 		PhotonProducer();
 		virtual ~PhotonProducer();
@@ -30,16 +29,25 @@ class PhotonProducer{
 
 		void CleaningSkim();
 		void Skim();
-	private:
-		//individual rec hits (jets)
-		//vector<vector<JetPoint>> m_rechits;
-		ReducedBase* m_base = nullptr;
-		int m_nEvts;
-		TFile* m_file;
 
 
 
 
+		//stacked photon LLID hists
+		//list of photon ids
+		vector<int> ids = {22, 32, 25, 35, 23, 24, 21, 31, 20, 30, 26, 27};
+		vector<string> id_names = {"#Chi \rightarrow #gamma", "ISR", "Not SUSY"};
+		vector<TH1D*> pho_llp_polang;
+		vector<TH1D*> pho_llp_azimang;
+		//add photon id to hist name/title
+
+
+		void MakeIDHists(){
+			for(int i = 0; i < (int)id_names.size(); i++) pho_llp_polang.push_back(new TH1D(("polar_ang"+std::to_string(i)).c_str(),("polar_ang"+std::to_string(ids[i])).c_str(),50,-3.5,3.5));	
+
+			for(int i = 0; i < (int)id_names.size(); i++) pho_llp_azimang.push_back(new TH1D(("azimuth_ang"+std::to_string(i)).c_str(),("azimuth_ang"+std::to_string(ids[i])).c_str(),50,-3.5,3.5));	
+
+		}
 
 
 

@@ -2,10 +2,10 @@
 #define JETPRODUCER_HH
 
 #include "JetPoint.hh"
-#include "ReducedBase.hh"
 #include "TFile.h"
+#include "BaseProducer.hh"
 
-class JetProducer{
+class JetProducer : public BaseProducer{
 	public:
 		JetProducer();
 		virtual ~JetProducer();
@@ -22,13 +22,8 @@ class JetProducer{
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetPrimaryVertex(Point& vtx, int evt);
 
+		void CleaningSkim(){ };
 		void Skim();
-	private:
-		//individual rec hits (jets)
-		//vector<vector<JetPoint>> m_rechits;
-		ReducedBase* m_base = nullptr;
-		int m_nEvts;
-		TFile* m_file;
 
 
 

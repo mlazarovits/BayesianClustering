@@ -10,9 +10,9 @@ PhotonProducer::PhotonProducer(){ };
 
 
 PhotonProducer::~PhotonProducer(){ 
-	m_file->Close();
-	delete m_base;
-	delete m_file;
+	_file->Close();
+	delete _base;
+	delete _file;
 }
 
 
@@ -23,10 +23,10 @@ PhotonProducer::PhotonProducer(TFile* file){
 
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
-	m_file = file;
+	_file = file;
 	TTree* tree = (TTree*)file->Get("tree/llpgtree");
-	m_base = new ReducedBase(tree);
-	m_nEvts = m_base->fChain->GetEntries();
+	_base = new ReducedBase(tree);
+	_nEvts = _base->fChain->GetEntries();
 
 }
 
@@ -36,26 +36,26 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 	unsigned long id;
 	int nRHs, nRHs_evt, nphotons;
 	rhs.clear();
-	for(int i = 0; i < m_nEvts; i++){
-		m_base->GetEntry(i);
-		nphotons = (int)m_base->Photon_rhIds->size();
-		nRHs_evt = (int)m_base->ECALRecHit_ID->size();
+	for(int i = 0; i < _nEvts; i++){
+		_base->GetEntry(i);
+		nphotons = (int)_base->Photon_rhIds->size();
+		nRHs_evt = (int)_base->ECALRecHit_ID->size();
 		rhs.push_back({});
 		for(int p = 0; p < nphotons; p++){
-			nRHs = (int)m_base->Photon_rhIds->at(p).size();
+			nRHs = (int)_base->Photon_rhIds->at(p).size();
 			unsigned long long id;
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
 				//t = rh_time - d_rh/c + d_pv/c
-				id = m_base->Photon_rhIds->at(p).at(r);
+				id = _base->Photon_rhIds->at(p).at(r);
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
-					if(m_base->ECALRecHit_ID->at(j) == id){
+					if(_base->ECALRecHit_ID->at(j) == id){
 						//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
-						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
-						rh.SetEta(m_base->ECALRecHit_eta->at(j));
-						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+						rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+						rh.SetEnergy(_base->ECALRecHit_energy->at(j));
+						rh.SetEta(_base->ECALRecHit_eta->at(j));
+						rh.SetPhi(_base->ECALRecHit_phi->at(j));
 						
 						//cleaning cuts
 						if(!cleanRH(rh)) break;
@@ -82,27 +82,27 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	double phiMax = 2.;
 	double phiMin = -2.8;
 	int cnt = 0;
-	for(int i = 0; i < m_nEvts; i++){
+	for(int i = 0; i < _nEvts; i++){
 		if(i == evt){
-			m_base->GetEntry(i);
-			nphotons = (int)m_base->Photon_rhIds->size();
-			nRHs_evt = (int)m_base->ECALRecHit_ID->size();
+			_base->GetEntry(i);
+			nphotons = (int)_base->Photon_rhIds->size();
+			nRHs_evt = (int)_base->ECALRecHit_ID->size();
 			
 			for(int p = 0; p < nphotons; p++){
-				nRHs = (int)m_base->Photon_rhIds->at(p).size();
+				nRHs = (int)_base->Photon_rhIds->at(p).size();
 				unsigned long long id;
 				for(int r = 0; r < nRHs; r++){
 					//add tof = d_pv to time to get correct RH time
 					//t = rh_time - d_rh/c + d_pv/c
-					id = m_base->Photon_rhIds->at(p).at(r);
+					id = _base->Photon_rhIds->at(p).at(r);
 					rh.SetRecHitId(id);
 					for(int j = 0; j < nRHs_evt; j++){
-						if(m_base->ECALRecHit_ID->at(j) == id){
+						if(_base->ECALRecHit_ID->at(j) == id){
 							//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-							rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
-							rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
-							rh.SetEta(m_base->ECALRecHit_eta->at(j));
-							rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+							rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+							rh.SetEnergy(_base->ECALRecHit_energy->at(j));
+							rh.SetEta(_base->ECALRecHit_eta->at(j));
+							rh.SetPhi(_base->ECALRecHit_phi->at(j));
 							
 							//cleaning cuts
 							if(!cleanRH(rh)) break;
@@ -127,27 +127,27 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	unsigned long id;
 	int nRHs, nRHs_evt;
 	rhs.clear();
-	for(int i = 0; i < m_nEvts; i++){
+	for(int i = 0; i < _nEvts; i++){
 		if(i == evt){
-			m_base->GetEntry(i);
-			cout << (int)m_base->Photon_energy->size() << " nphotons in evt " << evt << endl;
+			_base->GetEntry(i);
+			cout << (int)_base->Photon_energy->size() << " nphotons in evt " << evt << endl;
 			//make sure photon number is in vector
-			if(pho >= (int)m_base->Photon_rhIds->size()) return;
-			nRHs = (int)m_base->Photon_rhIds->at(pho).size();
-			nRHs_evt = (int)m_base->ECALRecHit_ID->size();
+			if(pho >= (int)_base->Photon_rhIds->size()) return;
+			nRHs = (int)_base->Photon_rhIds->at(pho).size();
+			nRHs_evt = (int)_base->ECALRecHit_ID->size();
 			unsigned long long id;
 			for(int r = 0; r < nRHs; r++){
 				//add tof = d_pv to time to get correct RH time
 				//t = rh_time - d_rh/c + d_pv/c
-				id = m_base->Photon_rhIds->at(pho).at(r);
+				id = _base->Photon_rhIds->at(pho).at(r);
 				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
-					if(m_base->ECALRecHit_ID->at(j) == id){
+					if(_base->ECALRecHit_ID->at(j) == id){
 						//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-						rh = JetPoint(m_base->ECALRecHit_rhx->at(j), m_base->ECALRecHit_rhy->at(j), m_base->ECALRecHit_rhz->at(j), m_base->ECALRecHit_time->at(j)+m_base->ECALRecHit_TOF->at(j));
-						rh.SetEnergy(m_base->ECALRecHit_energy->at(j));
-						rh.SetEta(m_base->ECALRecHit_eta->at(j));
-						rh.SetPhi(m_base->ECALRecHit_phi->at(j));
+						rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+						rh.SetEnergy(_base->ECALRecHit_energy->at(j));
+						rh.SetEta(_base->ECALRecHit_eta->at(j));
+						rh.SetPhi(_base->ECALRecHit_phi->at(j));
 						
 						//cleaning cuts
 						if(!cleanRH(rh)) break;
@@ -171,12 +171,12 @@ void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
 	//reset to empty 3-dim point	
 	vtx = Point(3);
 
-	for(int i = 0; i < m_nEvts; i++){
+	for(int i = 0; i < _nEvts; i++){
 		if(i == evt){
-			m_base->GetEntry(i);
-			vtx.SetValue(m_base->PV_x, 0);
-			vtx.SetValue(m_base->PV_y, 1);
-			vtx.SetValue(m_base->PV_z, 2);
+			_base->GetEntry(i);
+			vtx.SetValue(_base->PV_x, 0);
+			vtx.SetValue(_base->PV_y, 1);
+			vtx.SetValue(_base->PV_z, 2);
 			return;
 		}
 		else continue;	
@@ -199,11 +199,11 @@ void PhotonProducer::CleaningSkim(){
 
 	int nPho;
 	vector<JetPoint> rhs;
-	for(int i = 0; i < m_nEvts; i++){
-		m_base->GetEntry(i);
-		nPho = (int)m_base->Photon_energy->size();
+	for(int i = 0; i < _nEvts; i++){
+		_base->GetEntry(i);
+		nPho = (int)_base->Photon_energy->size();
 		for(int p = 0; p < nPho; p++){
-			phoE->Fill(m_base->Photon_energy->at(p));
+			phoE->Fill(_base->Photon_energy->at(p));
 			//find subclusters for each photon
 			GetRecHits(rhs, i, p);
 			//cout << "evt #" << i << " photon #" << p << " nrhs: " << rhs.size() << endl;
@@ -237,33 +237,15 @@ void PhotonProducer::Skim(){
 	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
 	
 
-	vector<TH1D*> TH1D_hists;
-	//subcluster energy - average
-	TH1D* e_avg = new TH1D("e_avg","e_avg",100,0.,50.);
 	TH1D_hists.push_back(e_avg);
-	//space slope
-	TH1D* slope_space = new TH1D("slope_space","slope_space",50,-30,30);
 	TH1D_hists.push_back(slope_space);
-	//eta-time slope
-	TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-2,2);
 	TH1D_hists.push_back(slope_etaT);
-	//phi-time slop
-	TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
 	TH1D_hists.push_back(slope_phiT);
-	//mean time - center in t
-	TH1D* time_center = new TH1D("time_center","time_center",50,-30,30);
+	TH1D_hists.push_back(polar_ang);
+	TH1D_hists.push_back(azimuth_ang);
 	TH1D_hists.push_back(time_center);
-	//mean eta - center in eta
-	TH1D* eta_center = new TH1D("eta_center","eta_center",50,-3.5,3.5);
 	TH1D_hists.push_back(eta_center);
-	//mean phi - center in phi
-	TH1D* phi_center = new TH1D("phi_center","phi_center",50,-3.5,3.5);
 	TH1D_hists.push_back(phi_center);
-	
-	//# of subclusters
-	TH1I* nSubClusters = new TH1I("nSubClusters","nSubClusters",7,0,7.);
-	//# of subclusters vs. photon reco energy
-	TH2D* e_nSubClusters = new TH2D("e_nSubClusters","e_nSubClusters",50,0.,1000.,7,0.,7.);	
 
 
 	//SEPARATE BY LLPID
@@ -294,23 +276,26 @@ void PhotonProducer::Skim(){
 
 	vector<JetPoint> rhs;
 	int nclusters;
+	double theta, phi, r, id;
 	vector<double> eigenvals, avg_Es;
 	vector<Matrix> eigenvecs;
-	for(int i = 0; i < m_nEvts; i++){
-		m_base->GetEntry(i);
-		nPho = (int)m_base->Photon_energy->size();
+	for(int i = 0; i < _nEvts; i++){
+		_base->GetEntry(i);
+		nPho = (int)_base->Photon_energy->size();
 		for(int p = 0; p < nPho; p++){
 			//find subclusters for each photon
 			GetRecHits(rhs, i, p);
-			cout << "evt: " << i << " of " << m_nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
+			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
 	
 			gmm = algo->FindSubjets(Jet(rhs));
 			
 			nclusters = gmm->GetNClusters();
 			nSubClusters->Fill(nclusters);
-			e_nSubClusters->Fill(m_base->Photon_energy->at(p), nclusters);
+			e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
 			
 			gmm->GetAvgWeights(avg_Es);		
+
+			
 
 
 			for(int k = 0; k < nclusters; k++){
@@ -329,7 +314,36 @@ void PhotonProducer::Skim(){
 				slope_etaT->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
 				//phi/time
 				slope_phiT->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
+				//polar angle
+				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
+				r = sqrt(eigenvecs[2].at(0,0)*eigenvecs[2].at(0,0) + eigenvecs[2].at(1,0)*eigenvecs[2].at(1,0) + eigenvecs[2].at(2,0)*eigenvecs[2].at(2,0));
+				theta = acos( eigenvecs[2].at(2,0) / r );
+				polar_ang->Fill(theta);
+				//azimuthal angle
+				//phi = arctan(y/x)
+				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
+				azimuth_ang->Fill(phi);
 
+				//fill LLPID hists
+				//0 = signal: chi_any -> gamma (22, 32, 25, 35)
+				//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
+				//2 = not susy: p -> gamma, not matched (29, -1)
+				double id = _base->Photon_genLlpId->at(p);
+				//signal
+				if(id == 22 || id == 32 || id == 25 || id == 35){
+					pho_llp_polang[0]->Fill(theta);
+					pho_llp_azimang[0]->Fill(theta);
+				}
+				//ISR
+				if(id == 23 || id == 33 || id == 24 || id == 34 || id == 21 || id == 31 || id == 20 || id == 30){
+					pho_llp_polang[1]->Fill(theta);
+					pho_llp_azimang[1]->Fill(theta);
+				}
+				//not susy, unmatched (fakes)
+				if(id == 29 || id == -1){
+					pho_llp_polang[2]->Fill(theta);
+					pho_llp_azimang[2]->Fill(theta);
+				}
 				//average cluster energy
 				e_avg->Fill(avg_Es[k]);
 			}
