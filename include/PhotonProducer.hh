@@ -17,7 +17,7 @@ class PhotonProducer{
 		//true = keep
 		//false = drop
 		bool cleanRH(JetPoint rh){
-			if(fabs(rh.t()) > 25 || rh.e() < 1.) return false;
+			if(fabs(rh.t()) > 25 && rh.e() < 1.) return false;
 			else return true;
 		}	
 	
