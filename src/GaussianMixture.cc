@@ -342,6 +342,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	CalculateExpectations();
 	double E_mu_lam, post, norm, dof, scale;
 	vector<double> post_norms;
+	vector<double> post_norms_adj; //norms for each pt (n vals)
+	vector<double> post_k_vals; //find max value for normalization (k vals for each pt)
+	vector<double> post_n_max; //max k val for nth pt (n vals)
 	Matrix x_mat, x_min_m, x_min_mT;
 
 	Matrix mean = Matrix(m_dim, 1);
@@ -377,12 +380,19 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		//	cout << "W[k]:" << endl;
 		//	scalemat.Print();
 		//	cout << "(x - m[k])T*W[k]*(x - m[k])" << endl; full.Print();
-			post = exp(post);
+			post_k_vals.push_back(post);
+		
+			//post = exp(post);
 			norm += post;
 			//need to normalize
 			m_post.SetEntry(post, n, k);
 			//if(k == 1){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
 		}
+		post_n_max.push_back(*std::max_element(post_k_vals.begin(), post_k_vals.end()));
+		post_norms_adj.push_back(0.);
+		for(int k = 0; k < m_k; k++) post_norms_adj[n] += exp(post_k_vals[k] - post_n_max[n]);
+
+		post_k_vals.clear();
 		post_norms.push_back(norm);
 	}
 //cout << "posterior pre-norm" << endl;	
@@ -392,8 +402,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
 			if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
-			//weight by data weight
-			m_post.SetEntry(m_data->at(n).w()*m_post.at(n,k)/post_norms[n],n,k);
+			//weight by data weight and adjusted by max ln(p_nk)
+			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
+			//m_post.SetEntry(m_data->at(n).w()*m_post.at(n,k)/post_norms[n],n,k);
 			//uncomment here to check posterior values
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
