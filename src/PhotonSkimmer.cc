@@ -10,27 +10,83 @@ PhotonSkimmer::PhotonSkimmer(){ };
 
 
 PhotonSkimmer::~PhotonSkimmer(){ 
-	_file->Close();
-	delete _base;
-	delete _file;
 }
 
 
-PhotonSkimmer::PhotonSkimmer(TFile* file){
+PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
-
-	//grab rec hit values
-	//x, y, z, time (adjusted), energy, phi, eta
-	_file = file;
-	TTree* tree = (TTree*)file->Get("tree/llpgtree");
-	_base = new ReducedBase(tree);
-	_nEvts = _base->fChain->GetEntries();
 	_prod = new PhotonProducer(_file);
-
+	_base = _prod->GetBase();
+		//	_base = new ReducedBase(tree);
+	_nEvts = _base->fChain->GetEntries();
 }
 
+//make cluster param histograms
+void PhotonSkimmer::Skim(){
+	cout << "PhotonSkimmer - start" << endl;
+	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
+
+	//create histograms to be filled
+	MakeIDHists();
+	
+	int nPho;
+	//create data smear matrix - smear in eta/phi
+	Matrix smear = Matrix(3,3);
+	double dphi = acos(-1)/360.; //1 degree in radians
+	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	//diagonal matrix
+	smear.SetEntry(deta,0,0);
+	smear.SetEntry(dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
+	
+	Clusterizer* algo = new Clusterizer();
+	algo->SetAlpha(0.1);
+	algo->SetThresh(1.);
+	algo->SetMaxNClusters(5);
+	algo->SetWeighted(true);
+	algo->SetVerbosity(0);
+//	algo->SetDataSmear(smear);
+
+
+	GaussianMixture* gmm = new GaussianMixture();
+	cout << "nevts: " << _nEvts << endl;
+
+	
+	vector<JetPoint> rhs;
+	double phoid;
+	for(int i = 0; i < _nEvts; i++){
+		_base->GetEntry(i);
+		nPho = (int)_base->Photon_energy->size();
+		for(int p = 0; p < nPho; p++){
+			//find subclusters for each photon
+			_prod->GetRecHits(rhs, i, p);
+			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << endl;//"\r" << flush;
+	if(i > 13) return;	
+			gmm = algo->FindSubjets(Jet(rhs));
+	
+			phoid = _base->Photon_genLlpId->at(p);
+			//find corresponding histogram category (signal, ISR, notSunm)	
+			//split by LLP ID
+			//0 = signal: chi_any -> gamma (22, 32, 25, 35)
+			//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
+			//2 = not susy: p -> gamma, not matched (29, -1)
+			for(int i = 0; i < (int)plotCats.size() - 1; i++){ //exclude total category - overlaps with above categories
+				vector<double> ids = plotCats[i].ids;
+				if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
+					FillHists(gmm, i);
+					break;
+				}
+			}
+			FillTotalHists(gmm);
+		}
+	}
+	WriteHists(ofile);
+	cout << "PhotonSkimmer - end" << endl;
+	
+
+}
 
 void PhotonSkimmer::CleaningSkim(){
 	TFile* ofile = new TFile("plots/photon_cleaningSkims.root","RECREATE");
@@ -75,64 +131,5 @@ void PhotonSkimmer::CleaningSkim(){
 	ofile->WriteTObject(TvErh_cut);
 	ofile->WriteTObject(phoE);
 	ofile->Close();
-
-}
-
-
-
-//make cluster param histograms
-void PhotonSkimmer::Skim(){
-	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
-	
-	int nPho;
-	//create data smear matrix - smear in eta/phi
-	Matrix smear = Matrix(3,3);
-	double dphi = acos(-1)/360.; //1 degree in radians
-	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
-	//diagonal matrix
-	smear.SetEntry(deta,0,0);
-	smear.SetEntry(dphi,1,1);
-	smear.SetEntry(1.,2,2); //no smear in time	
-	
-	Clusterizer* algo = new Clusterizer();
-	algo->SetAlpha(0.1);
-	algo->SetThresh(1.);
-	algo->SetMaxNClusters(5);
-	algo->SetWeighted(true);
-	algo->SetVerbosity(0);
-//	algo->SetDataSmear(smear);
-
-
-	GaussianMixture* gmm = new GaussianMixture();
-	
-	vector<JetPoint> rhs;
-	double phoid;
-	for(int i = 0; i < _nEvts; i++){
-		_base->GetEntry(i);
-		nPho = (int)_base->Photon_energy->size();
-		for(int p = 0; p < nPho; p++){
-			//find subclusters for each photon
-			_prod->GetRecHits(rhs, i, p);
-			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
-	
-			gmm = algo->FindSubjets(Jet(rhs));
-	
-			phoid = _base->Photon_genLlpId->at(p);
-			//find corresponding histogram category (signal, ISR, notSunm)	
-			//split by LLP ID
-			//0 = signal: chi_any -> gamma (22, 32, 25, 35)
-			//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
-			//2 = not susy: p -> gamma, not matched (29, -1)
-			for(int i = 0; i < (int)id_map.size() - 1; i++){ //exclude total category - overlaps with above categories
-				if(std::any_of(id_map[i].begin(), id_map[i].end(), [&](double iid){return iid == phoid;})){
-					FillHists(gmm, i);
-					break;
-				}
-			}
-			FillHists(gmm, (int)id_map.size() - 1); //fill total category	
-		}
-	}
-	WriteHists(ofile);
-	
 
 }

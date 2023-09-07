@@ -16,17 +16,17 @@ PhotonProducer::~PhotonProducer(){
 }
 
 
-PhotonProducer::PhotonProducer(TFile* file){
+PhotonProducer::PhotonProducer(TFile* file) : BaseProducer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
 
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
-	_file = file;
-	TTree* tree = (TTree*)file->Get("tree/llpgtree");
-	_base = new ReducedBase(tree);
-	_nEvts = _base->fChain->GetEntries();
+	//_file = file;
+	//TTree* tree = (TTree*)file->Get("tree/llpgtree");
+	//_base = new ReducedBase(tree);
+	//_nEvts = _base->fChain->GetEntries();
 
 }
 
@@ -130,7 +130,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	for(int i = 0; i < _nEvts; i++){
 		if(i == evt){
 			_base->GetEntry(i);
-			cout << (int)_base->Photon_energy->size() << " nphotons in evt " << evt << endl;
+	//		cout << (int)_base->Photon_energy->size() << " nphotons in evt " << evt << endl;
 			//make sure photon number is in vector
 			if(pho >= (int)_base->Photon_rhIds->size()) return;
 			nRHs = (int)_base->Photon_rhIds->at(pho).size();

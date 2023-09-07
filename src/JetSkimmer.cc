@@ -126,10 +126,6 @@ void JetSkimmer::Skim(){
 		eigenvecs.clear();
 
 	}
-	ofile->cd();
-	for(int i = 0; i < (int)hists1D.size(); i++) hists1D[i]->Write();
-	nSubClusters->Write();
-	//e_nSubClusters->Write();
 
 }
 
