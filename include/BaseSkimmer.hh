@@ -74,11 +74,11 @@ class BaseSkimmer{
 		//phi-time slop
 		TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
 		//polar angle
-		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-3.5,3.5);		
+		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-0.5,3.5);		
 		//azimuth angle
 		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",50,-3.5,3.5);		
 		//subcluster energy - average
-		TH1D* e_avg = new TH1D("e_avg","e_avg",100,0.,50.);
+		TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,50.);
 
 
 
@@ -103,7 +103,7 @@ class BaseSkimmer{
 			myleg->SetFillColor(0);
 			myleg->SetBorderSize(0);
 			myleg->SetTextFont(42);
-			myleg->SetTextSize(0.05);
+			myleg->SetTextSize(0.04);
 		
 			//offset for log scale
 			if(miny == 0) miny += 1e-6;
