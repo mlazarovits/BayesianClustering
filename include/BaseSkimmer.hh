@@ -142,8 +142,28 @@ class BaseSkimmer{
 			lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 			return;
+		}
+		void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string ytit){
+			can->cd();
+			can->SetGridx(1);
+			can->SetGridy(1);
+			hist->UseCurrentStyle();
+			hist->SetStats(false);
+			hist->GetXaxis()->CenterTitle(true);
+			hist->GetXaxis()->SetTitle(xtit.c_str());
+			hist->GetYaxis()->CenterTitle(true);
+			hist->GetYaxis()->SetTitle(ytit.c_str());
+			hist->Draw();
+			
+			string lat_cms = "#bf{CMS} #it{WIP} 2017 GMSB";
+			TLatex lat;
+			lat.SetNDC();
+			lat.SetTextSize(0.04);
+			lat.SetTextFont(42);
+			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+			lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
-
+			return;
 		}
 
 
