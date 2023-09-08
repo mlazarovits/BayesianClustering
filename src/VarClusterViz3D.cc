@@ -2,6 +2,7 @@
 #include "VarEMCluster.hh"
 
 #include "nlohmann/json.hpp"
+#include <iomanip>
 #include <TSystem.h>
 #include <TGraph.h>
 #include <TGraph2D.h>

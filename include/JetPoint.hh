@@ -2,6 +2,7 @@
 #define JETPOINT_HH
 
 #include "Point.hh"
+#include <math.h>
 
 //point that is physics-specific - ecal cell (rechit)
 class JetPoint{
