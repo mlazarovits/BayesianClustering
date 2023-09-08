@@ -10,9 +10,9 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 ### Dependencies
 - ROOT
 - Python at least v3.x for macros for visualization
-- [eigen3]{https://eigen.tuxfamily.org/index.php?title=Main_Page}
-- [boost]{https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html}
-- [nlohmman-json]{https://github.com/nlohmann/json} to make jsons for python macros
+- [eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+- [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)
+- [nlohmman-json](https://github.com/nlohmann/json) to make jsons for python macros
 
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
