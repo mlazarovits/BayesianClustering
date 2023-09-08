@@ -123,7 +123,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
-			double theta, phi, r, id;
+			double theta, phi, r, rot;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				plotCats[id_idx].hists1D[1]->Fill(params["mean"].at(2,0));
@@ -154,6 +154,14 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
 				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*npts);
+			
+				//rotundity - 3D
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
+				rot = eigenvals[2]/rot;
+				plotCats[id_idx].hists1D[10]->Fill(rot);
+	
+
+
 			}
 		}
 
@@ -168,7 +176,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double npts = (double)model->GetData()->GetNPoints();
 
 	
-			double theta, phi, r, id;
+			double theta, phi, r, rot;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				time_center->Fill(params["mean"].at(2,0));
@@ -198,6 +206,11 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
 				e_avg->Fill(avg_Es[k]*npts);
+				
+				//rotundity - 3D
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
+				rot = eigenvals[2]/rot;
+				rotundity->Fill(rot);
 			}
 		}
 
