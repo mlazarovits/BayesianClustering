@@ -81,7 +81,6 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 
 	nRHs = (int)_base->ECALRecHit_ID->size();
 	//clean for RHs in photon superclusters
-	phoIds = _base->Photon_rhIds;	
 	nPho = (int)_base->Photon_energy->size();
 	for(int p = 0; p < nPho; p++){
 		nPhoRHs = (int)_base->Photon_rhIds->at(p).size();

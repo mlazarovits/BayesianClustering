@@ -60,6 +60,8 @@ class BaseSkimmer{
 		int _nEvts;
 		BaseProducer* _prod;
 
+		string _cms_label;
+
 		vector<TH1D*> hists1D;
 		//# of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",7,0,7.);
@@ -96,6 +98,8 @@ class BaseSkimmer{
 		};
 
 
+
+		void SetCMSLabel(string lab){ _cms_label = lab; }
 
 
 		void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, vector<string> label){
@@ -136,7 +140,7 @@ class BaseSkimmer{
 			}
 			myleg->Draw("same"); 
 			gPad->Update();
-			string lat_cms = "#bf{CMS} #it{WIP} 2017 GMSB";
+			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
 			TLatex lat;
 			lat.SetNDC();
 			lat.SetTextSize(0.04);

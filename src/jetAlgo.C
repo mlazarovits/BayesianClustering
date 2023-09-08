@@ -141,6 +141,7 @@ int main(int argc, char *argv[]){
 	
 	/////GET DATA FROM NTUPLE//////
 	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
+	string cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v6";
 	fname += "_v6";
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
@@ -157,6 +158,7 @@ int main(int argc, char *argv[]){
 	if(skim){
 		cout << "Skimming jets" << endl;
 		JetSkimmer skimmer(file);
+		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;
 	}
