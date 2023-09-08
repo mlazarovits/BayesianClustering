@@ -94,43 +94,50 @@ class BaseSkimmer{
 
 
 		void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, vector<string> label){
-			cout << "TDRHist - name: " << xtit << endl;
 			if(hist.size() != label.size()){ cout << "Error: number of histograms and labels don't match." << endl; return;}
 			if(hist.size() == 0 || label.size() == 0) return;
 			can->cd();
-			TLegend* myleg = new TLegend( 0.6, 0.6, 0.8, 0.8 );
+			can->SetGridx(1);
+			can->SetGridy(1);
+			TLegend* myleg = new TLegend(0.7, 0.7, 0.8, 0.8 );
 			myleg->SetFillColor(0);
 			myleg->SetBorderSize(0);
-			myleg->SetTextSize(0.025);
-			myleg->SetHeader( (label[0]).c_str() );
+			myleg->SetTextFont(42);
+			myleg->SetTextSize(0.05);
+		
+			//offset for log scale
+			if(miny == 0) miny += 1e-6;
+			vector<int> k = {kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack};	
+
+
 			for( int i = 0 ; i < int(hist.size()); i++){
-				cout << "i - " << i << " label - " << label[i] << endl; 
 				hist[i]->UseCurrentStyle();
 				hist[i]->SetStats(false);
 				hist[i]->GetXaxis()->CenterTitle(true);
 				hist[i]->GetXaxis()->SetTitle(xtit.c_str());
 				hist[i]->GetYaxis()->CenterTitle(true);
 				hist[i]->GetYaxis()->SetTitle(ytit.c_str());
-				hist[i]->GetYaxis()->SetRangeUser(miny, maxy);
+				hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
 				hist[i]->SetLineColor(i+2);
 				hist[i]->SetMarkerStyle(i+25);
+				hist[i]->SetMarkerColor(i+2);
 				if( i == 0 ){
-					hist[i]->Draw();
+					hist[i]->Draw("ep");
 				}else{
-					hist[i]->Draw("same");
+					hist[i]->Draw("epsame");
 				}
-				myleg->AddEntry( hist[i], (label[i]).c_str(), "L" );
+				myleg->AddEntry( hist[i], (label[i]).c_str(), "p" );
 				gPad->Update();
 			}
 			myleg->Draw("same"); 
 			gPad->Update();
-			string lat_cms = "#bf{CMS} #it{Preliminary} (13 TeV)";
+			string lat_cms = "#bf{CMS} #it{WIP} 2017 GMSB";
 			TLatex lat;
 			lat.SetNDC();
-			lat.SetTextSize(0.05);
+			lat.SetTextSize(0.04);
 			lat.SetTextFont(42);
-			lat.DrawLatex(0.15,0.9325,lat_cms.c_str());
-			lat.DrawLatex((0.82),0.9325,plot_title.c_str());
+			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+			lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 			return;
 
@@ -138,6 +145,24 @@ class BaseSkimmer{
 		}
 
 
+		void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
+			//shellsort to find max, min
+			int N = (int)hists.size()-1;
+			if(N < 1){ ymax = 0; ymin = 0; return; }
+			int i, j, h;
+			TH1D* v = nullptr;
+			for(h = 1; h <= N/9; h = 3*h+1) ;
+			for( ; h > 0; h /= 3)
+				for(i = h+1; i <= N; i += 1){
+					v = hists[i]; j = i;
+					while(j > h && hists[j - h]->GetMaximum() > v->GetMaximum()){ hists[j] = hists[j - h]; j -= h; }
+					hists[j] = v;
+				}
+		
+			ymax = hists[0]->GetMaximum();
+			ymin = hists[N-1]->GetMinimum();
+
+		}
 
 
 };

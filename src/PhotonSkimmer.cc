@@ -25,7 +25,6 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
-	cout << "PhotonSkimmer - start" << endl;
 	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
 
 	//create histograms to be filled
@@ -51,7 +50,6 @@ void PhotonSkimmer::Skim(){
 
 
 	GaussianMixture* gmm = new GaussianMixture();
-	cout << "nevts: " << _nEvts << endl;
 
 	
 	vector<JetPoint> rhs;
@@ -62,8 +60,7 @@ void PhotonSkimmer::Skim(){
 		for(int p = 0; p < nPho; p++){
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, i, p);
-			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << endl;//"\r" << flush;
-	if(i > 13) return;	
+			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
 			gmm = algo->FindSubjets(Jet(rhs));
 	
 			phoid = _base->Photon_genLlpId->at(p);
@@ -72,7 +69,7 @@ void PhotonSkimmer::Skim(){
 			//0 = signal: chi_any -> gamma (22, 32, 25, 35)
 			//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
 			//2 = not susy: p -> gamma, not matched (29, -1)
-			for(int i = 0; i < (int)plotCats.size() - 1; i++){ //exclude total category - overlaps with above categories
+			for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 				vector<double> ids = plotCats[i].ids;
 				if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
 					FillHists(gmm, i);
@@ -80,11 +77,10 @@ void PhotonSkimmer::Skim(){
 				}
 			}
 			FillTotalHists(gmm);
+			rhs.clear();
 		}
 	}
 	WriteHists(ofile);
-	cout << "PhotonSkimmer - end" << endl;
-	
 
 }
 

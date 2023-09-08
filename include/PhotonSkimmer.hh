@@ -24,7 +24,6 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//stacked photon LLID hists
 		//list of photon ids
-		vector<string> id_names = {"#Chi \rightarrow #gamma", "ISR", "Not SUSY"};
 		vector<TH1D*> llp_sig;
 		vector<TH1D*> llp_ISR;
 		vector<TH1D*> llp_notSunm;
@@ -38,7 +37,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		void MakeIDHists(){
 			//signal
 			plotCat sig;
-			sig.legName = "#Chi \rightarrow #gamma";
+			sig.legName = "#Chi #rightarrow #gamma";
 			sig.plotName = "chiGam";
 			sig.ids = {22, 32, 25, 35};
 			plotCats.push_back(sig);
@@ -48,10 +47,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			ISR.plotName = "ISR";
 			ISR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
 			plotCats.push_back(ISR);
-			//ISR
+			//notSunm
 			plotCat notSunm;
-			notSunm.legName = "ISR";
-			notSunm.plotName = "ISR";
+			notSunm.legName = "notSunm";
+			notSunm.plotName = "notSunm";
 			notSunm.ids = {29, -1}; 
 			plotCats.push_back(notSunm);
 
@@ -64,6 +63,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					name = hists1D[i]->GetName();
 					name += "_"+plotCats[j].plotName;
 					plotCats[j].hists1D[i]->SetName(name.c_str());
+					plotCats[j].hists1D[i]->SetTitle("");
 				}
 		
 			}
@@ -71,24 +71,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 
 
-		void FindListHistBounds(vector<TH1D*>& hists, double& ymax, double& ymin){
-			//shellsort to find max, min
-			int N = (int)hists.size();
-			if(N < 1){ ymax = 0; ymin = 0; return; }
-			int i, j, h;
-			TH1D* v = nullptr;
-			for(h = 1; h <= N/9; h = 3*h+1) ;
-			for( ; h > 0; h /= 3)
-				for(i = h+1; i <= N; i += 1){
-					v = hists[i]; j = i;
-					while(j > h && hists[j - h]->GetYaxis()->GetXmax() > v->GetYaxis()->GetXmax()){ hists[j] = hists[j - h]; j -= h; }
-					hists[j] = v;
-				}
-
-			ymax = hists[0]->GetYaxis()->GetXmax();
-			ymin = hists[N-1]->GetYaxis()->GetXmax();
-
-		}
 
 
 		void WriteHists(TFile* ofile){
@@ -100,7 +82,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int i = 0; i < (int)plotCats.size(); i++)
 				id_names.push_back(plotCats[i].legName);
 
-cout << "id_names size: " << id_names.size() << endl;
 			ofile->cd();
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				//make a vector for each type of histogram
@@ -108,11 +89,11 @@ cout << "id_names size: " << id_names.size() << endl;
 					hists.push_back(plotCats[j].hists1D[i]);			
 					//should be 3 hists in this vector
 				}
-				FindListHistBounds(hists, ymax, ymin);
+				FindListHistBounds(hists, ymin, ymax);
 				name = hists1D[i]->GetName();
 				name += "_stack";
-				TCanvas* cv = new TCanvas(name.c_str(), name.c_str());
-				TDRMultiHist(hists, cv, name, name, "a.u.",ymax, ymin, id_names);
+				TCanvas* cv = new TCanvas(name.c_str(), "");
+				TDRMultiHist(hists, cv, name, name, "a.u.",ymin, ymax, id_names);
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
 				cv->Write();
