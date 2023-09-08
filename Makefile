@@ -5,6 +5,16 @@ ROOTGLIBS   = $(shell root-config --glibs)
 #set c(xx)flags and libraries
 CXXFLAGS    = $(ROOTCFLAGS)
 
+#add eigen include path
+CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
+#add digamma include path
+CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.81.0_1/include/
+GLIBS       = $(ROOTGLIBS)
+#add jsoncpp flags
+CXXFLAGS    += $(shell pkg-config --cflags /opt/homebrew/Cellar/jsoncpp/1.9.5/lib/pkgconfig/jsoncpp.pc)
+GLIBS       += $(shell pkg-config --libs /opt/homebrew/Cellar/jsoncpp/1.9.5/lib/pkgconfig/jsoncpp.pc)
+#add nlohmann-json flags
+CXXFLAGS   += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
 #specify compiler
 CXX         = g++
 

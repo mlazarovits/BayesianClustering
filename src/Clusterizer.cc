@@ -38,18 +38,23 @@ void Clusterizer::Cluster(Jet jet, string fname){
 		vector<double> weights;
 		jet.GetEnergies(weights);
 		points->SetWeights(weights);
-		fname += "_Eweighted";
+		//weights are in units GeV -> need to be in units N (number of points -> E = kN) - need to weight by transfer factor k
+		//such that the total effective number of events doesn't exceed the actual number of events (N)
+		//weight = GeV/N
+		double maxE = *std::max_element(weights.begin(), weights.end());
+		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= maxE;
+
 	}
 	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_alpha);
 
 	//set configs
+	if(_smeared) bhc->SetDataSmear(_data_smear);
 	bhc->SetThresh(_thresh);
 	bhc->AddData(points);
 	bhc->SetVerbosity(_verb);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
-	if(_smeared) bhc->SetDataSmear(_data_smear);
 
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)
@@ -94,7 +99,7 @@ void Clusterizer::Cluster(Jet jet, string fname){
 
 
 //crack open Jet and get underlying points
-void Clusterizer::FindSubjets(Jet jet, string fname){
+GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	//create GMM model
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
@@ -129,8 +134,8 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 	}
 
 	VarClusterViz3D cv3D;
-	cv3D.SetVerbosity(_verb);
 	if(viz){ cv3D = VarClusterViz3D(algo);
+		cv3D.SetVerbosity(_verb);
 		cv3D.UpdatePosterior();
 		cv3D.WriteJson(fname+"/it0");
 		}
@@ -156,11 +161,11 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
-			return;
+			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
 		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(fabs(dLogL) < LogLthresh || dLogL > 0){
+		if(fabs(dLogL) < LogLthresh){// || dLogL > 0){
 			if(_verb > 0){
 				cout << "Reached convergence at iteration " << it+1 << endl;
 			}
@@ -168,7 +173,7 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		}
 		oldLogL = newLogL;
 	}
-	if(_verb > 0){
+	if(_verb > 1){
 		cout << "Estimated parameters" << endl;
 		map<string, Matrix> params;
 		for(int i = 0; i < gmm->GetNClusters(); i++){
@@ -182,6 +187,8 @@ void Clusterizer::FindSubjets(Jet jet, string fname){
 		}
 
 	}
+
+	return gmm;
 }
 
 

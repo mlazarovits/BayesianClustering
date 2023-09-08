@@ -2,11 +2,9 @@
 #define PHOTONPRODUCER_HH
 
 #include "JetPoint.hh"
-#include "TFile.h"
-#include "TTree.h"
-#include "ReducedBase.hh"
-
-class PhotonProducer{
+#include <TFile.h>
+#include "BaseProducer.hh"
+class PhotonProducer : public BaseProducer{
 	public:
 		PhotonProducer();
 		virtual ~PhotonProducer();
@@ -15,25 +13,19 @@ class PhotonProducer{
 		PhotonProducer(TFile* file);
 		//ctor from rec hit collection - integrating into ntuplizer
 		
-		//make ctor that simulates rechits
-		
+		//true = keep
+		//false = drop
+		bool cleanRH(JetPoint rh){
+			if(fabs(rh.t()) > 25 && rh.e() < 1.) return false;
+			else return true;
+		}	
+	
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		void GetRecHits(vector<vector<JetPoint>>& rhs);
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int pho);
 		void GetPrimaryVertex(Point& vtx, int evt);
-	private:
-		//individual rec hits (jets)
-		//vector<vector<JetPoint>> m_rechits;
-		ReducedBase* m_base = nullptr;
-		int m_nEvts;
-		TFile* m_file;
-
-
-
-
-
 
 
 };

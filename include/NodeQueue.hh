@@ -14,7 +14,7 @@ class NodeQueue{
 			//end delimiter
 			_z = (node*)malloc(sizeof *_z);
 			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1;
-			_none->node = _z;
+			_none->n = _z;
 			_none->next = _none;	
 
 			_head = _tail = _none;
@@ -30,7 +30,7 @@ class NodeQueue{
 		//put element at top 
 		void put(node* node){
 			listnode* t = (listnode*)malloc(sizeof *t);
-			t->node = node;
+			t->n = node;
 			//if empty
 			if(empty()){
 				t->next = _none;
@@ -49,7 +49,7 @@ class NodeQueue{
 			listnode* t = _head;
 			_head = _head->next;
 			if(_head == _none) _tail = _none;
-			node* x = t->node;
+			node* x = t->n;
 			free(t);
 			return x;
 		
@@ -63,7 +63,7 @@ class NodeQueue{
 			listnode* t = (listnode*)malloc(sizeof *t);
 			t = _head;
 			while(t != _none){
-				cout << t->node->val << endl;
+				cout << t->n->val << endl;
 				t = t->next;
 			}
 

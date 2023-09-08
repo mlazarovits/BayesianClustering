@@ -34,7 +34,7 @@ class Clusterizer{
 		void Cluster(Jet jet, string fname = "");
 
 		//just runs varGMM over given jets
-		void FindSubjets(Jet jet, string fname = "");
+		GaussianMixture* FindSubjets(Jet jet, string fname = "");
 
 
 //		void SetMaxNClusters(int k){ m_maxK = k; }	

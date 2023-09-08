@@ -4,13 +4,13 @@
 #include "ClusterVizBase.hh"
 #include "BaseTree.hh"
 #include "NodeStack.hh"
-#include "json/json.h"
+#include "nlohmann/json.hpp"
 #include <string>
 #include <iostream>
 #include <fstream>
 using std::string;
 
-
+using json = nlohmann::json;
 using node = BaseTree::node;
 class FullViz3D : public ClusterVizBase{
 	public:
@@ -19,22 +19,20 @@ class FullViz3D : public ClusterVizBase{
 		virtual ~FullViz3D(){ };
 
 		//writes individual node
-		Json::Value WriteNode(node* node);
+		json WriteNode(node* node);
 		//writes tree following from given root node
-		Json::Value WriteTree(node* root);
+		json WriteTree(node* root);
 		void AddPlot(string filename = "test"){ };
 		void Write(){ };
-		Json::Value WriteLevels();
+		json WriteLevels();
 		void Write(string filename){
 			//writing level{ tree{} }
 			WriteLevels();	
 
-			Json::StreamWriterBuilder builder;
-			const std::string json_file = Json::writeString(builder, _root);
-
 			std::ofstream file;
 			file.open(filename+".json");
-			file << json_file << endl;
+			//sets 4 space indent
+			file << std::setw(4) << _root << endl;
 			cout << "Writing to: " << filename << ".json" << endl;
 		}
 		void SeeData(){ };
@@ -42,7 +40,7 @@ class FullViz3D : public ClusterVizBase{
 		vector<node*> _nodes;
 		vector<int> _k; //number of subclusters per cluster
 		//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		Json::Value _root;
+		json _root = json::object();
 
 		void orderTree(node* node, int level, map<int, NodeStack> &map);
 };

@@ -12,6 +12,9 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- $\vec{m}_0 = \vec{0}$
 	- $\nu_0 = (D - 1) + 0.001$
 	- $W_0 = \mathbb{I}$
+- any data smearing needs to be set before the data is set
+	- this is especially true for the BHC model because the leaf $r_k$ values are calculated when the data is set
+
 
 ### Formatting
 There are muliple visualization classes:

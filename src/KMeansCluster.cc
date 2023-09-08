@@ -9,7 +9,8 @@ void KMeansCluster::Initialize(unsigned long long seed){
 	}
 	//initialize means to be random points in data
 	PointCollection initpts = m_data->SelectPoints(m_k,seed);		
-	//cout << "KMeans starting points" << endl;
+	if(initpts.GetNPoints() < m_k && initpts.GetNPoints() != 0) m_k = initpts.GetNPoints();
+	//cout << "KMeans starting points: " << initpts.GetNPoints() << " m_k: " << m_k << endl;
 	//initpts.Print();
 	//create separate matrix for each mean
 	for(int k = 0; k < m_k; k++){
@@ -78,7 +79,7 @@ void KMeansCluster::Initialize_pp(unsigned long long seed){
 	}
 	for(int n = 0; n < m_n; n++) N += m_data->at(n).w();
  
-cout << "total norm: " << N << endl;
+//cout << "total norm: " << N << endl;
 	
 	for(int n = 0; n < m_n; n++) 
 		m_assigns.push_back(0);
@@ -92,16 +93,17 @@ void KMeansCluster::Estimate(){
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 999.;
+		dmin = 1e6;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
-			//calculate euclidean distance
+			//calculate euclidean distance squared as optimization metric
 			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
 		//	dist = sqrt(dist);
 			dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
 			if(dist < dmin){ dmin = dist; kmin = k; }
+			//cout << "k: " << k << " current kmin: " << kmin << " dist: " << dist << " current dmin: " << dmin << endl;
 		}
 		//track number of points that change assignments
 		if(kmin != m_assigns[n]) m_nchg++; //+= m_data->at(n).w();//m_nchg++; 
@@ -120,12 +122,13 @@ void KMeansCluster::Update(){
 		m_means[k].InitEmpty();
 	}
 	double val, w;
+	double test = 0;
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
+		w = m_data->at(n).w();
 		for(int d = 0; d < m_dim; d++){
 			val = m_means[m_assigns[n]].at(d,0);
 			//unweighted data -> w = 1
-			w = m_data->at(n).w();
 			m_means[m_assigns[n]].SetEntry(val + w*m_data->at(n).Value(d),d,0);
 		}
 	}
@@ -137,8 +140,6 @@ void KMeansCluster::Update(){
 				m_means[k].SetEntry(val/m_counts[k],d,0);
 			}
 		}
-	//	cout << "k: " << k << " counts: " << m_counts[k] << " mean: " << endl;
-	//	m_means[k].Print();
 	}
 }
 

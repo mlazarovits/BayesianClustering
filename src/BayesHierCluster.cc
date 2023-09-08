@@ -25,7 +25,6 @@ void BayesHierCluster::SetAlpha(double a){
 
 
 vector<node*> BayesHierCluster::Cluster(){
-	if(_verb > 0)cout << "BHC::Cluster" << endl;
 	int n;
 	node* di; node* dj;
 	double rk;
@@ -60,7 +59,7 @@ vector<node*> BayesHierCluster::Cluster(){
 		nodes = _mergeTree->GetClusters();
 		for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-		if(_verb > 1)	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl;
+		if(_verb > 1){	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl; }
 
 		}
 
@@ -126,7 +125,8 @@ vector<node*> BayesHierCluster::Cluster(){
 	nodes = _mergeTree->GetClusters();
 	for(int i = 0; i < (int)nodes.size(); i++){
 			int kmax = nodes[i]->model->GetNClusters();
-			if(_verb > 0) cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << " and " << nodes[i]->points->GetNPoints() << " points" << endl;	
+			if(_verb > 0) cout << "cluster " << i << " has " << kmax << " subclusters - rk: " << nodes[i]->val << " and " << nodes[i]->points->GetNPoints() << " points " << endl;	
+
 	}
 
 	return _mergeTree->GetClusters();

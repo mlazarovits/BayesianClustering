@@ -1,7 +1,7 @@
 #include "JetProducer.hh"
 #include "Clusterizer.hh"
 #include "VarClusterViz3D.hh"
-
+#include <TSystem.h>
 #include <TFile.h>
 #include <iostream>
 #include <cmath>
@@ -15,7 +15,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	
-	string fname = "testjet";
+	string fname = "jet";
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
@@ -126,16 +126,32 @@ int main(int argc, char *argv[]){
 
 
 	string extra = "";
-	extra = "_dofplus10";
 
 	fname += "_evt"+std::to_string(evt)+"_alpha"+a_string+"_thresh"+t_string+extra;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
+	if(weighted) fname += "_Eweighted";
+	if(smeared) fname += "_EtaPhiSmear";
 	
 	/////GET DATA FROM NTUPLE//////
-	string in_file = "gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
+	fname += "_v6";
+	if(viz){
+		if(gSystem->AccessPathName((fname).c_str())){
+			gSystem->Exec(("mkdir -p "+fname).c_str());
+		}
+		else{
+			gSystem->Exec(("rm -rf "+fname).c_str());
+			gSystem->Exec(("mkdir -p "+fname).c_str());
+
+		}
+		cout << "Writing to directory: " << fname << endl;
+	}
 	TFile* file = TFile::Open(in_file.c_str());
 	JetProducer prod(file);
+
+	//add skim option here
+
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
@@ -164,6 +180,7 @@ int main(int argc, char *argv[]){
 
 	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;
 
+	/*
 	map<string, Matrix> params;
 	params["scale"] = Matrix(0.001);
 	params["dof"] = Matrix(3 - 1 + 10.);
@@ -173,16 +190,16 @@ int main(int argc, char *argv[]){
 	mat.InitEmpty();
 	params["scalemat"] = mat;
 	params["m"] = mean;
-
+	*/
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = acos(-1)/360.; //1 degree in radians
-	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	double deta = dphi; //-log( tan(1./2) ); //pseudorap of 1 degree
 	//diagonal matrix
-	smear.SetEntry(deta,0,0);
-	smear.SetEntry(dphi,1,1);
-	smear.SetEntry(0.,2,2); //no smear in time	
+	smear.SetEntry(deta*deta,0,0);
+	smear.SetEntry(dphi*dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
 
 	
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;

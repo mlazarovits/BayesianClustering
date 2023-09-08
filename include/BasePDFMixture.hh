@@ -13,18 +13,19 @@ using std::string;
 
 class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0;}
+		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false;}
 		BasePDFMixture(int k){ 
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
-				m_norms.push_back(0.);
+				m_norms.push_back(1.);
+				m_norms_unwt.push_back(1.);
 				m_alphas.push_back(0.);
 			}
 			m_n = 0;
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
-			m_alpha0 = 0.1; _verb = 0;
+			m_alpha0 = 0.1; _verb = 0; _smear = false;
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -34,11 +35,18 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const Point& x);
 		double Prob(const PointCollection& x);
 
-		void SetData(PointCollection* data){m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); }
+		void SetData(PointCollection* data){
+			m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); 
+			if(data->GetNPoints() < m_k){
+				//remove extra models
+				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
+				m_k = data->GetNPoints();
+			}
+		}
 		PointCollection* GetData(){ return m_data; }
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
-		void SetDataSmear(const Matrix& cov){ _data_cov = cov; }
+		void SetDataSmear(const Matrix& cov){ _data_cov = cov; _smear = true; }
 
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
@@ -82,6 +90,8 @@ class BasePDFMixture : public BasePDF{
 					k--; //make sure to check following model
 				}
 			}
+			//cout if all clusters are removed
+			if(m_k < 1) cout << "Error: all clusters have been removed. Update threshold accordingly." << endl;
 
 		}
 
@@ -108,6 +118,11 @@ class BasePDFMixture : public BasePDF{
 				}
 			return max_k;
 		}
+		
+		//ie gets subcluster average energy (within subcluster) - returns average weight per subcluster
+		void GetAvgWeights(vector<double>& v){  v.clear(); for(int k = 0; k < m_k; k++){ 
+			//cout << "k: " << k << " m_norm: " << m_norms[k] << " m_norms_unwt: " << m_norms_unwt[k] << endl; 
+			v.push_back(m_norms[k]/m_norms_unwt[k]); }}  
 
 		PointCollection* m_data;
 		//number of data points
@@ -124,6 +139,7 @@ class BasePDFMixture : public BasePDF{
 		double m_alpha0;
 		//normalization on posterior
 		vector<double> m_norms;
+		vector<double> m_norms_unwt;
 		Matrix m_post;
 	
 		int m_dim;
@@ -131,7 +147,7 @@ class BasePDFMixture : public BasePDF{
 		int _verb;
 		//data smear
 		Matrix _data_cov;
-
+		bool _smear;
 
 };
 #endif

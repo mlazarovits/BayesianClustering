@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from plotly.colors import sample_colorscale
+from sklearn.preprocessing import minmax_scale
 import json
 import argparse
 import os
@@ -27,6 +29,10 @@ def plot_json(jsonfile, dataonly = False):
 	gr_arr = []
 
 	
+	for k in range(nClusters):
+		w.append(clusters[str(k)]["color"])
+		print("min",min(w),"max",max(w))
+	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = "Plotly3", showscale = True, line=dict(
@@ -37,6 +43,7 @@ def plot_json(jsonfile, dataonly = False):
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
 		return fig
 	
+
 	
 	for i in range(nClusters):
 		idx = str(i)
@@ -73,9 +80,14 @@ def plot_json(jsonfile, dataonly = False):
 		y2 = new_points[1, :] + y0
 		z2 = new_points[2, :] + z0
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
+
+		#make ellipsoid color of average energy across points (responsibilities)
+		cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
+		cl = sample_colorscale("Plotly3",cl_w)
+		cl = np.array([cl,cl]).flatten()
 	
 		#add ellipsoids
-		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=['rgba(132, 242, 201, 1.)','rgba(132, 242, 201, 1.)'], surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
+		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
 
 		#draw means
 		gr_arr.append(go.Scatter3d(x=[x0],y=[y0],z=[z0],mode='markers',marker=dict(

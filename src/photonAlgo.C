@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
 	int evt = 0;
 	bool weighted = false;
 	bool smeared = false;
+	bool skim = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -109,6 +110,10 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smeared = true;
    		}
+		if(strncmp(argv[i],"--skim", 6) == 0){
+    	 		skim = true;
+   		}
+
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -119,12 +124,13 @@ int main(int argc, char *argv[]){
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
-   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
-   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
-   		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --photon(-p) [npho]           set photon number to analyze (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
+   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
+   		cout << "   --weight                      weights data points (default = false)" << endl;
+   		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
    		return 0;
@@ -152,6 +158,10 @@ int main(int argc, char *argv[]){
 	
 	if(weighted) fname += "_Eweighted";
 	if(smeared) fname += "_EtaPhiSmear";
+
+	/////GET DATA FROM NTUPLE//////
+	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	fname += "_v6";
 	
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
@@ -165,36 +175,44 @@ int main(int argc, char *argv[]){
 		cout << "Writing to directory: " << fname << endl;
 	}
 	
-	/////GET DATA FROM NTUPLE//////
-	string in_file = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_0/src/KUCMSNtupleizer/KUCMSNtupleizer/GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+
 	TFile* file = TFile::Open(in_file.c_str());
 	PhotonProducer prod(file);
+	if(skim){
+		cout << "Skimming photons + subclusters" << endl;
+		prod.CleaningSkim();
+		prod.Skim();
+		return 0;
+	}
+
+
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
-	Point vtx;
-	prod.GetPrimaryVertex(vtx, evt);
 	prod.GetRecHits(rhs,evt,npho);
-	cout << rhs.size() << " rechits in first photon in first event" << endl;
+	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	if(rhs.size() < 1) return -1;
+
+
+
 
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testpho;
 	//set PV for momentum direction calculations
+	Point vtx;
+	prod.GetPrimaryVertex(vtx, evt);
 	testpho.SetVertex(vtx);
 	for(int i = 0; i < rhs.size(); i++){
 		testpho.add(rhs[i]);
 	}
 
-	cout << testpho.GetNConstituents() << " constituents in test photon" << endl;
-
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = acos(-1)/360.; //1 degree in radians
-	double deta = -log( tan(1./2) ); //pseudorap of 1 degree
+	double deta = dphi; //=sigma
 	//diagonal matrix
-	smear.SetEntry(deta,0,0);
-	smear.SetEntry(dphi,1,1);
+	smear.SetEntry(deta*deta,0,0);
+	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
 
 
@@ -203,7 +221,7 @@ int main(int argc, char *argv[]){
 	algo->SetThresh(thresh);
 	algo->SetVerbosity(verb);
 	algo->SetMaxNClusters(k);
-	if(weighted) algo->SetWeighted(weighted);
+	algo->SetWeighted(weighted);
 	if(smeared) algo->SetDataSmear(smear);
 	
 	if(viz)	algo->FindSubjets(testpho, fname); 

@@ -56,6 +56,40 @@ Jet::Jet(JetPoint rh, Point vtx){
 }
 
 
+Jet::Jet(vector<JetPoint> rhs){
+	m_nRHs = (int)rhs.size();	
+	for(int i = 0; i < m_nRHs; i++) m_rhs.push_back(rhs[i]);
+
+	double theta, pt, x, y, z;
+	for(int i = 0; i < m_nRHs; i++){
+		
+		//theta is calculated between beamline (z-dir) and x-y vector	
+		x = rhs[i].x(0);
+		y = rhs[i].x(1);
+		z = rhs[i].x(2);
+		theta = atan2( sqrt(x*x + y*y), z );
+		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
+		m_px += pt*cos(rhs[i].phi());
+		m_py += pt*sin(rhs[i].phi());
+		m_pz += pt*cosh(rhs[i].eta());
+		
+		m_E += rhs[i].E();
+
+
+	}
+	RecalcKT2();
+	RecalcPhi();
+	RecalcEta();
+//TODO: need to recalculate space four vector from clustering algo
+/*	
+	m_t = rh.at(0);
+	m_x = rh.at(1);
+	m_y = rh.at(2);
+	m_z = rh.at(3);
+	m_s = rh.four_space();
+*/
+
+}
 
 Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	m_nRHs = (int)rhs.size();	

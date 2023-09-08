@@ -94,6 +94,7 @@ class MergeTree : BaseTree{
 			//p(D_k | T_k) = p(D_k | H_1^k)
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			_clusters.push_back(x);
+			
 		}
 
 		//runs varEM to get Evidence (ELBO) for given GMM
@@ -106,15 +107,14 @@ class MergeTree : BaseTree{
 		
 			x->model = new GaussianMixture(k); //p(x | theta)
 			x->model->SetVerbosity(_verb);
-			x->model->SetAlpha(0.5);
+			x->model->SetAlpha(_alpha);
 			x->model->SetData(x->points);
+			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
-
-			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
 
 			/*
 			cout << "Initial prior parameters" << endl;

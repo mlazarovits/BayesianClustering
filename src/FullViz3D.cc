@@ -14,20 +14,22 @@ FullViz3D::FullViz3D(vector<node*> nodes){
 
 
 
-Json::Value FullViz3D::WriteNode(node* node){
-	Json::Value cluster;
-	Json::Value subclusters;
-	Json::Value subcluster;
-	Json::Value data;
-
-	Json::Value color(Json::arrayValue);
-	Json::Value x(Json::arrayValue);
-	Json::Value y(Json::arrayValue);
-	Json::Value z(Json::arrayValue);
+json FullViz3D::WriteNode(node* node){
 	
-	Json::Value eigenVec_0(Json::arrayValue);
-	Json::Value eigenVec_1(Json::arrayValue);
-	Json::Value eigenVec_2(Json::arrayValue);
+	json subcluster = json::object();
+	json subclusters = json::object();
+	json cluster = json::object();
+	json data = json::object();
+
+	vector<double> color;
+	vector<double> x;
+	vector<double> y;
+	vector<double> z;
+	vector<double> w;
+	
+	vector<double> eigenVec_0;
+	vector<double> eigenVec_1;
+	vector<double> eigenVec_2;
 	
 	int kmax = node->model->GetNClusters();
 	BasePDFMixture* model = node->model;
@@ -36,23 +38,28 @@ Json::Value FullViz3D::WriteNode(node* node){
 		return cluster;
 	}
 
-	
-			for(int i = 0; i < points->GetNPoints(); i++){
-				//eta
-				x.append(points->at(i).Value(0));
-				//phi
-				y.append(points->at(i).Value(1));
-				z.append(points->at(i).Value(2));
-			}
-			data["x"] = x;
-			data["y"] = y;
-			data["z"] = z;
+	for(int i = 0; i < points->GetNPoints(); i++){
+		//eta
+		x.push_back(points->at(i).Value(0));
+		//phi
+		y.push_back(points->at(i).Value(1));
+		//time
+		z.push_back(points->at(i).Value(2));
+		//weight
+		w.push_back(m_points->at(i).Weight());
+	}
+	data["x"] = x;
+	data["y"] = y;
+	data["z"] = z;
+	data["w"] = w;
 	cluster["data"] = data;
 	
 
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
+	vector<double> avgs;
+	model->GetAvgWeights(avgs);
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
@@ -64,9 +71,9 @@ Json::Value FullViz3D::WriteNode(node* node){
 
 		cluster_params["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
-			eigenVec_0.append(eigenVecs[0].at(i,0));
-			eigenVec_1.append(eigenVecs[1].at(i,0));
-			eigenVec_2.append(eigenVecs[2].at(i,0));
+			eigenVec_0.push_back(eigenVecs[0].at(i,0));
+			eigenVec_1.push_back(eigenVecs[1].at(i,0));
+			eigenVec_2.push_back(eigenVecs[2].at(i,0));
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
@@ -82,6 +89,8 @@ Json::Value FullViz3D::WriteNode(node* node){
 		subcluster["eigenVec_0"] = eigenVec_0;	
 		subcluster["eigenVec_1"] = eigenVec_1;	
 		subcluster["eigenVec_2"] = eigenVec_2;	
+		
+		subcluster["color"] = avgs[k];
 	
 		subclusters["subcluster_"+std::to_string(k)] = subcluster;
 
@@ -106,10 +115,12 @@ void FullViz3D::orderTree(node* node, int level, map<int, NodeStack> &map){
 }
 
 //level{ tree_0{ }, tree_1{ }, ...}
-Json::Value FullViz3D::WriteLevels(){
-	Json::Value levels;
-	Json::Value trees;
-	Json::Value clusters;
+json FullViz3D::WriteLevels(){
+	json levels = json::object();
+	json trees = json::object();
+	json clusters = json::object();
+	
+	
 	int nTrees = (int)_nodes.size();
 
 	//create a node - level map for each tree
@@ -159,9 +170,9 @@ if(_verb > 2) cout << "max: " << nLevels << " levels" << endl;
 	return levels;
 }
 
-Json::Value FullViz3D::WriteTree(node* root){
-	Json::Value level;
-	Json::Value clusters;
+json FullViz3D::WriteTree(node* root){
+	json level = json::object();
+	json clusters = json::object();
 	map<int, NodeStack> tree_map;
 	orderTree(root, 0, tree_map);	
 
@@ -180,7 +191,7 @@ Json::Value FullViz3D::WriteTree(node* root){
 		     level["clusters_level_"+std::to_string(i)] = clusters;
 		}
 
-	Json::Value levels;
+	json levels = json::object();
 	levels["levels"] = level;
 	return levels;
 }
