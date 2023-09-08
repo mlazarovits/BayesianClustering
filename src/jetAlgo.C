@@ -1,4 +1,5 @@
 #include "JetProducer.hh"
+#include "JetSkimmer.hh"
 #include "Clusterizer.hh"
 #include "VarClusterViz3D.hh"
 #include <TSystem.h>
@@ -25,6 +26,7 @@ int main(int argc, char *argv[]){
 	int evt = 0;
 	bool weighted = false;
 	bool smeared = false;
+	bool skim = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -90,6 +92,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smeared = true;
    		}
+		if(strncmp(argv[i],"--skim", 6) == 0){
+    	 		skim = true;
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -99,11 +104,12 @@ int main(int argc, char *argv[]){
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
+   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
+   		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
-   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -148,9 +154,14 @@ int main(int argc, char *argv[]){
 		cout << "Writing to directory: " << fname << endl;
 	}
 	TFile* file = TFile::Open(in_file.c_str());
+	if(skim){
+		cout << "Skimming jets" << endl;
+		JetSkimmer skimmer(file);
+		skimmer.Skim();
+		return 0;
+	}
 	JetProducer prod(file);
 
-	//add skim option here
 
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
