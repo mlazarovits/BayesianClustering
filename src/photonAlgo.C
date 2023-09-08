@@ -1,7 +1,7 @@
 #include "PhotonProducer.hh"
 #include "Jet.hh"
 #include "Clusterizer.hh"
-
+#include "PhotonSkimmer.hh"
 #include "TSystem.h"
 #include <TFile.h>
 #include <iostream>
@@ -177,17 +177,17 @@ int main(int argc, char *argv[]){
 	
 
 	TFile* file = TFile::Open(in_file.c_str());
-	PhotonProducer prod(file);
 	if(skim){
 		cout << "Skimming photons + subclusters" << endl;
-		prod.CleaningSkim();
-		prod.Skim();
+		PhotonSkimmer skimmer(file);
+		skimmer.Skim();
 		return 0;
 	}
 
 
 	vector<JetPoint> rhs;
 	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
+	PhotonProducer prod(file);
 	prod.GetRecHits(rhs,evt,npho);
 	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	if(rhs.size() < 1) return -1;

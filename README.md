@@ -37,4 +37,6 @@ There are muliple visualization classes:
 	- can be done in $\eta - \phi$ space or $X - Y - Z$ space, both with a time dimension
 
 
-
+### Plotting
+- to add a new histogram to the skims, need to declare it in BaseSkimmer and push it back to the vector in ctor
+	- fill histogram in the derived object skimmer

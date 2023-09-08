@@ -24,6 +24,8 @@ class BaseProducer{
 			_file = file;
 			TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			_base = new ReducedBase(tree);
+		//	_base->GetEntry(0);
+		//	cout << "base prod init - " << _base->Photon_energy->size() << endl;
 			_nEvts = _base->fChain->GetEntries();
 		}
 		virtual ~BaseProducer(){ };

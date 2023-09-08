@@ -6,8 +6,9 @@
 #include "BaseSkimmer.hh"
 #include "BasePDFMixture.hh"
 #include "PhotonProducer.hh"
+#include "TSystem.h"
 
-
+using plotCat = BaseSkimmer::plotCat;
 class PhotonSkimmer : public BaseSkimmer{
 	public:
 		PhotonSkimmer();
@@ -23,77 +24,81 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//stacked photon LLID hists
 		//list of photon ids
-		vector<string> id_names = {"#Chi \rightarrow #gamma", "ISR", "Not SUSY"};
 		vector<TH1D*> llp_sig;
 		vector<TH1D*> llp_ISR;
 		vector<TH1D*> llp_notSunm;
 		map<int, vector<double>> id_map;
 
 		vector<vector<TH1D*>> histsID;
+		vector<plotCat> plotCats;
+
+
 
 		void MakeIDHists(){
 			//signal
-			id_map[0] = {22, 32, 25, 35}; 
+			plotCat sig;
+			sig.legName = "#Chi^0 #rightarrow #gamma";
+			sig.plotName = "chiGam";
+			sig.ids = {22, 32, 25, 35};
+			plotCats.push_back(sig);
 			//ISR
-			id_map[1] = {20, 30, 21, 31, 23, 33, 24, 34}; 
-			//not susy/unmatched
-			id_map[2] = {29, -1};
-			//total - combination of all of above
-			id_map[3] = {};
-			for(int i = 0; i < 3; i++)
-				id_map[3].insert(id_map[3].end(), id_map[i].begin(), id_map[i].end());
-
+			plotCat ISR;
+			ISR.legName = "ISR";
+			ISR.plotName = "ISR";
+			ISR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
+			plotCats.push_back(ISR);
+			//notSunm
+			plotCat notSunm;
+			notSunm.legName = "notSunm";
+			notSunm.plotName = "notSunm";
+			notSunm.ids = {29, -1}; 
+			plotCats.push_back(notSunm);
 
 			//each category of histograms (histsID[j]) gets a list of histograms that is the same as the total list (hists1D)
+			string name;
 			for(int i = 0; i < (int)hists1D.size(); i++){
-				for(int j = 0; (int)histsID.size(); j++){
-					histsID[j].push_back((TH1D*)hists1D[i]->Clone());
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH1D* hist = (TH1D*)hists1D[i]->Clone();
+					plotCats[j].hists1D.push_back(hist);
+					name = hists1D[i]->GetName();
+					name += "_"+plotCats[j].plotName;
+					plotCats[j].hists1D[i]->SetName(name.c_str());
+					plotCats[j].hists1D[i]->SetTitle("");
 				}
 		
 			}
 
-
 		}
 
 
-		void FindListHistBounds(vector<TH1D*>& hists, double& ymax, double& ymin){
-			//shellsort to find max, min
-			int N = (int)hists.size();
-			int i, j, h;
-			TH1D* v = nullptr;
-			for(h = 1; h <= N/9; h = 3*h+1) ;
-			for( ; h > 0; h /= 3)
-				for(i = h+1; i <= N; i += 1){
-					v = hists[i]; j = i;
-					while(j > h && hists[j - h]->GetYaxis()->GetXmax() > v->GetYaxis()->GetXmax()){ hists[j] = hists[j - h]; j -= h; }
-					hists[j] = v;
-				}
-
-			ymax = hists[0]->GetYaxis()->GetXmax();
-			ymin = hists[N-1]->GetYaxis()->GetXmax();
-
-		}
 
 
 		void WriteHists(TFile* ofile){
 			vector<TH1D*> hists;
+			vector<string> id_names;
 			double ymax, ymin;
 			string name;
+		
+			for(int i = 0; i < (int)plotCats.size(); i++)
+				id_names.push_back(plotCats[i].legName);
+
 			ofile->cd();
-			for(int j = 0; j < (int)hists1D.size(); j++){
+			for(int i = 0; i < (int)hists1D.size(); i++){
 				//make a vector for each type of histogram
-				for(int i = 0; i < (int)id_map.size() - 1; i++){
-					hists.push_back(histsID[i][j]);			
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					hists.push_back(plotCats[j].hists1D[i]);			
 					//should be 3 hists in this vector
 				}
-				FindListHistBounds(hists, ymax, ymin);
-				name = hists1D[j]->GetName();
-				TCanvas* cv = new TCanvas(name.c_str(), name.c_str());
-				TDRMultiHist(hists, cv, name, name, "a.u.",ymax, ymin, id_names);
+				FindListHistBounds(hists, ymin, ymax);
+				name = hists1D[i]->GetName();
+				name += "_stack";
+				TCanvas* cv = new TCanvas(name.c_str(), "");
+				TDRMultiHist(hists, cv, name, name, "a.u.",ymin, ymax, id_names);
 				//write cv to file			
+			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
 				cv->Write();
 				//write total hist to file
-				histsID[j][3]->Write();
+				hists1D[i]->Write();
 
 				hists.clear();
 			}
@@ -106,45 +111,109 @@ class PhotonSkimmer : public BaseSkimmer{
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es;
 			vector<Matrix> eigenvecs;
+			//cout << "get nclusters" << endl;
 			int nclusters = model->GetNClusters();
-			histsID[id_idx][0]->Fill(nclusters);
+		//	cout << "fill nclusters" << endl;
+			
+			plotCats[id_idx].hists1D[0]->Fill(nclusters);
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
+		//	cout << "get avg E" << endl;
 			model->GetAvgWeights(avg_Es);
+		//	cout << "get n pts" << endl;
 			double npts = (double)model->GetData()->GetNPoints();
 
-	
-			double theta, phi, r, id;
+			//cout << "FillHists - starting subcluster loop" << endl;	
+			double theta, phi, r, rot;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
-				histsID[id_idx][1]->Fill(params["mean"].at(2,0));
-				histsID[id_idx][2]->Fill(params["mean"].at(0,0));
-				histsID[id_idx][3]->Fill(params["mean"].at(1,0));
+				plotCats[id_idx].hists1D[1]->Fill(params["mean"].at(2,0));
+				//histsID[id_idx][1]->Fill(params["mean"].at(2,0));
+				plotCats[id_idx].hists1D[2]->Fill(params["mean"].at(0,0));
+				plotCats[id_idx].hists1D[3]->Fill(params["mean"].at(1,0));
 		
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				
 				//largest eigenvalue is last
 				//phi/eta
-				histsID[id_idx][4]->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
+				plotCats[id_idx].hists1D[4]->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
         			//eta/time
-				histsID[id_idx][5]->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
+				plotCats[id_idx].hists1D[5]->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
 				//phi/time
-				histsID[id_idx][6]->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
+				plotCats[id_idx].hists1D[6]->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
 				//polar angle
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
 				r = sqrt(eigenvecs[2].at(0,0)*eigenvecs[2].at(0,0) + eigenvecs[2].at(1,0)*eigenvecs[2].at(1,0) + eigenvecs[2].at(2,0)*eigenvecs[2].at(2,0));
 				theta = acos( eigenvecs[2].at(2,0) / r );
-				histsID[id_idx][7]->Fill(theta);
+				plotCats[id_idx].hists1D[7]->Fill(theta);
 				//azimuthal angle
 				//phi = arctan(y/x)
 				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
-				histsID[id_idx][8]->Fill(phi);
+				plotCats[id_idx].hists1D[8]->Fill(phi);
 				
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
-				histsID[id_idx][9]->Fill(avg_Es[k]*npts);
+				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*npts);
+			
+				//rotundity - 3D
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
+				rot = eigenvals[2]/rot;
+				plotCats[id_idx].hists1D[10]->Fill(rot);
+	
+
+
 			}
 		}
+
+		void FillTotalHists(BasePDFMixture* model){
+			map<string, Matrix> params;
+			vector<double> eigenvals, avg_Es;
+			vector<Matrix> eigenvecs;
+			int nclusters = model->GetNClusters();
+			nSubClusters->Fill(nclusters);
+			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
+			model->GetAvgWeights(avg_Es);
+			double npts = (double)model->GetData()->GetNPoints();
+
+	
+			double theta, phi, r, rot;
+			for(int k = 0; k < nclusters; k++){
+				params = model->GetParameters(k);
+				time_center->Fill(params["mean"].at(2,0));
+				eta_center->Fill(params["mean"].at(0,0));
+				phi_center->Fill(params["mean"].at(1,0));
+		
+				//calculate slopes from eigenvectors
+				params["cov"].eigenCalc(eigenvals, eigenvecs);
+				
+				//largest eigenvalue is last
+				//phi/eta
+				slope_space->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
+        			//eta/time
+				slope_etaT->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
+				//phi/time
+				slope_phiT->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
+				//polar angle
+				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
+				r = sqrt(eigenvecs[2].at(0,0)*eigenvecs[2].at(0,0) + eigenvecs[2].at(1,0)*eigenvecs[2].at(1,0) + eigenvecs[2].at(2,0)*eigenvecs[2].at(2,0));
+				theta = acos( eigenvecs[2].at(2,0) / r );
+				polar_ang->Fill(theta);
+				//azimuthal angle
+				//phi = arctan(y/x)
+				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
+				azimuth_ang->Fill(phi);
+				
+				//average cluster energy
+				//w_n = E_n/N for N pts in sample
+				e_avg->Fill(avg_Es[k]*npts);
+				
+				//rotundity - 3D
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
+				rot = eigenvals[2]/rot;
+				rotundity->Fill(rot);
+			}
+		}
+
 
 
 
