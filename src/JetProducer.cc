@@ -71,29 +71,39 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	double phiMax = 2.;
 	double phiMin = -2.8;
 	int cnt = 0;
-	for(int i = 0; i < _nEvts; i++){
-		if(i == evt){
-			_base->GetEntry(i);
-			nRHs = (int)_base->ECALRecHit_ID->size();
-			for(int r = 0; r < nRHs; r++){
-				//add tof = d_pv to time to get correct RH time
-				//t = rh_time - d_rh/c + d_pv/c
-				rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
-				
-				rh.SetEnergy(_base->ECALRecHit_energy->at(r));
-				rh.SetEta(_base->ECALRecHit_eta->at(r));
-				rh.SetPhi(_base->ECALRecHit_phi->at(r));
-				rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
+	int nPho, nPhoRHs, rhId;
+	vector<unsigned int> phoIds;
 	
-				rhs.push_back(rh);
-			
-		
-			}
-			return;
 
-		}
-		else continue;
+	if(evt > _nEvts) return;
+
+	_base->GetEntry(evt);
+
+	nRHs = (int)_base->ECALRecHit_ID->size();
+	//clean for RHs in photon superclusters
+	phoIds = _base->Photon_rhIds;	
+	nPho = (int)_base->Photon_energy->size();
+	for(int p = 0; p < nPho; p++){
+		nPhoRHs = (int)_base->Photon_rhIds->at(p).size();
+		for(int r = 0; r < nPhoRHs; r++) phoIds.push_back(_base->Photon_rhIds->at(p).at(r));
 	}
+	
+	for(int r = 0; r < nRHs; r++){
+		//clean out photon ids - if rh id is in phoIds continue
+		rhId = _base->ECALRecHit_ID->at(r);	
+		if(std::any_of(phoIds.begin(), phoIds.end(), [&](int iid){return iid == rhId;})) continue; 
+	
+		//add tof = d_pv to time to get correct RH time
+		//t = rh_time - d_rh/c + d_pv/c
+		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
+		
+		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
+		rh.SetEta(_base->ECALRecHit_eta->at(r));
+		rh.SetPhi(_base->ECALRecHit_phi->at(r));
+		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
+	
+		rhs.push_back(rh);
+	}	
 }
 
 //ctor from rec hit collection - integrating into ntuplizer - in CMSSW
@@ -102,20 +112,12 @@ void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
 	//reset to empty 3-dim point	
 	vtx = Point(3);
 
-	for(int i = 0; i < _nEvts; i++){
-		if(i == evt){
-			_base->GetEntry(i);
-			vtx.SetValue(_base->PV_x, 0);
-			vtx.SetValue(_base->PV_y, 1);
-			vtx.SetValue(_base->PV_z, 2);
-			return;
-		}
-		else continue;	
-	}
+	if(evt > _nEvts) return;
+	_base->GetEntry(evt);
+	vtx.SetValue(_base->PV_x, 0);
+	vtx.SetValue(_base->PV_y, 1);
+	vtx.SetValue(_base->PV_z, 2);
 
 }
-
-
-
 
 
