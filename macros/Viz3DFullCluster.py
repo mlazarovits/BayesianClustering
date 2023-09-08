@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from plotly.colors import sample_colorscale
 import plotly.graph_objects as go
 import json
 import argparse
@@ -12,6 +13,9 @@ class JsonPlotter:
 		with open(jsonfile,'r') as file:
 			self.json_obj = json.load(file)
 		self.jsonfile = jsonfile
+
+	def setVerb(self, v):
+		self._v = v
 
 	def buildColorDict(self):
 		colors = {}
@@ -82,7 +86,9 @@ class JsonPlotter:
 		#if tree has less levels than l, plot all data in tree as leaves
 		level = self.json_obj["levels"]["level_"+str(l)]
 		nTrees = len(level)
-	
+		if self._v > 0:
+			print("level",l,"has",nTrees,"trees")
+
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
@@ -103,6 +109,10 @@ class JsonPlotter:
 		nClusters = len(tree)
 		#print("Tree",t,"has",nClusters,"clusters")
 		gr_arr = []
+	
+		if self._v > 0:
+			print("	tree",t,"has",nClusters,"clusters")
+
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
 			gr_arr.append(self.plot_cluster(cluster, t))
@@ -122,8 +132,15 @@ class JsonPlotter:
 		
 		gr_arr = []
 		
-		for k in range(nClusters):
-			w.append(clusters[str(k)]["color"])
+		nSubClusters = len(cluster['subclusters'])
+
+		if self._v > 0:
+			print("		cluster",c,"has",nSubClusters,"subclusters")
+
+		for k in range(nSubClusters):
+			if self._v > 0:
+				print("			subcluster",k,"has",cluster['subclusters']['subcluster_'+str(k)]['color'],'weight and',len(x),'points')
+			w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
 	
 		colors = self.buildColorDict()
 		
@@ -148,12 +165,12 @@ class JsonPlotter:
 		if(len(x) < minPoints):
 			return gr_arr
 		
-		nSubClusters = len(cluster['subclusters'])
 		for i in range(nSubClusters):
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
 			#should be subcluster_i	
-			
+		
+	
 			a = round(subcluster['eigenVal_0'], 10)
 			b = round(subcluster['eigenVal_1'], 10)
 			c = round(subcluster['eigenVal_2'], 10)
@@ -189,12 +206,18 @@ class JsonPlotter:
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 			#make ellipsoid color of average energy across points (responsibilities)
-			cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
-			col = sample_colorscale("Plotly3",cl_w)
-			col = np.array([cl,cl]).flatten()
+			scale = False
+			if max(w) == min(w):
+				cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
+			else:
+				cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
+				scale = True
+			cl = sample_colorscale("Plotly3",cl_w)
+			cl = np.array([cl,cl]).flatten()
 		
+	
 			#add ellipsoids
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[col,col], showscale = False)),
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
 			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
 		
 		return gr_arr
@@ -203,7 +226,9 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--json','-j',help='json file to plot')
 	parser.add_argument('--data',help='plot data only',action='store_true')
-	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0)
+	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0,type=int)
+	parser.add_argument('--verbosity','-v',help='verbosity',default=0,type=int)
+	parser.add_argument('--noViz',action='store_true',help='do not make plots',default=False)
 	args = parser.parse_args()
 	
 	if args.json is None:
@@ -216,7 +241,10 @@ def main():
 
 	f = args.json	
 	jp = JsonPlotter(f)	
+	jp.setVerb(args.verbosity)
 	figs = jp.plot_json(args.data, int(args.nlevels))
+	if args.noViz:
+		exit()
 	name = f[:f.find(".json")]
 	print("Writing to directory",name)
 	if(os.path.exists(name)):

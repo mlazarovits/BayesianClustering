@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.colors import sample_colorscale
-from sklearn.preprocessing import minmax_scale
 import json
 import argparse
 import os
