@@ -62,7 +62,7 @@ class JetSkimmer : public BaseSkimmer{
 				polar_ang->Fill(theta);
 				//azimuthal angle
 				//phi = arctan(y/x)
-				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
+				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy

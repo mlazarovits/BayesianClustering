@@ -44,7 +44,8 @@ class BaseSkimmer{
 			hists1D.push_back(polar_ang);
 			hists1D.push_back(azimuth_ang);
 			hists1D.push_back(e_avg);
-			hists1D.push_back(rotundity);
+			hists1D.push_back(rotundity_3D);
+			hists1D.push_back(rotundity_2D);
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
@@ -81,7 +82,9 @@ class BaseSkimmer{
 		//subcluster energy - average
 		TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,50.);
 		//ellipsoid rotundity
-		TH1D* rotundity = new TH1D("rotundity","rotundity",50,0,10);
+		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",50,0,10);
+		//spatial rotundity
+		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",50,0,10);
 
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)

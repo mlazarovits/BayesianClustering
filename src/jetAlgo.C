@@ -168,25 +168,13 @@ int main(int argc, char *argv[]){
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
 	prod.GetRecHits(rhs,evt);
-	cout << rhs.size() << " rechits in first event" << endl;
 
 	//combine rechits in eta-phi area to simulate merged jet to find subjets
 	Jet testjet;
 	//set PV for momentum direction calculations
 	testjet.SetVertex(vtx);
-	double etaMax = 0.5;
-	double etaMin = -etaMax;  
-	double phiMax = 2.;
-	double phiMin = -2.8;
-	int nRhs = 0;
 	for(int i = 0; i < rhs.size(); i++){
-//		if(nRhs > 10) break;
-		if(rhs[i].eta() > etaMax || rhs[i].eta() < etaMin)
-			continue;
-		if(rhs[i].phi() > phiMax || rhs[i].phi() < phiMin)
-			continue;
-			testjet.add(rhs[i]);
-		nRhs++;
+		testjet.add(rhs[i]);
 	}
 
 	cout << testjet.GetNConstituents() << " constituents in testjet" << endl;

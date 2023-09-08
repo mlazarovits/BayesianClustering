@@ -7,6 +7,7 @@
 #include "BasePDFMixture.hh"
 #include "PhotonProducer.hh"
 #include "TSystem.h"
+#include <math.h>
 
 using plotCat = BaseSkimmer::plotCat;
 class PhotonSkimmer : public BaseSkimmer{
@@ -81,6 +82,21 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 			for(int i = 0; i < (int)plotCats.size(); i++)
 				id_names.push_back(plotCats[i].legName);
+	
+			for(int i = 0; i < (int)plotCats.size(); i++){
+				//relative fraction histograms
+				//nSubClusters
+				plotCats[i].hists1D[0]->Scale(1./plotCats[i].hists1D[0]->Integral());
+				//ellipsoid center coordinates
+				plotCats[i].hists1D[1]->Scale(1./plotCats[i].hists1D[1]->Integral());
+				plotCats[i].hists1D[2]->Scale(1./plotCats[i].hists1D[2]->Integral());
+				plotCats[i].hists1D[3]->Scale(1./plotCats[i].hists1D[3]->Integral());
+				//theta + azimuthal angles
+				plotCats[i].hists1D[7]->Scale(1./plotCats[i].hists1D[7]->Integral());
+				plotCats[i].hists1D[8]->Scale(1./plotCats[i].hists1D[8]->Integral());
+			}
+
+
 
 			ofile->cd();
 			for(int i = 0; i < (int)hists1D.size(); i++){
@@ -109,25 +125,22 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void FillHists(BasePDFMixture* model, int id_idx){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es;
-			vector<Matrix> eigenvecs;
-			//cout << "get nclusters" << endl;
+			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<Matrix> eigenvecs, eigenvecs_space;
+			Matrix space_mat = Matrix(2,2);
+
 			int nclusters = model->GetNClusters();
-		//	cout << "fill nclusters" << endl;
-			
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
+			
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
-		//	cout << "get avg E" << endl;
 			model->GetAvgWeights(avg_Es);
-		//	cout << "get n pts" << endl;
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
-			double theta, phi, r, rot;
+			double theta, phi, r, rot2D, rot3D;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				plotCats[id_idx].hists1D[1]->Fill(params["mean"].at(2,0));
-				//histsID[id_idx][1]->Fill(params["mean"].at(2,0));
 				plotCats[id_idx].hists1D[2]->Fill(params["mean"].at(0,0));
 				plotCats[id_idx].hists1D[3]->Fill(params["mean"].at(1,0));
 		
@@ -148,7 +161,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[7]->Fill(theta);
 				//azimuthal angle
 				//phi = arctan(y/x)
-				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
+				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));
 				plotCats[id_idx].hists1D[8]->Fill(phi);
 				
 				//average cluster energy
@@ -156,10 +169,23 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*npts);
 			
 				//rotundity - 3D
-				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
-				rot = eigenvals[2]/rot;
-				plotCats[id_idx].hists1D[10]->Fill(rot);
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
+				rot3D = eigenvals[2]/rot3D;
+				plotCats[id_idx].hists1D[10]->Fill(rot3D);
+				
+				//rotundity - 2D
+				//take upper 2x2 submatrix from covariance
+				space_mat.SetEntry(params["cov"].at(0,0),0,0);	
+				space_mat.SetEntry(params["cov"].at(0,1),0,1);	
+				space_mat.SetEntry(params["cov"].at(1,0),1,0);	
+				space_mat.SetEntry(params["cov"].at(1,1),1,1);
+				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
 	
+				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
+				rot2D = eigenvals_space[2]/rot2D;
+				plotCats[id_idx].hists1D[11]->Fill(rot2D);
+
+			
 
 
 			}
@@ -167,16 +193,18 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void FillTotalHists(BasePDFMixture* model){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es;
-			vector<Matrix> eigenvecs;
+			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<Matrix> eigenvecs, eigenvecs_space;
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
 			model->GetAvgWeights(avg_Es);
 			double npts = (double)model->GetData()->GetNPoints();
 
+
+			Matrix space_mat = Matrix(2,2);
 	
-			double theta, phi, r, rot;
+			double theta, phi, r, rot2D, rot3D;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				time_center->Fill(params["mean"].at(2,0));
@@ -200,7 +228,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				polar_ang->Fill(theta);
 				//azimuthal angle
 				//phi = arctan(y/x)
-				phi = atan(eigenvecs[2].at(1,0) / eigenvecs[2].at(0,0));
+				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy
@@ -208,9 +236,21 @@ class PhotonSkimmer : public BaseSkimmer{
 				e_avg->Fill(avg_Es[k]*npts);
 				
 				//rotundity - 3D
-				for(int i = 0; i < (int)eigenvecs.size(); i++) rot += eigenvals[i];
-				rot = eigenvals[2]/rot;
-				rotundity->Fill(rot);
+				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
+				rot3D = eigenvals[2]/rot3D;
+				rotundity_3D->Fill(rot3D);
+				
+				//rotundity - 2D
+				//take upper 2x2 submatrix from covariance
+				space_mat.SetEntry(params["cov"].at(0,0),0,0);	
+				space_mat.SetEntry(params["cov"].at(0,1),0,1);	
+				space_mat.SetEntry(params["cov"].at(1,0),1,0);	
+				space_mat.SetEntry(params["cov"].at(1,1),1,1);
+				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+	
+				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
+				rot2D = eigenvals_space[2]/rot2D;
+				rotundity_2D->Fill(rot2D);
 			}
 		}
 
