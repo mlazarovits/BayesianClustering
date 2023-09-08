@@ -262,18 +262,21 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
 	m_mean0.InitEmpty();
 	
+	//nu > d - 1 (degrees of freedom)
+	m_nu0 = m_dim;// - 1) + 1e-3;
+	//cout << "nu0: " << m_nu0 << endl;
+	
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);
 	//W <- R in dxd space - is a covariance matrix
 	m_W0 = Matrix(m_dim, m_dim);
 	m_W0.InitIdentity();
+	//least informative prior - nu0^-1*sigma0^-1
+	m_W0.mult(m_W0,1./m_nu0);
 	//need W0 inverse for parameter calculation
 	m_W0inv = Matrix(m_dim,m_dim);
 	m_W0inv.invert(m_W0);
 
-	//nu > d - 1 (degrees of freedom)
-	m_nu0 = (m_dim - 1) + 1e-3;
-	//cout << "nu0: " << m_nu0 << endl;
 
 	m_post.SetDims(m_n, m_k);
 	
