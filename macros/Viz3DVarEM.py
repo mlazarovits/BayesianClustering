@@ -30,7 +30,6 @@ def plot_json(jsonfile, dataonly = False):
 	
 	for k in range(nClusters):
 		w.append(clusters[str(k)]["color"])
-		print("min",min(w),"max",max(w))
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -81,7 +80,10 @@ def plot_json(jsonfile, dataonly = False):
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 		#make ellipsoid color of average energy across points (responsibilities)
-		cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
+		if max(w) == min(w):
+			cl_w = (clusters[idx]["color"])# - min(w))/(max(w) - min(w))
+		else:
+			cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
 		cl = sample_colorscale("Plotly3",cl_w)
 		cl = np.array([cl,cl]).flatten()
 	
@@ -102,6 +104,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir','-d',help='directory with json files')
 parser.add_argument('--json','-j',help='json file to plot')
 parser.add_argument('--data',help='plot data only',action='store_true')
+parser.add_argument('--gif',help='make gif only (needs plots already made)',action='store_true')
 args = parser.parse_args()
 
 if args.dir is None and args.json is None:
@@ -130,6 +133,7 @@ if args.json is not None:
 	files.append(args.json)
 
 
+gifcmd = ''
 for f in files:
 	if ".json" not in f:
 		continue
@@ -137,9 +141,13 @@ for f in files:
 	if args.dir is not None:
 		name = f[:f.find(".json")]
 		print("Writing to",args.dir+"/"+name+".pdf")
-		fig.write_image(args.dir+"/"+name+".pdf")
+		if not args.gif:
+			fig.write_image(args.dir+"/"+name+".pdf")
+		gifcmd += args.dir+"/"+name+".pdf "
 	if args.data:
 		break
+
+gifcmd += args.dir+"/total.gif"
 fig.show()
 if args.dir is not None:
-	os.system("convert -delay 50 -loop 1 "+args.dir+"/*.pdf "+args.dir+"/total.gif");
+	os.system("convert -delay 50 -loop 1 "+gifcmd)#+args.dir+"/*.pdf "+args.dir+"/total.gif");
