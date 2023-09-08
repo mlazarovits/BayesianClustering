@@ -37,7 +37,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		void MakeIDHists(){
 			//signal
 			plotCat sig;
-			sig.legName = "#Chi #rightarrow #gamma";
+			sig.legName = "#Chi^0 #rightarrow #gamma";
 			sig.plotName = "chiGam";
 			sig.ids = {22, 32, 25, 35};
 			plotCats.push_back(sig);
