@@ -120,9 +120,34 @@ class BasePDFMixture : public BasePDF{
 		}
 		
 		//ie gets subcluster average energy (within subcluster) - returns average weight per subcluster
-		void GetAvgWeights(vector<double>& v){  v.clear(); for(int k = 0; k < m_k; k++){ 
-			//cout << "k: " << k << " m_norm: " << m_norms[k] << " m_norms_unwt: " << m_norms_unwt[k] << endl; 
-			v.push_back(m_norms[k]/m_norms_unwt[k]); }}  
+		void GetAvgWeights(vector<double>& v){
+			v.clear(); for(int k = 0; k < m_k; k++){ 
+			v.push_back(m_norms[k]/m_norms_unwt[k]); }
+		}  
+		void GetAvgVarWeights(vector<double>& v){
+			//maps original idx to coeff weight
+			vector<pair<int,double>> mweight;
+			for(int k = 0; k < m_k; k++) mweight.push_back(std::make_pair(k,(m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n)));
+			//sort by mixing coeff weight - insertion sort
+			int i, j;
+			pair<int, double> t;
+			for(i = 2; i < m_k; i++){
+				t = mweight[i]; j = i;
+				while(mweight[j-1].second > t.second){
+					mweight[j] = mweight[j-1]; j--;
+				}
+				mweight[j] = t;
+			}
+
+			
+
+			v.clear();
+			int idx; 
+			for(int k = 0; k < m_k; k++){
+				idx = mweight[k].first; 
+				v.push_back(m_norms[idx]/m_norms_unwt[idx]);
+			}
+		}  
 
 		PointCollection* m_data;
 		//number of data points

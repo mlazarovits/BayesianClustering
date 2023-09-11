@@ -52,3 +52,9 @@ There are muliple visualization classes:
 ### Plotting
 - to add a new histogram to the skims, need to declare it in BaseSkimmer and push it back to the vector in ctor
 	- fill histogram in the derived object skimmer
+
+
+### Development
+- `local` branch is for debugging the algorithm + framework
+	- this branch won't have access to larger samples outside of what ROOT files are currently in that branch
+- `main` branch should be run on LPC with corresponding MakeClass (`ReducedBase` class) for sample to run over

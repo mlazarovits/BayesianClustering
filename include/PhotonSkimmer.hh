@@ -133,7 +133,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
 			
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
-			model->GetAvgWeights(avg_Es);
+			model->GetAvgVarWeights(avg_Es);
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
@@ -185,10 +185,12 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = eigenvals_space[2]/rot2D;
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
 
-			
-
-
 			}
+			//leading cluster avg energy
+			plotCats[id_idx].hists1D[12]->Fill(avg_Es[0]*npts);
+			//subleading cluster avg energy - if it exists
+			if(nclusters > 1) plotCats[id_idx].hists1D[13]->Fill(avg_Es[1]*npts);
+
 		}
 
 		void FillTotalHists(BasePDFMixture* model){
