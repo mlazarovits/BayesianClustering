@@ -60,11 +60,11 @@ void PhotonSkimmer::Skim(){
 	for(int i = 0; i < _nEvts; i++){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();
+		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;
 		for(int p = 0; p < nPho; p++){
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, i, p);
-			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
-			if(i % 1000 == 0) cout << "Finished " << i << " events of " << _nEvts << endl;
+			cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			gmm = algo->FindSubjets(Jet(rhs));
 	
 			phoid = _base->Photon_genLlpId->at(p);
