@@ -64,6 +64,7 @@ void PhotonSkimmer::Skim(){
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, i, p);
 			cout << "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size() << "\r" << flush;
+			if(i % 1000 == 0) cout << "Finished " << i << " events of " << _nEvts << endl;
 			gmm = algo->FindSubjets(Jet(rhs));
 	
 			phoid = _base->Photon_genLlpId->at(p);
