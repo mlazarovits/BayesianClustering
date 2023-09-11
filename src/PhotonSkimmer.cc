@@ -25,7 +25,10 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
-	TFile* ofile = new TFile("plots/photon_skims_v6.root","RECREATE");
+
+	string fname = "plots/photon_skims_"+_cms_label+".root";
+	cout << "Writing skim to: " << fname << endl;
+	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
 
 	//create histograms to be filled
 	MakeIDHists();
