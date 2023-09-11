@@ -254,6 +254,10 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = eigenvals_space[2]/rot2D;
 				rotundity_2D->Fill(rot2D);
 			}
+			//leading cluster avg energy
+			e_avg_lead->Fill(avg_Es[0]*npts);
+			//subleading cluster avg energy - if it exists
+			if(nclusters > 1) e_avg_sublead->Fill(avg_Es[1]*npts);
 		}
 
 
