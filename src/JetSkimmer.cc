@@ -39,11 +39,10 @@ JetSkimmer::JetSkimmer(TFile* file){
 
 //make cluster param histograms
 void JetSkimmer::Skim(){
-	TFile* ofile = new TFile("plots/jet_skims_v6.root","RECREATE");
-	
-	
+	string fname = "plots/jet_skims_"+_cms_label+".root";
+	cout << "Writing skim to: " << fname << endl;
+	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
 
-	//create data smear matrix - smear in eta/phi
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = acos(-1)/360.; //1 degree in radians
@@ -67,15 +66,19 @@ void JetSkimmer::Skim(){
 	map<string, Matrix> params;
 
 	vector<JetPoint> rhs;
+	double k;
 	for(int i = 0; i < _nEvts; i++){
 		_base->GetEntry(i);
 		//find subclusters for each photon
 		_prod->GetRecHits(rhs, i);
-		cout << "evt: " << i << " of " << _nEvts << " nrhs: " << rhs.size() << "\r" << flush;
+		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << flush;
 
 		//need to cluster - full algo	
 		gmm = algo->FindSubjets(Jet(rhs));
-		FillTotalHists(gmm);
+		//get weight transfer factor - w_n/E_n = N/sum_n E_n for n rhs in a photon supercluster
+		k = gmm->GetData()->at(0).w()/rhs[0].E();
+		
+		FillTotalHists(gmm, k);
 		
 		//jet specific hists
 		nTrueJets->Fill((double)_base->Jet_energy->size());	

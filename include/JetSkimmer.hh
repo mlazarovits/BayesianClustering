@@ -28,7 +28,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		//all hists referenced here are in hists1D
-		void FillTotalHists(BasePDFMixture* model){
+		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es;
 			vector<Matrix> eigenvecs;
@@ -66,7 +66,7 @@ class JetSkimmer : public BaseSkimmer{
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy
-				e_avg->Fill(avg_Es[k]);
+				e_avg->Fill(avg_Es[k]/w_n);
 			}
 		}
 		void WriteHists(TFile* ofile){
