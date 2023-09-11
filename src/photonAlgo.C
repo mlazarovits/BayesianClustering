@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	bool weighted = false;
 	bool smeared = false;
 	bool skim = false;
+	bool data = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -113,6 +114,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
    		}
+		if(strncmp(argv[i],"--data", 6) == 0){
+    	 		data = true;
+   		}
 
 	}
 	if(hprint){
@@ -131,6 +135,7 @@ int main(int argc, char *argv[]){
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
+   		cout << "   --data                        run over data (JetHT sample) (default = false)" << endl;
    		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
    		return 0;
@@ -160,9 +165,24 @@ int main(int argc, char *argv[]){
 	if(smeared) fname += "_EtaPhiSmear";
 
 	/////GET DATA FROM NTUPLE//////
-	string in_file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
-	fname += "_v6";
+	string in_file, cmslab;
+
+	//local file
+	//in-file = "GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
 	
+
+	if(data){
+		in_file = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_0/src/KUCMSNtupleizer/KUCMSNtupleizer/JetHT_Met50_AOD_v2_JetHT_AOD_Run2018A-15Feb2022_UL2018-v2.root";
+		cmslab = "JetHT_Met50_2018_v2";
+		fname += "_JetHT_v2";
+	}
+	
+	else{
+		in_file = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_0/src/KUCMSNtupleizer/KUCMSNtupleizer/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root";
+		cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v9";	
+		fname += "_GMSB_v9";
+	}
+
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
@@ -180,6 +200,7 @@ int main(int argc, char *argv[]){
 	if(skim){
 		cout << "Skimming photons + subclusters" << endl;
 		PhotonSkimmer skimmer(file);
+		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;
 	}
