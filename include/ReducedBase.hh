@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Aug 29 15:07:38 2023 by ROOT version 6.28/04
+// Mon Sep 11 10:31:45 2023 by ROOT version 6.26/07
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root
+// found on file: GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBase_h
 #define ReducedBase_h
@@ -297,7 +297,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   //virtual void     Loop();
+  // virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -309,11 +309,11 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root");
+         f = new TFile("GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("GMSB_AOD_v6_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root:/tree");
       dir->GetObject("ReducedBase",tree);
 
    }
