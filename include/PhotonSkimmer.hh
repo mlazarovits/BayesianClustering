@@ -130,7 +130,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix space_mat = Matrix(2,2);
 
 			int nclusters = model->GetNClusters();
-			plotCats[id_idx].hists1D[0]->Fill(nclusters);
 			
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
 			model->GetAvgVarWeights(avg_Es);
