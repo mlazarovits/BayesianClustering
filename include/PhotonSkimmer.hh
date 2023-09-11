@@ -123,7 +123,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 
 
-		void FillHists(BasePDFMixture* model, int id_idx){
+		void FillHists(BasePDFMixture* model, int id_idx, double w_n = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es, eigenvals_space;
 			vector<Matrix> eigenvecs, eigenvecs_space;
@@ -166,7 +166,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
-				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*npts);
+				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*w_n);
 			
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -187,20 +187,21 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			}
 			//leading cluster avg energy
-			plotCats[id_idx].hists1D[12]->Fill(avg_Es[0]*npts);
+			plotCats[id_idx].hists1D[12]->Fill(avg_Es[0]/w_n);
 			//subleading cluster avg energy - if it exists
-			if(nclusters > 1) plotCats[id_idx].hists1D[13]->Fill(avg_Es[1]*npts);
+			if(nclusters > 1) plotCats[id_idx].hists1D[13]->Fill(avg_Es[1]/w_n);
 
 		}
 
-		void FillTotalHists(BasePDFMixture* model){
+		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es, eigenvals_space;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
-			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
-			model->GetAvgWeights(avg_Es);
+			
+			//undoing transfer factor k
+			model->GetAvgVarWeights(avg_Es);
 			double npts = (double)model->GetData()->GetNPoints();
 
 
@@ -234,8 +235,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy
-				//w_n = E_n/N for N pts in sample
-				e_avg->Fill(avg_Es[k]*npts);
+				//w_n = N/W_n for N pts in sample
+				e_avg->Fill(avg_Es[k]/w_n);
 				
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -255,9 +256,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				rotundity_2D->Fill(rot2D);
 			}
 			//leading cluster avg energy
-			e_avg_lead->Fill(avg_Es[0]*npts);
+			e_avg_lead->Fill(avg_Es[0]/w_n);
 			//subleading cluster avg energy - if it exists
-			if(nclusters > 1) e_avg_sublead->Fill(avg_Es[1]*npts);
+			if(nclusters > 1) e_avg_sublead->Fill(avg_Es[1]/w_n);
 		}
 
 
