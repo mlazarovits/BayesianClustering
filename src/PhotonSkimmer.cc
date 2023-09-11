@@ -57,7 +57,8 @@ void PhotonSkimmer::Skim(){
 	
 	vector<JetPoint> rhs;
 	double phoid, k;
-	for(int i = 0; i < _nEvts; i++){
+	int eSkip = 1000;
+	for(int i = 0; i < _nEvts; i+=eSkip){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();
 		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;
@@ -66,6 +67,8 @@ void PhotonSkimmer::Skim(){
 			_prod->GetRecHits(rhs, i, p);
 			cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
+
+			if(rhs.size() < 1){ cout << "No RHs in supercluster" << endl; continue; }
 
 			gmm = algo->FindSubjets(Jet(rhs));
 			//get weight transfer factor - w_n/E_n = N/sum_n E_n for n rhs in a photon supercluster
