@@ -200,6 +200,7 @@ int main(int argc, char *argv[]){
 	if(skim){
 		cout << "Skimming photons + subclusters" << endl;
 		PhotonSkimmer skimmer(file);
+		skimmer.SetData(data);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;

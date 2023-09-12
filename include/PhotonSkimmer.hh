@@ -100,22 +100,25 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			ofile->cd();
 			for(int i = 0; i < (int)hists1D.size(); i++){
+				//write total hist to file
+				name = hists1D[i]->GetName();
+				TCanvas* cv = new TCanvas((name+"CANVAS").c_str(), "");
+				TDRHist(hists1D[i], cv, name, name, "a.u.");	
+				cv->Write();
+				
 				//make a vector for each type of histogram
 				for(int j = 0; j < (int)plotCats.size(); j++){
 					hists.push_back(plotCats[j].hists1D[i]);			
 					//should be 3 hists in this vector
 				}
-				FindListHistBounds(hists, ymin, ymax);
-				name = hists1D[i]->GetName();
 				name += "_stack";
-				TCanvas* cv = new TCanvas(name.c_str(), "");
-				TDRMultiHist(hists, cv, name, name, "a.u.",ymin, ymax, id_names);
+				FindListHistBounds(hists, ymin, ymax);
+				TCanvas* cv_stack = new TCanvas(name.c_str(), "");
+				TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
-				cv->Write();
-				//write total hist to file
-				hists1D[i]->Write();
-
+				cv_stack->Write();
+				
 				hists.clear();
 			}
 			ofile->Close();

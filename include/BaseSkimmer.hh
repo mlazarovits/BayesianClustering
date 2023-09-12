@@ -33,7 +33,9 @@ class BaseSkimmer{
 			//_nEvts = _base->fChain->GetEntries();
 			//_base->GetEntry(0);
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
-			
+		
+			_data = false;
+	
 			hists1D.push_back(nSubClusters);
 			hists1D.push_back(time_center);
 			hists1D.push_back(eta_center);
@@ -51,7 +53,7 @@ class BaseSkimmer{
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
-			delete _base;
+			//delete _base;
 		}
 
 		virtual void CleaningSkim() = 0;
@@ -61,6 +63,9 @@ class BaseSkimmer{
 		ReducedBase* _base = nullptr;
 		int _nEvts;
 		BaseProducer* _prod;
+		bool _data;
+
+		void SetData(bool d){ _data = d; }
 
 		string _cms_label;
 
@@ -86,13 +91,13 @@ class BaseSkimmer{
 		//subcluster energy - average
 		TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,50.);
 		//ellipsoid rotundity
-		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",50,0,10);
+		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",20,0,1.1);
 		//spatial rotundity
-		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",50,0,10);
+		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0,1.1);
 		//leading subcluster energy - average
 		TH1D* e_avg_lead = new TH1D("e_avg_lead","e_avg_lead",50,0.,50.);
 		//subleading subcluster energy - average
-		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
+		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",25,0.,50.);
 
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
@@ -114,6 +119,7 @@ class BaseSkimmer{
 			can->cd();
 			can->SetGridx(1);
 			can->SetGridy(1);
+			can->SetTitle("");
 			TLegend* myleg = new TLegend(0.7, 0.7, 0.8, 0.8 );
 			myleg->SetFillColor(0);
 			myleg->SetBorderSize(0);
@@ -152,7 +158,7 @@ class BaseSkimmer{
 			lat.SetTextSize(0.04);
 			lat.SetTextFont(42);
 			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			lat.DrawLatex(0.4,0.92,plot_title.c_str());
+			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 			return;
 		}
@@ -160,6 +166,7 @@ class BaseSkimmer{
 			can->cd();
 			can->SetGridx(1);
 			can->SetGridy(1);
+			hist->SetTitle("");
 			hist->UseCurrentStyle();
 			hist->SetStats(false);
 			hist->GetXaxis()->CenterTitle(true);
@@ -168,13 +175,13 @@ class BaseSkimmer{
 			hist->GetYaxis()->SetTitle(ytit.c_str());
 			hist->Draw();
 			
-			string lat_cms = "#bf{CMS} #it{WIP} 2017 GMSB";
+			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
 			TLatex lat;
 			lat.SetNDC();
 			lat.SetTextSize(0.04);
 			lat.SetTextFont(42);
 			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			lat.DrawLatex(0.4,0.92,plot_title.c_str());
+			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 			return;
 		}
