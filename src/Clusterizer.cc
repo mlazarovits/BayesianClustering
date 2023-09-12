@@ -30,7 +30,7 @@ Clusterizer::Clusterizer(vector<Jet> jets){
 
 Clusterizer::~Clusterizer(){ }
 
-void Clusterizer::Cluster(Jet jet, string fname){
+vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
 	
@@ -92,6 +92,8 @@ void Clusterizer::Cluster(Jet jet, string fname){
 			}
 		}
 	}
+
+	return tree;
 
 }
 

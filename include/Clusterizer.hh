@@ -5,9 +5,11 @@
 #include "Jet.hh"
 #include "JetTree.hh"
 #include "GaussianMixture.hh"
+#include "BaseTree.hh"
 #include <string>
 using std::string;
 using std::vector;
+using node = BaseTree::node;
 
 //this class is a wrapper for the clustering algorithms (see: fastjet::ClusterSequence)
 //should b a recursive implementation
@@ -31,7 +33,7 @@ class Clusterizer{
 
 		//runs everything (varGMM + BHC)
 		//change to run over generic points (or vector of rhs)
-		void Cluster(Jet jet, string fname = "");
+		vector<node*> Cluster(Jet jet, string fname = "");
 
 		//just runs varGMM over given jets
 		GaussianMixture* FindSubjets(Jet jet, string fname = "");
