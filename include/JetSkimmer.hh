@@ -28,7 +28,7 @@ class JetSkimmer : public BaseSkimmer{
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* tPV = new TH1D("tPV","tPV",100,-1.,1.);
 		//difference in tPV between two back-to-back jets
-		TH1D* tPV_res = new TH1D("tPV_res",100,-10.,10.);
+		TH1D* tPV_res = new TH1D("tPV_res","tPV_res",100,-10.,10.);
 
 		//all hists referenced here are in hists1D
 		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
@@ -40,8 +40,6 @@ class JetSkimmer : public BaseSkimmer{
 			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
 			model->GetAvgVarWeights(avg_Es);		
 			double theta, phi, r, id, npts;
-			//for energy weights since w_n = E_n*(N/sum_n E_n) s.t. sum_n w_n = N
-			npts = (double)gmm->GetData()->GetNPoints();	
 			nClusters->Fill((double)nclusters);
 			//k clusters = k jets in event -> subclusters are mixture model components
 			for(int k = 0; k < nclusters; k++){
