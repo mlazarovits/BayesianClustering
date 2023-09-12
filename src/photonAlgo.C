@@ -193,9 +193,9 @@ int main(int argc, char *argv[]){
 		cout << "Writing to directory: " << fname << endl;
 	}
 	//local file
-	in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
-	cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v9";	
-	fname += "_GMSB_v9";
+	//in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";//"gmsb_AODSIM_KUCMSNtuplizer_v4.root";
+	//cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v9";	
+	//fname += "_GMSB_v9";
 	
 
 	TFile* file = TFile::Open(in_file.c_str());

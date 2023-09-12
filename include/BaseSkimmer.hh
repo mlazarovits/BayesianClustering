@@ -188,21 +188,16 @@ class BaseSkimmer{
 
 
 		void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
-			//shellsort to find max, min
-			int N = (int)hists.size()-1;
+			//insert to find max, min
+			int N = (int)hists.size();
 			if(N < 1){ ymax = 0; ymin = 0; return; }
-			int i, j, h;
-			TH1D* v = nullptr;
-			for(h = 1; h <= N/9; h = 3*h+1) ;
-			for( ; h > 0; h /= 3)
-				for(i = h+1; i <= N; i += 1){
-					v = hists[i]; j = i;
-					while(j > h && hists[j - h]->GetMaximum() > v->GetMaximum()){ hists[j] = hists[j - h]; j -= h; }
-					hists[j] = v;
-				}
-		
-			ymax = hists[0]->GetMaximum();
-			ymin = hists[N-1]->GetMinimum();
+			ymax = -999;
+			ymin = 999;
+			for(int i = 0; i < N; i++){
+				if(hists[i]->GetMaximum() > ymax) ymax = hists[i]->GetMaximum();
+				if(hists[i]->GetMinimum() < ymin) ymin = hists[i]->GetMinimum();
+
+			}		
 
 		}
 

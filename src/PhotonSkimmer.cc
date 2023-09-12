@@ -57,7 +57,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<JetPoint> rhs;
 	double phoid, k;
-	int eSkip = 100;
+	int eSkip = 10000;
 	for(int i = 0; i < _nEvts; i+=eSkip){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();
@@ -67,20 +67,17 @@ void PhotonSkimmer::Skim(){
 			_prod->GetRecHits(rhs, i, p);
 			cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
-
-			if(rhs.size() < 1){ cout << "No RHs in supercluster" << endl; continue; }
-
+			if(rhs.size() < 1){ continue; }
 			gmm = algo->FindSubjets(Jet(rhs));
 			//get weight transfer factor - w_n/E_n = N/sum_n E_n for n rhs in a photon supercluster
 			k = gmm->GetData()->at(0).w()/rhs[0].E();
-	
-			phoid = _base->Photon_genLlpId->at(p);
-			//find corresponding histogram category (signal, ISR, notSunm)	
-			//split by LLP ID
-			//0 = signal: chi_any -> gamma (22, 32, 25, 35)
-			//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
-			//2 = not susy: p -> gamma, not matched (29, -1)
 			if(!_data){
+				//find corresponding histogram category (signal, ISR, notSunm)	
+				//split by LLP ID
+				//0 = signal: chi_any -> gamma (22, 32, 25, 35)
+				//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
+				//2 = not susy: p -> gamma, not matched (29, -1)
+				phoid = _base->Photon_genLlpId->at(p);
 				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
@@ -93,6 +90,7 @@ void PhotonSkimmer::Skim(){
 			rhs.clear();
 		}
 	}
+	cout << "\n" << endl;
 	WriteHists(ofile);
 
 }
