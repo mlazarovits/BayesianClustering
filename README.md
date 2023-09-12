@@ -48,6 +48,8 @@ There are muliple visualization classes:
 	- it can be composite (made up of multiple Jets) or singular (ie one rechit)
 	- these are the units that are clustered in `JetCluster` 
 - `Cluster` calls the full algorithm and runs the corresponding EM algorithm to find the cluster parameters
+	- it returns a vector of `node`s, where each `node` is a jet
+	- a jet's (node's) clustering history can be traced back individually through its parents
 - `FindSubjets` only calls the variational EM algorithm with Gaussian mixture model
 	- can be done in $\eta - \phi$ space or $X - Y - Z$ space, both with a time dimension
 
