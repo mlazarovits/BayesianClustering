@@ -44,8 +44,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCats.push_back(sig);
 			//ISR
 			plotCat ISR;
-			ISR.legName = "ISR";
-			ISR.plotName = "ISR";
+			ISR.legName = "FSR";
+			ISR.plotName = "FSR";
 			ISR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
 			plotCats.push_back(ISR);
 			//notSunm
@@ -181,7 +181,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
 	
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
-				rot2D = eigenvals_space[2]/rot2D;
+				rot2D = eigenvals_space[1]/rot2D;
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
 
 			}
@@ -249,9 +249,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				space_mat.SetEntry(params["cov"].at(1,0),1,0);	
 				space_mat.SetEntry(params["cov"].at(1,1),1,1);
 				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
-	
+
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
-				rot2D = eigenvals_space[2]/rot2D;
+				rot2D = eigenvals_space[1]/rot2D;
 				rotundity_2D->Fill(rot2D);
 			}
 			//leading cluster avg energy
