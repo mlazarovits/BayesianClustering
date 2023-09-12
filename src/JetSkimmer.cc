@@ -60,29 +60,31 @@ void JetSkimmer::Skim(){
 	algo->SetVerbosity(0);
 	algo->SetDataSmear(smear);
 
-
-	GaussianMixture* gmm = new GaussianMixture();
-	
 	map<string, Matrix> params;
-
+	vector<node*> tree;
 	vector<JetPoint> rhs;
 	double k;
 	for(int i = 0; i < _nEvts; i++){
 		_base->GetEntry(i);
-		//find subclusters for each photon
 		_prod->GetRecHits(rhs, i);
 		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << flush;
 
-		//need to cluster - full algo	
-		gmm = algo->FindSubjets(Jet(rhs));
-		//get weight transfer factor - w_n/E_n = N/sum_n E_n for n rhs in a photon supercluster
-		k = gmm->GetData()->at(0).w()/rhs[0].E();
+		//calculate transfer factor
+		k = 0;
+		for(int r = 0; r < (int)rhs.size(); i++) k += rhs[i].e();
+		k /= (double)rhs.size();
+
+
+		tree = algo->Cluster(Jet(rhs));
 		
-		FillTotalHists(gmm, k);
+		for(int i = 0; i < (int)tree.size(); i++){	
+			BasePDFMixture* model = tree[i]->model;
+			FillModelHists(model, k);
+		}
 		
 		//jet specific hists
 		nTrueJets->Fill((double)_base->Jet_energy->size());	
-
+		nClusters->Fill((double)tree.size());
 
 	}
 

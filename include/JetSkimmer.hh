@@ -7,7 +7,9 @@
 #include <TFile.h>
 #include "JetProducer.hh"
 #include "TSystem.h"
+#include "BaseTree.hh"
 
+using node = BaseTree::node;
 using plotCat = BaseSkimmer::plotCat;
 class JetSkimmer : public BaseSkimmer{
 	public:
@@ -30,20 +32,24 @@ class JetSkimmer : public BaseSkimmer{
 		//difference in tPV between two back-to-back jets
 		TH1D* tPV_res = new TH1D("tPV_res","tPV_res",100,-10.,10.);
 
+		//this is for one jet
 		//all hists referenced here are in hists1D
-		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
+		void FillModelHists(BasePDFMixture* model, double w_n = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es;
 			vector<Matrix> eigenvecs;
+			double theta, phi, r, id, npts;
+			double time = 0;
+			double time_denom = 0;
+
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
-			//e_nSubClusters->Fill(_base->Photon_energy->at(p), nclusters);
+			
 			model->GetAvgVarWeights(avg_Es);		
-			double theta, phi, r, id, npts;
 			nClusters->Fill((double)nclusters);
 			//k clusters = k jets in event -> subclusters are mixture model components
 			for(int k = 0; k < nclusters; k++){
-				params = model->GetParameters(k);
+				params = model->GetPriorParameters(k);
 				eta_center->Fill(params["mean"].at(0,0));
 				phi_center->Fill(params["mean"].at(1,0));
 				time_center->Fill(params["mean"].at(2,0));
@@ -70,8 +76,44 @@ class JetSkimmer : public BaseSkimmer{
 				
 				//average cluster energy
 				e_avg->Fill(avg_Es[k]/w_n);
+			
+
+				//move to CalculateTime
+				//avg time weighted by subcluster mixing coeff
+				time +=	params["mean"]->at(2,0)*params["pi"].at(0,0);
+				time_denom += params["pi"].at(0,0);
 			}
+			tPV->Fill(time/time_denom);
 		}
+		
+
+
+		//find back to back jets
+		void FillPVHists(vector<node*> tree){
+			int njets = (int)tree.size(); 
+			double time, dtime, dr;
+
+			//find pairs of jets to calculate resolution	
+			for(int i = 0; i < njets; i++){
+				for(int j = i; j < njets; j++){
+					//need to be back to back
+					//dphi = tree[i].phi-center - tree[j].phi-center
+					//if fabs(dphi) > pi+0.1 or fabs(dphi) < pi-0.1: continue (outside pi-0.1 to pi+0.1)
+					//dtime = CalculateTime(tree[i]) - CalculateTime(tree[j])		
+					//time of subclusters is measured as center
+					//do this for various time definitions - avg time weighted by mixing coeff, average time, median time	
+				}
+			}
+
+
+
+
+
+
+		}
+
+
+
 		void WriteHists(TFile* ofile){
 			string name;
 
