@@ -37,7 +37,10 @@ There are muliple visualization classes:
 	- run either `macros/Viz3DVarEM.py` (var EM) or `macros/Viz3DFullCluster.py` (full algo) over the json output
 	- for var EM, one json (plot) per iteration is produced into a directory
 	- for the full algorithm, one json is produced, with individual plots corresponding descending levels in the binary agglomeration tree
-
+- `FullViz3D.cc` provides visualization capabilities for the full algorithm
+	- this produces a single json file (and corresponding directory for pdfs to be deposited)
+	- to produce pdfs, run `python macros/Viz3DFullCluster.py -j [json_file]`
+		- this will produce pdfs and open the highest level clustering in a browser
 
 ### (Jet) Clustering (Physics-specific)
 - `JetProducer` either grabs rechits from specified ROOT file (NANOAOD/Ntuple) or simulates rechits to cluster
