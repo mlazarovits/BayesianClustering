@@ -120,9 +120,11 @@ int main(int argc, char *argv[]){
 	for(int i = 0; i < 2; i++){
 		//create symmetric matrix
 		Matrix sigma = Matrix(N,N);
-		sigma.InitRandomSymPosDef(0., 1., 111+i);
+		sigma.InitRandomSymPosDef(0., 1., 113+i);
 		Matrix mu = Matrix(N,1);
-		mu.InitRandom(0., 10., 1121+i);
+		mu.InitRandom(0., 10., 126+i);
+		//if(i == 0) mu.SetEntry(3.61005,2,0);
+		//if(i == 1) mu.SetEntry(2.32593,2,0);
 		cout << "mean " << i << endl;
 		mu.Print();
 		cout << "cov " << i << endl;

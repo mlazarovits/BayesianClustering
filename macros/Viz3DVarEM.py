@@ -35,10 +35,11 @@ def plot_json(jsonfile, dataonly = False):
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = "Plotly3", showscale = True, line=dict(
 			#size = 4, color = 'rgba(132,242,201,1.)', line=dict(
-				color = 'rgba(132, 242, 201, 1.)', width = 30)), showlegend = False))
+				color = w, width = 30)), showlegend = False,
+			))
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
-		fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
+		fig.update_layout(scene=dict(aspectmode= "auto"),title=plotname, template=None,zaxis_title='time')
 		return fig
 	
 
@@ -96,7 +97,8 @@ def plot_json(jsonfile, dataonly = False):
 				color = 'rgba(0, 0, 0, 1.)', width = 30)), showlegend = False))
 	
 	fig = go.Figure(gr_arr)
-	fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
+	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
+	#fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
 	return fig
 
 
@@ -147,7 +149,7 @@ for f in files:
 	if args.data:
 		break
 
-gifcmd += args.dir+"/total.gif"
 fig.show()
 if args.dir is not None:
+	gifcmd += args.dir+"/total.gif"
 	os.system("convert -delay 50 -loop 1 "+gifcmd)#+args.dir+"/*.pdf "+args.dir+"/total.gif");
