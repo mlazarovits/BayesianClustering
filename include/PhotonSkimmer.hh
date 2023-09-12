@@ -102,7 +102,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				//write total hist to file
 				name = hists1D[i]->GetName();
-				TCanvas* cv = new TCanvas((name+"CANVAS").c_str(), "");
+				TCanvas* cv = new TCanvas((name).c_str(), "");
 				TDRHist(hists1D[i], cv, name, name, "a.u.");	
 				cv->Write();
 				
@@ -111,9 +111,8 @@ class PhotonSkimmer : public BaseSkimmer{
 					hists.push_back(plotCats[j].hists1D[i]);			
 					//should be 3 hists in this vector
 				}
-				name += "_stack";
 				FindListHistBounds(hists, ymin, ymax);
-				TCanvas* cv_stack = new TCanvas(name.c_str(), "");
+				TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
 				TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());

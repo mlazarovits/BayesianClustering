@@ -5,6 +5,7 @@
 #include "JetPoint.hh"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TSystem.h"
 #include "TLegend.h"
 #include "TStyle.h"
 #include "TPad.h"
@@ -21,6 +22,7 @@ class BaseProducer{
 
 			//grab rec hit values
 			//x, y, z, time (adjusted), energy, phi, eta
+			if(gSystem->AccessPathName(file->GetName())){ cout << "Error: file " << file->GetName() << " doesn't exist." << endl; return; }
 			_file = file;
 			TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			_base = new ReducedBase(tree);
