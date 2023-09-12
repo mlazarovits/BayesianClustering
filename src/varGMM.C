@@ -122,8 +122,7 @@ int main(int argc, char *argv[]){
 		Matrix sigma = Matrix(N,N);
 		sigma.InitRandomSymPosDef(0., 1., 111+i);
 		Matrix mu = Matrix(N,1);
-//		mu.InitRandom(0., 10., 1121+i);
-		mu.InitRandom(0., 10., 1121+i+1);
+		mu.InitRandom(0., 10., 1121+i);
 		cout << "mean " << i << endl;
 		mu.Print();
 		cout << "cov " << i << endl;
