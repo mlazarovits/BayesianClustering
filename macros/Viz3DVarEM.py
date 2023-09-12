@@ -92,7 +92,7 @@ def plot_json(jsonfile, dataonly = False):
 
 		#draw means
 		gr_arr.append(go.Scatter3d(x=[x0],y=[y0],z=[z0],mode='markers',marker=dict(
-			size = 4, color = 'rgba(0,0,0,1.)', symbol='x', line=dict(
+			size = 3, color = 'rgba(0,0,0,1.)', symbol='x', line=dict(
 				color = 'rgba(0, 0, 0, 1.)', width = 30)), showlegend = False))
 	
 	fig = go.Figure(gr_arr)
