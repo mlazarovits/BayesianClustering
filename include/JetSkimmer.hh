@@ -80,7 +80,7 @@ class JetSkimmer : public BaseSkimmer{
 
 				//move to CalculateTime
 				//avg time weighted by subcluster mixing coeff
-				time +=	params["mean"]->at(2,0)*params["pi"].at(0,0);
+				time +=	params["mean"].at(2,0)*params["pi"].at(0,0);
 				time_denom += params["pi"].at(0,0);
 			}
 			tPV->Fill(time/time_denom);
