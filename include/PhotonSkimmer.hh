@@ -168,7 +168,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
-				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]*w_n);
+				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]/w_n);
 			
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
