@@ -270,6 +270,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_meanBeta0.mult(m_mean0, m_beta0);
 	//W <- R in dxd space - is a covariance matrix
 	m_W0 = Matrix(m_dim, m_dim);
+	//this is the inverse prior covariance
 	m_W0.InitIdentity();
 	//least informative prior - nu0^-1*sigma0^-1
 	m_W0.mult(m_W0,1./m_nu0);
