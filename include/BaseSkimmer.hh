@@ -97,7 +97,7 @@ class BaseSkimmer{
 		//leading subcluster energy - average
 		TH1D* e_avg_lead = new TH1D("e_avg_lead","e_avg_lead",50,0.,50.);
 		//subleading subcluster energy - average
-		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",25,0.,50.);
+		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
 
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
