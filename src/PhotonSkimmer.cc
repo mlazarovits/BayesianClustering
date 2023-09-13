@@ -58,6 +58,8 @@ void PhotonSkimmer::Skim(){
 	vector<JetPoint> rhs;
 	double phoid, k;
 	int eSkip = 10;
+	if(_debug){ eSkip = 1000; }
+
 	for(int i = 0; i < _nEvts; i+=eSkip){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();

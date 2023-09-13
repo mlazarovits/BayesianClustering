@@ -139,7 +139,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
-			double theta, phi, r, rot2D, rot3D;
+			double theta, phi, r, rot2D, rot3D, vel;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				plotCats[id_idx].hists1D[1]->Fill(params["mean"].at(2,0));
@@ -186,6 +186,13 @@ class PhotonSkimmer : public BaseSkimmer{
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
 				rot2D = eigenvals_space[1]/rot2D;
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
+				
+				//velocity = z/r * rad/deg * deg/cm => ns/cm
+				vel = (eigenvecs[2].at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+				vel = 1./vel;
+				plotCats[id_idx].hists1D[14]->Fill(vel);
+			
+
 
 			}
 			//leading cluster avg energy
@@ -209,7 +216,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			Matrix space_mat = Matrix(2,2);
 	
-			double theta, phi, r, rot2D, rot3D;
+			double theta, phi, r, rot2D, rot3D, vel;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
 				time_center->Fill(params["mean"].at(2,0));
@@ -231,6 +238,12 @@ class PhotonSkimmer : public BaseSkimmer{
 				r = sqrt(eigenvecs[2].at(0,0)*eigenvecs[2].at(0,0) + eigenvecs[2].at(1,0)*eigenvecs[2].at(1,0) + eigenvecs[2].at(2,0)*eigenvecs[2].at(2,0));
 				theta = acos( eigenvecs[2].at(2,0) / r );
 				polar_ang->Fill(theta);
+		
+				//velocity = z/r * rad/deg * deg/cm => ns/cm
+				vel = (eigenvecs[2].at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+				vel = 1./vel;
+				velocity->Fill(vel);
+
 				//azimuthal angle
 				//phi = arctan(y/x)
 				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));

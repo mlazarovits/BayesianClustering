@@ -35,7 +35,7 @@ class BaseSkimmer{
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
 			_data = false;
-	
+			_debug = false;	
 			hists1D.push_back(nSubClusters);
 			hists1D.push_back(time_center);
 			hists1D.push_back(eta_center);
@@ -50,6 +50,7 @@ class BaseSkimmer{
 			hists1D.push_back(rotundity_2D);
 			hists1D.push_back(e_avg_lead);
 			hists1D.push_back(e_avg_sublead);
+			hists1D.push_back(velocity);
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
@@ -64,8 +65,11 @@ class BaseSkimmer{
 		int _nEvts;
 		BaseProducer* _prod;
 		bool _data;
+		bool _debug;
+
 
 		void SetData(bool d){ _data = d; }
+		void SetDebug(bool d){ _debug = d; }
 
 		string _cms_label;
 
@@ -82,7 +86,7 @@ class BaseSkimmer{
 		TH1D* slope_space = new TH1D("slope_space","slope_space",50,-30,30);
 		//eta-time slope
 		TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-2,2);
-		//phi-time slop
+		//phi-time slope
 		TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
 		//polar angle
 		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-0.5,3.5);		
@@ -98,7 +102,8 @@ class BaseSkimmer{
 		TH1D* e_avg_lead = new TH1D("e_avg_lead","e_avg_lead",50,0.,50.);
 		//subleading subcluster energy - average
 		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
-
+		//velocity = z/r*k for k transfer factor to velocity units
+		TH1D* velocity = new TH1D("velocity","velocity",50,-200,200);
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
