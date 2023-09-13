@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
 	bool smeared = false;
 	bool skim = false;
 	bool data = false;
+	bool debug = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -117,6 +118,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--data", 6) == 0){
     	 		data = true;
    		}
+		if(strncmp(argv[i],"--debug", 7) == 0){
+    	 		debug = true;
+   		}
 
 	}
 	if(hprint){
@@ -136,6 +140,7 @@ int main(int argc, char *argv[]){
    		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "   --data                        run over data (JetHT sample) (default = false)" << endl;
+   		cout << "   --debug                       debug mode (default = false)" << endl;
    		cout << "Example: ./photonAlgo.x -a 0.5 -t 1.6 --viz -o photonViz" << endl;
 
    		return 0;
@@ -203,6 +208,7 @@ int main(int argc, char *argv[]){
 		cout << "Skimming photons + subclusters" << endl;
 		PhotonSkimmer skimmer(file);
 		skimmer.SetData(data);
+		skimmer.SetDebug(debug);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;
