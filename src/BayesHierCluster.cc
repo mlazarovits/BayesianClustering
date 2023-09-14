@@ -1,9 +1,11 @@
 #include "BayesHierCluster.hh"
+#include "TriangularPDF.hh"
 #include "NodeStack.hh"
 #include "MergeTree.hh"
 
 
-BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; }
+BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; _constraint_d = 0; _constraint_thresh = -999; }
+		
 
 
 BayesHierCluster::BayesHierCluster(double alpha){
@@ -11,6 +13,9 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_verb = 0;
 	_thresh = 1;
 	_mergeTree->SetThresh(_thresh);
+
+	_constraint_d = 0;
+	_constraint_thresh = -999;
 }
 
 
@@ -23,6 +28,23 @@ void BayesHierCluster::SetAlpha(double a){
 	_mergeTree->SetAlpha(_alpha);
 }
 
+
+
+double BayesHierCluster::DistanceConstraint(node* i, node* j){
+	double cent1 = i->points->Centroid(_constraint_d);
+	double cent2 = j->points->Centroid(_constraint_d);
+
+	if(fabs(cent1 - cent2) > _constraint_thresh){
+		return 0;
+	}	
+
+	double c = (_constraint_a + _constraint_b)/2.;
+
+	TriangularPDF* tri = new TriangularPDF(_constraint_a,_constraint_b,c);
+	
+	return tri->Prob((cent1 - cent2));	
+
+}
 
 vector<node*> BayesHierCluster::Cluster(){
 	int n;
@@ -47,8 +69,15 @@ vector<node*> BayesHierCluster::Cluster(){
 			dj = _mergeTree->Get(j);
 			//calculate posterior for potential merge
 			node *x = _mergeTree->CalculateMerge(di, dj);
+			
+			//modify probability of merge (rk) by distance constraint if specified
+			if(_constraint_thresh != -999){
+				x->val *= DistanceConstraint(di,dj);		
+			}	
+		
 		//	//insert into search tree
 			_list.insert(x);	
+	
 		}
 	}
 	vector<node*> nodes;
@@ -109,6 +138,11 @@ vector<node*> BayesHierCluster::Cluster(){
 			if(di == max) continue;
 			node* x = _mergeTree->CalculateMerge(di, max);
 			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
+			//modify probability of merge (rk) by distance constraint if specified
+			if(_constraint_thresh != -999){
+				x->val *= DistanceConstraint(di,dj);		
+			}	
+			
 			_list1.insert(x);
 		}
 		//cout << "list1" << endl;
