@@ -128,14 +128,15 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void FillHists(BasePDFMixture* model, int id_idx, double w_n = 1.){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
 
 			int nclusters = model->GetNClusters();
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
-			
 			model->GetAvgVarWeights(avg_Es);
+			model->GetNormsUnwt(npts_unwt);
+			
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
@@ -197,6 +198,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 			//leading cluster avg energy
 			plotCats[id_idx].hists1D[12]->Fill(avg_Es[0]/w_n);
+			//leading cluster npts
+			npts_lead->Fill(npts_unwt[0]);
 			//subleading cluster avg energy - if it exists
 			if(nclusters > 1) plotCats[id_idx].hists1D[13]->Fill(avg_Es[1]/w_n);
 
@@ -204,15 +207,14 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
 			
-			//undoing transfer factor k
 			model->GetAvgVarWeights(avg_Es);
+			model->GetNormsUnwt(npts_unwt);
 			double npts = (double)model->GetData()->GetNPoints();
-
 
 			Matrix space_mat = Matrix(2,2);
 	
@@ -252,7 +254,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = N/W_n for N pts in sample
 				e_avg->Fill(avg_Es[k]/w_n);
-				
+				//e_tot->Fill(npts_unwt*w_n);			
+	
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
 				rot3D = eigenvals[2]/rot3D;
@@ -272,6 +275,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 			//leading cluster avg energy
 			e_avg_lead->Fill(avg_Es[0]/w_n);
+			//leading cluster npts
+			npts_lead->Fill(npts_unwt[0]);
 			//subleading cluster avg energy - if it exists
 			if(nclusters > 1) e_avg_sublead->Fill(avg_Es[1]/w_n);
 		}

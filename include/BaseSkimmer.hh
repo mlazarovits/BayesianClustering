@@ -51,6 +51,9 @@ class BaseSkimmer{
 			hists1D.push_back(e_avg_lead);
 			hists1D.push_back(e_avg_sublead);
 			hists1D.push_back(velocity);
+			hists1D.push_back(npts_lead);
+			hists1D.push_back(fracpts_lead);
+			hists1D.push_back(fracE_lead);
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
@@ -104,6 +107,12 @@ class BaseSkimmer{
 		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
 		//velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",50,-200,200);
+		//number of pts in lead subcluster
+		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,100);
+		//fraction of pts in lead subcluster
+		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,100);
+		//fraction of energy in lead subcluster
+		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
