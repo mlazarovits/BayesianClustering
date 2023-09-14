@@ -54,6 +54,12 @@ class BaseSkimmer{
 			hists1D.push_back(npts_lead);
 			hists1D.push_back(fracpts_lead);
 			hists1D.push_back(fracE_lead);
+		
+
+			hists2D.push_back(time_avgE);
+			hists2D.push_back(time_avgE_lead);
+			hists2D.push_back(time_avgE_sublead);
+
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
@@ -114,11 +120,20 @@ class BaseSkimmer{
 		//fraction of energy in lead subcluster
 		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
 
+
+		//two dimensional histograms
+		vector<TH2D*> hists2D;
+		TH2D* time_avgE = new TH2D("time_avgE","time_avgE", 50,-30,30,50,0,50);
+		TH2D* time_avgE_lead = new TH2D("time_avgE_lead","time_avgE_lead", 50,-30,30,50,0,50);
+		TH2D* time_avgE_sublead = new TH2D("time_avgE_sublead","time_avgE_sublead", 50,-30,30,50,0,50);
+
+
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
 			string legName;
 			string plotName;
 			vector<TH1D*> hists1D;
+			vector<TH2D*> hists2D;
 			vector<double> ids;
 		};
 

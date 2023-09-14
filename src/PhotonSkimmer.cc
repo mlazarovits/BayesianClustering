@@ -98,7 +98,9 @@ void PhotonSkimmer::Skim(){
 }
 
 void PhotonSkimmer::CleaningSkim(){
-	TFile* ofile = new TFile("plots/photon_cleaningSkims.root","RECREATE");
+	string fname = "plots/photon_clean_skims_"+_cms_label+".root";
+	cout << "Writing skim to: " << fname << endl;
+	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
 	//rh time
 	TH1D* t_rh = new TH1D("t_rh","t_rh",50,-150, 150);
 	//rh time vs. rh e
@@ -112,14 +114,17 @@ void PhotonSkimmer::CleaningSkim(){
 
 	int nPho;
 	vector<JetPoint> rhs;
-	for(int i = 0; i < _nEvts; i++){
+	int eSkip = 10;
+	if(_debug){ eSkip = 1000; }
+
+	for(int i = 0; i < _nEvts; i+=eSkip){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();
 		for(int p = 0; p < nPho; p++){
 			phoE->Fill(_base->Photon_energy->at(p));
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, i, p);
-			//cout << "evt #" << i << " photon #" << p << " nrhs: " << rhs.size() << endl;
+			cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			for(int r = 0; r < (int)rhs.size(); r++){
 				t_rh->Fill(rhs[r].t());
 				TvErh->Fill(rhs[r].t(), rhs[r].E());
