@@ -127,18 +127,27 @@ class BasePDFMixture : public BasePDF{
 		void GetAvgVarWeights(vector<double>& v){
 			for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]);
 
-			sortByVarCoeff(v);
-
 		}  
 
 
-		void sortByVarCoeff(vector<double>& v){
-			if((int)v.size() != m_k) return;
+		void GetNormsUnwt(vector<double>& v){
+			for(int k = 0; k < m_k; k++) v.push_back(m_norms_unwt[k]);
+		}
+
+
+		void sortedIdxs(vector<int>& idxs){
 			vector<pair<int,double>> mweight;
 			for(int k = 0; k < m_k; k++) mweight.push_back(std::make_pair(k,(m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n)));
 			//sort by mixing coeff weight - insertion sort
 			int i, j;
 			pair<int, double> t;
+			if(m_k < 3){
+				if(m_k < 2) idxs = {0};
+				if(mweight[0].second < mweight[1].second){
+					idxs = {1, 0};
+				}
+				else{ idxs = {0, 1}; }
+			}
 			for(i = 2; i < m_k; i++){
 				t = mweight[i]; j = i;
 				while(mweight[j-1].second > t.second){
@@ -146,22 +155,14 @@ class BasePDFMixture : public BasePDF{
 				}
 				mweight[j] = t;
 			}
-
-			v.clear();
-			vector<double> w;
-			int idx; 
+			int idx;	
 			for(int k = 0; k < m_k; k++){
 				idx = mweight[k].first; 
-				w.push_back(v[idx]);
+				idxs.push_back(idx);
 			}
-			v = w;
+
 		}
 
-
-		void GetNormsUnwt(vector<double>& v){
-			for(int k = 0; k < m_k; k++) v.push_back(m_norms_unwt[k]);
-			sortByVarCoeff(v);
-		}
 
 		PointCollection* m_data;
 		//number of data points
