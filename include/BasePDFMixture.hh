@@ -125,7 +125,15 @@ class BasePDFMixture : public BasePDF{
 			v.push_back(m_norms[k]/m_norms_unwt[k]); }
 		}  
 		void GetAvgVarWeights(vector<double>& v){
-			//maps original idx to coeff weight
+			for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]);
+
+			sortByVarCoeff(v);
+
+		}  
+
+
+		void sortByVarCoeff(vector<double>& v){
+			if((int)v.size() != m_k) return;
 			vector<pair<int,double>> mweight;
 			for(int k = 0; k < m_k; k++) mweight.push_back(std::make_pair(k,(m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n)));
 			//sort by mixing coeff weight - insertion sort
@@ -139,15 +147,21 @@ class BasePDFMixture : public BasePDF{
 				mweight[j] = t;
 			}
 
-			
-
 			v.clear();
+			vector<double> w;
 			int idx; 
 			for(int k = 0; k < m_k; k++){
 				idx = mweight[k].first; 
-				v.push_back(m_norms[idx]/m_norms_unwt[idx]);
+				w.push_back(v[idx]);
 			}
-		}  
+			v = w;
+		}
+
+
+		void GetNormsUnwt(vector<double>& v){
+			for(int k = 0; k < m_k; k++) v.push_back(m_norms_unwt[k]);
+			sortByVarCoeff(v);
+		}
 
 		PointCollection* m_data;
 		//number of data points
