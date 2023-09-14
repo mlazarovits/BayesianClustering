@@ -68,6 +68,17 @@ class PhotonSkimmer : public BaseSkimmer{
 				}
 		
 			}
+			for(int i = 0; i < (int)hists2D.size(); i++){
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH2D* hist = (TH2D*)hists2D[i]->Clone();
+					plotCats[j].hists2D.push_back(hist);
+					name = hists2D[i]->GetName();
+					name += "_"+plotCats[j].plotName;
+					plotCats[j].hists2D[i]->SetName(name.c_str());
+					plotCats[j].hists2D[i]->SetTitle("");
+				}
+		
+			}
 
 		}
 
@@ -128,14 +139,15 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void FillHists(BasePDFMixture* model, int id_idx, double w_n = 1.){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
 
 			int nclusters = model->GetNClusters();
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
-			
 			model->GetAvgVarWeights(avg_Es);
+			model->GetNormsUnwt(npts_unwt);
+			
 			double npts = (double)model->GetData()->GetNPoints();
 
 			//cout << "FillHists - starting subcluster loop" << endl;	
@@ -169,6 +181,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
 				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]/w_n);
+				plotCats[id_idx].hists2D[0]->Fill(params["mean"].at(2,0), avg_Es[k]/w_n);
 			
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -195,24 +208,36 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 			}
+			vector<int> idxs;
+			model->sortedIdxs(idxs);
 			//leading cluster avg energy
-			plotCats[id_idx].hists1D[12]->Fill(avg_Es[0]/w_n);
-			//subleading cluster avg energy - if it exists
-			if(nclusters > 1) plotCats[id_idx].hists1D[13]->Fill(avg_Es[1]/w_n);
+			plotCats[id_idx].hists1D[12]->Fill(avg_Es[idxs[0]]/w_n);
+			//leading cluster npts
+			plotCats[id_idx].hists1D[15]->Fill(npts_unwt[idxs[0]]);
+			//leading cluster time v energy
+			params = model->GetPriorParameters(idxs[0]);
+			plotCats[id_idx].hists2D[1]->Fill(params["mean"].at(2,0),avg_Es[idxs[0]]/w_n);
+			if(nclusters > 1){
+				//subleading cluster avg energy - if it exists
+				plotCats[id_idx].hists1D[13]->Fill(avg_Es[idxs[1]]/w_n);
+				//leading cluster time v energy
+				params = model->GetPriorParameters(idxs[1]);
+				plotCats[id_idx].hists2D[2]->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n);
+			}
 
 		}
 
 		void FillTotalHists(BasePDFMixture* model, double w_n = 1.){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es, eigenvals_space;
+			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
-			
-			//undoing transfer factor k
+		
+	
 			model->GetAvgVarWeights(avg_Es);
+			model->GetNormsUnwt(npts_unwt);
 			double npts = (double)model->GetData()->GetNPoints();
-
 
 			Matrix space_mat = Matrix(2,2);
 	
@@ -252,7 +277,10 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = N/W_n for N pts in sample
 				e_avg->Fill(avg_Es[k]/w_n);
-				
+				//e_tot->Fill(npts_unwt*w_n);			
+
+				time_avgE->Fill(params["mean"].at(2,0), avg_Es[k]/w_n);
+	
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
 				rot3D = eigenvals[2]/rot3D;
@@ -270,10 +298,22 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = eigenvals_space[1]/rot2D;
 				rotundity_2D->Fill(rot2D);
 			}
+			vector<int> idxs;
+			model->sortedIdxs(idxs);
 			//leading cluster avg energy
-			e_avg_lead->Fill(avg_Es[0]/w_n);
-			//subleading cluster avg energy - if it exists
-			if(nclusters > 1) e_avg_sublead->Fill(avg_Es[1]/w_n);
+			e_avg_lead->Fill(avg_Es[idxs[0]]/w_n);
+			//leading cluster npts
+			npts_lead->Fill(npts_unwt[idxs[0]]);
+			//leading cluster time v energy
+			params = model->GetPriorParameters(idxs[0]);
+			time_avgE_lead->Fill(params["mean"].at(2,0),avg_Es[idxs[0]]/w_n);
+			if(nclusters > 1){
+				//subleading cluster avg energy - if it exists
+				e_avg_sublead->Fill(avg_Es[idxs[1]]/w_n);
+				//leading cluster time v energy
+				params = model->GetPriorParameters(idxs[1]);
+				time_avgE_sublead->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n);
+			}
 		}
 
 

@@ -210,6 +210,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetData(data);
 		skimmer.SetDebug(debug);
 		skimmer.SetCMSLabel(cmslab);
+		//skimmer.CleaningSkim();
 		skimmer.Skim();
 		return 0;
 	}
