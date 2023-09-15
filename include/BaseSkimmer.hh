@@ -54,11 +54,20 @@ class BaseSkimmer{
 			hists1D.push_back(npts_lead);
 			hists1D.push_back(fracpts_lead);
 			hists1D.push_back(fracE_lead);
-		
+			hists1D.push_back(eigen2D_ratio);	
+			hists1D.push_back(objE);
+			hists1D.push_back(clusterE);
 
 			hists2D.push_back(time_totE);
 			hists2D.push_back(time_totE_lead);
 			hists2D.push_back(time_totE_sublead);
+			hists2D.push_back(az_totE);
+			hists2D.push_back(rot2D_totE);
+			hists2D.push_back(eta_phi);
+			hists2D.push_back(t_eta);
+			hists2D.push_back(t_phi);
+			hists2D.push_back(nsubcl_fracElead);
+			hists2D.push_back(objE_clusterE);
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -121,6 +130,10 @@ class BaseSkimmer{
 		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
 		//18 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
+		//19 - total object energy
+		TH1D* objE = new TH1D("objE","objE",50,0,100);
+		//20 - cluster energy
+		TH1D* clusterE = new TH1D("clusterE","clusterE",50,0,100);
 
 		//two dimensional histograms
 		vector<TH2D*> hists2D;
@@ -140,8 +153,11 @@ class BaseSkimmer{
 		TH2D* t_eta = new TH2D("t_eta","t_eta",50,-30,30,50,-3.5,3.5);
 		//7 - t v phi
 		TH2D* t_phi = new TH2D("t_phi","t_phi",50,-30,30,50,-3.5,3.5);
-
-
+		//8 - nsubClusters vs fraction of lead subcl E
+		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead",7,0,7,50,0,1);
+		//9 - objE (true) to cluster E (algo)
+		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE",50,0,100,50,0,100);
+	
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
 			string legName;
