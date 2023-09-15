@@ -156,27 +156,27 @@ class BaseSkimmer{
 		//two dimensional histograms
 		vector<TH2D*> hists2D;
 		//0 - time v tot subcluster energy
-		TH2D* time_totE = new TH2D("time_totE","time_totE", 50,-30,30,50,0,50);
+		TH2D* time_totE = new TH2D("time_totE","time_totE;time_center;totalE;a.u.", 50,-30,30,50,0,50);
 		//1 - time v tot lead subcluster energy
-		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead", 50,-30,30,50,0,50);
+		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead;time_center_lead;totalE_lead;a.u.", 50,-30,30,50,0,50);
 		//2 - time v tot sublead subcluster energy
-		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead", 50,-30,30,50,0,50);
+		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead:time_center_sublead;totalE_sublead;a.u.", 50,-30,30,50,0,50);
 		//3 - azimuthal angle v energy
-		TH2D* az_totE = new TH2D("az_totE","az_totE",50,-3.5,3.5,50,0,50);
+		TH2D* az_totE = new TH2D("az_totE","az_totE:azimuthal_angl;totalE;a.u.",50,-3.5,3.5,50,0,50);
 		//4 - rotundity (2D) v energy
-		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE",50,0.,1.1,50,0,50);
+		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE;rotundity2D;totalE;a.u.",50,0.,1.1,50,0,50);
 		//5 - eta v phi
-		TH2D* eta_phi = new TH2D("eta_phi","eta_phi",50,-3.5,3.5,50,-3.5,3.5);
+		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center;a.u.",50,-3.5,3.5,50,-3.5,3.5);
 		//6 - t v eta
-		TH2D* t_eta = new TH2D("t_eta","t_eta",50,-30,30,50,-3.5,3.5);
+		TH2D* t_eta = new TH2D("t_eta","t_eta;time_center;eta_center;a.u.",50,-30,30,50,-3.5,3.5);
 		//7 - t v phi
-		TH2D* t_phi = new TH2D("t_phi","t_phi",50,-30,30,50,-3.5,3.5);
+		TH2D* t_phi = new TH2D("t_phi","t_phi;time_center;phi_center;a.u.",50,-30,30,50,-3.5,3.5);
 		//8 - nsubClusters vs fraction of lead subcl E
-		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead",7,0,7,50,0,1);
+		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead;nSubClusters;fracE_lead;a.u.",7,0,7,50,0,1);
 		//9 - objE (true) to cluster E (algo)
-		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE",50,0,100,50,0,100);
+		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE;a.u.",50,0,100,50,0,100);
 		//10 - time to mixing coeff
-		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff",50,-30,30,50,0,1.);
+		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff;a.u.",50,-30,30,50,0,1.);
 		
 	
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
@@ -279,7 +279,7 @@ class BaseSkimmer{
 			hist->GetXaxis()->SetTitle(xtit.c_str());
 			hist->GetYaxis()->CenterTitle(true);
 			hist->GetYaxis()->SetTitle(ytit.c_str());
-			hist->Draw();
+			hist->Draw("colz");
 			
 			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
 			TLatex lat;

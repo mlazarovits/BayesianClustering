@@ -61,7 +61,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<JetPoint> rhs;
 	double phoid, k;
-	int eSkip = 1;
+	int eSkip = 10;
 	if(_debug){ eSkip = 1000; }
 	double sumE;
 	for(int e = 0; e < _nEvts; e+=eSkip){
