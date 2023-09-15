@@ -172,7 +172,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
-				
+			
+cout << "a" << endl;
+	
 				//largest eigenvalue is last
 				//phi/eta
 				plotCats[id_idx].hists1D[4]->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
@@ -190,16 +192,19 @@ class PhotonSkimmer : public BaseSkimmer{
 				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));
 				plotCats[id_idx].hists1D[8]->Fill(phi);
 				
+cout << "b" << endl;
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
 				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]/w_n);
 				plotCats[id_idx].hists2D[0]->Fill(params["mean"].at(2,0), avg_Es[k]/w_n);
 				E_tot += avg_Es[k]/w_n*npts_unwt[k]; 
 			
+cout << "c" << endl;
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
 				rot3D = eigenvals[2]/rot3D;
 				plotCats[id_idx].hists1D[10]->Fill(rot3D);
+cout << "d" << endl;
 				
 				//rotundity - 2D
 				//take upper 2x2 submatrix from covariance
@@ -209,17 +214,22 @@ class PhotonSkimmer : public BaseSkimmer{
 				space_mat.SetEntry(params["cov"].at(1,1),1,1);
 				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
 	
+cout << "e - rot2D: " << rot2D << " eigenvals space 0 : " << eigenvals_space[0] << " eigenvals space 1: " << eigenvals_space[1] << endl;
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
 				rot2D = eigenvals_space[1]/rot2D;
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
 				plotCats[id_idx].hists1D[18]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
-		
+	cout << "e - t: " << eigenvecs[2].at(2,0) << " r: " << r << endl;	
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
 				vel = (eigenvecs[2].at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+cout << "e1 - vel: " << vel << endl;
 				vel = 1./vel;
+cout << "e2" << endl;
 				plotCats[id_idx].hists1D[14]->Fill(vel);
+cout << "e3" << endl;
 				cout << "filling 2d hists per cluster" << endl;
 			
+cout << "f" << endl;
 				//2D hists
 				plotCats[id_idx].hists2D[0]->Fill(eigenvecs[2].at(2,0),E_k);			
 				plotCats[id_idx].hists2D[3]->Fill(phi,E_k);
@@ -227,6 +237,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[5]->Fill(eigenvecs[2].at(0,0),eigenvecs[2].at(1,0));
 				plotCats[id_idx].hists2D[6]->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(0,0));
 				plotCats[id_idx].hists2D[7]->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(1,0));
+cout << "d" << endl;
 
 
 			}
