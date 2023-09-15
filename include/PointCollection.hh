@@ -338,6 +338,19 @@ class PointCollection{
 	}
 
 
+	
+	double Centroid(int d){
+		double cent = 0;
+		double sum = 0;
+		for(int i = 0; i < (int)_pts.size(); i++){
+			cent += _pts[i].at(d)*_pts[i].w();
+			sum += _pts[i].w();
+		}
+		cent /= sum;
+		return cent;
+	};
+
+
 	private:
 		int _nDim = 0;
 		vector<Point> _pts;

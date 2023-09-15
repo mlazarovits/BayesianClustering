@@ -39,8 +39,6 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> eigenvals, avg_Es;
 			vector<Matrix> eigenvecs;
 			double theta, phi, r, id, npts;
-			double time = 0;
-			double time_denom = 0;
 
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
@@ -78,12 +76,8 @@ class JetSkimmer : public BaseSkimmer{
 				e_avg->Fill(avg_Es[k]/w_n);
 			
 
-				//move to CalculateTime
-				//avg time weighted by subcluster mixing coeff
-				time +=	params["mean"].at(2,0)*params["pi"].at(0,0);
-				time_denom += params["pi"].at(0,0);
 			}
-			tPV->Fill(time/time_denom);
+			//tPV->Fill(time/time_denom);
 		}
 		
 
@@ -107,8 +101,22 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
+		}
 
 
+
+		double CalcTime_avgT(node* nnode){
+			BasePDFMixture* model = nnode->model;
+			int kmax = model->GetNClusters();
+			double time = 0;
+			double ws;
+			double pi;
+			map<string, Matrix> params;
+			for(int k = 0; k < kmax; k++){
+				time += params["pi"].at(0,0)*params["mean"].at(2,0);
+				ws += params["pi"].at(0,0);
+			}
+			return time/ws; 
 
 		}
 
