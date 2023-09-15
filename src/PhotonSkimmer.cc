@@ -21,6 +21,10 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();
+
+
+	objE->SetTitle("phoE");
+	objE->SetName("phoE");
 }
 
 //make cluster param histograms
@@ -59,20 +63,24 @@ void PhotonSkimmer::Skim(){
 	double phoid, k;
 	int eSkip = 10;
 	if(_debug){ eSkip = 1000; }
-
-	for(int i = 0; i < _nEvts; i+=eSkip){
-		_base->GetEntry(i);
+	double sumE;
+	for(int e = 0; e < _nEvts; e+=eSkip){
+		_base->GetEntry(e);
 		nPho = (int)_base->Photon_energy->size();
 		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;
 		for(int p = 0; p < nPho; p++){
+			sumE = 0;
 			//find subclusters for each photon
-			_prod->GetRecHits(rhs, i, p);
-			cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+			_prod->GetRecHits(rhs, e, p);
+			if(_debug) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
+			else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			if(rhs.size() < 1){ continue; }
 			gmm = algo->FindSubjets(Jet(rhs));
-			//get weight transfer factor - w_n/E_n = N/sum_n E_n for n rhs in a photon supercluster
-			k = gmm->GetData()->at(0).w()/rhs[0].E();
+			//get weight transfer factor - k = sum_n(E_n)/N = E_n/w_n = E_n*k/E_n for N rhs in a photon supercluster
+			//w_n = E_n/k
+			k = rhs[0].E()/gmm->GetData()->at(0).w();
+			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -83,11 +91,14 @@ void PhotonSkimmer::Skim(){
 				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
-						FillHists(gmm, i, k);
+						FillModelHists(gmm, i, k);
+						plotCats[i].hists1D[19]->Fill(_base->Photon_energy->at(p));
 						break;
 					}
 				}
 			}
+			objE->Fill(_base->Photon_energy->at(p));
+			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
 			FillTotalHists(gmm, k);
 			rhs.clear();
 		}
