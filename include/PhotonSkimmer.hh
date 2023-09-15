@@ -108,17 +108,23 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 
 
+			//write unnormalized and normalized time center hists
+			TH1D* time_center_norm = (TH1D*)time_center->Clone();
+			time_center_norm->Scale(1./time_center_norm->Integral());	
+			
 
 			ofile->cd();
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				//write total hist to file
 				name = hists1D[i]->GetName();
+				if(hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 				TCanvas* cv = new TCanvas((name).c_str(), "");
 				TDRHist(hists1D[i], cv, name, name, "a.u.");	
 				cv->Write();
 				if(!_data){
 					//make a vector for each type of histogram
 					for(int j = 0; j < (int)plotCats.size(); j++){
+						if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 						hists.push_back(plotCats[j].hists1D[i]);			
 						//should be 3 hists in this vector
 					}
@@ -132,6 +138,11 @@ class PhotonSkimmer : public BaseSkimmer{
 					hists.clear();
 				}
 			}
+			name = time_center_norm->GetName();
+			TCanvas* cv = new TCanvas((name).c_str(), "");
+			TDRHist(time_center_norm, cv, name, name, "a.u.");	
+			cv->Write();
+			
 			ofile->Close();
 
 		}
@@ -149,8 +160,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			model->GetNormsUnwt(npts_unwt);
 			
 			double npts = (double)model->GetData()->GetNPoints();
-
-			//cout << "FillHists - starting subcluster loop" << endl;	
+			double E_tot = 0;
+			double E_k;
+			cout << "FillHists - starting subcluster loop" << endl;	
 			double theta, phi, r, rot2D, rot3D, vel;
 			for(int k = 0; k < nclusters; k++){
 				params = model->GetParameters(k);
@@ -182,6 +194,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//w_n = E_n/N for N pts in sample
 				plotCats[id_idx].hists1D[9]->Fill(avg_Es[k]/w_n);
 				plotCats[id_idx].hists2D[0]->Fill(params["mean"].at(2,0), avg_Es[k]/w_n);
+				E_tot += avg_Es[k]/w_n*npts_unwt[k]; 
 			
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -199,21 +212,41 @@ class PhotonSkimmer : public BaseSkimmer{
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
 				rot2D = eigenvals_space[1]/rot2D;
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
-				
+				plotCats[id_idx].hists1D[18]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+		
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
 				vel = (eigenvecs[2].at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
 				vel = 1./vel;
 				plotCats[id_idx].hists1D[14]->Fill(vel);
+				cout << "filling 2d hists per cluster" << endl;
 			
+				//2D hists
+				plotCats[id_idx].hists2D[0]->Fill(eigenvecs[2].at(2,0),E_k);			
+				plotCats[id_idx].hists2D[3]->Fill(phi,E_k);
+				plotCats[id_idx].hists2D[4]->Fill(rot2D,E_k);
+				plotCats[id_idx].hists2D[5]->Fill(eigenvecs[2].at(0,0),eigenvecs[2].at(1,0));
+				plotCats[id_idx].hists2D[6]->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(0,0));
+				plotCats[id_idx].hists2D[7]->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(1,0));
 
 
 			}
+			cout << "end clusters" << endl;
+
 			vector<int> idxs;
 			model->sortedIdxs(idxs);
 			//leading cluster avg energy
 			plotCats[id_idx].hists1D[12]->Fill(avg_Es[idxs[0]]/w_n);
 			//leading cluster npts
 			plotCats[id_idx].hists1D[15]->Fill(npts_unwt[idxs[0]]);
+			//fractional npts lead cluster
+			plotCats[id_idx].hists1D[16]->Fill(npts_unwt[idxs[0]]/npts);	
+			//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
+			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
+			//npts_unwt_k = sum_n(r_nk)
+			//E_tot = sum_k(E_k) = sum_k(sum_n(E_n*r_nk)) = sum_n(E_n*sum_k(r_nk)) = sum_n(E_n)
+			double E_lead = avg_Es[idxs[0]]/w_n*npts_unwt[idxs[0]];
+			plotCats[id_idx].hists1D[17]->Fill(E_lead/E_tot);	
+			
 			//leading cluster time v energy
 			params = model->GetPriorParameters(idxs[0]);
 			plotCats[id_idx].hists2D[1]->Fill(params["mean"].at(2,0),avg_Es[idxs[0]]/w_n);
@@ -222,7 +255,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[13]->Fill(avg_Es[idxs[1]]/w_n);
 				//leading cluster time v energy
 				params = model->GetPriorParameters(idxs[1]);
-				plotCats[id_idx].hists2D[2]->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n);
+				plotCats[id_idx].hists2D[2]->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n*npts_unwt[idxs[1]]);
 			}
 
 		}
@@ -238,7 +271,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
 			double npts = (double)model->GetData()->GetNPoints();
-
+			double E_tot = 0;
+			double E_k;
 			Matrix space_mat = Matrix(2,2);
 	
 			double theta, phi, r, rot2D, rot3D, vel;
@@ -277,9 +311,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				//average cluster energy
 				//w_n = N/W_n for N pts in sample
 				e_avg->Fill(avg_Es[k]/w_n);
-				//e_tot->Fill(npts_unwt*w_n);			
-
-				time_avgE->Fill(params["mean"].at(2,0), avg_Es[k]/w_n);
+				E_k = avg_Es[k]/w_n*npts_unwt[k]; 
+				E_tot += E_k;
+				time_totE->Fill(params["mean"].at(2,0), E_k);
 	
 				//rotundity - 3D
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -297,6 +331,22 @@ class PhotonSkimmer : public BaseSkimmer{
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
 				rot2D = eigenvals_space[1]/rot2D;
 				rotundity_2D->Fill(rot2D);
+				eigen2D_ratio->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+				
+				//velocity = z/r * rad/deg * deg/cm => ns/cm
+				vel = (eigenvecs[2].at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+				vel = 1./vel;
+				velocity->Fill(vel);
+			
+				//2D hists
+				time_totE->Fill(eigenvecs[2].at(2,0),E_k);			
+				az_totE->Fill(phi,E_k);
+				rot2D_totE->Fill(rot2D,E_k);
+				eta_phi->Fill(eigenvecs[2].at(0,0),eigenvecs[2].at(1,0));
+				t_eta->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(0,0));
+				t_phi->Fill(eigenvecs[2].at(2,0),eigenvecs[2].at(1,0));
+				
+
 			}
 			vector<int> idxs;
 			model->sortedIdxs(idxs);
@@ -304,15 +354,24 @@ class PhotonSkimmer : public BaseSkimmer{
 			e_avg_lead->Fill(avg_Es[idxs[0]]/w_n);
 			//leading cluster npts
 			npts_lead->Fill(npts_unwt[idxs[0]]);
+			fracpts_lead->Fill(npts_unwt[idxs[0]]/npts);	
+			//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
+			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
+			//npts_unwt_k = sum_n(r_nk)
+			//E_tot = sum_k(E_k) = sum_k(sum_n(E_n*r_nk)) = sum_n(E_n*sum_k(r_nk)) = sum_n(E_n)
+			double E_lead = avg_Es[idxs[0]]/w_n*npts_unwt[idxs[0]];
+			fracE_lead->Fill(E_lead/E_tot);	
+
+			//2D hists
 			//leading cluster time v energy
 			params = model->GetPriorParameters(idxs[0]);
-			time_avgE_lead->Fill(params["mean"].at(2,0),avg_Es[idxs[0]]/w_n);
+			time_totE_lead->Fill(params["mean"].at(2,0),E_lead);
 			if(nclusters > 1){
 				//subleading cluster avg energy - if it exists
 				e_avg_sublead->Fill(avg_Es[idxs[1]]/w_n);
 				//leading cluster time v energy
 				params = model->GetPriorParameters(idxs[1]);
-				time_avgE_sublead->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n);
+				time_totE_sublead->Fill(params["mean"].at(2,0),avg_Es[idxs[1]]/w_n*npts_unwt[idxs[1]]);
 			}
 		}
 

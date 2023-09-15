@@ -56,9 +56,9 @@ class BaseSkimmer{
 			hists1D.push_back(fracE_lead);
 		
 
-			hists2D.push_back(time_avgE);
-			hists2D.push_back(time_avgE_lead);
-			hists2D.push_back(time_avgE_sublead);
+			hists2D.push_back(time_totE);
+			hists2D.push_back(time_totE_lead);
+			hists2D.push_back(time_totE_sublead);
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -83,49 +83,63 @@ class BaseSkimmer{
 		string _cms_label;
 
 		vector<TH1D*> hists1D;
-		//# of subclusters
+		//0 - # of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",7,0,7.);
-		//mean time - center in t
+		//1 - mean time - center in t
 		TH1D* time_center = new TH1D("time_center","time_center",50,-30,30);
-		//mean eta - center in eta
+		//2 - mean eta - center in eta
 		TH1D* eta_center = new TH1D("eta_center","eta_center",50,-3.5,3.5);
-		//mean phi - center in phi
+		//3 - mean phi - center in phi
 		TH1D* phi_center = new TH1D("phi_center","phi_center",50,-3.5,3.5);
-		//space slope
+		//4 - space slope
 		TH1D* slope_space = new TH1D("slope_space","slope_space",50,-30,30);
-		//eta-time slope
+		//5 - eta-time slope
 		TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-2,2);
-		//phi-time slope
+		//6 - phi-time slope
 		TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
-		//polar angle
+		//7 - polar angle
 		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-0.5,3.5);		
-		//azimuth angle
+		//8 - azimuth angle
 		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",50,-3.5,3.5);		
-		//subcluster energy - average
+		//9 - subcluster energy - average
 		TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,50.);
-		//ellipsoid rotundity
+		//10 -ellipsoid rotundity
 		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",20,0,1.1);
-		//spatial rotundity
+		//11 - spatial rotundity
 		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0,1.1);
-		//leading subcluster energy - average
+		//12 - leading subcluster energy - average
 		TH1D* e_avg_lead = new TH1D("e_avg_lead","e_avg_lead",50,0.,50.);
-		//subleading subcluster energy - average
+		//13 - subleading subcluster energy - average
 		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
-		//velocity = z/r*k for k transfer factor to velocity units
+		//14 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",50,-200,200);
-		//number of pts in lead subcluster
+		//15 - number of pts in lead subcluster
 		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,100);
-		//fraction of pts in lead subcluster
+		//16 - fraction of pts in lead subcluster
 		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,100);
-		//fraction of energy in lead subcluster
+		//17 - fraction of energy in lead subcluster
 		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
-
+		//18 - ratio of 2D eigenvals
+		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 
 		//two dimensional histograms
 		vector<TH2D*> hists2D;
-		TH2D* time_avgE = new TH2D("time_avgE","time_avgE", 50,-30,30,50,0,50);
-		TH2D* time_avgE_lead = new TH2D("time_avgE_lead","time_avgE_lead", 50,-30,30,50,0,50);
-		TH2D* time_avgE_sublead = new TH2D("time_avgE_sublead","time_avgE_sublead", 50,-30,30,50,0,50);
+		//0 - time v tot subcluster energy
+		TH2D* time_totE = new TH2D("time_totE","time_totE", 50,-30,30,50,0,50);
+		//1 - time v tot lead subcluster energy
+		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead", 50,-30,30,50,0,50);
+		//2 - time v tot sublead subcluster energy
+		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead", 50,-30,30,50,0,50);
+		//3 - azimuthal angle v energy
+		TH2D* az_totE = new TH2D("az_totE","az_totE",50,-3.5,3.5,50,0,50);
+		//4 - rotundity (2D) v energy
+		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE",50,0.,1.1,50,0,50);
+		//5 - eta v phi
+		TH2D* eta_phi = new TH2D("eta_phi","eta_phi",50,-3.5,3.5,50,-3.5,3.5);
+		//6 - t v eta
+		TH2D* t_eta = new TH2D("t_eta","t_eta",50,-30,30,50,-3.5,3.5);
+		//7 - t v phi
+		TH2D* t_phi = new TH2D("t_phi","t_phi",50,-30,30,50,-3.5,3.5);
 
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
