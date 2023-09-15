@@ -44,8 +44,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCats.push_back(sig);
 			//FSR
 			plotCat FSR;
-			FSR.legName = "FSR";
-			FSR.plotName = "FSR";
+			//sparticle FSR
+			FSR.legName = "sFSR";
+			FSR.plotName = "sFSR";
 			FSR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
 			plotCats.push_back(FSR);
 			//notSunm
@@ -85,6 +86,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
+
 		void WriteHists(TFile* ofile){
 			vector<TH1D*> hists;
 			vector<string> id_names;
@@ -93,7 +95,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 			for(int i = 0; i < (int)plotCats.size(); i++)
 				id_names.push_back(plotCats[i].legName);
-	
+
+			//normalize histograms	
 			for(int i = 0; i < (int)plotCats.size(); i++){
 				//relative fraction histograms
 				//nSubClusters
@@ -114,6 +117,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 
 			ofile->cd();
+			//write 1D hists
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				//write total hist to file
 				name = hists1D[i]->GetName();
@@ -143,12 +147,35 @@ class PhotonSkimmer : public BaseSkimmer{
 			TDRHist(time_center_norm, cv, name, name, "a.u.");	
 			cv->Write();
 			
+			//write 2D hists
+			string xname, yname;
+			for(int i = 0; i < (int)hists2D.size(); i++){
+				//write total hist to file
+				name = hists2D[i]->GetName();
+				name += "2D";
+				xname = hists2D[i]->GetXaxis()->GetTitle();
+				yname = hists2D[i]->GetYaxis()->GetTitle();
+				if(hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				TCanvas* cv = new TCanvas((name).c_str(), "");
+				TDR2DHist(hists2D[i], cv, xname, yname);
+				cv->Write();
+				if(!_data){
+					//make a vector for each type of histogram
+					for(int j = 0; j < (int)plotCats.size(); j++){
+						if(plotCats[j].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
+						TCanvas* cv_stack = new TCanvas((name+"_"+plotCats[j].plotName).c_str(), "");
+						TDR2DHist(plotCats[j].hists2D[i], cv_stack, xname, yname);
+						cv_stack->Write();
+					}
+				}
+			}
+			
 			ofile->Close();
 
 		}
 
 		//k = sum_n(E_n)/N
-		void FillModelHists(BasePDFMixture* model, int id_idx, double k = 1.){
+		void FillModelHists(BasePDFMixture* model, int id_idx, double transf = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
@@ -157,7 +184,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
-			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc;
+			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
+			double v_x, v_y, v_z;
+			double E_tot = transf*npts;
 			Matrix lead_eigenvec;
 			
 			int nclusters = model->GetNClusters();
@@ -165,27 +194,39 @@ class PhotonSkimmer : public BaseSkimmer{
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
 			
+			//get indices of leading, etc clusters
+			vector<int> idxs;
+			model->sortedIdxs(idxs);
+			int leadidx = idxs[0];
+			int subleadidx = -999;
+			if(nclusters > 1) subleadidx = idxs[1];
+			
 			for(int k = 0; k < nclusters; k++){
 				//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-				avgE_k = avg_Es[k]*k;
+				avgE_k = avg_Es[k]*transf;
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
-				E_k = avg_Es[k]*k*npts_unwt[k]; 
+				E_k = avg_Es[k]*transf*npts_unwt[k]; 
 				
-				params = model->GetParameters(k);
+				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
 				tc = params["mean"].at(2,0);
+				pi = params["pi"].at(0,0);
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
 	
+				v_x = lead_eigenvec.at(0,0);	
+				v_y = lead_eigenvec.at(1,0);	
+				v_z = lead_eigenvec.at(2,0);	
 				r = sqrt(ec*ec + pc*pc + tc*tc);
 				//polar angle
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
 				theta = acos( lead_eigenvec.at(2,0) / r );
 				//azimuthal angle
 				//phi = arctan(y/x)
-				phi = atan2(lead_eigenvec.at(1,0) , lead_eigenvec.at(0,0));
+				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				if(signbit(v_y)) phi *= -1;
 
 				//rotundity - 3D
 				rot3D = 0;
@@ -240,78 +281,100 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[5]->Fill(ec,pc);
 				plotCats[id_idx].hists2D[6]->Fill(tc,ec);
 				plotCats[id_idx].hists2D[7]->Fill(tc,pc);
+				plotCats[id_idx].hists2D[10]->Fill(tc,pi);
+
+
+					//histograms for leading/subleading clusters
+				if(k == leadidx){
+					//histograms for leading clusters
+					//leading cluster avg energy
+					plotCats[id_idx].hists1D[12]->Fill(avg_Es[leadidx]*transf);
+					//leading cluster npts
+					plotCats[id_idx].hists1D[15]->Fill(npts_unwt[leadidx]);
+					//fractional npts lead cluster
+					plotCats[id_idx].hists1D[16]->Fill(npts_unwt[leadidx]/npts);	
+					//npts_unwt_k = sum_n(r_nk)
+					//w_n = sum_n(E_n)/npts
+					E_lead = avg_Es[leadidx]*transf*npts_unwt[leadidx];
+					plotCats[id_idx].hists1D[17]->Fill(E_lead/E_tot);	
+					plotCats[id_idx].hists2D[8]->Fill(nclusters,E_lead/E_tot);
+					plotCats[id_idx].hists2D[1]->Fill(tc,avg_Es[leadidx]*transf);
+					plotCats[id_idx].hists1D[21]->Fill(rot2D);
+					plotCats[id_idx].hists1D[23]->Fill(tc);
+	
+				}
+
+
+				if(nclusters > 1){
+					if(k == subleadidx){
+						//subleading cluster avg energy - if it exists
+						plotCats[id_idx].hists1D[13]->Fill(avg_Es[k]*transf);
+						//leading cluster time v energy
+						plotCats[id_idx].hists2D[2]->Fill(tc,avg_Es[k]*transf*npts_unwt[k]);
+						plotCats[id_idx].hists1D[24]->Fill(tc);
+					}
+					if(k != leadidx){
+						plotCats[id_idx].hists1D[22]->Fill(rot2D);
+
+					}
+				}
 
 			}
 //			cout << "end clusters" << endl;
-
-			//histograms for leading/subleading clusters
-			vector<int> idxs;
-			model->sortedIdxs(idxs);
-			int leadidx = idxs[0];
-			//leading cluster avg energy
-			plotCats[id_idx].hists1D[12]->Fill(avg_Es[leadidx]*k);
-			//leading cluster npts
-			plotCats[id_idx].hists1D[15]->Fill(npts_unwt[leadidx]);
-			//fractional npts lead cluster
-			plotCats[id_idx].hists1D[16]->Fill(npts_unwt[leadidx]/npts);	
-			//npts_unwt_k = sum_n(r_nk)
-			//w_n = sum_n(E_n)/npts
-			double E_tot = k*npts;
-			double E_lead = avg_Es[leadidx]*k*npts_unwt[leadidx];
-			
-			plotCats[id_idx].hists1D[17]->Fill(E_lead/E_tot);	
 			plotCats[id_idx].hists1D[20]->Fill(E_tot);
-			plotCats[id_idx].hists2D[8]->Fill(nclusters,E_lead/E_tot);
-			
-			//leading cluster time v energy
-			params = model->GetPriorParameters(leadidx);
-			plotCats[id_idx].hists2D[1]->Fill(params["mean"].at(2,0),avg_Es[leadidx]*k);
-			if(nclusters > 1){
-				int subleadidx = idxs[1];
-				//subleading cluster avg energy - if it exists
-				plotCats[id_idx].hists1D[13]->Fill(avg_Es[subleadidx]*k);
-				//leading cluster time v energy
-				params = model->GetPriorParameters(subleadidx);
-				plotCats[id_idx].hists2D[2]->Fill(params["mean"].at(2,0),avg_Es[subleadidx]*k*npts_unwt[subleadidx]);
-			}
+
 
 		}
 
-		void FillTotalHists(BasePDFMixture* model, double k = 1.){
+		void FillTotalHists(BasePDFMixture* model, double transf = 1.){
 			map<string, Matrix> params;
 			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
 			
 			double npts = (double)model->GetData()->GetNPoints();
-			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc;
+			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
+			double v_x, v_y, v_z;
+			double E_tot = transf*npts;
 			Matrix lead_eigenvec;
 			
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
+			
+			//get leading cluster index
+			vector<int> idxs;
+			model->sortedIdxs(idxs);
+			int leadidx = idxs[0];
+			int subleadidx = -999;
+			if(nclusters > 1) subleadidx = idxs[1];
 			for(int k = 0; k < nclusters; k++){
 				//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-				avgE_k = avg_Es[k]*k;
+				avgE_k = avg_Es[k]*transf;
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
-				E_k = avg_Es[k]*k*npts_unwt[k]; 
+				E_k = avg_Es[k]*transf*npts_unwt[k]; 
 				
-				params = model->GetParameters(k);
+				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
 				tc = params["mean"].at(2,0);
+				pi = params["pi"].at(0,0);
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
-	
-				r = sqrt(ec*ec + pc*pc + tc*tc);
+
+				v_x = lead_eigenvec.at(0,0);	
+				v_y = lead_eigenvec.at(1,0);	
+				v_z = lead_eigenvec.at(2,0);	
+				r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
 				//polar angle
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-				theta = acos( lead_eigenvec.at(2,0) / r );
+				theta = acos( v_z / r );
 				//azimuthal angle
 				//phi = arctan(y/x)
-				phi = atan2(lead_eigenvec.at(1,0) , lead_eigenvec.at(0,0));
+				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				if(signbit(v_y)) phi *= -1;
 
 				//rotundity - 3D
 				rot3D = 0;
@@ -371,40 +434,53 @@ class PhotonSkimmer : public BaseSkimmer{
 				eta_phi->Fill(ec,pc);
 				t_eta->Fill(tc,ec);
 				t_phi->Fill(tc,pc);
-				
+				t_mixcoeff->Fill(tc,pi);
+			
+
+				//leading subcluster hists
+				if(k == leadidx){
+					//leading cluster avg energy
+					e_avg_lead->Fill(avg_Es[k]*transf);
+					//leading cluster npts
+					npts_lead->Fill(npts_unwt[k]);
+					fracpts_lead->Fill(npts_unwt[k]/npts);	
+					//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
+					//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
+					//npts_unwt_k = sum_n(r_nk)
+					//w_n = sum_n(E_n)/npts
+					E_lead = avg_Es[k]*transf*npts_unwt[k];
+					fracE_lead->Fill(E_lead/E_tot);	
+					nsubcl_fracElead->Fill(nclusters,E_lead/E_tot);
+					//leading cluster time v energy
+					time_totE_lead->Fill(tc,E_lead);
+					//2D rotundity - lead
+					rotundity_2D_lead->Fill(rot2D);		
+					time_center_lead->Fill(tc);
+				}
+				if(nclusters > 1){
+					//sublead cluster
+					if(k == subleadidx){
+						//subleading cluster avg energy - if it exists
+						e_avg_sublead->Fill(avg_Es[k]*transf);
+						//leading cluster time v energy
+						time_totE_sublead->Fill(tc,avg_Es[k]*transf*npts_unwt[k]);
+						time_center_sublead->Fill(tc);
+					}
+
+
+					//not lead cluster
+					if(k != leadidx){
+						rotundity_2D_notlead->Fill(rot2D);		
+					}
+
+
+				}
+	
 
 			}
-			vector<int> idxs;
-			model->sortedIdxs(idxs);
-			int leadidx = idxs[0];
-			//leading cluster avg energy
-			e_avg_lead->Fill(avg_Es[leadidx]*k);
-			//leading cluster npts
-			npts_lead->Fill(npts_unwt[leadidx]);
-			fracpts_lead->Fill(npts_unwt[leadidx]/npts);	
-			//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
-			//npts_unwt_k = sum_n(r_nk)
-			//w_n = sum_n(E_n)/npts
-			double E_tot = k*npts;
-			double E_lead = avg_Es[leadidx]*k*npts_unwt[leadidx];
-			fracE_lead->Fill(E_lead/E_tot);	
 			clusterE->Fill(E_tot);
-			nsubcl_fracElead->Fill(nclusters,E_lead/E_tot);
 
-
-			//2D hists
-			//leading cluster time v energy
-			params = model->GetPriorParameters(leadidx);
-			time_totE_lead->Fill(params["mean"].at(2,0),E_lead);
-			if(nclusters > 1){
-				int subleadidx = idxs[1];
-				//subleading cluster avg energy - if it exists
-				e_avg_sublead->Fill(avg_Es[subleadidx]*k);
-				//leading cluster time v energy
-				params = model->GetPriorParameters(subleadidx);
-				time_totE_sublead->Fill(params["mean"].at(2,0),avg_Es[subleadidx]*k*npts_unwt[subleadidx]);
-			}
+	
 		}
 
 	private:

@@ -61,7 +61,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<JetPoint> rhs;
 	double phoid, k;
-	int eSkip = 10;
+	int eSkip = 1;
 	if(_debug){ eSkip = 1000; }
 	double sumE;
 	for(int e = 0; e < _nEvts; e+=eSkip){
@@ -93,6 +93,7 @@ void PhotonSkimmer::Skim(){
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
 						FillModelHists(gmm, i, k);
 						plotCats[i].hists1D[19]->Fill(_base->Photon_energy->at(p));
+						plotCats[i].hists2D[9]->Fill(_base->Photon_energy->at(p), sumE);
 						break;
 					}
 				}

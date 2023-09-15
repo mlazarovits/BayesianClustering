@@ -57,6 +57,10 @@ class BaseSkimmer{
 			hists1D.push_back(eigen2D_ratio);	
 			hists1D.push_back(objE);
 			hists1D.push_back(clusterE);
+			hists1D.push_back(rotundity_2D_lead);
+			hists1D.push_back(rotundity_2D_notlead);
+			hists1D.push_back(time_center_lead);
+			hists1D.push_back(time_center_sublead);
 
 			hists2D.push_back(time_totE);
 			hists2D.push_back(time_totE_lead);
@@ -68,11 +72,16 @@ class BaseSkimmer{
 			hists2D.push_back(t_phi);
 			hists2D.push_back(nsubcl_fracElead);
 			hists2D.push_back(objE_clusterE);
+			hists2D.push_back(t_mixcoeff);
+
+
 
 		}
 		virtual ~BaseSkimmer(){ 
 			_file->Close();
 			//delete _base;
+			hists1D.clear();
+			hists2D.clear();
 		}
 
 		virtual void CleaningSkim() = 0;
@@ -125,7 +134,7 @@ class BaseSkimmer{
 		//15 - number of pts in lead subcluster
 		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,100);
 		//16 - fraction of pts in lead subcluster
-		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,100);
+		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,1);
 		//17 - fraction of energy in lead subcluster
 		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
 		//18 - ratio of 2D eigenvals
@@ -134,6 +143,15 @@ class BaseSkimmer{
 		TH1D* objE = new TH1D("objE","objE",50,0,100);
 		//20 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",50,0,100);
+		//21 - spatial rotundity for lead subcluster
+		TH1D* rotundity_2D_lead = new TH1D("rotundity_2D_lead","rotundity_2D_lead",20,0,1.1);
+		//22 - spatial rotundity for !lead subcluster
+		TH1D* rotundity_2D_notlead = new TH1D("rotundity_2D_notlead","rotundity_2D_lead",20,0,1.1);
+		//23 - time center for lead subcluster
+		TH1D* time_center_lead = new TH1D("time_center_lead","time_center_lead",50,-30,30);
+		//24 - time center for sublead subcluster
+		TH1D* time_center_sublead = new TH1D("time_center_sublead","time_center_sublead",50,-30,30);
+
 
 		//two dimensional histograms
 		vector<TH2D*> hists2D;
@@ -157,6 +175,9 @@ class BaseSkimmer{
 		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead",7,0,7,50,0,1);
 		//9 - objE (true) to cluster E (algo)
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE",50,0,100,50,0,100);
+		//10 - time to mixing coeff
+		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff",50,-30,30,50,0,1.);
+		
 	
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
@@ -225,6 +246,32 @@ class BaseSkimmer{
 			can->cd();
 			can->SetGridx(1);
 			can->SetGridy(1);
+			hist->SetTitle("");
+			hist->UseCurrentStyle();
+			hist->SetStats(false);
+			hist->GetXaxis()->CenterTitle(true);
+			hist->GetXaxis()->SetTitle(xtit.c_str());
+			hist->GetYaxis()->CenterTitle(true);
+			hist->GetYaxis()->SetTitle(ytit.c_str());
+			hist->Draw();
+			
+			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
+			TLatex lat;
+			lat.SetNDC();
+			lat.SetTextSize(0.04);
+			lat.SetTextFont(42);
+			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
+
+			return;
+		}
+		
+
+
+		void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit){
+			can->cd();
+			//can->SetGridx(1);
+			//can->SetGridy(1);
 			hist->SetTitle("");
 			hist->UseCurrentStyle();
 			hist->SetStats(false);
