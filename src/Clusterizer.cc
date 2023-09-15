@@ -41,7 +41,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		double gev = 0;
 		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
 		gev = gev/(double)weights.size(); //k = sum_n E_n/n pts
-		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts 
+		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts, w_n = E_n/k  
 		points->SetWeights(weights);
 
 	}
