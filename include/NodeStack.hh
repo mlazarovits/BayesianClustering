@@ -132,22 +132,21 @@ class NodeStack{
 		
 
 		void sort(){
-		//struct listnode* c = _head->next;
+		//listnode* c = _head->next;
 		//cout << "unsorted" << endl;	
 		//int i = 0;
-		//while(c != _z){ cout << i << " " << c->node->val << endl; i++; c = c->next; } 
+		//while(c != _z){ cout << i << " " << c->n->val << endl; i++; c = c->next; } 
 		_head = mergesort(_head);
 		//cout << "sorted" << endl;	
-		//struct listnode* g = _head;
+		//listnode* g = _head;
 		//i = 0;
-		//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
+		//while(g != _z){ cout << i << " " << g->n->val << endl; i++; g = g->next; } 
 		}
 
 
 		void Print(){
 			listnode* g = _head->next;
 			int i = 1;
-			//while(g != _z){ cout << i << " " << g->node->val << endl; i++; g = g->next; } 
 			while(g != _z){ cout << "cluster " << i << endl; g->n->points->Print(); i++; g = g->next; } 
 		}
 
