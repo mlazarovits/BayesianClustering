@@ -45,11 +45,11 @@ class BaseSkimmer{
 			hists1D.push_back(slope_phiT);
 			hists1D.push_back(polar_ang);
 			hists1D.push_back(azimuth_ang);
-			hists1D.push_back(e_avg);
+			hists1D.push_back(e_tot);
 			hists1D.push_back(rotundity_3D);
 			hists1D.push_back(rotundity_2D);
-			hists1D.push_back(e_avg_lead);
-			hists1D.push_back(e_avg_sublead);
+			hists1D.push_back(e_tot_lead);
+			hists1D.push_back(e_tot_sublead);
 			hists1D.push_back(velocity);
 			hists1D.push_back(npts_lead);
 			hists1D.push_back(fracpts_lead);
@@ -60,7 +60,7 @@ class BaseSkimmer{
 			hists1D.push_back(rotundity_2D_lead);
 			hists1D.push_back(rotundity_2D_notlead);
 			hists1D.push_back(time_center_lead);
-			hists1D.push_back(time_center_sublead);
+			hists1D.push_back(time_center_notlead);
 
 			hists2D.push_back(time_totE);
 			hists2D.push_back(time_totE_lead);
@@ -73,8 +73,11 @@ class BaseSkimmer{
 			hists2D.push_back(nsubcl_fracElead);
 			hists2D.push_back(objE_clusterE);
 			hists2D.push_back(t_mixcoeff);
-
-
+			hists2D.push_back(totE_mixcoeff);
+			hists2D.push_back(rot3D_totE);
+			hists2D.push_back(totE_mixcoeff_lead);
+			hists2D.push_back(totE_mixcoeff_notlead);
+			hists2D.push_back(npts_totE);
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -119,18 +122,18 @@ class BaseSkimmer{
 		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-0.5,3.5);		
 		//8 - azimuth angle
 		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",50,-3.5,3.5);		
-		//9 - subcluster energy - average
-		TH1D* e_avg = new TH1D("e_avg","e_avg",50,0.,50.);
+		//9 - subcluster energy - total
+		TH1D* e_tot = new TH1D("e_tot","e_tot",50,0.,100.);
 		//10 -ellipsoid rotundity
 		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",20,0,1.1);
 		//11 - spatial rotundity
-		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0,1.1);
-		//12 - leading subcluster energy - average
-		TH1D* e_avg_lead = new TH1D("e_avg_lead","e_avg_lead",50,0.,50.);
-		//13 - subleading subcluster energy - average
-		TH1D* e_avg_sublead = new TH1D("e_avg_sublead","e_avg_sublead",50,0.,50.);
+		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0.4,1.1);
+		//12 - leading subcluster energy - total
+		TH1D* e_tot_lead = new TH1D("e_tot_lead","e_tot_lead",50,0.,100.);
+		//13 - subleading subcluster energy - total
+		TH1D* e_tot_sublead = new TH1D("e_tot_sublead","e_tot_sublead",50,0.,100.);
 		//14 - velocity = z/r*k for k transfer factor to velocity units
-		TH1D* velocity = new TH1D("velocity","velocity",50,-200,200);
+		TH1D* velocity = new TH1D("velocity","velocity",50,0.,1000);
 		//15 - number of pts in lead subcluster
 		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,100);
 		//16 - fraction of pts in lead subcluster
@@ -144,13 +147,13 @@ class BaseSkimmer{
 		//20 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",50,0,100);
 		//21 - spatial rotundity for lead subcluster
-		TH1D* rotundity_2D_lead = new TH1D("rotundity_2D_lead","rotundity_2D_lead",20,0,1.1);
+		TH1D* rotundity_2D_lead = new TH1D("rotundity_2D_lead","rotundity_2D_lead",20,0.4,1.1);
 		//22 - spatial rotundity for !lead subcluster
-		TH1D* rotundity_2D_notlead = new TH1D("rotundity_2D_notlead","rotundity_2D_lead",20,0,1.1);
+		TH1D* rotundity_2D_notlead = new TH1D("rotundity_2D_notlead","rotundity_2D_lead",20,0.4,1.1);
 		//23 - time center for lead subcluster
 		TH1D* time_center_lead = new TH1D("time_center_lead","time_center_lead",50,-30,30);
-		//24 - time center for sublead subcluster
-		TH1D* time_center_sublead = new TH1D("time_center_sublead","time_center_sublead",50,-30,30);
+		//24 - time center for notlead subcluster
+		TH1D* time_center_notlead = new TH1D("time_center_notlead","time_center_notlead",50,-30,30);
 
 
 		//two dimensional histograms
@@ -158,13 +161,13 @@ class BaseSkimmer{
 		//0 - time v tot subcluster energy
 		TH2D* time_totE = new TH2D("time_totE","time_totE;time_center;totalE", 50,-30,30,50,0,100);
 		//1 - time v tot lead subcluster energy
-		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead;time_center_lead;totalE_lead", 50,-30,30,50,0,50);
+		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead;time_center_lead;totalE_lead", 50,-30,30,50,0,100);
 		//2 - time v tot sublead subcluster energy
-		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead;time_center_sublead;totalE_sublead", 50,-30,30,50,0,50);
+		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead;time_center_sublead;totalE_sublead", 50,-30,30,50,0,100);
 		//3 - azimuthal angle v energy
-		TH2D* az_totE = new TH2D("az_totE","az_totE;azimuthal_angle;totalE;a.u.",50,-3.5,3.5,50,0,50);
+		TH2D* az_totE = new TH2D("az_totE","az_totE;azimuthal_angle;totalE;a.u.",50,-3.5,3.5,50,0,100);
 		//4 - rotundity (2D) v energy
-		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE;rotundity2D;totalE",50,0.,1.1,50,0,50);
+		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE;rotundity2D;totalE",50,0.4,1.1,50,0,100);
 		//5 - eta v phi
 		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-3.5,3.5,50,-3.5,3.5);
 		//6 - t v eta
@@ -177,8 +180,17 @@ class BaseSkimmer{
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,100,50,0,100);
 		//10 - time to mixing coeff
 		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff",50,-30,30,50,0,1.);
-		
-	
+		//11 - totE vs mixing coeff
+		TH2D* totE_mixcoeff = new TH2D("totE_mixcoeff","totE_mixcoeff;totE;mixing_coeff",50,0,100,50,0,1.);	
+		//12 - rotundity (3D) v energy
+		TH2D* rot3D_totE = new TH2D("rot3D_totE","rot3D_totE;rotundity3D;totalE",50,0.4,1.1,50,0,100);
+		//13 - totE vs mixing coeff - lead
+		TH2D* totE_mixcoeff_lead = new TH2D("totE_mixcoeff_lead","totE_mixcoeff;totE_lead;mixing_coeff_lead",50,0,100,50,0,1.);	
+		//14 - totE vs mixing coeff - notlead
+		TH2D* totE_mixcoeff_notlead = new TH2D("totE_mixcoeff_notlead","totE_mixcoeff_notlead;totE_notlead;mixing_coeff_notlead",50,0,100,50,0,1.);	
+		//15 - npts v energy
+		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,50,0,100);
+
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
 			string legName;
@@ -268,7 +280,7 @@ class BaseSkimmer{
 		
 
 
-		void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit){
+		void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string title = ""){
 			can->cd();
 			//can->SetGridx(1);
 			//can->SetGridy(1);
@@ -281,7 +293,7 @@ class BaseSkimmer{
 			hist->GetYaxis()->SetTitle(ytit.c_str());
 			hist->Draw("colz");
 			
-			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
+			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label+" "+title;
 			TLatex lat;
 			lat.SetNDC();
 			lat.SetTextSize(0.04);

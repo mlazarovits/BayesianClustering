@@ -34,19 +34,23 @@ class JetSkimmer : public BaseSkimmer{
 
 		//this is for one jet
 		//all hists referenced here are in hists1D
-		void FillModelHists(BasePDFMixture* model, double w_n = 1.){
+		void FillModelHists(BasePDFMixture* model, double transf = 1.){
 			map<string, Matrix> params;
-			vector<double> eigenvals, avg_Es;
+			vector<double> eigenvals, avg_Es, npts_unwt;
 			vector<Matrix> eigenvecs;
-			double theta, phi, r, id, npts;
+			double theta, phi, r, id, npts, E_k;
 
 			int nclusters = model->GetNClusters();
 			nSubClusters->Fill(nclusters);
 			
-			model->GetAvgVarWeights(avg_Es);		
+			model->GetAvgVarWeights(avg_Es);
+			model->GetNormsUnwt(npts_unwt);
+		
 			nClusters->Fill((double)nclusters);
 			//k clusters = k jets in event -> subclusters are mixture model components
 			for(int k = 0; k < nclusters; k++){
+				E_k = avg_Es[k]*transf*npts_unwt[k];
+
 				params = model->GetPriorParameters(k);
 				eta_center->Fill(params["mean"].at(0,0));
 				phi_center->Fill(params["mean"].at(1,0));
@@ -73,7 +77,7 @@ class JetSkimmer : public BaseSkimmer{
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy
-				e_avg->Fill(avg_Es[k]/w_n);
+				e_tot->Fill(E_k);
 			
 
 			}

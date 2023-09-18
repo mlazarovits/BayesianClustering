@@ -164,7 +164,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					for(int j = 0; j < (int)plotCats.size(); j++){
 						if(plotCats[j].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
 						TCanvas* cv_stack = new TCanvas((name+"_"+plotCats[j].plotName).c_str(), "");
-						TDR2DHist(plotCats[j].hists2D[i], cv_stack, xname, yname);
+						TDR2DHist(plotCats[j].hists2D[i], cv_stack, xname, yname, plotCats[j].plotName);
 						cv_stack->Write();
 					}
 				}
@@ -180,11 +180,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
-
 			
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
-			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
+			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
 			double v_x, v_y, v_z;
 			double E_tot = transf*npts;
 			Matrix lead_eigenvec;
@@ -194,16 +193,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
 			
-			//get indices of leading, etc clusters
+			//get leading cluster index
 			vector<int> idxs;
+			//sort by mixing coeffs in ascending order (smallest first)
 			model->sortedIdxs(idxs);
-			int leadidx = idxs[0];
+			int leadidx = idxs[nclusters-1];
 			int subleadidx = -999;
-			if(nclusters > 1) subleadidx = idxs[1];
-			
+			if(nclusters > 1) subleadidx = idxs[nclusters-2];
 			for(int k = 0; k < nclusters; k++){
-				//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-				avgE_k = avg_Es[k]*transf;
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 				E_k = avg_Es[k]*transf*npts_unwt[k]; 
 				
@@ -219,7 +216,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				v_x = lead_eigenvec.at(0,0);	
 				v_y = lead_eigenvec.at(1,0);	
 				v_z = lead_eigenvec.at(2,0);	
-				r = sqrt(ec*ec + pc*pc + tc*tc);
+				r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
 				//polar angle
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
 				theta = acos( lead_eigenvec.at(2,0) / r );
@@ -246,7 +243,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
 				vel = (lead_eigenvec.at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
-				vel = 1./vel;
+				vel = fabs(1./vel);
 
 				//fill hists
 				plotCats[id_idx].hists1D[1]->Fill(tc);
@@ -265,56 +262,58 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
-				plotCats[id_idx].hists1D[9]->Fill(avgE_k);
+				plotCats[id_idx].hists1D[9]->Fill(E_k);
 				//rotundity measures
 				plotCats[id_idx].hists1D[10]->Fill(rot3D);
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
 				plotCats[id_idx].hists1D[18]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 				//velocity	
 				plotCats[id_idx].hists1D[14]->Fill(vel);
-				
 				//2D hists
-				plotCats[id_idx].hists2D[0]->Fill(lead_eigenvec.at(2,0),E_k);			
-				plotCats[id_idx].hists2D[0]->Fill(tc, avgE_k);
+				plotCats[id_idx].hists2D[0]->Fill(tc, E_k);
 				plotCats[id_idx].hists2D[3]->Fill(phi,E_k);
 				plotCats[id_idx].hists2D[4]->Fill(rot2D,E_k);
 				plotCats[id_idx].hists2D[5]->Fill(ec,pc);
 				plotCats[id_idx].hists2D[6]->Fill(tc,ec);
 				plotCats[id_idx].hists2D[7]->Fill(tc,pc);
 				plotCats[id_idx].hists2D[10]->Fill(tc,pi);
+				plotCats[id_idx].hists2D[11]->Fill(E_k,pi);
+				plotCats[id_idx].hists2D[12]->Fill(rot3D,E_k);
+					
 
-
-					//histograms for leading/subleading clusters
+				//histograms for leading/subleading clusters
 				if(k == leadidx){
 					//histograms for leading clusters
-					//leading cluster avg energy
-					plotCats[id_idx].hists1D[12]->Fill(avg_Es[leadidx]*transf);
+					//leading cluster total energy
+					plotCats[id_idx].hists1D[12]->Fill(E_k);
 					//leading cluster npts
 					plotCats[id_idx].hists1D[15]->Fill(npts_unwt[leadidx]);
 					//fractional npts lead cluster
 					plotCats[id_idx].hists1D[16]->Fill(npts_unwt[leadidx]/npts);	
 					//npts_unwt_k = sum_n(r_nk)
 					//w_n = sum_n(E_n)/npts
-					E_lead = avg_Es[leadidx]*transf*npts_unwt[leadidx];
+					E_lead = E_k;
 					plotCats[id_idx].hists1D[17]->Fill(E_lead/E_tot);	
 					plotCats[id_idx].hists2D[8]->Fill(nclusters,E_lead/E_tot);
-					plotCats[id_idx].hists2D[1]->Fill(tc,avg_Es[leadidx]*transf);
+					plotCats[id_idx].hists2D[1]->Fill(tc,E_k);
 					plotCats[id_idx].hists1D[21]->Fill(rot2D);
 					plotCats[id_idx].hists1D[23]->Fill(tc);
+					plotCats[id_idx].hists2D[13]->Fill(E_k,pi);
 	
 				}
 
 
 				if(nclusters > 1){
 					if(k == subleadidx){
-						//subleading cluster avg energy - if it exists
-						plotCats[id_idx].hists1D[13]->Fill(avg_Es[k]*transf);
+						//subleading cluster tot energy - if it exists
+						plotCats[id_idx].hists1D[13]->Fill(E_k);
 						//leading cluster time v energy
-						plotCats[id_idx].hists2D[2]->Fill(tc,avg_Es[k]*transf*npts_unwt[k]);
-						plotCats[id_idx].hists1D[24]->Fill(tc);
+						plotCats[id_idx].hists2D[2]->Fill(tc,E_k);
 					}
 					if(k != leadidx){
 						plotCats[id_idx].hists1D[22]->Fill(rot2D);
+						plotCats[id_idx].hists2D[14]->Fill(E_k,pi);
+						plotCats[id_idx].hists1D[24]->Fill(tc);
 
 					}
 				}
@@ -331,9 +330,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<double> eigenvals, avg_Es, eigenvals_space, npts_unwt;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
-			
 			double npts = (double)model->GetData()->GetNPoints();
-			double E_k, avgE_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
+			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
 			double v_x, v_y, v_z;
 			double E_tot = transf*npts;
 			Matrix lead_eigenvec;
@@ -345,13 +343,12 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			//get leading cluster index
 			vector<int> idxs;
+			//sort by mixing coeffs in ascending order (smallest first)
 			model->sortedIdxs(idxs);
-			int leadidx = idxs[0];
+			int leadidx = idxs[nclusters-1];
 			int subleadidx = -999;
-			if(nclusters > 1) subleadidx = idxs[1];
+			if(nclusters > 1) subleadidx = idxs[nclusters-2];
 			for(int k = 0; k < nclusters; k++){
-				//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-				avgE_k = avg_Es[k]*transf;
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 				E_k = avg_Es[k]*transf*npts_unwt[k]; 
 				
@@ -394,7 +391,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
 				vel = (lead_eigenvec.at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
-				vel = 1./vel;
+				vel = fabs(1./vel);
 				
 				//fill histograms
 				time_center->Fill(tc);
@@ -413,10 +410,10 @@ class PhotonSkimmer : public BaseSkimmer{
 				azimuth_ang->Fill(phi);
 				//velocity
 				velocity->Fill(vel);
-				
-				//average cluster energy
+	
+				//total cluster energy
 				//w_n = N/W_n for N pts in sample
-				e_avg->Fill(avgE_k);
+				e_tot->Fill(E_k);
 				time_totE->Fill(tc, E_k);
 	
 				//rotundity - 3D
@@ -428,27 +425,28 @@ class PhotonSkimmer : public BaseSkimmer{
 				
 			
 				//2D hists
-				time_totE->Fill(lead_eigenvec.at(2,0),E_k);			
+				time_totE->Fill(tc,E_k);			
 				az_totE->Fill(phi,E_k);
 				rot2D_totE->Fill(rot2D,E_k);
 				eta_phi->Fill(ec,pc);
 				t_eta->Fill(tc,ec);
 				t_phi->Fill(tc,pc);
 				t_mixcoeff->Fill(tc,pi);
+				totE_mixcoeff->Fill(E_k,pi);
+				rot3D_totE->Fill(rot3D,E_k);
 			
 
 				//leading subcluster hists
 				if(k == leadidx){
-					//leading cluster avg energy
-					e_avg_lead->Fill(avg_Es[k]*transf);
+					//leading cluster tot energy
+					e_tot_lead->Fill(E_k);
 					//leading cluster npts
 					npts_lead->Fill(npts_unwt[k]);
 					fracpts_lead->Fill(npts_unwt[k]/npts);	
-					//avgE_k = sum_n(E_n*r_nk*w)/sum_n(r_nk)
-					//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 					//npts_unwt_k = sum_n(r_nk)
 					//w_n = sum_n(E_n)/npts
-					E_lead = avg_Es[k]*transf*npts_unwt[k];
+					E_lead = E_k;
+					if(nclusters == 1 && E_lead/E_tot < 0.9) cout << "E_lead: " << E_lead << " E_tot: " << E_tot << " nptsunwt: " << npts_unwt[k] << endl;
 					fracE_lead->Fill(E_lead/E_tot);	
 					nsubcl_fracElead->Fill(nclusters,E_lead/E_tot);
 					//leading cluster time v energy
@@ -456,21 +454,23 @@ class PhotonSkimmer : public BaseSkimmer{
 					//2D rotundity - lead
 					rotundity_2D_lead->Fill(rot2D);		
 					time_center_lead->Fill(tc);
+					totE_mixcoeff_lead->Fill(E_k,pi);
 				}
 				if(nclusters > 1){
 					//sublead cluster
 					if(k == subleadidx){
-						//subleading cluster avg energy - if it exists
-						e_avg_sublead->Fill(avg_Es[k]*transf);
-						//leading cluster time v energy
-						time_totE_sublead->Fill(tc,avg_Es[k]*transf*npts_unwt[k]);
-						time_center_sublead->Fill(tc);
+						//subleading cluster tot energy - if it exists
+						e_tot_sublead->Fill(E_k);
+						//leading cluster time v tot energy
+						time_totE_sublead->Fill(tc,E_k);
 					}
 
 
 					//not lead cluster
 					if(k != leadidx){
 						rotundity_2D_notlead->Fill(rot2D);		
+						totE_mixcoeff_notlead->Fill(E_k,pi);
+						time_center_notlead->Fill(tc);
 					}
 
 
