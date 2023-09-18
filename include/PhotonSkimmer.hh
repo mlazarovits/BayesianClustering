@@ -279,7 +279,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[10]->Fill(tc,pi);
 				plotCats[id_idx].hists2D[11]->Fill(E_k,pi);
 				plotCats[id_idx].hists2D[12]->Fill(rot3D,E_k);
-					
+				plotCats[id_idx].hists2D[15]->Fill(npts_unwt[k], E_tot);	
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
@@ -299,6 +299,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[21]->Fill(rot2D);
 					plotCats[id_idx].hists1D[23]->Fill(tc);
 					plotCats[id_idx].hists2D[13]->Fill(E_k,pi);
+					plotCats[id_idx].hists2D[16]->Fill(npts_unwt[k], E_lead/E_tot);	
 	
 				}
 
@@ -434,6 +435,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				t_mixcoeff->Fill(tc,pi);
 				totE_mixcoeff->Fill(E_k,pi);
 				rot3D_totE->Fill(rot3D,E_k);
+				npts_totE->Fill(npts_unwt[k], E_tot);
 			
 
 				//leading subcluster hists
@@ -455,6 +457,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					rotundity_2D_lead->Fill(rot2D);		
 					time_center_lead->Fill(tc);
 					totE_mixcoeff_lead->Fill(E_k,pi);
+					npts_fracE_lead->Fill(npts_unwt[k], E_lead/E_tot);
 				}
 				if(nclusters > 1){
 					//sublead cluster
