@@ -13,6 +13,7 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_verb = 0;
 	_thresh = 1;
 	_mergeTree->SetThresh(_thresh);
+	_mergeTree->SetVerbosity(_verb);
 
 	_constraint_d = 0;
 	_constraint_thresh = -999;
@@ -67,11 +68,13 @@ vector<node*> BayesHierCluster::Cluster(){
 			//get subtrees i, j	
 			di = _mergeTree->Get(i);
 			dj = _mergeTree->Get(j);
+//		cout << "i: " << i << " npts: " << di->points->GetNPoints() << " j: " << j << " npts: " << dj->points->GetNPoints() << endl;
 			//calculate posterior for potential merge
 			node *x = _mergeTree->CalculateMerge(di, dj);
-			
+//		cout << "potential merge x has " << x->points->GetNPoints() << " points" << endl; x->points->Print();	
 			//modify probability of merge (rk) by distance constraint if specified
 			if(_constraint_thresh != -999){
+				cout << "distance constraining" << endl;
 				x->val *= DistanceConstraint(di,dj);		
 			}	
 		
@@ -92,12 +95,11 @@ vector<node*> BayesHierCluster::Cluster(){
 
 		}
 
-
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
-		//if(_verb > 0){
-		//cout << "pre pop" << endl;
-		//_list.Print();}
+	//	if(_verb > 0){
+	//	cout << "pre pop" << endl;
+	//	_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
 		//cout << "max merge rk: " << max->val << endl;
@@ -131,6 +133,7 @@ vector<node*> BayesHierCluster::Cluster(){
 		_mergeTree->Remove(max->r);
 		//cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
 		
+		//cout << "max merge has: " << max->points->GetNPoints() << " points" << endl;
 		//for all nodes in merge tree: check against newly formed cluster
 		NodeStack _list1;
 		for(int i = 0; i < _mergeTree->GetNClusters(); i++){

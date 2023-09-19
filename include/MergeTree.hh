@@ -91,10 +91,9 @@ class MergeTree : BaseTree{
 			x->d = _alpha; 
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
-			//p(D_k | T_k) = p(D_k | H_1^k)
+			//p(D_k | T_k) = p(D_k | H_1^k)		
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			_clusters.push_back(x);
-			
 		}
 
 		//runs varEM to get Evidence (ELBO) for given GMM
@@ -106,7 +105,7 @@ class MergeTree : BaseTree{
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 		
 			x->model = new GaussianMixture(k); //p(x | theta)
-			x->model->SetVerbosity(_verb);
+			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_alpha);
 			x->model->SetData(x->points);
 			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
@@ -133,6 +132,7 @@ class MergeTree : BaseTree{
 		//	cout << "data" << endl;
 		//	x->model->GetData()->Print();
 
+
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
 			algo->SetThresh(_thresh);
 			
@@ -144,7 +144,7 @@ class MergeTree : BaseTree{
 			int it = 0;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
-		//cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
+		if(isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 				dLogL = newLogL - oldLogL;
 				oldLogL = newLogL;
 				it++;

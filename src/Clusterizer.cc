@@ -48,12 +48,11 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_alpha);
-
+	bhc->SetVerbosity(_verb);
 	//set configs
 	if(_smeared) bhc->SetDataSmear(_data_smear);
 	bhc->SetThresh(_thresh);
 	bhc->AddData(points);
-	bhc->SetVerbosity(_verb);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
 
 	//run algo

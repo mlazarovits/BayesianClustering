@@ -15,7 +15,7 @@ class BayesHierCluster{
 	
 		void AddData(PointCollection* pc);
 	
-		void SetVerbosity(int verb){ _verb = verb; }
+		void SetVerbosity(int verb){ _verb = verb; _mergeTree->SetVerbosity(_verb);}
 		
 		void SetThresh(double t){ _thresh = t; _mergeTree->SetThresh(_thresh); }
 		void SetDataSmear(const Matrix& cov){ _mergeTree->SetDataSmear(cov); }		

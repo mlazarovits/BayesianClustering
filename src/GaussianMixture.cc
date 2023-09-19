@@ -293,7 +293,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
-	if(_verb > 0) cout << "alpha0: " << m_alpha0 << endl;
+	if(_verb > 1) cout << "alpha0: " << m_alpha0 << endl;
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
@@ -326,8 +326,8 @@ void GaussianMixture::CalculateExpectations(){
 	//	cout << "k: " << k << " digam: " << digam << " d*ln2: " << m_dim*log(2) << " lndet: " << log(scalemat.det()) << " det: " << scalemat.det() << endl; scalemat.Print();
 		m_Elam[k] = digam + m_dim*log(2) + log(scalemat.det());
 		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
-	//	cout << "k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " det: " << scalemat.det() << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
-	//	scalemat.Print();
+		if(isnan(m_Elam[k])){ cout << "NAN!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
 	}	
 }
 
@@ -405,11 +405,21 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
-			if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
+		//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
+			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
+			
+			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
+			if(m_post.at(n,k) < 1e-308) m_post.SetEntry(0.,n,k);
+
+
+			//if(m_post.at(n,k) > 0 && isinf(1/m_post.at(n,k))){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
+
+
 			//m_post.SetEntry(m_data->at(n).w()*m_post.at(n,k)/post_norms[n],n,k);
 			//uncomment here to check posterior values
+		//	cout << "m post = " << m_post.at(n,k) << endl;
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
@@ -422,7 +432,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 
 
 void GaussianMixture::CalculateRStatistics(){
-//	cout << "Calculate RStats" << endl;
+	//cout << "Calculate RStats" << endl;
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
@@ -436,11 +446,18 @@ void GaussianMixture::CalculateRStatistics(){
 			m_norms[k] += m_post.at(n,k);
 			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
 		}
+		if(m_norms[k] > 0 && isinf(1/m_norms[k])){ cout << "k: " << k << " m_norms: " << m_norms[k] << endl; m_post.Print();cout << " w1: " << m_data->at(0).w() << " w2: " << m_data->at(1).w() << endl; }
 	}
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices
 	for(int k = 0; k < m_k; k++){
 		Matrix mu = Matrix(m_dim, 1);
+		//to avoid nans, if there are no effective points in a cluster, the update equations dictate that its parameters are just the priors
+		//however in calculating the r statistics, N_k = 0 can lead to nans
+		if(m_norms[k] == 0){
+			m_model[k]->SetParameter("mean",mu);		
+			continue;	
+		}
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
 			Matrix x = Matrix(m_data->at(n));
@@ -476,6 +493,13 @@ void GaussianMixture::CalculateRStatistics(){
 		//create (x_n - mu)*(x_n - mu)T matrices for each data pt
 		Matrix S = Matrix(m_dim,m_dim);
 		Matrix mu = m_model[k]->GetParameter("mean");
+		//to avoid nans, if there are no effective points in a cluster, the update equations dictate that its parameters are just the priors
+		//however in calculating the r statistics, N_k = 0 can lead to nans
+		if(m_norms[k] == 0){
+			m_model[k]->SetParameter("cov",S);		
+			continue;	
+		}
+
 //		cout << "k: " << k << " mu" << endl;
 //		mu.Print();
 		for(int n = 0; n < m_n; n++){
@@ -514,13 +538,8 @@ void GaussianMixture::CalculateRStatistics(){
 		//cout << "m_norm: " << m_norms[k] << endl;
 		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
 		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
-	
-
-		
-
+		//N_k = 0 clusters do not get a smear because there are no points to smear
 		if(_smear) S.add(_data_cov);
-		
-
 //		S.Print();
 		m_model[k]->SetParameter("cov",S);
 		//if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
@@ -532,6 +551,7 @@ void GaussianMixture::CalculateRStatistics(){
 //M-step
 void GaussianMixture::UpdateVariationalParameters(){
 	CalculateRStatistics();
+	//can't remove N_k = 0 clusters because alpha0 keeps these clusters alive -> instead these parameters will be only priors
 	UpdatePriorParameters();
 
 }
@@ -543,6 +563,18 @@ void GaussianMixture::UpdatePriorParameters(){
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
 	for(int k = 0; k < m_k; k++){
+		//to avoid nans, if there are no effective points in a cluster, the update equations dictate that its parameters are just the priors
+		//however in calculating the r statistics, N_k = 0 can lead to nans
+		if(m_norms[k] == 0){
+			m_model[k]->GetPrior()->SetParameter("scale", Matrix(m_beta0));
+			m_model[k]->GetPrior()->SetParameter("dof", Matrix(m_nu0));
+			m_model[k]->GetPrior()->SetParameter("mean", m_mean0);
+			m_model[k]->GetPrior()->SetParameter("scalemat", m_W0);
+			continue;	
+		}
+
+
+
 		//already calculated
 		Matrix mu = m_model[k]->GetParameter("mean");
 		Matrix cov = m_model[k]->GetParameter("cov");
@@ -607,6 +639,8 @@ void GaussianMixture::UpdatePriorParameters(){
 		//new_scalemat.Print();
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
+
+		if(isnan(new_scalemat.at(0,0))) cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
 		m_model[k]->GetPrior()->SetParameter("scalemat", new_scalemat);
 		//cout << "k: " << k << " cov: " << endl;
 		//cov.Print();
@@ -751,7 +785,7 @@ double GaussianMixture::EvalVariationalLogL(){
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 
 	}
-
+//	cout << "E_q_muLam: " << E_q_muLam << endl;
 	/*
 	cout << "E_p_all: " << E_p_all << endl;
 	cout << "E_p_Z: " << E_p_Z << endl;

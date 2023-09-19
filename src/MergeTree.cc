@@ -12,7 +12,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
-
 	struct node* x = (struct node*)malloc(sizeof *x);
 	x->points = points;
 	x->d = d;
@@ -27,6 +26,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 //cout << "pi: " << pi << " p_dk_h1: " << p_dk_h1 << " l->prob_tk: " << l->prob_tk << " l->d: " << l->d << " r->prob_tk: " << r->prob_tk << " r->d: " << r->d << " d: " << d << " p_dk_tk: " << p_dk_tk << " rk: " << rk << " points " << endl;
 //points->Print();
 	
+
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	

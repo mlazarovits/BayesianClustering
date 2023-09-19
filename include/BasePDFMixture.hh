@@ -83,7 +83,8 @@ class BasePDFMixture : public BasePDF{
 		void UpdateMixture(double thresh){
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 			for(int k = 0; k < m_k; k++){
-				if(m_alphas[k] < thresh){
+				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
+				if(m_norms[k] + m_alpha0 < thresh){
 					if(_verb > 1) cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
@@ -91,7 +92,7 @@ class BasePDFMixture : public BasePDF{
 				}
 			}
 			//cout if all clusters are removed
-			if(m_k < 1) cout << "Error: all clusters have been removed. Update threshold accordingly." << endl;
+			if(m_k < 1){ cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl;
 
 		}
 

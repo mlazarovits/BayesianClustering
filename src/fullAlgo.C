@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
 	int nIts = 50; //number of iterations to run EM algorithm
 	bool viz = false;
 	//for dirichlet prior in BHC
-	double alpha = 1;
+	double alpha = 0.1;
 	unsigned long long seed = 112;
 	int verb = 0;
 	for(int i = 0; i < argc; i++){
@@ -141,9 +141,9 @@ int main(int argc, char *argv[]){
 		pc += mat.MatToPoints();
 	}
 
-	cout << "DATA" << endl;
-	pc.Print();
-cout << "\n" << endl;	
+	//cout << "DATA" << endl;
+	//pc.Print();
+	//cout << "\n" << endl;	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(alpha);
 	bhc->SetVerbosity(verb);
