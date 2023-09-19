@@ -77,15 +77,26 @@ class BasePDFMixture : public BasePDF{
 			m_norms.erase(m_norms.begin()+k);
 			//don't need to update m_coeffs - only used for normal EM algorithm
 			//update number of clusters
-			m_k--; }
+			m_k--;
+			//update dimensions of posterior
+			Matrix newpost = Matrix(m_n,m_k);
+			for(int n = 0; n < m_n; n++)
+				for(int k = 0; k < m_k; k++) newpost.SetEntry(m_post.at(n,k),n,k);
+			m_post = newpost;
+		 }
 
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
+	//	cout << m_k << " original clusters" << endl;
+	//	for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl;
+	//	cout << "points" << endl; m_data->Print();
+	//	cout << "weights" << endl; for(int n = 0; n < m_n; n++) cout << m_data->at(n).w() << endl;
 			for(int k = 0; k < m_k; k++){
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				if(m_norms[k] + m_alpha0 < thresh){
-					if(_verb > 1) cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
+					if(_verb > 1) 
+						cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
 					k--; //make sure to check following model

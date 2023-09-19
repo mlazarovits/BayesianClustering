@@ -353,6 +353,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 
 	Matrix mean = Matrix(m_dim, 1);
 	Matrix scalemat = Matrix(m_dim, m_dim);
+	//cout << m_n << " points and " << m_k << " clusters " << endl;
 	for(int n = 0; n < m_n; n++){
 		norm = 0;
 		for(int k = 0; k < m_k; k++){
@@ -392,6 +393,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			m_post.SetEntry(post, n, k);
 			//if(k == 1){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
 		}
+		if(post_k_vals.size() < 1) continue;
 		post_n_max.push_back(*std::max_element(post_k_vals.begin(), post_k_vals.end()));
 		post_norms_adj.push_back(0.);
 		for(int k = 0; k < m_k; k++) post_norms_adj[n] += exp(post_k_vals[k] - post_n_max[n]);
@@ -399,13 +401,13 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		post_k_vals.clear();
 		post_norms.push_back(norm);
 	}
-//cout << "posterior pre-norm" << endl;	
+	//cout << "posterior pre-norm" << endl;	
 	//m_post.Print();
 	//normalize
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
-		//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
+	//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
 			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
@@ -423,8 +425,8 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
-//cout << "posterior normed" << endl;	
-//	m_post.Print();
+	//cout << "posterior normed" << endl;	
+	//m_post.Print();
 //cout << "\n" << endl;
 };
 
@@ -445,8 +447,10 @@ void GaussianMixture::CalculateRStatistics(){
 			//weighted in posterior calculation - need to unweight
 			m_norms[k] += m_post.at(n,k);
 			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
+			//cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 		}
-		if(m_norms[k] > 0 && isinf(1/m_norms[k])){ cout << "k: " << k << " m_norms: " << m_norms[k] << endl; m_post.Print();cout << " w1: " << m_data->at(0).w() << " w2: " << m_data->at(1).w() << endl; }
+		//cout << "k: " << k << " norm: " << m_norms[k] << endl;
+		//if(m_norms[k] > 0 && isinf(1/m_norms[k])){ cout << "k: " << k << " m_norms: " << m_norms[k] << endl; m_post.Print();cout << " w1: " << m_data->at(0).w() << " w2: " << m_data->at(1).w() << endl; }
 	}
 
 	//this is for x_k (eq. 10.52) - k dx1 matrices

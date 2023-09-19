@@ -20,13 +20,14 @@ int main(int argc, char *argv[]){
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
-	double alpha = 0.1;
+	double alpha = 0.5;
 	bool viz = false;
 	int verb = 0;
 	int evt = 0;
 	bool weighted = false;
 	bool smeared = false;
 	bool skim = false;
+	bool distconst = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -92,6 +93,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smeared = true;
    		}
+		if(strncmp(argv[i],"--dist", 6) == 0){
+    	 		distconst = true;
+   		}
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
    		}
@@ -109,6 +113,7 @@ int main(int argc, char *argv[]){
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
+   		cout << "   --dist                        clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
@@ -211,6 +216,7 @@ int main(int argc, char *argv[]){
 	algo->SetVerbosity(verb);
 	if(weighted) algo->SetWeighted(weighted);
 	if(smeared) algo->SetDataSmear(smear);
+	algo->SetDistanceConstraint(distconst);
 	
 	if(viz)	algo->Cluster(testjet, fname); 
 	else algo->Cluster(testjet);

@@ -30,7 +30,7 @@ void BayesHierCluster::SetAlpha(double a){
 }
 
 
-
+//uses a triangular distribution to constraint certain clusterings
 double BayesHierCluster::DistanceConstraint(node* i, node* j){
 	double cent1 = i->points->Centroid(_constraint_d);
 	double cent2 = j->points->Centroid(_constraint_d);
@@ -42,8 +42,11 @@ double BayesHierCluster::DistanceConstraint(node* i, node* j){
 	double c = (_constraint_a + _constraint_b)/2.;
 
 	TriangularPDF* tri = new TriangularPDF(_constraint_a,_constraint_b,c);
+
+	//to transform range to [0,1]
+	double trimax = tri->Prob(c);
 	
-	return tri->Prob((cent1 - cent2));	
+	return tri->Prob((cent1 - cent2))/trimax;
 
 }
 
@@ -74,7 +77,7 @@ vector<node*> BayesHierCluster::Cluster(){
 //		cout << "potential merge x has " << x->points->GetNPoints() << " points" << endl; x->points->Print();	
 			//modify probability of merge (rk) by distance constraint if specified
 			if(_constraint_thresh != -999){
-				cout << "distance constraining" << endl;
+				//cout << "distance constraining" << endl;
 				x->val *= DistanceConstraint(di,dj);		
 			}	
 		
@@ -104,8 +107,10 @@ vector<node*> BayesHierCluster::Cluster(){
 		node* max = _list.fullpop();
 		//cout << "max merge rk: " << max->val << endl;
 		//if rk < 0.5: cut tree
-		if(max->val < 0.5){
-			if(_verb > 0) cout << "reached min rk = " << max->val << " <  0.5 - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
+	
+		double maxval = 0.5;
+		if(max->val < maxval){
+			if(_verb > 0) cout << "reached min rk = " << max->val << " <  " << maxval << " - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
 			break;
 		}
 		//cout << "post pop" << endl;
@@ -131,14 +136,17 @@ vector<node*> BayesHierCluster::Cluster(){
 		_mergeTree->Insert(max);
 		_mergeTree->Remove(max->l);
 		_mergeTree->Remove(max->r);
-		//cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
 		
-		//cout << "max merge has: " << max->points->GetNPoints() << " points" << endl;
+	//	cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
+	//	cout << "max merge has: " << max->points->GetNPoints() << " points" << endl;
+	//	max->points->Print();
+		
 		//for all nodes in merge tree: check against newly formed cluster
 		NodeStack _list1;
 		for(int i = 0; i < _mergeTree->GetNClusters(); i++){
 			di = _mergeTree->Get(i);
 			if(di == max) continue;
+			//cout << "calculating merge for max and " << endl; di->points->Print();
 			node* x = _mergeTree->CalculateMerge(di, max);
 			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
 			//modify probability of merge (rk) by distance constraint if specified

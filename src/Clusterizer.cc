@@ -13,6 +13,7 @@ Clusterizer::Clusterizer(){
 	_maxK = 0;
 	_weighted = false;
 	_smeared = false;
+	_distconst = false;
 };
 
 Clusterizer::Clusterizer(vector<Jet> jets){
@@ -25,6 +26,7 @@ Clusterizer::Clusterizer(vector<Jet> jets){
 	_maxK = 0;
 	_weighted = false;
 	_smeared = false;
+	_distconst = false;
 }
 
 
@@ -54,7 +56,10 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	bhc->SetThresh(_thresh);
 	bhc->AddData(points);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
-
+	//int d = dimension, double c = threshold, double a = lower bount, double b = upper bound
+	//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
+	if(_distconst) bhc->SetDistanceConstraint(1, acos(-1)/2., -acos(-1)/2, acos(-1)/2);
+	
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
@@ -70,7 +75,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	if(_verb > 0) cout << tree.size() << " jets found." << endl;
 	for(int n = 0; n < (int)tree.size(); n++){
 		BasePDFMixture* model = tree[n]->model;
-		if(_verb > 0){
+		if(_verb > 3){
 			cout << model->GetNClusters() << " subjets found in jet " << n << endl;
 			cout << "Estimated prior parameters" << endl;
 			map<string, Matrix> params;
