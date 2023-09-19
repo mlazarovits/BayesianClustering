@@ -29,7 +29,7 @@ class Clusterizer{
 		void SetVerbosity(int v){ _verb = v; }
 		void SetMaxNClusters(int k){ _maxK = k; }
 		void SetWeighted(bool w){_weighted = w; }
-		
+		void SetDistanceConstraint(bool d){ _distconst = d;}	
 
 		//runs everything (varGMM + BHC)
 		//change to run over generic points (or vector of rhs)
@@ -62,5 +62,7 @@ class Clusterizer{
 		int _maxK;
 		bool _weighted;
 		bool _smeared;
+		bool _distconst;
+
 };
 #endif
