@@ -12,6 +12,8 @@ class TriangularPDF : public BasePDF{
 		TriangularPDF(double a, double b, double c){
 			if(b <= a || c < a || c > b){ cout << "Error: c: a <= c <= b and b: a < b" << endl; cout << "a: " << a << " b: " << b << " c: " << c << endl;}
 			_a = a; _b = b; _c = c;
+			m_params["a"] = Matrix(Point(_a));
+			m_params["b"] = Matrix(Point(_b));
 		}
 		virtual ~TriangularPDF(){ };
 
