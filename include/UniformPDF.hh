@@ -19,6 +19,10 @@ class UniformPDF : public BasePDF{
 
 		void InitParameters(unsigned long long seed = 123);
 
+		void UpdateParameters(){ _a = m_params["a"].at(0,0); _b = m_params["b"].at(0,0);
+			m_params["a"] = Matrix(Point(_a));
+			m_params["b"] = Matrix(Point(_b));
+		 }	
 
 	private:
 		double _a, _b;
