@@ -78,6 +78,7 @@ class BaseSkimmer{
 			hists2D.push_back(totE_mixcoeff_lead);
 			hists2D.push_back(totE_mixcoeff_notlead);
 			hists2D.push_back(npts_totE);
+			hists2D.push_back(npts_fracE_lead);
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -190,6 +191,8 @@ class BaseSkimmer{
 		TH2D* totE_mixcoeff_notlead = new TH2D("totE_mixcoeff_notlead","totE_mixcoeff_notlead;totE_notlead;mixing_coeff_notlead",50,0,100,50,0,1.);	
 		//15 - npts v energy
 		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,50,0,100);
+		//16 - npts v energy
+		TH2D* npts_fracE_lead = new TH2D("npts_fracE_lead","npts_fracE_lead;npts;fracE_lead",50,0.,100,50,0,100);
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
