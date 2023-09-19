@@ -92,7 +92,7 @@ class BasePDFMixture : public BasePDF{
 				}
 			}
 			//cout if all clusters are removed
-			if(m_k < 1){ cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl;
+			if(m_k < 1) cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
 
 		}
 

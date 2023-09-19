@@ -134,7 +134,7 @@ class MergeTree : BaseTree{
 
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
-			algo->SetThresh(_thresh);
+			if(x->points->GetNPoints() > 2) algo->SetThresh(_thresh);
 			
 			//cluster
 			double oldLogL = algo->EvalLogL();
