@@ -66,11 +66,6 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	unsigned long id;
 	int nRHs;
 	rhs.clear();
-	double etaMax = 0.5;
-	double etaMin = -etaMax;  
-	double phiMax = 2.;
-	double phiMin = -2.8;
-	int cnt = 0;
 	int nPho, nPhoRHs, rhId;
 	vector<unsigned int> phoIds;
 	
