@@ -75,13 +75,13 @@ class JsonPlotter:
 			nLevels = len(levels)
 			print("json has",nLevels,"levels")
 		for l in range(nLevels):
-			fig = self.plot_level(l, plotname+'_level'+str(l))
+			fig = self.plot_level(l, plotname+'_level'+str(l), dataonly)
 			figs.append(fig)
 		return figs
 			
 	
 	
-	def plot_level(self, l, filename):
+	def plot_level(self, l, filename, dataonly = False):
 		#get level l for each tree -> will return clusters_level_l for each tree
 		#if tree has less levels than l, plot all data in tree as leaves
 		level = self.json_obj["levels"]["level_"+str(l)]
@@ -92,7 +92,7 @@ class JsonPlotter:
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
-			gr_arr.append(self.plot_tree(level, t))	
+			gr_arr.append(self.plot_tree(level, t, dataonly))	
 	
 		
 		#make sure arr is flat
@@ -104,7 +104,7 @@ class JsonPlotter:
 	
 		
 	
-	def plot_tree(self, level, t):
+	def plot_tree(self, level, t, dataonly = False):
 		tree = level["tree_"+str(t)]
 		nClusters = len(tree)
 		#print("Tree",t,"has",nClusters,"clusters")
@@ -115,7 +115,7 @@ class JsonPlotter:
 
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
-			gr_arr.append(self.plot_cluster(cluster, t))
+			gr_arr.append(self.plot_cluster(cluster, t, dataonly))
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
