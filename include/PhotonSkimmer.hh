@@ -302,16 +302,18 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[16]->Fill(npts_unwt[k], E_lead/E_tot);	
 	
 				}
+				if(nclusters == 1)
+					plotCats[id_idx].hists2D[17]->Fill(npts_unwt[k], E_lead/E_tot);	
 
 
 				if(nclusters > 1){
 					if(k == subleadidx){
 						//subleading cluster tot energy - if it exists
 						plotCats[id_idx].hists1D[13]->Fill(E_k);
-						//leading cluster time v energy
-						plotCats[id_idx].hists2D[2]->Fill(tc,E_k);
 					}
 					if(k != leadidx){
+						//notleading cluster time v energy
+						plotCats[id_idx].hists2D[2]->Fill(tc,E_k);
 						plotCats[id_idx].hists1D[22]->Fill(rot2D);
 						plotCats[id_idx].hists2D[14]->Fill(E_k,pi);
 						plotCats[id_idx].hists1D[24]->Fill(tc);
@@ -459,18 +461,20 @@ class PhotonSkimmer : public BaseSkimmer{
 					totE_mixcoeff_lead->Fill(E_k,pi);
 					npts_fracE_lead->Fill(npts_unwt[k], E_lead/E_tot);
 				}
+				if(nclusters == 1)
+					npts_fracE_lead_1subcl->Fill(npts_unwt[k], E_lead/E_tot);	
 				if(nclusters > 1){
 					//sublead cluster
 					if(k == subleadidx){
 						//subleading cluster tot energy - if it exists
 						e_tot_sublead->Fill(E_k);
-						//leading cluster time v tot energy
-						time_totE_sublead->Fill(tc,E_k);
 					}
 
 
 					//not lead cluster
 					if(k != leadidx){
+						//notleading cluster time v tot energy
+						time_totE_notlead->Fill(tc,E_k);
 						rotundity_2D_notlead->Fill(rot2D);		
 						totE_mixcoeff_notlead->Fill(E_k,pi);
 						time_center_notlead->Fill(tc);
