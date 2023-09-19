@@ -64,7 +64,7 @@ class BaseSkimmer{
 
 			hists2D.push_back(time_totE);
 			hists2D.push_back(time_totE_lead);
-			hists2D.push_back(time_totE_sublead);
+			hists2D.push_back(time_totE_notlead);
 			hists2D.push_back(az_totE);
 			hists2D.push_back(rot2D_totE);
 			hists2D.push_back(eta_phi);
@@ -79,6 +79,7 @@ class BaseSkimmer{
 			hists2D.push_back(totE_mixcoeff_notlead);
 			hists2D.push_back(npts_totE);
 			hists2D.push_back(npts_fracE_lead);
+			hists2D.push_back(npts_fracE_lead_1subcl);
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -136,7 +137,7 @@ class BaseSkimmer{
 		//14 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",50,0.,1000);
 		//15 - number of pts in lead subcluster
-		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,100);
+		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,70);
 		//16 - fraction of pts in lead subcluster
 		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,1);
 		//17 - fraction of energy in lead subcluster
@@ -163,8 +164,8 @@ class BaseSkimmer{
 		TH2D* time_totE = new TH2D("time_totE","time_totE;time_center;totalE", 50,-30,30,50,0,100);
 		//1 - time v tot lead subcluster energy
 		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead;time_center_lead;totalE_lead", 50,-30,30,50,0,100);
-		//2 - time v tot sublead subcluster energy
-		TH2D* time_totE_sublead = new TH2D("time_totE_sublead","time_totE_sublead;time_center_sublead;totalE_sublead", 50,-30,30,50,0,100);
+		//2 - time v tot notlead subcluster energy
+		TH2D* time_totE_notlead = new TH2D("time_totE_notlead","time_totE_notlead;time_center_notlead;totalE_notlead", 50,-30,30,50,0,100);
 		//3 - azimuthal angle v energy
 		TH2D* az_totE = new TH2D("az_totE","az_totE;azimuthal_angle;totalE;a.u.",50,-3.5,3.5,50,0,100);
 		//4 - rotundity (2D) v energy
@@ -190,9 +191,11 @@ class BaseSkimmer{
 		//14 - totE vs mixing coeff - notlead
 		TH2D* totE_mixcoeff_notlead = new TH2D("totE_mixcoeff_notlead","totE_mixcoeff_notlead;totE_notlead;mixing_coeff_notlead",50,0,100,50,0,1.);	
 		//15 - npts v energy
-		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,50,0,100);
+		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,50,0,70);
 		//16 - npts v energy
-		TH2D* npts_fracE_lead = new TH2D("npts_fracE_lead","npts_fracE_lead;npts;fracE_lead",50,0.,100,50,0,100);
+		TH2D* npts_fracE_lead = new TH2D("npts_fracE_lead","npts_fracE_lead;npts;fracE_lead",50,0.,70,50,0,1.);
+		//17 - npts v energy for 1 subcluster photons
+		TH2D* npts_fracE_lead_1subcl = new TH2D("npts_fracE_lead_1subcl","npts_fracE_lead_1subcl;npts;fracE_lead",50,0.,70,50,0,1.);
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
