@@ -77,6 +77,10 @@ class MergeTree : BaseTree{
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
 
 	protected:
+
+
+
+
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
@@ -103,7 +107,13 @@ class MergeTree : BaseTree{
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-		
+	
+	
+			//center points in this cluster (bucket)
+			//this accounts for phi wraparound
+			Point transf = x->points->Center();
+			
+
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_alpha);
@@ -150,6 +160,25 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
+			//transform relevant parameters in each subcluster (just centers - matrices unaffected)
+			Matrix mu, mean;
+			map<string, Matrix> params;
+			for(int k = 0; k < x->model->GetNClusters(); k++){
+				params = x->model->GetPriorParameters(k);
+				mu = params["mean"];
+				mean = params["m"];
+
+				mu.add(Matrix(transf));
+				x->model->GetModel(k)->SetParameter("mean",mu);
+		
+				mean.add(Matrix(transf));
+				x->model->GetModel(k)->GetPrior()->SetParameter("mean",mean);
+			}
+			//transform data back
+			for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
+			x->points->Translate(transf);
+			
+
 			return newLogL;
 		}
 
