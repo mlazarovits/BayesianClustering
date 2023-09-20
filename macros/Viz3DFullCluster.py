@@ -17,6 +17,13 @@ class JsonPlotter:
 	def setVerb(self, v):
 		self._v = v
 
+	def makeOpacities(self, w):
+		wmin = min(w);
+		wmax = max(w);
+
+		op = [(i - wmin)/(wmax - wmin) for i in w]
+		return op
+
 	def buildColorDict(self):
 		colors = {}
 		#leaf color - hollow points
@@ -140,10 +147,11 @@ class JsonPlotter:
 		for k in range(nSubClusters):
 			if self._v > 0:
 				print("			subcluster",k,"has",cluster['subclusters']['subcluster_'+str(k)]['color'],'weight and',len(x),'points')
-			w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
+			#w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
 	
 		colors = self.buildColorDict()
-		
+
+
 		#leaf
 		if(len(x) == 1):
 			cl = -1
@@ -152,10 +160,15 @@ class JsonPlotter:
 		if cl > 17:
 			cl = cl % 16	
 	
+		cols = [colors[cl] for i in range(len(w))]
+
+		if(min(w) != max(w)):
+			opacities = self.makeOpacities(w)
+			cols = [i.replace("1.",str(opacities[idx])) for idx, i in enumerate(cols)]
 		#add data
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				#size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', line=dict(
-				size = 4, color = colors[cl], line=dict(
+				size = 4, color = cols, line=dict(
 					color = colors[cl], width = 30)), showlegend=False))
 		if dataonly is True:
 			return gr_arr
