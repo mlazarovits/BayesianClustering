@@ -39,24 +39,24 @@ class JsonPlotter:
 		colors[7] = 'rgba(135, 61, 89, 1.)'
 		#dark blue
 		colors[8] = 'rgba(39, 129, 143, 1.)'
-		#dark purple
-		colors[9] = 'rgba(39, 55, 105, 1.)' 
-		#dark orange
-		colors[10] = 'rgba(156, 92, 36, 1.)'
-		#dark pink
-		colors[11] = 'rgba(138, 48, 123, 1.)'
 		#dark magenta
-		colors[12] = 'rgba(136, 48, 138, 1.)'
-		#light magenta
-		colors[13] = 'rgba(188, 119, 189, 1.)'
+		colors[9] = 'rgba(136, 48, 138, 1.)'
+		#dark purple
+		colors[10] = 'rgba(39, 55, 105, 1.)' 
+		#dark orange
+		colors[11] = 'rgba(156, 92, 36, 1.)'
+		#dark blue-green
+		colors[12] = 'rgba(33, 99, 76, 1.)'
+		#dark pink
+		colors[13] = 'rgba(138, 48, 123, 1.)'
 		#dark yellow
 		colors[14] = 'rgba(148, 129, 34, 1.)'
+		#light magenta
+		colors[15] = 'rgba(188, 119, 189, 1.)'
 		#light yellow-green
-		colors[15] = 'rgba(187, 201, 123, 1.)'
+		colors[16] = 'rgba(187, 201, 123, 1.)'
 		#light blue-green
-		colors[16] = 'rgba(123, 201, 174, 1.)'
-		#dark blue-green
-		colors[17] = 'rgba(33, 99, 76, 1.)'
+		colors[17] = 'rgba(123, 201, 174, 1.)'
 		return colors
 	
 	
@@ -206,19 +206,19 @@ class JsonPlotter:
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 			#make ellipsoid color of average energy across points (responsibilities)
-			scale = False
-			if max(w) == min(w):
-				cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
-			else:
-				cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
-				scale = True
-			cl = sample_colorscale("Plotly3",cl_w)
-			cl = np.array([cl,cl]).flatten()
+			#scale = False
+			#if max(w) == min(w):
+			#	cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
+			#else:
+			#	cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
+			#	scale = True
+			#cl = sample_colorscale("Plotly3",cl_w)
+			#cl = np.array([cl,cl]).flatten()
 		
 	
 			#add ellipsoids
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
-			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
+			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
 		
 		return gr_arr
 
