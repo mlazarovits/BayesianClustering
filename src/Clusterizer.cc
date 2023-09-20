@@ -47,6 +47,8 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		points->SetWeights(weights);
 
 	}
+
+
 	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_alpha);
@@ -56,10 +58,13 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	bhc->SetThresh(_thresh);
 	bhc->AddData(points);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
-	//int d = dimension, double c = threshold, double a = lower bount, double b = upper bound
-	//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
-	if(_distconst) bhc->SetDistanceConstraint(1, acos(-1)/2., -acos(-1)/2, acos(-1)/2);
 	
+	if(_distconst){
+		//int d = dimension, double c = threshold, double a = lower bount, double b = upper bound
+		//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
+		bhc->SetDistanceConstraint(1, 0., acos(-1)/2);
+		bhc->SetPhiWraparound(true);
+	}
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();

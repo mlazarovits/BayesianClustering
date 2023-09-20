@@ -28,7 +28,8 @@ class BayesHierCluster{
 
 		void SetAlpha(double a);
 
-		void SetDistanceConstraint(int d, double thresh, double a = 0, double b = 1){ _constraint_d = d; _constraint_thresh = thresh; _constraint_a = a; _constraint_b = b; }
+		void SetDistanceConstraint(int d, double a = 0, double b = 1){ _constrain = true; _constraint_d = d; _constraint_a = a; _constraint_b = b; }
+		void SetPhiWraparound(bool phi){ _wraparound = phi; }
 		double DistanceConstraint(node* i, node* j);
 
 
@@ -55,9 +56,13 @@ class BayesHierCluster{
 		//hierarchical cluster distance constraints
 		//dimension along which to constrain
 		int _constraint_d;
-		//cutoff threshold (clusters farther away than thresh will not be clustered)
-		double _constraint_thresh;
+		//transform distance to this interval
+		double _constraint_min, _constraint_max;
+		//cutoff interval (clusters outside of [a,b] will not be clustered)
 		double _constraint_a, _constraint_b;
+		bool _constrain;
+		//if phi is used for distance constraint
+		bool _wraparound;
 };
 #endif
 

@@ -1,10 +1,11 @@
 #include "BayesHierCluster.hh"
 #include "TriangularPDF.hh"
+#include "UniformPDF.hh"
 #include "NodeStack.hh"
 #include "MergeTree.hh"
 
 
-BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; _constraint_d = 0; _constraint_thresh = -999; }
+BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; _constraint_d = 0; _constraint_min = -999; _constraint_max = -999; _constrain = false; _wraparound = false;}
 		
 
 
@@ -14,9 +15,9 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_thresh = 1;
 	_mergeTree->SetThresh(_thresh);
 	_mergeTree->SetVerbosity(_verb);
-
-	_constraint_d = 0;
-	_constraint_thresh = -999;
+	_constrain = false;
+	_wraparound = false;
+	_constraint_d = 0; _constraint_min = -999; _constraint_max = -999;
 }
 
 
@@ -35,18 +36,21 @@ double BayesHierCluster::DistanceConstraint(node* i, node* j){
 	double cent1 = i->points->Centroid(_constraint_d);
 	double cent2 = j->points->Centroid(_constraint_d);
 
-	if(fabs(cent1 - cent2) > _constraint_thresh){
-		return 0;
-	}	
-
 	double c = (_constraint_a + _constraint_b)/2.;
+	double pi = acos(-1);
+	double d = cent1 - cent2;
 
 	TriangularPDF* tri = new TriangularPDF(_constraint_a,_constraint_b,c);
-
-	//to transform range to [0,1]
-	double trimax = tri->Prob(c);
+	UniformPDF* uni = new UniformPDF(_constraint_a, _constraint_b);
 	
-	return tri->Prob((cent1 - cent2))/trimax;
+	//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
+	if(_wraparound){
+		d = fabs(cent1 - cent2);
+		if(d > pi) d = 2*pi - d; 
+	}	
+
+	return uni->Prob(d)*(_constraint_b - _constraint_a);
+//	return tri->Prob((cent1 - cent2))/Prob->(c);
 
 }
 
@@ -76,7 +80,7 @@ vector<node*> BayesHierCluster::Cluster(){
 			node *x = _mergeTree->CalculateMerge(di, dj);
 //		cout << "potential merge x has " << x->points->GetNPoints() << " points" << endl; x->points->Print();	
 			//modify probability of merge (rk) by distance constraint if specified
-			if(_constraint_thresh != -999){
+			if(_constrain){
 				//cout << "distance constraining" << endl;
 				x->val *= DistanceConstraint(di,dj);		
 			}	
@@ -150,7 +154,7 @@ vector<node*> BayesHierCluster::Cluster(){
 			node* x = _mergeTree->CalculateMerge(di, max);
 			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
 			//modify probability of merge (rk) by distance constraint if specified
-			if(_constraint_thresh != -999){
+			if(_constrain){
 				x->val *= DistanceConstraint(di,dj);		
 			}	
 			
