@@ -46,7 +46,8 @@ json FullViz3D::WriteNode(node* node){
 		//time
 		z.push_back(points->at(i).Value(2));
 		//weight
-		w.push_back(m_points->at(i).Weight());
+		w.push_back(points->at(i).Weight());
+
 	}
 	data["x"] = x;
 	data["y"] = y;
