@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --ouput(-o) [file]            output root file (in test/)" << endl;
+   		cout << "   --ouput(-o) [file]            output root file (in plots/)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
@@ -150,14 +150,15 @@ int main(int argc, char *argv[]){
 	string cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v9";
 	fname += "_v9";
 	if(viz){
-		if(gSystem->AccessPathName((fname).c_str())){
-			gSystem->Exec(("mkdir -p "+fname).c_str());
-		}
-		else{
-			gSystem->Exec(("rm -rf "+fname).c_str());
-			gSystem->Exec(("mkdir -p "+fname).c_str());
+	//directory is made in python script
+	//	if(gSystem->AccessPathName((fname).c_str())){
+	//		gSystem->Exec(("mkdir -p "+fname).c_str());
+	//	}
+	//	else{
+	//		gSystem->Exec(("rm -rf "+fname).c_str());
+	//		gSystem->Exec(("mkdir -p "+fname).c_str());
 
-		}
+	//	}
 		cout << "Writing to directory: " << fname << endl;
 	}
 	TFile* file = TFile::Open(in_file.c_str());
