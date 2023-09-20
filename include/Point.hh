@@ -163,7 +163,7 @@ class Point{
 				else
 					out += std::to_string(_value[d])+")";
 			}	
-			cout << out << endl;
+			cout << out << " w = " << _weight << endl;
 
 		}
 
