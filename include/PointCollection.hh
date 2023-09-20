@@ -216,9 +216,23 @@ class PointCollection{
 		return *std::min_element(pts.begin(), pts.end());
 	}
 
+	
+
 	//center all dimensions independently
-	//vector<double> Center(){
+	//shifts average to zero
 	Point Center(){
+		Point avg = mean();
+		for(int d = 0; d < _nDim; d++){
+			for(int i = 0; i < (int)_pts.size(); i++){
+				_pts[i].SetValue(_pts[i].at(d) - avg.at(d),d);
+			}
+		}
+		return avg;
+
+	}
+
+	//shifts min to zero
+	Point MinCenter(){
 		//vector<double> min;
 		Point min = Point(_nDim);
 		for(int d = 0; d < _nDim; d++){
@@ -261,7 +275,7 @@ class PointCollection{
 	//vector<double> Normalize(){
 	Point Normalize(){
 		//translate first
-		Center();
+		MinCenter();
 		double min, max;
 		//vector<double> scale;
 		Point scale = Point(_nDim);
