@@ -46,24 +46,24 @@ class JsonPlotter:
 		colors[7] = 'rgba(135, 61, 89, 1.)'
 		#dark blue
 		colors[8] = 'rgba(39, 129, 143, 1.)'
-		#dark magenta
-		colors[9] = 'rgba(136, 48, 138, 1.)'
 		#dark purple
-		colors[10] = 'rgba(39, 55, 105, 1.)' 
+		colors[9] = 'rgba(39, 55, 105, 1.)' 
 		#dark orange
-		colors[11] = 'rgba(156, 92, 36, 1.)'
+		colors[10] = 'rgba(156, 92, 36, 1.)'
 		#dark blue-green
-		colors[12] = 'rgba(33, 99, 76, 1.)'
+		colors[11] = 'rgba(33, 99, 76, 1.)'
 		#dark pink
-		colors[13] = 'rgba(138, 48, 123, 1.)'
+		colors[12] = 'rgba(138, 48, 123, 1.)'
 		#dark yellow
-		colors[14] = 'rgba(148, 129, 34, 1.)'
+		colors[13] = 'rgba(148, 129, 34, 1.)'
 		#light magenta
-		colors[15] = 'rgba(188, 119, 189, 1.)'
+		colors[14] = 'rgba(188, 119, 189, 1.)'
 		#light yellow-green
-		colors[16] = 'rgba(187, 201, 123, 1.)'
+		colors[15] = 'rgba(187, 201, 123, 1.)'
 		#light blue-green
-		colors[17] = 'rgba(123, 201, 174, 1.)'
+		colors[16] = 'rgba(123, 201, 174, 1.)'
+		#brown
+		colors[17] = 'rgba(97, 58, 18, 1.)'
 		return colors
 	
 	
@@ -136,6 +136,7 @@ class JsonPlotter:
 		y = data['y']
 		z = data['z']
 		w = data['w']
+		minPoints = 3
 		
 		gr_arr = []
 		
@@ -161,7 +162,11 @@ class JsonPlotter:
 			cl = cl % 16	
 	
 		cols = [colors[cl] for i in range(len(w))]
-
+		name = "cluster "+str(c)
+		if(len(x) >= minPoints or nSubClusters > 1):
+			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+")"
+			name += " in "+str(nSubClusters)+" subclusters" 
+		
 		if(min(w) != max(w)):
 			opacities = self.makeOpacities(w)
 			cols = [i.replace("1.",str(opacities[idx])) for idx, i in enumerate(cols)]
@@ -169,12 +174,11 @@ class JsonPlotter:
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				#size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', line=dict(
 				size = 4, color = cols, line=dict(
-					color = colors[cl], width = 30)), showlegend=False))
+					color = colors[cl], width = 30)), showlegend=True, name = name))
 		if dataonly is True:
 			return gr_arr
 		
 		#don't plot subclusters for clusters with points less than minPoints
-		minPoints = 3
 		if(len(x) < minPoints):
 			return gr_arr
 		
