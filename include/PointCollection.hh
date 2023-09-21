@@ -221,8 +221,10 @@ class PointCollection{
 	//center all dimensions independently
 	//shifts average to zero
 	Point Center(){
-		Point avg = mean();
+		//includes weights
+		Point avg = mean();//Point(_nDim);//mean();
 		for(int d = 0; d < _nDim; d++){
+			//avg.SetValue(Centroid(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - avg.at(d),d);
 			}
