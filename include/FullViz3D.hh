@@ -1,6 +1,7 @@
 #ifndef FullViz3D_HH
 #define FullViz3D_HH
 
+//for plotting all data 
 #include "ClusterVizBase.hh"
 #include "BaseTree.hh"
 #include "NodeStack.hh"

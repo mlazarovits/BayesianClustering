@@ -1,3 +1,4 @@
+//for plotting all data 
 #include "FullViz3D.hh"
 
 FullViz3D::FullViz3D(vector<node*> nodes){
