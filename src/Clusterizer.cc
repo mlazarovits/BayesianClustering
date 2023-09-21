@@ -74,7 +74,17 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		FullViz3D plots = FullViz3D(tree);
 		plots.SetVerbosity(_verb);
 		plots.Write(fname);
+		//plot individual clusters in local coordinates here
+		//for(int k = 0; k < tree; k++)
+		//plots.SetLocalCoords(true);
+		//json object root = plots.WriteNode(tree[i]);
+		//std::ofstream file;
+		//file.open(filename+to_string(k)+".json");
+		////sets 4 space indent
+		//file << std::setw(4) << root << endl;
+		//cout << "Writing to: " << filename << ".json" << endl;
 	}
+
 
 	//get parameters from subjets - GMM components
 	if(_verb > 0) cout << tree.size() << " jets found." << endl;

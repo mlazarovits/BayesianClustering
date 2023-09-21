@@ -1,4 +1,3 @@
-//for plotting all data 
 #include "FullViz3D.hh"
 
 FullViz3D::FullViz3D(vector<node*> nodes){
@@ -39,6 +38,12 @@ json FullViz3D::WriteNode(node* node){
 		return cluster;
 	}
 
+
+	//for writing individual cluster to its own plot/its history to its own json
+	if(_localcoords){
+		//center points on mean (not weighted) such that avg = 0 -> this is a deltaX, deltaY, deltaT plot/coords
+	}
+	
 	for(int i = 0; i < points->GetNPoints(); i++){
 		//eta
 		x.push_back(points->at(i).Value(0));

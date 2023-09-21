@@ -1,7 +1,6 @@
 #ifndef FullViz3D_HH
 #define FullViz3D_HH
 
-//for plotting all data 
 #include "ClusterVizBase.hh"
 #include "BaseTree.hh"
 #include "NodeStack.hh"
@@ -38,6 +37,7 @@ class FullViz3D : public ClusterVizBase{
 			cout << "Writing to: " << filename << ".json" << endl;
 		}
 		void SeeData(){ };
+		void SetLocalCoords(bool c){ _localcoords = c;}
 	private:
 		vector<node*> _nodes;
 		vector<int> _k; //number of subclusters per cluster
@@ -45,5 +45,7 @@ class FullViz3D : public ClusterVizBase{
 		json _root = json::object();
 
 		void orderTree(node* node, int level, map<int, NodeStack> &map);
+
+		bool _localcoords;
 };
 #endif
