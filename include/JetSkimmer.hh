@@ -30,7 +30,8 @@ class JetSkimmer : public BaseSkimmer{
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* tPV = new TH1D("tPV","tPV",100,-1.,1.);
 		//difference in tPV between two back-to-back jets
-		TH1D* tPV_res = new TH1D("tPV_res","tPV_res",100,-10.,10.);
+		TH1D* tPV_res_avg = new TH1D("tPV_res","tPV_res",100,-10.,10.);
+		TH1D* tPV_res_lead = new TH1D("tPV_res","tPV_res",100,-10.,10.);
 
 		//this is for one jet
 		//all hists referenced here are in hists1D
@@ -89,17 +90,21 @@ class JetSkimmer : public BaseSkimmer{
 		//find back to back jets
 		void FillPVHists(vector<node*> tree){
 			int njets = (int)tree.size(); 
-			double time, dtime, dr;
+			double pi = acos(-1);
 
+			double dtime, dphi, dr, phi1, t1, phi2, t2;
 			//find pairs of jets to calculate resolution	
+			//need to be back to back
+			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
 				for(int j = i; j < njets; j++){
-					//need to be back to back
-					//dphi = tree[i].phi-center - tree[j].phi-center
-					//if fabs(dphi) > pi+0.1 or fabs(dphi) < pi-0.1: continue (outside pi-0.1 to pi+0.1)
-					//dtime = CalculateTime(tree[i]) - CalculateTime(tree[j])		
-					//time of subclusters is measured as center
-					//do this for various time definitions - avg time weighted by mixing coeff, average time, median time	
+					//averaged over subclusters, weighted by mixing coeff
+					CalcAvg(tree[i],phi1,t1); CalcAvg(tree[j],phi2,t2);
+					if(fabs(phi1-phi2) < pi-0.1 && fabs(phi1-phi2) > pi+0.1) tPV_res_avg->Fill(t1-t2);
+					//lead subcluster
+					CalcLead(tree[i],phi1,t1); CalcLead(tree[j],phi2,t2);
+					if(fabs(phi1-phi2) < pi-0.1 && fabs(phi1-phi2) > pi+0.1) tPV_res_lead->Fill(t1-t2);
+			
 				}
 			}
 
@@ -108,21 +113,39 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 
-
-		double CalcTime_avgT(node* nnode){
+		void CalcLead(node* nnode, double& phi, double& t){
 			BasePDFMixture* model = nnode->model;
 			int kmax = model->GetNClusters();
-			double time = 0;
+			phi = 0;
+			t = 0;
+			vector<int> idxs;
+			model->sortedIdxs(idxs);
+			map<string, Matrix> params = model->GetPriorParameters(idxs[kmax-1]);
+			phi = params["pi"].at(0,0)*params["mean"].at(1,0);
+			t = params["pi"].at(0,0)*params["mean"].at(2,0);
+		}
+		
+
+
+
+		void CalcAvg(node* nnode, double& phi, double& t){
+			BasePDFMixture* model = nnode->model;
+			int kmax = model->GetNClusters();
+			phi = 0;
+			t = 0;
 			double ws;
 			double pi;
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
-				time += params["pi"].at(0,0)*params["mean"].at(2,0);
+				params = model->GetPriorParameters(k);
+				phi += params["pi"].at(0,0)*params["mean"].at(1,0);
+				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				ws += params["pi"].at(0,0);
 			}
-			return time/ws; 
-
+			phi /= ws;
+			t /= ws; 
 		}
+
 
 
 
