@@ -366,6 +366,11 @@ class PointCollection{
 		return cent;
 	};
 
+	double Sumw(){
+		double ret = 0;
+		for(int i = 0; i < (int)_pts.size(); i++) ret += _pts[i].w();
+		return ret;
+	}
 
 	private:
 		int _nDim = 0;
