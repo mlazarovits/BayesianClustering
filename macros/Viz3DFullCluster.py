@@ -304,21 +304,22 @@ def main():
 	if ".json" not in args.json:
 		print("Error: please provide either directory with jsons or single json file.")
 		exit()
+	
 
 	f = args.json	
 	jp = JsonPlotter(f)
+	name = jp.dirname
+	if args.data and os.path.exists(name):
+		#remake files
+		os.system("rm -rf "+name)	
+	os.mkdir(name)
 	jp.SetWraparound(args.noWrap)	
 	jp.setVerb(args.verbosity)
 	#draw all data - also plots individual clusters with GMM components
 	figs = jp.plotDataset(int(args.nlevels),args.data)
 	if args.noViz:
 		exit()
-	name = jp.dirname
 	print("Writing to directory",name)
-	if args.data and os.path.exists(name):
-		#remake files
-		os.system("rm -rf "+name)	
-		os.mkdir(name)
 	files = []
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+str(f)+".pdf")
