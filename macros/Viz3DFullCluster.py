@@ -309,7 +309,7 @@ def main():
 	f = args.json	
 	jp = JsonPlotter(f)
 	name = jp.dirname
-	if args.data and os.path.exists(name):
+	if os.path.exists(name):
 		#remake files
 		os.system("rm -rf "+name)	
 	os.mkdir(name)
