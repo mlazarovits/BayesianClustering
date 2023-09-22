@@ -315,10 +315,10 @@ def main():
 		exit()
 	name = jp.dirname
 	print("Writing to directory",name)
-	if(os.path.exists(name)):
+	if args.data and os.path.exists(name):
 		#remake files
 		os.system("rm -rf "+name)	
-	os.mkdir(name)
+		os.mkdir(name)
 	files = []
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+str(f)+".pdf")
