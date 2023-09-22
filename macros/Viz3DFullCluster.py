@@ -13,9 +13,15 @@ class JsonPlotter:
 		with open(jsonfile,'r') as file:
 			self.json_obj = json.load(file)
 		self.jsonfile = jsonfile
+		self.dirname = jsonfile[:jsonfile.find(".json")]
+		self.cl_gifs = []
+		self.minPoints = 3
 
 	def setVerb(self, v):
 		self._v = v
+
+	def SetWraparound(self, w):
+		self.wraparound = w
 
 	def makeOpacities(self, w):
 		wmin = min(w);
@@ -69,7 +75,7 @@ class JsonPlotter:
 	
 	
 	
-	def plot_json(self, dataonly = False, numlevels = 0):
+	def plotDataset(self, numlevels = 0, onlydata = False):
 		levels = self.json_obj['levels']
 			
 		plotname = self.jsonfile[:self.jsonfile.find(".json")]
@@ -77,29 +83,28 @@ class JsonPlotter:
 		figs = []
 		if numlevels > 0:
 			nLevels = numlevels
-			print("plotting",nLevels,"levels")
+			print("Plotting",nLevels,"levels")
 		else:
 			nLevels = len(levels)
 			print("json has",nLevels,"levels")
 		for l in range(nLevels):
-			fig = self.plot_level(l, plotname+'_level'+str(l), dataonly)
+			fig = self.plot_level(l, plotname+'_level'+str(l), onlydata)
 			figs.append(fig)
 		return figs
 			
 	
 	
-	def plot_level(self, l, filename, dataonly = False):
+	def plot_level(self, l, filename, onlydata = False):
 		#get level l for each tree -> will return clusters_level_l for each tree
 		#if tree has less levels than l, plot all data in tree as leaves
 		level = self.json_obj["levels"]["level_"+str(l)]
 		nTrees = len(level)
 		if self._v > 0:
 			print("level",l,"has",nTrees,"trees")
-
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
-			gr_arr.append(self.plot_tree(level, t, dataonly))	
+			gr_arr.append(self.plot_tree(l, t, onlydata))	
 	
 		
 		#make sure arr is flat
@@ -111,7 +116,8 @@ class JsonPlotter:
 	
 		
 	
-	def plot_tree(self, level, t, dataonly = False):
+	def plot_tree(self, l, t, onlydata = False):
+		level = self.json_obj["levels"]["level_"+str(l)]
 		tree = level["tree_"+str(t)]
 		nClusters = len(tree)
 		#print("Tree",t,"has",nClusters,"clusters")
@@ -122,23 +128,44 @@ class JsonPlotter:
 
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
-			gr_arr.append(self.plot_cluster(cluster, t, dataonly))
+			#plot whole data
+			gr_arr.append(self.plot_cluster(cluster, t, True))
+			if onlydata:
+				continue	
 		
-		#make sure arr is flat
-		gr_arr = [gr for i in gr_arr for gr in i]
+			#plot individual clusters
+			gr_cl = self.plot_cluster(cluster,t,False)
+			#if npts in data of cluster c is less than minPoints (defined in plot_cluster) subclusters won't be drawn, only want to draw clusters with subclusters so skip these
+			if(len(cluster["data"]["x"]) < self.minPoints):
+				continue
+			#this level is one plot
+			fig = go.Figure(gr_cl)
+			filename = self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
+			fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
+			#write to file
+			#make sure cluster directory exists
+			if(os.path.exists(self.dirname+"/cluster"+str(t))):
+				#remake files
+				os.system("rm -rf "+self.dirname+"/cluster"+str(t))	
+			os.mkdir(self.dirname+"/cluster"+str(t))
+			fig.write_image(self.dirname+"/cluster"+str(t)+"/level_"+str(l)+".pdf")
+			if l == 0:
+				fig.show()
+				gifcmd = "convert -delay 50 -loop 1 -reverse "
+				self.cl_gifs.append(gifcmd)
+			self.cl_gifs[c] += self.dirname+"/cluster"+str(t)+"/level_"+str(l)+" "
+				
 		return gr_arr
 	
 	
-	def plot_cluster(self, cluster, c, dataonly = False):
+	def plot_cluster(self, cluster, c, alldata = False):
 		#update axis names
 		data = cluster['data']
 		x = data['x']
 		y = data['y']
 		z = data['z']
 		w = data['w']
-		minPoints = 3
 		
-		gr_arr = []
 		
 		nSubClusters = len(cluster['subclusters'])
 
@@ -163,24 +190,46 @@ class JsonPlotter:
 	
 		cols = [colors[cl] for i in range(len(w))]
 		name = "cluster "+str(c)
-		if(len(x) >= minPoints or nSubClusters > 1):
+		if(len(x) >= self.minPoints or nSubClusters > 1):
 			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+")"
 			name += " in "+str(nSubClusters)+" subclusters" 
 		
 		if(min(w) != max(w)):
 			opacities = self.makeOpacities(w)
 			cols = [i.replace("1.",str(opacities[idx])) for idx, i in enumerate(cols)]
-		#add data
-		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-				#size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', line=dict(
+		
+
+		if alldata is True:
+			return go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				size = 4, color = cols, line=dict(
-					color = colors[cl], width = 30)), showlegend=True, name = name))
-		if dataonly is True:
-			return gr_arr
+					color = colors[cl], width = 30)), showlegend=True, name = name)
 		
 		#don't plot subclusters for clusters with points less than minPoints
-		if(len(x) < minPoints):
-			return gr_arr
+		if(len(x) < self.minPoints):
+			return go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
+				size = 4, color = cols, line=dict(
+					color = colors[cl], width = 30)), showlegend=True, name = name)
+
+		gr_arr = []
+		#transform the data points into local coordinates + have color be energy scale
+		if(self.wraparound is True):
+			for i in y:
+				if i < 0:
+					i += 2*np.pi
+
+		avg_x = np.mean(x)
+		avg_y = np.mean(y)
+		avg_z = np.mean(z)
+		for i, pt in enumerate(zip(x,y,z)):
+			x[i] = pt[0] - avg_x
+			#transform phi coord
+			y[i] = pt[1] - avg_y
+			z[i] = pt[2] - avg_z
+		
+		#data in "local"/delta coordinates
+		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
+			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
+			showlegend=True, name = name))
 		
 		for i in range(nSubClusters):
 			idx = str(i)
@@ -197,9 +246,9 @@ class JsonPlotter:
 			# compute ellipsoid coordinates on standard basis
 			# e1=(1, 0, 0), e2=(0, 1, 0), e3=(0, 0, 1)
 			u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
-			x0 = subcluster['mu_x'] 
-			y0 = subcluster['mu_y']
-			z0 = subcluster['mu_z']
+			x0 = subcluster['mu_x'] - avg_x 
+			y0 = subcluster['mu_y'] - avg_y
+			z0 = subcluster['mu_z'] - avg_z
 		
 			x1 = np.sqrt(a) * np.cos(u) * np.sin(v) 
 			y1 = np.sqrt(b) * np.sin(u) * np.sin(v) 
@@ -223,20 +272,19 @@ class JsonPlotter:
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
 			#make ellipsoid color of average energy across points (responsibilities)
-			#scale = False
-			#if max(w) == min(w):
-			#	cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
-			#else:
-			#	cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
-			#	scale = True
-			#cl = sample_colorscale("Plotly3",cl_w)
-			#cl = np.array([cl,cl]).flatten()
+			if max(w) == min(w):
+				cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
+			else:
+				cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
+				scale = True
+			cl = sample_colorscale("Plotly3",cl_w)
+			cl = np.array([cl,cl]).flatten()
 		
+			ell_name = "subcluster "+str(i)+" with weight "+str(round(subcluster["color"],2)) 
 	
 			#add ellipsoids
 			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=[colors[cl],colors[cl]], showscale = False)),
-		
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, showscale = False, name = ell_name,showlegend=True)),
 		return gr_arr
 
 def main():
@@ -246,6 +294,7 @@ def main():
 	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0,type=int)
 	parser.add_argument('--verbosity','-v',help='verbosity',default=0,type=int)
 	parser.add_argument('--noViz',action='store_true',help='do not make plots',default=False)
+	parser.add_argument('--noWrap',action='store_false',help='no (phi) wraparound',default=True)
 	args = parser.parse_args()
 	
 	if args.json is None:
@@ -257,12 +306,14 @@ def main():
 		exit()
 
 	f = args.json	
-	jp = JsonPlotter(f)	
+	jp = JsonPlotter(f)
+	jp.SetWraparound(args.noWrap)	
 	jp.setVerb(args.verbosity)
-	figs = jp.plot_json(args.data, int(args.nlevels))
+	#draw all data - also plots individual clusters with GMM components
+	figs = jp.plotDataset(int(args.nlevels),args.data)
 	if args.noViz:
 		exit()
-	name = f[:f.find(".json")]
+	name = jp.dirname
 	print("Writing to directory",name)
 	if(os.path.exists(name)):
 		#remake files
