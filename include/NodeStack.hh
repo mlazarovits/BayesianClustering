@@ -54,16 +54,17 @@ class NodeStack{
 
 		//get node from top of stack (should be largest)
 		node* pop(){
+			if(empty()) return nullptr;
 			node *x;
-			listnode *t;
-			t = _head->next; _head->next = t->next;
-			x = t->n;
+			listnode* t = _head->next; _head->next = t->next;
+			x = t->n; 
 			free(t);
 			return x;	
 		}
 
 		//pops off top node and removes then impossible nodes (merges with one of the parents of given merge)
 		node* fullpop(){
+			if(empty()) return nullptr;
 			node *x = pop();
 			listnode *c;
 			c = _head;
@@ -143,11 +144,17 @@ class NodeStack{
 		//while(g != _z){ cout << i << " " << g->n->val << endl; i++; g = g->next; } 
 		}
 
+		bool empty(){
+			return _head->next == _z; 
+		}
 
 		void Print(){
+			if(empty()) return;
 			listnode* g = _head->next;
 			int i = 1;
-			while(g != _z){ cout << "cluster " << i << endl; g->n->points->Print(); i++; g = g->next; } 
+			while(g != _z){ cout << "cluster " << i << endl;
+			g->n->points->Print(); 
+			i++; g = g->next; } 
 		}
 
 		private:

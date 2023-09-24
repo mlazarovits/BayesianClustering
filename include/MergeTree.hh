@@ -11,12 +11,12 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _thresh = 0.; _verb = 0; 
+		_alpha = 0; _thresh = 0.; _verb = 0; _wraparound = false; 
 		}
 
 		MergeTree(double alpha){
 			_alpha = alpha;
-			_thresh = 1.; _verb = 0;
+			_thresh = 1.; _verb = 0;_wraparound = false;
 		}
 
 		//copy constructor
@@ -27,12 +27,14 @@ class MergeTree : BaseTree{
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
 			_thresh = tree._thresh;
-			_verb = tree._verb;
+			_verb = tree._verb;_wraparound = tree._wraparound;
 		}
 
 		virtual ~MergeTree(){ }
 
 		void SetThresh(double t){ _thresh = t; }
+
+		void SetPhiWraparound(bool p){_wraparound = p; }
 
 		void AddData(PointCollection* pc){
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
@@ -108,11 +110,18 @@ class MergeTree : BaseTree{
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 	
+
+			//cout << "original points" << endl;
+			//x->points->Print();
 	
 			//center points in this cluster (bucket)
 			//this accounts for phi wraparound
-			Point transf = x->points->Center();
+			Point transf = Point();
+			if(_wraparound) transf = x->points->Center();
 			
+
+			//cout << "transformed points" << endl;
+			//x->points->Print();
 
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
@@ -144,7 +153,7 @@ class MergeTree : BaseTree{
 
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
-			if(x->points->GetNPoints() > 2) algo->SetThresh(_thresh);
+			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
 			
 			//cluster
 			double oldLogL = algo->EvalLogL();
@@ -160,24 +169,28 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			//transform relevant parameters in each subcluster (just centers - matrices unaffected)
-			Matrix mu, mean;
-			map<string, Matrix> params;
-			for(int k = 0; k < x->model->GetNClusters(); k++){
-				params = x->model->GetPriorParameters(k);
-				mu = params["mean"];
-				mean = params["m"];
+			//x - avg -> x - avg + avg = x
+			//transform back relevant parameters in each subcluster (just centers - matrices unaffected)
+			if(_wraparound){
+				Matrix mu, mean;
+				map<string, Matrix> params;
+				//for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
+				for(int k = 0; k < x->model->GetNClusters(); k++){
+					params = x->model->GetPriorParameters(k);
+					mu = params["mean"];
+					mean = params["m"];
 
-				mu.add(Matrix(transf));
-				x->model->GetModel(k)->SetParameter("mean",mu);
-		
-				mean.add(Matrix(transf));
-				x->model->GetModel(k)->GetPrior()->SetParameter("mean",mean);
+
+					mu.add(Matrix(transf));
+					x->model->GetModel(k)->SetParameter("mean",mu);
+	
+					mean.add(Matrix(transf));
+					x->model->GetModel(k)->GetPrior()->SetParameter("mean",mean);
+				}
+				for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
+				//transform data back
+				x->points->Translate(transf); 
 			}
-			//transform data back
-			for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
-			x->points->Translate(transf);
-			
 
 			return newLogL;
 		}
@@ -194,5 +207,6 @@ class MergeTree : BaseTree{
 		Matrix _data_smear;
 		int _verb;
 		map<string, Matrix> _params;
+		bool _wraparound;
 };
 #endif

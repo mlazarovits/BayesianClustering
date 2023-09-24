@@ -36,6 +36,8 @@ double BayesHierCluster::DistanceConstraint(node* i, node* j){
 	double cent1 = i->points->Centroid(_constraint_d);
 	double cent2 = j->points->Centroid(_constraint_d);
 
+	if(i->points->GetNPoints() + j->points->GetNPoints() > 40) cout << "n pts: " << i->points->GetNPoints() + j->points->GetNPoints() << " cent1: " << cent1 << " mean1: " << i->points->mean().at(1) << " cent2: " << cent2 << " mean2: " << j->points->mean().at(1) << endl;
+
 	double c = (_constraint_a + _constraint_b)/2.;
 	double pi = acos(-1);
 	double d = cent1 - cent2;
@@ -49,8 +51,8 @@ double BayesHierCluster::DistanceConstraint(node* i, node* j){
 		if(d > pi) d = 2*pi - d; 
 	}	
 
-	return uni->Prob(d)*(_constraint_b - _constraint_a);
-//	return tri->Prob((cent1 - cent2))/Prob->(c);
+//	return uni->Prob(d)*(_constraint_b - _constraint_a);
+	return tri->Prob((cent1 - cent2))/tri->Prob(c);
 
 }
 
@@ -101,7 +103,6 @@ vector<node*> BayesHierCluster::Cluster(){
 		if(_verb > 1){	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl; }
 
 		}
-
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
 	//	if(_verb > 0){
@@ -109,13 +110,14 @@ vector<node*> BayesHierCluster::Cluster(){
 	//	_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
+		if(max == nullptr) break;
 		//cout << "max merge rk: " << max->val << endl;
 		//if rk < 0.5: cut tree
 	
 		double maxval = 0.5;
 		if(max->val < maxval){
 			if(_verb > 0) cout << "reached min rk = " << max->val << " <  " << maxval << " - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
-			break;
+		//	break;
 		}
 		//cout << "post pop" << endl;
 		//_list.Print();

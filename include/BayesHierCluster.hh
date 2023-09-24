@@ -20,7 +20,6 @@ class BayesHierCluster{
 		void SetThresh(double t){ _thresh = t; _mergeTree->SetThresh(_thresh); }
 		void SetDataSmear(const Matrix& cov){ _mergeTree->SetDataSmear(cov); }		
 		void SetPriorParameters(map<string, Matrix> params){ _mergeTree->SetPriorParameters(params); }		
-
 		//cluster trees (points in pc)
 		//might need arg for recursion
 		//void Cluster(const vector<PointCollection>& pc);
@@ -29,7 +28,7 @@ class BayesHierCluster{
 		void SetAlpha(double a);
 
 		void SetDistanceConstraint(int d, double a = 0, double b = 1){ _constrain = true; _constraint_d = d; _constraint_a = a; _constraint_b = b; }
-		void SetPhiWraparound(bool phi){ _wraparound = phi; }
+		void SetPhiWraparound(bool phi){ _wraparound = phi; _mergeTree->SetPhiWraparound(_wraparound); }
 		double DistanceConstraint(node* i, node* j);
 
 
