@@ -293,7 +293,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	for(int k = 0; k < m_k; k++){
 		m_alphas[k] = m_alpha0;
 	}
-	if(_verb > 1) cout << "alpha0: " << m_alpha0 << endl;
 	//to init prior parameters without calculating Rstats from posterior
 	UpdatePriorParameters();
 
