@@ -148,12 +148,15 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 		int npts = 0;
 		for(int t = 0; t < nTrees; t++){
 			//only write if level exists in tree
-			if(l <= tree_maps[t].rbegin()->first && !tree_maps[t][l].empty()){
+			if(l <= tree_maps[t].rbegin()->first){
 				if(_verb > 2) cout << "Tree " << t << ": " << endl;
-				node* n = tree_maps[t][l].pop();
+			//	node* n = tree_maps[t][l].pop();
+				node* n;// = tree_maps[t][l].pop();
 				int j = 0;
 				//loop through nodes (clusters) at this level for this tree
-				while(n->val != -999 && !tree_maps[t][l].empty()){
+				//can't set to empty because need to evaluate last node popped off below
+				while(!tree_maps[t][l].empty()){//n->val != -999){
+					n = tree_maps[t][l].pop();
 					if(_verb > 2) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
@@ -161,7 +164,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 					}
 					npts += n->points->GetNPoints();
 					clusters["cluster_"+std::to_string(j)] = WriteNode(n);
-					n = tree_maps[t][l].pop();
+				//	n = tree_maps[t][l].pop();
 					j++;	
 				}
 			}
