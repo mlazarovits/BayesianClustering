@@ -21,6 +21,7 @@ int main(int argc, char *argv[]){
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
 	double alpha = 0.5;
+	double emAlpha = 0.5;
 	bool viz = false;
 	int verb = 0;
 	int evt = 0;
@@ -127,6 +128,12 @@ int main(int argc, char *argv[]){
 	a_string = stream.str();
 	int idx = a_string.find(".");
 	a_string.replace(idx,1,"p");	
+	
+	string ema_string;
+	stream << std::fixed << std::setprecision(3) << alpha;
+	ema_string = stream.str();
+	idx = ema_string.find(".");
+	ema_string.replace(idx,1,"p");	
 
 	string t_string;
 	stream.str("");
@@ -138,7 +145,7 @@ int main(int argc, char *argv[]){
 
 	string extra = "";
 
-	fname += "_evt"+std::to_string(evt)+"_alpha"+a_string+"_thresh"+t_string+extra;
+	fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+extra;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	if(weighted) fname += "_Eweighted";
@@ -213,7 +220,8 @@ int main(int argc, char *argv[]){
 	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
 	Clusterizer* algo = new Clusterizer();
-	algo->SetAlpha(alpha);
+	algo->SetClusterAlpha(alpha);
+	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetThresh(thresh);
 	algo->SetVerbosity(verb);
 	if(weighted) algo->SetWeighted(weighted);

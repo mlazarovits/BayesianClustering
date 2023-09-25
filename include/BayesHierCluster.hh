@@ -26,6 +26,7 @@ class BayesHierCluster{
 		vector<node*> Cluster();
 
 		void SetAlpha(double a);
+		void SetSubclusterAlpha(double a){ _emAlpha = a; _mergeTree->SetAlpha(_emAlpha); }
 
 		void SetDistanceConstraint(int d, double a = 0, double b = 1){ _constrain = true; _constraint_d = d; _constraint_a = a; _constraint_b = b; }
 		void SetPhiWraparound(bool phi){ _wraparound = phi; _mergeTree->SetPhiWraparound(_wraparound); }
@@ -46,6 +47,8 @@ class BayesHierCluster{
 
 		//dirichlet param
 		double _alpha;
+		//dirichlet param for EM
+		double _emAlpha;
 
 		//threshold for varEM
 		double _thresh;

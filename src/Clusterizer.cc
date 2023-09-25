@@ -7,7 +7,8 @@
 
 Clusterizer::Clusterizer(){
 	m_nJets = 0;
-	_alpha = 0;
+	_bhcAlpha = 0;
+	_emAlpha = 0;
 	_thresh = 0;
 	_verb = 0;
 	_maxK = 0;
@@ -20,7 +21,8 @@ Clusterizer::Clusterizer(vector<Jet> jets){
 	//add jet info to pointcollection
 	//match jets to points by index
 	m_oldJets = jets;
-	_alpha = 0;
+	_bhcAlpha = 0;
+	_emAlpha = 0;
 	_thresh = 0;
 	_verb = 0;
 	_maxK = 0;
@@ -51,7 +53,8 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 
 	
 	//Bayesian Hierarchical Clustering algo
-	BayesHierCluster* bhc = new BayesHierCluster(_alpha);
+	BayesHierCluster* bhc = new BayesHierCluster(_bhcAlpha);
+	bhc->SetSubclusterAlpha(_emAlpha);	
 	bhc->SetVerbosity(_verb);
 	//set configs
 	if(_smeared) bhc->SetDataSmear(_data_smear);
@@ -139,7 +142,7 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	GaussianMixture* gmm = new GaussianMixture(_maxK);
 	
 	gmm->SetData(points);
-	gmm->SetAlpha(_alpha);
+	gmm->SetAlpha(_emAlpha);
 	gmm->SetVerbosity(_verb);
 	gmm->InitParameters();
 	gmm->InitPriorParameters();

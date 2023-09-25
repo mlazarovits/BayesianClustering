@@ -48,7 +48,8 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(1.,2,2); //no smear in time	
 	
 	Clusterizer* algo = new Clusterizer();
-	algo->SetAlpha(0.1);
+	algo->SetClusterAlpha(0.1);
+	algo->SetSubclusterAlpha(0.1);
 	algo->SetThresh(1.);
 	algo->SetMaxNClusters(5);
 	algo->SetWeighted(true);

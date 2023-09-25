@@ -248,7 +248,7 @@ int main(int argc, char *argv[]){
 
 
 	Clusterizer* algo = new Clusterizer();
-	algo->SetAlpha(alpha);
+	algo->SetSubclusterAlpha(alpha);
 	algo->SetThresh(thresh);
 	algo->SetVerbosity(verb);
 	algo->SetMaxNClusters(k);

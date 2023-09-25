@@ -24,7 +24,6 @@ class Clusterizer{
 		//set point smear
 		void SetDataSmear(const Matrix& cov){ _data_smear = cov; _smeared = true; }
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
-		void SetAlpha(double a){ _alpha = a; }
 		void SetThresh(double t){_thresh = t; }
 		void SetVerbosity(int v){ _verb = v; }
 		void SetMaxNClusters(int k){ _maxK = k; }
@@ -43,6 +42,11 @@ class Clusterizer{
 
 		JetTree GetTree() const{ return m_tree; }
 
+		//set alpha for BHC
+		void SetClusterAlpha(double a){_bhcAlpha = a;}
+		//set alpha for EM
+		void SetSubclusterAlpha(double a){_emAlpha = a;}
+
 	private:
 		//BHC object
 		JetTree m_tree;
@@ -56,7 +60,8 @@ class Clusterizer{
 
 		map<string, Matrix> _params;
 
-		double _alpha;
+		double _bhcAlpha;
+		double _emAlpha;
 		double _thresh;
 		int _verb;
 		int _maxK;
