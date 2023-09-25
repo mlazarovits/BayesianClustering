@@ -154,7 +154,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 				int j = 0;
 				//loop through nodes (clusters) at this level for this tree
 				while(n->val != -999 && !tree_maps[t][l].empty()){
-					if(_verb > 1) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
+					if(_verb > 2) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
 						tree_maps[t][l+1].push(n);
