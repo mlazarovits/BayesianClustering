@@ -144,12 +144,12 @@ json FullViz3D::WriteLevels(){
 if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees" << endl;
 	//write a json for each level per tree
 	for(int l = 0; l < nLevels+1; l++){
-		if(_verb > 1) cout << "Level " << l << ": " << endl;
+		if(_verb > 2) cout << "Level " << l << ": " << endl;
 		int npts = 0;
 		for(int t = 0; t < nTrees; t++){
 			//only write if level exists in tree
 			if(l <= tree_maps[t].rbegin()->first && !tree_maps[t][l].empty()){
-				if(_verb > 1) cout << "Tree " << t << ": " << endl;
+				if(_verb > 2) cout << "Tree " << t << ": " << endl;
 				node* n = tree_maps[t][l].pop();
 				int j = 0;
 				//loop through nodes (clusters) at this level for this tree
@@ -157,7 +157,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 					if(_verb > 1) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
-				tree_maps[t][l+1].push(n);
+						tree_maps[t][l+1].push(n);
 					}
 					npts += n->points->GetNPoints();
 					clusters["cluster_"+std::to_string(j)] = WriteNode(n);
@@ -169,7 +169,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 			//reset trees Json object so values aren't carried over to unfilled levels
 			//clusters.clear();
 		}
-		if(_verb > 1) cout << npts << " points at level " << l << endl;
+		if(_verb > 2) cout << npts << " points at level " << l << endl;
 		levels["level_"+std::to_string(l)] = trees;
 	}
 	_root["levels"] = levels;
