@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
-    	 		fname = string(argv[i]);
+    	 		fname += "_"+string(argv[i]);
    		}
 		if(strncmp(argv[i],"--nIterations", 13) == 0){
      			i++;
@@ -130,7 +130,8 @@ int main(int argc, char *argv[]){
 	a_string.replace(idx,1,"p");	
 	
 	string ema_string;
-	stream << std::fixed << std::setprecision(3) << alpha;
+	stream.str("");
+	stream << std::fixed << std::setprecision(3) << emAlpha;
 	ema_string = stream.str();
 	idx = ema_string.find(".");
 	ema_string.replace(idx,1,"p");	
@@ -217,7 +218,7 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(1.,2,2); //no smear in time	
 
 	
-	cout << "Clustering with alpha = " << alpha << " and cutoff threshold = " << thresh << endl;
+	cout << "Clustering with BHC alpha = " << alpha << " and EM alpha = " << emAlpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
 	Clusterizer* algo = new Clusterizer();
 	algo->SetClusterAlpha(alpha);
