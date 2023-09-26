@@ -71,7 +71,7 @@ json FullViz3D::WriteNode(node* node){
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
 	for(int k = 0; k < kmax; k++){
-		cluster_params = model->GetParameters(k);
+		cluster_params = model->GetPriorParameters(k);
 		x0 = cluster_params["mean"].at(0,0);
 		y0 = cluster_params["mean"].at(1,0);
 		z0 = cluster_params["mean"].at(2,0);
