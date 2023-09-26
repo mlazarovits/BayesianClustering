@@ -409,7 +409,6 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
 			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
-			if(k == 0) cout << "n: " << n << " weight: " << m_data->at(n).w() << endl;
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
 			
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
