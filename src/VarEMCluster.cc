@@ -26,7 +26,7 @@ void VarEMCluster::Update(){
 double VarEMCluster::EvalLogL(){
 	double l = m_pdfmix->EvalVariationalLogL();
 	//cout << "CHECK for unnecessary clusters" << endl;
-	m_pdfmix->UpdateMixture(_thresh);
+	if(_thresh > 0) m_pdfmix->UpdateMixture(_thresh);
 	m_k = m_pdfmix->GetNClusters();
 	return l;
 }
