@@ -23,6 +23,9 @@ class JsonPlotter:
 	def SetWraparound(self, w):
 		self.wraparound = w
 
+	def SetViz(self, v):
+		self.viz = v
+
 	def makeOpacities(self, w):
 		wmin = min(w);
 		wmax = max(w);
@@ -112,6 +115,7 @@ class JsonPlotter:
 		#this level is one plot
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
+		fig.update_layout(scene=dict(yaxis=dict(range=[-3.5,3.5],),xaxis=dict(range=[-3.5,3.5],),zaxis=dict(range=[-35,35],)))
 		return fig
 	
 		
@@ -142,6 +146,7 @@ class JsonPlotter:
 			fig = go.Figure(gr_cl)
 			filename = self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
 			fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
+			#fig.update_layout(scene=dict(yaxis=dict(range=[-5,5],),xaxis=dict(range=[-10,10],),zaxis=dict(range=[-15,15],)),title=filename, template=None)
 			#write to file
 			#make sure cluster directory exists
 			if(os.path.exists(self.dirname+"/cluster"+str(t))):
@@ -150,7 +155,8 @@ class JsonPlotter:
 			os.mkdir(self.dirname+"/cluster"+str(t))
 			fig.write_image(self.dirname+"/cluster"+str(t)+"/level_"+str(l)+".pdf")
 			if l == 0:
-				fig.show()
+				if self.viz is True:
+					fig.show()
 				gifcmd = "convert -delay 50 -loop 1 -reverse "
 				self.cl_gifs.append(gifcmd)
 			self.cl_gifs[c] += self.dirname+"/cluster"+str(t)+"/level_"+str(l)+" "
@@ -237,10 +243,10 @@ class JsonPlotter:
 			#should be subcluster_i	
 		
 	
-			a = round(subcluster['eigenVal_0'], 10)
-			b = round(subcluster['eigenVal_1'], 10)
-			c = round(subcluster['eigenVal_2'], 10)
-			
+			a = round(subcluster['eigenVal_0'], 20)
+			b = round(subcluster['eigenVal_1'], 20)
+			c = round(subcluster['eigenVal_2'], 20)
+	
 			op = subcluster['mixing_coeff_norm']
 			
 			# compute ellipsoid coordinates on standard basis
@@ -250,6 +256,7 @@ class JsonPlotter:
 			y0 = subcluster['mu_y'] - avg_y
 			z0 = subcluster['mu_z'] - avg_z
 		
+			
 			x1 = np.sqrt(a) * np.cos(u) * np.sin(v) 
 			y1 = np.sqrt(b) * np.sin(u) * np.sin(v) 
 			z1 = np.sqrt(c) * np.cos(v)
@@ -280,11 +287,16 @@ class JsonPlotter:
 			cl = sample_colorscale("Plotly3",cl_w)
 			cl = np.array([cl,cl]).flatten()
 		
-			ell_name = "subcluster "+str(i)+" with weight "+str(round(subcluster["color"],2)) 
+			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+") with MM coeff "+str(round(op,2))
+
+			#if two eigenvalues are essentially zero, just plot a line
+			if (a < 1e-7 and b < 1e-7) or (a < 1e-7 and c < 1e-7) or (b < 1e-7 and c < 1e-7):
+				gr_arr.append(go.Scatter3d(x=x2.flatten(), y=y2.flatten(), z=z2.flatten(),mode='lines',line=dict(color = cl[0]), name = ell_name,showlegend=True))
+				continue
+			
 	
 			#add ellipsoids
-			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, showscale = False, name = ell_name,showlegend=True)),
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, showscale = False, name = ell_name,showlegend=True))
 		return gr_arr
 
 def main():
@@ -308,6 +320,7 @@ def main():
 
 	f = args.json	
 	jp = JsonPlotter(f)
+	jp.SetViz(not args.noViz)
 	name = jp.dirname
 	if os.path.exists(name):
 		#remake files
@@ -317,14 +330,12 @@ def main():
 	jp.setVerb(args.verbosity)
 	#draw all data - also plots individual clusters with GMM components
 	figs = jp.plotDataset(int(args.nlevels),args.data)
-	if args.noViz:
-		exit()
 	print("Writing to directory",name)
 	files = []
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+str(f)+".pdf")
 		files.append(name+"/level_"+str(f)+".pdf")
-		if f < 11:	
+		if f < 11 and args.noViz is False:	
 			fig.show()
 	gifcmd = "convert -delay 50 -loop 1 -reverse "
 	for f in files:
