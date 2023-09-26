@@ -344,7 +344,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//calculate necessary expectation values for E-step and ELBO
 	CalculateExpectations();
 	double E_mu_lam, post, norm, dof, scale;
-	vector<double> post_norms;
+	//vector<double> post_norms;
 	vector<double> post_norms_adj; //norms for each pt (n vals)
 	vector<double> post_k_vals; //find max value for normalization (k vals for each pt)
 	vector<double> post_n_max; //max k val for nth pt (n vals)
@@ -398,7 +398,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 		for(int k = 0; k < m_k; k++) post_norms_adj[n] += exp(post_k_vals[k] - post_n_max[n]);
 
 		post_k_vals.clear();
-		post_norms.push_back(norm);
+		//post_norms.push_back(norm);
 	}
 	//cout << "posterior pre-norm" << endl;	
 	//m_post.Print();
@@ -409,6 +409,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
 			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
+			if(k == 0) cout << "n: " << n << " weight: " << m_data->at(n).w() << endl;
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
 			
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding

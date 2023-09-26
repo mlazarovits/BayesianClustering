@@ -37,6 +37,7 @@ Clusterizer::~Clusterizer(){ }
 vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	PointCollection* points = new PointCollection();
 	jet.GetEtaPhiConstituents(*points);
+
 	
 	if(_weighted){
 		vector<double> weights;
@@ -50,7 +51,6 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 
 	}
 
-
 	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_bhcAlpha);
@@ -63,7 +63,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
 	
 	if(_distconst){
-		//int d = dimension, double c = threshold, double a = lower bount, double b = upper bound
+		//int d = dimension, double c = threshold, double a = lower bound, double b = upper bound
 		//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
 		bhc->SetDistanceConstraint(1, 0., acos(-1)/2);
 		bhc->SetPhiWraparound(true);
@@ -71,6 +71,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
+
 
 	//plotting
 	if(!fname.empty()){

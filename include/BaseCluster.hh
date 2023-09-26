@@ -7,9 +7,9 @@
 
 class BaseCluster{
 	public:
-		BaseCluster(){ m_k = 0; m_dim = 0; m_n = 0;}
-		BaseCluster(PointCollection* pc, int k){ m_k = k; m_data = pc; m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); }
-		BaseCluster(BasePDFMixture* pdf, int k){ m_pdfmix = pdf; m_k = k; m_data = m_pdfmix->GetData(); m_dim = m_data->Dim(); m_n = m_data->GetNPoints();}
+		BaseCluster(){ m_k = 0; m_dim = 0; m_n = 0; clustering_start = false;}
+		BaseCluster(PointCollection* pc, int k){ m_k = k; m_data = pc; m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); clustering_start = false;}
+		BaseCluster(BasePDFMixture* pdf, int k){ m_pdfmix = pdf; m_k = k; m_data = m_pdfmix->GetData(); m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); clustering_start = false;}
 		virtual ~BaseCluster(){ };
 
 		//E-step
@@ -31,6 +31,7 @@ class BaseCluster{
 			double newLogL = EvalLogL();
 			
 			m_pdfmix = GetModel();
+			clustering_start = true;
 			return newLogL;
 		};
 
@@ -58,6 +59,8 @@ class BaseCluster{
 		vector<double> m_coeffs;
 		//normalizations for each cluster, N_k = sum_n(gamma(z_nk)) (k entries)
 		vector<double> m_norms;
+
+		bool clustering_start;
 
 };
 #endif

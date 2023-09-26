@@ -27,7 +27,6 @@ void BayesHierCluster::AddData(PointCollection* pc){
 
 void BayesHierCluster::SetAlpha(double a){
 	_alpha = a;
-	_mergeTree->SetAlpha(_alpha);
 }
 
 
@@ -112,17 +111,17 @@ vector<node*> BayesHierCluster::Cluster(){
 		node* max = _list.fullpop();
 		if(max == nullptr) break;
 		//cout << "max merge rk: " << max->val << endl;
+
 		//if rk < 0.5: cut tree
-	
 		double maxval = 0.5;
 		if(max->val < maxval){
 			if(_verb > 0) cout << "reached min rk = " << max->val << " <  " << maxval << " - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
-		//	break;
+			break;
 		}
 		//cout << "post pop" << endl;
 		//_list.Print();
 		//merge corresponding subtrees in merge tree: merge = x (node)
-		if(_verb > 2){
+		if(_verb > 4){
 		cout << "merging clusters" << endl;
 		max->points->Print();	
 		cout << "removing cluster - left" << endl;

@@ -88,8 +88,8 @@ class BasePDFMixture : public BasePDF{
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
-	//	cout << m_k << " original clusters" << endl;
-	//	for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl;
+		cout << "UpdateMixture" << endl;
+		if(m_k > 1){ for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl; m_post.Print(); if(m_n < 3) m_data->Print(); }
 	//	cout << "points" << endl; m_data->Print();
 	//	cout << "weights" << endl; for(int n = 0; n < m_n; n++) cout << m_data->at(n).w() << endl;
 			for(int k = 0; k < m_k; k++){
@@ -103,7 +103,9 @@ class BasePDFMixture : public BasePDF{
 				}
 			}
 			//cout if all clusters are removed
-			if(m_k < 1) cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
+			//if all clusters removed -> set model to single gaussian
+			if(m_k < 1) m_k = 1;//cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
+		cout << "UpdateMixture - end" << endl;
 
 		}
 
@@ -143,10 +145,16 @@ class BasePDFMixture : public BasePDF{
 
 
 		void GetNormsUnwt(vector<double>& v){
+			v.clear();
 			for(int k = 0; k < m_k; k++) v.push_back(m_norms_unwt[k]);
 		}
 
-		
+		void GetNorms(vector<double>& v){
+			v.clear();
+			for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]);
+		}
+	
+	
 		//sorts smallest first - ascending order
 		void sortedIdxs(vector<int>& idxs){
 			vector<pair<int,double>> mweight;

@@ -114,12 +114,12 @@ class MergeTree : BaseTree{
 			//cout << "original points" << endl;
 			//x->points->Print();
 	
+			if(_wraparound){ cout << "Evidence" << endl; x->points->Print(); }
 			//center points in this cluster (bucket)
 			//this accounts for phi wraparound
 			Point transf = Point();
 			if(_wraparound) transf = x->points->Center();
 			
-
 			//cout << "transformed points" << endl;
 			//x->points->Print();
 
@@ -157,7 +157,7 @@ class MergeTree : BaseTree{
 			
 			//cluster
 			double oldLogL = algo->EvalLogL();
-			if(algo->GetNClusters() < 1){ cout << "Error: threshold too high for successful clustering with " << x->points->GetNPoints() << ". Please adjust accordingly to continue hierarchically clustering" << endl; return -999; }
+			if(algo->GetNClusters() < 1){ cout << "Error: threshold too high for successful clustering with " << x->points->GetNPoints() << " points (" << x->points->Sumw() << " weighted). Please adjust accordingly to continue hierarchically clustering" << endl; return -999; }
 			double LogLThresh = 0.01;
 			double newLogL;
 			double dLogL = 999; 
