@@ -26,7 +26,9 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- $W_0 = \nu_0^{-1}\mathbb{I}$
 - any data smearing needs to be set before the data is set
 	- this is especially true for the BHC model because the leaf $r_k$ values are calculated when the data is set
-
+- the algorithm will remove subclusters from a mixture model if the number of effective points ($\alpha + N_k$) falls below a specified threshhold `algo->SetThreshold(t)`
+	- the mininum number of subclusters in a mixture model though is 1
+	- if the algorithm removes all subclusters, it will set the number of subclusters to 1
 
 ### Formatting
 There are muliple visualization classes:
