@@ -236,7 +236,16 @@ class JsonPlotter:
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
 			showlegend=True, name = name))
-		
+	
+		op = []
+		op_norm = 0
+		for i in range(nSubClusters):
+			idx = str(i)
+			subcluster = cluster['subclusters']['subcluster_'+idx]
+			op.append(subcluster['mixing_coeff'])
+			op_norm += op[i]
+		op = [i/op_norm for i in op]
+
 		for i in range(nSubClusters):
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
@@ -247,7 +256,6 @@ class JsonPlotter:
 			b = round(subcluster['eigenVal_1'], 20)
 			c = round(subcluster['eigenVal_2'], 20)
 	
-			op = subcluster['mixing_coeff_norm']
 			
 			# compute ellipsoid coordinates on standard basis
 			# e1=(1, 0, 0), e2=(0, 1, 0), e3=(0, 0, 1)
@@ -287,7 +295,7 @@ class JsonPlotter:
 			cl = sample_colorscale("Plotly3",cl_w)
 			cl = np.array([cl,cl]).flatten()
 		
-			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+") with MM coeff "+str(round(op,2))
+			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+") with MM coeff "+str(round(op[i],2))
 
 			#if two eigenvalues are essentially zero, just plot a line
 			if (a < 1e-7 and b < 1e-7) or (a < 1e-7 and c < 1e-7) or (b < 1e-7 and c < 1e-7):
@@ -296,7 +304,7 @@ class JsonPlotter:
 			
 	
 			#add ellipsoids
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, showscale = False, name = ell_name,showlegend=True))
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op[i], colorscale=cl, showscale = False, name = ell_name,showlegend=True))
 		return gr_arr
 
 def main():
@@ -335,7 +343,7 @@ def main():
 	for f, fig in enumerate(figs):
 		fig.write_image(name+"/level_"+str(f)+".pdf")
 		files.append(name+"/level_"+str(f)+".pdf")
-		if f < 11 and args.noViz is False:	
+		if f < 3 and args.noViz is False:	
 			fig.show()
 	gifcmd = "convert -delay 50 -loop 1 -reverse "
 	for f in files:

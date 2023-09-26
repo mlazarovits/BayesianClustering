@@ -84,7 +84,7 @@ json FullViz3D::WriteNode(node* node){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		subcluster["mixing_coeff_norm"] = cluster_params["pi"].at(0,0);
+		subcluster["mixing_coeff"] = cluster_params["pi"].at(0,0);
 		subcluster["mu_x"] = x0;
 		subcluster["mu_y"] = y0;
 		subcluster["mu_z"] = z0;
