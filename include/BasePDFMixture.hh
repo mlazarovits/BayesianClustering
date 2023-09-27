@@ -153,7 +153,7 @@ class BasePDFMixture : public BasePDF{
 	
 	
 		//sorts smallest first - ascending order
-		void sortedIdxs(vector<int>& idxs){
+		void SortIdxs(vector<int>& idxs){
 			vector<pair<int,double>> mweight;
 			for(int k = 0; k < m_k; k++) mweight.push_back(std::make_pair(k,(m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n)));
 			//sort by mixing coeff weight - insertion sort
@@ -167,13 +167,15 @@ class BasePDFMixture : public BasePDF{
 	//			else{ idxs = {0, 1}; }
 				return;
 			}
-			for(i = 0; i < m_k; i++){
+			for(i = 1; i < m_k; i++){
 				t = mweight[i]; j = i;
 				while(mweight[j-1].second > t.second){
 					mweight[j] = mweight[j-1]; j--;
 				}
 				mweight[j] = t;
 			}
+
+			
 			int idx;	
 			for(int k = 0; k < m_k; k++){
 				idx = mweight[k].first; 

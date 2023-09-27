@@ -78,20 +78,20 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 
 	_base->GetEntry(evt);
 	int nJets = (int)_base->Jet_energy->size();
-	cout << "# jets in evt " << evt << ": " << nJets << endl;
+	//cout << "# jets in evt " << evt << ": " << nJets << endl;
 
 	int nJetRHs;
 	int nJetRHs_total = 0;
 	for(int j = 0; j < nJets; j++){
 		nJetRHs = (int)_base->Jet_drRhIds->at(j).size();
-		cout << "jet #" << j << " has " << nJetRHs << " rhs - eta = " << fabs(_base->Jet_eta->at(j)) << endl;
+		//cout << "jet #" << j << " has " << nJetRHs << " rhs - eta = " << fabs(_base->Jet_eta->at(j)) << endl;
 		if(fabs(_base->Jet_eta->at(j)) > 1.479) continue;
 		nJetRHs_total += _base->Jet_drRhIds->at(j).size(); 
 		for(int r = 0; r < nJetRHs; r++){
 			jetIds.push_back(_base->Jet_drRhIds->at(j).at(r));
 		}
 	}
-		cout << nJetRHs_total << " total rhs in all jets" << endl;
+//		cout << nJetRHs_total << " total rhs in all jets" << endl;
 	//clean for RHs in photon superclusters
 	nPho = (int)_base->Photon_energy->size();
 	for(int p = 0; p < nPho; p++){

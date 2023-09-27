@@ -33,7 +33,8 @@ class BasePDF{
 		}
 		//to call once the SetParameters function has been called
 		virtual void UpdateParameters() = 0;
-		Matrix GetParameter(string name){ if(m_params.find(name) != m_params.end()) return m_params[name]; 
+		Matrix GetParameter(string name){ if(m_params.empty()) return Matrix(); 
+		 if(m_params.find(name) != m_params.end()) return m_params[name]; 
 		else{ cout << "Parameter " << name << " not valid for this PDF." << endl; return Matrix(); }
 		}
 		void SetDim(int d){ m_dim = d; }

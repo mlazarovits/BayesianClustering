@@ -230,6 +230,7 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 
 map<string, Matrix> GaussianMixture::GetPriorParameters(int k){ 
 	map<string, Matrix> p;
+	if(k > m_k) return p;
 	p["mean"] = m_model[k]->GetParameter("mean");
 	p["cov"] = m_model[k]->GetParameter("cov");
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n));

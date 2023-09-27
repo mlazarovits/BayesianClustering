@@ -11,9 +11,6 @@ JetSkimmer::JetSkimmer(){ };
 
 
 JetSkimmer::~JetSkimmer(){ 
-	_file->Close();
-	delete _base;
-	delete _file;
 }
 
 
@@ -64,18 +61,20 @@ void JetSkimmer::Skim(){
 	vector<node*> tree;
 	vector<JetPoint> rhs;
 	double k;
-	for(int i = 0; i < _nEvts; i++){
+	for(int i = 5; i < _nEvts; i++){
+		if(i > 5) break;
 		_base->GetEntry(i);
 		_prod->GetRecHits(rhs, i);
 		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << flush;
 
-		//calculate transfer factor
-		k = 0;
-		for(int r = 0; r < (int)rhs.size(); i++) k += rhs[i].e();
-		k /= (double)rhs.size();
-
+		int njets = _base->Jet_energy->size();	
+		nTrueJets->Fill((double)_base->Jet_energy->size());	
+		if(njets < 1) continue;
 
 		tree = algo->Cluster(Jet(rhs));
+		//calculate transfer factor
+		k = rhs[0].E()/algo->GetData()->at(0).w();
+
 
 		FillPVHists(tree);
 		
@@ -85,8 +84,6 @@ void JetSkimmer::Skim(){
 		}
 		
 		//jet specific hists
-		int njets = _base->Jet_energy->size();	
-		nTrueJets->Fill((double)_base->Jet_energy->size());	
 		nClusters->Fill((double)tree.size());
 	
 		for(int j = 0; j < njets; j++){	

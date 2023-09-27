@@ -5,7 +5,6 @@
 #include "BaseSkimmer.hh"
 #include "BasePDFMixture.hh"
 #include <TFile.h>
-#include "JetProducer.hh"
 #include "TSystem.h"
 #include "BaseTree.hh"
 
@@ -120,7 +119,8 @@ class JetSkimmer : public BaseSkimmer{
 			phi = 0;
 			t = 0;
 			vector<int> idxs;
-			model->sortedIdxs(idxs);
+			model->SortIdxs(idxs);
+
 			map<string, Matrix> params = model->GetPriorParameters(idxs[kmax-1]);
 			phi = params["pi"].at(0,0)*params["mean"].at(1,0);
 			t = params["pi"].at(0,0)*params["mean"].at(2,0);

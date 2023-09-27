@@ -196,7 +196,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//get leading cluster index
 			vector<int> idxs;
 			//sort by mixing coeffs in ascending order (smallest first)
-			model->sortedIdxs(idxs);
+			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
 			int subleadidx = -999;
 			if(nclusters > 1) subleadidx = idxs[nclusters-2];
@@ -347,7 +347,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//get leading cluster index
 			vector<int> idxs;
 			//sort by mixing coeffs in ascending order (smallest first)
-			model->sortedIdxs(idxs);
+			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
 			int subleadidx = -999;
 			if(nclusters > 1) subleadidx = idxs[nclusters-2];
