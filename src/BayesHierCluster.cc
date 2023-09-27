@@ -5,7 +5,7 @@
 #include "NodeStack.hh"
 #include "MergeTree.hh"
 
-BayesHierCluster::BayesHierCluster(){  _verb = 0; _mergeTree = nullptr; _thresh = 0;  _constraint_min = -999; _constraint_max = -999; _constrain = false; _wraparound = false;}
+BayesHierCluster::BayesHierCluster(){  _verb = 0; _mergeTree = nullptr; _thresh = 0;}
 		
 
 
@@ -15,9 +15,6 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_thresh = 1;
 	_mergeTree->SetThresh(_thresh);
 	_mergeTree->SetVerbosity(_verb);
-	_constrain = false;
-	_wraparound = false;
-	 _constraint_min = -999; _constraint_max = -999;
 }
 
 
@@ -27,39 +24,6 @@ void BayesHierCluster::AddData(PointCollection* pc){
 
 
 
-//uses a triangular distribution to constraint certain clusterings
-double BayesHierCluster::DistanceConstraint(node* i, node* j){
-	double c = (_constraint_a + _constraint_b)/2.;
-	double pi = acos(-1);
-	double d;
-	//phi
-	double cent1 = i->points->Centroid(1);
-	double cent2 = j->points->Centroid(1);
-	TriangularPDF* tri = new TriangularPDF(_constraint_a,_constraint_b,c);
-	
-	//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
-	d = fabs(cent1 - cent2);
-	if(_wraparound){
-		if(d > pi) d = 2*pi - d; 
-	}	
-
-	double phi = 0;
-	double theta = 0;
-	if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
-	
-	//eta to theta
-	cent1 = i->points->Centroid(0); 
-	cent2 = j->points->Centroid(0); 
-
-	cent1 = 2*atan(exp(-cent1));
-	cent2 = 2*atan(exp(-cent2));
-	//don't need to wrap eta -> only goes from 0 to pi in theta
-	d = fabs(cent1 - cent2);	
-	if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
-
-	return theta*phi;//tri->Prob(d)/tri->Prob(c);
-
-}
 
 vector<node*> BayesHierCluster::Cluster(){
 	int n;
@@ -86,12 +50,6 @@ vector<node*> BayesHierCluster::Cluster(){
 			//calculate posterior for potential merge
 			node *x = _mergeTree->CalculateMerge(di, dj);
 //		cout << "potential merge x has " << x->points->GetNPoints() << " points" << endl; x->points->Print();	
-			//modify probability of merge (rk) by distance constraint if specified
-			if(_constrain){
-				//cout << "distance constraining" << endl;
-				x->val *= DistanceConstraint(di,dj);		
-		
-			}	
 		
 		//	//insert into search tree
 			_list.insert(x);	
@@ -162,9 +120,6 @@ vector<node*> BayesHierCluster::Cluster(){
 			node* x = _mergeTree->CalculateMerge(di, max);
 			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
 			//modify probability of merge (rk) by distance constraint if specified
-			if(_constrain){
-				x->val *= DistanceConstraint(di,dj);		
-			}	
 			
 			_list1.insert(x);
 		}

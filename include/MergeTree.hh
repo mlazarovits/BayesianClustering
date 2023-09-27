@@ -78,6 +78,40 @@ class MergeTree : BaseTree{
 
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
 
+		void SetDistanceConstraint(double a, double b){ _constraint = true; _constraint_a = a; _constraint_b = b; }
+		//uses a triangular distribution to constraint certain clusterings
+		double DistanceConstraint(node* i, node* j){
+			double c = (_constraint_a + _constraint_b)/2.;
+			double pi = acos(-1);
+			//phi
+			double cent1 = i->points->Centroid(1);
+			double cent2 = j->points->Centroid(1);
+			
+			//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
+			double d = fabs(cent1 - cent2);
+			if(_wraparound){
+				if(d > pi) d = 2*pi - d; 
+			}	
+		
+			double phi = 0;
+			double theta = 0;
+			if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
+			
+			//eta	
+			cent1 = i->points->Centroid(0); 
+			cent2 = j->points->Centroid(0); 
+		
+			//eta to theta
+			cent1 = 2*atan(exp(-cent1));
+			cent2 = 2*atan(exp(-cent2));
+			//don't need to wrap eta -> only goes from 0 to pi in theta
+			d = fabs(cent1 - cent2);	
+			if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
+		
+			return theta*phi;//tri->Prob(d)/tri->Prob(c);
+		
+		}
+
 	protected:
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
@@ -198,10 +232,12 @@ class MergeTree : BaseTree{
 		double _alpha, _emAlpha;
 		//threshold on variational EM
 		double _thresh;
+		//endpoints for distance constraining
+		double _constraint_a, _constraint_b;
 
 		Matrix _data_smear;
 		int _verb;
 		map<string, Matrix> _params;
-		bool _wraparound;
+		bool _wraparound, _constraint;
 };
 #endif

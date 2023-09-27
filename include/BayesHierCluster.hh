@@ -28,9 +28,7 @@ class BayesHierCluster{
 		void SetAlpha(double a){_mergeTree->SetAlpha(a);}
 		void SetSubclusterAlpha(double a){ _mergeTree->SetSubclusterAlpha(a); }
 
-		void SetDistanceConstraint(double a = 0, double b = 1){ _constrain = true; _constraint_a = a; _constraint_b = b; }
-		void SetPhiWraparound(bool phi){ _wraparound = phi; _mergeTree->SetPhiWraparound(_wraparound); }
-		double DistanceConstraint(node* i, node* j);
+		void SetDistanceConstraint(double a = 0, double b = 1){ _mergeTree->SetDistanceConstraint(a, b); }
 
 
 	private:
@@ -51,16 +49,6 @@ class BayesHierCluster{
 		//verbosity
 		int _verb;
 
-		//hierarchical cluster distance constraints
-		//dimension along which to constrain
-		//int _constraint_d;
-		//transform distance to this interval
-		double _constraint_min, _constraint_max;
-		//cutoff interval (clusters outside of [a,b] will not be clustered)
-		double _constraint_a, _constraint_b;
-		bool _constrain;
-		//if phi is used for distance constraint
-		bool _wraparound;
 };
 #endif
 

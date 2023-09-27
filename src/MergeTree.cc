@@ -7,8 +7,19 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
-	double d = _alpha*tgamma(n) + l->d*r->d;
-	double pi = _alpha*tgamma(n)/d;
+	double d, pi;
+	if(_constraint){
+		//calculate constraint probability rho
+		//rho = 1 -> merge likely, rho = 0 -> no merge likely
+		double rho = DistanceConstraint(l, r);
+
+		d = rho*_alpha*tgamma(n) + (1 - rho)*l->d*r->d;
+		pi = rho*_alpha*tgamma(n)/d;
+	}
+	else{
+		d = _alpha*tgamma(n) + l->d*r->d;
+		pi = _alpha*tgamma(n)/d;
+	}
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
