@@ -25,10 +25,10 @@ class BayesHierCluster{
 		//void Cluster(const vector<PointCollection>& pc);
 		vector<node*> Cluster();
 
-		void SetAlpha(double a);
-		void SetSubclusterAlpha(double a){ _emAlpha = a; _mergeTree->SetAlpha(_emAlpha); }
+		void SetAlpha(double a){_mergeTree->SetAlpha(a);}
+		void SetSubclusterAlpha(double a){ _mergeTree->SetSubclusterAlpha(a); }
 
-		void SetDistanceConstraint(int d, double a = 0, double b = 1){ _constrain = true; _constraint_d = d; _constraint_a = a; _constraint_b = b; }
+		void SetDistanceConstraint(double a = 0, double b = 1){ _constrain = true; _constraint_a = a; _constraint_b = b; }
 		void SetPhiWraparound(bool phi){ _wraparound = phi; _mergeTree->SetPhiWraparound(_wraparound); }
 		double DistanceConstraint(node* i, node* j);
 
@@ -45,10 +45,6 @@ class BayesHierCluster{
 		//tracks posterior values
 		NodeStack _list;
 
-		//dirichlet param
-		double _alpha;
-		//dirichlet param for EM
-		double _emAlpha;
 
 		//threshold for varEM
 		double _thresh;
@@ -57,7 +53,7 @@ class BayesHierCluster{
 
 		//hierarchical cluster distance constraints
 		//dimension along which to constrain
-		int _constraint_d;
+		//int _constraint_d;
 		//transform distance to this interval
 		double _constraint_min, _constraint_max;
 		//cutoff interval (clusters outside of [a,b] will not be clustered)

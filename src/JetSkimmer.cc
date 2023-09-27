@@ -14,7 +14,7 @@ JetSkimmer::~JetSkimmer(){
 }
 
 
-JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
+JetSkimmer::JetSkimmer(TFile* file, bool p) : BaseSkimmer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
@@ -22,6 +22,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
 	_prod = new JetProducer(_file);
+	_prod->SetInclPho(p);
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();
@@ -61,11 +62,10 @@ void JetSkimmer::Skim(){
 	vector<node*> tree;
 	vector<JetPoint> rhs;
 	double k;
-	for(int i = 5; i < _nEvts; i++){
-		if(i > 5) break;
+	for(int i = 0; i < _nEvts; i++){
 		_base->GetEntry(i);
 		_prod->GetRecHits(rhs, i);
-		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << flush;
+		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
 		int njets = _base->Jet_energy->size();	
 		nTrueJets->Fill((double)_base->Jet_energy->size());	

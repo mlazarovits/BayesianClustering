@@ -9,7 +9,8 @@
 
 
 
-JetProducer::JetProducer(){ };
+JetProducer::JetProducer(){ 
+}
 
 
 
@@ -35,6 +36,7 @@ JetProducer::JetProducer(TFile* file) : BaseProducer(file){
 	//_base = new ReducedBase(tree);
 	//cout << "d" << endl;
 	//_nEvts = _base->fChain->GetEntries();
+
 }
 
 void JetProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
@@ -102,12 +104,15 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		//	if(std::any_of(jetIds.begin(), jetIds.end(), [&](int iid){return iid == rhId;})) cout << "rh " << rhId << " in photon and jet" << endl; 
 		}
 	}
+
+	//actually get rhs for clustering
 	nRHs = (int)_base->ECALRecHit_ID->size();
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
-		if(std::any_of(phoIds.begin(), phoIds.end(), [&](int iid){return iid == rhId;})) continue; 
-	
+		if(!_inclpho){
+			if(std::any_of(phoIds.begin(), phoIds.end(), [&](int iid){return iid == rhId;})) continue; 
+		}
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));

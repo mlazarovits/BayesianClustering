@@ -35,8 +35,8 @@ Clusterizer::Clusterizer(vector<Jet> jets){
 Clusterizer::~Clusterizer(){ }
 
 vector<node*> Clusterizer::Cluster(Jet jet, string fname){
-	PointCollection* points = new PointCollection();
-	jet.GetEtaPhiConstituents(*points);
+	_points = new PointCollection();
+	jet.GetEtaPhiConstituents(*_points);
 
 	
 	if(_weighted){
@@ -47,11 +47,10 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
 		gev = gev/(double)weights.size(); //k = sum_n E_n/n pts
 		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts, w_n = E_n/k  
-		points->SetWeights(weights);
+		_points->SetWeights(weights);
 
 	}
 
-	
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_bhcAlpha);
 	bhc->SetSubclusterAlpha(_emAlpha);	
@@ -59,13 +58,13 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	//set configs
 	if(_smeared) bhc->SetDataSmear(_data_smear);
 	bhc->SetThresh(_thresh);
-	bhc->AddData(points);
+	bhc->AddData(_points);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
 	
 	if(_distconst){
 		//int d = dimension, double c = threshold, double a = lower bound, double b = upper bound
 		//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
-		bhc->SetDistanceConstraint(1, 0., acos(-1)/2);
+		bhc->SetDistanceConstraint(0., acos(-1)/2);
 		bhc->SetPhiWraparound(true);
 	}
 	//run algo
@@ -126,8 +125,8 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 //crack open Jet and get underlying points
 GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	//create GMM model
-	PointCollection* points = new PointCollection();
-	jet.GetEtaPhiConstituents(*points);
+	_points = new PointCollection();
+	jet.GetEtaPhiConstituents(*_points);
 
 	if(_weighted){
 		vector<double> weights;
@@ -137,12 +136,12 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
 		gev = gev/(double)weights.size(); //k = sum_n E_n/n pts
 		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts 
-		points->SetWeights(weights);
+		_points->SetWeights(weights);
 	}
 
 	GaussianMixture* gmm = new GaussianMixture(_maxK);
 	
-	gmm->SetData(points);
+	gmm->SetData(_points);
 	gmm->SetAlpha(_emAlpha);
 	gmm->SetVerbosity(_verb);
 	gmm->InitParameters();

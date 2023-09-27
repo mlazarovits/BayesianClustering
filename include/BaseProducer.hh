@@ -29,6 +29,7 @@ class BaseProducer{
 		//	_base->GetEntry(0);
 		//	cout << "base prod init - " << _base->Photon_energy->size() << endl;
 			_nEvts = _base->fChain->GetEntries();
+			_inclpho = false;
 		}
 		virtual ~BaseProducer(){ };
 
@@ -40,11 +41,13 @@ class BaseProducer{
 
 		ReducedBase* GetBase(){ return _base; }
 
+		void SetInclPho(bool ph){ _inclpho = ph; }	
 
 		TFile* _file;
 		ReducedBase* _base = nullptr;
 		int _nEvts;
 
+		bool _inclpho;
 
 
 

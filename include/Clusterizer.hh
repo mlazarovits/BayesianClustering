@@ -47,11 +47,13 @@ class Clusterizer{
 		//set alpha for EM
 		void SetSubclusterAlpha(double a){_emAlpha = a;}
 
+		PointCollection* GetData(){ return _points; }		
+
 	private:
 		//BHC object
 		JetTree m_tree;
 		//jets to points
-		PointCollection m_points;
+		PointCollection* _points;
 		//running number of jets
 		int m_nJets;
 		vector<Jet> m_newJets;

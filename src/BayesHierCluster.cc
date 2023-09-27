@@ -1,11 +1,11 @@
+#include <math.h>
 #include "BayesHierCluster.hh"
 #include "TriangularPDF.hh"
 #include "UniformPDF.hh"
 #include "NodeStack.hh"
 #include "MergeTree.hh"
 
-
-BayesHierCluster::BayesHierCluster(){  _verb = 0; _alpha = 0; _mergeTree = nullptr; _thresh = 0; _constraint_d = 0; _constraint_min = -999; _constraint_max = -999; _constrain = false; _wraparound = false;}
+BayesHierCluster::BayesHierCluster(){  _verb = 0; _mergeTree = nullptr; _thresh = 0;  _constraint_min = -999; _constraint_max = -999; _constrain = false; _wraparound = false;}
 		
 
 
@@ -17,7 +17,7 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_mergeTree->SetVerbosity(_verb);
 	_constrain = false;
 	_wraparound = false;
-	_constraint_d = 0; _constraint_min = -999; _constraint_max = -999;
+	 _constraint_min = -999; _constraint_max = -999;
 }
 
 
@@ -25,33 +25,39 @@ void BayesHierCluster::AddData(PointCollection* pc){
 	_mergeTree->AddData(pc);
 }
 
-void BayesHierCluster::SetAlpha(double a){
-	_alpha = a;
-}
 
 
 //uses a triangular distribution to constraint certain clusterings
 double BayesHierCluster::DistanceConstraint(node* i, node* j){
-	double cent1 = i->points->Centroid(_constraint_d);
-	double cent2 = j->points->Centroid(_constraint_d);
-
-	if(i->points->GetNPoints() + j->points->GetNPoints() > 40) cout << "n pts: " << i->points->GetNPoints() + j->points->GetNPoints() << " cent1: " << cent1 << " mean1: " << i->points->mean().at(1) << " cent2: " << cent2 << " mean2: " << j->points->mean().at(1) << endl;
-
 	double c = (_constraint_a + _constraint_b)/2.;
 	double pi = acos(-1);
-	double d = cent1 - cent2;
-
+	double d;
+	//phi
+	double cent1 = i->points->Centroid(1);
+	double cent2 = j->points->Centroid(1);
 	TriangularPDF* tri = new TriangularPDF(_constraint_a,_constraint_b,c);
-	UniformPDF* uni = new UniformPDF(_constraint_a, _constraint_b);
 	
 	//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
+	d = fabs(cent1 - cent2);
 	if(_wraparound){
-		d = fabs(cent1 - cent2);
 		if(d > pi) d = 2*pi - d; 
 	}	
 
-//	return uni->Prob(d)*(_constraint_b - _constraint_a);
-	return tri->Prob((cent1 - cent2))/tri->Prob(c);
+	double phi = 0;
+	double theta = 0;
+	if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
+	
+	//eta to theta
+	cent1 = i->points->Centroid(0); 
+	cent2 = j->points->Centroid(0); 
+
+	cent1 = 2*atan(exp(-cent1));
+	cent2 = 2*atan(exp(-cent2));
+	//don't need to wrap eta -> only goes from 0 to pi in theta
+	d = fabs(cent1 - cent2);	
+	if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
+
+	return theta*phi;//tri->Prob(d)/tri->Prob(c);
 
 }
 
@@ -84,6 +90,7 @@ vector<node*> BayesHierCluster::Cluster(){
 			if(_constrain){
 				//cout << "distance constraining" << endl;
 				x->val *= DistanceConstraint(di,dj);		
+		
 			}	
 		
 		//	//insert into search tree

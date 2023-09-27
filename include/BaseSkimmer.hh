@@ -35,7 +35,7 @@ class BaseSkimmer{
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
 			_data = false;
-			_debug = false;	
+			_debug = false;
 			hists1D.push_back(nSubClusters);
 			hists1D.push_back(time_center);
 			hists1D.push_back(eta_center);
@@ -100,6 +100,7 @@ class BaseSkimmer{
 		bool _debug;
 
 
+		
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 

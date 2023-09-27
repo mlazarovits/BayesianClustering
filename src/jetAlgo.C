@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
-	double alpha = 0.5;
+	double alpha = 0.1;
 	double emAlpha = 0.5;
 	bool viz = false;
 	int verb = 0;
@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	bool smeared = false;
 	bool skim = false;
 	bool distconst = false;
+	bool inclpho = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -72,6 +73,14 @@ int main(int argc, char *argv[]){
     	 		thresh = std::stod(argv[i]);
    		}
 	
+		if(strncmp(argv[i],"-EMa", 3) == 0){
+			i++;
+    	 		emAlpha = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--EMalpha", 7) == 0){
+			i++;
+    	 		emAlpha = std::stod(argv[i]);
+   		}
 		if(strncmp(argv[i],"-a", 2) == 0){
 			i++;
     	 		alpha = std::stod(argv[i]);
@@ -100,13 +109,17 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
    		}
+		if(strncmp(argv[i],"--pho", 5) == 0){
+    	 		inclpho = true;
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --ouput(-o) [file]            output root file (in plots/)" << endl;
-   		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 1)" << endl;
+   		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
+   		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
@@ -116,6 +129,7 @@ int main(int argc, char *argv[]){
    		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --dist                        clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
+   		cout << "   --pho                         include rechits in photon superclusters (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -152,6 +166,7 @@ int main(int argc, char *argv[]){
 	if(weighted) fname += "_Eweighted";
 	if(smeared) fname += "_EtaPhiSmear";
 	if(distconst) fname += "_distanceConstrained";
+	if(inclpho) fname += "_wPhotonRHs";
 	
 	/////GET DATA FROM NTUPLE//////
 	string in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
@@ -172,7 +187,7 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(in_file.c_str());
 	if(skim){
 		cout << "Skimming jets" << endl;
-		JetSkimmer skimmer(file);
+		JetSkimmer skimmer(file, inclpho);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;

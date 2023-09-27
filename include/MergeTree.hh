@@ -7,7 +7,6 @@
 #include "RandomSample.hh"
 #include "NodeStack.hh"
 
-//using node = BaseTree::node;
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
@@ -71,6 +70,7 @@ class MergeTree : BaseTree{
 
 		int GetNClusters(){ return (int)_clusters.size(); }	
 
+		void SetSubclusterAlpha(double a){ _emAlpha = a; }		
 
 		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
 
@@ -79,10 +79,6 @@ class MergeTree : BaseTree{
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
 
 	protected:
-
-
-
-
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
@@ -199,7 +195,7 @@ class MergeTree : BaseTree{
 		//keep list of nodes since tree is built bottom up
 		vector<node*> _clusters;
 		//Dirichlet prior parameter
-		double _alpha;
+		double _alpha, _emAlpha;
 		//threshold on variational EM
 		double _thresh;
 
