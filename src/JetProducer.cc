@@ -20,17 +20,21 @@ JetProducer::~JetProducer(){
 }
 
 
-JetProducer::JetProducer(TFile* file){
+JetProducer::JetProducer(TFile* file) : BaseProducer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
 
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
-	_file = file;
-	TTree* tree = (TTree*)file->Get("tree/llpgtree");
-	_base = new ReducedBase(tree);
-	_nEvts = _base->fChain->GetEntries();
+	//_file = file;
+	//cout << "b" << endl;
+	//cout << "file name: " << file->GetName() << endl;
+	//TTree* tree = (TTree*)file->Get("tree/llpgtree");
+	//cout << "c" << endl;
+	//_base = new ReducedBase(tree);
+	//cout << "d" << endl;
+	//_nEvts = _base->fChain->GetEntries();
 }
 
 void JetProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
@@ -67,24 +71,41 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	int nRHs;
 	rhs.clear();
 	int nPho, nPhoRHs, rhId;
-	vector<unsigned int> phoIds;
+	vector<unsigned int> phoIds, jetIds;
 	
 
 	if(evt > _nEvts) return;
 
 	_base->GetEntry(evt);
+	int nJets = (int)_base->Jet_energy->size();
+	cout << "# jets in evt " << evt << ": " << nJets << endl;
 
-	nRHs = (int)_base->ECALRecHit_ID->size();
+	int nJetRHs;
+	int nJetRHs_total = 0;
+	for(int j = 0; j < nJets; j++){
+		nJetRHs = (int)_base->Jet_drRhIds->at(j).size();
+		cout << "jet #" << j << " has " << nJetRHs << " rhs - eta = " << fabs(_base->Jet_eta->at(j)) << endl;
+		if(fabs(_base->Jet_eta->at(j)) > 1.479) continue;
+		nJetRHs_total += _base->Jet_drRhIds->at(j).size(); 
+		for(int r = 0; r < nJetRHs; r++){
+			jetIds.push_back(_base->Jet_drRhIds->at(j).at(r));
+		}
+	}
+		cout << nJetRHs_total << " total rhs in all jets" << endl;
 	//clean for RHs in photon superclusters
 	nPho = (int)_base->Photon_energy->size();
 	for(int p = 0; p < nPho; p++){
 		nPhoRHs = (int)_base->Photon_rhIds->at(p).size();
-		for(int r = 0; r < nPhoRHs; r++) phoIds.push_back(_base->Photon_rhIds->at(p).at(r));
+		for(int r = 0; r < nPhoRHs; r++){
+			phoIds.push_back(_base->Photon_rhIds->at(p).at(r));
+			rhId = _base->Photon_rhIds->at(p).at(r);
+		//	if(std::any_of(jetIds.begin(), jetIds.end(), [&](int iid){return iid == rhId;})) cout << "rh " << rhId << " in photon and jet" << endl; 
+		}
 	}
-	
+	nRHs = (int)_base->ECALRecHit_ID->size();
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
-		rhId = _base->ECALRecHit_ID->at(r);	
+		rhId = _base->ECALRecHit_ID->at(r);
 		if(std::any_of(phoIds.begin(), phoIds.end(), [&](int iid){return iid == rhId;})) continue; 
 	
 		//add tof = d_pv to time to get correct RH time

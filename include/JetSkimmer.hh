@@ -30,8 +30,9 @@ class JetSkimmer : public BaseSkimmer{
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* tPV = new TH1D("tPV","tPV",100,-1.,1.);
 		//difference in tPV between two back-to-back jets
-		TH1D* tPV_res_avg = new TH1D("tPV_res","tPV_res",100,-10.,10.);
-		TH1D* tPV_res_lead = new TH1D("tPV_res","tPV_res",100,-10.,10.);
+		TH1D* tPV_res_avg = new TH1D("tPV_res_avg","tPV_res_avg",100,-10.,10.);
+		TH1D* tPV_res_lead = new TH1D("tPV_res_lead","tPV_res_lead",100,-10.,10.);
+		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 
 		//this is for one jet
 		//all hists referenced here are in hists1D

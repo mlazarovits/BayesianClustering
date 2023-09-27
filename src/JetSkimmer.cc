@@ -1,5 +1,5 @@
 #include "JetSkimmer.hh"
-
+#include "JetProducer.hh"
 #include "Clusterizer.hh"
 #include "Matrix.hh"
 #include <TFile.h>
@@ -17,7 +17,7 @@ JetSkimmer::~JetSkimmer(){
 }
 
 
-JetSkimmer::JetSkimmer(TFile* file){
+JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
@@ -31,7 +31,6 @@ JetSkimmer::JetSkimmer(TFile* file){
 
 	hists1D.push_back(nClusters);
 	hists1D.push_back(nTrueJets);
-	
 
 }
 
@@ -77,6 +76,8 @@ void JetSkimmer::Skim(){
 
 
 		tree = algo->Cluster(Jet(rhs));
+
+		FillPVHists(tree);
 		
 		for(int i = 0; i < (int)tree.size(); i++){	
 			BasePDFMixture* model = tree[i]->model;
@@ -84,8 +85,13 @@ void JetSkimmer::Skim(){
 		}
 		
 		//jet specific hists
+		int njets = _base->Jet_energy->size();	
 		nTrueJets->Fill((double)_base->Jet_energy->size());	
 		nClusters->Fill((double)tree.size());
+	
+		for(int j = 0; j < njets; j++){	
+			e_nRhs->Fill(_base->Jet_energy->at(j),(double)_base->Jet_drRhIds->at(j).size());
+		}
 
 	}
 

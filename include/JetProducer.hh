@@ -24,8 +24,6 @@ class JetProducer : public BaseProducer{
 		void GetPrimaryVertex(Point& vtx, int evt);
 
 
-		void CleaningSkim(){ };
-		void Skim();
 
 
 
