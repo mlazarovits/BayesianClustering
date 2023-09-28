@@ -146,6 +146,7 @@ class JsonPlotter:
 			fig = go.Figure(gr_cl)
 			filename = self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
 			fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
+			fig.update_layout(title=dict(font=dict(size=13)))
 			#fig.update_layout(scene=dict(yaxis=dict(range=[-5,5],),xaxis=dict(range=[-10,10],),zaxis=dict(range=[-15,15],)),title=filename, template=None)
 			#write to file
 			#make sure cluster directory exists
@@ -153,7 +154,7 @@ class JsonPlotter:
 				#remake files
 				os.system("rm -rf "+self.dirname+"/cluster"+str(t))	
 			os.mkdir(self.dirname+"/cluster"+str(t))
-			fig.write_image(self.dirname+"/cluster"+str(t)+"/level_"+str(l)+".pdf")
+			fig.write_image(self.dirname+"/cluster"+str(t)+"/level_"+str(l)+".pdf",width=900,height=600)
 			if l == 0:
 				if self.viz is True:
 					fig.show()
@@ -348,7 +349,8 @@ def main():
 	print("Writing to directory",name)
 	files = []
 	for f, fig in enumerate(figs):
-		fig.write_image(name+"/level_"+str(f)+".pdf")
+		fig.update_layout(title=dict(font=dict(size=13)))
+		fig.write_image(name+"/level_"+str(f)+".pdf",width=900,height=600)
 		files.append(name+"/level_"+str(f)+".pdf")
 		if f < 3 and args.noViz is False:	
 			fig.show()
