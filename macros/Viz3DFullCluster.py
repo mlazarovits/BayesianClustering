@@ -255,6 +255,13 @@ class JsonPlotter:
 			a = round(subcluster['eigenVal_0'], 20)
 			b = round(subcluster['eigenVal_1'], 20)
 			c = round(subcluster['eigenVal_2'], 20)
+
+			if a < 1e-7:
+				a = abs(a)
+			if b < 1e-7:
+				b = abs(b)
+			if c < 1e-7:
+				c = abs(c)
 	
 			
 			# compute ellipsoid coordinates on standard basis
