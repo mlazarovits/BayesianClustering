@@ -65,7 +65,6 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		//int d = dimension, double c = threshold, double a = lower bound, double b = upper bound
 		//setting constraint of pi/2 on phi -> dphi must be at least pi/2 between two clusters
 		bhc->SetDistanceConstraint(0., acos(-1)/2);
-		bhc->SetPhiWraparound(true);
 	}
 	//run algo
 	//each node is a jet - a mixture of gaussians (subjets)

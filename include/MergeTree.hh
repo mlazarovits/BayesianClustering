@@ -108,7 +108,7 @@ class MergeTree : BaseTree{
 			d = fabs(cent1 - cent2);	
 			if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
 		
-			return theta*phi;//tri->Prob(d)/tri->Prob(c);
+			return sqrt(theta*phi);//tri->Prob(d)/tri->Prob(c);
 		
 		}
 
