@@ -38,14 +38,14 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	_points = new PointCollection();
 	jet.GetEtaPhiConstituents(*_points);
 
-	
+	double gev;
 	if(_weighted){
 		vector<double> weights;
 		jet.GetEnergies(weights);
 		//need to transfer from GeV (energy) -> unitless (number of points)
-		double gev = 0;
+		gev = 0;
 		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
-		gev = gev/(double)weights.size(); //k = sum_n E_n/n pts
+		gev = gev/(double)weights.size(); //gev = k = sum_n E_n/n pts
 		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts, w_n = E_n/k  
 		_points->SetWeights(weights);
 
@@ -75,6 +75,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	if(!fname.empty()){
 		FullViz3D plots = FullViz3D(tree);
 		plots.SetVerbosity(_verb);
+		plots.SetTransfFactor(gev);
 		plots.Write(fname);
 		//plot individual clusters in local coordinates here
 		//for(int k = 0; k < tree; k++)

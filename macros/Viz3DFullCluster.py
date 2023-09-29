@@ -198,7 +198,7 @@ class JsonPlotter:
 		cols = [colors[cl] for i in range(len(w))]
 		name = "cluster "+str(c)
 		if(len(x) >= self.minPoints or nSubClusters > 1):
-			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+")"
+			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+"GeV )"
 			name += " in "+str(nSubClusters)+" subclusters" 
 		
 		if(min(w) != max(w)):

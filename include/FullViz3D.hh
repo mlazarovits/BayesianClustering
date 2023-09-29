@@ -37,7 +37,9 @@ class FullViz3D : public ClusterVizBase{
 			cout << "Writing to: " << filename << ".json" << endl;
 		}
 		void SeeData(){ };
-		void SetLocalCoords(bool c){ _localcoords = c;}
+
+		//for calculating energies s.t. E_n = w_n*k
+		void SetTransfFactor(double k){ _transf = k; }
 	private:
 		vector<node*> _nodes;
 		vector<int> _k; //number of subclusters per cluster
@@ -46,6 +48,6 @@ class FullViz3D : public ClusterVizBase{
 
 		void orderTree(node* node, int level, map<int, NodeStack> &map);
 
-		bool _localcoords;
+		double _transf;
 };
 #endif

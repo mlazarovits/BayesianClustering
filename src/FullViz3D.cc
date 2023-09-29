@@ -37,12 +37,6 @@ json FullViz3D::WriteNode(node* node){
 	if(points->GetNPoints() == 0){
 		return cluster;
 	}
-
-
-	//for writing individual cluster to its own plot/its history to its own json
-	if(_localcoords){
-		//center points on mean (not weighted) such that avg = 0 -> this is a deltaX, deltaY, deltaT plot/coords
-	}
 	
 	for(int i = 0; i < points->GetNPoints(); i++){
 		//eta
@@ -51,8 +45,8 @@ json FullViz3D::WriteNode(node* node){
 		y.push_back(points->at(i).Value(1));
 		//time
 		z.push_back(points->at(i).Value(2));
-		//weight
-		w.push_back(points->at(i).Weight());
+		//weight - untransfererd (in GeV)
+		w.push_back(points->at(i).Weight()*_transf);
 
 	}
 	data["x"] = x;
@@ -65,8 +59,8 @@ json FullViz3D::WriteNode(node* node){
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
-	vector<double> avgs;
-	model->GetAvgWeights(avgs);
+	vector<double> cnts;
+	model->GetNorms(cnts);
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
@@ -97,7 +91,7 @@ json FullViz3D::WriteNode(node* node){
 		subcluster["eigenVec_1"] = eigenVec_1;	
 		subcluster["eigenVec_2"] = eigenVec_2;	
 		
-		subcluster["color"] = avgs[k];
+		subcluster["color"] = _transf*cnts[k];
 	
 		subclusters["subcluster_"+std::to_string(k)] = subcluster;
 
