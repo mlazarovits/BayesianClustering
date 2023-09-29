@@ -16,7 +16,7 @@ class JetSkimmer : public BaseSkimmer{
 		virtual ~JetSkimmer();
 
 		//get rechits from file to cluster
-		JetSkimmer(TFile* file, bool p = false);
+		JetSkimmer(TFile* file);
 		//ctor from rec hit collection - integrating into ntuplizer
 		
 		

@@ -110,9 +110,6 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
-		if(!_inclpho){
-			if(std::any_of(phoIds.begin(), phoIds.end(), [&](int iid){return iid == rhId;})) continue; 
-		}
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));

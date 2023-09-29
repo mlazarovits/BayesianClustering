@@ -29,7 +29,6 @@ int main(int argc, char *argv[]){
 	bool smeared = false;
 	bool skim = false;
 	bool distconst = false;
-	bool inclpho = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -109,9 +108,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
    		}
-		if(strncmp(argv[i],"--pho", 5) == 0){
-    	 		inclpho = true;
-   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -129,7 +125,6 @@ int main(int argc, char *argv[]){
    		cout << "   --weight                      weights data points (default = false)" << endl;
    		cout << "   --dist                        clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "   --skim                        skim over all photons to make distributions (default = false)" << endl;
-   		cout << "   --pho                         include rechits in photon superclusters (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -166,7 +161,6 @@ int main(int argc, char *argv[]){
 	if(weighted) fname += "_Eweighted";
 	if(smeared) fname += "_EtaPhiSmear";
 	if(distconst) fname += "_distanceConstrained";
-	if(inclpho) fname += "_wPhotonRHs";
 	
 	/////GET DATA FROM NTUPLE//////
 	string in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
@@ -187,7 +181,7 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(in_file.c_str());
 	if(skim){
 		cout << "Skimming jets" << endl;
-		JetSkimmer skimmer(file, inclpho);
+		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.Skim();
 		return 0;

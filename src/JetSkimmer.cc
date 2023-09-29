@@ -14,7 +14,7 @@ JetSkimmer::~JetSkimmer(){
 }
 
 
-JetSkimmer::JetSkimmer(TFile* file, bool p) : BaseSkimmer(file){
+JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
@@ -22,7 +22,6 @@ JetSkimmer::JetSkimmer(TFile* file, bool p) : BaseSkimmer(file){
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
 	_prod = new JetProducer(_file);
-	_prod->SetInclPho(p);
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();
