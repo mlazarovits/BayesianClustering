@@ -11,9 +11,10 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	if(_constraint){
 		//calculate constraint probability rho
 		//rho = 1 -> merge likely, rho = 0 -> no merge likely
-		double rho = DistanceConstraint(l, r);
-
-		d = rho*_alpha*tgamma(n) + (1 - rho)*l->d*r->d;
+		double rho = DistanceConstraint(l, r)/2.; //normalize by dividing by 2 for double counting (-pi/2 to 0 put into 0 to pi/2)
+		
+		//don't want to change the probability of a non-merge -> no factor on d_l*d_r term
+		d = rho*_alpha*tgamma(n) + l->d*r->d;
 		pi = rho*_alpha*tgamma(n)/d;
 	}
 	else{
