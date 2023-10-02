@@ -61,3 +61,7 @@ There are muliple visualization classes:
 - to add a new histogram to the skims, need to declare it in BaseSkimmer and push it back to the vector in ctor
 	- fill histogram in the derived object skimmer
 
+
+### References and Acknowledgements
+- [Bayesian Hierarchical Clustering] (https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
+- the seeding for the Bayesian Hierarchical Clustering is based on the Voronoi diagram implementation of finding geometric nearest neighbors as done in [Fastjet](https://arxiv.org/abs/1111.6097)
