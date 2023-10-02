@@ -25,7 +25,7 @@ GLIBS       = $(ROOTGLIBS)
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/eigen/1ae2849542a7892089f81f2ee460b510cdb0a16d/include/eigen3/
 #add digamma include path
-local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.81.0_1/include/
+local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.82.0_1/include/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.67.0/include/ 
 #add jsoncpp flags
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
