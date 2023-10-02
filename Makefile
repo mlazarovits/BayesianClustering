@@ -30,6 +30,9 @@ lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.67
 #add jsoncpp flags
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/json/3.7.3/include/ 
+#add CGAL flags
+local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6/include/
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/include/
 
 #specify local paths
 INCLUDEDIR  = ./include/
