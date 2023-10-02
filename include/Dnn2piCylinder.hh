@@ -29,15 +29,15 @@
 //FJENDHEADER
 
 
-#ifndef DROP_CGAL // in case we do not have the code for CGAL
-#ifndef __FASTJET_DNN2PICYLINDER_HH__
-#define __FASTJET_DNN2PICYLINDER_HH__
+//#ifndef DROP_CGAL // in case we do not have the code for CGAL
+#ifndef FASTJET_DNN2PICYLINDER_HH
+#define FASTJET_DNN2PICYLINDER_HH
 
-#include "fastjet/internal/DynamicNearestNeighbours.hh"
-#include "fastjet/internal/DnnPlane.hh"
-#include "fastjet/internal/numconsts.hh"
+#include "DynamicNearestNeighbours.hh"
+#include "DnnPlane.hh"
+//#include "fastjet/internal/numconsts.hh"
 
-FASTJET_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
+//FASTJET_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
 
 
 /// \if internal_doc
@@ -93,6 +93,8 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   ~Dnn2piCylinder();
 
  private:
+  double pi    = 3.14159265358;
+  double twopi = 6.28318530717;
 
   // our extras to help us navigate, find distance, etc.
   const static int INEXISTENT_VERTEX=-3;
@@ -267,7 +269,7 @@ inline Dnn2piCylinder::~Dnn2piCylinder() {
 }
 
 
-FASTJET_END_NAMESPACE
+//FASTJET_END_NAMESPACE
 
 #endif //  __FASTJET_DNN2PICYLINDER_HH__
-#endif //DROP_CGAL 
+//#endif //DROP_CGAL 
