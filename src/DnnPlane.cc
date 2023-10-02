@@ -329,8 +329,9 @@ void DnnPlane::RemoveAndAddPoints(
       // This is done first as it allows us to check if this is a new
       // coincidence or a coincidence added to a particle that was
       // previously "alone"
-      _supervertex[coinciding_index].NNindex = index;
-      _supervertex[coinciding_index].NNdistance = 0.0;
+      _supervertex[coinciding_index].neighbors.push_back(MergeNeighbor());
+      _supervertex[coinciding_index].neighbors[0].NNindex = index;
+      _supervertex[coinciding_index].neighbors[0].NNdistance = 0.0;
       indices_of_updated_neighbours.push_back(coinciding_index);
 
       // Note that we must not only set the coincidence of the
@@ -388,11 +389,44 @@ void DnnPlane::RemoveAndAddPoints(
 void DnnPlane::_SetNearest (const int j) {
   // first deal with the cases where we have a coincidence
   if (_supervertex[j].coincidence != j){
-    _supervertex[j].NNindex = _supervertex[j].coincidence;
-    _supervertex[j].NNdistance = 0.0;
+    //_supervertex[j].NNindex = _supervertex[j].coincidence;
+    //_supervertex[j].NNdistance = 0.0;
+    _supervertex[j].neighbors = {MergeNeighbor()};
+    _supervertex[j].neighbors[0].NNindex = _supervertex[j].coincidence;
+    _supervertex[j].neighbors[0].NNdistance = 0.0;
     return;
   }
-
+  Vertex_handle current = _supervertex[j].vertex;
+  Vertex_circulator vc = _TR.incident_vertices(current);
+  Vertex_circulator done = vc;
+  double dist;
+  double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
+  Vertex_handle nearest = _TR.infinite_vertex();
+ 
+  // loop over all vertices around given point 
+  // when there is only one finite point left in the triangulation, 
+  // there are no triangles. Presumably this is why voronoi returns
+  // NULL for the incident vertex circulator. Check if this is
+  // happening before circulating over it... (Otherwise it crashes
+  // when looking for neighbours of last point)
+  int it = 0;
+  if (vc != NULL) do { 
+    if ( vc->info().val() != INFINITE_VERTEX) {
+      // find distance between j and its Voronoi neighbour (vc)
+      if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
+   
+      // add neighbor to neighbors - vector of MergeNeighbors
+      //no comparisons
+      _supervertex[j].neighbors.push_back(MergeNeighbor());
+      _supervertex[j].neighbors[it].NNdistance = _euclid_distance(current->point(), vc->point());
+      _supervertex[j].neighbors[it].NNindex = vc->info().val();
+      _supervertex[j].neighbors[it].mergeval = -1;
+      
+      if (_verbose) cout << vc->point() << "; "<< dist << endl;
+      it++;
+    }
+  } while (++vc != done); // move on to next Voronoi neighbour
+  
   // The code below entirely uses CGAL distance comparisons to compute
   // the nearest neighbour. It has the mais drawback to induice a
   // 10-20% time penalty so we switched to our own comparison (which
@@ -451,37 +485,6 @@ void DnnPlane::_SetNearest (const int j) {
   //  // set j's supervertex info about nearest neighbour
   //  _supervertex[j].NNindex = nearest->info().val();
   //  _supervertex[j].NNdistance = mindist;
-
-  Vertex_handle current = _supervertex[j].vertex;
-  Vertex_circulator vc = _TR.incident_vertices(current);
-  Vertex_circulator done = vc;
-  double dist;
-  double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
-  Vertex_handle nearest = _TR.infinite_vertex();
-  
-  // when there is only one finite point left in the triangulation, 
-  // there are no triangles. Presumably this is why voronoi returns
-  // NULL for the incident vertex circulator. Check if this is
-  // happening before circulating over it... (Otherwise it crashes
-  // when looking for neighbours of last point)
-  if (vc != NULL) do { 
-    if ( vc->info().val() != INFINITE_VERTEX) {
-      // find distance between j and its Voronoi neighbour (vc)
-      if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
-
-      // check if j is closer to vc than vc's currently registered
-      // nearest neighbour (and update things if it is)
-      if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
-	nearest = vc; 
-      	if (_verbose) cout << "nearer ";
-      } 
-      if (_verbose) cout << vc->point() << "; "<< dist << endl;
-    }
-  } while (++vc != done); // move on to next Voronoi neighbour
-  
-  // set j's supervertex info about nearest neighbour
-  _supervertex[j].NNindex = nearest->info().val();
-  _supervertex[j].NNdistance = mindist;
 }
 
 //----------------------------------------------------------------------

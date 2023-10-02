@@ -4,7 +4,6 @@
 // any conditions added in Section 7 also apply. 
 //----------------------------------------------------------------------
 // Copyright (c) 2005-2021, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
-//
 //----------------------------------------------------------------------
 // This file is part of FastJet.
 //
@@ -37,7 +36,11 @@
 
 #include "Triangulation.hh"
 #include "DynamicNearestNeighbours.hh"
-
+#include <vector>
+#include <iostream>
+using std::cout;
+using std::endl;
+using std::vector;
 //FASTJET_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
 
 
@@ -64,13 +67,13 @@ class DnnPlane : public DynamicNearestNeighbours {
   DnnPlane(const std::vector<EtaPhi> &, const bool & verbose = false );
 
 
-  /// Returns the index of  the nearest neighbour of point labelled
+  /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
-  int NearestNeighbourIndex(const int ii) const ;
+  int NearestNeighbourIndex(const int ii, const int jj = 0) const ;
 
-  /// Returns the distance to the nearest neighbour of point labelled
+  /// Returns the distance to neighbour jj of point labelled
   /// by index ii (assumes ii is valid)
-  double NearestNeighbourDistance(const int ii) const ;
+  double NearestNeighbourDistance(const int ii, const int jj = 0) const ;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -250,12 +253,20 @@ private:
 
 // here follow some inline implementations of the simpler of the
 // functions defined above
+// returns info for vertex ii and its neighbor jj
+inline int DnnPlane::NearestNeighbourIndex(const int ii, const int jj) const {
+  if(jj > _supervertex[ii].neighbors.size()){
+    if(_verbose) cout << "Error: only " << _supervertex[ii].neighbors.size() << " neighbors for point " << ii << endl;
+    return -1;
+  }
+  return _supervertex[ii].neighbors[jj].NNindex;}
 
-inline int DnnPlane::NearestNeighbourIndex(const int ii) const {
-  return _supervertex[ii].NNindex;}
-
-inline double DnnPlane::NearestNeighbourDistance(const int ii) const {
-  return _supervertex[ii].NNdistance;}
+inline double DnnPlane::NearestNeighbourDistance(const int ii, int jj) const {
+  if(jj > _supervertex[ii].neighbors.size()){
+    if(_verbose) cout << "Error: only " << _supervertex[ii].neighbors.size() << " neighbors for point " << ii << endl;
+    return -1;
+  }
+  return _supervertex[ii].neighbors[jj].NNdistance;}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {

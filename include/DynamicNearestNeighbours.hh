@@ -1,8 +1,9 @@
-//FJSTARTHEADER
-// $Id$
-//
+// This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
+// The original version of this work was released
+// under version 2 of the GNU General Public License. As of v3 of GNU GPL,
+// any conditions added in Section 7 also apply. 
+//----------------------------------------------------------------------
 // Copyright (c) 2005-2021, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
-//
 //----------------------------------------------------------------------
 // This file is part of FastJet.
 //
@@ -107,13 +108,13 @@ public:
   //virtual DynamicNearestNeighbours(const std::vector<EtaPhi> &, 
   //				   const bool & verbose = false ) = 0;
 
-  /// Returns the index of the nearest neighbour of point labelled
+  /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
-  virtual int NearestNeighbourIndex(const int ii) const = 0;
+  virtual int NearestNeighbourIndex(const int ii, const int jj) const = 0;
 
-  /// Returns the distance to the nearest neighbour of point labelled
+  /// Returns the distance to neighbour jj of point labelled
   /// by index ii (assumes ii is valid)
-  virtual double NearestNeighbourDistance(const int ii) const = 0;
+  virtual double NearestNeighbourDistance(const int ii, const int jj) const = 0;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
