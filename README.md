@@ -63,5 +63,5 @@ There are muliple visualization classes:
 
 
 ### References and Acknowledgements
-- [Bayesian Hierarchical Clustering] (https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
-- the seeding for the Bayesian Hierarchical Clustering is based on the Voronoi diagram implementation of finding geometric nearest neighbors as done in [Fastjet](https://arxiv.org/abs/1111.6097)
+- [Bayesian Hierarchical Clustering]https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
+- The seeding for the Bayesian Hierarchical Clustering is based on the Voronoi diagram implementation of finding geometric nearest neighbors as done in [FastJet](https://arxiv.org/abs/1111.6097)
