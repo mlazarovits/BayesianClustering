@@ -1,6 +1,8 @@
-//FJSTARTHEADER
-// $Id$
-//
+// This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
+// The original version of this work was released
+// under version 2 of the GNU General Public License. As of v3 of GNU GPL,
+// any conditions added in Section 7 also apply. 
+//----------------------------------------------------------------------
 // Copyright (c) 2005-2021, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
 //
 //----------------------------------------------------------------------
@@ -26,7 +28,6 @@
 //  You should have received a copy of the GNU General Public License
 //  along with FastJet. If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------
-//FJENDHEADER
 
 
 //#ifndef DROP_CGAL // in case we do not have the code for CGAL
@@ -89,13 +90,18 @@ class DnnPlane : public DynamicNearestNeighbours {
   double phi(const int i) const;
 
 private:
+   //Structure containing information about a single nearest neighbor (ie a connecting Delauney triangulation center)
+   struct MergeNeighbor{
+    double NNdistance;
+    int NNindex;
+    double mergeval; //rk in Bayes Hierarchical Clustering
+   };
 
   /// Structure containing a vertex_handle and cached information on
   /// the nearest neighbour.
   struct SuperVertex {
     Vertex_handle vertex; // NULL indicates inexistence...
-    double NNdistance;
-    int NNindex;
+    vector<MergeNeighbor> neighbors; //info on adjacent neighbors for potential merges
     int coincidence;  // ==vertex->info.val() if no coincidence
                       // points to the coinciding SV in case of coincidence
     // later on for cylinder put a second vertex?

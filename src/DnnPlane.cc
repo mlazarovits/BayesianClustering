@@ -1,8 +1,9 @@
-//FJSTARTHEADER
-// $Id$
-//
+// This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
+// The original version of this work was released
+// under version 2 of the GNU General Public License. As of v3 of GNU GPL,
+// any conditions added in Section 7 also apply. 
+//----------------------------------------------------------------------
 // Copyright (c) 2005-2021, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
-//
 //----------------------------------------------------------------------
 // This file is part of FastJet.
 //
