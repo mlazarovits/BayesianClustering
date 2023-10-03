@@ -36,6 +36,8 @@ class Jet{
 		//return element i in four vector
 		double p(int i){ return m_p.at(i); }
 		double x(int i){ return m_space.at(i); }
+		double E(){ return m_E; }
+		double e(){ return m_E; }
 	
 		//scale momentum
 		void scaleMom(double s){
