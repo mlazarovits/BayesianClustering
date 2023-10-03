@@ -38,6 +38,7 @@
 #include<iostream>
 #include<sstream>
 #include<cassert>
+#include "Point.hh"
 //#include "fastjet/internal/numconsts.hh"
 //#include "fastjet/Error.hh"
 
@@ -57,6 +58,12 @@ public:
   double first, second;
   EtaPhi() {}
   EtaPhi(double a, double b) {first = a; second = b;}
+  //include ctor from framework point
+  EtaPhi(Point p){
+	if(p.Dim() < 2) return;
+	first = p.at(0);
+	second = p.at(1);
+  }
   double twopi = 6.28318530717;
   /// put things into the desired range.
   void sanitize() {    
@@ -110,11 +117,11 @@ public:
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
-  virtual int NearestNeighbourIndex(const int ii, const int jj) const = 0;
+  virtual int NearestNeighbourIndex(const int ii) const = 0;
 
   /// Returns the distance to neighbour jj of point labelled
   /// by index ii (assumes ii is valid)
-  virtual double NearestNeighbourDistance(const int ii, const int jj) const = 0;
+  virtual double NearestNeighbourDistance(const int ii) const = 0;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and

@@ -69,11 +69,11 @@ class DnnPlane : public DynamicNearestNeighbours {
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
-  int NearestNeighbourIndex(const int ii, const int jj = 0) const ;
+  int NearestNeighbourIndex(const int ii) const ;
 
   /// Returns the distance to neighbour jj of point labelled
   /// by index ii (assumes ii is valid)
-  double NearestNeighbourDistance(const int ii, const int jj = 0) const ;
+  double NearestNeighbourDistance(const int ii) const ;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -93,18 +93,12 @@ class DnnPlane : public DynamicNearestNeighbours {
   double phi(const int i) const;
 
 private:
-   //Structure containing information about a single nearest neighbor (ie a connecting Delauney triangulation center)
-   struct MergeNeighbor{
-    double NNdistance;
-    int NNindex;
-    double mergeval; //rk in Bayes Hierarchical Clustering
-   };
-
   /// Structure containing a vertex_handle and cached information on
   /// the nearest neighbour.
   struct SuperVertex {
     Vertex_handle vertex; // NULL indicates inexistence...
-    vector<MergeNeighbor> neighbors; //info on adjacent neighbors for potential merges
+    double NNdistance;
+    int NNindex;
     int coincidence;  // ==vertex->info.val() if no coincidence
                       // points to the coinciding SV in case of coincidence
     // later on for cylinder put a second vertex?
@@ -121,9 +115,15 @@ private:
 
   /// calculates and returns the euclidean distance between points p1
   /// and p2
-  inline double _euclid_distance(const Point& p1, const Point& p2) const {
+  inline double _euclid_distance(const CPoint& p1, const CPoint& p2) const {
     double distx= p1.x()-p2.x();
     double disty= p1.y()-p2.y();
+    return distx*distx+disty*disty;
+  }
+  
+  inline double _euclid_distance_2d(const Point& p1, const Point& p2) const {
+    double distx= p1.at(0)-p2.at(0);
+    double disty= p1.at(1)-p2.at(1);
     return distx*distx+disty*disty;
   }
 
@@ -161,8 +161,8 @@ private:
   /// Note that the 'near' point is passed through its vertex rather
   /// than as a point. This allows us to handle cases where we have no min
   /// yet (near is the infinite vertex)
-  inline bool _is_closer_to(const Point &pref, 
-			    const Point &candidate,
+  inline bool _is_closer_to(const CPoint &pref, 
+			    const CPoint &candidate,
 			    const Vertex_handle &near,
 			    double & dist,
 			    double & mindist){
@@ -172,8 +172,8 @@ private:
 
   /// same as '_is_closer_to' except that 'dist' already contains the
   /// distance between 'pref' and 'candidate'
-  inline bool _is_closer_to_with_hint(const Point &pref, 
-				      const Point &candidate,
+  inline bool _is_closer_to_with_hint(const CPoint &pref, 
+				      const CPoint &candidate,
 				      const Vertex_handle &near,
 				      const double & dist,
 				      double & mindist){
@@ -254,19 +254,11 @@ private:
 // here follow some inline implementations of the simpler of the
 // functions defined above
 // returns info for vertex ii and its neighbor jj
-inline int DnnPlane::NearestNeighbourIndex(const int ii, const int jj) const {
-  if(jj > _supervertex[ii].neighbors.size()){
-    if(_verbose) cout << "Error: only " << _supervertex[ii].neighbors.size() << " neighbors for point " << ii << endl;
-    return -1;
-  }
-  return _supervertex[ii].neighbors[jj].NNindex;}
+inline int DnnPlane::NearestNeighbourIndex(const int ii) const {
+  return _supervertex[ii].NNindex;}
 
-inline double DnnPlane::NearestNeighbourDistance(const int ii, int jj) const {
-  if(jj > _supervertex[ii].neighbors.size()){
-    if(_verbose) cout << "Error: only " << _supervertex[ii].neighbors.size() << " neighbors for point " << ii << endl;
-    return -1;
-  }
-  return _supervertex[ii].neighbors[jj].NNdistance;}
+inline double DnnPlane::NearestNeighbourDistance(const int ii) const {
+  return _supervertex[ii].NNdistance;}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {
@@ -279,7 +271,7 @@ inline bool DnnPlane::Valid(const int index) const {
 
 
 inline EtaPhi DnnPlane::etaphi(const int i) const {
-  Point * p = & (_supervertex[i].vertex->point());
+  CPoint * p = & (_supervertex[i].vertex->point());
   return EtaPhi(p->x(),p->y()); }
 
 inline double DnnPlane::eta(const int i) const {

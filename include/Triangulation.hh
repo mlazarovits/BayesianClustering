@@ -99,7 +99,7 @@ typedef CGAL::Triangulation_hierarchy_2<Dt> Triangulation;
 //#endif
 
 typedef Triangulation::Vertex_handle  Vertex_handle;
-typedef Triangulation::Point          Point; /// CGAL Point structure
+typedef Triangulation::Point          CPoint; /// CGAL Point structure
 typedef Triangulation::Vertex_circulator Vertex_circulator;
 typedef Triangulation::Face_circulator Face_circulator;
 typedef Triangulation::Face_handle Face_handle;
