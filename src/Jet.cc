@@ -1,67 +1,67 @@
 #include "Jet.hh"
-
+//TODO: change default space coords to eta phi
 
 Jet::Jet(){
-	m_E = 0;
-	m_px = 0;
-	m_py = 0;
-	m_pz = 0;
+	_E = 0;
+	_px = 0;
+	_py = 0;
+	_pz = 0;
 	
-	m_t = 0;
-	m_x = 0;
-	m_y = 0;
-	m_z = 0;
+	_t = 0;
+	_x = 0;
+	_y = 0;
+	_z = 0;
 	
-	m_nRHs = 0;
+	_nRHs = 0;
 	
-	m_parent1 = nullptr;
-	m_parent2 = nullptr;
-	m_child = nullptr; 
+	_parent1 = nullptr;
+	_parent2 = nullptr;
+	_child = nullptr; 
 
 }
 
 
 Jet::Jet(JetPoint rh, Point vtx){
-	m_t = rh.x(0);
-	m_x = rh.x(1);
-	m_y = rh.x(2);
-	m_z = rh.x(3);
+	_t = rh.x(0);
+	_x = rh.x(1);
+	_y = rh.x(2);
+	_z = rh.x(3);
 	
-	m_rhs.push_back(rh);
-	m_nRHs = (int)m_rhs.size();
-	m_space = rh.four_space();
+	_rhs.push_back(rh);
+	_nRHs = (int)_rhs.size();
+	_space = rh.four_space();
 
-	m_E = rh.E();
-	m_eta = rh.eta();
-	m_phi = rh.eta();
+	_E = rh.E();
+	_eta = rh.eta();
+	_phi = rh.eta();
 	
 	if(vtx.Dim() != 3){
 		cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
-	m_vtx = vtx;
-	Point dir = Point({m_x - vtx.at(0), m_y - vtx.at(1), m_z - vtx.at(3)});
+	_vtx = vtx;
+	Point dir = Point({_x - vtx.at(0), _y - vtx.at(1), _z - vtx.at(3)});
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
-	double theta = atan2( sqrt(m_x*m_x + m_y*m_y), m_z );
-	SetPt(m_E*sin(theta)); //consistent with mass = 0
-	SetFourMom(Point({pt()*cos(m_phi), pt()*sin(m_phi), pt()*cosh(m_eta),m_E}));
+	double theta = atan2( sqrt(_x*_x + _y*_y), _z );
+	SetPt();
+	SetFourMom(Point({pt()*cos(_phi), pt()*sin(_phi), pt()*cosh(_eta),_E}));
 
 		
-	m_parent1 = nullptr;
-	m_parent2 = nullptr;
-	m_child = nullptr; 
+	_parent1 = nullptr;
+	_parent2 = nullptr;
+	_child = nullptr; 
 
-	m_idx = 999;
+	_idx = 999;
 }
 
 
 Jet::Jet(vector<JetPoint> rhs){
-	m_nRHs = (int)rhs.size();	
-	for(int i = 0; i < m_nRHs; i++) m_rhs.push_back(rhs[i]);
+	_nRHs = (int)rhs.size();	
+	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);
 
 	double theta, pt, x, y, z;
-	for(int i = 0; i < m_nRHs; i++){
+	for(int i = 0; i < _nRHs; i++){
 		
 		//theta is calculated between beamline (z-dir) and x-y vector	
 		x = rhs[i].x(0);
@@ -69,11 +69,11 @@ Jet::Jet(vector<JetPoint> rhs){
 		z = rhs[i].x(2);
 		theta = atan2( sqrt(x*x + y*y), z );
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-		m_px += pt*cos(rhs[i].phi());
-		m_py += pt*sin(rhs[i].phi());
-		m_pz += pt*cosh(rhs[i].eta());
+		_px += pt*cos(rhs[i].phi());
+		_py += pt*sin(rhs[i].phi());
+		_pz += pt*cosh(rhs[i].eta());
 		
-		m_E += rhs[i].E();
+		_E += rhs[i].E();
 
 
 	}
@@ -82,28 +82,28 @@ Jet::Jet(vector<JetPoint> rhs){
 	RecalcEta();
 //TODO: need to recalculate space four vector from clustering algo
 /*	
-	m_t = rh.at(0);
-	m_x = rh.at(1);
-	m_y = rh.at(2);
-	m_z = rh.at(3);
+	_t = rh.at(0);
+	_x = rh.at(1);
+	_y = rh.at(2);
+	_z = rh.at(3);
 	m_s = rh.four_space();
 */
 
 }
 
 Jet::Jet(vector<JetPoint> rhs, Point vtx){
-	m_nRHs = (int)rhs.size();	
-	for(int i = 0; i < m_nRHs; i++) m_rhs.push_back(rhs[i]);
+	_nRHs = (int)rhs.size();	
+	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);
 
 	if(vtx.Dim() != 3){
 		cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
-	m_vtx = vtx;
+	_vtx = vtx;
 
 	double theta, pt, x, y, z;
-	for(int i = 0; i < m_nRHs; i++){
-		Point dir = Point({m_x - vtx.at(0), m_y - vtx.at(1), m_z - vtx.at(3)});
+	for(int i = 0; i < _nRHs; i++){
+		Point dir = Point({_x - vtx.at(0), _y - vtx.at(1), _z - vtx.at(3)});
 		
 		//theta is calculated between beamline (z-dir) and x-y vector	
 		x = rhs[i].x(0);
@@ -111,11 +111,11 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 		z = rhs[i].x(2);
 		theta = atan2( sqrt(x*x + y*y), z );
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-		m_px += pt*cos(rhs[i].phi());
-		m_py += pt*sin(rhs[i].phi());
-		m_pz += pt*cosh(rhs[i].eta());
+		_px += pt*cos(rhs[i].phi());
+		_py += pt*sin(rhs[i].phi());
+		_pz += pt*cosh(rhs[i].eta());
 		
-		m_E += rhs[i].E();
+		_E += rhs[i].E();
 
 
 	}
@@ -124,10 +124,10 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	RecalcEta();
 //TODO: need to recalculate space four vector from clustering algo
 /*	
-	m_t = rh.at(0);
-	m_x = rh.at(1);
-	m_y = rh.at(2);
-	m_z = rh.at(3);
+	_t = rh.at(0);
+	_x = rh.at(1);
+	_y = rh.at(2);
+	_z = rh.at(3);
 	m_s = rh.four_space();
 */
 
@@ -135,16 +135,16 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 
 
 Jet::~Jet(){
-	m_rhs.clear();
+	_rhs.clear();
 }
 
 
 bool Jet::operator ==(Jet& jet) const{
-	return m_space == jet.four_space();
+	return _space == jet.four_space();
 }
 
 bool Jet::operator !=(Jet& jet) const{
-	return m_space != jet.four_space();
+	return _space != jet.four_space();
 }
 
 //TODO: make sure it's consistent with the rec hits (JetPoints)
@@ -154,7 +154,7 @@ void Jet::SetFourMom(Point pt){
 		return;
 	}
 	
-	m_p = pt;
+	_mom = pt;
 }
 
 //TODO: make sure it's consistent with the rec hits (JetPoints)
@@ -163,7 +163,7 @@ void Jet::SetFourPos(Point pt){
 		cout << "Error: must provide 4 vector for space." << endl;
 		return;
 	}
-	m_space = pt;
+	_space = pt;
 }
 
 //add jet jt to this
@@ -173,14 +173,14 @@ void Jet::add(Jet& jt){
 	vector<JetPoint> rhs;
 	jt.GetConstituents(rhs);
 
-	for(int i = 0; i < (int)rhs.size(); i++) m_rhs.push_back(rhs[i]);
-	m_nRHs += (int)rhs.size();
+	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
+	_nRHs += (int)rhs.size();
 	
 	//add momentum
-	m_px += jt.p(0);
-	m_py += jt.p(1);
-	m_pz += jt.p(2);
-	m_E  += jt.p(3);
+	_px += jt.p(0);
+	_py += jt.p(1);
+	_pz += jt.p(2);
+	_E  += jt.p(3);
 
 	//recalculate kt2 of cluster
 	RecalcKT2();
@@ -191,49 +191,49 @@ void Jet::add(Jet& jt){
 
 //TODO: need to recalculate space four vector from clustering algo
 /*
-	m_x = 0;
-	m_y = 0;
-	m_z = 0;
-	m_t = 0;
+	_x = 0;
+	_y = 0;
+	_z = 0;
+	_t = 0;
 
 
-	for(int i = 0; i < m_nRHs; i++){
-		m_x += m_space_vec_coll.at(i).at(0);
-		m_y += m_space_vec_coll.at(i).at(1);
-		m_z += m_space_vec_coll.at(i).at(2);
-		m_t += m_space_vec_coll.at(i).at(3);
+	for(int i = 0; i < _nRHs; i++){
+		_x += _space_vec_coll.at(i).at(0);
+		_y += _space_vec_coll.at(i).at(1);
+		_z += _space_vec_coll.at(i).at(2);
+		_t += _space_vec_coll.at(i).at(3);
 
 	}
-	m_x /= m_nRHs;
-	m_y /= m_nRHs;
-	m_z /= m_nRHs;
-	m_t /= m_nRHs;
+	_x /= _nRHs;
+	_y /= _nRHs;
+	_z /= _nRHs;
+	_t /= _nRHs;
 */
 }
 
 
 void Jet::add(JetPoint& rh){
-	m_rhs.push_back(rh);
-	m_nRHs += 1;
+	_rhs.push_back(rh);
+	_nRHs += 1;
 
-	if(m_vtx.Dim() != 3){
+	if(_vtx.Dim() != 3){
 		cout << "Error: must provide 3 dimensional spatial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
 	//direction between ECAL position and vertex:q
 
-	Point dir = Point({m_x - m_vtx.at(0), m_y - m_vtx.at(1), m_z - m_vtx.at(3)});
+	Point dir = Point({_x - _vtx.at(0), _y - _vtx.at(1), _z - _vtx.at(3)});
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
-	double theta = atan2( sqrt(m_x*m_x + m_y*m_y), m_z );
+	double theta = atan2( sqrt(_x*_x + _y*_y), _z );
 	double pt = rh.E()*sin(theta); //consistent with mass = 0
 
 	//add momentum
 	//rh is massless => pT = Esin(theta)
-	m_px += pt*cos(rh.phi());
-	m_py += pt*sin(rh.phi());
-	m_pz += pt*sinh(rh.eta());
-	m_E  += rh.E();
+	_px += pt*cos(rh.phi());
+	_py += pt*sin(rh.phi());
+	_pz += pt*sinh(rh.eta());
+	_E  += rh.E();
 
 	//recalculate kt2
 	RecalcKT2();
@@ -242,23 +242,23 @@ void Jet::add(JetPoint& rh){
 	RecalcEta();
 //TODO: need to recalculate space four vector from clustering algo
 /*
-	m_x = 0;
-	m_y = 0;
-	m_z = 0;
-	m_t = 0;
+	_x = 0;
+	_y = 0;
+	_z = 0;
+	_t = 0;
 
 
-	for(int i = 0; i < m_nRHs; i++){
-		m_x += m_space_vec_coll.at(i).at(0);
-		m_y += m_space_vec_coll.at(i).at(1);
-		m_z += m_space_vec_coll.at(i).at(2);
-		m_t += m_space_vec_coll.at(i).at(3);
+	for(int i = 0; i < _nRHs; i++){
+		_x += _space_vec_coll.at(i).at(0);
+		_y += _space_vec_coll.at(i).at(1);
+		_z += _space_vec_coll.at(i).at(2);
+		_t += _space_vec_coll.at(i).at(3);
 
 	}
-	m_x /= m_nRHs;
-	m_y /= m_nRHs;
-	m_z /= m_nRHs;
-	m_t /= m_nRHs;
+	_x /= _nRHs;
+	_y /= _nRHs;
+	_z /= _nRHs;
+	_t /= _nRHs;
 */
 
 
@@ -270,13 +270,13 @@ void Jet::add(JetPoint& rh){
 void Jet::GetParents(Jet& p1, Jet& p2) const{
 	//check if jet has parents that combined to make this
 	//if no parents found, fills with nullptr
-	p1 = *m_parent1;
-	p2 = *m_parent2;
+	p1 = *_parent1;
+	p2 = *_parent2;
 }
 
 
 void Jet::GetBaby(Jet& child) const{
-	child = *m_child;
+	child = *_child;
 }
 
 
@@ -294,8 +294,8 @@ bool Jet::Has(Jet& jet) const{
 }
 
 bool Jet::Has(JetPoint& rh) const{
-	for(int i = 0; i < m_nRHs; i++)
-		if(m_rhs[i] == rh)
+	for(int i = 0; i < _nRHs; i++)
+		if(_rhs[i] == rh)
 			return true;
 	return false;
 

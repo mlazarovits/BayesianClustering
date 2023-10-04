@@ -1,13 +1,26 @@
 #ifndef JET_HH
 #define JET_HH
 
+// The structure of this method is respectfully repurposed from ClusterSequence_Delaunay in FastJet (Cacciari, Salam, Soyez).
+// This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
+// The original version of this work was released
+// under version 2 of the GNU General Public License. As of v3 of GNU GPL,
+// any conditions added in Section 7 also apply. 
+
+//----------------------------------------------------------------------
+// Copyright (c) 2005-2021, Matteo Cacciari, Gavin P. Salam and Gregory Soyez
+//----------------------------------------------------------------------
 #include <math.h>
+#include <cmath>
 #include "Matrix.hh"
 #include "JetPoint.hh"
 #include "Point.hh"
 
+
+
+//TODO: change default space coords to eta phi
 //point with more physics aspects - ecal cell
-class Jet{
+class Jet : public JetPoint{
 	public:
 		Jet();
 		Jet(JetPoint rh);
@@ -20,8 +33,8 @@ class Jet{
 		bool operator!=(Jet& j) const;
 
 		//return four vector for clustering
-		Point four_mom(){ return m_p; }
-		Point four_space(){ return m_space; }
+		Point four_mom(){ return _mom; }
+		Point four_space(){ return _space; }
 
 		void SetFourMom(Point pt);
 		void SetFourPos(Point pt);
@@ -30,30 +43,30 @@ class Jet{
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 				return;
 			}
-			m_vtx = vtx;
+			_vtx = vtx;
 		}
 
 		//return element i in four vector
-		double p(int i){ return m_p.at(i); }
-		double x(int i){ return m_space.at(i); }
-		double E(){ return m_E; }
-		double e(){ return m_E; }
+		double p(int i){ return _mom.at(i); }
+		double x(int i){ return _space.at(i); }
+		double E(){ return _E; }
+		double e(){ return _E; }
 	
 		//scale momentum
 		void scaleMom(double s){
-			m_px *= s;
-			m_py *= s;
-			m_pz *= s;
-			m_E *= s;
-			m_kt2 *= s*s;
+			_px *= s;
+			_py *= s;
+			_pz *= s;
+			_E *= s;
+			_kt2 *= s*s;
 		 };
 
 
-		vector<JetPoint> GetJetPoints() const{return m_rhs;}
+		vector<JetPoint> GetJetPoints() const{return _rhs;}
 		
 		PointCollection GetJetPoints_mom() const{
 			PointCollection pc;
-			//for(int i = 0; i < m_nRHs; i++) pc += m_rhs[i].four_mom();
+			//for(int i = 0; i < _nRHs; i++) pc += _rhs[i].four_mom();
 			return pc;
 		}
 
@@ -62,26 +75,26 @@ class Jet{
 		void add(JetPoint& rh);
 		
 		//constituents (jet points) in jet (clustered or unclustered)
-		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = m_rhs; }
-		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)m_rhs.size(); j++) energies.push_back(m_rhs[j].E()); }
+		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = _rhs; }
+		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)_rhs.size(); j++) energies.push_back(_rhs[j].E()); }
 		void GetXYZConstituents(PointCollection& pc) const{
 			pc.Clear();
-			for(int i = 0; i < (int)m_rhs.size(); i++){
-				pc += m_rhs[i].four_space();
+			for(int i = 0; i < (int)_rhs.size(); i++){
+				pc += _rhs[i].four_space();
 			}
 		}
 		void GetEtaPhiConstituents(PointCollection& pc) const{
 			pc.Clear();
-			for(int i = 0; i < (int)m_rhs.size(); i++){
-				pc += Point({m_rhs[i].eta(), m_rhs[i].phi(), m_rhs[i].time()});
+			for(int i = 0; i < (int)_rhs.size(); i++){
+				pc += Point({_rhs[i].eta(), _rhs[i].phi(), _rhs[i].time()});
 			}
 		}
 		
-		int GetNConstituents() const{return (int)m_rhs.size(); }	
+		int GetNConstituents() const{return (int)_rhs.size(); }	
 		
 		//parents in cluster
 		void GetParents(Jet& p1, Jet& p2) const;
-		void SetParents(Jet* p1, Jet* p2){ m_parent1 = p1; m_parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
+		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
 
 		//children in cluster
 		void GetBaby(Jet& child) const;
@@ -94,145 +107,133 @@ class Jet{
 		bool Has(Jet& jet) const;
 		//this has rh?
 		bool Has(JetPoint& rh) const;
-		
-		void SetEta(double eta){ m_eta = eta; }
-		void SetPhi(double phi){ 
-			m_phi = setPhi_negPiToPi(phi);
-		}
-
-		//sets phi [0,2pi]
-		double setPhi_02pi(double phi){
-			if(phi < 0.0) return phi + 2*acos(-1);
-			else if(phi >= 2*acos(-1)) return phi - 2*acos(-1);
-			return phi; 
-		}
-
-		//wraps phi around pi, [-pi,pi]
-		double setPhi_negPiToPi(double phi){
- 			double pi = acos(-1);
-			double o2pi = 1./(2*pi);
-			if(fabs(phi) <= pi)
-				return phi;
-			double n = std::round(phi * o2pi);
-			return phi - n * double(2.* pi);
-
-		}
-
-		void SetEnergy(double enr){ m_E = enr; }
-		
-		void SetPt(double pt){ m_kt2 = pt*pt; }
 
 		//set user idx info
-		void SetUserIdx(int i){ m_idx = i; }
-		int GetUserIdx(){ return m_idx; }
+		void SetUserIdx(int i){ _idx = i; }
+		int GetUserIdx(){ return _idx; }
 		
 
 		//boost function
 		//transverse energy
-		double Et() const{ return (m_kt2==0) ? 0.0 : m_E/sqrt(1.0+m_pz*m_pz/m_kt2); } 
+		double Et() const{ return (_kt2==0) ? 0.0 : _E/sqrt(1.0+_pz*_pz/_kt2); } 
 		//transverse mass
 		double mt() const {return sqrt(std::abs(mperp2()));}
   		double mperp() const {return sqrt(std::abs(mperp2()));}
 		//squared transverse mass = kt^2+m^2
-  		double mperp2() const {return (m_E+m_pz)*(m_E-m_pz);}
+  		double mperp2() const {return (_E+_pz)*(_E-_pz);}
 		//invariant mass squared: m^2 = E^2 - p^2
-		double m2() const{ return (m_E+m_pz)*(m_E-m_pz)-m_kt2; }
+		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
 		//invariant mass
 		double mass() const{return sqrt(m2()); }
 
 	
 		//squared transverse momentum
-  		double pt2() const {return m_kt2;}
+  		double pt2() const {return _kt2;}
   		//the scalar transverse momentum
-  		double pt() const {return sqrt(m_kt2);} 
+  		double pt() const {return sqrt(_kt2);} 
 	 	//the squared transverse momentum
-  		double kt2() const {return m_kt2;} 	
+  		double kt2() const {return _kt2;} 	
 		//deltaR between this and another jet pt
-		double deltaR(Jet& jet) const{ return sqrt( (m_eta - jet.eta())*(m_eta - jet.eta()) + (m_phi - jet.phi())*(m_phi - jet.phi())); }
-		//eta
-		double eta() const{return m_eta;}
-		double phi() const{return m_phi;}
+		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
 		
-		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = m_mu; cov = m_cov; }
+		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
 	
 		//define jet time from cluster parameters
 		double GetJetTime() const{ return 0.; }
 	
-		Point GetVertex() const{return m_vtx; }
+		Point GetVertex() const{return _vtx; }
 
 		//check IR + collinear safety?
+
+		void SetPt() const{
+			_kt2 = _px*_px + _py*_py;//_E*sin(theta); //consistent with mass = 0
+		}
 	
 	protected:
-		void SetBaby(Jet* child){ m_child = child; }
-
-		void RecalcKT2(){ m_kt2 = m_px*m_px + m_py*m_py; }
-		void RecalcPhi(){ if (m_kt2 == 0.0) {
-			m_phi = 0.0; } 
+		void _set_rap_phi() const{
+			if (_kt2 == 0.0) {
+				_phi = 0.0; } 
 			else {
-			  m_phi = atan2(m_py,m_px);
+				_phi = atan2(this->_py,this->_px);
 			}
-			m_phi = setPhi_negPiToPi(m_phi);
+			if (_phi < 0.0) {_phi += twopi;}
+			if (_phi >= twopi) {_phi -= twopi;} // can happen if phi=-|eps<1e-15|?
+			if (this->_E == abs(this->_pz) && _kt2 == 0) {
+				// Point has infinite rapidity -- convert that into a very large
+				// number, but in such a way that different 0-pt momenta will have
+				// different rapidities (so as to lift the degeneracy between
+				// them) [this can be relevant at parton-level]
+				double MaxRapHere = _maxRap + abs(this->_pz);
+				if (this->_pz >= 0.0) {this->_eta = MaxRapHere;} else {this->_eta = -MaxRapHere;}
+			} else {
+				// get the rapidity in a way that's modestly insensitive to roundoff
+				// error when things pz,E are large (actually the best we can do without
+				// explicit knowledge of mass)
+				double effective_m2 = std::max(0.0,m2()); // force non tachyonic mass
+				double E_plus_pz    = _E + abs(_pz); // the safer of p+, p-
+				// p+/p- = (p+ p-) / (p-)^2 = (kt^2+m^2)/(p-)^2
+				_eta = 0.5*log((_kt2 + effective_m2)/(E_plus_pz*E_plus_pz));
+				if (_pz > 0) {_eta = - _eta;}
+			}
+		}
+		void SetBaby(Jet* child){ _child = child; }
+
+		void RecalcKT2(){ _kt2 = _px*_px + _py*_py; }
+		void RecalcPhi(){ if (_kt2 == 0.0) {
+			_phi = 0.0; } 
+			else {
+			  _phi = atan2(_py,_px);
+			}
+			phi_negPiToPi();
 		}
 		
 		void RecalcEta(){
-			if(m_pz == 0){
-				m_theta = 0;
-				m_eta = m_maxRap;
+			if(_pz == 0){
+				_theta = 0;
+				_eta = _maxRap;
 			}
 			else{
-				m_theta = atan2(m_kt2 , m_pz);
-				if(m_theta < 0) m_theta += acos(-1);
-				m_eta = -log(tan(m_theta/2.));
+				_theta = atan2(_kt2 , _pz);
+				if(_theta < 0) _theta += acos(-1);
+				_eta = -log(tan(_theta/2.));
 			}
 
 		}
 	private:
 		//momentum four vector
-		double m_E;
-		double m_px;
-		double m_py;
-		double m_pz;
-		double m_kt2;
-		Point m_p;
+		double _px;
+		double _py;
+		double _pz;
+		mutable double _kt2;
+		Point _mom;
+		//double _E;
+		Point _vtx;
 
-		//spatial four vector
-		double m_t;
-		double m_x;
-		double m_y;
-		double m_z;
-		Point m_space;
-
-		//vertex from which momemtum direction is calculated
-		Point m_vtx;
-
+		//mutable double _eta, _phi, _theta;
 		//rec hits (JetPoints) in jet
-		vector<JetPoint> m_rhs;
+		vector<JetPoint> _rhs;
 
-		int m_nRHs;
-
-		double m_eta;
-		double m_phi;
-		double m_theta;
-
-		double m_maxRap = 1e5;
-		//default values - have yet to be calculated or set
-		double m_invalid_phi = -100.0;
-		double m_invalid_eta = -1e200;
-
+		int _nRHs;
 
 		//cluster params - modeling jet as gaussian in time, space + energy
-		Matrix m_mu;
-		Matrix m_cov;
+		Matrix _mu;
+		Matrix _cov;
 
 		//parents + child info
-		Jet* m_parent1;
-		Jet* m_parent2;
+		Jet* _parent1;
+		Jet* _parent2;
 
-		Jet* m_child;
+		Jet* _child;
 	
 		//user index	
-		int m_idx;
+		int _idx;
+		
 
+		double _maxRap = 1e5;
+		//default values - have yet to be calculated or set
+		double _invalid_phi = -100.0;
+		double _invalid_eta = -1e200;
+		double twopi = 6.28318530717;
 
 };
 

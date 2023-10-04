@@ -17,89 +17,167 @@ class JetPoint{
 		bool operator!=(JetPoint& j) const;
 
 		//return four vector for clustering
-		Point four_space() const{ return m_vec; }
+		Point four_space() const{ return _space; }
 
 		void SetFourSpace(Point pt);
 
+		void SetEnergy(double e){ _E = e;}
+		void SetPhi(double p){ _phi = p; _ensure_valid_rap_phi(); }
+		void SetEta(double e){ _eta = e; _ensure_valid_rap_phi(); }
+
 		//return element i in position (space-time) four vector
-		double x(int i) const{ return m_vec.at(i); }
+		double x(int i) const{ return _space.at(i); }
 
-
-		double eta() const{return m_eta;}
-		double phi() const{return m_phi;}
-		double Eta() const{return m_eta;}
-		double Phi() const{return m_phi;}
-
-		double e() const{return m_E;}
-		double E() const{return m_E;}
-		double energy() const{return m_E;}
-		double Energy() const{return m_E;}
-
-		double theta() const{return m_theta;}
-		double Theta() const{return m_theta;}
-
-		double time() const{return m_t;}
-		double t() const{return m_t;}
-		double x() const{return m_x;}
-		double y() const{return m_y;}
-		double z() const{return m_z;}
-	
-		void SetEta(double eta){ m_eta = eta; }
-		void SetPhi(double phi){ 
-			m_phi = setPhi_negPiToPi(phi);
-		}
 
 		//sets phi [0,2pi]
-		double setPhi_02pi(double phi){
-			if(phi < 0.0) return phi + 2*acos(-1);
-			else if(phi >= 2*acos(-1)) return phi - 2*acos(-1);
-			return phi; 
+		double phi_02pi() const{
+			_ensure_valid_rap_phi();
+			return _phi; 
 		}
 
 		//wraps phi around pi, [-pi,pi]
-		double setPhi_negPiToPi(double phi){
+		double phi_negPiToPi() const{
  			double pi = acos(-1);
 			double o2pi = 1./(2*pi);
-			if(fabs(phi) <= pi)
-				return phi;
-			double n = std::round(phi * o2pi);
-			return phi - n * double(2.* pi);
+			if(fabs(_phi) <= pi)
+				return _phi;
+			double n = std::round(_phi * o2pi);
+			return _phi - n * double(2.* pi);
 
 		}
-		void SetEnergy(double enr){ m_E = enr; }
 		
-		void SetRecHitId(unsigned int id){ m_rhId = id; }
-		unsigned int rhId(){ return m_rhId; }
+		//eta
+		double eta() const{
+			_ensure_valid_rap_phi();
+			return _eta;
+		}
+		double rap() const{
+			_ensure_valid_rap_phi();
+			return _eta;
+		}
+		//phi
+		double phi() const{
+			_ensure_valid_rap_phi();
+			return phi_02pi();
+		}
+
+
+		double e() const{return _E;}
+		double E() const{return _E;}
+		double energy() const{return _E;}
+		double Energy() const{return _E;}
+
+		double theta() const{return _theta;}
+		double Theta() const{return _theta;}
+
+		double time() const{return _t;}
+		double t() const{return _t;}
+		double x() const{return _x;}
+		double y() const{return _y;}
+		double z() const{return _z;}
+
+
+		double perp2() const{return _x*_x + _y*_y;}	
+
+		//calculations taken from ROOT
+		// Authors: W. Brown, M. Fischler, L. Moneta    2005
+		 
+		 /**********************************************************************
+		  *                                                                    *
+		  * Copyright (c) 2005 , FNAL MathLib Team                             *
+		  *                                                                    *
+		  *                                                                    *
+		  **********************************************************************/
+		 
+		 
+		// Header source file for function calculating eta
+		//
+		// Created by: Lorenzo Moneta  at 14 Jun 2007
+		/**
+		Calculate eta given rho and zeta.
+		This formula is faster than the standard calculation (below) from log(tan(theta/2)
+		but one has to be careful when rho is much smaller than z (large eta values)
+		Formula is  eta = log( zs + sqrt(zs^2 + 1) )  where zs = z/rho
+		
+		For large value of z_scaled (tan(theta) ) one can appoximate the sqrt via a Taylor expansion
+		We do the approximation of the sqrt if the numerical error is of the same order of second term of
+		the sqrt.expansion:
+		eps > 1/zs^4   =>   zs > 1/(eps^0.25)
+		
+		When rho == 0 we use etaMax (see definition in etaMax.h)
+		*/
+		/**
+		etaMax: Function providing the maximum possible value of pseudorapidity for
+		a non-zero rho, in the Scalar type with the largest dynamic range.
+		*/
+		double _set_rap() const{
+			double rho = sqrt(perp2());
+			//from ROOT
+			double etaMax = 22756.0;
+			if (rho > 0) {
+				// value to control Taylor expansion of sqrt
+				static const double big_z_scaled = pow(std::numeric_limits<double>::epsilon(), -.25);
+				double z_scaled = _z/rho;
+				if (std::fabs(z_scaled) < big_z_scaled) {
+				   return log(z_scaled + std::sqrt(z_scaled * z_scaled + 1.0));
+				} else {
+				   // apply correction using first order Taylor expansion of sqrt
+				   return _z > 0 ? log(2.0 * z_scaled + 0.5 / z_scaled) : -log(-2.0 * z_scaled);
+				}
+			}
+			// case vector has rho = 0
+			else if (_z==0) {
+			   return 0;
+			}
+			else if (_z>0) {
+			   return _z + etaMax;
+			}
+			else {
+			   return _z - etaMax;
+			}
+ 
+		}
+		virtual void _set_rap_phi() const{
+			_eta = _set_rap();
+			_phi = atan2(_y, _x);
+		}
+		void _ensure_valid_rap_phi() const{
+			if(_phi == _invalid_phi) _set_rap_phi();
+		}
+
+		
+		void SetRecHitId(unsigned int id){ _rhId = id; }
+		unsigned int rhId(){ return _rhId; }
 
 		//set user idx info
-		void SetUserIdx(int i){ m_idx = i; }
-		int userIdx(){ return m_idx; }
+		void SetUserIdx(int i){ _idx = i; }
+		int userIdx(){ return _idx; }
+		
+
+		double _maxRap = 1e5;
+		//default values - have yet to be calculated or set
+		double _invalid_phi = -100.0;
+		double _invalid_eta = -1e200;
+		double twopi = 6.28318530717;
 
 
-	private:
+	protected:
 		//spatial four vector
-		double m_t;
-		double m_x;
-		double m_y;
-		double m_z;
-		Point m_vec;
-
-		double m_eta;
-		double m_phi;
-		double m_theta;
-		double m_E;
+		double _t;
+		double _x;
+		double _y;
+		double _z;
+		Point _space;
+		
+		mutable double _eta, _phi, _theta;
+		double _E;
 
 
 		//rechit info
-		unsigned int m_rhId;
+		unsigned int _rhId;
 		
 		//user idx info
-		int m_idx;
-
-		double m_maxRap = 1e5;
-		//default values - have yet to be calculated or set
-		double m_invalid_phi = -100.0;
-		double m_invalid_eta = -1e200;
+		int _idx;
 
 
 
