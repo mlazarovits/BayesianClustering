@@ -39,6 +39,7 @@
 #include<sstream>
 #include<cassert>
 #include "Point.hh"
+#include "MergeTree.hh"
 //#include "fastjet/internal/numconsts.hh"
 //#include "fastjet/Error.hh"
 
@@ -123,6 +124,10 @@ public:
   /// by index ii (assumes ii is valid)
   virtual double NearestNeighbourDistance(const int ii) const = 0;
 
+  /// Returns the highest probability of merging point ii
+  /// with any of its neighbors
+  virtual double NearestNeighbourProb(const int ii) const = 0;
+
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
   /// not removed in the meantime)
@@ -181,6 +186,25 @@ public:
 
   /// destructor -- here it is now implemented
   virtual ~DynamicNearestNeighbours () {}
+
+  //for calculating merges and bookkeeping merges
+  MergeTree* _merge_tree = new MergeTree();
+
+  void SetAlpha(double a){
+    _merge_tree->SetAlpha(a);
+  }
+  void SetSubclusterAlpha(double a){
+    _merge_tree->SetSubclusterAlpha(a);
+  }
+  void SetMergeThreshold(double t){
+    _merge_tree->SetThresh(t);
+  }
+  void SmearData(const Matrix& cov){
+    _merge_tree->SetDataSmear(cov);
+  }
+  //set distance constraint
+
+
 };
   
 

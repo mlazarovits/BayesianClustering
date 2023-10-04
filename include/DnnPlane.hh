@@ -38,6 +38,7 @@
 #include "DynamicNearestNeighbours.hh"
 #include <vector>
 #include <iostream>
+#include "BaseTree.hh"
 using std::cout;
 using std::endl;
 using std::vector;
@@ -66,6 +67,10 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// eta and phi can have arbitrary ranges
   DnnPlane(const std::vector<EtaPhi> &, const bool & verbose = false );
 
+  /// Initialiser from a set of points on an Eta-Phi plane, where both
+  /// eta and phi can have arbitrary ranges, with time included for
+  /// probabilistic merging
+  DnnPlane(const PointCollection* pc, const bool & verbose = false );
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
@@ -74,6 +79,14 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// Returns the distance to neighbour jj of point labelled
   /// by index ii (assumes ii is valid)
   double NearestNeighbourDistance(const int ii) const ;
+  
+  /// Returns the index of neighbour jj of point labelled
+  /// by ii (assumes ii is valid)
+  int NearestNeighbourProbIndex(const int ii) const ;
+
+  /// Returns the highest probability of merging point ii
+  /// with any of its neighbors
+  double NearestNeighbourProb(const int ii) const;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -102,7 +115,14 @@ private:
     int coincidence;  // ==vertex->info.val() if no coincidence
                       // points to the coinciding SV in case of coincidence
     // later on for cylinder put a second vertex?
+    double MaxRk; //highest probability of merging
+    int MaxRkindex; //index of vertex to merge with
   };
+
+  //map vertex (via vertex_handle) to 3D points at vertex
+  //TODO: update in _setnearestandupdate
+  mutable std::map<Vertex_handle, node*> vtx_to_node;
+
 
   std::vector<SuperVertex> _supervertex;
   //set<Vertex_handle> _vertex_set;
@@ -120,11 +140,21 @@ private:
     double disty= p1.y()-p2.y();
     return distx*distx+disty*disty;
   }
-  
+ 
+  //not in OG fastjet - dependent on Point in this framework 
   inline double _euclid_distance_2d(const Point& p1, const Point& p2) const {
     double distx= p1.at(0)-p2.at(0);
     double disty= p1.at(1)-p2.at(1);
     return distx*distx+disty*disty;
+  }
+
+  
+  inline node* _merge_prob(const Vertex_handle& v1, const Vertex_handle& v2) const{
+	node* n1 = vtx_to_node[v1];
+	node* n2 = vtx_to_node[v2];
+
+	node* n_12 = _merge_tree->CalculateMerge(n1, n2);
+	return n_12;
   }
 
   //---------------------------------------------------------------------- 
@@ -226,6 +256,33 @@ private:
     return false;
   }
 
+
+  /// calculates merge probabilities for neighbor (candidate) of point (pref)
+  /// compares to best current merge (pref and best)
+  inline bool _best_merge_prob(const Vertex_handle& pref,
+			       const Vertex_handle& candidate,
+			       const Vertex_handle &best,
+			       double& rk,
+			       double& maxrk){
+    node* x = _merge_prob(pref, candidate);
+    rk = x->val;
+    return _best_merge_prob_with_hint(pref, candidate, best, rk, maxrk);
+
+  }
+  
+  inline bool _best_merge_prob_with_hint(const Vertex_handle &pref,
+			       const Vertex_handle& candidate,
+			       const Vertex_handle &best,
+			       const double& rk,
+			       double& maxrk){
+      if (rk >= maxrk){
+	maxrk = rk;
+	return true;
+      }
+    //don't update maxrk
+    return false;
+  }
+
   /// if a distance between a point and 2 others is smaller than this
   /// and the distance between the two points is also smaller than this
   /// then use CGAL to compare the distances. 
@@ -259,6 +316,12 @@ inline int DnnPlane::NearestNeighbourIndex(const int ii) const {
 
 inline double DnnPlane::NearestNeighbourDistance(const int ii) const {
   return _supervertex[ii].NNdistance;}
+
+inline int DnnPlane::NearestNeighbourProbIndex(const int ii) const{
+  return _supervertex[ii].MaxRkindex;}
+
+inline double DnnPlane::NearestNeighbourProb(const int ii) const{
+  return _supervertex[ii].MaxRk;}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {

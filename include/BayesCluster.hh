@@ -1,7 +1,7 @@
 #ifndef BAYESCLUSTER_HH
 #define BAYESCLUSTER_HH
 
-//The structure of this class is lovingly repurposed from ClusterSequence in FastJet (Cacciari, Salam, Soyez).
+//The structure of this class is respectfully repurposed from ClusterSequence in FastJet (Cacciari, Salam, Soyez).
 
 // This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
 // The original version of this work was released
@@ -42,6 +42,13 @@ class BayesCluster{
 
 
 	protected:
+		//need to typedef some stuff to build probability map used for determining cluster pairs
+		typedef std::pair<int,int> verts;
+		typedef std::pair<double,verts> RkEntry;
+		//use a multimap so multiple keys can have the same value
+		//also it's automatically sorted
+		typedef std::multimap<double,verts> ProbMap;
+
 		struct history_element{
 			/// index in _history where first parent of this jet
 			/// was created (InexistentParent if this jet is an
@@ -138,7 +145,7 @@ class BayesCluster{
 
 		void _cluster();
 		int n_particles() const;
- 
+	 
 };
 #endif
 

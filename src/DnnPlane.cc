@@ -103,6 +103,71 @@ DnnPlane::DnnPlane(const vector<EtaPhi> & input_points,
 
 }
 
+/// Initialiser from a set of points on an Eta-Phi plane, where both
+/// eta and phi can have arbitrary ranges, with time included for
+/// probabilistic merging
+DnnPlane::DnnPlane(const PointCollection* pc, 
+		   const bool & verbose ) {
+
+  _verbose = verbose;
+  int n = pc->GetNPoints();
+  
+  // construct Voronoi diagram in such a way as to get the vertex handles
+  // and remember to set CGAL info with the index of the vertex
+  SuperVertex sv;
+  for (int i = 0; i < n; i++) {
+    sv.vertex = 
+       _TR.insert(CPoint(pc->at(i).at(0), pc->at(i).at(1)));
+    //add node (leaf) to merge tree
+    _merge_tree->AddLeaf(&pc->at(i));
+
+    // check if we are dealing with coincident vertices
+    int coinciding_index = _CheckIfVertexPresent(sv.vertex, i);
+    if (coinciding_index == i){
+      // we need to associate an index to each vertex -- thus when we get
+      // a vertex (e.g. as a nearest neighbour) from CGAL, we will be
+      // able to figure out which particle it corresponded to.
+      sv.vertex->info() = sv.coincidence = i;
+    } else {
+      //cout << "  coincident with " << coinciding_index << endl;
+      // the new vertex points to the already existing one and we
+      // record the coincidence
+      //
+      // Note that we must not only set the coincidence of the
+      // currently-added particle, the one it coincides with also
+      // needs be updated (taking into account that it might already
+      // coincide with another one)
+      //
+      // An example may help. Say coinciding_index = i1 and we're adding i2==i.
+      // Then _sv[i2].coincidence = i1; _sv[i1].coincidence = i2. In both
+      // cases sv.vertex->info() == i1;
+      //
+      // Later on we add i3; we find out that its coinciding index is i1;
+      // so we set _sv[i3].coincidence = i2 and sv[i1].coincidence = i3. 
+      //
+      // This gives us the structure 
+      //  _supervertex[i1].coincidence == in
+      //  _supervertex[i2].coincidence == i1
+      //  ...
+      //  _supervertex[in].coincidence == in-1
+      //
+      sv.coincidence = _supervertex[coinciding_index].coincidence; // handles cases with previous coincidences
+      _supervertex[coinciding_index].coincidence = i;
+    }
+      
+    _supervertex.push_back(sv);  
+    //match up nodes for merges to vertex for triangulation 
+    vtx_to_node[_supervertex[i].vertex] = _merge_tree->Get(i); 
+  }
+
+  // label infinite vertex info with negative index 
+  _TR.infinite_vertex()->info() = INFINITE_VERTEX;
+
+  // set up the structure that holds nearest distances and neighbours
+  for (int j = 0; j < n; j++) {_SetNearest(j);}
+
+}
+
 
 //----------------------------------------------------------------------
 /// Crashes if the given vertex handle already exists. Otherwise
@@ -132,7 +197,8 @@ int DnnPlane::_CheckIfVertexPresent(
   return its_index;
 }
 
-
+// TODO: THIS IS WHERE I SHOULD ADD NEW POINTS TO MERGE TREE AND 
+// REMOVE MERGED ONES
 //----------------------------------------------------------------------
 /// remove the points labelled by the vector indices_to_remove, and
 /// add the points specified by the vector points_to_add
@@ -388,39 +454,11 @@ void DnnPlane::RemoveAndAddPoints(
 void DnnPlane::_SetNearest (const int j) {
   // first deal with the cases where we have a coincidence
   if (_supervertex[j].coincidence != j){
-    //_supervertex[j].NNindex = _supervertex[j].coincidence;
-    //_supervertex[j].NNdistance = 0.0;
     _supervertex[j].NNindex = _supervertex[j].coincidence;
     _supervertex[j].NNdistance = 0.0;
     return;
   }
-  Vertex_handle current = _supervertex[j].vertex;
-  Vertex_circulator vc = _TR.incident_vertices(current);
-  Vertex_circulator done = vc;
-  double dist;
-  double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
-  Vertex_handle nearest = _TR.infinite_vertex();
- 
-  // loop over all vertices around given point 
-  // when there is only one finite point left in the triangulation, 
-  // there are no triangles. Presumably this is why voronoi returns
-  // NULL for the incident vertex circulator. Check if this is
-  // happening before circulating over it... (Otherwise it crashes
-  // when looking for neighbours of last point)
-  if (vc != NULL) do { 
-    if ( vc->info().val() != INFINITE_VERTEX) {
-      // find distance between j and its Voronoi neighbour (vc)
-      if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
-   
-      // add neighbor to neighbors - vector of MergeNeighbors
-      //no comparisons
-      _supervertex[j].NNdistance = _euclid_distance(current->point(), vc->point());
-      _supervertex[j].NNindex = vc->info().val();
-      
-      if (_verbose) cout << vc->point() << "; "<< dist << endl;
-    }
-  } while (++vc != done); // move on to next Voronoi neighbour
-  
+
   // The code below entirely uses CGAL distance comparisons to compute
   // the nearest neighbour. It has the mais drawback to induice a
   // 10-20% time penalty so we switched to our own comparison (which
@@ -479,6 +517,49 @@ void DnnPlane::_SetNearest (const int j) {
   //  // set j's supervertex info about nearest neighbour
   //  _supervertex[j].NNindex = nearest->info().val();
   //  _supervertex[j].NNdistance = mindist;
+
+  Vertex_handle current = _supervertex[j].vertex;
+  Vertex_circulator vc = _TR.incident_vertices(current);
+  Vertex_circulator done = vc;
+  double dist;
+  double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
+  Vertex_handle nearest = _TR.infinite_vertex();
+  
+  //probability quantities
+  double rk;
+  double maxrk = 0;
+  Vertex_handle best_vtx = _TR.infinite_vertex();
+
+  // when there is only one finite point left in the triangulation, 
+  // there are no triangles. Presumably this is why voronoi returns
+  // NULL for the incident vertex circulator. Check if this is
+  // happening before circulating over it... (Otherwise it crashes
+  // when looking for neighbours of last point)
+  if (vc != NULL) do { 
+    if ( vc->info().val() != INFINITE_VERTEX) {
+      // find distance between j and its Voronoi neighbour (vc)
+      if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
+
+      // check if j is closer to vc than vc's currently registered
+      // nearest neighbour (and update things if it is)
+      if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
+	nearest = vc; 
+      	if (_verbose) cout << "nearer ";
+      } 
+      if (_verbose) cout << vc->point() << "; "<< dist << endl;
+    
+     //do the same as above but with probability instead of geometric distance
+     if(_best_merge_prob(current, vc, best_vtx, rk, maxrk)){
+         best_vtx = vc;
+     }    
+    }
+  } while (++vc != done); // move on to next Voronoi neighbour
+  
+  // set j's supervertex info about nearest neighbour
+  _supervertex[j].NNindex = nearest->info().val();
+  _supervertex[j].NNdistance = mindist;
+  _supervertex[j].MaxRk = maxrk;
+  _supervertex[j].MaxRkindex = best_vtx->info().val();
 }
 
 //----------------------------------------------------------------------
@@ -502,6 +583,9 @@ void DnnPlane::_SetNearest (const int j) {
 void DnnPlane::_SetAndUpdateNearest(
 			  const int j, 
 			  vector<int> & indices_of_updated_neighbours) {
+  
+  vector<int> indices_of_updated_merges;
+
   //cout << "SetAndUpdateNearest for point " << j << endl;
   // first deal with coincidences
   if (_supervertex[j].coincidence != j){
@@ -518,6 +602,11 @@ void DnnPlane::_SetAndUpdateNearest(
   double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
   Vertex_handle nearest = _TR.infinite_vertex();
 
+  //probability quantities
+  double rk;
+  double maxrk = 0;
+  Vertex_handle best_vtx = _TR.infinite_vertex();
+  
   // when there is only one finite point left in the triangulation, 
   // there are no triangles. Presumably this is why voronoi returns
   // NULL for the incident vertex circulator. Check if this is
@@ -532,6 +621,10 @@ void DnnPlane::_SetAndUpdateNearest(
 	nearest = vc; 
       	if (_verbose) cout << "nearer ";
       } 
+     //do the same as above but with probability instead of geometric distance
+     if(_best_merge_prob(current, vc, best_vtx, rk, maxrk)){
+         best_vtx = vc;
+     }    
 
       // find index corresponding to vc for easy manipulation
       int vcindx = vc->info().val();
@@ -545,6 +638,13 @@ void DnnPlane::_SetAndUpdateNearest(
 	indices_of_updated_neighbours.push_back(vcindx);
       }
 
+      if (_best_merge_prob_with_hint(vc, current, 
+				  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
+				  dist, _supervertex[vcindx].MaxRk)){
+	if (_verbose) cout << vcindx << "'s best merge becomes " << current->info().val() << endl;
+	_supervertex[vcindx].MaxRkindex = j;
+	indices_of_updated_merges.push_back(vcindx);
+      }
       // original code without the use of CGAL distance in potentially
       // dangerous cases
       //
@@ -569,6 +669,8 @@ void DnnPlane::_SetAndUpdateNearest(
   //cout << "  set to point " << nearest->info().val() << endl;
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = mindist;
+  _supervertex[j].MaxRk = maxrk;
+  _supervertex[j].MaxRkindex = best_vtx->info().val();
 }
 
 //FASTJET_END_NAMESPACE

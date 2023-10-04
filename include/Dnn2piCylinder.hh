@@ -73,6 +73,12 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
 		 const bool & ignore_nearest_is_mirror = false,
 		 const bool & verbose = false );
 
+  /// initialiser for probability merge...
+  Dnn2piCylinder(
+	const PointCollection* input_points, 
+	const bool & ignore_nearest_is_mirror,
+	const bool & verbose);
+
   /// Returns the index of  the nearest neighbour of point labelled
   /// by ii (assumes ii is valid)
   int NearestNeighbourIndex(const int ii) const ;
@@ -80,6 +86,14 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   /// Returns the distance to the nearest neighbour of point labelled
   /// by index ii (assumes ii is valid)
   double NearestNeighbourDistance(const int ii) const ;
+
+  /// Returns the index of  the nearest neighbour of point labelled
+  /// by ii (assumes ii is valid)
+  int NearestNeighbourProbIndex(const int ii) const ;
+
+  /// Returns the highest probability of merging point ii
+  /// with any of its neighbors
+  double NearestNeighbourProb(const int ii) const ;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -258,6 +272,47 @@ inline double Dnn2piCylinder::NearestNeighbourDistance(const int current) const 
       _DNN->NearestNeighbourDistance(mirror_index) ; 
   }
  
+}
+
+inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current) const {
+  int main_index = _mirror_info[current].main_index;
+  int mirror_index = _mirror_info[current].mirror_index;
+  int plane_index;
+  if (mirror_index == INEXISTENT_VERTEX ) {
+    plane_index = _DNN->NearestNeighbourProbIndex(main_index);
+  } else {
+    plane_index = (
+	_DNN->NearestNeighbourProb(main_index) < 
+	_DNN->NearestNeighbourProb(mirror_index)) ? 
+      _DNN->NearestNeighbourProbIndex(main_index) : 
+      _DNN->NearestNeighbourProbIndex(mirror_index) ; 
+  }
+  int this_cylinder_index = _cylinder_index_of_plane_vertex[plane_index];
+  // either the user has acknowledged the fact that they may get the
+  // mirror copy as the closest point, or crash if it should occur
+  // that mirror copy is the closest point.
+  assert(_ignore_nearest_is_mirror || this_cylinder_index != current);
+  //if (this_cylinder_index == current) {
+  //  cerr << "WARNING point "<<current<<
+  //    " has its mirror copy as its own nearest neighbour"<<endl;
+  //}
+  return this_cylinder_index;
+}
+
+
+//does the same as above but calculates the probability of merging in 3D space (eta, phi, time)
+inline double Dnn2piCylinder::NearestNeighbourProb(const int current) const{
+  int main_index = _mirror_info[current].main_index;
+  int mirror_index = _mirror_info[current].mirror_index;
+  if (mirror_index == INEXISTENT_VERTEX ) {
+    return _DNN->NearestNeighbourProb(main_index);
+  } else {
+    return (
+	_DNN->NearestNeighbourProb(main_index) < 
+	_DNN->NearestNeighbourProb(mirror_index)) ? 
+      _DNN->NearestNeighbourProb(main_index) : 
+      _DNN->NearestNeighbourProb(mirror_index) ; 
+  }
 }
 
 inline bool Dnn2piCylinder::Valid(const int index) const {

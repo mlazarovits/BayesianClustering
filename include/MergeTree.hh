@@ -112,7 +112,6 @@ class MergeTree : BaseTree{
 		
 		}
 
-	protected:
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			node* x = (node*)malloc(sizeof *x);
@@ -132,6 +131,7 @@ class MergeTree : BaseTree{
 			_clusters.push_back(x);
 		}
 
+	protected:
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
 			int k;

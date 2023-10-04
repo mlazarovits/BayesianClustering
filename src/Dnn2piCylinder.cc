@@ -63,6 +63,41 @@ Dnn2piCylinder::Dnn2piCylinder(
   _CreateNecessaryMirrorPoints(plane_point_indices,updated_point_indices);
 }
 
+//----------------------------------------------------------------------
+/// initialiser for probability merge...
+Dnn2piCylinder::Dnn2piCylinder(
+	const PointCollection* input_points, 
+	const bool & ignore_nearest_is_mirror,
+	const bool & verbose) {
+  
+  _verbose = verbose;
+  _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
+  vector<EtaPhi> plane_points;
+  vector<int>    plane_point_indices(input_points->GetNPoints());
+  //plane_points.reserve(2*input_points.size());
+
+  //save 2D points for triangulation
+  EtaPhi ep;
+  PointCollection* newpts;
+  Point pt = Point(3); 
+  for (unsigned int i=0; i < input_points->GetNPoints(); i++) {
+    ep = EtaPhi(input_points->at(i).at(0), input_points->at(i).at(1));
+    _RegisterCylinderPoint(pt, plane_points);
+    //update eta/phi values in point collection
+    pt.SetValue(ep.first, 0);
+    pt.SetValue(ep.second,1);
+    pt.SetValue(input_points->at(i).at(2),2);
+    newpts->AddPoint(pt);
+    plane_point_indices[i] = i;
+  }
+  
+  if (_verbose) cout << "============== Preparing _DNN" << endl;
+  _DNN = new DnnPlane(newpts, verbose);
+
+
+  vector<int> updated_point_indices; // we'll not use information from this
+  _CreateNecessaryMirrorPoints(plane_point_indices,updated_point_indices);
+}
 
 //----------------------------------------------------------------------
 /// Actions here are similar to those in the
