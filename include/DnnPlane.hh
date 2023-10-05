@@ -70,7 +70,8 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// Initialiser from a set of points on an Eta-Phi plane, where both
   /// eta and phi can have arbitrary ranges, with time included for
   /// probabilistic merging
-  DnnPlane(const PointCollection* pc, const bool & verbose = false );
+  /// includes alpha for BHC (a) and GMM (suba)
+  DnnPlane(const std::vector<PointCollection>& pc, const bool & verbose = false, double a = 0.5, double suba = 0.1);
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
@@ -105,6 +106,8 @@ class DnnPlane : public DynamicNearestNeighbours {
 
   /// returns the EtaPhi of point with index i.
   EtaPhi etaphi(const int i) const;
+  /// returns the points of point with index i.
+  PointCollection points(const int i) const;
   /// returns the eta point with index i.
   double eta(const int i) const;
   /// returns the phi point with index i.
@@ -155,11 +158,14 @@ private:
 
   
   inline double _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
+	cout << "merge_prob - start" << endl;
 	node* n1 = v1.n;
 	node* n2 = v2.n;
-
+cout << "n1: " << n1->points->GetNPoints() << " n2: " << n2->points->GetNPoints() << endl;
 	node* x = _merge_tree->CalculateMerge(n1, n2);
+cout << "calculated merge" << endl;
 	double rk = x->val; 
+	cout << "merge_prob - end: " << rk << endl;
 	return rk;
   }
 
@@ -270,6 +276,7 @@ private:
 			       const Vertex_handle &best,
 			       double& rk,
 			       double& maxrk){
+cout << "best_merge_prob - pref: " << pref.n->points->GetNPoints() << " candidate: " << candidate.n->points->GetNPoints() << endl;
     rk = _merge_prob(pref, candidate);
     return _best_merge_prob_with_hint(pref, candidate, best, rk, maxrk);
 
@@ -341,6 +348,10 @@ inline bool DnnPlane::Valid(const int index) const {
 inline EtaPhi DnnPlane::etaphi(const int i) const {
   CPoint * p = & (_supervertex[i].vertex->point());
   return EtaPhi(p->x(),p->y()); }
+
+inline PointCollection DnnPlane::points(const int i) const {
+  PointCollection  p =  *(_supervertex[i].n->points);
+  return p; }
 
 inline double DnnPlane::eta(const int i) const {
   return _supervertex[i].vertex->point().x(); }

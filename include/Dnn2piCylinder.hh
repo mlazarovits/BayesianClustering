@@ -74,10 +74,11 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
 		 const bool & verbose = false );
 
   /// initialiser for probability merge...
+  /// includes alpha for BHC (a) and GMM (suba)
   Dnn2piCylinder(
-	const PointCollection* input_points, 
+	const std::vector<PointCollection>& input_points, 
 	const bool & ignore_nearest_is_mirror,
-	const bool & verbose);
+	const bool & verbose, double a = 0.5, double suba = 0.1);
 
   /// Returns the index of  the nearest neighbour of point labelled
   /// by ii (assumes ii is valid)
@@ -195,6 +196,14 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
     if (phi < pi) { phi += twopi ;} else {phi -= twopi;}
     return EtaPhi(point.first, phi);}
 
+  inline PointCollection _remap_phi(const PointCollection& points) {
+    double phi = points.mean().at(1);
+    double shift;
+    if (phi < pi) { shift = twopi ;} else {shift = -twopi;}
+    Point transl = Point({0., -shift, 0.});
+    PointCollection pc = PointCollection(points);
+    pc.Translate(transl); 
+    return pc;}
 
   //----------------------------------------------------------------------
   /// Actions here are similar to those in the

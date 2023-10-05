@@ -224,7 +224,7 @@ class BayesCluster{
 		int _initial_n;
 
 		void _cluster();
-		int n_particles() const;
+		int n_particles() const{ return _initial_n; }
 	 
 };
 #endif

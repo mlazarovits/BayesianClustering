@@ -106,20 +106,37 @@ DnnPlane::DnnPlane(const vector<EtaPhi> & input_points,
 /// Initialiser from a set of points on an Eta-Phi plane, where both
 /// eta and phi can have arbitrary ranges, with time included for
 /// probabilistic merging
-DnnPlane::DnnPlane(const PointCollection* pc, 
-		   const bool & verbose ) {
-
+DnnPlane::DnnPlane(const std::vector<PointCollection>& pc, 
+		   const bool & verbose, double a, double suba ) {
   _verbose = verbose;
-  int n = pc->GetNPoints();
+  int n = pc.size();
   
+  // set alphas
+  _merge_tree->SetAlpha(a);
+  _merge_tree->SetSubclusterAlpha(suba);
+
   // construct Voronoi diagram in such a way as to get the vertex handles
   // and remember to set CGAL info with the index of the vertex
+  // the CPoint (CGAL Points) are for 2D delauney triangulation
+  // and as such the coordinates for these objects should be 
+  // set to the center of the point collections
   SuperVertex sv;
+  double eta, phi;
   for (int i = 0; i < n; i++) {
+    eta = pc[i].mean().at(0);
+    phi = pc[i].mean().at(1);
     sv.vertex = 
-       _TR.insert(CPoint(pc->at(i).at(0), pc->at(i).at(1)));
+       _TR.insert(CPoint(eta, phi));
     //add node (leaf) to merge tree
-    _merge_tree->AddLeaf(&pc->at(i));
+    //set node for SuperVertex
+    node* x = (node*)malloc(sizeof *x);
+    //initiliaze leaves for point collections of one points
+    //this should always be the case for the ctor
+    if(pc[i].GetNPoints() == 1){
+      _merge_tree->AddLeaf(&pc[i].at(0));
+    }
+    //get node that we just set
+    x = _merge_tree->Get(i);
 
     // check if we are dealing with coincident vertices
     int coinciding_index = _CheckIfVertexPresent(sv.vertex, i);
@@ -157,7 +174,7 @@ DnnPlane::DnnPlane(const PointCollection* pc,
       
     _supervertex.push_back(sv);  
     //match up nodes for merges to vertex for triangulation 
-    _supervertex[i].n = _merge_tree->Get(i); 
+    _supervertex[i].n = x; 
   }
 
   // label infinite vertex info with negative index 
@@ -460,7 +477,7 @@ void DnnPlane::RemoveAndAddPoints(
 			  vector<int> & indices_of_updated_neighbours) {
 
   if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
-
+cout << indices_to_remove.size() << " points to be removed" << endl;
   // build set of UNION of Voronoi neighbours of a pair of nearest
   // neighbours
   set<int> NeighbourUnion;
@@ -710,64 +727,6 @@ void DnnPlane::_SetNearest (const int j) {
     return;
   }
 
-  // The code below entirely uses CGAL distance comparisons to compute
-  // the nearest neighbour. It has the mais drawback to induice a
-  // 10-20% time penalty so we switched to our own comparison (which
-  // only turns to CGAL for dangerous situations)
-  //
-  //  Vertex_handle current = _supervertex[j].vertex;
-  //  Vertex_circulator vc = _TR.incident_vertices(current);
-  //  Vertex_circulator done = vc;
-  //  Vertex_handle nearest = _TR.infinite_vertex();
-  //  double mindist = HUGE_DOUBLE;
-  //
-  //   // when there is only one finite point left in the triangulation, 
-  //   // there are no triangles. Presumably this is why voronoi returns
-  //   // NULL for the incident vertex circulator. Check if this is
-  //   // happening before circulating over it... (Otherwise it crashes
-  //   // when looking for neighbours of last point)
-  //   if (vc != NULL){
-  //     // initialise the nearest vertex handle to the first incident
-  //     // vertex that is not INFINITE_VERTEX
-  //     while (vc->info().val() == INFINITE_VERTEX){
-  //       vc++;
-  //       if (vc==done) break; // if vc==done, then INFINITE_VERTEX is the
-  // 			   // only element in the neighbourhood
-  //     }
-  // 
-  //     // if there is just the infinite vertex, we have vc->info().val()
-  //     // == INFINITE_VERTEX and nothing has to be done
-  //     // otherwise, use the current vc as an initialisation
-  //     if (vc->info().val() != INFINITE_VERTEX){
-  //       nearest = vc; // initialisation to the first non-infinite vertex
-  // 
-  //       // and loop over the following ones
-  //       while (++vc != done){
-  // 	// we should not compare with the infinite vertex
-  // 	if (vc->info().val() == INFINITE_VERTEX) continue;
-  // 
-  // 	if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl; 
-  // 	// use CGAL's distance comparison to check if 'vc' is closer to
-  // 	// 'current' than the nearest so far (we include the == case for
-  // 	// safety though it should not matter in this precise case)
-  // 	if (CGAL::compare_distance_to_point(current->point(), vc->point(), nearest->point())!=CGAL::LARGER){
-  // 	  nearest = vc;
-  // 	  if (_verbose) cout << "nearer";
-  // 	}
-  //       }
-  // 
-  //       // now compute the distance
-  //       //
-  //       // Note that since we're always using CGAL to compare distances
-  //       // (and never the distance computed using _euclid_distance) we
-  //       // should not worry about rounding errors in mindist
-  //       mindist = _euclid_distance(current->point(), nearest->point());
-  //     }
-  //   }
-  //
-  //  // set j's supervertex info about nearest neighbour
-  //  _supervertex[j].NNindex = nearest->info().val();
-  //  _supervertex[j].NNdistance = mindist;
 
   Vertex_handle current = _supervertex[j].vertex;
   Vertex_circulator vc = _TR.incident_vertices(current);
@@ -780,7 +739,6 @@ void DnnPlane::_SetNearest (const int j) {
   double rk;
   double maxrk = 0;
   Vertex_handle best_vtx = _TR.infinite_vertex();
-
   // when there is only one finite point left in the triangulation, 
   // there are no triangles. Presumably this is why voronoi returns
   // NULL for the incident vertex circulator. Check if this is
@@ -802,10 +760,10 @@ void DnnPlane::_SetNearest (const int j) {
       // find index corresponding to vc for easy manipulation
       int vcindx = vc->info().val();
       int curidx = current->info().val();
-     //do the same as above but with probability instead of geometric distance
+	//do the same as above but with probability instead of geometric distance
      if(_best_merge_prob(_supervertex[curidx], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
-     }    
+     }  
     }
   } while (++vc != done); // move on to next Voronoi neighbour
   

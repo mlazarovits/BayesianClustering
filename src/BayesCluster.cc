@@ -18,12 +18,21 @@
 void BayesCluster::_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	int n = (int)_jets.size();
-	vector<EtaPhi> points(n);
+	vector<PointCollection> points(n);
+  	double twopi = 6.28318530717;
 	for (int i = 0; i < n; i++) {
-		points[i] = EtaPhi(_jets[i].rap(),_jets[i].phi_02pi());
-		points[i].sanitize(); // make sure things are in the right range
+		PointCollection pc = PointCollection();
+		Point pt = Point(3);
+		pt.SetValue(_jets[i].rap(), 0);
+		pt.SetValue(_jets[i].phi_02pi(), 1);
+		pt.SetValue(_jets[i].time(), 2);
+  		//make sure phi is in the right range
+		if (pt.at(1) <  0)     pt.SetValue(pt.at(1) + twopi, 1); 
+  		if (pt.at(1) >= twopi) pt.SetValue(pt.at(1) - twopi, 1); 
+		pc.AddPoint(pt);
+		points[i] = pc;
 	}
-	const bool verbose = false;
+	const bool verbose = true;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(points, ignore_nearest_is_mirror, verbose);
 
@@ -33,7 +42,7 @@ void BayesCluster::_cluster(){
 	//but the map will be built only in 2D space
 	//structure is typdef'ed in header
 	ProbMap RkMap;
-
+/*
 	//fill map with initial potential clusterings
 	double rk;
 	int j;	
@@ -71,7 +80,7 @@ void BayesCluster::_cluster(){
 		//update DNN with RemoveCombinedAddCombination
 			//this should also update the merge tree	
 	}
-
+*/
 }
 
 

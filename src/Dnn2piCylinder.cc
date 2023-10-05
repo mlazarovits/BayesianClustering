@@ -66,33 +66,24 @@ Dnn2piCylinder::Dnn2piCylinder(
 //----------------------------------------------------------------------
 /// initialiser for probability merge...
 Dnn2piCylinder::Dnn2piCylinder(
-	const PointCollection* input_points, 
+	const std::vector<PointCollection>& input_points, 
 	const bool & ignore_nearest_is_mirror,
-	const bool & verbose) {
+	const bool & verbose, double a, double suba) {
   
   _verbose = verbose;
   _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
-  vector<EtaPhi> plane_points;
-  vector<int>    plane_point_indices(input_points->GetNPoints());
+  vector<PointCollection> plane_points;
+  vector<int>    plane_point_indices(input_points.size());
   //plane_points.reserve(2*input_points.size());
 
   //save 2D points for triangulation
-  EtaPhi ep;
-  PointCollection* newpts;
-  Point pt = Point(3); 
-  for (unsigned int i=0; i < input_points->GetNPoints(); i++) {
-    ep = EtaPhi(input_points->at(i).at(0), input_points->at(i).at(1));
-    _RegisterCylinderPoint(pt, plane_points);
-    //update eta/phi values in point collection
-    pt.SetValue(ep.first, 0);
-    pt.SetValue(ep.second,1);
-    pt.SetValue(input_points->at(i).at(2),2);
-    newpts->AddPoint(pt);
+  for (int i=0; i < input_points.size(); i++) {
+    _RegisterCylinderPoint(input_points[i], plane_points);
     plane_point_indices[i] = i;
   }
   
   if (_verbose) cout << "============== Preparing _DNN" << endl;
-  _DNN = new DnnPlane(newpts, verbose);
+  _DNN = new DnnPlane(plane_points, verbose, a, suba);
 
 
   vector<int> updated_point_indices; // we'll not use information from this
@@ -162,17 +153,16 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
 void Dnn2piCylinder::_CreateNecessaryMirrorPoints(
 			  const vector<int> & plane_indices,
 			  vector<int> & updated_plane_points) {
-
-  vector<EtaPhi> new_plane_points;
+cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
+  vector<PointCollection> new_plane_points;
+  //vector<EtaPhi> new_plane_points;
 
   for (size_t i = 0; i < plane_indices.size(); i++) {
-
     int ip = plane_indices[i]; // plane index
-    EtaPhi position = _DNN->etaphi(ip);
-    double phi = position.second;
+    //EtaPhi position = _DNN->etaphi(ip);
+    PointCollection pts = _DNN->points(ip);
+    double phi = pts.mean().at(1);
 
-    //BAD // require phi < pi
-    //BAD if (phi >= pi) {continue;}
 
     // require absence of mirror
     int ic = _cylinder_index_of_plane_vertex[ip];
@@ -191,7 +181,7 @@ void Dnn2piCylinder::_CreateNecessaryMirrorPoints(
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
 
     // now proceed to prepare the point for addition
-    new_plane_points.push_back(_remap_phi(position));
+    new_plane_points.push_back(_remap_phi(pts));
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
   }
@@ -200,35 +190,8 @@ void Dnn2piCylinder::_CreateNecessaryMirrorPoints(
   vector<int> indices_added;     // will be filled as result of call
   _DNN->RemoveAndAddPoints(indices_to_remove,new_plane_points,indices_added, 
 			   updated_plane_points);
+cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
 
-  // occasionally, addition of points might cause a change in the
-  // nearest neighbour of a point in the 0--pi range? (But should be
-  // impossible -- we add points beyond 2pi, so they can only be
-  // nearest neighbours of points in the range pi--2pi; there is one
-  // exception -- the nearest neighbour of one's self -- but in that
-  // case this will already have been discovered, so there should be
-  // nothing left to do). 
-
-  // To be on the safe side, check to see if we have updated points
-  // with phi<pi and no current mirror point. BUT: this check, as
-  // written, only makes sense when the mirror image was created only
-  // beyond 2pi, which is no longer the case. Only apparent
-  // alternative is to run separate insertions for beyond 2pi and
-  // below phi=0, with separate checks in the two cases. But, given
-  // that across a large number of recombinations and events in the
-  // old method (single mirror), we never ran into this problem, it's
-  // probably safe to assume that the arguments given above are OK! So
-  // comment out the check...
-  //NOTNEEDED for (size_t i = 0; i < updated_plane_points.size(); i++) {
-  //NOTNEEDED   int ip = updated_plane_points[i];
-  //NOTNEEDED   double phi  = _DNN->phi(ip);
-  //NOTNEEDED   int ic = _cylinder_index_of_plane_vertex[ip];
-  //NOTNEEDED   assert (!(phi < pi && _mirror_info[ic].mirror_index == INEXISTENT_VERTEX));
-  //NOTNEEDED }
-  // alternative recursive code
-  //vector<int> extra_updated_plane_points;
-  //_CreateNecessaryMirrorPoints(updated_plane_points,extra_updated_plane_points)
-  //updated_plane_points.push_back(extra_updated_plane_points);
 }
 
 
