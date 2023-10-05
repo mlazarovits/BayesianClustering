@@ -138,7 +138,7 @@ class JetPoint{
 			}
  
 		}
-		 void _set_rap_phi() const{
+		void _set_rap_phi() const{
 			_eta = _set_rap();
 			_phi = atan2(_y, _x);
 		}
