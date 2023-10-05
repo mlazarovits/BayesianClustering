@@ -140,7 +140,6 @@ Jet::Jet(const Jet& j){
 	_pz = j.pz();
 	_E = j.E();
 	_mom = Point({_px, _py, _pz, _E});
-
 	_eta = j.eta();
 	_phi = j.phi();
 	_t = j.time();
@@ -148,7 +147,6 @@ Jet::Jet(const Jet& j){
 	_kt2 = j.kt2();
 	_mass = j.mass();
 	
-
 	_child = j._child;
 	_parent1 = j._parent1;
 	_parent2 = j._parent2;
@@ -169,16 +167,6 @@ bool Jet::operator ==(Jet& jet) const{
 
 bool Jet::operator !=(Jet& jet) const{
 	return _mom != jet.four_mom();
-}
-
-//TODO: make sure it's consistent with the rec hits (JetPoints)
-void Jet::SetFourMom(Point pt){
-	if(pt.Dim() != 4){
-		cout << "Error: must provide 4 vector for momentum." << endl;
-		return;
-	}
-	
-	_mom = pt;
 }
 
 //add jet jt to this

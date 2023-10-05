@@ -122,7 +122,6 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	_base->GetEntry(evt);
 	int nJets = (int)_base->Jet_energy->size();
 	//cout << "# jets in evt " << evt << ": " << nJets << endl;
-
 	int nJetRHs;
 	int nJetRHs_total = 0;
 	for(int j = 0; j < nJets; j++){
@@ -131,7 +130,11 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		if(fabs(_base->Jet_eta->at(j)) > 1.479) continue;
 		nJetRHs_total += _base->Jet_drRhIds->at(j).size(); 
 	}
-//		cout << nJetRHs_total << " total rhs in all jets" << endl;
+
+	Point vtx = Point(3);
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
 
 	//actually get rhs for clustering
 	nRHs = (int)_base->ECALRecHit_ID->size();
@@ -146,9 +149,12 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 
-		j = Jet(rh, Point({0,0,0}));
+		j = Jet(rh, vtx);
+
+/*
 		
 		jets.push_back(j);
+*/
 	}	
 }
 

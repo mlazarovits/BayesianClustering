@@ -34,14 +34,31 @@ class Jet{
 
 		bool operator==(Jet& j) const;
 		bool operator!=(Jet& j) const;
-		void operator =(const Jet& j) const{
-			j = Jet(*this);
+		void operator =(const Jet& j){
+				_px = j.px();
+				_py = j.py();
+				_pz = j.pz();
+				_E = j.E();
+				_mom = Point({_px, _py, _pz, _E});
+				_eta = j.eta();
+				_phi = j.phi();
+				_t = j.time();
+				
+				_kt2 = j.kt2();
+				_mass = j.mass();
+				
+				_child = j._child;
+				_parent1 = j._parent1;
+				_parent2 = j._parent2;
+				_idx = j.GetUserIdx();
+				_vtx = j.GetVertex();
+				_nRHs = j.GetNConstituents();
+				j.GetConstituents(_rhs);
 		}
 
 		//return four vector for clustering
 		Point four_mom(){ return _mom; }
 
-		void SetFourMom(Point pt);
 		void SetVertex(Point vtx){
 			if(vtx.Dim() != 3){
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
@@ -51,9 +68,9 @@ class Jet{
 		}
 		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
-		double px() const{ return _mom.at(0); }
-		double py() const{ return _mom.at(1); }
-		double pz() const{ return _mom.at(2); }
+		double px() const{ return _px; }
+		double py() const{ return _py; }
+		double pz() const{ return _pz; }
 		double E() const{ return _E; }
 		double e() const{ return _E; }
 		double t() const{ return _t; }
