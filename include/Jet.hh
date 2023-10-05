@@ -13,16 +13,18 @@
 #include <math.h>
 #include <cmath>
 #include "Matrix.hh"
-#include "JetPoint.hh"
 #include "Point.hh"
+#include "JetPoint.hh"
 
-
-
+//pt, eta, phi, m
+//px, py, pz, E
+//x, y, z, t
 //TODO: change default space coords to eta phi
 //point with more physics aspects - ecal cell
-class Jet : public JetPoint{
+class Jet{
 	public:
 		Jet();
+		Jet(double px, double py, double pz, double E);
 		Jet(JetPoint rh);
 		Jet(JetPoint rh, Point vtx);
 		Jet(vector<JetPoint> rhs, Point vtx);
@@ -34,10 +36,8 @@ class Jet : public JetPoint{
 
 		//return four vector for clustering
 		Point four_mom(){ return _mom; }
-		Point four_space(){ return _space; }
 
 		void SetFourMom(Point pt);
-		void SetFourPos(Point pt);
 		void SetVertex(Point vtx){
 			if(vtx.Dim() != 3){
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
@@ -45,21 +45,57 @@ class Jet : public JetPoint{
 			}
 			_vtx = vtx;
 		}
-
+		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
-		double p(int i){ return _mom.at(i); }
-		double x(int i){ return _space.at(i); }
+		double px(){ return _mom.at(0); }
+		double py(){ return _mom.at(1); }
+		double pz(){ return _mom.at(2); }
 		double E(){ return _E; }
 		double e(){ return _E; }
+		double t(){ return _t; }
+		double time(){ return _t; }
+
+		//kinematic quantities
+		//eta
+		double eta() const{
+			_ensure_valid_rap_phi();
+			return _eta;
+		}
+		double rap() const{
+			_ensure_valid_rap_phi();
+			return _eta;
+		}
+		//phi
+		double phi() const{
+			_ensure_valid_rap_phi();
+			return phi_02pi();
+		}
+
+
+		//transverse energy
+		double Et() const{ return (_kt2==0) ? 0.0 : _E/sqrt(1.0+_pz*_pz/_kt2); } 
+		//transverse mass
+		double mt() const {return sqrt(std::abs(mperp2()));}
+  		double mperp() const {return sqrt(std::abs(mperp2()));}
+		//squared transverse mass = kt^2+m^2
+  		double mperp2() const {return (_E+_pz)*(_E-_pz);}
+		//invariant mass squared: m^2 = E^2 - p^2
+		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
+		//invariant mass
+		double mass() const{return sqrt(m2()); }
+
 	
-		//scale momentum
-		void scaleMom(double s){
-			_px *= s;
-			_py *= s;
-			_pz *= s;
-			_E *= s;
-			_kt2 *= s*s;
-		 };
+		//squared transverse momentum
+  		double pt2() const {return _kt2;}
+  		//the scalar transverse momentum
+  		double pt() const {return sqrt(_kt2);} 
+	 	//the squared transverse momentum
+  		double kt2() const {return _kt2;} 	
+		//deltaR between this and another jet pt
+		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
+		
+
+	
 
 
 		vector<JetPoint> GetJetPoints() const{return _rhs;}
@@ -112,30 +148,6 @@ class Jet : public JetPoint{
 		void SetUserIdx(int i){ _idx = i; }
 		int GetUserIdx(){ return _idx; }
 		
-
-		//boost function
-		//transverse energy
-		double Et() const{ return (_kt2==0) ? 0.0 : _E/sqrt(1.0+_pz*_pz/_kt2); } 
-		//transverse mass
-		double mt() const {return sqrt(std::abs(mperp2()));}
-  		double mperp() const {return sqrt(std::abs(mperp2()));}
-		//squared transverse mass = kt^2+m^2
-  		double mperp2() const {return (_E+_pz)*(_E-_pz);}
-		//invariant mass squared: m^2 = E^2 - p^2
-		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
-		//invariant mass
-		double mass() const{return sqrt(m2()); }
-
-	
-		//squared transverse momentum
-  		double pt2() const {return _kt2;}
-  		//the scalar transverse momentum
-  		double pt() const {return sqrt(_kt2);} 
-	 	//the squared transverse momentum
-  		double kt2() const {return _kt2;} 	
-		//deltaR between this and another jet pt
-		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
-		
 		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
 	
 		//define jet time from cluster parameters
@@ -145,11 +157,35 @@ class Jet : public JetPoint{
 
 		//check IR + collinear safety?
 
-		void SetPt() const{
-			_kt2 = _px*_px + _py*_py;//_E*sin(theta); //consistent with mass = 0
+		//scale momentum
+		void scaleMom(double s){
+			_px *= s;
+			_py *= s;
+			_pz *= s;
+			_E *= s;
+			_kt2 *= s*s;
+		 }
+		//sets phi [0,2pi]
+		double phi_02pi() const{
+			_ensure_valid_rap_phi();
+			return _phi; 
+		}
+
+		//wraps phi around pi, [-pi,pi]
+		double phi_negPiToPi() const{
+ 			double pi = acos(-1);
+			double o2pi = 1./(2*pi);
+			if(fabs(_phi) <= pi)
+				return _phi;
+			double n = std::round(_phi * o2pi);
+			return _phi - n * double(2.* pi);
+
 		}
 	
 	protected:
+		void _ensure_valid_rap_phi() const{
+			if(_phi == _invalid_phi) _set_rap_phi();
+		}
 		void _set_rap_phi() const{
 			if (_kt2 == 0.0) {
 				_phi = 0.0; } 
@@ -178,33 +214,17 @@ class Jet : public JetPoint{
 		}
 		void SetBaby(Jet* child){ _child = child; }
 
-		void RecalcKT2(){ _kt2 = _px*_px + _py*_py; }
-		void RecalcPhi(){ if (_kt2 == 0.0) {
-			_phi = 0.0; } 
-			else {
-			  _phi = atan2(_py,_px);
-			}
-			phi_negPiToPi();
-		}
-		
-		void RecalcEta(){
-			if(_pz == 0){
-				_theta = 0;
-				_eta = _maxRap;
-			}
-			else{
-				_theta = atan2(_kt2 , _pz);
-				if(_theta < 0) _theta += acos(-1);
-				_eta = -log(tan(_theta/2.));
-			}
-
-		}
 	private:
 		//momentum four vector
 		double _px;
 		double _py;
 		double _pz;
 		mutable double _kt2;
+		mutable double _eta;
+		mutable double _phi;
+		double _E;
+		double _mass;
+		double _t;
 		Point _mom;
 		//double _E;
 		Point _vtx;

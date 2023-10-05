@@ -4,6 +4,7 @@
 #include "Point.hh"
 #include <math.h>
 
+//TODO: phase out JetPoint (a JetPoint should be a Jet with 1 constituent)
 //point that is physics-specific - ecal cell (rechit)
 class JetPoint{
 
@@ -137,7 +138,7 @@ class JetPoint{
 			}
  
 		}
-		virtual void _set_rap_phi() const{
+		 void _set_rap_phi() const{
 			_eta = _set_rap();
 			_phi = atan2(_y, _x);
 		}
