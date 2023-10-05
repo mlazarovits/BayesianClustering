@@ -154,12 +154,13 @@ private:
   }
 
   
-  inline node* _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
+  inline double _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
 	node* n1 = v1.n;
 	node* n2 = v2.n;
 
-	node* n_12 = _merge_tree->CalculateMerge(n1, n2);
-	return n_12;
+	node* x = _merge_tree->CalculateMerge(n1, n2);
+	double rk = x->val; 
+	return rk;
   }
 
   //---------------------------------------------------------------------- 
@@ -269,8 +270,7 @@ private:
 			       const Vertex_handle &best,
 			       double& rk,
 			       double& maxrk){
-    node* x = _merge_prob(pref, candidate);
-    rk = x->val;
+    rk = _merge_prob(pref, candidate);
     return _best_merge_prob_with_hint(pref, candidate, best, rk, maxrk);
 
   }
