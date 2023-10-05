@@ -151,10 +151,8 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 
 		j = Jet(rh, vtx);
 
-/*
 		
 		jets.push_back(j);
-*/
 	}	
 }
 
