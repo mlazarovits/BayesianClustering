@@ -29,10 +29,14 @@ class Jet{
 		Jet(JetPoint rh, Point vtx);
 		Jet(vector<JetPoint> rhs, Point vtx);
 		Jet(vector<JetPoint> rhs);
+		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
 		bool operator==(Jet& j) const;
 		bool operator!=(Jet& j) const;
+		void operator =(const Jet& j) const{
+			j = Jet(*this);
+		}
 
 		//return four vector for clustering
 		Point four_mom(){ return _mom; }
@@ -47,13 +51,13 @@ class Jet{
 		}
 		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
-		double px(){ return _mom.at(0); }
-		double py(){ return _mom.at(1); }
-		double pz(){ return _mom.at(2); }
-		double E(){ return _E; }
-		double e(){ return _E; }
-		double t(){ return _t; }
-		double time(){ return _t; }
+		double px() const{ return _mom.at(0); }
+		double py() const{ return _mom.at(1); }
+		double pz() const{ return _mom.at(2); }
+		double E() const{ return _E; }
+		double e() const{ return _E; }
+		double t() const{ return _t; }
+		double time() const{ return _t; }
 
 		//kinematic quantities
 		//eta
@@ -107,8 +111,8 @@ class Jet{
 		}
 
 		//add subjets/pixels to jet
-		void add(Jet& jt);
-		void add(JetPoint& rh);
+		void add(const Jet& jt);
+		void add(const JetPoint& rh);
 		
 		//constituents (jet points) in jet (clustered or unclustered)
 		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = _rhs; }
@@ -146,12 +150,12 @@ class Jet{
 
 		//set user idx info
 		void SetUserIdx(int i){ _idx = i; }
-		int GetUserIdx(){ return _idx; }
+		int GetUserIdx() const{ return _idx; }
 		
 		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
 	
 		//define jet time from cluster parameters
-		double GetJetTime() const{ return 0.; }
+		double GetJetTime() const{ return _t; }
 	
 		Point GetVertex() const{return _vtx; }
 

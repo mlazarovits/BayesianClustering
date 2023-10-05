@@ -135,6 +135,30 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 }
 
 
+Jet::Jet(const Jet& j){
+	_px = j.px();
+	_py = j.py();
+	_pz = j.pz();
+	_E = j.E();
+	_mom = Point({_px, _py, _pz, _E});
+
+	_eta = j.eta();
+	_phi = j.phi();
+	_t = j.time();
+
+	_kt2 = j.kt2();
+	_mass = j.mass();
+	
+
+	_child = j._child;
+	_parent1 = j._parent1;
+	_parent2 = j._parent2;
+	_idx = j.GetUserIdx();
+	_vtx = j.GetVertex();
+	_nRHs = j.GetNConstituents();
+	j.GetConstituents(_rhs);
+}
+
 Jet::~Jet(){
 	_rhs.clear();
 }
@@ -160,7 +184,7 @@ void Jet::SetFourMom(Point pt){
 
 //add jet jt to this
 //adding four vectors - recalculate invariant mass and other kinematic quantities
-void Jet::add(Jet& jt){
+void Jet::add(const Jet& jt){
 	//add rhs from jt
 	vector<JetPoint> rhs;
 	jt.GetConstituents(rhs);
@@ -181,7 +205,7 @@ void Jet::add(Jet& jt){
 }
 
 
-void Jet::add(JetPoint& rh){
+void Jet::add(const JetPoint& rh){
 	_rhs.push_back(rh);
 	_nRHs += 1;
 
