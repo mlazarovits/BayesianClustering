@@ -140,7 +140,7 @@ class PointCollection{
 			}
 		}
 
-		void Print(){
+		void Print() const{
 			for(int i = 0; i < (int)_pts.size(); i++) _pts[i].Print();
 
 		}		
