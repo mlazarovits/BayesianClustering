@@ -52,6 +52,7 @@ class MergeTree : BaseTree{
 
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
+		void Merge(node* l, node* r);
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
@@ -130,6 +131,8 @@ class MergeTree : BaseTree{
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			_clusters.push_back(x);
 		}
+
+
 
 	protected:
 		//runs varEM to get Evidence (ELBO) for given GMM

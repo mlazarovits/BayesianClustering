@@ -49,3 +49,10 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	return x;
 }
 
+
+void MergeTree::Merge(node* l, node* r){
+	node* x = CalculateMerge(l, r);
+	Remove(l);
+	Remove(r);
+	Insert(x);
+}
