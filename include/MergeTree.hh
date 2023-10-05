@@ -142,7 +142,6 @@ class MergeTree : BaseTree{
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-	
 
 			//cout << "original points" << endl;
 			//x->points->Print();
