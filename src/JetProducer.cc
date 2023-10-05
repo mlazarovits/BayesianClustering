@@ -8,7 +8,6 @@
 
 
 
-
 JetProducer::JetProducer(){ 
 }
 
@@ -69,11 +68,9 @@ void JetProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	JetPoint rh;
 	double x, y, z, t, E, eta, phi;
-	unsigned long id;
+	unsigned int rhId;
 	int nRHs;
 	rhs.clear();
-	int nPho, nPhoRHs, rhId;
-	vector<unsigned int> phoIds, jetIds;
 	
 
 	if(evt > _nEvts) return;
@@ -89,22 +86,8 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		//cout << "jet #" << j << " has " << nJetRHs << " rhs - eta = " << fabs(_base->Jet_eta->at(j)) << endl;
 		if(fabs(_base->Jet_eta->at(j)) > 1.479) continue;
 		nJetRHs_total += _base->Jet_drRhIds->at(j).size(); 
-		for(int r = 0; r < nJetRHs; r++){
-			jetIds.push_back(_base->Jet_drRhIds->at(j).at(r));
-		}
 	}
 //		cout << nJetRHs_total << " total rhs in all jets" << endl;
-	//clean for RHs in photon superclusters
-	nPho = (int)_base->Photon_energy->size();
-	for(int p = 0; p < nPho; p++){
-		nPhoRHs = (int)_base->Photon_rhIds->at(p).size();
-		for(int r = 0; r < nPhoRHs; r++){
-			phoIds.push_back(_base->Photon_rhIds->at(p).at(r));
-			rhId = _base->Photon_rhIds->at(p).at(r);
-		//	if(std::any_of(jetIds.begin(), jetIds.end(), [&](int iid){return iid == rhId;})) cout << "rh " << rhId << " in photon and jet" << endl; 
-		}
-	}
-
 	//actually get rhs for clustering
 	nRHs = (int)_base->ECALRecHit_ID->size();
 	for(int r = 0; r < nRHs; r++){
@@ -120,6 +103,52 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 	
 		rhs.push_back(rh);
+	}	
+}
+
+
+
+
+void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
+	JetPoint rh;
+	Jet j;
+	double t, E, eta, phi;
+	unsigned int rhId;
+	int nRHs;
+	jets.clear();
+
+	if(evt > _nEvts) return;
+
+	_base->GetEntry(evt);
+	int nJets = (int)_base->Jet_energy->size();
+	//cout << "# jets in evt " << evt << ": " << nJets << endl;
+
+	int nJetRHs;
+	int nJetRHs_total = 0;
+	for(int j = 0; j < nJets; j++){
+		nJetRHs = (int)_base->Jet_drRhIds->at(j).size();
+		//cout << "jet #" << j << " has " << nJetRHs << " rhs - eta = " << fabs(_base->Jet_eta->at(j)) << endl;
+		if(fabs(_base->Jet_eta->at(j)) > 1.479) continue;
+		nJetRHs_total += _base->Jet_drRhIds->at(j).size(); 
+	}
+//		cout << nJetRHs_total << " total rhs in all jets" << endl;
+
+	//actually get rhs for clustering
+	nRHs = (int)_base->ECALRecHit_ID->size();
+	for(int r = 0; r < nRHs; r++){
+		//clean out photon ids - if rh id is in phoIds continue
+		rhId = _base->ECALRecHit_ID->at(r);
+		//add tof = d_pv to time to get correct RH time
+		//t = rh_time - d_rh/c + d_pv/c
+		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
+		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
+		rh.SetEta(_base->ECALRecHit_eta->at(r));
+		rh.SetPhi(_base->ECALRecHit_phi->at(r));
+		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
+
+		j = Jet(rh, Point({0,0,0}));
+		
+		jets.push_back(j);
 	}	
 }
 

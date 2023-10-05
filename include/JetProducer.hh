@@ -2,6 +2,7 @@
 #define JETPRODUCER_HH
 
 #include "JetPoint.hh"
+#include "Jet.hh"
 #include "TFile.h"
 #include "BaseProducer.hh"
 
@@ -20,6 +21,7 @@ class JetProducer : public BaseProducer{
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		void GetRecHits(vector<vector<JetPoint>>& rhs);
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
+		void GetRecHits(vector<Jet>& rhs, int evt);
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int jet){ };
 		void GetPrimaryVertex(Point& vtx, int evt);
 

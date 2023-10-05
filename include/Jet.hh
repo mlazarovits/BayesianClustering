@@ -99,8 +99,6 @@ class Jet{
 		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
 		
 
-	
-
 
 		vector<JetPoint> GetJetPoints() const{return _rhs;}
 		
@@ -117,12 +115,6 @@ class Jet{
 		//constituents (jet points) in jet (clustered or unclustered)
 		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = _rhs; }
 		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)_rhs.size(); j++) energies.push_back(_rhs[j].E()); }
-		void GetXYZConstituents(PointCollection& pc) const{
-			pc.Clear();
-			for(int i = 0; i < (int)_rhs.size(); i++){
-				pc += _rhs[i].four_space();
-			}
-		}
 		void GetEtaPhiConstituents(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)_rhs.size(); i++){
@@ -139,7 +131,9 @@ class Jet{
 		//children in cluster
 		Jet GetBaby() const;
 
+		void AddRecHit(JetPoint rh){ _rhs.push_back(rh); }
 		
+
 		//subjets (jets) in jet (clustered or unclustered)
 		void GetSubJets(vector<Jet>& subjets, int depth = 0) const;
 
@@ -159,6 +153,7 @@ class Jet{
 	
 		//define jet time from cluster parameters
 		double GetJetTime() const{ return _t; }
+		void SetJetTime(double t){ _t = t; }
 	
 		Point GetVertex() const{return _vtx; }
 
@@ -237,7 +232,7 @@ class Jet{
 		Point _vtx;
 
 		//mutable double _eta, _phi, _theta;
-		//rec hits (JetPoints) in jet
+		//rec hits (ids) in jet
 		vector<JetPoint> _rhs;
 
 		int _nRHs;

@@ -61,7 +61,6 @@ Jet::Jet(JetPoint rh, Point vtx){
 		return;
 	}
 	_vtx = vtx;
-	Point dir = Point({rh.x() - vtx.at(0), rh.y() - vtx.at(1), rh.z() - vtx.at(3)});
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
