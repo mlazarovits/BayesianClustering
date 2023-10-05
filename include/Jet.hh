@@ -137,7 +137,7 @@ class Jet{
 		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
 
 		//children in cluster
-		void GetBaby(Jet& child) const;
+		Jet GetBaby() const;
 
 		
 		//subjets (jets) in jet (clustered or unclustered)
@@ -151,6 +151,9 @@ class Jet{
 		//set user idx info
 		void SetUserIdx(int i){ _idx = i; }
 		int GetUserIdx() const{ return _idx; }
+		//history index info
+		void SetHistoryIndex(int i){ _hist_idx = i; }
+		int GetHistoryIndex() const{ return _hist_idx; }
 		
 		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
 	
@@ -251,6 +254,8 @@ class Jet{
 	
 		//user index	
 		int _idx;
+		//history index
+		int _hist_idx;
 		
 
 		double _maxRap = 1e5;

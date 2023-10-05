@@ -84,11 +84,14 @@ class BayesCluster{
 			/// so far in the clustering history.
 			double max_dij_so_far;
 
+			/// the merge probability corresponding to the recombination
+			/// at this stage of the clustering.
+			double rk;  
 
 			/// maximum value of merge posterior rk  
 			/// at this stage of the clustering.
 			/// if max_rk < 0.5, clustering can stop
-			double max_rk;
+			double max_rk_so_far;
 		};
 
 
@@ -117,7 +120,8 @@ class BayesCluster{
 				element.jetp_index = i;
 				element.dij     = 0.0;
 				element.max_dij_so_far = 0.0;
-				element.max_rk = -1.0;	
+				element.rk = -1.0;	
+				element.max_rk_so_far = -1.0;	
 		 
 				_history.push_back(element);
 			
@@ -134,6 +138,82 @@ class BayesCluster{
 				_Qtot += _jets[i].E();
 			}
 			_initial_n = _jets.size();
+		}
+
+
+		void _do_ij_recombination_step(
+				const int jet_i, const int jet_j,
+				const double rk,
+				int& newjet_k){
+			Jet newjet;
+			recombine(_jets[jet_i], _jets[jet_j], newjet);
+			_jets.push_back(newjet);
+			newjet_k = _jets.size() - 1;
+
+			//do history stuff
+			int newstep_k = _history.size();
+			//provide jet with history info
+			_jets[newjet_k].SetHistoryIndex(newstep_k);
+
+			//sort history
+			int hist_i = _jets[jet_i].GetHistoryIndex();
+			int hist_j = _jets[jet_j].GetHistoryIndex();
+
+			//add_step_to_history(min(hist_i, hist_j), max(hist_i, hist_j), newjet_k, rk);
+			
+		}
+
+		//the straight up addition of 3-mom and E is the "E_scheme" recombination
+		//option in FastJet
+		void recombine(const Jet& pa, const Jet& pb, Jet& pab) const{ 
+			pab = pa;
+			pab.add(pb);
+		}
+
+
+		// initialise the history in a standard way
+		void _add_step_to_history (
+			             const int parent1, 
+			             const int parent2, const int jetp_index,
+			             const double rk) {
+ 
+			history_element element;
+			element.parent1 = parent1;
+			element.parent2 = parent2;
+			element.jetp_index = jetp_index;
+			element.child = Invalid;
+			element.rk   = rk;
+			element.max_rk_so_far = std::max(rk,_history[_history.size()-1].max_rk_so_far);
+			_history.push_back(element);
+ 
+			int local_step = _history.size()-1;
+			// sanity check: make sure the particles have not already been recombined
+			//
+			// Note that good practice would make this an assert (since this is
+			// a serious internal issue). However, we decided to throw an
+			// InternalError so that the end user can decide to catch it and
+			// retry the clustering with a different strategy.
+ 
+			assert(parent1 >= 0);
+			if (_history[parent1].child != Invalid){
+			  cout << "trying to recomine an object that has previsously been recombined" << endl;
+			}
+			_history[parent1].child = local_step;
+			if (parent2 >= 0) {
+			  if (_history[parent2].child != Invalid){
+			  cout << "trying to recomine an object that has previsously been recombined" << endl;
+			  }
+			  _history[parent2].child = local_step;
+			}
+ 
+			// get cross-referencing right from PseudoJets
+			if (jetp_index != Invalid) {
+			  assert(jetp_index >= 0);
+			  //cout << _jets.size() <<" "<<jetp_index<<"\n";
+			  _jets[jetp_index].SetHistoryIndex(local_step);
+			  //_set_structure_shared_ptr(_jets[jetp_index]);
+			}
+ 
 		}
 
 	private:

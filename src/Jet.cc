@@ -242,8 +242,8 @@ void Jet::GetParents(Jet& p1, Jet& p2) const{
 }
 
 
-void Jet::GetBaby(Jet& child) const{
-	child = *_child;
+Jet Jet::GetBaby() const{
+	return *_child;
 }
 
 

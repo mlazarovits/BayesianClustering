@@ -44,12 +44,33 @@ void BayesCluster::_cluster(){
 	}
 
 	//run the clustering
-		// find nearest vertices in map
-		//do_ij_recomb
+	for(int i = 0; i < n; i++){
+		// find largest rk value in map (last entry)
+		double BestRk;
+		verts BestRkPair;
+		std::multimap<double,verts>::iterator map_it;
+		int jet_i, jet_j;
+		bool Valid2;
+		do{
+			map_it = RkMap.end();
+			map_it--;
+			BestRk = map_it->first;
+			BestRkPair = map_it->second;
+			jet_i = BestRkPair.first;
+			jet_j = BestRkPair.second;
+			if (verbose) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
+ 			RkMap.erase(map_it);
+			Valid2 = DNN->Valid(jet_j);
+			if (verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
+		} while(!DNN->Valid(jet_i) || !Valid2);
+		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
+		int nn;
+		if (verbose) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
+      		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
 		//get eta phi (and time!) of new point - centroid of points in combined vertices
 		//update DNN with RemoveCombinedAddCombination
 			//this should also update the merge tree	
-
+	}
 
 }
 
