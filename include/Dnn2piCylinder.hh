@@ -105,7 +105,13 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours);
 
+  void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+			  const std::vector<PointCollection> & points_to_add,
+			  std::vector<int> & indices_added,
+			  std::vector<int> & indices_of_updated_neighbours);
   ~Dnn2piCylinder();
+
+
 
  private:
   double pi    = 3.14159265358;
@@ -200,6 +206,8 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   void _RegisterCylinderPoint (const EtaPhi & cylinder_point,
 			       std::vector<EtaPhi> & plane_points);
 
+  void _RegisterCylinderPoint (const PointCollection& cylinder_points,
+			       std::vector<PointCollection> & plane_points);
   /// For each plane point specified in the vector plane_indices,
   /// establish whether there is a need to create a mirror point
   /// according to the following criteria:
@@ -324,6 +332,12 @@ inline Dnn2piCylinder::~Dnn2piCylinder() {
   delete _DNN; 
 }
 
+inline void PointCollection_to_EtaPhi(PointCollection& pc, vector<EtaPhi>& eps){
+  for (unsigned int i=0; i < pc.GetNPoints(); i++) {
+    EtaPhi ep = EtaPhi(pc.at(i).at(0), pc.at(i).at(1));
+    eps.push_back(ep);
+  }
+  }
 
 //FASTJET_END_NAMESPACE
 

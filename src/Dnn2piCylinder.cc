@@ -122,6 +122,25 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const EtaPhi & cylinder_point,
   _mirror_info.push_back(mvi);
 }
 
+void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_point,
+					     vector<PointCollection> & plane_points) {
+  double eta = cylinder_point.mean().at(0);
+  double phi = cylinder_point.mean().at(1);
+  assert(phi >= 0.0 && phi < 2*pi);
+
+  EtaPhi ep(eta,phi);
+  
+  
+  // do main point
+  MirrorVertexInfo mvi;
+  mvi.main_index = _cylinder_index_of_plane_vertex.size();
+  _cylinder_index_of_plane_vertex.push_back(_mirror_info.size());
+  plane_points.push_back(cylinder_point);
+  mvi.mirror_index = INEXISTENT_VERTEX;
+  
+  // 
+  _mirror_info.push_back(mvi);
+}
 
 
 //----------------------------------------------------------------------
@@ -247,6 +266,70 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
   // plane_indices_added vector but that we will not actually check
   // its contents in any way -- the indices_added that is actually
   // returned has been calculated above).
+  vector<int> updated_plane_neighbours, plane_indices_added;
+  _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
+			     plane_indices_added, updated_plane_neighbours);
+
+  vector<int> extra_updated_plane_neighbours;
+  _CreateNecessaryMirrorPoints(updated_plane_neighbours,
+			       extra_updated_plane_neighbours);
+
+  // extract, from the updated_plane_neighbours, and
+  // extra_updated_plane_neighbours, the set of cylinder neighbours
+  // that have changed
+  set<int> index_set;
+  unsigned int i;
+  for (i=0; i < updated_plane_neighbours.size(); i++) {
+    index_set.insert(
+       _cylinder_index_of_plane_vertex[updated_plane_neighbours[i]]);}
+  for (i=0; i < extra_updated_plane_neighbours.size(); i++) {
+    index_set.insert(
+       _cylinder_index_of_plane_vertex[extra_updated_plane_neighbours[i]]);}
+
+  // decant the set into the vector that needs to be returned
+  indices_of_updated_neighbours.clear();
+  for (set<int>::iterator iter = index_set.begin(); 
+       iter != index_set.end(); iter++) {
+    indices_of_updated_neighbours.push_back(*iter);
+  }
+}
+//----------------------------------------------------------------------
+/// insertion and removal of points
+void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
+				const vector<PointCollection>& points_to_add,
+				vector<int> & indices_added,
+				vector<int> & indices_of_updated_neighbours) {
+
+  // translate from "cylinder" indices of points to remove to the
+  // plane indices of points to remove, bearing in mind that sometimes
+  // there are multple plane points to remove.
+  vector<int> plane_indices_to_remove;
+  for (unsigned int i=0; i < indices_to_remove.size(); i++) {
+    MirrorVertexInfo * mvi;
+    mvi = & _mirror_info[indices_to_remove[i]];
+    plane_indices_to_remove.push_back(mvi->main_index);
+    if (mvi->mirror_index != INEXISTENT_VERTEX) {
+      plane_indices_to_remove.push_back(mvi->mirror_index);
+    }
+  }
+
+  // given "cylinder" points to add get hold of the list of
+  // plane-points to add.
+  //vector<EtaPhi> plane_points_to_add;
+  vector<PointCollection> plane_points_to_add;
+  indices_added.clear();
+  
+
+  for (unsigned int i=0; i < points_to_add.size(); i++) {
+    indices_added.push_back(_mirror_info.size());
+    _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
+  }
+
+  // now get the hard work done (note that we need to supply the
+  // plane_indices_added vector but that we will not actually check
+  // its contents in any way -- the indices_added that is actually
+  // returned has been calculated above).
+  // TODO: make sure the below functions (RemoveAnd... and CreateNecessary...) are calling PointCollection versions 
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
 			     plane_indices_added, updated_plane_neighbours);

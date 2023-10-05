@@ -147,6 +147,10 @@ public:
 			  const std::vector<EtaPhi> & points_to_add,
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours) = 0;
+  virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+			  const std::vector<PointCollection> & points_to_add,
+			  std::vector<int> & indices_added,
+			  std::vector<int> & indices_of_updated_neighbours) = 0;
 
 
   /// Remove the point labelled by index and return the list of
@@ -162,6 +166,28 @@ public:
 		       );};
 
 
+  /// Removes the two points labelled by index1, index2 and adds in the
+  /// a point with coordinates newpoint; it returns an index for the new 
+  /// point (index 3) and a std::vector of indices of neighbours whose
+  /// nearest neighbour has changed (the list includes index3, i.e. the new
+  /// point).
+  inline void RemoveCombinedAddCombination(
+			const int index1, const int index2,
+			const PointCollection& newcluster,
+			int & index3,
+			std::vector<int> & indices_of_updated_neighbours) {
+    std::vector<int> indices_added(1);
+    std::vector<PointCollection> points_to_add(1);
+    std::vector<int> indices_to_remove(2);
+    indices_to_remove[0] = index1;
+    indices_to_remove[1] = index2;
+    points_to_add[0] = newcluster;
+    RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
+		       indices_of_updated_neighbours
+		       );
+    index3 = indices_added[0];
+  };
+  
   /// Removes the two points labelled by index1, index2 and adds in the
   /// a point with coordinates newpoint; it returns an index for the new 
   /// point (index 3) and a std::vector of indices of neighbours whose

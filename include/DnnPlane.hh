@@ -97,6 +97,11 @@ class DnnPlane : public DynamicNearestNeighbours {
 			  const std::vector<EtaPhi> & points_to_add,
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours);
+  
+  void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+			  const std::vector<PointCollection> & points_to_add,
+			  std::vector<int> & indices_added,
+			  std::vector<int> & indices_of_updated_neighbours);
 
   /// returns the EtaPhi of point with index i.
   EtaPhi etaphi(const int i) const;
@@ -117,11 +122,11 @@ private:
     // later on for cylinder put a second vertex?
     double MaxRk; //highest probability of merging
     int MaxRkindex; //index of vertex to merge with
+    node* n; //node containing point collection, rk value (should match MaxRk), parents, etc. 
   };
 
   //map vertex (via vertex_handle) to 3D points at vertex
   //TODO: update in _setnearestandupdate
-  mutable std::map<Vertex_handle, node*> vtx_to_node;
 
 
   std::vector<SuperVertex> _supervertex;
@@ -149,9 +154,9 @@ private:
   }
 
   
-  inline node* _merge_prob(const Vertex_handle& v1, const Vertex_handle& v2) const{
-	node* n1 = vtx_to_node[v1];
-	node* n2 = vtx_to_node[v2];
+  inline node* _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
+	node* n1 = v1.n;
+	node* n2 = v2.n;
 
 	node* n_12 = _merge_tree->CalculateMerge(n1, n2);
 	return n_12;
@@ -259,8 +264,8 @@ private:
 
   /// calculates merge probabilities for neighbor (candidate) of point (pref)
   /// compares to best current merge (pref and best)
-  inline bool _best_merge_prob(const Vertex_handle& pref,
-			       const Vertex_handle& candidate,
+  inline bool _best_merge_prob(const SuperVertex& pref,
+			       const SuperVertex& candidate,
 			       const Vertex_handle &best,
 			       double& rk,
 			       double& maxrk){
@@ -270,8 +275,8 @@ private:
 
   }
   
-  inline bool _best_merge_prob_with_hint(const Vertex_handle &pref,
-			       const Vertex_handle& candidate,
+  inline bool _best_merge_prob_with_hint(const SuperVertex &pref,
+			       const SuperVertex& candidate,
 			       const Vertex_handle &best,
 			       const double& rk,
 			       double& maxrk){
