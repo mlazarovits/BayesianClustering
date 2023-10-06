@@ -355,7 +355,7 @@ class PointCollection{
 
 
 	
-	double Centroid(int d){
+	double Centroid(int d) const{
 		double cent = 0;
 		double sum = 0;
 		for(int i = 0; i < (int)_pts.size(); i++){
@@ -366,7 +366,7 @@ class PointCollection{
 		return cent;
 	};
 
-	double Sumw(){
+	double Sumw() const{
 		double ret = 0;
 		for(int i = 0; i < (int)_pts.size(); i++) ret += _pts[i].w();
 		return ret;
