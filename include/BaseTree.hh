@@ -8,7 +8,7 @@ class BaseTree{
 	public:
 		BaseTree(){
 			_z = (struct node*) malloc(sizeof *_z);
-			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1; _z->points = nullptr;
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1; _z->points = new PointCollection();
 			_head = (struct node*)malloc(sizeof *_head);
 			_head->r = _z; _head->val = 0; _head->color = 999;
 		}
