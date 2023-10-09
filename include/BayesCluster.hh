@@ -40,14 +40,24 @@ class BayesCluster{
 		};
 		virtual ~BayesCluster(){ _jets.clear(); };
 
+		void sanitize(Point pt){
+			if(pt.Dim() < 2) return;
+  			double twopi = 6.28318530717;
+			double second = pt.at(1);
+			if (second <  0)     second += twopi; 
+			if (second >= twopi) second -= twopi;
+			pt.SetValue(second,1);
+		}
+
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
 		typedef std::pair<int,int> verts;
 		typedef std::pair<double,verts> RkEntry;
+		typedef std::pair<double,verts> CompEntry;
 		//use a multimap so multiple keys can have the same value
 		//also it's automatically sorted
-		typedef std::multimap<double,verts> ProbMap;
+		typedef std::multimap<double,verts> CompareMap;
 
 		struct history_element{
 			/// index in _history where first parent of this jet
@@ -215,6 +225,7 @@ class BayesCluster{
 			}
  
 		}
+		void _add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob = true);
 
 	private:
 		vector<Jet> _jets;

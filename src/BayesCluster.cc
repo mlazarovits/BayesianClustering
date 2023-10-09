@@ -17,9 +17,8 @@
 /// points with coincident eta-phi coordinates.
 void BayesCluster::_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
-	int n = (int)_jets.size();
+	int n = 10;//(int)_jets.size();
 	vector<PointCollection> points(n);
-  	double twopi = 6.28318530717;
 	for (int i = 0; i < n; i++) {
 		PointCollection pc = PointCollection();
 		Point pt = Point(3);
@@ -27,8 +26,9 @@ void BayesCluster::_cluster(){
 		pt.SetValue(_jets[i].phi_02pi(), 1);
 		pt.SetValue(_jets[i].time(), 2);
   		//make sure phi is in the right range
-		if (pt.at(1) <  0)     pt.SetValue(pt.at(1) + twopi, 1); 
-  		if (pt.at(1) >= twopi) pt.SetValue(pt.at(1) - twopi, 1); 
+		//if (pt.at(1) <  0)     pt.SetValue(pt.at(1) + twopi, 1); 
+  		//if (pt.at(1) >= twopi) pt.SetValue(pt.at(1) - twopi, 1); 
+		sanitize(pt);
 		pc.AddPoint(pt);
 		points[i] = pc;
 	}
@@ -41,17 +41,13 @@ void BayesCluster::_cluster(){
 	//all three dimensions will go into calculating the probabilityu
 	//but the map will be built only in 2D space
 	//structure is typdef'ed in header
-	ProbMap RkMap;
-/*
+	CompareMap ProbMap, DistMap;
 	//fill map with initial potential clusterings
-	double rk;
-	int j;	
 	for(int i = 0; i < n; i++){
-		rk = DNN->NearestNeighbourProb(i);
-		j = DNN->NearestNeighbourProbIndex(i);
-		RkMap.insert(RkEntry(rk,verts(i,j)));
+		_add_entry_to_maps(i, ProbMap, DNN);
+		_add_entry_to_maps(i, DistMap, DNN, false);	
 	}
-
+	std::pair<std::multimap<double,verts>::iterator, std::multimap<double,verts>::iterator> ret;	
 	//run the clustering
 	for(int i = 0; i < n; i++){
 		// find largest rk value in map (last entry)
@@ -60,15 +56,25 @@ void BayesCluster::_cluster(){
 		std::multimap<double,verts>::iterator map_it;
 		int jet_i, jet_j;
 		bool Valid2;
+		double oldrk = 0;
 		do{
-			map_it = RkMap.end();
+			map_it = ProbMap.end();
 			map_it--;
 			BestRk = map_it->first;
 			BestRkPair = map_it->second;
+			//check for equal rks, break tie with 3d distance
+			//right now - only equal rks are for equivalent merges
+			ret = ProbMap.equal_range(BestRk);
+				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; it++){
+					cout << "rk: " << it->first << " with points: " << it->second.first << ", " << it->second.second << endl;
+			
+				}
+			if(oldrk == BestRk) cout << "previous was equal to this" << endl;
+			oldrk = BestRk;	
 			jet_i = BestRkPair.first;
 			jet_j = BestRkPair.second;
 			if (verbose) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
- 			RkMap.erase(map_it);
+ 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
 			if (verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
 		} while(!DNN->Valid(jet_i) || !Valid2);
@@ -76,12 +82,43 @@ void BayesCluster::_cluster(){
 		int nn;
 		if (verbose) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
       		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
-		//get eta phi (and time!) of new point - centroid of points in combined vertices
-		
+		//add new jet to vector of _jets
+		_jets.push_back(_jets[nn]);
+		// exit the loop because we do not want to look for nearest neighbours
+		// etc. of zero partons
+		if (i == n-1) {break;}//get eta phi (and time!) of new point - centroid of points in combined vertices
+		int pt3;
+		vector<int> updated_neighbors;
 		//update DNN with RemoveCombinedAddCombination
-		//this should also update the merge tree	
+		//this should also update the merge tree - RemoveAndAddPoints in DnnPlane does
+		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
+		PointCollection newpts = PointCollection();
+		for(int i = 0; i < (int)jps.size(); i++){
+			Point pt = Point({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
+			newpts += pt;
+		}	
+		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
+							newpts, pt3, updated_neighbors);
+		//update map
+		vector<int>::iterator it = updated_neighbors.begin();
+		for(; it != updated_neighbors.end(); ++it){
+			int ii = *it;
+			_add_entry_to_maps(ii, ProbMap, DNN);
+			_add_entry_to_maps(ii, DistMap, DNN, false);	
+		}
 	}
-*/
 }
 
-
+void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob){
+		double comp;
+		int j;
+		if(prob){
+			comp = DNN->NearestNeighbourProb(i);
+			j = DNN->NearestNeighbourProbIndex(i);
+		}
+		else{
+			comp = DNN->NearestNeighbourDistance(i);
+			j = DNN->NearestNeighbourIndex(i);
+		}
+		inmap.insert(CompEntry(comp,verts(i,j)));
+}

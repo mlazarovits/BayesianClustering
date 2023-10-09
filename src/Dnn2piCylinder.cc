@@ -263,7 +263,6 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
 				const vector<PointCollection>& points_to_add,
 				vector<int> & indices_added,
 				vector<int> & indices_of_updated_neighbours, bool merge) {
-
   // translate from "cylinder" indices of points to remove to the
   // plane indices of points to remove, bearing in mind that sometimes
   // there are multple plane points to remove.
@@ -271,11 +270,14 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
   for (unsigned int i=0; i < indices_to_remove.size(); i++) {
     MirrorVertexInfo * mvi;
     mvi = & _mirror_info[indices_to_remove[i]];
+cout << "Dnn2pi to remove: " << indices_to_remove[i] << " main idx: " << mvi->main_index << " mirror idx: " << mvi->mirror_index << endl;
     plane_indices_to_remove.push_back(mvi->main_index);
     if (mvi->mirror_index != INEXISTENT_VERTEX) {
       plane_indices_to_remove.push_back(mvi->mirror_index);
     }
   }
+
+for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane index: " << plane_indices_to_remove[i] << endl;
 
   // given "cylinder" points to add get hold of the list of
   // plane-points to add.

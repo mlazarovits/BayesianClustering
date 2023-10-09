@@ -163,6 +163,10 @@ private:
     return distx*distx+disty*disty+distz*distz;
   }
   
+  inline double _euclid_distance_3d(const PointCollection& p1, const PointCollection& p2) const {
+    return _euclid_distance_3d(p1.mean(), p2.mean());
+  }
+  
   inline double _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
 	node* n1 = v1.n;
 	node* n2 = v2.n;
@@ -253,6 +257,75 @@ private:
       // nearest->point() is not ill-defined
       if (_verbose) std::cout << "using CGAL's distance ordering" << std::endl;
       if (CGAL::compare_distance_to_point(pref, candidate, near->point())!=CGAL::LARGER){
+	mindist = dist;
+	return true;
+      }
+    } else if (dist <= mindist) {
+      // Note that the use of a <= in the above expression (instead of
+      // a strict ordering <) is important in one case: when checking
+      // if a new point is the new NN of one of the points in its
+      // neighbourhood, in case of distances being ==, we are sure
+      // that 'candidate' is in a cell adjacent to 'pref' while it may
+      // no longer be the case for 'near'
+      mindist = dist;
+      return true;
+    } 
+    
+    return false;
+  }
+
+  //do the same for 3D distance for point collections
+  inline bool _is_closer_to(const SuperVertex& pref,
+			    const SuperVertex& candidate,
+			    const SuperVertex &near,
+			    double & dist,
+			    double & mindist){
+    dist = _euclid_distance_3d(*pref.n->points, *candidate.n->points);
+    return _is_closer_to_with_hint(pref, candidate, near, dist, mindist);
+  }
+
+  /// same as '_is_closer_to' except that 'dist' already contains the
+  /// distance between 'pref' and 'candidate'
+  inline bool _is_closer_to_with_hint(const SuperVertex& pref,
+			    const SuperVertex& candidate,
+			    const SuperVertex &near,
+			    double & dist,
+			    double & mindist){
+    
+    // check if 'dist', the pre-computed distance between 'candidate'
+    // and 'pref' is smaller than the distance between 'pref' and its
+    // currently registered nearest neighbour 'near' (and update
+    // things if it is)
+    //
+    // Interestingly enough, it has to be pointed out that the use of
+    // 'abs' instead of 'std::abs' returns wrong results (apparently
+    // ints without any compiler warning)
+    //
+    // The (near != NULL) test is there for one single reason: when
+    // checking that a newly inserted point is not closer than a
+    // previous NN, if that distance comparison involves a "nearly
+    // degenerate" distance we need to access near->point. But
+    // sometimes, in the course of RemoveAndAddPoints, its previous NN
+    // has been deleted and its vertex (corresponding to 'near') set
+    // to NULL. This is not a problem as all points having a deleted
+    // point as NN will have their NN explicitly recomputed at the end
+    // of RemoveAndAddPoints so here we should just make sure there is
+    // no crash... that's done by checking (near != NULL)
+    if ((std::abs(dist-mindist)<DISTANCE_FOR_CGAL_CHECKS) &&
+	_is_not_null(near.vertex) && // GPS cf. note below about != NULL with clang/CGAL
+	(_euclid_distance_3d(*candidate.n->points, *near.n->points)<DISTANCE_FOR_CGAL_CHECKS)){
+      // we're in a situation where there might be a rounding issue,
+      // use CGAL's distance computation to get it right
+      //
+      // Note that in the test right above,
+      // (abs(dist-mindist)<1e-12) guarantees that the current
+      // nearest point is not the infinite vertex and thus
+      // nearest->point() is not ill-defined
+      if (_verbose) std::cout << "using CGAL's distance ordering" << std::endl;
+      K::Point_3 pref_pt = K::Point_3(pref.n->points->mean().at(0), pref.n->points->mean().at(1), pref.n->points->mean().at(2));
+      K::Point_3 candidate_pt = K::Point_3(candidate.n->points->mean().at(0), candidate.n->points->mean().at(1), candidate.n->points->mean().at(2));
+      K::Point_3 near_pt = K::Point_3(near.n->points->mean().at(0), near.n->points->mean().at(1), near.n->points->mean().at(2));
+      if (CGAL::compare_distance_to_point(pref_pt, candidate_pt, near_pt)!=CGAL::LARGER){
 	mindist = dist;
 	return true;
       }

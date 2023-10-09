@@ -176,6 +176,7 @@ public:
 			const PointCollection& newcluster,
 			int & index3,
 			std::vector<int> & indices_of_updated_neighbours) {
+    cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - start" << endl;
     std::vector<int> indices_added(1);
     std::vector<PointCollection> points_to_add(1);
     std::vector<int> indices_to_remove(2);
@@ -187,6 +188,7 @@ public:
 		       indices_of_updated_neighbours,
 		       merge);
     index3 = indices_added[0];
+    cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - end" << endl;
   };
   
   /// Removes the two points labelled by index1, index2 and adds in the

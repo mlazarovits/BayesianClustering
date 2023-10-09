@@ -465,8 +465,8 @@ void DnnPlane::RemoveAndAddPoints(
 
 
 // ------------------------------------------------------------
-// TODO: THIS IS WHERE I SHOULD ADD NEW POINTS TO MERGE TREE AND 
-// REMOVE MERGED ONES
+// this is where i should add new points to merge tree and 
+// remove merged ones
 // PointCollection is a cluster of points, each pc is operating as one EtaPhi point
 // but all the points are necessary to be included so the mergetree can calculate the
 // proper probability
@@ -478,14 +478,16 @@ void DnnPlane::RemoveAndAddPoints(
 
   if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
 cout << indices_to_remove.size() << " points to be removed" << endl;
+
+  for (size_t ir = 0; ir < indices_to_remove.size(); ir++) {
+    cout << "going to remove index: " << indices_to_remove[ir] << endl;
+  }
   // build set of UNION of Voronoi neighbours of a pair of nearest
   // neighbours
   set<int> NeighbourUnion;
   // later on it will be convenient to have access to a set (rather
   // than vector) of indices being removed
   set<int> indices_removed;
-
-
 
   // for each of the indices to be removed add the voronoi
   // neighbourhood to the NeighbourUnion set as well as the coinciding
@@ -494,7 +496,7 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
     int index = indices_to_remove[ir];
     indices_removed.insert(index);
     if (_verbose) cout << "  scheduling point " << index << " for removal" << endl;
-
+cout << "coincidence: " << _supervertex[index].coincidence << endl;
     if (_supervertex[index].coincidence != index){
       // we have a coincidence
       //
@@ -548,11 +550,19 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
   node* newnode = (node*)malloc(sizeof *newnode);
   if(merge){
 	cout << "Merging" << endl;
-    assert(indices_to_remove.size() == 2 && indices_added.size() == 1);
+vector<int> indices_to_remove_true; //nonmirrored pts
+for(int i = 0; i < (int)indices_to_remove.size(); i++)
+	if(phi(indices_to_remove[i]) <= 2*acos(-1))
+		indices_to_remove_true.push_back(indices_to_remove[i]);
+cout << "indices to remove: " << indices_to_remove.size() << " true indices to remove: " << indices_to_remove_true.size() << " added: " << points_to_add.size() << endl;
+    assert(indices_to_remove_true.size() == 2 && points_to_add.size() == 1);
     //removes nodes from arguments and adds newnode to running list
-    newnode = _merge_tree->Merge(_supervertex[indices_to_remove[0]].n, _supervertex[indices_to_remove[1]].n);
-    _supervertex[indices_to_remove[0]].n = NULL;
-    _supervertex[indices_to_remove[1]].n = NULL;
+    int idx1 = indices_to_remove_true[0];
+    int idx2 = indices_to_remove_true[1];
+  cout << "idx1: " << idx1 << " idx2: " << idx2 << endl;
+     newnode = _merge_tree->Merge(_supervertex[idx1].n, _supervertex[idx2].n);
+    _supervertex[idx1].n = NULL;
+    _supervertex[idx2].n = NULL;
   }
 
   // update set, triangulation and supervertex info
@@ -568,7 +578,7 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
     if (_supervertex[index].coincidence != index){
       int new_index = _supervertex[index].coincidence;
 
-      // if this is the point among the coiciding ones that "owns" the
+      // if this is the point among the coinciding ones that "owns" the
       // CGAL vertex we need to re-label the CGAL vertex so that it
       // points to the coincident particle and set the current one to
       // NULL
@@ -604,6 +614,10 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
     _supervertex[index].vertex = NULL;
     if (_verbose) cout << "                 value is " << (_is_not_null(_supervertex[index].vertex)) << endl;
   }
+// cout << "checking all points in memory" << endl;
+// for(int i = 0; i < (int)_supervertex.size(); i++)
+//	cout << "i: " << i << " n pts: " << _supervertex[i].n->points->GetNPoints() << endl;
+
 
   // add new point: give a "hint" to the inserter that
   // the new point should be added close to old points -- the easiest way 
@@ -625,12 +639,6 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
   // steps in cases where we have 0..2pi periodicity and the first member
   // of the neighbour union happens to be on the wrong side.
   Face_handle face;
-  //if (indices_to_remove.size() > 0) { // GS: use NeighbourUnion instead
-                                        //     (safe also in case of coincidences)
-  if(merge){
-    assert(indices_to_remove.size() == 2 && indices_added.size() == 1);
-    
-  }
   if (NeighbourUnion.size() > 0) {
     // face can only be found if there were points to remove in first place
     face = _TR.incident_faces(
@@ -650,7 +658,6 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
     if (_verbose) cout << "  adding " << index << " at "
                        << eta_center << " " << phi_center << endl;
 
-    //if (indices_to_remove.size() > 0) {
     if (NeighbourUnion.size() > 0) {
       // be careful of using face (for location hinting) only when it exists
       _supervertex[index].vertex = _TR.insert(CPoint(eta_center, 
@@ -660,13 +667,11 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
 				  phi_center));
     }
    //add new node that's just blank
-    _supervertex[index].n = newnode;
+  _supervertex[index].n = newnode;
     PointCollection pc = points_to_add[ia];
     if(!merge){
       //add new node to merge tree
       //update with given points (otherwise newnode was set by mergetree)
-      //_supervertex[index].n->points = &pc;
-       assert(pc.GetNPoints() == 1);
        _merge_tree->AddLeaf(&pc.at(0));
        _supervertex[index].n = _merge_tree->Get(_merge_tree->GetNClusters() - 1);
       //cout << "update with given points " << points_to_add[ia].GetNPoints() << " " << pc.GetNPoints() << " " << _supervertex[index].n->points->GetNPoints() << endl;
@@ -704,6 +709,10 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
       _supervertex[coinciding_index].coincidence = index;
 
     }
+//  cout << "checking all points in memory" << endl;
+// for(int i = 0; i < (int)_supervertex.size(); i++)
+//	cout << "i: " << i << " pt: " << _supervertex[i].vertex->point() << " n pts: " << _supervertex[i].n->points->GetNPoints() << endl;
+
     
     // first find nearest neighbour of "newpoint" (shorthand for
     // _supervertex[index].vertex); while we're at it, for each of the
@@ -839,6 +848,10 @@ void DnnPlane::_SetAndUpdateNearest(
     return;
   }
 
+  cout << "n pts in current vertex j: " << j << " - " << _supervertex[j].n->points->GetNPoints() << endl;
+  cout << "l: " << _supervertex[j].n->l->points->GetNPoints() << endl;
+  cout << "r: " << _supervertex[j].n->r->points->GetNPoints() << endl;
+
   Vertex_handle current = _supervertex[j].vertex;
   Vertex_circulator vc = _TR.incident_vertices(current);
   Vertex_circulator done = vc;
@@ -867,6 +880,7 @@ void DnnPlane::_SetAndUpdateNearest(
       } 
       // find index corresponding to vc for easy manipulation
       int vcindx = vc->info().val();
+  cout << "compare to indx: " << vcindx << " " << _supervertex[vcindx].MaxRkindex << endl;
      //do the same as above but with probability instead of geometric distance
      if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
