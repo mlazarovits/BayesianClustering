@@ -6,6 +6,15 @@
 node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
+cout << "MergeTree::Merge - start" << endl;
+cout << "l: " << endl;
+cout << "	points: " << l->points->GetNPoints() << endl;
+cout << "	d: " << l->d << endl;
+cout << "	p_tk: " << l->prob_tk << endl;
+cout << "r: " << endl;
+cout << "	points: " << r->points->GetNPoints() << endl;
+cout << "	d: " << r->d << endl;
+cout << "	p_tk: " << r->prob_tk << endl;
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
 	double d, pi;
 	if(_constraint){
@@ -44,6 +53,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 //	if(isnan(rk)) cout << "rk is nan - pi " << pi << " p_dk_h1: " << p_dk_h1 << " p_dk_tk: " << p_dk_tk << endl;
 	//cout << "MergeTree::CalculateMerge - merging " << l->name << " + " << r->name << " val: " << rk << endl;	
 //	x->name = "("+l->name + "+"  + r->name+")";
+cout << "MergeTree::Merge - end" << endl;
 
 	return x;
 }
