@@ -13,7 +13,7 @@ using std::string;
 
 class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false;}
+		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; m_post.SetDims(m_n, m_k);}
 		BasePDFMixture(int k){ 
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
@@ -26,6 +26,7 @@ class BasePDFMixture : public BasePDF{
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
 			m_alpha0 = 0.1; _verb = 0; _smear = false;
+			m_post.SetDims(m_n, m_k);
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -37,6 +38,7 @@ class BasePDFMixture : public BasePDF{
 
 		void SetData(PointCollection* data){
 			m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); 
+			m_post.SetDims(m_n, m_k);
 			if(data->GetNPoints() < m_k){
 				//remove extra models
 				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
