@@ -102,7 +102,7 @@ class DnnPlane : public DynamicNearestNeighbours {
   void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours);
+			  std::vector<int> & indices_of_updated_neighbours, bool merge = false);
 
   /// returns the EtaPhi of point with index i.
   EtaPhi etaphi(const int i) const;
@@ -156,16 +156,18 @@ private:
     return distx*distx+disty*disty;
   }
 
+  inline double _euclid_distance_3d(const Point& p1, const Point& p2) const {
+    double distx= p1.at(0)-p2.at(0);
+    double disty= p1.at(1)-p2.at(1);
+    double distz= p1.at(2)-p2.at(2);
+    return distx*distx+disty*disty+distz*distz;
+  }
   
   inline double _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
-	cout << "merge_prob - start" << endl;
 	node* n1 = v1.n;
 	node* n2 = v2.n;
-cout << "n1: " << n1->points->GetNPoints() << " n2: " << n2->points->GetNPoints() << endl;
 	node* x = _merge_tree->CalculateMerge(n1, n2);
-cout << "calculated merge" << endl;
 	double rk = x->val; 
-	cout << "merge_prob - end: " << rk << endl;
 	return rk;
   }
 
@@ -276,7 +278,6 @@ cout << "calculated merge" << endl;
 			       const Vertex_handle &best,
 			       double& rk,
 			       double& maxrk){
-cout << "best_merge_prob - pref: " << pref.n->points->GetNPoints() << " candidate: " << candidate.n->points->GetNPoints() << endl;
     rk = _merge_prob(pref, candidate);
     return _best_merge_prob_with_hint(pref, candidate, best, rk, maxrk);
 
@@ -286,8 +287,9 @@ cout << "best_merge_prob - pref: " << pref.n->points->GetNPoints() << " candidat
 			       const SuperVertex& candidate,
 			       const Vertex_handle &best,
 			       const double& rk,
-			       double& maxrk){
-      if (rk >= maxrk){
+      			       double& maxrk){
+      //strictly greater than
+      if (rk > maxrk){
 	maxrk = rk;
 	return true;
       }

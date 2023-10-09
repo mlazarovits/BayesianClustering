@@ -52,7 +52,7 @@ class MergeTree : BaseTree{
 
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
-		void Merge(node* l, node* r);
+		node* Merge(node* l, node* r);
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
@@ -138,14 +138,10 @@ class MergeTree : BaseTree{
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
 			int k;
-			//if leaf node (ie r == _z && l == _z) -> set k = 1
+  			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-
-			//cout << "original points" << endl;
-			//x->points->Print();
-	
 			//center points in this cluster (bucket)
 			//this accounts for phi wraparound
 			Point transf = Point();
@@ -153,7 +149,6 @@ class MergeTree : BaseTree{
 			
 			//cout << "transformed points" << endl;
 			//x->points->Print();
-
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_alpha);
@@ -163,7 +158,6 @@ class MergeTree : BaseTree{
 			x->model->InitPriorParameters();
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
-
 
 			/*
 			cout << "Initial prior parameters" << endl;
@@ -185,7 +179,6 @@ class MergeTree : BaseTree{
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
 			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
-			
 			//cluster
 			double oldLogL = algo->EvalLogL();
 			//if(algo->GetNClusters() < 1){ cout << "Error: threshold too high for successful clustering with " << x->points->GetNPoints() << " points (" << x->points->Sumw() << " weighted). Please adjust accordingly to continue hierarchically clustering" << endl; return -999; }

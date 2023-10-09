@@ -50,9 +50,13 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 }
 
 
-void MergeTree::Merge(node* l, node* r){
+node* MergeTree::Merge(node* l, node* r){
 	node* x = CalculateMerge(l, r);
+	x->l = l;
+	x->r = r;
+	cout << "Merge - l pts: " << x->l->points->GetNPoints() << " r pts: " << x->r->points->GetNPoints() << endl;
 	Remove(l);
 	Remove(r);
 	Insert(x);
+	return x;
 }

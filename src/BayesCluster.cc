@@ -77,8 +77,9 @@ void BayesCluster::_cluster(){
 		if (verbose) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
       		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
 		//get eta phi (and time!) of new point - centroid of points in combined vertices
+		
 		//update DNN with RemoveCombinedAddCombination
-			//this should also update the merge tree	
+		//this should also update the merge tree	
 	}
 */
 }

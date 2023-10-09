@@ -153,7 +153,7 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
 void Dnn2piCylinder::_CreateNecessaryMirrorPoints(
 			  const vector<int> & plane_indices,
 			  vector<int> & updated_plane_points) {
-cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
+if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
   vector<PointCollection> new_plane_points;
   //vector<EtaPhi> new_plane_points;
 
@@ -182,6 +182,7 @@ cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
 
     // now proceed to prepare the point for addition
     new_plane_points.push_back(_remap_phi(pts));
+    //new_plane_points.push_back(_remap_phi(position));
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
   }
@@ -190,7 +191,7 @@ cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
   vector<int> indices_added;     // will be filled as result of call
   _DNN->RemoveAndAddPoints(indices_to_remove,new_plane_points,indices_added, 
 			   updated_plane_points);
-cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
+if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
 
 }
 
@@ -261,7 +262,7 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
 void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
 				const vector<PointCollection>& points_to_add,
 				vector<int> & indices_added,
-				vector<int> & indices_of_updated_neighbours) {
+				vector<int> & indices_of_updated_neighbours, bool merge) {
 
   // translate from "cylinder" indices of points to remove to the
   // plane indices of points to remove, bearing in mind that sometimes
@@ -295,7 +296,7 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
   // TODO: make sure the below functions (RemoveAnd... and CreateNecessary...) are calling PointCollection versions 
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
-			     plane_indices_added, updated_plane_neighbours);
+			     plane_indices_added, updated_plane_neighbours, merge);
 
   vector<int> extra_updated_plane_neighbours;
   _CreateNecessaryMirrorPoints(updated_plane_neighbours,

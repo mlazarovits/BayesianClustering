@@ -150,7 +150,7 @@ public:
   virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours) = 0;
+			  std::vector<int> & indices_of_updated_neighbours, bool merge = false) = 0;
 
 
   /// Remove the point labelled by index and return the list of
@@ -182,9 +182,10 @@ public:
     indices_to_remove[0] = index1;
     indices_to_remove[1] = index2;
     points_to_add[0] = newcluster;
+    bool merge = true;
     RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
-		       indices_of_updated_neighbours
-		       );
+		       indices_of_updated_neighbours,
+		       merge);
     index3 = indices_added[0];
   };
   
@@ -208,6 +209,7 @@ public:
 		       indices_of_updated_neighbours
 		       );
     index3 = indices_added[0];
+  
   };
 
   /// destructor -- here it is now implemented

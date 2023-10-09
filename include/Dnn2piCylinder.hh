@@ -109,7 +109,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours);
+			  std::vector<int> & indices_of_updated_neighbours, bool merge = false);
   ~Dnn2piCylinder();
 
 
