@@ -659,7 +659,6 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
       _supervertex[index].vertex = _TR.insert(CPoint(eta_center, 
 				  phi_center));
     }
-   cout << "add new node" << endl; 
    //add new node that's just blank
     _supervertex[index].n = newnode;
     PointCollection pc = points_to_add[ia];
@@ -670,10 +669,10 @@ cout << indices_to_remove.size() << " points to be removed" << endl;
        assert(pc.GetNPoints() == 1);
        _merge_tree->AddLeaf(&pc.at(0));
        _supervertex[index].n = _merge_tree->Get(_merge_tree->GetNClusters() - 1);
-      cout << "update with given points " << points_to_add[ia].GetNPoints() << " " << pc.GetNPoints() << " " << _supervertex[index].n->points->GetNPoints() << endl;
+      //cout << "update with given points " << points_to_add[ia].GetNPoints() << " " << pc.GetNPoints() << " " << _supervertex[index].n->points->GetNPoints() << endl;
     }
 
-    cout << "removeaddpts - new vtx has " << _supervertex[index].n->points->GetNPoints() << " pts" << endl;
+    //cout << "removeaddpts - new vtx has " << _supervertex[index].n->points->GetNPoints() << " pts" << endl;
     // check if this leads to a coincidence
     int coinciding_index = _CheckIfVertexPresent(_supervertex[index].vertex, index);
     if (coinciding_index == index){
@@ -826,7 +825,7 @@ void DnnPlane::_SetNearest (const int j) {
 void DnnPlane::_SetAndUpdateNearest(
 			  const int j, 
 			  vector<int> & indices_of_updated_neighbours) {
- cout << "_SetAndUpdateNearest - start" << endl; 
+ if(_verbose) cout << "_SetAndUpdateNearest - start" << endl; 
   vector<int> indices_of_updated_merges;
 
   //cout << "SetAndUpdateNearest for point " << j << endl;
@@ -882,11 +881,11 @@ void DnnPlane::_SetAndUpdateNearest(
 	_supervertex[vcindx].NNindex = j;
 	indices_of_updated_neighbours.push_back(vcindx);
       }
-cout << _supervertex[j].n->points->GetNPoints() << " npts in current vtx" << endl;
+//cout << _supervertex[j].n->points->GetNPoints() << " npts in current vtx" << endl;
 
       if (_best_merge_prob_with_hint(_supervertex[vcindx], _supervertex[j], 
 				  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
-				  dist, _supervertex[vcindx].MaxRk)){
+				  rk, _supervertex[vcindx].MaxRk)){
 	if (_verbose) cout << vcindx << "'s best merge becomes " << current->info().val() << endl;
 	_supervertex[vcindx].MaxRkindex = j;
 	indices_of_updated_merges.push_back(vcindx);
@@ -917,7 +916,7 @@ cout << _supervertex[j].n->points->GetNPoints() << " npts in current vtx" << end
   _supervertex[j].NNdistance = mindist;
   _supervertex[j].MaxRk = maxrk;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
- cout << "_SetAndUpdateNearest - end" << endl; 
+ if(_verbose) cout << "_SetAndUpdateNearest - end" << endl; 
 }
 
 //FASTJET_END_NAMESPACE
