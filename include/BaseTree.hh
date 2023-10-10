@@ -32,6 +32,19 @@ class BaseTree{
 			int color;
 			//for debugging - making sure correct merges are happening	
 			//std::string name;
+			
+			//node* operator =(const node* n){
+			node(const node& n){
+				points = n.points;
+				l = n.l;
+				r = n.r;
+				val = n.val;
+				d = n.d;
+				model = n.model;
+				prob_tk = n.prob_tk;
+				color = n.color;
+			}
+
 		};
 		struct listnode{
 			//posterior value in here
