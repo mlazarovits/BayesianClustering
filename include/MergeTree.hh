@@ -52,7 +52,9 @@ class MergeTree : BaseTree{
 
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
+		double CalculateMerge(int i, int j);
 		node* Merge(node* l, node* r);
+		void Merge(int i, int j);
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
@@ -64,8 +66,12 @@ class MergeTree : BaseTree{
 			}
 			else
 				return;
-			_clusters.erase(_clusters.begin()+idx);
+			//_clusters.erase(_clusters.begin()+idx);
+			//setting the node to null matches the implementation in the FastJet code (see DnnPlane)
+			_clusters[idx] = NULL;
 		}
+
+		void Remove(int i){ _clusters[i] = NULL; }
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
