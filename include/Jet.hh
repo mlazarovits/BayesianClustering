@@ -240,13 +240,10 @@ class Jet{
 		void _set_time(){
 			_t = 0;
 			double norm = 0;
-cout << "resetting time with " << _rhs.size() << " rechits" << endl;
 			for(int i = 0; i < _nRHs; i++){
-				cout << "rechit #" << i << " time: " << _rhs[i].t() << " E: " << _rhs[i].E() << endl; 
 				_t += _rhs[i].t()*_rhs[i].E();
 				norm += _rhs[i].E();
 			}
-			cout << "_t: " << _t << " norm: " << norm << endl;
 			_t /= norm;
 		}
 
