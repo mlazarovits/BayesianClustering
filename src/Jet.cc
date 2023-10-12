@@ -43,10 +43,6 @@ Jet::Jet(double px, double py, double pz, double E){
 }
 
 Jet::Jet(JetPoint rh, Point vtx){
-	_t = rh.x(0);
-	//_x = rh.x(1);
-	//_y = rh.x(2);
-	//_z = rh.x(3);
 	
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
@@ -54,6 +50,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 	_E = rh.E();
 	_eta = rh.eta();
 	_phi = rh.phi();
+	_t = rh.t();
 	_mass = mass();
 	
 	if(vtx.Dim() != 3){
@@ -86,9 +83,9 @@ Jet::Jet(vector<JetPoint> rhs){
 	for(int i = 0; i < _nRHs; i++){
 		
 		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x(0);
-		y = rhs[i].x(1);
-		z = rhs[i].x(2);
+		x = rhs[i].x();
+		y = rhs[i].y();
+		z = rhs[i].z();
 		theta = atan2( sqrt(x*x + y*y), z );
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
 		_px += pt*cos(rhs[i].phi());
@@ -101,6 +98,7 @@ Jet::Jet(vector<JetPoint> rhs){
 	}
 	_kt2 = _px*_px + _py*_py;
 	_ensure_valid_rap_phi();
+	_set_time();
 }
 
 Jet::Jet(vector<JetPoint> rhs, Point vtx){
@@ -116,9 +114,9 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	double theta, pt, x, y, z;
 	for(int i = 0; i < _nRHs; i++){
 		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x(0);
-		y = rhs[i].x(1);
-		z = rhs[i].x(2);
+		x = rhs[i].x();
+		y = rhs[i].y();
+		z = rhs[i].z();
 		theta = atan2( sqrt(x*x + y*y), z );
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
 		_px += pt*cos(rhs[i].phi());
@@ -131,6 +129,7 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	}
 	_kt2 = _px*_px + _py*_py;
 	_ensure_valid_rap_phi();
+	_set_time();
 }
 
 
@@ -184,11 +183,13 @@ void Jet::add(const Jet& jt){
 	_py += jt.py();
 	_pz += jt.pz();
 	_E  += jt.E();
+	//set time to be energy-weighted average of rec hit times
+	_set_time();
 
 	//recalculate kt2 of cluster
 	_kt2 = _px*_px + _py*_py;
 	//recalculate eta and phi of cluster
-	_ensure_valid_rap_phi();
+	_set_rap_phi();
 }
 
 
@@ -212,11 +213,12 @@ void Jet::add(const JetPoint& rh){
 	_py += pt*sin(rh.phi());
 	_pz += pt*sinh(rh.eta());
 	_E  += rh.E();
-
+	//set time to be energy-weighted average of rec hit times
+	_set_time();
 	//recalculate kt2 of cluster
 	_kt2 = sqrt(pt);
 	//recalculate eta and phi of cluster
-	_ensure_valid_rap_phi();
+	_set_rap_phi();
 
 
 }

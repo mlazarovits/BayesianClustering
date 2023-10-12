@@ -19,7 +19,6 @@
 //pt, eta, phi, m
 //px, py, pz, E
 //x, y, z, t
-//TODO: change default space coords to eta phi
 //point with more physics aspects - ecal cell
 class Jet{
 	public:
@@ -200,10 +199,14 @@ class Jet{
 			return _phi - n * double(2.* pi);
 
 		}
+
+
+
 	
 	protected:
 		void _ensure_valid_rap_phi() const{
-			if(_phi == _invalid_phi) _set_rap_phi();
+			if((_phi == _invalid_phi) || (_phi < 0) || (_phi >= twopi)) _set_rap_phi();
+  			assert(_phi >= 0.0 && _phi < 2*acos(-1));
 		}
 		void _set_rap_phi() const{
 			if (_kt2 == 0.0) {
@@ -232,6 +235,20 @@ class Jet{
 			}
 		}
 		void SetBaby(Jet* child){ _child = child; }
+
+		//set time to be energy weighted time
+		void _set_time(){
+			_t = 0;
+			double norm = 0;
+cout << "resetting time with " << _rhs.size() << " rechits" << endl;
+			for(int i = 0; i < _nRHs; i++){
+				cout << "rechit #" << i << " time: " << _rhs[i].t() << " E: " << _rhs[i].E() << endl; 
+				_t += _rhs[i].t()*_rhs[i].E();
+				norm += _rhs[i].E();
+			}
+			cout << "_t: " << _t << " norm: " << norm << endl;
+			_t /= norm;
+		}
 
 	private:
 		//momentum four vector
