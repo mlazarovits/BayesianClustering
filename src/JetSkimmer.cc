@@ -66,6 +66,10 @@ void JetSkimmer::Skim(){
 		_prod->GetRecHits(rhs, i);
 		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
+		for(int r = 0; r < rhs.size(); r++){
+			t_rhs->Fill(rhs[r].t());
+		}
+
 		int njets = _base->Jet_energy->size();	
 		nTrueJets->Fill((double)_base->Jet_energy->size());	
 		if(njets < 1) continue;
@@ -90,7 +94,7 @@ void JetSkimmer::Skim(){
 		}
 
 	}
-
+	WriteHists(ofile);
 }
 
 

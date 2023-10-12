@@ -32,6 +32,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* tPV_res_avg = new TH1D("tPV_res_avg","tPV_res_avg",100,-10.,10.);
 		TH1D* tPV_res_lead = new TH1D("tPV_res_lead","tPV_res_lead",100,-10.,10.);
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
+		TH1D* t_rhs = new TH1D("t_rhs","t_rhs",100,-30,30); 
 
 		//this is for one jet
 		//all hists referenced here are in hists1D
@@ -162,6 +163,9 @@ class JetSkimmer : public BaseSkimmer{
 				cv->Write();
 
 			}
+			TCanvas* cv = new TCanvas("rh_time", "");
+			TDRHist(t_rhs, cv, "rh_time", "rh_time", "a.u.");
+			cv->Write();
 			ofile->Close();
 
 		}
