@@ -44,7 +44,14 @@ class MergeTree : BaseTree{
 		
 		node* Get(int i){ return _clusters[i]; }
 
-		vector<node*> GetClusters(){ return _clusters; }
+		vector<node*> GetClusters(){ 
+			vector<node*> clusters;
+			for(int i = 0; i < _clusters.size(); i++){
+				if(_clusters[i] == nullptr) continue;
+				clusters.push_back(_clusters[i]);
+			} 
+			return clusters;
+		}
 		
 		void Insert(node* x){
 			_clusters.push_back(x);
@@ -75,7 +82,14 @@ class MergeTree : BaseTree{
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
-		int GetNClusters(){ return (int)_clusters.size(); }	
+		int GetNClusters(){ 			
+			vector<node*> clusters;
+			for(int i = 0; i < _clusters.size(); i++){
+				if(_clusters[i] == nullptr) continue;
+				clusters.push_back(_clusters[i]);
+			}
+		return (int)clusters.size(); }	
+			
 
 		void SetSubclusterAlpha(double a){ _emAlpha = a; }		
 
