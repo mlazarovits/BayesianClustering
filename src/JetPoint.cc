@@ -2,10 +2,10 @@
 
 
 JetPoint::JetPoint(){
-	_t = -999;
 	_x = -999;
 	_y = -999;
 	_z = -999;
+	_t = -999;
 
 	_space = Point({_x, _y, _z, _t});
 
@@ -19,10 +19,10 @@ JetPoint::JetPoint(){
 
 
 JetPoint::JetPoint(double x, double y, double z, double t){
-	_t = t;
 	_x = x;
 	_y = y;
 	_z = z;
+	_t = t;
 
 	_space = Point({_x, _y, _z, _t});
 	
@@ -42,10 +42,10 @@ JetPoint::JetPoint(Point pt){
 	}
 
 	_space = pt;
-	_t = _space.at(0);
-	_x = _space.at(1);
-	_y = _space.at(2);
-	_z = _space.at(3);
+	_x = _space.at(0);
+	_y = _space.at(1);
+	_z = _space.at(2);
+	_t = _space.at(3);
 	
 	_eta = _invalid_eta;
 	_phi = _invalid_phi;

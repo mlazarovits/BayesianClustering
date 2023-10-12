@@ -58,7 +58,6 @@ class JetPoint{
 		}
 		//phi
 		double phi() const{
-			_ensure_valid_rap_phi();
 			return phi_02pi();
 		}
 
