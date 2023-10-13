@@ -214,6 +214,7 @@ class Jet{
 		void _ensure_valid_rap_phi() const{
 			if(_phi == _invalid_phi) _set_rap_phi();
 		}
+		//as done in FastJet
 		void _set_rap_phi() const{
 			if (_kt2 == 0.0) {
 				_phi = 0.0; } 
