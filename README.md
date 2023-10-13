@@ -8,7 +8,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- `make`
 
 ### Dependencies
-- ROOT
+- ROOT for producers and skimmers
 - Python at least v3.x for macros for visualization
 - [eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 - [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)
