@@ -26,7 +26,6 @@ void BayesHierCluster::AddData(PointCollection* pc){
 
 
 vector<node*> BayesHierCluster::Cluster(){
-cout << "BHC::Cluster - start" << endl;
 	int n;
 	node* di; node* dj;
 	double rk;
@@ -69,13 +68,13 @@ cout << "BHC::Cluster - start" << endl;
 		}
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
-		if(_verb > 0){
+		if(_verb > 4){
 		cout << "pre pop" << endl;
 		_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
 		if(max == nullptr) break;
-		cout << "max merge rk: " << max->val << endl;
+		if(_verb > 2) cout << "max merge rk: " << max->val << endl;
 
 		//if rk < 0.5: cut tree
 		double maxval = 0.5;
@@ -83,8 +82,10 @@ cout << "BHC::Cluster - start" << endl;
 			if(_verb > 0) cout << "reached min rk = " << max->val << " <  " << maxval << " - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
 			break;
 		}
-		//cout << "post pop" << endl;
-		//_list.Print();
+		if(_verb > 4){
+		cout << "post pop" << endl;
+		_list.Print();
+		}
 		//merge corresponding subtrees in merge tree: merge = x (node)
 		if(_verb > 4){
 		cout << "merging clusters" << endl;
@@ -106,17 +107,20 @@ cout << "BHC::Cluster - start" << endl;
 		_mergeTree->Insert(max);
 		_mergeTree->Remove(max->l);
 		_mergeTree->Remove(max->r);
-		
-	//	cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
-	//	cout << "max merge has: " << max->points->GetNPoints() << " points" << endl;
-	//	max->points->Print();
+	
+		if(_verb > 4){	
+		cout << "n clusters in merge tree: " << _mergeTree->GetNClusters() << endl;
+		cout << "max merge has: " << max->points->GetNPoints() << " points" << endl;
+		max->points->Print();
+		}	
 		
 		//for all nodes in merge tree: check against newly formed cluster
 		NodeStack _list1;
 		for(int i = 0; i < _mergeTree->GetNClusters(); i++){
 			di = _mergeTree->Get(i);
 			if(di == max) continue;
-			//cout << "calculating merge for max and " << endl; di->points->Print();
+			if(di == nullptr) continue;
+			if(_verb > 4){ cout << "calculating merge for max and " << endl; di->points->Print();}
 			node* x = _mergeTree->CalculateMerge(di, max);
 			if(isnan(x->val)){  return _mergeTree->GetClusters(); }
 			//modify probability of merge (rk) by distance constraint if specified

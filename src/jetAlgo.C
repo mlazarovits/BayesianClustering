@@ -9,12 +9,16 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <time.h>
 
 using std::string;
 using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
+	//to track computation time from beginning of program
+	clock_t t = clock();
+	
 	
 	string fname = "jet";
 	bool hprint = false;
@@ -203,7 +207,7 @@ int main(int argc, char *argv[]){
 		testjet.add(rhs[i]);
 	}
 
-	cout << testjet.GetNConstituents() << " constituents in event " << evt << endl;
+	cout << testjet.GetNConstituents() << " rechits in event " << evt << endl;
 
 	/*
 	map<string, Matrix> params;
@@ -245,5 +249,7 @@ int main(int argc, char *argv[]){
 	//vector<Jet> finalJets = clusterTree.GetJets(depth = d)
 	//write finalJets to same file (space, time, momentum, energy)
 
+	t = clock() - t;
+	cout << "Total program time elapsed: " << (float)t/CLOCKS_PER_SEC << " seconds." << endl;
 
 }
