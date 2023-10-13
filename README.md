@@ -55,7 +55,9 @@ There are muliple visualization classes:
 	- a jet's (node's) clustering history can be traced back individually through its parents
 - `FindSubjets` only calls the variational EM algorithm with Gaussian mixture model
 	- can be done in $\eta - \phi$ space or $X - Y - Z$ space, both with a time dimension
-
+- `Jet` and `JetPoint` (the ECAL rechit counterpart of `Jet`) both store the phi ($\phi$) coordinate on a $[-\pi, \pi]$ range
+	- `phi_02pi()` for both classes returns phi on a range from $[0, 2\pi]$ but still keeps the original coordinate value
+	- for `Jet`s that are instantiated from a momentum four-vector with no external $\phi$ or $\eta$ provided via the `SetPhi()` or `SetEta()` functions, these coordinates will be calculated as they are in CMSSW
 
 ### Plotting
 - to add a new histogram to the skims, need to declare it in BaseSkimmer and push it back to the vector in ctor
