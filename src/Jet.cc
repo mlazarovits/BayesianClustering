@@ -1,5 +1,7 @@
 #include "Jet.hh"
 //TODO: change default space coords to eta phi
+#include <iostream>
+using std::cerr;
 
 Jet::Jet(){
 	_E = 0;
@@ -54,7 +56,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 	_mass = mass();
 	
 	if(vtx.Dim() != 3){
-		cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
+		cerr << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
 	_vtx = vtx;
@@ -106,7 +108,7 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);
 
 	if(vtx.Dim() != 3){
-		cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
+		cerr << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
 	_vtx = vtx;
@@ -134,7 +136,6 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 
 
 Jet::Jet(const Jet& j){
-//cout << "Jet copy ctor - start" << endl;
 	_px = j.px();
 	_py = j.py();
 	_pz = j.pz();
@@ -143,7 +144,6 @@ Jet::Jet(const Jet& j){
 	_eta = j.eta();
 	_phi = j.phi();
 	_t = j.time();
-//cout << "eta: " << _eta << " phi: " << _phi << " time: " << _t << endl;
 
 	_kt2 = j.kt2();
 	_mass = j.mass();
@@ -155,12 +155,6 @@ Jet::Jet(const Jet& j){
 	_vtx = j.GetVertex();
 	_rhs = j.GetJetPoints();
 	_nRHs = (int)_rhs.size();
-
-/*
-	for(int i = 0; i < _nRHs; i++) 
-		cout << "_rhs # "<< i << " - eta: " << _rhs[i].eta() << " phi: " << _rhs[i].phi() << " time: " << _rhs[i].t() << " energy: " << _rhs[i].E() << endl;
-cout << "Jet copy ctor - end" << endl;
-*/
 
 }
 
@@ -180,20 +174,12 @@ bool Jet::operator !=(Jet& jet) const{
 //add jet jt to this
 //adding four vectors - recalculate invariant mass and other kinematic quantities
 void Jet::add(const Jet& jt){
-cout << "Jet::add - start" << endl;
-cout << _nRHs << " rhs initially (" << _rhs.size() << ")" << endl;
-
 	//add rhs from jt
 	vector<JetPoint> rhs;
 	jt.GetConstituents(rhs);
 
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs += (int)rhs.size();
-cout << _nRHs << " rhs after add (" << _rhs.size() << ")" << endl;
-
-cout << "jet points" << endl;
-	for(int i = 0; i < _nRHs; i++) 
-		cout << "_rhs # "<< i << " - eta: " << _rhs[i].eta() << " phi: " << _rhs[i].phi() << " time: " << _rhs[i].t() << " energy: " << _rhs[i].E() << endl;
 	
 	//add momentum
 	_px += jt.px();
@@ -207,7 +193,6 @@ cout << "jet points" << endl;
 	_kt2 = _px*_px + _py*_py;
 	//recalculate eta and phi of cluster
 	_set_rap_phi();
-cout << "Jet::add - end" << endl;
 }
 
 
@@ -216,7 +201,7 @@ void Jet::add(const JetPoint& rh){
 	_nRHs += 1;
 
 	if(_vtx.Dim() != 3){
-		cout << "Error: must provide 3 dimensional spatial coordinates for vertex for momentum direction." << endl;
+		cerr << "Error: must provide 3 dimensional spatial coordinates for vertex for momentum direction." << endl;
 		return;
 	}
 	//direction between ECAL position and vertex:q
