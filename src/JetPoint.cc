@@ -14,7 +14,11 @@ JetPoint::JetPoint(){
 	
 	_idx = -999;
 	_rhId = -999;
+	
+	_w = 1;
+
 }
+
 
 
 
@@ -31,6 +35,7 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 	
 	_idx = -999;
 	_rhId = -999;
+	_w = 1;
 
 }
 
@@ -52,6 +57,7 @@ JetPoint::JetPoint(Point pt){
 
 	_idx = -999;
 	_rhId = -999;
+	_w = 1;
 }
 
 
