@@ -34,7 +34,7 @@ class BayesCluster{
 			// and any type that has [] subscript access to the momentum
 			// components, such as CLHEP HepLorentzVector).
 			for (unsigned int i = 0; i < pseudojets.size(); i++) {
-			  _jets.push_back(pseudojets[i]);}
+			_jets.push_back(pseudojets[i]);}
 	
 			_initialize_and_run();
 		};
@@ -55,10 +55,11 @@ class BayesCluster{
 		typedef std::pair<int,int> verts;
 		typedef std::pair<double,verts> RkEntry;
 		typedef std::pair<double,verts> CompEntry;
+		typedef std::pair<int,pair<int,double>> InvCompEntry;
 		//use a multimap so multiple keys can have the same value
 		//also it's automatically sorted
 		typedef std::multimap<double,verts> CompareMap;
-
+		typedef std::map<int,pair<int,double>> InvCompareMap;
 		struct history_element{
 			/// index in _history where first parent of this jet
 			/// was created (InexistentParent if this jet is an
@@ -156,9 +157,17 @@ class BayesCluster{
 				const double rk,
 				int& newjet_k){
 			Jet newjet;
+			cout << "jet # " << jet_i << " - eta: " << _jets[jet_i].eta() << " phi: " << _jets[jet_i].phi_02pi() << " time: " << _jets[jet_i].t() << " energy: " << _jets[jet_i].E() << endl;
+			cout << "jet # " << jet_j << " - eta: " << _jets[jet_j].eta() << " phi: " << _jets[jet_j].phi_02pi() << " time: " << _jets[jet_j].t() << " energy: " << _jets[jet_j].E() << endl;
 			recombine(_jets[jet_i], _jets[jet_j], newjet);
 			_jets.push_back(newjet);
 			newjet_k = _jets.size() - 1;
+
+			cout << "newjet # "<< newjet_k << " - eta: " << newjet.eta() << " phi: " << newjet.phi_02pi() << " time: " << newjet.t() << " energy: " << newjet.E() << endl;
+
+			for(int i = 0; i < newjet.GetJetPoints().size(); i++){
+				cout << "point # "<< i << " - eta: " << newjet.GetJetPoints()[i].eta() << " phi: " << newjet.GetJetPoints()[i].phi_02pi() << " time: " << newjet.GetJetPoints()[i].t() << " energy: " << newjet.GetJetPoints()[i].E() << endl;
+			}
 
 			//do history stuff
 			int newstep_k = _history.size();
@@ -176,7 +185,7 @@ class BayesCluster{
 		//the straight up addition of 3-mom and E is the "E_scheme" recombination
 		//option in FastJet
 		void recombine(const Jet& pa, const Jet& pb, Jet& pab) const{ 
-			pab = pa;
+			pab = Jet(pa);
 			pab.add(pb);
 		}
 
@@ -226,6 +235,7 @@ class BayesCluster{
  
 		}
 		void _add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob = true);
+		void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
 
 	private:
 		vector<Jet> _jets;
