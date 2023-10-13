@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
 		gev = 0;
 		for(int i = 0; i < (int)rhs.size(); i++) gev += rhs[i].E();
 		gev = gev/(double)rhs.size(); //gev = k = sum_n E_n/n pts
-		cout << "gev: " << gev << endl;
+//		cout << "gev: " << gev << endl;
 		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(rhs[i].E()/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k  
 	}
 
