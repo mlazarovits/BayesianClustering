@@ -25,7 +25,8 @@ class JetPoint{
 		void SetEnergy(double e){ _E = e;}
 		void SetPhi(double p){ _phi = p; _ensure_valid_rap_phi(); }
 		void SetEta(double e){ _eta = e; _ensure_valid_rap_phi(); }
-
+		void SetWeight(double w){ _w = w; } 
+		double GetWeight(){ return _w; } 
 		//return element i in position (space-time) four vector
 		double x(int i) const{ return _space.at(i); }
 
@@ -181,7 +182,8 @@ class JetPoint{
 		int _idx;
 
 
-
+		//weight of point
+		double _w;
 
 
 };

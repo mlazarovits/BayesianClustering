@@ -114,7 +114,13 @@ class Jet{
 		//deltaR between this and another jet pt
 		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
 		
-
+		void SetWeight(double w){ for(int i = 0; i < _nRHs; i++) _rhs[i].SetWeight(w); }
+		void SetWeight(vector<double> w){ if(w.size() != _nRHs) return;
+			for(int i = 0; i < _nRHs; i++) _rhs[i].SetWeight(w[i]); }
+		void GetWeights(vector<double>& ws){
+			ws.clear();
+			for(int i = 0; i < _nRHs; i++) ws.push_back(_rhs[i].GetWeight()); 
+		}
 
 		vector<JetPoint> GetJetPoints() const{return _rhs;}
 		
