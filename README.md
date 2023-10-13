@@ -55,9 +55,9 @@ There are muliple visualization classes:
 	- a jet's (node's) clustering history can be traced back individually through its parents
 - `FindSubjets` only calls the variational EM algorithm with Gaussian mixture model
 	- can be done in $\eta - \phi$ space or $X - Y - Z$ space, both with a time dimension
-- `Jet` and `JetPoint` (the ECAL rechit counterpart of `Jet`) both store the phi ($\phi$) coordinate on a $[-\pi, \pi]$ range
+- `Jet` and `JetPoint` (the massless counterpart of `Jet`, a version of a RecHit) both store the phi ($\phi$) coordinate on a $[-\pi, \pi]$ range
 	- `phi_02pi()` for both classes returns phi on a range from $[0, 2\pi]$ but still keeps the original coordinate value
-	- for `Jet`s that are instantiated from a momentum four-vector with no external $\phi$ or $\eta$ provided via the `SetPhi()` or `SetEta()` functions, these coordinates will be calculated as they are in CMSSW
+	- for `Jet`s and `JetPoint`s that are instantiated from a momentum four-vector with no external $\phi$ or $\eta$ provided via the `SetPhi()` or `SetEta()` functions, these coordinates will be calculated as they are in [FastJet](https://fastjet.fr/repo/doxygen-3.4.2/PseudoJet_8cc_source.html) for `Jet`s and ROOT for `JetPoint`s ([eta](https://root.cern.ch/doc/master/eta_8h_source.html#l00048) and [phi](https://root.cern.ch/doc/master/GenVector_2Cartesian3D_8h_source.html#l00117))
 	- `Jet`s are instantiated with a momentum four-vector $(p_x, p_y, p_z, E)$ (in that order) while a `JetPoint` is instantiated from a spatial fourvector $(x, y, z, t)$
 		- this is because a `JetPoint` (or RecHit) has no mass and no associated vertex (only spatial and energy information) and therefore a momentum four-vector cannot be specified (unless you assume a zero-mass scenario and provide the coordinates for the vertex)
 - for the Bayesian Hierarchical Clustering (BHC) a distance constraint of $pi/2$ is defaulted to in `BayesCluster`
