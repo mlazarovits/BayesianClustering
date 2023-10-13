@@ -185,8 +185,9 @@ class Jet{
 		 }
 		//sets phi [0,2pi]
 		double phi_02pi() const{
-			_ensure_valid_rap_phi();
-			return _phi; 
+			if(_phi < 0) return _phi + 2*acos(-1);
+			else if(_phi > 2*acos(-1)) return _phi - 2*acos(-1);
+			else return _phi; 
 		}
 
 		//wraps phi around pi, [-pi,pi]
@@ -205,8 +206,7 @@ class Jet{
 	
 	protected:
 		void _ensure_valid_rap_phi() const{
-			if((_phi == _invalid_phi) || (_phi < 0) || (_phi >= twopi)) _set_rap_phi();
-  			assert(_phi >= 0.0 && _phi < 2*acos(-1));
+			if(_phi == _invalid_phi) _set_rap_phi();
 		}
 		void _set_rap_phi() const{
 			if (_kt2 == 0.0) {

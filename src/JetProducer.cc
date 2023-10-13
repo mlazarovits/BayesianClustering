@@ -150,13 +150,10 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 
 		j = Jet(rh, vtx);
-
-		
 		jets.push_back(j);
 	}	
 }
 
-//ctor from rec hit collection - integrating into ntuplizer - in CMSSW
 
 void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
 	//reset to empty 3-dim point	

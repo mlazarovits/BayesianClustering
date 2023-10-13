@@ -32,8 +32,9 @@ class JetPoint{
 
 		//sets phi [0,2pi]
 		double phi_02pi() const{
-			_ensure_valid_rap_phi();
-			return _phi; 
+			if(_phi < 0) return _phi + 2*acos(-1);
+			else if(_phi > 2*acos(-1)) return _phi - 2*acos(-1);
+			else return _phi; 
 		}
 
 		//wraps phi around pi, [-pi,pi]
@@ -58,7 +59,7 @@ class JetPoint{
 		}
 		//phi
 		double phi() const{
-			return phi_02pi();
+			return _phi;
 		}
 
 

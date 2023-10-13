@@ -134,6 +134,7 @@ Jet::Jet(vector<JetPoint> rhs, Point vtx){
 
 
 Jet::Jet(const Jet& j){
+//cout << "Jet copy ctor - start" << endl;
 	_px = j.px();
 	_py = j.py();
 	_pz = j.pz();
@@ -142,6 +143,7 @@ Jet::Jet(const Jet& j){
 	_eta = j.eta();
 	_phi = j.phi();
 	_t = j.time();
+//cout << "eta: " << _eta << " phi: " << _phi << " time: " << _t << endl;
 
 	_kt2 = j.kt2();
 	_mass = j.mass();
@@ -151,8 +153,15 @@ Jet::Jet(const Jet& j){
 	_parent2 = j._parent2;
 	_idx = j.GetUserIdx();
 	_vtx = j.GetVertex();
-	_nRHs = j.GetNConstituents();
-	j.GetConstituents(_rhs);
+	_rhs = j.GetJetPoints();
+	_nRHs = (int)_rhs.size();
+
+/*
+	for(int i = 0; i < _nRHs; i++) 
+		cout << "_rhs # "<< i << " - eta: " << _rhs[i].eta() << " phi: " << _rhs[i].phi() << " time: " << _rhs[i].t() << " energy: " << _rhs[i].E() << endl;
+cout << "Jet copy ctor - end" << endl;
+*/
+
 }
 
 Jet::~Jet(){
@@ -171,12 +180,20 @@ bool Jet::operator !=(Jet& jet) const{
 //add jet jt to this
 //adding four vectors - recalculate invariant mass and other kinematic quantities
 void Jet::add(const Jet& jt){
+cout << "Jet::add - start" << endl;
+cout << _nRHs << " rhs initially (" << _rhs.size() << ")" << endl;
+
 	//add rhs from jt
 	vector<JetPoint> rhs;
 	jt.GetConstituents(rhs);
 
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs += (int)rhs.size();
+cout << _nRHs << " rhs after add (" << _rhs.size() << ")" << endl;
+
+cout << "jet points" << endl;
+	for(int i = 0; i < _nRHs; i++) 
+		cout << "_rhs # "<< i << " - eta: " << _rhs[i].eta() << " phi: " << _rhs[i].phi() << " time: " << _rhs[i].t() << " energy: " << _rhs[i].E() << endl;
 	
 	//add momentum
 	_px += jt.px();
@@ -190,6 +207,7 @@ void Jet::add(const Jet& jt){
 	_kt2 = _px*_px + _py*_py;
 	//recalculate eta and phi of cluster
 	_set_rap_phi();
+cout << "Jet::add - end" << endl;
 }
 
 
