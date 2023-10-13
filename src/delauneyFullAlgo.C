@@ -10,12 +10,16 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <time.h>
 
 using std::string;
 using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
+	//to track computation time from beginning of program
+	clock_t t = clock();
+
 	
 	string fname = "jet";
 	bool hprint = false;
@@ -190,13 +194,20 @@ int main(int argc, char *argv[]){
 	JetProducer prod(file);
 
 	vector<Jet> rhs;
-	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
 	prod.GetRecHits(rhs,evt);
-
-
+	
 	cout << rhs.size() << " rechits in event " << evt << endl;
+	double gev;
+	if(weighted){
+		//need to transfer from GeV (energy) -> unitless (number of points)
+		gev = 0;
+		for(int i = 0; i < (int)rhs.size(); i++) gev += rhs[i].E();
+		gev = gev/(double)rhs.size(); //gev = k = sum_n E_n/n pts
+		cout << "gev: " << gev << endl;
+		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(rhs[i].E()/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k  
+	}
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -208,15 +219,21 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(1.,2,2); //no smear in time	
 
 	
-//	cout << "Clustering with BHC alpha = " << alpha << " and EM alpha = " << emAlpha << " and cutoff threshold = " << thresh << endl;
+	cout << "Clustering with BHC alpha = " << alpha << " and EM alpha = " << emAlpha << " and cutoff threshold = " << thresh << endl;
 	//cluster jets for 1 event
 
-	int nrhs = 5;
-	cout << "clustering first " << nrhs << " rechits" << endl;
-	rhs.resize(nrhs);
-	rhs.shrink_to_fit();
-	BayesCluster *algo = new BayesCluster(rhs);
+//	int nrhs = 75;
+//	cout << "clustering first " << nrhs << " rechits" << endl;
+//	rhs.resize(nrhs);
+//	rhs.shrink_to_fit();
 
+	BayesCluster *algo = new BayesCluster(rhs);
+	if(smeared) algo->SetDataSmear(smear);
+	algo->SetThresh(thresh);
+	algo->SetAlpha(alpha);
+	algo->SetSubclusterAlpha(emAlpha);
+	algo->SetVerbosity(verb);
+	algo->Cluster();
 
 
 // old implementation
@@ -237,4 +254,6 @@ int main(int argc, char *argv[]){
 	//write finalJets to same file (space, time, momentum, energy)
 
 
+	t = clock() - t;
+	cout << "Total program time elapsed: " << (float)t/CLOCKS_PER_SEC << " seconds." << endl;
 }

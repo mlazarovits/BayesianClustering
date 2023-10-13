@@ -19,21 +19,25 @@ void BayesCluster::_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	int n = (int)_jets.size();
 	vector<PointCollection> points(n);
-	double alpha = 0.5;
-	double subalpha = 0.1;
-	MergeTree* mt = new MergeTree(alpha);
-	mt->SetSubclusterAlpha(subalpha);
+	MergeTree* mt = new MergeTree(_alpha);
+	mt->SetSubclusterAlpha(_subalpha);
 	//set data smear
+	if(!_smear.empty()) mt->SetDataSmear(_smear);
+	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);
+	
+	vector<double> weight;
 	for (int i = 0; i < n; i++) {
 		PointCollection pc = PointCollection();
 		Point pt = Point(3);
 		pt.SetValue(_jets[i].rap(), 0);
 		pt.SetValue(_jets[i].phi_02pi(), 1);
 		pt.SetValue(_jets[i].time(), 2);
+		_jets[i].GetWeights(weight);
+		pt.SetWeight(weight[0]);
   		//make sure phi is in the right range
-		sanitize(pt);
+		_sanitize(pt);
   		if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
   		assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
 		pc.AddPoint(pt);
@@ -42,7 +46,7 @@ void BayesCluster::_cluster(){
 	}
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
-	//cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
+	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(points, ignore_nearest_is_mirror, mt, verbose);
 
 	//need to make a distance map like in FastJet, but instead of clustering
@@ -82,12 +86,12 @@ void BayesCluster::_cluster(){
 				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; ++it){
 					jet_i = it->second.first;
 					jet_j = it->second.second;
-					if(verbose)cout << "rk: " << BestRk << " with points: " << jet_i << ", " << jet_j << endl;
+					if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jet_i << ", " << jet_j << endl;
 					dist = InvDistMap[jet_i].second;
 					if(dist < mindist) mindist = dist;
 
 				}
-			if(verbose) cout << "mindist: " << mindist << " jet_i: " << DistMap.find(mindist)->second.first << " jet_j: " << DistMap.find(mindist)->second.second  << endl;
+			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << DistMap.find(mindist)->second.first << " jet_j: " << DistMap.find(mindist)->second.second  << endl;
 			jet_i = DistMap.find(mindist)->second.first; jet_j = DistMap.find(mindist)->second.second;
 		
 			}else{
@@ -95,11 +99,11 @@ void BayesCluster::_cluster(){
 				jet_j = BestRkPair.second;
 			}
 
-			if (verbose) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl; // GPS debugging
+			if (_verb > 0) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl; // GPS debugging
  			//also need to erase any impossible merges from map too
 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
-			if (verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
+			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() >= 1); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
@@ -112,8 +116,8 @@ void BayesCluster::_cluster(){
 				BestDistPair = map_it_dist->second;
 				jet_i = BestDistPair.first;
 				jet_j = BestDistPair.second;
-				if (verbose) cout << "BayesCluster found distance recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
-			if (verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
+				if (_verb > 0) cout << "BayesCluster found distance recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
+			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
 				//check validity (to see if it has been clustered before)
 				//if best match is between mirrored points AND there are no points that haven't been geometrically clustered yet,
 				//we're done
@@ -124,13 +128,13 @@ void BayesCluster::_cluster(){
 			} 
 		}
 		if(done){ cout << "done clustering" << endl; break;}
-if(verbose) cout << "get best rk for jet " << jet_i << " and " << jet_j << endl;
+if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; break; }	
 
 
 		int nn;
-		if(verbose) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
+		if(_verb > 0) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
       		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
 		// exit the loop because we do not want to look for nearest neighbours
@@ -148,7 +152,7 @@ if(verbose) cout << "get best rk for jet " << jet_i << " and " << jet_j << endl;
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-	if(verbose) cout << "updating map" << endl;
+	if(_verb > 1) cout << "updating map" << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
@@ -157,21 +161,26 @@ if(verbose) cout << "get best rk for jet " << jet_i << " and " << jet_j << endl;
 			_add_entry_to_maps(ii, DistMap, DNN, false);	
 			_add_entry_to_maps(ii, InvDistMap, DNN);
 		}
-		if(verbose) cout << "\n" << endl;
+		if(_verb > 0) cout << "\n" << endl;
 	}
 
 	//MergeTree* endmerge = DNN->GetMergeTree();
 	vector<node*> trees = mt->GetClusters();
 	cout << trees.size() << " final clusters" << endl;
+	double nmirror = 0;
 	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and mirror points
-		if(trees[i] == nullptr){ continue; }
-		if(trees[i]->points->mean().at(1) > 2*acos(-1)){ cout << "cluster #" << i << " is a mirrored point" << endl; continue; }
+		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){ nmirror++; continue; }
 		cout << "getting " << trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
 		trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
+	cout << nmirror << " mirror points." << endl;
 	//plotting stuff here
+	//FullViz3D plots = FullViz3D(tree);
+	//plots.SetVerbosity(_verb);
+	//plots.SetTransfFactor(gev);
+	//plots.Write(fname);
 	//get merge tree from DNN
 	//FullViz3D plots = FullViz3D() //see Clusterizer
 	

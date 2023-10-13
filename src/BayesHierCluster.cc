@@ -26,6 +26,7 @@ void BayesHierCluster::AddData(PointCollection* pc){
 
 
 vector<node*> BayesHierCluster::Cluster(){
+cout << "BHC::Cluster - start" << endl;
 	int n;
 	node* di; node* dj;
 	double rk;
@@ -35,7 +36,6 @@ vector<node*> BayesHierCluster::Cluster(){
 //	m_nclusters = (int)m_pts.size(); //needs to be updated
 
 	int it = 0;
-
 	//while(_mergeTree->GetNPoints() > 1){
 	int m_npts = _mergeTree->GetNClusters();
 	//construct rk list (NodeStack)
@@ -69,13 +69,13 @@ vector<node*> BayesHierCluster::Cluster(){
 		}
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
-	//	if(_verb > 0){
-	//	cout << "pre pop" << endl;
-	//	_list.Print();}
+		if(_verb > 0){
+		cout << "pre pop" << endl;
+		_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
 		if(max == nullptr) break;
-		//cout << "max merge rk: " << max->val << endl;
+		cout << "max merge rk: " << max->val << endl;
 
 		//if rk < 0.5: cut tree
 		double maxval = 0.5;
@@ -141,6 +141,7 @@ vector<node*> BayesHierCluster::Cluster(){
 
 	}
 
+cout << "BHC::Cluster - end" << endl;
 	return _mergeTree->GetClusters();
 }
 

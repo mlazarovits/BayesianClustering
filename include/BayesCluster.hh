@@ -14,6 +14,7 @@
 
 #include "Dnn2piCylinder.hh"
 #include "Jet.hh"
+#include "Matrix.hh"
 #include <iostream>
 #include <vector>
 
@@ -36,19 +37,26 @@ class BayesCluster{
 			for (unsigned int i = 0; i < pseudojets.size(); i++) {
 			_jets.push_back(pseudojets[i]);}
 	
-			_initialize_and_run();
+		//	_initialize_and_run();
+			
+			_thresh = -999;
+			_alpha = 0.1;
+			_subalpha = 0.5;
+			_smear = Matrix();
+
+			_verb = 0;
 		};
 		virtual ~BayesCluster(){ _jets.clear(); };
 
-		void sanitize(Point pt){
-			if(pt.Dim() < 2) return;
-  			double twopi = 6.28318530717;
-			double second = pt.at(1);
-			if (second <  0)     second += twopi; 
-			if (second >= twopi) second -= twopi;
-			pt.SetValue(second,1);
+		void Cluster(){
+			this->_cluster();
 		}
 
+		void SetThresh(double t){ _thresh = t; }
+		void SetDataSmear(const Matrix& cov){ _smear = cov; }		
+		void SetAlpha(double a){ _alpha = a; }
+		void SetSubclusterAlpha(double a){ _subalpha = a; }
+		void SetVerbosity(int v){ _verb = v; }
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
@@ -104,14 +112,29 @@ class BayesCluster{
 			/// if max_rk < 0.5, clustering can stop
 			double max_rk_so_far;
 		};
+		void _sanitize(Point pt){
+			if(pt.Dim() < 2) return;
+  			double twopi = 6.28318530717;
+			double second = pt.at(1);
+			if (second <  0)     second += twopi; 
+			if (second >= twopi) second -= twopi;
+			pt.SetValue(second,1);
+		}
 
 
-		void _initialize_and_run(){ 
+
+		//void _initialize_and_run(){ 
+		//	_fill_initial_history();
+		//	// don't run anything if the event is empty
+		//	if (n_particles() == 0) return;	
+
+		//	this->_cluster();
+		//};
+		void _initialize(){ 
 			_fill_initial_history();
 			// don't run anything if the event is empty
 			if (n_particles() == 0) return;	
 
-			this->_cluster();
 		};
 
 
@@ -236,6 +259,9 @@ class BayesCluster{
 
 		void _cluster();
 		int n_particles() const{ return _initial_n; }
+		double _thresh, _alpha, _subalpha;
+		Matrix _smear;
+		int _verb;
 	 
 };
 #endif
