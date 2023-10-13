@@ -214,7 +214,7 @@ class Jet{
 		void _ensure_valid_rap_phi() const{
 			if(_phi == _invalid_phi) _set_rap_phi();
 		}
-		//as done in FastJet
+		//as done in FastJet - https://fastjet.fr/repo/doxygen-3.4.2/PseudoJet_8cc_source.html
 		void _set_rap_phi() const{
 			if (_kt2 == 0.0) {
 				_phi = 0.0; } 
