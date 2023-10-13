@@ -38,6 +38,9 @@
 #include "DnnPlane.hh"
 //#include "fastjet/internal/numconsts.hh"
 
+#include <iostream>
+using std::cerr;
+
 //FASTJET_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
 
 
@@ -77,8 +80,9 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   /// includes alpha for BHC (a) and GMM (suba)
   Dnn2piCylinder(
 	const std::vector<PointCollection>& input_points, 
-	const bool & ignore_nearest_is_mirror,
-	const bool & verbose, double a = 0.5, double suba = 0.1);
+	const bool & ignore_nearest_is_mirror, MergeTree* mt,
+	const bool & verbose);
+  
 
   /// Returns the index of  the nearest neighbour of point labelled
   /// by ii (assumes ii is valid)
@@ -90,7 +94,12 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
 
   /// Returns the index of  the nearest neighbour of point labelled
   /// by ii (assumes ii is valid)
-  int NearestNeighbourProbIndex(const int ii) const ;
+  int NearestNeighbourProbIndex(const int ii, int& merge_index) const ;
+
+  /// Returns the index of  the nearest neighbour of point labelled
+  /// by ii (assumes ii is valid)
+  node* NearestNeighbourProbNode(const int ii) const ;
+  
 
   /// Returns the highest probability of merging point ii
   /// with any of its neighbors
@@ -109,7 +118,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours, bool merge = false);
+			  std::vector<int> & indices_of_updated_neighbours);
   ~Dnn2piCylinder();
 
 
@@ -229,7 +238,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   ///
   /// If conditions all hold, then create the mirror point, insert it
   /// into the _DNN structure, adjusting any nearest neighbours, and
-  /// return the list of plane points whose nearest neighbours have
+ // /// return the list of plane points whose nearest neighbours have
   /// changed (this will include the new neighbours that have just been
   /// added)
   void _CreateNecessaryMirrorPoints(
@@ -291,28 +300,48 @@ inline double Dnn2piCylinder::NearestNeighbourDistance(const int current) const 
  
 }
 
-inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current) const {
+inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current, int& merge_index) const {
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
+if(_verbose) cout << "current: " << current << " main idx: " << main_index << " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
   int plane_index;
   if (mirror_index == INEXISTENT_VERTEX ) {
     plane_index = _DNN->NearestNeighbourProbIndex(main_index);
+merge_index = main_index;
   } else {
     plane_index = (
-	_DNN->NearestNeighbourProb(main_index) < 
+	_DNN->NearestNeighbourProb(main_index) > 
 	_DNN->NearestNeighbourProb(mirror_index)) ? 
       _DNN->NearestNeighbourProbIndex(main_index) : 
       _DNN->NearestNeighbourProbIndex(mirror_index) ; 
+    merge_index = (
+	_DNN->NearestNeighbourProb(main_index) > 
+	_DNN->NearestNeighbourProb(mirror_index)) ? 
+      (main_index) : 
+      (mirror_index) ; 
   }
+
+  //infinite vertex - defined in Triangulation
+  //no match
+  if(plane_index == -1){
+	return current;
+  }
+if(_verbose) cout << "IDX prob main idx: " << _DNN->NearestNeighbourProbIndex(main_index) << " prob mirror idx: " << _DNN->NearestNeighbourProbIndex(mirror_index) << endl; 
+if(_verbose)cout << "current phi: ";
+if(_verbose){ if( _merge_tree->Get(current) != nullptr) cout << _merge_tree->Get(current)->points->mean().at(1);
+else cout << " current null pts";} 
+if(_verbose)cout << " main phi: ";
+if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge_tree->Get(main_index)->points->mean().at(1);
+
   int this_cylinder_index = _cylinder_index_of_plane_vertex[plane_index];
   // either the user has acknowledged the fact that they may get the
   // mirror copy as the closest point, or crash if it should occur
   // that mirror copy is the closest point.
   assert(_ignore_nearest_is_mirror || this_cylinder_index != current);
-  //if (this_cylinder_index == current) {
-  //  cerr << "WARNING point "<<current<<
-  //    " has its mirror copy as its own nearest neighbour"<<endl;
-  //}
+  if (this_cylinder_index == current) {
+    cerr << "WARNING point "<<current<<
+      " has its mirror copy as its own nearest neighbour"<<endl;
+  }
   return this_cylinder_index;
 }
 
@@ -321,18 +350,75 @@ inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current) const {
 inline double Dnn2piCylinder::NearestNeighbourProb(const int current) const{
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
-  if (mirror_index == INEXISTENT_VERTEX ) {
+ if (mirror_index == INEXISTENT_VERTEX) {
     return _DNN->NearestNeighbourProb(main_index);
   } else {
     return (
-	_DNN->NearestNeighbourProb(main_index) < 
+	_DNN->NearestNeighbourProb(main_index) > 
 	_DNN->NearestNeighbourProb(mirror_index)) ? 
       _DNN->NearestNeighbourProb(main_index) : 
       _DNN->NearestNeighbourProb(mirror_index) ; 
   }
 }
 
+inline node* Dnn2piCylinder::NearestNeighbourProbNode(const int current) const {
+  int main_index = _mirror_info[current].main_index;
+  int mirror_index = _mirror_info[current].mirror_index;
+if(_verbose) cout << "current: " << current << " main idx: " << main_index << " cyl index: " << _cylinder_index_of_plane_vertex[main_index] <<  " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
+if(_verbose)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror index: " << _DNN->Valid(mirror_index) << " cyl index: " << Valid(_cylinder_index_of_plane_vertex[main_index]) << endl;
+  int plane_index;
+  node* x;
+  if (mirror_index == INEXISTENT_VERTEX ) {
+    //plane_index = _DNN->NearestNeighbourProbIndex(main_index);
+    x = _DNN->NearestNeighbourProbNode(main_index);
+  } else {
+    //plane_index = (
+    //    _DNN->NearestNeighbourProb(main_index) > 
+    //    _DNN->NearestNeighbourProb(mirror_index)) ? 
+    //  _DNN->NearestNeighbourProbIndex(main_index) : 
+    //  _DNN->NearestNeighbourProbIndex(mirror_index) ; 
+    x = (
+	_DNN->NearestNeighbourProb(main_index) > 
+	_DNN->NearestNeighbourProb(mirror_index)) ? 
+        _DNN->NearestNeighbourProbNode(main_index) :
+        _DNN->NearestNeighbourProbNode(mirror_index);
+  }
+	if(_verbose) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl; 
+ //if mirrored points, may need to translate back or set points to points of main idx
+if(_verbose) cout << "phi of selected merge node: " << x->points->mean().at(1) << endl;
+if(x->points->mean().at(1) > twopi) x->points = _merge_tree->Get(main_index)->points;
+  return x;
+/*
+  //infinite vertex - defined in Triangulation
+  //no match
+  if(plane_index == -1){
+	return current;
+  }
+cout << "prob main idx: " << _DNN->NearestNeighbourProb(main_index) << " prob mirror idx: " << _DNN->NearestNeighbourProb(mirror_index) << endl; 
+cout << "IDX prob main idx: " << _DNN->NearestNeighbourProbIndex(main_index) << " prob mirror idx: " << _DNN->NearestNeighbourProbIndex(mirror_index) << endl; 
+cout << "# cyl indices: " << _cylinder_index_of_plane_vertex.size() << endl;
+for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
+	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
+
+
+cout << "plane index: " << plane_index << endl;
+  int this_cylinder_index = _cylinder_index_of_plane_vertex[plane_index];
+cout << "this cyl index: " << this_cylinder_index << endl;
+  // either the user has acknowledged the fact that they may get the
+  // mirror copy as the closest point, or crash if it should occur
+  // that mirror copy is the closest point.
+  assert(_ignore_nearest_is_mirror || this_cylinder_index != current);
+  if (this_cylinder_index == current) {
+    cerr << "WARNING point "<<current<<
+      " has its mirror copy as its own nearest neighbour"<<endl;
+  }
+  return this_cylinder_index;
+*/
+
+}
+
 inline bool Dnn2piCylinder::Valid(const int index) const {
+if(_verbose) cout << "Valid - index: " << index << " main index: " << _mirror_info[index].main_index << endl;  
   return (_DNN->Valid(_mirror_info[index].main_index));
 }
 

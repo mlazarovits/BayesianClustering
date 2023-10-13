@@ -71,7 +71,7 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// eta and phi can have arbitrary ranges, with time included for
   /// probabilistic merging
   /// includes alpha for BHC (a) and GMM (suba)
-  DnnPlane(const std::vector<PointCollection>& pc, const bool & verbose = false, double a = 0.5, double suba = 0.1);
+  DnnPlane(const std::vector<PointCollection>& pc, MergeTree* mt, const bool & verbose = false);
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
@@ -89,6 +89,8 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// with any of its neighbors
   double NearestNeighbourProb(const int ii) const;
 
+  node* NearestNeighbourProbNode(const int ii) const;
+
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
   /// not removed in the meantime)
@@ -102,7 +104,13 @@ class DnnPlane : public DynamicNearestNeighbours {
   void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours, bool merge = false);
+			  std::vector<int> & indices_of_updated_neighbours);
+  
+  void AddMirrorNodes(const std::vector<int>& current_indices_to_mirror,
+                  const std::vector<node*> & nodes_to_add,
+		  std::vector<int> & indices_added,
+		  std::vector<int> & indices_of_updated_neighbours);
+
 
   /// returns the EtaPhi of point with index i.
   EtaPhi etaphi(const int i) const;
@@ -123,8 +131,8 @@ private:
     int coincidence;  // ==vertex->info.val() if no coincidence
                       // points to the coinciding SV in case of coincidence
     // later on for cylinder put a second vertex?
-    double MaxRk; //highest probability of merging
-    int MaxRkindex; //index of vertex to merge with
+    double MaxRk = -1; //highest probability of merging, defaults to -1 (useful for mirror points)
+    int MaxRkindex = -3; //index of vertex to merge with, defaults to inexistent vertex (defined as -3 in Dnn2piCylinder)
     node* n; //node containing point collection, rk value (should match MaxRk), parents, etc. 
   };
 
@@ -153,14 +161,14 @@ private:
   inline double _euclid_distance_2d(const Point& p1, const Point& p2) const {
     double distx= p1.at(0)-p2.at(0);
     double disty= p1.at(1)-p2.at(1);
-    return distx*distx+disty*disty;
+    return sqrt(distx*distx+disty*disty);
   }
 
   inline double _euclid_distance_3d(const Point& p1, const Point& p2) const {
     double distx= p1.at(0)-p2.at(0);
     double disty= p1.at(1)-p2.at(1);
     double distz= p1.at(2)-p2.at(2);
-    return distx*distx+disty*disty+distz*distz;
+    return sqrt(distx*distx+disty*disty+distz*distz);
   }
   
   inline double _euclid_distance_3d(const PointCollection& p1, const PointCollection& p2) const {
@@ -409,6 +417,9 @@ inline int DnnPlane::NearestNeighbourProbIndex(const int ii) const{
 
 inline double DnnPlane::NearestNeighbourProb(const int ii) const{
   return _supervertex[ii].MaxRk;}
+
+inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
+  return _supervertex[ii].n;}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {

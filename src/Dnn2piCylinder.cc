@@ -62,14 +62,13 @@ Dnn2piCylinder::Dnn2piCylinder(
   vector<int> updated_point_indices; // we'll not use information from this
   _CreateNecessaryMirrorPoints(plane_point_indices,updated_point_indices);
 }
-
 //----------------------------------------------------------------------
 /// initialiser for probability merge...
 Dnn2piCylinder::Dnn2piCylinder(
 	const std::vector<PointCollection>& input_points, 
-	const bool & ignore_nearest_is_mirror,
-	const bool & verbose, double a, double suba) {
-  
+	const bool & ignore_nearest_is_mirror, MergeTree* mt,
+	const bool & verbose) {
+ SetMergeTree(mt); 
   _verbose = verbose;
   _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
   vector<PointCollection> plane_points;
@@ -81,14 +80,15 @@ Dnn2piCylinder::Dnn2piCylinder(
     _RegisterCylinderPoint(input_points[i], plane_points);
     plane_point_indices[i] = i;
   }
-  
   if (_verbose) cout << "============== Preparing _DNN" << endl;
-  _DNN = new DnnPlane(plane_points, verbose, a, suba);
+  _DNN = new DnnPlane(plane_points, mt, verbose);
 
 
   vector<int> updated_point_indices; // we'll not use information from this
   _CreateNecessaryMirrorPoints(plane_point_indices,updated_point_indices);
+
 }
+
 
 //----------------------------------------------------------------------
 /// Actions here are similar to those in the
@@ -117,11 +117,15 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
 					     vector<PointCollection> & plane_points) {
   double eta = cylinder_point.mean().at(0);
   double phi = cylinder_point.mean().at(1);
+  if(!(phi >= 0.0 && phi < 2*pi)){ cout << "bad phi: " << phi << endl; cylinder_point.Print(); }
   assert(phi >= 0.0 && phi < 2*pi);
 
   EtaPhi ep(eta,phi);
-  
-  
+ 
+// cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
+if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
+	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
+ } 
   // do main point
   MirrorVertexInfo mvi;
   mvi.main_index = _cylinder_index_of_plane_vertex.size();
@@ -154,9 +158,13 @@ void Dnn2piCylinder::_CreateNecessaryMirrorPoints(
 			  const vector<int> & plane_indices,
 			  vector<int> & updated_plane_points) {
 if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
+
+
+
   vector<PointCollection> new_plane_points;
   //vector<EtaPhi> new_plane_points;
-
+  //manually add node to _merge_tree here because the mirror point (cluster) needs to have
+  //the same BHC values as it's originator
   for (size_t i = 0; i < plane_indices.size(); i++) {
     int ip = plane_indices[i]; // plane index
     //EtaPhi position = _DNN->etaphi(ip);
@@ -164,7 +172,7 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     double phi = pts.mean().at(1);
 
 
-    // require absence of mirror
+    // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
     int ic = _cylinder_index_of_plane_vertex[ip];
     if (_mirror_info[ic].mirror_index != INEXISTENT_VERTEX) {continue;}
 
@@ -179,18 +187,37 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // of time ... )
     double nndist = _DNN->NearestNeighbourDistance(ip); 
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
+ if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
+//cout << "getting pts: " << _merge_tree->Get(ip)->points->GetNPoints() << " " << pts.GetNPoints() << endl;
+    node* x = new node(*_merge_tree->Get(ip));
+  // cout << "copied rk val: " << x->val << " copied pts: " << x->points->GetNPoints() << endl; 
 
+    PointCollection* newpts = new PointCollection(_remap_phi(pts));
     // now proceed to prepare the point for addition
-    new_plane_points.push_back(_remap_phi(pts));
+    new_plane_points.push_back(*newpts);
+//cout << "adding mirrored pointcollection for pc with mean " << pts.mean().at(0) << ", " << pts.mean().at(1) << " original NNdistance: " << nndist << endl;
+    x->points = newpts;
+//cout << "n pts in new node: " << x->points->GetNPoints() << endl;
+
     //new_plane_points.push_back(_remap_phi(position));
+    //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
+    _merge_tree->Insert(x);
+//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in inserted node: "  << _merge_tree->Get(_merge_tree->GetNClusters() - 1)->points->GetNPoints() << endl;
   }
 
   vector<int> indices_to_remove; // empty
   vector<int> indices_added;     // will be filled as result of call
   _DNN->RemoveAndAddPoints(indices_to_remove,new_plane_points,indices_added, 
 			   updated_plane_points);
+  if(_verbose){
+  cout << "created mirror points: ";
+    std::vector<int>::iterator it;
+  for(it = indices_added.begin(); it != indices_added.end(); ++it)
+    cout << *it << endl;
+  }
+
 if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
 
 }
@@ -262,22 +289,26 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
 void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
 				const vector<PointCollection>& points_to_add,
 				vector<int> & indices_added,
-				vector<int> & indices_of_updated_neighbours, bool merge) {
+				vector<int> & indices_of_updated_neighbours) {
   // translate from "cylinder" indices of points to remove to the
   // plane indices of points to remove, bearing in mind that sometimes
   // there are multple plane points to remove.
-  vector<int> plane_indices_to_remove;
+if(_verbose) cout << "Dnn2pi - RemoveAndAddPoints start" << endl;  
+
+vector<int> plane_indices_to_remove;
   for (unsigned int i=0; i < indices_to_remove.size(); i++) {
     MirrorVertexInfo * mvi;
     mvi = & _mirror_info[indices_to_remove[i]];
-cout << "Dnn2pi to remove: " << indices_to_remove[i] << " main idx: " << mvi->main_index << " mirror idx: " << mvi->mirror_index << endl;
+if(_verbose) cout << "Dnn2pi to remove: " << indices_to_remove[i] << " main idx: " << mvi->main_index << " mirror idx: " << mvi->mirror_index << endl;
     plane_indices_to_remove.push_back(mvi->main_index);
     if (mvi->mirror_index != INEXISTENT_VERTEX) {
       plane_indices_to_remove.push_back(mvi->mirror_index);
     }
   }
 
+if(_verbose){
 for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane index: " << plane_indices_to_remove[i] << endl;
+}
 
   // given "cylinder" points to add get hold of the list of
   // plane-points to add.
@@ -285,9 +316,11 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
   vector<PointCollection> plane_points_to_add;
   indices_added.clear();
   
-
+if(_verbose)
+cout << "adding points" << endl;
   for (unsigned int i=0; i < points_to_add.size(); i++) {
-    indices_added.push_back(_mirror_info.size());
+  if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt #" << i << endl;
+	indices_added.push_back(_mirror_info.size());
     _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
   }
 
@@ -295,14 +328,25 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
   // plane_indices_added vector but that we will not actually check
   // its contents in any way -- the indices_added that is actually
   // returned has been calculated above).
-  // TODO: make sure the below functions (RemoveAnd... and CreateNecessary...) are calling PointCollection versions 
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
-			     plane_indices_added, updated_plane_neighbours, merge);
+			     plane_indices_added, updated_plane_neighbours);
+//update merge tree
+//  _merge_tree = _DNN->GetMergeTree();
+ 
 
+if(_verbose){ 
+  cout << "added points: ";
+  std::vector<int>::iterator it;
+  for(it = plane_indices_added.begin(); it != plane_indices_added.end(); ++it)
+    cout << *it << " mirror? " << _cylinder_index_of_plane_vertex[*it] << endl;
+  }
   vector<int> extra_updated_plane_neighbours;
   _CreateNecessaryMirrorPoints(updated_plane_neighbours,
 			       extra_updated_plane_neighbours);
+
+
+
 
   // extract, from the updated_plane_neighbours, and
   // extra_updated_plane_neighbours, the set of cylinder neighbours
@@ -310,18 +354,25 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
   set<int> index_set;
   unsigned int i;
   for (i=0; i < updated_plane_neighbours.size(); i++) {
+  if(_verbose)     cout << "updated main idx: " << _cylinder_index_of_plane_vertex[updated_plane_neighbours[i]] << " plane idx: " << updated_plane_neighbours[i]<< endl;
     index_set.insert(
        _cylinder_index_of_plane_vertex[updated_plane_neighbours[i]]);}
   for (i=0; i < extra_updated_plane_neighbours.size(); i++) {
+   if(_verbose)    cout << "updated mirror idx: " << _cylinder_index_of_plane_vertex[extra_updated_plane_neighbours[i]] << " plane idx: " << extra_updated_plane_neighbours[i] << endl;
     index_set.insert(
        _cylinder_index_of_plane_vertex[extra_updated_plane_neighbours[i]]);}
-
+if(_verbose) cout << "number of pts to update: " << index_set.size() << endl;
   // decant the set into the vector that needs to be returned
   indices_of_updated_neighbours.clear();
   for (set<int>::iterator iter = index_set.begin(); 
        iter != index_set.end(); iter++) {
+	if(_verbose)cout << "updating idx: "<< *iter << endl;
     indices_of_updated_neighbours.push_back(*iter);
   }
+if(_verbose){ 
+for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
+	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << " valid? " << Valid(_cylinder_index_of_plane_vertex[i]) << endl;}
+if(_verbose) cout << "Dnn2pi - RemoveAndAddPoints end" << endl;  
 }
 
 //FASTJET_END_NAMESPACE

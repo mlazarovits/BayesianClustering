@@ -127,6 +127,10 @@ public:
   /// Returns the highest probability of merging point ii
   /// with any of its neighbors
   virtual double NearestNeighbourProb(const int ii) const = 0;
+  
+  /// Returns the highest probability of merging point ii
+  /// with any of its neighbors
+  virtual node* NearestNeighbourProbNode(const int ii) const = 0;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -150,7 +154,7 @@ public:
   virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours, bool merge = false) = 0;
+			  std::vector<int> & indices_of_updated_neighbours) = 0;
 
 
   /// Remove the point labelled by index and return the list of
@@ -176,20 +180,29 @@ public:
 			const PointCollection& newcluster,
 			int & index3,
 			std::vector<int> & indices_of_updated_neighbours) {
-    cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - start" << endl;
+	bool _verbose = false;
+    if(_verbose) cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - start" << endl;
     std::vector<int> indices_added(1);
     std::vector<PointCollection> points_to_add(1);
     std::vector<int> indices_to_remove(2);
     indices_to_remove[0] = index1;
     indices_to_remove[1] = index2;
     points_to_add[0] = newcluster;
-    bool merge = true;
+    node* n1 = NearestNeighbourProbNode(index1);
+    node* n2 = NearestNeighbourProbNode(index2);
+
+    _merge_tree->Merge(n1, n2);
+
     RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
-		       indices_of_updated_neighbours,
-		       merge);
+		       indices_of_updated_neighbours);
     index3 = indices_added[0];
-    cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - end" << endl;
-  };
+   if(_verbose){cout << "updated neighbours: "; 
+std::vector<int>::iterator it;
+for(it = indices_of_updated_neighbours.begin(); it != indices_of_updated_neighbours.end(); ++it)
+cout << *it << endl; 
+   }
+	if(_verbose)cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - end" << endl;
+   };
   
   /// Removes the two points labelled by index1, index2 and adds in the
   /// a point with coordinates newpoint; it returns an index for the new 
@@ -217,22 +230,11 @@ public:
   /// destructor -- here it is now implemented
   virtual ~DynamicNearestNeighbours () {}
 
-  //for calculating merges and bookkeeping merges
-  MergeTree* _merge_tree = new MergeTree();
+  inline void SetMergeTree(MergeTree* mt){ _merge_tree = mt; }
+  inline MergeTree* GetMergeTree(){ return _merge_tree; }
 
-  void SetAlpha(double a){
-    _merge_tree->SetAlpha(a);
-  }
-  void SetSubclusterAlpha(double a){
-    _merge_tree->SetSubclusterAlpha(a);
-  }
-  void SetMergeThreshold(double t){
-    _merge_tree->SetThresh(t);
-  }
-  void SmearData(const Matrix& cov){
-    _merge_tree->SetDataSmear(cov);
-  }
-  //set distance constraint
+  //for calculating merges and bookkeeping merges
+  MergeTree* _merge_tree = nullptr;
 
 
 };

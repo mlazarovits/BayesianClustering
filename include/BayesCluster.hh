@@ -157,17 +157,9 @@ class BayesCluster{
 				const double rk,
 				int& newjet_k){
 			Jet newjet;
-			cout << "jet # " << jet_i << " - eta: " << _jets[jet_i].eta() << " phi: " << _jets[jet_i].phi_02pi() << " time: " << _jets[jet_i].t() << " energy: " << _jets[jet_i].E() << endl;
-			cout << "jet # " << jet_j << " - eta: " << _jets[jet_j].eta() << " phi: " << _jets[jet_j].phi_02pi() << " time: " << _jets[jet_j].t() << " energy: " << _jets[jet_j].E() << endl;
 			recombine(_jets[jet_i], _jets[jet_j], newjet);
 			_jets.push_back(newjet);
 			newjet_k = _jets.size() - 1;
-
-			cout << "newjet # "<< newjet_k << " - eta: " << newjet.eta() << " phi: " << newjet.phi_02pi() << " time: " << newjet.t() << " energy: " << newjet.E() << endl;
-
-			for(int i = 0; i < newjet.GetJetPoints().size(); i++){
-				cout << "point # "<< i << " - eta: " << newjet.GetJetPoints()[i].eta() << " phi: " << newjet.GetJetPoints()[i].phi_02pi() << " time: " << newjet.GetJetPoints()[i].t() << " energy: " << newjet.GetJetPoints()[i].E() << endl;
-			}
 
 			//do history stuff
 			int newstep_k = _history.size();
@@ -228,9 +220,7 @@ class BayesCluster{
 			// get cross-referencing right from PseudoJets
 			if (jetp_index != Invalid) {
 			  assert(jetp_index >= 0);
-			  //cout << _jets.size() <<" "<<jetp_index<<"\n";
 			  _jets[jetp_index].SetHistoryIndex(local_step);
-			  //_set_structure_shared_ptr(_jets[jetp_index]);
 			}
  
 		}
