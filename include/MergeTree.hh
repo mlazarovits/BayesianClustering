@@ -171,7 +171,7 @@ class MergeTree : BaseTree{
 			//x->points->Print();
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
-			x->model->SetAlpha(_alpha);
+			x->model->SetAlpha(_emAlpha);
 			x->model->SetData(x->points);
 			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
 			x->model->InitParameters();
