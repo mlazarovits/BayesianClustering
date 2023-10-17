@@ -36,6 +36,8 @@ int main(int argc, char *argv[]){
 	bool skim = false;
 	//by default in BayesCluster
 	bool distconst = true;
+	//clustering strategy for skimmer
+	int strat = 0; //0 is NlnN
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -115,6 +117,14 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
    		}
+		if(strncmp(argv[i],"--strategy", 10) == 0){
+    	 		i++;
+			strat = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"-s", 2) == 0){
+    	 		i++;
+			strat = std::atoi(argv[i]);
+   		}
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -127,6 +137,7 @@ int main(int argc, char *argv[]){
 		cout << "   --nIterations(-it) [nIts]     sets number of iterations for EM algorithm (default = 50)" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
+   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
@@ -190,6 +201,7 @@ int main(int argc, char *argv[]){
 		cout << "Skimming jets" << endl;
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
+		skimmer.SetStrategy(strat);
 		skimmer.Skim();
 		return 0;
 	}
@@ -249,8 +261,6 @@ int main(int argc, char *argv[]){
 		prod.GetTrueJets(jets, evt);
 		plots.AddTrueJets(jets);
 		plots.Write(fname);
-	
-
 	}
 // old implementation
 //	Clusterizer* algo = new Clusterizer();
