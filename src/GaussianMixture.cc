@@ -183,7 +183,6 @@ void GaussianMixture::UpdateParameters(){
 			//(x_n - mu_k)*(x_n - mu_k)T
 			cov_k.mult(x_min_mu,x_min_muT);
 			//weighting by posterior gamma(z_nk)
-			cov_k.mult(cov_k,m_post.at(n,k));
 			//sum over n
 			new_cov.add(cov_k);
 		}	
@@ -230,10 +229,10 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 
 map<string, Matrix> GaussianMixture::GetPriorParameters(int k){ 
 	map<string, Matrix> p;
-	if(k > m_k) return p;
+	if(k >= m_k) return p;
 	p["mean"] = m_model[k]->GetParameter("mean");
 	p["cov"] = m_model[k]->GetParameter("cov");
-	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_n));
+	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
 	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
 	p["m"] = m_model[k]->GetPrior()->GetParameter("mean");
 	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
@@ -412,9 +411,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//weight by data weight and adjusted by max ln(p_nk)
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
 			
+	
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
 			if(m_post.at(n,k) < 1e-308) m_post.SetEntry(0.,n,k);
-
 
 			//if(m_post.at(n,k) > 0 && isinf(1/m_post.at(n,k))){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 
@@ -425,6 +424,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
+
 	//cout << "posterior normed" << endl;	
 	//m_post.Print();
 //cout << "\n" << endl;

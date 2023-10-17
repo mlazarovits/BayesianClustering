@@ -37,7 +37,9 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const PointCollection& x);
 
 		void SetData(PointCollection* data){
-			m_data = data; m_n = m_data->GetNPoints(); m_dim = m_data->Dim(); 
+			m_data = data; 
+			m_n = m_data->GetNPoints(); 
+			m_dim = m_data->Dim(); 
 			m_post.SetDims(m_n, m_k);
 			if(data->GetNPoints() < m_k){
 				//remove extra models
@@ -70,21 +72,27 @@ class BasePDFMixture : public BasePDF{
 		void SetAlpha(double alpha){  m_alpha0 = alpha; }
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
-		void RemoveModel(int k){
+		void RemoveModel(int j){
 			//erase model
-			m_model.erase(m_model.begin()+k); 
+			m_model.erase(m_model.begin()+j); 
 			//erase corresponding dirichlet param
-			m_alphas.erase(m_alphas.begin()+k);
+			m_alphas.erase(m_alphas.begin()+j);
 			//erase corresponding number of associated points (N_k)
-			m_norms.erase(m_norms.begin()+k);
+			m_norms.erase(m_norms.begin()+j);
 			//don't need to update m_coeffs - only used for normal EM algorithm
+			//update dimensions of posterior
+			Matrix newpost = Matrix(m_n,m_k-1);
+			int l = 0;
+			for(int k = 0; k < m_k; k++){
+				if(k == j){ l++; continue; }
+				for(int n = 0; n < m_n; n++){
+					//debug
+					newpost.SetEntry(m_post.at(n,k),n,k-l);
+				}
+			}
+			m_post = newpost;
 			//update number of clusters
 			m_k--;
-			//update dimensions of posterior
-			Matrix newpost = Matrix(m_n,m_k);
-			for(int n = 0; n < m_n; n++)
-				for(int k = 0; k < m_k; k++) newpost.SetEntry(m_post.at(n,k),n,k);
-			m_post = newpost;
 		 }
 
 		//removes components that do not contribute to overall likelihood
@@ -105,7 +113,17 @@ class BasePDFMixture : public BasePDF{
 			}
 			//if all clusters removed -> set model to single gaussian
 			if(m_k < 1) m_k = 1;//cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
-
+			//if single gaussian -> all points need to be under this gaussian
+			if(m_k == 1){
+				for(int n = 0; n < m_n; n++){
+					if(m_post.at(n,0) < m_data->at(n).w()){
+						m_post.SetEntry(m_data->at(n).w(), n, 0);
+					}
+				}
+			}
+			//update effective counts + corresponding parameters - the corresponding 
+			//entry r_nk is the point weight
+			UpdateVariationalParameters();
 		}
 
 
