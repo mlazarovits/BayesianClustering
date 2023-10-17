@@ -1,8 +1,9 @@
 #include "JetProducer.hh"
 #include "JetSkimmer.hh"
 #include "BayesCluster.hh"
+#include "FullViz3D.hh"
 //#include "Clusterizer.hh"
-#include "VarClusterViz3D.hh"
+//#include "VarClusterViz3D.hh"
 #include <TSystem.h>
 #include <TFile.h>
 #include <iostream>
@@ -33,7 +34,8 @@ int main(int argc, char *argv[]){
 	bool weighted = false;
 	bool smeared = false;
 	bool skim = false;
-	bool distconst = false;
+	//by default in BayesCluster
+	bool distconst = true;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -196,8 +198,9 @@ int main(int argc, char *argv[]){
 	vector<Jet> rhs;
 	Point vtx;
 	prod.GetPrimaryVertex(vtx, evt);
-	prod.GetRecHits(rhs,evt);
-	
+	prod.GetRecHits(rhs,evt);	
+
+
 	cout << rhs.size() << " rechits in event " << evt << endl;
 	double gev;
 	if(weighted){
@@ -234,10 +237,21 @@ int main(int argc, char *argv[]){
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetVerbosity(verb);
-	algo->SetPlotFileName(fname);
-	algo->Cluster();
+	vector<node*> trees = algo->Cluster();
 
+	if(viz){
+		//plotting stuff here
+		FullViz3D plots = FullViz3D(trees);
+		plots.SetVerbosity(verb);
+		plots.SetTransfFactor(gev);
+		//add info of true jets
+		vector<Jet> jets; 
+		prod.GetTrueJets(jets, evt);
+		plots.AddTrueJets(jets);
+		plots.Write(fname);
+	
 
+	}
 // old implementation
 //	Clusterizer* algo = new Clusterizer();
 //	algo->SetClusterAlpha(alpha);
