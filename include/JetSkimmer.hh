@@ -177,7 +177,23 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 
+		void SetStrategy(int i){
+			if(i == 0) _strategy = NlnN;
+			else if(i == 1) _strategy = N2;
+			else return; 
+		}
 
+
+		private:
+			enum Strategy{
+				//Delauney strategy - NlnN time - for 2pi cylinder
+				NlnN = 0,
+				//traditional strategy - N^2 time
+				N2 = 1
+			};
+		
+			//clustering strategy - N^2 or NlnN
+			Strategy _strategy;
 
 };
 #endif

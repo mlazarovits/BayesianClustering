@@ -2,7 +2,7 @@
 #define BaseProducer_HH
 
 #include "ReducedBase.hh"
-#include "JetPoint.hh"
+#include "Jet.hh"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TSystem.h"
@@ -35,6 +35,7 @@ class BaseProducer{
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<vector<JetPoint>>& rhs) = 0;
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
+		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt, int obj) = 0;
 		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
 
