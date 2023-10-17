@@ -1,5 +1,6 @@
 #include "BayesCluster.hh"
 #include "DynamicNearestNeighbours.hh"
+#include "FullViz3D.hh"
 
 // The structure of this method is respectfully repurposed from ClusterSequence_Delaunay in FastJet (Cacciari, Salam, Soyez).
 // This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
@@ -18,9 +19,11 @@
 void BayesCluster::_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	int n = (int)_jets.size();
+	double gev; //transfer factor for plotting 
 	vector<PointCollection> points(n);
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
+	mt->SetVerbosity(_verb);
 	//set data smear
 	if(!_smear.empty()) mt->SetDataSmear(_smear);
 	if(_thresh != -999) mt->SetThresh(_thresh);
@@ -36,6 +39,7 @@ void BayesCluster::_cluster(){
 		pt.SetValue(_jets[i].time(), 2);
 		_jets[i].GetWeights(weight);
 		pt.SetWeight(weight[0]);
+		if(i == 0) gev = _jets[i].E()/weight[0]; //weight = E/k for k = sum_n E/N
   		//make sure phi is in the right range
 		_sanitize(pt);
   		if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
@@ -169,18 +173,22 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 	cout << trees.size() << " final clusters" << endl;
 	double nmirror = 0;
 	for(int i = 0; i < trees.size(); i++){
-		//ignore removed (clustered) points and mirror points
-		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){ nmirror++; continue; }
+		//ignore removed (clustered) points and don't plot mirror points
+		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
+			nmirror++; 
+			trees.erase(trees.begin()+i);
+			i--;
+			continue; }
 		cout << "getting " << trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
 		trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	cout << nmirror << " mirror points." << endl;
 	//plotting stuff here
-	//FullViz3D plots = FullViz3D(tree);
-	//plots.SetVerbosity(_verb);
-	//plots.SetTransfFactor(gev);
-	//plots.Write(fname);
+	FullViz3D plots = FullViz3D(trees);
+	plots.SetVerbosity(_verb);
+	plots.SetTransfFactor(gev);
+	plots.Write(_oname);
 	//get merge tree from DNN
 	//FullViz3D plots = FullViz3D() //see Clusterizer
 	

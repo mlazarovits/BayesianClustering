@@ -70,6 +70,13 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	//each node is a jet - a mixture of gaussians (subjets)
 	vector<node*> tree = bhc->Cluster();
 
+	cout << tree.size() << " final clusters" << endl;
+	for(int i = 0; i < tree.size(); i++){
+		//ignore removed (clustered) points and mirror points
+		cout << "getting " << tree[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+		tree[i]->points->Print();
+		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
+	}
 
 	//plotting
 	if(!fname.empty()){

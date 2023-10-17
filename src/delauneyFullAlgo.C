@@ -21,7 +21,7 @@ int main(int argc, char *argv[]){
 	clock_t t = clock();
 
 	
-	string fname = "jet";
+	string fname = "jetDelauney";
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
@@ -202,6 +202,7 @@ int main(int argc, char *argv[]){
 	double gev;
 	if(weighted){
 		//need to transfer from GeV (energy) -> unitless (number of points)
+		//transfer factor is over all points in event
 		gev = 0;
 		for(int i = 0; i < (int)rhs.size(); i++) gev += rhs[i].E();
 		gev = gev/(double)rhs.size(); //gev = k = sum_n E_n/n pts
@@ -233,6 +234,7 @@ int main(int argc, char *argv[]){
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetVerbosity(verb);
+	algo->SetPlotFileName(fname);
 	algo->Cluster();
 
 

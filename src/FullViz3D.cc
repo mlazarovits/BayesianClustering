@@ -15,7 +15,6 @@ FullViz3D::FullViz3D(vector<node*> nodes){
 
 
 json FullViz3D::WriteNode(node* node){
-	
 	json subcluster = json::object();
 	json subclusters = json::object();
 	json cluster = json::object();
@@ -45,7 +44,7 @@ json FullViz3D::WriteNode(node* node){
 		y.push_back(points->at(i).Value(1));
 		//time
 		z.push_back(points->at(i).Value(2));
-		//weight - untransfererd (in GeV)
+		//weight - untransfererd (in GeV (sum_n E_n*r_nk))
 		w.push_back(points->at(i).Weight()*_transf);
 
 	}
@@ -61,6 +60,7 @@ json FullViz3D::WriteNode(node* node){
 	vector<double> eigenVals;
 	vector<double> cnts;
 	model->GetNorms(cnts);
+	double pisum = 0;
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
@@ -78,6 +78,7 @@ json FullViz3D::WriteNode(node* node){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
+		pisum += cluster_params["pi"].at(0,0);
 		subcluster["mixing_coeff"] = cluster_params["pi"].at(0,0);
 		subcluster["mu_x"] = x0;
 		subcluster["mu_y"] = y0;
@@ -91,6 +92,7 @@ json FullViz3D::WriteNode(node* node){
 		subcluster["eigenVec_1"] = eigenVec_1;	
 		subcluster["eigenVec_2"] = eigenVec_2;	
 		
+		//color for subcluster will be total energy (sum_n E_n*r_nk)
 		subcluster["color"] = _transf*cnts[k];
 	
 		subclusters["subcluster_"+std::to_string(k)] = subcluster;
@@ -100,6 +102,7 @@ json FullViz3D::WriteNode(node* node){
 		eigenVec_1.clear();
 		eigenVec_2.clear();
 	}
+
 	cluster["subclusters"] = subclusters;
 	return cluster;
 }

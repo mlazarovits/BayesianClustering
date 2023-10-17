@@ -43,7 +43,7 @@ class BayesCluster{
 			_alpha = 0.1;
 			_subalpha = 0.5;
 			_smear = Matrix();
-
+			_oname = "testDelauney";
 			_verb = 0;
 		};
 		virtual ~BayesCluster(){ _jets.clear(); };
@@ -57,6 +57,7 @@ class BayesCluster{
 		void SetAlpha(double a){ _alpha = a; }
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
 		void SetVerbosity(int v){ _verb = v; }
+		void SetPlotFileName(string oname){ _oname = oname; }
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
@@ -262,6 +263,7 @@ class BayesCluster{
 		double _thresh, _alpha, _subalpha;
 		Matrix _smear;
 		int _verb;
+		string _oname;
 	 
 };
 #endif

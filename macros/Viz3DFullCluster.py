@@ -115,7 +115,7 @@ class JsonPlotter:
 		#this level is one plot
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
-		fig.update_layout(scene=dict(yaxis=dict(range=[-3.5,3.5],),xaxis=dict(range=[-3.5,3.5],),zaxis=dict(range=[-35,35],)))
+		fig.update_layout(scene=dict(yaxis=dict(range=[0,3*np.pi+0.2],),xaxis=dict(range=[-3.5,3.5],),zaxis=dict(range=[-35,35],)))
 		return fig
 	
 		
@@ -155,12 +155,15 @@ class JsonPlotter:
 				os.system("rm -rf "+self.dirname+"/cluster"+str(t))	
 			os.mkdir(self.dirname+"/cluster"+str(t))
 			fig.write_image(self.dirname+"/cluster"+str(t)+"/level_"+str(l)+".pdf",width=900,height=600)
+			#make gif in the first level only
 			if l == 0:
 				if self.viz is True:
 					fig.show()
-				gifcmd = "convert -delay 50 -loop 1 -reverse "
-				self.cl_gifs.append(gifcmd)
-			self.cl_gifs[c] += self.dirname+"/cluster"+str(t)+"/level_"+str(l)+" "
+			#	gifcmd = "convert -delay 50 -loop 1 -reverse "
+			#	self.cl_gifs.append(gifcmd)
+			#print("l",l,"c",c,"len",len(self.cl_gifs))
+			##add clusters at lower levels to gif
+			#self.cl_gifs[c] += self.dirname+"/cluster"+str(t)+"/level_"+str(l)+" "
 				
 		return gr_arr
 	
@@ -182,7 +185,7 @@ class JsonPlotter:
 		for k in range(nSubClusters):
 			if self._v > 0:
 				print("			subcluster",k,"has",cluster['subclusters']['subcluster_'+str(k)]['color'],'weight and',len(x),'points')
-			#w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
+			w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
 	
 		colors = self.buildColorDict()
 
@@ -198,12 +201,12 @@ class JsonPlotter:
 		cols = [colors[cl] for i in range(len(w))]
 		name = "cluster "+str(c)
 		if(len(x) >= self.minPoints or nSubClusters > 1):
-			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+"GeV )"
+			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+" GeV)"
 			name += " in "+str(nSubClusters)+" subclusters" 
 		
 		if(min(w) != max(w)):
 			opacities = self.makeOpacities(w)
-			cols = [i.replace("1.",str(opacities[idx])) for idx, i in enumerate(cols)]
+			cols = [i.replace("1.",'{:8f}'.format(opacities[idx])) for idx, i in enumerate(cols)]
 		
 
 		if alldata is True:
@@ -219,10 +222,12 @@ class JsonPlotter:
 
 		gr_arr = []
 		#transform the data points into local coordinates + have color be energy scale
-		if(self.wraparound is True):
-			for i in y:
-				if i < 0:
-					i += 2*np.pi
+		#if(self.wraparound is True):
+		#	for i in y:
+		#		if i < 0:
+		#			i += 2*np.pi
+		#		if i > 2*np.pi:
+		#			i -= 2*np.pi
 
 		avg_x = np.mean(x)
 		avg_y = np.mean(y)
@@ -237,15 +242,13 @@ class JsonPlotter:
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
 			showlegend=True, name = name))
+
 	
 		op = []
-		op_norm = 0
 		for i in range(nSubClusters):
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
 			op.append(subcluster['mixing_coeff'])
-			op_norm += op[i]
-		op = [i/op_norm for i in op]
 
 		for i in range(nSubClusters):
 			idx = str(i)
@@ -253,29 +256,40 @@ class JsonPlotter:
 			#should be subcluster_i	
 		
 	
-			a = round(subcluster['eigenVal_0'], 20)
-			b = round(subcluster['eigenVal_1'], 20)
-			c = round(subcluster['eigenVal_2'], 20)
+			arad = round(subcluster['eigenVal_0'], 20)
+			brad = round(subcluster['eigenVal_1'], 20)
+			crad = round(subcluster['eigenVal_2'], 20)
 
-			if a < 1e-7:
-				a = abs(a)
-			if b < 1e-7:
-				b = abs(b)
-			if c < 1e-7:
-				c = abs(c)
+			if arad < 1e-7:
+				arad = abs(arad)
+			if brad < 1e-7:
+				brad = abs(brad)
+			if crad < 1e-7:
+				crad = abs(crad)
 	
 			
 			# compute ellipsoid coordinates on standard basis
 			# e1=(1, 0, 0), e2=(0, 1, 0), e3=(0, 0, 1)
 			u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
-			x0 = subcluster['mu_x'] - avg_x 
+			x0 = subcluster['mu_x'] - avg_x
 			y0 = subcluster['mu_y'] - avg_y
+			if(subcluster['mu_y'] < 0): 
+				y0 += 2*np.pi
 			z0 = subcluster['mu_z'] - avg_z
 		
+			print("cluster",c,"y",y0,"true y",subcluster['mu_y'],"avg y",avg_y)
 			
-			x1 = np.sqrt(a) * np.cos(u) * np.sin(v) 
-			y1 = np.sqrt(b) * np.sin(u) * np.sin(v) 
-			z1 = np.sqrt(c) * np.cos(v)
+			#this means that the cluster was fit to the mirrored points
+			#move back into [0,2pi] range
+			#this should only happen over 2*pi, 0 is the low bound of the plane for the clustering
+			#if(y0 > 2*np.pi):
+			#	y0 -= 2*np.pi	
+			#if(y0 < 0):
+			#	y0 += 2*np.pi
+	
+			x1 = np.sqrt(arad) * np.cos(u) * np.sin(v) 
+			y1 = np.sqrt(brad) * np.sin(u) * np.sin(v) 
+			z1 = np.sqrt(crad) * np.cos(v)
 			# points on the ellipsoid
 			points = np.stack([t.flatten() for t in [x1, y1, z1]])
 			
@@ -306,7 +320,7 @@ class JsonPlotter:
 			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+") with MM coeff "+str(round(op[i],2))
 
 			#if two eigenvalues are essentially zero, just plot a line
-			if (a < 1e-7 and b < 1e-7) or (a < 1e-7 and c < 1e-7) or (b < 1e-7 and c < 1e-7):
+			if (arad < 1e-7 and brad < 1e-7) or (arad < 1e-7 and crad < 1e-7) or (brad < 1e-7 and crad < 1e-7):
 				gr_arr.append(go.Scatter3d(x=x2.flatten(), y=y2.flatten(), z=z2.flatten(),mode='lines',line=dict(color = cl[0]), name = ell_name,showlegend=True))
 				continue
 			
@@ -354,6 +368,7 @@ def main():
 		files.append(name+"/level_"+str(f)+".pdf")
 		if f < 3 and args.noViz is False:	
 			fig.show()
+	#make gif of all levels
 	gifcmd = "convert -delay 50 -loop 1 -reverse "
 	for f in files:
 		gifcmd += f+" "
@@ -361,7 +376,6 @@ def main():
 
 	gifcmd += name+"/total.gif"
 
-	if args.nlevels == 0:
-		os.system(gifcmd)
+	os.system(gifcmd)
 if __name__ == "__main__":
 	main()
