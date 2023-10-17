@@ -9,6 +9,8 @@ Jet::Jet(){
 	_py = 0;
 	_pz = 0;
 	_mass = 0;
+	_phi = _invalid_phi;
+	_eta = _invalid_eta;
 
 	//will set from GMM	
 	_t = 0;
@@ -29,6 +31,8 @@ Jet::Jet(double px, double py, double pz, double E){
 	_pz = pz;
 	_kt2 = px*px + py*py;
 	_mass = mass();
+	_phi = _invalid_phi;
+	_eta = _invalid_eta;
 
 	//sets eta + phi
 	_ensure_valid_rap_phi();

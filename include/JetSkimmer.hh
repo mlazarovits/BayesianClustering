@@ -5,6 +5,7 @@
 #include "BaseSkimmer.hh"
 #include "BasePDFMixture.hh"
 #include <TFile.h>
+#include <TGraph.h>
 #include "TSystem.h"
 #include "BaseTree.hh"
 
@@ -33,6 +34,11 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* tPV_res_lead = new TH1D("tPV_res_lead","tPV_res_lead",100,-10.,10.);
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH1D* t_rhs = new TH1D("t_rhs","t_rhs",100,-30,30); 
+		//comp time distribution
+		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
+		//comp time as a function of number of rechits per event
+		TGraph* comptime_nrhs = new TGraph();
+		
 
 		//this is for one jet
 		//all hists referenced here are in hists1D

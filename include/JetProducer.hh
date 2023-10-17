@@ -25,7 +25,7 @@ class JetProducer : public BaseProducer{
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int jet){ };
 		void GetPrimaryVertex(Point& vtx, int evt);
 
-
+		void GetTrueJets(vector<Jet>& jets, int evt);
 
 
 

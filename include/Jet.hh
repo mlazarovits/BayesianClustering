@@ -153,7 +153,12 @@ class Jet{
 		//children in cluster
 		Jet GetBaby() const;
 
-		void AddRecHit(JetPoint rh){ _rhs.push_back(rh); }
+		void AddRecHit(JetPoint rh){
+			_rhs.push_back(rh); 
+			_nRHs = (int)_rhs.size();
+			//recalculate time
+			_set_time();
+		}
 		
 
 		//subjets (jets) in jet (clustered or unclustered)
