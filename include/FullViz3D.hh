@@ -5,6 +5,7 @@
 #include "BaseTree.hh"
 #include "NodeStack.hh"
 #include "nlohmann/json.hpp"
+#include "Jet.hh"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -40,6 +41,21 @@ class FullViz3D : public ClusterVizBase{
 
 		//for calculating energies s.t. E_n = w_n*k
 		void SetTransfFactor(double k){ _transf = k; }
+
+		void AddTrueJets(vector<Jet> jets){
+			json true_jets = json::object();
+			for(int j = 0; j < jets.size(); j++){
+				//eta
+				true_jets["jet_"+std::to_string(j)]["x"] = jets[j].eta();
+				//phi
+				true_jets["jet_"+std::to_string(j)]["y"] = jets[j].phi_02pi();
+				//time - set right now to be energy weighted time of all rechits (see Jet.hh)
+				true_jets["jet_"+std::to_string(j)]["z"] = jets[j].time();
+			}
+			_root["true_jets"] = true_jets;
+	
+		}
+
 	private:
 		vector<node*> _nodes;
 		vector<int> _k; //number of subclusters per cluster

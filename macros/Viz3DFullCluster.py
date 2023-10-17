@@ -115,7 +115,7 @@ class JsonPlotter:
 		#this level is one plot
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
-		fig.update_layout(scene=dict(yaxis=dict(range=[0,3*np.pi+0.2],),xaxis=dict(range=[-3.5,3.5],),zaxis=dict(range=[-35,35],)))
+		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
 		return fig
 	
 		
@@ -182,10 +182,6 @@ class JsonPlotter:
 		if self._v > 0:
 			print("		cluster",c,"has",nSubClusters,"subclusters")
 
-		for k in range(nSubClusters):
-			if self._v > 0:
-				print("			subcluster",k,"has",cluster['subclusters']['subcluster_'+str(k)]['color'],'weight and',len(x),'points')
-			w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
 	
 		colors = self.buildColorDict()
 
@@ -213,6 +209,12 @@ class JsonPlotter:
 			return go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 				size = 4, color = cols, line=dict(
 					color = colors[cl], width = 30)), showlegend=True, name = name)
+		
+		#add subcluster energies to color scale
+		for k in range(nSubClusters):
+			if self._v > 0:
+				print("			subcluster",k,"has",cluster['subclusters']['subcluster_'+str(k)]['color'],'weight and',len(x),'points')
+			w.append(cluster['subclusters']['subcluster_'+str(k)]["color"])
 		
 		#don't plot subclusters for clusters with points less than minPoints
 		if(len(x) < self.minPoints):
@@ -277,7 +279,6 @@ class JsonPlotter:
 				y0 += 2*np.pi
 			z0 = subcluster['mu_z'] - avg_z
 		
-			print("cluster",c,"y",y0,"true y",subcluster['mu_y'],"avg y",avg_y)
 			
 			#this means that the cluster was fit to the mirrored points
 			#move back into [0,2pi] range
