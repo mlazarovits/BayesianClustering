@@ -60,7 +60,7 @@ There are muliple visualization classes:
 	- for `Jet`s and `JetPoint`s that are instantiated from a momentum four-vector with no external $\phi$ or $\eta$ provided via the `SetPhi()` or `SetEta()` functions, these coordinates will be calculated as they are in [FastJet](https://fastjet.fr/repo/doxygen-3.4.2/PseudoJet_8cc_source.html) for `Jet`s and ROOT for `JetPoint`s ([eta](https://root.cern.ch/doc/master/eta_8h_source.html#l00048) and [phi](https://root.cern.ch/doc/master/GenVector_2Cartesian3D_8h_source.html#l00117))
 	- `Jet`s are instantiated with a momentum four-vector $(p_x, p_y, p_z, E)$ (in that order) while a `JetPoint` is instantiated from a spatial fourvector $(x, y, z, t)$
 		- this is because a `JetPoint` (or RecHit) has no mass and no associated vertex (only spatial and energy information) and therefore a momentum four-vector cannot be specified (unless you assume a zero-mass scenario and provide the coordinates for the vertex)
-- for the Bayesian Hierarchical Clustering (BHC) a distance constraint of $pi/2$ is defaulted to in `BayesCluster`
+- for the Bayesian Hierarchical Clustering (BHC) a distance constraint of $\pi/2$ is defaulted to in `BayesCluster`
 	- the distance constraint sets the merge posterior ($r_k$) of a potential merge if the constituents are too far apart
 	- see implementation in `MergeTree::DistanceConstraint()`
 
