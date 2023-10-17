@@ -16,10 +16,9 @@
 ///
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
-void BayesCluster::_cluster(){
+vector<node*> BayesCluster::_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	int n = (int)_jets.size();
-	double gev; //transfer factor for plotting 
 	vector<PointCollection> points(n);
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
@@ -39,7 +38,6 @@ void BayesCluster::_cluster(){
 		pt.SetValue(_jets[i].time(), 2);
 		_jets[i].GetWeights(weight);
 		pt.SetWeight(weight[0]);
-		if(i == 0) gev = _jets[i].E()/weight[0]; //weight = E/k for k = sum_n E/N
   		//make sure phi is in the right range
 		_sanitize(pt);
   		if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
@@ -184,13 +182,7 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	cout << nmirror << " mirror points." << endl;
-	//plotting stuff here
-	FullViz3D plots = FullViz3D(trees);
-	plots.SetVerbosity(_verb);
-	plots.SetTransfFactor(gev);
-	plots.Write(_oname);
-	//get merge tree from DNN
-	//FullViz3D plots = FullViz3D() //see Clusterizer
+	return trees;
 	
 	
 }

@@ -48,8 +48,8 @@ class BayesCluster{
 		};
 		virtual ~BayesCluster(){ _jets.clear(); };
 
-		void Cluster(){
-			this->_cluster();
+		vector<node*> Cluster(){
+			return this->_cluster();
 		}
 
 		void SetThresh(double t){ _thresh = t; }
@@ -258,7 +258,7 @@ class BayesCluster{
 		enum JetType {Invalid=-3, InexistentParent = -2, BeamJet = -1};
 		int _initial_n;
 
-		void _cluster();
+		vector<node*> _cluster();
 		int n_particles() const{ return _initial_n; }
 		double _thresh, _alpha, _subalpha;
 		Matrix _smear;
