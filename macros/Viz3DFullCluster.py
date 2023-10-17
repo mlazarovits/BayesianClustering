@@ -75,11 +75,28 @@ class JsonPlotter:
 		colors[17] = 'rgba(97, 58, 18, 1.)'
 		return colors
 	
+	def plot_trueJets(self):
+		jets = self.json_obj["true_jets"]
+		njets = len(jets)
+		x = []
+		y = []
+		z = []
+		for j in range(njets):
+			x.append(jets["jet_"+str(j)]["x"])	
+			y.append(jets["jet_"+str(j)]["y"])	
+			z.append(jets["jet_"+str(j)]["z"])
+
+		col = "chartreuse"	
+		name = "True jet centers (E-weighted time)"
+		self.jetsgr = go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
+			size = 4, color = col, symbol = 'x', line=dict(
+				color = col, width = 30)), showlegend=True, name = name)
 	
 	
 	
 	def plotDataset(self, numlevels = 0, onlydata = False):
 		levels = self.json_obj['levels']
+		self.plot_trueJets()
 			
 		plotname = self.jsonfile[:self.jsonfile.find(".json")]
 		
@@ -108,14 +125,16 @@ class JsonPlotter:
 		minLevel = 0
 		for t in range(nTrees):
 			gr_arr.append(self.plot_tree(l, t, onlydata))	
-	
+		
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
+		gr_arr.append(self.jetsgr)	
 		#this level is one plot
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
 		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
+		
 		return fig
 	
 		
@@ -134,6 +153,7 @@ class JsonPlotter:
 			cluster = tree["cluster_"+str(c)]
 			#plot whole data
 			gr_arr.append(self.plot_cluster(cluster, t, True))
+			#add true jets
 			if onlydata:
 				continue	
 		
@@ -204,6 +224,8 @@ class JsonPlotter:
 			opacities = self.makeOpacities(w)
 			cols = [i.replace("1.",'{:8f}'.format(opacities[idx])) for idx, i in enumerate(cols)]
 		
+
+
 
 		if alldata is True:
 			return go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
@@ -329,6 +351,10 @@ class JsonPlotter:
 			#add ellipsoids
 			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op[i], colorscale=cl, showscale = False, name = ell_name,showlegend=True))
 		return gr_arr
+
+
+
+
 
 def main():
 	parser = argparse.ArgumentParser()
