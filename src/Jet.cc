@@ -78,6 +78,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 	_child = nullptr; 
 
 	_idx = 999;
+	_set_time();
 }
 
 

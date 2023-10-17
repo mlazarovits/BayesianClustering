@@ -129,6 +129,7 @@ class JsonPlotter:
 		
 		#make sure arr is flat
 		gr_arr = [gr for i in gr_arr for gr in i]
+		#add true jet centers to overall data plot
 		gr_arr.append(self.jetsgr)	
 		#this level is one plot
 		fig = go.Figure(gr_arr)
@@ -149,6 +150,9 @@ class JsonPlotter:
 		if self._v > 0:
 			print("	tree",t,"has",nClusters,"clusters")
 
+
+		#add true jet centers to individual cluster plots
+		gr_arr.append(self.jetsgr)	
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
 			#plot whole data
@@ -262,6 +266,8 @@ class JsonPlotter:
 			y[i] = pt[1] - avg_y
 			z[i] = pt[2] - avg_z
 		
+
+			
 		#data in "local"/delta coordinates
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
 			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
