@@ -168,7 +168,7 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 
 	//MergeTree* endmerge = DNN->GetMergeTree();
 	vector<node*> trees = mt->GetClusters();
-	cout << trees.size() << " final clusters" << endl;
+	if(_verb > 0) cout << trees.size() << " final clusters" << endl;
 	double nmirror = 0;
 	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
@@ -177,11 +177,11 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 			trees.erase(trees.begin()+i);
 			i--;
 			continue; }
-		cout << "getting " << trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-		trees[i]->points->Print();
+		if(_verb > 0) cout << "getting " << trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+		if(_verb > 0) trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
-	cout << nmirror << " mirror points." << endl;
+	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	return trees;
 	
 	
