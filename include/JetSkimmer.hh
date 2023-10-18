@@ -215,7 +215,6 @@ class JetSkimmer : public BaseSkimmer{
 			can->SetGridy(1);
 			gr->SetTitle("");
 			gr->UseCurrentStyle();
-			gr->SetStats(false);
 			gr->GetXaxis()->CenterTitle(true);
 			gr->GetXaxis()->SetTitle(xtit.c_str());
 			gr->GetYaxis()->CenterTitle(true);
