@@ -339,8 +339,8 @@ if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge
   // that mirror copy is the closest point.
   assert(_ignore_nearest_is_mirror || this_cylinder_index != current);
   if (this_cylinder_index == current) {
-    cerr << "WARNING point "<<current<<
-      " has its mirror copy as its own nearest neighbour"<<endl;
+    if(_verbose > 0){ cerr << "WARNING point "<<current<<
+      " has its mirror copy as its own nearest neighbour"<<endl;}
   }
   return this_cylinder_index;
 }
