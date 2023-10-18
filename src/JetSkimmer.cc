@@ -4,6 +4,7 @@
 #include "BayesCluster.hh"
 #include "Matrix.hh"
 #include <TFile.h>
+#include <time.h>
 //#include <TH1D.h>
 #include <TH2D.h>
 
@@ -29,6 +30,16 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 	hists1D.push_back(nClusters);
 	hists1D.push_back(nTrueJets);
+	hists1D.push_back(tPV);
+	hists1D.push_back(tPV_res_avg);
+	hists1D.push_back(tPV_res_lead);
+	hists1D.push_back(t_rhs); 
+	hists1D.push_back(comptime);
+
+	hists2D.push_back(e_nRhs);
+
+	graphs.push_back(nrhs_comptime);
+
 
 }
 
@@ -79,11 +90,15 @@ void JetSkimmer::Skim(){
 	vector<node*> delauneytrees;
 	vector<JetPoint> rhs;
 	vector<Jet> rhs_jet;
-	double k;
+	double gev;
+
+	//for computational time
+	vector<double> x_nrhs, y_time;
+
 	for(int i = 0; i < _nEvts; i++){
 		_base->GetEntry(i);
-		_prod->GetRecHits(rhs_jet, i);
 		_prod->GetRecHits(rhs, i);
+		x_nrhs.push_back((double)rhs.size());
 		
 		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
@@ -96,39 +111,48 @@ void JetSkimmer::Skim(){
 		if(njets < 1) continue;
 
 
+		clock_t t;
+
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
+			_prod->GetRecHits(rhs_jet, i);
 			//need to transfer from GeV (energy) -> unitless (number of points)
 			//transfer factor is over all points in event
-			double gev = 0;
+			gev = 0;
 			for(int i = 0; i < (int)rhs_jet.size(); i++) gev += rhs_jet[i].E();
 			gev = gev/(double)rhs_jet.size(); //gev = k = sum_n E_n/n pts
 //			cout << "gev: " << gev << endl;
-			for(int i = 0; i < (int)rhs_jet.size(); i++){ rhs_jet[i].SetWeight(rhs_jet[i].E()/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k  
+			for(int i = 0; i < (int)rhs_jet.size(); i++){ rhs_jet[i].SetWeight(rhs_jet[i].E()/gev); }//weights[i] /= gev;  //sums to n pts, w_n = E_n/k  
 			algoDelauney = new BayesCluster(rhs_jet);
 			algoDelauney->SetDataSmear(smear);
 			algoDelauney->SetThresh(thresh);
 			algoDelauney->SetAlpha(alpha);
 			algoDelauney->SetSubclusterAlpha(emAlpha);
 			algoDelauney->SetVerbosity(0);
+			//start clock
+			t = clock();
 			delauneytrees = algoDelauney->Cluster();
 		}
 		//N^2 version
-		else if(_strategy == N2)
+		else if(_strategy == N2){
+			//start clock
+			t = clock();
 			trees = algo->Cluster(Jet(rhs));
+			//calculate transfer factor
+			gev = rhs[0].E()/algo->GetData()->at(0).w();
+		}
+		t = clock() - t;
+		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		
 
-
-		//calculate transfer factor
-		k = rhs[0].E()/algo->GetData()->at(0).w();
 
 
 		FillPVHists(trees);
 		
 		for(int i = 0; i < (int)trees.size(); i++){	
 			BasePDFMixture* model = trees[i]->model;
-			FillModelHists(model, k);
+			FillModelHists(model, gev);
 		}
 		
 		//jet specific hists
@@ -139,6 +163,10 @@ void JetSkimmer::Skim(){
 		}
 
 	}
+
+	//do computationaVl time graph
+	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
+	
 	WriteHists(ofile);
 }
 

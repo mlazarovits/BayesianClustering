@@ -37,7 +37,7 @@ class JetSkimmer : public BaseSkimmer{
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
 		//comp time as a function of number of rechits per event
-		TGraph* comptime_nrhs = new TGraph();
+		TGraph* nrhs_comptime = new TGraph();
 		
 
 		//this is for one jet
@@ -169,9 +169,21 @@ class JetSkimmer : public BaseSkimmer{
 				cv->Write();
 
 			}
-			TCanvas* cv = new TCanvas("rh_time", "");
-			TDRHist(t_rhs, cv, "rh_time", "rh_time", "a.u.");
-			cv->Write();
+			for(int i = 0; i < (int)hists2D.size(); i++){
+				TCanvas* cv = new TCanvas(name.c_str(), "");
+				TDR2DHist(hists2D[i], cv, name, name, "a.u.");
+				//write cv to file			
+			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
+				cv->Write();
+			}
+			for(int i = 0; i < (int)graphs.size(); i++){
+				TCanvas* cv = new TCanvas(name.c_str(), "");
+				TDRGraph(graphs[i], cv, name, name, "a.u.");
+				//write cv to file			
+			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
+				cv->Write();
+
+			}
 			ofile->Close();
 
 		}
@@ -195,5 +207,30 @@ class JetSkimmer : public BaseSkimmer{
 			//clustering strategy - N^2 or NlnN
 			Strategy _strategy;
 
+			vector<TGraph*> graphs;
+	
+		void TDRGraph(TGraph* gr, TCanvas* &can, string plot_title, string xtit, string ytit){
+			can->cd();
+			can->SetGridx(1);
+			can->SetGridy(1);
+			gr->SetTitle("");
+			gr->UseCurrentStyle();
+			gr->SetStats(false);
+			gr->GetXaxis()->CenterTitle(true);
+			gr->GetXaxis()->SetTitle(xtit.c_str());
+			gr->GetYaxis()->CenterTitle(true);
+			gr->GetYaxis()->SetTitle(ytit.c_str());
+			gr->Draw();
+			
+			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
+			TLatex lat;
+			lat.SetNDC();
+			lat.SetTextSize(0.04);
+			lat.SetTextFont(42);
+			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
+
+			return;
+		}
 };
 #endif
