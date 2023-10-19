@@ -38,6 +38,8 @@ int main(int argc, char *argv[]){
 	bool distconst = true;
 	//clustering strategy for skimmer
 	int strat = 0; //0 is NlnN
+	int evti = 0; //for skimming from evti to evtj
+	int evtj = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -125,6 +127,15 @@ int main(int argc, char *argv[]){
     	 		i++;
 			strat = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--evti", 6) == 0){
+    	 		i++;
+			evti = std::atoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"--evtj", 6) == 0){
+    	 		i++;
+			evtj = std::atoi(argv[i]);
+   		}
+
 	}
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
@@ -138,6 +149,7 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN)" << endl;
+   		cout << "   --evti [i] --evtj [j]         skim from event i to event j (default evti = evtj = 0 to skim over everything)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
@@ -202,7 +214,7 @@ int main(int argc, char *argv[]){
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
-		skimmer.Skim();
+		skimmer.Skim(evti,evtj);
 		return 0;
 	}
 	JetProducer prod(file);
