@@ -22,7 +22,7 @@ parser.add_argument('--verbosity','-v',help="verbosity",default=0)
 #add algorithm parameters - alpha, emAlpha, verbosity, thresh
 parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
 parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
-parser.add_argument('--thresh','-t',help='threshold for GMM clusters')
+parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
 args = parser.parse_args()
 
 
@@ -75,7 +75,7 @@ SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
 
 print("submission ready, to run use:")
 #need to be in directory with the execution script to run
-print("pushd ../ && condor_submit "+dirname+"/src/submit.sh")
+print("pushd ../ && condor_submit condor/"+dirname+"/src/submit.sh")
 
 
 
