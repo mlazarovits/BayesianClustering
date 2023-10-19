@@ -153,6 +153,52 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	}
 }
 
+//get rec hits for a particular photon for an event
+void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
+	JetPoint rh;
+	Jet jet;
+	double x, y, z, t, E, eta, phi;
+	int nRHs, nRHs_evt;
+	rhs.clear();
+	if(evt > _nEvts) return;
+	_base->GetEntry(evt);
+
+	//set vertex info
+	Point vtx = Point(3);
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
+
+	//make sure photon number is in vector
+	if(pho >= (int)_base->Photon_rhIds->size()) return;
+	nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	nRHs_evt = (int)_base->ECALRecHit_ID->size();
+	unsigned int id;
+	for(int r = 0; r < nRHs; r++){
+		//add tof = d_pv to time to get correct RH time
+		//t = rh_time - d_rh/c + d_pv/c
+		id = _base->Photon_rhIds->at(pho).at(r);
+		rh.SetRecHitId(id);
+		for(int j = 0; j < nRHs_evt; j++){
+			if(_base->ECALRecHit_ID->at(j) == id){
+				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
+				rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
+				rh.SetEta(_base->ECALRecHit_eta->at(j));
+				rh.SetPhi(_base->ECALRecHit_phi->at(j));
+				
+				//cleaning cuts
+				if(!cleanRH(rh)) break;
+			
+				jet = Jet(rh, vtx);	
+				rhs.push_back(jet);
+				break;
+			}
+		}
+	
+	}
+}
+
 //ctor from rec hit collection - integrating into ntuplizer - in CMSSW
 
 void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
