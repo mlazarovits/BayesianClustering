@@ -33,6 +33,7 @@ obj/*.o
 
 *.x
 *.swp
+*.pyc
 
 #jsons are usually too big
 *.json
