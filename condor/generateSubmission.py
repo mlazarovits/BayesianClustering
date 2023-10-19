@@ -69,7 +69,7 @@ os.makedirs(dirname+"/out")
 
 ####################Create submission script in src directory##################
 subf = open(dirname+"/src/submit.sh","w")
-SH.writeSubmissionBase( subf, dirname )
+SH.writeSubmissionBase( subf, dirname, inputFile )
 eventnums = SH.eventsSplit(inputFile, args.split)
 flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy) 
 SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)

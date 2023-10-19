@@ -6,14 +6,14 @@ import ROOT
 import os
 import re
 import numpy as np
-def writeSubmissionBase( subf, dirname ):
+def writeSubmissionBase( subf, dirname, infile ):
 	subf.write("universe = vanilla\n")
 	subf.write("executable = execute_script.sh\n")
 	subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
 	subf.write("error = ./"+dirname+"/log/job.$(Process).err\n")
 	subf.write("log = ./"+dirname+"/log/job.log\n")
 	#include tarball with CMSSW environment
-	subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, config.tgz\n")
+	subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, config.tgz, "+infile+"\n")
 	subf.write("should_transfer_files = YES\n")
 	subf.write("when_to_transfer_output = ON_EXIT\n")
 	outname = dirname+"/out/skim.$(Process).root"
