@@ -48,7 +48,7 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 local: all
 lpc:   all
 #specify what to make
-all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullCluster.x
+all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
@@ -67,9 +67,13 @@ photonAlgo.x: $(SRCDIR)photonAlgo.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o photonAlgo.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch photonAlgo.x
 
-FullCluster.x: $(SRCDIR)FullCluster.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullCluster.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch FullCluster.x
+FullClusterSingle.x: $(SRCDIR)FullClusterSingle.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch FullClusterSingle.x
+
+FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch FullClusterSkim.x
 
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
