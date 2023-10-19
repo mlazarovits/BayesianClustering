@@ -47,7 +47,7 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	outFileArg = " -o "+ofilename+".$(Process).root"
 
 	#infile should only be file name (no path)
-	infile = infile[infile.rfind("/")+1:]
+	inFile = inFile[inFile.rfind("/")+1:]
 	
 	jobCtr=0
 	for e in evts:
