@@ -17,13 +17,15 @@ def writeSubmissionBase( subf, dirname, infile ):
 	subf.write("should_transfer_files = YES\n")
 	subf.write("when_to_transfer_output = ON_EXIT\n")
 	outname = dirname+"/out/skim.$(Process).root"
+	print "outname", outname
 	subf.write("transfer_output_files = "+outname+"\n")
 	# need to supply absolute path for remap
 	#absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
 	#absCWD = os.getcwd()
 	absCWD = os.popen('pwd').readline().rstrip() 
 	#print("abs path is "+ absCWD)
-	remap= absCWD+"/"+dirname+"/out/"+outname
+	remap= absCWD+"/"+outname
+	print "remap", remap
 	#print("remap is "+ remap)
 	subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")
 
@@ -43,6 +45,9 @@ def eventsSplit(infile, nChunk):
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	configArgs = " --skim"
 	outFileArg = " -o "+ofilename+".$(Process).root"
+
+	#infile should only be file name (no path)
+	infile = infile[infile.rfind("/")+1:]
 	
 	jobCtr=0
 	for e in evts:
