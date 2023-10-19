@@ -98,13 +98,13 @@ class BaseSkimmer{
 		BaseProducer* _prod;
 		bool _data;
 		bool _debug;
-
+		int _evti, _evtj;
+		string _cms_label;
 
 		
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
-
-		string _cms_label;
+		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 
 		vector<TH1D*> hists1D;
 		//0 - # of subclusters

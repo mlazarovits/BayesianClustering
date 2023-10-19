@@ -53,6 +53,7 @@ ofilename = ""
 if(objName == "jets"):
 	dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName+"/"+strategyName
 	ofilename = sampleNameShort+"_"+objName+"_"+strategyName
+#strategy doesn't apply to photons (GMM only)
 else:
 	dirname = odir+"/"+sampleNameShort+"/"+sampleName+"/"+objName
 	ofilename = dirname+"/out/"+sampleNameShort+"_"+objName+"_"+strategyName

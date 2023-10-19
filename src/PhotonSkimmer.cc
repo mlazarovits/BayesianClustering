@@ -5,7 +5,10 @@
 #include <TFile.h>
 //#include <TH1D.h>
 #include <TH2D.h>
-PhotonSkimmer::PhotonSkimmer(){ };
+PhotonSkimmer::PhotonSkimmer(){ 
+	_evti = 0;
+	_evtj = 0;
+};
 
 
 
@@ -21,7 +24,8 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();
-
+	_evti = 0;
+	_evtj = _nEvts;
 
 	objE->SetTitle("phoE");
 	objE->SetName("phoE");
@@ -65,7 +69,7 @@ void PhotonSkimmer::Skim(){
 	int eSkip = 10;
 	if(_debug){ eSkip = 1000; }
 	double sumE;
-	for(int e = 0; e < _nEvts; e+=eSkip){
+	for(int e = _evti; e < _evtj; e+=eSkip){
 		_base->GetEntry(e);
 		nPho = (int)_base->Photon_energy->size();
 		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;

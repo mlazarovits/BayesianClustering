@@ -72,6 +72,7 @@ There are muliple visualization classes:
 	- `python2 condor/generateSubmission.py` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
+- if the executable `FullCluster.x` changes, make sure to add the new `.x` file to `config/` and recreate the `config` tarball
 
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
