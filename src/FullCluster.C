@@ -136,11 +136,11 @@ int main(int argc, char *argv[]){
     	 		i++;
 			strat = std::atoi(argv[i]);
    		}
-		if(strncmp(argv[i],"--evti", 6) == 0){
+		if(strncmp(argv[i],"--evtFirst", 6) == 0){
     	 		i++;
 			evti = std::atoi(argv[i]);
    		}
-		if(strncmp(argv[i],"--evtj", 6) == 0){
+		if(strncmp(argv[i],"--evtLast", 6) == 0){
     	 		i++;
 			evtj = std::atoi(argv[i]);
    		}
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --event(-e) [evt]             set event number to analyze (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN)" << endl;
-   		cout << "   --evti [i] --evtj [j]         skim from event i to event j (default evti = evtj = 0 to skim over everything)" << endl;
+   		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = false)" << endl;
