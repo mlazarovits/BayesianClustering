@@ -15,6 +15,7 @@
 #include "Dnn2piCylinder.hh"
 #include "Jet.hh"
 #include "Matrix.hh"
+#include "GaussianMixture.hh"
 #include <iostream>
 #include <vector>
 
@@ -48,8 +49,14 @@ class BayesCluster{
 		};
 		virtual ~BayesCluster(){ _jets.clear(); };
 
+		//for jets - BHC for clusters + GMM EM for subclusters
 		vector<node*> Cluster(){
 			return this->_cluster();
+		}
+
+		//for photons - subclusters only
+		GaussianMixture* SubCluster(){
+			return this->_subcluster();
 		}
 
 		void SetThresh(double t){ _thresh = t; }
@@ -259,6 +266,7 @@ class BayesCluster{
 		int _initial_n;
 
 		vector<node*> _cluster();
+		GaussianMixture* _subcluster();
 		int n_particles() const{ return _initial_n; }
 		double _thresh, _alpha, _subalpha;
 		Matrix _smear;
