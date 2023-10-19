@@ -100,13 +100,14 @@ void JetSkimmer::Skim(){
 
 	//for computational time
 	vector<double> x_nrhs, y_time;
-	
+	int SKIP = 10;	
 	for(int i = _evti; i < _evtj; i++){
 		_base->GetEntry(i);
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
 		
-		cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		if(i % SKIP == 0) cout << "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << endl;
 
 		for(int r = 0; r < rhs.size(); r++){
 			t_rhs->Fill(rhs[r].t());

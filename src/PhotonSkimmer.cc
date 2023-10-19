@@ -77,8 +77,9 @@ void PhotonSkimmer::Skim(){
 			sumE = 0;
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, e, p);
-			if(_debug) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
-			else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+			//if(_debug) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
+			if(e % eSkip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
+			//else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			if(rhs.size() < 1){ continue; }
 			gmm = algo->FindSubjets(Jet(rhs));
