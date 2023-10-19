@@ -1,6 +1,7 @@
 #include "BayesCluster.hh"
 #include "DynamicNearestNeighbours.hh"
 #include "FullViz3D.hh"
+#include "VarClusterViz3D.hh"
 
 // The structure of this method is respectfully repurposed from ClusterSequence_Delaunay in FastJet (Cacciari, Salam, Soyez).
 // This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
@@ -213,3 +214,104 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 		}
 		inmap.insert(CompEntry(comp,verts(i,j)));
 }
+
+
+GaussianMixture* BayesCluster::_subcluster(){
+	//create GMM model
+	PointCollection* points = new PointCollection();
+	
+	for(auto jet : _jets){
+		PointCollection tmp = PointCollection();
+		jet.GetEtaPhiConstituents(tmp);
+		points->AddPoints(tmp);
+	}
+	int maxK = points->GetNPoints();
+	GaussianMixture* gmm = new GaussianMixture(maxK);
+	
+	gmm->SetData(points);
+	gmm->SetAlpha(_subalpha);
+	gmm->SetVerbosity(_verb);
+	gmm->InitParameters();
+	gmm->InitPriorParameters();
+
+	gmm->SetDataSmear(_smear);
+
+	//create EM algo
+	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
+	algo->SetThresh(_thresh);
+	
+
+	map<string, vector<Matrix>> params;
+	bool viz = false;
+	if(!_oname.empty()){
+		viz = true;
+	}
+
+	VarClusterViz3D cv3D;
+	if(viz){ cv3D = VarClusterViz3D(algo);
+		cv3D.SetVerbosity(_verb);
+		cv3D.UpdatePosterior();
+		cv3D.WriteJson(_oname+"/it0");
+		}
+	//loop
+	double dLogL, newLogL;
+	double LogLthresh = 0.01;
+	double oldLogL = algo->EvalLogL();
+	////////run EM algo////////
+	//maximum of 50 iterations
+	for(int it = 0; it < 50; it++){
+	
+		//E step
+		algo->Estimate();
+		//M step
+		algo->Update();
+		
+		//Plot
+		if(viz){
+			cv3D.UpdatePosterior();
+			cv3D.WriteJson(_oname+"/it"+std::to_string(it+1));
+		}
+		//Check for convergence
+		newLogL = algo->EvalLogL();
+		if(isnan(newLogL)){
+			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
+			return gmm;
+		}
+		dLogL = oldLogL - newLogL;
+		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(fabs(dLogL) < LogLthresh){// || dLogL > 0){
+			if(_verb > 0){
+				cout << "Reached convergence at iteration " << it+1 << endl;
+			}
+			break;
+		}
+		oldLogL = newLogL;
+	}
+	if(_verb > 1){
+		cout << "Estimated parameters" << endl;
+		map<string, Matrix> params;
+		for(int i = 0; i < gmm->GetNClusters(); i++){
+			params = gmm->GetPriorParameters(i);	
+			cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << endl;
+			cout << "mean " << i << endl;
+			params["mean"].Print();
+			cout << "cov " << i << endl;
+			params["cov"].Print();
+			params.clear();
+		}
+
+	}
+
+	return gmm;
+
+
+
+
+
+
+
+
+}
+
+
+

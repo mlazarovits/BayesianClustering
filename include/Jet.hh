@@ -124,12 +124,6 @@ class Jet{
 
 		vector<JetPoint> GetJetPoints() const{return _rhs;}
 		
-		PointCollection GetJetPoints_mom() const{
-			PointCollection pc;
-			//for(int i = 0; i < _nRHs; i++) pc += _rhs[i].four_mom();
-			return pc;
-		}
-
 		//add subjets/pixels to jet
 		void add(const Jet& jt);
 		void add(const JetPoint& rh);

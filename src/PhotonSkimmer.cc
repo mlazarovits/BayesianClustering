@@ -55,7 +55,6 @@ void PhotonSkimmer::Skim(){
 	algo->SetClusterAlpha(0.1);
 	algo->SetSubclusterAlpha(0.1);
 	algo->SetThresh(1.);
-	algo->SetMaxNClusters(5);
 	algo->SetWeighted(true);
 	algo->SetVerbosity(0);
 	algo->SetDataSmear(smear);
@@ -69,7 +68,14 @@ void PhotonSkimmer::Skim(){
 	int eSkip = 10;
 	if(_debug){ eSkip = 1000; }
 	double sumE;
-	for(int e = _evti; e < _evtj; e+=eSkip){
+
+
+
+	if(_evti == _evtj){
+		_evti = 0;
+		_evtj = _nEvts;
+	}
+	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		nPho = (int)_base->Photon_energy->size();
 		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;
@@ -82,6 +88,7 @@ void PhotonSkimmer::Skim(){
 			//else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			if(rhs.size() < 1){ continue; }
+			algo->SetMaxNClusters(int(rhs.size()));
 			gmm = algo->FindSubjets(Jet(rhs));
 			//get weight transfer factor - k = sum_n(E_n)/N = E_n/w_n = E_n*k/E_n for N rhs in a photon supercluster
 			//w_n = E_n/k

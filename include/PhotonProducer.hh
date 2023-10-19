@@ -25,6 +25,7 @@ class PhotonProducer : public BaseProducer{
 		void GetRecHits(vector<vector<JetPoint>>& rhs);
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int pho);
+		void GetRecHits(vector<Jet>& rhs, int evt, int pho);
 		void GetPrimaryVertex(Point& vtx, int evt);
 
 

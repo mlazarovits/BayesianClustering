@@ -100,6 +100,10 @@ void JetSkimmer::Skim(){
 
 	//for computational time
 	vector<double> x_nrhs, y_time;
+	if(_evti == _evtj){
+		_evti = 0;
+		_evtj = _nEvts;
+	}
 	int SKIP = 10;	
 	for(int i = _evti; i < _evtj; i++){
 		_base->GetEntry(i);
