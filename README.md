@@ -71,6 +71,7 @@ There are muliple visualization classes:
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 condor/generateSubmission.py` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
+- run the python scripts and submit scripts from the condor folder
 
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)

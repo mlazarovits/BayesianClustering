@@ -75,42 +75,7 @@ SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
 
 print("submission ready, to run use:")
 #need to be in directory with the execution script to run
-print("pushd ../ && condor_submit condor/"+dirname+"/src/submit.sh")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print("pushd ../ && condor_submit "+dirname+"/src/submit.sh")
 
 
 
