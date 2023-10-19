@@ -17,7 +17,6 @@ def writeSubmissionBase( subf, dirname, infile ):
 	subf.write("should_transfer_files = YES\n")
 	subf.write("when_to_transfer_output = ON_EXIT\n")
 	outname = dirname+"/out/skim.$(Process).root"
-	print "outname", outname
 	subf.write("transfer_output_files = "+outname+"\n")
 	# need to supply absolute path for remap
 	#absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
@@ -25,7 +24,6 @@ def writeSubmissionBase( subf, dirname, infile ):
 	absCWD = os.popen('pwd').readline().rstrip() 
 	#print("abs path is "+ absCWD)
 	remap= absCWD+"/"+outname
-	print "remap", remap
 	#print("remap is "+ remap)
 	subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")
 
