@@ -49,7 +49,7 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	jobCtr=0
 	for e in evts:
 		inFileArg = " -i "+inFile
-		Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+"\n"
+		Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+ofilename+"\n"
 		subf.write("\n\n\n")
 		subf.write("###### job"+str(jobCtr)+ "######\n")
 		subf.write(Args)

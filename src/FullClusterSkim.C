@@ -20,7 +20,7 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
-	string fname = "fullcluster";
+	string fname = "";
 	string in_file = "rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
@@ -144,53 +144,9 @@ int main(int argc, char *argv[]){
    		return 0;
   	}
 
-	if(obj == 0)
-		fname = "jets";
-	else if(obj == 1)
-		fname = "pho";
-	else{
-		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
-		return -1;
-	}
 
-	fname = "plots/"+fname;
-	string a_string;
-	std::stringstream stream;
-	stream << std::fixed << std::setprecision(3) << alpha;
-	a_string = stream.str();
-	int idx = a_string.find(".");
-	a_string.replace(idx,1,"p");	
-	
-	string ema_string;
-	stream.str("");
-	stream << std::fixed << std::setprecision(3) << emAlpha;
-	ema_string = stream.str();
-	idx = ema_string.find(".");
-	ema_string.replace(idx,1,"p");	
-
-	string t_string;
-	stream.str("");
-	stream << std::fixed << std::setprecision(3) << thresh;
-	t_string = stream.str();
-	idx = t_string.find(".");
-	t_string.replace	(idx,1,"p");	
-
-
-	string extra = "";
-
-	//make sure evti < evtj
-	if(evti > evtj){
-		int evt = evtj;
-		evtj = evti;
-		evti = evt;
-	}
-
-	fname += "_evt"+std::to_string(evti)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+extra;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
-	if(weighted) fname += "_Eweighted";
-	if(smeared) fname += "_EtaPhiSmear";
-	if(distconst) fname += "_distanceConstrained";
 	
 	/////GET DATA FROM NTUPLE//////
 	//get version
@@ -201,15 +157,63 @@ int main(int argc, char *argv[]){
 	for(auto x : m) version += x;
 	string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
 	cmslab += version.substr(0,3);
-	fname += version.substr(0,3); //"_v9"
 	cout << "Writing to directory: " << fname << endl;
 	TFile* file = TFile::Open(in_file.c_str());
-	cout << "Skimming ";
+	cout << "Skimming events " << evti << " to " << evtj << " for ";
+
+	if(fname != ""){
+		if(obj == 0)
+			fname = "jets";
+		else if(obj == 1)
+			fname = "pho";
+		else{
+			cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
+			return -1;
+		}
+
+		fname = "plots/"+fname;
+		string a_string;
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(3) << alpha;
+		a_string = stream.str();
+		int idx = a_string.find(".");
+		a_string.replace(idx,1,"p");	
+		
+		string ema_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << emAlpha;
+		ema_string = stream.str();
+		idx = ema_string.find(".");
+		ema_string.replace(idx,1,"p");	
+
+		string t_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << thresh;
+		t_string = stream.str();
+		idx = t_string.find(".");
+		t_string.replace(idx,1,"p");	
+
+
+		fname += "_evt"+std::to_string(evti)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
+		if(weighted) fname += "_Eweighted";
+		if(smeared) fname += "_EtaPhiSmear";
+		if(distconst) fname += "_distanceConstrained";
+		fname += cmslab.substr(0,cmslab.find("_")); //short sample name
+		fname += version.substr(0,3); //"_v9"
+	}
+	//make sure evti < evtj
+	if(evti > evtj){
+		int evt = evtj;
+		evtj = evti;
+		evti = evt;
+	}
+
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
+		skimmer.SetOutfile(fname);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.Skim();
@@ -223,6 +227,7 @@ int main(int argc, char *argv[]){
         	else
 			data = true;
 		skimmer.SetData(data);
+		skimmer.SetOutfile(fname);
         	//skimmer.SetDebug(debug);
 		//set EMalpha
         	skimmer.SetCMSLabel(cmslab);

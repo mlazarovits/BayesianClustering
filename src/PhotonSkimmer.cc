@@ -26,6 +26,7 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_nEvts = _base->fChain->GetEntries();
 	_evti = 0;
 	_evtj = _nEvts;
+	_oname = "plots/photon_skims_"+_cms_label+".root";
 
 	objE->SetTitle("phoE");
 	objE->SetName("phoE");
@@ -34,9 +35,8 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
 
-	string fname = "plots/photon_skims_"+_cms_label+".root";
-	cout << "Writing skim to: " << fname << endl;
-	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
+	cout << "Writing skim to: " << _oname << endl;
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	//create histograms to be filled
 	MakeIDHists();
@@ -123,9 +123,9 @@ void PhotonSkimmer::Skim(){
 }
 
 void PhotonSkimmer::CleaningSkim(){
-	string fname = "plots/photon_clean_skims_"+_cms_label+".root";
-	cout << "Writing skim to: " << fname << endl;
-	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
+	string _oname = "plots/photon_clean_skims_"+_cms_label+".root";
+	cout << "Writing skim to: " << _oname << endl;
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//rh time
 	TH1D* t_rh = new TH1D("t_rh","t_rh",50,-150, 150);
 	//rh time vs. rh e

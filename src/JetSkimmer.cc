@@ -32,6 +32,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	_nEvts = _base->fChain->GetEntries();
 	_evti = 0;
 	_evtj = _nEvts;
+	_oname = "plots/jet_skims_"+_cms_label+".root";
 
 	hists1D.push_back(nClusters);
 	hists1D.push_back(nTrueJets);
@@ -53,8 +54,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 //make cluster param histograms
 //if specified, skim from events i to j
 void JetSkimmer::Skim(){
-	string fname = "plots/jet_skims_"+_cms_label+".root";
-	cout << "Writing skim to: " << fname << endl;
+	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy";
 	if(_strategy == NlnN)
 		cout << " NlnN (Delauney)" << endl;
@@ -62,7 +62,7 @@ void JetSkimmer::Skim(){
 		cout << " N2 (naive)" << endl;
 	else
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
-	TFile* ofile = new TFile(fname.c_str(),"RECREATE");
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);

@@ -13,7 +13,7 @@ odir = 'Output/'
 #Load input arguments ()
 parser = argparse.ArgumentParser()
 #Ntuple file to run over
-parser.add_argument('--inputFile','-i',help='Ntuple file to create skims from',required=True)
+parser.add_argument('--inputFile','-i',help='Ntuple file to create skims from (absolute path)',required=True)
 #which object to analyze (jets or photons currently supported)
 parser.add_argument('--object','-o',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
 parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=["1","0"])
@@ -72,7 +72,7 @@ subf = open(dirname+"/src/submit.sh","w")
 SH.writeSubmissionBase( subf, dirname, inputFile )
 eventnums = SH.eventsSplit(inputFile, args.split)
 flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy) 
-SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
+SH.writeQueueList(subf, inputFile, dirname+"/"+ofilename+"_skims", eventnums, flags)
 
 print("submission ready, to run use:")
 #need to be in directory with the execution script to run

@@ -99,12 +99,14 @@ class BaseSkimmer{
 		bool _data;
 		bool _debug;
 		int _evti, _evtj;
-		string _cms_label;
+		string _cms_label, _oname;
 
 		
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
+		void SetOutfile(string fname){ _oname = fname; }
+
 
 		vector<TH1D*> hists1D;
 		//0 - # of subclusters
