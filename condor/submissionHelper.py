@@ -5,7 +5,7 @@
 import ROOT
 import os
 import re
-def getDataSetName(pathToList):
+import numpy as np
 def writeSubmissionBase( subf, dirname ):
 	subf.write("universe = vanilla\n")
 	subf.write("executable = execute_script.sh\n")
@@ -29,23 +29,26 @@ def writeSubmissionBase( subf, dirname ):
 
 #splits by event number
 def eventsSplit(infile, nChunk):
-	print("Splitting each file into "+nChunk+" jobs ")
+	if nChunk == 0:
+		nChunk += 1
+	print("Splitting each file into "+str(nChunk)+" jobs ")
 	#should split by event number in file
 	rfile = ROOT.TFile(infile)
 	nevts = rfile.Get("tree/llpgtree").GetEntries()
-	evts = range(nevts)
+	evts = range(nevts+1)
 	#return array of pairs of evtFirst and evtLast to pass as args into the exe to run
-	return np.array_split(nevts, nchunk)
- 
+	arr = [[min(i), max(i)] for i in np.array_split(evts,nChunk)] 
+	return arr
 
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
-	configargs = " --skim"
+	configArgs = " --skim"
 	outFileArg = " -o "+ofilename+".$(Process).root"
+	print evts
 	
 	jobCtr=0
 	for e in evts:
 		inFileArg = " -i "+inFile
-		Args = "Arguments ="+inFileArg+" "+configArgs+" "+flags+" --evtFirst "+e[0]+" --evtLast "+e[1]+"\n"
+		Args = "Arguments ="+inFileArg+" "+configArgs+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+"\n"
 		subf.write("\n\n\n")
 		subf.write("###### job"+str(jobCtr)+ "######\n")
 		subf.write(Args)
