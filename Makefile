@@ -52,7 +52,7 @@ all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullCluster.x
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o GMM.x $(OUTOBJ)/*.o $(GLIBS) $ $< #-Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ 
+	$(CXX) $(CXXFLAGS) -o GMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch GMM.x
 
 varGMM.x: $(SRCDIR)varGMM.C $(OBJ_FILES) $(HH_FILES)
