@@ -9,21 +9,21 @@ import numpy as np
 def writeSubmissionBase( subf, dirname ):
 	subf.write("universe = vanilla\n")
 	subf.write("executable = execute_script.sh\n")
-	subf.write("output = ./condor/Output/"+dirname+"/log/job.$(Process).out\n")
-	subf.write("error = ./condor/Output/"+dirname+"/log/job.$(Process).err\n")
-	subf.write("log = ./condor/Output/"+dirname+"/log/job.log\n")
+	subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
+	subf.write("error = ./"+dirname+"/log/job.$(Process).err\n")
+	subf.write("log = ./"+dirname+"/log/job.log\n")
 	#include tarball with CMSSW environment
-	subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2\n")
+	subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, config.tgz\n")
 	subf.write("should_transfer_files = YES\n")
 	subf.write("when_to_transfer_output = ON_EXIT\n")
-	outname = dirname+".$(Process).root"
+	outname = dirname+"/out/skim.$(Process).root"
 	subf.write("transfer_output_files = "+outname+"\n")
 	# need to supply absolute path for remap
 	#absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
 	#absCWD = os.getcwd()
 	absCWD = os.popen('pwd').readline().rstrip() 
 	#print("abs path is "+ absCWD)
-	remap= absCWD+"/Output/"+dirname+"/out/"+outname
+	remap= absCWD+"/"+dirname+"/out/"+outname
 	#print("remap is "+ remap)
 	subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")
 
@@ -43,7 +43,6 @@ def eventsSplit(infile, nChunk):
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	configArgs = " --skim"
 	outFileArg = " -o "+ofilename+".$(Process).root"
-	print evts
 	
 	jobCtr=0
 	for e in evts:
