@@ -22,7 +22,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		
 		void CleaningSkim(){ };
-		void Skim();
+		void Skim(int evti = 0, int evtj = 0);
 
 		//jet specific quantities
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);

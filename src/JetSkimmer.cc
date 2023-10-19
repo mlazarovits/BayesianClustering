@@ -46,7 +46,8 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 
 //make cluster param histograms
-void JetSkimmer::Skim(){
+//if specified, skim from events i to j
+void JetSkimmer::Skim(int evti, int evtj){
 	string fname = "plots/jet_skims_"+_cms_label+".root";
 	cout << "Writing skim to: " << fname << endl;
 	cout << "Using clustering strategy";
@@ -94,8 +95,9 @@ void JetSkimmer::Skim(){
 
 	//for computational time
 	vector<double> x_nrhs, y_time;
-
-	for(int i = 0; i < _nEvts; i++){
+	
+	if(evtj == 0) evtj = _nEvts;
+	for(int i = evti; i < evtj; i++){
 		_base->GetEntry(i);
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
