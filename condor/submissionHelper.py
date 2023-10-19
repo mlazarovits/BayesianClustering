@@ -41,7 +41,6 @@ def eventsSplit(infile, nChunk):
 	return arr
 
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
-	configArgs = " --skim"
 	outFileArg = " -o "+ofilename+".$(Process).root"
 
 	#infile should only be file name (no path)
@@ -50,7 +49,7 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	jobCtr=0
 	for e in evts:
 		inFileArg = " -i "+inFile
-		Args = "Arguments ="+inFileArg+" "+configArgs+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+"\n"
+		Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+"\n"
 		subf.write("\n\n\n")
 		subf.write("###### job"+str(jobCtr)+ "######\n")
 		subf.write(Args)
