@@ -8,7 +8,10 @@
 //#include <TH1D.h>
 #include <TH2D.h>
 
-JetSkimmer::JetSkimmer(){ };
+JetSkimmer::JetSkimmer(){ 
+	_evti = 0;
+	_evtj = 0;
+};
 
 
 
@@ -27,6 +30,8 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();
+	_evti = 0;
+	_evtj = _nEvts;
 
 	hists1D.push_back(nClusters);
 	hists1D.push_back(nTrueJets);
@@ -47,7 +52,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 //make cluster param histograms
 //if specified, skim from events i to j
-void JetSkimmer::Skim(int evti, int evtj){
+void JetSkimmer::Skim(){
 	string fname = "plots/jet_skims_"+_cms_label+".root";
 	cout << "Writing skim to: " << fname << endl;
 	cout << "Using clustering strategy";
@@ -96,8 +101,7 @@ void JetSkimmer::Skim(int evti, int evtj){
 	//for computational time
 	vector<double> x_nrhs, y_time;
 	
-	if(evtj == 0) evtj = _nEvts;
-	for(int i = evti; i < evtj; i++){
+	for(int i = _evti; i < _evtj; i++){
 		_base->GetEntry(i);
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());

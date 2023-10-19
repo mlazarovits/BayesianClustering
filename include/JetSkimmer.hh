@@ -22,7 +22,8 @@ class JetSkimmer : public BaseSkimmer{
 		
 		
 		void CleaningSkim(){ };
-		void Skim(int evti = 0, int evtj = 0);
+		void Skim();
+		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 
 		//jet specific quantities
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
@@ -197,6 +198,8 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		private:
+			int _evti, _evtj;
+		
 			enum Strategy{
 				//Delauney strategy - NlnN time - for 2pi cylinder
 				NlnN = 0,

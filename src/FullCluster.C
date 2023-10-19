@@ -23,6 +23,7 @@ int main(int argc, char *argv[]){
 
 	
 	string fname = "jetDelauney";
+	string in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	int nIts = 50; //number of iterations to run EM algorithm
 	double thresh = 1.;
@@ -47,13 +48,21 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"-h", 2) == 0){
     	 		hprint = true;
    		}
+		if(strncmp(argv[i],"--input", 7) == 0){
+     			i++;
+    	 		in_file = string(argv[i]);
+   		}
+		if(strncmp(argv[i],"-i", 2) == 0){
+     			i++;
+    	 		in_file = string(argv[i]);
+   		}
 		if(strncmp(argv[i],"--output", 8) == 0){
      			i++;
     	 		fname = string(argv[i]);
    		}
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
-    	 		fname += "_"+string(argv[i]);
+    	 		fname = string(argv[i]);
    		}
 		if(strncmp(argv[i],"--nIterations", 13) == 0){
      			i++;
@@ -141,7 +150,8 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --ouput(-o) [file]            output root file (in plots/)" << endl;
+   		cout << "   --input(-i) [file]            input root file" << endl;
+   		cout << "   --output(-o) [file]           output root file (in plots/)" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
@@ -193,7 +203,6 @@ int main(int argc, char *argv[]){
 	if(distconst) fname += "_distanceConstrained";
 	
 	/////GET DATA FROM NTUPLE//////
-	string in_file = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	string cmslab = "GMSB_L-350TeV_Ctau-200cm_2017_v9";
 	fname += "_v9";
 	if(viz){
@@ -214,7 +223,8 @@ int main(int argc, char *argv[]){
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
-		skimmer.Skim(evti,evtj);
+		skimmer.SetEventRange(evti,evtj);
+		skimmer.Skim();
 		return 0;
 	}
 	JetProducer prod(file);
