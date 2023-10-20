@@ -135,7 +135,8 @@ class JsonPlotter:
 		fig = go.Figure(gr_arr)
 		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
 		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
-		
+	
+	
 		return fig
 	
 		
@@ -151,8 +152,6 @@ class JsonPlotter:
 			print("	tree",t,"has",nClusters,"clusters")
 
 
-		#add true jet centers to individual cluster plots
-		gr_arr.append(self.jetsgr)	
 		for c in range(nClusters):
 			cluster = tree["cluster_"+str(c)]
 			#plot whole data
