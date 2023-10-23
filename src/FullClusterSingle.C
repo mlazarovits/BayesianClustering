@@ -140,14 +140,14 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN, does not apply to photons)" << endl;
-   		cout << "   --object [obj]          set object to cluster (0 : jets, default; 1 : photons)" << endl;
+   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2,  does not apply to photons)" << endl;
+   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
    		cout << "   --weight                      weights data points (default = true)" << endl;
    		cout << "   --dist                        clusters must be within pi/2 in phi (default = true)" << endl;
-   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
+   		cout << "Example: ./FullClusterSingle.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
   	}
