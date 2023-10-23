@@ -37,7 +37,6 @@ Clusterizer::~Clusterizer(){ }
 vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	_points = new PointCollection();
 	jet.GetEtaPhiConstituents(*_points);
-
 	double gev;
 	if(_weighted){
 		vector<double> weights;
@@ -121,7 +120,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 			}
 		}
 	}
-
+cout << "end clusterizer" << endl;
 	return tree;
 
 }

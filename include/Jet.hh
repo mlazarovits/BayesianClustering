@@ -135,7 +135,7 @@ class Jet{
 		void GetEtaPhiConstituents(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)_rhs.size(); i++){
-				pc += Point({_rhs[i].eta(), _rhs[i].phi(), _rhs[i].time()});
+				pc += Point({_rhs[i].eta(), _rhs[i].phi_02pi(), _rhs[i].time()});
 			}
 		}
 		

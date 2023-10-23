@@ -116,7 +116,6 @@ Jet::Jet(vector<Jet> jets){
 		_rhs.push_back(rhs[j]);
 	}
 	_nRHs = (int)_rhs.size();	
-
 	double theta, pt, x, y, z;
 	for(int i = 0; i < _nRHs; i++){
 		//theta is calculated between beamline (z-dir) and x-y vector	

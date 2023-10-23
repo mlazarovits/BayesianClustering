@@ -271,19 +271,28 @@ cout << "obj: " << obj << endl;
 	else if(strat == 1){
 		cout << "N^2 (naive)" << endl;
 		Clusterizer* algo = new Clusterizer();
+	cout << "a" << endl;
 		if(smeared) algo->SetDataSmear(smear);
+	cout << "b" << endl;
 		algo->SetThresh(thresh);
+	cout << "c" << endl;
 		algo->SetClusterAlpha(alpha);
+	cout << "d" << endl;
 		algo->SetSubclusterAlpha(emAlpha);
+	cout << "e" << endl;
 		algo->SetVerbosity(verb);
+	cout << "f" << endl;
 		algo->SetWeighted(true);
+	cout << "g" << endl;
 		
 		trees = algo->Cluster(Jet(rhs));
+	cout << "h" << endl;
 
 	}
 	else cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)" << endl;
 
 	if(viz){
+	cout << "start viz" << endl;
 		//plotting stuff here
 		FullViz3D plots = FullViz3D(trees);
 		plots.SetVerbosity(verb);
@@ -291,6 +300,7 @@ cout << "obj: " << obj << endl;
 		//add info of true jets
 		plots.AddTrueJets(jets);
 		plots.Write(fname);
+	cout << "end viz" << endl;
 	}
 
 
