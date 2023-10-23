@@ -108,6 +108,36 @@ Jet::Jet(vector<JetPoint> rhs){
 	_set_time();
 }
 
+Jet::Jet(vector<Jet> jets){
+	vector<JetPoint> rhs;
+	for(int i = 0; i < (int)jets.size(); i++){
+		jets[i].GetConstituents(rhs);
+		for(int j = 0; j < (int)rhs.size(); j++)
+		_rhs.push_back(rhs[j]);
+	}
+	_nRHs = (int)_rhs.size();	
+
+	double theta, pt, x, y, z;
+	for(int i = 0; i < _nRHs; i++){
+		//theta is calculated between beamline (z-dir) and x-y vector	
+		x = rhs[i].x();
+		y = rhs[i].y();
+		z = rhs[i].z();
+		theta = atan2( sqrt(x*x + y*y), z );
+		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
+		_px += pt*cos(rhs[i].phi());
+		_py += pt*sin(rhs[i].phi());
+		_pz += pt*cosh(rhs[i].eta());
+		
+		_E += rhs[i].E();
+
+
+	}
+	_kt2 = _px*_px + _py*_py;
+	_ensure_valid_rap_phi();
+	_set_time();
+}
+
 Jet::Jet(vector<JetPoint> rhs, Point vtx){
 	_nRHs = (int)rhs.size();	
 	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);

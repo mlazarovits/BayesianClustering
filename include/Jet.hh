@@ -28,6 +28,7 @@ class Jet{
 		Jet(JetPoint rh, Point vtx);
 		Jet(vector<JetPoint> rhs, Point vtx);
 		Jet(vector<JetPoint> rhs);
+		Jet(vector<Jet> jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
