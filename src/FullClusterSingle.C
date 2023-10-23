@@ -255,7 +255,7 @@ cout << "obj: " << obj << endl;
 	}
 
 
-	cout << "Using clustering strategy " << strat << " : ";
+	cout << "Using clustering strategy " << strat << ": ";
 	if(strat == 0){
 		cout << "Delauney (NlnN)" << endl;
 		BayesCluster *algo = new BayesCluster(rhs);
