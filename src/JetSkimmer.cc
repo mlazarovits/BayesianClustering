@@ -83,7 +83,7 @@ void JetSkimmer::Skim(){
 	algo->SetClusterAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetThresh(thresh);
-	algo->SetMaxNClusters(5);
+	//algo->SetMaxNClusters(5);
 	algo->SetWeighted(true);
 	algo->SetVerbosity(0);
 	algo->SetDataSmear(smear);
@@ -149,6 +149,7 @@ void JetSkimmer::Skim(){
 		else if(_strategy == N2){
 			//start clock
 			t = clock();
+			algo->SetMaxNClusters((int)rhs.size());
 			trees = algo->Cluster(Jet(rhs));
 			//calculate transfer factor
 			gev = rhs[0].E()/algo->GetData()->at(0).w();
