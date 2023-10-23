@@ -26,12 +26,24 @@ class JsonPlotter:
 	def SetViz(self, v):
 		self.viz = v
 
-	def makeOpacities(self, w):
-		wmin = min(w);
-		wmax = max(w);
+	#make opacities for all points in all trees + all clusters
+	#same for all levels - just do level 0
+	def makeOpacities(self):
+		level = self.json_obj['levels']['level_0']
+		ws = []
+		for t in range(len(level)):
+			tree = level["tree_"+str(t)]
+			for c in range(len(tree)):
+				cluster = tree["cluster_"+str(c)]
+				ws.append(cluster['data']['w'])
 
-		op = [(i - wmin)/(wmax - wmin) for i in w]
-		return op
+		#make sure arr is flat
+		ws = [w for i in ws for w in i]
+	
+		wmin = min(ws);
+		wmax = max(ws);
+
+		self.ops = {i : (i - wmin)/(wmax - wmin) for i in ws}
 
 	def buildColorDict(self):
 		colors = {}
@@ -97,7 +109,9 @@ class JsonPlotter:
 	def plotDataset(self, numlevels = 0, onlydata = False):
 		levels = self.json_obj['levels']
 		self.plot_trueJets()
-			
+		self.makeOpacities()
+
+		
 		plotname = self.jsonfile[:self.jsonfile.find(".json")]
 		
 		figs = []
@@ -182,7 +196,7 @@ class JsonPlotter:
 			if l == 0:
 				if self.viz is True:
 					fig.show()
-			#	gifcmd = "convert -delay 50 -loop 1 -reverse "
+			#	gifcmd = "conver/stash/user/mlazarovits/public/CMSSW_10_6_5/srct -delay 50 -loop 1 -reverse "
 			#	self.cl_gifs.append(gifcmd)
 			#print("l",l,"c",c,"len",len(self.cl_gifs))
 			##add clusters at lower levels to gif
@@ -198,7 +212,6 @@ class JsonPlotter:
 		y = data['y']
 		z = data['z']
 		w = data['w']
-		
 		
 		nSubClusters = len(cluster['subclusters'])
 
@@ -224,8 +237,7 @@ class JsonPlotter:
 			name += " in "+str(nSubClusters)+" subclusters" 
 		
 		if(min(w) != max(w)):
-			opacities = self.makeOpacities(w)
-			cols = [i.replace("1.",'{:8f}'.format(opacities[idx])) for idx, i in enumerate(cols)]
+			cols = [i.replace("1.",'{:8f}'.format(self.ops[w[idx]])) for idx, i in enumerate(cols)]
 		
 
 
