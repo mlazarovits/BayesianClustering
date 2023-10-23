@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
 	stream << std::fixed << std::setprecision(3) << thresh;
 	t_string = stream.str();
 	idx = t_string.find(".");
-	t_string.replace	(idx,1,"p");	
+	t_string.replace(idx,1,"p");	
 
 
 	string extra = "";
@@ -235,7 +235,6 @@ cout << "obj: " << obj << endl;
 	}
 	//get rhs (as Jets) for single (npho) photon
 	else if(obj == 1){
-        	//get corresponding PV information - TODO: assuming jet is coming from interation point or PV or somewhere else?
         	PhotonProducer prod(file);
 		int npho = 0; //which photon to analyze
 		cout << "Making plots for photon " << npho << "  at event " << evt << endl;
@@ -256,15 +255,33 @@ cout << "obj: " << obj << endl;
 	}
 
 
-	BayesCluster *algo = new BayesCluster(rhs);
-	if(smeared) algo->SetDataSmear(smear);
-	algo->SetThresh(thresh);
-	algo->SetAlpha(alpha);
-	algo->SetSubclusterAlpha(emAlpha);
-	algo->SetVerbosity(verb);
-	
-	if(obj == 0) trees = algo->Cluster();
-	else if(obj == 1) model = algo->SubCluster();
+	cout << "Using clustering strategy " << strat << " : ";
+	if(strat == 0){
+		cout << "Delauney (NlnN)" << endl;
+		BayesCluster *algo = new BayesCluster(rhs);
+		if(smeared) algo->SetDataSmear(smear);
+		algo->SetThresh(thresh);
+		algo->SetAlpha(alpha);
+		algo->SetSubclusterAlpha(emAlpha);
+		algo->SetVerbosity(verb);
+		
+		if(obj == 0) trees = algo->Cluster();
+		else if(obj == 1) model = algo->SubCluster();
+	}
+	else if(strat == 1){
+		cout << "N^2 (naive)" << endl;
+		Clusterizer* algo = new Clusterizer();
+		if(smeared) algo->SetDataSmear(smear);
+		algo->SetThresh(thresh);
+		algo->SetClusterAlpha(alpha);
+		algo->SetSubclusterAlpha(emAlpha);
+		algo->SetVerbosity(verb);
+		algo->SetWeighted(true);
+		
+		trees = algo->Cluster(Jet(rhs));
+
+	}
+	else cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)" << endl;
 
 	if(viz){
 		//plotting stuff here
