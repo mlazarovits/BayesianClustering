@@ -89,7 +89,7 @@ void RandomSample::SetRange(double xmin, double xmax){
 //return random double (xmin, xmax) according to Gaussian distribuion
 vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsample){
 	vector<double> samples;
-	if(sigma < 0){
+	if(sigma <= 0){
 		cout << "Please input valid sigma > 0" << endl;
 		return samples;
 	}

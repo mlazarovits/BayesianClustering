@@ -20,8 +20,6 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
-	//to track computation time from beginning of program
-	clock_t t = clock();
 
 	
 	string fname = "fullcluster";
@@ -32,8 +30,8 @@ int main(int argc, char *argv[]){
 	double emAlpha = 0.5;
 	bool viz = false;
 	int verb = 0;
-	bool weighted = false;
-	bool smeared = false;
+	bool weighted = true;
+	bool smeared = true;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -99,14 +97,14 @@ int main(int argc, char *argv[]){
 			i++;
     	 		alpha = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--weight", 8) == 0){
-    	 		weighted = true;
+		if(strncmp(argv[i],"--noWeight", 10) == 0){
+    	 		weighted = false;
    		}
-		if(strncmp(argv[i],"--smear", 7) == 0){
-    	 		smeared = true;
+		if(strncmp(argv[i],"--noSmear", 9) == 0){
+    	 		smeared = false;
    		}
-		if(strncmp(argv[i],"--dist", 6) == 0){
-    	 		distconst = true;
+		if(strncmp(argv[i],"--noDist", 8) == 0){
+    	 		distconst = false;
    		}
 		if(strncmp(argv[i],"--strategy", 10) == 0){
     	 		i++;
@@ -144,9 +142,9 @@ int main(int argc, char *argv[]){
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
-   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
-   		cout << "   --weight                      weights data points (default = true)" << endl;
-   		cout << "   --dist                        clusters must be within pi/2 in phi (default = true)" << endl;
+   		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
+   		cout << "   --noWeight                    turns off weighting data points (default = true)" << endl;
+   		cout << "   --noDist                      turns off - clusters must be within pi/2 in phi (default = true)" << endl;
    		cout << "Example: ./FullClusterSingle.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -243,6 +241,10 @@ cout << "obj: " << obj << endl;
 	}	
         if(rhs.size() < 1) return -1;
 
+	//to debug - use less rechits
+	
+
+
 	double gev;
 	if(weighted){
 		//need to transfer from GeV (energy) -> unitless (number of points)
@@ -253,9 +255,11 @@ cout << "obj: " << obj << endl;
 //		cout << "gev: " << gev << endl;
 		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(rhs[i].E()/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
 	}
-
+	else
+		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(1.); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
 
 	cout << "Using clustering strategy " << strat << ": ";
+	clock_t t;
 	if(strat == 0){
 		cout << "Delauney (NlnN)" << endl;
 		BayesCluster *algo = new BayesCluster(rhs);
@@ -265,34 +269,29 @@ cout << "obj: " << obj << endl;
 		algo->SetSubclusterAlpha(emAlpha);
 		algo->SetVerbosity(verb);
 		
+		//to track computation time from beginning of program
+		t = clock();
 		if(obj == 0) trees = algo->Cluster();
 		else if(obj == 1) model = algo->SubCluster();
 	}
 	else if(strat == 1){
 		cout << "N^2 (naive)" << endl;
 		Clusterizer* algo = new Clusterizer();
-	cout << "a" << endl;
 		if(smeared) algo->SetDataSmear(smear);
-	cout << "b" << endl;
 		algo->SetThresh(thresh);
-	cout << "c" << endl;
 		algo->SetClusterAlpha(alpha);
-	cout << "d" << endl;
 		algo->SetSubclusterAlpha(emAlpha);
-	cout << "e" << endl;
 		algo->SetVerbosity(verb);
-	cout << "f" << endl;
 		algo->SetWeighted(true);
-	cout << "g" << endl;
 		
-		trees = algo->Cluster(Jet(rhs));
-	cout << "h" << endl;
-
+		//to track computation time from beginning of program
+		t = clock();
+		if(obj == 0) trees = algo->Cluster(Jet(rhs));
+		else if(obj == 1) model = algo->FindSubjets(Jet(rhs));
 	}
 	else cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)" << endl;
 
 	if(viz){
-	cout << "start viz" << endl;
 		//plotting stuff here
 		FullViz3D plots = FullViz3D(trees);
 		plots.SetVerbosity(verb);
@@ -300,7 +299,6 @@ cout << "obj: " << obj << endl;
 		//add info of true jets
 		plots.AddTrueJets(jets);
 		plots.Write(fname);
-	cout << "end viz" << endl;
 	}
 
 

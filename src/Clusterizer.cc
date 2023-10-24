@@ -76,7 +76,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		tree[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
-
+	
 	//plotting
 	if(!fname.empty()){
 		FullViz3D plots = FullViz3D(tree);
@@ -120,7 +120,6 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 			}
 		}
 	}
-cout << "end clusterizer" << endl;
 	return tree;
 
 }

@@ -73,6 +73,7 @@ class BasePDFMixture : public BasePDF{
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		void RemoveModel(int j){
+cout << "BasePDFMixture::RemoveModel - start" << endl;
 			//erase model
 			m_model.erase(m_model.begin()+j); 
 			//erase corresponding dirichlet param
@@ -93,10 +94,12 @@ class BasePDFMixture : public BasePDF{
 			m_post = newpost;
 			//update number of clusters
 			m_k--;
+cout << "BasePDFMixture::RemoveModel - end" << endl;
 		 }
 
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
+		cout << "BasePDFMixture::UpdateMixture - start" << endl;
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 		//if(m_k > 1){ for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl; m_post.Print(); if(m_n < 3) m_data->Print(); }
 	//	cout << "points" << endl; m_data->Print();
@@ -124,6 +127,7 @@ class BasePDFMixture : public BasePDF{
 			//update effective counts + corresponding parameters - the corresponding 
 			//entry r_nk is the point weight
 			UpdateVariationalParameters();
+		cout << "BasePDFMixture::UpdateMixture - end" << endl;
 		}
 
 

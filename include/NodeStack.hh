@@ -58,7 +58,9 @@ class NodeStack{
 			node *x;
 			listnode* t = _head->next; _head->next = t->next;
 			x = t->n; 
-			free(t);
+		cout << "NodeStack::pop - free" << endl;
+		      free(t);
+		cout << "NodeStack::pop - end" << endl;
 			return x;	
 		}
 
