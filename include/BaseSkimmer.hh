@@ -26,7 +26,6 @@ class BaseSkimmer{
 
 			//grab rec hit values
 			//x, y, z, time (adjusted), energy, phi, eta
-			_file = file;
 			//getting the stuff below from producer in derived class
 			//TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			//_base = new ReducedBase(tree);
@@ -83,8 +82,7 @@ class BaseSkimmer{
 
 		}
 		virtual ~BaseSkimmer(){ 
-			_file->Close();
-			//delete _base;
+			delete _base;
 			hists1D.clear();
 			hists2D.clear();
 		}
@@ -92,7 +90,6 @@ class BaseSkimmer{
 		virtual void CleaningSkim() = 0;
 		virtual void Skim() = 0;
 
-		TFile* _file;
 		ReducedBase* _base = nullptr;
 		int _nEvts;
 		BaseProducer* _prod;

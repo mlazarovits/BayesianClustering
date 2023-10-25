@@ -10,9 +10,8 @@ PhotonProducer::PhotonProducer(){ };
 
 
 PhotonProducer::~PhotonProducer(){ 
-	_file->Close();
-	delete _base;
-	delete _file;
+//	delete _base;
+//	delete _file;
 }
 
 
@@ -23,7 +22,6 @@ PhotonProducer::PhotonProducer(TFile* file) : BaseProducer(file){
 
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
-	//_file = file;
 	//TTree* tree = (TTree*)file->Get("tree/llpgtree");
 	//_base = new ReducedBase(tree);
 	//_nEvts = _base->fChain->GetEntries();

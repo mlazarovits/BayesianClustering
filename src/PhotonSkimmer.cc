@@ -20,7 +20,7 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 	//tof = (d_rh-d_pv)/c
 	//in ntuplizer, stored as rh time
-	_prod = new PhotonProducer(_file);
+	_prod = new PhotonProducer(file);
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();

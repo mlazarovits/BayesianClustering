@@ -23,14 +23,14 @@ class BaseProducer{
 			//grab rec hit values
 			//x, y, z, time (adjusted), energy, phi, eta
 			if(gSystem->AccessPathName(file->GetName())){ cout << "Error: file " << file->GetName() << " doesn't exist." << endl; return; }
-			_file = file;
 			TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			_base = new ReducedBase(tree);
-		//	_base->GetEntry(0);
-		//	cout << "base prod init - " << _base->Photon_energy->size() << endl;
 			_nEvts = _base->fChain->GetEntries();
 		}
-		virtual ~BaseProducer(){ };
+		virtual ~BaseProducer(){ 
+			delete _base;
+			
+		};
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<vector<JetPoint>>& rhs) = 0;
@@ -43,7 +43,6 @@ class BaseProducer{
 		ReducedBase* GetBase(){ return _base; }
 
 
-		TFile* _file;
 		ReducedBase* _base = nullptr;
 		int _nEvts;
 

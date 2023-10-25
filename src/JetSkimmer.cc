@@ -26,7 +26,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 	//grab rec hit values
 	//x, y, z, time (adjusted), energy, phi, eta
-	_prod = new JetProducer(_file);
+	_prod = new JetProducer(file);
 	_base = _prod->GetBase();
 		//	_base = new ReducedBase(tree);
 	_nEvts = _base->fChain->GetEntries();

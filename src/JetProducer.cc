@@ -14,9 +14,9 @@ JetProducer::JetProducer(){
 
 
 JetProducer::~JetProducer(){ 
-	_file->Close();
-	delete _base;
-	delete _file;
+//	_file->Close();
+//	delete _base;
+//	delete _file;
 }
 
 
