@@ -242,7 +242,9 @@ cout << "obj: " << obj << endl;
         if(rhs.size() < 1) return -1;
 
 	//to debug - use less rechits
-	
+	int nrhs = 50;
+	rhs.resize(nrhs);
+	rhs.shrink_to_fit();	
 
 
 	double gev;

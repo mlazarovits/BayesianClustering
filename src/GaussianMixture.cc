@@ -554,9 +554,11 @@ void GaussianMixture::CalculateRStatistics(){
 
 //M-step
 void GaussianMixture::UpdateVariationalParameters(){
+	cout << "GaussianMixture::UpdateVariationalParameters - start" << endl;
 	CalculateRStatistics();
 	//can't remove N_k = 0 clusters because alpha0 keeps these clusters alive -> instead these parameters will be only priors
 	UpdatePriorParameters();
+	cout << "GaussianMixture::UpdateVariationalParameters - end" << endl;
 
 }
 

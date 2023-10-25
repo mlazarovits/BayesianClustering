@@ -74,6 +74,8 @@ class BasePDFMixture : public BasePDF{
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		void RemoveModel(int j){
 cout << "BasePDFMixture::RemoveModel - start" << endl;
+			cout << "starting with " << m_model.size() << " models. " << m_k << " " << m_alphas.size() << " " << m_norms.size() << endl;
+			cout << "erasing model number " << j << endl;
 			//erase model
 			m_model.erase(m_model.begin()+j); 
 			//erase corresponding dirichlet param
@@ -85,15 +87,16 @@ cout << "BasePDFMixture::RemoveModel - start" << endl;
 			Matrix newpost = Matrix(m_n,m_k-1);
 			int l = 0;
 			for(int k = 0; k < m_k; k++){
+			cout << m_model[k]->Dim() << " dim for model number " << k << endl;
 				if(k == j){ l++; continue; }
 				for(int n = 0; n < m_n; n++){
-					//debug
 					newpost.SetEntry(m_post.at(n,k),n,k-l);
 				}
 			}
 			m_post = newpost;
 			//update number of clusters
 			m_k--;
+			cout << "ending with " << m_model.size() << " models. " << m_k << " " << m_alphas.size() << " " << m_norms.size() << endl;
 cout << "BasePDFMixture::RemoveModel - end" << endl;
 		 }
 
@@ -116,6 +119,7 @@ cout << "BasePDFMixture::RemoveModel - end" << endl;
 			}
 			//if all clusters removed -> set model to single gaussian
 			if(m_k < 1) m_k = 1;//cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
+			cout << "updated m_k if < 1" << endl;
 			//if single gaussian -> all points need to be under this gaussian
 			if(m_k == 1){
 				for(int n = 0; n < m_n; n++){
@@ -124,6 +128,7 @@ cout << "BasePDFMixture::RemoveModel - end" << endl;
 					}
 				}
 			}
+		cout << "updated m_post for 1 gaussian" << endl;
 			//update effective counts + corresponding parameters - the corresponding 
 			//entry r_nk is the point weight
 			UpdateVariationalParameters();

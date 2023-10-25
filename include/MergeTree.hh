@@ -157,6 +157,7 @@ class MergeTree : BaseTree{
 	protected:
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
+cout << "MergeTree::Evidence - start" << endl;
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z) k = 1;
@@ -206,6 +207,7 @@ class MergeTree : BaseTree{
 			double newLogL;
 			double dLogL = 999; 
 			int it = 0;
+cout << "MergeTree::Evidence - start clustering" << endl;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
 		if(isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
@@ -213,6 +215,7 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
+cout << "MergeTree::Evidence - end clustering" << endl;
 			//x - avg -> x - avg + avg = x
 			//transform back relevant parameters in each subcluster (just centers - matrices unaffected)
 			if(_wraparound){
@@ -235,7 +238,7 @@ class MergeTree : BaseTree{
 				//transform data back
 				x->points->Translate(transf); 
 			}
-
+cout << "MergeTree::Evidence - end" << endl;
 			return newLogL;
 		}
 
