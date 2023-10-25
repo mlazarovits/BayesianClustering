@@ -132,7 +132,6 @@ class MergeTree : BaseTree{
 			double theta = 0;
 			if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
 		
-			cout << "d: " << d << " a: " << _constraint_a << " b: " << _constraint_b << endl;
 	
 			//eta	
 			cent1 = i->points->Centroid(0); 
@@ -144,7 +143,6 @@ class MergeTree : BaseTree{
 			//don't need to wrap eta -> only goes from 0 to pi in theta
 			d = fabs(cent1 - cent2);	
 			if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
-	cout << "theta: " << theta << " phi: " << phi << endl;	
 			return theta*phi;		
 		}
 
