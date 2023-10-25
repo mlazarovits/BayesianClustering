@@ -10,12 +10,14 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _thresh = 0.; _verb = 0; _wraparound = false; 
+		_alpha = 0; _thresh = 0.; _verb = 0; _wraparound = false; _constraint_a = 0; _constraint_b = acos(-1)/2.; 
+		_constraint = false;
 		}
 
 		MergeTree(double alpha){
 			_alpha = alpha;
-			_thresh = 1.; _verb = 0;_wraparound = false;
+			_thresh = 1.; _verb = 0;_wraparound = false;_constraint_a = 0; _constraint_b = acos(-1)/2.;
+		_constraint = false;
 		}
 
 		//copy constructor
@@ -26,7 +28,8 @@ class MergeTree : BaseTree{
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
 			_thresh = tree._thresh;
-			_verb = tree._verb;_wraparound = tree._wraparound;
+			_verb = tree._verb;_wraparound = tree._wraparound;_constraint_a = tree._constraint_a; _constraint_b = tree._constraint_b;
+			_constraint = tree._constraint;
 		}
 
 		virtual ~MergeTree(){ }
@@ -41,10 +44,11 @@ class MergeTree : BaseTree{
 				AddLeaf(&pc->at(i));
 			}
 		}
-		
+	
+	
 		node* Get(int i){ return _clusters[i]; }
 
-		vector<node*> GetClusters(){ 
+		const vector<node*> GetClusters() const{ 
 			vector<node*> clusters;
 			for(int i = 0; i < _clusters.size(); i++){
 				if(_clusters[i] == nullptr) continue;
@@ -52,9 +56,18 @@ class MergeTree : BaseTree{
 			} 
 			return clusters;
 		}
+		const void GetClusters(vector<node*>& clusters) const{ 
+			clusters.clear();
+			for(int i = 0; i < _clusters.size(); i++){
+				if(_clusters[i] == nullptr) continue;
+			cout << "Cluster " << i << " has val " << _clusters[i]->val << endl;
+				clusters.push_back(_clusters[i]);
+			} 
+		}
 		
 		void Insert(node* x){
-			_clusters.push_back(x);
+			_clusters.push_back(nullptr);
+			_clusters[(int)_clusters.size() - 1] = x;
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
@@ -102,6 +115,7 @@ class MergeTree : BaseTree{
 		void SetDistanceConstraint(double a, double b){ _constraint = true; _constraint_a = a; _constraint_b = b; }
 		//uses a triangular distribution to constraint certain clusterings
 		double DistanceConstraint(node* i, node* j){
+			_constraint = true;
 			double c = (_constraint_a + _constraint_b)/2.;
 			double pi = acos(-1);
 			//phi
@@ -117,7 +131,9 @@ class MergeTree : BaseTree{
 			double phi = 0;
 			double theta = 0;
 			if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
-			
+		
+			cout << "d: " << d << " a: " << _constraint_a << " b: " << _constraint_b << endl;
+	
 			//eta	
 			cent1 = i->points->Centroid(0); 
 			cent2 = j->points->Centroid(0); 
@@ -128,13 +144,13 @@ class MergeTree : BaseTree{
 			//don't need to wrap eta -> only goes from 0 to pi in theta
 			d = fabs(cent1 - cent2);	
 			if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
-		
-			return sqrt(theta*phi);//tri->Prob(d)/tri->Prob(c);
-		
+	cout << "theta: " << theta << " phi: " << phi << endl;	
+			return theta*phi;		
 		}
 
 		void AddLeaf(const Point* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
+			_clusters.push_back(nullptr);
 			node* x = (node*)malloc(sizeof *x);
 			//cout << "z val: " << _z->val << endl;
 			x->l = _z; x->r = _z;
@@ -149,7 +165,8 @@ class MergeTree : BaseTree{
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
-			_clusters.push_back(x);
+			int n = _clusters.size();
+			_clusters[n-1] = x;
 		}
 
 
@@ -157,7 +174,6 @@ class MergeTree : BaseTree{
 	protected:
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
-cout << "MergeTree::Evidence - start" << endl;
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z) k = 1;
@@ -207,7 +223,6 @@ cout << "MergeTree::Evidence - start" << endl;
 			double newLogL;
 			double dLogL = 999; 
 			int it = 0;
-cout << "MergeTree::Evidence - start clustering" << endl;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
 		if(isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
@@ -215,7 +230,6 @@ cout << "MergeTree::Evidence - start clustering" << endl;
 				oldLogL = newLogL;
 				it++;
 			}
-cout << "MergeTree::Evidence - end clustering" << endl;
 			//x - avg -> x - avg + avg = x
 			//transform back relevant parameters in each subcluster (just centers - matrices unaffected)
 			if(_wraparound){
@@ -238,7 +252,6 @@ cout << "MergeTree::Evidence - end clustering" << endl;
 				//transform data back
 				x->points->Translate(transf); 
 			}
-cout << "MergeTree::Evidence - end" << endl;
 			return newLogL;
 		}
 

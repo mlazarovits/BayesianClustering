@@ -37,7 +37,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double rk = pi*p_dk_h1/p_dk_tk;
 //cout << "pi: " << pi << " p_dk_h1: " << p_dk_h1 << " l->prob_tk: " << l->prob_tk << " l->d: " << l->d << " r->prob_tk: " << r->prob_tk << " r->d: " << r->d << " d: " << d << " p_dk_tk: " << p_dk_tk << " rk: " << rk << " points " << endl;
 //points->Print();
-	
+//cout << " with val: " << rk << endl;	
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	

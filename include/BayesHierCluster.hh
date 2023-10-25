@@ -33,8 +33,7 @@ class BayesHierCluster{
 
 	private:
 		//int m_nclusters;
-
-		vector<PointCollection*> m_pts;
+		int _npts;
 		vector<node*> _clusters;
 
 		//calculates and tracks merges

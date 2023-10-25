@@ -5,7 +5,12 @@
 #include "NodeStack.hh"
 #include "MergeTree.hh"
 
-BayesHierCluster::BayesHierCluster(){  _verb = 0; _mergeTree = nullptr; _thresh = 0;}
+BayesHierCluster::BayesHierCluster(){
+	_verb = 0;
+	_mergeTree = nullptr;
+	_thresh = 0;
+	_npts = 0;
+}
 		
 
 
@@ -15,11 +20,13 @@ BayesHierCluster::BayesHierCluster(double alpha){
 	_thresh = 1;
 	_mergeTree->SetThresh(_thresh);
 	_mergeTree->SetVerbosity(_verb);
+	_npts = 0;
 }
 
 
 void BayesHierCluster::AddData(PointCollection* pc){
 	_mergeTree->AddData(pc);
+	_npts = _mergeTree->GetNClusters();
 }
 
 
@@ -60,21 +67,22 @@ vector<node*> BayesHierCluster::Cluster(){
 	//loop over possible merges
 	while(_mergeTree->GetNClusters() > 1){
 		if(_verb > 1) cout << "---------- iteration: " << it << " ----------" << endl;
-		nodes = _mergeTree->GetClusters();
-		for(int i = 0; i < (int)nodes.size(); i++){
-			int kmax = nodes[i]->model->GetNClusters();
-		if(_verb > 1){	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl; }
+		if(_verb > 1) _list.Print();
+		//_mergeTree->GetClusters(nodes);
+		//for(int i = 0; i < (int)nodes.size(); i++){
+			//int kmax = nodes[i]->model->GetNClusters();
+		//if(_verb > 1){	cout << "cluster " << i << " has " << kmax << " subclusters and " << nodes[i]->model->GetData()->GetNPoints() << " points - rk: " << nodes[i]->val << endl; }
 
-		}
+		//}
 		//get max rk as top of sorted list - quicksort search tree (list) - get top value (pop)
 		_list.sort();
-		if(_verb > 4){
+		if(_verb > 5){
 		cout << "pre pop" << endl;
 		_list.Print();}
 		//remove all combinations containing one subtree from list
 		node* max = _list.fullpop();
 		if(max == nullptr) break;
-		if(_verb > 2) cout << "max merge rk: " << max->val << endl;
+		if(_verb > 2) cout << "max merge rk: " << max->val << " " << endl;
 
 		//if rk < 0.5: cut tree
 		double maxval = 0.5;
@@ -82,12 +90,14 @@ vector<node*> BayesHierCluster::Cluster(){
 			if(_verb > 0) cout << "reached min rk = " << max->val << " <  " << maxval << " - final iteration: " << it <<  " - " << _mergeTree->GetNClusters() << " clusters" << endl;
 			break;
 		}
-		if(_verb > 4){
+
+
+		if(_verb > 5){
 		cout << "post pop" << endl;
 		_list.Print();
 		}
 		//merge corresponding subtrees in merge tree: merge = x (node)
-		if(_verb > 4){
+		if(_verb > 5){
 		cout << "merging clusters" << endl;
 		max->points->Print();	
 		cout << "removing cluster - left" << endl;
@@ -114,6 +124,11 @@ vector<node*> BayesHierCluster::Cluster(){
 		max->points->Print();
 		}	
 		
+		if(max->points->GetNPoints() == _npts){
+			cout << "All points clustered. Exiting clustering." << endl;
+			break;
+		} 
+
 		//for all nodes in merge tree: check against newly formed cluster
 		NodeStack _list1;
 		for(int i = 0; i < _mergeTree->GetNClusters(); i++){
