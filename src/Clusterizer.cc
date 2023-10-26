@@ -34,21 +34,22 @@ Clusterizer::Clusterizer(vector<Jet> jets){
 
 Clusterizer::~Clusterizer(){ }
 
+//may want to change input to vector<Jet> like BayesCluster
 vector<node*> Clusterizer::Cluster(Jet jet, string fname){
-	_points = new PointCollection();
-	jet.GetEtaPhiConstituents(*_points);
-	double gev;
-	if(_weighted){
-		vector<double> weights;
-		jet.GetEnergies(weights);
-		//need to transfer from GeV (energy) -> unitless (number of points)
-		gev = 0;
-		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
-		gev = gev/(double)weights.size(); //gev = k = sum_n E_n/n pts
-		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts, w_n = E_n/k  
-		_points->SetWeights(weights);
-
+	//_points = new PointCollection();
+	//jet.GetEtaPhiConstituents(*_points);
+	PointCollection* data = new PointCollection();	
+	vector<JetPoint> pts = jet.GetJetPoints();
+	for(int i = 0; i < (int)pts.size(); i++){
+		Point pt = Point(3);
+		pt.SetValue(pts[i].rap(),0);
+		pt.SetValue(pts[i].phi_02pi(),1);
+		pt.SetValue(pts[i].time(), 2);
+		pt.SetWeight(pts[i].GetWeight());
+		assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
+		data->AddPoint(pt);
 	}
+
 
 	//Bayesian Hierarchical Clustering algo
 	BayesHierCluster* bhc = new BayesHierCluster(_bhcAlpha);
@@ -57,7 +58,7 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 	//set configs
 	if(_smeared) bhc->SetDataSmear(_data_smear);
 	bhc->SetThresh(_thresh);
-	bhc->AddData(_points);
+	bhc->AddData(data);
 	if(!_params.empty()) bhc->SetPriorParameters(_params);
 	
 	if(_distconst){
@@ -76,27 +77,9 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 		tree[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
-	
-	//plotting
-	if(!fname.empty()){
-		FullViz3D plots = FullViz3D(tree);
-		plots.SetVerbosity(_verb);
-		plots.SetTransfFactor(gev);
-		plots.Write(fname);
-		//plot individual clusters in local coordinates here
-		//for(int k = 0; k < tree; k++)
-		//plots.SetLocalCoords(true);
-		//json object root = plots.WriteNode(tree[i]);
-		//std::ofstream file;
-		//file.open(filename+to_string(k)+".json");
-		////sets 4 space indent
-		//file << std::setw(4) << root << endl;
-		//cout << "Writing to: " << filename << ".json" << endl;
-	}
-
-
 	//get parameters from subjets - GMM components
-	if(_verb > 0) cout << tree.size() << " jets found." << endl;
+	/*
+	cout << tree.size() << " jets found." << endl;
 	for(int n = 0; n < (int)tree.size(); n++){
 		BasePDFMixture* model = tree[n]->model;
 		if(_verb > 3){
@@ -120,6 +103,8 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 			}
 		}
 	}
+	*/
+	//delete data;
 	return tree;
 
 }
@@ -130,23 +115,24 @@ vector<node*> Clusterizer::Cluster(Jet jet, string fname){
 //crack open Jet and get underlying points
 GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 	//create GMM model
-	_points = new PointCollection();
-	jet.GetEtaPhiConstituents(*_points);
+//	_points = new PointCollection();
+//	jet.GetEtaPhiConstituents(*_points);
 
-	if(_weighted){
-		vector<double> weights;
-		jet.GetEnergies(weights);
-		//need to transfer from GeV (energy) -> unitless (number of points)
-		double gev = 0;
-		for(int i = 0; i < (int)weights.size(); i++) gev += weights[i];
-		gev = gev/(double)weights.size(); //k = sum_n E_n/n pts
-		for(int i = 0; i < (int)weights.size(); i++) weights[i] /= gev; //sums to n pts 
-		_points->SetWeights(weights);
+	PointCollection data = PointCollection();	
+	vector<JetPoint> pts = jet.GetJetPoints();
+	for(int i = 0; i < (int)pts.size(); i++){
+		Point pt = Point(3);
+		pt.SetValue(pts[i].rap(),0);
+		pt.SetValue(pts[i].phi_02pi(),1);
+		pt.SetValue(pts[i].time(), 2);
+		pt.SetWeight(pts[i].GetWeight());
+		assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
+		data.AddPoint(pt);
 	}
 
-	GaussianMixture* gmm = new GaussianMixture(_maxK);
+	GaussianMixture* gmm = new GaussianMixture(data.GetNPoints());
 	
-	gmm->SetData(_points);
+	gmm->SetData(&data);
 	gmm->SetAlpha(_emAlpha);
 	gmm->SetVerbosity(_verb);
 	gmm->InitParameters();
@@ -156,8 +142,9 @@ GaussianMixture* Clusterizer::FindSubjets(Jet jet, string fname){
 		gmm->SetDataSmear(_data_smear);
 	}
 
+
 	//create EM algo
-	VarEMCluster* algo = new VarEMCluster(gmm,_maxK);
+	VarEMCluster* algo = new VarEMCluster(gmm,data.GetNPoints());
 	algo->SetThresh(_thresh);
 	
 

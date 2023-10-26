@@ -10,9 +10,9 @@ class BaseTree{
 			_z = (struct node*) malloc(sizeof *_z);
 			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1; _z->points = new PointCollection();
 			_head = (struct node*)malloc(sizeof *_head);
-			_head->r = _z; _head->val = 0; _head->color = 999;
+			_head->l = _head; _head->r = _head; _head->val = -1; _head->d = -1; _head->prob_tk = -1; _head->model = nullptr; _head->color = -1; _head->points = new PointCollection();
 		}
-		virtual ~BaseTree(){ delete _head; delete _z; }
+		virtual ~BaseTree(){ free(_head); free(_z); }
 		//node structure
 		struct node{
 			//points at node or info

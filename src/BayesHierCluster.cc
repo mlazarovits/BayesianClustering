@@ -160,7 +160,6 @@ vector<node*> BayesHierCluster::Cluster(){
 
 	}
 
-cout << "BHC::Cluster - end" << endl;
 	return _mergeTree->GetClusters();
 }
 

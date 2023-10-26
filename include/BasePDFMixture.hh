@@ -21,6 +21,7 @@ class BasePDFMixture : public BasePDF{
 				m_norms.push_back(1.);
 				m_norms_unwt.push_back(1.);
 				m_alphas.push_back(0.);
+				m_model.push_back(nullptr);
 			}
 			m_n = 0;
 			//alpha > 0
@@ -30,7 +31,10 @@ class BasePDFMixture : public BasePDF{
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
-		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear(); m_model.clear(); }
+		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear();
+			for(auto& pointer : m_model)
+				delete pointer;
+		}
 
 		void SetVerbosity(int v){ _verb = v; }
 		double Prob(const Point& x);
@@ -73,11 +77,19 @@ class BasePDFMixture : public BasePDF{
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		void RemoveModel(int j){
-cout << "BasePDFMixture::RemoveModel - start" << endl;
-			cout << "starting with " << m_model.size() << " models. " << m_k << " " << m_alphas.size() << " " << m_norms.size() << endl;
-			cout << "erasing model number " << j << endl;
 			//erase model
-			m_model.erase(m_model.begin()+j); 
+			//m_model.erase(m_model.begin()+j); 
+			//for(int i = 0; i < m_model.size(); i++){
+			for(auto& pointer : m_model){
+				//avoid dangling pointers
+				if(pointer == m_model[j]){
+					delete pointer;
+					pointer = nullptr;
+					break;
+				}
+			}			
+			m_model.erase(std::remove(m_model.begin(), m_model.end(), nullptr), m_model.end());
+
 			//erase corresponding dirichlet param
 			m_alphas.erase(m_alphas.begin()+j);
 			//erase corresponding number of associated points (N_k)
@@ -87,7 +99,6 @@ cout << "BasePDFMixture::RemoveModel - start" << endl;
 			Matrix newpost = Matrix(m_n,m_k-1);
 			int l = 0;
 			for(int k = 0; k < m_k; k++){
-			cout << m_model[k]->Dim() << " dim for model number " << k << endl;
 				if(k == j){ l++; continue; }
 				for(int n = 0; n < m_n; n++){
 					newpost.SetEntry(m_post.at(n,k),n,k-l);
@@ -96,13 +107,10 @@ cout << "BasePDFMixture::RemoveModel - start" << endl;
 			m_post = newpost;
 			//update number of clusters
 			m_k--;
-			cout << "ending with " << m_model.size() << " models. " << m_k << " " << m_alphas.size() << " " << m_norms.size() << endl;
-cout << "BasePDFMixture::RemoveModel - end" << endl;
 		 }
 
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
-		cout << "BasePDFMixture::UpdateMixture - start" << endl;
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 		//if(m_k > 1){ for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl; m_post.Print(); if(m_n < 3) m_data->Print(); }
 	//	cout << "points" << endl; m_data->Print();
@@ -119,7 +127,6 @@ cout << "BasePDFMixture::RemoveModel - end" << endl;
 			}
 			//if all clusters removed -> set model to single gaussian
 			if(m_k < 1) m_k = 1;//cout << "Error: all clusters for " << m_n << " points have been removed. Update threshold accordingly." << endl; 
-			cout << "updated m_k if < 1" << endl;
 			//if single gaussian -> all points need to be under this gaussian
 			if(m_k == 1){
 				for(int n = 0; n < m_n; n++){
@@ -128,11 +135,9 @@ cout << "BasePDFMixture::RemoveModel - end" << endl;
 					}
 				}
 			}
-		cout << "updated m_post for 1 gaussian" << endl;
 			//update effective counts + corresponding parameters - the corresponding 
 			//entry r_nk is the point weight
 			UpdateVariationalParameters();
-		cout << "BasePDFMixture::UpdateMixture - end" << endl;
 		}
 
 

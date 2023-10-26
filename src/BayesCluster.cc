@@ -17,10 +17,8 @@
 ///
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
-vector<node*> BayesCluster::_cluster(){
+const vector<node*>& BayesCluster::_delauney_cluster(){
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
-	int n = (int)_jets.size();
-	vector<PointCollection> points(n);
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
@@ -29,28 +27,19 @@ vector<node*> BayesCluster::_cluster(){
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);
-	
-	vector<double> weight;
+	int n = _points.size();	
 	for (int i = 0; i < n; i++) {
-		PointCollection pc = PointCollection();
-		Point pt = Point(3);
-		pt.SetValue(_jets[i].rap(), 0);
-		pt.SetValue(_jets[i].phi_02pi(), 1);
-		pt.SetValue(_jets[i].time(), 2);
-		_jets[i].GetWeights(weight);
-		pt.SetWeight(weight[0]);
-  		//make sure phi is in the right range
-		_sanitize(pt);
-  		if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
-  		assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
-		pc.AddPoint(pt);
-		points[i] = pc;
-		mt->AddLeaf(&pt);
+		//should only be one point per entry in points
+		if(_points[i].GetNPoints() != 1){
+			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
+			return _trees;
+		} 
+		mt->AddLeaf(&_points[i].at(0));
 	}
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
-	Dnn2piCylinder* DNN = new Dnn2piCylinder(points, ignore_nearest_is_mirror, mt, verbose);
+	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
@@ -168,22 +157,23 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 	}
 
 	//MergeTree* endmerge = DNN->GetMergeTree();
-	vector<node*> trees = mt->GetClusters();
-	if(_verb > 0) cout << trees.size() << " final clusters" << endl;
+	_trees = mt->GetClusters();
+	cout << _trees.size() << " final clusters" << endl;
 	double nmirror = 0;
-	for(int i = 0; i < trees.size(); i++){
+	for(int i = 0; i < _trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
-		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
+		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
-			trees.erase(trees.begin()+i);
-			i--;
+			//trees.erase(trees.begin()+i);
+			//i--;
 			continue; }
-		if(_verb > 0) cout << "getting " << trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-		if(_verb > 0) trees[i]->points->Print();
+		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+		_trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	return trees;
+	cout << _trees.size() - nmirror << " jets found." << endl;
+	return _trees;
 	
 	
 }
@@ -214,6 +204,124 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 		}
 		inmap.insert(CompEntry(comp,verts(i,j)));
 }
+
+
+
+
+const vector<node*>& BayesCluster::_naive_cluster(){
+        node* di; node* dj;
+        double rk;
+        double rk_max;
+	NodeStack list; //for sorting nodes by merge probability
+	
+	//set up merge tree that will calculate merges and track nodes
+	MergeTree* mt = new MergeTree(_alpha);
+	mt->SetSubclusterAlpha(_subalpha);
+	mt->SetVerbosity(_verb);
+	//set data smear
+	if(!_smear.empty()) mt->SetDataSmear(_smear);
+	if(_thresh != -999) mt->SetThresh(_thresh);
+	//set distance constraint
+	mt->SetDistanceConstraint(0,acos(-1)/2.);
+	int n = _points.size();
+	if(_verb > 0) cout << "Creating rk list for all pairings (this might take a minute...)" << endl;	
+	for (int i = 0; i < n; i++) {
+		//should only be one point per entry in points
+		if(_points[i].GetNPoints() != 1){
+			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
+			return _trees;
+		} 
+		mt->AddLeaf(&_points[i].at(0));
+	}
+
+	int it = 0;
+	//loop through all possible pairs to create list of merge probabilites r_{i+j} = r_k
+	//O(N^2)
+	for(int i = 0; i < n; i++){
+		for(int j = i+1; j < n; j++){
+			di = mt->Get(i);
+			dj = mt->Get(j);
+			node* x = mt->CalculateMerge(di, dj);
+			list.insert(x);
+		}
+	}
+
+	//do clustering
+	double maxrk = 0.5;
+	while(mt->GetNClusters() > 1){
+                if(_verb > 0) cout << "---------- iteration: " << it << " ----------" << endl;
+                if(_verb > 0) list.Print();
+		
+		list.sort();
+	
+		//get node with maximum merge probability
+		node* max = list.fullpop();
+
+		//check that popped node is not null
+		if(max == nullptr) break;
+		if(_verb > 2) cout << "max merge rk: " << max->val << " " << endl;
+		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
+                if(max->val < maxrk){
+                        cout << "reached min rk = " << max->val << " <  " << maxrk << " - final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters" << endl;
+                        break;
+                }
+		
+		//update merge tree with selected merge
+		//TODO: at insert step in mergetreee (equivalent of Dnn2piCylinder) see if a mirror point needs to be added for the new cluster
+		mt->Insert(max);
+		mt->Remove(max->l);
+		mt->Remove(max->r);
+
+		//if this merge clusters all avaible points, stop clustering
+		if(max->points->GetNPoints() == n){
+                        cout << "All points clustered. Exiting clustering..." << endl;
+                        break;
+		}	
+
+		//create new merges with the remaining nodes and the newly formed cluster
+		//this operation is O(N)
+		node* dl;
+		for(int i = 0; i < mt->GetNClusters(); i++){
+			dl = mt->Get(i);
+			//make sure this is not the max merge cluster - doesn't need to be paired with itself
+			if(dl == max) continue;
+			//make sure this node exists
+			if(dl == nullptr) continue;
+			//calculate merge for node i and max node
+			node* x = mt->CalculateMerge(dl, max);
+			//make sure rk is not nan
+			if(isnan(x->val)) break;
+			//add new potential merge to list
+			list.insert(x); 
+		}
+		it++;
+
+	}
+
+	if(_verb > 0) cout << "---------- final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters ----------" << endl;
+        _trees = mt->GetClusters();
+
+	
+	_trees = mt->GetClusters();
+	cout << _trees.size() << " final clusters" << endl;
+	double nmirror = 0;
+	for(int i = 0; i < _trees.size(); i++){
+		//ignore removed (clustered) points and don't plot mirror points
+		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
+			nmirror++; 
+			//trees.erase(trees.begin()+i);
+			//i--;
+			continue; }
+		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+		_trees[i]->points->Print();
+		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
+	}
+	if(_verb > 0) cout << nmirror << " mirror points." << endl;
+	cout << _trees.size() - nmirror << " jets found." << endl;
+	return _trees;
+
+}
+
 
 
 GaussianMixture* BayesCluster::_subcluster(){

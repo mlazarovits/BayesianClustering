@@ -79,23 +79,21 @@ void JetSkimmer::Skim(){
 	
 	
 	//nominal N^2 version
-	Clusterizer* algo = new Clusterizer();
-	algo->SetClusterAlpha(alpha);
-	algo->SetSubclusterAlpha(emAlpha);
-	algo->SetThresh(thresh);
-	//algo->SetMaxNClusters(5);
-	algo->SetWeighted(true);
-	algo->SetVerbosity(0);
-	algo->SetDataSmear(smear);
+	//Clusterizer* algo = new Clusterizer();
+	//algo->SetClusterAlpha(alpha);
+	//algo->SetSubclusterAlpha(emAlpha);
+	//algo->SetThresh(thresh);
+	////algo->SetMaxNClusters(5);
+	//algo->SetWeighted(true);
+	//algo->SetVerbosity(0);
+	//algo->SetDataSmear(smear);
 
 
-	BayesCluster* algoDelauney = nullptr;
 
 	map<string, Matrix> params;
 	vector<node*> trees;
-	vector<node*> delauneytrees;
-	vector<JetPoint> rhs;
-	vector<Jet> rhs_jet;
+	//vector<JetPoint> rhs;
+	vector<Jet> rhs;
 	double gev;
 
 	//for computational time
@@ -123,42 +121,33 @@ void JetSkimmer::Skim(){
 
 
 		clock_t t;
-
+		BayesCluster* algo = new BayesCluster(rhs);
+		algo->SetDataSmear(smear);
+		algo->SetThresh(thresh);
+		algo->SetAlpha(alpha);
+		algo->SetSubclusterAlpha(emAlpha);
+		algo->SetVerbosity(0);
+		//calculate transfer factor
+		vector<double> weight;
+		rhs[0].GetWeights(weight);
+		gev = rhs[0].E()/weight[0];
+ 
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
-			_prod->GetRecHits(rhs_jet, i);
-			//need to transfer from GeV (energy) -> unitless (number of points)
-			//transfer factor is over all points in event
-			gev = 0;
-			for(int i = 0; i < (int)rhs_jet.size(); i++) gev += rhs_jet[i].E();
-			gev = gev/(double)rhs_jet.size(); //gev = k = sum_n E_n/n pts
-//			cout << "gev: " << gev << endl;
-			for(int i = 0; i < (int)rhs_jet.size(); i++){ rhs_jet[i].SetWeight(rhs_jet[i].E()/gev); }//weights[i] /= gev;  //sums to n pts, w_n = E_n/k  
-			algoDelauney = new BayesCluster(rhs_jet);
-			algoDelauney->SetDataSmear(smear);
-			algoDelauney->SetThresh(thresh);
-			algoDelauney->SetAlpha(alpha);
-			algoDelauney->SetSubclusterAlpha(emAlpha);
-			algoDelauney->SetVerbosity(0);
 			//start clock
 			t = clock();
-			delauneytrees = algoDelauney->Cluster();
+			trees = algo->NlnNCluster();
 		}
 		//N^2 version
 		else if(_strategy == N2){
 			//start clock
 			t = clock();
-			algo->SetMaxNClusters((int)rhs.size());
-			trees = algo->Cluster(Jet(rhs));
-			//calculate transfer factor
-			gev = rhs[0].E()/algo->GetData()->at(0).w();
+			trees = algo->N2Cluster();
 		}
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		
-
-
 
 		FillPVHists(trees);
 		

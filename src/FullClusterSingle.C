@@ -216,21 +216,19 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(1.,2,2); //no smear in time	
 
 
-	vector<Jet> rhs;
+	vector<Jet> rhs, jets;
 	vector<node*> trees;
-	vector<Jet> jets;
 	GaussianMixture* model = nullptr; 
 	//get rhs (as Jets) for event
 cout << "obj: " << obj << endl;
 	if(obj == 0){
-		cout << "Making plots for jets at event " << evt << endl;
+		cout << "Getting rec hits for jets at event " << evt << endl;
 		JetProducer prod(file);
-		Point vtx;
-		prod.GetPrimaryVertex(vtx, evt);
 		prod.GetRecHits(rhs,evt);	
 		prod.GetTrueJets(jets, evt);
 		cout << rhs.size() << " rechits in event " << evt << endl;
 	}
+	//Jet testjet = Jet(rhs);
 	//get rhs (as Jets) for single (npho) photon
 	else if(obj == 1){
         	PhotonProducer prod(file);
@@ -240,58 +238,41 @@ cout << "obj: " << obj << endl;
         	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}	
         if(rhs.size() < 1) return -1;
-
+	vector<double> ws;
+	rhs[0].GetWeights(ws);
+	double gev = rhs[0].E()/ws[0];
 	//to debug - use less rechits
-	int nrhs = 50;
-	rhs.resize(nrhs);
-	rhs.shrink_to_fit();	
+	//int nrhs = 5;
+	//rhs.resize(nrhs);
+	//rhs.shrink_to_fit();
 
 
-	double gev;
-	if(weighted){
-		//need to transfer from GeV (energy) -> unitless (number of points)
-		//transfer factor is over all points in event
-		gev = 0;
-		for(int i = 0; i < (int)rhs.size(); i++) gev += rhs[i].E();
-		gev = gev/(double)rhs.size(); //gev = k = sum_n E_n/n pts
-//		cout << "gev: " << gev << endl;
-		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(rhs[i].E()/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
-	}
-	else
-		for(int i = 0; i < (int)rhs.size(); i++){ rhs[i].SetWeight(1.); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
-
+	
 	cout << "Using clustering strategy " << strat << ": ";
+	BayesCluster *algo = new BayesCluster(rhs);
+	if(smeared) algo->SetDataSmear(smear);
+	algo->SetThresh(thresh);
+	algo->SetAlpha(alpha);
+	algo->SetSubclusterAlpha(emAlpha);
+	algo->SetVerbosity(verb);
 	clock_t t;
-	if(strat == 0){
-		cout << "Delauney (NlnN)" << endl;
-		BayesCluster *algo = new BayesCluster(rhs);
-		if(smeared) algo->SetDataSmear(smear);
-		algo->SetThresh(thresh);
-		algo->SetAlpha(alpha);
-		algo->SetSubclusterAlpha(emAlpha);
-		algo->SetVerbosity(verb);
-		
-		//to track computation time from beginning of program
-		t = clock();
-		if(obj == 0) trees = algo->Cluster();
-		else if(obj == 1) model = algo->SubCluster();
+	if(obj == 0){
+		if(strat == 0){
+			cout << "Delauney (NlnN)" << endl;
+			//to track computation time from beginning of program
+			t = clock();
+			if(obj == 0) trees = algo->NlnNCluster();
+		}
+		else if(strat == 1){
+			cout << "N^2 (naive)" << endl;
+			//to track computation time from beginning of program
+			t = clock();
+			if(obj == 0) trees = algo->N2Cluster();
+		}
+		else{ cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)." << endl; return -1; }
 	}
-	else if(strat == 1){
-		cout << "N^2 (naive)" << endl;
-		Clusterizer* algo = new Clusterizer();
-		if(smeared) algo->SetDataSmear(smear);
-		algo->SetThresh(thresh);
-		algo->SetClusterAlpha(alpha);
-		algo->SetSubclusterAlpha(emAlpha);
-		algo->SetVerbosity(verb);
-		algo->SetWeighted(true);
-		
-		//to track computation time from beginning of program
-		t = clock();
-		if(obj == 0) trees = algo->Cluster(Jet(rhs));
-		else if(obj == 1) model = algo->FindSubjets(Jet(rhs));
-	}
-	else cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)" << endl;
+	else if(obj == 1) model = algo->SubCluster();
+	else{ cout << "Object undefined. Please use --object [obj] with options 0 for jets or 1 for photons." << endl; return -1; }
 
 	if(viz){
 		//plotting stuff here
@@ -303,8 +284,9 @@ cout << "obj: " << obj << endl;
 		plots.Write(fname);
 	}
 
-
-
+	//causing crashes - //file->Close();
+	//delete file;
+	
 
 	t = clock() - t;
 	cout << "Total program time elapsed: " << (float)t/CLOCKS_PER_SEC << " seconds." << endl;

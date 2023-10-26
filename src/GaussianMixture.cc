@@ -21,8 +21,8 @@ GaussianMixture::GaussianMixture(){
 }
 
 GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
-	for(int i = 0; i < k; i++){
-		m_model.push_back(new Gaussian());
+	for(int k = 0; k < m_k; k++){
+		m_model[k] = new Gaussian();
 	}
 }
 
@@ -554,11 +554,9 @@ void GaussianMixture::CalculateRStatistics(){
 
 //M-step
 void GaussianMixture::UpdateVariationalParameters(){
-	cout << "GaussianMixture::UpdateVariationalParameters - start" << endl;
 	CalculateRStatistics();
 	//can't remove N_k = 0 clusters because alpha0 keeps these clusters alive -> instead these parameters will be only priors
 	UpdatePriorParameters();
-	cout << "GaussianMixture::UpdateVariationalParameters - end" << endl;
 
 }
 

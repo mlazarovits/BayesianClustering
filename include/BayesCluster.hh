@@ -38,20 +38,41 @@ class BayesCluster{
 			for (unsigned int i = 0; i < pseudojets.size(); i++) {
 			_jets.push_back(pseudojets[i]);}
 	
-		//	_initialize_and_run();
-			
 			_thresh = -999;
 			_alpha = 0.1;
 			_subalpha = 0.5;
 			_smear = Matrix();
-			_oname = "testDelauney";
+			_oname = "testCluster";
 			_verb = 0;
-		};
-		virtual ~BayesCluster(){ _jets.clear(); };
+			_trees = {nullptr};
+			
+			//add initial jets (rec hits) to merge tree as leaves
+			int n = (int)_jets.size();
+			vector<double> weight;
+       			for (int i = 0; i < n; i++) {
+				PointCollection pc;
+				Point pt(3);
+				pt.SetValue(_jets[i].rap(), 0);
+				pt.SetValue(_jets[i].phi_02pi(), 1);
+				pt.SetValue(_jets[i].time(), 2);
+				_jets[i].GetWeights(weight);
+				pt.SetWeight(weight[0]); 
+			//	//make sure phi is in the right range
+				_sanitize(pt);
+				if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
+				assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
+				pc.AddPoint(pt);
+				_points.push_back(pc);
+			}
 
+		};
 		//for jets - BHC for clusters + GMM EM for subclusters
-		vector<node*> Cluster(){
-			return this->_cluster();
+		const vector<node*>& NlnNCluster(){
+			return this->_delauney_cluster();
+		}
+
+		const vector<node*>& N2Cluster(){
+			return this->_naive_cluster();
 		}
 
 		//for photons - subclusters only
@@ -260,12 +281,15 @@ class BayesCluster{
 
 	private:
 		vector<Jet> _jets;
+		vector<PointCollection> _points; //to pass to merge tree in cluster function
+		vector<node*> _trees;
 		vector<history_element> _history;
 		double _Qtot;
 		enum JetType {Invalid=-3, InexistentParent = -2, BeamJet = -1};
 		int _initial_n;
 
-		vector<node*> _cluster();
+		const vector<node*>& _delauney_cluster();
+		const vector<node*>& _naive_cluster();
 		GaussianMixture* _subcluster();
 		int n_particles() const{ return _initial_n; }
 		double _thresh, _alpha, _subalpha;
