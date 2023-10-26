@@ -110,36 +110,42 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 
 
 void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
-	JetPoint rh;
-	Jet j;
 	double t, E, eta, phi;
 	unsigned int rhId;
-	int nRHs;
 	jets.clear();
 
 	if(evt > _nEvts) return;
 
 	_base->GetEntry(evt);
+	int nRHs = (int)_base->ECALRecHit_ID->size();
 
 	Point vtx = Point(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
+	//make weights - E/e_avg
+	vector<double> ws;
+	//need to transfer from GeV (energy) -> unitless (number of points
+	//transfer factor is over all points in event
+	double gev = 0;
+	for(int r = 0; r < nRHs; r++) gev += _base->ECALRecHit_energy->at(r);
+	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
+	for(int r = 0; r < nRHs; r++){ ws.push_back(_base->ECALRecHit_energy->at(r)/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
 
-	//actually get rhs for clustering
-	nRHs = (int)_base->ECALRecHit_ID->size();
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
-		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
+		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
+		rh.SetWeight(ws[r]);
 
-		j = Jet(rh, vtx);
+		Jet j(rh);
+		j.SetVertex(vtx);
 		jets.push_back(j);
 	}	
 }
@@ -182,7 +188,7 @@ void JetProducer::GetTrueJets(vector<Jet>& jets, int evt){
 		py = pt*sin(phi);
 		pz = pt*sinh(eta);
 
-		Jet jet = Jet(px, py, pz, _base->Jet_energy->at(j));	
+		Jet jet(px, py, pz, _base->Jet_energy->at(j));	
 		
 		//set rec hits in jet
 		vector<unsigned int> rhs = _base->Jet_drRhIds->at(j);
@@ -192,14 +198,15 @@ void JetProducer::GetTrueJets(vector<Jet>& jets, int evt){
 			rhit = std::find(rhids.begin(), rhids.end(), rhid);
 			if(rhit != rhids.end()){
 				rhidx = rhit - rhids.begin();
-				JetPoint rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), 
+				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), 
 					_base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
+				rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
 				jet.AddRecHit(rh);
 			}
 
 		}
-		if(jet.GetNConstituents() < 1) continue;
+		if(jet.GetNPoints() < 1) continue;
 		jets.push_back(jet);
 	}
 

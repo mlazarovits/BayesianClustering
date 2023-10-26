@@ -29,7 +29,6 @@ PhotonProducer::PhotonProducer(TFile* file) : BaseProducer(file){
 }
 
 void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
-	JetPoint rh;
 	double x, y, z, t, E, eta, phi;
 	unsigned long id;
 	int nRHs, nRHs_evt, nphotons;
@@ -46,15 +45,15 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 				//add tof = d_pv to time to get correct RH time
 				//t = rh_time - d_rh/c + d_pv/c
 				id = _base->Photon_rhIds->at(p).at(r);
-				rh.SetRecHitId(id);
 				for(int j = 0; j < nRHs_evt; j++){
 					if(_base->ECALRecHit_ID->at(j) == id){
 						//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-						rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+						JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
 						rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 						rh.SetEta(_base->ECALRecHit_eta->at(j));
 						rh.SetPhi(_base->ECALRecHit_phi->at(j));
-						
+						rh.SetRecHitId(id);
+	
 						//cleaning cuts
 						if(!cleanRH(rh)) break;
 						
@@ -70,7 +69,6 @@ void PhotonProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
 
 //get rechits for all photons in an event
 void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
-	JetPoint rh;
 	double x, y, z, t, E, eta, phi;
 	unsigned long id;
 	int nRHs, nphotons, nRHs_evt;
@@ -92,14 +90,14 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 			//add tof = d_pv to time to get correct RH time
 			//t = rh_time - d_rh/c + d_pv/c
 			id = _base->Photon_rhIds->at(p).at(r);
-			rh.SetRecHitId(id);
 			for(int j = 0; j < nRHs_evt; j++){
 				if(_base->ECALRecHit_ID->at(j) == id){
 					//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-					rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
 					rh.SetPhi(_base->ECALRecHit_phi->at(j));
+					rh.SetRecHitId(id);
 					
 					//cleaning cuts
 					if(!cleanRH(rh)) break;
@@ -116,7 +114,6 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 
 //get rec hits for a particular photon for an event
 void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
-	JetPoint rh;
 	double x, y, z, t, E, eta, phi;
 	int nRHs, nRHs_evt;
 	rhs.clear();
@@ -131,14 +128,14 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		id = _base->Photon_rhIds->at(pho).at(r);
-		rh.SetRecHitId(id);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-				rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
+				rh.SetRecHitId(id);
 				
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
@@ -153,8 +150,6 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 
 //get rec hits for a particular photon for an event
 void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
-	JetPoint rh;
-	Jet jet;
 	double x, y, z, t, E, eta, phi;
 	int nRHs, nRHs_evt;
 	rhs.clear();
@@ -176,19 +171,20 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		id = _base->Photon_rhIds->at(pho).at(r);
-		rh.SetRecHitId(id);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-				rh = JetPoint(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
+				rh.SetRecHitId(id);
 				
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
 			
-				jet = Jet(rh, vtx);	
+				Jet jet(rh);
+				jet.SetVertex(vtx);	
 				rhs.push_back(jet);
 				break;
 			}

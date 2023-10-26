@@ -25,10 +25,8 @@ class Jet{
 		Jet();
 		Jet(double px, double py, double pz, double E);
 		Jet(JetPoint rh);
-		Jet(JetPoint rh, Point vtx);
-		Jet(vector<JetPoint> rhs, Point vtx);
-		Jet(vector<JetPoint> rhs);
-		Jet(vector<Jet> jets);
+		Jet(const vector<JetPoint>& rhs);
+		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
@@ -52,8 +50,8 @@ class Jet{
 				_parent2 = j._parent2;
 				_idx = j.GetUserIdx();
 				_vtx = j.GetVertex();
-				_nRHs = j.GetNConstituents();
-				j.GetConstituents(_rhs);
+				_nRHs = j.GetNPoints();
+				_rhs = j.GetJetPoints();
 		}
 
 		//return four vector for clustering
@@ -123,14 +121,12 @@ class Jet{
 			for(int i = 0; i < _nRHs; i++) ws.push_back(_rhs[i].GetWeight()); 
 		}
 
-		vector<JetPoint> GetJetPoints() const{return _rhs;}
-		
+		const vector<JetPoint>& GetJetPoints() const{return _rhs;}
+
 		//add subjets/pixels to jet
 		void add(const Jet& jt);
 		void add(const JetPoint& rh);
 		
-		//constituents (jet points) in jet (clustered or unclustered)
-		void GetConstituents(vector<JetPoint>& rhs) const { rhs.clear(); rhs = _rhs; }
 		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)_rhs.size(); j++) energies.push_back(_rhs[j].E()); }
 		void GetEtaPhiConstituents(PointCollection& pc) const{
 			pc.Clear();
@@ -139,7 +135,7 @@ class Jet{
 			}
 		}
 		
-		int GetNConstituents() const{return (int)_rhs.size(); }	
+		int GetNPoints() const{return (int)_rhs.size(); }	
 		
 		//parents in cluster
 		void GetParents(Jet& p1, Jet& p2) const;
@@ -266,7 +262,6 @@ class Jet{
 		double _mass;
 		double _t;
 		Point _mom;
-		//double _E;
 		Point _vtx;
 
 		//mutable double _eta, _phi, _theta;

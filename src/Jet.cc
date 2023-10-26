@@ -48,8 +48,7 @@ Jet::Jet(double px, double py, double pz, double E){
 
 }
 
-Jet::Jet(JetPoint rh, Point vtx){
-	
+Jet::Jet(JetPoint rh){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 
@@ -58,12 +57,6 @@ Jet::Jet(JetPoint rh, Point vtx){
 	_phi = rh.phi();
 	_t = rh.t();
 	_mass = mass();
-	
-	if(vtx.Dim() != 3){
-		cerr << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
-		return;
-	}
-	_vtx = vtx;
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
@@ -82,10 +75,9 @@ Jet::Jet(JetPoint rh, Point vtx){
 }
 
 
-Jet::Jet(vector<JetPoint> rhs){
-	_nRHs = (int)rhs.size();	
-	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);
-
+Jet::Jet(const vector<JetPoint>& rhs){
+	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
+	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
 	for(int i = 0; i < _nRHs; i++){
 		
@@ -104,14 +96,19 @@ Jet::Jet(vector<JetPoint> rhs){
 
 	}
 	_kt2 = _px*_px + _py*_py;
+	_parent1 = nullptr;
+	_parent2 = nullptr;
+	_child = nullptr; 
+
+	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
+
 }
 
-Jet::Jet(vector<Jet> jets){
-	vector<JetPoint> rhs;
+Jet::Jet(const vector<Jet>& jets){
 	for(int i = 0; i < (int)jets.size(); i++){
-		jets[i].GetConstituents(rhs);
+		vector<JetPoint> rhs = jets[i].GetJetPoints();
 		for(int j = 0; j < (int)rhs.size(); j++)
 		_rhs.push_back(rhs[j]);
 	}
@@ -119,51 +116,25 @@ Jet::Jet(vector<Jet> jets){
 	double theta, pt, x, y, z;
 	for(int i = 0; i < _nRHs; i++){
 		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x();
-		y = rhs[i].y();
-		z = rhs[i].z();
+		x = _rhs[i].x();
+		y = _rhs[i].y();
+		z = _rhs[i].z();
 		theta = atan2( sqrt(x*x + y*y), z );
-		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-		_px += pt*cos(rhs[i].phi());
-		_py += pt*sin(rhs[i].phi());
-		_pz += pt*cosh(rhs[i].eta());
+		pt = _rhs[i].E()*sin(theta); //consistent with mass = 0
+		_px += pt*cos(_rhs[i].phi());
+		_py += pt*sin(_rhs[i].phi());
+		_pz += pt*cosh(_rhs[i].eta());
 		
-		_E += rhs[i].E();
+		_E += _rhs[i].E();
 
 
 	}
 	_kt2 = _px*_px + _py*_py;
-	_ensure_valid_rap_phi();
-	_set_time();
-}
+	_parent1 = nullptr;
+	_parent2 = nullptr;
+	_child = nullptr; 
 
-Jet::Jet(vector<JetPoint> rhs, Point vtx){
-	_nRHs = (int)rhs.size();	
-	for(int i = 0; i < _nRHs; i++) _rhs.push_back(rhs[i]);
-
-	if(vtx.Dim() != 3){
-		cerr << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
-		return;
-	}
-	_vtx = vtx;
-
-	double theta, pt, x, y, z;
-	for(int i = 0; i < _nRHs; i++){
-		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x();
-		y = rhs[i].y();
-		z = rhs[i].z();
-		theta = atan2( sqrt(x*x + y*y), z );
-		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-		_px += pt*cos(rhs[i].phi());
-		_py += pt*sin(rhs[i].phi());
-		_pz += pt*cosh(rhs[i].eta());
-		
-		_E += rhs[i].E();
-
-
-	}
-	_kt2 = _px*_px + _py*_py;
+	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
 }
@@ -209,8 +180,7 @@ bool Jet::operator !=(Jet& jet) const{
 //adding four vectors - recalculate invariant mass and other kinematic quantities
 void Jet::add(const Jet& jt){
 	//add rhs from jt
-	vector<JetPoint> rhs;
-	jt.GetConstituents(rhs);
+	vector<JetPoint> rhs = jt.GetJetPoints();
 
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs += (int)rhs.size();

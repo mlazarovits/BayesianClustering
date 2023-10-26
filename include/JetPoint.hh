@@ -11,24 +11,17 @@ class JetPoint{
 	public:
 		JetPoint();
 		JetPoint(double x, double y, double z, double t);
-		JetPoint(Point pt);
 		virtual ~JetPoint();
 
 		bool operator==(JetPoint& j) const;
 		bool operator!=(JetPoint& j) const;
 
-		//return four vector for clustering
-		Point four_space() const{ return _space; }
-
-		void SetFourSpace(Point pt);
 
 		void SetEnergy(double e){ _E = e;}
 		void SetPhi(double p){ _phi = p; _ensure_valid_rap_phi(); }
 		void SetEta(double e){ _eta = e; _ensure_valid_rap_phi(); }
 		void SetWeight(double w){ _w = w; } 
 		double GetWeight(){ return _w; } 
-		//return element i in position (space-time) four vector
-		double x(int i) const{ return _space.at(i); }
 
 
 		//sets phi [0,2pi]
@@ -169,7 +162,6 @@ class JetPoint{
 		double _x;
 		double _y;
 		double _z;
-		Point _space;
 		
 		mutable double _eta, _phi, _theta;
 		double _E;
