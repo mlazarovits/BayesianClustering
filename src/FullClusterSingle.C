@@ -4,7 +4,7 @@
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
 #include "Clusterizer.hh"
-//#include "VarClusterViz3D.hh"
+#include "VarClusterViz3D.hh"
 #include <TSystem.h>
 #include <TFile.h>
 #include <iostream>
@@ -204,6 +204,9 @@ int main(int argc, char *argv[]){
 	fname += version.substr(0,3); //"_v9"
 	if(viz){
 		cout << "Writing to directory: " << fname << endl;
+		if(gSystem->AccessPathName(fname.c_str())){
+			gSystem->Exec(("mkdir -p "+fname).c_str());
+		}
 	}
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
@@ -218,7 +221,6 @@ int main(int argc, char *argv[]){
 
 	vector<Jet> rhs, jets;
 	vector<node*> trees;
-	GaussianMixture* model = nullptr; 
 	//get rhs (as Jets) for event
 cout << "obj: " << obj << endl;
 	if(obj == 0){
@@ -248,41 +250,48 @@ cout << "obj: " << obj << endl;
 
 
 	
-	cout << "Using clustering strategy " << strat << ": ";
 	BayesCluster *algo = new BayesCluster(rhs);
 	if(smeared) algo->SetDataSmear(smear);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetVerbosity(verb);
-	clock_t t;
+	clock_t t = clock();
+	//jets
 	if(obj == 0){
+		cout << "Using clustering strategy " << strat << ": ";
 		if(strat == 0){
 			cout << "Delauney (NlnN)" << endl;
 			//to track computation time from beginning of program
-			t = clock();
 			if(obj == 0) trees = algo->NlnNCluster();
 		}
 		else if(strat == 1){
 			cout << "N^2 (naive)" << endl;
 			//to track computation time from beginning of program
-			t = clock();
 			if(obj == 0) trees = algo->N2Cluster();
 		}
 		else{ cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)." << endl; return -1; }
+		if(viz){
+			//plotting stuff here
+			FullViz3D plots = FullViz3D(trees);
+			plots.SetVerbosity(verb);
+			plots.SetTransfFactor(gev);
+			//add info of true jets
+			plots.AddTrueJets(jets);
+			plots.Write(fname);
+		}
 	}
-	else if(obj == 1) model = algo->SubCluster();
+	//photons
+	else if(obj == 1){
+		string oname = "";
+		if(viz) oname = fname;
+		algo->SubCluster(oname);
+	}	
+
+
+
 	else{ cout << "Object undefined. Please use --object [obj] with options 0 for jets or 1 for photons." << endl; return -1; }
 
-	if(viz){
-		//plotting stuff here
-		FullViz3D plots = FullViz3D(trees);
-		plots.SetVerbosity(verb);
-		plots.SetTransfFactor(gev);
-		//add info of true jets
-		plots.AddTrueJets(jets);
-		plots.Write(fname);
-	}
 
 	//causing crashes - //file->Close();
 	//delete file;

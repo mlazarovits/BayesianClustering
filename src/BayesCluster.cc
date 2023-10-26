@@ -324,14 +324,11 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 
 
 
-GaussianMixture* BayesCluster::_subcluster(){
+void BayesCluster::_subcluster(string oname){
 	//create GMM model
 	PointCollection* points = new PointCollection();
-	
-	for(auto jet : _jets){
-		PointCollection tmp = PointCollection();
-		jet.GetEtaPhiConstituents(tmp);
-		points->AddPoints(tmp);
+	for(auto point : _points){
+		points->AddPoints(point);
 	}
 	int maxK = points->GetNPoints();
 	GaussianMixture* gmm = new GaussianMixture(maxK);
@@ -351,16 +348,16 @@ GaussianMixture* BayesCluster::_subcluster(){
 
 	map<string, vector<Matrix>> params;
 	bool viz = false;
-	if(!_oname.empty()){
+	if(!oname.empty()){
 		viz = true;
 	}
 
-	VarClusterViz3D cv3D;
-	if(viz){ cv3D = VarClusterViz3D(algo);
+	VarClusterViz3D cv3D(algo);
+	if(viz){
 		cv3D.SetVerbosity(_verb);
 		cv3D.UpdatePosterior();
-		cv3D.WriteJson(_oname+"/it0");
-		}
+		cv3D.WriteJson(oname+"/it0");
+	}
 	//loop
 	double dLogL, newLogL;
 	double LogLthresh = 0.01;
@@ -377,13 +374,13 @@ GaussianMixture* BayesCluster::_subcluster(){
 		//Plot
 		if(viz){
 			cv3D.UpdatePosterior();
-			cv3D.WriteJson(_oname+"/it"+std::to_string(it+1));
+			cv3D.WriteJson(oname+"/it"+std::to_string(it+1));
 		}
 		//Check for convergence
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
-			return gmm;
+			return;
 		}
 		dLogL = oldLogL - newLogL;
 		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
@@ -410,7 +407,7 @@ GaussianMixture* BayesCluster::_subcluster(){
 
 	}
 
-	return gmm;
+	return;
 
 
 
