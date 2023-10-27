@@ -189,7 +189,8 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
  if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
 //cout << "getting pts: " << _merge_tree->Get(ip)->points->GetNPoints() << " " << pts.GetNPoints() << endl;
-    node* x = new node(*_merge_tree->Get(ip));
+   //copy node
+   node* x = new node(*_merge_tree->Get(ip));
   // cout << "copied rk val: " << x->val << " copied pts: " << x->points->GetNPoints() << endl; 
 
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
@@ -203,6 +204,7 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
+    //add new mirror node to be clustered
     _merge_tree->Insert(x);
 //cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in inserted node: "  << _merge_tree->Get(_merge_tree->GetNClusters() - 1)->points->GetNPoints() << endl;
   }

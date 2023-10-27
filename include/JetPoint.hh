@@ -140,6 +140,16 @@ class JetPoint{
 			if(_phi == _invalid_phi) _set_rap_phi();
 		}
 
+
+		void Print(){
+                        std::string out = "(";
+                        out += std::to_string(eta())+",";
+                        out += std::to_string(phi_02pi())+",";
+                        out += std::to_string(time())+")";
+                        cout << out << " w = " << _w << endl;
+		
+		}
+
 		
 		void SetRecHitId(unsigned int id){ _rhId = id; }
 		unsigned int rhId(){ return _rhId; }

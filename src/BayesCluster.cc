@@ -158,10 +158,11 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 
 	//MergeTree* endmerge = DNN->GetMergeTree();
 	_trees = mt->GetClusters();
-	cout << _trees.size() << " final clusters" << endl;
+	cout << mt->GetNClusters() << " final clusters" << endl;
 	double nmirror = 0;
 	for(int i = 0; i < _trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
+		if(_trees[i] == nullptr) continue;
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
 			//trees.erase(trees.begin()+i);
@@ -172,39 +173,11 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	cout << _trees.size() - nmirror << " jets found." << endl;
+	cout << mt->GetNClusters() - nmirror << " jets found." << endl;
 	return _trees;
 	
 	
 }
-void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN){
-		double dist;
-		int j;
-		dist = DNN->NearestNeighbourDistance(i);
-		j = DNN->NearestNeighbourIndex(i);
-//cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
-		inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
-}
-
-//need to add idx corresponding to plane index because those are the nodes stored in merge tree
-void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob){
-		bool verbose = false;
-		double comp;
-		int j, cyl_j;
-		if(prob){
-			comp = DNN->NearestNeighbourProb(i);
-			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
-			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
-			if(verbose) cout << "adding entry " << i << " with best probability " << comp << " pair " << cyl_j << " merge idx: " << j << endl;
-		}
-		else{
-			comp = DNN->NearestNeighbourDistance(i);
-			j = DNN->NearestNeighbourIndex(i);
-	if(verbose) cout << "adding entry " << i << " with best distance " << comp << " pair " << j << endl;
-		}
-		inmap.insert(CompEntry(comp,verts(i,j)));
-}
-
 
 
 
@@ -212,10 +185,10 @@ const vector<node*>& BayesCluster::_naive_cluster(){
         node* di; node* dj;
         double rk;
         double rk_max;
-	NodeStack list; //for sorting nodes by merge probability
+	NodeStack list; //for sorting nodes by merge probability and tracking potential merges
 	
 	//set up merge tree that will calculate merges and track nodes
-	MergeTree* mt = new MergeTree(_alpha);
+	MergeTree* mt = new MergeTree(_alpha); //keeps track of merges made + merge history
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
 	//set data smear
@@ -232,6 +205,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			return _trees;
 		} 
 		mt->AddLeaf(&_points[i].at(0));
+		mt->CreateMirrorNode(mt->Get(i));
 	}
 
 	int it = 0;
@@ -242,24 +216,32 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			di = mt->Get(i);
 			dj = mt->Get(j);
 			node* x = mt->CalculateMerge(di, dj);
+		cout << "checking nodes " << i << ": ";
+		di->points->Print();
+		cout << " and " << j << ": ";
+		dj->points->Print();
+		cout << "this rk: " << x->val <<  "\n" << endl;
+			
 			list.insert(x);
 		}
 	}
-
+cout << "big list done" << endl;
 	//do clustering
 	double maxrk = 0.5;
 	while(mt->GetNClusters() > 1){
                 if(_verb > 0) cout << "---------- iteration: " << it << " ----------" << endl;
-                if(_verb > 0) list.Print();
+                //if(_verb > 0) list.Print();
 		
 		list.sort();
 	
-		//get node with maximum merge probability
+		//get node with maximum merge probability + remove impossible merges because of max node
 		node* max = list.fullpop();
-
 		//check that popped node is not null
 		if(max == nullptr) break;
-		if(_verb > 2) cout << "max merge rk: " << max->val << " " << endl;
+		//if(_verb > 2) cout << "max merge rk: " << max->val << " " << endl;
+		cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
+		max->points->Print();
+		cout << "\n" << endl;
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
                 if(max->val < maxrk){
                         cout << "reached min rk = " << max->val << " <  " << maxrk << " - final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters" << endl;
@@ -267,8 +249,9 @@ const vector<node*>& BayesCluster::_naive_cluster(){
                 }
 		
 		//update merge tree with selected merge
-		//TODO: at insert step in mergetreee (equivalent of Dnn2piCylinder) see if a mirror point needs to be added for the new cluster
 		mt->Insert(max);
+		//make new mirror node for max if necessary
+		mt->CreateMirrorNode(max);
 		mt->Remove(max->l);
 		mt->Remove(max->r);
 
@@ -277,36 +260,47 @@ const vector<node*>& BayesCluster::_naive_cluster(){
                         cout << "All points clustered. Exiting clustering..." << endl;
                         break;
 		}	
+		//print remaining possible merges
+		cout << "remaining possible merges" << endl;
+		list.Print(1);
+		cout << "\n" << endl; 
 
 		//create new merges with the remaining nodes and the newly formed cluster
 		//this operation is O(N)
+		cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
 		node* dl;
-		for(int i = 0; i < mt->GetNClusters(); i++){
+		for(int i = 0; i < mt->GetNAllClusters(); i++){
 			dl = mt->Get(i);
-			//make sure this is not the max merge cluster - doesn't need to be paired with itself
-			if(dl == max) continue;
 			//make sure this node exists
 			if(dl == nullptr) continue;
+			cout << "checking pair " << i << " or " << dl->idx << " and max " << max->idx << endl;
+			//make sure this is not the max merge cluster - doesn't need to be paired with itself
+			if(dl == max) continue;
 			//calculate merge for node i and max node
 			node* x = mt->CalculateMerge(dl, max);
+		cout << "checking nodes " << i << ": ";
+		dl->points->Print();
+		cout << " and max " << max->idx << ": ";
+		max->points->Print();
+		cout << "this rk: " << x->val << "\n" << endl;
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
 			//add new potential merge to list
 			list.insert(x); 
 		}
+
+
 		it++;
 
 	}
 
 	if(_verb > 0) cout << "---------- final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters ----------" << endl;
         _trees = mt->GetClusters();
-
-	
-	_trees = mt->GetClusters();
-	cout << _trees.size() << " final clusters" << endl;
+	cout << mt->GetNClusters() << " final clusters" << endl;
 	double nmirror = 0;
 	for(int i = 0; i < _trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
+		if(_trees[i] == nullptr) continue;
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
 			//trees.erase(trees.begin()+i);
@@ -317,7 +311,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	cout << _trees.size() - nmirror << " jets found." << endl;
+	cout << mt->GetNClusters() - nmirror << " jets found." << endl;
 	return _trees;
 
 }
@@ -419,4 +413,32 @@ void BayesCluster::_subcluster(string oname){
 }
 
 
+
+void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN){
+		double dist;
+		int j;
+		dist = DNN->NearestNeighbourDistance(i);
+		j = DNN->NearestNeighbourIndex(i);
+//cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
+		inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
+}
+
+//need to add idx corresponding to plane index because those are the nodes stored in merge tree
+void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob){
+		bool verbose = false;
+		double comp;
+		int j, cyl_j;
+		if(prob){
+			comp = DNN->NearestNeighbourProb(i);
+			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
+			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
+			if(_verb > 1) cout << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << endl;
+		}
+		else{
+			comp = DNN->NearestNeighbourDistance(i);
+			j = DNN->NearestNeighbourIndex(i);
+	if(verbose) cout << "adding entry " << i << " with best distance " << comp << " pair " << j << endl;
+		}
+		inmap.insert(CompEntry(comp,verts(i,j)));
+}
 

@@ -13,14 +13,19 @@ class NodeQueue{
 		
 			//end delimiter
 			_z = (node*)malloc(sizeof *_z);
-			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; _z->color = -1;
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr;
 			_none->n = _z;
 			_none->next = _none;	
 
 			_head = _tail = _none;
 					
 		};
-		virtual ~NodeQueue(){ };
+		virtual ~NodeQueue(){ 
+			free(_head);
+			free(_tail);
+			free(_none);
+			free(_z);
+		};
 		NodeQueue(const NodeQueue& nodes){
 			_head = nodes._head;
 			_tail = nodes._tail;

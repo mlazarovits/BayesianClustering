@@ -10,14 +10,16 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _thresh = 0.; _verb = 0; _wraparound = false; _constraint_a = 0; _constraint_b = acos(-1)/2.; 
+		_alpha = 0; _thresh = 0.; _verb = 0;
+		_constraint_a = 0; _constraint_b = acos(-1)/2.; 
 		_constraint = false;
 		}
 
 		MergeTree(double alpha){
 			_alpha = alpha;
-			_thresh = 1.; _verb = 0;_wraparound = false;_constraint_a = 0; _constraint_b = acos(-1)/2.;
-		_constraint = false;
+			_thresh = 1.; _verb = 0;
+			_constraint_a = 0; _constraint_b = acos(-1)/2.;
+			_constraint = false;
 		}
 
 		//copy constructor
@@ -28,15 +30,14 @@ class MergeTree : BaseTree{
 			_alpha = tree._alpha;
 			_clusters = tree._clusters;
 			_thresh = tree._thresh;
-			_verb = tree._verb;_wraparound = tree._wraparound;_constraint_a = tree._constraint_a; _constraint_b = tree._constraint_b;
+			_verb = tree._verb;
+			_constraint_a = tree._constraint_a; _constraint_b = tree._constraint_b;
 			_constraint = tree._constraint;
 		}
 
 		virtual ~MergeTree(){ }
 
 		void SetThresh(double t){ _thresh = t; }
-
-		void SetPhiWraparound(bool p){_wraparound = p; }
 
 		void AddData(PointCollection* pc){
 		//sort nodes of merge tree once here then add nodes to search tree and merge tree (as leaves)	
@@ -48,25 +49,13 @@ class MergeTree : BaseTree{
 	
 		node* Get(int i){ return _clusters[i]; }
 
-		const vector<node*> GetClusters() const{ 
-			vector<node*> clusters;
-			for(int i = 0; i < _clusters.size(); i++){
-				if(_clusters[i] == nullptr) continue;
-				clusters.push_back(_clusters[i]);
-			} 
-			return clusters;
-		}
-		const void GetClusters(vector<node*>& clusters) const{ 
-			clusters.clear();
-			for(int i = 0; i < _clusters.size(); i++){
-				if(_clusters[i] == nullptr) continue;
-			cout << "Cluster " << i << " has val " << _clusters[i]->val << endl;
-				clusters.push_back(_clusters[i]);
-			} 
+		const vector<node*>& GetClusters() const{ 
+			return _clusters;
 		}
 		
 		void Insert(node* x){
 			_clusters.push_back(nullptr);
+			x->idx = (int)_clusters.size() - 1;
 			_clusters[(int)_clusters.size() - 1] = x;
 		}
 
@@ -95,13 +84,24 @@ class MergeTree : BaseTree{
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
+		//counts clusters that have been removed
+		//use this function when looping over clusters s.t. the element indices line up
+		int GetNAllClusters(){ 			
+			return (int)_clusters.size();
+		}	
+
+		//this does not count removed clusters
+		//use this function to get number of actual clusters
+		//when no merges have been made (ie clusters are only leaves)
+		//this should match GetNAllClusters 
 		int GetNClusters(){ 			
-			vector<node*> clusters;
+			int n = 0;
 			for(int i = 0; i < _clusters.size(); i++){
 				if(_clusters[i] == nullptr) continue;
-				clusters.push_back(_clusters[i]);
+				n++;
 			}
-		return (int)clusters.size(); }	
+			return n;
+		}	
 			
 
 		void SetSubclusterAlpha(double a){ _emAlpha = a; }		
@@ -124,10 +124,12 @@ class MergeTree : BaseTree{
 			
 			//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
 			double d = fabs(cent1 - cent2);
-			if(_wraparound){
-				if(d > pi) d = 2*pi - d; 
-			}	
-		
+			//update 3D nearest neighbors for mirror point calculation
+			double dist3d = _euclidean_3d(i, j);
+			if(dist3d < i->nn3dist) i->nn3dist = dist3d;
+			if(dist3d < j->nn3dist) j->nn3dist = dist3d;	
+
+	
 			double phi = 0;
 			double theta = 0;
 			if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
@@ -164,12 +166,18 @@ class MergeTree : BaseTree{
 			//p(D_k | T_k) = p(D_k | H_1^k)		
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			int n = _clusters.size();
+			x->idx = n-1;
 			_clusters[n-1] = x;
 		}
 
 
+		//note: this ONLY gets called in the N^2 clustering
+		//for the delauney (NlnN) clustering this is taken care of
+		//by Dnn2piCylinder
+		void CreateMirrorNode(node* x);
 
 	protected:
+
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
 			int k;
@@ -177,13 +185,7 @@ class MergeTree : BaseTree{
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-			//center points in this cluster (bucket)
-			//this accounts for phi wraparound
-			Point transf = Point();
-			if(_wraparound) transf = x->points->Center();
 			
-			//cout << "transformed points" << endl;
-			//x->points->Print();
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
@@ -193,24 +195,6 @@ class MergeTree : BaseTree{
 			x->model->InitPriorParameters();
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
-
-			/*
-			cout << "Initial prior parameters" << endl;
-			map<string, Matrix> params;
-			for(int i = 0; i < x->model->GetNClusters(); i++){
-				params = x->model->GetPriorParameters(i);	
-				cout << "mean " << i << endl;
-				params["m"].Print();
-				cout << "Gaus scale " << i << ": " << params["scale"].at(0,0) << endl;
-				cout << "dof " << i << ": " << params["dof"].at(0,0) << endl;
-				cout << "scalemat " << i << endl;
-				params["scalemat"].Print();
-				params.clear();
-		}
-			*/
-		//	cout << "data" << endl;
-		//	x->model->GetData()->Print();
-
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);	
 			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
@@ -228,29 +212,17 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			//x - avg -> x - avg + avg = x
-			//transform back relevant parameters in each subcluster (just centers - matrices unaffected)
-			if(_wraparound){
-				Matrix mu, mean;
-				map<string, Matrix> params;
-				//for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
-				for(int k = 0; k < x->model->GetNClusters(); k++){
-					params = x->model->GetPriorParameters(k);
-					mu = params["mean"];
-					mean = params["m"];
-
-
-					mu.add(Matrix(transf));
-					x->model->GetModel(k)->SetParameter("mean",mu);
-	
-					mean.add(Matrix(transf));
-					x->model->GetModel(k)->GetPrior()->SetParameter("mean",mean);
-				}
-				for(int d = 0; d < transf.Dim(); d++) transf.SetValue(-transf.at(d),d);
-				//transform data back
-				x->points->Translate(transf); 
-			}
 			return newLogL;
+		}
+
+
+		double _euclidean_3d(node* i, node* j){
+			double deta = i->points->mean().at(0) - j->points->mean().at(0);
+			double dphi = i->points->mean().at(1) - j->points->mean().at(1);
+			double dtime = i->points->mean().at(2) - j->points->mean().at(2);
+
+			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
+
 		}
 
 
@@ -267,6 +239,7 @@ class MergeTree : BaseTree{
 		Matrix _data_smear;
 		int _verb;
 		map<string, Matrix> _params;
-		bool _wraparound, _constraint;
+		bool _constraint;
+		void _remap_phi(PointCollection& points);
 };
 #endif

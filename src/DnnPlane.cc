@@ -804,9 +804,12 @@ void DnnPlane::_SetNearest (const int j) {
       // find index corresponding to vc for easy manipulation
       int vcindx = vc->info().val();
 	//do the same as above but with probability instead of geometric distance
-     if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
+	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
      }  
+     cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
+	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
+	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
  //cout << "# clusters: " << _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
     }
   } while (++vc != done); // move on to next Voronoi neighbour
@@ -893,6 +896,9 @@ if(_verbose){
          best_vtx = vc;
     if(_verbose) cout << "more probable "; 
     }    
+     cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
+	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
+	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
 
       if (_verbose) cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
 

@@ -12,12 +12,14 @@ class NodeStack{
 		NodeStack(){
 			_head = (listnode*)malloc(sizeof *_head);
 			node* h = (node*)malloc(sizeof* h); h->val = 999; //sort high to low
-			h->l = h; h->r = h; h->d = -1; h->prob_tk = -1; h->model = nullptr; h->color = -1; h->points = new PointCollection();
+			h->l = h; h->r = h; h->d = -1; h->prob_tk = -1; h->model = nullptr; //h->color = -1; 
+			h->points = new PointCollection();
 			_head->n = h;	
 		
 			_z = (listnode*)malloc(sizeof *_z);
 			node* z = (node*)malloc(sizeof* z); z->val = -999; //sort high to low
-			z->l = z; z->r = z; z->d = -1; z->prob_tk = -1; z->model = nullptr; z->color = -1; z->points = new PointCollection(); 
+			z->l = z; z->r = z; z->d = -1; z->prob_tk = -1; z->model = nullptr; //z->color = -1; 
+			z->points = new PointCollection(); 
 			_z->n = z;
 			
 			_head->next = _z; _z->next = _z; 
@@ -156,13 +158,24 @@ class NodeStack{
 			if(empty()) return;
 			listnode* g = _head->next;
 			int i = 1;
-			while(g != _z){ cout << "cluster " << i << ": ";
-			if(v > 1)g->n->points->Print(); 
+			while(g != _z){ 
+				if(v == 1){
+					cout << "nodes " << g->n->l->idx << ": ";
+					g->n->l->points->Print();
+					cout << " and " << g->n->r->idx << ": ";
+					g->n->r->points->Print();
+				}
+				if(v == 0){
+					cout << "cluster " << i << ": ";
+					g->n->points->Print();
+				} 
+				cout << "this rk: " << g->n->val << "\n" << endl;
 			i++; g = g->next; } 
 		}
 
 		private:
-			listnode* _head, *_z;
+			listnode* _head = nullptr; 
+			listnode* _z = nullptr;
 
 
 

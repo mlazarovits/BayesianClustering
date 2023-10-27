@@ -203,6 +203,9 @@ class Jet{
 
 		}
 
+		void Print(){
+			for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
+		}
 
 
 	
@@ -249,6 +252,8 @@ class Jet{
 			}
 			_t /= norm;
 		}
+
+
 
 	private:
 		//momentum four vector

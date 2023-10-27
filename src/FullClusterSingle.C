@@ -243,8 +243,10 @@ cout << "obj: " << obj << endl;
 	vector<double> ws;
 	rhs[0].GetWeights(ws);
 	double gev = rhs[0].E()/ws[0];
+
+
 	//to debug - use less rechits
-	//int nrhs = 5;
+	//int nrhs = 10;
 	//rhs.resize(nrhs);
 	//rhs.shrink_to_fit();
 

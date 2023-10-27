@@ -1,15 +1,14 @@
 #include "FullViz3D.hh"
 
-FullViz3D::FullViz3D(vector<node*> nodes){
-	_nodes = nodes;
+FullViz3D::FullViz3D(const vector<node*>& nodes){
 	
-	for(int i = 0; i < (int)_nodes.size(); i++){
-		m_points->AddPoints(*_nodes[i]->points);	
-		_k.push_back(_nodes[i]->model->GetNClusters());
+	for(int i = 0; i < (int)nodes.size(); i++){
+		if(nodes[i] == nullptr) continue;
+		_nodes.push_back(nodes[i]);
+		m_points->AddPoints(*nodes[i]->points);	
+		_k.push_back(nodes[i]->model->GetNClusters());
 	}
 	m_n = m_points->GetNPoints();
-	
-
 }
 
 

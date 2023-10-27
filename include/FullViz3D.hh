@@ -17,7 +17,7 @@ using node = BaseTree::node;
 class FullViz3D : public ClusterVizBase{
 	public:
 		FullViz3D() : ClusterVizBase(){ };
-		FullViz3D(vector<node*> nodes);
+		FullViz3D(const vector<node*>& nodes);
 		virtual ~FullViz3D(){ };
 
 		//writes individual node
