@@ -806,10 +806,12 @@ void DnnPlane::_SetNearest (const int j) {
 	//do the same as above but with probability instead of geometric distance
 	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
-     }  
-     cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
-	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
-	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
+     } 
+     if(_verbose){ 
+       cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
+       cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
+       cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
+     }
  //cout << "# clusters: " << _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
     }
   } while (++vc != done); // move on to next Voronoi neighbour
@@ -844,7 +846,6 @@ void DnnPlane::_SetNearest (const int j) {
 void DnnPlane::_SetAndUpdateNearest(
 			  const int j, 
 			  vector<int> & indices_of_updated_neighbours) {
- if(_verbose) cout << "_SetAndUpdateNearest - start" << endl; 
   vector<int> indices_of_updated_merges;
 
   //cout << "SetAndUpdateNearest for point " << j << endl;
@@ -857,12 +858,6 @@ void DnnPlane::_SetAndUpdateNearest(
     //cout << "  set to coinciding point " << _supervertex[j].coincidence << endl;
     return;
   }
-if(_verbose){
-//cout << "# clusters: " << _merge_tree->GetNClusters() << endl;
-  cout << "n pts in current vertex j: " << j << " - " << _supervertex[j].n->points->GetNPoints() << " og best rk indx: " << _supervertex[j].MaxRkindex << endl;
-  cout << "l: " << _supervertex[j].n->l->points->GetNPoints() << endl;
-  cout << "r: " << _supervertex[j].n->r->points->GetNPoints() << endl;
-}
   Vertex_handle current = _supervertex[j].vertex;
   Vertex_circulator vc = _TR.incident_vertices(current);
   Vertex_circulator done = vc;
@@ -896,11 +891,11 @@ if(_verbose){
          best_vtx = vc;
     if(_verbose) cout << "more probable "; 
     }    
-     cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
+      if (_verbose){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
+        cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
 	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
 	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
-
-      if (_verbose) cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
+      }
 
       if (_is_closer_to_with_hint(vc->point(), current->point(), 
 				  _supervertex[_supervertex[vcindx].NNindex].vertex,
