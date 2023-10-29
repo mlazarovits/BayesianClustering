@@ -201,7 +201,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
-			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
+			cerr << "BayesCluster - Error: multiple points in one collection of starting vector. " << _points[i].GetNPoints() << " points in collection " << i << "." << endl;
 			return _trees;
 		} 
 		mt->AddLeaf(&_points[i].at(0));

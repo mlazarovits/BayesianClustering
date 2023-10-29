@@ -158,6 +158,15 @@ int main(int argc, char *argv[]){
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
 		return -1;
 	}
+	if(strat == 0)
+		fname += "NlnN";
+	else if(strat == 1)
+		fname += "N2";
+	else{
+		cout << "Strateg number " << strat << " not supported. Only 0 : NlnN, 1 : N^2." << endl;
+		return -1;
+	}
+
 
 	fname = "plots/"+fname;
 	string a_string;
@@ -246,9 +255,9 @@ cout << "obj: " << obj << endl;
 
 
 	//to debug - use less rechits
-	//int nrhs = 10;
-	//rhs.resize(nrhs);
-	//rhs.shrink_to_fit();
+	int nrhs = 5;
+	rhs.resize(nrhs);
+	rhs.shrink_to_fit();
 
 
 	

@@ -29,7 +29,7 @@ class NodeStack{
 			_head = nodes._head;
 			_z = nodes._z;
 		}
-		virtual ~NodeStack(){ free(_head); free(_z); };
+		virtual ~NodeStack(){ };//free(_head); free(_z); };
 
 
 		listnode* GetList(){
@@ -61,7 +61,7 @@ class NodeStack{
 		//get node from top of stack (should be largest)
 		node* pop(){
 			if(empty()) return nullptr;
-			node *x = nullptr;
+			node *x = (node*)malloc(sizeof *x);
 			listnode* t = _head->next; _head->next = t->next;
 			x = t->n; 
 			free(t);
@@ -96,26 +96,16 @@ class NodeStack{
 
 		listnode* merge(listnode* a, listnode* b){
 			listnode* c;
-			//cout << "NodeStack::merge 1" << endl;
 			c = _z;
-			//cout << "NodeStack::merge 2 " << a->node->val << endl;
 			do{
-			//	cout << "begin do-while loop - a: " << a->node->val << " b: " << b->node->val << endl;
 				if(a->n->val >= b->n->val){
-			//cout << "NodeStack::merge 3" << endl;
       				c->next = a; c = a; a = a->next;
-			//cout << "NodeStack::merge 4" << endl;
       			}
       			else{
-			//cout << "NodeStack::merge 5" << endl;
       				c->next = b; c = b; b = b->next;
-			//cout << "NodeStack::merge 6" << endl;
       			}
-			//cout << "NodeStack::merge 7" << endl;
-      		}while(c != _z);
-			//cout << "NodeStack::merge 8" << endl;
-      		c = _z->next; _z->next = _z;
-			//cout << "NodeStack::merge - end" << endl;
+      			}while(c != _z);
+      			c = _z->next; _z->next = _z;
 			return c;
 		}
 
@@ -167,7 +157,6 @@ class NodeStack{
 				}
 				if(v == 0){
 					cout << "cluster " << i << ": ";
-					g->n->points->Print();
 				} 
 				cout << "this rk: " << g->n->val << "\n" << endl;
 			i++; g = g->next; } 

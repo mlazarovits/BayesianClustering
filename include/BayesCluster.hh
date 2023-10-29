@@ -18,7 +18,6 @@
 #include "GaussianMixture.hh"
 #include <iostream>
 #include <vector>
-
 using std::vector;
 using std::cout;
 using std::endl;
@@ -65,6 +64,17 @@ class BayesCluster{
 			}
 
 		};
+
+
+		virtual ~BayesCluster(){
+			for(auto n : _trees) delete n;
+			_trees.clear();
+			_jets.clear();
+			_points.clear();
+			_history.clear();
+		};
+
+
 		//for jets - BHC for clusters + GMM EM for subclusters
 		const vector<node*>& NlnNCluster(){
 			return this->_delauney_cluster();

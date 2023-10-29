@@ -26,22 +26,18 @@ class BaseTree{
 			struct node *l = nullptr;
 			struct node *r = nullptr;
 			//posterior value - info or key
-			double val;
+			double val = -999;
 			//factor in prior
 			double d;
 			//model of cluster
 			BasePDFMixture* model = nullptr;
 			//probability of being in tree T_k p(D_k | T_k)
-			double prob_tk;
+			double prob_tk = -999;
 			//3D distance to nearest neighbor
-			double nn3dist;
+			double nn3dist = -999;
 			//mirror node
 			struct node* mirror = nullptr;
-			int idx; //index of node in merge tree
-			//color for plotting -> maps to color map
-			//int color;
-			//for debugging - making sure correct merges are happening	
-			//std::string name;
+			int idx = -999; //index of node in merge tree
 			
 			//node* operator =(const node* n){
 			node(const node& n){
@@ -52,6 +48,9 @@ class BaseTree{
 				d = n.d;
 				model = n.model;
 				prob_tk = n.prob_tk;
+				nn3dist = n.nn3dist;
+				mirror = n.mirror;
+				idx = n.idx;
 			}
 
 			//destructor for node

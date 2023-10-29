@@ -1,41 +1,34 @@
 #include "FullViz3D.hh"
 
 FullViz3D::FullViz3D(const vector<node*>& nodes){
-	
 	for(int i = 0; i < (int)nodes.size(); i++){
 		if(nodes[i] == nullptr) continue;
-		_nodes.push_back(nodes[i]);
-		m_points->AddPoints(*nodes[i]->points);	
-		_k.push_back(nodes[i]->model->GetNClusters());
+		_nodes.push_back(nullptr);
+		node* x = new node(*(nodes[i]));
+		_nodes[(int)_nodes.size() - 1] = nodes[i];
 	}
-	m_n = m_points->GetNPoints();
+		
 }
 
 
 
-json FullViz3D::WriteNode(node* node){
+json FullViz3D::WriteNode(node* n){
 	json subcluster = json::object();
 	json subclusters = json::object();
 	json cluster = json::object();
 	json data = json::object();
 
-	vector<double> color;
-	vector<double> x;
-	vector<double> y;
-	vector<double> z;
-	vector<double> w;
+	vector<double> color, x, y, z, w;
 	
-	vector<double> eigenVec_0;
-	vector<double> eigenVec_1;
-	vector<double> eigenVec_2;
+	vector<double> eigenVec_0, eigenVec_1, eigenVec_2;
 	
-	int kmax = node->model->GetNClusters();
-	BasePDFMixture* model = node->model;
-	PointCollection* points = node->points;
+	BasePDFMixture* pdfmodel = n->model;
+	int kmax = pdfmodel->GetNClusters();
+	PointCollection* points = n->points;
 	if(points->GetNPoints() == 0){
 		return cluster;
 	}
-	
+
 	for(int i = 0; i < points->GetNPoints(); i++){
 		//eta
 		x.push_back(points->at(i).Value(0));
@@ -58,13 +51,13 @@ json FullViz3D::WriteNode(node* node){
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
 	vector<double> cnts;
-	model->GetNorms(cnts);
+	pdfmodel->GetNorms(cnts);
 	double pisum = 0;
 	
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
 	for(int k = 0; k < kmax; k++){
-		cluster_params = model->GetPriorParameters(k);
+		cluster_params = pdfmodel->GetPriorParameters(k);
 		x0 = cluster_params["mean"].at(0,0);
 		y0 = cluster_params["mean"].at(1,0);
 		z0 = cluster_params["mean"].at(2,0);
@@ -104,16 +97,19 @@ json FullViz3D::WriteNode(node* node){
 
 	cluster["subclusters"] = subclusters;
 	return cluster;
+
 }
 
 
 
-void FullViz3D::orderTree(node* node, int level, map<int, NodeStack> &map){
-	if(node->val == -1) return;
-	map[level].push(node);
-	
-	orderTree(node->l, level + 1, map);
-	orderTree(node->r, level + 1, map);
+void FullViz3D::orderTree(node* n, int level, map<int, NodeStack> &map){
+	//either head or end node
+	if(n->val == -1) return;
+	map[level].push(n);
+
+
+	orderTree(n->l, level + 1, map);
+	orderTree(n->r, level + 1, map);
 
 }
 
@@ -122,17 +118,19 @@ json FullViz3D::WriteLevels(){
 	json levels = json::object();
 	json trees = json::object();
 	json clusters = json::object();
-	
-	
-	int nTrees = (int)_nodes.size(); 
 
+	int nTrees = (int)_nodes.size();
+	
 	//create a node - level map for each tree
 	vector<map<int, NodeStack>> tree_maps;
+	map<int, NodeStack> tree_map;
 	for(int i = 0; i < nTrees; i++){
-		map<int, NodeStack> tree_map;
+		if(_nodes[i] == nullptr){ continue; }
 		orderTree(_nodes[i], 0, tree_map);
 		tree_maps.push_back(tree_map);	
 	}
+	if(tree_maps.empty()) return levels;
+
     auto pr = std::max_element(tree_maps.begin(), tree_maps.end(), [](const auto &x, const auto &y) {
                     return x.rbegin()->first < y.rbegin()->first;
                 });
@@ -146,13 +144,11 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 			//only write if level exists in tree
 			if(l <= tree_maps[t].rbegin()->first){
 				if(_verb > 2) cout << "Tree " << t << ": " << endl;
-			//	node* n = tree_maps[t][l].pop();
-				node* n;// = tree_maps[t][l].pop();
 				int j = 0;
 				//loop through nodes (clusters) at this level for this tree
 				//can't set to empty because need to evaluate last node popped off below
-				while(!tree_maps[t][l].empty()){//n->val != -999){
-					n = tree_maps[t][l].pop();
+				while(!tree_maps[t][l].empty()){
+					node* n = tree_maps[t][l].pop();
 					if(_verb > 2) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
@@ -160,8 +156,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 					}
 					npts += n->points->GetNPoints();
 					clusters["cluster_"+std::to_string(j)] = WriteNode(n);
-				//	n = tree_maps[t][l].pop();
-					j++;	
+					j++;
 				}
 			}
 			trees["tree_"+std::to_string(t)] = clusters;
@@ -172,31 +167,32 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 		levels["level_"+std::to_string(l)] = trees;
 	}
 	_root["levels"] = levels;
+	tree_map.clear();
 	return levels;
 }
 
-json FullViz3D::WriteTree(node* root){
-	json level = json::object();
-	json clusters = json::object();
-	map<int, NodeStack> tree_map;
-	orderTree(root, 0, tree_map);	
-
-	for (int i = 0; i < tree_map.size(); i++)
-		{
-		     cout << "Level " << i << ": " << endl;
-		     tree_map[i].Print();
-		     //for each node in tree_map[i] (NodeStack):
-		     node* t = tree_map[i].pop();
-		     int j = 0;
-		     while(t->val != -999){ 
-		     	clusters["cluster_"+std::to_string(j)] = WriteNode(t);
-		     	t = tree_map[i].pop();
-		     	j++;	
-		     }
-		     level["clusters_level_"+std::to_string(i)] = clusters;
-		}
-
-	json levels = json::object();
-	levels["levels"] = level;
-	return levels;
-}
+//json FullViz3D::WriteTree(node* root){
+//	json level = json::object();
+//	json clusters = json::object();
+//	map<int, NodeStack> tree_map;
+//	orderTree(root, 0, tree_map);	
+//
+//	for (int i = 0; i < tree_map.size(); i++)
+//		{
+//		     cout << "Level " << i << ": " << endl;
+//		     tree_map[i].Print();
+//		     //for each node in tree_map[i] (NodeStack):
+//		     node* t = tree_map[i].pop();
+//		     int j = 0;
+//		     while(t->val != -999){ 
+//		     	clusters["cluster_"+std::to_string(j)] = WriteNode(t);
+//		     	t = tree_map[i].pop();
+//		     	j++;	
+//		     }
+//		     level["clusters_level_"+std::to_string(i)] = clusters;
+//		}
+//
+//	json levels = json::object();
+//	levels["levels"] = level;
+//	return levels;
+//}

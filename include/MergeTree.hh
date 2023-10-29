@@ -6,7 +6,6 @@
 #include "MultivarT.hh"
 #include "RandomSample.hh"
 #include "NodeStack.hh"
-
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
@@ -35,7 +34,10 @@ class MergeTree : BaseTree{
 			_constraint = tree._constraint;
 		}
 
-		virtual ~MergeTree(){ }
+		virtual ~MergeTree(){ 
+			for(auto n : _clusters) delete n;
+			_clusters.clear();
+		}
 
 		void SetThresh(double t){ _thresh = t; }
 
