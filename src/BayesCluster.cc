@@ -216,16 +216,16 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			di = mt->Get(i);
 			dj = mt->Get(j);
 			node* x = mt->CalculateMerge(di, dj);
+		if(_verb > 2){
 		cout << "checking nodes " << i << ": ";
 		di->points->Print();
 		cout << " and " << j << ": ";
 		dj->points->Print();
 		cout << "this rk: " << x->val <<  "\n" << endl;
-			
+		}	
 			list.insert(x);
 		}
 	}
-cout << "big list done" << endl;
 	//do clustering
 	double maxrk = 0.5;
 	while(mt->GetNClusters() > 1){
@@ -238,10 +238,10 @@ cout << "big list done" << endl;
 		node* max = list.fullpop();
 		//check that popped node is not null
 		if(max == nullptr) break;
-		//if(_verb > 2) cout << "max merge rk: " << max->val << " " << endl;
-		cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
+		if(_verb > 2){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
 		max->points->Print();
 		cout << "\n" << endl;
+		}
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
                 if(max->val < maxrk){
                         cout << "reached min rk = " << max->val << " <  " << maxrk << " - final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters" << endl;
@@ -261,28 +261,32 @@ cout << "big list done" << endl;
                         break;
 		}	
 		//print remaining possible merges
+		if(_verb > 2){
 		cout << "remaining possible merges" << endl;
 		list.Print(1);
 		cout << "\n" << endl; 
+		}
 
 		//create new merges with the remaining nodes and the newly formed cluster
 		//this operation is O(N)
-		cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
+		if(_verb > 2) cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
 		node* dl;
 		for(int i = 0; i < mt->GetNAllClusters(); i++){
 			dl = mt->Get(i);
 			//make sure this node exists
 			if(dl == nullptr) continue;
-			cout << "checking pair " << i << " or " << dl->idx << " and max " << max->idx << endl;
+			if(_verb > 2) cout << "checking pair " << i << " or " << dl->idx << " and max " << max->idx << endl;
 			//make sure this is not the max merge cluster - doesn't need to be paired with itself
 			if(dl == max) continue;
 			//calculate merge for node i and max node
 			node* x = mt->CalculateMerge(dl, max);
+		if(_verb > 2){
 		cout << "checking nodes " << i << ": ";
 		dl->points->Print();
 		cout << " and max " << max->idx << ": ";
 		max->points->Print();
 		cout << "this rk: " << x->val << "\n" << endl;
+		}
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
 			//add new potential merge to list
