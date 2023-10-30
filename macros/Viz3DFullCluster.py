@@ -389,7 +389,6 @@ def main():
 		#remake files
 		os.system("rm -rf "+name)	
 	os.mkdir(name)
-	jp.SetWraparound(args.noWrap)	
 	jp.setVerb(args.verbosity)
 	#draw all data - also plots individual clusters with GMM components
 	figs = jp.plotDataset(int(args.nlevels),args.data)
