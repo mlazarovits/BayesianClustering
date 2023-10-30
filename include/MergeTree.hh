@@ -126,8 +126,8 @@ class MergeTree : BaseTree{
 			double d = fabs(cent1 - cent2);
 			//update 3D nearest neighbors for mirror point calculation
 			double dist2d = _euclidean_2d(i, j);
-			if(dist3d < i->nndist) i->nndist = dist2d;
-			if(dist3d < j->nndist) j->nndist = dist2d;	
+			if(dist2d < i->nndist) i->nndist = dist2d;
+			if(dist2d < j->nndist) j->nndist = dist2d;	
 
 	
 			double phi = 0;
