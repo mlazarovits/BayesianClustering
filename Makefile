@@ -1,16 +1,21 @@
 #include ROOT cflags and libraries
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTGLIBS   = $(shell root-config --glibs)
-
-#set c(xx)flags and libraries
-CXXFLAGS    = $(ROOTCFLAGS)
+#include pythia cflags and libraries
+PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia-config --cflags)
+PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia-config --libs) 
 
 #specify compiler
 CXX         = g++
 CXX	   += -frounding-math
+
+#set c(xx)flags 
+CXXFLAGS    = $(ROOTCFLAGS)
+CXXFLAGS   += $(PYTHIACFLAGS) 
  
 #add libraries
 GLIBS       = $(ROOTGLIBS)
+GLIBS      += $(PYTHIAGLIBS)
 
 #add eigen include path
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
@@ -31,7 +36,11 @@ lpc:   GLIBS       += -lCGAL -lCGAL_Core
 #example from KUEWkinoAnalysis makefile #lpc:   GLIBS += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_5/external/slc7_amd64_gcc700/lib/ -lvdt -lboost_program_options -lboost_filesystem -lboost_regex -lboost_system
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
-lpc:   GLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+#pythia8 for event generation
+
+local: CXXFLAGS    += -I/Users/margaretlazarovits/pythia8307/include/
+local: GLIBS       += -L/Users/margaretlazarovits/pythia8307/lib/ -lpythia8
 
 #specify local paths
 INCLUDEDIR  = ./include/
