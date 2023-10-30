@@ -207,7 +207,6 @@ int main(int argc, char *argv[]){
 		testjet.add(rhs[i]);
 	}
 
-	cout << testjet.GetNConstituents() << " rechits in event " << evt << endl;
 
 	/*
 	map<string, Matrix> params;
