@@ -20,9 +20,6 @@ class JsonPlotter:
 	def setVerb(self, v):
 		self._v = v
 
-	def SetWraparound(self, w):
-		self.wraparound = w
-
 	def SetViz(self, v):
 		self.viz = v
 
@@ -260,13 +257,6 @@ class JsonPlotter:
 					color = colors[cl], width = 30)), showlegend=True, name = name)
 
 		gr_arr = []
-		#transform the data points into local coordinates + have color be energy scale
-		#if(self.wraparound is True):
-		#	for i in y:
-		#		if i < 0:
-		#			i += 2*np.pi
-		#		if i > 2*np.pi:
-		#			i -= 2*np.pi
 
 		avg_x = np.mean(x)
 		avg_y = np.mean(y)
@@ -380,7 +370,6 @@ def main():
 	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0,type=int)
 	parser.add_argument('--verbosity','-v',help='verbosity',default=0,type=int)
 	parser.add_argument('--noViz',action='store_true',help='do not make plots',default=False)
-	parser.add_argument('--noWrap',action='store_false',help='no (phi) wraparound',default=True)
 	args = parser.parse_args()
 	
 	if args.json is None:
