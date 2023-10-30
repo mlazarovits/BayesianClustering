@@ -207,8 +207,8 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		} 
 		mt->AddLeaf(&_points[i].at(0));
 	//experiment with not adding mirror points for leaves
-	//mirror points are calculated here and CalculateMerge because nn3dist is set with DistanceConstraint (called in calculate merge)
-	//so here nn3dist for all leaves is set to default
+	//mirror points are calculated here and CalculateMerge because nndist is set with DistanceConstraint (called in calculate merge)
+	//so here nndist for all leaves is set to default
 	//in order to set nn3dist for all leaves, that would be another n^2 operation
 	//see if cluster phi's are enough so you only do n^2 once
 	//	mt->CreateMirrorNode(mt->Get(i));
