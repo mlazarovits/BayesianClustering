@@ -45,7 +45,6 @@ json FullViz3D::WriteNode(node* n){
 	data["z"] = z;
 	data["w"] = w;
 	cluster["data"] = data;
-	
 
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
@@ -105,6 +104,10 @@ json FullViz3D::WriteNode(node* n){
 void FullViz3D::orderTree(node* n, int level, map<int, NodeStack> &map){
 	//either head or end node
 	if(n->val == -1) return;
+	//a node that's been deleted
+	if(n == nullptr) return;
+	//a mirror node
+	if(n->points->mean().at(1) < 0.0 || n->points->mean().at(1) >= 2*acos(-1)) return;
 	map[level].push(n);
 
 
@@ -119,15 +122,18 @@ json FullViz3D::WriteLevels(){
 	json trees = json::object();
 	json clusters = json::object();
 
-	int nTrees = (int)_nodes.size();
+	int nTrees = 0;
 	
 	//create a node - level map for each tree
 	vector<map<int, NodeStack>> tree_maps;
-	map<int, NodeStack> tree_map;
-	for(int i = 0; i < nTrees; i++){
+	for(int i = 0; i < (int)_nodes.size(); i++){
+		map<int, NodeStack> tree_map;
 		if(_nodes[i] == nullptr){ continue; }
+		//a mirror node
+		if(_nodes[i]->points->mean().at(1) < 0.0 || _nodes[i]->points->mean().at(1) >= 2*acos(-1)) continue;
 		orderTree(_nodes[i], 0, tree_map);
-		tree_maps.push_back(tree_map);	
+		tree_maps.push_back(tree_map);
+		nTrees++;	
 	}
 	if(tree_maps.empty()) return levels;
 
@@ -143,13 +149,15 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 		for(int t = 0; t < nTrees; t++){
 			//only write if level exists in tree
 			if(l <= tree_maps[t].rbegin()->first){
-				if(_verb > 2) cout << "Tree " << t << ": " << endl;
+				if(_verb > 2) cout << "  Tree " << t << ": " << endl;
 				int j = 0;
 				//loop through nodes (clusters) at this level for this tree
 				//can't set to empty because need to evaluate last node popped off below
 				while(!tree_maps[t][l].empty()){
 					node* n = tree_maps[t][l].pop();
-					if(_verb > 2) cout << "node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
+					if(_verb > 2) cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
+					//a mirror node
+					if(n->points->mean().at(1) < 0.0 || n->points->mean().at(1) >= 2*acos(-1)) continue;
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
 						tree_maps[t][l+1].push(n);
@@ -167,32 +175,7 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 		levels["level_"+std::to_string(l)] = trees;
 	}
 	_root["levels"] = levels;
-	tree_map.clear();
+	//tree_map.clear();
 	return levels;
 }
 
-//json FullViz3D::WriteTree(node* root){
-//	json level = json::object();
-//	json clusters = json::object();
-//	map<int, NodeStack> tree_map;
-//	orderTree(root, 0, tree_map);	
-//
-//	for (int i = 0; i < tree_map.size(); i++)
-//		{
-//		     cout << "Level " << i << ": " << endl;
-//		     tree_map[i].Print();
-//		     //for each node in tree_map[i] (NodeStack):
-//		     node* t = tree_map[i].pop();
-//		     int j = 0;
-//		     while(t->val != -999){ 
-//		     	clusters["cluster_"+std::to_string(j)] = WriteNode(t);
-//		     	t = tree_map[i].pop();
-//		     	j++;	
-//		     }
-//		     level["clusters_level_"+std::to_string(i)] = clusters;
-//		}
-//
-//	json levels = json::object();
-//	levels["levels"] = level;
-//	return levels;
-//}
