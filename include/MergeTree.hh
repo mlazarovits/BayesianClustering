@@ -64,8 +64,6 @@ class MergeTree : BaseTree{
 		//assuming Dirichlet Process Model (sets priors)
 		node* CalculateMerge(node *l, node* r);
 		double CalculateMerge(int i, int j);
-		node* Merge(node* l, node* r);
-		void Merge(int i, int j);
 
 		void Remove(node *l){
 			//remove nodes l and r (that combine merge x)
@@ -127,7 +125,7 @@ class MergeTree : BaseTree{
 			//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
 			double d = fabs(cent1 - cent2);
 			//update 3D nearest neighbors for mirror point calculation
-			double dist3d = _euclidean_3d(i, j);
+			double dist3d = _euclidean_2d(i, j);
 			if(dist3d < i->nn3dist) i->nn3dist = dist3d;
 			if(dist3d < j->nn3dist) j->nn3dist = dist3d;	
 
@@ -163,12 +161,16 @@ class MergeTree : BaseTree{
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
+			x->model = nullptr;
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
 			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			int n = _clusters.size();
 			x->idx = n-1;
+			
+			x->nn3dist = 1e300;
+			x->mirror = nullptr;
 			_clusters[n-1] = x;
 		}
 
@@ -218,6 +220,14 @@ class MergeTree : BaseTree{
 		}
 
 
+
+		double _euclidean_2d(node* i, node* j){
+			double deta = i->points->mean().at(0) - j->points->mean().at(0);
+			double dphi = i->points->mean().at(1) - j->points->mean().at(1);
+
+			return sqrt(deta*deta + dphi*dphi);
+
+		}
 		double _euclidean_3d(node* i, node* j){
 			double deta = i->points->mean().at(0) - j->points->mean().at(0);
 			double dphi = i->points->mean().at(1) - j->points->mean().at(1);
@@ -226,7 +236,6 @@ class MergeTree : BaseTree{
 			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
 
 		}
-
 
 	private:
 		//keep list of nodes since tree is built bottom up

@@ -29,23 +29,21 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->d = d;
 	x->l = l;
 	x->r = r;
+	double nn3dist = 1e300;
+	//find nn3dist for x (should be O(n) operation)
+	for(int i = 0; i < (int)_clusters.size(); i++){
+		if(_clusters[i] == nullptr) continue;
+		if(_euclidean_2d(l, r) < nn3dist) x->nn3dist = _euclidean_2d(l, r);
+	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
 	double p_dk_h1 = exp(Evidence(x));
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
 	double rk = pi*p_dk_h1/p_dk_tk;
-//cout << "pi: " << pi << " p_dk_h1: " << p_dk_h1 << " l->prob_tk: " << l->prob_tk << " l->d: " << l->d << " r->prob_tk: " << r->prob_tk << " r->d: " << r->d << " d: " << d << " p_dk_tk: " << p_dk_tk << " rk: " << rk << " points " << endl;
-//points->Print();
-//cout << " with val: " << rk << endl;	
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	
-//	if(isnan(rk)) cout << "rk is nan - pi " << pi << " p_dk_h1: " << p_dk_h1 << " p_dk_tk: " << p_dk_tk << endl;
-	//cout << "MergeTree::CalculateMerge - merging " << l->name << " + " << r->name << " val: " << rk << endl;	
-//	x->name = "("+l->name + "+"  + r->name+")";
-//cout << "MergeTree::Merge - end" << endl;
-
 	return x;
 }
 
@@ -57,23 +55,6 @@ double MergeTree::CalculateMerge(int i, int j){
 	if(n2 == nullptr) cout << "cluster for " << j << " null" << endl;
 	node* x = CalculateMerge(n1, n2);
 	return x->val;	
-}
-
-void MergeTree::Merge(int i, int j){
-	node* n1 = Get(i);
-	node* n2 = Get(j);
-	Merge(n1, n2);	
-}
-
-
-node* MergeTree::Merge(node* l, node* r){
-	node* x = CalculateMerge(l, r);
-	x->l = l;
-	x->r = r;
-	Remove(l);
-	Remove(r);
-	Insert(x);
-	return x;
 }
 
 
@@ -102,12 +83,17 @@ void MergeTree::CreateMirrorNode(node* x){
 	//require absense of mirror
 	if(x->mirror != nullptr) return;
 
+
 	// check that we are sufficiently close to the border --
 	//// i.e. closer than nearest neighbour distance.
 	//// we actually sqrt the distance this time so no need to square phi :)
 	double nndist = x->nn3dist;
+cout << "checking to see if mirror point is necessary for point " << x->idx << " with nndist " << nndist << " and phi " << phi << endl;
 	if(phi >= nndist && (twopi - phi) >= nndist) return;
 	if(_verb > 1) cout << "creating mirror point for point with phi center: " << phi << " with nndist: " << nndist << endl;
+ cout << "!!!!!!!!!!creating mirror point for " << x->idx << " with nndist: " << nndist << " and points" << endl;
+	x->points->Print();
+cout << "phi: " << phi << endl;
 
 	//copy node x into node y so it has all the same info
 	node* y = new node(*x);

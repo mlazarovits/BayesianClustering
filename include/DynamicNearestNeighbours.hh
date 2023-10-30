@@ -191,7 +191,11 @@ public:
     node* n1 = NearestNeighbourProbNode(index1);
     node* n2 = NearestNeighbourProbNode(index2);
 
-    _merge_tree->Merge(n1, n2);
+    //update merge tree with selected merge
+    node* newnode = _merge_tree->CalculateMerge(n1, n2);
+    _merge_tree->Insert(newnode);
+    _merge_tree->Remove(n1);
+    _merge_tree->Remove(n2);
 
     RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
 		       indices_of_updated_neighbours);
