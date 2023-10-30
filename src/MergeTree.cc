@@ -29,11 +29,11 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->d = d;
 	x->l = l;
 	x->r = r;
-	double nn3dist = 1e300;
-	//find nn3dist for x (should be O(n) operation)
+	double nndist = 1e300;
+	//find nndist for x (should be O(n) operation)
 	for(int i = 0; i < (int)_clusters.size(); i++){
 		if(_clusters[i] == nullptr) continue;
-		if(_euclidean_2d(l, r) < nn3dist) x->nn3dist = _euclidean_2d(l, r);
+		if(_euclidean_2d(l, r) < nndist) x->nndist = _euclidean_2d(l, r);
 	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
@@ -87,7 +87,7 @@ void MergeTree::CreateMirrorNode(node* x){
 	// check that we are sufficiently close to the border --
 	//// i.e. closer than nearest neighbour distance.
 	//// we actually sqrt the distance this time so no need to square phi :)
-	double nndist = x->nn3dist;
+	double nndist = x->nndist;
 cout << "checking to see if mirror point is necessary for point " << x->idx << " with nndist " << nndist << " and phi " << phi << endl;
 	if(phi >= nndist && (twopi - phi) >= nndist) return;
 	if(_verb > 1) cout << "creating mirror point for point with phi center: " << phi << " with nndist: " << nndist << endl;

@@ -11,11 +11,13 @@ class BaseTree{
 			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr; //_z->color = -1; 
 			_z->points = new PointCollection();
 			_z->idx = -1;
+			_z->nndist = -999;
 
 			_head = (struct node*)malloc(sizeof *_head);
 			_head->l = _head; _head->r = _head; _head->val = -1; _head->d = -1; _head->prob_tk = -1; _head->model = nullptr;
 			_head->points = new PointCollection();
 			_head->idx = -1;
+			_head->nndist = -999;
 		}
 		virtual ~BaseTree(){ free(_head); free(_z); }
 		//node structure
@@ -34,7 +36,7 @@ class BaseTree{
 			//probability of being in tree T_k p(D_k | T_k)
 			double prob_tk = -999;
 			//3D distance to nearest neighbor
-			double nn3dist = -999;
+			double nndist = 1e300;
 			//mirror node
 			struct node* mirror = nullptr;
 			int idx = -999; //index of node in merge tree
@@ -48,7 +50,7 @@ class BaseTree{
 				d = n.d;
 				model = n.model;
 				prob_tk = n.prob_tk;
-				nn3dist = n.nn3dist;
+				nndist = n.nndist;
 				mirror = n.mirror;
 				idx = n.idx;
 			}

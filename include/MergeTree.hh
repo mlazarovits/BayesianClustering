@@ -125,9 +125,9 @@ class MergeTree : BaseTree{
 			//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
 			double d = fabs(cent1 - cent2);
 			//update 3D nearest neighbors for mirror point calculation
-			double dist3d = _euclidean_2d(i, j);
-			if(dist3d < i->nn3dist) i->nn3dist = dist3d;
-			if(dist3d < j->nn3dist) j->nn3dist = dist3d;	
+			double dist2d = _euclidean_2d(i, j);
+			if(dist3d < i->nndist) i->nndist = dist2d;
+			if(dist3d < j->nndist) j->nndist = dist2d;	
 
 	
 			double phi = 0;
@@ -169,7 +169,7 @@ class MergeTree : BaseTree{
 			int n = _clusters.size();
 			x->idx = n-1;
 			
-			x->nn3dist = 1e300;
+			x->nndist = 1e300;
 			x->mirror = nullptr;
 			_clusters[n-1] = x;
 		}

@@ -144,7 +144,8 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-	if(_verb > 1) cout << "updating map" << endl;
+	cout << "added pt # " << pt3 << endl;
+		if(_verb > 1) cout << "updating map" << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
@@ -205,7 +206,12 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			return _trees;
 		} 
 		mt->AddLeaf(&_points[i].at(0));
-		mt->CreateMirrorNode(mt->Get(i));
+	//experiment with not adding mirror points for leaves
+	//mirror points are calculated here and CalculateMerge because nn3dist is set with DistanceConstraint (called in calculate merge)
+	//so here nn3dist for all leaves is set to default
+	//in order to set nn3dist for all leaves, that would be another n^2 operation
+	//see if cluster phi's are enough so you only do n^2 once
+	//	mt->CreateMirrorNode(mt->Get(i));
 	}
 
 	int it = 0;
@@ -238,7 +244,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		node* max = list.fullpop();
 		//check that popped node is not null
 		if(max == nullptr) break;
-		if(_verb > 2){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
+		if(_verb > 1){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
 		max->points->Print();
 		cout << "\n" << endl;
 		}
@@ -247,7 +253,9 @@ const vector<node*>& BayesCluster::_naive_cluster(){
                         cout << "reached min rk = " << max->val << " <  " << maxrk << " - final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters" << endl;
                         break;
                 }
-		
+	
+	
+	//	mt->Merge(max->l, max->r);		
 		//update merge tree with selected merge
 		mt->Insert(max);
 		//make new mirror node for max if necessary
@@ -261,7 +269,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
                         break;
 		}	
 		//print remaining possible merges
-		if(_verb > 2){
+		if(_verb > 1){
 		cout << "remaining possible merges" << endl;
 		list.Print(1);
 		cout << "\n" << endl; 
@@ -269,7 +277,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 
 		//create new merges with the remaining nodes and the newly formed cluster
 		//this operation is O(N)
-		if(_verb > 2) cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
+		if(_verb > 1) cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
 		node* dl;
 		for(int i = 0; i < mt->GetNAllClusters(); i++){
 			dl = mt->Get(i);
@@ -280,7 +288,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			if(dl == max) continue;
 			//calculate merge for node i and max node
 			node* x = mt->CalculateMerge(dl, max);
-		if(_verb > 2){
+		if(_verb > 1){
 		cout << "checking nodes " << i << ": ";
 		dl->points->Print();
 		cout << " and max " << max->idx << ": ";
