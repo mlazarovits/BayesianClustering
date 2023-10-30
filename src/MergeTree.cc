@@ -88,12 +88,9 @@ void MergeTree::CreateMirrorNode(node* x){
 	//// i.e. closer than nearest neighbour distance.
 	//// we actually sqrt the distance this time so no need to square phi :)
 	double nndist = x->nndist;
-cout << "checking to see if mirror point is necessary for point " << x->idx << " with nndist " << nndist << " and phi " << phi << endl;
+	if(_verb > 1) cout << "checking to see if mirror point is necessary for point " << x->idx << " with nndist " << nndist << " and phi " << phi << endl;
 	if(phi >= nndist && (twopi - phi) >= nndist) return;
-	if(_verb > 1) cout << "creating mirror point for point with phi center: " << phi << " with nndist: " << nndist << endl;
- cout << "!!!!!!!!!!creating mirror point for " << x->idx << " with nndist: " << nndist << " and points" << endl;
-	x->points->Print();
-cout << "phi: " << phi << endl;
+	if(_verb > 1) cout << "creating mirror point for point " << x->idx << "  with phi center: " << phi << " with nndist: " << nndist << endl;
 
 	//copy node x into node y so it has all the same info
 	node* y = new node(*x);

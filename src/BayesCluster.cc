@@ -144,7 +144,6 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-	cout << "added pt # " << pt3 << endl;
 		if(_verb > 1) cout << "updating map" << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
@@ -360,7 +359,7 @@ void BayesCluster::_subcluster(string oname){
 
 	VarClusterViz3D cv3D(algo);
 	if(viz){
-		cv3D.SetVerbosity(_verb);
+		cv3D.SetVerbosity(3);
 		cv3D.UpdatePosterior();
 		cv3D.WriteJson(oname+"/it0");
 	}

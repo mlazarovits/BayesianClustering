@@ -255,9 +255,9 @@ cout << "obj: " << obj << endl;
 
 
 	//to debug - use less rechits
-	int nrhs = 8;
-	rhs.resize(nrhs);
-	rhs.shrink_to_fit();
+	//int nrhs = 50;
+	//rhs.resize(nrhs);
+	//rhs.shrink_to_fit();
 
 
 	
