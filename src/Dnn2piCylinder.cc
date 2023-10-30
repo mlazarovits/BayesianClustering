@@ -162,12 +162,10 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
 
 
   vector<PointCollection> new_plane_points;
-  //vector<EtaPhi> new_plane_points;
   //manually add node to _merge_tree here because the mirror point (cluster) needs to have
   //the same BHC values as it's originator
   for (size_t i = 0; i < plane_indices.size(); i++) {
     int ip = plane_indices[i]; // plane index
-    //EtaPhi position = _DNN->etaphi(ip);
     PointCollection pts = _DNN->points(ip);
     double phi = pts.mean().at(1);
 
@@ -175,9 +173,6 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
     int ic = _cylinder_index_of_plane_vertex[ip];
     if (_mirror_info[ic].mirror_index != INEXISTENT_VERTEX) {continue;}
-
-    //printf("%3d %3d %10.5f %10.5f %3d\n",ic, ip, phi, 
-    //	   _DNN->NearestNeighbourDistance(ip),_DNN->NearestNeighbourIndex(ip));
 
 
     // check that we are sufficiently close to the border --
@@ -187,26 +182,20 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // of time ... )
     double nndist = _DNN->NearestNeighbourDistance(ip); 
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
- if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
-//cout << "getting pts: " << _merge_tree->Get(ip)->points->GetNPoints() << " " << pts.GetNPoints() << endl;
-   //copy node
-   node* x = new node(*_merge_tree->Get(ip));
-  // cout << "copied rk val: " << x->val << " copied pts: " << x->points->GetNPoints() << endl; 
+    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
 
+    //copy node
+    node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
-//cout << "adding mirrored pointcollection for pc with mean " << pts.mean().at(0) << ", " << pts.mean().at(1) << " original NNdistance: " << nndist << endl;
     x->points = newpts;
-//cout << "n pts in new node: " << x->points->GetNPoints() << endl;
 
-    //new_plane_points.push_back(_remap_phi(position));
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
     //add new mirror node to be clustered
     _merge_tree->Insert(x);
-//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in inserted node: "  << _merge_tree->Get(_merge_tree->GetNClusters() - 1)->points->GetNPoints() << endl;
   }
 
   vector<int> indices_to_remove; // empty
@@ -333,9 +322,6 @@ cout << "adding points" << endl;
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
 			     plane_indices_added, updated_plane_neighbours);
-//update merge tree
-//  _merge_tree = _DNN->GetMergeTree();
- 
 
 if(_verbose){ 
   cout << "added points: ";
@@ -344,6 +330,10 @@ if(_verbose){
     cout << *it << " mirror? " << _cylinder_index_of_plane_vertex[*it] << endl;
   }
   vector<int> extra_updated_plane_neighbours;
+  //if this merge clusters all points (ie is the last clustering) do not create mirror points
+  if(_merge_tree->GetNClusters() == 1) return;
+
+
   _CreateNecessaryMirrorPoints(updated_plane_neighbours,
 			       extra_updated_plane_neighbours);
 
