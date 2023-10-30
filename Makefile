@@ -2,8 +2,8 @@
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTGLIBS   = $(shell root-config --glibs)
 #include pythia cflags and libraries
-PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia-config --cflags)
-PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia-config --libs) 
+PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
+PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
 
 #specify compiler
 CXX         = g++
@@ -37,10 +37,6 @@ lpc:   GLIBS       += -lCGAL -lCGAL_Core
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
 lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
-#pythia8 for event generation
-
-local: CXXFLAGS    += -I/Users/margaretlazarovits/pythia8307/include/
-local: GLIBS       += -L/Users/margaretlazarovits/pythia8307/lib/ -lpythia8
 
 #specify local paths
 INCLUDEDIR  = ./include/
