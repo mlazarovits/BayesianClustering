@@ -7,6 +7,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
+//	cout << n << " points in this merge bw " << l->idx << " and " << r->idx << endl;
 	double d, pi, phidist;
 	if(_constraint){
 		//calculate constraint probability rho
@@ -93,14 +94,22 @@ void MergeTree::CreateMirrorNode(node* x){
 	if(_verb > 1) cout << "creating mirror point for point " << x->idx << "  with phi center: " << phi << " with nndist: " << nndist << endl;
 
 	//copy node x into node y so it has all the same info
-	node* y = new node(*x);
-
+	node* y = (node*)malloc(sizeof *y);
+	y->points = new PointCollection(*x->points);
+	y->l = new node(*x->l);
+	y->r = new node(*x->r);	
+	y->val = x->val;
+	y->d = x->d;
+	y->model = x->model;
+	y->prob_tk = x->prob_tk;
+	y->nndist = x->nndist;
 	//map points across 0-2pi boundary
 	_remap_phi(*y->points);
 
 	//set x's mirror node to y and vice versa
 	x->mirror = y;
 	y->mirror = x;
+
 	
 	//add mirror point to list of clusters
 	Insert(y);

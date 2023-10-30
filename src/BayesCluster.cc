@@ -165,8 +165,6 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		if(_trees[i] == nullptr) continue;
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
-			//trees.erase(trees.begin()+i);
-			//i--;
 			continue; }
 		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
 		_trees[i]->points->Print();
@@ -244,7 +242,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//check that popped node is not null
 		if(max == nullptr) break;
 		if(_verb > 1){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
-		max->points->Print();
+		//max->points->Print();
 		cout << "\n" << endl;
 		}
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
@@ -270,16 +268,15 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//print remaining possible merges
 		if(_verb > 1){
 		cout << "remaining possible merges" << endl;
-		list.Print(1);
+		list.Print(11);
 		cout << "\n" << endl; 
 		}
 
 		//create new merges with the remaining nodes and the newly formed cluster
 		//this operation is O(N)
 		if(_verb > 1) cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
-		node* dl;
 		for(int i = 0; i < mt->GetNAllClusters(); i++){
-			dl = mt->Get(i);
+			node* dl = mt->Get(i);
 			//make sure this node exists
 			if(dl == nullptr) continue;
 			if(_verb > 2) cout << "checking pair " << i << " or " << dl->idx << " and max " << max->idx << endl;
@@ -289,10 +286,10 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			node* x = mt->CalculateMerge(dl, max);
 		if(_verb > 1){
 		cout << "checking nodes " << i << ": ";
-		dl->points->Print();
+		//dl->points->Print();
 		cout << " and max " << max->idx << ": ";
-		max->points->Print();
-		cout << "this rk: " << x->val << "\n" << endl;
+		//max->points->Print();
+		cout << "this rk: " << x->val << " with " << dl->points->GetNPoints() + max->points->GetNPoints() << " total points\n" << endl;
 		}
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
@@ -314,11 +311,10 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		if(_trees[i] == nullptr) continue;
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
-			//trees.erase(trees.begin()+i);
-			//i--;
 			continue; }
 		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-		_trees[i]->points->Print();
+		cout << "with center" << endl; _trees[i]->points->mean().Print();
+		//_trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
@@ -359,7 +355,7 @@ void BayesCluster::_subcluster(string oname){
 
 	VarClusterViz3D cv3D(algo);
 	if(viz){
-		cv3D.SetVerbosity(3);
+		cv3D.SetVerbosity(_verb);
 		cv3D.UpdatePosterior();
 		cv3D.WriteJson(oname+"/it0");
 	}
