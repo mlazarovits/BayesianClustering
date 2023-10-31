@@ -186,6 +186,7 @@ int main(int argc, char *argv[]){
 		fname += "_GMSB_v9";
 	}
 
+	//in_file = "/Users/margaretlazarovits/BayesianClustering/rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root"
 	if(viz){
 		if(gSystem->AccessPathName((fname).c_str())){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
