@@ -95,6 +95,9 @@ class BasePDFMixture : public BasePDF{
 			//erase corresponding number of associated points (N_k)
 			m_norms.erase(m_norms.begin()+j);
 			//don't need to update m_coeffs - only used for normal EM algorithm
+			//if this is removing the last cluster
+			//break and do resetting of posterior in UpdateModel()
+			if(m_k - 1 == 0) return;
 			//update dimensions of posterior
 			Matrix newpost = Matrix(m_n,m_k-1);
 			int l = 0;
@@ -104,6 +107,7 @@ class BasePDFMixture : public BasePDF{
 					newpost.SetEntry(m_post.at(n,k),n,k-l);
 				}
 			}
+		
 			m_post = newpost;
 			//update number of clusters
 			m_k--;
@@ -122,6 +126,9 @@ class BasePDFMixture : public BasePDF{
 						cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
+					//if the above call removes all clusters
+					//break and continue to set single gaussian
+					if(m_k == 1) break;
 					k--; //make sure to check following model
 				}
 			}
@@ -138,6 +145,7 @@ class BasePDFMixture : public BasePDF{
 			//update effective counts + corresponding parameters - the corresponding 
 			//entry r_nk is the point weight
 			UpdateVariationalParameters();
+
 		}
 
 
