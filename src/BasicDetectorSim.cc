@@ -57,3 +57,54 @@ void BasicDetectorSim::SimTTbar(){
 	_pythia.init();
   
 }
+
+
+
+
+void BasicDetectorSim::SimulateEvents(){
+	double maxeta = 1.749;
+	double e = 0;
+	//(nominal values of) constants for energy resolution
+	//these are from CMS TDR Fig. 1.7
+	//the more conservative values are taken (s.t. sig/E is larger than other values)
+	double s = 3.63; //stochastic term
+	double n = 124; //(MeV), noise term
+	double c = 0.26; //constant term
+	double e_sig = 1; //sigma of energy resolution smearing
+
+	for(int i = 0; i < _nevts; i++){
+		if(!_pythia.next()) continue;
+		//loop through all particles
+		//make sure to only record those that would
+		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
+		for(int p = 0; p < _pythia.event.size(); p++){
+			Particle p = _pythia.event[p];
+			//make sure particle is a photon or electron
+			if(fabs(p.id()) != 11 && fabs(p.id()) != 22) continue;
+			//make sure particle is final-state and (probably) stable
+			if(p.statusHepMC() != 1) continue;
+			//make sure particle is in detector acceptance
+			//since this is a CMS ECAL sim, use CMS ECAL geometry
+			if(fabs(p.eta()) > maxeta) continue;
+			
+			//could do min pt cut here
+			//if i HAD one
+
+			//do energy resolution smearing with a gaussian
+			//centered on nominal energy and with an energy-dependent spread 
+			//that follows equation 1.2 in CMS TDR
+			//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
+			e_sig = sqrt( s*s*sqrt(p.eCalc()) + n*n + c*c*p.eCalc()*p.eCalc() );
+			e = _rs.SampleGaussian(p.eCalc(), e_sig, 1).at(0); //returns a vector, take first (and only) element
+			
+			//save particle four vector
+			
+		
+	
+		}
+
+	}
+
+
+
+}
