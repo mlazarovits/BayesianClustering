@@ -151,9 +151,9 @@ class NodeStack{
 			while(g != _z){ 
 				if(v == 1){
 					cout << "nodes " << g->n->l->idx << ": ";
-					g->n->l->points->Print();
+					if(v > 1) g->n->l->points->Print();
 					cout << " and " << g->n->r->idx << ": ";
-					g->n->r->points->Print();
+					if(v > 1) g->n->r->points->Print();
 				}
 				if(v == 0){
 					cout << "cluster " << i << ": ";

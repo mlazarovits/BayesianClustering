@@ -114,7 +114,7 @@ void MergeTree::CreateMirrorNode(node* x){
 	//add mirror point to list of clusters
 	Insert(y);
 
-
+	if(_verb > 1) cout << "created mirror point " << y->idx << " with mean phi: " <<  y->points->mean().at(1) << " for point " << x->idx << " with mean phi: " << x->points->mean().at(1) << endl;
 }
 
 void MergeTree::_remap_phi(PointCollection& points){

@@ -22,7 +22,7 @@ using std::endl;
 int main(int argc, char *argv[]){
 
 	
-	string fname = "fullcluster";
+	string fname = "";
 	string in_file = "rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
@@ -151,9 +151,9 @@ int main(int argc, char *argv[]){
   	}
 
 	if(obj == 0)
-		fname = "jets";
+		fname += "_jets";
 	else if(obj == 1)
-		fname = "pho";
+		fname += "_pho";
 	else{
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
 		return -1;
@@ -255,7 +255,7 @@ cout << "obj: " << obj << endl;
 
 
 	//to debug - use less rechits
-	//int nrhs = 20;
+	//int nrhs = 100;
 	//rhs.resize(nrhs);
 	//rhs.shrink_to_fit();
 

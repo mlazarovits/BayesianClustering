@@ -66,18 +66,12 @@ class MergeTree : BaseTree{
 		double CalculateMerge(int i, int j);
 
 		void Remove(node *l){
-			//remove nodes l and r (that combine merge x)
-			auto it = find(_clusters.begin(), _clusters.end(), l);
-			int idx;
-			// If element was found
-			if (it != _clusters.end()){ 
-				idx = it - _clusters.begin();
-			}
-			else
-				return;
-			//_clusters.erase(_clusters.begin()+idx);
+			//remove given node and associated mirror node if exists
+			//also remove mirror node
+			if(l->mirror != nullptr) _clusters[l->mirror->idx] = NULL;
 			//setting the node to null matches the implementation in the FastJet code (see DnnPlane)
-			_clusters[idx] = NULL;
+			_clusters[x->idx] = NULL;
+			//_clusters[idx] = NULL;
 		}
 
 		void Remove(int i){ _clusters[i] = NULL; }

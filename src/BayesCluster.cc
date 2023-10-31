@@ -243,7 +243,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		if(max == nullptr) break;
 		if(_verb > 1){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
 		//max->points->Print();
-		cout << "\n" << endl;
+	//	cout << "\n" << endl;
 		}
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
                 if(max->val < maxrk){
@@ -268,8 +268,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//print remaining possible merges
 		if(_verb > 1){
 		cout << "remaining possible merges" << endl;
-		list.Print(11);
-		cout << "\n" << endl; 
+		//list.Print(1);
 		}
 
 		//create new merges with the remaining nodes and the newly formed cluster
@@ -284,13 +283,13 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			if(dl == max) continue;
 			//calculate merge for node i and max node
 			node* x = mt->CalculateMerge(dl, max);
-		if(_verb > 1){
-		cout << "checking nodes " << i << ": ";
-		//dl->points->Print();
-		cout << " and max " << max->idx << ": ";
-		//max->points->Print();
-		cout << "this rk: " << x->val << " with " << dl->points->GetNPoints() + max->points->GetNPoints() << " total points\n" << endl;
-		}
+		//if(_verb > 1){
+		//cout << "checking nodes " << i << ": ";
+		////dl->points->Print();
+		//cout << " and max " << max->idx << ": ";
+		////max->points->Print();
+		//cout << "this rk: " << x->val << " with " << dl->points->GetNPoints() + max->points->GetNPoints() << " total points\n" << endl;
+		//}
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
 			//add new potential merge to list
