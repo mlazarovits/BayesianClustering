@@ -347,7 +347,7 @@ class JsonPlotter:
 			cl = sample_colorscale("Plotly3",cl_w)
 			cl = np.array([cl,cl]).flatten()
 		
-			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+") with MM coeff "+str(round(op[i],2))
+			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+" GeV) with MM coeff "+str(round(op[i],2))
 
 			#if two eigenvalues are essentially zero, just plot a line
 			if (arad < 1e-7 and brad < 1e-7) or (arad < 1e-7 and crad < 1e-7) or (brad < 1e-7 and crad < 1e-7):

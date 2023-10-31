@@ -17,7 +17,6 @@ def plot_json(jsonfile, dataonly = False):
 	
 	plotname = jsonfile[:jsonfile.find(".json")]
 
-
 	#update axis names
 	x = data['x']
 	y = data['y']
@@ -28,18 +27,19 @@ def plot_json(jsonfile, dataonly = False):
 	gr_arr = []
 
 	
-	for k in range(nClusters):
-		w.append(clusters[str(k)]["color"])
+	#set trace name
+	name = "photon supercluster has "+str(len(x))+" rechits and "+str(nClusters)+" subclusters ("+str(round(sum(w),2))+" GeV)"
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = "Plotly3", showscale = True, line=dict(
-			#size = 4, color = 'rgba(132,242,201,1.)', line=dict(
-				color = w, width = 30)), showlegend = False,
-			))
+		size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = "Plotly3", colorbar=dict(title="Energy (GeV)",x=-0.2)),
+		showlegend = True, name = name
+		))
+	
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
 		fig.update_layout(scene=dict(aspectmode= "auto"),title=plotname, template=None,zaxis_title='time')
+		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
 		return fig
 	
 
@@ -50,7 +50,7 @@ def plot_json(jsonfile, dataonly = False):
 		b = clusters[idx]['eigenVal_1']
 		c = clusters[idx]['eigenVal_2']
 		
-		op = clusters[idx]['mixing_coeff_norm']
+		op = clusters[idx]['mixing_coeff']
 		
 		# compute ellipsoid coordinates on standard basis
 		# e1=(1, 0, 0), e2=(0, 1, 0), e3=(0, 0, 1)
@@ -84,18 +84,17 @@ def plot_json(jsonfile, dataonly = False):
 		if max(w) == min(w):
 			cl_w = (clusters[idx]["color"])# - min(w))/(max(w) - min(w))
 		else:
+			w.append(clusters[idx]["color"])
 			cl_w = (clusters[idx]["color"] - min(w))/(max(w) - min(w))
 		cl = sample_colorscale("Plotly3",cl_w)
 		cl = np.array([cl,cl]).flatten()
 	
+		name = "subcluster "+idx
+		name += " has "+str(len(x))+" points ("+str(round(clusters[idx]["color"],2))+" GeV) with MM coeff "+str(round(op,2))
 		#add ellipsoids
-		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), showscale = False, showlegend = False)),
+		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), 
+			showscale = False, showlegend = True, name = name)),
 
-		#draw means
-		gr_arr.append(go.Scatter3d(x=[x0],y=[y0],z=[z0],mode='markers',marker=dict(
-			size = 3, color = 'rgba(0,0,0,1.)', symbol='x', line=dict(
-				color = 'rgba(0, 0, 0, 1.)', width = 30)), showlegend = False))
-	
 	fig = go.Figure(gr_arr)
 	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
 	#fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
