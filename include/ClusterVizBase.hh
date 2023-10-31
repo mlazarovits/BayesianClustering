@@ -16,32 +16,31 @@ using std::string;
 class ClusterVizBase{
 	public:
 		ClusterVizBase(){ 
-			m_model = nullptr;
-			m_post = Matrix();
-			m_points = new PointCollection();	
-			m_n = 0; //number of points
-			m_k = 0; //number of clusters
-			m_fname = "";	
-			m_cvs = {}; 
+			_model = nullptr;
+			_post = Matrix();
+			_points = new PointCollection();	
+			_n = 0; //number of points
+			_k = 0; //number of clusters
+			_fname = "";	
+			_cvs = {}; 
 			_verb = 0;
 		};
 		ClusterVizBase(BaseCluster* algo, string fname = "test"){
-			m_model = algo->GetModel();
-			m_fname = fname;
-			m_points = algo->GetData();
-			m_n = m_points->GetNPoints();
-			m_k = algo->GetNClusters();
-			m_post = m_model->GetPosterior();
-			m_algo = algo;
+			_model = algo->GetModel();
+			_fname = fname;
+			_points = algo->GetData();
+			_n = _points->GetNPoints();
+			_k = algo->GetNClusters();
+			_post = _model->GetPosterior();
 			_verb = 0;
 		};
 		virtual ~ClusterVizBase(){ 
 		//	cvs.clear();
-		//	delete m_model;
+		//	delete _model;
 		};
 	
 		void UpdatePosterior(){
-			m_post = m_model->GetPosterior();
+			_post = _model->GetPosterior();
 		
 		}	
 		virtual void AddPlot(string plotName = "test") = 0;
@@ -53,15 +52,13 @@ class ClusterVizBase{
 		void SetTransfFactor(double k){ _transf = k; }
 	
 	//protected:
-		BaseCluster* m_algo;
-		Int_t m_palette[100];
-		BasePDFMixture* m_model;
-		Matrix m_post;
-		PointCollection* m_points;	
-		int m_n; //number of points
-		int m_k; //number of clusters
-		string m_fname;	
-		vector<TCanvas*> m_cvs;
+		BasePDFMixture* _model;
+		Matrix _post;
+		PointCollection* _points;	
+		int _n; //number of points
+		int _k; //number of clusters
+		string _fname;	
+		vector<TCanvas*> _cvs;
 		int _verb; 
 		double _transf;
 

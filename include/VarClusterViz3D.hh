@@ -11,13 +11,13 @@ using std::string;
 class VarClusterViz3D : public ClusterVizBase{
 	public:
 		VarClusterViz3D(){
-			m_model = nullptr;
-			m_post = Matrix();
-			m_points = new PointCollection();	
-			m_n = 0; //number of points
-			m_k = 0; //number of clusters
-			m_fname = "";	
-			m_cvs = {}; 
+			_model = nullptr;
+			_post = Matrix();
+			_points = new PointCollection();	
+			_n = 0; //number of points
+			_k = 0; //number of clusters
+			_fname = "";	
+			_cvs = {}; 
 		}
 		VarClusterViz3D(const VarClusterViz3D& viz);
 		VarClusterViz3D(VarEMCluster* algo, string fname = "test");
@@ -28,31 +28,20 @@ class VarClusterViz3D : public ClusterVizBase{
 	
 		void WriteJson(string filename = "test");
 		void UpdatePosterior(){  
-			if(m_n == 0){
+			if(_n == 0){
 				return;
 			}
-			m_post = m_model->GetPosterior();
-			m_k = m_model->GetNClusters();
+			_post = _model->GetPosterior();
+			_k = _model->GetNClusters();
 		}	
 		void SeeData();
 
-		BasePDFMixture* GetModel(){ return m_model; }
-		string GetFileName(){ return m_fname; }
+		BasePDFMixture* GetModel(){ return _model; }
+		string GetFileName(){ return _fname; }
 
 	private:
-		BasePDFMixture* m_model;
-		Matrix m_post;
-		PointCollection* m_points;	
-		int m_n; //number of points
-		int m_k; //number of clusters
-		double m_deltaT; //time slices for individual plots
-		string m_fname;	
-		vector<TCanvas*> m_cvs; 
-		Int_t m_palette[100];
-
-
-		Point m_scale;
-		Point m_shift;
+		Point _scale;
+		Point _shift;
 };
 
 #endif

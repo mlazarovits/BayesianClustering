@@ -20,15 +20,7 @@ class ClusterViz2D : public ClusterVizBase{
 		void Write();
 		void SetPalette(int k);
 
-	private:
-		//BasePDFMixture* m_model;
-		//Matrix m_post;
-		//PointCollection m_points;	
-		//int m_n; //number of points
-		//int m_k; //number of clusters
-		//string m_fname;	
-		//vector<TCanvas*> m_cvs; 
-		//Int_t m_palette[100];
+		Int_t _palette[100];
 };
 
 #endif

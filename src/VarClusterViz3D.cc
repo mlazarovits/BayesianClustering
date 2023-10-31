@@ -26,32 +26,30 @@ using json = nlohmann::json;
 VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){ 
 	if(algo->GetData()->Dim() != 3){
 		cout << "VarClusterViz3D Error: dimensionality of data is not 2-> Dimensionality is " << algo->GetData()->Dim() << "." << endl;
-		m_n = 0;
+		_n = 0;
 		return;
 	}
-	m_model = algo->GetModel();
-	m_fname = fname;
-	m_points = algo->GetData();
-	m_n = m_points->GetNPoints();
-	m_k = algo->GetNClusters();
-	m_post = m_model->GetPosterior();
-	m_deltaT = 0.1;
+	_model = algo->GetModel();
+	_fname = fname;
+	_points = algo->GetData();
+	_n = _points->GetNPoints();
+	_k = algo->GetNClusters();
+	_post = _model->GetPosterior();
 	
 }
 
 VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){ 
-	m_model = viz.m_model;
-	if(m_model->GetData()->Dim() != 3){
-		cout << "VarClusterViz3D Error: dimensionality of data is not 2-> Dimensionality is " << m_model->GetData()->Dim() << "." << endl;
-		m_n = 0;
+	_model = viz._model;
+	if(_model->GetData()->Dim() != 3){
+		cout << "VarClusterViz3D Error: dimensionality of data is not 2-> Dimensionality is " << _model->GetData()->Dim() << "." << endl;
+		_n = 0;
 		return;
 	}
-	m_fname = viz.m_fname;
-	m_points = viz.m_points;
-	m_n = viz.m_n;
-	m_k = viz.m_k;
-	m_post = viz.m_post;
-	m_deltaT = 0.1;
+	_fname = viz._fname;
+	_points = viz._points;
+	_n = viz._n;
+	_k = viz._k;
+	_post = viz._post;
 }
 
 
@@ -74,22 +72,21 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<double> eigenVec_1;
 	vector<double> eigenVec_2;
 	
-	if(m_n == 0){
+	if(_n == 0){
 		return;
 	}
 	vector<Matrix> mus, covs;
-	vector<map<string, Matrix>> cluster_params;
-	for(int i = 0; i < m_k; i++) cluster_params.push_back(m_model->GetParameters(i));
+	map<string, Matrix> cluster_params;
 
-	for(int i = 0; i < m_n; i++){
+	for(int i = 0; i < _n; i++){
 		//eta
-		x.push_back(m_points->at(i).Value(0));
+		x.push_back(_points->at(i).Value(0));
 		//phi
-		y.push_back(m_points->at(i).Value(1));
+		y.push_back(_points->at(i).Value(1));
 		//time
-		z.push_back(m_points->at(i).Value(2));
+		z.push_back(_points->at(i).Value(2));
 		//weight
-		w.push_back(m_points->at(i).Weight());
+		w.push_back(_points->at(i).Weight()*_transf);
 	}
 	data["x"] = json(x);
 	data["y"] = json(y);
@@ -105,18 +102,20 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
 	vector<double> cnts;
-	m_model->GetNorms(cnts);
+	_model->GetNorms(cnts);
 
 
 
 	double x0, y0, z0;	
-	for(int k = 0; k < m_k; k++){
-		x0 = cluster_params[k]["mean"].at(0,0);
-		y0 = cluster_params[k]["mean"].at(1,0);
-		z0 = cluster_params[k]["mean"].at(2,0);
+	for(int k = 0; k < _k; k++){
+		cluster_params = _model->GetPriorParameters(k);
+
+		x0 = cluster_params["mean"].at(0,0);
+		y0 = cluster_params["mean"].at(1,0);
+		z0 = cluster_params["mean"].at(2,0);
 
 
-		cluster_params[k]["cov"].eigenCalc(eigenVals, eigenVecs);
+		cluster_params["cov"].eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
 			eigenVec_0.push_back(eigenVecs[0].at(i,0));
 			eigenVec_1.push_back(eigenVecs[1].at(i,0));
@@ -124,7 +123,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		cluster["mixing_coeff_norm"] = cluster_params[k]["pi"].at(0,0);
+		cluster["mixing_coeff"] = cluster_params["pi"].at(0,0);
 		cluster["mu_x"] = x0;
 		cluster["mu_y"] = y0;
 		cluster["mu_z"] = z0;
@@ -159,16 +158,16 @@ void VarClusterViz3D::WriteJson(string filename){
 
 void VarClusterViz3D::SeeData(){
 	vector<double> x, y, z;
-	for(int i = 0; i < m_n; i++){
+	for(int i = 0; i < _n; i++){
 		//eta
-		x.push_back(m_points->at(i).Value(0));
+		x.push_back(_points->at(i).Value(0));
 		//phi
-		y.push_back(m_points->at(i).Value(1));
+		y.push_back(_points->at(i).Value(1));
 		//time
-		z.push_back(m_points->at(i).Value(2));
+		z.push_back(_points->at(i).Value(2));
 	}
 	
-if(m_n == 0 || x.size() == 0){
+if(_n == 0 || x.size() == 0){
 	cout << "Error: no data to plot." << endl;
 	return;
 }
@@ -194,7 +193,7 @@ if(m_n == 0 || x.size() == 0){
 	
 	gr_data->Draw("p");
 
-	m_cvs.push_back(cv);
+	_cvs.push_back(cv);
 
 }
 

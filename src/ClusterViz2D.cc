@@ -33,28 +33,28 @@ void ClusterViz2D::AddPlot(string plotName){
 	string cvName = "cv_"+plotName;
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	vector<map<string, Matrix>> clusters;
-	for(int i = 0; i < m_k; i++) clusters.push_back(m_model->GetParameters(i));
+	for(int i = 0; i < _k; i++) clusters.push_back(_model->GetParameters(i));
 
 	vector<double> x, y, z;
-	for(int i = 0; i < m_n; i++){
-		x.push_back(m_points->at(i).Value(0.));
-		y.push_back(m_points->at(i).Value(1.));
+	for(int i = 0; i < _n; i++){
+		x.push_back(_points->at(i).Value(0.));
+		y.push_back(_points->at(i).Value(1.));
 		//just using one value of cluster weights - only works for 2 cluster models
 		//weight for column 1 used because
 		//w_i ~ 1 = class 1
 		//w_i ~ 0 = class 0 to match class to idx
-		z.push_back(m_post.at(i,1));	
+		z.push_back(_post.at(i,1));	
 
 	}
 	
 
 	//get palette colors for circles
-	SetPalette(m_k);
+	SetPalette(_k);
 	auto cols = TColor::GetPalette();
 	
 	cv->Update();
 
-	TGraph2D* gr_data = new TGraph2D(m_n, &x[0], &y[0], &z[0]);
+	TGraph2D* gr_data = new TGraph2D(_n, &x[0], &y[0], &z[0]);
 	gr_data->SetTitle(("EM Clustering "+plotName).c_str());
 	gr_data->SetName(("EM Clustering "+plotName).c_str());
 	gr_data->SetMarkerStyle(20);
@@ -99,7 +99,7 @@ void ClusterViz2D::AddPlot(string plotName){
 	int color_idx;
 	//set coords for parameter circles
 	double c_x, c_y, r_x, r_y, theta; //centers, radii, and angle of each ellipse
-	for(int k = 0; k < m_k; k++){
+	for(int k = 0; k < _k; k++){
 		c_x = clusters[k]["mean"].at(0,0);
 		c_y = clusters[k]["mean"].at(1,0);
 		
@@ -125,7 +125,7 @@ void ClusterViz2D::AddPlot(string plotName){
 
 		TEllipse* circle = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
 		TEllipse* circle_bkg = new TEllipse(c_x, c_y, r_x, r_y,0,360, theta);
-		circle->SetLineColor(cols[int(double(k) / double(m_k - 1)*(cols.GetSize() - 1))]);
+		circle->SetLineColor(cols[int(double(k) / double(_k - 1)*(cols.GetSize() - 1))]);
 	
 		circle->SetLineWidth(5);
 	   	circle->SetFillStyle(0);
@@ -137,7 +137,7 @@ void ClusterViz2D::AddPlot(string plotName){
 	}
 
 
-	m_cvs.push_back(cv);
+	_cvs.push_back(cv);
 
 }
 
@@ -146,12 +146,12 @@ void ClusterViz2D::AddPlot(string plotName){
 
 void ClusterViz2D::SeeData(){
 	vector<double> x, y, z;
-	for(int i = 0; i < m_n; i++){
-		x.push_back(m_points->at(i).Value(0));
-		y.push_back(m_points->at(i).Value(1));
+	for(int i = 0; i < _n; i++){
+		x.push_back(_points->at(i).Value(0));
+		y.push_back(_points->at(i).Value(1));
 	}
 	
-if(m_n == 0 || x.size() == 0){
+if(_n == 0 || x.size() == 0){
 	cout << "Error: no data to plot." << endl;
 	return;
 }
@@ -177,19 +177,19 @@ if(m_n == 0 || x.size() == 0){
 	
 	gr_data->Draw("ap");
 
-	m_cvs.push_back(cv);
+	_cvs.push_back(cv);
 
 }
 
 
 
 void ClusterViz2D::Write(){
-	cout << "Writing plot(s) to: " << m_fname << ".root" << endl;
-	TFile* f = TFile::Open((m_fname+".root").c_str(),"RECREATE");	
+	cout << "Writing plot(s) to: " << _fname << ".root" << endl;
+	TFile* f = TFile::Open((_fname+".root").c_str(),"RECREATE");	
 	f->cd();
-	SetPalette(m_k);
-	for(int i = 0; i < m_cvs.size(); i++){
-		m_cvs[i]->Write();
+	SetPalette(_k);
+	for(int i = 0; i < _cvs.size(); i++){
+		_cvs[i]->Write();
 	}
 
 	f->Close();
@@ -235,8 +235,8 @@ void ClusterViz2D::SetPalette(int k){
 		stops.push_back(0.5);
 		stops.push_back(1.0);
 	Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
-	for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
-	//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
+	for (int i=0;i<nColors;i++) _palette[i] = fi+i;
+	//cout << "pal - first color: " << _palette[0] << " last color: " << _palette[99] << endl;
 
 	}
 
@@ -267,8 +267,8 @@ void ClusterViz2D::SetPalette(int k){
 		
 
 		Int_t fi = TColor::CreateGradientColorTable(nMainColors,&stops[0],&red[0],&green[0],&blue[0],nColors);
-		for (int i=0;i<nColors;i++) m_palette[i] = fi+i;
-		//cout << "pal - first color: " << m_palette[0] << " last color: " << m_palette[99] << endl;
+		for (int i=0;i<nColors;i++) _palette[i] = fi+i;
+		//cout << "pal - first color: " << _palette[0] << " last color: " << _palette[99] << endl;
 	
 	}
 
