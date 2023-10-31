@@ -49,6 +49,8 @@ class ClusterVizBase{
 		virtual void SeeData() = 0;	
 
 		void SetVerbosity(int v){ _verb = v; }
+		//for calculating energies s.t. E_n = w_n*k
+		void SetTransfFactor(double k){ _transf = k; }
 	
 	//protected:
 		BaseCluster* m_algo;
@@ -61,6 +63,7 @@ class ClusterVizBase{
 		string m_fname;	
 		vector<TCanvas*> m_cvs;
 		int _verb; 
+		double _transf;
 
 
 

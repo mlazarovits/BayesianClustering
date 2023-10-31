@@ -104,9 +104,9 @@ void VarClusterViz3D::WriteJson(string filename){
 	//set coords for parameter circles
 	vector<Matrix> eigenVecs;
 	vector<double> eigenVals;
+	vector<double> cnts;
+	m_model->GetNorms(cnts);
 
-	vector<double> avgs;
-	m_model->GetAvgWeights(avgs);
 
 
 	double x0, y0, z0;	
@@ -137,7 +137,8 @@ void VarClusterViz3D::WriteJson(string filename){
 		cluster["eigenVec_1"] = json(eigenVec_1);	
 		cluster["eigenVec_2"] = json(eigenVec_2);	
 
-		cluster["color"] = avgs[k];
+		//color for subcluster will be total energy (sum_n E_n*r_nk)
+		cluster["color"] = _transf*cnts[k];
 
 	
 		clusters[std::to_string(k)] = cluster;

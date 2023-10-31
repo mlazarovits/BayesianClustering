@@ -41,8 +41,6 @@ class FullViz3D : public ClusterVizBase{
 		}
 		void SeeData(){ };
 
-		//for calculating energies s.t. E_n = w_n*k
-		void SetTransfFactor(double k){ _transf = k; }
 
 		void AddTrueJets(vector<Jet> jets){
 			json true_jets = json::object();
@@ -65,6 +63,5 @@ class FullViz3D : public ClusterVizBase{
 
 		void orderTree(node* n, int level, map<int, NodeStack> &map);
 
-		double _transf;
 };
 #endif
