@@ -150,20 +150,22 @@ int main(int argc, char *argv[]){
    		return 0;
   	}
 
-	if(obj == 0)
-		fname += "_jets";
+	if(!fname.empty()) fname += "_";
+	if(obj == 0){
+		fname += "jets";
+		if(strat == 0)
+			fname += "NlnN";
+		else if(strat == 1)
+			fname += "N2";
+		else{
+			cout << "Strategy number " << strat << " not supported. Only 0 : NlnN, 1 : N^2." << endl;
+			return -1;
+		}
+	}
 	else if(obj == 1)
-		fname += "_pho";
+		fname += "pho";
 	else{
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
-		return -1;
-	}
-	if(strat == 0)
-		fname += "NlnN";
-	else if(strat == 1)
-		fname += "N2";
-	else{
-		cout << "Strateg number " << strat << " not supported. Only 0 : NlnN, 1 : N^2." << endl;
 		return -1;
 	}
 
@@ -191,10 +193,9 @@ int main(int argc, char *argv[]){
 	t_string.replace(idx,1,"p");	
 
 
-	string extra = "";
 
 
-	fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+extra;
+	fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	if(weighted) fname += "_Eweighted";
