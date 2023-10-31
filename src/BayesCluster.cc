@@ -340,7 +340,6 @@ void BayesCluster::_subcluster(string oname){
 	gmm->InitPriorParameters();
 
 	gmm->SetDataSmear(_smear);
-
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
 	algo->SetThresh(_thresh);
@@ -353,8 +352,12 @@ void BayesCluster::_subcluster(string oname){
 	}
 
 	VarClusterViz3D cv3D(algo);
+	vector<double> ws;
+	_jets[0].GetWeights(ws);
+	double gev = _jets[0].E()/ws[0];
 	if(viz){
 		cv3D.SetVerbosity(_verb);
+		cv3D.SetTransfFactor(gev);
 		cv3D.UpdatePosterior();
 		cv3D.WriteJson(oname+"/it0");
 	}
@@ -366,6 +369,7 @@ void BayesCluster::_subcluster(string oname){
 	//maximum of 50 iterations
 	for(int it = 0; it < 50; it++){
 	
+		algo->SetClusterStart();
 		//E step
 		algo->Estimate();
 		//M step
@@ -392,12 +396,14 @@ void BayesCluster::_subcluster(string oname){
 		}
 		oldLogL = newLogL;
 	}
+	vector<double> norms;
+	gmm->GetNorms(norms);
 	if(_verb > 1){
 		cout << "Estimated parameters" << endl;
 		map<string, Matrix> params;
 		for(int i = 0; i < gmm->GetNClusters(); i++){
 			params = gmm->GetPriorParameters(i);	
-			cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << endl;
+			cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << " eff evts: " << norms[i] << endl;
 			cout << "mean " << i << endl;
 			params["mean"].Print();
 			cout << "cov " << i << endl;
