@@ -151,26 +151,41 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 //get rec hits for a particular photon for an event
 void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	double x, y, z, t, E, eta, phi;
-	int nRHs, nRHs_evt;
 	rhs.clear();
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
+	//make sure photon number is in vector
+	if(pho >= (int)_base->Photon_rhIds->size()) return;
+	int nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	int nRHs_evt = (int)_base->ECALRecHit_ID->size();
+	unsigned int id;
 
 	//set vertex info
 	Point vtx = Point(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
-
-	//make sure photon number is in vector
-	if(pho >= (int)_base->Photon_rhIds->size()) return;
-	nRHs = (int)_base->Photon_rhIds->at(pho).size();
-	nRHs_evt = (int)_base->ECALRecHit_ID->size();
-	unsigned int id;
+	//transfer factor is over all points in event
+	double gev = 0;
 	for(int r = 0; r < nRHs; r++){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		id = _base->Photon_rhIds->at(pho).at(r);
+		for(int j = 0; j < nRHs_evt; j++){
+			if(_base->ECALRecHit_ID->at(j) == id)
+				gev += _base->ECALRecHit_energy->at(j);	
+		}
+	}
+	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
+
+	for(int r = 0; r < nRHs; r++){
+		//add tof = d_pv to time to get correct RH time
+		//t = rh_time - d_rh/c + d_pv/c
+		id = _base->Photon_rhIds->at(pho).at(r);
+		for(int j = 0; j < nRHs_evt; j++){
+			if(_base->ECALRecHit_ID->at(j) == id)
+				gev += _base->ECALRecHit_energy->at(j);	
+		}
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
@@ -179,7 +194,7 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
 				rh.SetRecHitId(id);
-				
+				rh.SetWeight(_base->ECALRecHit_energy->at(j)/gev);	
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
 			
