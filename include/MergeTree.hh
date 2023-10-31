@@ -70,8 +70,7 @@ class MergeTree : BaseTree{
 			//also remove mirror node
 			if(l->mirror != nullptr) _clusters[l->mirror->idx] = NULL;
 			//setting the node to null matches the implementation in the FastJet code (see DnnPlane)
-			_clusters[x->idx] = NULL;
-			//_clusters[idx] = NULL;
+			_clusters[l->idx] = NULL;
 		}
 
 		void Remove(int i){ _clusters[i] = NULL; }
