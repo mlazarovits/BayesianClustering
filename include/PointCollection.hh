@@ -354,7 +354,7 @@ class PointCollection{
 	}
 
 
-	
+	//weighted mean	
 	double Centroid(int d) const{
 		double cent = 0;
 		double sum = 0;
