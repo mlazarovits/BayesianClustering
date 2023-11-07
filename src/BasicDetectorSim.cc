@@ -1,5 +1,6 @@
 #include "BasicDetectorSim.hh"
 #include "TMath.h"
+#include <TFile.h>
 #include <algorithm>
 
 BasicDetectorSim::BasicDetectorSim(){
@@ -18,9 +19,12 @@ BasicDetectorSim::BasicDetectorSim(){
 	_gev = 0; //default
 	_default_transfer = true;
 	_nevts = 1000;
-	//initialize cal
-	for(int i = 0; i < _netacal; i++)
-		_cal.push_back(vector<double>(_nphical));
+	//initialize cal - save e, t, n emissions
+	for(int i = 0; i < _netacal; i++){
+		_cal.push_back({});
+		for(int j = 0; j < _nphical; j++)
+			_cal[i].push_back(Point({0.,0.,0.}));
+	}
 }
 
 //ctor with input pythia cmnd file
@@ -39,9 +43,12 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_rs = RandomSample(); //random sampler
 	_gev = 999; //default
 	_default_transfer = true;
-	//initialize cal
-	for(int i = 0; i < _netacal; i++)
-		_cal.push_back(vector<double>(_nphical));
+	//initialize cal - save e, t, n emissions
+	for(int i = 0; i < _netacal; i++){
+		_cal.push_back({});
+		for(int j = 0; j < _nphical; j++)
+			_cal[i].push_back(Point({0.,0.,0.}));
+	}
 
 	//sets pythia settings by given .cmnd file
 	_pythia.readFile(infile);
@@ -110,55 +117,57 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				continue;
 			if(rp.particle.e() < 0) continue;
 			//fill ecal cell with reco particle
-	cout << "particle " << p << endl;
 			FillCal(rp);
-			
+		
+
+			//TODO: save gen particle information in Jet for histogram	
 			//save gen particle four vector
-		//	_genps.push_back(_pythia.event[p]);
+			_genps.push_back(_pythia.event[p]);
 			//save reco particle four vector
-		//	_recops.push_back(rp);	
+			_recops.push_back(rp);	
 	
 		}
 
 	}
-
+	MakeRecHits();
 }
 
 //updates pvec of p
 //this code is based on ParticlePropagator class in Delphes
 //https://github.com/delphes/delphes/blob/master/modules/ParticlePropagator.cc
 void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
+	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
+	ROOT::Math::XYZTVector Position = rp.Position;
 	//calculate halflength from max eta
 	double theta = 2*atan(exp(-_etamax));
-	double halfLength = _rmax/tan(theta);
+	double halfLength = _rmax/tan(theta); //[m]
 
 	//pythia units are in mm (or mm/c for time, natural units)
 	//convert to cm (or cm/c where c is in cm/ns)
-	double x = rp.particle.xProd() * 1e-1;
-	double y = rp.particle.yProd() * 1e-1;
-	double z = rp.particle.zProd() * 1e-1;
-	//conver to ns: mm/c * 1cm/10 mm = cm/c * cm/ns = ns
-	double t = rp.particle.tProd() * 1e-1 * _sol;
+	//initialized to production coordinates
+	double x = Position.x();
+	double y = Position.y();
+	double z = Position.z();
+
 
 	double q = rp.particle.charge();
 
 	//eta check is done in SimulateEvents but double check with halflength
 	if(fabs(z) > halfLength) return;
 
-	double px = rp.particle.px();
-	double py = rp.particle.py();
-	double pz = rp.particle.pz();
-	double pt = rp.particle.pT();
-	double pt2 = rp.particle.pT2();
-	double e = rp.particle.e();
+	double px = Momentum.px();
+	double py = Momentum.py();
+	double pz = Momentum.pz();
+	double pt = Momentum.pt();
+	double pt2 = Momentum.Perp2();
+	double e = Momentum.e();
 
-	double tmp, tr, tz, x_t, y_t, z_t, r_t;
+	double tmp, tr, tz, x_t, y_t, z_t, r_t, t;
 	double gammam, omega, r, alpha;
 	double x_c, y_c, r_c, vz;
-	double phi0, phid, phit, pio;
-	double xd, yd, zd, td;
+	double phi0, phid, phit, pio, etad;
+	double xd, yd, zd, td, dpv;
 	//uncharged trajectory or no mag field
-	//TODO: check math
 	if(fabs(q) < 1e-9 || fabs(_b) < 1e-9){
 		//calculate time to detector
 		// solve pt2*t^2 + 2*(px*x + py*y)*t - (fRadius2 - x*x - y*y) = 0
@@ -172,10 +181,11 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		y_t = y + py*t;
 		z_t = z + pz*t;	
 	
-		rp.Position.SetCoordinates(x_t, y_t, z_t, rp.Position.T() + t * e);
-		//set to gen values
-		rp.Momentum.SetCoordinates(rp.Momentum.pt(), rp.Momentum.eta(), rp.Momentum.phi(), rp.Momentum.e());
 
+		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p	
+		rp.Position.SetCoordinates(x_t, y_t, z_t, Position.T() + t * e / Momentum.P());
+		//keep momentum at gen values - update eta, phi
+		rp.Momentum.SetCoordinates(pt, rp.Position.eta(), rp.Position.phi(), e); 	
 	}
 	//charged particles in magnetic field
 	else{
@@ -222,7 +232,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		py = pt * TMath::Sin(phid);
 
 		//reset momentum
-		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, rp.Momentum.E());
+		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
 		
 		// 3. time evaluation t = TMath::Min(t_r, t_z)
 		//    t_r : time to exit from the sides
@@ -249,18 +259,10 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		z_t = z + vz * t;
 		r_t = TMath::Hypot(x_t, y_t);
 		
-		//reset spatial coordinates	
-		if(r_t > 0.0)
-		{
-			rp.Position.SetXYZT(x_t * 1.0E3, y_t * 1.0E3, z_t * 1.0E3, rp.Position.T() + t * _sol * 1.0E3);
-		}
-			
-		if(rp.Momentum.e() < 1.05)
-		{
-			cout << "x: " << x_t * 1.0E3 << " y: " <<  y_t * 1.0E3 << " z: " <<  z_t * 1.0E3 << " t: " << rp.Position.T() + t * _sol * 1.0E3 << " e: " << rp.Momentum.e() << endl;
-		}
-			
 
+		//TODO: double check time calculation
+		if(r_t > 0.0)
+			rp.Position.SetCoordinates(x_t, y_t, z_t, Position.T() + t * e / Momentum.P());
 	}
 	
 }
@@ -270,66 +272,51 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 
 
 //fill ecal cells (and create rechits)
-void BasicDetectorSim::FillCal(const RecoParticle& rp){
+void BasicDetectorSim::FillCal(RecoParticle& rp){
 	Particle p = rp.particle;
-	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
-	ROOT::Math::XYZTVector Position = rp.Position;
+	PtEtaPhiEVector Momentum = rp.Momentum;
+	XYZTVector Position = rp.Position;
 	//set energy resolution based on particle type
-	double e, e_cell, e_sig, t_cell;
+	double e, e_cell, e_sig, t_cell, pt;
 	e = Momentum.e();
-	//if particle is a photon or electron
-	//use approx CMS ECAL energy resolution
-	if(fabs(p.id()) != 11 && fabs(p.id()) != 22){
-		//do energy resolution smearing with a gaussian
-		//centered on nominal energy and with an energy-dependent spread 
-		//that follows equation 1.2 in CMS TDR
-		//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
-		e_sig = sqrt( _s*_s*sqrt(e) + _n*_n + _c*_c*e*e );
-	}
-	else{
-		//else if it's a charged hadron
-		//use approx CMS HCAL energy resolution
-		//using formula from Thomson pg. 21
-		e_sig = sqrt(e)*0.5;
-
-	}
+	pt = Momentum.pt();
 
 	double eta, phi;
 	int ieta, iphi;
-	double x, y, z, t, r, theta; //coordinates of JetPoint (rechit)
+	double x, y, z, t; //coordinates of JetPoint (rechit)
+	double dpv, r, theta;
+	double pz = rp.Momentum.pz();
 	//assume all energy gets deposited in ecal
 	//get eta,phi indices from fcn
 	eta = Momentum.eta();
 	phi = Momentum.phi();
 	//get particle time of arrival
 	t = Position.t();
+	//TODO: check below
 	//length in xy plane
 	if(p.isNeutral() || _b < 1e-9)
-		r = Momentum.pt() / _sol;
+		r = Momentum.P() / (Momentum.E()*_sol*t);
 	else
 		r = Momentum.pt() / (p.charge() * _b) / _sol;
-		//TODO: check units	
 
 	_get_etaphi_idx(eta, phi, ieta, iphi);	
-	
 	//simulate shower cell radius
 	//or just take it to be constant :)
-	//the Moliere radius of the CMS ECAL is 2.2 cm = 0.1 is deta or dphi 
-	//two Moliere radii contain 95% of shower's energy deposition (on average)
-	//for constant shower radius, take 2*2.2 to be 2*0.1 (0.1 corresponds to 2.2 cm or 1 deg in deltaPhi or deltaEta in barrel)
+	//the Moliere radius of the CMS ECAL is 2.2 cm = 0.01 is deta or dphi 
+	//this should have ~90% of the shower's energy on average which would correspond to ~2 sigma
 	//assume circular (orthogonal in eta-phi) shower
-	double showrad = 0.2;
+	double showrad = _deta/2.; //same for phi
 
 	//energy threshold for reconstruction
 	double e_thresh = 0.1; //(GeV)
 
 	//check all cells in a (generous) 5x5 grid around the central ieta, iphi cell
-	//ieta-2 < eta < ieta+2
 	double aeta, beta, aphi, bphi, ceta, cphi; //integral bounds
 	int iieta, iiphi;
-	cout << "doing 5x5 grid loop in eta, phi" << endl;
-	for(int i = -2; i < 2; i++){
-		for(int j = -2; j < 2; j++){
+	double etot = 0;
+	int ncell = 2;
+	for(int i = -ncell; i < ncell+1; i++){
+		for(int j = -ncell; j < ncell+1; j++){
 			//get ieta, iphi for cell in grid
 			iieta = ieta+i;
 			iiphi = iphi+j;
@@ -348,63 +335,146 @@ void BasicDetectorSim::FillCal(const RecoParticle& rp){
 			//assume normalized gaussian distribution 
 			//eta integral * phi integral
 			//percent of particle energy in this cell
-			e_cell = e*0.5*( erf((beta - eta)/(showrad*sqrt(2))) - erf((aeta - eta)/(showrad*sqrt(2))) ) * 0.5*( erf((bphi - phi)/(showrad*sqrt(2))) - erf((aphi - phi)/(showrad*sqrt(2))) );
-	
-			if(e_cell < 1e-3) continue;
-cout << std::setprecision(15) << endl;
-cout << "cell energy unsmeared: " << e_cell << " esig: " << e_sig << " e: " << e << " pt " << Momentum.pt() << endl;
-			//smear energy in each cell
-			//make sure e can't be negative
-			do{	
-				cout << "original energy: " << e_cell << endl;
-				e_cell = _rs.SampleGaussian(e_cell, e_sig, 1).at(0); //returns a vector, take first (and only) element
-				cout << "smeared energy: " << e_cell << endl;
-			}while(e_cell < 0);
-	cout << "done while loop" << endl;	
+			e_cell = e*(0.5*( erf((beta - eta)/(showrad*sqrt(2))) - erf((aeta - eta)/(showrad*sqrt(2))) ) * 0.5*( erf((bphi - phi)/(showrad*sqrt(2))) - erf((aphi - phi)/(showrad*sqrt(2))) ));
+			etot += e_cell;
 			//in each cell to find energy deposited
 			//if integral is below some threshold e_cell = 0
 			if(e_cell < e_thresh) continue;
-
 			//add energy to right ieta, iphi cell	
 			//energy has already been smeared
-			_cal[ieta][iphi] += e_cell;
-cout << "added energy to cal" << endl;
-cout << "t: " << t << " calTres: " << _calTres << endl;
-			//update rec hit information
-			//rec hit time is based on nominal particle time
-			//with spread 
-			//t can be negative (early times)
-			t_cell = _rs.SampleGaussian(t, _calTres, 1).at(0);
-cout << "done t sampling" << endl;
+			_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(0)+e_cell, 0);	
+			_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(1)+e_cell*t, 1);	
+			_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(2)+1,2);
 			//get x, y, z based on cell eta phi
+			//from delphes calculations
 			x = r*cos(cphi);
 			y = r*sin(cphi);
 			theta = 2*tan(exp(-ceta));
-			z = r*cos(theta); 
-
-			_cal_rhs.push_back( JetPoint(x, y, z, t_cell) );
-			_cal_rhs[i].SetEnergy(e_cell);	
+			//vz*t
+			z = (pz*_sol/e)*t; 
 			if(_default_transfer) _gev += e_cell;
-		cout << "done particle loop" << endl;
+			//reset spatial coordinates	
+			//adjust time with TOF correction
+			dpv = sqrt( (x - rp.particle.xProd())*(x - rp.particle.xProd()) + 
+				    (y - rp.particle.yProd())*(y - rp.particle.yProd()) +
+				    (z - rp.particle.zProd())*(z - rp.particle.zProd()) )/_sol;
+		
+			//add emission to particle
+			//include tof correction to time
+			JetPoint jet(x, y, z, t + dpv);
+			jet.SetEnergy(e_cell);
+			jet.SetEta(ceta);
+			jet.SetPhi(cphi);
+			rp.AddEmission(jet);
+
+		}
+	}
+	//update reco energy
+	//same pt, eta, phi as before (from CalcTrajectory)
+	rp.Momentum.SetCoordinates(pt, eta, phi, etot); 
+}
+
+
+
+void BasicDetectorSim::MakeRecHits(){
+	if(_default_transfer) _gev /= (double)_cal_rhs.size();
+	double e, t, x, y, z, theta;
+	double e_cell, t_cell;
+	double e_sig, t_sig;
+	double eta, phi;
+	
+	for(int i = 0; i < _netacal; i++){
+		for(int j = 0; j < _nphical; j++){
+			if(_cal[i][j].at(0) == 0.) continue;
+		cout << "filling rec hit i: " << i << " j: " << j << endl;	
+			
+			e = _cal[i][j].at(0);
+			//time in cell ieta, jphi is energy weighted average
+			t = _cal[i][j].at(1)/(_gev*(double)_cal[i][j].at(2));			
+			
+			//do amplitude dependent energy smearing
+			//that follows equation 1.2 in CMS TDR
+			//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
+			e_sig = _s*_s/e + _n*_n/(e*e) + _c*_c;
+			e_sig = e*sqrt(e_sig);
+			//smear total energy in cell
+			//update random sampling range to match
+			//energy in this cell
+			//out to 5 sigma
+			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
+			//smear energy in each cell
+			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			//make sure e can't be negative
+			if(e_cell < 0) e_cell = 0;	
+			
+
+			//do amplitude dependent time smearing
+			//with constant c = 200 ps
+			t_sig = _calTres*_calTres + _n*_n/(e*e);
+			t_sig = sqrt(t_sig);
+			//smear time in cell
+			//t can be negative (early times)
+			//update range to be centered on t, up to 5 sigma (calTres)
+			_rs.SetRange(t - 5*_calTres, t + 5*_calTres);
+			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			
+			
+			//get center eta, phi for cell
+			_get_etaphi(i, j, eta, phi);
+
+			//get x, y, z based on cell eta phi
+			//TODO: check math
+			x = _rmax*cos(phi);
+			y = _rmax*sin(phi);
+			theta = 2*tan(exp(-eta));
+			z = _rmax*cos(theta); 
+
+			JetPoint jet(x, y, z, t_cell);
+			jet.SetEnergy(e_cell);
+			//set eta + phi from center of ecal cell
+			jet.SetEta(eta);
+			jet.SetPhi(phi);
+			_cal_rhs.push_back(jet);
+
 		}
 	}
 
-}
 
+
+
+}
 
 
 //get "Jets" for clustering
 void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
 	rhs.clear();
-	if(_default_transfer) _gev /= (double)_cal_rhs.size();
 	for(int j = 0; j < _cal_rhs.size(); j++){
-		_cal_rhs[j].SetWeight(_cal_rhs[j].e()/_gev);
+		_cal_rhs[j].SetWeight(_cal_rhs[j].E()/_gev);
 		rhs.push_back(Jet(_cal_rhs[j]));
 	}
-
 }
 
+void BasicDetectorSim::GetParticlesMom(vector<PtEtaPhiEVector>& genps, vector<PtEtaPhiEVector>& recops){
+	genps.clear();
+	recops.clear();
+	PtEtaPhiEVector genvec;
+	for(int i = 0; i < _recops.size(); i++){
+		recops.push_back(_recops[i].Momentum);
+		genvec.SetCoordinates(_recops[i].particle.pT(), _recops[i].particle.eta(), _recops[i].particle.phi(), _recops[i].particle.e());
+		genps.push_back(genvec);
+	}
+}
 
+void BasicDetectorSim::GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVector>& recops){
+	genps.clear();
+	recops.clear();
+	XYZTVector genvec;
+	for(int i = 0; i < _recops.size(); i++){
+		recops.push_back(_recops[i].Position);
+		genvec.SetCoordinates(_recops[i].particle.xProd(), _recops[i].particle.yProd(), _recops[i].particle.zProd(), _recops[i].particle.tProd());
+		genps.push_back(genvec);
+	}
+}
 
 
 bool BasicDetectorSim::_in_cell_crack(const RecoParticle& rp){
@@ -435,7 +505,7 @@ void BasicDetectorSim::_get_etaphi_idx(double eta, double phi, int& ieta, int& i
 	if(eta > _etamin && eta < _etamax){
 		//offset for indexing starting at 0
 		ieta = int(((eta - _etamin)/_deta) + 0.5) - 1; 
-      		if(ieta < _netacal) ieta = 0;
+		if(ieta > _netacal) ieta = 0;
 		else if(ieta < 0) ieta = 0;
       
 	}
@@ -444,7 +514,10 @@ void BasicDetectorSim::_get_etaphi_idx(double eta, double phi, int& ieta, int& i
 //get eta-phi center given ieta, iphi cell indices
 void BasicDetectorSim::_get_etaphi(int ieta, int iphi, double& eta, double& phi){
 	//eta      
-	eta = _etamin + _deta/2. + double(ieta-1)*_deta;      
+	eta = _etamin + _deta/2. + double(ieta)*_deta;      
 	//phi 
-	phi = _dphi/2. + double(iphi-1)*_dphi;
+	phi = _dphi/2. + double(iphi)*_dphi;
 }
+
+
+

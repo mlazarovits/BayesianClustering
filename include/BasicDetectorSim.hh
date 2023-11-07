@@ -12,12 +12,15 @@
 #include "Pythia8/Pythia.h"
 #include "Jet.hh"
 #include <Math/Vector4D.h>
+#include <TH1D.h>
 #include <string>
 
 using std::string;
 using Pythia = Pythia8::Pythia;
 using Particle = Pythia8::Particle; 
 
+using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
+using XYZTVector = ROOT::Math::XYZTVector;
 class BasicDetectorSim{
 struct RecoParticle;
 	public:
@@ -33,15 +36,22 @@ struct RecoParticle;
 					// particles from PV to detector (cal) face
 					// see pgs_track_res in PGS
 
-		//this is what creates the rec hits from the reco particles
-		void FillCal(const RecoParticle& rp); // for energy depositions
+		//this is what creates the showers from the reco particles
+		void FillCal(RecoParticle& rp); // for energy depositions
 				// see pgs_fill_cal in PGS
-		//this also does energy smearing per cal cell
+
+		void MakeRecHits(); //loops through filled ecal cells
+		//does time and energy smearings
+		
 	
 		void SimulateEvents(int evt = -1); //loop through pythia events to get gen level info
 
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
+		//get gen + reco momentum
+		void GetParticlesMom(vector<PtEtaPhiEVector>& genps, vector<PtEtaPhiEVector>& recops);
+		//get gen + reco position
+		void GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVector>& recops);
 
 		//sets transfer factor for rec hit weights
 		void SetEnergyTransferFactor(double gev){ _gev = gev; _default_transfer = false; }
@@ -74,16 +84,19 @@ struct RecoParticle;
 		double _crack_frac; //calorimeter cell edge crack fraction
 		
 		//terms for ECAL energy resolution
-		double _s = 3.63; //stochastic term
-		double _n = 124; //(MeV), noise term
-		double _c = 0.26; //constant term
+		double _s = 0.0363; //% stochastic term
+		double _n = 124*1e-3; //(124 MeV), noise term
+		double _c = 0.0026; //& constant term
 	
 		//speed of light in (cm/ns)
-		double _sol = 29.9792458;
+		constexpr static double _sol = 29.9792458;
 	
 		RandomSample _rs; //random sampler for smearing
 		int _nevts; //number of events to simulate
-		vector<vector<double>> _cal; //energy in ecal cells in [eta][phi]
+		vector<vector<double>> _calE; //energy in ecal cells in [eta][phi]
+		vector<vector<double>> _calT; //time in ecal cells in [eta][phi]
+		vector<vector<int>>    _calN; //number of emissions in an [eta][phi] cell
+		vector<vector<Point>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		vector<JetPoint> _cal_rhs; //ecal rec hits
 
 		vector<Particle> _genps; //gen particles
@@ -102,21 +115,25 @@ struct RecoParticle;
 		struct RecoParticle{
 			//associated gen particle
 			Particle particle;
-			//associated rhs
-			vector<JetPoint> rhs;
+			//associated emissions
+			vector<JetPoint> ems;
+			//reco position and momentum vectors
+			PtEtaPhiEVector Momentum;
+			XYZTVector Position;
 			
+			//ctor from gen particle
 			RecoParticle(Particle& p){ 
 				particle = p;
+				//init momentum to gen momentum
 				Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
 				//init to production coordinates
-				Position.SetCoordinates(p.xProd(), p.yProd(), p.zProd(), p.tProd());
+				//convert units to cm and ns
+				//originally in mm
+				Position.SetCoordinates(p.xProd() * 1e-1, p.yProd() * 1e-1, p.zProd() * 1e-1, p.tProd() * 1e-1 / _sol );
+				
 			}
-			void AddRecHits(JetPoint& rh){ rhs.push_back(rh); }
+			void AddEmission(JetPoint& j){ ems.push_back(j); }				
 		
-			//reco position and momentum vectors
-			ROOT::Math::PtEtaPhiEVector Momentum;
-			ROOT::Math::XYZTVector Position;
-			
 		};
 
 };
