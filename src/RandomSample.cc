@@ -2,7 +2,7 @@
 #include "PointCollection.hh"
 #include <iostream>
 #include <vector>
-
+#include <boost/math/special_functions/gamma.hpp>
 using std::cout;
 using std::endl;
 using std::vector;
@@ -62,6 +62,11 @@ double RandomSample::FlatGausScaled(){
 double RandomSample::Gaussian(double x, double mu, double sigma){
 	double x_scaled = x - mu;
 	return 1./(sigma*sqrt(2.*acos(-1)))*exp(-(x_scaled*x_scaled)/(2.*sigma*sigma));
+}
+
+double RandomSample::Poisson(int x, double rate){
+	//tgamma(n) = (n-1)!
+	return pow(rate,x)*exp(-rate)/tgamma(x+1);
 }
 
 //get random x value according to flat distribuion
@@ -136,5 +141,34 @@ int RandomSample::SampleCategorical(vector<double> weights){
 	} 
 
 	return k_final;
+
+}
+
+
+vector<double> RandomSample::SamplePoisson(double rate, int Nsample){
+	vector<double> samples;
+	if(rate <= 0){
+		cout << "Please input valid rate > 0" << endl;
+		return samples;
+	}
+	double X, ran, R;
+	int Ntrial = 0;
+	for(int i = 0; i < Nsample; i++){
+		Ntrial += 1;
+		X = i;//SampleFlat();
+		R = Poisson(X,rate)*exp(rate);//Gaussian(X,rate)/FlatGausScaled();
+		ran = rand();
+		if(ran > R){ // reject if "die thrown" (random number) is above distribution
+			i -= 1; // decrease i and try again
+			continue;
+		} else{ // accept if "die" is below (within) distribution
+			samples.push_back(X);
+		}
+	}
+	return samples;
+
+
+
+
 
 }
