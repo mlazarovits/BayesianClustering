@@ -24,7 +24,7 @@ class RandomSample{
 		void SetRange(double xmin, double xmax);
 		vector<double> SampleGaussian(double mean, double sigma, int Nsample);
 		vector<double> SamplePoisson(double rate, int Nsample);
-		int SampleCategorical(vector<double> weights);
+		int SampleCategorical(const vector<double>& weights);
 
 		double _xmax = 5;
 		double _xmin = -5;

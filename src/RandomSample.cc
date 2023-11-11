@@ -116,7 +116,7 @@ vector<double> RandomSample::SampleGaussian(double mean, double sigma, int Nsamp
 }
 
 
-int RandomSample::SampleCategorical(vector<double> weights){
+int RandomSample::SampleCategorical(const vector<double>& weights){
 	vector<double> probs;
 	double norm = 0.;
 	for(int n = 0; n < (int)weights.size(); n++) norm += weights[n];
@@ -151,24 +151,20 @@ vector<double> RandomSample::SamplePoisson(double rate, int Nsample){
 		cout << "Please input valid rate > 0" << endl;
 		return samples;
 	}
-	double X, ran, R;
-	int Ntrial = 0;
+
+	SetRange(0,1);
+	double l = exp(-rate);
+	double p = 1;
+	int k = 0;
+	double u;
 	for(int i = 0; i < Nsample; i++){
-		Ntrial += 1;
-		X = i;//SampleFlat();
-		R = Poisson(X,rate)*exp(rate);//Gaussian(X,rate)/FlatGausScaled();
-		ran = rand();
-		if(ran > R){ // reject if "die thrown" (random number) is above distribution
-			i -= 1; // decrease i and try again
-			continue;
-		} else{ // accept if "die" is below (within) distribution
-			samples.push_back(X);
-		}
+		do{
+			k++;
+			u = SampleFlat();
+			p = p*u;		
+		}while(p > l);
+		samples.push_back(k-1);
 	}
+
 	return samples;
-
-
-
-
-
 }
