@@ -84,12 +84,17 @@ class Jet{
 			_ensure_valid_rap_phi();
 			return _eta;
 		}
-		//phi
+		//[0,2pi]
 		double phi() const{
 			_ensure_valid_rap_phi();
 			return phi_02pi();
 		}
 
+		//[-pi, pi]
+		double phi_std() const{
+			_ensure_valid_rap_phi();
+			return phi_negPiToPi();
+		}
 
 		//transverse energy
 		double Et() const{ return (_kt2==0) ? 0.0 : _E/sqrt(1.0+_pz*_pz/_kt2); } 
@@ -194,13 +199,16 @@ class Jet{
 
 		//wraps phi around pi, [-pi,pi]
 		double phi_negPiToPi() const{
- 			double pi = acos(-1);
+			double pi = acos(-1);
+			if(_phi > pi) return _phi - 2*pi;
+			else return _phi;
+			/*
 			double o2pi = 1./(2*pi);
 			if(fabs(_phi) <= pi)
 				return _phi;
 			double n = std::round(_phi * o2pi);
 			return _phi - n * double(2.* pi);
-
+			*/
 		}
 
 		void Print(){
@@ -280,10 +288,10 @@ class Jet{
 		Matrix _cov;
 
 		//parents + child info
-		Jet* _parent1;
-		Jet* _parent2;
+		Jet* _parent1 = nullptr;
+		Jet* _parent2 = nullptr;
 
-		Jet* _child;
+		Jet* _child = nullptr;
 	
 		//user index	
 		int _idx;
