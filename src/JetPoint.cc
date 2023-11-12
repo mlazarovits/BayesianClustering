@@ -26,8 +26,9 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 	_z = z;
 	_t = t;
 
-	_eta = _invalid_eta;
-	_phi = _invalid_phi;
+	_phi = atan2(y,x);//_invalid_phi;
+	double rho = sqrt(x*x + y*y);
+	_eta = atan2(rho,z);//_invalid_eta;
 	
 	_idx = -999;
 	_rhId = -999;
