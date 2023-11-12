@@ -17,7 +17,6 @@
 
 using std::string;
 using Pythia = Pythia8::Pythia;
-using Particle = Pythia8::Particle; 
 
 using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
 using XYZTVector = ROOT::Math::XYZTVector;
@@ -28,8 +27,8 @@ struct RecoParticle;
 		BasicDetectorSim(string infile);
 		virtual ~BasicDetectorSim(){ };
 
-		void SimQCD(); //use pythia to simulate QCD events
-		void SimTTbar(); //use pythia to simulate ttbar events
+		void SimTTbar(){ _procs_to_sim.push_back(ttbar); };
+		void SimQCD(){ _procs_to_sim.push_back(qcd); };
 
 		//this is what does the detector effects on the tracks
 		void CalcTrajectory(RecoParticle& rp); //calculate trajectories/tracks for 
@@ -40,11 +39,20 @@ struct RecoParticle;
 		void FillCal(RecoParticle& rp); // for energy depositions
 				// see pgs_fill_cal in PGS
 
+		
 		void MakeRecHits(); //loops through filled ecal cells
 		//does time and energy smearings
-		
+	
+
+		void ReconstructEnergy(); //reconstruct e and t from smeared and summed (overlapping showers) rhs	
 	
 		void SimulateEvents(int evt = -1); //loop through pythia events to get gen level info
+
+
+		void TurnOnPileup(int npuavg = 5){
+			_pu = true;
+			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
+		}
 
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
@@ -52,11 +60,14 @@ struct RecoParticle;
 		void GetParticlesMom(vector<PtEtaPhiEVector>& genps, vector<PtEtaPhiEVector>& recops);
 		//get gen + reco position
 		void GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVector>& recops);
+		//get emissions per reco particle
+		void GetEmissions(vector<vector<JetPoint>>& ems);
 
 		//sets transfer factor for rec hit weights
 		void SetEnergyTransferFactor(double gev){ _gev = gev; _default_transfer = false; }
 		void SetNEvents(int e){ _nevts = e; _pythia.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
 		void SetVerbosity(int v = 0){
+			_verb = v;
 			if(v == 0)
 				_pythia.readString("Print:quiet = on");
 			else if(v == 1){
@@ -68,9 +79,10 @@ struct RecoParticle;
 			}
 			_pythia.readString("Print:errors = "+std::to_string(v));
 		}
+	
 
 	private:
-		double _rmax; //max radius of detector (cm)
+		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)
 		double _netacal; //number of cells in eta in calorimeter
 		double _nphical; //number of cells in phi in calorimeter
@@ -78,18 +90,28 @@ struct RecoParticle;
 		double _dphi; //width of cell in phi
 		double _etamin; //min eta	
 		double _etamax; //max eta
+		double _phimin; //sets [-pi, pi] or [0, 2pi] for phi indexing
 		double _calEres; //calorimeter energy resolution
 		double _calTres; //calorimeter time resolution
 		double _sagres; //sagitta resolution
 		double _crack_frac; //calorimeter cell edge crack fraction
 		
 		//terms for ECAL energy resolution
-		double _s = 0.0363; //% stochastic term
+		//(nominal values of) constants for energy resolution
+		//these are from CMS TDR Fig. 1.7
+		//the more conservative values are taken (s.t. sig/E is larger than other values)
+		double _s = 3.63; //% stochastic term
 		double _n = 124*1e-3; //(124 MeV), noise term
-		double _c = 0.0026; //& constant term
+		double _c = 0.26; //& constant term
 	
-		//speed of light in (cm/ns)
-		constexpr static double _sol = 29.9792458;
+		//2*_ncell + 1 = n
+		//nxn grid of reconstructing energy
+		int _ncell;
+		//energy threshold for reconstruction
+		double _ethresh; //(GeV)
+		
+		//speed of light in (m/s)
+		constexpr static double _sol = 2.99792458e8; //cm/ns = 29.9792458;
 	
 		RandomSample _rs; //random sampler for smearing
 		int _nevts; //number of events to simulate
@@ -99,9 +121,16 @@ struct RecoParticle;
 		vector<vector<Point>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		vector<JetPoint> _cal_rhs; //ecal rec hits
 
-		vector<Particle> _genps; //gen particles
 		vector<RecoParticle> _recops; //reco particles
-		Pythia8::Pythia _pythia; //pythia object for event generation
+		Pythia8::Pythia _pythia; //pythia object for main event generation
+		bool _pu; //pileup switch
+		int _nPUavg; //number of pu events on average
+
+		//process enums
+		enum _proc {ttbar, qcd};
+		vector<int> _procs_to_sim;
+		void _simQCD(); //use pythia to simulate QCD events
+		void _simTTbar(); //use pythia to simulate ttbar events
 
 
 		double _gev; //transfer factor for weighting rechits
@@ -111,10 +140,11 @@ struct RecoParticle;
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
 		void _get_etaphi(int ieta, int iphi, double& eta, double& phi);
 
+		int _verb;
 
 		struct RecoParticle{
 			//associated gen particle
-			Particle particle;
+			Pythia8::Particle Particle;
 			//associated emissions
 			vector<JetPoint> ems;
 			//reco position and momentum vectors
@@ -122,15 +152,14 @@ struct RecoParticle;
 			XYZTVector Position;
 			
 			//ctor from gen particle
-			RecoParticle(Particle& p){ 
-				particle = p;
+			RecoParticle(Pythia8::Particle& p){ 
+				Particle = p;
 				//init momentum to gen momentum
 				Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
 				//init to production coordinates
-				//convert units to cm and ns
 				//originally in mm
-				Position.SetCoordinates(p.xProd() * 1e-1, p.yProd() * 1e-1, p.zProd() * 1e-1, p.tProd() * 1e-1 / _sol );
-				
+				//convert to m and s
+				Position.SetCoordinates(p.xProd()*1e-3, p.yProd()*1e-3, p.zProd()*1e-3, p.tProd() / (_sol*1e-3) );
 			}
 			void AddEmission(JetPoint& j){ ems.push_back(j); }				
 		
