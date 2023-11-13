@@ -1,5 +1,7 @@
 #include "BasicDetectorSim.hh"
 #include "TMath.h"
+#include "fastjet/ClusterSequence.hh"
+
 #include <TFile.h>
 #include <algorithm>
 
@@ -130,7 +132,15 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double zmax = _rmax/tan(theta); //[mm]
 
 	Pythia8::Event sumEvent; //one object where individual events are collected
-
+	
+	//declare fjinput/output containers
+	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
+	//fastjet objects - "AK4" jets
+	double Rparam = 0.4;
+	fastjet::Strategy strategy = fastjet::Best;
+	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
+	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
+	
 	for(int i = 0; i < _nevts; i++){
 		if(!_pythia.next() || i != evt) continue;
 		//store event info if pileup is on
@@ -143,6 +153,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				sumEvent += pileup.event;
 			}
 		}
+		// Reset Fastjet input
+    		fjinputs.clear();
+		fjinputs.resize(0);
+		
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
@@ -151,6 +165,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			Pythia8::Particle particle = sumEvent[p];
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
+			// No neutrinos
+      			if (_pythia.event[i].idAbs() == 12 || _pythia.event[i].idAbs() == 14 ||
+      			    _pythia.event[i].idAbs() == 16)     continue;
+			
+			
 			//set production vertex from z-smearing
 			_rs.SetRange(particle.zProd()*1e-3 - zig, particle.zProd()*1e-3 + zig);
 			znew = _rs.SampleGaussian(particle.zProd()*1e-3, zig, 1).at(0);	
@@ -184,14 +203,27 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			FillCal(rp);
 		
 
+			//add particle to fastjet
+			//running fastjet on gen particles, no shower, etc.
+      			fjinputs.push_back( fastjet::PseudoJet( _pythia.event[p].px(),
+      			  _pythia.event[p].py(), _pythia.event[p].pz(), _pythia.event[p].e() ) );
+			
+
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
-	
+			
 		}
+		//run fastjet
+		fastjet::ClusterSequence cs(fjinputs, jetdef);
+		//get jets - min 5 pt
+		fjoutputs = cs.inclusive_jets(5.);
+		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 
 	}
 	MakeRecHits();
 	ReconstructEnergy();
+	//sort jets by pt
+	_jets = sorted_by_pt(_jets);
 }
 
 //updates pvec of p
@@ -581,6 +613,14 @@ void BasicDetectorSim::GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVec
 	}
 }
 
+
+
+void BasicDetectorSim::GetTrueJets(vector<Jet>& jets){
+	jets.clear();
+	for(int i = 0; i < _jets.size(); i++)
+		jets.push_back(Jet( _jets[i].px(), _jets[i].py(), _jets[i].pz(), _jets[i].e()) );
+
+}
 
 bool BasicDetectorSim::_in_cell_crack(const RecoParticle& rp){
 	Pythia8::Particle p = rp.Particle;

@@ -11,6 +11,7 @@
 #include "RandomSample.hh"
 #include "Pythia8/Pythia.h"
 #include "Jet.hh"
+#include "fastjet/PseudoJet.hh"
 #include <Math/Vector4D.h>
 #include <TH1D.h>
 #include <string>
@@ -54,6 +55,7 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 		}
 
+
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
 		//get gen + reco momentum
@@ -62,6 +64,8 @@ struct RecoParticle;
 		void GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVector>& recops);
 		//get emissions per reco particle
 		void GetEmissions(vector<vector<JetPoint>>& ems);
+		//get fastjet jets - run on gen particles
+		void GetTrueJets(vector<Jet>& jets);
 
 		//sets transfer factor for rec hit weights
 		void SetEnergyTransferFactor(double gev){ _gev = gev; _default_transfer = false; }
@@ -120,6 +124,7 @@ struct RecoParticle;
 		vector<vector<int>>    _calN; //number of emissions in an [eta][phi] cell
 		vector<vector<Point>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		vector<JetPoint> _cal_rhs; //ecal rec hits
+		vector<fastjet::PseudoJet>  _jets; //outputs from fastjet
 
 		vector<RecoParticle> _recops; //reco particles
 		Pythia8::Pythia _pythia; //pythia object for main event generation
