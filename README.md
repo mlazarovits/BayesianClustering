@@ -9,11 +9,15 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Dependencies
 - ROOT for producers and skimmers
-- Python at least v3.x for macros for visualization
+- Python for macros for visualization
+	- at least v3.x
 - [eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 - [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)
 - [nlohmman-json](https://github.com/nlohmann/json) to make jsons for python macros
 - [cgal](https://www.cgal.org/) for Voronoi diagrams
+- [fastjet](https://fastjet.fr/) for detector simulation
+	- at least v3.4.1 for compatibility with C++17
+	- at least v3.4.2 for compatibility with C++20 
 
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
