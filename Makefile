@@ -40,9 +40,15 @@ lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/exter
 #include FastJet cxxflags and libraries
 local: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+#TODO: update for LPC path
 lpc: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 lpc: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
 
+#make list of libraries for shared library
+SGLIBS          = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
+SGLIBS         += -lRooFit -lRooFitCore
+SGLIBS	       += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+SGLIBS         += $(PYTHIAGLIBS)
 
 #specify local paths
 INCLUDEDIR  = ./include/
@@ -56,10 +62,13 @@ CC_FILES    = $(wildcard src/*.cc)
 HH_FILES    = $(wildcard include/*.hh)
 OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
+
+
+#specify what to make
 local: all
 lpc:   all
-#specify what to make
 all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
+lib: lib/libBayesCluster.so
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
@@ -90,6 +99,12 @@ detectorSim.x: $(SRCDIR)detectorSim.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o detectorSim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch detectorSim.x
 
+#make shared library
+lib/libBayesCluster.so: $(OBJ_FILES)
+	mkdir -p lib
+	$(CXX) -shared -o lib/libBayesCluster.so $(OBJ_FILES) $(SGLIBS)
+	touch lib/libBayesCluster.so
+
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -100,6 +115,6 @@ clean:
 	rm -f *.x
 	rm -f AutoDict*
 	rm -f *.d
-
+	rm -f lib/libBayesCluster.so
 
 
