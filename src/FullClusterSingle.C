@@ -3,8 +3,10 @@
 #include "PhotonSkimmer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
-#include "Clusterizer.hh"
+//#include "Clusterizer.hh"
 #include "VarClusterViz3D.hh"
+#include "BasicDetectorSim.hh"
+
 #include <TSystem.h>
 #include <TFile.h>
 #include <iostream>
@@ -139,7 +141,7 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2,  does not apply to photons)" << endl;
-   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
+   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons, 2 : detector sim)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
@@ -151,8 +153,9 @@ int main(int argc, char *argv[]){
   	}
 
 	if(!fname.empty()) fname += "_";
-	if(obj == 0){
-		fname += "jets";
+	if(obj == 0 || obj == 2){
+		if(obj == 0) fname += "jets";
+		else fname += "jetsSim"; 
 		if(strat == 0)
 			fname += "NlnN";
 		else if(strat == 1)
@@ -240,20 +243,30 @@ cout << "obj: " << obj << endl;
 		prod.GetTrueJets(jets, evt);
 		cout << rhs.size() << " rechits in event " << evt << endl;
 	}
-	//Jet testjet = Jet(rhs);
-	//get rhs (as Jets) for single (npho) photon
 	else if(obj == 1){
         	PhotonProducer prod(file);
 		int npho = 0; //which photon to analyze
 		cout << "Making plots for photon " << npho << "  at event " << evt << endl;
         	prod.GetRecHits(rhs,evt,npho);
         	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
-	}	
+	}
+	else if(obj == 2){
+		BasicDetectorSim det;
+		det.SetNEvents(10);
+		det.SetVerbosity(verb);
+		det.SimTTbar();
+		det.TurnOnPileup();
+		//default arg is all events
+		det.SimulateEvents(evt);
+		det.GetRecHits(rhs);
+		det.GetTrueJets(jets);
+		cout << rhs.size() << " rechits in event " << evt << endl;
+	}
+	
         if(rhs.size() < 1) return -1;
 	vector<double> ws;
 	rhs[0].GetWeights(ws);
 	double gev = rhs[0].E()/ws[0];
-
 
 	//to debug - use less rechits
 	//int nrhs = 100;
@@ -270,12 +283,12 @@ cout << "obj: " << obj << endl;
 	algo->SetVerbosity(verb);
 	clock_t t = clock();
 	//jets
-	if(obj == 0){
+	if(obj == 0 || obj == 2){
 		cout << "Using clustering strategy " << strat << ": ";
 		if(strat == 0){
 			cout << "Delauney (NlnN)" << endl;
 			//to track computation time from beginning of program
-			if(obj == 0) trees = algo->NlnNCluster();
+			trees = algo->NlnNCluster();
 		}
 		else if(strat == 1){
 			cout << "N^2 (naive)" << endl;

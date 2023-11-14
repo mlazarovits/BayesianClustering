@@ -303,7 +303,7 @@ inline double Dnn2piCylinder::NearestNeighbourDistance(const int current) const 
 inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current, int& merge_index) const {
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
-if(_verbose) cout << "current: " << current << " main idx: " << main_index << " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
+// cout << "getting nearest neighbor prob index for current: " << current << " main idx: " << main_index << " mirror_index: " << mirror_index << endl;
   int plane_index;
   if (mirror_index == INEXISTENT_VERTEX ) {
     plane_index = _DNN->NearestNeighbourProbIndex(main_index);

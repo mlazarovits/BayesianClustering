@@ -38,31 +38,6 @@ JetProducer::JetProducer(TFile* file) : BaseProducer(file){
 
 }
 
-void JetProducer::GetRecHits(vector<vector<JetPoint>>& rhs){
-	JetPoint rh;
-	double x, y, z, t, E, eta, phi;
-	unsigned long id;
-	int nRHs;
-	rhs.clear();
-	for(int i = 0; i < _nEvts; i++){
-		_base->GetEntry(i);
-		//TODO: switch to _base->nRHs when that's in the ntuples
-		nRHs = (int)_base->ECALRecHit_ID->size();
-		rhs.push_back({});
-		for(int r = 0; r < nRHs; r++){
-			//add tof = d_pv to time to get correct RH time
-			//t = rh_time - d_rh/c + d_pv/c = tadj + TOF
-			rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
-			
-			rh.SetEnergy(_base->ECALRecHit_energy->at(r));
-			rh.SetEta(_base->ECALRecHit_eta->at(r));
-			rh.SetPhi(_base->ECALRecHit_phi->at(r));
-			rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
-	
-			rhs[i].push_back(rh);
-		}
-	}
-}
 
 
 void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
@@ -90,6 +65,14 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 //		cout << nJetRHs_total << " total rhs in all jets" << endl;
 	//actually get rhs for clustering
 	nRHs = (int)_base->ECALRecHit_ID->size();
+	vector<double> ws;
+	//need to transfer from GeV (energy) -> unitless (number of points
+	//transfer factor is over all points in event
+	double gev = 0;
+	for(int r = 0; r < nRHs; r++) gev += _base->ECALRecHit_energy->at(r);
+	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
+	for(int r = 0; r < nRHs; r++){ ws.push_back(_base->ECALRecHit_energy->at(r)/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
+	
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
@@ -101,6 +84,7 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
+		rh.SetWeight(ws[r]);
 	
 		rhs.push_back(rh);
 	}	

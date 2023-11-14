@@ -36,7 +36,7 @@ class BayesCluster{
 			// components, such as CLHEP HepLorentzVector).
 			for (unsigned int i = 0; i < pseudojets.size(); i++) {
 			_jets.push_back(pseudojets[i]);}
-	
+			
 			_thresh = -999;
 			_alpha = 0.1;
 			_subalpha = 0.5;

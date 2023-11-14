@@ -22,7 +22,6 @@ class PhotonProducer : public BaseProducer{
 	
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
-		void GetRecHits(vector<vector<JetPoint>>& rhs);
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int pho);
 		void GetRecHits(vector<Jet>& rhs, int evt, int pho);

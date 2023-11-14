@@ -225,8 +225,6 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 	return p;
 };
 
-
-
 map<string, Matrix> GaussianMixture::GetPriorParameters(int k){ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
@@ -242,6 +240,19 @@ map<string, Matrix> GaussianMixture::GetPriorParameters(int k){
 	return p;
 };
 
+
+map<string, Matrix> GaussianMixture::GetOnlyPriorParameters(int k){ 
+	map<string, Matrix> p;
+	if(k >= m_k) return p;
+	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
+	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
+	p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
+	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
+	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
+	p["alpha"] = Matrix(m_alphas[k]);
+	
+	return p;
+};
 
 //variational stuff 
 void GaussianMixture::InitPriorParameters(unsigned long long seed){
@@ -789,17 +800,14 @@ double GaussianMixture::EvalVariationalLogL(){
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 
 	}
-//	cout << "E_q_muLam: " << E_q_muLam << endl;
-	/*
-	cout << "E_p_all: " << E_p_all << endl;
-	cout << "E_p_Z: " << E_p_Z << endl;
-	cout << "E_p_pi: " << E_p_pi << endl;
-	cout << "E_p_muLam: " << E_p_muLam << endl;
-	cout << "E_q_Z: " <<  E_q_Z << endl;
-	cout << "E_q_pi: " << E_q_pi << endl;
-	cout << "E_q_muLam: " <<  E_q_muLam << endl;
-	cout << "m_post" << endl;
-	*/
+//	cout << "E_p_all: " << E_p_all << endl;
+//	cout << "E_p_Z: " << E_p_Z << endl;
+//	cout << "E_p_pi: " << E_p_pi << endl;
+//	cout << "E_p_muLam: " << E_p_muLam << endl;
+//	cout << "E_q_Z: " <<  E_q_Z << endl;
+//	cout << "E_q_pi: " << E_q_pi << endl;
+//	cout << "E_q_muLam: " <<  E_q_muLam << endl;
+//	cout << "m_post" << endl;
 	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam - E_q_Z - E_q_pi - E_q_muLam;
 	
 

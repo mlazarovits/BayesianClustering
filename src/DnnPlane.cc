@@ -544,7 +544,7 @@ cout << points_to_add.size() << " points to add" << endl;
     // first deal with  coincidences
     if (_supervertex[index].coincidence != index){
       int new_index = _supervertex[index].coincidence;
-	cout << "removing coincidence: " << index << " with " << new_index << endl;
+	if(_verbose) cout << "removing coincidence: " << index << " with " << new_index << endl;
 
       // if this is the point among the coinciding ones that "owns" the
       // CGAL vertex we need to re-label the CGAL vertex so that it

@@ -34,7 +34,6 @@ class BaseProducer{
 
 		//TODO remove jet points - use only jets
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
-		virtual void GetRecHits(vector<vector<JetPoint>>& rhs) = 0;
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt, int obj) = 0;

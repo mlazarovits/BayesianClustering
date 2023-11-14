@@ -143,6 +143,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	
 	for(int i = 0; i < _nevts; i++){
 		if(!_pythia.next() || i != evt) continue;
+		// Reset Fastjet input
+    		fjinputs.clear();
+		fjinputs.resize(0);
 		//store event info if pileup is on
 		sumEvent = _pythia.event;
 		if(_pu){
@@ -153,10 +156,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				sumEvent += pileup.event;
 			}
 		}
-		// Reset Fastjet input
-    		fjinputs.clear();
-		fjinputs.resize(0);
-		
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
@@ -166,8 +165,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
 			// No neutrinos
-      			if (_pythia.event[i].idAbs() == 12 || _pythia.event[i].idAbs() == 14 ||
-      			    _pythia.event[i].idAbs() == 16)     continue;
+      			if (sumEvent[p].idAbs() == 12 || sumEvent[p].idAbs() == 14 ||
+      			    sumEvent[p].idAbs() == 16)     continue;
 			
 			
 			//set production vertex from z-smearing
@@ -205,10 +204,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 			//add particle to fastjet
 			//running fastjet on gen particles, no shower, etc.
-      			fjinputs.push_back( fastjet::PseudoJet( _pythia.event[p].px(),
-      			  _pythia.event[p].py(), _pythia.event[p].pz(), _pythia.event[p].e() ) );
+      			fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
+      			  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
 			
-
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 			

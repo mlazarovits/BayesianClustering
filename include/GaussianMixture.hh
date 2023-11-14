@@ -31,14 +31,14 @@ class GaussianMixture : public BasePDFMixture{
 			m_nu0 = params["dof"].at(0,0);
 			m_W0 = params["scalemat"];
 			m_mean0 = params["mean"];
-			if(_verb > 0){
-				cout << "GaussianMixture::SetPriorParameters - setting prior parameters" << endl;
-				cout << "beta0 = " << m_beta0 << " nu0 = " << m_nu0 << endl;
-				cout << "W0 = " << endl;
-				m_W0.Print();
-				cout << "m0 = " << endl;
-				m_mean0.Print();
-			}
+		//	if(_verb > 0){
+		//		cout << "GaussianMixture::SetPriorParameters - setting prior parameters" << endl;
+		//		cout << "beta0 = " << m_beta0 << " nu0 = " << m_nu0 << endl;
+		//		cout << "W0 = " << endl;
+		//		m_W0.Print();
+		//		cout << "m0 = " << endl;
+		//		m_mean0.Print();
+		//	}
 
 		}
 			
@@ -53,6 +53,7 @@ class GaussianMixture : public BasePDFMixture{
 		double EvalVariationalLogL();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
 		map<string, Matrix> GetPriorParameters(int k); 
+		map<string, Matrix> GetOnlyPriorParameters(int k); 
 
 
 

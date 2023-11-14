@@ -32,6 +32,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
+			cout << "return" << endl;
 			return _trees;
 		} 
 		mt->AddLeaf(&_points[i].at(0));
@@ -40,7 +41,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
-
+	
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
 	//all three dimensions will go into calculating the probabilityu
@@ -119,8 +120,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			break;
 			} 
 		}
-		if(done){ cout << "done clustering" << endl; break;}
-if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; break; }	
 
@@ -144,7 +143,7 @@ if(_verb > 1) cout << "get best rk for jet " << jet_i << " and " << jet_j << end
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-		if(_verb > 1) cout << "updating map" << endl;
+		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
@@ -219,7 +218,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			di = mt->Get(i);
 			dj = mt->Get(j);
 			node* x = mt->CalculateMerge(di, dj);
-		if(_verb > 2){
+		if(_verb > 1){
 		cout << "checking nodes " << i << ": ";
 		di->points->Print();
 		cout << " and " << j << ": ";
@@ -242,7 +241,9 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//check that popped node is not null
 		if(max == nullptr) break;
 		if(_verb > 1){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
-		//max->points->Print();
+		max->l->points->Print();
+		cout << "and" << endl;
+		max->r->points->Print();
 	//	cout << "\n" << endl;
 		}
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
@@ -283,13 +284,14 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			if(dl == max) continue;
 			//calculate merge for node i and max node
 			node* x = mt->CalculateMerge(dl, max);
-		//if(_verb > 1){
-		//cout << "checking nodes " << i << ": ";
-		////dl->points->Print();
-		//cout << " and max " << max->idx << ": ";
-		////max->points->Print();
-		//cout << "this rk: " << x->val << " with " << dl->points->GetNPoints() + max->points->GetNPoints() << " total points\n" << endl;
-		//}
+		if(_verb > 1){
+		cout << std::setprecision(10) << endl;
+		cout << "checking nodes " << dl->idx << ": ";
+		//dl->points->Print();
+		cout << " and max " << max->idx << ": ";
+		//max->points->Print();
+		cout << "this rk: " << x->val << " with " << dl->points->GetNPoints() + max->points->GetNPoints() << " total points\n" << endl;
+		}
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
 			//add new potential merge to list
@@ -312,9 +314,8 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			nmirror++; 
 			continue; }
 		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-		cout << "with center" << endl; _trees[i]->points->mean().Print();
-		//_trees[i]->points->Print();
-		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
+		//cout << "with center" << endl; _trees[i]->points->mean().Print();
+		_trees[i]->points->Print();
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << mt->GetNClusters() - nmirror << " jets found." << endl;

@@ -182,18 +182,31 @@ class MergeTree : BaseTree{
 			if(x->l == _z && x->r == _z) k = 1;
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-			
+		
+
+			//transform points into local coordinates
+			//for GMM parameter estimation
+			//use weighted mean as center to be set to 0 point
+			//Point center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
+			//copy points for parameter estimation
+			//so original points don't get overwritten
+			PointCollection newpts = PointCollection(*x->points);
+			Point center = newpts.Center();//Translate(center);
+
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
-			x->model->SetData(x->points);
+			x->model->SetData(&newpts);
+			//x->model->SetData(x->points);
 			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
-			VarEMCluster* algo = new VarEMCluster(x->model, k);	
+			VarEMCluster* algo = new VarEMCluster(x->model, k);
+			//make sure sum of weights for points is above threshold
+			//otherwise the algorithm will exclude all components	
 			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
@@ -209,6 +222,29 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
+
+			//translate the parameters back into global coordinates
+			Matrix matshift;
+			matshift.PointToMat(center);
+			Matrix mean, priormean;
+			map<string, Matrix> params;
+			for(int k = 0; k < x->model->GetNClusters(); k++){
+				//only need to do this once for prior
+				if(k == 0){
+					params = x->model->GetOnlyPriorParameters(k);
+					priormean = params["mean"];
+					priormean.add(matshift);
+					params["m"] = priormean;
+					x->model->SetPriorParameters(params);
+				}
+				params = x->model->GetPriorParameters(k);
+				//only need to translate mean + mean on prior - stddev doesn't change
+				mean = params["mean"];
+				mean.add(matshift);
+				params["mean"] = mean;
+				x->model->GetModel(k)->SetParameter("mean",mean);
+			}
+
 			return newLogL;
 		}
 

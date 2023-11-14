@@ -120,8 +120,6 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
   if(!(phi >= 0.0 && phi < 2*pi)){ cout << "bad phi: " << phi << endl; cylinder_point.Print(); }
   assert(phi >= 0.0 && phi < 2*pi);
 
-  EtaPhi ep(eta,phi);
- 
 // cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
 if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
 	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
@@ -132,7 +130,6 @@ if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
   _cylinder_index_of_plane_vertex.push_back(_mirror_info.size());
   plane_points.push_back(cylinder_point);
   mvi.mirror_index = INEXISTENT_VERTEX;
-  
   // 
   _mirror_info.push_back(mvi);
 }
@@ -180,13 +177,20 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // nearest neighbourDistance actually returns a squared distance
     // (this was really stupid on our part -- caused considerable loss
     // of time ... )
-    double nndist = _DNN->NearestNeighbourDistance(ip); 
+    double nndist = _DNN->NearestNeighbourDistance(ip);
+	double offset = 0.1; 
+    //if ((phi-offset)*(phi-offset) >= nndist && ((twopi+offset)-(phi))*((twopi+offset)-(phi)) >= nndist) {continue;}
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
     if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
+    //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
+//cout << "point to mirror" << endl;
+//pts.Print();
 
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
+//    cout << "mirrored points" << endl;
+//	newpts->Print();
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
     x->points = newpts;
@@ -202,12 +206,6 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
   vector<int> indices_added;     // will be filled as result of call
   _DNN->RemoveAndAddPoints(indices_to_remove,new_plane_points,indices_added, 
 			   updated_plane_points);
-  if(_verbose){
-  cout << "created mirror points: ";
-    std::vector<int>::iterator it;
-  for(it = indices_added.begin(); it != indices_added.end(); ++it)
-    cout << *it << endl;
-  }
 
 if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
 

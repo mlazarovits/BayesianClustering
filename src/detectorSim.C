@@ -14,7 +14,7 @@ using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
 using XYZTVector = ROOT::Math::XYZTVector;
 
 int main(int argc, char *argv[]){
-	vector<Jet> rhs;
+	vector<Jet> rhs, jets;
 	vector<PtEtaPhiEVector> genmoms;
 	vector<PtEtaPhiEVector> recomoms;
 	vector<XYZTVector> genpos;
@@ -71,6 +71,8 @@ int main(int argc, char *argv[]){
 	cout << rhs.size() << " rechits in event " << evt << endl;
 	
 
+
+	///////make histograms///////
 	string fname = "plots/detectorSimSkim.root";
 	cout << "Writing to " << fname << endl;
 	TFile f(fname.c_str(),"RECREATE");

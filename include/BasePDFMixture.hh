@@ -69,6 +69,7 @@ class BasePDFMixture : public BasePDF{
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
 		virtual map<string, Matrix> GetPriorParameters(int k) = 0; 
+		virtual map<string, Matrix> GetOnlyPriorParameters(int k) = 0; 
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
 		void GetDirichletParameters(vector<double>& alphas){ alphas.clear(); alphas = m_alphas; }
