@@ -197,7 +197,6 @@ class MergeTree : BaseTree{
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
 			x->model->SetData(&newpts);
-			//x->model->SetData(x->points);
 			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
@@ -244,6 +243,8 @@ class MergeTree : BaseTree{
 				params["mean"] = mean;
 				x->model->GetModel(k)->SetParameter("mean",mean);
 			}
+			//reset data to original points
+			x->model->SetData(x->points);
 
 			return newLogL;
 		}
