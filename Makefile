@@ -37,6 +37,12 @@ lpc:   GLIBS       += -lCGAL -lCGAL_Core
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
 lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+#include FastJet cxxflags and libraries
+local: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
+local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+lpc: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
+lpc: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+
 
 #specify local paths
 INCLUDEDIR  = ./include/
@@ -53,8 +59,7 @@ OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 local: all
 lpc:   all
 #specify what to make
-#all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x
-all: detectorSim.x 
+all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
