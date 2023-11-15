@@ -2,8 +2,10 @@
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTGLIBS   = $(shell root-config --glibs)
 #include pythia cflags and libraries
-PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
-PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
+local: PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
+local: PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
+lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/include
+lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/lib -Wl,-rpath,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/lib -lpythia8 -ldl
 
 #specify compiler
 CXX         = g++
@@ -38,17 +40,27 @@ lpc:   GLIBS       += -lCGAL -lCGAL_Core
 #use -Wl comma separated to pass to linker
 lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
 #include FastJet cxxflags and libraries
-local: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
+local: CXXFLAGS  += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
-#TODO: update for LPC path
-lpc: CXXFLAGS    += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
-lpc: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+lpc: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --cxxflags)
+lpc: GLIBS     += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --libs)
 
+#add to make lib ig?
+lpc: CXXFLAGS += -fPIC
 #make list of libraries for shared library
-SGLIBS          = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
-SGLIBS         += -lRooFit -lRooFitCore
-SGLIBS	       += $(shell ~/fastjet-install/bin/fastjet-config --libs)
-SGLIBS         += $(PYTHIAGLIBS)
+lib: SGLIBS          = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
+lib: SGLIBS         += -lRooFit -lRooFitCore
+lib: SGLIBS         += $(shell ~/fastjet-install/bin/fastjet-config --libs)
+lib: SGLIBS         += $(PYTHIAGLIBS)
+
+lpclib: SGLIBS        = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
+lpclib: SGLIBS       += -lRooFit -lRooFitCore
+#fastjet
+lpclib: SGLIBS       += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --libs)
+#pythia
+lpclib: SGLIBS       += $(PYTHIAGLIBS)
+lpclib: SGLIBS       += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib/
+lpclib: SGLIBS       += -lCGAL -lCGAL_Core
 
 #specify local paths
 INCLUDEDIR  = ./include/
@@ -69,6 +81,7 @@ local: all
 lpc:   all
 all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 lib: lib/libBayesCluster.so
+lpclib: lib/libBayesCluster.so
 
 #executables
 GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
