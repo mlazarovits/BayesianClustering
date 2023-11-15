@@ -22,9 +22,9 @@ def writeSubmissionBase( subf, dirname, infile ):
 	#absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
 	#absCWD = os.getcwd()
 	absCWD = os.popen('pwd').readline().rstrip() 
-	#print("abs path is "+ absCWD)
+	print("abs path is "+ absCWD)
 	remap= absCWD+"/"+outname
-	#print("remap is "+ remap)
+	print("remap is "+ remap)
 	subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")
 
 #splits by event number

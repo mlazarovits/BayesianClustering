@@ -72,7 +72,7 @@ subf = open(dirname+"/src/submit.sh","w")
 SH.writeSubmissionBase( subf, dirname, inputFile )
 eventnums = SH.eventsSplit(inputFile, args.split)
 flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy) 
-SH.writeQueueList(subf, inputFile, dirname+"/"+ofilename+"_skims", eventnums, flags)
+SH.writeQueueList(subf, inputFile, dirname+"/out/skims", eventnums, flags)
 
 print("submission ready, to run use:")
 #need to be in directory with the execution script to run

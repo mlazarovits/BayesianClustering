@@ -21,7 +21,7 @@ using std::endl;
 
 int main(int argc, char *argv[]){
 	string fname = "";
-	string in_file = "rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
+	string in_file = "";//rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
 	double alpha = 0.1;
@@ -149,18 +149,23 @@ int main(int argc, char *argv[]){
 	
 	
 	/////GET DATA FROM NTUPLE//////
-	//get version
-	std::smatch m;
-	std::regex re("_v[0-9]_");
-	string version = "";
-	std::regex_search(in_file,m,re);
-	for(auto x : m) version += x;
-	string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-	cmslab += version.substr(0,3);
-	cout << "Writing to directory: " << fname << endl;
-	TFile* file = TFile::Open(in_file.c_str());
-	cout << "Skimming events " << evti << " to " << evtj << " for ";
-
+	if(!in_file.empty()){
+		//get version
+		std::smatch m;
+		std::regex re("_v[0-9]_");
+		string version = "";
+		std::regex_search(in_file,m,re);
+		for(auto x : m) version += x;
+		string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+		cmslab += version.substr(0,3);
+		cout << "Writing to directory: " << fname << endl;
+		TFile* file = TFile::Open(in_file.c_str());
+		cout << "Skimming events " << evti << " to " << evtj << " for ";
+	}
+	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
+	else{
+		in_file = "BDSIM";
+	} 
 	if(fname != ""){
 		if(obj == 0)
 			fname = "jets";
