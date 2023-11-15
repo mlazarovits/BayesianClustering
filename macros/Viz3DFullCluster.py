@@ -32,6 +32,10 @@ class JsonPlotter:
 			tree = level["tree_"+str(t)]
 			for c in range(len(tree)):
 				cluster = tree["cluster_"+str(c)]
+				#skip unclustered points when making opacities
+				#to avoid any high unclustered weights from pulling the rest
+				if(len(cluster['data']['w']) < 2):
+					continue
 				ws.append(cluster['data']['w'])
 
 		#make sure arr is flat
@@ -39,8 +43,17 @@ class JsonPlotter:
 	
 		wmin = min(ws);
 		wmax = max(ws);
+		
+		#add in unclustered points
+		for t in range(len(level)):
+			tree = level["tree_"+str(t)]
+			for c in range(len(tree)):
+				cluster = tree["cluster_"+str(c)]
+				if(len(cluster['data']['w']) >= 2):
+					continue
+				ws.append(cluster['data']['w'][0])
 
-		self.ops = {i : (i - wmin)/(wmax - wmin) for i in ws}
+		self.ops = {i : (i - wmin)/(wmax - wmin) if(i > wmin and i < wmax) else 0 for i in ws}
 
 	def buildColorDict(self):
 		colors = {}
@@ -181,7 +194,7 @@ class JsonPlotter:
 			filename = self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
 			fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
 			fig.update_layout(title=dict(font=dict(size=13)))
-			#fig.update_layout(scene=dict(yaxis=dict(range=[-5,5],),xaxis=dict(range=[-10,10],),zaxis=dict(range=[-15,15],)),title=filename, template=None)
+			fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
 			#write to file
 			#make sure cluster directory exists
 			if(os.path.exists(self.dirname+"/cluster"+str(t))):
@@ -235,8 +248,6 @@ class JsonPlotter:
 		
 		if(min(w) != max(w)):
 			cols = [i.replace("1.",'{:8f}'.format(self.ops[w[idx]])) for idx, i in enumerate(cols)]
-		
-
 
 
 		if alldata is True:
