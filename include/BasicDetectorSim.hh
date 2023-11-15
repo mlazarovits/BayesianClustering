@@ -55,6 +55,13 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 		}
 
+		void TurnOnSpikes(double sprob = 0.01){ _spikes = true; _spikeprob = sprob; }
+
+
+		//set resolution constants
+		void SetTimeResCts(double cte, double rate){ _calTresCte = cte; _calTresRate = rate; }
+		//set energy threshold for zero suppression
+		void SetEnergyThreshold(double e){ _ethresh = e; }
 
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
@@ -96,7 +103,8 @@ struct RecoParticle;
 		double _etamax; //max eta
 		double _phimin; //sets [-pi, pi] or [0, 2pi] for phi indexing
 		double _calEres; //calorimeter energy resolution
-		double _calTres; //calorimeter time resolution
+		double _calTresCte; //calorimeter time resolution - constant term
+		double _calTresRate; //calorimeter time resolution - energy dependent term
 		double _sagres; //sagitta resolution
 		double _crack_frac; //calorimeter cell edge crack fraction
 		
@@ -130,6 +138,8 @@ struct RecoParticle;
 		Pythia8::Pythia _pythia; //pythia object for main event generation
 		bool _pu; //pileup switch
 		int _nPUavg; //number of pu events on average
+		bool _spikes; //spikes switch
+		double _spikeprob; //probability of spiking in rec hit
 
 		//process enums
 		enum _proc {ttbar, qcd};

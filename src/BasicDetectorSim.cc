@@ -22,7 +22,8 @@ BasicDetectorSim::BasicDetectorSim(){
 	_deta = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTres = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_gev = 0; //default
@@ -33,9 +34,11 @@ BasicDetectorSim::BasicDetectorSim(){
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
-	_ethresh = 0.7; //(GeV)
+	_ethresh = 1.0;//0.7; //(GeV)
 	_ncell = 1;
 	_pu = false; //pileup switch
+	_spikes = false; //spikes switch
+	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//create container for cal cell info
 	//E, t, nEmissions
 	for(int i = 0; i < _netacal; i++){
@@ -56,7 +59,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTres = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_gev = 999; //default
@@ -68,6 +72,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_ethresh = 0.1; //(GeV)
 	_ncell = 1;
 	_pu = false; //pileup switch
+	_spikes = false; //spikes switch
+	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//initialize cal - save e, t, n emissions
 	for(int i = 0; i < _netacal; i++){
 		_cal.push_back({});
@@ -167,7 +173,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			// No neutrinos
       			if (sumEvent[p].idAbs() == 12 || sumEvent[p].idAbs() == 14 ||
       			    sumEvent[p].idAbs() == 16)     continue;
-			
+		
+
+			//extreme gen momentum eta cut	
+			if(fabs(particle.eta()) > 2.4) continue;	
+
+			//puT in pT cut hehe
+			//muon would need ~3.5 GeV to get to muon chambers so this should be the ceiling for the cut
+			if(particle.pT() < 3.) continue;
 			
 			//set production vertex from z-smearing
 			_rs.SetRange(particle.zProd()*1e-3 - zig, particle.zProd()*1e-3 + zig);
@@ -187,9 +200,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(particle.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//if(fabs(rp.Position.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//reset phi for reco particle to include zshift
-		
-			//if particle energy is less than single rechit thresh, skip	
-			if(particle.e() < _ethresh) continue;
 			
 			//calculate new pt (does full pvec but same pz)
 			CalcTrajectory(rp);
@@ -467,7 +477,7 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			//do amplitude dependent time smearing
 			//with constant c = 200 ps
-			t_sig = _calTres*_calTres;// + _n*_n/(e*e);
+			t_sig = _calTresCte*_calTresCte + _calTresRate*_calTresRate/(e_cell*e_cell);
 			t_sig = sqrt(t_sig);
 			//smear time in cell
 			//t can be negative (early times)
@@ -475,11 +485,13 @@ void BasicDetectorSim::MakeRecHits(){
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
 			
+			
 			//reset e and t for cal cells
 			etot += e_cell;
 			nrhs++;			
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
+			
 	
 		}
 	}
@@ -500,6 +512,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 	int ieta, iphi, iieta, iiphi;	
 	double reco_e, reco_t, reco_nrh;
 	double x, y, z, t, r, q;
+	int nspikes = 0;	
 	for(int p = 0; p < _recops.size(); p++){
 		Position = _recops[p].Position;
 		Momentum = _recops[p].Momentum;
@@ -543,7 +556,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//get cal time for iieta and iiphi (this time is itself an E-weighted average)
 				reco_t += _cal[iieta][iiphi].at(1)*_cal[iieta][iiphi].at(0);
 				reco_nrh++;
-		
+				
 				//add emission to particle
 				//doesn't include tof correction to time
 				//save time in ns, space in cm
@@ -554,6 +567,55 @@ void BasicDetectorSim::ReconstructEnergy(){
 				_recops[p].AddEmission(jet);
 				_cal_rhs.push_back(jet);
 	
+				//simulate spikes
+				//emissions separate from showers
+				//don't want to conflate spike energy/times with shower energy/times
+				if(_spikes){
+					//roll dice to see if spike occurs
+					_rs.SetRange(0.,1.);
+					r = _rs.SampleFlat();
+					if(r > _spikeprob) continue;				
+			
+					nspikes++;
+					//if yes, roll dice for energy
+					//assume spikes have a characteristic/on average energy of ~80 GeV
+					//gain switch is not calibrated for energies above 120 GeV
+					//so the time reco gets weird (in CMS)
+					//0 is 4sigma away so captures most of the distribution
+					_rs.SetRange(0.,120.);
+					reco_e = _rs.SampleGaussian(80., 20., 1).at(0);
+					//roll dice for time
+					//assume spikes have an early time between 5 to 15 ns early
+					//peaked at -10 ns
+					//5 sigma spread, make sure spike is OUT of time
+					//t can be negative (early times)
+					_rs.SetRange(-35*1e-9, 0.);
+					reco_t = _rs.SampleGaussian(-10.*1e-9,5.*1e-9,1).at(0); 
+					//save as separate JetPoint in _cal_rhs
+					//smear eta, phi based on cell dimensions
+					//this is to avoid 2D overlap with true rec hits
+					_rs.SetRange(ceta + _deta/2., ceta - _deta/2.);
+					ceta = _rs.SampleFlat();
+					_rs.SetRange(cphi + _dphi/2., cphi - _dphi/2.);
+					cphi = _rs.SampleFlat();
+					//that are measured in cell center
+					//get x, y, z based on cell eta phi
+					x = _rmax*cos(cphi);
+					y = _rmax*sin(cphi);
+					theta = 2*tan(exp(-ceta));
+					z = sqrt(x*x + y*y)/tan(theta);
+
+					//doesn't include tof correction to time
+					//save time in ns, space in cm
+					JetPoint jet(x*1e2, y*1e2, z*1e2, reco_t*1e9);
+					jet.SetEnergy(reco_e);
+					jet.SetEta(eta);
+					jet.SetPhi(phi);
+					_cal_rhs.push_back(jet);
+
+				}
+		
+	
 
 			}
 		}
@@ -563,7 +625,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 	}	
-
+cout << nspikes << " spikes" << endl;
 
 }
 
