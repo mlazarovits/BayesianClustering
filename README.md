@@ -73,7 +73,7 @@ There are muliple visualization classes:
 	- fill histogram in the derived object skimmer
 #### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
-	- `python2 condor/generateSubmission.py` generates the submission script for condor
+	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
 - if the executable `FullCluster.x` changes, make sure to add the new `.x` file to `config/` and recreate the `config` tarball
