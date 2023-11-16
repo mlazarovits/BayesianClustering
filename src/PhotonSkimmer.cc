@@ -8,6 +8,8 @@
 PhotonSkimmer::PhotonSkimmer(){ 
 	_evti = 0;
 	_evtj = 0;
+	_isocuts = false;
+	_oskip = 10;
 };
 
 
@@ -30,6 +32,8 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 
 	objE->SetTitle("phoE");
 	objE->SetName("phoE");
+	_isocuts = false;
+	_oskip = 10;
 }
 
 //make cluster param histograms
@@ -65,12 +69,17 @@ void PhotonSkimmer::Skim(){
 	
 	vector<JetPoint> rhs;
 	double phoid, k;
-	int eSkip = 10;
-	if(_debug){ eSkip = 1000; }
+	if(_debug){ _oskip = 1000; }
 	double sumE;
 
+	//false = does not pass iso
+	//true = passes iso
+	bool iso = true;
+	bool trksum = true;
+	bool ecalrhsum = true;
+	bool htowoverem = true;
 
-
+	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
@@ -78,13 +87,21 @@ void PhotonSkimmer::Skim(){
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		nPho = (int)_base->Photon_energy->size();
-		//if(i % 10 == 0) cout << "Event " << i << " events of " << _nEvts << endl;
+		//loop over photons
 		for(int p = 0; p < nPho; p++){
+			//apply isolation cuts
+			if(_isocuts){
+				trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
+				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
+				htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
+				iso = trksum && ecalrhsum && htowoverem;
+			}
+			if(!iso) continue;
+
 			sumE = 0;
 			//find subclusters for each photon
 			_prod->GetRecHits(rhs, e, p);
-			//if(_debug) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
-			if(e % eSkip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << endl;
+			if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			//else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			if(rhs.size() < 1){ continue; }
@@ -139,10 +156,10 @@ void PhotonSkimmer::CleaningSkim(){
 
 	int nPho;
 	vector<JetPoint> rhs;
-	int eSkip = 10;
-	if(_debug){ eSkip = 1000; }
+	int _oskip = 10;
+	if(_debug){ _oskip = 1000; }
 
-	for(int i = 0; i < _nEvts; i+=eSkip){
+	for(int i = 0; i < _nEvts; i+=_oskip){
 		_base->GetEntry(i);
 		nPho = (int)_base->Photon_energy->size();
 		for(int p = 0; p < nPho; p++){

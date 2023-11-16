@@ -22,6 +22,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		void CleaningSkim();
 		void Skim();
 
+		void SetIsoCuts(){ _isocuts = true; }
+		bool _isocuts;
+		//set skip for outstream
+		void SetSkip(int i){ _oskip = i; }
+		int _oskip;
 
 		//stacked photon LLID hists
 		//list of photon ids
