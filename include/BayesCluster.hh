@@ -85,7 +85,7 @@ class BayesCluster{
 		}
 
 		//for photons - subclusters only
-		void SubCluster(string oname = ""){
+		GaussianMixture* SubCluster(string oname = ""){
 			this->_subcluster(oname);
 		}
 
@@ -305,7 +305,7 @@ class BayesCluster{
 
 		const vector<node*>& _delauney_cluster();
 		const vector<node*>& _naive_cluster();
-		void _subcluster(string oname = "");
+		GaussianMixture* _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }
 		double _thresh, _alpha, _subalpha;
 		Matrix _smear;

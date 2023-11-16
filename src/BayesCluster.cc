@@ -325,7 +325,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 
 
 
-void BayesCluster::_subcluster(string oname){
+GaussianMixture* BayesCluster::_subcluster(string oname){
 	//create GMM model
 	PointCollection* points = new PointCollection();
 	for(auto point : _points){
@@ -414,14 +414,7 @@ void BayesCluster::_subcluster(string oname){
 
 	}
 
-	return;
-
-
-
-
-
-
-
+	return gmm;
 
 }
 
