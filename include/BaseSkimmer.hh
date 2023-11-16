@@ -79,7 +79,7 @@ class BaseSkimmer{
 			hists2D.push_back(npts_totE);
 			hists2D.push_back(npts_fracE_lead);
 			hists2D.push_back(npts_fracE_lead_1subcl);
-
+			hists2D.push_back(nsubcl_nrhs);
 		}
 		virtual ~BaseSkimmer(){ 
 			delete _base;
@@ -196,6 +196,9 @@ class BaseSkimmer{
 		TH2D* npts_fracE_lead = new TH2D("npts_fracE_lead","npts_fracE_lead;npts;fracE_lead",50,0.,70,50,0,1.);
 		//17 - npts v energy for 1 subcluster photons
 		TH2D* npts_fracE_lead_1subcl = new TH2D("npts_fracE_lead_1subcl","npts_fracE_lead_1subcl;npts;fracE_lead",50,0.,70,50,0,1.);
+		//18 - nsubclusters vs nrhs in cluster
+		TH2D* nsubcl_nrhs = new TH2D("nsubcl_npts","nsubcl_npts;nsubclusters;nrhs",10,0,10,10,0,50);
+	
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
