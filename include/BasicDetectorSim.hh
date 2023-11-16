@@ -14,7 +14,11 @@
 #include "fastjet/PseudoJet.hh"
 #include <Math/Vector4D.h>
 #include <TH1D.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TBranch.h>
 #include <string>
+#include <memory>
 
 using std::string;
 using Pythia = Pythia8::Pythia;
@@ -26,7 +30,8 @@ struct RecoParticle;
 	public:
 		BasicDetectorSim();
 		BasicDetectorSim(string infile);
-		virtual ~BasicDetectorSim(){ };
+		virtual ~BasicDetectorSim(){ 
+		};
 
 		void SimTTbar(){ _procs_to_sim.push_back(ttbar); };
 		void SimQCD(){ _procs_to_sim.push_back(qcd); };
@@ -92,6 +97,10 @@ struct RecoParticle;
 		}
 	
 
+		//init tree
+		void InitTree(string fname = "rootfiles/ttbarPUspikes_BDS.root");
+		void WriteTree();
+
 	private:
 		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)
@@ -156,6 +165,15 @@ struct RecoParticle;
 		void _get_etaphi(int ieta, int iphi, double& eta, double& phi);
 
 		int _verb;
+
+		//for writing
+		TTree* _tree = nullptr;
+		std::unique_ptr<TFile> _file;
+		void _reset();
+		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
+		vector<double> _spikeE;
+		int _evt, _nRhs, _nSpikes, _nRecoParticles;
+
 
 		struct RecoParticle{
 			//associated gen particle

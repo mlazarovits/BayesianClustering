@@ -46,6 +46,7 @@ BasicDetectorSim::BasicDetectorSim(){
 		for(int j = 0; j < _nphical; j++)
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
+
 }
 
 //ctor with input pythia cmnd file
@@ -129,6 +130,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	}
 
 	_pythia.init();
+
 	//sigma for z-smearing
 	//beamspot spread is ~5 cm = 0.05 m to use with _sol
 	double zig = 0.05/2.;
@@ -148,12 +150,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
 	for(int i = 0; i < _nevts; i++){
-		if(!_pythia.next() || i != evt) continue;
-		// Reset Fastjet input
-    		fjinputs.clear();
-		fjinputs.resize(0);
+		if(evt != -1)
+			if(i != evt) continue;
+		if(!_pythia.next()) continue;
 		//store event info if pileup is on
 		sumEvent = _pythia.event;
+
+		_evt = i;		
+
 		if(_pu){
 			//simulate n pileup events
 			int nPU = _rs.SamplePoisson(_nPUavg,1).at(0);
@@ -190,8 +194,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//original pythia coords are in m, convert to mm
 			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
 			
-			//create new particle for reco one
-			RecoParticle rp(particle); 
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
 			//this is for gen particles
@@ -200,6 +202,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(particle.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//if(fabs(rp.Position.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//reset phi for reco particle to include zshift
+			
+			//create new particle for reco one
+			RecoParticle rp(particle); 
 			
 			//calculate new pt (does full pvec but same pz)
 			CalcTrajectory(rp);
@@ -216,7 +221,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//running fastjet on gen particles, no shower, etc.
       			fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
       			  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
-			
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 			
@@ -226,12 +230,22 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//get jets - min 5 pt
 		fjoutputs = cs.inclusive_jets(5.);
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
-
+		//make rhs and reconstruct time + energy for particles in evt	
+		MakeRecHits();
+		ReconstructEnergy();
+		//sort jets by pt
+		_jets = sorted_by_pt(_jets);
+cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << endl;
+		if(_tree != nullptr) _tree->Fill();
+		
+		//reset event
+		sumEvent.clear();
+		_reset();
+		// Reset Fastjet input
+    		fjinputs.clear();
+		fjinputs.resize(0);
+	
 	}
-	MakeRecHits();
-	ReconstructEnergy();
-	//sort jets by pt
-	_jets = sorted_by_pt(_jets);
 }
 
 //updates pvec of p
@@ -365,7 +379,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 
 
 
-//fill ecal cells (and create rechits)
+//fill ecal cells - create showers
 void BasicDetectorSim::FillCal(RecoParticle& rp){
 	Pythia8::Particle p = rp.Particle;
 	PtEtaPhiEVector Momentum = rp.Momentum;
@@ -427,7 +441,6 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			//eta integral * phi integral
 			//percent of particle energy in this cell
 			e_cell = e*(0.5*( erf((beta - eta)/(showrad*sqrt(2))) - erf((aeta - eta)/(showrad*sqrt(2))) ) * 0.5*( erf((bphi - phi)/(showrad*sqrt(2))) - erf((aphi - phi)/(showrad*sqrt(2))) ));
-			
 			//add energy to right ieta, iphi cell	
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(0)+e_cell, 0);	
 			//add time to right ieta, iphi cell	
@@ -441,7 +454,9 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 }
 
 
-
+//add up emissions in rec hits
+//some may be overlapping so need to fill call
+//with all particles first
 void BasicDetectorSim::MakeRecHits(){
 	double e, t, x, y, z, theta;
 	double e_cell, t_cell;
@@ -449,6 +464,7 @@ void BasicDetectorSim::MakeRecHits(){
 	double eta, phi;
 	int nrhs = 0;
 	int etot = 0;
+
 	//do energy first to get transfer factor
 	for(int i = 0; i < _netacal; i++){
 		for(int j = 0; j < _nphical; j++){
@@ -459,7 +475,7 @@ void BasicDetectorSim::MakeRecHits(){
 			//that follows equation 1.2 in CMS TDR
 			//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
 			e_sig = _s*_s/e + _n*_n/(e*e) + _c*_c;
-			e_sig = e*sqrt(e_sig);
+			e_sig = sqrt(e_sig);
 			//smear total energy in cell
 			//update random sampling range to match
 			//energy in this cell
@@ -492,10 +508,36 @@ void BasicDetectorSim::MakeRecHits(){
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
 			
+			//get cell bounds
+			_get_etaphi(i, j, eta, phi);
 	
+			//get x, y, z based on cell eta phi
+			x = _rmax*cos(phi);
+			y = _rmax*sin(phi);
+			theta = 2*tan(exp(-eta));
+			z = sqrt(x*x + y*y)/tan(theta);
+			t = _cal[i][j].at(1); 
+			
+			JetPoint jet(x*1e2, y*1e2, z*1e2, t*1e9);
+			jet.SetEnergy(_cal[i][j].at(0));
+			jet.SetEta(eta);
+			jet.SetPhi(phi);
+			_cal_rhs.push_back(jet);
+			
+			//save rec hits to tree
+			_rhE.push_back(_cal[i][j].at(0));			
+			_rhx.push_back(x*1e2);
+			_rhy.push_back(y*1e2);
+			_rhz.push_back(z*1e2);
+			_rht.push_back(t*1e9);
+			_rheta.push_back(eta);
+			_rhphi.push_back(phi);
+			_nRhs++;
+
 		}
 	}
 	if(_default_transfer) _gev = etot/(double)nrhs;
+
 }
 
 
@@ -539,7 +581,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				
 				//also do zero suppression here so
 				//this rh doesn't get counted in time average
-				if(_cal[iieta][iiphi].at(0) < _ethresh) continue;
+				if(_cal[iieta][iiphi].at(0) < _ethresh) continue; //_cal[iieta][iiphi].SetValue(0., 0.);
 			
 				//get integral bounds
 				_get_etaphi(iieta, iiphi, ceta, cphi);
@@ -554,7 +596,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//get cal energies for iieta and iiphi;
 				reco_e += _cal[iieta][iiphi].at(0);		
 				//get cal time for iieta and iiphi (this time is itself an E-weighted average)
-				reco_t += _cal[iieta][iiphi].at(1)*_cal[iieta][iiphi].at(0);
+				reco_t += _cal[iieta][iiphi].at(1);
 				reco_nrh++;
 				
 				//add emission to particle
@@ -565,7 +607,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				jet.SetEta(ceta);
 				jet.SetPhi(cphi);
 				_recops[p].AddEmission(jet);
-				_cal_rhs.push_back(jet);
+			
 	
 				//simulate spikes
 				//emissions separate from showers
@@ -594,9 +636,9 @@ void BasicDetectorSim::ReconstructEnergy(){
 					//save as separate JetPoint in _cal_rhs
 					//smear eta, phi based on cell dimensions
 					//this is to avoid 2D overlap with true rec hits
-					_rs.SetRange(ceta + _deta/2., ceta - _deta/2.);
+					_rs.SetRange(ceta - _deta/2., ceta + _deta/2.);
 					ceta = _rs.SampleFlat();
-					_rs.SetRange(cphi + _dphi/2., cphi - _dphi/2.);
+					_rs.SetRange(cphi - _dphi/2., cphi + _dphi/2.);
 					cphi = _rs.SampleFlat();
 					//that are measured in cell center
 					//get x, y, z based on cell eta phi
@@ -612,6 +654,10 @@ void BasicDetectorSim::ReconstructEnergy(){
 					jet.SetEta(eta);
 					jet.SetPhi(phi);
 					_cal_rhs.push_back(jet);
+					
+					//save spikes to tree
+					_spikeE.push_back(reco_e);			
+					_nSpikes++;
 
 				}
 		
@@ -619,13 +665,12 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 			}
 		}
-		//reset e and t
+		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
-
+		_nRecoParticles++;
 
 	}	
-cout << nspikes << " spikes" << endl;
 
 }
 
@@ -680,6 +725,58 @@ void BasicDetectorSim::GetTrueJets(vector<Jet>& jets){
 	for(int i = 0; i < _jets.size(); i++)
 		jets.push_back(Jet( _jets[i].px(), _jets[i].py(), _jets[i].pz(), _jets[i].e()) );
 
+}
+
+
+//init tree
+void BasicDetectorSim::InitTree(string fname){
+	std::unique_ptr<TFile> f(new TFile(fname.c_str(), "RECREATE"));
+	_file = std::move(f);	
+	TDirectory* dir = _file->mkdir("tree");
+	dir->cd();
+
+	_tree = new TTree("llpgtree","llpgtree");
+	_tree->Branch("event", &_evt)->SetTitle("Event");
+	_tree->Branch("ECALRecHit_energy", &_rhE)->SetTitle("rec hit energy (GeV)");
+	_tree->Branch("ECALRecHit_rhx", &_rhx)->SetTitle("rec hit x coord (cm)");
+	_tree->Branch("ECALRecHit_rhy", &_rhy)->SetTitle("rec hit y coord (cm)");
+	_tree->Branch("ECALRecHit_rhz", &_rhz)->SetTitle("rec hit z coord (cm)");
+	_tree->Branch("ECALRecHit_time", &_rht)->SetTitle("rec hit time (ns)");
+	_tree->Branch("ECALRecHit_eta", &_rheta)->SetTitle("rec hit eta");
+	_tree->Branch("ECALRecHit_phi", &_rhphi)->SetTitle("rec hit phi");
+	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
+	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
+	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
+	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
+}
+
+
+void BasicDetectorSim::_reset(){
+	_rhE.clear();
+	_rhx.clear();
+	_rhy.clear();
+	_rhz.clear();
+	_rht.clear();
+	_rheta.clear();
+	_rhphi.clear();
+	_spikeE.clear();
+	_evt = 0;
+	_nRhs = 0;
+	_nRecoParticles = 0;
+	_nSpikes = 0;
+	for(int i = 0; i < _netacal; i++)
+		for(int j = 0; j < _nphical; j++)
+			_cal[i][j] = Point({0., 0., 0.});
+	_cal_rhs.clear();
+	_recops.clear();
+	_jets.clear();
+}
+
+void BasicDetectorSim::WriteTree(){
+	cout << "Writing to " << _file->GetName() << endl;
+	_file->cd();	
+	_file->Write();
+	_file->Close();
 }
 
 bool BasicDetectorSim::_in_cell_crack(const RecoParticle& rp){

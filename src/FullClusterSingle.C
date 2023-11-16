@@ -235,7 +235,6 @@ int main(int argc, char *argv[]){
 	vector<Jet> rhs, jets;
 	vector<node*> trees;
 	//get rhs (as Jets) for event
-cout << "obj: " << obj << endl;
 	if(obj == 0){
 		cout << "Getting rec hits for jets at event " << evt << endl;
 		JetProducer prod(file);
@@ -252,10 +251,14 @@ cout << "obj: " << obj << endl;
 	}
 	else if(obj == 2){
 		BasicDetectorSim det;
-		det.SetNEvents(10);
+		det.SetNEvents(1);
 		det.SetVerbosity(verb);
+		det.SetEnergyThreshold(1.); //set to 1 GeV
+		//could set time resolution cte to MTD specs here
+		
 		det.SimTTbar();
 		det.TurnOnPileup();
+		det.TurnOnSpikes(0.05);
 		//default arg is all events
 		det.SimulateEvents(evt);
 		det.GetRecHits(rhs);
@@ -305,6 +308,7 @@ cout << "obj: " << obj << endl;
 			plots.AddTrueJets(jets);
 			plots.Write(fname);
 		}
+		cout << jets.size() << " true jets" << endl;
 	}
 	//photons
 	else if(obj == 1){
