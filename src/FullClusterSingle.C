@@ -40,6 +40,7 @@ int main(int argc, char *argv[]){
 	int strat = 0; //0 is NlnN
 	int evt = 0; //for event evt
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
+	int nobj = 0; //number of object in event to cluster (only for photons)
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -128,6 +129,11 @@ int main(int argc, char *argv[]){
     	 		i++;
 			obj = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--nobj", 6) == 0){
+    	 		i++;
+			nobj = std::atoi(argv[i]);
+   		}
+		
 
 	}
 	if(hprint){
@@ -142,6 +148,7 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2,  does not apply to photons)" << endl;
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons, 2 : detector sim)" << endl;
+   		cout << "   --nobj [n]                    set number of object in event to cluster (photons only, default = 0)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
@@ -201,10 +208,6 @@ int main(int argc, char *argv[]){
 	fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
-	if(weighted) fname += "_Eweighted";
-	if(smeared) fname += "_EtaPhiSmear";
-	if(distconst) fname += "_distanceConstrained";
-	
 	/////GET DATA FROM NTUPLE//////
 	//get version
 	std::smatch m;
@@ -244,7 +247,7 @@ int main(int argc, char *argv[]){
 	}
 	else if(obj == 1){
         	PhotonProducer prod(file);
-		int npho = 0; //which photon to analyze
+		int npho = nobj; //which photon to analyze
 		cout << "Making plots for photon " << npho << "  at event " << evt << endl;
         	prod.GetRecHits(rhs,evt,npho);
         	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
