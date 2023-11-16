@@ -1,6 +1,8 @@
 #include "BasicDetectorSim.hh"
 #include "TMath.h"
+#include "Matrix.hh"
 #include "fastjet/ClusterSequence.hh"
+#include "BayesCluster.hh"
 
 #include <TFile.h>
 #include <algorithm>
@@ -46,6 +48,9 @@ BasicDetectorSim::BasicDetectorSim(){
 		for(int j = 0; j < _nphical; j++)
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
+	_alpha = 0.5;
+	_emAlpha = 0.1;
+	_thresh = 1.;
 
 }
 
@@ -85,6 +90,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	//sets pythia settings by given .cmnd file
 	_pythia.readFile(infile);
 	_nevts = _pythia.mode("Main:numberOfEvents");
+	_alpha = 0.5;
+	_emAlpha = 0.1;
+	_thresh = 1.;
 
 }
 
@@ -149,6 +157,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
+	//declare settings for BayesCluster
+	Matrix smear = Matrix(3,3);
+	//diagonal matrix
+	smear.SetEntry(_deta*_deta,0,0);
+	smear.SetEntry(_dphi*_dphi,1,1);
+	smear.SetEntry(1.,2,2); //no smear in time	
+
+
 	for(int i = 0; i < _nevts; i++){
 		if(evt != -1)
 			if(i != evt) continue;
@@ -230,17 +246,36 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//get jets - min 5 pt
 		fjoutputs = cs.inclusive_jets(5.);
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
+		//sort jets by pt
+		_jets = sorted_by_pt(_jets);
+		
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
 		ReconstructEnergy();
-		//sort jets by pt
-		_jets = sorted_by_pt(_jets);
+
+		//do bayesian clustering
+		BayesCluster bc(_cal_rhs);
+		bc.SetDataSmear(smear);
+		bc.SetThresh(_thresh);
+		bc.SetAlpha(_alpha);
+		bc.SetSubclusterAlpha(_emAlpha);
+		bc.SetVerbosity(0);
+		vector<node*> trees = bc.NlnNCluster();
+		vector<Jet> predjets;
+		for(int i = 0; i < trees.size(); i++){
+			//TODO: set predicted jets from PointCollection in tree[i]
+		}
+		
+
+
 cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << endl;
 		if(_tree != nullptr) _tree->Fill();
 		
 		//reset event
 		sumEvent.clear();
 		_reset();
+		//if only simulating one event, save for GetRecHits
+		if(evt != -1) _cal_rhs.clear();
 		// Reset Fastjet input
     		fjinputs.clear();
 		fjinputs.resize(0);
@@ -554,7 +589,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 	int ieta, iphi, iieta, iiphi;	
 	double reco_e, reco_t, reco_nrh;
 	double x, y, z, t, r, q;
-	int nspikes = 0;	
 	for(int p = 0; p < _recops.size(); p++){
 		Position = _recops[p].Position;
 		Momentum = _recops[p].Momentum;
@@ -618,7 +652,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 					r = _rs.SampleFlat();
 					if(r > _spikeprob) continue;				
 			
-					nspikes++;
 					//if yes, roll dice for energy
 					//assume spikes have a characteristic/on average energy of ~80 GeV
 					//gain switch is not calibrated for energies above 120 GeV
@@ -633,7 +666,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 					//t can be negative (early times)
 					_rs.SetRange(-35*1e-9, 0.);
 					reco_t = _rs.SampleGaussian(-10.*1e-9,5.*1e-9,1).at(0); 
-					//save as separate JetPoint in _cal_rhs
 					//smear eta, phi based on cell dimensions
 					//this is to avoid 2D overlap with true rec hits
 					_rs.SetRange(ceta - _deta/2., ceta + _deta/2.);
@@ -682,6 +714,7 @@ void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
 	for(int j = 0; j < _cal_rhs.size(); j++){
 		_cal_rhs[j].SetWeight(_cal_rhs[j].E()/_gev);
 		rhs.push_back(Jet(_cal_rhs[j]));
+		//rhs.push_back(Jet(_cal_rhs[j]));
 	}
 }
 
