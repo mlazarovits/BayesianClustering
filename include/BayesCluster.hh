@@ -86,7 +86,7 @@ class BayesCluster{
 
 		//for photons - subclusters only
 		GaussianMixture* SubCluster(string oname = ""){
-			this->_subcluster(oname);
+			return this->_subcluster(oname);
 		}
 
 		void SetThresh(double t){ _thresh = t; }

@@ -385,7 +385,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		newLogL = algo->EvalLogL();
 		if(isnan(newLogL)){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
-			return;
+			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
 		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;

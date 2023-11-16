@@ -212,14 +212,13 @@ int main(int argc, char *argv[]){
 		evtj = evti;
 		evti = evt;
 	}
-	cout << "Writing to directory: " << fname << endl;
 
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
-		skimmer.SetOutfile(fname);
+		skimmer.SetOutfile(fname+".root");
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.Skim();
@@ -234,7 +233,7 @@ int main(int argc, char *argv[]){
 			data = true;
 		skimmer.SetIsoCuts();
 		skimmer.SetData(data);
-		skimmer.SetOutfile(fname);
+		skimmer.SetOutfile(fname+".root");
         	//skimmer.SetDebug(debug);
 		//set EMalpha
         	skimmer.SetCMSLabel(cmslab);
