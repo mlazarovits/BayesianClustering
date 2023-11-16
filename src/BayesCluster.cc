@@ -155,7 +155,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		if(_verb > 0) cout << "\n" << endl;
 	}
 
-	//MergeTree* endmerge = DNN->GetMergeTree();
 	_trees = mt->GetClusters();
 	cout << mt->GetNClusters() << " final clusters" << endl;
 	double nmirror = 0;
@@ -165,12 +164,13 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
 			continue; }
-		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+		
+		cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		_trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	cout << mt->GetNClusters() - nmirror << " jets found." << endl;
+	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
 	return _trees;
 	
 	

@@ -147,19 +147,20 @@ int main(int argc, char *argv[]){
 
 	cout << "Free sha-va-ca-doo!" << endl;
 	
-	
+	string cmslab, version;	
+	TFile* file = nullptr;
 	/////GET DATA FROM NTUPLE//////
 	if(!in_file.empty()){
 		//get version
 		std::smatch m;
 		std::regex re("_v[0-9]_");
-		string version = "";
+		version = "";
 		std::regex_search(in_file,m,re);
 		for(auto x : m) version += x;
-		string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+		cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
 		cmslab += version.substr(0,3);
 		cout << "Writing to directory: " << fname << endl;
-		TFile* file = TFile::Open(in_file.c_str());
+		file = TFile::Open(in_file.c_str());
 		cout << "Skimming events " << evti << " to " << evtj << " for ";
 	}
 	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
