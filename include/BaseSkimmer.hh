@@ -107,7 +107,7 @@ class BaseSkimmer{
 
 		vector<TH1D*> hists1D;
 		//0 - # of subclusters
-		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",7,0,7.);
+		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
 		//1 - mean time - center in t
 		TH1D* time_center = new TH1D("time_center","time_center",50,-30,30);
 		//2 - mean eta - center in eta
@@ -177,7 +177,7 @@ class BaseSkimmer{
 		//7 - t v phi
 		TH2D* t_phi = new TH2D("t_phi","t_phi;time_center;phi_center",50,-30,30,50,-3.5,3.5);
 		//8 - nsubClusters vs fraction of lead subcl E
-		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead;nSubClusters;fracE_lead",7,0,7,50,0,1);
+		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead;nSubClusters;fracE_lead",10,0,10.,50,0,1);
 		//9 - objE (true) to cluster E (algo)
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,100,50,0,100);
 		//10 - time to mixing coeff
@@ -197,7 +197,7 @@ class BaseSkimmer{
 		//17 - npts v energy for 1 subcluster photons
 		TH2D* npts_fracE_lead_1subcl = new TH2D("npts_fracE_lead_1subcl","npts_fracE_lead_1subcl;npts;fracE_lead",50,0.,70,50,0,1.);
 		//18 - nsubclusters vs nrhs in cluster
-		TH2D* nsubcl_nrhs = new TH2D("nsubcl_npts","nsubcl_npts;nsubclusters;nrhs",10,0,10,10,0,50);
+		TH2D* nsubcl_nrhs = new TH2D("nsubcl_nrhs","nsubcl_nrhs;nsubclusters;nrhs",10,0,10,10,0,50);
 	
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
