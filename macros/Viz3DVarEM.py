@@ -97,6 +97,7 @@ def plot_json(jsonfile, dataonly = False):
 
 	fig = go.Figure(gr_arr)
 	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
+	fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
 	#fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
 	return fig
 
@@ -143,7 +144,7 @@ for f in files:
 		name = f[:f.find(".json")]
 		print("Writing to",args.dir+"/"+name+".pdf")
 		if not args.gif:
-			fig.write_image(args.dir+"/"+name+".pdf")
+			fig.write_image(args.dir+"/"+name+".pdf",width=900,height=600)
 		gifcmd += args.dir+"/"+name+".pdf "
 	if args.data:
 		break
