@@ -54,7 +54,7 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	int nJets = (int)_base->Jet_energy->size();
 
 	//actually get rhs for clustering
-	nRHs = (int)_base->ECALRecHit_ID->size();
+	nRHs = (int)_base->ECALRecHit_energy->size();
 	vector<double> ws;
 	//need to transfer from GeV (energy) -> unitless (number of points
 	//transfer factor is over all points in event
