@@ -27,6 +27,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//set skip for outstream
 		void SetSkip(int i){ _oskip = i; }
 		int _oskip;
+		void SetThresh(double t){ _thresh = t; }
+		void SetBHCAlpha(double a){ _alpha = a; }
+		void SetEMAlpha(double a){ _emAlpha = a; }
+		double _thresh, _alpha, _emAlpha;
+
 
 		//stacked photon LLID hists
 		//list of photon ids
@@ -195,6 +200,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			int nclusters = model->GetNClusters();
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
+			plotCats[id_idx].hists2D[18]->Fill(nclusters,npts);
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
 			

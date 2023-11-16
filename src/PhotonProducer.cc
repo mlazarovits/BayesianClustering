@@ -1,5 +1,4 @@
 #include "PhotonProducer.hh"
-#include "Clusterizer.hh"
 #include "Matrix.hh"
 
 #include <TFile.h>
@@ -177,10 +176,6 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
 		id = _base->Photon_rhIds->at(pho).at(r);
-		for(int j = 0; j < nRHs_evt; j++){
-			if(_base->ECALRecHit_ID->at(j) == id)
-				gev += _base->ECALRecHit_energy->at(j);	
-		}
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF

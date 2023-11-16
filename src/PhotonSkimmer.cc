@@ -1,15 +1,17 @@
 #include "PhotonSkimmer.hh"
-#include "Clusterizer.hh"
+#include "BayesCluster.hh"
 #include "Matrix.hh"
 
 #include <TFile.h>
-//#include <TH1D.h>
 #include <TH2D.h>
 PhotonSkimmer::PhotonSkimmer(){ 
 	_evti = 0;
 	_evtj = 0;
 	_isocuts = false;
 	_oskip = 10;
+	_thresh = 1.;
+	_alpha = 0.1;
+	_emAlpha = 0.5;
 };
 
 
@@ -34,6 +36,9 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	objE->SetName("phoE");
 	_isocuts = false;
 	_oskip = 10;
+	_thresh = 1.;
+	_alpha = 0.1;
+	_emAlpha = 0.5;
 }
 
 //make cluster param histograms
@@ -55,19 +60,9 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
 	
-	Clusterizer* algo = new Clusterizer();
-	algo->SetClusterAlpha(0.1);
-	algo->SetSubclusterAlpha(0.1);
-	algo->SetThresh(1.);
-	algo->SetWeighted(true);
-	algo->SetVerbosity(0);
-	algo->SetDataSmear(smear);
-
-
-	GaussianMixture* gmm = new GaussianMixture();
 
 	
-	vector<JetPoint> rhs;
+	vector<Jet> rhs;
 	double phoid, k;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
@@ -103,10 +98,15 @@ void PhotonSkimmer::Skim(){
 			_prod->GetRecHits(rhs, e, p);
 			if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			//else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+			BayesCluster *algo = new BayesCluster(rhs);
+			algo->SetDataSmear(smear);
+			algo->SetThresh(_thresh);
+			algo->SetAlpha(_alpha);
+			algo->SetSubclusterAlpha(_emAlpha);
+			algo->SetVerbosity(0);
 			
 			if(rhs.size() < 1){ continue; }
-			algo->SetMaxNClusters(int(rhs.size()));
-			gmm = algo->FindSubjets(Jet(rhs));
+			GaussianMixture* gmm = algo->SubCluster();
 			//get weight transfer factor - k = sum_n(E_n)/N = E_n/w_n = E_n*k/E_n for N rhs in a photon supercluster
 			//w_n = E_n/k
 			k = rhs[0].E()/gmm->GetData()->at(0).w();
