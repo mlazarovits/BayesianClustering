@@ -200,7 +200,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			int nclusters = model->GetNClusters();
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
-			plotCats[id_idx].hists2D[18]->Fill(nclusters,npts);
+			plotCats[id_idx].hists2D[18]->Fill((double)nclusters,npts);
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);
 			
@@ -351,6 +351,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix lead_eigenvec;
 			
 			int nclusters = model->GetNClusters();
+			nsubcl_nrhs->Fill((double)nclusters,npts);
 			nSubClusters->Fill(nclusters);
 			model->GetAvgVarWeights(avg_Es);
 			model->GetNormsUnwt(npts_unwt);

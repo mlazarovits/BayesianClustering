@@ -107,6 +107,7 @@ void PhotonSkimmer::Skim(){
 			
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
+			if(gmm->GetNClusters() > 7) cout << "photon #" << p << " in event # " << e << " has " << gmm->GetNClusters() << " subclusters" << endl;	
 			//get weight transfer factor - k = sum_n(E_n)/N = E_n/w_n = E_n*k/E_n for N rhs in a photon supercluster
 			//w_n = E_n/k
 			k = rhs[0].E()/gmm->GetData()->at(0).w();
