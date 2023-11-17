@@ -43,23 +43,6 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	_base->GetEntry(evt);
 	nphotons = (int)_base->Photon_rhIds->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
-	//transfer factor is over all points in event
-	vector<double> gevs;
-	for(int p = 0; p < nphotons; p++){
-		double gev = 0;
-		nRHs = (int)_base->Photon_rhIds->at(p).size();
-		for(int r = 0; r < nRHs; r++){
-			//add tof = d_pv to time to get correct RH time
-			//t = rh_time - d_rh/c + d_pv/c
-			id = _base->Photon_rhIds->at(p).at(r);
-			for(int j = 0; j < nRHs_evt; j++){
-				if(_base->ECALRecHit_ID->at(j) == id)
-					gev += _base->ECALRecHit_energy->at(j);	
-			}
-		}
-		//weigh photons individually
-		gevs.push_back(gev/(double)nRHs); //gev = k = sum_n E_n/n pts
-	}
 	
 	for(int p = 0; p < nphotons; p++){
 		nRHs = (int)_base->Photon_rhIds->at(p).size();
@@ -76,7 +59,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
 					rh.SetPhi(_base->ECALRecHit_phi->at(j));
 					rh.SetRecHitId(id);
-					rh.SetWeight(_base->ECALRecHit_energy->at(j)/gevs[p]);	
+					rh.SetWeight(_base->ECALRecHit_energy->at(j)*_gev);	
 					
 					//cleaning cuts
 					if(!cleanRH(rh)) break;
@@ -104,18 +87,6 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
 	
-	//transfer factor is over all points in event
-	double gev = 0;
-	for(int r = 0; r < nRHs; r++){
-		//add tof = d_pv to time to get correct RH time
-		//t = rh_time - d_rh/c + d_pv/c
-		id = _base->Photon_rhIds->at(pho).at(r);
-		for(int j = 0; j < nRHs_evt; j++){
-			if(_base->ECALRecHit_ID->at(j) == id)
-				gev += _base->ECALRecHit_energy->at(j);	
-		}
-	}
-	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
 	
 	for(int r = 0; r < nRHs; r++){
 		//add tof = d_pv to time to get correct RH time
@@ -129,7 +100,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
 				rh.SetRecHitId(id);
-				rh.SetWeight(_base->ECALRecHit_energy->at(j)/gev);	
+				rh.SetWeight(_base->ECALRecHit_energy->at(j)*_gev);	
 				
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
@@ -159,18 +130,6 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
-	//transfer factor is over all points in event
-	double gev = 0;
-	for(int r = 0; r < nRHs; r++){
-		//add tof = d_pv to time to get correct RH time
-		//t = rh_time - d_rh/c + d_pv/c
-		id = _base->Photon_rhIds->at(pho).at(r);
-		for(int j = 0; j < nRHs_evt; j++){
-			if(_base->ECALRecHit_ID->at(j) == id)
-				gev += _base->ECALRecHit_energy->at(j);	
-		}
-	}
-	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
 
 	for(int r = 0; r < nRHs; r++){
 		//add tof = d_pv to time to get correct RH time
@@ -184,7 +143,7 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
 				rh.SetRecHitId(id);
-				rh.SetWeight(_base->ECALRecHit_energy->at(j)/gev);	
+				rh.SetWeight(_base->ECALRecHit_energy->at(j)*_gev);	
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
 			

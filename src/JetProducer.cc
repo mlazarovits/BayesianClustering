@@ -57,11 +57,6 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	nRHs = (int)_base->ECALRecHit_energy->size();
 	vector<double> ws;
 	//need to transfer from GeV (energy) -> unitless (number of points
-	//transfer factor is over all points in event
-	double gev = 0;
-	for(int r = 0; r < nRHs; r++) gev += _base->ECALRecHit_energy->at(r);
-	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
-	for(int r = 0; r < nRHs; r++){ ws.push_back(_base->ECALRecHit_energy->at(r)/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
 	
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
@@ -74,7 +69,7 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
-		rh.SetWeight(ws[r]);
+		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 	
 		rhs.push_back(rh);
 	}	
@@ -99,12 +94,6 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	vtx.SetValue(_base->PV_z,2);
 	//make weights - E/e_avg
 	vector<double> ws;
-	//need to transfer from GeV (energy) -> unitless (number of points
-	//transfer factor is over all points in event
-	double gev = 0;
-	for(int r = 0; r < nRHs; r++) gev += _base->ECALRecHit_energy->at(r);
-	gev = gev/(double)nRHs; //gev = k = sum_n E_n/n pts
-	for(int r = 0; r < nRHs; r++){ ws.push_back(_base->ECALRecHit_energy->at(r)/gev); }//weights[i] /= gev; } //sums to n pts, w_n = E_n/k 
 
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
@@ -116,7 +105,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
-		rh.SetWeight(ws[r]);
+		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 
 		Jet j(rh);
 		j.SetVertex(vtx);

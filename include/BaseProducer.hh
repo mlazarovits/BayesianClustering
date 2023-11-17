@@ -14,7 +14,9 @@
 
 class BaseProducer{
 	public:
-		BaseProducer(){ };
+		BaseProducer(){ 
+			_gev = 1;
+		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
@@ -26,6 +28,8 @@ class BaseProducer{
 			TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			_base = new ReducedBase(tree);
 			_nEvts = _base->fChain->GetEntries();
+			//default to 1 GeV = 1 entry -> gev = 1
+			_gev = 1;
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
@@ -46,7 +50,10 @@ class BaseProducer{
 		ReducedBase* _base = nullptr;
 		int _nEvts;
 
-
+		//energy weight transfer factor
+		//w = g*E -> g = N/GeV
+		void SetTransferFactor(double g){ _gev = g; }
+		double _gev;
 
 
 
