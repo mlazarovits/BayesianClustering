@@ -23,7 +23,7 @@ def plot_json(jsonfile, dataonly = False):
 	z = data['z']
 	#weights - colors
 	w = data['w']
-	
+
 	gr_arr = []
 
 	
@@ -80,7 +80,7 @@ def plot_json(jsonfile, dataonly = False):
 		z2 = new_points[2, :] + z0
 		x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
-		#make ellipsoid color of average energy across points (responsibilities)
+		#make ellipsoid color of total energy across points (responsibilities)
 		if max(w) == min(w):
 			cl_w = (clusters[idx]["color"])# - min(w))/(max(w) - min(w))
 		else:
