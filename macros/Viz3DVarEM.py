@@ -39,7 +39,7 @@ def plot_json(jsonfile, dataonly = False):
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
 		fig.update_layout(scene=dict(aspectmode= "auto"),title=plotname, template=None,zaxis_title='time')
-		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
+		fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
 		return fig
 	
 
@@ -97,8 +97,7 @@ def plot_json(jsonfile, dataonly = False):
 
 	fig = go.Figure(gr_arr)
 	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
-	fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
-	#fig.update_layout({"scene": {"aspectmode": "auto"}},title=plotname, template=None)
+	fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
 	return fig
 
 
