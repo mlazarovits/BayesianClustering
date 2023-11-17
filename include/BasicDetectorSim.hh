@@ -80,7 +80,7 @@ struct RecoParticle;
 		void GetTrueJets(vector<Jet>& jets);
 
 		//sets transfer factor for rec hit weights
-		void SetEnergyTransferFactor(double gev){ _gev = gev; _default_transfer = false; }
+		void SetTransferFactor(double gev){ _gev = gev; }
 		void SetNEvents(int e){ _nevts = e; _pythia.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
 		void SetVerbosity(int v = 0){
 			_verb = v;
@@ -100,6 +100,12 @@ struct RecoParticle;
 		//init tree
 		void InitTree(string fname = "rootfiles/ttbarPUspikes_BDS.root");
 		void WriteTree();
+
+
+		//for BayesCluster
+		void SetBayesThreshold(double t){ _thresh = t; }
+		void SetBayesAlpha(double a){ _alpha = a; }
+		void SetBayesSubAlpha(double a){ _emAlpha = a; }
 
 	private:
 		double _rmax; //max radius of detector (m)
@@ -136,11 +142,10 @@ struct RecoParticle;
 	
 		RandomSample _rs; //random sampler for smearing
 		int _nevts; //number of events to simulate
-		vector<vector<double>> _calE; //energy in ecal cells in [eta][phi]
-		vector<vector<double>> _calT; //time in ecal cells in [eta][phi]
-		vector<vector<int>>    _calN; //number of emissions in an [eta][phi] cell
+		//this needs to be separate from JetPoint bc there is no field in JetPoint to track how many emissions are in a cell
 		vector<vector<Point>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
-		vector<JetPoint> _cal_rhs; //ecal rec hits
+		//vector<JetPoint> _cal_rhs; //ecal rec hits
+		vector<Jet> _cal_rhs; //ecal rec hits
 		vector<fastjet::PseudoJet>  _jets; //outputs from fastjet
 
 		vector<RecoParticle> _recops; //reco particles
@@ -158,7 +163,6 @@ struct RecoParticle;
 
 
 		double _gev; //transfer factor for weighting rechits
-		bool _default_transfer;
 
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
@@ -171,9 +175,15 @@ struct RecoParticle;
 		std::unique_ptr<TFile> _file;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
+		int _npredjets, _ntruejets;
+		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
+		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
 
+
+		//BayesCluster params
+		double _alpha, _emAlpha, _thresh;
 
 		struct RecoParticle{
 			//associated gen particle
