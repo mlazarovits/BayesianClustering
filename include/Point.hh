@@ -48,7 +48,7 @@ class Point{
 			_rank.clear();
 			_value = p.Value();
 			_rank = p.Rank();	
-			_weight = 1.;
+			_weight = p.Weight();
 			return *this;
 		}
 		bool operator == (const Point& pt2) const{
