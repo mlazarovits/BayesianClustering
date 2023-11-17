@@ -90,7 +90,7 @@ def plot_json(jsonfile, dataonly = False):
 		cl = np.array([cl,cl]).flatten()
 	
 		name = "subcluster "+idx
-		name += " has "+str(len(x))+" points ("+str(round(clusters[idx]["color"],2))+" GeV) with MM coeff "+str(round(op,2))
+		name += " has MM coeff "+str(round(op,2))+" ("+str(round(clusters[idx]["color"],2))+" GeV)" 
 		#add ellipsoids
 		gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op, colorscale=cl, surfacecolor=y1, cmin=y1.min(), cmax=y1.max(), 
 			showscale = False, showlegend = True, name = name)),
