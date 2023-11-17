@@ -70,16 +70,16 @@ CXX	   += -I$(INCLUDEDIR) -I.
 OUTOBJ	    = ./obj/
 
 #specify local source, include, and object files
-CC_FILES    = $(wildcard src/*.cc)
-HH_FILES    = $(wildcard include/*.hh)
-OBJ_FILES   = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
+CC_FILES        = $(wildcard src/*.cc)
+HH_FILES        = $(wildcard include/*.hh)
+OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
-
+SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
 #specify what to make
+all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 local: all
 lpc:   all
-all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
@@ -113,9 +113,9 @@ detectorSim.x: $(SRCDIR)detectorSim.C $(OBJ_FILES) $(HH_FILES)
 	touch detectorSim.x
 
 #make shared library
-lib/libBayesCluster.so: $(OBJ_FILES)
+lib/libBayesCluster.so: $(SOBJ_FILES)
 	mkdir -p lib
-	$(CXX) -shared -o lib/libBayesCluster.so $(OBJ_FILES) $(SGLIBS)
+	$(CXX) -shared -o lib/libBayesCluster.so $(SOBJ_FILES) $(SGLIBS)
 	touch lib/libBayesCluster.so
 
 #where to put object files
