@@ -333,6 +333,19 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	}
 	int maxK = points->GetNPoints();
 	GaussianMixture* gmm = new GaussianMixture(maxK);
+
+	//TODO: needs wraparound implemented
+	_phi_wraparound(*points);
+
+	//put in local coordinates
+	//transform points into local coordinates
+	//for GMM parameter estimation
+	//use weighted mean as center to be set to 0 point
+	//Point center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
+	//copy points for parameter estimation
+	//so original points don't get overwritten
+	Point center = points->Center();//Translate(center);
+
 	
 	gmm->SetData(points);
 	gmm->SetAlpha(_subalpha);
@@ -419,6 +432,46 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 }
 
 
+
+void BayesCluster::_phi_wraparound(PointCollection& pc){
+	Point mean = pc.mean();
+	double pi = acos(-1);
+
+	//calculate max distance from mean for all points (O(n))
+	double maxdist = 0;
+	double dphi;
+	for(int i = 0; i < pc.GetNPoints(); i++){
+		dphi = fabs(pc.at(i).at(1) - mean.at(1));
+		if(dphi > maxdist) maxdist = dphi;
+	} 
+
+	//if maxdist is less than pi/2. return
+	if(maxdist < pi/2.) return;
+
+	//else, mirror all points above pi to below 0
+	PointCollection mirrorpts;
+	for(int i = 0; i < pc.GetNPoints(); i++){
+		Point pt = pc.at(i);
+		if(pt.at(1) > pi){ 
+			pt.SetValue(2*pi - pt.at(1),1);
+		}
+		mirrorpts.AddPoint(pt);
+	}
+	//recalculate max distance from mean
+	mean = mirrorpts.mean();
+	double newmaxdist = 0;
+	for(int i = 0; i < mirrorpts.GetNPoints(); i++){
+		dphi = fabs(mirrorpts.at(i).at(1) - mean.at(1));
+		if(dphi > newmaxdist) newmaxdist = dphi;
+	} 
+
+	//if new maxdist < maxdist, keep mirrored points
+	if(newmaxdist < maxdist) pc = mirrorpts;
+	//else keep original points
+	return;
+
+	//else unmirror points
+}
 
 void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN){
 		double dist;

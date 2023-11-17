@@ -293,6 +293,7 @@ class BayesCluster{
 		}
 		void _add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob = true);
 		void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
+		void _phi_wraparound(PointCollection& pc);
 
 	private:
 		vector<Jet> _jets;
