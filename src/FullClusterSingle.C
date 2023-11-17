@@ -205,7 +205,8 @@ int main(int argc, char *argv[]){
 
 
 
-	fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
+	if(obj != 1) fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
+	else fname += "_evt"+std::to_string(evt)+"_emAlpha"+ema_string+"_thresh"+t_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	/////GET DATA FROM NTUPLE//////
@@ -217,7 +218,8 @@ int main(int argc, char *argv[]){
 	for(auto x : m) version += x;
 	string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
 	cmslab += version.substr(0,3);
-	fname += version.substr(0,3); //"_v9"
+	
+	fname += "_"+cmslab;//version.substr(0,3); //"_v9"
 	if(viz){
 		cout << "Writing to directory: " << fname << endl;
 		if(gSystem->AccessPathName(fname.c_str())){
