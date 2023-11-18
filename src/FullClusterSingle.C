@@ -236,6 +236,10 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
 
+	//this should be in N/GeV
+	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
+	double gev = 1./5.;
+
 
 	vector<Jet> rhs, jets;
 	vector<node*> trees;
@@ -243,12 +247,14 @@ int main(int argc, char *argv[]){
 	if(obj == 0){
 		cout << "Getting rec hits for jets at event " << evt << endl;
 		JetProducer prod(file);
+		prod.SetTransferFactor(gev);
 		prod.GetRecHits(rhs,evt);	
 		prod.GetTrueJets(jets, evt);
 		cout << rhs.size() << " rechits in event " << evt << endl;
 	}
 	else if(obj == 1){
         	PhotonProducer prod(file);
+		prod.SetTransferFactor(gev);
 		int npho = nobj; //which photon to analyze
 		cout << "Making plots for photon " << npho << "  at event " << evt << endl;
         	prod.GetRecHits(rhs,evt,npho);
@@ -256,6 +262,7 @@ int main(int argc, char *argv[]){
 	}
 	else if(obj == 2){
 		BasicDetectorSim det;
+		det.SetTransferFactor(gev);
 		det.SetNEvents(1);
 		det.SetVerbosity(verb);
 		det.SetEnergyThreshold(1.); //set to 1 GeV
@@ -274,7 +281,6 @@ int main(int argc, char *argv[]){
         if(rhs.size() < 1) return -1;
 	vector<double> ws;
 	rhs[0].GetWeights(ws);
-	double gev = rhs[0].E()/ws[0];
 
 	//to debug - use less rechits
 	//int nrhs = 100;

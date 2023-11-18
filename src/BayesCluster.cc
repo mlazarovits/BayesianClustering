@@ -334,7 +334,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	int maxK = points->GetNPoints();
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 
-	//TODO: needs wraparound implemented
 	_phi_wraparound(*points);
 
 	//put in local coordinates

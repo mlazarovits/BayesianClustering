@@ -517,6 +517,7 @@ void GaussianMixture::CalculateRStatistics(){
 
 //		cout << "k: " << k << " mu" << endl;
 //		mu.Print();
+		double t_sig2;
 		for(int n = 0; n < m_n; n++){
 			//construct x - mu
 			Matrix x_mat = Matrix(m_data->at(n));
@@ -533,18 +534,24 @@ void GaussianMixture::CalculateRStatistics(){
 			Matrix x_min_muT = Matrix(1, m_dim);
 			x_min_muT.transpose(x_min_mu);
 		
-			Matrix S_k = Matrix(m_dim, m_dim);	
+			Matrix S_n = Matrix(m_dim, m_dim);	
 			//(x_n - mu_k)*(x_n - mu_k)T
-			S_k.mult(x_min_mu,x_min_muT);
+			S_n.mult(x_min_mu,x_min_muT);
 			//cout << "(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();
 			//weighting by posterior r_nk
-			S_k.mult(S_k,m_post.at(n,k));
+			S_n.mult(S_n,m_post.at(n,k));
 		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
 			//cout << "post*(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();
 			//sum over n
-			S.add(S_k);
+			S.add(S_n);
+			//set time resolution smear: c^2 + n^2/e^2
+			//remember time is already in ns
+			//e = w/gev
+			//t_sig2 = 0.2*0.2 + (0.5*0.5)/(m_data->at(n).w()*m_data->at(n).w());
+			//if(_time_smear) _data_cov.SetEntry(t_sig2,2,0);
+			if(_smear) S.add(_data_cov);
 		}	
 		//cout << "sum_n post*(x - mu)*(x - mu)T" << endl;	
 		//S.Print();
@@ -554,7 +561,6 @@ void GaussianMixture::CalculateRStatistics(){
 		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
 		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
 		//N_k = 0 clusters do not get a smear because there are no points to smear
-		if(_smear) S.add(_data_cov);
 //		S.Print();
 		m_model[k]->SetParameter("cov",S);
 		//if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
