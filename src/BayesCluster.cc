@@ -24,6 +24,10 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	mt->SetVerbosity(_verb);
 	//set data smear
 	if(!_smear.empty()) mt->SetDataSmear(_smear);
+	//set time resolution smear: c^2 + n^2/e^2
+	//remember time is already in ns
+	//e = w/gev
+	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);
@@ -190,6 +194,10 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 	mt->SetVerbosity(_verb);
 	//set data smear
 	if(!_smear.empty()) mt->SetDataSmear(_smear);
+	//set time resolution smear: c^2 + n^2/e^2
+	//remember time is already in ns
+	//e = w/gev
+	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);
@@ -353,6 +361,8 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->InitPriorParameters();
 
 	gmm->SetDataSmear(_smear);
+	
+	if(_tresSmear_c != -1) gmm->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
 	algo->SetThresh(_thresh);

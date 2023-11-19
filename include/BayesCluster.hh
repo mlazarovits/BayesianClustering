@@ -43,6 +43,8 @@ class BayesCluster{
 			_smear = Matrix();
 			_verb = 0;
 			_trees = {nullptr};
+			_tresSmear_c = -1;
+			_tresSmear_n = -1;
 			
 			//add initial jets (rec hits) to merge tree as leaves
 			int n = (int)_jets.size();
@@ -94,6 +96,8 @@ class BayesCluster{
 		void SetAlpha(double a){ _alpha = a; }
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
 		void SetVerbosity(int v){ _verb = v; }
+		//set time resolution smearing factors
+		void SetTimeResSmear(double c, double n){ _tresSmear_c = c; _tresSmear_n = n; }
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
@@ -295,6 +299,7 @@ class BayesCluster{
 		void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
 		void _phi_wraparound(PointCollection& pc);
 
+
 	private:
 		vector<Jet> _jets;
 		vector<PointCollection> _points; //to pass to merge tree in cluster function
@@ -311,6 +316,9 @@ class BayesCluster{
 		double _thresh, _alpha, _subalpha;
 		Matrix _smear;
 		int _verb;
+
+		//time res smearing factors
+		double _tresSmear_c, _tresSmear_n;
 	 
 };
 #endif

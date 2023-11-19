@@ -546,11 +546,17 @@ void GaussianMixture::CalculateRStatistics(){
 			//S_k.Print();
 			//sum over n
 			S.add(S_n);
-			//set time resolution smear: c^2 + n^2/e^2
-			//remember time is already in ns
-			//e = w/gev
-			//t_sig2 = 0.2*0.2 + (0.5*0.5)/(m_data->at(n).w()*m_data->at(n).w());
-			//if(_time_smear) _data_cov.SetEntry(t_sig2,2,0);
+			//if resolution based smearing is set for any dimension of the covariance,
+			//alter smearing matrix accordingly
+			if(_res_smear_d.size() > 0 && _smear){
+				double res;
+				for(int i = 0; i < _res_smear_d.size(); i++){
+					res = _res_smear_c[i]*_res_smear_c[i] + (_res_smear_n[i]*_res_smear_n[i])/( m_data->at(n).w()*m_data->at(n).w() );
+					//entry is sigma^2
+					_data_cov.SetEntry( res*res, _res_smear_d[i], _res_smear_d[i] );
+				}
+
+			}
 			if(_smear) S.add(_data_cov);
 		}	
 		//cout << "sum_n post*(x - mu)*(x - mu)T" << endl;	

@@ -290,7 +290,11 @@ int main(int argc, char *argv[]){
 
 	
 	BayesCluster *algo = new BayesCluster(rhs);
-	if(smeared) algo->SetDataSmear(smear);
+	algo->SetDataSmear(smear);
+	//set time resolution smear: c^2 + n^2/e^2
+	//remember time is already in ns
+	//e = w/gev
+	algo->SetTimeResSmear(0.2, 0.3*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);

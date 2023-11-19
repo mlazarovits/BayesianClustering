@@ -55,7 +55,14 @@ class BasePDFMixture : public BasePDF{
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
 		void SetDataSmear(const Matrix& cov){ _data_cov = cov; _smear = true; }
-
+		//set a weight-dependent resolution smearing for dimension d
+		//ie energy dependent time resolution smearing
+		//res = c^2 + n^2/w^2
+		void SetWeightBasedResSmear(double c, double n, int d){
+			if(d > m_dim) return;
+			_res_smear_c.push_back(c); _res_smear_n.push_back(n); _res_smear_d.push_back(d);
+		} 
+	
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
 		virtual void UpdateParameters() = 0;
@@ -252,6 +259,11 @@ class BasePDFMixture : public BasePDF{
 		//data smear
 		Matrix _data_cov;
 		bool _smear;
+
+		//resolution smearing - one entry per dim to smear
+		vector<double> _res_smear_c, _res_smear_n;
+		//which dimension(s) to smear
+		vector<int> _res_smear_d;
 
 };
 #endif

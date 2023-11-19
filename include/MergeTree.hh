@@ -100,6 +100,12 @@ class MergeTree : BaseTree{
 		void SetSubclusterAlpha(double a){ _emAlpha = a; }		
 
 		void SetDataSmear(const Matrix& cov){ _data_smear = cov; }
+		//set a weight-dependent resolution smearing for dimension d
+		//ie energy dependent time resolution smearing
+		//res = c^2 + n^2/w^2
+		void SetWeightBasedResSmear(double c, double n, int d){
+			_res_smear_c.push_back(c); _res_smear_n.push_back(n); _res_smear_d.push_back(d);
+		} 
 
 		void SetVerbosity(int v){ _verb = v; }
 
@@ -197,7 +203,14 @@ class MergeTree : BaseTree{
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
 			x->model->SetData(&newpts);
-			if(!_data_smear.empty()) x->model->SetDataSmear(_data_smear);
+			if(!_data_smear.empty()){
+				x->model->SetDataSmear(_data_smear);
+				if(_res_smear_d.size() > 0){
+					for(int i = 0; i < _res_smear_d.size(); i++){
+						x->model->SetWeightBasedResSmear(_res_smear_c[i], _res_smear_n[i], _res_smear_d[i]);
+					}
+				}
+			}
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
 
@@ -278,6 +291,8 @@ class MergeTree : BaseTree{
 		double _constraint_a, _constraint_b;
 
 		Matrix _data_smear;
+		vector<double> _res_smear_c, _res_smear_n;
+		vector<int> _res_smear_d;
 		int _verb;
 		map<string, Matrix> _params;
 		bool _constraint;
