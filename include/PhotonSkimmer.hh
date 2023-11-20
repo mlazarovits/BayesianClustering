@@ -63,7 +63,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			notSunm.legName = "bkg";
 			notSunm.plotName = "bkg";
 			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
-			bkg.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
+			notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
 			//notSunm.ids = {29, -1}; 
 			plotCats.push_back(notSunm);
 
