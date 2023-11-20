@@ -86,7 +86,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		//time
 		z.push_back(_points->at(i).Value(2));
 		//weight
-		w.push_back(_points->at(i).Weight()*_transf);
+		w.push_back(_points->at(i).Weight()/_transf);
 	}
 	data["x"] = json(x);
 	data["y"] = json(y);
@@ -137,7 +137,7 @@ void VarClusterViz3D::WriteJson(string filename){
 		cluster["eigenVec_2"] = json(eigenVec_2);	
 
 		//color for subcluster will be total energy (sum_n E_n*r_nk)
-		cluster["color"] = _transf*cnts[k];
+		cluster["color"] = cnts[k]/_transf;
 
 	
 		clusters[std::to_string(k)] = cluster;

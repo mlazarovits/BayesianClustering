@@ -37,7 +37,7 @@ json FullViz3D::WriteNode(node* n){
 		//time
 		z.push_back(points->at(i).Value(2));
 		//weight - untransfererd (in GeV (sum_n E_n*r_nk))
-		w.push_back(points->at(i).Weight()*_transf);
+		w.push_back(points->at(i).Weight()/_transf);
 
 	}
 	data["x"] = x;
@@ -84,7 +84,7 @@ json FullViz3D::WriteNode(node* n){
 		subcluster["eigenVec_2"] = eigenVec_2;	
 		
 		//color for subcluster will be total energy (sum_n E_n*r_nk)
-		subcluster["color"] = _transf*cnts[k];
+		subcluster["color"] = cnts[k]/_transf;
 	
 		subclusters["subcluster_"+std::to_string(k)] = subcluster;
 
