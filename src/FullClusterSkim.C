@@ -36,6 +36,9 @@ int main(int argc, char *argv[]){
 	int evti = 0; //for skimming from evti to evtj
 	int evtj = 0;
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
+	//this should be in N/GeV
+	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
+	double gev = 1./5.;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -93,13 +96,13 @@ int main(int argc, char *argv[]){
     	 		alpha = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--weight", 8) == 0){
-    	 		weighted = true;
+    	 		weighted = false;
    		}
 		if(strncmp(argv[i],"--smear", 7) == 0){
-    	 		smeared = true;
+    	 		smeared = false;
    		}
 		if(strncmp(argv[i],"--dist", 6) == 0){
-    	 		distconst = true;
+    	 		distconst = false;
    		}
 		if(strncmp(argv[i],"--strategy", 10) == 0){
     	 		i++;
@@ -121,6 +124,10 @@ int main(int argc, char *argv[]){
     	 		i++;
 			obj = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--gev", 5) == 0){
+			i++;
+    	 		gev = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -134,11 +141,12 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN, does not apply to photons)" << endl;
-   		cout << "   --object [obj]          set object to cluster (0 : jets, default; 1 : photons)" << endl;
+   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/5)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --smear                       smears data according to preset covariance (default = false)" << endl;
-   		cout << "   --weight                      weights data points (default = false)" << endl;
-   		cout << "   --dist                        clusters must be within pi/2 in phi (default = true)" << endl;
+   		cout << "   --NoSmear                     smears data according to preset covariance (default = true)" << endl;
+   		cout << "   --NoWeight                    weights data points (default = true)" << endl;
+   		cout << "   --NoDist                      clusters must be within pi/2 in phi (default = true)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -201,9 +209,18 @@ int main(int argc, char *argv[]){
 	t_string = stream.str();
 	idx = t_string.find(".");
 	t_string.replace(idx,1,"p");	
+	
+	string gev_string;
+	stream.str("");
+	stream << std::fixed << std::setprecision(3) << gev;
+	gev_string = stream.str();
+	idx = gev_string.find(".");
+	gev_string.replace(idx,1,"p");	
 
+	
 	if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
 	fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
+	fname += "NperGeV"+gev_string+"_";
 	fname += cmslab.substr(0,cmslab.find("_")); //short sample name
 	fname += version.substr(0,3); //"_v9"
 	//make sure evti < evtj
@@ -219,6 +236,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
 		skimmer.SetOutfile(fname+".root");
+		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.Skim();
@@ -234,6 +252,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetIsoCuts();
 		skimmer.SetData(data);
 		skimmer.SetOutfile(fname+".root");
+		skimmer.SetTransferFactor(gev);
         	//skimmer.SetDebug(debug);
 		//set EMalpha
         	skimmer.SetCMSLabel(cmslab);

@@ -18,7 +18,9 @@
 using std::string;
 class BaseSkimmer{
 	public:
-		BaseSkimmer(){ };
+		BaseSkimmer(){ 
+			_gev = 1;
+		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
@@ -33,6 +35,7 @@ class BaseSkimmer{
 			//_base->GetEntry(0);
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
+			_gev = 1;
 			_data = false;
 			_debug = false;
 			hists1D.push_back(nSubClusters);
@@ -97,13 +100,14 @@ class BaseSkimmer{
 		bool _debug;
 		int _evti, _evtj;
 		string _cms_label, _oname;
+		double _gev;
 
 		
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 		void SetOutfile(string fname){ _oname = fname; }
-
+		void SetTransferFactor(double gev){ _gev = gev; }
 
 		vector<TH1D*> hists1D;
 		//0 - # of subclusters
@@ -136,9 +140,9 @@ class BaseSkimmer{
 		TH1D* e_tot_sublead = new TH1D("e_tot_sublead","e_tot_sublead",50,0.,100.);
 		//14 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",50,0.,1000);
-		//15 - number of pts in lead subcluster
+		//15 - number of effective (ie weighted) pts in lead subcluster
 		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,70);
-		//16 - fraction of pts in lead subcluster
+		//16 - fraction of effective (ie weighted) pts in lead subcluster
 		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,1);
 		//17 - fraction of energy in lead subcluster
 		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
@@ -190,9 +194,9 @@ class BaseSkimmer{
 		TH2D* totE_mixcoeff_lead = new TH2D("totE_mixcoeff_lead","totE_mixcoeff;totE_lead;mixing_coeff_lead",50,0,100,50,0,1.);	
 		//14 - totE vs mixing coeff - notlead
 		TH2D* totE_mixcoeff_notlead = new TH2D("totE_mixcoeff_notlead","totE_mixcoeff_notlead;totE_notlead;mixing_coeff_notlead",50,0,100,50,0,1.);	
-		//15 - npts v energy
+		//15 - npts effective (ie weighted) v energy
 		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,50,0,70);
-		//16 - npts v energy
+		//16 - npts effective (ie weighted) v energy for lead subcluster
 		TH2D* npts_fracE_lead = new TH2D("npts_fracE_lead","npts_fracE_lead;npts;fracE_lead",50,0.,70,50,0,1.);
 		//17 - npts v energy for 1 subcluster photons
 		TH2D* npts_fracE_lead_1subcl = new TH2D("npts_fracE_lead_1subcl","npts_fracE_lead_1subcl;npts;fracE_lead",50,0.,70,50,0,1.);
@@ -327,6 +331,8 @@ class BaseSkimmer{
 			}		
 
 		}
+
+
 
 
 };

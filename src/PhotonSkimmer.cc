@@ -49,6 +49,9 @@ void PhotonSkimmer::Skim(){
 
 	//create histograms to be filled
 	MakeIDHists();
+
+	//set energy weight transfer factor
+	_prod->SetTransferFactor(_gev);
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi
@@ -59,7 +62,8 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
-	
+	double tres_c = 0.2;
+	double tres_n = 0.3*_gev;	
 
 	
 	vector<Jet> rhs;
@@ -100,6 +104,8 @@ void PhotonSkimmer::Skim(){
 			//else cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
+			//set time resolution smearing
+			algo->SetTimeResSmear(0.2, 0.3*_gev);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -108,9 +114,6 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			if(gmm->GetNClusters() > 7) cout << "photon #" << p << " in event # " << e << " has " << gmm->GetNClusters() << " subclusters" << endl;	
-			//get weight transfer factor - k = sum_n(E_n)/N = E_n/w_n = E_n*k/E_n for N rhs in a photon supercluster
-			//w_n = E_n/k
-			k = rhs[0].E()/gmm->GetData()->at(0).w();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
@@ -131,7 +134,7 @@ void PhotonSkimmer::Skim(){
 			}
 			objE->Fill(_base->Photon_energy->at(p));
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
-			FillTotalHists(gmm, k);
+			FillTotalHists(gmm);
 			rhs.clear();
 		}
 	}
