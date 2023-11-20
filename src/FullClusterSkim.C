@@ -187,6 +187,7 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 	if(oname != "") fname = fname+"_"+oname;
+	else fname = fname+"Skim";
 
 	fname = "plots/"+fname;
 	string a_string;
@@ -219,7 +220,8 @@ int main(int argc, char *argv[]){
 
 	
 	if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
-	fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
+	if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
+	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
 	fname += "NperGeV"+gev_string+"_";
 	fname += cmslab.substr(0,cmslab.find("_")); //short sample name
 	fname += version.substr(0,3); //"_v9"
