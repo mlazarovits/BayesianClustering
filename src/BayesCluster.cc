@@ -377,7 +377,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	VarClusterViz3D cv3D(algo);
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
-	double gev = _jets[0].E()/ws[0];
+	double gev = ws[0]/_jets[0].E();
+	cout << "gev: " << gev << endl;
+	for(int i = 0; i < _jets.size(); i++){
+		_jets[i].GetWeights(ws);
+		cout << "i: " << i << " energy: " << _jets[i].E() << " weight: " << ws[0] << endl;
+	}
 	if(viz){
 		cv3D.SetVerbosity(_verb);
 		cv3D.SetTransfFactor(gev);
@@ -386,7 +391,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	}
 	//loop
 	double dLogL, newLogL;
-	double LogLthresh = 0.01;
+	double LogLthresh = 0.001;
 	double oldLogL = algo->EvalLogL();
 	////////run EM algo////////
 	//maximum of 50 iterations

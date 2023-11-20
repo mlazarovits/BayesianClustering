@@ -223,7 +223,7 @@ class MergeTree : BaseTree{
 			//cluster
 			double oldLogL = algo->EvalLogL();
 			//if(algo->GetNClusters() < 1){ cout << "Error: threshold too high for successful clustering with " << x->points->GetNPoints() << " points (" << x->points->Sumw() << " weighted). Please adjust accordingly to continue hierarchically clustering" << endl; return -999; }
-			double LogLThresh = 0.01;
+			double LogLThresh = 0.001;
 			double newLogL;
 			double dLogL = 999; 
 			int it = 0;
