@@ -41,6 +41,9 @@ int main(int argc, char *argv[]){
 	int evt = 0; //for event evt
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
 	int nobj = 0; //number of object in event to cluster (only for photons)
+	//this should be in N/GeV
+	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
+	double gev = 1./5.;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -133,6 +136,10 @@ int main(int argc, char *argv[]){
     	 		i++;
 			nobj = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--gev", 5) == 0){
+			i++;
+    	 		gev = std::stod(argv[i]);
+   		}
 		
 
 	}
@@ -150,6 +157,7 @@ int main(int argc, char *argv[]){
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons, 2 : detector sim)" << endl;
    		cout << "   --nobj [n]                    set number of object in event to cluster (photons only, default = 0)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/5)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = true)" << endl;
@@ -173,7 +181,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 	else if(obj == 1)
-		fname += "pho";
+		fname += "photon";
 	else{
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
 		return -1;
@@ -235,10 +243,6 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
-
-	//this should be in N/GeV
-	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
-	double gev = 1./5.;
 
 
 	vector<Jet> rhs, jets;
