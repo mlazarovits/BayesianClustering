@@ -113,8 +113,15 @@ void PhotonSkimmer::Skim(){
 			
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
-			if(gmm->GetNClusters() > 5) cout << "\n photon #" << p << " in event # " << e << " has " << gmm->GetNClusters() << " subclusters" << endl;	
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			if(gmm->GetNClusters() > 3){
+				cout << "\n photon #" << p << " in event # " << e << " has energy " << _base->Photon_energy->at(p) << "  " << sumE << " (GeV) and " << gmm->GetNClusters() << " subclusters" << endl;	
+				cout << "rh energies:" << endl;
+				for(int i = 0; i < rhs.size(); i++){
+					cout << "i: " << i << " energy: " << rhs[i].E() << endl;
+
+				}	
+			}
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -138,6 +145,7 @@ void PhotonSkimmer::Skim(){
 			rhs.clear();
 		}
 	}
+	cout << "\n" << endl;
 	WriteHists(ofile);
 
 }

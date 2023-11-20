@@ -378,11 +378,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
-	cout << "gev: " << gev << endl;
-	for(int i = 0; i < _jets.size(); i++){
-		_jets[i].GetWeights(ws);
-		cout << "i: " << i << " energy: " << _jets[i].E() << " weight: " << ws[0] << endl;
-	}
 	if(viz){
 		cv3D.SetVerbosity(_verb);
 		cv3D.SetTransfFactor(gev);
