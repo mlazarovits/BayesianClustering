@@ -50,26 +50,22 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCat sig;
 			sig.legName = "#Chi^{0} #rightarrow #gamma";
 			sig.plotName = "chiGam";
-			sig.ids = {22, 32, 25, 35};
+			sig.ids = {22};
 			plotCats.push_back(sig);
 			//FSR
-			plotCat FSR;
-			FSR.legName = "sFSR";
-			FSR.plotName = "sFSR";
-			FSR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
-			plotCats.push_back(FSR);
+			//plotCat FSR;
+			//FSR.legName = "sFSR";
+			//FSR.plotName = "sFSR";
+			//FSR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
+			//plotCats.push_back(FSR);
 			//notSunm
 			plotCat notSunm;
-			notSunm.legName = "notSunm";
-			notSunm.plotName = "notSunm";
-			notSunm.ids = {29, -1}; 
+			notSunm.legName = "bkg";
+			notSunm.plotName = "bkg";
+			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
+			bkg.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
+			//notSunm.ids = {29, -1}; 
 			plotCats.push_back(notSunm);
-			//bkg
-			//plotCat bkg;
-			//bkg.legName = "bkg";
-			//bkg.plotName = "bkg";
-			//bkg.ids = {29, -1}; 
-			//plotCats.push_back(bkg);
 
 			//each category of histograms (histsID[j]) gets a list of histograms that is the same as the total list (hists1D)
 			string name;
@@ -190,7 +186,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 
 		//k = sum_n(E_n)/N
-		void FillModelHists(BasePDFMixture* model, int id_idx, double transf = 1.){
+		void FillModelHists(BasePDFMixture* model, int id_idx){
 			map<string, Matrix> params;
 			vector<double> eigenvals, eigenvals_space, norms;
 			vector<Matrix> eigenvecs, eigenvecs_space;
