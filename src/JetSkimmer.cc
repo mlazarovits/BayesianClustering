@@ -94,7 +94,6 @@ void JetSkimmer::Skim(){
 	vector<node*> trees;
 	//vector<JetPoint> rhs;
 	vector<Jet> rhs;
-	double gev;
 
 	//for computational time
 	vector<double> x_nrhs, y_time;
@@ -123,15 +122,12 @@ void JetSkimmer::Skim(){
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		algo->SetDataSmear(smear);
+		algo->SetTimeResSmear(0.2, 0.3*_gev);
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
 		algo->SetVerbosity(0);
-		//calculate transfer factor
-		vector<double> weight;
-		rhs[0].GetWeights(weight);
-		gev = rhs[0].E()/weight[0];
- 
+		
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
@@ -153,7 +149,7 @@ void JetSkimmer::Skim(){
 		
 		for(int i = 0; i < (int)trees.size(); i++){	
 			BasePDFMixture* model = trees[i]->model;
-			FillModelHists(model, gev);
+			FillModelHists(model);
 		}
 		
 		//jet specific hists

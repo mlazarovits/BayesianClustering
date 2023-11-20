@@ -19,7 +19,6 @@ class BasePDFMixture : public BasePDF{
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
 				m_norms.push_back(1.);
-				m_norms_unwt.push_back(1.);
 				m_alphas.push_back(0.);
 				m_model.push_back(nullptr);
 			}
@@ -180,21 +179,6 @@ class BasePDFMixture : public BasePDF{
 			return max_k;
 		}
 		
-		//ie gets subcluster average energy (within subcluster) - returns average weight per subcluster
-		void GetAvgWeights(vector<double>& v){
-			v.clear(); for(int k = 0; k < m_k; k++){ 
-			v.push_back(m_norms[k]/m_norms_unwt[k]); }
-		}  
-		void GetAvgVarWeights(vector<double>& v){
-			for(int k = 0; k < m_k; k++) v.push_back(m_norms[k]/m_norms_unwt[k]);
-
-		}  
-
-
-		void GetNormsUnwt(vector<double>& v){
-			v.clear();
-			for(int k = 0; k < m_k; k++) v.push_back(m_norms_unwt[k]);
-		}
 
 		void GetNorms(vector<double>& v){
 			v.clear();
@@ -250,7 +234,6 @@ class BasePDFMixture : public BasePDF{
 		double m_alpha0;
 		//normalization on posterior
 		vector<double> m_norms;
-		vector<double> m_norms_unwt;
 		Matrix m_post;
 	
 		int m_dim;

@@ -42,7 +42,6 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 		for(int n = 0; n < m_n; n++){ w += m_data->at(n).w(); }
 		m_norms[k] *= w/double(m_n); 
 
-		m_norms_unwt[k] = double(m_n)/double(m_k);
 		m_model[k]->SetDim(m_dim);
 
 
@@ -131,11 +130,8 @@ void GaussianMixture::UpdateParameters(){
 	//this is for N_k - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms[k] = 0;
-		m_norms_unwt[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			m_norms[k] += m_post.at(n,k);
-			//weighted in posterior calculation - need to unweight
-			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
 		}
 	}
 	//set new means + coeffs	
@@ -450,14 +446,12 @@ void GaussianMixture::CalculateRStatistics(){
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
 		m_norms[k] = 0;
-		m_norms_unwt[k] = 0;
 		for(int n = 0; n < m_n; n++){
 			//if(k == 0) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 			//if(n == 3) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 			
 			//weighted in posterior calculation - need to unweight
 			m_norms[k] += m_post.at(n,k);
-			m_norms_unwt[k] += m_post.at(n,k)/m_data->at(n).w();
 			//cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << endl;
 		}
 		//cout << "k: " << k << " norm: " << m_norms[k] << endl;
