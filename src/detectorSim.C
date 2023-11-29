@@ -82,7 +82,8 @@ int main(int argc, char *argv[]){
 	BasicDetectorSim det;
 	det.SetNEvents(nevts);
 	det.SetEnergyThreshold(1.); //set to 1 GeV
-	//set energy transfer factor
+	//set energy transfer factor in N/GeV
+	det.SetTransferFactor(1./10.);
 	det.SetVerbosity(verb);
 	det.SimTTbar();
 	if(pu) det.TurnOnPileup();

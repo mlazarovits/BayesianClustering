@@ -174,7 +174,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
-	cout << _trees.size() << " trees size" << endl;
 	return _trees;
 	
 	
@@ -321,9 +320,10 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
 			continue; }
-		cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-		//cout << "with center" << endl; _trees[i]->points->mean().Print();
-		_trees[i]->points->Print();
+		if(_verb > 0){
+			cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+			_trees[i]->points->Print();
+		}
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << mt->GetNClusters() - nmirror << " jets found." << endl;

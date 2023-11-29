@@ -162,12 +162,15 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	smear.SetEntry(_dphi*_dphi,1,1);
 	smear.SetEntry(1.,2,2); //no smear in time	
 
+	vector<node*> trees;
+	vector<Jet> predjets;
 
 	for(int i = 0; i < _nevts; i++){
 		if(evt != -1)
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
+	cout << "\nevent #" << i << endl;
 		sumEvent = _pythia.event;
 
 		_evt = i;		
@@ -254,21 +257,24 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//do bayesian clustering
 		BayesCluster bc(_cal_rhs);
 		bc.SetDataSmear(smear);
+		bc.SetTimeResSmear(0.2, 0.3*_gev);
 		bc.SetThresh(_thresh);
 		bc.SetAlpha(_alpha);
 		bc.SetSubclusterAlpha(_emAlpha);
 		bc.SetVerbosity(0);
-		vector<node*> trees = bc.NlnNCluster();
-		vector<Jet> predjets;
-		for(int i = 0; i < trees.size(); i++){
-			//TODO: set predicted jets from PointCollection in tree[i]
-		}
+		trees.clear();
+		trees = bc.NlnNCluster();
+		//for(int i = 0; i < trees.size(); i++){
+		//      //TODO: set predicted jets from PointCollection in tree[i]
+		//	if(trees[i] == nullptr) continue;
+		//	if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
+		//		continue; }
+		//}
 		
 
 
 cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << endl;
 		if(_tree != nullptr) _tree->Fill();
-		
 		//reset event
 		sumEvent.clear();
 		_reset();
@@ -277,7 +283,6 @@ cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size()
 		// Reset Fastjet input
     		fjinputs.clear();
 		fjinputs.resize(0);
-	
 	}
 }
 
@@ -555,6 +560,7 @@ void BasicDetectorSim::MakeRecHits(){
 			jet.SetEnergy(_cal[i][j].at(0));
 			jet.SetEta(eta);
 			jet.SetPhi(phi);
+			jet.SetWeight(_cal[i][j].at(0)*_gev);
 			_cal_rhs.push_back(jet);
 			
 			//save rec hits to tree

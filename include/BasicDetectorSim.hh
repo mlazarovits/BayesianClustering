@@ -31,6 +31,7 @@ struct RecoParticle;
 		BasicDetectorSim();
 		BasicDetectorSim(string infile);
 		virtual ~BasicDetectorSim(){ 
+
 		};
 
 		void SimTTbar(){ _procs_to_sim.push_back(ttbar); };

@@ -23,7 +23,7 @@ class BaseTree{
 		//node structure
 		struct node{
 			//points at node or info
-			PointCollection* points = nullptr;
+			PointCollection* points = new PointCollection();//nullptr;
 			//left and right subnodes
 			struct node *l = nullptr;
 			struct node *r = nullptr;
@@ -58,10 +58,10 @@ class BaseTree{
 			//destructor for node
 			~node(){
 				delete points;
+				model = nullptr;
 				delete model;
-				free(l);
-				free(r);
-				free(mirror);
+				//don't free l + r because those could be freed themselves as nodes
+				if(mirror != NULL) free(mirror);
 			}
 
 		};
