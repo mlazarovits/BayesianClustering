@@ -166,15 +166,15 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		//ignore removed (clustered) points and don't plot mirror points
 		if(_trees[i] == nullptr) continue;
 		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
-			nmirror++; 
+			nmirror++;
 			continue; }
-		
 		cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		_trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
+	cout << _trees.size() << " trees size" << endl;
 	return _trees;
 	
 	
@@ -419,9 +419,15 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		}
 		oldLogL = newLogL;
 	}
-	vector<double> norms;
-	gmm->GetNorms(norms);
+
+	//need to put GMM parameters AND points back in detector coordinates (not local)
+	//add shift function to BasePDFMixture
+	center.Scale(-1);
+	gmm->Shift(center);
+
 	if(_verb > 1){
+		vector<double> norms;
+		gmm->GetNorms(norms);
 		cout << "Estimated parameters" << endl;
 		map<string, Matrix> params;
 		for(int i = 0; i < gmm->GetNClusters(); i++){
