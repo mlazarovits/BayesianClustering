@@ -218,6 +218,8 @@ class BasePDFMixture : public BasePDF{
 
 		}
 
+		//shift data + learned parameters
+		virtual void Shift(const Point& pt) = 0;
 
 		PointCollection* m_data;
 		//number of data points

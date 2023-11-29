@@ -41,6 +41,26 @@ class GaussianMixture : public BasePDFMixture{
 		//	}
 
 		}
+
+
+		//shift data + learned model parameters
+		void Shift(const Point& pt){
+			m_data->Translate(pt);
+
+			//only need to shift Gaussian means + prior mean
+			for(int k = 0; k < m_k; k++){
+				Matrix mean = m_model[k]->GetParameter("mean");
+				PointCollection m = mean.MatToPoints();
+				m.Translate(pt);
+				m_model[k]->SetParameter("mean",m);
+			}
+			PointCollection m = m_mean0.MatToPoints();
+			m.Translate(pt);
+			m_mean0.PointsToMat(m);
+
+
+		}
+
 			
 		//for variational EM algorithm
 		void InitPriorParameters(unsigned long long seed = 111);
