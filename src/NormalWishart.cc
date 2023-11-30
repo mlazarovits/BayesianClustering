@@ -66,7 +66,7 @@ void NormalWishart::InitParameters(unsigned long long seed){
 
 void NormalWishart::UpdateParameters(){ 
 	m_mean = m_params["mean"];
-	m_scalemat = m_params["scale_mat"];
+	m_scalemat = m_params["scalemat"];
 	m_dof = m_params["dof"].at(0,0);
 	m_scale = m_params["scale"].at(0,0);
 };
