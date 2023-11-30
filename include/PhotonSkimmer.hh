@@ -119,6 +119,11 @@ class PhotonSkimmer : public BaseSkimmer{
 				//theta + azimuthal angles
 				plotCats[i].hists1D[7]->Scale(1./plotCats[i].hists1D[7]->Integral());
 				plotCats[i].hists1D[8]->Scale(1./plotCats[i].hists1D[8]->Integral());
+				//rotundity
+				plotCats[i].hists1D[10]->Scale(1./plotCats[i].hists1D[10]->Integral());
+				plotCats[i].hists1D[11]->Scale(1./plotCats[i].hists1D[11]->Integral());
+				//velocity
+				plotCats[i].hists1D[14]->Scale(1./plotCats[i].hists1D[14]->Integral());
 			}
 
 
@@ -214,6 +219,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			int leadidx = idxs[nclusters-1];
 			int subleadidx = -999;
 			if(nclusters > 1) subleadidx = idxs[nclusters-2];
+
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 				E_k = norms[k]/_gev; 
@@ -233,9 +239,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
 				//polar angle with lead eigenvector
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-				theta = acos( lead_eigenvec.at(2,0) / r );
+				theta = acos( v_z / r );
 				//azimuthal angle with lead eigenvector
-				//phi = arctan(y/x)
 				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
 				if(signbit(v_y)) phi *= -1;
 
@@ -256,7 +261,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = eigenvals_space[1]/rot2D;
 				
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
-				vel = (lead_eigenvec.at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
 				vel = fabs(1./vel);
 
 				//fill hists
@@ -283,6 +288,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[18]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 				//velocity	
 				plotCats[id_idx].hists1D[14]->Fill(vel);
+				
 				//2D hists
 				plotCats[id_idx].hists2D[0]->Fill(tc, E_k);
 				plotCats[id_idx].hists2D[3]->Fill(phi,E_k);
@@ -314,7 +320,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[23]->Fill(tc);
 					plotCats[id_idx].hists2D[13]->Fill(E_k,pi);
 					plotCats[id_idx].hists2D[16]->Fill(norms[k], E_lead/E_tot);	
-	
+					plotCats[id_idx].hists2D[19]->Fill(nclusters,pi);	
 				}
 				if(nclusters == 1)
 					plotCats[id_idx].hists2D[17]->Fill(norms[k], E_lead/E_tot);	
@@ -409,8 +415,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = eigenvals_space[1]/rot2D;
 				
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
-				vel = (lead_eigenvec.at(2,0)/r) * (acos(-1)/180.) * (1./2.2);
+				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
 				vel = fabs(1./vel);
+				//cout << "velocity: " << vel << " lead z: " << lead_eigenvec.at(2,0) << " r: " << r  << " space r: " << sqrt(v_x*v_x + v_y*v_y) << endl;
 				
 				//fill histograms
 				time_center->Fill(tc);
@@ -474,11 +481,12 @@ class PhotonSkimmer : public BaseSkimmer{
 					//2D rotundity - lead
 					rotundity_2D_lead->Fill(rot2D);		
 					time_center_lead->Fill(tc);
-					totE_mixcoeff_lead->Fill(E_k,pi);
-					npts_fracE_lead->Fill(norms[k], E_lead/E_tot);
+					eta_center_lead->Fill(ec);
+					phi_center_lead->Fill(pc);
+					totE_mixcoeff_lead->Fill(E_k,pi); 	
+					fracE_mmcoeff_lead->Fill(E_k/E_tot, pi);
+					nsubcl_mmcoeff_leadsubcl->Fill(nclusters,pi);	
 				}
-				if(nclusters == 1)
-					npts_fracE_lead_1subcl->Fill(norms[k], E_lead/E_tot);	
 				if(nclusters > 1){
 					//sublead cluster
 					if(k == subleadidx){
@@ -494,6 +502,10 @@ class PhotonSkimmer : public BaseSkimmer{
 						rotundity_2D_notlead->Fill(rot2D);		
 						totE_mixcoeff_notlead->Fill(E_k,pi);
 						time_center_notlead->Fill(tc);
+						eta_center_notlead->Fill(ec);
+						phi_center_notlead->Fill(pc);
+						nsubcl_mmcoeff_notleadsubcl->Fill(nclusters,pi);	
+						fracE_mmcoeff_notlead->Fill(E_k/E_tot, pi);
 					}
 
 

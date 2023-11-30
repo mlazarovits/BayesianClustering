@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
 	//this should be in N/GeV
 	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
 	double gev = 1./5.;
+	
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -181,12 +182,12 @@ int main(int argc, char *argv[]){
 	if(obj == 0)
 		fname = "jets";
 	else if(obj == 1)
-		fname = "pho";
+		fname = "photon";
 	else{
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
 		return -1;
 	}
-	if(oname != "") fname = fname+"_"+oname;
+	if(oname != "") fname = fname+"Skim_"+oname;
 	else fname = fname+"Skim";
 
 	fname = "plots/"+fname;
@@ -241,6 +242,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
+		//do only mm/true jet pv times
+		skimmer.GMMOnly();
 		skimmer.Skim();
 	}
 	else if(obj == 1){
