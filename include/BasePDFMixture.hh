@@ -40,6 +40,7 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const PointCollection& x);
 
 		void SetData(PointCollection* data){
+			if(data->GetNPoints() < 2) cout << "Error: " << data->GetNPoints() << " points in data for mixture model" << endl;
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
