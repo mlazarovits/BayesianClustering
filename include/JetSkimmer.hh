@@ -142,12 +142,11 @@ class JetSkimmer : public BaseSkimmer{
 		void FillPVHists_MMOnly(const vector<Jet>& jets, double alpha = 0.5, double emAlpha = 0.1){
 			int njets = (int)jets.size(); 
 			double pi = acos(-1);
-			double dtime, dphi, dr, phi1, t1, phi2, t2;
+			double dphi, phi1, t1, phi2, t2;
 			//find pairs of jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
-cout << "jet " << i << endl;
 				phi1 = jets[i].phi_02pi();
 				t1 = jets[i].t();
 				//fill pv time histograms
@@ -158,11 +157,11 @@ cout << "jet " << i << endl;
 				//mm average over subclusters
 				PVtime_mmAvg->Fill( CalcMMAvgTime(jets[i], alpha, emAlpha));
 				for(int j = i+1; j < njets; j++){
-					//dphi within [pi-0.1,pi+0.1]
-					if(fabs(phi1-phi2) < pi-0.1 && fabs(phi1-phi2) > pi+0.1) continue;
 					phi2 = jets[j].phi_02pi();
 					t2 = jets[j].t();
-
+					//dphi within [pi-0.1,pi+0.1]
+					dphi = fabs(phi1 - phi2);
+					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
 					//fill pv time difference histograms
 					//median time
 					PVtimeDiff_median->Fill( CalcMedianTime(jets[i]) - CalcMedianTime(jets[j]) );
