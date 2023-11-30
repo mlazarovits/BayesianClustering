@@ -141,6 +141,7 @@ class Jet{
 		}
 		
 		int GetNPoints() const{return (int)_rhs.size(); }	
+		int GetNRecHits() const{return (int)_rhs.size(); }	
 		
 		//parents in cluster
 		void GetParents(Jet& p1, Jet& p2) const;
@@ -149,7 +150,7 @@ class Jet{
 		//children in cluster
 		Jet GetBaby() const;
 
-		void AddRecHit(JetPoint rh){
+		void AddRecHit(const JetPoint& rh){
 			_rhs.push_back(rh); 
 			_nRHs = (int)_rhs.size();
 			//recalculate time

@@ -11,6 +11,7 @@ class JetPoint{
 	public:
 		JetPoint();
 		JetPoint(double x, double y, double z, double t);
+		JetPoint(const JetPoint& jp);
 		virtual ~JetPoint();
 
 		bool operator==(JetPoint& j) const;
