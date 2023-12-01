@@ -77,7 +77,8 @@ OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
 #specify what to make
-all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
+#all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
+all: FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 local: all
 lpc:   all configtar
 lib: lib/libBayesCluster.so
