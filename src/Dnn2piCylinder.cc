@@ -194,11 +194,15 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
     x->points = newpts;
+    //make sure this node knows that its mirror exists (and vice versa)
+    x->mirror = _merge_tree->Get(ip);
+    _merge_tree->Get(ip)->mirror = x;
 
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
-    //add new mirror node to be clustered
+    cout << "inserting mirror node with " << x->points->GetNPoints() << " points" << endl;
+	//add new mirror node to be clustered
     _merge_tree->Insert(x);
   }
 

@@ -151,12 +151,7 @@ class MergeTree : BaseTree{
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			_clusters.push_back(nullptr);
 			node* x = (node*)malloc(sizeof *x);
-			//cout << "z val: " << _z->val << endl;
 			x->l = _z; x->r = _z;
-			//cout << "add leaf" << endl;
-			//pt->Print();
-			//cout << "add leaf with left val: " << x->l->val << endl;
-			//cout << "add leaf with right val: " << x->r->val << endl;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			x->val = 1.;	
 			x->d = _alpha; 
@@ -222,7 +217,6 @@ class MergeTree : BaseTree{
 			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
-			//if(algo->GetNClusters() < 1){ cout << "Error: threshold too high for successful clustering with " << x->points->GetNPoints() << " points (" << x->points->Sumw() << " weighted). Please adjust accordingly to continue hierarchically clustering" << endl; return -999; }
 			double LogLThresh = 0.001;
 			double newLogL;
 			double dLogL = 999; 

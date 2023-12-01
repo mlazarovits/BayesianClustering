@@ -7,7 +7,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
-//	cout << n << " points in this merge bw " << l->idx << " and " << r->idx << endl;
 	double d, pi, phidist;
 	if(_constraint){
 		//calculate constraint probability rho
@@ -30,6 +29,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->d = d;
 	x->l = l;
 	x->r = r;
+	x->mirror = nullptr;
 	double nndist = 1e300;
 	//find nndist for x (should be O(n) operation)
 	for(int i = 0; i < (int)_clusters.size(); i++){
