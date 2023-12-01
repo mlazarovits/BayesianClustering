@@ -267,6 +267,7 @@ cout << "jet " << i << endl;
 
 			ofile->cd();
 			for(int i = 0; i < (int)hists1D.size(); i++){
+				name = hists1D[i]->GetName();
 				TCanvas* cv = new TCanvas(name.c_str(), "");
 				TDRHist(hists1D[i], cv, name, name, "a.u.");
 				//write cv to file			
@@ -275,6 +276,7 @@ cout << "jet " << i << endl;
 
 			}
 			for(int i = 0; i < (int)hists2D.size(); i++){
+				name = hists2D[i]->GetName();
 				TCanvas* cv = new TCanvas(name.c_str(), "");
 				TDR2DHist(hists2D[i], cv, name, name, "a.u.");
 				//write cv to file			
@@ -282,6 +284,7 @@ cout << "jet " << i << endl;
 				cv->Write();
 			}
 			for(int i = 0; i < (int)graphs.size(); i++){
+				name = graphs[i]->GetName();
 				TCanvas* cv = new TCanvas(name.c_str(), "");
 				TDRGraph(graphs[i], cv, name, name, "a.u.");
 				//write cv to file			
