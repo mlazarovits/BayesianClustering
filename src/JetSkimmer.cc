@@ -36,19 +36,34 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	_oname = "plots/jet_skims_"+_cms_label+".root";
 	_mmonly = false;
 
-	hists1D.push_back(nClusters);
-	hists1D.push_back(nTrueJets);
-	hists1D.push_back(t_rhs); 
-	hists1D.push_back(comptime);
 
+	//true jet hists
+	hists1D.push_back(nTrueJets);
+	
 	//true jets pv times
 	hists1D.push_back(PVtime_median);	
 	hists1D.push_back(PVtime_eAvg);	
+	//time differences for back-to-back jets for time resolution
+	hists1D.push_back(PVtimeDiff_median);	
+	hists1D.push_back(PVtimeDiff_eAvg);	
+
+	//mm only jets
 	hists1D.push_back(PVtime_mmAvg);	
+	hists1D.push_back(PVtimeDiff_mmAvg);	
 
-	hists2D.push_back(e_nRhs);
-
-	graphs.push_back(nrhs_comptime);
+	//predicted jets pv times - from BHC
+	//hists1D.push_back(nClusters);
+	//hists1D.push_back(t_rhs); 
+	//hists1D.push_back(comptime);
+	//hists1D.push_back(PVtime_median_pred);	
+	//hists1D.push_back(PVtime_eAvg_pred);	
+	//hists1D.push_back(PVtime_mmAvg_pred);	
+	////time differences for back-to-back jets for time resolution
+	//hists1D.push_back(PVtimeDiff_median_pred);	
+	//hists1D.push_back(PVtimeDiff_eAvg_pred);	
+	//hists1D.push_back(PVtimeDiff_mmAvg_pred);	
+	//hists2D.push_back(e_nRhs);
+	//graphs.push_back(nrhs_comptime);
 
 
 }
@@ -108,18 +123,15 @@ void JetSkimmer::Skim(){
 		}
 		
 		//fill true jet histograms
-		int njets = _base->Jet_energy->size();	
-		nTrueJets->Fill((double)_base->Jet_energy->size());	
-		if(njets < 1) continue;
+		vector<Jet> jets;
+		GetTrueJets(jets);
+		FillTrueJetHists(jets);
+		//fill mm only jet hists
+		FillMMOnlyJetHists(jets);
 		//also fill PV time (e-weighted avg of crystals, median of crystals, mm-weighted avg. of time centers of subclusters) res plots with true jets 
 		//need at least two jets
-		if(i % (SKIP*10) == 0) cout << "evt: " << i << " of " << _nEvts;
-		if(njets > 1){
-			vector<Jet> jets;
-			GetTrueJets(jets);
-			if(i % (SKIP*10) == 0) cout << " with " << jets.size() << " jets to cluster" << endl;
-			FillPVHists_MMOnly(jets, alpha, emAlpha);
-		}
+		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts << " with " << jets.size() << " jets to cluster" << endl;
+		
 		if(_mmonly) continue;	
 	
 
@@ -152,19 +164,19 @@ void JetSkimmer::Skim(){
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		
 
-		FillPVHists(trees);
+		FillPVHists_PredJets(trees);
 		
 		for(int i = 0; i < (int)trees.size(); i++){	
 			BasePDFMixture* model = trees[i]->model;
 			FillModelHists(model);
 		}
 		
-		//jet specific hists
-		nClusters->Fill((double)trees.size());
-	
-		for(int j = 0; j < njets; j++){	
-			e_nRhs->Fill(_base->Jet_energy->at(j),(double)_base->Jet_drRhIds->at(j).size());
-		}
+	//	//jet specific hists
+	//	nClusters->Fill((double)trees.size());
+	//
+	//	for(int j = 0; j < njets; j++){	
+	//		e_nRhs->Fill(_base->Jet_energy->at(j),(double)_base->Jet_drRhIds->at(j).size());
+	//	}
 
 	}
 
@@ -207,6 +219,7 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 				rh.SetPhi(_base->ECALRecHit_phi->at(rr));
 				rh.SetWeight(_base->ECALRecHit_energy->at(rr)*_gev);
 				jet.AddRecHit(rh);
+				jet.SetUserIdx(j);
 				break;
 			}
 		}

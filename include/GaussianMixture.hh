@@ -11,7 +11,10 @@ class GaussianMixture : public BasePDFMixture{
 	public:
 		GaussianMixture();
 		GaussianMixture(int k);
-		virtual ~GaussianMixture(){ };
+		virtual ~GaussianMixture(){
+			m_Elam.clear();
+			m_Epi.clear();
+		};
 	
 		void InitParameters(unsigned long long seed = 111);
 		//E-step
@@ -72,7 +75,7 @@ class GaussianMixture : public BasePDFMixture{
 		void UpdatePriorParameters();
 		double EvalVariationalLogL();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		map<string, Matrix> GetPriorParameters(int k); 
+		map<string, Matrix> GetPriorParameters(int k) const; 
 		map<string, Matrix> GetOnlyPriorParameters(int k); 
 
 

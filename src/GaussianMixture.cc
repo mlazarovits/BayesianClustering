@@ -223,7 +223,7 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 	return p;
 };
 
-map<string, Matrix> GaussianMixture::GetPriorParameters(int k){ 
+map<string, Matrix> GaussianMixture::GetPriorParameters(int k) const{ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
 	p["mean"] = m_model[k]->GetParameter("mean");

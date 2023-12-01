@@ -28,27 +28,27 @@ class JetSkimmer : public BaseSkimmer{
 		void GMMOnly(){ _mmonly = true; }
 
 
-		//jet specific quantities
-		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
+		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
-		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
-		TH1D* t_rhs = new TH1D("t_rhs","t_rhs",100,-30,30); 
-	
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* PVtime_median = new TH1D("PVtime_median","PVtime_median",100,-10,10);	
 		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
-		//mm only time (from true jets)
-		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
-		
 		//difference in tPV between two back-to-back jets
 		//previous time definitions
 		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",100,-10,10);	
 		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-10,10);	
+
+		//mm only jet plots
+		//mm only time (from true jets)
+		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
 		//mm only time (from true jets)
 		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-10,10);	
+		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 
-
-		//with BHC - predicted jets
+		//predicted jet plots
+		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
+		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
+		TH1D* t_rhs = new TH1D("t_rhs","t_rhs",100,-30,30); 
 		TH1D* PVtime_median_pred = new TH1D("PVtime_median_pred","PVtime_median_pred",100,-10,10);	
 		TH1D* PVtime_eAvg_pred = new TH1D("PVtime_eAvg_pred","PVtime_eAvg_pred",100,-10,10);	
 		TH1D* PVtime_mmAvg_pred = new TH1D("PVtime_mmAvg_pred", "PVtime_mmAvg_pred",100,-10,10);	
@@ -58,12 +58,55 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* PVtimeDiff_eAvg_pred = new TH1D("PVtimeDiff_eAvg_pred","PVtimeDiff_eAvg_pred",100,-10,10);	
 		//mm only time (from true jets)
 		TH1D* PVtimeDiff_mmAvg_pred = new TH1D("PVtimeDiff_mmAvg_pred", "PVtimeDiff_mmAvg_pred",100,-10,10);	
-	
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime = new TGraph();
-		
+	
+
+		void FillTrueJetHists(const vector<Jet>& jets){
+			int njets = _base->Jet_energy->size();	
+			nTrueJets->Fill((double)njets);
+
+			FillPVHists_TrueJets(jets);	
+		}
+
+
+		void FillMMOnlyJetHists(const vector<Jet>& jets, double alpha = 0.1, double emAlpha = 0.5){
+			vector<GaussianMixture*> models;
+			Matrix smear = Matrix(3,3);
+			double dphi = acos(-1)/360.; //1 degree in radians
+			double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
+			//diagonal matrix
+			smear.SetEntry(deta*deta,0,0);
+			smear.SetEntry(dphi*dphi,1,1);
+			smear.SetEntry(1.,2,2); //energy dependent smear in time, set in BayesCluster	
+			for(int i = 0; i < jets.size(); i++){
+				vector<JetPoint> rhs = jets[i].GetJetPoints();
+				vector<Jet> rhs_jet;
+				for(int r = 0; r < rhs.size(); r++){
+					rhs_jet.push_back( Jet(rhs[r]) );
+					rhs_jet[r].SetVertex(jets[i].GetVertex());
+				}
+				BayesCluster* algo = new BayesCluster(rhs_jet);
+				algo->SetDataSmear(smear);
+				//set time resolution smearing
+				algo->SetTimeResSmear(0.2, 0.3*_gev);
+				algo->SetThresh(1.);
+				algo->SetAlpha(alpha);
+				algo->SetSubclusterAlpha(emAlpha);
+				algo->SetVerbosity(0);
+				GaussianMixture* gmm = algo->SubCluster();
+				nSubClusters_mm->Fill(gmm->GetNClusters());
+				models.push_back(gmm);
+			}		
+			//need vector of all jets/models
+			//to do back-to-back matching for resolution
+			FillPVHists_MMOnlyJets(jets, models);	
+			
+	
+		}	
+	
 
 		//this is for one jet
 		//all hists referenced here are in hists1D
@@ -117,7 +160,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		//find back to back jets
-		void FillPVHists(vector<node*> tree){
+		void FillPVHists_PredJets(vector<node*> tree){
 			int njets = (int)tree.size(); 
 			double pi = acos(-1);
 
@@ -139,26 +182,22 @@ class JetSkimmer : public BaseSkimmer{
 
 		}
 		//find back to back jets
-		void FillPVHists_MMOnly(const vector<Jet>& jets, double alpha = 0.5, double emAlpha = 0.1){
+		void FillPVHists_TrueJets(const vector<Jet>& jets){
 			int njets = (int)jets.size(); 
 			double pi = acos(-1);
-			double dphi, phi1, t1, phi2, t2;
+			double dphi, phi1, phi2;
 			//find pairs of jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
 				phi1 = jets[i].phi_02pi();
-				t1 = jets[i].t();
 				//fill pv time histograms
 				//median time
 				PVtime_median->Fill( CalcMedianTime(jets[i]));
 				//energy-weighted average
 				PVtime_eAvg->Fill( CalcEAvgTime(jets[i]));	
-				//mm average over subclusters
-				PVtime_mmAvg->Fill( CalcMMAvgTime(jets[i], alpha, emAlpha));
 				for(int j = i+1; j < njets; j++){
 					phi2 = jets[j].phi_02pi();
-					t2 = jets[j].t();
 					//dphi within [pi-0.1,pi+0.1]
 					dphi = fabs(phi1 - phi2);
 					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
@@ -167,8 +206,34 @@ class JetSkimmer : public BaseSkimmer{
 					PVtimeDiff_median->Fill( CalcMedianTime(jets[i]) - CalcMedianTime(jets[j]) );
 					//energy-weighted average
 					PVtimeDiff_eAvg->Fill( CalcEAvgTime(jets[i]) - CalcEAvgTime(jets[j]) );	
+				}
+			}
+
+		}
+		//find back to back jets
+		void FillPVHists_MMOnlyJets(const vector<Jet>& jets, const vector<GaussianMixture*>& models){
+			int njets = (int)jets.size();
+			if(njets != models.size()){ cout << njets << " jets and " << models.size() << " models" << endl; return;} 
+			double pi = acos(-1);
+			double dphi, phi1, phi2;
+			Jet jet_i, jet_j;
+			GaussianMixture model_i, model_j;
+			//find pairs of jets to calculate resolution	
+			//need to be back to back
+			//time of subclusters is measured as center
+			for(int i = 0; i < njets; i++){
+				phi1 = jets[i].phi_02pi();
+				//fill pv time histograms
+				//mm average over subclusters
+				PVtime_mmAvg->Fill( CalcMMAvgTime(models[i]) );
+				for(int j = i+1; j < njets; j++){
+					phi2 = jets[j].phi_02pi();
+					//dphi within [pi-0.1,pi+0.1]
+					dphi = fabs(phi1 - phi2);
+					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
+					//fill pv time difference histograms
 					//mm average over subclusters
-					PVtimeDiff_mmAvg->Fill( CalcMMAvgTime(jets[i], alpha, emAlpha) - CalcMMAvgTime(jets[j], alpha, emAlpha) );
+					PVtimeDiff_mmAvg->Fill( CalcMMAvgTime(models[i]) - CalcMMAvgTime(models[j]) );
 				}
 			}
 
@@ -205,43 +270,13 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		double CalcMMAvgTime(const Jet& j, double alpha = 0.5, double emAlpha = 0.1){
-			Matrix smear = Matrix(3,3);
-			double dphi = acos(-1)/360.; //1 degree in radians
-			double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
-			//diagonal matrix
-			smear.SetEntry(deta*deta,0,0);
-			smear.SetEntry(dphi*dphi,1,1);
-			smear.SetEntry(1.,2,2); //energy dependent smear in time, set in BayesCluster	
-		
-			vector<JetPoint> rhs = j.GetJetPoints();
-			vector<Jet> rhs_jet;
-			for(int r = 0; r < rhs.size(); r++){
-				rhs_jet.push_back( Jet(rhs[r]) );
-				rhs_jet[r].SetVertex(j.GetVertex());
-			}
-	cout << "clustering " << rhs_jet.size() << " rhs" << endl;
-	if(rhs_jet.size() < 3){
-			for(int r = 0; r < rhs.size(); r++){
-				cout << "rh #" << r << endl;
-				rhs_jet[r].Print();
-			}	
-	}
-			BayesCluster* algo = new BayesCluster(rhs_jet);
-			algo->SetDataSmear(smear);
-			//set time resolution smearing
-			algo->SetTimeResSmear(0.2, 0.3*_gev);
-			algo->SetThresh(1.);
-			algo->SetAlpha(alpha);
-			algo->SetSubclusterAlpha(emAlpha);
-			algo->SetVerbosity(0);
-			GaussianMixture* gmm = algo->SubCluster();
-			int kmax = gmm->GetNClusters();
+		double CalcMMAvgTime(GaussianMixture* model){
+			int kmax = model->GetNClusters();
 			double t = 0;
 			double pi, norm;
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
-				params = gmm->GetPriorParameters(k);
+				params = model->GetPriorParameters(k);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				norm += params["pi"].at(0,0);
 			}

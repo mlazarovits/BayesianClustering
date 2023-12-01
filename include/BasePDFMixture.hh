@@ -75,7 +75,7 @@ class BasePDFMixture : public BasePDF{
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		virtual map<string, Matrix> GetPriorParameters(int k) = 0; 
+		virtual map<string, Matrix> GetPriorParameters(int k) const = 0; 
 		virtual map<string, Matrix> GetOnlyPriorParameters(int k) = 0; 
 
 		void GetMixingCoeffs(vector<double>& coeffs){ coeffs.clear(); coeffs = m_coeffs; }	
@@ -166,7 +166,7 @@ class BasePDFMixture : public BasePDF{
 			return m_post;
 		}
 
-		int GetNClusters(){ return m_k; }		
+		int GetNClusters() const{ return m_k; }		
 
 		int GetMaxPointAssignment(int n){
 			if(m_post.empty()) return -1;
