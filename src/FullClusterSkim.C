@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --input(-i) [file]            input root file" << endl;
-   		cout << "   --output(-o) [file]           output root file (in plots/)" << endl;
+   		cout << "   --output(-o) [file]           output root file" << endl;
    		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
@@ -187,45 +187,55 @@ int main(int argc, char *argv[]){
 		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
 		return -1;
 	}
-	if(oname != "") fname = fname+"Skim_"+oname;
-	else fname = fname+"Skim";
 
-	fname = "plots/"+fname;
-	string a_string;
-	std::stringstream stream;
-	stream << std::fixed << std::setprecision(3) << alpha;
-	a_string = stream.str();
-	int idx = a_string.find(".");
-	a_string.replace(idx,1,"p");	
-	
-	string ema_string;
-	stream.str("");
-	stream << std::fixed << std::setprecision(3) << emAlpha;
-	ema_string = stream.str();
-	idx = ema_string.find(".");
-	ema_string.replace(idx,1,"p");	
+	//condor is in outname
+	if(oname.find("condor") != string::npos){
+		fname = oname;	
+	}
+	else{
+		if(oname != "")
+			fname = "plots/"+fname+"Skim_"+oname;
+		else fname = fname+"Skim";
+		string a_string;
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(3) << alpha;
+		a_string = stream.str();
+		int idx = a_string.find(".");
+		a_string.replace(idx,1,"p");	
+		
+		string ema_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << emAlpha;
+		ema_string = stream.str();
+		idx = ema_string.find(".");
+		ema_string.replace(idx,1,"p");	
 
-	string t_string;
-	stream.str("");
-	stream << std::fixed << std::setprecision(3) << thresh;
-	t_string = stream.str();
-	idx = t_string.find(".");
-	t_string.replace(idx,1,"p");	
-	
-	string gev_string;
-	stream.str("");
-	stream << std::fixed << std::setprecision(3) << gev;
-	gev_string = stream.str();
-	idx = gev_string.find(".");
-	gev_string.replace(idx,1,"p");	
+		string t_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << thresh;
+		t_string = stream.str();
+		idx = t_string.find(".");
+		t_string.replace(idx,1,"p");	
+		
+		string gev_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << gev;
+		gev_string = stream.str();
+		idx = gev_string.find(".");
+		gev_string.replace(idx,1,"p");	
+
+		
+		if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
+		if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
+		else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
+		fname += "NperGeV"+gev_string+"_";
+		fname += cmslab.substr(0,cmslab.find("_")); //short sample name
+		fname += version.substr(0,3); //"_v9"
+
+	}
+	fname = fname+".root";
 
 	
-	if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
-	if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
-	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
-	fname += "NperGeV"+gev_string+"_";
-	fname += cmslab.substr(0,cmslab.find("_")); //short sample name
-	fname += version.substr(0,3); //"_v9"
 	//make sure evti < evtj
 	if(evti > evtj){
 		int evt = evtj;
@@ -238,7 +248,7 @@ int main(int argc, char *argv[]){
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetStrategy(strat);
-		skimmer.SetOutfile(fname+".root");
+		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
@@ -256,7 +266,7 @@ int main(int argc, char *argv[]){
 			data = true;
 		skimmer.SetIsoCuts();
 		skimmer.SetData(data);
-		skimmer.SetOutfile(fname+".root");
+		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
         	//skimmer.SetDebug(debug);
 		//set EMalpha
