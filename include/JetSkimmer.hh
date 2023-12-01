@@ -220,7 +220,13 @@ class JetSkimmer : public BaseSkimmer{
 				rhs_jet.push_back( Jet(rhs[r]) );
 				rhs_jet[r].SetVertex(j.GetVertex());
 			}
-
+	cout << "clustering " << rhs_jet.size() << " rhs" << endl;
+	if(rhs_jet.size() < 3){
+			for(int r = 0; r < rhs.size(); r++){
+				cout << "rh #" << r << endl;
+				rhs_jet[r].Print();
+			}	
+	}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			algo->SetDataSmear(smear);
 			//set time resolution smearing
