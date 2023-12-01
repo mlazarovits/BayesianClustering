@@ -30,8 +30,8 @@ class Jet{
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
-		bool operator==(Jet& j) const;
-		bool operator!=(Jet& j) const;
+		bool operator==(const Jet& j) const;
+		bool operator!=(const Jet& j) const;
 		void operator =(const Jet& j){
 				_px = j.px();
 				_py = j.py();
@@ -55,7 +55,7 @@ class Jet{
 		}
 
 		//return four vector for clustering
-		Point four_mom(){ return _mom; }
+		Point four_mom() const{ return _mom; }
 
 		void SetVertex(Point vtx){
 			if(vtx.Dim() != 3){

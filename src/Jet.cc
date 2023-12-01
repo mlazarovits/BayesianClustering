@@ -168,11 +168,11 @@ Jet::~Jet(){
 }
 
 
-bool Jet::operator ==(Jet& jet) const{
+bool Jet::operator ==(const Jet& jet) const{
 	return _mom == jet.four_mom();
 }
 
-bool Jet::operator !=(Jet& jet) const{
+bool Jet::operator !=(const Jet& jet) const{
 	return _mom != jet.four_mom();
 }
 
