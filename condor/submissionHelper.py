@@ -15,7 +15,7 @@ def makeDir(dir_name):
 
 # Create directories for work area.
 def createWorkArea(sampleDir):
-	os.mkdir(sampleDir)
+	os.makedirs(sampleDir)
 	os.mkdir(sampleDir+"/src")
 	os.mkdir(sampleDir+"/log")
 	os.mkdir(sampleDir+"/out")

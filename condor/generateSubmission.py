@@ -29,6 +29,8 @@ def generateSubmission(args):
 	        strategyName = "NlnN"
 	elif args.strategy == 1:
 	        strategyName = "N2"
+	elif args.strategy == 2:
+		strategyName = "GMMonly"
 	else:
 	        print("Invalid strategy",args.strategy,"specified")
 	        exit()
@@ -49,11 +51,10 @@ def generateSubmission(args):
 	#strategy doesn't apply to photons (GMM only)
 	else:
 	        dirname = odir+"/"+sampleNameShort+"/"+sampleName+"/"+objName
-	        ofilename = dirname+"/out/"+sampleNameShort+"_"+objName+"_"+strategyName
+	        ofilename = dirname+"/out/"+sampleNameShort+"_"+objName
 
 	
 	print("Preparing sample directory: {0}".format(dirname))
-
 	##### Create a workspace (remove existing directory) #####
 	if os.path.exists(dirname):
 		print("Removing existing directory: {0}".format(dirname))
@@ -87,7 +88,7 @@ def main():
 	parser.add_argument('--inputFile','-i',help='Ntuple file to create skims from (absolute path)',required=True)
 	#which object to analyze (jets or photons currently supported)
 	parser.add_argument('--object','-o',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
-	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=["1","0"])
+	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=["2","1","0"])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
 	parser.add_argument('--verbosity','-v',help="verbosity",default=0)
 	#add algorithm parameters - alpha, emAlpha, verbosity, thresh

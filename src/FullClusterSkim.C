@@ -141,7 +141,7 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (default = NlnN, does not apply to photons)" << endl;
+   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2, 2 : GMM only, does not apply to photons)" << endl;
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/5)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
@@ -247,13 +247,15 @@ int main(int argc, char *argv[]){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
-		skimmer.SetStrategy(strat);
+		if(strat == 2) 
+			skimmer.GMMOnly();
+		else
+			skimmer.SetStrategy(strat);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		//do only mm/true jet pv times
-		skimmer.GMMOnly();
 		skimmer.Skim();
 	}
 	else if(obj == 1){
