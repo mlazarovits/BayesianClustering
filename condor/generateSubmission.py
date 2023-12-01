@@ -35,7 +35,7 @@ def generateSubmission(args):
 	        print("Invalid strategy",args.strategy,"specified")
 	        exit()
 	
-	print "Skimming for",objName,"in file",args.inputFile 
+	print "Skimming for",objName,"in file",args.inputFile,"with strategy",strategyName 
 	
 	
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
@@ -83,12 +83,11 @@ def main():
 	# options
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
-	
 	#Ntuple file to run over
 	parser.add_argument('--inputFile','-i',help='Ntuple file to create skims from (absolute path)',required=True)
 	#which object to analyze (jets or photons currently supported)
 	parser.add_argument('--object','-o',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
-	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=["2","1","0"])
+	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
 	parser.add_argument('--verbosity','-v',help="verbosity",default=0)
 	#add algorithm parameters - alpha, emAlpha, verbosity, thresh
