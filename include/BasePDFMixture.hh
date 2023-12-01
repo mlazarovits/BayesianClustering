@@ -85,6 +85,9 @@ class BasePDFMixture : public BasePDF{
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		void RemoveModel(int j){
+			//if this is removing the last cluster
+			//break and do resetting of posterior in UpdateModel()
+			if(m_k - 1 == 0) return;
 			//erase model
 			//m_model.erase(m_model.begin()+j); 
 			//for(int i = 0; i < m_model.size(); i++){
@@ -103,9 +106,6 @@ class BasePDFMixture : public BasePDF{
 			//erase corresponding number of associated points (N_k)
 			m_norms.erase(m_norms.begin()+j);
 			//don't need to update m_coeffs - only used for normal EM algorithm
-			//if this is removing the last cluster
-			//break and do resetting of posterior in UpdateModel()
-			if(m_k - 1 == 0) return;
 			//update dimensions of posterior
 			Matrix newpost = Matrix(m_n,m_k-1);
 			int l = 0;

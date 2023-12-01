@@ -158,6 +158,8 @@ void GaussianMixture::UpdateParameters(){
 		//normalized by sum of posteriors for cluster k
 		mu.mult(mu,1./m_norms[k]);
 		//m_mus[k].mult(m_mus[k],1./m_norms[k]);
+		cout << "UpdateParameters" << endl;
+		mu.Print();
 		m_model[k]->SetParameter("mean",mu);		
 	}
 
@@ -490,7 +492,6 @@ void GaussianMixture::CalculateRStatistics(){
 		mu.mult(mu,1./m_norms[k]);
 		//cout << "k: " << k << " m_norm: " << m_norms[k] << endl;
 		//cout << "1/N[k]*(sum_n post*x)" << endl;
-		//mu.Print();
 		m_model[k]->SetParameter("mean",mu);		
 	}
 	
