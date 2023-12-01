@@ -79,7 +79,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 #specify what to make
 all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 local: all
-lpc:   all
+lpc:   all configtar
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
@@ -111,6 +111,10 @@ FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
 detectorSim.x: $(SRCDIR)detectorSim.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o detectorSim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch detectorSim.x
+
+configtar:
+	cp FullCluster*.x config/
+	tar -czf condor/config.tgz config/
 
 #make shared library
 lib/libBayesCluster.so: $(SOBJ_FILES)
