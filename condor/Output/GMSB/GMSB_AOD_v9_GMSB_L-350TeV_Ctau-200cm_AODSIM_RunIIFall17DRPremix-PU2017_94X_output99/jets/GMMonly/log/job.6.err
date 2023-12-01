@@ -1,0 +1,11 @@
+WARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.
+Error in <TTree::SetBranchAddress>: unknown branch -> Met_covXX
+Error in <TTree::SetBranchAddress>: unknown branch -> Met_covXY
+Error in <TTree::SetBranchAddress>: unknown branch -> Met_covYY
+Error in <TTree::SetBranchAddress>: unknown branch -> Met_significance
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_esEffSigmaRR
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_esEnergyOverRawE
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_haloTaggerMVAVal
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_pfChargedIsoPFPV
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_pfChargedIsoWorstVtx
+Error in <TTree::SetBranchAddress>: unknown branch -> Photon_pfPhoIso03
