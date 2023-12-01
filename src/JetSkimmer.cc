@@ -113,11 +113,11 @@ void JetSkimmer::Skim(){
 		if(njets < 1) continue;
 		//also fill PV time (e-weighted avg of crystals, median of crystals, mm-weighted avg. of time centers of subclusters) res plots with true jets 
 		//need at least two jets
-		if(i % SKIP == 0) cout << "evt: " << i << " of " << _nEvts;
+		if(i % (SKIP*10) == 0) cout << "evt: " << i << " of " << _nEvts;
 		if(njets > 1){
 			vector<Jet> jets;
 			GetTrueJets(jets);
-			if(i % SKIP == 0) cout << " with " << jets.size() << " jets to cluster" << endl;
+			if(i % (SKIP*10) == 0) cout << " with " << jets.size() << " jets to cluster" << endl;
 			FillPVHists_MMOnly(jets, alpha, emAlpha);
 		}
 		if(_mmonly) continue;	
