@@ -53,7 +53,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 	//predicted jets pv times - from BHC
 	//hists1D.push_back(nClusters);
-	//hists1D.push_back(t_rhs); 
+	//hists1D.push_back(rhTime); 
 	//hists1D.push_back(comptime);
 	//hists1D.push_back(PVtime_median_pred);	
 	//hists1D.push_back(PVtime_eAvg_pred);	
@@ -114,30 +114,32 @@ void JetSkimmer::Skim(){
 	int SKIP = 1;	
 	for(int i = _evti; i < _evtj; i++){
 		_base->GetEntry(i);
+		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
 		
 
 		for(int r = 0; r < rhs.size(); r++){
-			t_rhs->Fill(rhs[r].t());
+			rhTime->Fill(rhs[r].t());
 		}
 		
 		//fill true jet histograms
 		vector<Jet> jets;
 		GetTrueJets(jets);
+		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
 		//fill mm only jet hists
 		FillMMOnlyJetHists(jets);
-		//also fill PV time (e-weighted avg of crystals, median of crystals, mm-weighted avg. of time centers of subclusters) res plots with true jets 
-		//need at least two jets
-		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts << " with " << jets.size() << " jets to cluster" << endl;
 		
-		if(_mmonly) continue;	
-	
+		if(_mmonly){
+			cout << endl;
+			continue;	
+		}
 
-		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-	
+
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		algo->SetDataSmear(smear);
@@ -163,21 +165,9 @@ void JetSkimmer::Skim(){
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		
+		FillPredJetHists(trees);
 
-		FillPVHists_PredJets(trees);
 		
-		for(int i = 0; i < (int)trees.size(); i++){	
-			BasePDFMixture* model = trees[i]->model;
-			FillModelHists(model);
-		}
-		
-	//	//jet specific hists
-	//	nClusters->Fill((double)trees.size());
-	//
-	//	for(int j = 0; j < njets; j++){	
-	//		e_nRhs->Fill(_base->Jet_energy->at(j),(double)_base->Jet_drRhIds->at(j).size());
-	//	}
-
 	}
 
 	//do computational time graph
@@ -200,11 +190,15 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 	vtx.SetValue(_base->PV_z, 2);
 	for(int j = 0; j < njets; j++){
 		nrhs = _base->Jet_drRhIds->at(j).size();
-		//need at least 2 rhs in a jet for clustering
-		if(nrhs < 2) continue;
 		px = _base->Jet_pt->at(j)*cos( _base->Jet_phi->at(j) );
 		py = _base->Jet_pt->at(j)*sin( _base->Jet_phi->at(j) );
 		pz = _base->Jet_pt->at(j)*sinh( _base->Jet_eta->at(j) );
+		
+		//rough preselection
+		if(nrhs < 2) continue;
+		if(_base->Jet_energy->at(j) < 30.) continue;
+		if(fabs(_base->Jet_eta->at(j)) > 2.4) continue;
+		
 		jet = Jet(px, py, pz, _base->Jet_energy->at(j));
 		jet.SetVertex(vtx);
 		//add rec hits

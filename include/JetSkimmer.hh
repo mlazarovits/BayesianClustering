@@ -30,6 +30,8 @@ class JetSkimmer : public BaseSkimmer{
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
+		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-30,30); 
+		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* PVtime_median = new TH1D("PVtime_median","PVtime_median",100,-10,10);	
 		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
@@ -47,8 +49,6 @@ class JetSkimmer : public BaseSkimmer{
 
 		//predicted jet plots
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
-		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
-		TH1D* t_rhs = new TH1D("t_rhs","t_rhs",100,-30,30); 
 		TH1D* PVtime_median_pred = new TH1D("PVtime_median_pred","PVtime_median_pred",100,-10,10);	
 		TH1D* PVtime_eAvg_pred = new TH1D("PVtime_eAvg_pred","PVtime_eAvg_pred",100,-10,10);	
 		TH1D* PVtime_mmAvg_pred = new TH1D("PVtime_mmAvg_pred", "PVtime_mmAvg_pred",100,-10,10);	
@@ -67,6 +67,11 @@ class JetSkimmer : public BaseSkimmer{
 		void FillTrueJetHists(const vector<Jet>& jets){
 			int njets = _base->Jet_energy->size();	
 			nTrueJets->Fill((double)njets);
+		
+			for(int j = 0; j < jets.size(); j++){
+				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
+				
+			}
 
 			FillPVHists_TrueJets(jets);	
 		}
@@ -106,6 +111,22 @@ class JetSkimmer : public BaseSkimmer{
 			
 	
 		}	
+
+
+		void FillPredJetHists(const vector<node*>& trees){
+			int njets = 0;
+			vector<node*> cleaned_trees;
+			for(int i = 0; i < trees.size(); i++){
+				if(trees[i] == nullptr) continue;
+				//check for mirrored point - would be double counted
+				if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
+				FillModelHists(trees[i]->model);
+				njets++;
+				cleaned_trees.push_back(trees[i]);
+			}
+			nSubClusters->Fill(njets);
+			FillPVHists_PredJets(cleaned_trees);
+		}
 	
 
 		//this is for one jet
@@ -160,8 +181,8 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		//find back to back jets
-		void FillPVHists_PredJets(vector<node*> tree){
-			int njets = (int)tree.size(); 
+		void FillPVHists_PredJets(const vector<node*>& trees){
+			int njets = (int)trees.size(); 
 			double pi = acos(-1);
 
 			double dtime, dphi, dr, phi1, t1, phi2, t2;
@@ -169,14 +190,19 @@ class JetSkimmer : public BaseSkimmer{
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
+				if(trees[i] == nullptr) continue;
+				CalcMMAvgPhiTime(trees[i]->model, phi1, t1);
+				PVtimeDiff_mmAvg_pred->Fill(t1);	
 				for(int j = i+1; j < njets; j++){
-					if(tree[i] == nullptr) continue;
+					if(trees[i] == nullptr) continue;
+					CalcMMAvgPhiTime(trees[j]->model, phi2, t2);
 					//dphi within [pi-0.1,pi+0.1]
-					if(fabs(phi1-phi2) < pi-0.1 && fabs(phi1-phi2) > pi+0.1) continue;
+					dphi = fabs(phi1 - phi2);
+					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
 					//median time
 					//energy-weighted average
 					//mm average over subclusters
-			
+					PVtimeDiff_mmAvg_pred->Fill(t1 - t2);	
 				}
 			}
 
@@ -270,7 +296,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		double CalcMMAvgTime(GaussianMixture* model){
+		double CalcMMAvgTime(BasePDFMixture* model){
 			int kmax = model->GetNClusters();
 			double t = 0;
 			double pi, norm;
@@ -283,8 +309,7 @@ class JetSkimmer : public BaseSkimmer{
 			return t/norm; 
 		}
 
-		void CalcMMAvgPhiTime(node* nnode, double& phi, double& t){
-			BasePDFMixture* model = nnode->model;
+		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
 			int kmax = model->GetNClusters();
 			phi = 0;
 			t = 0;
@@ -306,31 +331,32 @@ class JetSkimmer : public BaseSkimmer{
 			string name;
 
 			ofile->cd();
+			//for condor skims, histograms need to be written because these
+			//can be hadded together (TCanvases can't)
 			for(int i = 0; i < (int)hists1D.size(); i++){
-				name = hists1D[i]->GetName();
-				TCanvas* cv = new TCanvas(name.c_str(), "");
-				TDRHist(hists1D[i], cv, name, name, "a.u.");
+				//name = hists1D[i]->GetName();
+				//TCanvas* cv = new TCanvas(name.c_str(), "");
+				//TDRHist(hists1D[i], cv, name, name, "a.u.");
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
-				cv->Write();
-
+				//cv->Write();
+				hists1D[i]->Write();
 			}
 			for(int i = 0; i < (int)hists2D.size(); i++){
-				name = hists2D[i]->GetName();
-				TCanvas* cv = new TCanvas(name.c_str(), "");
-				TDR2DHist(hists2D[i], cv, name, name, "a.u.");
+				//name = hists2D[i]->GetName();
+				//TCanvas* cv = new TCanvas(name.c_str(), "");
+				//TDR2DHist(hists2D[i], cv, name, name, "a.u.");
 				//write cv to file			
-			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
-				cv->Write();
+				//cv->Write();
+				hists2D[i]->Write();
 			}
 			for(int i = 0; i < (int)graphs.size(); i++){
-				name = graphs[i]->GetName();
-				TCanvas* cv = new TCanvas(name.c_str(), "");
-				TDRGraph(graphs[i], cv, name, name, "a.u.");
+				//name = graphs[i]->GetName();
+				//TCanvas* cv = new TCanvas(name.c_str(), "");
+				//TDRGraph(graphs[i], cv, name, name, "a.u.");
 				//write cv to file			
-			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
-				cv->Write();
-
+				//cv->Write();
+				graphs[i]->Write();
 			}
 			ofile->Close();
 
