@@ -127,6 +127,7 @@ void JetSkimmer::Skim(){
 		//fill true jet histograms
 		vector<Jet> jets;
 		GetTrueJets(jets);
+		if(jets.size() < 1) continue;
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
@@ -188,6 +189,7 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
+	bool jetid;
 	for(int j = 0; j < njets; j++){
 		nrhs = _base->Jet_drRhIds->at(j).size();
 		px = _base->Jet_pt->at(j)*cos( _base->Jet_phi->at(j) );
@@ -198,7 +200,13 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 		if(nrhs < 2) continue;
 		if(_base->Jet_energy->at(j) < 30.) continue;
 		if(fabs(_base->Jet_eta->at(j)) > 2.4) continue;
-		
+		//create jet id (based on Run III recommendations)
+		jetid = (_base->Jet_neEmEF->at(j) < 0.9) && (_base->Jet_neHEF->at(j) < 0.9) && (_base->Jet_nConstituents->at(j) > 1)
+			&& (_base->Jet_muEF->at(j) < 0.8) && (_base->Jet_chHEF->at(j) > 0.01) && (_base->Jet_chHM->at(j) > 0)
+			&& (_base->Jet_chEmEF->at(j) < 0.8);
+		if(!jetid) continue;  		
+
+
 		jet = Jet(px, py, pz, _base->Jet_energy->at(j));
 		jet.SetVertex(vtx);
 		//add rec hits
