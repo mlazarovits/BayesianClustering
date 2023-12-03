@@ -52,18 +52,18 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	hists1D.push_back(PVtimeDiff_mmAvg);	
 
 	//predicted jets pv times - from BHC
-	//hists1D.push_back(nClusters);
-	//hists1D.push_back(rhTime); 
-	//hists1D.push_back(comptime);
-	//hists1D.push_back(PVtime_median_pred);	
-	//hists1D.push_back(PVtime_eAvg_pred);	
-	//hists1D.push_back(PVtime_mmAvg_pred);	
-	////time differences for back-to-back jets for time resolution
-	//hists1D.push_back(PVtimeDiff_median_pred);	
-	//hists1D.push_back(PVtimeDiff_eAvg_pred);	
-	//hists1D.push_back(PVtimeDiff_mmAvg_pred);	
-	//hists2D.push_back(e_nRhs);
-	//graphs.push_back(nrhs_comptime);
+	hists1D.push_back(nClusters);
+	hists1D.push_back(rhTime); 
+	hists1D.push_back(comptime);
+	hists1D.push_back(PVtime_median_pred);	
+	hists1D.push_back(PVtime_eAvg_pred);	
+	hists1D.push_back(PVtime_mmAvg_pred);	
+	//time differences for back-to-back jets for time resolution
+	hists1D.push_back(PVtimeDiff_median_pred);	
+	hists1D.push_back(PVtimeDiff_eAvg_pred);	
+	hists1D.push_back(PVtimeDiff_mmAvg_pred);	
+	hists2D.push_back(e_nRhs);
+	graphs.push_back(nrhs_comptime);
 
 
 }
@@ -104,7 +104,7 @@ void JetSkimmer::Skim(){
 	map<string, Matrix> params;
 	vector<node*> trees;
 	vector<Jet> rhs;
-
+        
 	//for computational time
 	vector<double> x_nrhs, y_time;
 	if(_evti == _evtj){
@@ -131,10 +131,10 @@ void JetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
-		//fill mm only jet hists
-		FillMMOnlyJetHists(jets);
 		
 		if(_mmonly){
+			//fill mm only jet hists
+			FillMMOnlyJetHists(jets);
 			cout << endl;
 			continue;	
 		}
@@ -199,7 +199,7 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 		//rough preselection
 		if(nrhs < 2) continue;
 		if(_base->Jet_energy->at(j) < 30.) continue;
-		if(fabs(_base->Jet_eta->at(j)) > 2.4) continue;
+		if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
 		//create jet id (based on Run III recommendations)
 		jetid = (_base->Jet_neEmEF->at(j) < 0.9) && (_base->Jet_neHEF->at(j) < 0.9) && (_base->Jet_nConstituents->at(j) > 1)
 			&& (_base->Jet_muEF->at(j) < 0.8) && (_base->Jet_chHEF->at(j) > 0.01) && (_base->Jet_chHM->at(j) > 0)
