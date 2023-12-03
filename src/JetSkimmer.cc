@@ -198,12 +198,12 @@ void JetSkimmer::GetTrueJets(vector<Jet>& jets){
 		
 		//rough preselection
 		if(nrhs < 2) continue;
-		if(_base->Jet_energy->at(j) < 30.) continue;
+		if(_base->Jet_pt->at(j) < 30.) continue;
 		if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
-		//create jet id (based on Run III recommendations)
+		//create jet id (based on tight 2017 Run II recommendations)
+		//https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
 		jetid = (_base->Jet_neEmEF->at(j) < 0.9) && (_base->Jet_neHEF->at(j) < 0.9) && (_base->Jet_nConstituents->at(j) > 1)
-			&& (_base->Jet_muEF->at(j) < 0.8) && (_base->Jet_chHEF->at(j) > 0.01) && (_base->Jet_chHM->at(j) > 0)
-			&& (_base->Jet_chEmEF->at(j) < 0.8);
+			&& (_base->Jet_chHEF->at(j) > 0.0) && (_base->Jet_chHM->at(j) > 0);
 		if(!jetid) continue;  		
 
 
