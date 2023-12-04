@@ -127,6 +127,14 @@ class Jet{
 		}
 
 		const vector<JetPoint>& GetJetPoints() const{return _rhs;}
+		const void GetJets(vector<Jet>& rhs) const{
+			Jet rh;
+			for(int r = 0; r < _rhs.size(); r++){
+				rh = Jet(_rhs[r]);
+				rh.SetVertex(_vtx);
+				rhs.push_back(rh);	
+			}
+		}
 
 		//add subjets/pixels to jet
 		void add(const Jet& jt);
