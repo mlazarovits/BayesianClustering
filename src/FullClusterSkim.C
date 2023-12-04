@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
 	//this should be in N/GeV
 	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
-	double gev = 1./5.;
+	double gev = 1./10.;
 	
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
