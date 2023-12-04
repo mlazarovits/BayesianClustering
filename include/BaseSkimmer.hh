@@ -170,9 +170,9 @@ class BaseSkimmer{
 		TH1D* eta_center_lead = new TH1D("eta_center_lead","eta_center_lead",50,-0.5,0.5);
 		//26 - eta center for notlead subcluster
 		TH1D* eta_center_notlead = new TH1D("eta_center_notlead","eta_center_notlead",50,-0.5,0.5);
-		//25 - phi center for lead subcluster
+		//27 - phi center for lead subcluster
 		TH1D* phi_center_lead = new TH1D("phi_center_lead","phi_center_lead",50,-0.5,0.5);
-		//26 - phi center for notlead subcluster
+		//28 - phi center for notlead subcluster
 		TH1D* phi_center_notlead = new TH1D("phi_center_notlead","phi_center_notlead",50,-0.5,0.5);
 
 		//two dimensional histograms

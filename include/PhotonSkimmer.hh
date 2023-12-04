@@ -46,6 +46,13 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 		void MakeIDHists(){
+			//total
+			plotCat tot;
+			tot.legName = "";
+			tot.plotName = "";
+			tot.ids = {-999};
+			plotCats.push_back(tot);	
+		
 			//signal
 			plotCat sig;
 			sig.legName = "#Chi^{0} #rightarrow #gamma";
@@ -74,9 +81,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					TH1D* hist = (TH1D*)hists1D[i]->Clone();
 					plotCats[j].hists1D.push_back(hist);
 					name = hists1D[i]->GetName();
-					name += "_"+plotCats[j].plotName;
+					if(j != 0) name += "_"+plotCats[j].plotName;
 					plotCats[j].hists1D[i]->SetName(name.c_str());
-					plotCats[j].hists1D[i]->SetTitle("");
+					if(j != 0) plotCats[j].hists1D[i]->SetTitle("");
 				}
 		
 			}
@@ -85,9 +92,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					TH2D* hist = (TH2D*)hists2D[i]->Clone();
 					plotCats[j].hists2D.push_back(hist);
 					name = hists2D[i]->GetName();
-					name += "_"+plotCats[j].plotName;
+					if(j != 0) name += "_"+plotCats[j].plotName;
 					plotCats[j].hists2D[i]->SetName(name.c_str());
-					plotCats[j].hists2D[i]->SetTitle("");
+					if(j != 0) plotCats[j].hists2D[i]->SetTitle("");
 				}
 		
 			}
@@ -104,7 +111,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double ymax, ymin;
 			string name;
 		
-			for(int i = 0; i < (int)plotCats.size(); i++)
+			for(int i = 1; i < (int)plotCats.size(); i++)
 				id_names.push_back(plotCats[i].legName);
 
 			//normalize histograms	
@@ -136,14 +143,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			//write 1D hists
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				//write total hist to file
-				name = hists1D[i]->GetName();
-				if(hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				name = plotCats[0].hists1D[i]->GetName();
+				if(plotCats[0].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 				TCanvas* cv = new TCanvas((name).c_str(), "");
-				TDRHist(hists1D[i], cv, name, name, "a.u.");	
+				TDRHist(plotCats[0].hists1D[i], cv, name, name, "a.u.");	
 				cv->Write();
 				if(!_data){
 					//make a vector for each type of histogram
-					for(int j = 0; j < (int)plotCats.size(); j++){
+					for(int j = 1; j < (int)plotCats.size(); j++){
 						if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
 						hists.push_back(plotCats[j].hists1D[i]);			
 						//should be 3 hists in this vector
@@ -167,17 +174,17 @@ class PhotonSkimmer : public BaseSkimmer{
 			string xname, yname;
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				//write total hist to file
-				name = hists2D[i]->GetName();
+				name = plotCats[0].hists2D[i]->GetName();
 				name += "2D";
-				xname = hists2D[i]->GetXaxis()->GetTitle();
-				yname = hists2D[i]->GetYaxis()->GetTitle();
-				if(hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				xname = plotCats[0].hists2D[i]->GetXaxis()->GetTitle();
+				yname = plotCats[0].hists2D[i]->GetYaxis()->GetTitle();
+				if(plotCats[0].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 				TCanvas* cv = new TCanvas((name).c_str(), "");
-				TDR2DHist(hists2D[i], cv, xname, yname);
+				TDR2DHist(plotCats[0].hists2D[i], cv, xname, yname);
 				cv->Write();
 				if(!_data){
 					//make a vector for each type of histogram
-					for(int j = 0; j < (int)plotCats.size(); j++){
+					for(int j = 1; j < (int)plotCats.size(); j++){
 						if(plotCats[j].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
 						TCanvas* cv_stack = new TCanvas((name+"_"+plotCats[j].plotName).c_str(), "");
 						TDR2DHist(plotCats[j].hists2D[i], cv_stack, xname, yname, plotCats[j].plotName);
@@ -189,6 +196,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			ofile->Close();
 
 		}
+
+
+
 
 		//k = sum_n(E_n)/N
 		void FillModelHists(BasePDFMixture* model, int id_idx){
@@ -319,11 +329,11 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[21]->Fill(rot2D);
 					plotCats[id_idx].hists1D[23]->Fill(tc);
 					plotCats[id_idx].hists2D[13]->Fill(E_k,pi);
-					plotCats[id_idx].hists2D[16]->Fill(norms[k], E_lead/E_tot);	
 					plotCats[id_idx].hists2D[19]->Fill(nclusters,pi);	
+					plotCats[id_idx].hists1D[25]->Fill(ec);
+					plotCats[id_idx].hists1D[27]->Fill(pc);
+					plotCats[id_idx].hists2D[16]->Fill(E_lead/E_tot, pi);	
 				}
-				if(nclusters == 1)
-					plotCats[id_idx].hists2D[17]->Fill(norms[k], E_lead/E_tot);	
 
 
 				if(nclusters > 1){
@@ -337,6 +347,10 @@ class PhotonSkimmer : public BaseSkimmer{
 						plotCats[id_idx].hists1D[22]->Fill(rot2D);
 						plotCats[id_idx].hists2D[14]->Fill(E_k,pi);
 						plotCats[id_idx].hists1D[24]->Fill(tc);
+						plotCats[id_idx].hists1D[26]->Fill(ec);
+						plotCats[id_idx].hists1D[28]->Fill(pc);
+						plotCats[id_idx].hists2D[17]->Fill(E_lead/E_tot, pi);	
+						plotCats[id_idx].hists2D[20]->Fill(nclusters,pi);	
 
 					}
 				}
@@ -348,6 +362,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		}
 
+	/*
 		void FillTotalHists(BasePDFMixture* model){
 			map<string, Matrix> params;
 			vector<double> eigenvals, eigenvals_space, norms;
@@ -517,7 +532,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	
 		}
-
+		*/
 	private:
 		TH1D* time_center_norm = nullptr;
 

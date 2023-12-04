@@ -67,16 +67,14 @@ void PhotonSkimmer::Skim(){
 
 	
 	vector<Jet> rhs;
+	vector<Jet> phos;
 	double phoid, k;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
-	//false = does not pass iso
-	//true = passes iso
-	bool iso;
-	bool trksum;
-	bool ecalrhsum;
-	bool htowoverem;
+
+	//set iso cuts
+	_prod->SetIsoCut();
 
 	//loop over events
 	if(_evti == _evtj){
@@ -85,23 +83,16 @@ void PhotonSkimmer::Skim(){
 	}
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
-		nPho = (int)_base->Photon_energy->size();
-		//loop over photons
+		_prod->GetTruePhotons(phos, e);
+		int nPho = phos.size();
+		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
-			//apply isolation cuts
-			if(_isocuts){
-				trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
-				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
-				htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
-				iso = trksum && ecalrhsum && htowoverem;
-			}
-			if(!iso) continue;
-
+			
 			sumE = 0;
-			//find subclusters for each photon
-			_prod->GetRecHits(rhs, e, p);
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+			phos[p].GetJets(rhs);
 			cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
 			//set time resolution smearing
@@ -114,6 +105,9 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			//fill total plotCat - first one
+			FillModelHists(gmm, 0);
+			
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -121,7 +115,7 @@ void PhotonSkimmer::Skim(){
 				//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
 				//2 = not susy: p -> gamma, not matched (29, -1)
 				phoid = _base->Photon_genLlpId->at(p);
-				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
+				for(int i = 1; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
 						FillModelHists(gmm, i);
@@ -133,7 +127,7 @@ void PhotonSkimmer::Skim(){
 			}
 			objE->Fill(_base->Photon_energy->at(p));
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
-			FillTotalHists(gmm);
+			//FillTotalHists(gmm);
 			rhs.clear();
 		}
 	}
@@ -159,7 +153,7 @@ void PhotonSkimmer::CleaningSkim(){
 
 	int nPho;
 	vector<JetPoint> rhs;
-	int _oskip = 10;
+	int _oskip = 1;
 	if(_debug){ _oskip = 1000; }
 
 	for(int i = 0; i < _nEvts; i+=_oskip){
