@@ -73,10 +73,10 @@ void PhotonSkimmer::Skim(){
 
 	//false = does not pass iso
 	//true = passes iso
-	bool iso = true;
-	bool trksum = true;
-	bool ecalrhsum = true;
-	bool htowoverem = true;
+	bool iso;
+	bool trksum;
+	bool ecalrhsum;
+	bool htowoverem;
 
 	//loop over events
 	if(_evti == _evtj){
@@ -114,14 +114,6 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-			//if(gmm->GetNClusters() > 3){
-			//	cout << "\n photon #" << p << " in event # " << e << " has energy " << _base->Photon_energy->at(p) << "  " << sumE << " (GeV) and " << gmm->GetNClusters() << " subclusters" << endl;	
-			//	cout << "rh energies:" << endl;
-			//	for(int i = 0; i < rhs.size(); i++){
-			//		cout << "i: " << i << " energy: " << rhs[i].E() << " time: " << rhs[i].t() << endl;
-
-			//	}	
-			//}
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
