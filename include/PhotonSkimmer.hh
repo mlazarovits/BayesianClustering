@@ -138,37 +138,6 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		}
 
-		void WriteHist1D(int i){
-			vector<TH1D*> hists;
-			double ymin, ymax;
-			vector<string> id_names;
-			//write total hist to file
-			string name = plotCats[0].hists1D[i]->GetName();
-			if(plotCats[0].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; return; }
-			TCanvas* cv = new TCanvas((name).c_str(), "");
-			TDRHist(plotCats[0].hists1D[i], cv, name, name, "a.u.");	
-			cv->Write();
-			if(!_data){
-				//make a vector for each type of histogram
-				for(int j = 1; j < (int)plotCats.size(); j++){
-					if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
-					hists.push_back(plotCats[j].hists1D[i]);			
-					//should be 3 hists in this vector
-				}
-				FindListHistBounds(hists, ymin, ymax);
-				TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
-				TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
-				//write cv to file			
-				cv_stack->Write();
-				
-				hists.clear();
-			}
-		}
-			
-
-
-
-
 		void WriteHists(TFile* ofile){
 			vector<TH1D*> hists;
 			vector<string> id_names;
@@ -200,19 +169,39 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			ofile->cd();
 			//write 1D hists
+		cout << hists1D.size() << " 1d hists" << endl;	
 			for(int i = 0; i < (int)hists1D.size(); i++){
-				WriteHist1D(i);
+				name = plotCats[0].hists1D[i]->GetName();
+				if(plotCats[0].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				TCanvas* cv = new TCanvas((name).c_str(), "");
+				TDRHist(plotCats[0].hists1D[i], cv, name, name, "a.u.");	
+				cv->Write();
+				if(!_data){
+					//make a vector for each type of histogram
+					for(int j = 1; j < (int)plotCats.size(); j++){
+						if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
+						hists.push_back(plotCats[j].hists1D[i]);			
+					}
+					FindListHistBounds(hists, ymin, ymax);
+					TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
+					TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
+					//write cv to file			
+					cv_stack->Write();
+					
+					hists.clear();
+				}
 			}
 			
 			//write 2D hists
 			string xname, yname;
+		cout << hists2D.size() << " 2d hists" << endl;	
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				//write total hist to file
 				name = plotCats[0].hists2D[i]->GetName();
 				name += "2D";
 				xname = plotCats[0].hists2D[i]->GetXaxis()->GetTitle();
 				yname = plotCats[0].hists2D[i]->GetYaxis()->GetTitle();
-				if(plotCats[0].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				if(plotCats[0].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for total." << endl; continue; }
 				TCanvas* cv = new TCanvas((name).c_str(), "");
 				TDR2DHist(plotCats[0].hists2D[i], cv, xname, yname);
 				cv->Write();
@@ -278,7 +267,6 @@ class PhotonSkimmer : public BaseSkimmer{
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
-
 				if(fabs(tc) > 15 && pi < 0.1) cout << "\n tail event here - cluster " << k << " has time " << tc << " ns and MM coeff " << pi << endl;
 	
 				v_x = lead_eigenvec.at(0,0);	
@@ -417,6 +405,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D_lead[3]->Fill(ec,pc);
 					plotCats[id_idx].hists2D_lead[4]->Fill(tc,ec);
 					plotCats[id_idx].hists2D_lead[5]->Fill(tc,pc);
+					//cout << "fill hist with time: " << tc << " and coeff: " << pi << endl;
 					plotCats[id_idx].hists2D_lead[6]->Fill(tc,pi);
 					plotCats[id_idx].hists2D_lead[7]->Fill(E_k,pi);
 					plotCats[id_idx].hists2D_lead[8]->Fill(rot3D,E_k);
@@ -488,9 +477,6 @@ class PhotonSkimmer : public BaseSkimmer{
 				}
 
 			}
-//			cout << "end clusters" << endl;
-
-
 		}
 
 

@@ -94,6 +94,7 @@ void PhotonSkimmer::Skim(){
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
 			cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
@@ -107,8 +108,6 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-			//fill total plotCat - first one
-			FillModelHists(gmm, 0);
 			
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
@@ -119,11 +118,11 @@ void PhotonSkimmer::Skim(){
 				phoid = _base->Photon_genLlpId->at(p);
 				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
-					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
+					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;}) || i == 0){
 						FillModelHists(gmm, i);
 						plotCats[i].hists1D[19]->Fill(_base->Photon_energy->at(p));
 						plotCats[i].hists2D[9]->Fill(_base->Photon_energy->at(p), sumE);
-						break;
+						if(i != 0) break;
 					}
 				}
 			}
