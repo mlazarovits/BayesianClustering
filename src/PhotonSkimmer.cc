@@ -32,8 +32,6 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_evtj = _nEvts;
 	_oname = "plots/photon_skims_"+_cms_label+".root";
 
-	objE->SetTitle("phoE");
-	objE->SetName("phoE");
 	_isocuts = false;
 	_oskip = 10;
 	_thresh = 1.;
@@ -49,7 +47,12 @@ void PhotonSkimmer::Skim(){
 
 	//create histograms to be filled
 	MakeIDHists();
+	plotCats[0].hists1D[19]->SetTitle("phoE");
+	plotCats[0].hists1D[19]->SetName("phoE");
 
+	plotCats[0].hists2D[9]->SetTitle("phoE_clusterE");
+	plotCats[0].hists2D[9]->SetName("phoE_clusterE");
+	
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	
@@ -87,7 +90,6 @@ void PhotonSkimmer::Skim(){
 		int nPho = phos.size();
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
-			
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
@@ -96,7 +98,7 @@ void PhotonSkimmer::Skim(){
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
 			//set time resolution smearing
-			algo->SetTimeResSmear(0.2, 0.3*_gev);
+			algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -115,7 +117,7 @@ void PhotonSkimmer::Skim(){
 				//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
 				//2 = not susy: p -> gamma, not matched (29, -1)
 				phoid = _base->Photon_genLlpId->at(p);
-				for(int i = 1; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
+				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;})){
 						FillModelHists(gmm, i);
@@ -127,11 +129,11 @@ void PhotonSkimmer::Skim(){
 			}
 			objE->Fill(_base->Photon_energy->at(p));
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
-			//FillTotalHists(gmm);
-			rhs.clear();
 		}
 	}
 	cout << "\n" << endl;
+	ofile->WriteTObject(objE);
+	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
 
 }
@@ -153,7 +155,7 @@ void PhotonSkimmer::CleaningSkim(){
 
 	int nPho;
 	vector<JetPoint> rhs;
-	int _oskip = 1;
+	int _oskip = 10;
 	if(_debug){ _oskip = 1000; }
 
 	for(int i = 0; i < _nEvts; i+=_oskip){
