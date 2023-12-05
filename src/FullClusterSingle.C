@@ -265,9 +265,10 @@ int main(int argc, char *argv[]){
         	PhotonProducer prod(file);
 		prod.SetTransferFactor(gev);
 		int npho = nobj; //which photon to analyze
-		cout << "Making plots for photon " << npho << "  at event " << evt << endl;
+		if(viz) cout << "Making plots for photon " << npho << "  at event " << evt << endl;
         	prod.GetRecHits(rhs,evt,npho);
-        	cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
+        	//prod.GetTruePhotons(phos, evt);
+		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
 	else if(obj == 2){
 		BasicDetectorSim det;
