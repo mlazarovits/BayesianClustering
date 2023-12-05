@@ -99,7 +99,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
 
 		//Photon selection
 		if(nrhs < 2) continue;
-                if(_base->Photon_pt->at(p) < 20.) continue;
+                //if(_base->Photon_pt->at(p) < 20.) continue;
                 //if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
                 //isolation cuts
 		bool iso;
@@ -125,7 +125,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
                                 JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
