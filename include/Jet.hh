@@ -128,6 +128,7 @@ class Jet{
 
 		const vector<JetPoint>& GetJetPoints() const{return _rhs;}
 		const void GetJets(vector<Jet>& rhs) const{
+			rhs.clear();
 			Jet rh;
 			for(int r = 0; r < _rhs.size(); r++){
 				rh = Jet(_rhs[r]);
