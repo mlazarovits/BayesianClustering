@@ -28,7 +28,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1; //default
+	_gev = 1/10.; //default
 	_nevts = 1000;
 	//initialize cal - save e, t, n emissions
 	_etamax = 1.479 + _deta/2.; //puts outermost corner at true etamax
@@ -68,7 +68,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1; //default
+	_gev = 1/10.; //default
 	_etamax = 1.479;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
@@ -160,7 +160,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	//diagonal matrix
 	smear.SetEntry(_deta*_deta,0,0);
 	smear.SetEntry(_dphi*_dphi,1,1);
-	smear.SetEntry(1.,2,2); //no smear in time	
+	smear.SetEntry(0.,2,2); //no smear in time	
 
 	vector<node*> trees;
 	vector<Jet> predjets;

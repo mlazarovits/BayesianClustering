@@ -211,10 +211,15 @@ int main(int argc, char *argv[]){
 	t_string.replace(idx,1,"p");	
 
 
+	string gev_string;
+	stream.str("");
+	stream << std::fixed << std::setprecision(3) << gev;
+	gev_string = stream.str();
+	idx = gev_string.find(".");
+	gev_string.replace(idx,1,"p");	
 
-
-	if(obj != 1) fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string;
-	else fname += "_evt"+std::to_string(evt)+"_emAlpha"+ema_string+"_thresh"+t_string;
+	if(obj != 1) fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_gev"+gev_string;
+	else fname += "_evt"+std::to_string(evt)+"_nobj"+std::to_string(nobj)+"_emAlpha"+ema_string+"_thresh"+t_string+"_gev"+gev_string;
 	cout << "Free sha-va-ca-doo!" << endl;
 	
 	/////GET DATA FROM NTUPLE//////
@@ -242,7 +247,7 @@ int main(int argc, char *argv[]){
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(1.,2,2); //no smear in time	
+	smear.SetEntry(0.,2,2); //no smear in time	
 
 
 	vector<Jet> rhs, jets;

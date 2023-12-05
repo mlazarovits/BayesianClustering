@@ -61,7 +61,7 @@ void PhotonSkimmer::Skim(){
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(1.,2,2); //no smear in time	
+	smear.SetEntry(0.,2,2); //no smear in time	
 	double tres_c = 0.2;
 	double tres_n = 0.3*_gev;	
 
