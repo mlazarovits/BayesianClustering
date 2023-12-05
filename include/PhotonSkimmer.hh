@@ -232,6 +232,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
+
+				if(fabs(tc) > 15 && pi < 0.1) cout << "\n tail event here - cluster " << k << " has time " << tc << " ns and MM coeff " << pi << endl;
 	
 				v_x = lead_eigenvec.at(0,0);	
 				v_y = lead_eigenvec.at(1,0);	
