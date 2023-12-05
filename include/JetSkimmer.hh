@@ -24,7 +24,6 @@ class JetSkimmer : public BaseSkimmer{
 		
 		void CleaningSkim(){ };
 		void Skim();
-		void GetTrueJets(vector<Jet>& jets);
 		void GMMOnly(){ _mmonly = true; }
 
 
@@ -37,15 +36,19 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
 		//difference in tPV between two back-to-back jets
 		//previous time definitions
-		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",100,-10,10);	
-		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-10,10);	
+		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",100,-20,20);	
+		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-20,20);	
 
 		//mm only jet plots
 		//mm only time (from true jets)
 		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
 		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-10,10);	
+		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-20,20);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
+
+
+		//comparing predicted jets + true jets
+		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
 
 		//predicted jet plots
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
@@ -124,7 +127,7 @@ class JetSkimmer : public BaseSkimmer{
 				njets++;
 				cleaned_trees.push_back(trees[i]);
 			}
-			nSubClusters->Fill(njets);
+			nClusters->Fill(njets);
 			FillPVHists_PredJets(cleaned_trees);
 		}
 	
@@ -320,6 +323,21 @@ class JetSkimmer : public BaseSkimmer{
 				phi += params["pi"].at(0,0)*params["mean"].at(1,0);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				ws += params["pi"].at(0,0);
+			}
+			phi /= ws;
+			t /= ws; 
+		}
+		
+		void CalcEAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
+			int kmax = model->GetNClusters();
+			phi = 0;
+			t = 0;
+			double pi, ws;
+			map<string, Matrix> params;
+			for(int i = 0; i < model->GetData()->GetNPoints(); i++){
+				phi += model->GetData()->at(i).w()/_gev*model->GetData()->at(i).Value(1);
+				t += model->GetData()->at(i).w()/_gev*model->GetData()->at(i).Value(2);
+				ws += model->GetData()->at(i).w()/_gev;
 			}
 			phi /= ws;
 			t /= ws; 

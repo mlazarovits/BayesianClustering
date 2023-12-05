@@ -127,53 +127,5 @@ void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
 }
 
 
-void JetProducer::GetTrueJets(vector<Jet>& jets, int evt){
-	double px, py, pz, pt, phi, eta;
-	jets.clear();
-
-	if(evt > _nEvts) return;
-
-	_base->GetEntry(evt);
-	int nJets = (int)_base->Jet_energy->size();
-	//cout << "# jets in evt " << evt << ": " << nJets << endl;
-	int nJetRHs;
-	int nJetRHs_total = 0;
-	//for dR matched rec hits
-	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
-	vector<unsigned int>::iterator rhit;
-	int rhidx;
-	for(int j = 0; j < nJets; j++){
-		pt = _base->Jet_pt->at(j);
-		phi = _base->Jet_phi->at(j);
-		eta = _base->Jet_eta->at(j);
-
-		px = pt*cos(phi);
-		py = pt*sin(phi);
-		pz = pt*sinh(eta);
-
-		Jet jet(px, py, pz, _base->Jet_energy->at(j));	
-		
-		//set rec hits in jet
-		vector<unsigned int> rhs = _base->Jet_drRhIds->at(j);
-		vector<unsigned int> egidxs = _base->Jet_egIndxs->at(j);
-		for(int r = 0; r < rhs.size(); r++){
-			unsigned int rhid = rhs[r];
-			rhit = std::find(rhids.begin(), rhids.end(), rhid);
-			if(rhit != rhids.end()){
-				rhidx = rhit - rhids.begin();
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), 
-					_base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
-				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
-				rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
-				jet.AddRecHit(rh);
-			}
-
-		}
-		if(jet.GetNPoints() < 1) continue;
-		jets.push_back(jet);
-	}
-
-
-}
 
 

@@ -50,6 +50,7 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	//mm only jets
 	hists1D.push_back(PVtime_mmAvg);	
 	hists1D.push_back(PVtimeDiff_mmAvg);	
+	hists1D.push_back(nSubClusters_mm);
 
 	//predicted jets pv times - from BHC
 	hists1D.push_back(nClusters);
@@ -63,6 +64,9 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 	hists1D.push_back(PVtimeDiff_eAvg_pred);	
 	hists1D.push_back(PVtimeDiff_mmAvg_pred);	
 	hists2D.push_back(e_nRhs);
+	
+	nrhs_comptime->SetName("nrhs_comptime");
+        nrhs_comptime->SetTitle("nrhs_comptime");
 	graphs.push_back(nrhs_comptime);
 
 
@@ -95,7 +99,10 @@ void JetSkimmer::Skim(){
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(1.,2,2); //no smear in time	
+	smear.SetEntry(1.,2,2); 
+	//for time smearing (energy dependent)
+	double tres_c = 0.2;
+        double tres_n = 0.3*_gev;
 	
 	double alpha = 0.1;
 	double emAlpha = 0.5;
@@ -126,7 +133,7 @@ void JetSkimmer::Skim(){
 		
 		//fill true jet histograms
 		vector<Jet> jets;
-		GetTrueJets(jets);
+		_prod->GetTrueJets(jets, i);
 		if(jets.size() < 1) continue;
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
@@ -179,56 +186,6 @@ void JetSkimmer::Skim(){
 
 
 
-void JetSkimmer::GetTrueJets(vector<Jet>& jets){
-	jets.clear();
-	double px, py, pz;
-	int nrhs, rhid;
-	int njets = _base->Jet_energy->size();
-	Jet jet;
-	Point vtx(3);
-	vtx.SetValue(_base->PV_x, 0);
-	vtx.SetValue(_base->PV_y, 1);
-	vtx.SetValue(_base->PV_z, 2);
-	bool jetid;
-	for(int j = 0; j < njets; j++){
-		nrhs = _base->Jet_drRhIds->at(j).size();
-		px = _base->Jet_pt->at(j)*cos( _base->Jet_phi->at(j) );
-		py = _base->Jet_pt->at(j)*sin( _base->Jet_phi->at(j) );
-		pz = _base->Jet_pt->at(j)*sinh( _base->Jet_eta->at(j) );
-		
-		//rough preselection
-		if(nrhs < 2) continue;
-		if(_base->Jet_energy->at(j) < 30.) continue;
-		if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
-		//create jet id (based on Run III recommendations)
-		jetid = (_base->Jet_neEmEF->at(j) < 0.9) && (_base->Jet_neHEF->at(j) < 0.9) && (_base->Jet_nConstituents->at(j) > 1)
-			&& (_base->Jet_muEF->at(j) < 0.8) && (_base->Jet_chHEF->at(j) > 0.01) && (_base->Jet_chHM->at(j) > 0)
-			&& (_base->Jet_chEmEF->at(j) < 0.8);
-		if(!jetid) continue;  		
-
-
-		jet = Jet(px, py, pz, _base->Jet_energy->at(j));
-		jet.SetVertex(vtx);
-		//add rec hits
-		for(int r = 0; r < nrhs; r++){
-			rhid = _base->Jet_drRhIds->at(j).at(r);
-			for(int rr = 0; rr < _base->ECALRecHit_ID->size(); rr++){
-				if(_base->ECALRecHit_ID->at(rr) != rhid) continue;
-				JetPoint rh = JetPoint(_base->ECALRecHit_rhx->at(rr), _base->ECALRecHit_rhy->at(rr), 
-					_base->ECALRecHit_rhz->at(rr), _base->ECALRecHit_time->at(rr) + _base->ECALRecHit_TOF->at(rr));
-				rh.SetEnergy(_base->ECALRecHit_energy->at(rr));
-				rh.SetEta(_base->ECALRecHit_eta->at(rr));
-				rh.SetPhi(_base->ECALRecHit_phi->at(rr));
-				rh.SetWeight(_base->ECALRecHit_energy->at(rr)*_gev);
-				jet.AddRecHit(rh);
-				jet.SetUserIdx(j);
-				break;
-			}
-		}
-		jets.push_back(jet);
-			
-	}
-}
 
 
 

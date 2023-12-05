@@ -44,6 +44,10 @@ class BaseProducer{
 		virtual void GetRecHits(vector<Jet>& rhs, int evt, int obj){};
 		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
 
+
+		void GetTrueJets(vector<Jet>& jets, int evt);
+
+
 		ReducedBase* GetBase(){ return _base; }
 
 
