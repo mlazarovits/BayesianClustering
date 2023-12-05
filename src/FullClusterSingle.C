@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 	int nobj = 0; //number of object in event to cluster (only for photons)
 	//this should be in N/GeV
 	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
-	double gev = 1./5.;
+	double gev = 1./10.;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -157,7 +157,7 @@ int main(int argc, char *argv[]){
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons, 2 : detector sim)" << endl;
    		cout << "   --nobj [n]                    set number of object in event to cluster (photons only, default = 0)" << endl;
    		cout << "   --evt(-e) [evt]               get plots for event e (default = 0)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/5)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = true)" << endl;
