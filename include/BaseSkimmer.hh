@@ -19,7 +19,7 @@ using std::string;
 class BaseSkimmer{
 	public:
 		BaseSkimmer(){ 
-			_gev = 1;
+			_gev = 1/10.;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
