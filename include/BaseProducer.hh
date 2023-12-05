@@ -16,6 +16,7 @@ class BaseProducer{
 	public:
 		BaseProducer(){ 
 			_gev = 1;
+			_isocut = false;
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -30,6 +31,7 @@ class BaseProducer{
 			_nEvts = _base->fChain->GetEntries();
 			//default to 1 GeV = 1 entry -> gev = 1
 			_gev = 1;
+			_isocut = false;
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
@@ -46,7 +48,10 @@ class BaseProducer{
 
 
 		void GetTrueJets(vector<Jet>& jets, int evt);
+		void GetTruePhotons(vector<Jet>& phos, int evt);
 
+		bool _isocut;
+		void SetIsoCut(){ _isocut = true; }		
 
 		ReducedBase* GetBase(){ return _base; }
 

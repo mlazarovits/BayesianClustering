@@ -32,8 +32,6 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_evtj = _nEvts;
 	_oname = "plots/photon_skims_"+_cms_label+".root";
 
-	objE->SetTitle("phoE");
-	objE->SetName("phoE");
 	_isocuts = false;
 	_oskip = 10;
 	_thresh = 1.;
@@ -49,7 +47,12 @@ void PhotonSkimmer::Skim(){
 
 	//create histograms to be filled
 	MakeIDHists();
+	plotCats[0].hists1D[19]->SetTitle("phoE");
+	plotCats[0].hists1D[19]->SetName("phoE");
 
+	plotCats[0].hists2D[9]->SetTitle("phoE_clusterE");
+	plotCats[0].hists2D[9]->SetName("phoE_clusterE");
+	
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	
@@ -67,16 +70,14 @@ void PhotonSkimmer::Skim(){
 
 	
 	vector<Jet> rhs;
+	vector<Jet> phos;
 	double phoid, k;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
-	//false = does not pass iso
-	//true = passes iso
-	bool iso;
-	bool trksum;
-	bool ecalrhsum;
-	bool htowoverem;
+
+	//set iso cuts
+	_prod->SetIsoCut();
 
 	//loop over events
 	if(_evti == _evtj){
@@ -85,27 +86,19 @@ void PhotonSkimmer::Skim(){
 	}
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
-		nPho = (int)_base->Photon_energy->size();
-		//loop over photons
+		_prod->GetTruePhotons(phos, e);
+		int nPho = phos.size();
+		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
-			//apply isolation cuts
-			if(_isocuts){
-				trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
-				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
-				htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
-				iso = trksum && ecalrhsum && htowoverem;
-			}
-			if(!iso) continue;
-
 			sumE = 0;
-			//find subclusters for each photon
-			_prod->GetRecHits(rhs, e, p);
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+			phos[p].GetJets(rhs);
 			cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
 			//set time resolution smearing
-			algo->SetTimeResSmear(0.2, 0.3*_gev);
+			algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -114,6 +107,9 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			//fill total plotCat - first one
+			FillModelHists(gmm, 0);
+			
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -133,11 +129,11 @@ void PhotonSkimmer::Skim(){
 			}
 			objE->Fill(_base->Photon_energy->at(p));
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
-			FillTotalHists(gmm);
-			rhs.clear();
 		}
 	}
 	cout << "\n" << endl;
+	ofile->WriteTObject(objE);
+	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
 
 }

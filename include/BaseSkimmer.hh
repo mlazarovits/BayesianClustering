@@ -47,48 +47,40 @@ class BaseSkimmer{
 			hists1D.push_back(slope_phiT);
 			hists1D.push_back(polar_ang);
 			hists1D.push_back(azimuth_ang);
-			hists1D.push_back(e_tot);
+			hists1D.push_back(e_subcl);
 			hists1D.push_back(rotundity_3D);
 			hists1D.push_back(rotundity_2D);
-			hists1D.push_back(e_tot_lead);
-			hists1D.push_back(e_tot_sublead);
 			hists1D.push_back(velocity);
-			hists1D.push_back(npts_lead);
-			hists1D.push_back(fracpts_lead);
-			hists1D.push_back(fracE_lead);
 			hists1D.push_back(eigen2D_ratio);	
-			hists1D.push_back(objE);
 			hists1D.push_back(clusterE);
-			hists1D.push_back(rotundity_2D_lead);
-			hists1D.push_back(rotundity_2D_notlead);
-			hists1D.push_back(time_center_lead);
-			hists1D.push_back(time_center_notlead);
-			hists1D.push_back(eta_center_lead);
-			hists1D.push_back(eta_center_notlead);
-			hists1D.push_back(phi_center_lead);
-			hists1D.push_back(phi_center_notlead);
+                	hists1D.push_back(etaVar); 
+                	hists1D.push_back(phiVar); 
+                	hists1D.push_back(timeVar);
+			hists1D.push_back(fracE);
+			hists1D.push_back(e_tot);
+			hists1D.push_back(azimuth_ang_2D);
 
-			hists2D.push_back(time_totE);
-			hists2D.push_back(time_totE_lead);
-			hists2D.push_back(time_totE_notlead);
-			hists2D.push_back(az_totE);
-			hists2D.push_back(rot2D_totE);
+
+			hists2D.push_back(time_E);
+			hists2D.push_back(az_E);
+			hists2D.push_back(rot2D_E);
 			hists2D.push_back(eta_phi);
 			hists2D.push_back(t_eta);
 			hists2D.push_back(t_phi);
-			hists2D.push_back(nsubcl_fracElead);
-			hists2D.push_back(objE_clusterE);
 			hists2D.push_back(t_mixcoeff);
-			hists2D.push_back(totE_mixcoeff);
-			hists2D.push_back(rot3D_totE);
-			hists2D.push_back(totE_mixcoeff_lead);
-			hists2D.push_back(totE_mixcoeff_notlead);
-			hists2D.push_back(npts_totE);
-			hists2D.push_back(fracE_mmcoeff_lead);
-			hists2D.push_back(fracE_mmcoeff_notlead);
+			hists2D.push_back(E_mixcoeff);
+			hists2D.push_back(rot3D_E);
+			hists2D.push_back(npts_E);
 			hists2D.push_back(nsubcl_nrhs);
-			hists2D.push_back(nsubcl_mmcoeff_leadsubcl);
-			hists2D.push_back(nsubcl_mmcoeff_notleadsubcl);
+			hists2D.push_back(nsubcl_mmcoeff);
+			hists2D.push_back(etaVar_phiVar); 
+                	hists2D.push_back(timeVar_etaVar);
+                	hists2D.push_back(timeVar_phiVar);
+			hists2D.push_back(fracE_mmcoeff);
+			hists2D.push_back(nsubcl_fracE);
+	
+			MakeMMCoeffSeparatedHists();
+
 		}
 		virtual ~BaseSkimmer(){ 
 			delete _base;
@@ -135,98 +127,130 @@ class BaseSkimmer{
 		//8 - azimuth angle
 		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",25,-3.5,3.5);		
 		//9 - subcluster energy - total
-		TH1D* e_tot = new TH1D("e_tot","e_tot",50,0.,2000.);
+		TH1D* e_subcl = new TH1D("e_subcl","e_subcl",50,0.,2000.);
 		//10 - ellipsoid rotundity
 		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",10,0.74,1.01);
 		//11 - spatial rotundity
 		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0.4,1.1);
-		//12 - leading subcluster energy - total
-		TH1D* e_tot_lead = new TH1D("e_tot_lead","e_tot_lead",10,0.,1000.);
-		//13 - subleading subcluster energy - total
-		TH1D* e_tot_sublead = new TH1D("e_tot_sublead","e_tot_sublead",10,0.,500.);
-		//14 - velocity = z/r*k for k transfer factor to velocity units
+		//12 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",31,-1.,30.);
-		//15 - number of effective (ie weighted) pts in lead subcluster
-		TH1D* npts_lead = new TH1D("npts_lead","npts_lead",50,0,70);
-		//16 - fraction of effective (ie weighted) pts in lead subcluster
-		TH1D* fracpts_lead = new TH1D("fracpts_lead","fracpts_lead",50,0,1);
-		//17 - fraction of energy in lead subcluster
-		TH1D* fracE_lead = new TH1D("fracE_lead","fracE_lead",50,0.,1.);
-		//18 - ratio of 2D eigenvals
+		//13 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
-		//19 - total object energy
-		TH1D* objE = new TH1D("objE","objE",50,0,100);
-		//20 - cluster energy
+		//14 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",10,0,1000);
-		//21 - spatial rotundity for lead subcluster
-		TH1D* rotundity_2D_lead = new TH1D("rotundity_2D_lead","rotundity_2D_lead",20,0.4,1.1);
-		//22 - spatial rotundity for !lead subcluster
-		TH1D* rotundity_2D_notlead = new TH1D("rotundity_2D_notlead","rotundity_2D_lead",20,0.4,1.1);
-		//23 - time center for lead subcluster
-		TH1D* time_center_lead = new TH1D("time_center_lead","time_center_lead",50,-20,20);
-		//24 - time center for notlead subcluster
-		TH1D* time_center_notlead = new TH1D("time_center_notlead","time_center_notlead",50,-20,20);
-		//25 - eta center for lead subcluster
-		TH1D* eta_center_lead = new TH1D("eta_center_lead","eta_center_lead",50,-0.5,0.5);
-		//26 - eta center for notlead subcluster
-		TH1D* eta_center_notlead = new TH1D("eta_center_notlead","eta_center_notlead",50,-0.5,0.5);
-		//25 - phi center for lead subcluster
-		TH1D* phi_center_lead = new TH1D("phi_center_lead","phi_center_lead",50,-0.5,0.5);
-		//26 - phi center for notlead subcluster
-		TH1D* phi_center_notlead = new TH1D("phi_center_notlead","phi_center_notlead",50,-0.5,0.5);
+		//15 - eta variance	
+                TH1D* etaVar = new TH1D("etaVar","etaVar",50,0,1.);
+		//16 - phi variance	
+                TH1D* phiVar = new TH1D("phiVar","phiVar",50,0,1.);
+		//17 - time variance	
+                TH1D* timeVar = new TH1D("timeVar","timeVar",50,0,1.);
+		//18 - fraction of energy in cluster
+		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.);
+		//19 - cluster energy - total
+		TH1D* e_tot = new TH1D("e_tot","e_tot",50,0.,2000.);
+		//20 - azimuth angle in 2D
+		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-0.5,3.5);		
 
+	
 		//two dimensional histograms
 		vector<TH2D*> hists2D;
-		//0 - time v tot subcluster energy
-		TH2D* time_totE = new TH2D("time_totE","time_totE;time_center;totalE", 50,-30,30,10,0,1000);
-		//1 - time v tot lead subcluster energy
-		TH2D* time_totE_lead = new TH2D("time_totE_lead","time_totE_lead;time_center_lead;totalE_lead", 50,-30,30,10,0,1000);
-		//2 - time v tot notlead subcluster energy
-		TH2D* time_totE_notlead = new TH2D("time_totE_notlead","time_totE_notlead;time_center_notlead;totalE_notlead", 50,-30,30,10,0,500);
-		//3 - azimuthal angle v energy
-		TH2D* az_totE = new TH2D("az_totE","az_totE;azimuthal_angle;totalE;a.u.",50,-3.5,3.5,10,0,1000);
-		//4 - rotundity (2D) v energy
-		TH2D* rot2D_totE = new TH2D("rot2D_totE","rot2D_totE;rotundity2D;totalE",50,0.4,1.1,10,0,1000);
-		//5 - eta v phi
+		//0 - time v subcl subcluster energy
+		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
+		//1 - azimuthal angle v subcl energy
+		TH2D* az_E = new TH2D("az_subclE","az_subclE;azimuthal_angle;E;a.u.",50,-3.5,3.5,10,0,1000);
+		//2 - rotundity (2D) v subcl energy
+		TH2D* rot2D_E = new TH2D("rot2D_subclE","rot2D_subclE;rotundity2D;E;a.u.",50,0.4,1.1,10,0,1000);
+		//3 - eta v phi
 		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-3.5,3.5,50,-3.5,3.5);
-		//6 - t v eta
+		//4 - t v eta
 		TH2D* t_eta = new TH2D("t_eta","t_eta;time_center;eta_center",50,-30,30,50,-3.5,3.5);
-		//7 - t v phi
-		TH2D* t_phi = new TH2D("t_phi","t_phi;time_center;phi_center",50,-30,30,50,-3.5,3.5);
-		//8 - nsubClusters vs fraction of lead subcl E
-		TH2D* nsubcl_fracElead = new TH2D("nsubcl_fracElead","nsubcl_fracElead;nSubClusters;fracE_lead",10,0,10.,20,0,1.1);
-		//9 - objE (true) to cluster E (algo)
-		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
-		//10 - time to mixing coeff
-		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff",50,-20,20,50,0,1.);
-		//11 - totE vs mixing coeff
-		TH2D* totE_mixcoeff = new TH2D("totE_mixcoeff","totE_mixcoeff;totE;mixing_coeff",20,0,2000,20,0,1.);	
-		//12 - rotundity (3D) v energy
-		TH2D* rot3D_totE = new TH2D("rot3D_totE","rot3D_totE;rotundity3D;totalE",50,0.4,1.1,50,0,100);
-		//13 - totE vs mixing coeff - lead
-		TH2D* totE_mixcoeff_lead = new TH2D("totE_mixcoeff_lead","totE_mixcoeff;totE_lead;mixing_coeff_lead",20,0,2000,20,0,1.);	
-		//14 - totE vs mixing coeff - notlead
-		TH2D* totE_mixcoeff_notlead = new TH2D("totE_mixcoeff_notlead","totE_mixcoeff_notlead;totE_notlead;mixing_coeff_notlead",10,0,300,20,0,1.);	
-		//15 - npts effective (ie weighted) v energy
-		TH2D* npts_totE = new TH2D("npts_totE","npts_totE;npts;totalE",50,0.,100,10,0,1000);
-		//16 - mmcoeff v energy for lead subcluster
-		TH2D* fracE_mmcoeff_lead = new TH2D("fracE_mmcoeff_lead","fracE_mmcoeff_lead;fracE_lead;mmcoeff",20,0.,1.,20,0,1.);
-		//17 - mmcoeff v energy for not leading coeff
-		TH2D* fracE_mmcoeff_notlead = new TH2D("fracE_mmcoeff_notlead","fracE_mmcoeff_notlead;fracE_notlead;mmcoeff",20,0.,1.,20,0,1.);
-		//18 - nsubclusters vs nrhs in cluster
+		//5 - t v phi
+		TH2D* t_phi = new TH2D("t_phi","t_phi;time_center;phi_center;a.u.",50,-30,30,50,-3.5,3.5);
+		//6 - time to mixing coeff
+		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff;a.u.",50,-20,20,50,0,1.);
+		//7 - subcl E vs mixing coeff
+		TH2D* E_mixcoeff = new TH2D("subclE_mixcoeff","subclE_mixcoeff;E;mixing_coeff;a.u.",20,0,2000,20,0,1.);	
+		//8 - rotundity (3D) v subcluster energy
+		TH2D* rot3D_E = new TH2D("rot3D_subclE","rot3D_subclE;rotundity3D;E;a.u.",50,0.4,1.1,50,0,100);
+		//9 - npts effective (ie weighted) v subcl energy
+		TH2D* npts_E = new TH2D("npts_E","npts_subclE;npts;E;a.u.",50,0.,100,10,0,1000);
+		//10 - nsubclusters vs nrhs in cluster
 		TH2D* nsubcl_nrhs = new TH2D("nsubcl_nrhs","nsubcl_nrhs;nsubclusters;nrhs",10,0,10,10,0,50);
-		//19 - nsubclusters vs mm coeff
-		TH2D* nsubcl_mmcoeff_leadsubcl = new TH2D("nsubcl_mmcoeff_leadsubcl","nsubcl_mmcoefflead;nsubclusters;mmcoeff_leadsubcl",10,0,10,20,0.,1.);
-		//20 - nsubclusters vs mm coeff
-		TH2D* nsubcl_mmcoeff_notleadsubcl = new TH2D("nsubcl_mmcoeff_notleadsubcl","nsubcl_mmcoeffnotlead;nsubclusters;mmcoeff_notleadsubcl",10,0,10,20,0.,1.);
+		//11 - nsubclusters vs mm coeff
+		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.);
+                //12 - eta variance v phi variance
+		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",50,0,1.,50,0,1.);
+                //13 - time variance v phi variance
+                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",50,0,1.,50,0,1.);
+                //14 - time variance v phi variance
+                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",50,0,1.,50,0,1.);
+		//15 - fraction of energy in subcluster vs mm coeff of subcluster
+		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.);
+		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
+		TH2D* nsubcl_fracE = new TH2D("nsubcl_fracE","nsubcl_fracE;nSubClusters;fracE",10,0,10.,20,0,1.1);
+
+
+		//reco object histograms
+		//NOT in hist vectors
+		TH1D* objE = new TH1D("objE","objE",50,0,100);
+		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
+		
+		vector<TH1D*> hists1D_lead;
+		vector<TH1D*> hists1D_notlead;
+		vector<TH2D*> hists2D_lead;
+		vector<TH2D*> hists2D_notlead;
+		void MakeMMCoeffSeparatedHists(){
+			string name;
+			for(int i = 0; i < hists1D.size(); i++){
+				name = hists1D[i]->GetName();
+				//skip histograms with "total" energy (doesn't apply to individual subclusters)
+				//keep 1-1 indexing
+				//if(name.find("tot") != string::npos) continue;
 	
+				hists1D_lead.push_back((TH1D*)hists1D[i]->Clone());
+				hists1D_lead[i]->SetName((name+"_lead").c_str());
+				hists1D_lead[i]->SetTitle((name+"_lead").c_str());
+				
+				hists1D_notlead.push_back((TH1D*)hists1D[i]->Clone());
+				hists1D_notlead[i]->SetName((name+"_notlead").c_str());
+				hists1D_notlead[i]->SetTitle((name+"_notlead").c_str());
+			
+				//add fractional histograms to lead histograms
+
+			}
+			for(int i = 0; i < hists2D.size(); i++){
+				name = hists2D[i]->GetName();
+				//skip histograms with "total" energy (doesn't apply to individual subclusters)
+				//keep 1-1 indexing
+				//if(name.find("tot") != string::npos) continue;
+				
+				hists2D_lead.push_back((TH2D*)hists2D[i]->Clone());
+				hists2D_lead[i]->SetName((name+"_lead").c_str());
+				hists2D_lead[i]->SetTitle((name+"_lead").c_str());
+				
+				hists2D_notlead.push_back((TH2D*)hists2D[i]->Clone());
+				hists2D_notlead[i]->SetName((name+"_notlead").c_str());
+				hists2D_notlead[i]->SetTitle((name+"_notlead").c_str());
+			}
+		}
+	
+
+
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
 			string legName;
 			string plotName;
 			vector<TH1D*> hists1D;
+			//for lead subcluster
+			vector<TH1D*> hists1D_lead;
+			//for !lead subcluster
+			vector<TH1D*> hists1D_notlead;
 			vector<TH2D*> hists2D;
+			//for lead subcluster
+			vector<TH2D*> hists2D_lead;
+			//for !lead subcluster
+			vector<TH2D*> hists2D_notlead;
 			vector<double> ids;
 		};
 

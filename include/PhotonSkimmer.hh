@@ -32,7 +32,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetEMAlpha(double a){ _emAlpha = a; }
 		double _thresh, _alpha, _emAlpha;
 
-
 		//stacked photon LLID hists
 		//list of photon ids
 		vector<TH1D*> llp_sig;
@@ -43,9 +42,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		vector<vector<TH1D*>> histsID;
 		vector<plotCat> plotCats;
 
-
-
 		void MakeIDHists(){
+			//total
+			plotCat tot;
+			tot.legName = "";
+			tot.plotName = "";
+			tot.ids = {-999};
+			plotCats.push_back(tot);	
+		
 			//signal
 			plotCat sig;
 			sig.legName = "#Chi^{0} #rightarrow #gamma";
@@ -74,26 +78,93 @@ class PhotonSkimmer : public BaseSkimmer{
 					TH1D* hist = (TH1D*)hists1D[i]->Clone();
 					plotCats[j].hists1D.push_back(hist);
 					name = hists1D[i]->GetName();
-					name += "_"+plotCats[j].plotName;
+					if(j != 0) name += "_"+plotCats[j].plotName;
 					plotCats[j].hists1D[i]->SetName(name.c_str());
-					plotCats[j].hists1D[i]->SetTitle("");
+					if(j != 0) plotCats[j].hists1D[i]->SetTitle("");
 				}
 		
+			}
+			for(int i = 0; i < (int)hists1D_lead.size(); i++){
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH1D* hist = (TH1D*)hists1D_lead[i]->Clone();
+					plotCats[j].hists1D_lead.push_back(hist);
+					name = hists1D_lead[i]->GetName();
+					if(j != 0) name += "_"+plotCats[j].plotName;
+					plotCats[j].hists1D_lead[i]->SetName(name.c_str());
+					if(j != 0) plotCats[j].hists1D_lead[i]->SetTitle("");
+				}
+			}
+			for(int i = 0; i < (int)hists1D_notlead.size(); i++){
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH1D* hist = (TH1D*)hists1D_notlead[i]->Clone();
+					plotCats[j].hists1D_notlead.push_back(hist);
+					name = hists1D_notlead[i]->GetName();
+					if(j != 0) name += "_"+plotCats[j].plotName;
+					plotCats[j].hists1D_notlead[i]->SetName(name.c_str());
+					if(j != 0) plotCats[j].hists1D_notlead[i]->SetTitle("");
+				}
 			}
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				for(int j = 0; j < (int)plotCats.size(); j++){
 					TH2D* hist = (TH2D*)hists2D[i]->Clone();
 					plotCats[j].hists2D.push_back(hist);
 					name = hists2D[i]->GetName();
-					name += "_"+plotCats[j].plotName;
+					if(j != 0) name += "_"+plotCats[j].plotName;
 					plotCats[j].hists2D[i]->SetName(name.c_str());
-					plotCats[j].hists2D[i]->SetTitle("");
+					if(j != 0) plotCats[j].hists2D[i]->SetTitle("");
 				}
 		
+			}
+			for(int i = 0; i < (int)hists2D_lead.size(); i++){
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH2D* hist = (TH2D*)hists2D_lead[i]->Clone();
+					plotCats[j].hists2D_lead.push_back(hist);
+					name = hists2D_lead[i]->GetName();
+					if(j != 0) name += "_"+plotCats[j].plotName;
+					plotCats[j].hists2D_lead[i]->SetName(name.c_str());
+					if(j != 0) plotCats[j].hists2D_lead[i]->SetTitle("");
+				}
+			}
+			for(int i = 0; i < (int)hists2D_notlead.size(); i++){
+				for(int j = 0; j < (int)plotCats.size(); j++){
+					TH2D* hist = (TH2D*)hists2D_notlead[i]->Clone();
+					plotCats[j].hists2D_notlead.push_back(hist);
+					name = hists2D_notlead[i]->GetName();
+					if(j != 0) name += "_"+plotCats[j].plotName;
+					plotCats[j].hists2D_notlead[i]->SetName(name.c_str());
+					if(j != 0) plotCats[j].hists2D_notlead[i]->SetTitle("");
+				}
 			}
 
 		}
 
+		void WriteHist1D(int i){
+			vector<TH1D*> hists;
+			double ymin, ymax;
+			vector<string> id_names;
+			//write total hist to file
+			string name = plotCats[0].hists1D[i]->GetName();
+			if(plotCats[0].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; return; }
+			TCanvas* cv = new TCanvas((name).c_str(), "");
+			TDRHist(plotCats[0].hists1D[i], cv, name, name, "a.u.");	
+			cv->Write();
+			if(!_data){
+				//make a vector for each type of histogram
+				for(int j = 1; j < (int)plotCats.size(); j++){
+					if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
+					hists.push_back(plotCats[j].hists1D[i]);			
+					//should be 3 hists in this vector
+				}
+				FindListHistBounds(hists, ymin, ymax);
+				TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
+				TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
+				//write cv to file			
+				cv_stack->Write();
+				
+				hists.clear();
+			}
+		}
+			
 
 
 
@@ -104,7 +175,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double ymax, ymin;
 			string name;
 		
-			for(int i = 0; i < (int)plotCats.size(); i++)
+			for(int i = 1; i < (int)plotCats.size(); i++)
 				id_names.push_back(plotCats[i].legName);
 
 			//normalize histograms	
@@ -127,57 +198,27 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 
 
-			//write unnormalized and normalized time center hists
-			time_center_norm = (TH1D*)time_center->Clone();
-			time_center_norm->Scale(1./time_center_norm->Integral());	
-			
-
 			ofile->cd();
 			//write 1D hists
 			for(int i = 0; i < (int)hists1D.size(); i++){
-				//write total hist to file
-				name = hists1D[i]->GetName();
-				if(hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
-				TCanvas* cv = new TCanvas((name).c_str(), "");
-				TDRHist(hists1D[i], cv, name, name, "a.u.");	
-				cv->Write();
-				if(!_data){
-					//make a vector for each type of histogram
-					for(int j = 0; j < (int)plotCats.size(); j++){
-						if(plotCats[j].hists1D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
-						hists.push_back(plotCats[j].hists1D[i]);			
-						//should be 3 hists in this vector
-					}
-					FindListHistBounds(hists, ymin, ymax);
-					TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
-					TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
-					//write cv to file			
-			//		cv->SaveAs((fname+"/"+name+".pdf").c_str());
-					cv_stack->Write();
-					
-					hists.clear();
-				}
+				WriteHist1D(i);
 			}
-			name = time_center_norm->GetName();
-			TCanvas* cv = new TCanvas((name+"_norm").c_str(), "");
-			TDRHist(time_center_norm, cv, name, name, "a.u.");	
-			cv->Write();
 			
 			//write 2D hists
 			string xname, yname;
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				//write total hist to file
-				name = hists2D[i]->GetName();
+				name = plotCats[0].hists2D[i]->GetName();
 				name += "2D";
-				xname = hists2D[i]->GetXaxis()->GetTitle();
-				yname = hists2D[i]->GetYaxis()->GetTitle();
-				if(hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+				xname = plotCats[0].hists2D[i]->GetXaxis()->GetTitle();
+				yname = plotCats[0].hists2D[i]->GetYaxis()->GetTitle();
+				if(plotCats[0].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 				TCanvas* cv = new TCanvas((name).c_str(), "");
-				TDR2DHist(hists2D[i], cv, xname, yname);
+				TDR2DHist(plotCats[0].hists2D[i], cv, xname, yname);
 				cv->Write();
 				if(!_data){
 					//make a vector for each type of histogram
-					for(int j = 0; j < (int)plotCats.size(); j++){
+					for(int j = 1; j < (int)plotCats.size(); j++){
 						if(plotCats[j].hists2D[i]->Integral() == 0){ cout << "Histogram: " << name << " not filled for " << plotCats[j].plotName << endl; continue; }
 						TCanvas* cv_stack = new TCanvas((name+"_"+plotCats[j].plotName).c_str(), "");
 						TDR2DHist(plotCats[j].hists2D[i], cv_stack, xname, yname, plotCats[j].plotName);
@@ -190,6 +231,10 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		}
 
+
+
+
+
 		//k = sum_n(E_n)/N
 		void FillModelHists(BasePDFMixture* model, int id_idx){
 			map<string, Matrix> params;
@@ -199,17 +244,17 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
-			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
+			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead, phi2D;
 			double v_x, v_y, v_z;
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
 			}
-			Matrix lead_eigenvec;
+			Matrix lead_eigenvec, lead_eigenvec_space;
 			
 			int nclusters = model->GetNClusters();
 			plotCats[id_idx].hists1D[0]->Fill(nclusters);
-			plotCats[id_idx].hists2D[18]->Fill((double)nclusters,npts);
+			plotCats[id_idx].hists2D[10]->Fill((double)nclusters,npts);
 			model->GetNorms(norms);
 			
 			//get leading cluster index
@@ -229,6 +274,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				pc = params["mean"].at(1,0);
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
+		
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
@@ -242,7 +288,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//polar angle with lead eigenvector
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
 				theta = acos( v_z / r );
-				//azimuthal angle with lead eigenvector
+				//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
 				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
 				if(signbit(v_y)) phi *= -1;
 
@@ -250,6 +296,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot3D = 0;
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
 				rot3D = eigenvals[2]/rot3D;
+				//velocity = z/r * rad/deg * deg/cm => ns/cm
+				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
+				vel = fabs(1./vel);
 				
 				//rotundity - 2D
 				//take upper 2x2 submatrix from covariance
@@ -261,270 +310,188 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = 0;
 				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
 				rot2D = eigenvals_space[1]/rot2D;
+				lead_eigenvec_space = eigenvecs_space[1];			
+				v_x = lead_eigenvec_space.at(0,0);	
+				v_y = lead_eigenvec_space.at(1,0);	
+				r = sqrt(v_x*v_x + v_y*v_y);
+				//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
+				phi2D = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				if(signbit(v_y)) phi2D *= -1;
 				
-				//velocity = z/r * rad/deg * deg/cm => ns/cm
-				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
-				vel = fabs(1./vel);
 
 				//fill hists
+				//centers
 				plotCats[id_idx].hists1D[1]->Fill(tc);
 				plotCats[id_idx].hists1D[2]->Fill(ec);
 				plotCats[id_idx].hists1D[3]->Fill(pc);
-			
 				//phi/eta
 				plotCats[id_idx].hists1D[4]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
         			//eta/time
 				plotCats[id_idx].hists1D[5]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
 				//phi/time
 				plotCats[id_idx].hists1D[6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
-				//angles in 3D space
+				//angle in 3D space
 				plotCats[id_idx].hists1D[7]->Fill(theta);
+				//angle in 2D space
 				plotCats[id_idx].hists1D[8]->Fill(phi);
-				
 				//average cluster energy
 				//w_n = E_n/N for N pts in sample
 				plotCats[id_idx].hists1D[9]->Fill(E_k);
 				//rotundity measures
 				plotCats[id_idx].hists1D[10]->Fill(rot3D);
 				plotCats[id_idx].hists1D[11]->Fill(rot2D);
-				plotCats[id_idx].hists1D[18]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 				//velocity	
-				plotCats[id_idx].hists1D[14]->Fill(vel);
-				
+				plotCats[id_idx].hists1D[12]->Fill(vel);
+				plotCats[id_idx].hists1D[13]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+				//cluster E
+				plotCats[id_idx].hists1D[14]->Fill(E_tot);
+				//get variances
+				plotCats[id_idx].hists1D[15]->Fill(params["cov"].at(0,0));
+				plotCats[id_idx].hists1D[16]->Fill(params["cov"].at(1,1));
+				plotCats[id_idx].hists1D[17]->Fill(params["cov"].at(2,2));
+				//fractional E
+				plotCats[id_idx].hists1D[18]->Fill(E_k/E_tot);
+				//"azimuth" angle in 2D (angle from x axis)
+				plotCats[id_idx].hists1D[20]->Fill(phi2D);
+	
 				//2D hists
 				plotCats[id_idx].hists2D[0]->Fill(tc, E_k);
-				plotCats[id_idx].hists2D[3]->Fill(phi,E_k);
-				plotCats[id_idx].hists2D[4]->Fill(rot2D,E_k);
-				plotCats[id_idx].hists2D[5]->Fill(ec,pc);
-				plotCats[id_idx].hists2D[6]->Fill(tc,ec);
-				plotCats[id_idx].hists2D[7]->Fill(tc,pc);
-				plotCats[id_idx].hists2D[10]->Fill(tc,pi);
-				plotCats[id_idx].hists2D[11]->Fill(E_k,pi);
-				plotCats[id_idx].hists2D[12]->Fill(rot3D,E_k);
-				plotCats[id_idx].hists2D[15]->Fill(norms[k], E_tot);	
+				plotCats[id_idx].hists2D[1]->Fill(phi,E_k);
+				plotCats[id_idx].hists2D[2]->Fill(rot2D,E_k);
+				plotCats[id_idx].hists2D[3]->Fill(ec,pc);
+				plotCats[id_idx].hists2D[4]->Fill(tc,ec);
+				plotCats[id_idx].hists2D[5]->Fill(tc,pc);
+				plotCats[id_idx].hists2D[6]->Fill(tc,pi);
+				plotCats[id_idx].hists2D[7]->Fill(E_k,pi);
+				plotCats[id_idx].hists2D[8]->Fill(rot3D,E_k);
+				plotCats[id_idx].hists2D[9]->Fill(norms[k], E_k);
+				plotCats[id_idx].hists2D[11]->Fill(nclusters, pi);
+				plotCats[id_idx].hists2D[12]->Fill(params["cov"].at(0,0), params["cov"].at(1,1));
+				plotCats[id_idx].hists2D[13]->Fill(params["cov"].at(2,2), params["cov"].at(0,0));
+				plotCats[id_idx].hists2D[14]->Fill(params["cov"].at(2,2), params["cov"].at(1,1));
+				plotCats[id_idx].hists2D[15]->Fill(E_k, pi);
+				plotCats[id_idx].hists2D[16]->Fill(nclusters, E_k);
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
-					//histograms for leading clusters
-					//leading cluster total energy
-					plotCats[id_idx].hists1D[12]->Fill(E_k);
-					//leading cluster npts
-					plotCats[id_idx].hists1D[15]->Fill(norms[leadidx]);
-					//fractional npts lead cluster
-					plotCats[id_idx].hists1D[16]->Fill(norms[leadidx]/npts);	
-					//npts_unwt_k = sum_n(r_nk)
-					//w_n = sum_n(E_n)/npts
-					E_lead = E_k;
-					plotCats[id_idx].hists1D[17]->Fill(E_lead/E_tot);	
-					plotCats[id_idx].hists2D[8]->Fill(nclusters,E_lead/E_tot);
-					plotCats[id_idx].hists2D[1]->Fill(tc,E_k);
-					plotCats[id_idx].hists1D[21]->Fill(rot2D);
-					plotCats[id_idx].hists1D[23]->Fill(tc);
-					plotCats[id_idx].hists2D[13]->Fill(E_k,pi);
-					plotCats[id_idx].hists2D[16]->Fill(norms[k], E_lead/E_tot);	
-					plotCats[id_idx].hists2D[19]->Fill(nclusters,pi);	
+					//centers
+					plotCats[id_idx].hists1D_lead[1]->Fill(tc);
+					plotCats[id_idx].hists1D_lead[2]->Fill(ec);
+					plotCats[id_idx].hists1D_lead[3]->Fill(pc);
+					//phi/eta
+					plotCats[id_idx].hists1D_lead[4]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
+        				//eta/time
+					plotCats[id_idx].hists1D_lead[5]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
+					//phi/time
+					plotCats[id_idx].hists1D_lead[6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
+					//angle in 3D_lead space
+					plotCats[id_idx].hists1D_lead[7]->Fill(theta);
+					//angle in 2D_lead space
+					plotCats[id_idx].hists1D_lead[8]->Fill(phi);
+					//average cluster energy
+					//w_n = E_n/N for N pts in sample
+					plotCats[id_idx].hists1D_lead[9]->Fill(E_k);
+					//rotundity measures
+					plotCats[id_idx].hists1D_lead[10]->Fill(rot3D);
+					plotCats[id_idx].hists1D_lead[11]->Fill(rot2D);
+					//velocity	
+					plotCats[id_idx].hists1D_lead[12]->Fill(vel);
+					plotCats[id_idx].hists1D_lead[13]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+					
+					//cluster E
+					plotCats[id_idx].hists1D_lead[14]->Fill(E_tot);
+					
+					//get variances
+					plotCats[id_idx].hists1D_lead[15]->Fill(params["cov"].at(0,0));
+					plotCats[id_idx].hists1D_lead[16]->Fill(params["cov"].at(1,1));
+					plotCats[id_idx].hists1D_lead[17]->Fill(params["cov"].at(2,2));
+					//fractional E
+					plotCats[id_idx].hists1D_lead[18]->Fill(E_k/E_tot);
+					//"azimuth" angle in 2D (angle from x axis)
+					plotCats[id_idx].hists1D[20]->Fill(phi2D);
+			
+					//2D_lead hists
+					plotCats[id_idx].hists2D_lead[0]->Fill(tc, E_k);
+					plotCats[id_idx].hists2D_lead[1]->Fill(phi,E_k);
+					plotCats[id_idx].hists2D_lead[2]->Fill(rot2D,E_k);
+					plotCats[id_idx].hists2D_lead[3]->Fill(ec,pc);
+					plotCats[id_idx].hists2D_lead[4]->Fill(tc,ec);
+					plotCats[id_idx].hists2D_lead[5]->Fill(tc,pc);
+					plotCats[id_idx].hists2D_lead[6]->Fill(tc,pi);
+					plotCats[id_idx].hists2D_lead[7]->Fill(E_k,pi);
+					plotCats[id_idx].hists2D_lead[8]->Fill(rot3D,E_k);
+					plotCats[id_idx].hists2D_lead[9]->Fill(norms[k], E_k);
+					plotCats[id_idx].hists2D_lead[11]->Fill(nclusters, pi);
+					plotCats[id_idx].hists2D_lead[12]->Fill(params["cov"].at(0,0), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D_lead[13]->Fill(params["cov"].at(2,2), params["cov"].at(0,0));
+					plotCats[id_idx].hists2D_lead[14]->Fill(params["cov"].at(2,2), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D_lead[15]->Fill(E_k, pi);
+					plotCats[id_idx].hists2D_lead[16]->Fill(nclusters, E_k);
 				}
-				if(nclusters == 1)
-					plotCats[id_idx].hists2D[17]->Fill(norms[k], E_lead/E_tot);	
 
 
-				if(nclusters > 1){
-					if(k == subleadidx){
-						//subleading cluster tot energy - if it exists
-						plotCats[id_idx].hists1D[13]->Fill(E_k);
-					}
-					if(k != leadidx){
-						//notleading cluster time v energy
-						plotCats[id_idx].hists2D[2]->Fill(tc,E_k);
-						plotCats[id_idx].hists1D[22]->Fill(rot2D);
-						plotCats[id_idx].hists2D[14]->Fill(E_k,pi);
-						plotCats[id_idx].hists1D[24]->Fill(tc);
+				else if(k != leadidx){
+					//centers
+					plotCats[id_idx].hists1D_notlead[1]->Fill(tc);
+					plotCats[id_idx].hists1D_notlead[2]->Fill(ec);
+					plotCats[id_idx].hists1D_notlead[3]->Fill(pc);
+					//phi/eta
+					plotCats[id_idx].hists1D_notlead[4]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
+        				//eta/time
+					plotCats[id_idx].hists1D_notlead[5]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
+					//phi/time
+					plotCats[id_idx].hists1D_notlead[6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
+					//angle in 3D_notlead space
+					plotCats[id_idx].hists1D_notlead[7]->Fill(theta);
+					//angle in 2D_notlead space
+					plotCats[id_idx].hists1D_notlead[8]->Fill(phi);
+					//average cluster energy
+					//w_n = E_n/N for N pts in sample
+					plotCats[id_idx].hists1D_notlead[9]->Fill(E_k);
+					//rotundity measures
+					plotCats[id_idx].hists1D_notlead[10]->Fill(rot3D);
+					plotCats[id_idx].hists1D_notlead[11]->Fill(rot2D);
+					//velocity	
+					plotCats[id_idx].hists1D_notlead[12]->Fill(vel);
+					plotCats[id_idx].hists1D_notlead[13]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+					
+					//cluster E
+					plotCats[id_idx].hists1D_notlead[14]->Fill(E_tot);
+					
+					//get variances
+					plotCats[id_idx].hists1D_notlead[15]->Fill(params["cov"].at(0,0));
+					plotCats[id_idx].hists1D_notlead[16]->Fill(params["cov"].at(1,1));
+					plotCats[id_idx].hists1D_notlead[17]->Fill(params["cov"].at(2,2));
+					//fractional E
+					plotCats[id_idx].hists1D_notlead[18]->Fill(E_k/E_tot);
+					//"azimuth" angle in 2D (angle from x axis)
+					plotCats[id_idx].hists1D[20]->Fill(phi2D);
+			
+					//2D_notlead hists
+					plotCats[id_idx].hists2D_notlead[0]->Fill(tc, E_k);
+					plotCats[id_idx].hists2D_notlead[1]->Fill(phi,E_k);
+					plotCats[id_idx].hists2D_notlead[2]->Fill(rot2D,E_k);
+					plotCats[id_idx].hists2D_notlead[3]->Fill(ec,pc);
+					plotCats[id_idx].hists2D_notlead[4]->Fill(tc,ec);
+					plotCats[id_idx].hists2D_notlead[5]->Fill(tc,pc);
+					plotCats[id_idx].hists2D_notlead[6]->Fill(tc,pi);
+					plotCats[id_idx].hists2D_notlead[7]->Fill(E_k,pi);
+					plotCats[id_idx].hists2D_notlead[8]->Fill(rot3D,E_k);
+					plotCats[id_idx].hists2D_notlead[9]->Fill(norms[k], E_k);
+					plotCats[id_idx].hists2D_notlead[11]->Fill(nclusters, pi);
+					plotCats[id_idx].hists2D_notlead[12]->Fill(params["cov"].at(0,0), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D_notlead[13]->Fill(params["cov"].at(2,2), params["cov"].at(0,0));
+					plotCats[id_idx].hists2D_notlead[14]->Fill(params["cov"].at(2,2), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D_notlead[15]->Fill(E_k, pi);
+					plotCats[id_idx].hists2D_notlead[16]->Fill(nclusters, E_k);
 
-					}
 				}
 
 			}
 //			cout << "end clusters" << endl;
-			plotCats[id_idx].hists1D[20]->Fill(E_tot);
 
 
 		}
-
-		void FillTotalHists(BasePDFMixture* model){
-			map<string, Matrix> params;
-			vector<double> eigenvals, eigenvals_space, norms;
-			vector<Matrix> eigenvecs, eigenvecs_space;
-			Matrix space_mat = Matrix(2,2);
-			double npts = (double)model->GetData()->GetNPoints();
-			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead;
-			double v_x, v_y, v_z;
-			double E_tot = 0.;
-			for(int i = 0; i < npts; i++){
-				E_tot += model->GetData()->at(i).w()/_gev;
-			}
-			Matrix lead_eigenvec;
-			
-			int nclusters = model->GetNClusters();
-			nsubcl_nrhs->Fill((double)nclusters,npts);
-			nSubClusters->Fill(nclusters);
-			model->GetNorms(norms);
-			
-			//get leading cluster index
-			vector<int> idxs;
-			//sort by mixing coeffs in ascending order (smallest first)
-			model->SortIdxs(idxs);
-			int leadidx = idxs[nclusters-1];
-			int subleadidx = -999;
-			if(nclusters > 1) subleadidx = idxs[nclusters-2];
-			for(int k = 0; k < nclusters; k++){
-				E_k = norms[k]/_gev; 
-				
-				params = model->GetPriorParameters(k);
-				ec = params["mean"].at(0,0);
-				pc = params["mean"].at(1,0);
-				tc = params["mean"].at(2,0);
-				pi = params["pi"].at(0,0);
-				//calculate slopes from eigenvectors
-				params["cov"].eigenCalc(eigenvals, eigenvecs);
-				lead_eigenvec = eigenvecs[2];			
-
-				v_x = lead_eigenvec.at(0,0);	
-				v_y = lead_eigenvec.at(1,0);	
-				v_z = lead_eigenvec.at(2,0);	
-				r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
-				//polar angle
-				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-				theta = acos( v_z / r );
-				//azimuthal angle
-				//phi = arctan(y/x)
-				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
-				if(signbit(v_y)) phi *= -1;
-
-				//rotundity - 3D
-				rot3D = 0;
-				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
-				rot3D = eigenvals[2]/rot3D;
-				
-				//rotundity - 2D
-				//take upper 2x2 submatrix from covariance
-				space_mat.SetEntry(params["cov"].at(0,0),0,0);	
-				space_mat.SetEntry(params["cov"].at(0,1),0,1);	
-				space_mat.SetEntry(params["cov"].at(1,0),1,0);	
-				space_mat.SetEntry(params["cov"].at(1,1),1,1);
-				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
-				rot2D = 0;
-				for(int i = 0; i < (int)eigenvecs_space.size(); i++) rot2D += eigenvals_space[i];
-				rot2D = eigenvals_space[1]/rot2D;
-				
-				//velocity = z/r * rad/deg * deg/cm => ns/cm
-				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
-				vel = fabs(1./vel);
-				//cout << "velocity: " << vel << " lead z: " << lead_eigenvec.at(2,0) << " r: " << r  << " space r: " << sqrt(v_x*v_x + v_y*v_y) << endl;
-				
-				//fill histograms
-				time_center->Fill(tc);
-				eta_center->Fill(ec);
-				phi_center->Fill(pc);
-				
-				//phi/eta
-				slope_space->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
-        			//eta/time
-				slope_etaT->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
-				//phi/time
-				slope_phiT->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
-				//polar angle
-				polar_ang->Fill(theta);
-				//azimuthal angle
-				azimuth_ang->Fill(phi);
-				//velocity
-				velocity->Fill(vel);
-	
-				//total cluster energy
-				//w_n = N/W_n for N pts in sample
-				e_tot->Fill(E_k);
-				time_totE->Fill(tc, E_k);
-	
-				//rotundity - 3D
-				rotundity_3D->Fill(rot3D);
-				
-				//rotundity - 2D
-				rotundity_2D->Fill(rot2D);
-				eigen2D_ratio->Fill(eigenvals_space[0]/eigenvals_space[1]);		
-				
-			
-				//2D hists
-				time_totE->Fill(tc,E_k);			
-				az_totE->Fill(phi,E_k);
-				rot2D_totE->Fill(rot2D,E_k);
-				eta_phi->Fill(ec,pc);
-				t_eta->Fill(tc,ec);
-				t_phi->Fill(tc,pc);
-				t_mixcoeff->Fill(tc,pi);
-				totE_mixcoeff->Fill(E_k,pi);
-				rot3D_totE->Fill(rot3D,E_k);
-				npts_totE->Fill(norms[k], E_tot);
-			
-
-				//leading subcluster hists
-				if(k == leadidx){
-					//leading cluster tot energy
-					e_tot_lead->Fill(E_k);
-					//leading cluster npts
-					npts_lead->Fill(norms[k]);
-					fracpts_lead->Fill(norms[k]/npts);	
-					//npts_unwt_k = sum_n(r_nk)
-					//w_n = sum_n(E_n)/npts
-					E_lead = E_k;
-					if(nclusters == 1 && E_lead/E_tot < 0.9) cout << "E_lead: " << E_lead << " E_tot: " << E_tot << " npts: " << norms[k] << endl;
-					fracE_lead->Fill(E_lead/E_tot);	
-					nsubcl_fracElead->Fill(nclusters,E_lead/E_tot);
-					//leading cluster time v energy
-					time_totE_lead->Fill(tc,E_lead);
-					//2D rotundity - lead
-					rotundity_2D_lead->Fill(rot2D);		
-					time_center_lead->Fill(tc);
-					eta_center_lead->Fill(ec);
-					phi_center_lead->Fill(pc);
-					totE_mixcoeff_lead->Fill(E_k,pi); 	
-					fracE_mmcoeff_lead->Fill(E_k/E_tot, pi);
-					nsubcl_mmcoeff_leadsubcl->Fill(nclusters,pi);	
-				}
-				if(nclusters > 1){
-					//sublead cluster
-					if(k == subleadidx){
-						//subleading cluster tot energy - if it exists
-						e_tot_sublead->Fill(E_k);
-					}
-
-
-					//not lead cluster
-					if(k != leadidx){
-						//notleading cluster time v tot energy
-						time_totE_notlead->Fill(tc,E_k);
-						rotundity_2D_notlead->Fill(rot2D);		
-						totE_mixcoeff_notlead->Fill(E_k,pi);
-						time_center_notlead->Fill(tc);
-						eta_center_notlead->Fill(ec);
-						phi_center_notlead->Fill(pc);
-						nsubcl_mmcoeff_notleadsubcl->Fill(nclusters,pi);	
-						fracE_mmcoeff_notlead->Fill(E_k/E_tot, pi);
-					}
-
-
-				}
-	
-
-			}
-			clusterE->Fill(E_tot);
-
-	
-		}
-
-	private:
-		TH1D* time_center_norm = nullptr;
-
-
-
 
 
 };
