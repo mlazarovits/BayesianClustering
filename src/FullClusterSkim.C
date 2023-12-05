@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2, 2 : GMM only, does not apply to photons)" << endl;
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/5)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --NoSmear                     smears data according to preset covariance (default = true)" << endl;
    		cout << "   --NoWeight                    weights data points (default = true)" << endl;

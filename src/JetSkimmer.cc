@@ -99,7 +99,7 @@ void JetSkimmer::Skim(){
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(1.,2,2); 
+	smear.SetEntry(0.,2,2); 
 	//for time smearing (energy dependent)
 	double tres_c = 0.2;
         double tres_n = 0.3*_gev;
