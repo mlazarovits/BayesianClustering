@@ -59,7 +59,7 @@ void PhotonSkimmer::Skim(){
 	int nPho;
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
-	double dphi = acos(-1)/360.; //1 degree in radians
+	double dphi = 2*acos(-1)/360.; //1 degree in radians
 	double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
@@ -93,7 +93,7 @@ void PhotonSkimmer::Skim(){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
-			cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << "  pho: " << p << " nrhs: " << rhs.size()  << flush;
+		cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 
 			BayesCluster *algo = new BayesCluster(rhs);

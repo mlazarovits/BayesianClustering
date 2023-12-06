@@ -139,17 +139,17 @@ class BaseSkimmer{
 		//14 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",10,0,1000);
 		//15 - eta variance	
-                TH1D* etaVar = new TH1D("etaVar","etaVar",50,0,1.);
+                TH1D* etaVar = new TH1D("etaVar","etaVar",25,0,5e-3);
 		//16 - phi variance	
-                TH1D* phiVar = new TH1D("phiVar","phiVar",50,0,1.);
+                TH1D* phiVar = new TH1D("phiVar","phiVar",25,0,5e-3);
 		//17 - time variance	
-                TH1D* timeVar = new TH1D("timeVar","timeVar",50,0,1.);
+                TH1D* timeVar = new TH1D("timeVar","timeVar",25,0,50.);
 		//18 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.);
 		//19 - cluster energy - total
 		TH1D* e_tot = new TH1D("e_tot","e_tot",50,0.,2000.);
 		//20 - azimuth angle in 2D
-		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-0.5,3.5);		
+		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-3.5,3.5);		
 
 	
 		//two dimensional histograms
@@ -179,11 +179,11 @@ class BaseSkimmer{
 		//11 - nsubclusters vs mm coeff
 		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.);
                 //12 - eta variance v phi variance
-		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",50,0,1.,50,0,1.);
+		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",25,0,5e-3,25,0,5e-3);
                 //13 - time variance v phi variance
-                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",50,0,1.,50,0,1.);
+                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",25,0,50.,25,0,5e-3);
                 //14 - time variance v phi variance
-                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",50,0,1.,50,0,1.);
+                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",25,0,50.,25,0,5e-3);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
 		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)

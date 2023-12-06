@@ -242,7 +242,7 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
-	double dphi = acos(-1)/360.; //1 degree in radians
+	double dphi = 2*acos(-1)/360.; //1 degree in radians
 	double deta = dphi; //-log( tan(1./2) ); //pseudorap of 1 degree
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(0.,2,2); //no smear in time	
 
 
-	vector<Jet> rhs, jets;
+	vector<Jet> rhs, jets, phos;
 	vector<node*> trees;
 	//get rhs (as Jets) for event
 	if(obj == 0){
@@ -266,8 +266,12 @@ int main(int argc, char *argv[]){
 		prod.SetTransferFactor(gev);
 		int npho = nobj; //which photon to analyze
 		if(viz) cout << "Making plots for photon " << npho << "  at event " << evt << endl;
-        	prod.GetRecHits(rhs,evt,npho);
-        	//prod.GetTruePhotons(phos, evt);
+        	//prod.GetRecHits(rhs,evt,npho);
+        	prod.SetIsoCut();
+		prod.GetTruePhotons(phos, evt);
+		if(phos.size() < 1){ cout << "no photons passing selection found for event " << evt << endl; return -1; }
+		
+		phos[npho].GetJets(rhs);
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
 	else if(obj == 2){
