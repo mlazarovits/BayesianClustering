@@ -96,11 +96,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                 pz = pt*sinh(eta);
 
                 nrhs = _base->Photon_rhIds->size();
-
 		//Photon selection
-		if(nrhs < 2) continue;
-                //if(_base->Photon_pt->at(p) < 20.) continue;
-                //if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
+                if(_base->Photon_pt->at(p) < 30.) continue;
+		//if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
                 //isolation cuts
 		bool iso;
 		bool trksum;
@@ -111,9 +109,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                         ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
                         htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
                         iso = trksum && ecalrhsum && htowoverem;
+                	if(!iso) continue;
                 }
-                if(!iso) continue;
-
 
                 Jet pho(px, py, pz, _base->Photon_energy->at(p));
                 pho.SetVertex(vtx);
@@ -139,7 +136,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                         }
 
                 }
-                phos.push_back(pho);
+		if(pho.GetNRecHits() < 2) continue;
+		phos.push_back(pho);
         }
 
 
