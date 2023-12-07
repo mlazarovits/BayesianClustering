@@ -548,7 +548,7 @@ void GaussianMixture::CalculateRStatistics(){
 				for(int i = 0; i < _res_smear_d.size(); i++){
 					res = _res_smear_c[i]*_res_smear_c[i] + (_res_smear_n[i]*_res_smear_n[i])/( m_data->at(n).w()*m_data->at(n).w() );
 					//entry is sigma^2
-					_data_cov.SetEntry( res*res, _res_smear_d[i], _res_smear_d[i] );
+					_data_cov.SetEntry( res, _res_smear_d[i], _res_smear_d[i] );
 				}
 
 			}
