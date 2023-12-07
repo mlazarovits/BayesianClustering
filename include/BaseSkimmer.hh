@@ -89,7 +89,6 @@ class BaseSkimmer{
 			_hists2D.clear();
 		}
 
-		virtual void CleaningSkim() = 0;
 		virtual void Skim() = 0;
 
 		ReducedBase* _base = nullptr;

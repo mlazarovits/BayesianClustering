@@ -22,7 +22,6 @@ class JetSkimmer : public BaseSkimmer{
 		//ctor from rec hit collection - integrating into ntuplizer
 		
 		
-		void CleaningSkim(){ };
 		void Skim();
 		void GMMOnly(){ _mmonly = true; }
 
