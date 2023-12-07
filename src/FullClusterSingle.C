@@ -225,12 +225,14 @@ int main(int argc, char *argv[]){
 	/////GET DATA FROM NTUPLE//////
 	//get version
 	std::smatch m;
-	std::regex re("_v[0-9]_");
-	string version = "";
-	std::regex_search(in_file,m,re);
-	for(auto x : m) version += x;
-	string cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-	cmslab += version.substr(0,3);
+        std::regex re("_v[0-9]+_");
+        version = "";
+        std::regex_search(in_file,m,re);
+        cout << "version match: " << m.str() << endl;
+        for(auto x : m) version += x;
+        cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+        version.pop_back();
+        cmslab += version;
 	
 	fname += "_"+cmslab;//version.substr(0,3); //"_v9"
 	if(viz){

@@ -162,12 +162,14 @@ int main(int argc, char *argv[]){
 	if(!in_file.empty()){
 		//get version
 		std::smatch m;
-		std::regex re("_v[0-9]_");
+		std::regex re("_v[0-9]+_");
 		version = "";
 		std::regex_search(in_file,m,re);
+		cout << "version match: " << m.str() << endl;
 		for(auto x : m) version += x;
-		cmslab = in_file.substr(in_file.find(version)+4,in_file.find("_AODSIM") - in_file.find(version)-4);//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-		cmslab += version.substr(0,3);
+		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+		version.pop_back();
+		cmslab += version;
 		file = TFile::Open(in_file.c_str());
 		if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
 		else cout << "Skimming all events for ";
@@ -230,11 +232,10 @@ int main(int argc, char *argv[]){
 		else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
 		fname += "NperGeV"+gev_string+"_";
 		fname += cmslab.substr(0,cmslab.find("_")); //short sample name
-		fname += version.substr(0,3); //"_v9"
+		fname += version; //"_v9"
 
 	}
 	fname = fname+".root";
-
 	
 	//make sure evti < evtj
 	if(evti > evtj){
