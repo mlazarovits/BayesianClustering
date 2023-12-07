@@ -19,7 +19,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		PhotonSkimmer(TFile* file);
 		//ctor from rec hit collection - integrating into ntuplizer
 		
-		void CleaningSkim();
 		void Skim();
 
 		void SetIsoCuts(){ _isocuts = true; }
