@@ -226,11 +226,11 @@ int main(int argc, char *argv[]){
 	//get version
 	std::smatch m;
         std::regex re("_v[0-9]+_");
-        version = "";
+        string version = "";
         std::regex_search(in_file,m,re);
         cout << "version match: " << m.str() << endl;
         for(auto x : m) version += x;
-        cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+        string cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
         version.pop_back();
         cmslab += version;
 	
