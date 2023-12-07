@@ -174,7 +174,7 @@ class JetSkimmer : public BaseSkimmer{
 				azimuth_ang->Fill(phi);
 				
 				//average cluster energy
-				e_tot->Fill(E_k);
+				clusterE->Fill(E_k);
 			
 
 			}
