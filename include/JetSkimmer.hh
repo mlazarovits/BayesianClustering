@@ -351,22 +351,22 @@ class JetSkimmer : public BaseSkimmer{
 			ofile->cd();
 			//for condor skims, histograms need to be written because these
 			//can be hadded together (TCanvases can't)
-			for(int i = 0; i < (int)hists1D.size(); i++){
+			for(int i = 0; i < (int)_hists1D.size(); i++){
 				//name = hists1D[i]->GetName();
 				//TCanvas* cv = new TCanvas(name.c_str(), "");
 				//TDRHist(hists1D[i], cv, name, name, "a.u.");
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
 				//cv->Write();
-				hists1D[i]->Write();
+				_hists1D[i]->Write();
 			}
-			for(int i = 0; i < (int)hists2D.size(); i++){
+			for(int i = 0; i < (int)_hists2D.size(); i++){
 				//name = hists2D[i]->GetName();
 				//TCanvas* cv = new TCanvas(name.c_str(), "");
 				//TDR2DHist(hists2D[i], cv, name, name, "a.u.");
 				//write cv to file			
 				//cv->Write();
-				hists2D[i]->Write();
+				_hists2D[i]->Write();
 			}
 			for(int i = 0; i < (int)graphs.size(); i++){
 				//name = graphs[i]->GetName();

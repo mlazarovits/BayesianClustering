@@ -37,6 +37,11 @@ PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
 	_thresh = 1.;
 	_alpha = 0.1;
 	_emAlpha = 0.5;
+	objE->SetTitle("phoE");
+	objE->SetName("phoE");
+
+	objE_clusterE->SetTitle("phoE_clusterE");
+	objE_clusterE->SetName("phoE_clusterE");
 }
 
 //make cluster param histograms
@@ -47,11 +52,6 @@ void PhotonSkimmer::Skim(){
 
 	//create histograms to be filled
 	MakeIDHists();
-	plotCats[0].hists1D[19]->SetTitle("phoE");
-	plotCats[0].hists1D[19]->SetName("phoE");
-
-	plotCats[0].hists2D[9]->SetTitle("phoE_clusterE");
-	plotCats[0].hists2D[9]->SetName("phoE_clusterE");
 	
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
@@ -120,8 +120,6 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;}) || i == 0){
 						FillModelHists(gmm, i);
-						plotCats[i].hists1D[19]->Fill(_base->Photon_energy->at(p));
-						plotCats[i].hists2D[9]->Fill(_base->Photon_energy->at(p), sumE);
 						if(i != 0) break;
 					}
 				}

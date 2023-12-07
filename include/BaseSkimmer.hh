@@ -14,7 +14,9 @@
 #include "TFile.h"
 #include "TTree.h"
 #include <string>
+#include <vector>
 
+using std::vector;
 using std::string;
 class BaseSkimmer{
 	public:
@@ -38,54 +40,53 @@ class BaseSkimmer{
 			_gev = 1;
 			_data = false;
 			_debug = false;
-			hists1D.push_back(nSubClusters);
-			hists1D.push_back(time_center);
-			hists1D.push_back(eta_center);
-			hists1D.push_back(phi_center);
-			hists1D.push_back(slope_space);
-			hists1D.push_back(slope_etaT);
-			hists1D.push_back(slope_phiT);
-			hists1D.push_back(polar_ang);
-			hists1D.push_back(azimuth_ang);
-			hists1D.push_back(e_subcl);
-			hists1D.push_back(rotundity_3D);
-			hists1D.push_back(rotundity_2D);
-			hists1D.push_back(velocity);
-			hists1D.push_back(eigen2D_ratio);	
-			hists1D.push_back(clusterE);
-                	hists1D.push_back(etaVar); 
-                	hists1D.push_back(phiVar); 
-                	hists1D.push_back(timeVar);
-			hists1D.push_back(fracE);
-			hists1D.push_back(e_tot);
-			hists1D.push_back(azimuth_ang_2D);
+			_hists1D.push_back(nSubClusters);
+			_hists1D.push_back(time_center);
+			_hists1D.push_back(eta_center);
+			_hists1D.push_back(phi_center);
+			_hists1D.push_back(slope_space);
+			_hists1D.push_back(slope_etaT);
+			_hists1D.push_back(slope_phiT);
+			_hists1D.push_back(polar_ang);
+			_hists1D.push_back(azimuth_ang);
+			_hists1D.push_back(e_subcl);
+			_hists1D.push_back(rotundity_3D);
+			_hists1D.push_back(rotundity_2D);
+			_hists1D.push_back(velocity);
+			_hists1D.push_back(eigen2D_ratio);	
+			_hists1D.push_back(clusterE);
+                	_hists1D.push_back(etaVar); 
+                	_hists1D.push_back(phiVar); 
+                	_hists1D.push_back(timeVar);
+			_hists1D.push_back(fracE);
+			_hists1D.push_back(e_tot);
+			_hists1D.push_back(azimuth_ang_2D);
 
 
-			hists2D.push_back(time_E);
-			hists2D.push_back(az_E);
-			hists2D.push_back(rot2D_E);
-			hists2D.push_back(eta_phi);
-			hists2D.push_back(t_eta);
-			hists2D.push_back(t_phi);
-			hists2D.push_back(t_mixcoeff);
-			hists2D.push_back(E_mixcoeff);
-			hists2D.push_back(rot3D_E);
-			hists2D.push_back(npts_E);
-			hists2D.push_back(nsubcl_nrhs);
-			hists2D.push_back(nsubcl_mmcoeff);
-			hists2D.push_back(etaVar_phiVar); 
-                	hists2D.push_back(timeVar_etaVar);
-                	hists2D.push_back(timeVar_phiVar);
-			hists2D.push_back(fracE_mmcoeff);
-			hists2D.push_back(nsubcl_fracE);
+			_hists2D.push_back(time_E);
+			_hists2D.push_back(az_E);
+			_hists2D.push_back(rot2D_E);
+			_hists2D.push_back(eta_phi);
+			_hists2D.push_back(t_eta);
+			_hists2D.push_back(t_phi);
+			_hists2D.push_back(t_mixcoeff);
+			_hists2D.push_back(E_mixcoeff);
+			_hists2D.push_back(rot3D_E);
+			_hists2D.push_back(npts_E);
+			_hists2D.push_back(nsubcl_nrhs);
+			_hists2D.push_back(nsubcl_mmcoeff);
+			_hists2D.push_back(etaVar_phiVar); 
+                	_hists2D.push_back(timeVar_etaVar);
+                	_hists2D.push_back(timeVar_phiVar);
+			_hists2D.push_back(fracE_mmcoeff);
+			_hists2D.push_back(nsubcl_fracE);
 	
-			MakeMMCoeffSeparatedHists();
 
 		}
 		virtual ~BaseSkimmer(){ 
 			delete _base;
-			hists1D.clear();
-			hists2D.clear();
+			_hists1D.clear();
+			_hists2D.clear();
 		}
 
 		virtual void CleaningSkim() = 0;
@@ -107,7 +108,7 @@ class BaseSkimmer{
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){ _gev = gev; }
 
-		vector<TH1D*> hists1D;
+		vector<TH1D*> _hists1D;
 		//0 - # of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
 		//1 - mean time - center in t
@@ -153,7 +154,7 @@ class BaseSkimmer{
 
 	
 		//two dimensional histograms
-		vector<TH2D*> hists2D;
+		vector<TH2D*> _hists2D;
 		//0 - time v subcl subcluster energy
 		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
 		//1 - azimuthal angle v subcl energy
@@ -195,12 +196,10 @@ class BaseSkimmer{
 		TH1D* objE = new TH1D("objE","objE",50,0,100);
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
 		
-		vector<TH1D*> hists1D_lead;
-		vector<TH1D*> hists1D_notlead;
-		vector<TH2D*> hists2D_lead;
-		vector<TH2D*> hists2D_notlead;
-		void MakeMMCoeffSeparatedHists(){
+		void MakeMMCoeff1DHists(const vector<TH1D*>& hists1D, vector<TH1D*>& hists1D_lead, vector<TH1D*>& hists1D_notlead){
 			string name;
+			hists1D_lead.clear();
+			hists1D_notlead.clear();
 			for(int i = 0; i < hists1D.size(); i++){
 				name = hists1D[i]->GetName();
 				//skip histograms with "total" energy (doesn't apply to individual subclusters)
@@ -218,6 +217,11 @@ class BaseSkimmer{
 				//add fractional histograms to lead histograms
 
 			}
+		}
+		void MakeMMCoeff2DHists(const vector<TH2D*>& hists2D, vector<TH2D*>& hists2D_lead, vector<TH2D*>& hists2D_notlead){
+			string name;
+			hists2D_lead.clear();
+			hists2D_notlead.clear();
 			for(int i = 0; i < hists2D.size(); i++){
 				name = hists2D[i]->GetName();
 				//skip histograms with "total" energy (doesn't apply to individual subclusters)
@@ -241,17 +245,67 @@ class BaseSkimmer{
 		struct plotCat{
 			string legName;
 			string plotName;
-			vector<TH1D*> hists1D;
+			
+			vector<string> histcatnames = {"","lead","notlead"};
+		
+			vector<TH1D*> hists1D_nom;
 			//for lead subcluster
 			vector<TH1D*> hists1D_lead;
 			//for !lead subcluster
 			vector<TH1D*> hists1D_notlead;
-			vector<TH2D*> hists2D;
+			vector<vector<TH1D*>> hists1D;
+
+			vector<TH2D*> hists2D_nom;
 			//for lead subcluster
 			vector<TH2D*> hists2D_lead;
 			//for !lead subcluster
 			vector<TH2D*> hists2D_notlead;
+			vector<vector<TH2D*>> hists2D;
 			vector<double> ids;
+		
+			plotCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotName = "", string legName = ""){
+				hists1D.push_back(hists1D_nom);
+				hists1D.push_back(hists1D_lead);
+				hists1D.push_back(hists1D_notlead);
+				
+				hists2D.push_back(hists2D_nom);
+				hists2D.push_back(hists2D_lead);
+				hists2D.push_back(hists2D_notlead);
+				
+				string name;
+				//for each histogram (variable or correlation)
+				for(int i = 0; i < (int)in1dhists.size(); i++){
+					//create a clone for each type
+					for(int j = 0; j < hists1D.size(); j++){
+						//make sure they have the right add-on name (ie leading, !lead, etc)
+						TH1D* hist = (TH1D*)in1dhists[i]->Clone();
+						hists1D[j].push_back(hist);
+						name = hist->GetName();
+						if(!plotName.empty()) name += "_"+plotName;
+						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
+						hists1D[j][i]->SetName(name.c_str());
+						cout << "set hist name to " << name << endl;
+						if(!plotName.empty()) hists1D[j][i]->SetTitle("");
+					}
+
+				}
+				//for each histogram
+				for(int i = 0; i < (int)in2dhists.size(); i++){
+					//create a clone for each type
+					for(int j = 0; j < hists2D.size(); j++){
+						TH2D* hist = (TH2D*)in2dhists[i]->Clone();
+						hists2D[j].push_back(hist);
+						name = hist->GetName();
+						if(!plotName.empty()) name += "_"+plotName;
+						name += "_"+histcatnames[j];
+						hists2D[j][i]->SetName(name.c_str());
+						if(!plotName.empty()) hists2D[j][i]->SetTitle("");
+					}
+
+				}
+			}
+			
+
 		};
 
 

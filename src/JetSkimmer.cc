@@ -38,32 +38,32 @@ JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
 
 
 	//true jet hists
-	hists1D.push_back(nTrueJets);
+	_hists1D.push_back(nTrueJets);
 	
 	//true jets pv times
-	hists1D.push_back(PVtime_median);	
-	hists1D.push_back(PVtime_eAvg);	
+	_hists1D.push_back(PVtime_median);	
+	_hists1D.push_back(PVtime_eAvg);	
 	//time differences for back-to-back jets for time resolution
-	hists1D.push_back(PVtimeDiff_median);	
-	hists1D.push_back(PVtimeDiff_eAvg);	
+	_hists1D.push_back(PVtimeDiff_median);	
+	_hists1D.push_back(PVtimeDiff_eAvg);	
 
 	//mm only jets
-	hists1D.push_back(PVtime_mmAvg);	
-	hists1D.push_back(PVtimeDiff_mmAvg);	
-	hists1D.push_back(nSubClusters_mm);
+	_hists1D.push_back(PVtime_mmAvg);	
+	_hists1D.push_back(PVtimeDiff_mmAvg);	
+	_hists1D.push_back(nSubClusters_mm);
 
 	//predicted jets pv times - from BHC
-	hists1D.push_back(nClusters);
-	hists1D.push_back(rhTime); 
-	hists1D.push_back(comptime);
-	hists1D.push_back(PVtime_median_pred);	
-	hists1D.push_back(PVtime_eAvg_pred);	
-	hists1D.push_back(PVtime_mmAvg_pred);	
+	_hists1D.push_back(nClusters);
+	_hists1D.push_back(rhTime); 
+	_hists1D.push_back(comptime);
+	_hists1D.push_back(PVtime_median_pred);	
+	_hists1D.push_back(PVtime_eAvg_pred);	
+	_hists1D.push_back(PVtime_mmAvg_pred);	
 	//time differences for back-to-back jets for time resolution
-	hists1D.push_back(PVtimeDiff_median_pred);	
-	hists1D.push_back(PVtimeDiff_eAvg_pred);	
-	hists1D.push_back(PVtimeDiff_mmAvg_pred);	
-	hists2D.push_back(e_nRhs);
+	_hists1D.push_back(PVtimeDiff_median_pred);	
+	_hists1D.push_back(PVtimeDiff_eAvg_pred);	
+	_hists1D.push_back(PVtimeDiff_mmAvg_pred);	
+	_hists2D.push_back(e_nRhs);
 	
 	nrhs_comptime->SetName("nrhs_comptime");
         nrhs_comptime->SetTitle("nrhs_comptime");
