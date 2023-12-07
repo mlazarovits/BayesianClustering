@@ -66,7 +66,7 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(0.,2,2); //no smear in time	
 	double tres_c = 0.2;
-	double tres_n = 0.3*_gev;	
+	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;	
 
 	
 	vector<Jet> rhs;

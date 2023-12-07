@@ -248,7 +248,8 @@ int main(int argc, char *argv[]){
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(0.,2,2); //no smear in time	
-
+	double tres_c = 0.2; //ns
+	double tres_n = 30*sqrt(1 - tres_c*tres_c); //ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
 
 	vector<Jet> rhs, jets, phos;
 	vector<node*> trees;
@@ -272,6 +273,7 @@ int main(int argc, char *argv[]){
 		if(phos.size() < 1){ cout << "no photons passing selection found for event " << evt << endl; return -1; }
 		
 		phos[npho].GetJets(rhs);
+		phos[npho].Print();
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
 	else if(obj == 2){
@@ -308,7 +310,7 @@ int main(int argc, char *argv[]){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	algo->SetTimeResSmear(0.2, 0.3*gev);
+	algo->SetTimeResSmear(tres_c, tres_n*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
