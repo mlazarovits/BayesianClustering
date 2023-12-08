@@ -534,13 +534,6 @@ void GaussianMixture::CalculateRStatistics(){
 			S_n.mult(x_min_mu,x_min_muT);
 			//cout << "(x - mu)*(x - mu)T" << endl;	
 			//S_k.Print();
-			//weighting by posterior r_nk
-			S_n.mult(S_n,m_post.at(n,k));
-		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
-			//cout << "post*(x - mu)*(x - mu)T" << endl;	
-			//S_k.Print();
-			//sum over n
-			S.add(S_n);
 			//if resolution based smearing is set for any dimension of the covariance,
 			//alter smearing matrix accordingly
 			if(_res_smear_d.size() > 0 && _smear){
@@ -552,7 +545,14 @@ void GaussianMixture::CalculateRStatistics(){
 				}
 
 			}
-			if(_smear) S.add(_data_cov);
+			if(_smear) S_n.add(_data_cov);
+			//weighting by posterior r_nk
+			S_n.mult(S_n,m_post.at(n,k));
+		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
+			//cout << "post*(x - mu)*(x - mu)T" << endl;	
+			//S_k.Print();
+			//sum over n
+			S.add(S_n);
 		}	
 		//cout << "sum_n post*(x - mu)*(x - mu)T" << endl;	
 		//S.Print();
