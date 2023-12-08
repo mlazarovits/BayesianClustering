@@ -91,6 +91,7 @@ void JetSkimmer::Skim(){
 		cout << "Using pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
 	}
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
+	//set differences in samples (ie GMSB, data) here
 	
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);

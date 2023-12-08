@@ -28,7 +28,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                 py = pt*sin(phi);
                 pz = pt*sinh(eta);
 
-                nrhs = _base->Jet_drRhIds->size();
+                nrhs = _base->Jet_drRhIds->at(j).size();
 
 		//Jet selection
 		if(nrhs < 2) continue;
@@ -48,7 +48,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                 jet.SetVertex(vtx);
 		//set rec hits in jet
 		vector<unsigned int> rhs = _base->Jet_drRhIds->at(j);
-                for(int r = 0; r < rhs.size(); r++){
+		for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){

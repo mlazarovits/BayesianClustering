@@ -29,7 +29,10 @@ class JetSkimmer : public BaseSkimmer{
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
 		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-30,30); 
+		TH1D* pT_twoHardJets = new TH1D("pT_twoHardJets","pT Two Hardest Jets",100,0,3000);
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
+		
+
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
 		TH1D* PVtime_median = new TH1D("PVtime_median","PVtime_median",100,-10,10);	
 		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
@@ -243,27 +246,36 @@ class JetSkimmer : public BaseSkimmer{
 			int njets = (int)jets.size();
 			if(njets != models.size()){ cout << njets << " jets and " << models.size() << " models" << endl; return;} 
 			double pi = acos(-1);
+			double time;
 			double dphi, phi1, phi2;
 			Jet jet_i, jet_j;
 			GaussianMixture model_i, model_j;
-			//find pairs of jets to calculate resolution	
+			map<double,double> pt_time;
+			//find hardest two jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
-				phi1 = jets[i].phi_02pi();
 				//fill pv time histograms
 				//mm average over subclusters
-				PVtime_mmAvg->Fill( CalcMMAvgTime(models[i]) );
-				for(int j = i+1; j < njets; j++){
-					phi2 = jets[j].phi_02pi();
-					//dphi within [pi-0.1,pi+0.1]
-					dphi = fabs(phi1 - phi2);
-					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
-					//fill pv time difference histograms
-					//mm average over subclusters
-					PVtimeDiff_mmAvg->Fill( CalcMMAvgTime(models[i]) - CalcMMAvgTime(models[j]) );
-				}
+				time = CalcMMAvgTime(models[i]);
+				pt_time[jets[i].pt()] = time;
+				PVtime_mmAvg->Fill( time );
 			}
+			map<double,double>::reverse_iterator it = pt_time.rbegin();	
+			double dtime = it->second;
+			pT_twoHardJets->Fill(it->first);
+			it++;
+			pT_twoHardJets->Fill(it->first);
+			dtime -= it->second;	
+			//not needed for GMSB
+			////dphi within [pi-0.1,pi+0.1]
+			//phi1 = jets[jet1].phi_02pi();
+			//phi2 = jets[jet2].phi_02pi();
+			//dphi = fabs(phi1 - phi2);
+			//if(dphi < pi-0.1 || dphi > pi+0.1) return;
+			//fill pv time difference histograms
+			//mm average over subclusters
+			PVtimeDiff_mmAvg->Fill( dtime );
 
 		}
 
