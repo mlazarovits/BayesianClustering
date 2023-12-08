@@ -142,7 +142,7 @@ class BaseSkimmer{
 		//16 - phi variance	
                 TH1D* phiVar = new TH1D("phiVar","phiVar",25,0,1e-1);
 		//17 - time variance	
-                TH1D* timeVar = new TH1D("timeVar","timeVar",25,0,200.);
+                TH1D* timeVar = new TH1D("timeVar","timeVar",25,0,50.);
 		//18 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//19 - azimuth angle in 2D
@@ -178,9 +178,9 @@ class BaseSkimmer{
                 //12 - eta variance v phi variance
 		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",25,0,1e-1,25,0,1e-1);
                 //13 - time variance v phi variance
-                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",25,0,100.,25,0,1e-1);
+                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",25,0,50.,25,0,1e-1);
                 //14 - time variance v phi variance
-                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",25,0,100.,25,0,1e-1);
+                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",25,0,50.,25,0,1e-1);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
 		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.1);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
