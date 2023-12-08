@@ -228,7 +228,6 @@ int main(int argc, char *argv[]){
         std::regex re("_v[0-9]+_");
         string version = "";
         std::regex_search(in_file,m,re);
-        cout << "version match: " << m.str() << endl;
         for(auto x : m) version += x;
         string cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
         version.pop_back();
