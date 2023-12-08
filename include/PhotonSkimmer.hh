@@ -191,7 +191,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix lead_eigenvec, lead_eigenvec_space;
 			
 			int nclusters = model->GetNClusters();
-			
 			plotCats[id_idx].hists1D[0][0]->Fill(nclusters);
 			plotCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
 			model->GetNorms(norms);
