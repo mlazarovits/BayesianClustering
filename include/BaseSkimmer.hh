@@ -144,7 +144,7 @@ class BaseSkimmer{
 		//17 - time variance	
                 TH1D* timeVar = new TH1D("timeVar","timeVar",25,0,200.);
 		//18 - fraction of energy in cluster
-		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.);
+		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//19 - azimuth angle in 2D
 		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-3.5,3.5);		
 
@@ -164,9 +164,9 @@ class BaseSkimmer{
 		//5 - t v phi
 		TH2D* t_phi = new TH2D("t_phi","t_phi;time_center;phi_center;a.u.",50,-30,30,50,-3.5,3.5);
 		//6 - time to mixing coeff
-		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff;a.u.",50,-20,20,50,0,1.);
+		TH2D* t_mixcoeff = new TH2D("t_mixcoeff","t_mixcoeff;time_center;mixing_coeff;a.u.",50,-20,20,50,0,1.1);
 		//7 - subcl E vs mixing coeff
-		TH2D* E_mixcoeff = new TH2D("subclE_mixcoeff","subclE_mixcoeff;E;mixing_coeff;a.u.",20,0,2000,20,0,1.);	
+		TH2D* E_mixcoeff = new TH2D("subclE_mixcoeff","subclE_mixcoeff;E;mixing_coeff;a.u.",20,0,2000,20,0,1.1);	
 		//8 - rotundity (3D) v subcluster energy
 		TH2D* rot3D_E = new TH2D("rot3D_subclE","rot3D_subclE;rotundity3D;E;a.u.",50,0.4,1.1,50,0,100);
 		//9 - npts effective (ie weighted) v subcl energy
@@ -174,15 +174,15 @@ class BaseSkimmer{
 		//10 - nsubclusters vs nrhs in cluster
 		TH2D* nsubcl_nrhs = new TH2D("nsubcl_nrhs","nsubcl_nrhs;nsubclusters;nrhs",10,0,10,10,0,50);
 		//11 - nsubclusters vs mm coeff
-		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.);
+		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.1);
                 //12 - eta variance v phi variance
-		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",25,0,1e-2,25,0,1e-1);
+		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",25,0,1e-1,25,0,1e-1);
                 //13 - time variance v phi variance
                 TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",25,0,100.,25,0,1e-1);
                 //14 - time variance v phi variance
                 TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",25,0,100.,25,0,1e-1);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
-		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.);
+		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.1);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
 		TH2D* nsubcl_fracE = new TH2D("nsubcl_fracE","nsubcl_fracE;nSubClusters;fracE",10,0,10.,20,0,1.1);
 
@@ -192,50 +192,6 @@ class BaseSkimmer{
 		TH1D* objE = new TH1D("objE","objE",50,0,100);
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
 		
-		void MakeMMCoeff1DHists(const vector<TH1D*>& hists1D, vector<TH1D*>& hists1D_lead, vector<TH1D*>& hists1D_notlead){
-			string name;
-			hists1D_lead.clear();
-			hists1D_notlead.clear();
-			for(int i = 0; i < hists1D.size(); i++){
-				name = hists1D[i]->GetName();
-				//skip histograms with "total" energy (doesn't apply to individual subclusters)
-				//keep 1-1 indexing
-				//if(name.find("tot") != string::npos) continue;
-	
-				hists1D_lead.push_back((TH1D*)hists1D[i]->Clone());
-				hists1D_lead[i]->SetName((name+"_lead").c_str());
-				hists1D_lead[i]->SetTitle((name+"_lead").c_str());
-				
-				hists1D_notlead.push_back((TH1D*)hists1D[i]->Clone());
-				hists1D_notlead[i]->SetName((name+"_notlead").c_str());
-				hists1D_notlead[i]->SetTitle((name+"_notlead").c_str());
-			
-				//add fractional histograms to lead histograms
-
-			}
-		}
-		void MakeMMCoeff2DHists(const vector<TH2D*>& hists2D, vector<TH2D*>& hists2D_lead, vector<TH2D*>& hists2D_notlead){
-			string name;
-			hists2D_lead.clear();
-			hists2D_notlead.clear();
-			for(int i = 0; i < hists2D.size(); i++){
-				name = hists2D[i]->GetName();
-				//skip histograms with "total" energy (doesn't apply to individual subclusters)
-				//keep 1-1 indexing
-				//if(name.find("tot") != string::npos) continue;
-				
-				hists2D_lead.push_back((TH2D*)hists2D[i]->Clone());
-				hists2D_lead[i]->SetName((name+"_lead").c_str());
-				hists2D_lead[i]->SetTitle((name+"_lead").c_str());
-				
-				hists2D_notlead.push_back((TH2D*)hists2D[i]->Clone());
-				hists2D_notlead[i]->SetName((name+"_notlead").c_str());
-				hists2D_notlead[i]->SetTitle((name+"_notlead").c_str());
-			}
-		}
-	
-
-
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct plotCat{
@@ -259,7 +215,7 @@ class BaseSkimmer{
 			vector<vector<TH2D*>> hists2D;
 			vector<double> ids;
 		
-			plotCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotName = "", string legName = ""){
+			plotCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = ""){
 				hists1D.push_back(hists1D_nom);
 				hists1D.push_back(hists1D_lead);
 				hists1D.push_back(hists1D_notlead);
@@ -267,6 +223,9 @@ class BaseSkimmer{
 				hists2D.push_back(hists2D_nom);
 				hists2D.push_back(hists2D_lead);
 				hists2D.push_back(hists2D_notlead);
+
+				plotName = plotname;
+				legName = legname;
 				
 				string name;
 				//for each histogram (variable or correlation)

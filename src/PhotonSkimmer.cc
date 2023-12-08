@@ -112,15 +112,15 @@ void PhotonSkimmer::Skim(){
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
-				//0 = signal: chi_any -> gamma (22, 32, 25, 35)
-				//1 = ISR: chi -> W/Z -> gamma, gino/sq -> q -> gamma (23, 33, 24, 34, 21, 31, 20, 30)
-				//2 = not susy: p -> gamma, not matched (29, -1)
+				//0 = all
+				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
+				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
 				phoid = _base->Photon_genLlpId->at(p);
 				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = plotCats[i].ids;
-					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return iid == phoid;}) || i == 0){
+					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
 						FillModelHists(gmm, i);
-						if(i != 0) break;
+						//if(i != 0) break;
 					}
 				}
 			}

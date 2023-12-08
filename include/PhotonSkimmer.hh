@@ -31,14 +31,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetEMAlpha(double a){ _emAlpha = a; }
 		double _thresh, _alpha, _emAlpha;
 
-		//stacked photon LLID hists
-		//list of photon ids
-		vector<TH1D*> llp_sig;
-		vector<TH1D*> llp_ISR;
-		vector<TH1D*> llp_notSunm;
-		map<int, vector<double>> id_map;
-
-		vector<vector<TH1D*>> histsID;
 		vector<plotCat> plotCats;
 
 		void MakeIDHists(){
@@ -51,14 +43,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
 			sig.ids = {22};
 			plotCats.push_back(sig);
-			//FSR
-			//plotCat FSR;
-			//FSR.legName = "sFSR";
-			//FSR.plotName = "sFSR";
-			//FSR.ids = {20, 30, 21, 31, 23, 33, 24, 34}; 
-			//plotCats.push_back(FSR);
 			//notSunm
-			plotCat notSunm(_hists1D, _hists2D, "bkg","bkg");
+			plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
 			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
 			notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
 			//notSunm.ids = {29, -1}; 
@@ -68,7 +54,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	
 
 
-		void WritePlotCat(TFile* ofile, const plotCat& pc){
+		void WritePlotCat1D(TFile* ofile, const plotCat& pc){
 			ofile->cd();
 			string name;
 			vector<vector<TH1D*>> hists1D = pc.hists1D;
@@ -77,17 +63,20 @@ class PhotonSkimmer : public BaseSkimmer{
 				for(int j = 0; j < hists1D[i].size(); j++){
 					if(pc.hists1D[i][j] == nullptr) continue;
 					name = pc.hists1D[i][j]->GetName();
-					if(pc.hists1D[i][j]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+					if(pc.hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 					TCanvas* cv = new TCanvas((name).c_str(), "");
 					TDRHist(pc.hists1D[i][j], cv, name, name, "a.u.");	
 					cv->Write();
 					//or instead write hist here
 				}
 			}
-			
-			//write 2D hists
+		}
+		void WritePlotCat2D(TFile* ofile, const plotCat& pc){
+			ofile->cd();
 			string xname, yname;
+			string name;
 			vector<vector<TH2D*>> hists2D = pc.hists2D;
+			//write 2D hists
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				for(int j = 0; j < hists2D[i].size(); j++){
 					if(pc.hists2D[i][j] == nullptr) continue;
@@ -96,7 +85,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					name += "2D";
 					xname = pc.hists2D[i][j]->GetXaxis()->GetTitle();
 					yname = pc.hists2D[i][j]->GetYaxis()->GetTitle();
-					if(pc.hists2D[i][j]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+					if(pc.hists2D[i][j]->GetEntries() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 					TCanvas* cv = new TCanvas((name).c_str(), "");
 					TDR2DHist(pc.hists2D[i][j], cv, xname, yname, pc.plotName);
 					cv->Write();
@@ -107,34 +96,43 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
-		void WritePlotCats(TFile* ofile, const vector<plotCat>& pcs){
+		void WritePlotCatStack(TFile* ofile, const vector<plotCat>& pcs){
 			ofile->cd();
 			string name;
 			double ymax, ymin;
 			vector<string> id_names;
-			cout << "writing " << pcs.size() << " to stack plots" << endl;
+			vector<TH1D*> hists;
 			//number of histogram categories (ie leading, !leading, etc)
 			int nhistCats = pcs[0].hists1D.size();
 			//write 1D hists
+			//variables
 			for(int j = 0; j < (int)_hists1D.size(); j++){
+				//cout << "var: " << _hists1D[j]->GetName() << endl;
+				//lead, not lead, etc.
 				for(int i = 0; i < nhistCats; i++){
-					vector<TH1D*> hists;
 					if(pcs[0].hists1D[i][j] == nullptr) continue;
-					name = pcs[0].hists1D[i][j]->GetName();
+					//needs to be reset for each category
+					name = _hists1D[j]->GetName();
+					if(!pcs[0].histcatnames[i].empty()) name += "_"+pcs[0].histcatnames[i];
+					//cout << "	category: " << pcs[0].histcatnames[i] << endl; 
+					hists.clear();
+					id_names.clear();
+					//proc
 					for(int k = 0; k < pcs.size(); k++){
 						if(pcs[k].hists1D[i][j] == nullptr) continue;
-						if(pcs[k].hists1D[i][j]->Integral() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
+						if(pcs[k].hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
+			//			cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
 						hists.push_back(pcs[k].hists1D[i][j]);			
-						id_names.push_back(pcs[i].legName);
+						id_names.push_back(pcs[k].legName);
 					}
+					if(hists.size() < 1) continue;
 					FindListHistBounds(hists, ymin, ymax);
 					TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
 					TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
+					//cout << "wrote new stack: " << name+"_stack" << endl;
 					//write cv to file			
 					cv_stack->Write();
 					//or write hist here	
-					hists.clear();
-					id_names.clear();
 				}
 			}
 			
@@ -142,20 +140,12 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 		void WriteHists(TFile* ofile){
-			vector<TH1D*> hists;
-			vector<string> id_names;
-			double ymax, ymin;
-			string name;
-		
-			for(int i = 1; i < (int)plotCats.size(); i++)
-				id_names.push_back(plotCats[i].legName);
-
 			//normalize histograms	
 			for(int i = 0; i < (int)plotCats.size(); i++){
 				for(int j = 0; j < plotCats[i].hists1D.size(); j++){
 					//relative fraction histograms
 					//nSubClusters
-					plotCats[i].hists1D[j][0]->Scale(1./plotCats[i].hists1D[j][0]->Integral());
+					//plotCats[i].hists1D[j][0]->Scale(1./plotCats[i].hists1D[j][0]->Integral());
 					//ellipsoid center coordinates
 					plotCats[i].hists1D[j][1]->Scale(1./plotCats[i].hists1D[j][1]->Integral());
 					plotCats[i].hists1D[j][2]->Scale(1./plotCats[i].hists1D[j][2]->Integral());
@@ -171,9 +161,10 @@ class PhotonSkimmer : public BaseSkimmer{
 				}
 			}
 
-			WritePlotCat(ofile, plotCats[0]);
+			WritePlotCat1D(ofile, plotCats[0]);
+			WritePlotCat2D(ofile, plotCats[0]);
 			vector<plotCat> id_cats(plotCats.begin()+1, plotCats.end());
-			WritePlotCats(ofile, id_cats);
+			WritePlotCatStack(ofile, id_cats);
 
 			ofile->Close();
 
@@ -200,6 +191,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix lead_eigenvec, lead_eigenvec_space;
 			
 			int nclusters = model->GetNClusters();
+			
 			plotCats[id_idx].hists1D[0][0]->Fill(nclusters);
 			plotCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
 			model->GetNorms(norms);
@@ -341,7 +333,6 @@ class PhotonSkimmer : public BaseSkimmer{
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
-				cout << "LEAD eta sig: " << sqrt(params["cov"].at(0,0)) << " phi sig: " << sqrt(params["cov"].at(1,1)) << " time sig: " << sqrt(params["cov"].at(2,2)) << endl;
 					//centers
 					plotCats[id_idx].hists1D[1][1]->Fill(tc);
 					plotCats[id_idx].hists1D[1][2]->Fill(ec);
@@ -398,7 +389,6 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 				else if(k != leadidx){
-				cout << "NOT LEAD eta sig: " << sqrt(params["cov"].at(0,0)) << " phi sig: " << sqrt(params["cov"].at(1,1)) << " time sig: " << sqrt(params["cov"].at(2,2)) << endl;
 					//centers
 					plotCats[id_idx].hists1D[2][1]->Fill(tc);
 					plotCats[id_idx].hists1D[2][2]->Fill(ec);
@@ -427,9 +417,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[2][14]->Fill(E_tot);
 					
 					//get variances
-					plotCats[id_idx].hists1D[2][15]->Fill(params["cov"].at(0,0));
-					plotCats[id_idx].hists1D[2][16]->Fill(params["cov"].at(1,1));
-					plotCats[id_idx].hists1D[2][17]->Fill(params["cov"].at(2,2));
+					plotCats[id_idx].hists1D[2][15]->Fill(sqrt(params["cov"].at(0,0)));
+					plotCats[id_idx].hists1D[2][16]->Fill(sqrt(params["cov"].at(1,1)));
+					plotCats[id_idx].hists1D[2][17]->Fill(sqrt(params["cov"].at(2,2)));
 					//fractional E
 					plotCats[id_idx].hists1D[2][18]->Fill(E_k/E_tot);
 					//"azimuth" angle in 2D (angle from x axis)
@@ -447,9 +437,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[2][8]->Fill(rot3D,E_k);
 					plotCats[id_idx].hists2D[2][9]->Fill(norms[k], E_k);
 					plotCats[id_idx].hists2D[2][11]->Fill(nclusters, pi);
-					plotCats[id_idx].hists2D[2][12]->Fill(params["cov"].at(0,0), params["cov"].at(1,1));
-					plotCats[id_idx].hists2D[2][13]->Fill(params["cov"].at(2,2), params["cov"].at(0,0));
-					plotCats[id_idx].hists2D[2][14]->Fill(params["cov"].at(2,2), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D[2][12]->Fill(sqrt(params["cov"].at(0,0)), sqrt(params["cov"].at(1,1)));
+					plotCats[id_idx].hists2D[2][13]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(0,0)));
+					plotCats[id_idx].hists2D[2][14]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(1,1)));
 					plotCats[id_idx].hists2D[2][15]->Fill(E_k/E_tot, pi);
 					plotCats[id_idx].hists2D[2][16]->Fill(nclusters, E_k/E_tot);
 
