@@ -51,14 +51,12 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
 
 #splits by event number
 def eventsSplit(infile, nChunk):
-        if not os.path.exists(infile):
-		print("Cannot locate file "+infile)
-		return
 	if nChunk == 0:
                 nChunk += 1
         print("Splitting each file into "+str(nChunk)+" jobs ")
         #should split by event number in file
-        rfile = ROOT.TFile(infile)
+        print(infile)
+	rfile = ROOT.TFile.Open(infile)
         tree = rfile.Get("tree/llpgtree")
 	nevts = tree.GetEntries()
         evts = range(nevts+1)
@@ -80,9 +78,9 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
 	outFileArg = ofilename+".$(Process)"
 
         #infile should only be file name (no path)
-        inFile = inFile[inFile.rfind("/")+1:]
-	#add access via xrootd (condor has 1GB limit for direct file transfers)
-	inFile = "root://cmsxrootd.fnal.gov/"+inFile
+        #inFile = inFile[inFile.rfind("/")+1:]
+	#inFile = "root://cmsxrootd.fnal.gov/"+inFile
+	print('infile '+inFile)
 
         jobCtr=0
         for e in evts:

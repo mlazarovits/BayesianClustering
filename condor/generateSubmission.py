@@ -10,6 +10,7 @@ import shutil
 import submissionHelper as SH
 
 
+
 # Create workspace and condor submit files.
 def generateSubmission(args):
  	# Ensure that the directory includes "/" at the end.
@@ -23,6 +24,12 @@ def generateSubmission(args):
 	SH.makeDir(odir)
 	
 	inputFile = args.inputFile
+	#to use xrootd path cannot be relative
+	#find any ../ and remove it and the dir before it
+	#inputFile = createAbsPath(inputFile)
+	inputFile = inputFile[inputFile.rfind("/"):]
+	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples"+inputFile
+
 	objName = args.object
 	strategyName = ""
 	if args.strategy == 0:
@@ -35,7 +42,7 @@ def generateSubmission(args):
 	        print("Invalid strategy",args.strategy,"specified")
 	        exit()
 	
-	print "Skimming for",objName,"in file",args.inputFile,"with strategy",strategyName 
+	print "Skimming for",objName,"in file",inputFile,"with strategy",strategyName 
 	
 	
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
