@@ -268,11 +268,13 @@ class JetSkimmer : public BaseSkimmer{
 			pT_twoHardJets->Fill(it->first);
 			dtime -= it->second;	
 			//not needed for GMSB
-			////dphi within [pi-0.1,pi+0.1]
-			//phi1 = jets[jet1].phi_02pi();
-			//phi2 = jets[jet2].phi_02pi();
-			//dphi = fabs(phi1 - phi2);
-			//if(dphi < pi-0.1 || dphi > pi+0.1) return;
+			if(_data){
+				//dphi within [pi-0.1,pi+0.1]
+				phi1 = jets[jet1].phi_02pi();
+				phi2 = jets[jet2].phi_02pi();
+				dphi = fabs(phi1 - phi2);
+				if(dphi < pi-0.1 || dphi > pi+0.1) return;
+			}
 			//fill pv time difference histograms
 			//mm average over subclusters
 			PVtimeDiff_mmAvg->Fill( dtime );
