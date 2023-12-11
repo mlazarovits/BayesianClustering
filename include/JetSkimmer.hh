@@ -247,10 +247,11 @@ class JetSkimmer : public BaseSkimmer{
 			if(njets != models.size()){ cout << njets << " jets and " << models.size() << " models" << endl; return;} 
 			double pi = acos(-1);
 			double time;
+			vector<double> times;
 			double dphi, phi1, phi2;
-			Jet jet_i, jet_j;
+			int jet1, jet2;
 			GaussianMixture model_i, model_j;
-			map<double,double> pt_time;
+			map<double,int> pt_idx;
 			//find hardest two jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
@@ -258,15 +259,18 @@ class JetSkimmer : public BaseSkimmer{
 				//fill pv time histograms
 				//mm average over subclusters
 				time = CalcMMAvgTime(models[i]);
-				pt_time[jets[i].pt()] = time;
+				times.push_back(time);
+				//jets[i].SetJetTime(time);
+				pt_idx[jets[i].pt()] = i;
 				PVtime_mmAvg->Fill( time );
 			}
-			map<double,double>::reverse_iterator it = pt_time.rbegin();	
-			double dtime = it->second;
-			pT_twoHardJets->Fill(it->first);
+			map<double,int>::reverse_iterator it = pt_idx.rbegin();	
+			jet1 = it->second;
 			it++;
-			pT_twoHardJets->Fill(it->first);
-			dtime -= it->second;	
+			jet2 = it->second;
+			pT_twoHardJets->Fill(jets[jet1].pt());
+			pT_twoHardJets->Fill(jets[jet2].pt());
+			double dtime = times[jet1] - times[jet2];
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]

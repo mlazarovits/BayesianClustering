@@ -247,7 +247,7 @@ int main(int argc, char *argv[]){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
 		if(in_file.find("JetHT") != string::npos)
-			skimmer.SetData();
+			skimmer.SetData(true);
 		skimmer.SetCMSLabel(cmslab);
 		if(strat == 2) 
 			skimmer.GMMOnly();
