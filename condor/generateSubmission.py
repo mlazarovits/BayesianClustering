@@ -25,6 +25,8 @@ def generateSubmission(args):
 
 	if args.inputSample == "GMSB":	
 		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "JetHT":
+		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
@@ -61,6 +63,10 @@ def generateSubmission(args):
 	        dirname = odir+"/"+sampleNameShort+"/"+sampleName+"/"+objName
 	        ofilename = dirname+"/out/"+sampleNameShort+"_"+objName
 
+	if args.output is not None:
+		ofilename = ofilename+"_"+args.output 
+		dirname = dirname+"_"+args.output
+	ofilename = "condor_"+ofilename
 	
 	print("Preparing sample directory: {0}".format(dirname))
 	##### Create a workspace (remove existing directory) #####
@@ -78,9 +84,9 @@ def generateSubmission(args):
 	##### Create condor submission script in src directory #####
 	condorSubmitFile = dirname + "/src/submit.sh"
 	subf = open(condorSubmitFile, "w")
-	oFileName = "condorSkim"
-	SH.writeSubmissionBase(subf, dirname, oFileName, inputFile)
-	SH.writeQueueList(subf, inputFile, oFileName, eventnums, flags)
+	print("outputfile name "+ofilename)
+	SH.writeSubmissionBase(subf, dirname, ofilename, inputFile)
+	SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
 	#subf.close()
 	if eventnums == 0 or eventnums is None:
 		return
@@ -95,9 +101,10 @@ def main():
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
 	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB','JetHT'])
+	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
-	parser.add_argument('--object','-o',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
+	parser.add_argument('--object',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
 	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
 	parser.add_argument('--verbosity','-v',help="verbosity",default=0)

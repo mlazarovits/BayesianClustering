@@ -55,7 +55,6 @@ def eventsSplit(infile, nChunk):
                 nChunk += 1
         print("Splitting each file into "+str(nChunk)+" jobs ")
         #should split by event number in file
-        print(infile)
 	rfile = ROOT.TFile.Open(infile)
         tree = rfile.Get("tree/llpgtree")
 	nevts = tree.GetEntries()
@@ -80,7 +79,6 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
         #infile should only be file name (no path)
         #inFile = inFile[inFile.rfind("/")+1:]
 	#inFile = "root://cmsxrootd.fnal.gov/"+inFile
-	print('infile '+inFile)
 
         jobCtr=0
         for e in evts:
