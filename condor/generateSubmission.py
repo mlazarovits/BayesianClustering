@@ -22,13 +22,14 @@ def generateSubmission(args):
 	print("------------------------------------------------------------")
 	# Create output directory for condor results if it does not exist.
 	SH.makeDir(odir)
-	
-	inputFile = args.inputFile
+
+	if args.inputSample == "GMSB":	
+		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+	else:
+		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
 	#find any ../ and remove it and the dir before it
-	#inputFile = createAbsPath(inputFile)
-	inputFile = inputFile[inputFile.rfind("/"):]
-	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples"+inputFile
+	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
 
 	objName = args.object
 	strategyName = ""
@@ -72,7 +73,7 @@ def generateSubmission(args):
 
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
-	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)
+	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)
 
 	##### Create condor submission script in src directory #####
 	condorSubmitFile = dirname + "/src/submit.sh"
@@ -93,7 +94,8 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputFile','-i',help='Ntuple file to create skims from (absolute path)',required=True)
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB','JetHT'])
+	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
 	parser.add_argument('--object','-o',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
 	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
@@ -103,6 +105,7 @@ def main():
 	parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
 	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
 	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
+	parser.add_argument('--gev',help='energy transfer factor',default=1./30.)
 	args = parser.parse_args()
 
 	generateSubmission(args)
