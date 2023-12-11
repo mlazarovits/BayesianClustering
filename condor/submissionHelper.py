@@ -34,7 +34,7 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         subf.write("error = ./"+dirname+"/log/job.$(Process).err\n")
         subf.write("log = ./"+dirname+"/log/job.log\n")
         #include tarball with CMSSW environment
-        subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, config.tgz, "+infile+"\n")
+        subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, config.tgz, \n")
         subf.write("should_transfer_files = YES\n")
         subf.write("when_to_transfer_output = ON_EXIT\n")
         outname = ofilename+".$(Process).root"
@@ -51,12 +51,16 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
 
 #splits by event number
 def eventsSplit(infile, nChunk):
-        if nChunk == 0:
+        if not os.path.exists(infile):
+		print("Cannot locate file "+infile)
+		return
+	if nChunk == 0:
                 nChunk += 1
         print("Splitting each file into "+str(nChunk)+" jobs ")
         #should split by event number in file
         rfile = ROOT.TFile(infile)
-        nevts = rfile.Get("tree/llpgtree").GetEntries()
+        tree = rfile.Get("tree/llpgtree")
+	nevts = tree.GetEntries()
         evts = range(nevts+1)
         #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
         #make sure to count first event in every chunk after first
@@ -69,11 +73,16 @@ def eventsSplit(infile, nChunk):
 
 # Write each job to the condor submit file.
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
-        #.root is set in exe
+        if evts == 0 or evts is None:
+		print "No events found"
+		return
+	#.root is set in exe
 	outFileArg = ofilename+".$(Process)"
 
         #infile should only be file name (no path)
         inFile = inFile[inFile.rfind("/")+1:]
+	#add access via xrootd (condor has 1GB limit for direct file transfers)
+	inFile = "root://cmsxrootd.fnal.gov/"+inFile
 
         jobCtr=0
         for e in evts:

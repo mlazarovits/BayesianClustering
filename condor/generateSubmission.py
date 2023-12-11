@@ -74,6 +74,8 @@ def generateSubmission(args):
 	SH.writeSubmissionBase(subf, dirname, oFileName, inputFile)
 	SH.writeQueueList(subf, inputFile, oFileName, eventnums, flags)
 	#subf.close()
+	if eventnums == 0 or eventnums is None:
+		return
 	
 	print("------------------------------------------------------------")
 	print("Submission ready, to run use:")
