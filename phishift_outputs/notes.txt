@@ -1,0 +1,141 @@
+Delauney phi shift notes
+FINAL
+- slightly different merges (off by 1 or two points traded between clusters) caused by mirroring 
+	- when points shift, they shift relative to the mirror point (0 or 2pi) so this has to be shifted too
+- ultimately end up with the same results for n2* and delauney
+- *not exactly the same for n2 because initial points are not mirrored like they are in delauney
+	- setting mirrors for the initial points for n2 would be two n2 operations which is computationally intractable
+- show that for 20ish events
+
+- phi shifted: 	
+- N^2: phi shifting (applying shift to mirroring + prior) produces same results
+		- slight differences in merge paths (ie which mirror points are created, which then affects downstream merges)
+		- very very slight differences (~O(1e-9)) in merge posterior calculations
+	- the nonlinear nature of merge probability dependence on data + prior values makes pinning down exact cause/equation difficult
+	
+		
+
+
+Differences
+- 36 gets mirrored in nominal, 39 gets mirrored in phi shift
+	- they are each other’s closest neighbors with nndist: 0.00297952
+In original coordinates:
+36: (-0.416267,6.256919,-0.802969) w = 0.271788
+	- mirrored to: (-0.416267,-0.026266,-0.802969) w = 0.271788
+39: (-0.433270,6.20505,5.088734) w = 0.147563
+	- the above mirroring scheme in either scenario is consistent with what should happen
+	- both points are within [0,2pi] boundary
+In shifted coordinates:
+36: phi = 0.0737336
+	- phi is actually 6.256919 + 0.1 = 6.3569190
+	- but this is outside the [0,2pi] boundary
+	- so it gets corrected to 6.3569190 - 2*pi = 0.0737336
+39: phi = 0.0218643
+	- mirrored to: (-0.416267,-0.026266,-0.802969) w = 0.271788
+	- same happens here
+	- (6.20505 + 0.1) - 2*pi = 0.0218643
+- 169 = 168 + 42 gets mirrored (idx 173) in phi shift, not in nominal
+- in phi shift: ip = 172, pt3 = 169 (first cluster to get mirrored)
+- first cluster to get mirrored in nom: ip = 174, pt3 = 171 (mirror idx 175)
+
+- adding offset to mirror point conditions created correct mirror points
+	- phi - (0 + offset) and (twopi+offset) - phi
+- n^2 also took a different merge path bw shift and nominal
+- phi changes the coordinates of the points, but this will change the distance between points and the prior parameters (these don’t change)
+	- the merge probability is based on the likelihood of a model (ELBO) which depends on this
+
+
+
+Divergences:
+- n^2
+	- at iteration 110:
+		-nom: 36 + 265 (rk = 0.9999991815)
+			- 46 gets merged with 266 (36 + 265) on it 111
+			- 46 + 265 rk: 0.9999991386
+		-shift: 46 + 265 (rk = 0.9999991391)
+			- 36 gets merged with 39 on it 119 
+			- 36 + 265 rk:  0
+	- shifted pt 46: (-0.433645,6.145900,0.927356) w = 0.2631285419
+	- nom     pt 46: (-0.433645,6.045900,0.927356) w = 0.2631285419
+	- shifted pt 36: (-0.416267,0.073734,-0.802969) w = 0.2717875536
+	- nom     pt 36: (-0.416267,6.256919,-0.802969) w = 0.2717875536
+	
+	- see if same points bw nom and shift are in 265 - yes
+	- set mean prior to 0.1 for shift and see if that changes anything
+
+
+- delauney
+	- at merge 161 + x
+		- nom: 161 + 46
+		- shift: 161 + 36
+			- 46 is merged with 241	
+
+
+Point #124
+Unshifted - in cluster 2 (unclustered)
+(-2.726925, 5.446426, 11.16193)
+	- originally best paired with 56
+	- at merge 166 = 165 + 56, best merge gets updated to 39 (mirrored to 137)
+	- at merge 170 = 169 + 36, best merge gets updated to 39 (153)
+Phi shifted - in cluster 4 (23 pts)
+(-2.726925, 5.5446426, 11.16193)
+	- originally best paired with 56
+	- at merge 166 = 165 + 56, best merge gets updated to 39 
+	- at merge 169 = 168 + 42, best merge gets updated to 39 (neighbors changed but not best rk)
+Merges with cluster 171 to become cluster 252 with rk = 0.999611
+	171 =  39 + 170 (0.99992)
+		- seeded from first merge: 106 + 103
+
+
+
+Point #4
+Unshifted - in cluster 5 (23 pts - #177)
+(-0.030294, 6.851662, 0.09618)
+and 4: (-0.030294,0.668477,0.096184) w = 0.870298
+Plotting mirrored points
+Merged first in 177 = 176 + 4
+
+Phi shifted - in cluster 5 (81 pts - #265)
+(-0.03029394, 6.951662, 0.09618425)
+(-0.03029394, 0.66847669, 0.09618425)
+and 4: (-0.030294,0.568477,0.096184) w = 0.870298
+Merged first in 233 = 232 + 4
+
+Point #4 journey - phi shift
+- 0’s best merge is 4
+- 4’s best merge is 5
+- 5’s best merge is 4
+- 10’s best merge is 4
+- 36’s best merge is 4
+- …
+- cluster 171 = 170 + 39 is made
+	- 171’s best merge is 4
+- cluster 232 = 231 + 5 is made
+	- 232’s best merge is 4
+- 4 and 232 are merged
+
+Point #4 journey - nom
+- 0’s best merge is 4
+- 4’s best merge is 5
+- 5’s best merge is 4
+- 10’s best merge is 4
+- 36’s best merge is 4
+- …
+- cluster 150 = 149 + 86 is made
+	- 36’s best merge is updated to 4 (was updated to 149 previously)
+- cluster 171 = 170 + 39 is made
+	- 171’s best merge is 4
+- 171 and 4 are merged
+
+
+In beginning:
+Phi shift: create mirror point for 39 (mirror idx 136) with nndist 0.00297952
+Nom:      create mirror point for 36 (mirror idx 136) with nndist 0.00297952
+For both of these points, they end up in the 23 pt cluster
+
+At merge 149 = 148 + 88
+Phi shift: updated 39’s (mirror idx 136) best merge as 149
+nom:       updated 36’s (mirror idx 136) best merge as 149
+
+
+
