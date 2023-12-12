@@ -71,6 +71,10 @@ There are muliple visualization classes:
 ### Plotting
 - to add a new histogram to the skims, need to declare it in BaseSkimmer and push it back to the vector in ctor
 	- fill histogram in the derived object skimmer
+- plots are saved as histograms (not PDFs or TCanvases) so they can be hadded together
+	- if running the skimmer on condor (see below)
+- to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormat.C("[skim.root]")'` from command line
+
 #### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
