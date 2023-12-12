@@ -169,6 +169,10 @@ string GetCMSLabel(string in_file){
 }
 
 void HistFormat(string file){
+	if(gSystem->AccessPathName(file.c_str())){
+		cout << "File " << file << " does not exist." << endl;
+		return;
+	}
 	TFile* f = TFile::Open(file.c_str());
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
