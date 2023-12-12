@@ -178,7 +178,6 @@ int main(int argc, char *argv[]){
 		in_file = "BDSIM";
 	} 
 
-
 	if(gSystem->AccessPathName(in_file.c_str())){
 		cout << "Error: file " << in_file << " not found." << endl;
 		return -1;
@@ -235,8 +234,9 @@ int main(int argc, char *argv[]){
 		if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
 		else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
 		fname += "NperGeV"+gev_string+"_";
-		fname += cmslab.substr(0,cmslab.find("_")); //short sample name
-		fname += version; //"_v9"
+		fname += cmslab; //long sample name
+		//fname += cmslab.substr(0,cmslab.find("_")); //short sample name
+		//fname += version; //"_v9"
 
 	}
 	fname = fname+".root";
