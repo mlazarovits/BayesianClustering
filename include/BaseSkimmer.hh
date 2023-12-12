@@ -22,6 +22,9 @@ class BaseSkimmer{
 	public:
 		BaseSkimmer(){ 
 			_gev = 1/10.;
+			_data = false;
+			_debug = false;
+			_timesmear = true;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -40,6 +43,7 @@ class BaseSkimmer{
 			_gev = 1;
 			_data = false;
 			_debug = false;
+			_timesmear = true;
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);
 			_hists1D.push_back(eta_center);
@@ -55,11 +59,17 @@ class BaseSkimmer{
 			_hists1D.push_back(velocity);
 			_hists1D.push_back(eigen2D_ratio);	
 			_hists1D.push_back(clusterE);
-                	_hists1D.push_back(etaVar); 
-                	_hists1D.push_back(phiVar); 
-                	_hists1D.push_back(timeVar);
+                	_hists1D.push_back(etaSig); 
+                	_hists1D.push_back(phiSig); 
+                	_hists1D.push_back(timeSig);
 			_hists1D.push_back(fracE);
 			_hists1D.push_back(azimuth_ang_2D);
+                	_hists1D.push_back(etaSig_pos); 
+                	_hists1D.push_back(etaSig_neg); 
+			_hists1D.push_back(etaphi_cov); 
+			_hists1D.push_back(timeeta_cov);
+			_hists1D.push_back(timephi_cov);
+			_hists1D.push_back(objE);
 
 
 			_hists2D.push_back(time_E);
@@ -74,11 +84,17 @@ class BaseSkimmer{
 			_hists2D.push_back(npts_E);
 			_hists2D.push_back(nsubcl_nrhs);
 			_hists2D.push_back(nsubcl_mmcoeff);
-			_hists2D.push_back(etaVar_phiVar); 
-                	_hists2D.push_back(timeVar_etaVar);
-                	_hists2D.push_back(timeVar_phiVar);
+			_hists2D.push_back(etaSig_phiSig); 
+                	_hists2D.push_back(timeSig_etaSig);
+                	_hists2D.push_back(timeSig_phiSig);
 			_hists2D.push_back(fracE_mmcoeff);
 			_hists2D.push_back(nsubcl_fracE);
+			_hists2D.push_back(timeSig_timeCenter);
+			_hists2D.push_back(rot2D_az2D);
+			_hists2D.push_back(timeSig_fracE);
+			_hists2D.push_back(timeSig_totE);
+			_hists2D.push_back(timeEtaCov_totE);
+			_hists2D.push_back(timePhiCov_totE);
 	
 
 		}
@@ -137,16 +153,29 @@ class BaseSkimmer{
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//14 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",10,0,1000);
-		//15 - eta variance	
-                TH1D* etaVar = new TH1D("etaVar","etaVar",25,0, 1e-1);
-		//16 - phi variance	
-                TH1D* phiVar = new TH1D("phiVar","phiVar",25,0,1e-1);
-		//17 - time variance	
-                TH1D* timeVar = new TH1D("timeVar","timeVar",25,0,50.);
+		//15 - eta sigma	
+                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.09);
+		//16 - phi sigma	
+                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.01,0.09);
+		//17 - time sigma	
+                TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,25.);
 		//18 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//19 - azimuth angle in 2D
 		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-3.5,3.5);		
+		//20 - eta sigma for positive eta clusters
+                TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.09);
+		//21 - eta sigma for negative eta clusters
+                TH1D* etaSig_neg = new TH1D("etaSig_neg","etaSig_neg",25,0.01, 0.09);
+		//22 - normalized covariance - eta/phi
+		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",25,0,0.01);
+		//23 - normalized covariance - time/eta
+		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,0,0.01);
+		//24 - normalized covariance - time/phi
+		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,0,0.01);
+		//25 - object energy
+		TH1D* objE = new TH1D("objE","objE",50,0,100);
+
 
 	
 		//two dimensional histograms
@@ -175,21 +204,33 @@ class BaseSkimmer{
 		TH2D* nsubcl_nrhs = new TH2D("nsubcl_nrhs","nsubcl_nrhs;nsubclusters;nrhs",10,0,10,10,0,50);
 		//11 - nsubclusters vs mm coeff
 		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.1);
-                //12 - eta variance v phi variance
-		TH2D* etaVar_phiVar = new TH2D("etaVar_phiVar","etaVar_phiVar;etaVar;phiVar;a.u.",25,0,1e-1,25,0,1e-1);
-                //13 - time variance v phi variance
-                TH2D* timeVar_etaVar = new TH2D("timeVar_etaVar","timeVar_etaVar;timeVar;etaVar;a.u.",25,0,50.,25,0,1e-1);
-                //14 - time variance v phi variance
-                TH2D* timeVar_phiVar = new TH2D("timeVar_phiVar","timeVar_phiVar;timeVar;phiVar;a.u.",25,0,50.,25,0,1e-1);
+                //12 - eta sigma v phi sigma
+		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig;a.u.",25,0.01,0.09,25,0.01,0.09);
+                //13 - time sigma v phi sigma
+                TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig;a.u.",25,0,25.,25,0.01,0.09);
+                //14 - time sigma v phi sigma
+                TH2D* timeSig_phiSig = new TH2D("timeSig_phiSig","timeSig_phiSig;timeSig;phiSig;a.u.",25,0,25.,25,0.01,0.09);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
 		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.1);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
 		TH2D* nsubcl_fracE = new TH2D("nsubcl_fracE","nsubcl_fracE;nSubClusters;fracE",10,0,10.,20,0,1.1);
+		//17 - time sigma vs time center
+		TH2D* timeSig_timeCenter = new TH2D("timeSig_timeCenter","timeSig_timeCenter",25,0,25,50,-20,20);
+		//18 - 2d rotundity vs 2d az angle
+		TH2D* rot2D_az2D = new TH2D("rot2D_az2D","rot2D_az2D",50,0.4,1.1,50,-3.5,3.5);
+		//19 - time variation vs frac E
+		TH2D* timeSig_fracE = new TH2D("timeSig_fracE","timeSig_fracE",25,0,25,20,0.,1.1);
+		//20 - time sigma vs total E
+		TH2D* timeSig_totE = new TH2D("timeSig_totE","timeSig_totE",25,0,25,20,0,2000);
+		//21 - time-eta covariance vs total E
+		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE",25,0,25,20,0,2000);
+		//22 - time-phi covariance vs total E
+		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE",25,0,25,20,0,2000);
+
 
 
 		//reco object histograms
 		//NOT in hist vectors
-		TH1D* objE = new TH1D("objE","objE",50,0,100);
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
 		
 
@@ -263,125 +304,10 @@ class BaseSkimmer{
 		};
 
 
-
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 
-
-		void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, vector<string> label){
-			if(hist.size() != label.size()){ cout << "Error: number of histograms and labels don't match." << endl; return;}
-			if(hist.size() == 0 || label.size() == 0) return;
-			can->cd();
-			can->SetGridx(1);
-			can->SetGridy(1);
-			can->SetTitle("");
-			TLegend* myleg = new TLegend(0.7, 0.7, 0.8, 0.8 );
-			myleg->SetFillColor(0);
-			myleg->SetBorderSize(0);
-			myleg->SetTextFont(42);
-			myleg->SetTextSize(0.04);
-		
-			//offset for log scale
-			if(miny == 0) miny += 1e-6;
-			vector<int> k = {kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack};	
-
-
-			for( int i = 0 ; i < int(hist.size()); i++){
-				hist[i]->UseCurrentStyle();
-				hist[i]->SetStats(false);
-				hist[i]->GetXaxis()->CenterTitle(true);
-				hist[i]->GetXaxis()->SetTitle(xtit.c_str());
-				hist[i]->GetYaxis()->CenterTitle(true);
-				hist[i]->GetYaxis()->SetTitle(ytit.c_str());
-				hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
-				hist[i]->SetLineColor(i+2);
-				hist[i]->SetMarkerStyle(i+25);
-				hist[i]->SetMarkerColor(i+2);
-				if( i == 0 ){
-					hist[i]->Draw("ep");
-				}else{
-					hist[i]->Draw("epsame");
-				}
-				myleg->AddEntry( hist[i], (label[i]).c_str(), "p" );
-				gPad->Update();
-			}
-			myleg->Draw("same"); 
-			gPad->Update();
-			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
-			TLatex lat;
-			lat.SetNDC();
-			lat.SetTextSize(0.04);
-			lat.SetTextFont(42);
-			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
-
-			return;
-		}
-		void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string ytit){
-			can->cd();
-			can->SetGridx(1);
-			can->SetGridy(1);
-			hist->SetTitle("");
-			hist->UseCurrentStyle();
-			hist->SetStats(false);
-			hist->GetXaxis()->CenterTitle(true);
-			hist->GetXaxis()->SetTitle(xtit.c_str());
-			hist->GetYaxis()->CenterTitle(true);
-			hist->GetYaxis()->SetTitle(ytit.c_str());
-			hist->Draw();
-			
-			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
-			TLatex lat;
-			lat.SetNDC();
-			lat.SetTextSize(0.04);
-			lat.SetTextFont(42);
-			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
-
-			return;
-		}
-		
-
-
-		void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string title = ""){
-			can->cd();
-			//can->SetGridx(1);
-			//can->SetGridy(1);
-			hist->SetTitle("");
-			hist->UseCurrentStyle();
-			hist->SetStats(false);
-			hist->GetXaxis()->CenterTitle(true);
-			hist->GetXaxis()->SetTitle(xtit.c_str());
-			hist->GetYaxis()->CenterTitle(true);
-			hist->GetYaxis()->SetTitle(ytit.c_str());
-			hist->Draw("colz");
-			
-			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label+" "+title;
-			TLatex lat;
-			lat.SetNDC();
-			lat.SetTextSize(0.04);
-			lat.SetTextFont(42);
-			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
-
-			return;
-		}
-
-
-		void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
-			//insert to find max, min
-			int N = (int)hists.size();
-			if(N < 1){ ymax = 0; ymin = 0; return; }
-			ymax = -999;
-			ymin = 999;
-			for(int i = 0; i < N; i++){
-				if(hists[i]->GetMaximum() > ymax) ymax = hists[i]->GetMaximum();
-				if(hists[i]->GetMinimum() < ymin) ymin = hists[i]->GetMinimum();
-
-			}		
-
-		}
-
-
+		void SetTimeSmear(bool t){ _timesmear = t; }
+		bool _timesmear;
 
 
 };

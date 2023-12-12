@@ -43,12 +43,16 @@ class PhotonSkimmer : public BaseSkimmer{
 			plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
 			sig.ids = {22};
 			plotCats.push_back(sig);
+		
 			//notSunm
 			plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
 			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
 			notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
-			//notSunm.ids = {29, -1}; 
 			plotCats.push_back(notSunm);
+
+			//data
+			plotCat data(_hists1D, _hists2D, "JetHT", "JetHT");
+			data.ids = {-999};
 
 		}
 	
@@ -64,10 +68,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					if(pc.hists1D[i][j] == nullptr) continue;
 					name = pc.hists1D[i][j]->GetName();
 					if(pc.hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
-					TCanvas* cv = new TCanvas((name).c_str(), "");
-					TDRHist(pc.hists1D[i][j], cv, name, name, "a.u.");	
-					cv->Write();
-					//or instead write hist here
+					pc.hists1D[i][j]->Write();
 				}
 			}
 		}
@@ -86,9 +87,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					xname = pc.hists2D[i][j]->GetXaxis()->GetTitle();
 					yname = pc.hists2D[i][j]->GetYaxis()->GetTitle();
 					if(pc.hists2D[i][j]->GetEntries() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
-					TCanvas* cv = new TCanvas((name).c_str(), "");
-					TDR2DHist(pc.hists2D[i][j], cv, xname, yname, pc.plotName);
-					cv->Write();
+					pc.hists2D[i][j]->Write();
 				}
 			}
 
@@ -109,10 +108,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int j = 0; j < (int)_hists1D.size(); j++){
 				//cout << "var: " << _hists1D[j]->GetName() << endl;
 				//lead, not lead, etc.
+				name = _hists1D[j]->GetName();
+				TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
+				dir->cd(); 
 				for(int i = 0; i < nhistCats; i++){
 					if(pcs[0].hists1D[i][j] == nullptr) continue;
 					//needs to be reset for each category
-					name = _hists1D[j]->GetName();
+					//name = _hists1D[j]->GetName();
 					if(!pcs[0].histcatnames[i].empty()) name += "_"+pcs[0].histcatnames[i];
 					//cout << "	category: " << pcs[0].histcatnames[i] << endl; 
 					hists.clear();
@@ -122,17 +124,10 @@ class PhotonSkimmer : public BaseSkimmer{
 						if(pcs[k].hists1D[i][j] == nullptr) continue;
 						if(pcs[k].hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
 			//			cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
-						hists.push_back(pcs[k].hists1D[i][j]);			
-						id_names.push_back(pcs[k].legName);
+						pcs[k].hists1D[i][j]->Write();
+						//hists.push_back(pcs[k].hists1D[i][j]);			
+						//id_names.push_back(pcs[k].legName);
 					}
-					if(hists.size() < 1) continue;
-					FindListHistBounds(hists, ymin, ymax);
-					TCanvas* cv_stack = new TCanvas((name+"_stack").c_str(), "");
-					TDRMultiHist(hists, cv_stack, name, name, "a.u.",ymin, ymax, id_names);
-					//cout << "wrote new stack: " << name+"_stack" << endl;
-					//write cv to file			
-					cv_stack->Write();
-					//or write hist here	
 				}
 			}
 			
@@ -183,7 +178,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
 			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead, phi2D;
-			double v_x, v_y, v_z;
+			double v_x, v_y, v_z, ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
@@ -210,10 +205,19 @@ class PhotonSkimmer : public BaseSkimmer{
 				pc = params["mean"].at(1,0);
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
-		
+	
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				lead_eigenvec = eigenvecs[2];			
+
+				e_var = params["cov"].at(0,0);
+				p_var = params["cov"].at(1,1);
+				t_var = params["cov"].at(2,2);
+
+				ep_cov = params["cov"].at(1,0)/sqrt(e_var*p_var);
+				te_cov = params["cov"].at(2,0)/sqrt(t_var*e_var);
+				tp_cov = params["cov"].at(2,1)/sqrt(t_var*p_var);
+
 
 				//eta - time sign convention
 				//define relative sign for eta and time components
@@ -223,8 +227,12 @@ class PhotonSkimmer : public BaseSkimmer{
 						//time sign does NOT match eta sign
 						//flip eta sign
 						eigenvecs[i].SetEntry(-eigenvecs[i].at(0,0),0,0);	
+						plotCats[id_idx].hists1D[0][21]->Fill(sqrt(t_var));
 					}
 					//else time sign matches eta sign
+					else{
+						plotCats[id_idx].hists1D[0][20]->Fill(sqrt(t_var));
+					}
 				}
 
 				v_x = lead_eigenvec.at(0,0);	
@@ -235,22 +243,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
 				theta = acos( v_z / r );
 				//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
-				phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				//phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				phi = atan2( v_y , v_x  );
 				if(signbit(v_y)) phi *= -1;
-				//if(id_idx == 0){
-				//	if(fabs(tc) > 15 && pi < 0.1) cout << "\n tail event here - cluster " << k << " has time " << tc << " ns and MM coeff " << pi << endl;
-				//	if(phi > -1.8 && phi < -1.6 && model->GetData()->GetNPoints() > 15){
-				//		cout << "\n az peak event here - cluster " << k << " has az angle: " << phi << " and theta: " << theta <<endl;
-				//		for(int i = 0; i < 3; i++) cout << "\ni: " << i << " eigenval: " << eigenvals[i] << endl;
-				//		cout << "eigenvec 0" << endl;
-				//		eigenvecs[0].Print();
-				//		cout << "eigenvec 1" << endl;
-				//		eigenvecs[1].Print();
-				//		cout << "eigenvec 2" << endl;
-				//		lead_eigenvec.Print();
-
-				//	}
-				//}
 				//rotundity - 3D
 				rot3D = 0;
 				for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
@@ -273,7 +268,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				v_x = lead_eigenvec_space.at(0,0);	
 				v_y = lead_eigenvec_space.at(1,0);	
 				//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
-				phi2D = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
+				phi2D = atan2( v_y , v_x  );
 				if(signbit(v_y)) phi2D *= -1;
 				
 
@@ -304,13 +299,19 @@ class PhotonSkimmer : public BaseSkimmer{
 				//cluster E
 				plotCats[id_idx].hists1D[0][14]->Fill(E_tot);
 				//get variances
-				plotCats[id_idx].hists1D[0][15]->Fill(sqrt(params["cov"].at(0,0)));
-				plotCats[id_idx].hists1D[0][16]->Fill(sqrt(params["cov"].at(1,1)));
-				plotCats[id_idx].hists1D[0][17]->Fill(sqrt(params["cov"].at(2,2)));
+				plotCats[id_idx].hists1D[0][15]->Fill(sqrt(e_var));
+				plotCats[id_idx].hists1D[0][16]->Fill(sqrt(p_var));
+				plotCats[id_idx].hists1D[0][17]->Fill(sqrt(t_var));
 				//fractional E
 				plotCats[id_idx].hists1D[0][18]->Fill(E_k/E_tot);
 				//"azimuth" angle in 2D (angle from x axis)
 				plotCats[id_idx].hists1D[0][19]->Fill(phi2D);
+				//covariances
+				plotCats[id_idx].hists1D[0][22]->Fill(ep_cov);
+				plotCats[id_idx].hists1D[0][23]->Fill(te_cov);
+				plotCats[id_idx].hists1D[0][24]->Fill(tp_cov);
+
+
 	
 				//2D hists
 				plotCats[id_idx].hists2D[0][0]->Fill(tc, E_k);
@@ -324,11 +325,17 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[0][8]->Fill(rot3D,E_k);
 				plotCats[id_idx].hists2D[0][9]->Fill(norms[k], E_k);
 				plotCats[id_idx].hists2D[0][11]->Fill(nclusters, pi);
-				plotCats[id_idx].hists2D[0][12]->Fill(sqrt(params["cov"].at(0,0)), sqrt(params["cov"].at(1,1)));
-				plotCats[id_idx].hists2D[0][13]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(0,0)));
-				plotCats[id_idx].hists2D[0][14]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(1,1)));
+				plotCats[id_idx].hists2D[0][12]->Fill(sqrt(e_var), sqrt(p_var));
+				plotCats[id_idx].hists2D[0][13]->Fill(sqrt(t_var), sqrt(e_var));
+				plotCats[id_idx].hists2D[0][14]->Fill(sqrt(t_var), sqrt(p_var));
 				plotCats[id_idx].hists2D[0][15]->Fill(E_k/E_tot, pi);
 				plotCats[id_idx].hists2D[0][16]->Fill(nclusters, E_k/E_tot);
+				plotCats[id_idx].hists2D[0][17]->Fill(sqrt(t_var), tc);
+				plotCats[id_idx].hists2D[0][18]->Fill(rot2D, phi2D);
+				plotCats[id_idx].hists2D[0][19]->Fill(sqrt(t_var), E_k/E_tot);
+				plotCats[id_idx].hists2D[0][20]->Fill(sqrt(t_var), E_tot);
+				plotCats[id_idx].hists2D[0][21]->Fill(sqrt(te_cov), E_tot);
+				plotCats[id_idx].hists2D[0][22]->Fill(sqrt(tp_cov), E_tot);
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
@@ -358,13 +365,23 @@ class PhotonSkimmer : public BaseSkimmer{
 					//cluster E
 					plotCats[id_idx].hists1D[1][14]->Fill(E_tot);
 					//get variances
-					plotCats[id_idx].hists1D[1][15]->Fill(sqrt(params["cov"].at(0,0)));
-					plotCats[id_idx].hists1D[1][16]->Fill(sqrt(params["cov"].at(1,1)));
-					plotCats[id_idx].hists1D[1][17]->Fill(sqrt(params["cov"].at(2,2)));
+					plotCats[id_idx].hists1D[1][15]->Fill(sqrt(e_var));
+					plotCats[id_idx].hists1D[1][16]->Fill(sqrt(p_var));
+					plotCats[id_idx].hists1D[1][17]->Fill(sqrt(t_var));
 					//fractional E
 					plotCats[id_idx].hists1D[1][18]->Fill(E_k/E_tot);
 					//"azimuth" angle in 2D (angle from x axis)
 					plotCats[id_idx].hists1D[1][19]->Fill(phi2D);
+					if(ec < 0){
+						plotCats[id_idx].hists1D[1][21]->Fill(sqrt(t_var));
+					}
+					//else time sign matches eta sign
+					else{
+						plotCats[id_idx].hists1D[1][20]->Fill(sqrt(t_var));
+					}
+					plotCats[id_idx].hists1D[1][22]->Fill(ep_cov);
+					plotCats[id_idx].hists1D[1][23]->Fill(te_cov);
+					plotCats[id_idx].hists1D[1][24]->Fill(tp_cov);
 			
 					//2D[1] hists
 					plotCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
@@ -379,11 +396,17 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[1][8]->Fill(rot3D,E_k);
 					plotCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
 					plotCats[id_idx].hists2D[1][11]->Fill(nclusters, pi);
-					plotCats[id_idx].hists2D[1][12]->Fill(params["cov"].at(0,0), params["cov"].at(1,1));
-					plotCats[id_idx].hists2D[1][13]->Fill(params["cov"].at(2,2), params["cov"].at(0,0));
-					plotCats[id_idx].hists2D[1][14]->Fill(params["cov"].at(2,2), params["cov"].at(1,1));
+					plotCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
+					plotCats[id_idx].hists2D[1][13]->Fill(t_var, e_var);
+					plotCats[id_idx].hists2D[1][14]->Fill(t_var, p_var);
 					plotCats[id_idx].hists2D[1][15]->Fill(E_k/E_tot, pi);
 					plotCats[id_idx].hists2D[1][16]->Fill(nclusters, E_k/E_tot);
+					plotCats[id_idx].hists2D[1][17]->Fill(sqrt(t_var), tc);
+					plotCats[id_idx].hists2D[1][18]->Fill(rot2D, phi2D);
+					plotCats[id_idx].hists2D[1][19]->Fill(sqrt(t_var), E_k/E_tot);
+					plotCats[id_idx].hists2D[1][20]->Fill(sqrt(t_var), E_tot);
+					plotCats[id_idx].hists2D[1][21]->Fill(sqrt(te_cov), E_tot);
+					plotCats[id_idx].hists2D[1][22]->Fill(sqrt(tp_cov), E_tot);
 				}
 
 
@@ -416,13 +439,23 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[2][14]->Fill(E_tot);
 					
 					//get variances
-					plotCats[id_idx].hists1D[2][15]->Fill(sqrt(params["cov"].at(0,0)));
-					plotCats[id_idx].hists1D[2][16]->Fill(sqrt(params["cov"].at(1,1)));
-					plotCats[id_idx].hists1D[2][17]->Fill(sqrt(params["cov"].at(2,2)));
+					plotCats[id_idx].hists1D[2][15]->Fill(sqrt(e_var));
+					plotCats[id_idx].hists1D[2][16]->Fill(sqrt(p_var));
+					plotCats[id_idx].hists1D[2][17]->Fill(sqrt(t_var));
 					//fractional E
 					plotCats[id_idx].hists1D[2][18]->Fill(E_k/E_tot);
 					//"azimuth" angle in 2D (angle from x axis)
 					plotCats[id_idx].hists1D[2][19]->Fill(phi2D);
+					if(ec < 0){
+						plotCats[id_idx].hists1D[2][21]->Fill(sqrt(t_var));
+					}
+					//else time sign matches eta sign
+					else{
+						plotCats[id_idx].hists1D[2][20]->Fill(sqrt(t_var));
+					}
+					plotCats[id_idx].hists1D[2][22]->Fill(ep_cov);
+					plotCats[id_idx].hists1D[2][23]->Fill(te_cov);
+					plotCats[id_idx].hists1D[2][24]->Fill(tp_cov);
 			
 					//2D[2] hists
 					plotCats[id_idx].hists2D[2][0]->Fill(tc, E_k);
@@ -436,11 +469,18 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[2][8]->Fill(rot3D,E_k);
 					plotCats[id_idx].hists2D[2][9]->Fill(norms[k], E_k);
 					plotCats[id_idx].hists2D[2][11]->Fill(nclusters, pi);
-					plotCats[id_idx].hists2D[2][12]->Fill(sqrt(params["cov"].at(0,0)), sqrt(params["cov"].at(1,1)));
-					plotCats[id_idx].hists2D[2][13]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(0,0)));
-					plotCats[id_idx].hists2D[2][14]->Fill(sqrt(params["cov"].at(2,2)), sqrt(params["cov"].at(1,1)));
+					plotCats[id_idx].hists2D[2][12]->Fill(sqrt(e_var), sqrt(p_var));
+					plotCats[id_idx].hists2D[2][13]->Fill(sqrt(t_var), sqrt(e_var));
+					plotCats[id_idx].hists2D[2][14]->Fill(sqrt(t_var), sqrt(p_var));
 					plotCats[id_idx].hists2D[2][15]->Fill(E_k/E_tot, pi);
 					plotCats[id_idx].hists2D[2][16]->Fill(nclusters, E_k/E_tot);
+					plotCats[id_idx].hists2D[2][17]->Fill(sqrt(t_var), tc);
+					plotCats[id_idx].hists2D[2][18]->Fill(rot2D, phi2D);
+					plotCats[id_idx].hists2D[2][19]->Fill(sqrt(t_var), E_k/E_tot);
+					plotCats[id_idx].hists2D[2][20]->Fill(sqrt(t_var), E_tot);
+					plotCats[id_idx].hists2D[2][21]->Fill(sqrt(te_cov), E_tot);
+					plotCats[id_idx].hists2D[2][22]->Fill(sqrt(tp_cov), E_tot);
+
 
 				}
 

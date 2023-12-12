@@ -93,19 +93,19 @@ void PhotonSkimmer::Skim(){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
+			if(rhs.size() < 1){ continue; }
 		cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
 			//set time resolution smearing
-			algo->SetTimeResSmear(tres_c, tres_n);
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(0);
 			
-			if(rhs.size() < 1){ continue; }
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 			
@@ -120,16 +120,14 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
 						FillModelHists(gmm, i);
-						//if(i != 0) break;
+						plotCats[i].hists1D[0][25]->Fill(_base->Photon_energy->at(p));
 					}
 				}
 			}
-			objE->Fill(_base->Photon_energy->at(p));
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
 		}
 	}
 	cout << "\n" << endl;
-	ofile->WriteTObject(objE);
 	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
 

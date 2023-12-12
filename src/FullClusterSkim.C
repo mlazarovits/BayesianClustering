@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 	double emAlpha = 0.5;
 	int verb = 0;
 	bool weighted = true;
-	bool smeared = true;
+	bool nosmear = false;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -99,8 +99,8 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--weight", 8) == 0){
     	 		weighted = false;
    		}
-		if(strncmp(argv[i],"--smear", 7) == 0){
-    	 		smeared = false;
+		if(strncmp(argv[i],"--NoTimeSmear", 11) == 0){
+    	 		nosmear = true;
    		}
 		if(strncmp(argv[i],"--dist", 6) == 0){
     	 		distconst = false;
@@ -145,9 +145,9 @@ int main(int argc, char *argv[]){
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --NoSmear                     smears data according to preset covariance (default = true)" << endl;
-   		cout << "   --NoWeight                    weights data points (default = true)" << endl;
-   		cout << "   --NoDist                      clusters must be within pi/2 in phi (default = true)" << endl;
+   		cout << "   --NoTimeSmear                 turns off smearing data in time dimension (default = false)" << endl;
+   		cout << "   --NoWeight                    turns off weighting data points (default = false)" << endl;
+   		cout << "   --NoDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -251,9 +251,9 @@ int main(int argc, char *argv[]){
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
+		skimmer.SetCMSLabel(cmslab);
 		if(in_file.find("JetHT") != string::npos)
 			skimmer.SetData(true);
-		skimmer.SetCMSLabel(cmslab);
 		if(strat == 2) 
 			skimmer.GMMOnly();
 		else
@@ -262,12 +262,14 @@ int main(int argc, char *argv[]){
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
+		skimmer.SetTimeSmear(!nosmear);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
 	else if(obj == 1){
 		cout << "photons" << endl;
 		PhotonSkimmer skimmer(file);
+		skimmer.SetCMSLabel(cmslab);
 		bool data;
 		if(in_file.find("SIM") != string::npos)
 			data = false;
@@ -279,8 +281,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTransferFactor(gev);
         	//skimmer.SetDebug(debug);
 		//set EMalpha
-        	skimmer.SetCMSLabel(cmslab);
 		skimmer.SetEventRange(evti,evtj);
+		skimmer.SetTimeSmear(!nosmear);
         	skimmer.Skim();
 	}
         return 0;
