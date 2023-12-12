@@ -200,8 +200,8 @@ int main(int argc, char *argv[]){
 	}
 	else{
 		if(oname != "")
-			fname = "plots/"+fname+"Skim_"+oname;
-		else fname = "plots/"+fname+"Skim";
+			fname = "skims/"+fname+"Skim_"+oname;
+		else fname = "skims/"+fname+"Skim";
 		string a_string;
 		std::stringstream stream;
 		stream << std::fixed << std::setprecision(3) << alpha;
