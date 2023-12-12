@@ -177,7 +177,12 @@ int main(int argc, char *argv[]){
 	else{
 		in_file = "BDSIM";
 	} 
-	
+
+
+	if(gSystem->AccessPathName(in_file.c_str())){
+		cout << "Error: file " << in_file << " not found." << endl;
+		return -1;
+	}	
 
 	string fname;
 	if(obj == 0)
