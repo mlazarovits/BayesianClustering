@@ -32,6 +32,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
 
 		//Jet selection
 		if(nrhs < 2) continue;
+		//if(nrhs < 25) continue;
                 if(_base->Jet_pt->at(j) < 30.) continue;
                 if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
 
