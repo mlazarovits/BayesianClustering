@@ -31,8 +31,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                 nrhs = _base->Jet_drRhIds->at(j).size();
 
 		//Jet selection
-		if(nrhs < 2) continue;
-		//if(nrhs < 25) continue;
+		//if(nrhs < 2) continue;
+		if(nrhs < 25) continue;
                 if(_base->Jet_pt->at(j) < 30.) continue;
                 if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
 
@@ -55,7 +55,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
                                 JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
                                 rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
