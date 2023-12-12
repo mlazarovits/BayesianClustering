@@ -234,6 +234,10 @@ class JetSkimmer : public BaseSkimmer{
 			it_idx++;
 			outjets.second = it->second;
 			outjets.second.SetUserIdx(it_idx->second);
+			//if needing to find "true" pair
+			//calculate dphi here
+			//if dphi doesn't satisfy back-to-back pi requirement (see below) check next two jets (ie it->second and it++; it->second;)
+			//continue until pair is found
 
 		}
 		void FillTimeRes(TimeStrategy timeStrategy, const pair<Jet,Jet>& jets, const pair<GaussianMixture*,GaussianMixture*>& models = std::make_pair(nullptr,nullptr)){
