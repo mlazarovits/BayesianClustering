@@ -80,7 +80,7 @@ def generateSubmission(args):
 	eventnums = SH.eventsSplit(inputFile, args.split)
 	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)
 	if(args.noTimeSmear):
-		flags += '--noTimeSmear'
+		flags += ' --noTimeSmear'
 
 	##### Create condor submission script in src directory #####
 	condorSubmitFile = dirname + "/src/submit.sh"
