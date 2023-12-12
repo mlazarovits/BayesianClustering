@@ -216,8 +216,39 @@ class JetSkimmer : public BaseSkimmer{
 		void FillPVHists_TrueJets(const vector<Jet>& jets){
 			int njets = (int)jets.size(); 
 			double pi = acos(-1);
-			double dphi, phi1, phi2;
-			//find pairs of jets to calculate resolution	
+			double dphi, phi1, phi2, time;
+			vector<double> times;
+			for(int i = 0; i < njets; i++){
+				//fill pv time histograms
+				//mm average over subclusters
+				time = CalcMMAvgTime(models[i]);
+				times.push_back(time);
+				pt_idx[jets[i].pt()] = i;
+				PVtime_median->Fill( CalcMedianTime(models[i]) );
+				PVtime_eAvg->Fill( CalcEnergyAvgTime(models[i]) );
+			}
+			map<double,int>::reverse_iterator it = pt_idx.rbegin();	
+			jet1 = it->second;
+			it++;
+			jet2 = it->second;
+			pT_twoHardJets->Fill(jets[jet1].pt());
+			pT_twoHardJets->Fill(jets[jet2].pt());
+			//not needed for GMSB
+			if(_data){
+				//dphi within [pi-0.1,pi+0.1]
+				phi1 = jets[jet1].phi_02pi();
+				phi2 = jets[jet2].phi_02pi();
+				dphi = fabs(phi1 - phi2);
+				if(dphi < pi-0.1 || dphi > pi+0.1) return;
+			}
+			double dtime = times[jet1] - times[jet2];
+			//fill pv time difference histograms
+			//mm average over subclusters
+			PVtimeDiff_mmAvg->Fill( dtime );
+
+
+
+	//find pairs of jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
@@ -270,7 +301,6 @@ class JetSkimmer : public BaseSkimmer{
 			jet2 = it->second;
 			pT_twoHardJets->Fill(jets[jet1].pt());
 			pT_twoHardJets->Fill(jets[jet2].pt());
-			double dtime = times[jet1] - times[jet2];
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]
@@ -279,6 +309,7 @@ class JetSkimmer : public BaseSkimmer{
 				dphi = fabs(phi1 - phi2);
 				if(dphi < pi-0.1 || dphi > pi+0.1) return;
 			}
+			double dtime = times[jet1] - times[jet2];
 			//fill pv time difference histograms
 			//mm average over subclusters
 			PVtimeDiff_mmAvg->Fill( dtime );
