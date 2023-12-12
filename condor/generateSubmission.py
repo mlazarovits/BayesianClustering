@@ -45,29 +45,28 @@ def generateSubmission(args):
 	        print("Invalid strategy",args.strategy,"specified")
 	        exit()
 	
-	print "Skimming for",objName,"in file",inputFile,"with strategy",strategyName 
-	
+	printstring = "Skimming for "+objName+" in file "+inputFile
+	if(objName == "jets"):
+		printstring += " with strategy "+strategyName 
+	print printstring
 	
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
 	#find .root and then find the / before that (if it exists) - everything in between is the file name
 	sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
 	sampleNameShort = sampleName[ : sampleName.find("_") ]
-	
-	dirname = ""
-	ofilename = ""
+
+	dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
+	ofilename = sampleNameShort+"_"+objName
 	if(objName == "jets"):
-	        dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName+"/"+strategyName
-	        ofilename = sampleNameShort+"_"+objName+"_"+strategyName
+		dirname += "/"+strategyName
+		ofilename += "_"+strategyName
 	#strategy doesn't apply to photons (GMM only)
-	else:
-	        dirname = odir+"/"+sampleNameShort+"/"+sampleName+"/"+objName
-	        ofilename = dirname+"/out/"+sampleNameShort+"_"+objName
 
 	if args.output is not None:
 		ofilename = ofilename+"_"+args.output 
 		dirname = dirname+"_"+args.output
 	ofilename = "condor_"+ofilename
-	
+
 	print("Preparing sample directory: {0}".format(dirname))
 	##### Create a workspace (remove existing directory) #####
 	if os.path.exists(dirname):
@@ -80,6 +79,8 @@ def generateSubmission(args):
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
 	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)
+	if(args.noTimeSmear):
+		flags += '--noTimeSmear'
 
 	##### Create condor submission script in src directory #####
 	condorSubmitFile = dirname + "/src/submit.sh"
@@ -113,6 +114,7 @@ def main():
 	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
 	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
 	parser.add_argument('--gev',help='energy transfer factor',default=1./30.)
+	parser.add_argument('--noTimeSmear',help="turn off time smearing",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
