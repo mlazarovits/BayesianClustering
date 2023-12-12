@@ -20,7 +20,13 @@ class JetSkimmer : public BaseSkimmer{
 		//get rechits from file to cluster
 		JetSkimmer(TFile* file);
 		//ctor from rec hit collection - integrating into ntuplizer
-		
+
+
+		enum TimeStrategy{
+			med = 0, 
+			eavg = 1, 
+			mmavg = 2
+		};		
 		
 		void Skim();
 		void GMMOnly(){ _mmonly = true; }
@@ -212,107 +218,88 @@ class JetSkimmer : public BaseSkimmer{
 			}
 
 		}
-		//find back to back jets
-		void FillPVHists_TrueJets(const vector<Jet>& jets){
-			int njets = (int)jets.size(); 
-			double pi = acos(-1);
-			double dphi, phi1, phi2, time;
-			vector<double> times;
+		void FindHardestJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
+			int njets = (int)injets.size(); 
+			map<double,Jet> pt_jet;
+			map<double, int> pt_idx;
 			for(int i = 0; i < njets; i++){
-				//fill pv time histograms
-				//mm average over subclusters
-				time = CalcMMAvgTime(models[i]);
-				times.push_back(time);
-				pt_idx[jets[i].pt()] = i;
-				PVtime_median->Fill( CalcMedianTime(models[i]) );
-				PVtime_eAvg->Fill( CalcEnergyAvgTime(models[i]) );
+				pt_jet[injets[i].pt()] = injets[i];
+				pt_idx[injets[i].pt()] = i;
 			}
-			map<double,int>::reverse_iterator it = pt_idx.rbegin();	
-			jet1 = it->second;
+			map<double,Jet>::reverse_iterator it = pt_jet.rbegin();	
+			map<double,int>::reverse_iterator it_idx = pt_idx.rbegin();	
+			outjets.first = it->second;
+			outjets.first.SetUserIdx(it_idx->second);
 			it++;
-			jet2 = it->second;
-			pT_twoHardJets->Fill(jets[jet1].pt());
-			pT_twoHardJets->Fill(jets[jet2].pt());
+			it_idx++;
+			outjets.second = it->second;
+			outjets.second.SetUserIdx(it_idx->second);
+
+		}
+		void FillTimeRes(TimeStrategy timeStrategy, const pair<Jet,Jet>& jets, const pair<GaussianMixture*,GaussianMixture*>& models = std::make_pair(nullptr,nullptr)){
+			double pi = acos(-1);
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]
-				phi1 = jets[jet1].phi_02pi();
-				phi2 = jets[jet2].phi_02pi();
-				dphi = fabs(phi1 - phi2);
+				double phi1 = jets.first.phi_02pi();
+				double phi2 = jets.second.phi_02pi();
+				double dphi = fabs(phi1 - phi2);
 				if(dphi < pi-0.1 || dphi > pi+0.1) return;
 			}
-			double dtime = times[jet1] - times[jet2];
-			//fill pv time difference histograms
-			//mm average over subclusters
-			PVtimeDiff_mmAvg->Fill( dtime );
-
-
-
-	//find pairs of jets to calculate resolution	
-			//need to be back to back
-			//time of subclusters is measured as center
-			for(int i = 0; i < njets; i++){
-				phi1 = jets[i].phi_02pi();
-				//fill pv time histograms
-				//median time
-				PVtime_median->Fill( CalcMedianTime(jets[i]));
-				//energy-weighted average
-				PVtime_eAvg->Fill( CalcEAvgTime(jets[i]));	
-				for(int j = i+1; j < njets; j++){
-					phi2 = jets[j].phi_02pi();
-					//dphi within [pi-0.1,pi+0.1]
-					dphi = fabs(phi1 - phi2);
-					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
-					//fill pv time difference histograms
-					//median time
-					PVtimeDiff_median->Fill( CalcMedianTime(jets[i]) - CalcMedianTime(jets[j]) );
-					//energy-weighted average
-					PVtimeDiff_eAvg->Fill( CalcEAvgTime(jets[i]) - CalcEAvgTime(jets[j]) );	
-				}
+			double dtime;
+			if(timeStrategy == 0){	
+				dtime = CalcMedianTime(jets.first) - CalcMedianTime(jets.second);
+				PVtimeDiff_median->Fill(dtime);
+			}
+			else if(timeStrategy == 1){	
+				dtime = CalcEAvgTime(jets.first) - CalcEAvgTime(jets.second);
+				PVtimeDiff_eAvg->Fill(dtime);
+			}
+			else if(timeStrategy == 2){	
+				dtime = CalcMMAvgTime(models.first) - CalcMMAvgTime(models.second);
+			if(fabs(dtime) < 1e-5) cout << "MM avg time difference: " << dtime << " jets chosen " << jets.first.GetUserIdx() << " and " << jets.second.GetUserIdx() << endl;
+				PVtimeDiff_mmAvg->Fill(dtime);
+			}
+			else{
+				cout << "Error: strategy not recognized. Available time reco strategies are 0 (median), 1 (energy average), or 2 (GMM coefficient weighted averge)" << endl;
+				return;
 			}
 
 		}
+
+	
+
 		//find back to back jets
+		void FillPVHists_TrueJets(const vector<Jet>& jets){
+			int njets = (int)jets.size(); 
+			for(int i = 0; i < njets; i++){
+				PVtime_median->Fill( CalcMedianTime(jets[i]) );
+				PVtime_eAvg->Fill( CalcEAvgTime(jets[i]) );
+			}
+			if(njets < 2) return;
+			pair<Jet,Jet> hardjets;
+			FindHardestJetPair(jets, hardjets);
+			pT_twoHardJets->Fill(hardjets.first.pt());
+			pT_twoHardJets->Fill(hardjets.second.pt());
+			FillTimeRes(med, hardjets);
+			FillTimeRes(eavg, hardjets);
+		}
 		void FillPVHists_MMOnlyJets(const vector<Jet>& jets, const vector<GaussianMixture*>& models){
 			int njets = (int)jets.size();
 			if(njets != models.size()){ cout << njets << " jets and " << models.size() << " models" << endl; return;} 
-			double pi = acos(-1);
-			double time;
-			vector<double> times;
-			double dphi, phi1, phi2;
-			int jet1, jet2;
-			GaussianMixture model_i, model_j;
-			map<double,int> pt_idx;
 			//find hardest two jets to calculate resolution	
 			//need to be back to back
 			//time of subclusters is measured as center
 			for(int i = 0; i < njets; i++){
-				//fill pv time histograms
-				//mm average over subclusters
-				time = CalcMMAvgTime(models[i]);
-				times.push_back(time);
-				//jets[i].SetJetTime(time);
-				pt_idx[jets[i].pt()] = i;
-				PVtime_mmAvg->Fill( time );
+				PVtime_mmAvg->Fill( CalcMMAvgTime(models[i]) );
 			}
-			map<double,int>::reverse_iterator it = pt_idx.rbegin();	
-			jet1 = it->second;
-			it++;
-			jet2 = it->second;
-			pT_twoHardJets->Fill(jets[jet1].pt());
-			pT_twoHardJets->Fill(jets[jet2].pt());
-			//not needed for GMSB
-			if(_data){
-				//dphi within [pi-0.1,pi+0.1]
-				phi1 = jets[jet1].phi_02pi();
-				phi2 = jets[jet2].phi_02pi();
-				dphi = fabs(phi1 - phi2);
-				if(dphi < pi-0.1 || dphi > pi+0.1) return;
-			}
-			double dtime = times[jet1] - times[jet2];
-			//fill pv time difference histograms
-			//mm average over subclusters
-			PVtimeDiff_mmAvg->Fill( dtime );
+			if(njets < 2) return;
+			pair<Jet,Jet> hardjets;
+			pair<GaussianMixture*,GaussianMixture*> hardmodels;
+			FindHardestJetPair(jets, hardjets);
+			hardmodels.first = models[hardjets.first.GetUserIdx()];
+			hardmodels.second = models[hardjets.second.GetUserIdx()];
+			FillTimeRes(mmavg, hardjets, hardmodels);
 
 		}
 
