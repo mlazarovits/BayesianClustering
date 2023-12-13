@@ -30,7 +30,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		void Skim();
 		void GMMOnly(){ _mmonly = true; }
-
+		void SetTransferFactor(double gev){ _gev = gev; _prod->SetTransferFactor(_gev); }
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
@@ -51,7 +51,7 @@ class JetSkimmer : public BaseSkimmer{
 		//mm only time (from true jets)
 		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
 		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-20,20);	
+		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-10,10);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 
 
@@ -250,18 +250,33 @@ class JetSkimmer : public BaseSkimmer{
 				double dphi = fabs(phi1 - phi2);
 				if(dphi < pi-0.1 || dphi > pi+0.1) return;
 			}
-			double dtime;
+			double dtime, t1, t2;
 			if(timeStrategy == 0){	
-				dtime = CalcMedianTime(jets.first) - CalcMedianTime(jets.second);
+				t1 = CalcMedianTime(jets.first);
+				t2 = CalcMedianTime(jets.second);
+				dtime = t1 - t2;
+				cout << "Median - jets first time " << t1 << " jets second time " << t2 << endl;
+				cout << "Median dtime: " << dtime << endl;
+
 				PVtimeDiff_median->Fill(dtime);
 			}
 			else if(timeStrategy == 1){	
-				dtime = CalcEAvgTime(jets.first) - CalcEAvgTime(jets.second);
+				t1 = CalcEAvgTime(jets.first);
+				t2 = CalcEAvgTime(jets.second);
+				dtime = t1 - t2;
+				cout << "E-AVERAGE - jets first time " << t1 << " jets second time " << t2 << endl;
+				cout << "Eavg dtime: " << dtime << endl;
+				//if(fabs(dtime) < 1e-2) cout << "energy avg time difference: " << dtime << " jets chosen " << jets.first.GetUserIdx() << " and " << jets.second.GetUserIdx() << endl;
 				PVtimeDiff_eAvg->Fill(dtime);
+		cout << PVtimeDiff_eAvg->GetEntries() << " entries in pv time diff e-avg plot" << endl;
 			}
 			else if(timeStrategy == 2){	
-				dtime = CalcMMAvgTime(models.first) - CalcMMAvgTime(models.second);
-			if(fabs(dtime) < 1e-5) cout << "MM avg time difference: " << dtime << " jets chosen " << jets.first.GetUserIdx() << " and " << jets.second.GetUserIdx() << endl;
+				t1 = CalcMMAvgTime(models.first);
+				t2 = CalcMMAvgTime(models.second);
+
+				dtime = t1 - t2;
+				cout << "MM-AVERAGE - jets first time " << t1 << " jets second time " << t2 << endl;
+				cout << "MMavg dtime: " << dtime << endl;
 				PVtimeDiff_mmAvg->Fill(dtime);
 			}
 			else{
@@ -325,7 +340,8 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		double CalcEAvgTime(const Jet& j){
-			double t, norm;
+			double t = 0;
+			double norm = 0;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++){
@@ -341,7 +357,8 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcMMAvgTime(BasePDFMixture* model){
 			int kmax = model->GetNClusters();
 			double t = 0;
-			double pi, norm;
+			double pi = 0;
+			double norm = 0;
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
 				params = model->GetPriorParameters(k);
