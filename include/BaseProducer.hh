@@ -65,6 +65,16 @@ class BaseProducer{
 		double _gev;
 
 
+		double deltaR2(double e1, double p1, double e2, double p2){
+			double de = e1 - e2;
+			double dp = fabs(p1 - p2);
+			double pi = acos(-1);
+			if(dp > pi)
+				dp -= 2*pi;
+			return de*de + dp*dp;
+		}
+
+
 
 };
 #endif
