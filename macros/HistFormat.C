@@ -187,7 +187,7 @@ void HistFormat(string file){
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
-	string name;
+	string name, xtitle, ytitle;
 	string oname = f->GetName();
 	oname = oname.substr(0,oname.find(".root"));
 	oname = oname+"_formatted.root";
@@ -220,10 +220,12 @@ void HistFormat(string file){
 			TH2D* hist = (TH2D*)key->ReadObj();
 			if(hist){
 				name = hist->GetName();
+				xtitle = hist->GetXaxis()->GetTitle();
+				ytitle = hist->GetYaxis()->GetTitle();
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
 				//draw as tcanvases
-				TDR2DHist(hist, cv, name, name, cmslab);
+				TDR2DHist(hist, cv, xtitle, ytitle, cmslab);
 				cv->Write(); 
 			}
 		}
