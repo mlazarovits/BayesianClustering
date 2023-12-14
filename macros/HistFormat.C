@@ -144,6 +144,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 				else{
 					if(name.find("_"+type) == string::npos) continue;
 				}
+				hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 				for(int i = 0; i < procs.size(); i++){
 					if(name.find(procs[i]) != string::npos){
