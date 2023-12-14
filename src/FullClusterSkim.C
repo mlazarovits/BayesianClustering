@@ -98,12 +98,15 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--weight", 8) == 0){
     	 		weighted = false;
+			cout << "Turning off energy weighting." << endl;
    		}
-		if(strncmp(argv[i],"--NoTimeSmear", 11) == 0){
+		if(strncmp(argv[i],"--noTimeSmear", 11) == 0){
     	 		nosmear = true;
+			cout << "Turning off time smearing." << endl;
    		}
 		if(strncmp(argv[i],"--dist", 6) == 0){
     	 		distconst = false;
+			cout << "Turning off distance constraint." << endl;
    		}
 		if(strncmp(argv[i],"--strategy", 10) == 0){
     	 		i++;
@@ -282,7 +285,7 @@ int main(int argc, char *argv[]){
         	//skimmer.SetDebug(debug);
 		//set EMalpha
 		skimmer.SetEventRange(evti,evtj);
-		skimmer.SetTimeSmear(!nosmear);
+		skimmer.SetTimeSmear(false);
         	skimmer.Skim();
 	}
         return 0;

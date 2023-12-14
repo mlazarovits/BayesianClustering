@@ -40,7 +40,7 @@ class BaseSkimmer{
 			//_base->GetEntry(0);
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
-			_gev = 1;
+			_gev = 1/10.;
 			_data = false;
 			_debug = false;
 			_timesmear = true;
@@ -120,7 +120,7 @@ class BaseSkimmer{
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 		void SetOutfile(string fname){ _oname = fname; }
-		void SetTransferFactor(double gev){ _gev = gev; }
+		void SetTransferFactor(double gev){ _gev = gev; _prod->SetTransferFactor(_gev); }
 
 		vector<TH1D*> _hists1D;
 		//0 - # of subclusters
@@ -164,15 +164,15 @@ class BaseSkimmer{
 		//19 - azimuth angle in 2D
 		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-3.5,3.5);		
 		//20 - eta sigma for positive eta clusters
-                TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.09);
+                TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.06);
 		//21 - eta sigma for negative eta clusters
-                TH1D* etaSig_neg = new TH1D("etaSig_neg","etaSig_neg",25,0.01, 0.09);
+                TH1D* etaSig_neg = new TH1D("etaSig_neg","etaSig_neg",25,0.01, 0.06);
 		//22 - normalized covariance - eta/phi
-		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",25,0,0.01);
+		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",10,0,0.01);
 		//23 - normalized covariance - time/eta
-		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,0,0.01);
+		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",10,0,0.01);
 		//24 - normalized covariance - time/phi
-		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,0,0.01);
+		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",10,0,0.01);
 		//25 - object energy
 		TH1D* objE = new TH1D("objE","objE",50,0,100);
 
@@ -219,13 +219,13 @@ class BaseSkimmer{
 		//18 - 2d rotundity vs 2d az angle
 		TH2D* rot2D_az2D = new TH2D("rot2D_az2D","rot2D_az2D",50,0.4,1.1,50,-3.5,3.5);
 		//19 - time variation vs frac E
-		TH2D* timeSig_fracE = new TH2D("timeSig_fracE","timeSig_fracE",25,0,25,20,0.,1.1);
+		TH2D* timeSig_fracE = new TH2D("timeSig_fracE","timeSig_fracE;timeSig;fracE",25,0,25,20,0.,1.1);
 		//20 - time sigma vs total E
-		TH2D* timeSig_totE = new TH2D("timeSig_totE","timeSig_totE",25,0,25,20,0,2000);
+		TH2D* timeSig_totE = new TH2D("timeSig_totE","timeSig_totE;timeSig;totE",25,0,25,20,0,2000);
 		//21 - time-eta covariance vs total E
-		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE",25,0,25,20,0,2000);
+		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE;timeEtaCov;totE",10,0,25,20,0,2000);
 		//22 - time-phi covariance vs total E
-		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE",25,0,25,20,0,2000);
+		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE;timePhiCov;totE",10,0,25,20,0,2000);
 
 
 

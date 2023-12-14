@@ -1,5 +1,4 @@
 #include "JetSkimmer.hh"
-#include "JetProducer.hh"
 #include "Clusterizer.hh"
 #include "BayesCluster.hh"
 #include "Matrix.hh"
@@ -7,71 +6,6 @@
 #include <time.h>
 //#include <TH1D.h>
 #include <TH2D.h>
-
-JetSkimmer::JetSkimmer(){ 
-	_evti = 0;
-	_evtj = 0;
-	_mmonly = false;
-};
-
-
-
-JetSkimmer::~JetSkimmer(){ 
-}
-
-
-JetSkimmer::JetSkimmer(TFile* file) : BaseSkimmer(file){
-	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-	//tof = (d_rh-d_pv)/c
-	//in ntuplizer, stored as rh time
-
-	//grab rec hit values
-	//x, y, z, time (adjusted), energy, phi, eta
-	_prod = new JetProducer(file);
-	_base = _prod->GetBase();
-		//	_base = new ReducedBase(tree);
-	_nEvts = _base->fChain->GetEntries();
-	_evti = 0;
-	_evtj = _nEvts;
-	_oname = "plots/jet_skims_"+_cms_label+".root";
-	_mmonly = false;
-
-
-	//true jet hists
-	_hists1D.push_back(nTrueJets);
-	
-	//true jets pv times
-	_hists1D.push_back(PVtime_median);	
-	_hists1D.push_back(PVtime_eAvg);	
-	//time differences for back-to-back jets for time resolution
-	_hists1D.push_back(PVtimeDiff_median);	
-	_hists1D.push_back(PVtimeDiff_eAvg);	
-
-	//mm only jets
-	_hists1D.push_back(PVtime_mmAvg);	
-	_hists1D.push_back(PVtimeDiff_mmAvg);	
-	_hists1D.push_back(nSubClusters_mm);
-
-	//predicted jets pv times - from BHC
-	_hists1D.push_back(nClusters);
-	_hists1D.push_back(rhTime); 
-	_hists1D.push_back(comptime);
-	_hists1D.push_back(PVtime_median_pred);	
-	_hists1D.push_back(PVtime_eAvg_pred);	
-	_hists1D.push_back(PVtime_mmAvg_pred);	
-	//time differences for back-to-back jets for time resolution
-	_hists1D.push_back(PVtimeDiff_median_pred);	
-	_hists1D.push_back(PVtimeDiff_eAvg_pred);	
-	_hists1D.push_back(PVtimeDiff_mmAvg_pred);	
-	_hists2D.push_back(e_nRhs);
-	
-	nrhs_comptime->SetName("nrhs_comptime");
-        nrhs_comptime->SetTitle("nrhs_comptime");
-	graphs.push_back(nrhs_comptime);
-
-
-}
-
 
 
 //make cluster param histograms
@@ -119,9 +53,8 @@ void JetSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
-	int SKIP = 1;	
+	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i++){
-		_base->GetEntry(i);
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
@@ -135,7 +68,7 @@ void JetSkimmer::Skim(){
 		//fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i);
-		if(jets.size() < 1) continue;
+		if(jets.size() < 1){ cout << endl; continue; }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);

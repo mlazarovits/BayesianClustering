@@ -12,13 +12,97 @@
 using plotCat = BaseSkimmer::plotCat;
 class PhotonSkimmer : public BaseSkimmer{
 	public:
-		PhotonSkimmer();
-		virtual ~PhotonSkimmer();
+		PhotonSkimmer(){
+			_evti = 0;
+			_evtj = 0;
+			_isocuts = false;
+			_oskip = 10;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+		};
+		virtual ~PhotonSkimmer(){ };
 
 		//get rechits from file to cluster
-		PhotonSkimmer(TFile* file);
-		//ctor from rec hit collection - integrating into ntuplizer
-		
+		PhotonSkimmer(TFile* file) : BaseSkimmer(file){
+			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
+			//tof = (d_rh-d_pv)/c
+			//in ntuplizer, stored as rh time
+			_prod = new PhotonProducer(file);
+			_base = _prod->GetBase();
+			_nEvts = _base->fChain->GetEntries();
+			_evti = 0;
+			_evtj = _nEvts;
+			_oname = "plots/photon_skims_"+_cms_label+".root";
+			
+			_isocuts = false;
+			_oskip = 10;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			objE->SetTitle("phoE");
+			objE->SetName("phoE");
+			
+			objE_clusterE->SetTitle("phoE_clusterE");
+			objE_clusterE->SetName("phoE_clusterE");
+
+			//add photon specific histograms
+                        _hists1D.push_back(slope_space);
+                        _hists1D.push_back(slope_etaT);
+                        _hists1D.push_back(slope_phiT);
+                        _hists1D.push_back(polar_ang);
+                        _hists1D.push_back(azimuth_ang);
+                        _hists1D.push_back(e_subcl);
+                        _hists1D.push_back(rotundity_3D);
+                        _hists1D.push_back(rotundity_2D);
+                        _hists1D.push_back(velocity);
+                        _hists1D.push_back(eigen2D_ratio);
+                        _hists1D.push_back(clusterE);
+                        _hists1D.push_back(etaSig);
+                        _hists1D.push_back(phiSig);
+                        _hists1D.push_back(timeSig);
+                        _hists1D.push_back(fracE);
+                        _hists1D.push_back(azimuth_ang_2D);
+                        _hists1D.push_back(etaSig_pos);
+                        _hists1D.push_back(etaSig_neg);
+                        _hists1D.push_back(etaphi_cov);
+                        _hists1D.push_back(timeeta_cov);
+                        _hists1D.push_back(timephi_cov);
+			
+			_hists2D.push_back(time_E);
+                        _hists2D.push_back(az_E);
+                        _hists2D.push_back(rot2D_E);
+                        _hists2D.push_back(eta_phi);
+                        _hists2D.push_back(t_eta);
+                        _hists2D.push_back(t_phi);
+                        _hists2D.push_back(t_mixcoeff);
+                        _hists2D.push_back(E_mixcoeff);
+                        _hists2D.push_back(rot3D_E);
+                        _hists2D.push_back(npts_E);
+                        _hists2D.push_back(nsubcl_nrhs);
+                        _hists2D.push_back(nsubcl_mmcoeff);
+                        _hists2D.push_back(etaSig_phiSig);
+                        _hists2D.push_back(timeSig_etaSig);
+                        _hists2D.push_back(timeSig_phiSig);
+                        _hists2D.push_back(fracE_mmcoeff);
+                        _hists2D.push_back(nsubcl_fracE);
+                        _hists2D.push_back(timeSig_timeCenter);
+                        _hists2D.push_back(rot2D_az2D);
+                        _hists2D.push_back(timeSig_fracE);
+                        _hists2D.push_back(timeSig_totE);
+                        _hists2D.push_back(timeEtaCov_totE);
+                        _hists2D.push_back(timePhiCov_totE);
+			
+		};
+	
+
+
+
+
+
+
+
+	
 		void Skim();
 
 		void SetIsoCuts(){ _isocuts = true; }
@@ -74,7 +158,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 		void WritePlotCat2D(TFile* ofile, const plotCat& pc){
 			ofile->cd();
-			string xname, yname;
 			string name;
 			vector<vector<TH2D*>> hists2D = pc.hists2D;
 			//write 2D hists
@@ -84,8 +167,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					//write total hist to file
 					name = pc.hists2D[i][j]->GetName();
 					name += "2D";
-					xname = pc.hists2D[i][j]->GetXaxis()->GetTitle();
-					yname = pc.hists2D[i][j]->GetYaxis()->GetTitle();
+					pc.hists2D[i][j]->SetName(name.c_str());		
 					if(pc.hists2D[i][j]->GetEntries() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 					pc.hists2D[i][j]->Write();
 				}
@@ -157,7 +239,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 
 			WritePlotCat1D(ofile, plotCats[0]);
-			WritePlotCat2D(ofile, plotCats[0]);
+			for(int i = 0; i < (int)plotCats.size(); i++)
+				WritePlotCat2D(ofile, plotCats[i]);
 			vector<plotCat> id_cats(plotCats.begin()+1, plotCats.end());
 			WritePlotCatStack(ofile, id_cats);
 
@@ -227,11 +310,11 @@ class PhotonSkimmer : public BaseSkimmer{
 						//time sign does NOT match eta sign
 						//flip eta sign
 						eigenvecs[i].SetEntry(-eigenvecs[i].at(0,0),0,0);	
-						plotCats[id_idx].hists1D[0][21]->Fill(sqrt(t_var));
+						plotCats[id_idx].hists1D[0][21]->Fill(sqrt(e_var));
 					}
 					//else time sign matches eta sign
 					else{
-						plotCats[id_idx].hists1D[0][20]->Fill(sqrt(t_var));
+						plotCats[id_idx].hists1D[0][20]->Fill(sqrt(e_var));
 					}
 				}
 

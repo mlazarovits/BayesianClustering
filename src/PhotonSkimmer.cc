@@ -4,45 +4,6 @@
 
 #include <TFile.h>
 #include <TH2D.h>
-PhotonSkimmer::PhotonSkimmer(){ 
-	_evti = 0;
-	_evtj = 0;
-	_isocuts = false;
-	_oskip = 10;
-	_thresh = 1.;
-	_alpha = 0.1;
-	_emAlpha = 0.5;
-};
-
-
-
-PhotonSkimmer::~PhotonSkimmer(){ 
-}
-
-
-PhotonSkimmer::PhotonSkimmer(TFile* file) : BaseSkimmer(file){
-	//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-	//tof = (d_rh-d_pv)/c
-	//in ntuplizer, stored as rh time
-	_prod = new PhotonProducer(file);
-	_base = _prod->GetBase();
-		//	_base = new ReducedBase(tree);
-	_nEvts = _base->fChain->GetEntries();
-	_evti = 0;
-	_evtj = _nEvts;
-	_oname = "plots/photon_skims_"+_cms_label+".root";
-
-	_isocuts = false;
-	_oskip = 10;
-	_thresh = 1.;
-	_alpha = 0.1;
-	_emAlpha = 0.5;
-	objE->SetTitle("phoE");
-	objE->SetName("phoE");
-
-	objE_clusterE->SetTitle("phoE_clusterE");
-	objE_clusterE->SetName("phoE_clusterE");
-}
 
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
@@ -94,8 +55,8 @@ void PhotonSkimmer::Skim(){
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
 			if(rhs.size() < 1){ continue; }
-		cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
+			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
