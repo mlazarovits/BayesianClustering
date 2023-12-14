@@ -87,8 +87,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
 		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-30,30); 
 		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,2000);
-		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",100,0,100);
-		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",100,0,1000);
+		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",25,0,100);
+		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",25,0,600);
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		
 
@@ -136,6 +136,7 @@ class JetSkimmer : public BaseSkimmer{
 			int ijet = 0;
 			for(int j = 0; j < jets.size(); j++){
 				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
+				objE->Fill(jets[j].E());
 				TrueJet_pT->Fill(jets[j].pt());
 				TrueJet_nRhs->Fill(jets[j].GetNRecHits());
 				
