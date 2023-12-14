@@ -340,7 +340,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<double> eigenvals, eigenvals_space, norms;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
-			
+			Matrix 2Deigenmat = Matrix(3,3);		
+	
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
 			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead, phi2D;
@@ -434,6 +435,15 @@ class PhotonSkimmer : public BaseSkimmer{
 				phi2D = atan2( v_y , v_x  );
 				if(signbit(v_y)) phi2D *= -1;
 				
+				//2D rotated with 3D covariance
+				2Deigenmat = cov;
+				2Deigenmat.SetEntry(eigenvals_space[1],0,0);
+				2Deigenmat.SetEntry(eigenvals_space[0],1,1);
+				2Deigenmat.SetEntry(0,1,0);
+				2Deigenmat.SetEntry(0,0,1);
+
+				cout << "cov" << endl; cov.Print();
+				cout << "2d rotated cov" << endl; 2Deigenmat.Print();
 
 				//fill hists
 				//centers
