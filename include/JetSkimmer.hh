@@ -256,24 +256,7 @@ class JetSkimmer : public BaseSkimmer{
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				
-				//largest eigenvalue is last
-				//phi/eta
-				slope_space->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(0,0));
-        			//eta/time
-				slope_etaT->Fill(eigenvecs[2].at(0,0)/eigenvecs[2].at(2,0));
-				//phi/time
-				slope_phiT->Fill(eigenvecs[2].at(1,0)/eigenvecs[2].at(2,0));
-				//polar angle
-				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-				r = sqrt(eigenvecs[2].at(0,0)*eigenvecs[2].at(0,0) + eigenvecs[2].at(1,0)*eigenvecs[2].at(1,0) + eigenvecs[2].at(2,0)*eigenvecs[2].at(2,0));
-				theta = acos( eigenvecs[2].at(2,0) / r );
-				polar_ang->Fill(theta);
-				//azimuthal angle
-				//phi = arctan(y/x)
-				phi = atan2(eigenvecs[2].at(1,0) , eigenvecs[2].at(0,0));
-				azimuth_ang->Fill(phi);
-				
-				//average cluster energy
+				//total cluster energy
 				clusterE->Fill(E_k);
 			
 
