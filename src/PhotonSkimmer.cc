@@ -4,6 +4,7 @@
 
 #include <TFile.h>
 #include <TH2D.h>
+
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
 
@@ -26,8 +27,7 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(0.,2,2); //no smear in time	
 	double tres_c = 0.2;
-	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;
-	if(_timesmear) cout << "Smearing covariance in time with energy dependence." << endl;	
+	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;	
 
 	
 	vector<Jet> rhs;
@@ -37,10 +37,6 @@ void PhotonSkimmer::Skim(){
 	double sumE;
 
 
-//to check histogram indices
-//	for(int i = 0; i < _hists1D.size(); i++)
-//		cout << "i: " << i << " hist: " << _hists1D[i]->GetName() << endl;
-	
 	//set iso cuts
 	_prod->SetIsoCut();
 
@@ -59,8 +55,8 @@ void PhotonSkimmer::Skim(){
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
 			if(rhs.size() < 1){ continue; }
-		cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
+			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
@@ -85,7 +81,7 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = plotCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
 						FillModelHists(gmm, i);
-						plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+						plotCats[i].hists1D[0][25]->Fill(_base->Photon_energy->at(p));
 					}
 				}
 			}
