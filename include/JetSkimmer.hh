@@ -35,6 +35,9 @@ class JetSkimmer : public BaseSkimmer{
 			_evtj = _nEvts;
 			_oname = "plots/jet_skims_"+_cms_label+".root";
 			_mmonly = false;
+				
+			objE_clusterE->SetTitle("jetE_clusterE");
+			objE_clusterE->SetName("jetE_clusterE");
 			//true jet hists
 			_hists1D.push_back(nTrueJets);
 			_hists1D.push_back(PVtime_median);
