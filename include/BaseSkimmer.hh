@@ -87,7 +87,7 @@ class BaseSkimmer{
 		//3 - mean phi - center in phi
 		TH1D* phi_center = new TH1D("phi_center","phi_center",50,-3.5,3.5);
 		//4 - object energy
-		TH1D* objE = new TH1D("objE","objE",50,0,100);
+		TH1D* objE = new TH1D("objE","objE",50,0,1000);
 		//5 - cluster energy
 		TH1D* clusterE = new TH1D("clusterE","clusterE",10,0,1000);
 

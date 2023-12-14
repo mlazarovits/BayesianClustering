@@ -37,10 +37,10 @@ void PhotonSkimmer::Skim(){
 	double sumE;
 
 
-//to check histogram indices
-//	for(int i = 0; i < _hists1D.size(); i++)
-//		cout << "i: " << i << " hist: " << _hists1D[i]->GetName() << endl;
-	
+	//to check histogram indices
+	//for(int i = 0; i < _hists2D.size(); i++)
+	//	cout << "i: " << i << " hist: " << _hists2D[i]->GetName() << endl;
+	//return;	
 	//set iso cuts
 	_prod->SetIsoCut();
 

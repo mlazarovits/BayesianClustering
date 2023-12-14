@@ -67,6 +67,8 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists1D.push_back(etaphi_cov);
                         _hists1D.push_back(timeeta_cov);
                         _hists1D.push_back(timephi_cov);
+			_hists1D.push_back(timemaj_cov);
+			_hists1D.push_back(timemin_cov);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -91,50 +93,64 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists2D.push_back(timeSig_totE);
                         _hists2D.push_back(timeEtaCov_totE);
                         _hists2D.push_back(timePhiCov_totE);
+                	_hists2D.push_back(timeSig_timeMajCov);
+                	_hists2D.push_back(timeSig_timeMinCov);
+                	_hists2D.push_back(azAngle2D_timeMajCov);
+                	_hists2D.push_back(azAngle2D_timeMinCov);
+                	_hists2D.push_back(rot2D_timeMajCov);
+                	_hists2D.push_back(rot2D_timeMinCov);
+                	_hists2D.push_back(rot3D_timeMajCov);
+                	_hists2D.push_back(rot3D_timeMinCov);
+
 			
 		};
 	
 
-		//4 - space slope
+		//6 - space slope
 		TH1D* slope_space = new TH1D("slope_space","slope_space",50,-30,30);
-		//5 - eta-time slope
+		//7 - eta-time slope
 		TH1D* slope_etaT = new TH1D("slope_etaT","slope_etaT",50,-2,2);
-		//6 - phi-time slope
+		//8 - phi-time slope
 		TH1D* slope_phiT = new TH1D("slope_phiT","slope_phiT",50,-4,4);
-		//7 - polar angle
+		//9 - polar angle
 		TH1D* polar_ang = new TH1D("polar_ang","polar_ang",50,-0.5,3.5);		
-		//8 - azimuth angle
-		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",25,-3.5,3.5);		
-		//9 - subcluster energy - total
+		//10 - azimuth angle
+		TH1D* azimuth_ang = new TH1D("azimuth_ang","azimuth_ang",25,0.,3.5);		
+		//11 - subcluster energy - total
 		TH1D* e_subcl = new TH1D("e_subcl","e_subcl",50,0.,2000.);
-		//10 - ellipsoid rotundity
+		//12 - ellipsoid rotundity
 		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",10,0.74,1.01);
-		//11 - spatial rotundity
+		//13 - spatial rotundity
 		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0.4,1.1);
-		//12 - velocity = z/r*k for k transfer factor to velocity units
+		//14 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",31,-1.,30.);
-		//13 - ratio of 2D eigenvals
+		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
-		//15 - eta sigma	
+		//16 - eta sigma	
                 TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.09);
-		//16 - phi sigma	
+		//17 - phi sigma	
                 TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.01,0.09);
-		//17 - time sigma	
-                TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,25.);
-		//18 - fraction of energy in cluster
+		//18 - time sigma	
+                TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,10.);
+		//19 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
-		//19 - azimuth angle in 2D
-		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,-3.5,3.5);		
-		//20 - eta sigma for positive eta clusters
+		//20 - azimuth angle in 2D
+		TH1D* azimuth_ang_2D = new TH1D("azimuth_ang_2D","azimuth_ang_2D",50,0.,3.5);		
+		//21 - eta sigma for positive eta clusters
                 TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.09);
-		//21 - eta sigma for negative eta clusters
+		//22 - eta sigma for negative eta clusters
                 TH1D* etaSig_neg = new TH1D("etaSig_neg","etaSig_neg",25,0.01, 0.09);
-		//22 - normalized covariance - eta/phi
+		//23 - normalized covariance - eta/phi
 		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",25,-1.,1.);
-		//23 - normalized covariance - time/eta
+		//24 - normalized covariance - time/eta
 		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,-1.,1.);
-		//24 - normalized covariance - time/phi
+		//25 - normalized covariance - time/phi
 		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-1.,1.);
+		//26 - normalized covariance - time/major axis
+		TH1D* timemaj_cov = new TH1D("timemaj_cov","timemaj_cov",25,-0.5,0.5);
+		//27 - normalized covariance - time/minor axis
+		TH1D* timemin_cov = new TH1D("timemin_cov","timemin_cov",25,-0.5,0.5);
+
 
 		//0 - time v subcl subcluster energy
 		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
@@ -161,27 +177,43 @@ class PhotonSkimmer : public BaseSkimmer{
 		//11 - nsubclusters vs mm coeff
 		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.1);
                 //12 - eta sigma v phi sigma
-		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig;a.u.",25,0.01,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig",25,0.1,0.09,25,0.01,0.09);
                 //13 - time sigma v phi sigma
-                TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig;a.u.",25,0,25.,25,0.01,0.09);
+                TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig",25,0,5.,25,0.01,0.09);
                 //14 - time sigma v phi sigma
-                TH2D* timeSig_phiSig = new TH2D("timeSig_phiSig","timeSig_phiSig;timeSig;phiSig;a.u.",25,0,25.,25,0.01,0.09);
+                TH2D* timeSig_phiSig = new TH2D("timeSig_phiSig","timeSig_phiSig;timeSig;phiSig",25,0,5.,25,0.01,0.09);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
 		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.1);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
 		TH2D* nsubcl_fracE = new TH2D("nsubcl_fracE","nsubcl_fracE;nSubClusters;fracE",10,0,10.,20,0,1.1);
 		//17 - time sigma vs time center
-		TH2D* timeSig_timeCenter = new TH2D("timeSig_timeCenter","timeSig_timeCenter;timeSig (ns);time center (ns)",25,0,10,50,-5,15);
+		TH2D* timeSig_timeCenter = new TH2D("timeSig_timeCenter","timeSig_timeCenter;timeSig;time center",25,0,10,50,-5,15);
 		//18 - 2d rotundity vs 2d az angle
-		TH2D* rot2D_az2D = new TH2D("rot2D_az2D","rot2D_az2D;rotundity 2D;azimuth angle 2D",50,0.4,1.1,50,-3.5,3.5);
+		TH2D* rot2D_az2D = new TH2D("rot2D_az2D","rot2D_az2D;rotundity2D;azangle2D",50,0.4,1.1,50,0.,3.5);
 		//19 - time variation vs frac E
-		TH2D* timeSig_fracE = new TH2D("timeSig_fracE","timeSig_fracE;timeSig (ns);fracE (GeV)",25,0,25,20,0.,1.1);
+		TH2D* timeSig_fracE = new TH2D("timeSig_fracE","timeSig_fracE;timeSig;fracE",25,0,25,20,0.,1.1);
 		//20 - time sigma vs total E
-		TH2D* timeSig_totE = new TH2D("timeSig_totE","timeSig_totE;timeSig (ns);totE (GeV)",25,0,10,20,0,1400);
+		TH2D* timeSig_totE = new TH2D("timeSig_totE","timeSig_totE;timeSig;totE",30,0,5,30,0,1400);
 		//21 - time-eta covariance vs total E
-		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE;timeEtaCov (ns);totE (GeV)",25,-1,1,20,0,2000);
+		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE;timeEtaCov;totE",25,-1,1,20,0,2000);
 		//22 - time-phi covariance vs total E
-		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE;timePhiCov (ns);totE (GeV)",25,-1,1,20,0,2000);
+		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE;timePhiCob;totE",25,-1,1,20,0,2000);
+                //23 - time sigma vs. TimeMajCov
+                TH2D* timeSig_timeMajCov = new TH2D("timeSig_timeMajCov","timeSig_timeMajCov;timeSig;timeMajCov",25,0,5.,25,-0.5,0.5);
+                //24 - time sigma vs. TimeMinCov
+                TH2D* timeSig_timeMinCov = new TH2D("timeSig_timeMinCov","timeSig_timeMinCov;timeSig;timeMinCov",25,0,5.,25,-0.5,0.5);
+                //25 - az angle 2D vs. TimeMajCov
+                TH2D* azAngle2D_timeMajCov = new TH2D("azAngle2D_timeMajCov","azAngle2D_timeMajCov;azAngle2D;timeMajCov",25,0,3.5,25,-0.5,0.5);
+                //26 - az 2D angle vs. TimeMinCov
+                TH2D* azAngle2D_timeMinCov = new TH2D("azAngle2D_timeMinCov","azAngle2D_timeMinCov;azAngle2D;timeMinCov",25,0,3.5,25,-0.5,0.5);
+                //27 - rot 2D vs. TimeMajCov
+                TH2D* rot2D_timeMajCov = new TH2D("rot2D_timeMajCov","rot2D_timeMajCov;rot2D;timeMajCov",25,0.4,1.1,25,-0.5,0.5);
+                //28 - rot 2D angle vs. TimeMinCov
+                TH2D* rot2D_timeMinCov = new TH2D("rot2D_timeMinCov","rot2D_timeMinCov;rot2D;timeMinCov",25,0.4,1.1,25,-0.5,0.5);
+                //29 - rot 3D vs. TimeMajCov
+                TH2D* rot3D_timeMajCov = new TH2D("rot3D_timeMajCov","rot3D_timeMajCov;rot3D;timeMajCov",25,0.4,1.1,25,-0.5,0.5);
+                //30 - rot 3D angle vs. TimeMinCov
+                TH2D* rot3D_timeMinCov = new TH2D("rot3D_timeMinCov","rot3D_timeMinCov;rot3D;timeMinCov",25,0.4,1.1,25,-0.5,0.5);
 
 	
 		void Skim();
@@ -204,16 +236,17 @@ class PhotonSkimmer : public BaseSkimmer{
 			tot.ids = {-999};
 			plotCats.push_back(tot);	
 		
-			//signal
-			plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
-			sig.ids = {22};
-			plotCats.push_back(sig);
 		
 			//notSunm
 			plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
 			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
 			notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
 			plotCats.push_back(notSunm);
+			
+			//signal
+			plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
+			sig.ids = {22};
+			plotCats.push_back(sig);
 
 			//data
 			plotCat data(_hists1D, _hists2D, "JetHT", "JetHT");
@@ -340,12 +373,15 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<double> eigenvals, eigenvals_space, norms;
 			vector<Matrix> eigenvecs, eigenvecs_space;
 			Matrix space_mat = Matrix(2,2);
-			Matrix 2Deigenmat = Matrix(3,3);		
-	
+			Matrix rotmat2D = Matrix(2,2);		
+			Matrix etaphi = Matrix(2,1);	
+			Matrix majmin = Matrix(2,1);	
+
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
 			double E_k, theta, phi, r, rot2D, rot3D, vel, ec, pc, tc, pi, E_lead, phi2D;
 			double v_x, v_y, v_z, ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
+			double majtime_cov, mintime_cov;
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
@@ -362,6 +398,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			//sort by mixing coeffs in ascending order (smallest first)
 			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
+
+
+
 
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
@@ -435,15 +474,42 @@ class PhotonSkimmer : public BaseSkimmer{
 				phi2D = atan2( v_y , v_x  );
 				if(signbit(v_y)) phi2D *= -1;
 				
+				//put into function - inputs: rotation matrix, point collection; outputs - covs
 				//2D rotated with 3D covariance
-				2Deigenmat = cov;
-				2Deigenmat.SetEntry(eigenvals_space[1],0,0);
-				2Deigenmat.SetEntry(eigenvals_space[0],1,1);
-				2Deigenmat.SetEntry(0,1,0);
-				2Deigenmat.SetEntry(0,0,1);
+				rotmat2D.SetEntry(eigenvals_space[1],0,0);
+				rotmat2D.SetEntry(eigenvals_space[0],1,1);
+				rotmat2D.SetEntry(0,1,0);
+				rotmat2D.SetEntry(0,0,1);
+			
+				majtime_cov = 0;
+				mintime_cov = 0;
+				PointCollection majminpts;
+				//calculat points rotated into major/minor axes
+				for(int i = 0; i < model->GetData()->GetNPoints(); i++){
+					//put eta/phi coordinates into major/minor coordinates
+					Point pt = model->GetData()->at(i);
+					etaphi.SetEntry(pt.at(0),0,0);
+					etaphi.SetEntry(pt.at(1),1,0);
 
-				cout << "cov" << endl; cov.Print();
-				cout << "2d rotated cov" << endl; 2Deigenmat.Print();
+					//rotate by above transformation
+					majmin.mult(rotmat2D,etaphi);	
+					PointCollection newpts = majmin.MatToPoints();
+					majminpts.AddPoints(newpts);	
+				}
+				Point majminmean = majminpts.mean();
+				//calculate covariances of major/minor axes with time
+				//variance of major/minor axes are eigenvalues (lead/sublead) from 2D covariance
+				for(int i = 0; i < majminpts.GetNPoints(); i++){
+					majtime_cov += (majminpts.at(i).at(0) - majminmean.at(0))*(model->GetData()->at(i).at(2) - model->GetData()->mean().at(2));
+					mintime_cov += (majminpts.at(i).at(1) - majminmean.at(1))*(model->GetData()->at(i).at(2) - model->GetData()->mean().at(2));
+	
+				}
+				majtime_cov /= sqrt(rotmat2D.at(0,0)*cov.at(2,2));	
+				mintime_cov /= sqrt(rotmat2D.at(1,1)*cov.at(2,2));	
+
+
+
+
 
 				//fill hists
 				//centers
@@ -487,6 +553,9 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[0][23]->Fill(ep_cov);
 				plotCats[id_idx].hists1D[0][24]->Fill(te_cov);
 				plotCats[id_idx].hists1D[0][25]->Fill(tp_cov);
+				//major/minor covariances with time
+				plotCats[id_idx].hists1D[0][26]->Fill(majtime_cov);
+				plotCats[id_idx].hists1D[0][27]->Fill(mintime_cov);
 
 
 	
@@ -511,8 +580,16 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[0][18]->Fill(rot2D, phi2D);
 				plotCats[id_idx].hists2D[0][19]->Fill(sqrt(t_var), E_k/E_tot);
 				plotCats[id_idx].hists2D[0][20]->Fill(sqrt(t_var), E_tot);
-				plotCats[id_idx].hists2D[0][21]->Fill(sqrt(te_cov), E_tot);
-				plotCats[id_idx].hists2D[0][22]->Fill(sqrt(tp_cov), E_tot);
+				plotCats[id_idx].hists2D[0][21]->Fill(te_cov, E_tot);
+				plotCats[id_idx].hists2D[0][22]->Fill(tp_cov, E_tot);
+				plotCats[id_idx].hists2D[0][23]->Fill(sqrt(t_var), majtime_cov);
+				plotCats[id_idx].hists2D[0][24]->Fill(sqrt(t_var), mintime_cov);
+				plotCats[id_idx].hists2D[0][25]->Fill(phi2D, majtime_cov);
+				plotCats[id_idx].hists2D[0][26]->Fill(phi2D, mintime_cov);
+				plotCats[id_idx].hists2D[0][27]->Fill(rot2D, majtime_cov);
+				plotCats[id_idx].hists2D[0][28]->Fill(rot2D, mintime_cov);
+				plotCats[id_idx].hists2D[0][29]->Fill(rot3D, majtime_cov);
+				plotCats[id_idx].hists2D[0][30]->Fill(rot3D, mintime_cov);
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
@@ -557,6 +634,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[1][23]->Fill(ep_cov);
 					plotCats[id_idx].hists1D[1][24]->Fill(te_cov);
 					plotCats[id_idx].hists1D[1][25]->Fill(tp_cov);
+					//major/minor covariances with time
+					plotCats[id_idx].hists1D[1][26]->Fill(majtime_cov);
+					plotCats[id_idx].hists1D[1][27]->Fill(mintime_cov);
 			
 					//2D[1] hists
 					plotCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
@@ -580,8 +660,16 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[1][18]->Fill(rot2D, phi2D);
 					plotCats[id_idx].hists2D[1][19]->Fill(sqrt(t_var), E_k/E_tot);
 					plotCats[id_idx].hists2D[1][20]->Fill(sqrt(t_var), E_tot);
-					plotCats[id_idx].hists2D[1][21]->Fill(sqrt(te_cov), E_tot);
-					plotCats[id_idx].hists2D[1][22]->Fill(sqrt(tp_cov), E_tot);
+					plotCats[id_idx].hists2D[1][21]->Fill(te_cov, E_tot);
+					plotCats[id_idx].hists2D[1][22]->Fill(tp_cov, E_tot);
+					plotCats[id_idx].hists2D[1][23]->Fill(sqrt(t_var), majtime_cov);
+					plotCats[id_idx].hists2D[1][24]->Fill(sqrt(t_var), mintime_cov);
+					plotCats[id_idx].hists2D[1][25]->Fill(phi2D, majtime_cov);
+					plotCats[id_idx].hists2D[1][26]->Fill(phi2D, mintime_cov);
+					plotCats[id_idx].hists2D[1][27]->Fill(rot2D, majtime_cov);
+					plotCats[id_idx].hists2D[1][28]->Fill(rot2D, mintime_cov);
+					plotCats[id_idx].hists2D[1][29]->Fill(rot3D, majtime_cov);
+					plotCats[id_idx].hists2D[1][30]->Fill(rot3D, mintime_cov);
 				}
 
 
@@ -627,6 +715,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[2][23]->Fill(ep_cov);
 					plotCats[id_idx].hists1D[2][24]->Fill(te_cov);
 					plotCats[id_idx].hists1D[2][25]->Fill(tp_cov);
+					//major/minor covariances with time
+					plotCats[id_idx].hists1D[2][26]->Fill(majtime_cov);
+					plotCats[id_idx].hists1D[2][27]->Fill(mintime_cov);
 					
 					//2D[2] hists
 					plotCats[id_idx].hists2D[2][0]->Fill(tc, E_k);
@@ -649,14 +740,23 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[2][18]->Fill(rot2D, phi2D);
 					plotCats[id_idx].hists2D[2][19]->Fill(sqrt(t_var), E_k/E_tot);
 					plotCats[id_idx].hists2D[2][20]->Fill(sqrt(t_var), E_tot);
-					plotCats[id_idx].hists2D[2][21]->Fill(sqrt(te_cov), E_tot);
-					plotCats[id_idx].hists2D[2][22]->Fill(sqrt(tp_cov), E_tot);
+					plotCats[id_idx].hists2D[2][21]->Fill(te_cov, E_tot);
+					plotCats[id_idx].hists2D[2][22]->Fill(tp_cov, E_tot);
+					plotCats[id_idx].hists2D[2][23]->Fill(sqrt(t_var), majtime_cov);
+					plotCats[id_idx].hists2D[2][24]->Fill(sqrt(t_var), mintime_cov);
+					plotCats[id_idx].hists2D[2][25]->Fill(phi2D, majtime_cov);
+					plotCats[id_idx].hists2D[2][26]->Fill(phi2D, mintime_cov);
+					plotCats[id_idx].hists2D[2][27]->Fill(rot2D, majtime_cov);
+					plotCats[id_idx].hists2D[2][28]->Fill(rot2D, mintime_cov);
+					plotCats[id_idx].hists2D[2][29]->Fill(rot3D, majtime_cov);
+					plotCats[id_idx].hists2D[2][30]->Fill(rot3D, mintime_cov);
 
 
 				}
 
 			}
 		}
+
 
 
 };
