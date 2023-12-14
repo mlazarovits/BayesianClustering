@@ -158,14 +158,23 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 }
 
 
+string GetExtraLabel(string in_file){
+	int idx = in_file.find("Skim_")+4;
+	int idx2 = in_file.find("_emAlpha");
+	//no extra string in between
+	if(idx == idx2) return "";
+	else return in_file.substr(idx+1,idx2-idx-1);
+
+}
+
 string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
-	int idx = in_file.find(".root");
-	int idx2 = in_file.find("NperGeV0p");
+	int idx = in_file.find("NperGeV0p");
 	//based on NperGeV0pXXX being the last label before cms label
 	//and 3 digits following "GeV0p"
-	cmslab = in_file.substr(idx2+13,idx);
+	cmslab = in_file.substr(idx+13);
+	cmslab = cmslab.substr(0,cmslab.find(".root"));
 	return cmslab;
 }
 
@@ -187,7 +196,8 @@ void HistFormat(string file){
 	vector<string> types = {"","lead","notlead"};
 
 	string cmslab = GetCMSLabel(file);
-	
+	string extra = GetExtraLabel(file);
+	if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
 	TString th2d("TH2D");
