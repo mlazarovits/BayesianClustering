@@ -4,8 +4,6 @@
 #include "Point.hh"
 #include <math.h>
 
-//TODO: phase out JetPoint (a JetPoint should be a Jet with 1 constituent)
-//point that is physics-specific - ecal cell (rechit)
 class JetPoint{
 
 	public:
@@ -142,7 +140,7 @@ class JetPoint{
 		}
 
 
-		void Print(){
+		void Print() const{
                         std::string out = "(";
                         out += std::to_string(eta())+",";
                         out += std::to_string(phi_02pi())+",";
