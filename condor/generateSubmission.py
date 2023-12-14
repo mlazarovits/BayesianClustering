@@ -24,6 +24,7 @@ def generateSubmission(args):
 	SH.makeDir(odir)
 
 	if args.inputSample == "GMSB":	
+		#inputFile = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root"
 		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
@@ -81,6 +82,10 @@ def generateSubmission(args):
 	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)
 	if(args.noTimeSmear):
 		flags += ' --noTimeSmear'
+	if(objName == "jets"):
+		flags += " --object 0"
+	if(objName == "photons"):
+		flags += " --object 1"
 
 	##### Create condor submission script in src directory #####
 	condorSubmitFile = dirname + "/src/submit.sh"
