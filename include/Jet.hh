@@ -126,7 +126,9 @@ class Jet{
 			for(int i = 0; i < _nRHs; i++) ws.push_back(_rhs[i].GetWeight()); 
 		}
 
+		//returns rec hits as jet points
 		const vector<JetPoint>& GetJetPoints() const{return _rhs;}
+		//returns rec hits as jets
 		const void GetJets(vector<Jet>& rhs) const{
 			rhs.clear();
 			Jet rh;
@@ -221,7 +223,7 @@ class Jet{
 			*/
 		}
 
-		void Print(){
+		void Print() const{
 			for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
 		}
 
