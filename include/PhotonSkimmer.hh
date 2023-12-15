@@ -456,6 +456,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//velocity = z/r * rad/deg * deg/cm => ns/cm
 				vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
 				vel = fabs(1./vel);
+				if(isnan(vel) || isinf(vel)) vel = -999;
 				
 				//rotundity - 2D
 				//take upper 2x2 submatrix from covariance
