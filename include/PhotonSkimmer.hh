@@ -197,7 +197,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//21 - time-eta covariance vs total E
 		TH2D* timeEtaCov_totE = new TH2D("timeEtaCov_totE","timeEtaCov_totE;timeEtaCov;totE",25,-1,1,20,0,2000);
 		//22 - time-phi covariance vs total E
-		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE;timePhiCob;totE",25,-1,1,20,0,2000);
+		TH2D* timePhiCov_totE = new TH2D("timePhiCov_totE","timePhiCov_totE;timePhiCov;totE",25,-1,1,20,0,2000);
                 //23 - time sigma vs. TimeMajCov
                 TH2D* timeSig_timeMajCov = new TH2D("timeSig_timeMajCov","timeSig_timeMajCov;timeSig;timeMajCov",25,0,5.,25,-0.5,0.5);
                 //24 - time sigma vs. TimeMinCov
@@ -211,9 +211,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //28 - rot 2D angle vs. TimeMinCov
                 TH2D* rot2D_timeMinCov = new TH2D("rot2D_timeMinCov","rot2D_timeMinCov;rot2D;timeMinCov",25,0.4,1.1,25,-0.5,0.5);
                 //29 - rot 3D vs. TimeMajCov
-                TH2D* rot3D_timeMajCov = new TH2D("rot3D_timeMajCov","rot3D_timeMajCov;rot3D;timeMajCov",25,0.4,1.1,25,-0.5,0.5);
+                TH2D* rot3D_timeMajCov = new TH2D("rot3D_timeMajCov","rot3D_timeMajCov;rot3D;timeMajCov",25,0.8,1.1,25,-0.5,0.5);
                 //30 - rot 3D angle vs. TimeMinCov
-                TH2D* rot3D_timeMinCov = new TH2D("rot3D_timeMinCov","rot3D_timeMinCov;rot3D;timeMinCov",25,0.4,1.1,25,-0.5,0.5);
+                TH2D* rot3D_timeMinCov = new TH2D("rot3D_timeMinCov","rot3D_timeMinCov;rot3D;timeMinCov",25,0.8,1.1,25,-0.5,0.5);
 
 	
 		void Skim();
@@ -284,6 +284,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					if(strcmp(&name[name.size() - 1],"_") == 0) name.pop_back();
 					name += "2D";
 					pc.hists2D[i][j]->SetName(name.c_str());		
+					pc.hists2D[i][j]->SetTitle(pc.plotlabel.c_str());
 					if(pc.hists2D[i][j]->GetEntries() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 					pc.hists2D[i][j]->Write();
 				}
