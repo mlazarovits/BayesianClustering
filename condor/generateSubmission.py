@@ -23,8 +23,9 @@ def generateSubmission(args):
 	# Create output directory for condor results if it does not exist.
 	SH.makeDir(odir)
 
-	if args.inputSample == "GMSB":	
-		#inputFile = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root"
+	if args.inputSample == "GMSBv9":	
+		inputFile = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root"
+	elif args.inputSample == "GMSBv13":	
 		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
@@ -33,7 +34,7 @@ def generateSubmission(args):
 	#to use xrootd path cannot be relative
 	#find any ../ and remove it and the dir before it
 	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
-
+	
 	objName = args.object
 	strategyName = ""
 	if args.strategy == 0:
@@ -106,7 +107,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB','JetHT'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSBv9','GMSBv13','JetHT'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
