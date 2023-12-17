@@ -47,6 +47,7 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_pT); 
 			_hists1D.push_back(TrueJet_nRhs); 
 			_hists1D.push_back(TrueJet_EmE); 
+			_hists1D.push_back(TrueJet_nConstituents);
 			
 			//mm only jets
 			_hists1D.push_back(PVtime_mmAvg);
@@ -82,14 +83,19 @@ class JetSkimmer : public BaseSkimmer{
 		
 		void Skim();
 		void GMMOnly(){ _mmonly = true; }
+			
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
 		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-30,30); 
-		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,2000);
+		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,1000);
 		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",25,0,100);
-		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",25,0,600);
+		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
+		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,20);
+		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
+
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
+
 		
 
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
@@ -139,11 +145,12 @@ class JetSkimmer : public BaseSkimmer{
 				objE->Fill(jets[j].E());
 				TrueJet_pT->Fill(jets[j].pt());
 				TrueJet_nRhs->Fill(jets[j].GetNRecHits());
-				
+	
 				ijet = jets[j].GetUserIdx();
 				eECAL = _base->Jet_neEmEF->at(ijet) + _base->Jet_chEmEF->at(ijet);
 				eECAL *= jets[j].E();
 				TrueJet_EmE->Fill(eECAL);
+				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet));			
 				
 			}
 
@@ -159,6 +166,10 @@ class JetSkimmer : public BaseSkimmer{
 			if(njets < 2) return;
 			pair<Jet,Jet> hardjets;
 			FindHardestJetPair(jets, hardjets);
+	
+			TrueJet_twoHardestpT->Fill(hardjets.first.pt());
+			TrueJet_twoHardestpT->Fill(hardjets.second.pt());
+
 			FillTimeRes(med, hardjets);
 			FillTimeRes(eavg, hardjets);
 		}
