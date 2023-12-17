@@ -39,7 +39,9 @@ int main(int argc, char *argv[]){
 	//this should be in N/GeV
 	double gev = 1./30.;
 	//put cuts on jets (ie min pt) here
-
+	double minpt = 30;
+	double minnrhs = 2;
+	double minEmE = 10;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -132,6 +134,18 @@ int main(int argc, char *argv[]){
 			i++;
     	 		gev = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minpt", 7) == 0){
+			i++;
+    	 		minpt = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--minNrhs", 9) == 0){
+			i++;
+    	 		minnrhs = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--minemE", 8) == 0){
+			i++;
+    	 		minEmE = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -147,6 +161,9 @@ int main(int argc, char *argv[]){
    		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2, 2 : GMM only, does not apply to photons)" << endl;
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
+   		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
+   		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
+   		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --NoTimeSmear                 turns off smearing data in time dimension (default = false)" << endl;
    		cout << "   --NoWeight                    turns off weighting data points (default = false)" << endl;
@@ -255,6 +272,9 @@ int main(int argc, char *argv[]){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
+		skimmer.SetMinPt(minpt);
+		skimmer.SetMinNrhs(minnrhs);
+		skimmer.SetMinEmE(minEmE);
 		if(in_file.find("JetHT") != string::npos)
 			skimmer.SetData(true);
 		if(strat == 2) 

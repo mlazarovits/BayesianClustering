@@ -11,7 +11,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
         int nJets = (int)_base->Jet_energy->size();
         int nrhs, rhidx;
 	bool jetid;
-	double dr, deta, dphi;
+	double dr, deta, dphi, eme;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -34,11 +34,12 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
 		rhs = _base->Jet_drRhIds->at(j);
                 nrhs = rhs.size();
 
+		eme = _base->Jet_energy->at(j)*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
-		if(nrhs < 2) continue;
-		//if(nrhs < 25) continue;
-                if(_base->Jet_pt->at(j) < 30.) continue;
+		if(nrhs < _minnrhs) continue;
+                if(_base->Jet_pt->at(j) < _minpt) continue;
                 if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
+		if(eme < _mineme) continue;
 
 		//create jet id (based on tight 2017 Run II recommendations)
 		//https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2017
