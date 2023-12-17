@@ -186,7 +186,7 @@ int main(int argc, char *argv[]){
 		version = "";
 		std::regex_search(in_file,m,re);
 		for(auto x : m) version += x;
-		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find(".root") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
 		version.pop_back();
 		cmslab += version;
 		file = TFile::Open(in_file.c_str());
