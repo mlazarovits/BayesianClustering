@@ -48,6 +48,7 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_nRhs); 
 			_hists1D.push_back(TrueJet_EmE); 
 			_hists1D.push_back(TrueJet_nConstituents);
+			_hists1D.push_back(TrueJet_twoHardestpT);	
 			
 			//mm only jets
 			_hists1D.push_back(PVtime_mmAvg);
@@ -103,14 +104,14 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
 		//difference in tPV between two back-to-back jets
 		//previous time definitions
-		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",100,-5,5);	
-		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-5,5);	
+		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",25,-3,3);	
+		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-3,3);	
 
 		//mm only jet plots
 		//mm only time (from true jets)
 		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
 		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-5,5);	
+		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-3,3);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 
 
