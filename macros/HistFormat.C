@@ -199,7 +199,6 @@ void HistFormat(string file){
 	oname = oname.substr(0,oname.find(".root"));
 	oname = oname+"_formatted.root";
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
-
 	vector<string> types = {"","lead","notlead"};
 
 	string cmslab = GetCMSLabel(file);
