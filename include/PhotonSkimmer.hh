@@ -236,7 +236,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			tot.ids = {-999};
 			plotCats.push_back(tot);	
 		
-		
 			//notSunm
 			plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
 			//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
@@ -284,7 +283,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					if(strcmp(&name[name.size() - 1],"_") == 0) name.pop_back();
 					name += "2D";
 					pc.hists2D[i][j]->SetName(name.c_str());		
-					pc.hists2D[i][j]->SetTitle(pc.plotlabel.c_str());
+					pc.hists2D[i][j]->SetTitle(pc.plotName.c_str());
 					if(pc.hists2D[i][j]->GetEntries() == 0){ cout << "Histogram: " << name << " not filled." << endl; continue; }
 					pc.hists2D[i][j]->Write();
 				}

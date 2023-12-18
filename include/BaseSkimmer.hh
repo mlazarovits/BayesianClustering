@@ -44,6 +44,7 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_timesmear = true;
+			
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);
 			_hists1D.push_back(eta_center);
@@ -76,6 +77,12 @@ class BaseSkimmer{
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){ _gev = gev; }
+
+		void SetMinPt(double p){ _prod->SetMinPt(p); }
+		void SetMinNrhs(double p){ _prod->SetMinNrhs(p); }
+		void SetMinEmE(double p){ _prod->SetMinEmE(p); }
+
+
 
 		vector<TH1D*> _hists1D;
 		//0 - # of subclusters

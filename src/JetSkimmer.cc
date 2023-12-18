@@ -37,7 +37,7 @@ void JetSkimmer::Skim(){
 	smear.SetEntry(0.,2,2); 
 	//for time smearing (energy dependent)
 	double tres_c = 0.2;
-	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;	
+	double tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
 	
 	double alpha = 0.1;
 	double emAlpha = 0.5;
@@ -46,6 +46,9 @@ void JetSkimmer::Skim(){
 	map<string, Matrix> params;
 	vector<node*> trees;
 	vector<Jet> rhs;
+
+	double jetSelEff = 0;
+	double totEvt = 0;
         
 	//for computational time
 	vector<double> x_nrhs, y_time;
@@ -65,6 +68,8 @@ void JetSkimmer::Skim(){
 			rhTime->Fill(rhs[r].t());
 		}
 		
+		totEvt++;	
+	
 		//fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i);
@@ -72,6 +77,8 @@ void JetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
+
+		jetSelEff++;
 		
 		if(_mmonly){
 			//fill mm only jet hists
@@ -116,6 +123,8 @@ void JetSkimmer::Skim(){
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 
 	WriteHists(ofile);
+
+	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
 }
 
 

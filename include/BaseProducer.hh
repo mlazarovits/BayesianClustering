@@ -17,6 +17,7 @@ class BaseProducer{
 		BaseProducer(){ 
 			_gev = 1;
 			_isocut = false;
+			_minpt = 0;
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -32,6 +33,7 @@ class BaseProducer{
 			//default to 1 GeV = 1 entry -> gev = 1
 			_gev = 1;
 			_isocut = false;
+			_minpt = 0;
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
@@ -64,6 +66,13 @@ class BaseProducer{
 		void SetTransferFactor(double g){ _gev = g; }
 		double _gev;
 
+
+		void SetMinPt(double p){ _minpt = p; }
+		double _minpt;
+		void SetMinNrhs(double p){ _minnrhs = p; }
+		double _minnrhs;
+		void SetMinEmE(double p){ _mineme = p; }
+		double _mineme;
 
 		double deltaR2(double e1, double p1, double e2, double p2){
 			double de = e1 - e2;
