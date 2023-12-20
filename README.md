@@ -74,6 +74,7 @@ There are muliple visualization classes:
 - plots are saved as histograms (not PDFs or TCanvases) so they can be hadded together
 	- if running the skimmer on condor (see below)
 - to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormat.C("[skim.root]")'` from command line
+- to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
 
 #### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
