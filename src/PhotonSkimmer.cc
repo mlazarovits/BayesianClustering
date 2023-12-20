@@ -10,11 +10,8 @@ void PhotonSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
-	//create histograms to be filled
-	MakeIDHists();
+	MakeIDHists(_oname);
 	
-	//set energy weight transfer factor
-	_prod->SetTransferFactor(_gev);
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi
@@ -43,6 +40,8 @@ void PhotonSkimmer::Skim(){
 	//return;	
 	//set iso cuts
 	_prod->SetIsoCut();
+	//set energy weight transfer factor
+	_prod->SetTransferFactor(_gev);
 
 	//loop over events
 	if(_evti == _evtj){
@@ -59,8 +58,8 @@ void PhotonSkimmer::Skim(){
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
 			if(rhs.size() < 1){ continue; }
-		cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-			//cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 
 			BayesCluster *algo = new BayesCluster(rhs);
 			algo->SetDataSmear(smear);
@@ -89,6 +88,14 @@ void PhotonSkimmer::Skim(){
 					}
 				}
 			}
+			else{
+				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
+					FillModelHists(gmm, i);
+					plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+				}
+				
+
+			}
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
 		}
 	}
@@ -98,3 +105,14 @@ void PhotonSkimmer::Skim(){
 
 }
 
+
+
+
+void PhotonSkimmer::AddSample(TFile* file){
+
+
+	PhotonProducer* prod = new PhotonProducer(file);
+	ReducedBase* base = prod->GetBase();
+	
+
+}
