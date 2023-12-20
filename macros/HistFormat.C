@@ -161,7 +161,6 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 string GetExtraLabel(string in_file){
 	int idx = in_file.find("Skim_")+4;
 	int idx2 = in_file.find("_emAlpha");
-	cout << "idx: " << idx << " idx2: " << idx2 << endl;
 	//no extra string in between
 	if(idx == idx2) return "";
 	else return in_file.substr(idx+1,idx2-idx-1);
