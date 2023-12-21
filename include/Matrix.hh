@@ -61,7 +61,7 @@ class Matrix{
 		void mean(const PointCollection& data);
 		void scatter(const PointCollection& data);
 
-		bool empty(){ if(m_row == 0 && m_col == 0) return true; else return false; }
+		bool empty() const{ if(m_row == 0 && m_col == 0) return true; else return false; }
 		//clear
 		void clear();
 		void Print() const;
