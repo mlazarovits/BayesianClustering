@@ -50,6 +50,7 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->SetLineColor(i+2);
 		hist[i]->SetMarkerStyle(i+25);
 		hist[i]->SetMarkerColor(i+2);
+//cout << "hist: " << hist[i]->GetName() << " Integral: " << hist[i]->Integral() << " entries: " << hist[i]->GetEntries() << endl;
 		if( i == 0 ){
 			hist[i]->Draw("ep");
 		}else{
@@ -82,6 +83,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+//cout << "hist: " << hist->GetName() << " Integral: " << hist->Integral() << " entries: " << hist->GetEntries() << endl;
 	hist->Draw("colz");
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
@@ -108,6 +110,7 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+//cout << "hist: " << hist->GetName() << " Integral: " << hist->Integral() << " entries: " << hist->GetEntries() << endl;
 	hist->Draw();
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
@@ -131,7 +134,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 	labels.clear();
 	hists.clear();
 
-	vector<string> procs = {"chiGam","notSunm"};
+	vector<string> procs = {"chiGam","notSunm","JetHT"};
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			//get 1D histograms
@@ -144,7 +147,8 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 				else{
 					if(name.find("_"+type) == string::npos) continue;
 				}
-				hist->Scale(1./hist->Integral());
+				if(isnan(hist->Integral())) continue;
+				if(hist->Integral() != 0 && hist->GetEntries() > 0) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 				for(int i = 0; i < procs.size(); i++){
 					if(name.find(procs[i]) != string::npos){
