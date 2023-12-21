@@ -125,6 +125,7 @@ void JetSkimmer::Skim(){
 	WriteHists(ofile);
 
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
+	cout << "Wrote skim to: " << _oname << endl;
 }
 
 

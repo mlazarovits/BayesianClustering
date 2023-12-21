@@ -102,6 +102,7 @@ void PhotonSkimmer::Skim(){
 	cout << "\n" << endl;
 	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
+	cout << "Wrote skim to: " << _oname << endl;
 
 }
 
