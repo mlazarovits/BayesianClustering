@@ -21,9 +21,8 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 }
 
 
-void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, vector<string> label, string cms_label){
-	if(hist.size() != label.size()){ cout << "Error: number of histograms and labels don't match." << endl; return;}
-	if(hist.size() == 0 || label.size() == 0) return;
+void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
+	if(hist.size() == 0)return;
 	can->cd();
 	can->SetGridx(1);
 	can->SetGridy(1);
@@ -50,13 +49,12 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->SetLineColor(i+2);
 		hist[i]->SetMarkerStyle(i+25);
 		hist[i]->SetMarkerColor(i+2);
-//cout << "hist: " << hist[i]->GetName() << " Integral: " << hist[i]->Integral() << " entries: " << hist[i]->GetEntries() << endl;
 		if( i == 0 ){
 			hist[i]->Draw("ep");
 		}else{
 			hist[i]->Draw("epsame");
 		}
-		myleg->AddEntry( hist[i], (label[i]).c_str(), "p" );
+		myleg->AddEntry( hist[i], hist[i]->GetTitle(), "p" );
 		gPad->Update();
 	}
 	myleg->Draw("same"); 
@@ -67,15 +65,12 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-	//lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 	return;
 }
 
 void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_label, string title = ""){
 	can->cd();
-	//can->SetGridx(1);
-	//can->SetGridy(1);
 	hist->SetTitle("");
 	hist->UseCurrentStyle();
 	hist->SetStats(false);
@@ -83,7 +78,6 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
-//cout << "hist: " << hist->GetName() << " Integral: " << hist->Integral() << " entries: " << hist->GetEntries() << endl;
 	hist->Draw("colz");
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
@@ -92,7 +86,6 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-	//lat.DrawLatex(0.4,0.92,plot_title.c_str());
 
 	return;
 }
@@ -110,7 +103,6 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
-//cout << "hist: " << hist->GetName() << " Integral: " << hist->Integral() << " entries: " << hist->GetEntries() << endl;
 	hist->Draw();
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
@@ -118,23 +110,21 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
-	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-	//lat.DrawLatex(0.4,0.92,plot_title.c_str());
+	lat.DrawLatex(0.1,0.92,lat_cms.c_str());
 
 	return;
 };
 
 
-void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>& labels){
+//void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, set<string>& labels){
+void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 	TList* list = dir->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
 	string name;
 	TString th1d("TH1D");
-	labels.clear();
 	hists.clear();
 
-	vector<string> procs = {"chiGam","notSunm","JetHT"};
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			//get 1D histograms
@@ -150,12 +140,6 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, vector<string>
 				if(isnan(hist->Integral())) continue;
 				if(hist->Integral() != 0 && hist->GetEntries() > 0) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
-				for(int i = 0; i < procs.size(); i++){
-					if(name.find(procs[i]) != string::npos){
-						labels.push_back(procs[i]);
-						break;
-					}
-				}
 			}
 		}
 	}
@@ -187,6 +171,7 @@ string GetCMSLabel(string in_file){
 	cmslab = cmslab.substr(0,cmslab.find(".root"));
 	return cmslab;
 }
+
 
 void HistFormat(string file){
 	if(gSystem->AccessPathName(file.c_str())){
@@ -235,7 +220,7 @@ void HistFormat(string file){
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
 				//draw as tcanvases
-				TDR2DHist(hist, cv, xtitle, ytitle, cmslab);
+				TDR2DHist(hist, cv, xtitle, ytitle, cmslab, hist->GetTitle());
 				cv->Write(); 
 			}
 		}
@@ -243,7 +228,6 @@ void HistFormat(string file){
 			//get stack histograms - in directory
 			TDirectory* dir = (TDirectory*)key->ReadObj();
 			double ymin, ymax;
-			vector<string> labels;
 			if(dir){
 				dir->cd();
 				vector<TH1D*> hists;
@@ -252,14 +236,15 @@ void HistFormat(string file){
 					//loop through hists in dir
 					name = dir->GetName();
 					if(!types[i].empty()) name += "_"+types[i];
-					GetHists(dir, types[i], hists, labels);
+					//GetHists(dir, types[i], hists, labels);
+					GetHists(dir, types[i], hists);
 					if(hists.size() < 1) continue;
 					FindListHistBounds(hists, ymin, ymax);
 					if(ymin == 0 && ymax == 0) continue;
 					TCanvas *cv = new TCanvas(name.c_str(), "");
 					ofile->cd();
 					//draw as tcanvases
-					TDRMultiHist(hists, cv, name, name, "a.u", ymin, ymax, labels, cmslab);
+					TDRMultiHist(hists, cv, name, name, "a.u", ymin, ymax, cmslab);
 					cv->Write(); 
 				}
 			}
