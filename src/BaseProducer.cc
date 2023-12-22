@@ -47,7 +47,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                         && (_base->Jet_chHEF->at(j) > 0.0) && (_base->Jet_chHM->at(j) > 0);
                 if(!jetid) continue;
 
-
                 Jet jet(px, py, pz, _base->Jet_energy->at(j));
                 jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
@@ -61,6 +60,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
+
+				//remove timing reco (ratio) failed fits
+				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
