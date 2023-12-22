@@ -50,6 +50,8 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_nConstituents);
 			_hists1D.push_back(TrueJet_twoHardestpT);	
 			
+			_hists2D.push_back(erhs_trhs);		
+	
 			//mm only jets
 			_hists1D.push_back(PVtime_mmAvg);
 			_hists1D.push_back(PVtimeDiff_mmAvg);
@@ -92,11 +94,11 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,1000);
 		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",25,0,100);
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
-		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,20);
+		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,50);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
-
+		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
 		
 
 		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
@@ -105,13 +107,13 @@ class JetSkimmer : public BaseSkimmer{
 		//difference in tPV between two back-to-back jets
 		//previous time definitions
 		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",25,-3,3);	
-		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",100,-3,3);	
+		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",50,-3,3);	
 
 		//mm only jet plots
 		//mm only time (from true jets)
 		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
 		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",100,-3,3);	
+		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",50,-3,3);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 
 
@@ -141,6 +143,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 			double eECAL = 0;
 			int ijet = 0;
+			vector<JetPoint> rhs;
 			for(int j = 0; j < jets.size(); j++){
 				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
 				objE->Fill(jets[j].E());
@@ -153,6 +156,12 @@ class JetSkimmer : public BaseSkimmer{
 				TrueJet_EmE->Fill(eECAL);
 				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet));			
 				
+				rhs.clear();
+				rhs = jets[j].GetJetPoints();
+				for(int r = 0; r < rhs.size(); r++){
+					erhs_trhs->Fill(rhs[r].E(), rhs[r].t());
+				}		
+	
 			}
 
 			FillPVHists_TrueJets(jets);	
