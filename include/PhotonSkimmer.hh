@@ -200,7 +200,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//19 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//20 - azimuth angle in 2D
-		TH1D* azimuth_ang_2D = new TH1D("phi_ell","phi_ell",50,-0.1,3.);		
+		TH1D* azimuth_ang_2D = new TH1D("phi_ell","phi_ell",50,-3.1,3.1);		
 		//21 - eta sigma for positive eta clusters
                 TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.09);
 		//22 - eta sigma for negative eta clusters
@@ -1243,7 +1243,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		double v_y = eigenvecs[maxd].at(1,0);	
 		//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
 		double phi = atan2( v_y , v_x );
-		if(signbit(v_y)) phi *= -1;
 		return phi;
 	}
 
@@ -1366,6 +1365,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			outcov.SetEntry(-outcov.at(0,2),0,2);	
 			outcov.SetEntry(-outcov.at(2,0),2,0);	
 		}
+
+
 
 	}
 
