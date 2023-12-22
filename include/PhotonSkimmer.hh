@@ -520,6 +520,7 @@ class PhotonSkimmer : public BaseSkimmer{
 						if(pcs[k].hists1D[i][j] == nullptr) continue;
 						if(pcs[k].hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
 			//			cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
+						pcs[k].hists1D[i][j]->SetTitle(pcs[k].plotName.c_str());
 						pcs[k].hists1D[i][j]->Write();
 						//hists.push_back(pcs[k].hists1D[i][j]);			
 						//id_names.push_back(pcs[k].legName);
