@@ -18,6 +18,8 @@ class BaseProducer{
 			_gev = 1;
 			_isocut = false;
 			_minpt = 0;
+			_mineme = 0;
+			_minnrhs = 0;
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -33,7 +35,9 @@ class BaseProducer{
 			//default to 1 GeV = 1 entry -> gev = 1
 			_gev = 1;
 			_isocut = false;
-			_minpt = 0;
+			_minpt = 30;
+			_mineme = 20;
+			_minnrhs = 15;
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;

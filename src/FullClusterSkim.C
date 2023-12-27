@@ -40,8 +40,8 @@ int main(int argc, char *argv[]){
 	double gev = 1./30.;
 	//put cuts on jets (ie min pt) here
 	double minpt = 30;
-	double minnrhs = 2;
-	double minEmE = 10;
+	double minnrhs = 15;
+	double minEmE = 20;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
