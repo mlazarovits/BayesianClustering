@@ -285,7 +285,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
-		skimmer.SetTimeSmear(!nosmear);
+		skimmer.SetTimeSmear(false); //turn off time smearing for jets - impacts PV deltaT res
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
