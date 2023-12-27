@@ -12,18 +12,15 @@
 //if specified, skim from events i to j
 void JetSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
-	if(!_mmonly){
-		cout << "Using clustering strategy";
-		if(_strategy == NlnN)
-			cout << " NlnN (Delauney)" << endl;
-		else if(_strategy == N2)
-			cout << " N2 (naive)" << endl;
-		else
-			cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
-	}
-	else{
-		cout << "Using pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
-	}
+	cout << "Using clustering strategy";
+	if(_strategy == NlnN)
+		cout << " NlnN (Delauney)" << endl;
+	else if(_strategy == N2)
+		cout << " N2 (naive)" << endl;
+	else if(_strategy == MM)
+		cout << " mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
+	else
+		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//set differences in samples (ie GMSB, data) here
 	
@@ -56,6 +53,8 @@ void JetSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
+	
+
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i++){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
@@ -75,38 +74,41 @@ void JetSkimmer::Skim(){
 		_prod->GetTrueJets(jets, i);
 		if(jets.size() < 1){ cout << endl; continue; }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
-
+		for(int i = 0; i < trCats.size(); i++)	
+			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
+		
 		jetSelEff++;
 		
-		if(_mmonly){
-			//fill mm only jet hists
-			FillMMOnlyJetHists(jets);
+
+		//fill mm only jet hists - done above
+		if(_strategy == MM){
+			//FillMMOnlyJetHists(jets, smear);
 			cout << endl;
 			continue;	
 		}
 
-		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		algo->SetDataSmear(smear);
-		algo->SetTimeResSmear(0.2, 0.3*_gev);
+		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
 		algo->SetVerbosity(0);
-		
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
+			if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 			//start clock
 			t = clock();
 			trees = algo->NlnNCluster();
 		}
 		//N^2 version
 		else if(_strategy == N2){
+			if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 			//start clock
 			t = clock();
 			trees = algo->N2Cluster();

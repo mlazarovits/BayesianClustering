@@ -18,7 +18,6 @@ class JetSkimmer : public BaseSkimmer{
 		JetSkimmer(){
 			_evti = 0;
 			_evtj = 0;
-			_mmonly = false;
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -34,28 +33,26 @@ class JetSkimmer : public BaseSkimmer{
 			_evti = 0;
 			_evtj = _nEvts;
 			_oname = "plots/jet_skims_"+_cms_label+".root";
-			_mmonly = false;
 				
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
 			//true jet hists
 			_hists1D.push_back(nTrueJets);
-			_hists1D.push_back(PVtime_median);
-			_hists1D.push_back(PVtime_eAvg);
-			_hists1D.push_back(PVtimeDiff_median);
-			_hists1D.push_back(PVtimeDiff_eAvg);
 			_hists1D.push_back(TrueJet_pT); 
 			_hists1D.push_back(TrueJet_nRhs); 
 			_hists1D.push_back(TrueJet_EmE); 
 			_hists1D.push_back(TrueJet_nConstituents);
 			_hists1D.push_back(TrueJet_twoHardestpT);	
-			
-			_hists2D.push_back(erhs_trhs);		
-	
-			//mm only jets
-			_hists1D.push_back(PVtime_mmAvg);
-			_hists1D.push_back(PVtimeDiff_mmAvg);
 			_hists1D.push_back(nSubClusters_mm);
+			
+			_timeHists.push_back(PVtime);
+			_timeHists.push_back(deltaT_jet);
+			_timeHists.push_back(deltaT_pvGam);	
+			//key figures of merit	
+			_timeHists.push_back(diffDeltaT_recoGen);
+			_timeHists.push_back(ptAvg_resDiffDeltaT);
+			
+			//_hists2D.push_back(erhs_trhs);		
 			
 			//predicted jets - from BHC
 			//_hists1D.push_back(nClusters);
@@ -64,29 +61,71 @@ class JetSkimmer : public BaseSkimmer{
 			//_hists1D.push_back(PVtime_median_pred);
 			//_hists1D.push_back(PVtime_eAvg_pred);
 			//_hists1D.push_back(PVtime_mmAvg_pred);
-			//_hists1D.push_back(PVtimeDiff_median_pred);
-			//_hists1D.push_back(PVtimeDiff_eAvg_pred);
-			//_hists1D.push_back(PVtimeDiff_mmAvg_pred);
+			//_hists1D.push_back(PVdeltaT_jet_median_pred);
+			//_hists1D.push_back(PVdeltaT_jet_eAvg_pred);
+			//_hists1D.push_back(PVdeltaT_jet_mmAvg_pred);
 			//_hists2D.push_back(e_nRhs);
 
 			nrhs_comptime->SetName("nrhs_comptime");
 			nrhs_comptime->SetTitle("nrhs_comptime");
 			graphs.push_back(nrhs_comptime);
+			MakeTimeRecoCatHists();
 
 
 		};
 		//ctor from rec hit collection - integrating into ntuplizer
-
 
 		enum TimeStrategy{
 			med = 0, 
 			eavg = 1, 
 			mmavg = 2
 		};		
-		
-		void Skim();
-		void GMMOnly(){ _mmonly = true; }
+		//struct for different types of time reco (ie median, eAvg, mmAvg)
+		struct timeRecoCat{
+			vector<TH1D*> hists1D;
+			vector<TH2D*> hists2D;
 			
+			string methodName;
+
+			timeRecoCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, const TimeStrategy& ts){
+				if(ts == med)
+					methodName = "median";
+				else if(ts == eavg)
+					methodName = "eAvg";
+				else if(ts == mmavg)
+					methodName = "mmAvg";
+				else
+					cout << "Error: time strategy " << ts << " not supported." << endl;		
+				string name;
+				//for each histogram (variable or correlation)
+				for(int i = 0; i < (int)in1dhists.size(); i++){
+						//make sure they have the right add-on name (ie leading, !lead, etc)
+						TH1D* hist = (TH1D*)in1dhists[i]->Clone();
+						name = hist->GetName();
+						if(!methodName.empty()) name += "_"+methodName;
+						hist->SetName(name.c_str());
+						if(!methodName.empty()) hist->SetTitle("");
+						hists1D.push_back(hist);
+					}
+
+				//for each histogram
+				for(int i = 0; i < (int)in2dhists.size(); i++){
+					TH2D* hist = (TH2D*)in2dhists[i]->Clone();
+					name = hist->GetName();
+					if(!methodName.empty()) name += "_"+methodName;
+					hist->SetName(name.c_str());
+					if(!methodName.empty()) hist->SetTitle("");
+					hists2D.push_back(hist);
+
+				}
+			}
+			
+
+
+		};
+
+		void Skim();
+		vector<TH1D*> _timeHists;	
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
@@ -100,51 +139,57 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
 		
-
-		//tPV = tJet - dRH/c (clock offset) + dPV/c (TOF - time to travel offset)
-		TH1D* PVtime_median = new TH1D("PVtime_median","PVtime_median",100,-10,10);	
-		TH1D* PVtime_eAvg = new TH1D("PVtime_eAvg","PVtime_eAvg",100,-10,10);	
-		//difference in tPV between two back-to-back jets
-		//previous time definitions
-		TH1D* PVtimeDiff_median = new TH1D("PVtimeDiff_median","PVtimeDiff_median",25,-3,3);	
-		TH1D* PVtimeDiff_eAvg = new TH1D("PVtimeDiff_eAvg","PVtimeDiff_eAvg",50,-3,3);	
-
-		//mm only jet plots
-		//mm only time (from true jets)
-		TH1D* PVtime_mmAvg = new TH1D("PVtime_mmAvg", "PVtime_mmAvg",100,-10,10);	
-		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg = new TH1D("PVtimeDiff_mmAvg", "PVtimeDiff_mmAvg",50,-3,3);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
+		
 
+		//0 - pv time
+		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
+		//1 - delta t between jets (pv time frame)
+		TH1D* deltaT_jet = new TH1D("PVdeltaT_jet", "PVdeltaT_jet",50,-3,3);	
+		//2 - delta t between pv and photon 
+		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-3,3);	
+		//3 - difference in deltaT_pvGam between gen and reco
+		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
+		//4 - resolution of above difference as a function of pT avg of jets that go into PV time calculation
+		//may need to adjust binning
+		TH1D* ptAvg_resDiffDeltaT = new TH1D("ptAvg_resDiffDeltaT","ptAvg_resDiff",50,0,100);
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
 
 		//predicted jet plots
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
-		TH1D* PVtime_median_pred = new TH1D("PVtime_median_pred","PVtime_median_pred",100,-10,10);	
-		TH1D* PVtime_eAvg_pred = new TH1D("PVtime_eAvg_pred","PVtime_eAvg_pred",100,-10,10);	
-		TH1D* PVtime_mmAvg_pred = new TH1D("PVtime_mmAvg_pred", "PVtime_mmAvg_pred",100,-10,10);	
+		TH1D* PVtime_pred = new TH1D("PVtime_pred","PVtime_pred",100,-10,10);	
 		//difference in tPV between two back-to-back jets
 		//previous time definitions
-		TH1D* PVtimeDiff_median_pred = new TH1D("PVtimeDiff_median_pred","PVtimeDiff_median_pred",100,-10,10);	
-		TH1D* PVtimeDiff_eAvg_pred = new TH1D("PVtimeDiff_eAvg_pred","PVtimeDiff_eAvg_pred",100,-10,10);	
-		//mm only time (from true jets)
-		TH1D* PVtimeDiff_mmAvg_pred = new TH1D("PVtimeDiff_mmAvg_pred", "PVtimeDiff_mmAvg_pred",100,-10,10);	
+		TH1D* deltaT_jet_pred = new TH1D("PVdeltaT_jet_pred","PVdeltaT_jet_pred",100,-10,10);	
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime = new TGraph();
+
+
+		vector<timeRecoCat> trCats;
+		void MakeTimeRecoCatHists(){
+			timeRecoCat trmed(_timeHists, _hists2D, med);
+			timeRecoCat treavg(_timeHists, _hists2D, eavg);
+			timeRecoCat trmmavg(_timeHists, _hists2D, mmavg);
+		
+			trCats.push_back(trmed);
+			trCats.push_back(treavg);
+			trCats.push_back(trmmavg);	
+		}
+
 	
 
 		void FillTrueJetHists(const vector<Jet>& jets){
-			int njets = _base->Jet_energy->size();	
+			int njets = jets.size();	
 			nTrueJets->Fill((double)njets);
 		
 			double eECAL = 0;
 			int ijet = 0;
 			vector<JetPoint> rhs;
-			for(int j = 0; j < jets.size(); j++){
+			for(int j = 0; j < njets; j++){
 				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
 				objE->Fill(jets[j].E());
 				TrueJet_pT->Fill(jets[j].pt());
@@ -155,89 +200,47 @@ class JetSkimmer : public BaseSkimmer{
 				eECAL *= jets[j].E();
 				TrueJet_EmE->Fill(eECAL);
 				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet));			
+			
 				
 				rhs.clear();
 				rhs = jets[j].GetJetPoints();
 				for(int r = 0; r < rhs.size(); r++){
 					erhs_trhs->Fill(rhs[r].E(), rhs[r].t());
 				}		
-	
-			}
-
-			FillPVHists_TrueJets(jets);	
-		}
-		
-		void FillPVHists_TrueJets(const vector<Jet>& jets){
-			int njets = (int)jets.size(); 
-			for(int i = 0; i < njets; i++){
-				PVtime_median->Fill( CalcMedianTime(jets[i]) );
-				PVtime_eAvg->Fill( CalcEAvgTime(jets[i]) );
-			}
-			if(njets < 2) return;
-			pair<Jet,Jet> hardjets;
-			FindHardestJetPair(jets, hardjets);
-	
-			TrueJet_twoHardestpT->Fill(hardjets.first.pt());
-			TrueJet_twoHardestpT->Fill(hardjets.second.pt());
-
-			FillTimeRes(med, hardjets);
-			FillTimeRes(eavg, hardjets);
-		}
-		void FillPVHists_MMOnlyJets(const vector<Jet>& jets, const vector<GaussianMixture*>& models){
-			int njets = (int)jets.size();
-			if(njets != models.size()){ cout << njets << " jets and " << models.size() << " models" << endl; return;} 
-			//find hardest two jets to calculate resolution	
-			//need to be back to back
-			//time of subclusters is measured as center
-			for(int i = 0; i < njets; i++){
-				PVtime_mmAvg->Fill( CalcMMAvgTime(models[i]) );
-			}
-			if(njets < 2) return;
-			pair<Jet,Jet> hardjets;
-			pair<GaussianMixture*,GaussianMixture*> hardmodels;
-			FindHardestJetPair(jets, hardjets);
-			hardmodels.first = models[hardjets.first.GetUserIdx()];
-			hardmodels.second = models[hardjets.second.GetUserIdx()];
-			FillTimeRes(mmavg, hardjets, hardmodels);
-
-		}
-
-
-
-		void FillMMOnlyJetHists(const vector<Jet>& jets, double alpha = 0.1, double emAlpha = 0.5){
-			vector<GaussianMixture*> models;
-			Matrix smear = Matrix(3,3);
-			double dphi = acos(-1)/360.; //1 degree in radians
-			double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
-			//diagonal matrix
-			smear.SetEntry(deta*deta,0,0);
-			smear.SetEntry(dphi*dphi,1,1);
-			smear.SetEntry(1.,2,2); //energy dependent smear in time, set in BayesCluster	
-			for(int i = 0; i < jets.size(); i++){
-				vector<JetPoint> rhs = jets[i].GetJetPoints();
-				vector<Jet> rhs_jet;
-				for(int r = 0; r < rhs.size(); r++){
-					rhs_jet.push_back( Jet(rhs[r]) );
-					rhs_jet[r].SetVertex(jets[i].GetVertex());
+				if(njets < 2) continue;
+				if(j == 0 || j == 1){	
+					TrueJet_twoHardestpT->Fill(jets[j].pt());
+					TrueJet_twoHardestpT->Fill(jets[j].pt());
 				}
-				BayesCluster* algo = new BayesCluster(rhs_jet);
-				algo->SetDataSmear(smear);
-				//set time resolution smearing
-				algo->SetTimeResSmear(0.2, 0.3*_gev);
-				algo->SetThresh(1.);
-				algo->SetAlpha(alpha);
-				algo->SetSubclusterAlpha(emAlpha);
-				algo->SetVerbosity(0);
-				GaussianMixture* gmm = algo->SubCluster();
-				nSubClusters_mm->Fill(gmm->GetNClusters());
-				models.push_back(gmm);
-			}		
-			//need vector of all jets/models
-			//to do back-to-back matching for resolution
-			FillPVHists_MMOnlyJets(jets, models);	
-			
-	
-		}	
+			}
+		}
+
+		void FillPVTimeHists(vector<Jet>& jets, int tr_idx, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+			double time = -999;
+			int njets = jets.size();
+			for(int j = 0; j < njets; j++){
+				if(tr_idx == med) time = CalcMedianTime(jets[j]);
+				else if(tr_idx == eavg) time = CalcEAvgTime(jets[j]);
+				else if(tr_idx == mmavg){
+					GaussianMixture* gmm = _subcluster(jets[j], smear, emAlpha, alpha, tres_c, tres_n);
+					nSubClusters_mm->Fill(gmm->GetNClusters());
+					time = CalcMMAvgTime(gmm);
+					jets[j].SetJetTime(time);
+				}
+				trCats[tr_idx].hists1D[0]->Fill( time );
+			}
+			if(njets < 2) return;
+			pair<Jet,Jet> hardjets;
+			if(jets[0].pt() < jets[1].pt()){
+				FindHardestJetPair(jets, hardjets);
+			}
+			//pt sorted
+			else{
+				hardjets = std::make_pair(jets[0],jets[1]);
+			}
+			double dtime = GetDTime(hardjets);
+			trCats[tr_idx].hists1D[1]->Fill(dtime);	
+		}
 
 
 		void FillPredJetHists(const vector<node*>& trees){
@@ -283,8 +286,6 @@ class JetSkimmer : public BaseSkimmer{
 				
 				//total cluster energy
 				clusterE->Fill(E_k);
-			
-
 			}
 		}
 		
@@ -302,7 +303,7 @@ class JetSkimmer : public BaseSkimmer{
 			for(int i = 0; i < njets; i++){
 				if(trees[i] == nullptr) continue;
 				CalcMMAvgPhiTime(trees[i]->model, phi1, t1);
-				PVtimeDiff_mmAvg_pred->Fill(t1);	
+				//PVdeltaT_jet_mmAvg_pred->Fill(t1);	
 				for(int j = i+1; j < njets; j++){
 					if(trees[i] == nullptr) continue;
 					CalcMMAvgPhiTime(trees[j]->model, phi2, t2);
@@ -312,7 +313,7 @@ class JetSkimmer : public BaseSkimmer{
 					//median time
 					//energy-weighted average
 					//mm average over subclusters
-					PVtimeDiff_mmAvg_pred->Fill(t1 - t2);	
+					//PVdeltaT_jet_mmAvg_pred->Fill(t1 - t2);	
 				}
 			}
 
@@ -339,7 +340,7 @@ class JetSkimmer : public BaseSkimmer{
 			//continue until pair is found
 
 		}
-		void FillTimeRes(TimeStrategy timeStrategy, const pair<Jet,Jet>& jets, const pair<GaussianMixture*,GaussianMixture*>& models = std::make_pair(nullptr,nullptr)){
+		double GetDTime(pair<Jet,Jet>& jets){
 			double pi = acos(-1);
 			//not needed for GMSB
 			if(_data){
@@ -347,77 +348,68 @@ class JetSkimmer : public BaseSkimmer{
 				double phi1 = jets.first.phi_02pi();
 				double phi2 = jets.second.phi_02pi();
 				double dphi = fabs(phi1 - phi2);
-				if(dphi < pi-0.1 || dphi > pi+0.1) return;
+				if(dphi < pi-0.1 || dphi > pi+0.1) return -999;
 			}
-			double dtime = 0;
-			double t1 = 0;
-			double t2 = 0;
-			if(timeStrategy == 0){	
-				t1 = CalcMedianTime(jets.first);
-				t2 = CalcMedianTime(jets.second);
-				dtime = t1 - t2;
-				//cout << "Median - jets first time " << t1 << " jets second time " << t2 << endl;
-				//cout << "Median dtime: " << dtime << endl;
-
-				PVtimeDiff_median->Fill(dtime);
-			}
-			else if(timeStrategy == 1){	
-				t1 = CalcEAvgTime(jets.first);
-				t2 = CalcEAvgTime(jets.second);
-				dtime = t1 - t2;
-				//cout << "E-AVERAGE - jets first time " << t1 << " jets second time " << t2 << endl;
-				//cout << "Eavg dtime: " << dtime << endl;
-				//if(fabs(dtime) < 1e-2) cout << "energy avg time difference: " << dtime << " jets chosen " << jets.first.GetUserIdx() << " and " << jets.second.GetUserIdx() << endl;
-				PVtimeDiff_eAvg->Fill(dtime);
-				//cout << PVtimeDiff_eAvg->GetEntries() << " entries in pv time diff e-avg plot" << endl;
-			}
-			else if(timeStrategy == 2){	
-				t1 = CalcMMAvgTime(models.first);
-				t2 = CalcMMAvgTime(models.second);
-
-				dtime = t1 - t2;
-				//cout << "MM-AVERAGE - jets first time " << t1 << " jets second time " << t2 << endl;
-				//cout << "MMavg dtime: " << dtime << endl;
-				PVtimeDiff_mmAvg->Fill(dtime);
-			}
-			else{
-				cout << "Error: strategy not recognized. Available time reco strategies are 0 (median), 1 (energy average), or 2 (GMM coefficient weighted averge)" << endl;
-				return;
-			}
-
+			double t1 = jets.first.time();
+			double t2 = jets.second.time();
+			return t1 - t2;
 		}
 
 	
 
 
-		double CalcMedianTime(const Jet& j){
+		double CalcMedianTime(Jet& j){
 			vector<double> times;
+			double time = -999;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++)
 				times.push_back(rhs[i].t());
 			//even - return average of two median times
 			if(nrhs % 2 == 0)
-				return (times[int(double(nrhs)/2.)] + times[int(double(nrhs)/2.)-1]/2.);
+				time = (times[int(double(nrhs)/2.)] + times[int(double(nrhs)/2.)-1]/2.);
 			//odd - return median
 			else
-				return times[int(double(nrhs)/2.)];
-
+				time = times[int(double(nrhs)/2.)];
+			j.SetJetTime(time);
+			return time;
 		}		
 
 
-		double CalcEAvgTime(const Jet& j){
+		double CalcEAvgTime(Jet& j){
 			double t = 0;
 			double norm = 0;
+			double time = -999;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++){
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			}
-			return t/norm;
+			time = t/norm;
+			j.SetJetTime(time);
+			return time;
 		}
 
+
+		GaussianMixture* _subcluster(const Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+			vector<JetPoint> rhs = jet.GetJetPoints();
+			vector<Jet> rhs_jet;
+			for(int r = 0; r < rhs.size(); r++){
+				rhs_jet.push_back( Jet(rhs[r]) );
+				rhs_jet[r].SetVertex(jet.GetVertex());
+			}
+			BayesCluster* algo = new BayesCluster(rhs_jet);
+			algo->SetDataSmear(smear);
+			//set time resolution smearing
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			algo->SetThresh(1.);
+			algo->SetAlpha(alpha);
+			algo->SetSubclusterAlpha(emAlpha);
+			algo->SetVerbosity(0);
+			GaussianMixture* gmm = algo->SubCluster();
+			return gmm;
+		}
 
 
 
@@ -467,6 +459,20 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
+		void WriteTimeRecoCat1D(TFile* ofile, const timeRecoCat& tr){
+			ofile->cd();
+			string name;
+			vector<TH1D*> hists1D = tr.hists1D;
+			//write 1D hists
+			for(int i = 0; i < (int)hists1D.size(); i++){
+				if(tr.hists1D[i] == nullptr) continue;
+				name = tr.hists1D[i]->GetName();
+				if(tr.hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
+				tr.hists1D[i]->Write();
+			}
+		}
+
+
 		void WriteHists(TFile* ofile){
 			string name;
 
@@ -490,6 +496,7 @@ class JetSkimmer : public BaseSkimmer{
 				//cv->Write();
 				_hists2D[i]->Write();
 			}
+			erhs_trhs->Write();		
 			for(int i = 0; i < (int)graphs.size(); i++){
 				//name = graphs[i]->GetName();
 				//TCanvas* cv = new TCanvas(name.c_str(), "");
@@ -498,6 +505,9 @@ class JetSkimmer : public BaseSkimmer{
 				//cv->Write();
 				graphs[i]->Write();
 			}
+			for(int i = 0; i < trCats.size(); i++)
+				WriteTimeRecoCat1D(ofile, trCats[i]);
+
 			ofile->Close();
 
 		}
@@ -506,18 +516,21 @@ class JetSkimmer : public BaseSkimmer{
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;
 			else if(i == 1) _strategy = N2;
+			else if(i == 2) _strategy = MM;
 			else return; 
 		}
 
 
 		private:
-			bool _mmonly;
 			enum Strategy{
 				//Delauney strategy - NlnN time - for 2pi cylinder
 				NlnN = 0,
 				//traditional strategy - N^2 time
-				N2 = 1
+				N2 = 1,
+				//mm only
+				MM = 2
 			};
+		
 		
 			//clustering strategy - N^2 or NlnN
 			Strategy _strategy;

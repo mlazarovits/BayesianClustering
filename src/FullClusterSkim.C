@@ -277,8 +277,6 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinEmE(minEmE);
 		if(in_file.find("JetHT") != string::npos)
 			skimmer.SetData(true);
-		if(strat == 2) 
-			skimmer.GMMOnly();
 		else
 			skimmer.SetStrategy(strat);
 		skimmer.SetOutfile(fname);
