@@ -6,6 +6,7 @@
 #include "BasePDFMixture.hh"
 #include "BayesCluster.hh"
 #include "JetProducer.hh"
+#include "PhotonProducer.hh"
 #include <TFile.h>
 #include <TGraph.h>
 #include "TSystem.h"
@@ -28,6 +29,10 @@ class JetSkimmer : public BaseSkimmer{
 			//in ntuplizer, stored as rh time		
 
 			_prod = new JetProducer(file);
+			_prod->SetTransferFactor(_gev);
+			_prod->SetIsoCut();
+		
+
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -218,6 +223,7 @@ class JetSkimmer : public BaseSkimmer{
 		void FillPVTimeHists(vector<Jet>& jets, int tr_idx, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
 			double time = -999;
 			int njets = jets.size();
+			double gamtime = -999;
 			for(int j = 0; j < njets; j++){
 				if(tr_idx == med) time = CalcMedianTime(jets[j]);
 				else if(tr_idx == eavg) time = CalcEAvgTime(jets[j]);
@@ -227,7 +233,14 @@ class JetSkimmer : public BaseSkimmer{
 					time = CalcMMAvgTime(gmm);
 					jets[j].SetJetTime(time);
 				}
+				//fill pv time - 0
 				trCats[tr_idx].hists1D[0]->Fill( time );
+				
+				//fill deltaT_pvGam - 2
+				if(_phos.size() < 1) continue;
+				//only fill for two leading photons + this jet
+				gamtime = CalcPhotonTime(TimeStrategy(tr_idx), _phos[0]);
+
 			}
 			if(njets < 2) return;
 			pair<Jet,Jet> hardjets;
@@ -239,7 +252,13 @@ class JetSkimmer : public BaseSkimmer{
 				hardjets = std::make_pair(jets[0],jets[1]);
 			}
 			double dtime = GetDTime(hardjets);
+			//fill deltaT_jets - 1
 			trCats[tr_idx].hists1D[1]->Fill(dtime);	
+		
+			//fill difference in deltaT_pvGam of reco and gen - 3
+
+			//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
+
 		}
 
 
@@ -457,7 +476,11 @@ class JetSkimmer : public BaseSkimmer{
 			t /= ws; 
 		}
 
+		double CalcPhotonTime(const TimeStrategy& ts, const Jet& pho){
+			
 
+			return -999;
+		}
 
 		void WriteTimeRecoCat1D(TFile* ofile, const timeRecoCat& tr){
 			ofile->cd();
@@ -534,30 +557,8 @@ class JetSkimmer : public BaseSkimmer{
 		
 			//clustering strategy - N^2 or NlnN
 			Strategy _strategy;
-
 			vector<TGraph*> graphs;
-	
-		void TDRGraph(TGraph* gr, TCanvas* &can, string plot_title, string xtit, string ytit){
-			can->cd();
-			can->SetGridx(1);
-			can->SetGridy(1);
-			gr->SetTitle("");
-			gr->UseCurrentStyle();
-			gr->GetXaxis()->CenterTitle(true);
-			gr->GetXaxis()->SetTitle(xtit.c_str());
-			gr->GetYaxis()->CenterTitle(true);
-			gr->GetYaxis()->SetTitle(ytit.c_str());
-			gr->Draw();
-			
-			string lat_cms = "#bf{CMS} #it{WIP} "+_cms_label;
-			TLatex lat;
-			lat.SetNDC();
-			lat.SetTextSize(0.04);
-			lat.SetTextFont(42);
-			lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-			//lat.DrawLatex(0.4,0.92,plot_title.c_str());
+			vector<Jet> _phos; //photons for event
 
-			return;
-		}
 };
 #endif

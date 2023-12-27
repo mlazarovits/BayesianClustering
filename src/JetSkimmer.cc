@@ -55,14 +55,14 @@ void JetSkimmer::Skim(){
 	}
 	
 
+
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i++){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
+		_prod->GetTruePhotons(_phos, i);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
-		
-
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
@@ -72,9 +72,11 @@ void JetSkimmer::Skim(){
 		//fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i);
+	cout << "jets " << jets.size() << "phos: " << _phos.size() << endl;
 		if(jets.size() < 1){ cout << endl; continue; }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
-		
+
+	
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
 		FillTrueJetHists(jets);
 		for(int i = 0; i < trCats.size(); i++)	
@@ -85,7 +87,6 @@ void JetSkimmer::Skim(){
 
 		//fill mm only jet hists - done above
 		if(_strategy == MM){
-			//FillMMOnlyJetHists(jets, smear);
 			cout << endl;
 			continue;	
 		}
@@ -117,7 +118,7 @@ void JetSkimmer::Skim(){
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		
 		FillPredJetHists(trees);
-
+		_phos.clear();
 		
 	}
 
