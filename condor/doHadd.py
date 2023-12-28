@@ -25,7 +25,7 @@ def main():
 			continue
 		print(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")	
 		os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
-
+		print("Wrote to "+d.path+"/"+oname)
 
 
 if __name__ == "__main__":
