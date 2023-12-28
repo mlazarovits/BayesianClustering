@@ -39,3 +39,6 @@ obj/*.o
 *.json
 
 plots_local/*
+rootfiles/*
+skims/*
+condor/*
