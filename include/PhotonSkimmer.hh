@@ -166,7 +166,26 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(cmsSmin_cmsTimeSig);
 			_hists2D.push_back(cmsLogESmaj_cmsLogETimeSig);
 			_hists2D.push_back(cmsLogESmin_cmsLogETimeSig);
-
+			_hists2D.push_back(etaPhiCov_timeEtaCov);
+			_hists2D.push_back(timeEtaCov_timePhiCov);
+			_hists2D.push_back(etaPhiCov_timePhiCov);
+                	_hists2D.push_back(etaPhiCov_timeMajCov);
+                	_hists2D.push_back(etaPhiCov_timeMinCov);
+                	_hists2D.push_back(timePhiCov_timeMajCov);
+                	_hists2D.push_back(timePhiCov_timeMinCov);
+                	_hists2D.push_back(timeEtaCov_timeMajCov);
+                	_hists2D.push_back(timeEtaCov_timeMinCov);
+			_hists2D.push_back(etaPhiCovUnnnorm_timeEtaCovUnnnorm); 
+			_hists2D.push_back(timeEtaCovUnnnorm_timePhiCovUnnnorm);
+			_hists2D.push_back(etaPhiCovUnnnorm_timePhiCovUnnnorm); 
+                	_hists2D.push_back(etaPhiCovUnnnorm_timeMajCovUnnnorm); 
+                	_hists2D.push_back(etaPhiCovUnnnorm_timeMinCovUnnnorm); 
+                	_hists2D.push_back(timePhiCovUnnnorm_timeMajCovUnnnorm);
+                	_hists2D.push_back(timePhiCovUnnnorm_timeMinCovUnnnorm);
+                	_hists2D.push_back(timeEtaCovUnnnorm_timeMajCovUnnnorm);
+                	_hists2D.push_back(timeEtaCovUnnnorm_timeMinCovUnnnorm);
+                	_hists2D.push_back(rot2D_etaPhiCov);
+                	_hists2D.push_back(rot2D_etaPhiCovUnnorm);
 
 		};
 	
@@ -406,6 +425,46 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* cmsLogESmaj_cmsLogETimeSig = new TH2D("cmsLogESmaj_cmsLogETimeSig","cmsLogESmaj_cmsLogETimeSig;cmsLogE_Smaj;cmsLogE_timeSig",25,0.,0.01,25,0,10);
 		//45 - CMS logE smin vs cms sigma_t
 		TH2D* cmsLogESmin_cmsLogETimeSig = new TH2D("cmsLogESmin_cmsLogETimeSig","cmsLogESmin_cmsLogETimeSig;cmsLogE_Smin;cmsLogE_timeSig",25,0.,0.01,25,0,10);
+		//46 - etaphi cov vs timeeta cov
+		TH2D* etaPhiCov_timeEtaCov = new TH2D("etaPhiCov_timeEtaCov","etaPhiCov_timeEtaCov;etaPhiCov;time center",25,-1,1,25,-1,1);
+		//47 - timeeta cov vs timephi cov
+		TH2D* timeEtaCov_timePhiCov = new TH2D("timeEtaCov_timePhiCov","timeEtaCov_timePhiCov;timeEtaCov;time center",25,-1,1,25,-1,1);
+		//48 - etaphi cov vs timephi cov
+		TH2D* etaPhiCov_timePhiCov = new TH2D("etaPhiCov_timePhiCov","etaPhiCov_timePhiCov;etaPhiCov;time center",25,-1,1,25,-1,1);
+                //49 - etaphi cov vs. TimeMajCov
+                TH2D* etaPhiCov_timeMajCov = new TH2D("etaPhiCov_timeMajCov","etaPhiCov_timeMajCov;etaPhiCov;timeMajCov",25,-1,1.,25,-0.5,0.5);
+                //50 - etaphi cov vs. TimeMinCov
+                TH2D* etaPhiCov_timeMinCov = new TH2D("etaPhiCov_timeMinCov","etaPhiCov_timeMinCov;etaPhiCov;timeMinCov",25,-1,1.,25,-0.5,0.5);
+                //51 - timephi cov vs. TimeMajCov
+                TH2D* timePhiCov_timeMajCov = new TH2D("timePhiCov_timeMajCov","timePhiCov_timeMajCov;timePhiCov;timeMajCov",25,-1,1.,25,-0.5,0.5);
+                //52 - timephi cov vs. TimeMinCov
+                TH2D* timePhiCov_timeMinCov = new TH2D("timePhiCov_timeMinCov","timePhiCov_timeMinCov;timePhiCov;timeMinCov",25,-1,1.,25,-0.5,0.5);
+                //53 - timeeta cov vs. TimeMajCov
+                TH2D* timeEtaCov_timeMajCov = new TH2D("timeEtaCov_timeMajCov","timeEtaCov_timeMajCov;timeEtaCov;timeMajCov",25,-1,1.,25,-0.5,0.5);
+                //54 - timeeta cov vs. TimeMinCov
+                TH2D* timeEtaCov_timeMinCov = new TH2D("timeEtaCov_timeMinCov","timeEtaCov_timeMinCov;timeEtaCov;timeMinCov",25,-1,1.,25,-0.5,0.5);
+		//55 - etaphi cov unnnorm vs timeeta cov unnnorm
+		TH2D* etaPhiCovUnnnorm_timeEtaCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeEtaCovUnnnorm","etaPhiCovUnnnorm_timeEtaCovUnnnorm;etaPhiCovUnnnorm;time center",25,-1,1,25,-1,1);
+		//56 - timeeta cov unnnorm vs timephi cov unnnorm
+		TH2D* timeEtaCovUnnnorm_timePhiCovUnnnorm = new TH2D("timeEtaCovUnnnorm_timePhiCovUnnnorm","timeEtaCovUnnnorm_timePhiCovUnnnorm;timeEtaCovUnnnorm;time center",25,-1,1,25,-1,1);
+		//57 - etaphi cov unnnorm vs timephi cov unnnorm
+		TH2D* etaPhiCovUnnnorm_timePhiCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timePhiCovUnnnorm","etaPhiCovUnnnorm_timePhiCovUnnnorm;etaPhiCovUnnnorm;time center",25,-1,1,25,-1,1);
+                //58 - etaphi cov unnnorm vs. TimeMajCovUnnnorm 
+                TH2D* etaPhiCovUnnnorm_timeMajCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeMajCovUnnnorm","etaPhiCovUnnnorm_timeMajCovUnnnorm;etaPhiCovUnnnorm;timeMajCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //59 - etaphi cov unnnorm vs. TimeMinCovUnnnorm
+                TH2D* etaPhiCovUnnnorm_timeMinCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeMinCovUnnnorm","etaPhiCovUnnnorm_timeMinCovUnnnorm;etaPhiCovUnnnorm;timeMinCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //60 - timephi cov unnnorm vs. TimeMajCovUnnnorm
+                TH2D* timePhiCovUnnnorm_timeMajCovUnnnorm = new TH2D("timePhiCovUnnnorm_timeMajCovUnnnorm","timePhiCovUnnnorm_timeMajCovUnnnorm;timePhiCovUnnnorm;timeMajCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //61 - timephi cov unnnorm vs. TimeMinCovUnnnorm
+                TH2D* timePhiCovUnnnorm_timeMinCovUnnnorm = new TH2D("timePhiCovUnnnorm_timeMinCovUnnnorm","timePhiCovUnnnorm_timeMinCovUnnnorm;timePhiCovUnnnorm;timeMinCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //62 - timeeta cov unnnorm vs. TimeMajCovUnnnorm
+                TH2D* timeEtaCovUnnnorm_timeMajCovUnnnorm = new TH2D("timeEtaCovUnnnorm_timeMajCovUnnnorm","timeEtaCovUnnnorm_timeMajCovUnnnorm;timeEtaCovUnnnorm;timeMajCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //63 - timeeta cov unnnorm vs. TimeMinCovUnnnorm
+                TH2D* timeEtaCovUnnnorm_timeMinCovUnnnorm = new TH2D("timeEtaCovUnnnorm_timeMinCovUnnnorm","timeEtaCovUnnnorm_timeMinCovUnnnorm;timeEtaCovUnnnorm;timeMinCovUnnnorm",25,-1,1.,25,-0.5,0.5);
+                //64 - rot 2D vs. etaphi cov
+                TH2D* rot2D_etaPhiCov = new TH2D("rot2D_etaPhiCov","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-1,1);
+                //65 - rot 2D vs. etaphi cov unnorm
+                TH2D* rot2D_etaPhiCovUnnorm = new TH2D("rot2D_etaPhiCovUnnorm","rot2D_etaPhiCovUnnorm;rot2D;etaPhiCovUnnorm",25,0.4,1.1,25,-1,1);
 
 	
 		void Skim();
@@ -909,6 +968,26 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[0][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
 				plotCats[id_idx].hists2D[0][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
 				plotCats[id_idx].hists2D[0][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+				plotCats[id_idx].hists2D[0][46]->Fill(ep_cov, te_cov);
+				plotCats[id_idx].hists2D[0][47]->Fill(te_cov, tp_cov);
+				plotCats[id_idx].hists2D[0][48]->Fill(ep_cov, tp_cov);
+				plotCats[id_idx].hists2D[0][49]->Fill(ep_cov, majtime_cov);
+				plotCats[id_idx].hists2D[0][50]->Fill(ep_cov, mintime_cov);
+				plotCats[id_idx].hists2D[0][51]->Fill(tp_cov, majtime_cov);
+				plotCats[id_idx].hists2D[0][52]->Fill(tp_cov, mintime_cov);
+				plotCats[id_idx].hists2D[0][53]->Fill(te_cov, majtime_cov);
+				plotCats[id_idx].hists2D[0][54]->Fill(te_cov, mintime_cov);
+				plotCats[id_idx].hists2D[0][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+				plotCats[id_idx].hists2D[0][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+				plotCats[id_idx].hists2D[0][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+				plotCats[id_idx].hists2D[0][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+				plotCats[id_idx].hists2D[0][64]->Fill(rot2D, ep_cov);
+				plotCats[id_idx].hists2D[0][65]->Fill(rot2D, ep_cov_unnorm);
 
 
 				//histograms for leading/subleading clusters
@@ -1052,6 +1131,26 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[1][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
 					plotCats[id_idx].hists2D[1][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
 					plotCats[id_idx].hists2D[1][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+					plotCats[id_idx].hists2D[1][46]->Fill(ep_cov, te_cov);
+					plotCats[id_idx].hists2D[1][47]->Fill(te_cov, tp_cov);
+					plotCats[id_idx].hists2D[1][48]->Fill(ep_cov, tp_cov);
+					plotCats[id_idx].hists2D[1][49]->Fill(ep_cov, majtime_cov);
+					plotCats[id_idx].hists2D[1][50]->Fill(ep_cov, mintime_cov);
+					plotCats[id_idx].hists2D[1][51]->Fill(tp_cov, majtime_cov);
+					plotCats[id_idx].hists2D[1][52]->Fill(tp_cov, mintime_cov);
+					plotCats[id_idx].hists2D[1][53]->Fill(te_cov, majtime_cov);
+					plotCats[id_idx].hists2D[1][54]->Fill(te_cov, mintime_cov);
+					plotCats[id_idx].hists2D[1][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+					plotCats[id_idx].hists2D[1][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+					plotCats[id_idx].hists2D[1][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+					plotCats[id_idx].hists2D[1][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[1][64]->Fill(rot2D, ep_cov);
+					plotCats[id_idx].hists2D[1][65]->Fill(rot2D, ep_cov_unnorm);
 				}
 
 				else if(k != leadidx){
@@ -1195,6 +1294,26 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[2][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
 					plotCats[id_idx].hists2D[2][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
 					plotCats[id_idx].hists2D[2][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+					plotCats[id_idx].hists2D[2][46]->Fill(ep_cov, te_cov);
+					plotCats[id_idx].hists2D[2][47]->Fill(te_cov, tp_cov);
+					plotCats[id_idx].hists2D[2][48]->Fill(ep_cov, tp_cov);
+					plotCats[id_idx].hists2D[2][49]->Fill(ep_cov, majtime_cov);
+					plotCats[id_idx].hists2D[2][50]->Fill(ep_cov, mintime_cov);
+					plotCats[id_idx].hists2D[2][51]->Fill(tp_cov, majtime_cov);
+					plotCats[id_idx].hists2D[2][52]->Fill(tp_cov, mintime_cov);
+					plotCats[id_idx].hists2D[2][53]->Fill(te_cov, majtime_cov);
+					plotCats[id_idx].hists2D[2][54]->Fill(te_cov, mintime_cov);
+					plotCats[id_idx].hists2D[2][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+					plotCats[id_idx].hists2D[2][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+					plotCats[id_idx].hists2D[2][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+					plotCats[id_idx].hists2D[2][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+					plotCats[id_idx].hists2D[2][64]->Fill(rot2D, ep_cov);
+					plotCats[id_idx].hists2D[2][65]->Fill(rot2D, ep_cov_unnorm);
 				}
 
 			}
