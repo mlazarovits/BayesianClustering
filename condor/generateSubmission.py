@@ -27,6 +27,8 @@ def generateSubmission(args):
 		inputFile = "GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X.root"
 	elif args.inputSample == "GMSBv13":	
 		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GMSBv13_L150":	
+		inputFile = "GMSB_AOD_v13_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
 	else:
@@ -51,7 +53,7 @@ def generateSubmission(args):
 	if(objName == "jets"):
 		printstring += " with strategy "+strategyName 
 	print printstring
-	
+
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
 	#find .root and then find the / before that (if it exists) - everything in between is the file name
 	sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
@@ -80,7 +82,7 @@ def generateSubmission(args):
 
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
-	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)
+	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)
 	if(args.noTimeSmear):
 		flags += ' --noTimeSmear'
 	if(objName == "jets"):
@@ -107,7 +109,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSBv9','GMSBv13','JetHT'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSBv9','GMSBv13','GMSBv13_L150','JetHT'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
@@ -120,6 +122,9 @@ def main():
 	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
 	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
 	parser.add_argument('--gev',help='energy transfer factor',default=1./30.)
+	parser.add_argument('--minpt',help='min object pt',default=30.)
+	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
+	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
 	parser.add_argument('--noTimeSmear',help="turn off time smearing",default=False,action='store_true')
 	args = parser.parse_args()
 
