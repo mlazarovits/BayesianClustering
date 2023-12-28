@@ -1,6 +1,5 @@
 import os
 import argparse
-import ROOT
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -19,8 +18,13 @@ def main():
 		elif "photons" in d.path:
 			oname += "_photons"
 		oname += ".root"
-		#os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
+		#check if file exists
+		if os.path.exists(oname):
+			continue
+		if not os.path.exists(d.path+"/out/"):
+			continue
 		print(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")	
+		os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
 
 
 
