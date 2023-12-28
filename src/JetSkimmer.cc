@@ -72,12 +72,11 @@ void JetSkimmer::Skim(){
 		//fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i);
-	cout << "jets " << jets.size() << "phos: " << _phos.size() << endl;
 		if(jets.size() < 1){ cout << endl; continue; }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
 	
-		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster";
+		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		FillTrueJetHists(jets);
 		for(int i = 0; i < trCats.size(); i++)	
 			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
@@ -124,6 +123,7 @@ void JetSkimmer::Skim(){
 
 	//do computational time graph
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
+	//Profile2DHist(ptavg_diffDeltaTime,ptavg_sigmaDeltaTime);
 
 	WriteHists(ofile);
 

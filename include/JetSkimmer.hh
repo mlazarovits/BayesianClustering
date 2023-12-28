@@ -50,13 +50,17 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_twoHardestpT);	
 			_hists1D.push_back(nSubClusters_mm);
 			
-			_timeHists.push_back(PVtime);
-			_timeHists.push_back(deltaT_jet);
-			_timeHists.push_back(deltaT_pvGam);	
+			_timeHists1D.push_back(PVtime);
+			_timeHists1D.push_back(deltaT_jet);
+			_timeHists1D.push_back(deltaT_pvGam);	
 			//key figures of merit	
-			_timeHists.push_back(diffDeltaT_recoGen);
-			_timeHists.push_back(ptAvg_resDiffDeltaT);
-			
+			_timeHists1D.push_back(diffDeltaT_recoGen);
+			_timeHists1D.push_back(ptavg_sigmaDeltaTime);
+
+			_timeHists2D.push_back(ptavg_diffDeltaTime);
+
+
+
 			//_hists2D.push_back(erhs_trhs);		
 			
 			//predicted jets - from BHC
@@ -130,7 +134,8 @@ class JetSkimmer : public BaseSkimmer{
 		};
 
 		void Skim();
-		vector<TH1D*> _timeHists;	
+		vector<TH1D*> _timeHists1D;	
+		vector<TH2D*> _timeHists2D;	
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
@@ -150,14 +155,16 @@ class JetSkimmer : public BaseSkimmer{
 		//0 - pv time
 		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
 		//1 - delta t between jets (pv time frame)
-		TH1D* deltaT_jet = new TH1D("PVdeltaT_jet", "PVdeltaT_jet",50,-3,3);	
+		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-3,3);	
 		//2 - delta t between pv and photon 
 		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-3,3);	
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
+		//may need to adjust binning/windows here
+		TH2D* ptavg_diffDeltaTime = new TH2D("ptavg_diffDeltaT","pvavg_diffDeltaT",50,0,1000,25,-3,3);	
+		//profile of above
 		//4 - resolution of above difference as a function of pT avg of jets that go into PV time calculation
-		//may need to adjust binning
-		TH1D* ptAvg_resDiffDeltaT = new TH1D("ptAvg_resDiffDeltaT","ptAvg_resDiff",50,0,100);
+		TH1D* ptavg_sigmaDeltaTime = new TH1D("ptavg_sigmaDeltaTime","ptavg_sigmaDeltaTime",50,0,1000);
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -176,9 +183,9 @@ class JetSkimmer : public BaseSkimmer{
 
 		vector<timeRecoCat> trCats;
 		void MakeTimeRecoCatHists(){
-			timeRecoCat trmed(_timeHists, _hists2D, med);
-			timeRecoCat treavg(_timeHists, _hists2D, eavg);
-			timeRecoCat trmmavg(_timeHists, _hists2D, mmavg);
+			timeRecoCat trmed(_timeHists1D, _timeHists2D, med);
+			timeRecoCat treavg(_timeHists1D, _timeHists2D, eavg);
+			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg);
 		
 			trCats.push_back(trmed);
 			trCats.push_back(treavg);
@@ -221,43 +228,64 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 		void FillPVTimeHists(vector<Jet>& jets, int tr_idx, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
-			double time = -999;
 			int njets = jets.size();
+			double jettime = -999;
+			vector<double> jettimes;
 			double gamtime = -999;
+			double pvtime = -999;
+			double deltaT_pvgam = -999;
+			double ptavg = 0;
+			TimeStrategy ts = TimeStrategy(tr_idx);
 			for(int j = 0; j < njets; j++){
-				if(tr_idx == med) time = CalcMedianTime(jets[j]);
-				else if(tr_idx == eavg) time = CalcEAvgTime(jets[j]);
-				else if(tr_idx == mmavg){
-					GaussianMixture* gmm = _subcluster(jets[j], smear, emAlpha, alpha, tres_c, tres_n);
-					nSubClusters_mm->Fill(gmm->GetNClusters());
-					time = CalcMMAvgTime(gmm);
-					jets[j].SetJetTime(time);
+				jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
+				jets[j].SetJetTime(jettime);
+				//fill jet time in pv frame - 0
+				trCats[tr_idx].hists1D[0]->Fill(jettime);
+				//add to pv time calculation
+				jettimes.push_back(jettime);
+				ptavg += jets[j].pt();	
+			}
+			ptavg = ptavg/double(njets);
+			//calculate jet time difference
+			if(njets < 1){
+				pair<Jet,Jet> hardjets;
+				if(jets[0].pt() < jets[1].pt()){
+					FindHardestJetPair(jets, hardjets);
 				}
-				//fill pv time - 0
-				trCats[tr_idx].hists1D[0]->Fill( time );
-				
-				//fill deltaT_pvGam - 2
-				if(_phos.size() < 1) continue;
-				//only fill for two leading photons + this jet
-				gamtime = CalcPhotonTime(TimeStrategy(tr_idx), _phos[0]);
-
-			}
-			if(njets < 2) return;
-			pair<Jet,Jet> hardjets;
-			if(jets[0].pt() < jets[1].pt()){
-				FindHardestJetPair(jets, hardjets);
-			}
-			//pt sorted
-			else{
-				hardjets = std::make_pair(jets[0],jets[1]);
-			}
-			double dtime = GetDTime(hardjets);
-			//fill deltaT_jets - 1
-			trCats[tr_idx].hists1D[1]->Fill(dtime);	
-		
+				//pt sorted
+				else{
+					hardjets = std::make_pair(jets[0],jets[1]);
+				}
+				double dtime = GetDTime(hardjets);
+				//fill deltaT_jets - 1
+				trCats[tr_idx].hists1D[1]->Fill(dtime);
+			}	
+			//fill deltaT_pvGam - 2
+			//only fill for two leading photons + weighted avg of jet time
+			if(_phos.size() < 1) return;
+			//this assumes that the time for the jet was set previously with the respective method
+			pvtime = CalcPVTime(ts, jets);
+			gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
+			deltaT_pvgam = pvtime - gamtime;
+			trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
 			//fill difference in deltaT_pvGam of reco and gen - 3
-
+			//deltaT_pvgam_gen = ???
+			//trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
+			
 			//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
+			//need to give Profile2DHist a 2D hist with ptavg on x and deltaT_recoGen on y
+			//ptavg_diffDeltaTime->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
+			
+			//do same for subleading photon if it exists
+			if(_phos.size() > 1){
+				gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+				deltaT_pvgam = pvtime - gamtime;
+				trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
+				//deltaT_pvgam_gen = ???
+				//trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
+				//ptavg_diffDeltaTime->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
+			}
+		
 
 		}
 
@@ -375,7 +403,51 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 	
+		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+			if(ts == med) return CalcMedianTime(jet);
+			else if(ts == eavg) return CalcEAvgTime(jet);
+			else if(ts == mmavg){
+				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
+				nSubClusters_mm->Fill(gmm->GetNClusters());
+				return CalcMMAvgTime(gmm);
+			}
+			else return -999;
 
+		}
+		double CalcPVTime(const TimeStrategy& ts, vector<Jet>& jets){
+			int njets = jets.size();
+			double time = -99;
+			if(ts == med){
+				vector<double> times;
+				for(int i = 0; i < njets; i++)
+					times.push_back(jets[i].t());
+				//even - return average of two median times
+				if(njets % 2 == 0)
+					time = (times[int(double(njets)/2.)] + times[int(double(njets)/2.)-1]/2.);
+				//odd - return median
+				else
+					time = times[int(double(njets)/2.)];
+
+			}
+			else if(ts == eavg){
+				double norm = 0;
+				double t = 0;
+				for(int j = 0; j < njets; j++){
+					t += jets[j].E()*jets[j].t();
+					norm += jets[j].E();
+				}
+				time = t/norm;
+			}	
+			else if(ts == mmavg){
+				double norm = 0;
+				double t = 0;
+				for(int j = 0; j < njets; j++){
+					t += jets[j].t();
+				}
+				time = t/double(njets);
+			}	
+			return time;
+		}
 
 		double CalcMedianTime(Jet& j){
 			vector<double> times;
@@ -390,7 +462,6 @@ class JetSkimmer : public BaseSkimmer{
 			//odd - return median
 			else
 				time = times[int(double(nrhs)/2.)];
-			j.SetJetTime(time);
 			return time;
 		}		
 
@@ -406,7 +477,6 @@ class JetSkimmer : public BaseSkimmer{
 				t += rhs[i].E()*rhs[i].t();
 			}
 			time = t/norm;
-			j.SetJetTime(time);
 			return time;
 		}
 
@@ -474,12 +544,6 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			phi /= ws;
 			t /= ws; 
-		}
-
-		double CalcPhotonTime(const TimeStrategy& ts, const Jet& pho){
-			
-
-			return -999;
 		}
 
 		void WriteTimeRecoCat1D(TFile* ofile, const timeRecoCat& tr){
