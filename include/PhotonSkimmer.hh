@@ -53,7 +53,7 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists1D.push_back(slope_etaT);
                         _hists1D.push_back(slope_phiT);
                         _hists1D.push_back(polar_ang);
-                        _hists1D.push_back(azimuth_ang);
+                        _hists1D.push_back(phiEll);
                         _hists1D.push_back(e_subcl);
                         _hists1D.push_back(rotundity_3D);
                         _hists1D.push_back(rotundity_2D);
@@ -63,7 +63,7 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists1D.push_back(phiSig);
                         _hists1D.push_back(timeSig);
                         _hists1D.push_back(fracE);
-                        _hists1D.push_back(azimuth_ang_2D);
+                        _hists1D.push_back(phiEll);
                         _hists1D.push_back(etaSig_pos);
                         _hists1D.push_back(etaSig_neg);
                         _hists1D.push_back(etaphi_cov);
@@ -104,7 +104,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(cmsNoE_time_center);
 			_hists1D.push_back(cmsNoE_eta_center);
 			_hists1D.push_back(cmsNoE_phi_center);
-			_hists1D.push_back(cmsNoE_azimuth_ang_2D);		
+			_hists1D.push_back(cmsNoE_phiEll);		
 			_hists1D.push_back(cmsNoE_timeSmaj_cov);
 			_hists1D.push_back(cmsNoE_timeSmin_cov);
 			_hists1D.push_back(cmsNoE_timeSmaj_covUnnorm);
@@ -113,7 +113,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(cmsLogE_time_center);
 			_hists1D.push_back(cmsLogE_eta_center);
 			_hists1D.push_back(cmsLogE_phi_center);
-			_hists1D.push_back(cmsLogE_azimuth_ang_2D);	
+			_hists1D.push_back(cmsLogE_phiEll);	
 			_hists1D.push_back(cmsLogE_timeSmaj_cov);
 			_hists1D.push_back(cmsLogE_timeSmin_cov);
 			_hists1D.push_back(cmsLogE_timeSmaj_covUnnorm);
@@ -145,17 +145,17 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists2D.push_back(timePhiCov_totE);
                 	_hists2D.push_back(timeSig_timeMajCov);
                 	_hists2D.push_back(timeSig_timeMinCov);
-                	_hists2D.push_back(azAngle2D_timeMajCov);
-                	_hists2D.push_back(azAngle2D_timeMinCov);
+                	_hists2D.push_back(phiEll2D_timeMajCov);
+                	_hists2D.push_back(phiEll2D_timeMinCov);
                 	_hists2D.push_back(rot2D_timeMajCov);
                 	_hists2D.push_back(rot2D_timeMinCov);
                 	_hists2D.push_back(rot3D_timeMajCov);
                 	_hists2D.push_back(rot3D_timeMinCov);
 			_hists2D.push_back(timeMajCov_timeCenter);
 			_hists2D.push_back(timeMinCov_timeCenter);
-			_hists2D.push_back(etaPhiCov_azAngle2D);
-			_hists2D.push_back(timeMajCov_azAngle2D);
-			_hists2D.push_back(timeMinCov_azAngle2D);
+			_hists2D.push_back(etaPhiCov_phiEll2D);
+			_hists2D.push_back(timeMajCov_phiEll2D);
+			_hists2D.push_back(timeMinCov_phiEll2D);
                 	_hists2D.push_back(rot2D_timeMajCovUnnorm);
                 	_hists2D.push_back(rot2D_timeMinCovUnnorm);
                 	_hists2D.push_back(timeSig_timeEtaCov);
@@ -219,7 +219,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//19 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//20 - azimuth angle in 2D
-		TH1D* azimuth_ang_2D = new TH1D("phi_ell","phi_ell",50,-3.1,3.1);		
+		TH1D* phiEll = new TH1D("phi_ell","phi_ell",50,-3.1,3.1);		
 		//21 - eta sigma for positive eta clusters
                 TH1D* etaSig_pos = new TH1D("etaSig_pos","etaSig_pos",25,0.01, 0.09);
 		//22 - eta sigma for negative eta clusters
@@ -301,7 +301,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//60 - CMS phi center
 		TH1D* cmsNoE_phi_center = new TH1D("cmsNoE_phi_center","cmsNoE_phi_center",50,-0.1,6.3);
 		//61 - CMS ellipsoid angle (phi2D)
-		TH1D* cmsNoE_azimuth_ang_2D = new TH1D("cmsNoE_phi_ell","cmsNoE_phi_ell",50,-0.1,3.);		
+		TH1D* cmsNoE_phiEll = new TH1D("cmsNoE_phi_ell","cmsNoE_phi_ell",50,-0.1,3.);		
 		//62 - CMS time-smaj covariance
 		TH1D* cmsNoE_timeSmaj_cov = new TH1D("cmsNoE_timeSmaj_cov","cmsNoE_timeSmaj_cov",25,-3.,3.);
 		//63 - CMS time-smin covariance
@@ -319,7 +319,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//69 - CMS logE phi center
 		TH1D* cmsLogE_phi_center = new TH1D("cmsLogE_phi_center","cmsLogE_phi_center",50,-0.1,6.3);
 		//70 - CMS logE ellipsoid angle (phi2D)
-		TH1D* cmsLogE_azimuth_ang_2D = new TH1D("cmsLogE_phi_ell","cmsLogE_phi_ell",50,-0.1,3.);	
+		TH1D* cmsLogE_phiEll = new TH1D("cmsLogE_phi_ell","cmsLogE_phi_ell",50,-0.1,3.);	
 		//71 - CMS logE time-smaj covariance
 		TH1D* cmsLogE_timeSmaj_cov = new TH1D("cmsLogE_timeSmaj_cov","cmsLogE_timeSmaj_cov",25,-3.,3.);
 		//72 - CMS logE time-smin covariance
@@ -384,9 +384,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //24 - time sigma vs. TimeMinCov
                 TH2D* timeSig_timeMinCov = new TH2D("timeSig_timeMinCov","timeSig_timeMinCov;timeSig;timeMinCov",25,0,1.,25,-0.5,0.5);
                 //25 - az angle 2D vs. TimeMajCov
-                TH2D* azAngle2D_timeMajCov = new TH2D("azAngle2D_timeMajCov","azAngle2D_timeMajCov;azAngle2D;timeMajCov",25,0,3.5,25,-0.5,0.5);
+                TH2D* phiEll2D_timeMajCov = new TH2D("azAngle2D_timeMajCov","azAngle2D_timeMajCov;azAngle2D;timeMajCov",25,0,3.5,25,-0.5,0.5);
                 //26 - az 2D angle vs. TimeMinCov
-                TH2D* azAngle2D_timeMinCov = new TH2D("azAngle2D_timeMinCov","azAngle2D_timeMinCov;azAngle2D;timeMinCov",25,0,3.5,25,-0.5,0.5);
+                TH2D* phiEll2D_timeMinCov = new TH2D("azAngle2D_timeMinCov","azAngle2D_timeMinCov;azAngle2D;timeMinCov",25,0,3.5,25,-0.5,0.5);
                 //27 - rot 2D vs. TimeMajCov
                 TH2D* rot2D_timeMajCov = new TH2D("rot2D_timeMajCov","rot2D_timeMajCov;rot2D;timeMajCov",25,0.4,1.1,25,-0.5,0.5);
                 //28 - rot 2D angle vs. TimeMinCov
@@ -400,11 +400,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//32 - timemin cov vs time center
 		TH2D* timeMinCov_timeCenter = new TH2D("timeMinCov_timeCenter","timeMinCov_timeCenter;timeMinCov;time center",25,-0.5,0.5,25,-0.1,0.1);
 		//33 - eta-phi covariance vs azimuth ellipsoid angle
-		TH2D* etaPhiCov_azAngle2D = new TH2D("etaPhiCov_phiE2D","etaPhiCov_phiE2D;etaPhiCov;ellipsoid phi 2D",25,-10.,10.,25,0,3.5);
+		TH2D* etaPhiCov_phiEll2D = new TH2D("etaPhiCov_phiE2D","etaPhiCov_phiE2D;etaPhiCov;ellipsoid phi 2D",25,-10.,10.,25,0,3.5);
 		//34 - time-maj covariance vs azimuth ellipsoid angle
-		TH2D* timeMajCov_azAngle2D = new TH2D("timeMajCov_phiE2D","timeMajCov_phiE2D;timeMajCov;ellipsoid phi 2D",25,-0.5,0.5,25,0,3.5);
+		TH2D* timeMajCov_phiEll2D = new TH2D("timeMajCov_phiE2D","timeMajCov_phiE2D;timeMajCov;ellipsoid phi 2D",25,-0.5,0.5,25,0,3.5);
 		//35 - time-min covariance vs azimuth ellipsoid angle
-		TH2D* timeMinCov_azAngle2D = new TH2D("timeMinCov_phiE2D","timeMinCov_phiE2D;timeMinCov;ellipsoid phi 2D",25,-0.5,0.5,25,0,3.5);
+		TH2D* timeMinCov_phiEll2D = new TH2D("timeMinCov_phiE2D","timeMinCov_phiE2D;timeMinCov;ellipsoid phi 2D",25,-0.5,0.5,25,0,3.5);
                 //36 - rot 2D vs. TimeMajCov unnorm
                 TH2D* rot2D_timeMajCovUnnorm = new TH2D("rot2D_timeMajCovUnnorm","rot2D_timeMajCovUnnorm;rot2D;timeMajCovUnnorm",25,0.4,1.1,25,-0.5,0.5);
                 //37 - rot 2D angle vs. TimeMinCov unnorm
@@ -444,23 +444,23 @@ class PhotonSkimmer : public BaseSkimmer{
                 //54 - timeeta cov vs. TimeMinCov
                 TH2D* timeEtaCov_timeMinCov = new TH2D("timeEtaCov_timeMinCov","timeEtaCov_timeMinCov;timeEtaCov;timeMinCov",25,-1,1.,25,-0.5,0.5);
 		//55 - etaphi cov unnorm vs timeeta cov unnorm
-		TH2D* etaPhiCovUnnorm_timeEtaCovUnnorm = new TH2D("etaPhiCovUnnorm_timeEtaCovUnnorm","etaPhiCovUnnorm_timeEtaCovUnnorm;etaPhiCovUnnorm;timeEtaCovUnnorm",25,-1,1,25,-1,1);
+		TH2D* etaPhiCovUnnorm_timeEtaCovUnnorm = new TH2D("etaPhiCovUnnorm_timeEtaCovUnnorm","etaPhiCovUnnorm_timeEtaCovUnnorm;etaPhiCovUnnorm;timeEtaCovUnnorm",25,-0.2,0.2,25,-0.5,0.5);
 		//56 - timeeta cov unnorm vs timephi cov unnorm
-		TH2D* timeEtaCovUnnorm_timePhiCovUnnorm = new TH2D("timeEtaCovUnnorm_timePhiCovUnnorm","timeEtaCovUnnorm_timePhiCovUnnorm;timeEtaCovUnnorm;timePhiCovUnnorm",25,-1,1,25,-1,1);
+		TH2D* timeEtaCovUnnorm_timePhiCovUnnorm = new TH2D("timeEtaCovUnnorm_timePhiCovUnnorm","timeEtaCovUnnorm_timePhiCovUnnorm;timeEtaCovUnnorm;timePhiCovUnnorm",25,-0.5,0.5,25,-0.5,0.5);
 		//57 - etaphi cov unnorm vs timephi cov unnorm
-		TH2D* etaPhiCovUnnorm_timePhiCovUnnorm = new TH2D("etaPhiCovUnnorm_timePhiCovUnnorm","etaPhiCovUnnorm_timePhiCovUnnorm;etaPhiCovUnnorm;timePhiCovUnnorm",25,-1,1,25,-1,1);
+		TH2D* etaPhiCovUnnorm_timePhiCovUnnorm = new TH2D("etaPhiCovUnnorm_timePhiCovUnnorm","etaPhiCovUnnorm_timePhiCovUnnorm;etaPhiCovUnnorm;timePhiCovUnnorm",25,-0.2,0.2,25,-0.5,0.5);
                 //58 - etaphi cov unnorm vs. TimeMajCovUnnorm 
-                TH2D* etaPhiCovUnnorm_timeMajCovUnnorm = new TH2D("etaPhiCovUnnorm_timeMajCovUnnorm","etaPhiCovUnnorm_timeMajCovUnnorm;etaPhiCovUnnorm;timeMajCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* etaPhiCovUnnorm_timeMajCovUnnorm = new TH2D("etaPhiCovUnnorm_timeMajCovUnnorm","etaPhiCovUnnorm_timeMajCovUnnorm;etaPhiCovUnnorm;timeMajCovUnnorm",25,-0.2,0.2.,25,-0.5,0.5);
                 //59 - etaphi cov unnorm vs. TimeMinCovUnnorm
-                TH2D* etaPhiCovUnnorm_timeMinCovUnnorm = new TH2D("etaPhiCovUnnorm_timeMinCovUnnorm","etaPhiCovUnnorm_timeMinCovUnnorm;etaPhiCovUnnorm;timeMinCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* etaPhiCovUnnorm_timeMinCovUnnorm = new TH2D("etaPhiCovUnnorm_timeMinCovUnnorm","etaPhiCovUnnorm_timeMinCovUnnorm;etaPhiCovUnnorm;timeMinCovUnnorm",25,-0.2,0.2.,25,-0.5,0.5);
                 //60 - timephi cov unnorm vs. TimeMajCovUnnorm
-                TH2D* timePhiCovUnnorm_timeMajCovUnnorm = new TH2D("timePhiCovUnnorm_timeMajCovUnnorm","timePhiCovUnnorm_timeMajCovUnnorm;timePhiCovUnnorm;timeMajCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* timePhiCovUnnorm_timeMajCovUnnorm = new TH2D("timePhiCovUnnorm_timeMajCovUnnorm","timePhiCovUnnorm_timeMajCovUnnorm;timePhiCovUnnorm;timeMajCovUnnorm",25,-0.5,0.5.,25,-0.5,0.5);
                 //61 - timephi cov unnorm vs. TimeMinCovUnnorm
-                TH2D* timePhiCovUnnorm_timeMinCovUnnorm = new TH2D("timePhiCovUnnorm_timeMinCovUnnorm","timePhiCovUnnorm_timeMinCovUnnorm;timePhiCovUnnorm;timeMinCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* timePhiCovUnnorm_timeMinCovUnnorm = new TH2D("timePhiCovUnnorm_timeMinCovUnnorm","timePhiCovUnnorm_timeMinCovUnnorm;timePhiCovUnnorm;timeMinCovUnnorm",25,-0.5,0.5.,25,-0.5,0.5);
                 //62 - timeeta cov unnorm vs. TimeMajCovUnnorm
-                TH2D* timeEtaCovUnnorm_timeMajCovUnnorm = new TH2D("timeEtaCovUnnorm_timeMajCovUnnorm","timeEtaCovUnnorm_timeMajCovUnnorm;timeEtaCovUnnorm;timeMajCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* timeEtaCovUnnorm_timeMajCovUnnorm = new TH2D("timeEtaCovUnnorm_timeMajCovUnnorm","timeEtaCovUnnorm_timeMajCovUnnorm;timeEtaCovUnnorm;timeMajCovUnnorm",25,-0.5,0.5.,25,-0.5,0.5);
                 //63 - timeeta cov unnorm vs. TimeMinCovUnnorm
-                TH2D* timeEtaCovUnnorm_timeMinCovUnnorm = new TH2D("timeEtaCovUnnorm_timeMinCovUnnorm","timeEtaCovUnnorm_timeMinCovUnnorm;timeEtaCovUnnorm;timeMinCovUnnorm",25,-1,1.,25,-0.5,0.5);
+                TH2D* timeEtaCovUnnorm_timeMinCovUnnorm = new TH2D("timeEtaCovUnnorm_timeMinCovUnnorm","timeEtaCovUnnorm_timeMinCovUnnorm;timeEtaCovUnnorm;timeMinCovUnnorm",25,-0.5,0.5.,25,-0.5,0.5);
                 //64 - rot 2D vs. etaphi cov
                 TH2D* rot2D_etaPhiCov = new TH2D("rot2D_etaPhiCov","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-1,1);
                 //65 - rot 2D vs. etaphi cov unnorm
