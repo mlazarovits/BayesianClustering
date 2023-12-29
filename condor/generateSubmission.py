@@ -57,7 +57,8 @@ def generateSubmission(args):
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
 	#find .root and then find the / before that (if it exists) - everything in between is the file name
 	sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
-	sampleNameShort = sampleName[ : sampleName.find("_") ]
+	#sampleNameShort = sampleName[ : sampleName.find("_") ]
+	samopleNameShort = args.inputSample
 
 	dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
 	ofilename = sampleNameShort+"_"+objName
