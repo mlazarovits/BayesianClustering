@@ -8,7 +8,11 @@ void MakePDFs(string file, string odir, string histname){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	string odirname = file.substr(0,file.find_last_of("."));
+	if(file.find("formatted") == string::npos){
+		cout << "Please give formatted file with TCanvases." << endl;
+		return;
+	}
+	string odirname = file.substr(0,file.find_last_of("_"));
 	odirname = odirname.substr(odirname.find("/")+1);
 	odir = "plots_local/"+odirname+"/"+odir+"/";
 	cout << "Writing plots to " << odir << endl;
@@ -21,7 +25,10 @@ void MakePDFs(string file, string odir, string histname){
 	TKey* key;
 	TCanvas* cv;
 	string name;
+	TString cvstring("TCanvas");
 	while((key = (TKey*)iter())){
+		if(key->GetClassName() != cvstring) continue;
+
 		cv = (TCanvas*)key->ReadObj();
 		name = cv->GetName();
 		if(name.find(histname) != string::npos){
