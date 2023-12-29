@@ -159,10 +159,21 @@ string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
 	if(in_file.find("condor") == string::npos){
-		int idx = in_file.find("NperGeV0p");
-		//based on NperGeV0pXXX being the last label before cms label
-		//and 3 digits following "GeV0p"
-		cmslab = in_file.substr(idx+13);
+		//int idx = in_file.find("NperGeV0p");
+		////based on NperGeV0pXXX being the last label before cms label
+		////and 3 digits following "GeV0p"
+		//cmslab = in_file.substr(idx+13);
+		
+		//get from v[0-9] to cm
+		//get version
+		std::smatch m;
+		std::regex re("_v[0-9]+_");
+		string version = "";
+		std::regex_search(in_file,m,re);
+		for(auto x : m) version += x;
+		int vidx = in_file.find(version)+version.size();
+		int cmidx = in_file.rfind("_AOD");
+		cmslab = in_file.substr(vidx,cmidx-vidx);
 	}
 	else{
 		string match = "condor_";
