@@ -57,17 +57,16 @@ def generateSubmission(args):
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
 	#find .root and then find the / before that (if it exists) - everything in between is the file name
 	sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
-	#sampleNameShort = sampleName[ : sampleName.find("_") ]
-	samopleNameShort = args.inputSample
+	sampleNameShort = sampleName[ : sampleName.find("_") ]
 
 	dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
-	ofilename = sampleNameShort+"_"+objName
+	ofilename = args.inputSample+"_"+objName
 	if(objName == "jets"):
 		dirname += "/"+strategyName
 		ofilename += "_"+strategyName
 	#strategy doesn't apply to photons (GMM only)
 
-	if args.output is not None:
+	if args.output is not None and if objName not in args.output:
 		ofilename = ofilename+"_"+args.output 
 		dirname = dirname+"_"+args.output
 	ofilename = "condor_"+ofilename

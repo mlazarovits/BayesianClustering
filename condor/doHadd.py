@@ -9,22 +9,18 @@ def main():
 	cmd = "hadd -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
 	for d in os.scandir(args.dir):
 		oname = d.name
-		if "GMSB" in d.path:
-			oname += "_GMSB"
-		elif "JetHT" in d.path:
-			oname += "_JetHT"
-		if "jets" in d.path:
-			oname += "_jets"
-		elif "photons" in d.path:
-			oname += "_photons"
-		oname += ".root"
+		proc = d.path[d.path.find("/")+1:]
+		proc = proc[proc.find("/")+1:]
+		proc = proc[:proc.find("/")]
+		
+		oname += "_"+proc+".root"
 		#check if file exists
 		if os.path.exists(oname):
 			continue
 		if not os.path.exists(d.path+"/out/"):
 			continue
 		print(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")	
-		os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
+		#os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
 		print("Wrote to "+d.path+"/"+oname)
 
 
