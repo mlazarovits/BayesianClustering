@@ -426,11 +426,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//45 - CMS logE smin vs cms sigma_t
 		TH2D* cmsLogESmin_cmsLogETimeSig = new TH2D("cmsLogESmin_cmsLogETimeSig","cmsLogESmin_cmsLogETimeSig;cmsLogE_Smin;cmsLogE_timeSig",25,0.,0.01,25,0,10);
 		//46 - etaphi cov vs timeeta cov
-		TH2D* etaPhiCov_timeEtaCov = new TH2D("etaPhiCov_timeEtaCov","etaPhiCov_timeEtaCov;etaPhiCov;time center",25,-1,1,25,-1,1);
+		TH2D* etaPhiCov_timeEtaCov = new TH2D("etaPhiCov_timeEtaCov","etaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
 		//47 - timeeta cov vs timephi cov
-		TH2D* timeEtaCov_timePhiCov = new TH2D("timeEtaCov_timePhiCov","timeEtaCov_timePhiCov;timeEtaCov;time center",25,-1,1,25,-1,1);
+		TH2D* timeEtaCov_timePhiCov = new TH2D("timeEtaCov_timePhiCov","timeEtaCov_timePhiCov;timeEtaCov;timePhiCov",25,-1,1,25,-1,1);
 		//48 - etaphi cov vs timephi cov
-		TH2D* etaPhiCov_timePhiCov = new TH2D("etaPhiCov_timePhiCov","etaPhiCov_timePhiCov;etaPhiCov;time center",25,-1,1,25,-1,1);
+		TH2D* etaPhiCov_timePhiCov = new TH2D("etaPhiCov_timePhiCov","etaPhiCov_timePhiCov;etaPhiCov;timePhiCov",25,-1,1,25,-1,1);
                 //49 - etaphi cov vs. TimeMajCov
                 TH2D* etaPhiCov_timeMajCov = new TH2D("etaPhiCov_timeMajCov","etaPhiCov_timeMajCov;etaPhiCov;timeMajCov",25,-1,1.,25,-0.5,0.5);
                 //50 - etaphi cov vs. TimeMinCov
@@ -444,11 +444,11 @@ class PhotonSkimmer : public BaseSkimmer{
                 //54 - timeeta cov vs. TimeMinCov
                 TH2D* timeEtaCov_timeMinCov = new TH2D("timeEtaCov_timeMinCov","timeEtaCov_timeMinCov;timeEtaCov;timeMinCov",25,-1,1.,25,-0.5,0.5);
 		//55 - etaphi cov unnnorm vs timeeta cov unnnorm
-		TH2D* etaPhiCovUnnnorm_timeEtaCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeEtaCovUnnnorm","etaPhiCovUnnnorm_timeEtaCovUnnnorm;etaPhiCovUnnnorm;time center",25,-1,1,25,-1,1);
+		TH2D* etaPhiCovUnnnorm_timeEtaCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeEtaCovUnnnorm","etaPhiCovUnnnorm_timeEtaCovUnnnorm;etaPhiCovUnnnorm;timeEtaCovUnnorm",25,-1,1,25,-1,1);
 		//56 - timeeta cov unnnorm vs timephi cov unnnorm
-		TH2D* timeEtaCovUnnnorm_timePhiCovUnnnorm = new TH2D("timeEtaCovUnnnorm_timePhiCovUnnnorm","timeEtaCovUnnnorm_timePhiCovUnnnorm;timeEtaCovUnnnorm;time center",25,-1,1,25,-1,1);
+		TH2D* timeEtaCovUnnnorm_timePhiCovUnnnorm = new TH2D("timeEtaCovUnnnorm_timePhiCovUnnnorm","timeEtaCovUnnnorm_timePhiCovUnnnorm;timeEtaCovUnnnorm;timePhiCovUnnorm",25,-1,1,25,-1,1);
 		//57 - etaphi cov unnnorm vs timephi cov unnnorm
-		TH2D* etaPhiCovUnnnorm_timePhiCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timePhiCovUnnnorm","etaPhiCovUnnnorm_timePhiCovUnnnorm;etaPhiCovUnnnorm;time center",25,-1,1,25,-1,1);
+		TH2D* etaPhiCovUnnnorm_timePhiCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timePhiCovUnnnorm","etaPhiCovUnnnorm_timePhiCovUnnnorm;etaPhiCovUnnnorm;timePhiCovUnnorm",25,-1,1,25,-1,1);
                 //58 - etaphi cov unnnorm vs. TimeMajCovUnnnorm 
                 TH2D* etaPhiCovUnnnorm_timeMajCovUnnnorm = new TH2D("etaPhiCovUnnnorm_timeMajCovUnnnorm","etaPhiCovUnnnorm_timeMajCovUnnnorm;etaPhiCovUnnnorm;timeMajCovUnnnorm",25,-1,1.,25,-0.5,0.5);
                 //59 - etaphi cov unnnorm vs. TimeMinCovUnnnorm
