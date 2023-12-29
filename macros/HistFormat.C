@@ -149,6 +149,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 string GetExtraLabel(string in_file){
 	int idx = in_file.find("Skim_")+4;
 	int idx2 = in_file.find("_emAlpha");
+	if(idx == string::npos || idx2 == string::npos) return "";
 	//no extra string in between
 	if(idx == idx2) return "";
 	else return in_file.substr(idx+1,idx2-idx-1);
@@ -159,10 +160,21 @@ string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
 	if(in_file.find("condor") == string::npos){
-		int idx = in_file.find("NperGeV0p");
-		//based on NperGeV0pXXX being the last label before cms label
-		//and 3 digits following "GeV0p"
-		cmslab = in_file.substr(idx+13);
+		//int idx = in_file.find("NperGeV0p");
+		////based on NperGeV0pXXX being the last label before cms label
+		////and 3 digits following "GeV0p"
+		//cmslab = in_file.substr(idx+13);
+		
+		//get from v[0-9] to cm
+		//get version
+		std::smatch m;
+		std::regex re("_v[0-9]+_");
+		string version = "";
+		std::regex_search(in_file,m,re);
+		for(auto x : m) version += x;
+		int vidx = in_file.find(version)+version.size();
+		int cmidx = in_file.rfind("_AOD");
+		cmslab = in_file.substr(vidx,cmidx-vidx);
 	}
 	else{
 		string match = "condor_";
