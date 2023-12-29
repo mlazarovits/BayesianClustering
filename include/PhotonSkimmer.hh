@@ -338,7 +338,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//1 - azimuthal angle v subcl energy
 		TH2D* az_E = new TH2D("az_subclE","az_subclE;azimuthal_angle;E;a.u.",50,-3.5,3.5,10,0,1000);
 		//2 - rotundity (2D) v subcl energy
-		TH2D* rot2D_E = new TH2D("rot2D_subclE","rot2D_subclE;rotundity2D;E;a.u.",50,0.4,1.1,10,0,1000);
+		TH2D* rot2D_E = new TH2D("rot2D_subclE","rot2D_subclE;rotundity2D;E;a.u.",25,0.4,1.1,25,0,1000);
 		//3 - eta v phi
 		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-3.5,3.5,50,-0.1,6.3);
 		//4 - t v eta
