@@ -128,7 +128,13 @@ class JetSkimmer : public BaseSkimmer{
 
 				}
 			}
-			
+		
+			void AddHist(TH1D* hist){
+				hists1D.push_back(hist);
+			}	
+			void AddHist(TH2D* hist){
+				hists2D.push_back(hist);
+			}	
 
 
 		};
@@ -155,16 +161,16 @@ class JetSkimmer : public BaseSkimmer{
 		//0 - pv time
 		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
 		//1 - delta t between jets (pv time frame)
-		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-3,3);	
+		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-3,3);	
+		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-4,4);	
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
+		//4 - resolution of difference in reco - gen deltaTs as a function of pT avg of jets that go into PV time calculation
+		TH1D* ptavg_sigmaDeltaTime = new TH1D("ptavg_sigmaDeltaTime","ptavg_sigmaDeltaTime",10,0,700);
+		//0 - 2D histogram for 1D profile
 		//may need to adjust binning/windows here
-		TH2D* ptavg_diffDeltaTime = new TH2D("ptavg_diffDeltaT","pvavg_diffDeltaT",50,0,1000,25,-3,3);	
-		//profile of above
-		//4 - resolution of above difference as a function of pT avg of jets that go into PV time calculation
-		TH1D* ptavg_sigmaDeltaTime = new TH1D("ptavg_sigmaDeltaTime","ptavg_sigmaDeltaTime",50,0,1000);
+		TH2D* ptavg_diffDeltaTime = new TH2D("ptavg_diffDeltaTime","pvavg_diffDeltaTime",10,0,700,10,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -206,7 +212,6 @@ class JetSkimmer : public BaseSkimmer{
 				objE->Fill(jets[j].E());
 				TrueJet_pT->Fill(jets[j].pt());
 				TrueJet_nRhs->Fill(jets[j].GetNRecHits());
-	
 				ijet = jets[j].GetUserIdx();
 				eECAL = _base->Jet_neEmEF->at(ijet) + _base->Jet_chEmEF->at(ijet);
 				eECAL *= jets[j].E();
@@ -234,6 +239,7 @@ class JetSkimmer : public BaseSkimmer{
 			double gamtime = -999;
 			double pvtime = -999;
 			double deltaT_pvgam = -999;
+			double deltaT_pvgam_gen = -999;
 			double ptavg = 0;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			for(int j = 0; j < njets; j++){
@@ -247,7 +253,7 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			ptavg = ptavg/double(njets);
 			//calculate jet time difference
-			if(njets < 1){
+			if(njets > 1){
 				pair<Jet,Jet> hardjets;
 				if(jets[0].pt() < jets[1].pt()){
 					FindHardestJetPair(jets, hardjets);
@@ -265,29 +271,79 @@ class JetSkimmer : public BaseSkimmer{
 			if(_phos.size() < 1) return;
 			//this assumes that the time for the jet was set previously with the respective method
 			pvtime = CalcPVTime(ts, jets);
-			gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
+			gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 			deltaT_pvgam = pvtime - gamtime;
 			trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
 			//fill difference in deltaT_pvGam of reco and gen - 3
-			//deltaT_pvgam_gen = ???
-			//trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
+			deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
+			//only for gen matches
+			if(deltaT_pvgam_gen != -999){
+				trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);	
+				//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
+				//need to give Profile2DHist a 2D hist with ptavg on x and deltaT_recoGen on y
+				trCats[tr_idx].hists2D[0]->Fill(CalcAvgPt(jets), deltaT_pvgam - deltaT_pvgam_gen);
 			
-			//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
-			//need to give Profile2DHist a 2D hist with ptavg on x and deltaT_recoGen on y
-			//ptavg_diffDeltaTime->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
-			
+			}	
+
 			//do same for subleading photon if it exists
 			if(_phos.size() > 1){
 				gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
 				deltaT_pvgam = pvtime - gamtime;
 				trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
-				//deltaT_pvgam_gen = ???
-				//trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
-				//ptavg_diffDeltaTime->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
+				deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
+				//only for gen matches
+				if(deltaT_pvgam_gen != -999){
+					trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
+					trCats[tr_idx].hists2D[0]->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
+				}
 			}
 		
 
 		}
+
+		double CalcAvgPt(const vector<Jet>& jets){
+			double pt = 0;
+			int njets = jets.size();
+			for(int j = 0; j < njets; j++)
+				pt += jets[j].pt();
+			return pt/double(njets);
+		}
+
+		double CalcGenDeltaT(const Jet& pho){
+			//calc times differently for !sig and sig photons
+			double dpho = -999;
+			double c = 29.9792458; // speed of light in cm/ns
+			int genidx, phoidx;
+			phoidx = pho.GetUserIdx();
+			//gen photon coordinates
+			double px, py, pz, ptheta, peta, pphi;
+			//gen vertex coordinates
+			double vx, vy, vz;
+			//if no match
+			if(_base->Photon_genLlpId->at(phoidx) == -1) return dpho;
+			genidx = _base->Photon_genIdx->at(phoidx);
+			peta = _base->Gen_eta->at(genidx);
+			pphi = _base->Gen_phi->at(genidx);
+			ptheta = 2*atan(exp(-1*peta));
+			px = 120*sin(pphi);
+			py = 120*cos(pphi);
+			pz = 120/tan(ptheta);			
+
+			if(_base->Photon_genLlpId->at(phoidx) == 22){
+				vx = _base->Photon_genSigMomVx->at(phoidx);
+				vy = _base->Photon_genSigMomVy->at(phoidx);
+				vz = _base->Photon_genSigMomVz->at(phoidx);
+			}
+			//assume prompt production
+			else{
+				vx = _base->PV_x;
+				vy = _base->PV_y;
+				vz = _base->PV_z;
+			}
+			dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) );
+			return dpho/c;
+		}
+
 
 
 		void FillPredJetHists(const vector<node*>& trees){
@@ -416,7 +472,7 @@ class JetSkimmer : public BaseSkimmer{
 		}
 		double CalcPVTime(const TimeStrategy& ts, vector<Jet>& jets){
 			int njets = jets.size();
-			double time = -99;
+			double time = -999;
 			if(ts == med){
 				vector<double> times;
 				for(int i = 0; i < njets; i++)
@@ -546,9 +602,16 @@ class JetSkimmer : public BaseSkimmer{
 			t /= ws; 
 		}
 
-		void WriteTimeRecoCat1D(TFile* ofile, const timeRecoCat& tr){
+		void WriteTimeRecoCat(TFile* ofile, timeRecoCat& tr){
 			ofile->cd();
 			string name;
+			//make profile
+			vector<TH1D*> profs;
+			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
+			//make sure profiles get written
+			for(int i = 0; i < profs.size(); i++)
+				tr.AddHist(profs[i]);		
+	
 			vector<TH1D*> hists1D = tr.hists1D;
 			//write 1D hists
 			for(int i = 0; i < (int)hists1D.size(); i++){
@@ -556,6 +619,14 @@ class JetSkimmer : public BaseSkimmer{
 				name = tr.hists1D[i]->GetName();
 				if(tr.hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 				tr.hists1D[i]->Write();
+			}
+			vector<TH2D*> hists2D = tr.hists2D;
+			//write 2D hists
+			for(int i = 0; i < (int)hists2D.size(); i++){
+				if(tr.hists2D[i] == nullptr) continue;
+				name = tr.hists2D[i]->GetName();
+				if(tr.hists2D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
+				tr.hists2D[i]->Write();
 			}
 		}
 
@@ -581,9 +652,9 @@ class JetSkimmer : public BaseSkimmer{
 				//TDR2DHist(hists2D[i], cv, name, name, "a.u.");
 				//write cv to file			
 				//cv->Write();
-				_hists2D[i]->Write();
+			_hists2D[i]->Write();
 			}
-			erhs_trhs->Write();		
+			//erhs_trhs->Write();		
 			for(int i = 0; i < (int)graphs.size(); i++){
 				//name = graphs[i]->GetName();
 				//TCanvas* cv = new TCanvas(name.c_str(), "");
@@ -593,7 +664,7 @@ class JetSkimmer : public BaseSkimmer{
 				graphs[i]->Write();
 			}
 			for(int i = 0; i < trCats.size(); i++)
-				WriteTimeRecoCat1D(ofile, trCats[i]);
+				WriteTimeRecoCat(ofile, trCats[i]);
 
 			ofile->Close();
 

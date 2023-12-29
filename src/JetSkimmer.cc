@@ -123,8 +123,6 @@ void JetSkimmer::Skim(){
 
 	//do computational time graph
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
-	//Profile2DHist(ptavg_diffDeltaTime,ptavg_sigmaDeltaTime);
-
 	WriteHists(ofile);
 
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
