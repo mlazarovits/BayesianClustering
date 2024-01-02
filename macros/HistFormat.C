@@ -37,7 +37,7 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	if(miny == 0) miny += 1e-6;
 	vector<int> k = {kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack};	
 
-
+	string legentry;
 	for( int i = 0 ; i < int(hist.size()); i++){
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
@@ -49,12 +49,14 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->SetLineColor(i+2);
 		hist[i]->SetMarkerStyle(i+25);
 		hist[i]->SetMarkerColor(i+2);
+		legentry = hist[i]->GetTitle();
+		hist[i]->SetTitle("");
 		if( i == 0 ){
 			hist[i]->Draw("ep");
 		}else{
 			hist[i]->Draw("epsame");
 		}
-		myleg->AddEntry( hist[i], hist[i]->GetTitle(), "p" );
+		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 		gPad->Update();
 	}
 	myleg->Draw("same"); 
@@ -159,11 +161,7 @@ string GetExtraLabel(string in_file){
 string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
-	if(in_file.find("condor") == string::npos){
-		//int idx = in_file.find("NperGeV0p");
-		////based on NperGeV0pXXX being the last label before cms label
-		////and 3 digits following "GeV0p"
-		//cmslab = in_file.substr(idx+13);
+	if(in_file.find("output") == string::npos){
 		
 		//get from v[0-9] to cm
 		//get version
@@ -177,8 +175,11 @@ string GetCMSLabel(string in_file){
 		cmslab = in_file.substr(vidx,cmidx-vidx);
 	}
 	else{
-		string match = "condor_";
-		cmslab = in_file.substr(in_file.find(match)+match.size());
+		int idx = in_file.find("NperGeV0p");
+		//based on NperGeV0pXXX being the last label before cms label
+		//and 3 digits following "GeV0p"
+		cmslab = in_file.substr(idx+13);
+		cmslab = cmslab.substr(0,cmslab.find("_output"));
 	}
 	cmslab = cmslab.substr(0,cmslab.find(".root"));
 	return cmslab;
@@ -203,7 +204,7 @@ void HistFormat(string file){
 
 	string cmslab = GetCMSLabel(file);
 	string extra = "";
-	if(file.find("condor") == string::npos) extra = GetExtraLabel(file);
+	if(file.find("Skim") == string::npos) extra = GetExtraLabel(file);
 	if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
