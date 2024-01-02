@@ -130,6 +130,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
 
                 Jet pho(px, py, pz, _base->Photon_energy->at(p));
                 pho.SetVertex(vtx);
+		pho.SetUserIdx(p);
 		//set rec hits in photon
 		vector<unsigned int> rhs = _base->Photon_rhIds->at(p);
                 for(int r = 0; r < rhs.size(); r++){
@@ -138,7 +139,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
                                 JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
+                                        //_base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
