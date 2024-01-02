@@ -66,7 +66,7 @@ def generateSubmission(args):
 		ofilename += "_"+strategyName
 	#strategy doesn't apply to photons (GMM only)
 
-	if args.output is not None and if objName not in args.output:
+	if args.output is not None and objName not in args.output:
 		ofilename = ofilename+"_"+args.output 
 		dirname = dirname+"_"+args.output
 	ofilename = "condor_"+ofilename
