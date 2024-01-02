@@ -259,8 +259,10 @@ void HistFormat(string file){
 					ofile->cd();
 					//draw as tcanvases
 					if(name.find("sigma") != string::npos){
-						xlab = "p^{avg}_{T_{jet}}"; //hists[0]->GetXaxis()->GetTitle();
+						xlab = "p^{avg}_{T_{jet}}"; 
+						xlab = hists[0]->GetXaxis()->GetTitle();
 						ylab = "#sigma_{#Delta t}";
+						ylab = hists[0]->GetYaxis()->GetTitle();
 					}
 					else{
 						xlab = name;
