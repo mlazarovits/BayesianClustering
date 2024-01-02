@@ -1,7 +1,9 @@
 #include "BaseSkimmer.hh"
 #include "TF1.h"
 
-void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs, double range){
+
+//consider changing outplot to TGraph (hist is ok for now)
+void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs){
 	int nbins = inhist->GetNbinsX();
 	profs.clear();
 	//skip overflow + underflow bins
@@ -11,19 +13,25 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 		phist->SetName(("profile_bin"+std::to_string(i)).c_str());
 		phist->GetXaxis()->SetTitle("diffDeltaT_recoGen");	
 		profs.push_back(phist);
+		outhist->GetXaxis()->SetTitle("p^{avg}_{T} (GeV)");
+		outhist->GetXaxis()->SetName("ptavg");
+		outhist->GetYaxis()->SetTitle("#sigma_{#Delta t} (ns)");
+		outhist->GetYaxis()->SetName("sigma_deltaT");
+
 		//get values for param init
 		double mean = phist->GetMean();
 		double stddev = phist->GetStdDev();
-		double norm = phist->GetBinContent(phist->GetMaximumBin());
-		double high = mean + range*stddev;
-		double low = mean - range*stddev;
+		double norm = phist->Integral();
+		double low = phist->GetBinLowEdge(0);
+		double high = -low;
 		//check that initial parameter values are ok
 		if( stddev > 0.0 && norm > 0.){
 			TF1* fit = new TF1("fit","gaus",low,high);
-			fit->SetParameter(0,norm);
-			fit->SetParameter(1,mean);
-			fit->SetParameter(2,stddev);
-			phist->Fit(fit->GetName(),"RBQ0");
+			//fit->SetParameter(0,norm);
+			//fit->SetParameter(1,mean);
+			//fit->SetParameter(2,stddev);
+			//phist->Fit(fit->GetName(),"RBQ0");
+			phist->Fit(fit->GetName(),"RQ0");
 			
 			double fit_stddev = fit->GetParameter(2);
 			double fit_stddev_err = fit->GetParError(2);
@@ -36,3 +44,6 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 	}
 		
 }
+
+
+

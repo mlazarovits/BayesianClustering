@@ -82,7 +82,7 @@ class BaseSkimmer{
 		void SetMinNrhs(double p){ _prod->SetMinNrhs(p); }
 		void SetMinEmE(double p){ _prod->SetMinEmE(p); }
 
-		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs, double range = 1.);
+		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
 
 		vector<TH1D*> _hists1D;

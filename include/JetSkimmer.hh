@@ -129,11 +129,23 @@ class JetSkimmer : public BaseSkimmer{
 				}
 			}
 		
-			void AddHist(TH1D* hist){
+			void AddHist(TH1D* inhist){
+				//make sure they have the right add-on name (ie leading, !lead, etc)
+				TH1D* hist = (TH1D*)inhist->Clone();
+				string name = hist->GetName();
+				if(!methodName.empty()) name += "_"+methodName;
+				hist->SetName(name.c_str());
+				if(!methodName.empty()) hist->SetTitle("");
 				hists1D.push_back(hist);
 			}	
-			void AddHist(TH2D* hist){
+			void AddHist(TH2D* inhist){
+				TH2D* hist = (TH2D*)inhist->Clone();
+				string name = hist->GetName();
+				if(!methodName.empty()) name += "_"+methodName;
+				hist->SetName(name.c_str());
+				if(!methodName.empty()) hist->SetTitle("");
 				hists2D.push_back(hist);
+
 			}	
 
 
@@ -194,8 +206,8 @@ class JetSkimmer : public BaseSkimmer{
 			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg);
 		
 			trCats.push_back(trmed);
-			trCats.push_back(treavg);
 			trCats.push_back(trmmavg);	
+			trCats.push_back(treavg);
 		}
 
 	
@@ -607,10 +619,11 @@ class JetSkimmer : public BaseSkimmer{
 			string name;
 			//make profile
 			vector<TH1D*> profs;
+			cout << "Writing " << tr.methodName << endl;
 			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
 			//make sure profiles get written
-			for(int i = 0; i < profs.size(); i++)
-				tr.AddHist(profs[i]);		
+			//for(int i = 0; i < profs.size(); i++)
+			//	tr.AddHist(profs[i]);		
 	
 			vector<TH1D*> hists1D = tr.hists1D;
 			//write 1D hists
@@ -628,6 +641,29 @@ class JetSkimmer : public BaseSkimmer{
 				if(tr.hists2D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 				tr.hists2D[i]->Write();
 			}
+		}
+		
+		void WriteTimeRecoCatStack(TFile* ofile, const vector<timeRecoCat>& trs){
+			ofile->cd();
+			string name, dirname;
+			//write 1D hists
+			//variables
+			int nhists = trs[0].hists1D.size();
+			for(int i = 0; i < nhists; i++){
+				name = trs[0].hists1D[i]->GetName();
+				//only write sigma plots
+				if(name.find("sigma") == string::npos) continue;
+				dirname = name.substr(0,name.find("_median"));
+				TDirectory* dir = ofile->mkdir((dirname+"_stack").c_str());
+				dir->cd();
+				for(int k = 0; k < trs.size(); k++){
+					if(trs[k].hists1D[i] == nullptr) continue;
+					if(trs[k].hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[k].plotName << " not filled." << endl; continue; }
+					trs[k].hists1D[i]->SetTitle(trs[k].methodName.c_str());
+					trs[k].hists1D[i]->Write();
+				}
+			}
+			
 		}
 
 
@@ -665,8 +701,10 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			for(int i = 0; i < trCats.size(); i++)
 				WriteTimeRecoCat(ofile, trCats[i]);
+			WriteTimeRecoCatStack(ofile, trCats);
 
 			ofile->Close();
+
 
 		}
 
