@@ -79,7 +79,9 @@ void JetSkimmer::Skim(){
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		FillTrueJetHists(jets);
 		for(int i = 0; i < trCats.size(); i++)	
-			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
+			//make sure time smearing doesn't happen here when it's turned off by the flag
+			//FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
+			FillPVTimeHists(jets, i); //turn off time and spatial smearing
 		
 		jetSelEff++;
 		
@@ -92,7 +94,7 @@ void JetSkimmer::Skim(){
 
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
-		algo->SetDataSmear(smear);
+		if(!smear.empty()) algo->SetDataSmear(smear);
 		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);

@@ -557,7 +557,7 @@ class JetSkimmer : public BaseSkimmer{
 				rhs_jet[r].SetVertex(jet.GetVertex());
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
-			algo->SetDataSmear(smear);
+			if(!smear.empty()) algo->SetDataSmear(smear);
 			//set time resolution smearing
 			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(1.);
