@@ -140,7 +140,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 					if(name.find("_"+type) == string::npos) continue;
 				}
 				if(isnan(hist->Integral())) continue;
-				if(hist->Integral() != 0 && hist->GetEntries() > 0) hist->Scale(1./hist->Integral());
+				if(hist->Integral() != 0 && hist->GetEntries() > 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 			}
 		}
@@ -241,6 +241,7 @@ void HistFormat(string file){
 			//get stack histograms - in directory
 			TDirectory* dir = (TDirectory*)key->ReadObj();
 			double ymin, ymax;
+			string ylab, xlab;
 			if(dir){
 				dir->cd();
 				vector<TH1D*> hists;
@@ -257,7 +258,15 @@ void HistFormat(string file){
 					TCanvas *cv = new TCanvas(name.c_str(), "");
 					ofile->cd();
 					//draw as tcanvases
-					TDRMultiHist(hists, cv, name, name, "a.u", ymin, ymax, cmslab);
+					if(name.find("sigma") != string::npos){
+						xlab = "p^{avg}_{T_{jet}}"; //hists[0]->GetXaxis()->GetTitle();
+						ylab = "#sigma_{#Delta t}";
+					}
+					else{
+						xlab = name;
+						ylab = "a.u."; 
+					}
+					TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
 					cv->Write(); 
 				}
 			}
