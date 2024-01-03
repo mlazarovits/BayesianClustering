@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 	double emAlpha = 0.5;
 	int verb = 0;
 	bool weighted = true;
-	bool nosmear = false;
+	bool smear = true;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -98,15 +98,15 @@ int main(int argc, char *argv[]){
 			i++;
     	 		alpha = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--weight", 8) == 0){
+		if(strncmp(argv[i],"--noWeight", 10) == 0){
     	 		weighted = false;
 			cout << "Turning off energy weighting." << endl;
    		}
-		if(strncmp(argv[i],"--noTimeSmear", 11) == 0){
-    	 		nosmear = true;
-			cout << "Turning off time smearing." << endl;
+		if(strncmp(argv[i],"--noSmear", 7) == 0){
+    	 		smear = false;
+			cout << "Turning off smearing." << endl;
    		}
-		if(strncmp(argv[i],"--dist", 6) == 0){
+		if(strncmp(argv[i],"--noDist", 8) == 0){
     	 		distconst = false;
 			cout << "Turning off distance constraint." << endl;
    		}
@@ -165,9 +165,9 @@ int main(int argc, char *argv[]){
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --NoTimeSmear                 turns off smearing data in time dimension (default = false)" << endl;
-   		cout << "   --NoWeight                    turns off weighting data points (default = false)" << endl;
-   		cout << "   --NoDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
+   		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
+   		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
+   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -277,13 +277,12 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinEmE(minEmE);
 		if(in_file.find("JetHT") != string::npos)
 			skimmer.SetData(true);
-		else
-			skimmer.SetStrategy(strat);
+		skimmer.SetStrategy(strat);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
-		skimmer.SetTimeSmear(false); //turn off time smearing for jets - impacts PV deltaT res
+		skimmer.SetSmear(smear); //turn off time smearing for jets - impacts PV deltaT res
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
@@ -303,7 +302,7 @@ int main(int argc, char *argv[]){
         	//skimmer.SetDebug(debug);
 		//set EMalpha
 		skimmer.SetEventRange(evti,evtj);
-		skimmer.SetTimeSmear(false);
+		skimmer.SetSmear(smear);
         	skimmer.Skim();
 	}
         return 0;

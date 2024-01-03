@@ -286,6 +286,8 @@ class JetSkimmer : public BaseSkimmer{
 			gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 			deltaT_pvgam = pvtime - gamtime;
 			trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
+			if(_data) return; //no gen info with data
+
 			//fill difference in deltaT_pvGam of reco and gen - 3
 			deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
 			//only for gen matches
@@ -557,9 +559,9 @@ class JetSkimmer : public BaseSkimmer{
 				rhs_jet[r].SetVertex(jet.GetVertex());
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
-			if(!smear.empty()) algo->SetDataSmear(smear);
+			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(1.);
 			algo->SetAlpha(alpha);
 			algo->SetSubclusterAlpha(emAlpha);
