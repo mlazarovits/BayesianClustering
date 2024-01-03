@@ -33,9 +33,13 @@ void JetSkimmer::Skim(){
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(0.,2,2); 
 	//for time smearing (energy dependent)
-	double tres_c = 0.2;
-	double tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
-	
+	double tres_c = 0.;
+	double tres_n = 0.;
+	if(_timesmear){	
+		tres_c = 0.2;
+		tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
+	}	
+
 	double alpha = 0.1;
 	double emAlpha = 0.5;
 	double thresh = 1.;
@@ -80,8 +84,8 @@ void JetSkimmer::Skim(){
 		FillTrueJetHists(jets);
 		for(int i = 0; i < trCats.size(); i++)	
 			//make sure time smearing doesn't happen here when it's turned off by the flag
-			//FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
-			FillPVTimeHists(jets, i); //turn off time and spatial smearing
+			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
+			//FillPVTimeHists(jets, i); //turn off time and spatial smearing
 		
 		jetSelEff++;
 		
