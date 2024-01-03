@@ -330,7 +330,7 @@ class JetSkimmer : public BaseSkimmer{
 			int genidx, phoidx;
 			phoidx = pho.GetUserIdx();
 			//gen photon coordinates
-			double px, py, pz, ptheta, peta, pphi;
+			double px, py, pz, ptheta, peta, pphi, vx, vy, vz;
 			//if no match
 			if(_base->Photon_genLlpId->at(phoidx) == -1) return dpho;
 			genidx = _base->Photon_genIdx->at(phoidx);
