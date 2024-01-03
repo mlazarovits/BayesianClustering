@@ -286,6 +286,8 @@ class JetSkimmer : public BaseSkimmer{
 			gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 			deltaT_pvgam = pvtime - gamtime;
 			trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
+			if(_data) return; //no gen info with data
+
 			//fill difference in deltaT_pvGam of reco and gen - 3
 			deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
 			//only for gen matches
@@ -328,9 +330,7 @@ class JetSkimmer : public BaseSkimmer{
 			int genidx, phoidx;
 			phoidx = pho.GetUserIdx();
 			//gen photon coordinates
-			double px, py, pz, ptheta, peta, pphi;
-			//gen vertex coordinates
-			double vx, vy, vz;
+			double px, py, pz, ptheta, peta, pphi, vx, vy, vz;
 			//if no match
 			if(_base->Photon_genLlpId->at(phoidx) == -1) return dpho;
 			genidx = _base->Photon_genIdx->at(phoidx);
@@ -340,20 +340,40 @@ class JetSkimmer : public BaseSkimmer{
 			px = 120*sin(pphi);
 			py = 120*cos(pphi);
 			pz = 120/tan(ptheta);			
+			
+			double pvx = _base->PV_x;
+			double pvy = _base->PV_y;
+			double pvz = _base->PV_z;
 
+			double beta;
 			if(_base->Photon_genLlpId->at(phoidx) == 22){
 				vx = _base->Photon_genSigMomVx->at(phoidx);
 				vy = _base->Photon_genSigMomVy->at(phoidx);
 				vz = _base->Photon_genSigMomVz->at(phoidx);
+		
+				double mompx, mompy, mompz, momE;			
+
+				mompx = _base->Photon_genSigMomPx->at(phoidx);			
+				mompy = _base->Photon_genSigMomPy->at(phoidx);			
+				mompz = _base->Photon_genSigMomPz->at(phoidx);			
+				momE = _base->Photon_genSigMomEnergy->at(phoidx);			
+
+				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
+			
+				//distance bw photon and production point (LLP)
+				dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) )/c;
+		
+				//distance bw LLP and PV
+				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(c*beta);	
+
 			}
 			//assume prompt production
 			else{
-				vx = _base->PV_x;
-				vy = _base->PV_y;
-				vz = _base->PV_z;
+				//distance bw photon and production point (PV)
+				dpho = sqrt( (px - pvx)*(px - pvx) + (py - pvy)*(py - pvy) + (pz - pvz)*(pz - pvz) )/c;
 			}
-			dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) );
-			return dpho/c;
+			
+			return dpho;
 		}
 
 
@@ -557,9 +577,9 @@ class JetSkimmer : public BaseSkimmer{
 				rhs_jet[r].SetVertex(jet.GetVertex());
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
-			if(!smear.empty()) algo->SetDataSmear(smear);
+			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(1.);
 			algo->SetAlpha(alpha);
 			algo->SetSubclusterAlpha(emAlpha);

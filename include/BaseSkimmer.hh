@@ -24,7 +24,7 @@ class BaseSkimmer{
 			_gev = 1/10.;
 			_data = false;
 			_debug = false;
-			_timesmear = true;
+			_smear = true;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -43,7 +43,7 @@ class BaseSkimmer{
 			_gev = 1;
 			_data = false;
 			_debug = false;
-			_timesmear = true;
+			_smear = true;
 			
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);
@@ -181,8 +181,8 @@ class BaseSkimmer{
 
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 
-		void SetTimeSmear(bool t){ _timesmear = t; }
-		bool _timesmear;
+		void SetSmear(bool t){ _smear = t; }
+		bool _smear;
 
 
 };

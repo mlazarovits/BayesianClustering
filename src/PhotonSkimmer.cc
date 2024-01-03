@@ -24,7 +24,7 @@ void PhotonSkimmer::Skim(){
 	smear.SetEntry(0.,2,2); //no smear in time	
 	double tres_c = 0.2;
 	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;
-	if(_timesmear) cout << "Smearing covariance in time with energy dependence." << endl;	
+	//if(_timesmear) cout << "Smearing covariance in time with energy dependence." << endl;	
 
 	
 	vector<Jet> rhs;
@@ -62,9 +62,9 @@ void PhotonSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 
 			BayesCluster *algo = new BayesCluster(rhs);
-			algo->SetDataSmear(smear);
+			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			//algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);

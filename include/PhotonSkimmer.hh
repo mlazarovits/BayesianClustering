@@ -554,9 +554,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		void WritePlotCatStack(TFile* ofile, const vector<plotCat>& pcs){
 			ofile->cd();
 			string name;
-			double ymax, ymin;
-			vector<string> id_names;
-			vector<TH1D*> hists;
 			//number of histogram categories (ie leading, !leading, etc)
 			int nhistCats = pcs[0].hists1D.size();
 			//write 1D hists
@@ -572,8 +569,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					//name = _hists1D[j]->GetName();
 					if(!pcs[0].histcatnames[i].empty()) name += "_"+pcs[0].histcatnames[i];
 					//cout << "	category: " << pcs[0].histcatnames[i] << endl; 
-					hists.clear();
-					id_names.clear();
 					//proc
 					for(int k = 0; k < pcs.size(); k++){
 						if(pcs[k].hists1D[i][j] == nullptr) continue;
@@ -581,8 +576,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			//			cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
 						pcs[k].hists1D[i][j]->SetTitle(pcs[k].plotName.c_str());
 						pcs[k].hists1D[i][j]->Write();
-						//hists.push_back(pcs[k].hists1D[i][j]);			
-						//id_names.push_back(pcs[k].legName);
 					}
 				}
 			}

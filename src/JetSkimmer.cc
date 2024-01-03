@@ -98,8 +98,8 @@ void JetSkimmer::Skim(){
 
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
-		if(!smear.empty()) algo->SetDataSmear(smear);
-		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+		if(_smear) algo->SetDataSmear(smear);
+		//algo->SetTimeResSmear(tres_c, tres_n);
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
