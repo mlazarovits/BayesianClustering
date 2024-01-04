@@ -114,7 +114,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                 nrhs = _base->Photon_rhIds->size();
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
-		//if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
+		if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
                 //isolation cuts
 		bool iso;
 		bool trksum;
