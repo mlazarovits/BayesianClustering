@@ -31,6 +31,8 @@ def generateSubmission(args):
 		inputFile = "GMSB_AOD_v13_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
+	elif args.inputSample == "GJets":
+		inputFile = "GJets_AOD_v13_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
@@ -83,8 +85,8 @@ def generateSubmission(args):
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
 	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)
-	if(args.noTimeSmear):
-		flags += ' --noTimeSmear'
+	if(args.noSmear):
+		flags += ' --noSmear'
 	if(objName == "jets"):
 		flags += " --object 0"
 	if(objName == "photons"):
@@ -109,7 +111,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','JetHT'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','JetHT','GJets'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
@@ -125,7 +127,7 @@ def main():
 	parser.add_argument('--minpt',help='min object pt',default=30.)
 	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
 	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
-	parser.add_argument('--noTimeSmear',help="turn off time smearing",default=False,action='store_true')
+	parser.add_argument('--noSmear',help="turn off smearing",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
