@@ -88,6 +88,11 @@ class BaseProducer{
 		}
 
 
+		double hypo(double x, double y, double z){
+			return sqrt(x*x + y*y + z*z);
+		}
+		double _c = 29.9792458;	
+
 
 };
 #endif

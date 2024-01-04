@@ -46,7 +46,7 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	unsigned int rhId;
 	int nRHs;
 	rhs.clear();
-	
+	double timecorr, drh;	
 
 	if(evt > _nEvts) return;
 
@@ -61,9 +61,16 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
-		//add tof = d_pv to time to get correct RH time
-		//t = rh_time - d_rh/c + d_pv/c
-		rh = JetPoint(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
+		//TOF from 0 to rh location
+		drh = hypo(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r))/_c;
+		//TOF from PV to rh location
+		timecorr = drh - hypo((_base->ECALRecHit_rhx->at(r) - _base->PV_x), (_base->ECALRecHit_rhy->at(r) - _base->PV_y), (_base->ECALRecHit_rhz->at(r) - _base->PV_z))/_c;
+		
+		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+		//undo adjustment currently made in ntuples (traw - drh/c)
+		//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
+		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r) + timecorr + drh);
 		
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
@@ -82,6 +89,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	double t, E, eta, phi;
 	unsigned int rhId;
 	jets.clear();
+	double timecorr, drh;	
 
 	if(evt > _nEvts) return;
 
@@ -98,9 +106,17 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	for(int r = 0; r < nRHs; r++){
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
-		//add tof = d_pv to time to get correct RH time
-		//t = rh_time - d_rh/c + d_pv/c
-		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r)+_base->ECALRecHit_TOF->at(r));
+		//TOF from 0 to rh location
+		drh = hypo(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r), _base->ECALRecHit_rhz->at(r))/_c;
+		//TOF from PV to rh location
+		timecorr = drh - hypo((_base->ECALRecHit_rhx->at(r) - _base->PV_x), (_base->ECALRecHit_rhy->at(r) - _base->PV_y), (_base->ECALRecHit_rhz->at(r) - _base->PV_z))/_c;
+		
+		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+		//undo adjustment currently made in ntuples (traw - drh/c)
+		//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
+		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r) + timecorr + drh);
+		
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));

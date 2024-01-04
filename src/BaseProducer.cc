@@ -12,6 +12,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
         int nrhs, rhidx;
 	bool jetid;
 	double dr, deta, dphi, eme;
+	double timecorr, drh;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -56,6 +57,11 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
+				//TOF from 0 to rh location
+				drh = hypo(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx))/_c;
+				//TOF from PV to rh location
+				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(rhidx) - _base->PV_x), (_base->ECALRecHit_rhy->at(rhidx) - _base->PV_y), (_base->ECALRecHit_rhz->at(rhidx) - _base->PV_z))/_c;
+
                            
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
@@ -64,8 +70,11 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 
+				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                               	//undo adjustment currently made in ntuples (traw - drh/c)
+				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr + drh);
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
                                 
@@ -93,7 +102,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
         _base->GetEntry(evt);
         int nPhos = (int)_base->Photon_energy->size();
         int nrhs, rhidx;
-	//bool jetid;
+	double timecorr = 0; //to get photon time in "PV frame"
+	double drh;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -138,9 +148,16 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
-                                JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        //_base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx)+_base->ECALRecHit_TOF->at(rhidx));
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
+				//TOF from 0 to rh location
+				drh = hypo(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx))/_c;
+				//TOF from PV to rh location
+				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(rhidx) - _base->PV_x), (_base->ECALRecHit_rhy->at(rhidx) - _base->PV_y), (_base->ECALRecHit_rhz->at(rhidx) - _base->PV_z))/_c;
+
+				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                               	//undo adjustment currently made in ntuples (traw - drh/c)
+				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr + drh);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;

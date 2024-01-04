@@ -43,6 +43,8 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	_base->GetEntry(evt);
 	nphotons = (int)_base->Photon_rhIds->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
+
+	double timecorr, drh;
 	
 	for(int p = 0; p < nphotons; p++){
 
@@ -69,8 +71,17 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 			id = _base->Photon_rhIds->at(p).at(r);
 			for(int j = 0; j < nRHs_evt; j++){
 				if(_base->ECALRecHit_ID->at(j) == id){
-					//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+					//TOF from 0 to rh location
+					drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+					//TOF from PV to rh location
+					timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+
+					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                        	       	//undo adjustment currently made in ntuples (traw - drh/c)
+					//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
+                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+					
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
 					rh.SetPhi(_base->ECALRecHit_phi->at(j));
@@ -102,6 +113,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	nRHs = (int)_base->Photon_rhIds->at(pho).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+	double timecorr, drh;
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -126,8 +138,17 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 		id = _base->Photon_rhIds->at(pho).at(r);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
-				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				//TOF from 0 to rh location
+				drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+				//TOF from PV to rh location
+				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+
+				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                        	//undo adjustment currently made in ntuples (traw - drh/c)
+				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
+                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
