@@ -45,6 +45,22 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	
 	for(int p = 0; p < nphotons; p++){
+
+		//base photon selection
+	        if(_base->Photon_pt->at(p) < 30.) continue;
+		if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
+		//isolation cuts
+		bool iso;
+		bool trksum;
+		bool ecalrhsum;
+		bool htowoverem;
+		if(_isocut){
+		        trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
+		        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
+		        htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
+		        iso = trksum && ecalrhsum && htowoverem;
+			if(!iso) continue;
+		}
 		nRHs = (int)_base->Photon_rhIds->at(p).size();
 		unsigned long long id;
 		for(int r = 0; r < nRHs; r++){
@@ -86,6 +102,22 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	nRHs = (int)_base->Photon_rhIds->at(pho).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+
+	//base photon selection
+        if(_base->Photon_pt->at(pho) < 30.) return;
+	if(fabs(_base->Photon_eta->at(pho)) > 1.5) return;
+	//isolation cuts
+	bool iso;
+	bool trksum;
+	bool ecalrhsum;
+	bool htowoverem;
+	if(_isocut){
+	        trksum = _base->Photon_trkSumPtSolidConeDR04->at(pho) < 6.0;
+	        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(pho) < 10.0;
+	        htowoverem = _base->Photon_hadTowOverEM->at(pho) < 0.02;
+	        iso = trksum && ecalrhsum && htowoverem;
+		if(!iso) return;
+	}
 	
 	
 	for(int r = 0; r < nRHs; r++){
@@ -124,6 +156,23 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	int nRHs = (int)_base->Photon_rhIds->at(pho).size();
 	int nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+
+	//base photon selection
+        if(_base->Photon_pt->at(pho) < 30.) return;
+	if(fabs(_base->Photon_eta->at(pho)) > 1.5) return;
+	//isolation cuts
+	bool iso;
+	bool trksum;
+	bool ecalrhsum;
+	bool htowoverem;
+	if(_isocut){
+	        trksum = _base->Photon_trkSumPtSolidConeDR04->at(pho) < 6.0;
+	        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(pho) < 10.0;
+	        htowoverem = _base->Photon_hadTowOverEM->at(pho) < 0.02;
+	        iso = trksum && ecalrhsum && htowoverem;
+		if(!iso) return;
+	}
+
 
 	//set vertex info
 	Point vtx = Point(3);
