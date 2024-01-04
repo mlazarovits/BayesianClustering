@@ -657,8 +657,8 @@ class JetSkimmer : public BaseSkimmer{
 			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
 			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
 			//make sure profiles get written
-			//for(int i = 0; i < profs.size(); i++)
-			//	tr.AddHist(profs[i]);		
+			for(int i = 0; i < profs.size(); i++)
+				tr.AddHist(profs[i]);		
 	
 			vector<TH1D*> hists1D = tr.hists1D;
 			//write 1D hists
