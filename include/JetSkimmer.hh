@@ -55,9 +55,11 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(deltaT_pvGam);	
 			//key figures of merit	
 			_timeHists1D.push_back(diffDeltaT_recoGen);
-			_timeHists1D.push_back(ptavg_sigmaDeltaTime);
+			_timeHists1D.push_back(Erh_sigmaDeltaTime_recoGen);
+			_timeHists1D.push_back(ptavg_sigmaDeltaTime_dijets);
 
-			_timeHists2D.push_back(ptavg_diffDeltaTime);
+			_timeHists2D.push_back(Erh_diffDeltaTime_recoGen);
+			_timeHists2D.push_back(ptavg_diffDeltaTime_dijets);	
 
 
 
@@ -163,11 +165,11 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
 		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,50);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
+		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
 		
-		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
 		
 
 		//0 - pv time
@@ -178,11 +180,16 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-4,4);	
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
-		//4 - resolution of difference in reco - gen deltaTs as a function of pT avg of jets that go into PV time calculation
-		TH1D* ptavg_sigmaDeltaTime = new TH1D("ptavg_sigmaDeltaTime","ptavg_sigmaDeltaTime",10,0,700);
-		//0 - 2D histogram for 1D profile
+		//4 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* Erh_sigmaDeltaTime_recoGen = new TH1D("Erh_sigmaDeltaTime_recoGen","Erh_sigmaDeltaTime_recoGen",10,0,700);
+		//5 - resolution of difference between two jets for PV time as a function of their average pT 	
+		TH1D* ptavg_sigmaDeltaTime_dijets = new TH1D("ptavg_sigmaDeltaTime_dijets","ptavg_sigmaDeltaTime_dijets",10,0,700);
+	
+		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* ptavg_diffDeltaTime = new TH2D("ptavg_diffDeltaTime","pvavg_diffDeltaTime",10,0,700,10,-10,10);	
+		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","pvavg_diffDeltaTime_recoGen",10,0,700,10,-10,10);
+		//1 - 2D histogram for dijets resolution
+		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets",10,0,700,10,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -253,6 +260,8 @@ class JetSkimmer : public BaseSkimmer{
 			double deltaT_pvgam = -999;
 			double deltaT_pvgam_gen = -999;
 			double ptavg = 0;
+			double Erh = 0;
+			vector<JetPoint> rhs;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			for(int j = 0; j < njets; j++){
 				jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
@@ -261,9 +270,11 @@ class JetSkimmer : public BaseSkimmer{
 				trCats[tr_idx].hists1D[0]->Fill(jettime);
 				//add to pv time calculation
 				jettimes.push_back(jettime);
-				ptavg += jets[j].pt();	
+				rhs = jets[j].GetJetPoints();
+				for(int r = 0; r < rhs.size(); r++)
+					Erh += rhs[r].E();
+				rhs.clear();
 			}
-			ptavg = ptavg/double(njets);
 			//calculate jet time difference
 			if(njets > 1){
 				pair<Jet,Jet> hardjets;
@@ -274,9 +285,12 @@ class JetSkimmer : public BaseSkimmer{
 				else{
 					hardjets = std::make_pair(jets[0],jets[1]);
 				}
-				double dtime = GetDTime(hardjets);
+				double deltaT_jets = GetDTime(hardjets);
+				ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
 				//fill deltaT_jets - 1
-				trCats[tr_idx].hists1D[1]->Fill(dtime);
+				trCats[tr_idx].hists1D[1]->Fill(deltaT_jets);
+				//2D plot for profile
+				trCats[tr_idx].hists2D[1]->Fill(ptavg, deltaT_jets);
 			}	
 			//fill deltaT_pvGam - 2
 			//only fill for two leading photons + weighted avg of jet time
@@ -295,7 +309,7 @@ class JetSkimmer : public BaseSkimmer{
 				trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);	
 				//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 				//need to give Profile2DHist a 2D hist with ptavg on x and deltaT_recoGen on y
-				trCats[tr_idx].hists2D[0]->Fill(CalcAvgPt(jets), deltaT_pvgam - deltaT_pvgam_gen);
+				trCats[tr_idx].hists2D[0]->Fill(Erh, deltaT_pvgam - deltaT_pvgam_gen);
 			
 			}	
 
@@ -641,6 +655,7 @@ class JetSkimmer : public BaseSkimmer{
 			vector<TH1D*> profs;
 			cout << "Writing " << tr.methodName << endl;
 			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
+			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
 			//make sure profiles get written
 			//for(int i = 0; i < profs.size(); i++)
 			//	tr.AddHist(profs[i]);		

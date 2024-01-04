@@ -43,8 +43,26 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	_base->GetEntry(evt);
 	nphotons = (int)_base->Photon_rhIds->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
+
+	double timecorr, drh;
 	
 	for(int p = 0; p < nphotons; p++){
+
+		//base photon selection
+	        if(_base->Photon_pt->at(p) < 30.) continue;
+		if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
+		//isolation cuts
+		bool iso;
+		bool trksum;
+		bool ecalrhsum;
+		bool htowoverem;
+		if(_isocut){
+		        trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
+		        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
+		        htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
+		        iso = trksum && ecalrhsum && htowoverem;
+			if(!iso) continue;
+		}
 		nRHs = (int)_base->Photon_rhIds->at(p).size();
 		unsigned long long id;
 		for(int r = 0; r < nRHs; r++){
@@ -53,8 +71,17 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 			id = _base->Photon_rhIds->at(p).at(r);
 			for(int j = 0; j < nRHs_evt; j++){
 				if(_base->ECALRecHit_ID->at(j) == id){
-					//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+					//TOF from 0 to rh location
+					drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+					//TOF from PV to rh location
+					timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+
+					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                        	       	//undo adjustment currently made in ntuples (traw - drh/c)
+					//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
+                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+					
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
 					rh.SetPhi(_base->ECALRecHit_phi->at(j));
@@ -86,6 +113,23 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	nRHs = (int)_base->Photon_rhIds->at(pho).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+	double timecorr, drh;
+
+	//base photon selection
+        if(_base->Photon_pt->at(pho) < 30.) return;
+	if(fabs(_base->Photon_eta->at(pho)) > 1.5) return;
+	//isolation cuts
+	bool iso;
+	bool trksum;
+	bool ecalrhsum;
+	bool htowoverem;
+	if(_isocut){
+	        trksum = _base->Photon_trkSumPtSolidConeDR04->at(pho) < 6.0;
+	        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(pho) < 10.0;
+	        htowoverem = _base->Photon_hadTowOverEM->at(pho) < 0.02;
+	        iso = trksum && ecalrhsum && htowoverem;
+		if(!iso) return;
+	}
 	
 	
 	for(int r = 0; r < nRHs; r++){
@@ -94,8 +138,17 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 		id = _base->Photon_rhIds->at(pho).at(r);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
-				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				//TOF from 0 to rh location
+				drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+				//TOF from PV to rh location
+				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+
+				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+                        	//undo adjustment currently made in ntuples (traw - drh/c)
+				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
+				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
+                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));
@@ -124,6 +177,23 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	int nRHs = (int)_base->Photon_rhIds->at(pho).size();
 	int nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+
+	//base photon selection
+        if(_base->Photon_pt->at(pho) < 30.) return;
+	if(fabs(_base->Photon_eta->at(pho)) > 1.5) return;
+	//isolation cuts
+	bool iso;
+	bool trksum;
+	bool ecalrhsum;
+	bool htowoverem;
+	if(_isocut){
+	        trksum = _base->Photon_trkSumPtSolidConeDR04->at(pho) < 6.0;
+	        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(pho) < 10.0;
+	        htowoverem = _base->Photon_hadTowOverEM->at(pho) < 0.02;
+	        iso = trksum && ecalrhsum && htowoverem;
+		if(!iso) return;
+	}
+
 
 	//set vertex info
 	Point vtx = Point(3);

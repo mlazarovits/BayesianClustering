@@ -53,7 +53,7 @@ class PhotonSkimmer : public BaseSkimmer{
                         _hists1D.push_back(slope_etaT);
                         _hists1D.push_back(slope_phiT);
                         _hists1D.push_back(polar_ang);
-                        _hists1D.push_back(phiEll);
+                        _hists1D.push_back(azimuth_ang);
                         _hists1D.push_back(e_subcl);
                         _hists1D.push_back(rotundity_3D);
                         _hists1D.push_back(rotundity_2D);
@@ -119,6 +119,25 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(cmsLogE_timeSmaj_covUnnorm);
 			_hists1D.push_back(cmsLogE_timeSmin_covUnnorm);
 			_hists1D.push_back(cmsLogE_rotundity_2D);
+			_hists1D.push_back(rotundity_2D_Elo);
+			_hists1D.push_back(rotundity_2D_Emed);
+			_hists1D.push_back(rotundity_2D_Ehi);
+			_hists1D.push_back(rotundity_2D_1Q);
+			_hists1D.push_back(rotundity_2D_2Q);
+			_hists1D.push_back(rotundity_2D_3Q);
+			_hists1D.push_back(rotundity_2D_4Q);
+			_hists1D.push_back(phiE_2D_1Q);
+			_hists1D.push_back(phiE_2D_2Q);
+			_hists1D.push_back(phiE_2D_3Q);
+			_hists1D.push_back(phiE_2D_4Q);
+			_hists1D.push_back(etaPhiCov_1Q);
+			_hists1D.push_back(etaPhiCov_2Q);
+			_hists1D.push_back(etaPhiCov_3Q);
+			_hists1D.push_back(etaPhiCov_4Q);
+			_hists1D.push_back(timeEtaCov_1Q);
+			_hists1D.push_back(timeEtaCov_2Q);
+			_hists1D.push_back(timeEtaCov_3Q);
+			_hists1D.push_back(timeEtaCov_4Q);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -186,6 +205,8 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(timeEtaCovUnnorm_timeMinCovUnnorm);
                 	_hists2D.push_back(rot2D_etaPhiCov);
                 	_hists2D.push_back(rot2D_etaPhiCovUnnorm);
+			_hists2D.push_back(E_phi);
+                	_hists2D.push_back(rot2D_phiEll2D);
 
 		};
 	
@@ -330,6 +351,49 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* cmsLogE_timeSmin_covUnnorm = new TH1D("cmsLogE_timeSmin_covUnnorm","cmsLogE_timeSmin_covUnnorm",25,-0.5,0.5);
 		//75 - CMS logE rotundity 2D
 		TH1D* cmsLogE_rotundity_2D = new TH1D("cmsLogE_rotundity_2D","cmsLogE_rotundity_2D",20,0.4,1.1);
+		//76 - spatial rotundity, E low
+		TH1D* rotundity_2D_Elo = new TH1D("rot2D_Elo","rot2D_Elo",20,0.4,1.1);
+		//77 - spatial rotundity, E med
+		TH1D* rotundity_2D_Emed = new TH1D("rot2D_Emed","rot2D_Emed",20,0.4,1.1);
+		//78 - spatial rotundity, E high
+		TH1D* rotundity_2D_Ehi = new TH1D("rot2D_Ehi","rot2D_Ehi",20,0.4,1.1);
+		//Quadrants in etaPhiCov-timeEtaCov space
+		//Q1 = ep_cov < 0 and te_cov < 0 
+		//Q2 = ep_cov < 0 and te_cov > 0 
+		//Q3 = ep_cov > 0 and te_cov < 0 
+		//Q4 = ep_cov > 0 and te_cov > 0  
+		//79 - rotundity in quadrant 1
+		TH1D* rotundity_2D_1Q = new TH1D("rot2D_1Q","rot2D_1Q",20,0.4,1.1);
+		//80 - rotundity in quadrant 2
+		TH1D* rotundity_2D_2Q = new TH1D("rot2D_2Q","rot2D_2Q",20,0.4,1.1);
+		//81 - rotundity in quadrant 3
+		TH1D* rotundity_2D_3Q = new TH1D("rot2D_3Q","rot2D_3Q",20,0.4,1.1);
+		//82 - rotundity in quadrant 4
+		TH1D* rotundity_2D_4Q = new TH1D("rot2D_4Q","rot2D_4Q",20,0.4,1.1);
+		//83 - phiE2D in quadrant 1
+		TH1D* phiE_2D_1Q = new TH1D("phiE2D_1Q","phiE2D_1Q",20,-3.1,1);
+		//84 - phiE2D in quadrant 2
+		TH1D* phiE_2D_2Q = new TH1D("phiE2D_2Q","phiE2D_2Q",20,-3.1,1);
+		//85 - phiE2D in quadrant 3
+		TH1D* phiE_2D_3Q = new TH1D("phiE2D_3Q","phiE2D_3Q",20,-3.1,1);
+		//86 - phiE2D in quadrant 4
+		TH1D* phiE_2D_4Q = new TH1D("phiE2D_4Q","phiE2D_4Q",20,-3.1,1);
+		//87 - etaphicov in quadrant 1
+		TH1D* etaPhiCov_1Q = new TH1D("etaPhiCov_1Q","etaPhiCov_1Q",20,-1,0.1);
+		//88 - etaphicov in quadrant 2
+		TH1D* etaPhiCov_2Q = new TH1D("etaPhiCov_2Q","etaPhiCov_2Q",20,-1,0.1);
+		//89 - etaphicov in quadrant 3
+		TH1D* etaPhiCov_3Q = new TH1D("etaPhiCov_3Q","etaPhiCov_3Q",20,-0.1,1.1);
+		//90 - etaphicov in quadrant 4
+		TH1D* etaPhiCov_4Q = new TH1D("etaPhiCov_4Q","etaPhiCov_4Q",20,-0.1,1.1);
+		//91 - timeetacov in quadrant 1
+		TH1D* timeEtaCov_1Q = new TH1D("timeEtaCov_1Q","timeEtaCov_1Q",20,-1,0.1);
+		//92 - timeetacov in quadrant 2
+		TH1D* timeEtaCov_2Q = new TH1D("timeEtaCov_2Q","timeEtaCov_2Q",20,-0.1,1);
+		//93 - timeetacov in quadrant 3
+		TH1D* timeEtaCov_3Q = new TH1D("timeEtaCov_3Q","timeEtaCov_3Q",20,-1,0.1);
+		//94 - timeetacov in quadrant 4
+		TH1D* timeEtaCov_4Q = new TH1D("timeEtaCov_4Q","timeEtaCov_4Q",20,-0.1,1);
 
 
 
@@ -340,7 +404,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//2 - rotundity (2D) v subcl energy
 		TH2D* rot2D_E = new TH2D("rot2D_subclE","rot2D_subclE;rotundity2D;E;a.u.",25,0.4,1.1,25,0,1000);
 		//3 - eta v phi
-		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-3.5,3.5,50,-0.1,6.3);
+		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-2,2.,50,-0.2,6.4);
 		//4 - t v eta
 		TH2D* t_eta = new TH2D("t_eta","t_eta;time_center;eta_center",50,-30,30,50,-3.5,3.5);
 		//5 - t v phi
@@ -465,6 +529,11 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH2D* rot2D_etaPhiCov = new TH2D("rot2D_etaPhiCov","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //65 - rot 2D vs. etaphi cov unnorm
                 TH2D* rot2D_etaPhiCovUnnorm = new TH2D("rot2D_etaPhiCovUnnorm","rot2D_etaPhiCovUnnorm;rot2D;etaPhiCovUnnorm",25,0.4,1.1,25,-0.2,0.2);
+		//66 - phi center vs. energy
+		TH2D* E_phi = new TH2D("E_phi","E_phi;E_center;phi_center",50,0.,1000,50,-0.2,6.4);
+		//67 - rot2D vs phiE2D
+                TH2D* rot2D_phiEll2D = new TH2D("rot2D_phiE2D","rot2D_phiE2D;rot2D;phiE2D",25,0.4,1.1,25,-3.1,1);
+		
 
 	
 		void Skim();
@@ -482,6 +551,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		double _thresh, _alpha, _emAlpha;
 
 		vector<plotCat> plotCats;
+
+
+		enum weightScheme{
+			noWeight = 0,
+			Eweight = 1,
+			logEweight = 2
+		};
+		
 
 		void MakeIDHists(string sample){
 			//total
@@ -734,7 +811,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				PointCollection majminpts;
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
 				Matrix majminCovMat = Matrix(3,3);
-				MakeCovMat(&majminpts, majminCovMat);
+				MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
 				//set time covariance from GMM
 				majminCovMat.SetEntry(cov.at(2,2),2,2);
 				majtime_cov = CalcCov(majminCovMat,2,0);
@@ -745,7 +822,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//////////////////////calculate CMS No energy weighting variables//////////////////////
 				Matrix noEw = Matrix(3,3);
 				//calculate covariances like in CMSSW
-				MakeCovMat(model->GetData(), noEw, false);	
+				MakeCovMat(model->GetData(), noEw, weightScheme(0));	
 				cmsNoE_e_var = sqrt(noEw.at(0,0));
 				cmsNoE_p_var = sqrt(noEw.at(1,1));
 				cmsNoE_t_var = sqrt(noEw.at(2,2));
@@ -767,7 +844,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//rotate points into maj/min axes
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
-				MakeCovMat(&majminpts, majminCovMat);
+				MakeCovMat(&majminpts, majminCovMat, weightScheme(2));
 				//set time covariance from GMM
 				majminCovMat.SetEntry(cov.at(2,2),2,2);
 				cmsNoE_majtime_cov = CalcCov(majminCovMat,2,0);
@@ -783,7 +860,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//////////////////////calculate CMS Log energy weighting variables//////////////////////
 				Matrix logEw = Matrix(3,3);
 				//calculate covariances like in CMSSW
-				MakeCovMat(model->GetData(), logEw, true);	
+				MakeCovMat(model->GetData(), logEw, weightScheme(2));	
 				cmsLogE_e_var = sqrt(logEw.at(0,0));
 				cmsLogE_p_var = sqrt(logEw.at(1,1));
 				cmsLogE_t_var = sqrt(logEw.at(2,2));
@@ -806,7 +883,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//rotate points into maj/min axes
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
-				MakeCovMat(&majminpts, majminCovMat);
+				MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
 				//set time covariance from GMM
 				majminCovMat.SetEntry(cov.at(2,2),2,2);
 				cmsLogE_majtime_cov = CalcCov(majminCovMat,2,0);
@@ -865,9 +942,18 @@ class PhotonSkimmer : public BaseSkimmer{
 				//major/minor covariances with time
 				plotCats[id_idx].hists1D[0][26]->Fill(majtime_cov);
 				plotCats[id_idx].hists1D[0][27]->Fill(mintime_cov);
-				if(E_tot <= 100) plotCats[id_idx].hists1D[0][28]->Fill(t_var);
-				else if(E_tot > 100 && E_tot <= 200) plotCats[id_idx].hists1D[0][29]->Fill(t_var);
-				else plotCats[id_idx].hists1D[0][30]->Fill(t_var);
+				if(E_tot <= 100){
+					plotCats[id_idx].hists1D[0][28]->Fill(t_var);
+					plotCats[id_idx].hists1D[0][76]->Fill(rot2D);	
+				}
+				else if(E_tot > 100 && E_tot <= 200){
+					plotCats[id_idx].hists1D[0][29]->Fill(t_var);
+					plotCats[id_idx].hists1D[0][77]->Fill(rot2D);	
+				}
+				else{
+					plotCats[id_idx].hists1D[0][30]->Fill(t_var);
+					plotCats[id_idx].hists1D[0][78]->Fill(rot2D);	
+				}
 				plotCats[id_idx].hists1D[0][31]->Fill(te_cov_unnorm);
 				plotCats[id_idx].hists1D[0][32]->Fill(tp_cov_unnorm);
 				plotCats[id_idx].hists1D[0][33]->Fill(majtime_cov_unnorm);
@@ -913,6 +999,36 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
 				plotCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
 				plotCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
+				if(ep_cov < 0){
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[0][79]->Fill(rot2D);
+						plotCats[id_idx].hists1D[0][83]->Fill(phi2D);
+						plotCats[id_idx].hists1D[0][87]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[0][91]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[0][80]->Fill(rot2D);
+						plotCats[id_idx].hists1D[0][84]->Fill(phi2D);
+						plotCats[id_idx].hists1D[0][88]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[0][92]->Fill(te_cov);
+					}
+				}
+				else{
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[0][81]->Fill(rot2D);
+						plotCats[id_idx].hists1D[0][85]->Fill(phi2D);
+						plotCats[id_idx].hists1D[0][89]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[0][93]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[0][82]->Fill(rot2D);
+						plotCats[id_idx].hists1D[0][86]->Fill(phi2D);
+						plotCats[id_idx].hists1D[0][90]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[0][94]->Fill(te_cov);
+
+					}
+				}
+
 
 	
 				//2D hists
@@ -981,6 +1097,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				plotCats[id_idx].hists2D[0][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
 				plotCats[id_idx].hists2D[0][64]->Fill(rot2D, ep_cov);
 				plotCats[id_idx].hists2D[0][65]->Fill(rot2D, ep_cov_unnorm);
+				plotCats[id_idx].hists2D[0][66]->Fill(E_k, pc);
+				plotCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
 
 
 				//histograms for leading/subleading clusters
@@ -1029,9 +1147,18 @@ class PhotonSkimmer : public BaseSkimmer{
 					//major/minor covariances with time
 					plotCats[id_idx].hists1D[1][26]->Fill(majtime_cov);
 					plotCats[id_idx].hists1D[1][27]->Fill(mintime_cov);
-					if(E_tot <= 100) plotCats[id_idx].hists1D[1][28]->Fill(t_var);
-					else if(E_tot > 100 && E_tot <= 200) plotCats[id_idx].hists1D[1][29]->Fill(t_var);
-					else plotCats[id_idx].hists1D[1][30]->Fill(t_var);
+					if(E_tot <= 100){
+						plotCats[id_idx].hists1D[1][28]->Fill(t_var);
+						plotCats[id_idx].hists1D[1][76]->Fill(rot2D);	
+					}
+					else if(E_tot > 100 && E_tot <= 200){
+						plotCats[id_idx].hists1D[1][29]->Fill(t_var);
+						plotCats[id_idx].hists1D[1][77]->Fill(rot2D);	
+					}
+					else{
+						plotCats[id_idx].hists1D[1][30]->Fill(t_var);
+						plotCats[id_idx].hists1D[1][78]->Fill(rot2D);	
+					}
 					plotCats[id_idx].hists1D[1][31]->Fill(te_cov_unnorm);
 					plotCats[id_idx].hists1D[1][32]->Fill(tp_cov_unnorm);
 					plotCats[id_idx].hists1D[1][33]->Fill(majtime_cov_unnorm);
@@ -1077,6 +1204,38 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[1][73]->Fill(cmsLogE_majtime_cov_unnorm);
 					plotCats[id_idx].hists1D[1][74]->Fill(cmsLogE_mintime_cov_unnorm);
 					plotCats[id_idx].hists1D[1][75]->Fill(cmsLogE_rot2D);
+				if(ep_cov < 0){
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[1][79]->Fill(rot2D);
+						plotCats[id_idx].hists1D[1][83]->Fill(phi2D);
+						plotCats[id_idx].hists1D[1][87]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[1][91]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[1][80]->Fill(rot2D);
+						plotCats[id_idx].hists1D[1][84]->Fill(phi2D);
+						plotCats[id_idx].hists1D[1][88]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[1][92]->Fill(te_cov);
+					}
+				}
+				else{
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[1][81]->Fill(rot2D);
+						plotCats[id_idx].hists1D[1][85]->Fill(phi2D);
+						plotCats[id_idx].hists1D[1][89]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[1][93]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[1][82]->Fill(rot2D);
+						plotCats[id_idx].hists1D[1][86]->Fill(phi2D);
+						plotCats[id_idx].hists1D[1][90]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[1][94]->Fill(te_cov);
+
+					}
+				}
+
+
+
 	
 					//2D hists
 					plotCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
@@ -1144,6 +1303,10 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists2D[1][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
 					plotCats[id_idx].hists2D[1][64]->Fill(rot2D, ep_cov);
 					plotCats[id_idx].hists2D[1][65]->Fill(rot2D, ep_cov_unnorm);
+					plotCats[id_idx].hists2D[1][66]->Fill(E_k, pc);
+					plotCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
+				
+
 				}
 
 				else if(k != leadidx){
@@ -1239,6 +1402,35 @@ class PhotonSkimmer : public BaseSkimmer{
 					plotCats[id_idx].hists1D[2][73]->Fill(cmsLogE_majtime_cov_unnorm);
 					plotCats[id_idx].hists1D[2][74]->Fill(cmsLogE_mintime_cov_unnorm);
 					plotCats[id_idx].hists1D[2][75]->Fill(cmsLogE_rot2D);
+				if(ep_cov < 0){
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[2][79]->Fill(rot2D);
+						plotCats[id_idx].hists1D[2][83]->Fill(phi2D);
+						plotCats[id_idx].hists1D[2][87]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[2][91]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[2][80]->Fill(rot2D);
+						plotCats[id_idx].hists1D[2][84]->Fill(phi2D);
+						plotCats[id_idx].hists1D[2][88]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[2][92]->Fill(te_cov);
+					}
+				}
+				else{
+					if(te_cov < 0){
+						plotCats[id_idx].hists1D[2][81]->Fill(rot2D);
+						plotCats[id_idx].hists1D[2][85]->Fill(phi2D);
+						plotCats[id_idx].hists1D[2][89]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[2][93]->Fill(te_cov);
+					}	
+					else{
+						plotCats[id_idx].hists1D[0][82]->Fill(rot2D);
+						plotCats[id_idx].hists1D[0][86]->Fill(phi2D);
+						plotCats[id_idx].hists1D[0][90]->Fill(ep_cov);
+						plotCats[id_idx].hists1D[0][94]->Fill(te_cov);
+
+					}
+				}
 
 	
 					//2D hists
@@ -1387,7 +1579,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			newpt.mult(rotmat,oldpt);
 			//may need to preserve weight
 			PointCollection tmp_newpts = newpt.MatToPoints();
-			newpts.AddPoints(tmp_newpts);	
+			Point newpoint = tmp_newpts.at(0);
+			newpoint.SetWeight(pt.w());
+			newpts.AddPoint(newpoint);	
 		}
 
 	}
@@ -1431,7 +1625,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	}
 
 
-	void MakeCovMat(PointCollection* pc, Matrix& outcov, bool logw = false){
+	void MakeCovMat(PointCollection* pc, Matrix& outcov, const weightScheme& ws){
 		if(!outcov.square()) return;
 		if(outcov.GetDims()[0] != pc->Dim()) return;
 		
@@ -1451,8 +1645,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		Point pt;
 		for(int i = 0; i < npts; i ++){
 			pt = pc->at(i);
-			if(logw) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
-			else pt.SetWeight( 1.0 );
+			if(ws == 0) pt.SetWeight( 1.0 );
+			//already e-weighted
+			if(ws == 2) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
 			pcnew.AddPoint(pt);
 		}
 		//is weighted mean
