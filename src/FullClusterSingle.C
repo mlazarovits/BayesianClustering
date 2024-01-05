@@ -268,12 +268,12 @@ int main(int argc, char *argv[]){
         	PhotonProducer prod(file);
 		prod.SetTransferFactor(gev);
 		int npho = nobj; //which photon to analyze
-		if(viz) cout << "Making plots for photon " << npho << "  at event " << evt << endl;
+		if(viz) cout << "Making plots for photon " << npho << " at event " << evt << endl;
         	//prod.GetRecHits(rhs,evt,npho);
         	prod.SetIsoCut();
 		prod.GetTruePhotons(phos, evt);
-		if(phos.size() < 1){ cout << "no photons passing selection found for event " << evt << endl; return -1; }
-		
+		if(phos.size() < 1){ cout << "No photons passing selection found for event " << evt << endl; return -1; }
+		if(nobj > phos.size() - 1){ cout << "Only " << phos.size() << " photons passing selection found for event " << evt << endl; return -1; }
 		phos[npho].GetJets(rhs);
 		phos[npho].Print();
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
@@ -308,11 +308,11 @@ int main(int argc, char *argv[]){
 
 	
 	BayesCluster *algo = new BayesCluster(rhs);
-	algo->SetDataSmear(smear);
+	if(smeared) algo->SetDataSmear(smear);
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	algo->SetTimeResSmear(tres_c, tres_n*gev);
+	//algo->SetTimeResSmear(tres_c, tres_n*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
