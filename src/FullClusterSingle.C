@@ -166,6 +166,24 @@ int main(int argc, char *argv[]){
 
    		return 0;
   	}
+	cout << "Free sha-va-ca-doo!" << endl;
+	string cmslab, version;	
+	/////GET DATA FROM NTUPLE//////
+	if(!in_file.empty()){
+		//get version
+		std::smatch m;
+		std::regex re("_v[0-9]+_");
+		version = "";
+		std::regex_search(in_file,m,re);
+		for(auto x : m) version += x;
+		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find(".root") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
+		version.pop_back();
+		cmslab += version;
+	}
+	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
+	else{
+		in_file = "BDSIM";
+	} 
 
 	if(!fname.empty()) fname += "_";
 	if(obj == 0 || obj == 2){
@@ -188,7 +206,11 @@ int main(int argc, char *argv[]){
 	}
 
 
-	fname = "plots/"+fname;
+
+
+	if(fname != "")
+		fname = "skims/"+fname+"Skim_"+fname;
+	else fname = "skims/"+fname+"Skim";
 	string a_string;
 	std::stringstream stream;
 	stream << std::fixed << std::setprecision(3) << alpha;
@@ -209,8 +231,7 @@ int main(int argc, char *argv[]){
 	t_string = stream.str();
 	idx = t_string.find(".");
 	t_string.replace(idx,1,"p");	
-
-
+	
 	string gev_string;
 	stream.str("");
 	stream << std::fixed << std::setprecision(3) << gev;
@@ -218,28 +239,25 @@ int main(int argc, char *argv[]){
 	idx = gev_string.find(".");
 	gev_string.replace(idx,1,"p");	
 
-	if(obj != 1) fname += "_evt"+std::to_string(evt)+"_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_gev"+gev_string;
-	else fname += "_evt"+std::to_string(evt)+"_nobj"+std::to_string(nobj)+"_emAlpha"+ema_string+"_thresh"+t_string+"_gev"+gev_string;
-	cout << "Free sha-va-ca-doo!" << endl;
 	
-	/////GET DATA FROM NTUPLE//////
-	//get version
-	std::smatch m;
-        std::regex re("_v[0-9]+_");
-        string version = "";
-        std::regex_search(in_file,m,re);
-        for(auto x : m) version += x;
-        string cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find("_AODSIM") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-        version.pop_back();
-        cmslab += version;
-	
-	fname += "_"+cmslab;//version.substr(0,3); //"_v9"
+	if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
+	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
+	fname += "NperGeV"+gev_string+"_";
+	fname += cmslab; //long sample name
+
+
+	fname = "plots/"+fname;
+
+
+
+
 	if(viz){
 		cout << "Writing to directory: " << fname << endl;
 		if(gSystem->AccessPathName(fname.c_str())){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
 		}
 	}
+	return -1;
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
