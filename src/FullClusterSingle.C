@@ -22,9 +22,8 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
-
-	
 	string fname = "";
+	string oname = "";
 	string in_file = "rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
@@ -61,11 +60,11 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--output", 8) == 0){
      			i++;
-    	 		fname = string(argv[i]);
+    	 		oname = string(argv[i]);
    		}
 		if(strncmp(argv[i],"-o", 2) == 0){
      			i++;
-    	 		fname = string(argv[i]);
+    	 		oname = string(argv[i]);
    		}
 		if(strncmp(argv[i],"--viz", 5) == 0){
     	 		viz = true;
@@ -185,7 +184,6 @@ int main(int argc, char *argv[]){
 		in_file = "BDSIM";
 	} 
 
-	if(!fname.empty()) fname += "_";
 	if(obj == 0 || obj == 2){
 		if(obj == 0) fname += "jets";
 		else fname += "jetsSim"; 
@@ -208,8 +206,8 @@ int main(int argc, char *argv[]){
 
 
 
-	if(fname != "")
-		fname = "skims/"+fname+"Skim_"+fname;
+	if(oname != "")
+		fname = "skims/"+fname+"Skim_"+oname;
 	else fname = "skims/"+fname+"Skim";
 	string a_string;
 	std::stringstream stream;
@@ -257,7 +255,6 @@ int main(int argc, char *argv[]){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
 		}
 	}
-	return -1;
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
