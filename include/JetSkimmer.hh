@@ -593,7 +593,7 @@ class JetSkimmer : public BaseSkimmer{
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(1.);
 			algo->SetAlpha(alpha);
 			algo->SetSubclusterAlpha(emAlpha);
@@ -653,7 +653,6 @@ class JetSkimmer : public BaseSkimmer{
 			string name;
 			//make profile
 			vector<TH1D*> profs;
-			cout << "Writing " << tr.methodName << endl;
 			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
 			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
 			//make sure profiles get written

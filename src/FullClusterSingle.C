@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
 	int verb = 0;
 	bool weighted = true;
 	bool smeared = true;
+	bool timesmeared = true;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -108,6 +109,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--noSmear", 9) == 0){
     	 		smeared = false;
    		}
+		if(strncmp(argv[i],"--noTimeSmear", 13) == 0){
+    	 		timesmeared = false;
+   		}
 		if(strncmp(argv[i],"--noDist", 8) == 0){
     	 		distconst = false;
    		}
@@ -159,6 +163,7 @@ int main(int argc, char *argv[]){
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
+   		cout << "   --noTimeSmear                 turns off time smearing data according to preset covariance (default = true)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = true)" << endl;
    		cout << "   --noDist                      turns off - clusters must be within pi/2 in phi (default = true)" << endl;
    		cout << "Example: ./FullClusterSingle.x -a 0.5 -t 1.6 --viz" << endl;
@@ -327,7 +332,7 @@ int main(int argc, char *argv[]){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	algo->SetTimeResSmear(tres_c, tres_n*gev);
+	if(timesmeared) algo->SetTimeResSmear(tres_c, tres_n*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
@@ -368,7 +373,7 @@ int main(int argc, char *argv[]){
 		map<string, Matrix> params;
 		for(int k = 0; k < nk; k++){
 			params = gmm->GetPriorParameters(k);
-			cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(k,0) << endl;
+			cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(0,0) << endl;
 		}
 	}	
 

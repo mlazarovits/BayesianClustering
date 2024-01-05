@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
 	int verb = 0;
 	bool weighted = true;
 	bool smear = true;
+	bool timesmear = true;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -102,9 +103,13 @@ int main(int argc, char *argv[]){
     	 		weighted = false;
 			cout << "Turning off energy weighting." << endl;
    		}
-		if(strncmp(argv[i],"--noSmear", 7) == 0){
+		if(strncmp(argv[i],"--noSmear", 9) == 0){
     	 		smear = false;
 			cout << "Turning off smearing." << endl;
+   		}
+		if(strncmp(argv[i],"--noTimeSmear", 13) == 0){
+    	 		timesmear = false;
+			cout << "Turning off time smearing." << endl;
    		}
 		if(strncmp(argv[i],"--noDist", 8) == 0){
     	 		distconst = false;
@@ -166,6 +171,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
+   		cout << "   --noTimeSmear                 turns off time smearing data (default = true)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
@@ -282,7 +288,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
 		skimmer.SetEventRange(evti,evtj);
-		skimmer.SetSmear(smear); //turn off time smearing for jets - impacts PV deltaT res
+		skimmer.SetSmear(smear);
+		skimmer.SetTimeSmear(timesmear); 
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
@@ -303,6 +310,7 @@ int main(int argc, char *argv[]){
 		//set EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
+		skimmer.SetTimeSmear(timesmear); 
         	skimmer.Skim();
 	}
         return 0;

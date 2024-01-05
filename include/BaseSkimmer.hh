@@ -182,7 +182,8 @@ class BaseSkimmer{
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 
 		void SetSmear(bool t){ _smear = t; }
-		bool _smear;
+		void SetTimeSmear(bool t){ _timesmear = t; }
+		bool _smear, _timesmear;
 
 
 };
