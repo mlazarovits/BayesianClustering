@@ -59,6 +59,8 @@ class BasePDFMixture : public BasePDF{
 		//res = c^2 + n^2/w^2
 		void SetWeightBasedResSmear(double c, double n, int d){
 			if(d > m_dim) return;
+			_data_cov = Matrix(m_data->Dim(), m_data->Dim());
+			_smear = true;
 			_res_smear_c.push_back(c); _res_smear_n.push_back(n); _res_smear_d.push_back(d);
 		} 
 	
