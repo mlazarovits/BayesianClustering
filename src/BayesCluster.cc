@@ -360,7 +360,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
 
-	if(!_smear.empty()) gmm->SetDataSmear(_smear);
+	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 	
 	if(_tresSmear_c != -1) gmm->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	//create EM algo
