@@ -57,7 +57,7 @@ void JetSkimmer::Skim(){
 
 
 	int SKIP = 1;
-	for(int i = _evti; i < _evtj; i++){
+	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
@@ -95,7 +95,7 @@ void JetSkimmer::Skim(){
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
-		//algo->SetTimeResSmear(tres_c, tres_n);
+		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
