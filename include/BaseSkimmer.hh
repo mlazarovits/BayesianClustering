@@ -76,7 +76,10 @@ class BaseSkimmer{
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 		void SetOutfile(string fname){ _oname = fname; }
-		void SetTransferFactor(double gev){ _gev = gev; }
+		void SetTransferFactor(double gev){
+			_gev = gev;
+			_prod->SetTransferFactor(_gev);
+		}
 
 		void SetMinPt(double p){ _prod->SetMinPt(p); }
 		void SetMinNrhs(double p){ _prod->SetMinNrhs(p); }

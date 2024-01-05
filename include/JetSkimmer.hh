@@ -29,7 +29,6 @@ class JetSkimmer : public BaseSkimmer{
 			//in ntuplizer, stored as rh time		
 
 			_prod = new JetProducer(file);
-			_prod->SetTransferFactor(_gev);
 			_prod->SetIsoCut();
 		
 
@@ -187,9 +186,9 @@ class JetSkimmer : public BaseSkimmer{
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","pvavg_diffDeltaTime_recoGen",10,0,700,10,-10,10);
+		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","Erh_diffDeltaTime_recoGen;#sum_{rh} E_{rh} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,700,10,-10,10);
 		//1 - 2D histogram for dijets resolution
-		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets",10,0,700,10,-10,10);	
+		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets;p^{avg}_{T} (GeV); #Delta t^{PV}_{dijet}",10,0,700,10,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -257,13 +256,14 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> jettimes;
 			double gamtime = -999;
 			double pvtime = -999;
-			double deltaT_pvgam = -999;
-			double deltaT_pvgam_gen = -999;
+			double deltaT_gampv = -999;
+			double deltaT_gampv_gen = -999;
 			double ptavg = 0;
 			double Erh = 0;
 			vector<JetPoint> rhs;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			for(int j = 0; j < njets; j++){
+				if(TimeStrategy(tr_idx) == mmavg) cout << " jet #" << j << " has " << jets[j].GetNRecHits() << " rhs and";
 				jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 				jets[j].SetJetTime(jettime);
 				//fill jet time in pv frame - 0
@@ -298,31 +298,31 @@ class JetSkimmer : public BaseSkimmer{
 			//this assumes that the time for the jet was set previously with the respective method
 			pvtime = CalcPVTime(ts, jets);
 			gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
-			deltaT_pvgam = pvtime - gamtime;
-			trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
+			deltaT_gampv = gamtime - pvtime;
+			trCats[tr_idx].hists1D[2]->Fill( deltaT_gampv );
 			if(_data) return; //no gen info with data
 
 			//fill difference in deltaT_pvGam of reco and gen - 3
-			deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
+			deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
 			//only for gen matches
-			if(deltaT_pvgam_gen != -999){
-				trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);	
+			if(deltaT_gampv_gen != -999){
+				trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
 				//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
-				//need to give Profile2DHist a 2D hist with ptavg on x and deltaT_recoGen on y
-				trCats[tr_idx].hists2D[0]->Fill(Erh, deltaT_pvgam - deltaT_pvgam_gen);
+				//need to give Profile2DHist a 2D hist with ptavg on x and deltaT on y
+				trCats[tr_idx].hists2D[0]->Fill(Erh, deltaT_gampv - deltaT_gampv_gen);
 			
 			}	
 
 			//do same for subleading photon if it exists
 			if(_phos.size() > 1){
 				gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
-				deltaT_pvgam = pvtime - gamtime;
-				trCats[tr_idx].hists1D[2]->Fill( deltaT_pvgam );
-				deltaT_pvgam_gen = CalcGenDeltaT(_phos[0]);
+				deltaT_gampv = gamtime - pvtime;
+				trCats[tr_idx].hists1D[2]->Fill( deltaT_gampv );
+				deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
 				//only for gen matches
-				if(deltaT_pvgam_gen != -999){
-					trCats[tr_idx].hists1D[3]->Fill( deltaT_pvgam - deltaT_pvgam_gen);
-					trCats[tr_idx].hists2D[0]->Fill(ptavg, deltaT_pvgam - deltaT_pvgam_gen);
+				if(deltaT_gampv_gen != -999){
+					trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);
+					trCats[tr_idx].hists2D[0]->Fill(ptavg, deltaT_gampv - deltaT_gampv_gen);
 				}
 			}
 		
@@ -417,6 +417,7 @@ class JetSkimmer : public BaseSkimmer{
 			double theta, phi, r, id, npts, E_k;
 
 			int nclusters = model->GetNClusters();
+			
 			nSubClusters->Fill(nclusters);
 			model->GetNorms(norms);
 		
@@ -510,6 +511,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg) return CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
+				cout << " " << gmm->GetNClusters() << " nSubClusters";
 				nSubClusters_mm->Fill(gmm->GetNClusters());
 				return CalcMMAvgTime(gmm);
 			}
@@ -651,13 +653,28 @@ class JetSkimmer : public BaseSkimmer{
 		void WriteTimeRecoCat(TFile* ofile, timeRecoCat& tr){
 			ofile->cd();
 			string name;
-			//make profile
+			//write recogen hists
 			vector<TH1D*> profs;
 			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
+			//make sure profiles get written
+			for(int i = 0; i < profs.size(); i++){
+				name = profs[i]->GetName();
+				name = name+"_recoGen";
+				profs[i]->SetName(name.c_str());
+				profs[i]->SetTitle(name.c_str()); 
+				tr.AddHist(profs[i]);	
+			}	
+			profs.clear();
+			//write dijet hists
 			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
 			//make sure profiles get written
-			for(int i = 0; i < profs.size(); i++)
-				tr.AddHist(profs[i]);		
+			for(int i = 0; i < profs.size(); i++){
+				name = profs[i]->GetName();
+				name = name+"_dijets";
+				profs[i]->SetName(name.c_str());
+				profs[i]->SetTitle(name.c_str()); 
+				tr.AddHist(profs[i]);	
+			}	
 	
 			vector<TH1D*> hists1D = tr.hists1D;
 			//write 1D hists
