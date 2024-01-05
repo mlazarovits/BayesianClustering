@@ -386,7 +386,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	}
 	//loop
 	double dLogL, newLogL;
-	double LogLthresh = 1e-4;
+	double LogLthresh = 1e-10;
 	double oldLogL = algo->EvalLogL();
 	////////run EM algo////////
 	//maximum of 50 iterations
