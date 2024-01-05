@@ -38,7 +38,7 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 			//set new contents
 			outhist->SetBinContent(i, fit_stddev);
 			outhist->SetBinError(i, fit_stddev_err);
-		cout << "bin " << i << ": stddev " << stddev << " fit_stddev " << fit_stddev << " err: " << fit_stddev_err << " norm " << norm << " phist integral: " << phist->Integral() << endl; 	
+		//cout << "bin " << i << ": stddev " << stddev << " fit_stddev " << fit_stddev << " err: " << fit_stddev_err << " norm " << norm << " phist integral: " << phist->Integral() << endl; 	
 			delete fit;
 		}
 	}
