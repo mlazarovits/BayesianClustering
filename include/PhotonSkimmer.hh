@@ -580,9 +580,15 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				plotCat data(_hists1D, _hists2D, "JetHT", "JetHT");
-				data.ids = {-999};
-				plotCats.push_back(data);
+				plotCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
+				jetht.ids = {-999};
+				plotCats.push_back(jetht);
+			}
+			else if(sample.find("GJets") != string::npos){
+				//data
+				plotCat gjets(_hists1D, _hists2D, "GJets", "GJets");
+				gjets.ids = {-999};
+				plotCats.push_back(gjets);
 			}
 			else return;
 
