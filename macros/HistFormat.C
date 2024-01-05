@@ -204,7 +204,7 @@ void HistFormat(string file){
 
 	string cmslab = GetCMSLabel(file);
 	string extra = "";
-	if(file.find("Skim") == string::npos) extra = GetExtraLabel(file);
+	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
 	if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
