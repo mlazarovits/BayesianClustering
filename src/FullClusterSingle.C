@@ -327,7 +327,7 @@ int main(int argc, char *argv[]){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	//algo->SetTimeResSmear(tres_c, tres_n*gev);
+	algo->SetTimeResSmear(tres_c, tres_n*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
@@ -362,7 +362,14 @@ int main(int argc, char *argv[]){
 	else if(obj == 1){
 		string oname = "";
 		if(viz) oname = fname;
-		algo->SubCluster(oname);
+		GaussianMixture* gmm = algo->SubCluster(oname);
+		int nk = gmm->GetNClusters();
+		cout << nk << " clusters in model." << endl;
+		map<string, Matrix> params;
+		for(int k = 0; k < nk; k++){
+			params = gmm->GetPriorParameters(k);
+			cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(k,0) << endl;
+		}
 	}	
 
 
