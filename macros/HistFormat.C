@@ -27,7 +27,7 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	can->SetGridx(1);
 	can->SetGridy(1);
 	can->SetTitle("");
-	TLegend* myleg = new TLegend(0.7, 0.7, 0.8, 0.8 );
+	TLegend* myleg = new TLegend(0.7, 0.7, 0.9, 0.9);
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
 	myleg->SetTextFont(42);
