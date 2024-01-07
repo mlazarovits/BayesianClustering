@@ -19,6 +19,7 @@ class JetSkimmer : public BaseSkimmer{
 		JetSkimmer(){
 			_evti = 0;
 			_evtj = 0;
+			_gev = 1./10.;
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -37,6 +38,7 @@ class JetSkimmer : public BaseSkimmer{
 			_evti = 0;
 			_evtj = _nEvts;
 			_oname = "plots/jet_skims_"+_cms_label+".root";
+			_gev = 1./10.;
 				
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
@@ -56,6 +58,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(diffDeltaT_recoGen);
 			_timeHists1D.push_back(Erh_sigmaDeltaTime_recoGen);
 			_timeHists1D.push_back(ptavg_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(deltaT_pvGam_gen);	
 
 			_timeHists2D.push_back(Erh_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(ptavg_diffDeltaTime_dijets);	
@@ -84,11 +87,11 @@ class JetSkimmer : public BaseSkimmer{
 
 		};
 		//ctor from rec hit collection - integrating into ntuplizer
-
+		//needs to match order of timeRecoCats
 		enum TimeStrategy{
 			med = 0, 
-			eavg = 1, 
-			mmavg = 2
+			mmavg = 1, 
+			eavg = 2
 		};		
 		//struct for different types of time reco (ie median, eAvg, mmAvg)
 		struct timeRecoCat{
@@ -114,7 +117,7 @@ class JetSkimmer : public BaseSkimmer{
 						name = hist->GetName();
 						if(!methodName.empty()) name += "_"+methodName;
 						hist->SetName(name.c_str());
-						if(!methodName.empty()) hist->SetTitle("");
+						if(!methodName.empty()) hist->SetTitle(methodName.c_str());
 						hists1D.push_back(hist);
 					}
 
@@ -124,7 +127,7 @@ class JetSkimmer : public BaseSkimmer{
 					name = hist->GetName();
 					if(!methodName.empty()) name += "_"+methodName;
 					hist->SetName(name.c_str());
-					if(!methodName.empty()) hist->SetTitle("");
+					if(!methodName.empty()) hist->SetTitle(methodName.c_str());
 					hists2D.push_back(hist);
 
 				}
@@ -136,7 +139,7 @@ class JetSkimmer : public BaseSkimmer{
 				string name = hist->GetName();
 				if(!methodName.empty()) name += "_"+methodName;
 				hist->SetName(name.c_str());
-				if(!methodName.empty()) hist->SetTitle("");
+				if(!methodName.empty()) hist->SetTitle(methodName.c_str());
 				hists1D.push_back(hist);
 			}	
 			void AddHist(TH2D* inhist){
@@ -144,7 +147,7 @@ class JetSkimmer : public BaseSkimmer{
 				string name = hist->GetName();
 				if(!methodName.empty()) name += "_"+methodName;
 				hist->SetName(name.c_str());
-				if(!methodName.empty()) hist->SetTitle("");
+				if(!methodName.empty()) hist->SetTitle(methodName.c_str());
 				hists2D.push_back(hist);
 
 			}	
@@ -175,14 +178,16 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
-		//2 - delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam","deltaT_pvGam",25,-4,4);	
+		//2 - reco delta t between pv and photon 
+		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam_reco","deltaT_pvGam_reco",25,-4,4);	
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
 		//4 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
 		TH1D* Erh_sigmaDeltaTime_recoGen = new TH1D("Erh_sigmaDeltaTime_recoGen","Erh_sigmaDeltaTime_recoGen",10,0,700);
 		//5 - resolution of difference between two jets for PV time as a function of their average pT 	
 		TH1D* ptavg_sigmaDeltaTime_dijets = new TH1D("ptavg_sigmaDeltaTime_dijets","ptavg_sigmaDeltaTime_dijets",10,0,700);
+		//6 - gen deltaT bw photon and pv
+		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-4,4);	
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
@@ -262,10 +267,11 @@ class JetSkimmer : public BaseSkimmer{
 			double Erh = 0;
 			vector<JetPoint> rhs;
 			TimeStrategy ts = TimeStrategy(tr_idx);
+			//cout << "method: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << endl;
 			for(int j = 0; j < njets; j++){
-				if(TimeStrategy(tr_idx) == mmavg) cout << " jet #" << j << " has " << jets[j].GetNRecHits() << " rhs and";
 				jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 				jets[j].SetJetTime(jettime);
+				//cout << " jet #" << j << " time: " << jettime << endl;
 				//fill jet time in pv frame - 0
 				trCats[tr_idx].hists1D[0]->Fill(jettime);
 				//add to pv time calculation
@@ -286,6 +292,7 @@ class JetSkimmer : public BaseSkimmer{
 					hardjets = std::make_pair(jets[0],jets[1]);
 				}
 				double deltaT_jets = GetDTime(hardjets);
+				//cout  << " dtime_jets: " << deltaT_jets << endl;
 				ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
 				//fill deltaT_jets - 1
 				trCats[tr_idx].hists1D[1]->Fill(deltaT_jets);
@@ -304,6 +311,7 @@ class JetSkimmer : public BaseSkimmer{
 
 			//fill difference in deltaT_pvGam of reco and gen - 3
 			deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
+			trCats[tr_idx].hists1D[6]->Fill(deltaT_gampv_gen);
 			//only for gen matches
 			if(deltaT_gampv_gen != -999){
 				trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
@@ -315,10 +323,11 @@ class JetSkimmer : public BaseSkimmer{
 
 			//do same for subleading photon if it exists
 			if(_phos.size() > 1){
-				gamtime = CalcJetTime(TimeStrategy(tr_idx), _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+				gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
 				deltaT_gampv = gamtime - pvtime;
 				trCats[tr_idx].hists1D[2]->Fill( deltaT_gampv );
 				deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
+				trCats[tr_idx].hists1D[6]->Fill(deltaT_gampv_gen);
 				//only for gen matches
 				if(deltaT_gampv_gen != -999){
 					trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);
@@ -337,6 +346,7 @@ class JetSkimmer : public BaseSkimmer{
 			return pt/double(njets);
 		}
 
+		//should be deltaT = gam - pv
 		double CalcGenDeltaT(const Jet& pho){
 			//calc times differently for !sig and sig photons
 			double dpho = -999;
@@ -507,12 +517,13 @@ class JetSkimmer : public BaseSkimmer{
 
 	
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+			//cout << "CalcJetTime method " << ts << endl;
 			if(ts == med) return CalcMedianTime(jet);
 			else if(ts == eavg) return CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				cout << " " << gmm->GetNClusters() << " nSubClusters";
 				nSubClusters_mm->Fill(gmm->GetNClusters());
+				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				return CalcMMAvgTime(gmm);
 			}
 			else return -999;
@@ -595,7 +606,7 @@ class JetSkimmer : public BaseSkimmer{
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n*_gev);
 			algo->SetThresh(1.);
 			algo->SetAlpha(alpha);
 			algo->SetSubclusterAlpha(emAlpha);
@@ -615,6 +626,7 @@ class JetSkimmer : public BaseSkimmer{
 				params = model->GetPriorParameters(k);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				norm += params["pi"].at(0,0);
+				//cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
 			}
 			return t/norm; 
 		}
