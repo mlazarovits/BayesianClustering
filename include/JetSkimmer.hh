@@ -100,6 +100,7 @@ class JetSkimmer : public BaseSkimmer{
 			
 			string methodName;
 
+			vector<procCat> procCats;
 			timeRecoCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, const TimeStrategy& ts){
 				if(ts == med)
 					methodName = "median";
