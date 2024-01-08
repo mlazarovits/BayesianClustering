@@ -287,7 +287,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv = Matrix(m_dim,m_dim);
 	m_W0inv.invert(m_W0);
 
-cout << "init prior params - mW0" << endl; m_W0.Print();
 	m_post.SetDims(m_n, m_k);
 	
 	m_Elam.clear();
