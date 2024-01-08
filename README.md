@@ -90,20 +90,20 @@ There are muliple visualization classes:
 - run the python scripts and submit scripts from the condor folder
 
 #### Use as an external package
-- make sure `lib/libBayesCluster.so` exists
+- make sure `lib/libBayesianClustering.so` exists
 	- if not, it can be made with `make lib`
 - be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
 	```
-	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesCluster/lib
+	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesianClustering/lib
 	```
 - In Makefile:
 	- Add the following flags to `CXXFLAGS` (or equivalent)
 	```
-	CXXFLAGS += -I/path/to/BayesCluster/include
+	CXXFLAGS += -I/path/to/BayesianClustering/include
 	```
 	- Add the following flags to `GLIBS` (or equivalent)
 	```
-	GLIBS += -L/path/to/BayesCluster/lib -lBayesCluster
+	GLIBS += -L/path/to/BayesianClustering/lib -lBayesianClustering
 	```
 - If there are errors related to CGAL (ie undefined references)
 	- Add the following flags to `GLIBS` (or equivalent)
@@ -120,6 +120,7 @@ There are muliple visualization classes:
 	```
 	GLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
 	```
+- Then, in your executable be sure to include the header `#include BayesianClustering/BayesianClustering.hh`
 
 
 ### References and Acknowledgements
