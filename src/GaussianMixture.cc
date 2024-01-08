@@ -287,7 +287,7 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv = Matrix(m_dim,m_dim);
 	m_W0inv.invert(m_W0);
 
-
+cout << "init prior params - mW0" << endl; m_W0.Print();
 	m_post.SetDims(m_n, m_k);
 	
 	m_Elam.clear();
@@ -662,7 +662,10 @@ void GaussianMixture::UpdatePriorParameters(){
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
 
-		if(isnan(new_scalemat.at(0,0))) cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
+		if(isnan(new_scalemat.at(0,0))){
+			cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
+			cout << "xbar" << endl; mu.Print(); cout << "S" << endl; cov.Print();
+		}	
 		m_model[k]->GetPrior()->SetParameter("scalemat", new_scalemat);
 		//cout << "k: " << k << " cov: " << endl;
 		//cov.Print();
