@@ -80,7 +80,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 all: FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 local: all
-lpc:   all configtar lib
+lpc:   all configtar lpclib
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
