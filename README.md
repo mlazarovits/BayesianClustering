@@ -83,13 +83,13 @@ There are muliple visualization classes:
 - to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
 	- make sure to add sample to MakeIDHists() in `PhotonSkimmer.hh`
 
-#### Condor
+### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
 
-#### Use as an external package
+### Use as an external package
 - make sure `lib/libBayesianClustering.so` exists
 	- if not, it can be made with `make lib`
 - be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
