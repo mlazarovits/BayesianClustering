@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 	int verb = 0;
 	bool weighted = true;
 	bool smeared = true;
-	bool timesmeared = true;
+	bool timesmeared = false;
 	//by default in BayesCluster
 	bool distconst = true;
 	//clustering strategy for skimmer
@@ -109,8 +109,8 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--noSmear", 9) == 0){
     	 		smeared = false;
    		}
-		if(strncmp(argv[i],"--noTimeSmear", 13) == 0){
-    	 		timesmeared = false;
+		if(strncmp(argv[i],"--timeSmear", 11) == 0){
+    	 		timesmeared = true;
    		}
 		if(strncmp(argv[i],"--noDist", 8) == 0){
     	 		distconst = false;
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]){
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
    		cout << "   --viz                         makes plots (and gifs if N == 3)" << endl;
    		cout << "   --noSmear                     turns off smearing data according to preset covariance (default = true)" << endl;
-   		cout << "   --noTimeSmear                 turns off time smearing data according to preset covariance (default = true)" << endl;
+   		cout << "   --timeSmear                   turns on time smearing data according to preset covariance (default = false)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = true)" << endl;
    		cout << "   --noDist                      turns off - clusters must be within pi/2 in phi (default = true)" << endl;
    		cout << "Example: ./FullClusterSingle.x -a 0.5 -t 1.6 --viz" << endl;
@@ -196,8 +196,10 @@ int main(int argc, char *argv[]){
 			fname += "NlnN";
 		else if(strat == 1)
 			fname += "N2";
+		else if(strat == 2)
+			fname += "GMMonly";
 		else{
-			cout << "Strategy number " << strat << " not supported. Only 0 : NlnN, 1 : N^2." << endl;
+			cout << "Strategy number " << strat << " not supported. Only 0 : NlnN, 1 : N^2, 2 : GMM only." << endl;
 			return -1;
 		}
 	}
@@ -277,13 +279,26 @@ int main(int argc, char *argv[]){
 	vector<node*> trees;
 	//get rhs (as Jets) for event
 	if(obj == 0){
-		cout << "Getting rec hits for jets at event " << evt << endl;
 		JetProducer prod(file);
 		prod.SetTransferFactor(gev);
-		prod.GetRecHits(rhs,evt);	
-		prod.GetTrueJets(jets, evt);
-		cout << rhs.size() << " rechits in event " << evt << endl;
+		prod.SetMinPt(30);
+		prod.SetMinNrhs(15);
+		prod.SetMinEmE(20);
+		if(strat != 2){
+			cout << "Getting rec hits for jets at event " << evt << endl;
+			prod.GetRecHits(rhs,evt);	
+			cout << rhs.size() << " rechits in event " << evt << endl;
+		}
+		else{
+			cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
+			prod.GetTrueJets(jets, evt);
+			if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
+			if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
+			jets[nobj].GetJets(rhs);
+			cout << rhs.size() << " rechits in jet " << nobj << " in event " << evt << endl;
+		}
 	}
+
 	else if(obj == 1){
         	PhotonProducer prod(file);
 		prod.SetTransferFactor(gev);
@@ -295,7 +310,6 @@ int main(int argc, char *argv[]){
 		if(phos.size() < 1){ cout << "No photons passing selection found for event " << evt << endl; return -1; }
 		if(nobj > phos.size() - 1){ cout << "Only " << phos.size() << " photons passing selection found for event " << evt << endl; return -1; }
 		phos[npho].GetJets(rhs);
-		phos[npho].Print();
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
 	else if(obj == 2){
@@ -341,27 +355,44 @@ int main(int argc, char *argv[]){
 	//jets
 	if(obj == 0 || obj == 2){
 		cout << "Using clustering strategy " << strat << ": ";
-		if(strat == 0){
-			cout << "Delauney (NlnN)" << endl;
-			//to track computation time from beginning of program
-			trees = algo->NlnNCluster();
+		if(strat == 0 || strat == 1){
+			if(strat == 0){
+				cout << "Delauney (NlnN)" << endl;
+				//to track computation time from beginning of program
+				trees = algo->NlnNCluster();
+			}
+			else if(strat == 1){
+				cout << "N^2 (naive)" << endl;
+				//to track computation time from beginning of program
+				if(obj == 0) trees = algo->N2Cluster();
+			}
+			if(viz){
+				//plotting stuff here
+				FullViz3D plots = FullViz3D(trees);
+				plots.SetVerbosity(verb);
+				plots.SetTransfFactor(gev);
+				//add info of true jets
+				plots.AddTrueJets(jets);
+				plots.Write(fname);
+			}
+			cout << jets.size() << " true jets" << endl;
 		}
-		else if(strat == 1){
-			cout << "N^2 (naive)" << endl;
-			//to track computation time from beginning of program
-			if(obj == 0) trees = algo->N2Cluster();
+		else if(strat == 2){
+			cout << "mixture model with pre-clustered AK4 jets" << endl;
+			string oname = "";
+			if(viz) oname = fname;
+			GaussianMixture* gmm = algo->SubCluster(oname);
+			int nk = gmm->GetNClusters();
+			cout << nk << " clusters in model." << endl;
+			map<string, Matrix> params;
+			for(int k = 0; k < nk; k++){
+				params = gmm->GetPriorParameters(k);
+				cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(0,0) << endl;
+			}
+			
+
 		}
 		else{ cout << " undefined. Please use --strategy(-s) [strat] with options 0 (NlnN) or 1 (N^2)." << endl; return -1; }
-		if(viz){
-			//plotting stuff here
-			FullViz3D plots = FullViz3D(trees);
-			plots.SetVerbosity(verb);
-			plots.SetTransfFactor(gev);
-			//add info of true jets
-			plots.AddTrueJets(jets);
-			plots.Write(fname);
-		}
-		cout << jets.size() << " true jets" << endl;
 	}
 	//photons
 	else if(obj == 1){
