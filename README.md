@@ -88,6 +88,39 @@ There are muliple visualization classes:
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
 
+#### Use as an external package
+- make sure `lib/libBayesCluster.so` exists
+	- if not, it can be made with `make lib`
+- be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
+	```
+	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesCluster/lib
+	```
+- In Makefile:
+	- Add the following flags to `CXXFLAGS` (or equivalent)
+	```
+	CXXFLAGS += -I/path/to/BayesCluster/include
+	```
+	- Add the following flags to `GLIBS` (or equivalent)
+	```
+	GLIBS += -L/path/to/BayesCluster/lib -lBayesCluster
+	```
+- If there are errors related to CGAL (ie undefined references)
+	- Add the following flags to `GLIBS` (or equivalent)
+	```
+	GLIBS += -L/path/to/CGALvX.X-install/X.X/lib -lCGAL
+	```
+- If there are errors related to boost (ie undefined references)
+	- Add the following flags to `CXXFLAGS` (or equivalent)
+	```
+	CXXFLAGS += -I/path/to/boost_vX.X.X-install/X.X.X/include
+	```
+- If there are errors related to how CGAL needs boost (ie `warning: libboost_thread.so.1.63.0, needed by /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib//libCGAL.so, not found`)
+	- Add the following flags to `GLIBS` (or equivalent) *before* the libraries for CGAL
+	```
+	BCGLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+	```
+
+
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
 - The seeding for the Bayesian Hierarchical Clustering is based on the Voronoi diagram implementation of finding geometric nearest neighbors as done in [FastJet](https://arxiv.org/abs/1111.6097)
