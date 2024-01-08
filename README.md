@@ -99,7 +99,7 @@ There are muliple visualization classes:
 - In Makefile:
 	- Add the following flags to `CXXFLAGS` (or equivalent)
 	```
-	CXXFLAGS += -I/path/to/BayesianClustering/include
+	CXXFLAGS += -I/path/to/BayesianClustering/include -frounding-math
 	```
 	- Add the following flags to `GLIBS` (or equivalent)
 	```
