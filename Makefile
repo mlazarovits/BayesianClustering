@@ -80,7 +80,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 all: FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 local: all
-lpc:   all configtar
+lpc:   all configtar lpclib
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
@@ -120,8 +120,8 @@ configtar:
 #make shared library
 lib/libBayesCluster.so: $(SOBJ_FILES)
 	mkdir -p lib
-	$(CXX) -shared -o lib/libBayesCluster.so $(SOBJ_FILES) $(SGLIBS)
-	touch lib/libBayesCluster.so
+	$(CXX) -shared -o lib/libBayesianClustering.so $(SOBJ_FILES) $(SGLIBS) -fPIC
+	touch lib/libBayesianClustering.so
 
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh

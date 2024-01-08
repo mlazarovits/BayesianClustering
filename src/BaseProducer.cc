@@ -108,6 +108,10 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
 
+	//true = skip
+	//false = keep (ok)
+	bool hemVeto = false;	
+
 	Point vtx(3);
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
@@ -122,6 +126,14 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
                 pz = pt*sinh(eta);
 
                 nrhs = _base->Photon_rhIds->size();
+	
+		//hem veto?
+		if(_year == 2018 && _data){
+			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) ); 			
+			//skip whole event
+			if(hemVeto) return;
+		}
+
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
 		if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;

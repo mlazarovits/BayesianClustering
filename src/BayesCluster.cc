@@ -360,7 +360,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
 
-	if(!_smear.empty()) gmm->SetDataSmear(_smear);
+	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 	
 	if(_tresSmear_c != -1) gmm->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	//create EM algo
@@ -378,6 +378,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
+	if(isnan(gev) || isinf(gev)){ cout << "Energy-weighting scale factor " << gev << " is not valid." << endl; return gmm; }
 	if(viz){
 		cv3D.SetVerbosity(_verb);
 		cv3D.SetTransfFactor(gev);
@@ -386,7 +387,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	}
 	//loop
 	double dLogL, newLogL;
-	double LogLthresh = 1e-4;
+	double LogLthresh = 1e-10;
 	double oldLogL = algo->EvalLogL();
 	////////run EM algo////////
 	//maximum of 50 iterations

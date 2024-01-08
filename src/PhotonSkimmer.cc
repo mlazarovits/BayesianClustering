@@ -64,7 +64,7 @@ void PhotonSkimmer::Skim(){
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			//algo->SetTimeResSmear(tres_c, tres_n);
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -72,7 +72,7 @@ void PhotonSkimmer::Skim(){
 			
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-			
+		
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID

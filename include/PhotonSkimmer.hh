@@ -404,7 +404,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//2 - rotundity (2D) v subcl energy
 		TH2D* rot2D_E = new TH2D("rot2D_subclE","rot2D_subclE;rotundity2D;E;a.u.",25,0.4,1.1,25,0,1000);
 		//3 - eta v phi
-		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-2,2.,50,-0.2,6.4);
+		TH2D* eta_phi = new TH2D("eta_phi","eta_phi;eta_center;phi_center",50,-2,2,50,-0.2,6.4);
 		//4 - t v eta
 		TH2D* t_eta = new TH2D("t_eta","t_eta;time_center;eta_center",50,-30,30,50,-3.5,3.5);
 		//5 - t v phi
@@ -580,9 +580,15 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				plotCat data(_hists1D, _hists2D, "JetHT", "JetHT");
-				data.ids = {-999};
-				plotCats.push_back(data);
+				plotCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
+				jetht.ids = {-999};
+				plotCats.push_back(jetht);
+			}
+			else if(sample.find("GJets") != string::npos){
+				//data
+				plotCat gjets(_hists1D, _hists2D, "GJets", "GJets");
+				gjets.ids = {-999};
+				plotCats.push_back(gjets);
 			}
 			else return;
 

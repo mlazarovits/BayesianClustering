@@ -11,12 +11,12 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
 		phist->SetTitle(("profile_bin"+std::to_string(i)).c_str());	
 		phist->SetName(("profile_bin"+std::to_string(i)).c_str());
-		phist->GetXaxis()->SetTitle("diffDeltaT_recoGen");	
+		phist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());	
 		profs.push_back(phist);
-		outhist->GetXaxis()->SetTitle("p^{avg}_{T} (GeV)");
-		outhist->GetXaxis()->SetName("ptavg");
-		outhist->GetYaxis()->SetTitle("#sigma_{#Delta t} (ns)");
-		outhist->GetYaxis()->SetName("sigma_deltaT");
+		outhist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
+		string ytitle = inhist->GetYaxis()->GetTitle();
+		ytitle = "#sigma "+ytitle;
+		outhist->GetYaxis()->SetTitle(ytitle.c_str());
 
 		//get values for param init
 		double mean = phist->GetMean();
@@ -38,7 +38,7 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 			//set new contents
 			outhist->SetBinContent(i, fit_stddev);
 			outhist->SetBinError(i, fit_stddev_err);
-		cout << "bin " << i << ": stddev " << stddev << " fit_stddev " << fit_stddev << " err: " << fit_stddev_err << " norm " << norm << " phist integral: " << phist->Integral() << endl; 	
+		//cout << "bin " << i << ": stddev " << stddev << " fit_stddev " << fit_stddev << " err: " << fit_stddev_err << " norm " << norm << " phist integral: " << phist->Integral() << endl; 	
 			delete fit;
 		}
 	}

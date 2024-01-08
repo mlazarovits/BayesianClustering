@@ -20,6 +20,8 @@ class BaseProducer{
 			_minpt = 0;
 			_mineme = 0;
 			_minnrhs = 0;
+			_year = 2018;
+			_data = false;
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -38,13 +40,23 @@ class BaseProducer{
 			_minpt = 30;
 			_mineme = 20;
 			_minnrhs = 15;
+			
+			//set year
+			string name = file->GetName();
+			if(name.find("2017") != string::npos) _year = 2017;
+			else if(name.find("2018") != string::npos) _year = 2018;
+			else if(name.find("2022") != string::npos) _year = 2022;
+			
+			//set if data
+			if(name.find("SIM") == string::npos) _data = true;
+			else _data = false;
+
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
 			
 		};
 
-		//TODO remove jet points - use only jets
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
@@ -92,7 +104,7 @@ class BaseProducer{
 			return sqrt(x*x + y*y + z*z);
 		}
 		double _c = 29.9792458;	
-
-
+		bool _data;
+		int _year;
 };
 #endif

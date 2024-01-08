@@ -217,7 +217,7 @@ class MergeTree : BaseTree{
 			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
-			double LogLThresh = 0.001;
+			double LogLThresh = 1e-10;
 			double newLogL;
 			double dLogL = 999; 
 			int it = 0;

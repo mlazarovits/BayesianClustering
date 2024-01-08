@@ -25,6 +25,7 @@ def main():
 			else:
 				print(oname+" exists ")
 				continue
+		oname = "condor_"+oname
 		print(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")	
 		os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
 		print("Wrote to "+d.path+"/"+oname)
