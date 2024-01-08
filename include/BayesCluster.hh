@@ -26,6 +26,7 @@ using std::endl;
 class BayesCluster{
 	public:
 		BayesCluster(const vector<Jet>& pseudojets){ 
+		cout << "BayesCluster ctor start" << endl;
 			// this will ensure that we can point to jets without difficulties
 			// arising.
 			_jets.reserve(pseudojets.size()*2);
@@ -50,6 +51,8 @@ class BayesCluster{
 			int n = (int)_jets.size();
 			vector<double> weight;
        			for (int i = 0; i < n; i++) {
+				//if jet has no rec hits - skip
+				if(_jets[i].GetNRecHits() < 1) continue;
 				PointCollection pc;
 				Point pt(3);
 				pt.SetValue(_jets[i].rap(), 0);
