@@ -15,6 +15,11 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 - [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)
 - [nlohmman-json](https://github.com/nlohmann/json) to make jsons for python macros
 - [cgal](https://www.cgal.org/) for Voronoi diagrams
+	- on LPC: make sure the path to the CGAL lib is added to `$LD_LIBRARY_PATH`
+		- this can be done within the user's `~/.bash_profile` by adding the following line
+		```
+		export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib
+		```
 - [fastjet](https://fastjet.fr/) for detector simulation
 	- at least v3.4.1 for compatibility with C++17
 	- at least v3.4.2 for compatibility with C++20 
