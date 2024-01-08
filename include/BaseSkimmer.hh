@@ -112,7 +112,7 @@ class BaseSkimmer{
 
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
-		struct plotCat{
+		struct procCat{
 			string legName;
 			string plotName;
 			
@@ -133,7 +133,7 @@ class BaseSkimmer{
 			vector<vector<TH2D*>> hists2D;
 			vector<double> ids;
 		
-			plotCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = ""){
+			procCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = ""){
 				hists1D.push_back(hists1D_nom);
 				hists1D.push_back(hists1D_lead);
 				hists1D.push_back(hists1D_notlead);
@@ -179,36 +179,36 @@ class BaseSkimmer{
 			
 
 		};
-		vector<plotCat> plotCats;
+		vector<procCat> procCats;
 		void MakeIDHists(string sample){
 			//total
-			plotCat tot(_hists1D, _hists2D);
+			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
-			plotCats.push_back(tot);	
+			procCats.push_back(tot);	
 			
 			if(sample.find("GMSB") != string::npos){
 				//notSunm
-				plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
+				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
 				//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
 				notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
-				plotCats.push_back(notSunm);
+				procCats.push_back(notSunm);
 				
 				//signal
-				plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
+				procCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
 				sig.ids = {22};
-				plotCats.push_back(sig);
+				procCats.push_back(sig);
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				plotCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
+				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
 				jetht.ids = {-999};
-				plotCats.push_back(jetht);
+				procCats.push_back(jetht);
 			}
 			else if(sample.find("GJets") != string::npos){
 				//data
-				plotCat gjets(_hists1D, _hists2D, "GJets", "GJets");
+				procCat gjets(_hists1D, _hists2D, "GJets", "GJets");
 				gjets.ids = {-999};
-				plotCats.push_back(gjets);
+				procCats.push_back(gjets);
 			}
 			else return;
 

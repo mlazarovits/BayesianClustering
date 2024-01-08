@@ -80,18 +80,18 @@ void PhotonSkimmer::Skim(){
 				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
 				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
 				phoid = _base->Photon_genLlpId->at(p);
-				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
-					vector<double> ids = plotCats[i].ids;
+				for(int i = 0; i < (int)procCats.size(); i++){ //exclude total category - overlaps with above categories
+					vector<double> ids = procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
 						FillModelHists(gmm, i);
-						plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+						procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
 					}
 				}
 			}
 			else{
-				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
+				for(int i = 0; i < (int)procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i);
-					plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+					procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
 				}
 				
 

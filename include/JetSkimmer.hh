@@ -13,7 +13,7 @@
 #include "BaseTree.hh"
 
 using node = BaseTree::node;
-using plotCat = BaseSkimmer::plotCat;
+using procCat = BaseSkimmer::procCat;
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){

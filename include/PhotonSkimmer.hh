@@ -9,7 +9,7 @@
 #include "TSystem.h"
 #include <math.h>
 
-using plotCat = BaseSkimmer::plotCat;
+using procCat = BaseSkimmer::procCat;
 class PhotonSkimmer : public BaseSkimmer{
 	public:
 		PhotonSkimmer(){
@@ -562,7 +562,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	
 
 
-		void WritePlotCat1D(TFile* ofile, const plotCat& pc){
+		void WritePlotCat1D(TFile* ofile, const procCat& pc){
 			ofile->cd();
 			string name;
 			vector<vector<TH1D*>> hists1D = pc.hists1D;
@@ -576,7 +576,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				}
 			}
 		}
-		void WritePlotCat2D(TFile* ofile, const plotCat& pc){
+		void WritePlotCat2D(TFile* ofile, const procCat& pc){
 			ofile->cd();
 			string name;
 			vector<vector<TH2D*>> hists2D = pc.hists2D;
@@ -600,7 +600,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
-		void WritePlotCatStack(TFile* ofile, const vector<plotCat>& pcs){
+		void WritePlotCatStack(TFile* ofile, const vector<procCat>& pcs){
 			ofile->cd();
 			string name;
 			//number of histogram categories (ie leading, !leading, etc)
@@ -634,30 +634,30 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void WriteHists(TFile* ofile){
 			//normalize histograms	
-			for(int i = 0; i < (int)plotCats.size(); i++){
-				for(int j = 0; j < plotCats[i].hists1D.size(); j++){
+			for(int i = 0; i < (int)procCats.size(); i++){
+				for(int j = 0; j < procCats[i].hists1D.size(); j++){
 					//relative fraction histograms
 					//nSubClusters
-					//plotCats[i].hists1D[j][0]->Scale(1./plotCats[i].hists1D[j][0]->Integral());
+					//procCats[i].hists1D[j][0]->Scale(1./procCats[i].hists1D[j][0]->Integral());
 					//ellipsoid center coordinates
-					plotCats[i].hists1D[j][1]->Scale(1./plotCats[i].hists1D[j][1]->Integral());
-					plotCats[i].hists1D[j][2]->Scale(1./plotCats[i].hists1D[j][2]->Integral());
-					plotCats[i].hists1D[j][3]->Scale(1./plotCats[i].hists1D[j][3]->Integral());
+					procCats[i].hists1D[j][1]->Scale(1./procCats[i].hists1D[j][1]->Integral());
+					procCats[i].hists1D[j][2]->Scale(1./procCats[i].hists1D[j][2]->Integral());
+					procCats[i].hists1D[j][3]->Scale(1./procCats[i].hists1D[j][3]->Integral());
 					//theta + azimuthal angles
-					plotCats[i].hists1D[j][7]->Scale(1./plotCats[i].hists1D[j][7]->Integral());
-					plotCats[i].hists1D[j][8]->Scale(1./plotCats[i].hists1D[j][8]->Integral());
+					procCats[i].hists1D[j][7]->Scale(1./procCats[i].hists1D[j][7]->Integral());
+					procCats[i].hists1D[j][8]->Scale(1./procCats[i].hists1D[j][8]->Integral());
 					//rotundity
-					plotCats[i].hists1D[j][10]->Scale(1./plotCats[i].hists1D[j][10]->Integral());
-					plotCats[i].hists1D[j][11]->Scale(1./plotCats[i].hists1D[j][11]->Integral());
+					procCats[i].hists1D[j][10]->Scale(1./procCats[i].hists1D[j][10]->Integral());
+					procCats[i].hists1D[j][11]->Scale(1./procCats[i].hists1D[j][11]->Integral());
 					//velocity
-					plotCats[i].hists1D[j][14]->Scale(1./plotCats[i].hists1D[j][14]->Integral());
+					procCats[i].hists1D[j][14]->Scale(1./procCats[i].hists1D[j][14]->Integral());
 				}
 			}
 
-			WritePlotCat1D(ofile, plotCats[0]);
-			for(int i = 0; i < (int)plotCats.size(); i++)
-				WritePlotCat2D(ofile, plotCats[i]);
-			vector<plotCat> id_cats(plotCats.begin()+1, plotCats.end());
+			WritePlotCat1D(ofile, procCats[0]);
+			for(int i = 0; i < (int)procCats.size(); i++)
+				WritePlotCat2D(ofile, procCats[i]);
+			vector<procCat> id_cats(procCats.begin()+1, procCats.end());
 			WritePlotCatStack(ofile, id_cats);
 
 			ofile->Close();
@@ -700,8 +700,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix cov, lead_eigenvec, lead_eigenvec_space;
 			
 			int nclusters = model->GetNClusters();
-			plotCats[id_idx].hists1D[0][0]->Fill(nclusters);
-			plotCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
+			procCats[id_idx].hists1D[0][0]->Fill(nclusters);
+			procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
 			model->GetNorms(norms);
 			
 			//get leading cluster index
@@ -871,132 +871,132 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 				//fill hists
 				//centers
-				plotCats[id_idx].hists1D[0][1]->Fill(tc);
-				plotCats[id_idx].hists1D[0][2]->Fill(ec);
-				plotCats[id_idx].hists1D[0][3]->Fill(pc);
+				procCats[id_idx].hists1D[0][1]->Fill(tc);
+				procCats[id_idx].hists1D[0][2]->Fill(ec);
+				procCats[id_idx].hists1D[0][3]->Fill(pc);
 				//4 - phoE filled in .cc
 				//cluster E
-				plotCats[id_idx].hists1D[0][5]->Fill(E_tot);
+				procCats[id_idx].hists1D[0][5]->Fill(E_tot);
 				//slope space - phi/eta
-				//plotCats[id_idx].hists1D[0][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
+				//procCats[id_idx].hists1D[0][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
         			////slope - eta/time
-				//plotCats[id_idx].hists1D[0][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
+				//procCats[id_idx].hists1D[0][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
 				////slope - phi/time
-				//plotCats[id_idx].hists1D[0][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
+				//procCats[id_idx].hists1D[0][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
 				//polar angle in 3D space
-				//plotCats[id_idx].hists1D[0][9]->Fill(theta);
+				//procCats[id_idx].hists1D[0][9]->Fill(theta);
 				//azimuthal angle in 2D space
-				//plotCats[id_idx].hists1D[0][10]->Fill(phi);
+				//procCats[id_idx].hists1D[0][10]->Fill(phi);
 				//subcluster energy
-				plotCats[id_idx].hists1D[0][11]->Fill(E_k);
+				procCats[id_idx].hists1D[0][11]->Fill(E_k);
 				//rotundity measures
-				//plotCats[id_idx].hists1D[0][12]->Fill(rot3D);
-				plotCats[id_idx].hists1D[0][13]->Fill(rot2D);
+				//procCats[id_idx].hists1D[0][12]->Fill(rot3D);
+				procCats[id_idx].hists1D[0][13]->Fill(rot2D);
 				//velocity	
-				//plotCats[id_idx].hists1D[0][14]->Fill(vel);
+				//procCats[id_idx].hists1D[0][14]->Fill(vel);
 				//2D eigenval ratio
-				//plotCats[id_idx].hists1D[0][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+				//procCats[id_idx].hists1D[0][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 				//get variances
-				plotCats[id_idx].hists1D[0][16]->Fill(e_var);
-				plotCats[id_idx].hists1D[0][17]->Fill(p_var);
-				plotCats[id_idx].hists1D[0][18]->Fill(t_var);
+				procCats[id_idx].hists1D[0][16]->Fill(e_var);
+				procCats[id_idx].hists1D[0][17]->Fill(p_var);
+				procCats[id_idx].hists1D[0][18]->Fill(t_var);
 				//fractional E
-				plotCats[id_idx].hists1D[0][19]->Fill(E_k/E_tot);
+				procCats[id_idx].hists1D[0][19]->Fill(E_k/E_tot);
 				//"azimuth" angle in 2D (angle from x axis)
-				plotCats[id_idx].hists1D[0][20]->Fill(phi2D);
+				procCats[id_idx].hists1D[0][20]->Fill(phi2D);
 				//pos/neg eta split sigma
-				if(ec > 0) plotCats[id_idx].hists1D[0][21]->Fill(e_var);
-				else plotCats[id_idx].hists1D[0][22]->Fill(e_var);
+				if(ec > 0) procCats[id_idx].hists1D[0][21]->Fill(e_var);
+				else procCats[id_idx].hists1D[0][22]->Fill(e_var);
 				//covariances
-				plotCats[id_idx].hists1D[0][23]->Fill(ep_cov);
-				plotCats[id_idx].hists1D[0][24]->Fill(te_cov);
-				plotCats[id_idx].hists1D[0][25]->Fill(tp_cov);
+				procCats[id_idx].hists1D[0][23]->Fill(ep_cov);
+				procCats[id_idx].hists1D[0][24]->Fill(te_cov);
+				procCats[id_idx].hists1D[0][25]->Fill(tp_cov);
 				//major/minor covariances with time
-				plotCats[id_idx].hists1D[0][26]->Fill(majtime_cov);
-				plotCats[id_idx].hists1D[0][27]->Fill(mintime_cov);
+				procCats[id_idx].hists1D[0][26]->Fill(majtime_cov);
+				procCats[id_idx].hists1D[0][27]->Fill(mintime_cov);
 				if(E_tot <= 100){
-					plotCats[id_idx].hists1D[0][28]->Fill(t_var);
-					plotCats[id_idx].hists1D[0][76]->Fill(rot2D);	
+					procCats[id_idx].hists1D[0][28]->Fill(t_var);
+					procCats[id_idx].hists1D[0][76]->Fill(rot2D);	
 				}
 				else if(E_tot > 100 && E_tot <= 200){
-					plotCats[id_idx].hists1D[0][29]->Fill(t_var);
-					plotCats[id_idx].hists1D[0][77]->Fill(rot2D);	
+					procCats[id_idx].hists1D[0][29]->Fill(t_var);
+					procCats[id_idx].hists1D[0][77]->Fill(rot2D);	
 				}
 				else{
-					plotCats[id_idx].hists1D[0][30]->Fill(t_var);
-					plotCats[id_idx].hists1D[0][78]->Fill(rot2D);	
+					procCats[id_idx].hists1D[0][30]->Fill(t_var);
+					procCats[id_idx].hists1D[0][78]->Fill(rot2D);	
 				}
-				plotCats[id_idx].hists1D[0][31]->Fill(te_cov_unnorm);
-				plotCats[id_idx].hists1D[0][32]->Fill(tp_cov_unnorm);
-				plotCats[id_idx].hists1D[0][33]->Fill(majtime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][34]->Fill(mintime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][35]->Fill(cmsLogE_te_cov);
-				plotCats[id_idx].hists1D[0][36]->Fill(cmsLogE_tp_cov);
-				plotCats[id_idx].hists1D[0][37]->Fill(cmsLogE_ep_cov);
-				plotCats[id_idx].hists1D[0][38]->Fill(cmsLogE_e_var);
-				plotCats[id_idx].hists1D[0][39]->Fill(cmsLogE_p_var);
-				plotCats[id_idx].hists1D[0][40]->Fill(cmsLogE_t_var);
-				plotCats[id_idx].hists1D[0][41]->Fill(cmsNoE_te_cov);	
-				plotCats[id_idx].hists1D[0][42]->Fill(cmsNoE_tp_cov);	
-				plotCats[id_idx].hists1D[0][43]->Fill(cmsNoE_ep_cov);	
-				plotCats[id_idx].hists1D[0][44]->Fill(cmsNoE_e_var);
-				plotCats[id_idx].hists1D[0][45]->Fill(cmsNoE_p_var);
-				plotCats[id_idx].hists1D[0][46]->Fill(cmsNoE_t_var);
-				plotCats[id_idx].hists1D[0][47]->Fill(cmsNoE_te_cov_unnorm);
-				plotCats[id_idx].hists1D[0][48]->Fill(cmsNoE_tp_cov_unnorm);
-				plotCats[id_idx].hists1D[0][49]->Fill(cmsNoE_ep_cov_unnorm);
-				plotCats[id_idx].hists1D[0][50]->Fill(cmsLogE_te_cov_unnorm);
-				plotCats[id_idx].hists1D[0][51]->Fill(cmsLogE_tp_cov_unnorm);
-				plotCats[id_idx].hists1D[0][52]->Fill(cmsLogE_ep_cov_unnorm);
-				plotCats[id_idx].hists1D[0][53]->Fill(ep_cov_unnorm);
-				plotCats[id_idx].hists1D[0][54]->Fill(cmsNoE_smaj);
-				plotCats[id_idx].hists1D[0][55]->Fill(cmsNoE_smin);
-				plotCats[id_idx].hists1D[0][56]->Fill(cmsLogE_smaj);
-				plotCats[id_idx].hists1D[0][57]->Fill(cmsLogE_smin);
-				plotCats[id_idx].hists1D[0][58]->Fill(noEwCenter.at(2));
-				plotCats[id_idx].hists1D[0][59]->Fill(noEwCenter.at(0));
-				plotCats[id_idx].hists1D[0][60]->Fill(noEwCenter.at(1));
-				plotCats[id_idx].hists1D[0][61]->Fill(cmsNoE_phi2D);
-				plotCats[id_idx].hists1D[0][62]->Fill(cmsNoE_majtime_cov);
-				plotCats[id_idx].hists1D[0][63]->Fill(cmsNoE_mintime_cov);
-				plotCats[id_idx].hists1D[0][64]->Fill(cmsNoE_majtime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][65]->Fill(cmsNoE_mintime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][66]->Fill(cmsNoE_rot2D);
-				plotCats[id_idx].hists1D[0][67]->Fill(logEwCenter.at(2));
-				plotCats[id_idx].hists1D[0][68]->Fill(logEwCenter.at(0));
-				plotCats[id_idx].hists1D[0][69]->Fill(logEwCenter.at(1));
-				plotCats[id_idx].hists1D[0][70]->Fill(cmsLogE_phi2D);
-				plotCats[id_idx].hists1D[0][71]->Fill(cmsLogE_majtime_cov);
-				plotCats[id_idx].hists1D[0][72]->Fill(cmsLogE_mintime_cov);
-				plotCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
-				plotCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
+				procCats[id_idx].hists1D[0][31]->Fill(te_cov_unnorm);
+				procCats[id_idx].hists1D[0][32]->Fill(tp_cov_unnorm);
+				procCats[id_idx].hists1D[0][33]->Fill(majtime_cov_unnorm);
+				procCats[id_idx].hists1D[0][34]->Fill(mintime_cov_unnorm);
+				procCats[id_idx].hists1D[0][35]->Fill(cmsLogE_te_cov);
+				procCats[id_idx].hists1D[0][36]->Fill(cmsLogE_tp_cov);
+				procCats[id_idx].hists1D[0][37]->Fill(cmsLogE_ep_cov);
+				procCats[id_idx].hists1D[0][38]->Fill(cmsLogE_e_var);
+				procCats[id_idx].hists1D[0][39]->Fill(cmsLogE_p_var);
+				procCats[id_idx].hists1D[0][40]->Fill(cmsLogE_t_var);
+				procCats[id_idx].hists1D[0][41]->Fill(cmsNoE_te_cov);	
+				procCats[id_idx].hists1D[0][42]->Fill(cmsNoE_tp_cov);	
+				procCats[id_idx].hists1D[0][43]->Fill(cmsNoE_ep_cov);	
+				procCats[id_idx].hists1D[0][44]->Fill(cmsNoE_e_var);
+				procCats[id_idx].hists1D[0][45]->Fill(cmsNoE_p_var);
+				procCats[id_idx].hists1D[0][46]->Fill(cmsNoE_t_var);
+				procCats[id_idx].hists1D[0][47]->Fill(cmsNoE_te_cov_unnorm);
+				procCats[id_idx].hists1D[0][48]->Fill(cmsNoE_tp_cov_unnorm);
+				procCats[id_idx].hists1D[0][49]->Fill(cmsNoE_ep_cov_unnorm);
+				procCats[id_idx].hists1D[0][50]->Fill(cmsLogE_te_cov_unnorm);
+				procCats[id_idx].hists1D[0][51]->Fill(cmsLogE_tp_cov_unnorm);
+				procCats[id_idx].hists1D[0][52]->Fill(cmsLogE_ep_cov_unnorm);
+				procCats[id_idx].hists1D[0][53]->Fill(ep_cov_unnorm);
+				procCats[id_idx].hists1D[0][54]->Fill(cmsNoE_smaj);
+				procCats[id_idx].hists1D[0][55]->Fill(cmsNoE_smin);
+				procCats[id_idx].hists1D[0][56]->Fill(cmsLogE_smaj);
+				procCats[id_idx].hists1D[0][57]->Fill(cmsLogE_smin);
+				procCats[id_idx].hists1D[0][58]->Fill(noEwCenter.at(2));
+				procCats[id_idx].hists1D[0][59]->Fill(noEwCenter.at(0));
+				procCats[id_idx].hists1D[0][60]->Fill(noEwCenter.at(1));
+				procCats[id_idx].hists1D[0][61]->Fill(cmsNoE_phi2D);
+				procCats[id_idx].hists1D[0][62]->Fill(cmsNoE_majtime_cov);
+				procCats[id_idx].hists1D[0][63]->Fill(cmsNoE_mintime_cov);
+				procCats[id_idx].hists1D[0][64]->Fill(cmsNoE_majtime_cov_unnorm);
+				procCats[id_idx].hists1D[0][65]->Fill(cmsNoE_mintime_cov_unnorm);
+				procCats[id_idx].hists1D[0][66]->Fill(cmsNoE_rot2D);
+				procCats[id_idx].hists1D[0][67]->Fill(logEwCenter.at(2));
+				procCats[id_idx].hists1D[0][68]->Fill(logEwCenter.at(0));
+				procCats[id_idx].hists1D[0][69]->Fill(logEwCenter.at(1));
+				procCats[id_idx].hists1D[0][70]->Fill(cmsLogE_phi2D);
+				procCats[id_idx].hists1D[0][71]->Fill(cmsLogE_majtime_cov);
+				procCats[id_idx].hists1D[0][72]->Fill(cmsLogE_mintime_cov);
+				procCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
+				procCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
+				procCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[0][79]->Fill(rot2D);
-						plotCats[id_idx].hists1D[0][83]->Fill(phi2D);
-						plotCats[id_idx].hists1D[0][87]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[0][91]->Fill(te_cov);
+						procCats[id_idx].hists1D[0][79]->Fill(rot2D);
+						procCats[id_idx].hists1D[0][83]->Fill(phi2D);
+						procCats[id_idx].hists1D[0][87]->Fill(ep_cov);
+						procCats[id_idx].hists1D[0][91]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[0][80]->Fill(rot2D);
-						plotCats[id_idx].hists1D[0][84]->Fill(phi2D);
-						plotCats[id_idx].hists1D[0][88]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[0][92]->Fill(te_cov);
+						procCats[id_idx].hists1D[0][80]->Fill(rot2D);
+						procCats[id_idx].hists1D[0][84]->Fill(phi2D);
+						procCats[id_idx].hists1D[0][88]->Fill(ep_cov);
+						procCats[id_idx].hists1D[0][92]->Fill(te_cov);
 					}
 				}
 				else{
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[0][81]->Fill(rot2D);
-						plotCats[id_idx].hists1D[0][85]->Fill(phi2D);
-						plotCats[id_idx].hists1D[0][89]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[0][93]->Fill(te_cov);
+						procCats[id_idx].hists1D[0][81]->Fill(rot2D);
+						procCats[id_idx].hists1D[0][85]->Fill(phi2D);
+						procCats[id_idx].hists1D[0][89]->Fill(ep_cov);
+						procCats[id_idx].hists1D[0][93]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[0][82]->Fill(rot2D);
-						plotCats[id_idx].hists1D[0][86]->Fill(phi2D);
-						plotCats[id_idx].hists1D[0][90]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[0][94]->Fill(te_cov);
+						procCats[id_idx].hists1D[0][82]->Fill(rot2D);
+						procCats[id_idx].hists1D[0][86]->Fill(phi2D);
+						procCats[id_idx].hists1D[0][90]->Fill(ep_cov);
+						procCats[id_idx].hists1D[0][94]->Fill(te_cov);
 
 					}
 				}
@@ -1004,204 +1004,204 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	
 				//2D hists
-				plotCats[id_idx].hists2D[0][0]->Fill(tc, E_k);
-				plotCats[id_idx].hists2D[0][1]->Fill(phi,E_k);
-				plotCats[id_idx].hists2D[0][2]->Fill(rot2D,E_k);
-				plotCats[id_idx].hists2D[0][3]->Fill(ec,pc);
-				plotCats[id_idx].hists2D[0][4]->Fill(tc,ec);
-				plotCats[id_idx].hists2D[0][5]->Fill(tc,pc);
-				plotCats[id_idx].hists2D[0][6]->Fill(tc,pi);
-				plotCats[id_idx].hists2D[0][7]->Fill(E_k,pi);
-				//plotCats[id_idx].hists2D[0][8]->Fill(rot3D,E_k);
-				plotCats[id_idx].hists2D[0][9]->Fill(norms[k], E_k);
-				plotCats[id_idx].hists2D[0][11]->Fill(nclusters, pi);
-				plotCats[id_idx].hists2D[0][12]->Fill(e_var, p_var);
-				plotCats[id_idx].hists2D[0][13]->Fill(t_var, e_var);
-				plotCats[id_idx].hists2D[0][14]->Fill(t_var, p_var);
-				plotCats[id_idx].hists2D[0][15]->Fill(E_k/E_tot, pi);
-				plotCats[id_idx].hists2D[0][16]->Fill(nclusters, E_k/E_tot);
-				plotCats[id_idx].hists2D[0][17]->Fill(t_var, tc);
-				plotCats[id_idx].hists2D[0][18]->Fill(rot2D, phi2D);
-				plotCats[id_idx].hists2D[0][19]->Fill(t_var, E_k/E_tot);
-				plotCats[id_idx].hists2D[0][20]->Fill(t_var, E_tot);
-				plotCats[id_idx].hists2D[0][21]->Fill(te_cov, E_tot);
-				plotCats[id_idx].hists2D[0][22]->Fill(tp_cov, E_tot);
-				plotCats[id_idx].hists2D[0][23]->Fill(t_var, majtime_cov);
-				plotCats[id_idx].hists2D[0][24]->Fill(t_var, mintime_cov);
-				plotCats[id_idx].hists2D[0][25]->Fill(phi2D, majtime_cov);
-				plotCats[id_idx].hists2D[0][26]->Fill(phi2D, mintime_cov);
-				plotCats[id_idx].hists2D[0][27]->Fill(rot2D, majtime_cov);
-				plotCats[id_idx].hists2D[0][28]->Fill(rot2D, mintime_cov);
-				//plotCats[id_idx].hists2D[0][29]->Fill(rot3D, majtime_cov);
-				//plotCats[id_idx].hists2D[0][30]->Fill(rot3D, mintime_cov);
-				plotCats[id_idx].hists2D[0][31]->Fill(majtime_cov, tc);
-				plotCats[id_idx].hists2D[0][32]->Fill(mintime_cov, tc);
-				plotCats[id_idx].hists2D[0][33]->Fill(ep_cov, phi2D);
-				plotCats[id_idx].hists2D[0][34]->Fill(majtime_cov, phi2D);
-				plotCats[id_idx].hists2D[0][35]->Fill(mintime_cov, phi2D);
-				plotCats[id_idx].hists2D[0][36]->Fill(rot2D, majtime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][37]->Fill(rot2D, mintime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][38]->Fill(t_var, te_cov);
-				plotCats[id_idx].hists2D[0][39]->Fill(ep_cov, tc);
-				plotCats[id_idx].hists2D[0][40]->Fill(te_cov, tc);
-				plotCats[id_idx].hists2D[0][41]->Fill(tp_cov, tc);
-				plotCats[id_idx].hists2D[0][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-				plotCats[id_idx].hists2D[0][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-				plotCats[id_idx].hists2D[0][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-				plotCats[id_idx].hists2D[0][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
-				plotCats[id_idx].hists2D[0][46]->Fill(ep_cov, te_cov);
-				plotCats[id_idx].hists2D[0][47]->Fill(te_cov, tp_cov);
-				plotCats[id_idx].hists2D[0][48]->Fill(ep_cov, tp_cov);
-				plotCats[id_idx].hists2D[0][49]->Fill(ep_cov, majtime_cov);
-				plotCats[id_idx].hists2D[0][50]->Fill(ep_cov, mintime_cov);
-				plotCats[id_idx].hists2D[0][51]->Fill(tp_cov, majtime_cov);
-				plotCats[id_idx].hists2D[0][52]->Fill(tp_cov, mintime_cov);
-				plotCats[id_idx].hists2D[0][53]->Fill(te_cov, majtime_cov);
-				plotCats[id_idx].hists2D[0][54]->Fill(te_cov, mintime_cov);
-				plotCats[id_idx].hists2D[0][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
-				plotCats[id_idx].hists2D[0][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
-				plotCats[id_idx].hists2D[0][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
-				plotCats[id_idx].hists2D[0][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
-				plotCats[id_idx].hists2D[0][64]->Fill(rot2D, ep_cov);
-				plotCats[id_idx].hists2D[0][65]->Fill(rot2D, ep_cov_unnorm);
-				plotCats[id_idx].hists2D[0][66]->Fill(E_k, pc);
-				plotCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
+				procCats[id_idx].hists2D[0][0]->Fill(tc, E_k);
+				procCats[id_idx].hists2D[0][1]->Fill(phi,E_k);
+				procCats[id_idx].hists2D[0][2]->Fill(rot2D,E_k);
+				procCats[id_idx].hists2D[0][3]->Fill(ec,pc);
+				procCats[id_idx].hists2D[0][4]->Fill(tc,ec);
+				procCats[id_idx].hists2D[0][5]->Fill(tc,pc);
+				procCats[id_idx].hists2D[0][6]->Fill(tc,pi);
+				procCats[id_idx].hists2D[0][7]->Fill(E_k,pi);
+				//procCats[id_idx].hists2D[0][8]->Fill(rot3D,E_k);
+				procCats[id_idx].hists2D[0][9]->Fill(norms[k], E_k);
+				procCats[id_idx].hists2D[0][11]->Fill(nclusters, pi);
+				procCats[id_idx].hists2D[0][12]->Fill(e_var, p_var);
+				procCats[id_idx].hists2D[0][13]->Fill(t_var, e_var);
+				procCats[id_idx].hists2D[0][14]->Fill(t_var, p_var);
+				procCats[id_idx].hists2D[0][15]->Fill(E_k/E_tot, pi);
+				procCats[id_idx].hists2D[0][16]->Fill(nclusters, E_k/E_tot);
+				procCats[id_idx].hists2D[0][17]->Fill(t_var, tc);
+				procCats[id_idx].hists2D[0][18]->Fill(rot2D, phi2D);
+				procCats[id_idx].hists2D[0][19]->Fill(t_var, E_k/E_tot);
+				procCats[id_idx].hists2D[0][20]->Fill(t_var, E_tot);
+				procCats[id_idx].hists2D[0][21]->Fill(te_cov, E_tot);
+				procCats[id_idx].hists2D[0][22]->Fill(tp_cov, E_tot);
+				procCats[id_idx].hists2D[0][23]->Fill(t_var, majtime_cov);
+				procCats[id_idx].hists2D[0][24]->Fill(t_var, mintime_cov);
+				procCats[id_idx].hists2D[0][25]->Fill(phi2D, majtime_cov);
+				procCats[id_idx].hists2D[0][26]->Fill(phi2D, mintime_cov);
+				procCats[id_idx].hists2D[0][27]->Fill(rot2D, majtime_cov);
+				procCats[id_idx].hists2D[0][28]->Fill(rot2D, mintime_cov);
+				//procCats[id_idx].hists2D[0][29]->Fill(rot3D, majtime_cov);
+				//procCats[id_idx].hists2D[0][30]->Fill(rot3D, mintime_cov);
+				procCats[id_idx].hists2D[0][31]->Fill(majtime_cov, tc);
+				procCats[id_idx].hists2D[0][32]->Fill(mintime_cov, tc);
+				procCats[id_idx].hists2D[0][33]->Fill(ep_cov, phi2D);
+				procCats[id_idx].hists2D[0][34]->Fill(majtime_cov, phi2D);
+				procCats[id_idx].hists2D[0][35]->Fill(mintime_cov, phi2D);
+				procCats[id_idx].hists2D[0][36]->Fill(rot2D, majtime_cov_unnorm);
+				procCats[id_idx].hists2D[0][37]->Fill(rot2D, mintime_cov_unnorm);
+				procCats[id_idx].hists2D[0][38]->Fill(t_var, te_cov);
+				procCats[id_idx].hists2D[0][39]->Fill(ep_cov, tc);
+				procCats[id_idx].hists2D[0][40]->Fill(te_cov, tc);
+				procCats[id_idx].hists2D[0][41]->Fill(tp_cov, tc);
+				procCats[id_idx].hists2D[0][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
+				procCats[id_idx].hists2D[0][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
+				procCats[id_idx].hists2D[0][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
+				procCats[id_idx].hists2D[0][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+				procCats[id_idx].hists2D[0][46]->Fill(ep_cov, te_cov);
+				procCats[id_idx].hists2D[0][47]->Fill(te_cov, tp_cov);
+				procCats[id_idx].hists2D[0][48]->Fill(ep_cov, tp_cov);
+				procCats[id_idx].hists2D[0][49]->Fill(ep_cov, majtime_cov);
+				procCats[id_idx].hists2D[0][50]->Fill(ep_cov, mintime_cov);
+				procCats[id_idx].hists2D[0][51]->Fill(tp_cov, majtime_cov);
+				procCats[id_idx].hists2D[0][52]->Fill(tp_cov, mintime_cov);
+				procCats[id_idx].hists2D[0][53]->Fill(te_cov, majtime_cov);
+				procCats[id_idx].hists2D[0][54]->Fill(te_cov, mintime_cov);
+				procCats[id_idx].hists2D[0][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+				procCats[id_idx].hists2D[0][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+				procCats[id_idx].hists2D[0][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+				procCats[id_idx].hists2D[0][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+				procCats[id_idx].hists2D[0][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+				procCats[id_idx].hists2D[0][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+				procCats[id_idx].hists2D[0][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+				procCats[id_idx].hists2D[0][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+				procCats[id_idx].hists2D[0][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+				procCats[id_idx].hists2D[0][64]->Fill(rot2D, ep_cov);
+				procCats[id_idx].hists2D[0][65]->Fill(rot2D, ep_cov_unnorm);
+				procCats[id_idx].hists2D[0][66]->Fill(E_k, pc);
+				procCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
 
 
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
 					//centers
-					plotCats[id_idx].hists1D[1][1]->Fill(tc);
-					plotCats[id_idx].hists1D[1][2]->Fill(ec);
-					plotCats[id_idx].hists1D[1][3]->Fill(pc);
+					procCats[id_idx].hists1D[1][1]->Fill(tc);
+					procCats[id_idx].hists1D[1][2]->Fill(ec);
+					procCats[id_idx].hists1D[1][3]->Fill(pc);
 					//4 - phoE filled in .cc
 					//cluster E
-					plotCats[id_idx].hists1D[1][5]->Fill(E_tot);
+					procCats[id_idx].hists1D[1][5]->Fill(E_tot);
 					//slope space - phi/eta
-					//plotCats[id_idx].hists1D[1][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
+					//procCats[id_idx].hists1D[1][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
         				////slope - eta/time
-					//plotCats[id_idx].hists1D[1][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
+					//procCats[id_idx].hists1D[1][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
 					////slope - phi/time
-					//plotCats[id_idx].hists1D[1][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
+					//procCats[id_idx].hists1D[1][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
 					//polar angle in 3D space
-					//plotCats[id_idx].hists1D[1][9]->Fill(theta);
+					//procCats[id_idx].hists1D[1][9]->Fill(theta);
 					//azimuthal angle in 2D space
-					//plotCats[id_idx].hists1D[1][10]->Fill(phi);
+					//procCats[id_idx].hists1D[1][10]->Fill(phi);
 					//subcluster energy
-					plotCats[id_idx].hists1D[1][11]->Fill(E_k);
+					procCats[id_idx].hists1D[1][11]->Fill(E_k);
 					//rotundity measures
-					//plotCats[id_idx].hists1D[1][12]->Fill(rot3D);
-					plotCats[id_idx].hists1D[1][13]->Fill(rot2D);
+					//procCats[id_idx].hists1D[1][12]->Fill(rot3D);
+					procCats[id_idx].hists1D[1][13]->Fill(rot2D);
 					//velocity	
-					//plotCats[id_idx].hists1D[1][14]->Fill(vel);
+					//procCats[id_idx].hists1D[1][14]->Fill(vel);
 					//2D eigenval ratio
-					//plotCats[id_idx].hists1D[1][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+					//procCats[id_idx].hists1D[1][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 					//get variances
-					plotCats[id_idx].hists1D[1][16]->Fill(e_var);
-					plotCats[id_idx].hists1D[1][17]->Fill(p_var);
-					plotCats[id_idx].hists1D[1][18]->Fill(t_var);
+					procCats[id_idx].hists1D[1][16]->Fill(e_var);
+					procCats[id_idx].hists1D[1][17]->Fill(p_var);
+					procCats[id_idx].hists1D[1][18]->Fill(t_var);
 					//fractional E
-					plotCats[id_idx].hists1D[1][19]->Fill(E_k/E_tot);
+					procCats[id_idx].hists1D[1][19]->Fill(E_k/E_tot);
 					//"azimuth" angle in 2D (angle from x axis)
-					plotCats[id_idx].hists1D[1][20]->Fill(phi2D);
+					procCats[id_idx].hists1D[1][20]->Fill(phi2D);
 					//pos/neg eta split sigma
-					if(ec > 0) plotCats[id_idx].hists1D[1][21]->Fill(e_var);
-					else plotCats[id_idx].hists1D[1][22]->Fill(e_var);
+					if(ec > 0) procCats[id_idx].hists1D[1][21]->Fill(e_var);
+					else procCats[id_idx].hists1D[1][22]->Fill(e_var);
 					//covariances
-					plotCats[id_idx].hists1D[1][23]->Fill(ep_cov);
-					plotCats[id_idx].hists1D[1][24]->Fill(te_cov);
-					plotCats[id_idx].hists1D[1][25]->Fill(tp_cov);
+					procCats[id_idx].hists1D[1][23]->Fill(ep_cov);
+					procCats[id_idx].hists1D[1][24]->Fill(te_cov);
+					procCats[id_idx].hists1D[1][25]->Fill(tp_cov);
 					//major/minor covariances with time
-					plotCats[id_idx].hists1D[1][26]->Fill(majtime_cov);
-					plotCats[id_idx].hists1D[1][27]->Fill(mintime_cov);
+					procCats[id_idx].hists1D[1][26]->Fill(majtime_cov);
+					procCats[id_idx].hists1D[1][27]->Fill(mintime_cov);
 					if(E_tot <= 100){
-						plotCats[id_idx].hists1D[1][28]->Fill(t_var);
-						plotCats[id_idx].hists1D[1][76]->Fill(rot2D);	
+						procCats[id_idx].hists1D[1][28]->Fill(t_var);
+						procCats[id_idx].hists1D[1][76]->Fill(rot2D);	
 					}
 					else if(E_tot > 100 && E_tot <= 200){
-						plotCats[id_idx].hists1D[1][29]->Fill(t_var);
-						plotCats[id_idx].hists1D[1][77]->Fill(rot2D);	
+						procCats[id_idx].hists1D[1][29]->Fill(t_var);
+						procCats[id_idx].hists1D[1][77]->Fill(rot2D);	
 					}
 					else{
-						plotCats[id_idx].hists1D[1][30]->Fill(t_var);
-						plotCats[id_idx].hists1D[1][78]->Fill(rot2D);	
+						procCats[id_idx].hists1D[1][30]->Fill(t_var);
+						procCats[id_idx].hists1D[1][78]->Fill(rot2D);	
 					}
-					plotCats[id_idx].hists1D[1][31]->Fill(te_cov_unnorm);
-					plotCats[id_idx].hists1D[1][32]->Fill(tp_cov_unnorm);
-					plotCats[id_idx].hists1D[1][33]->Fill(majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][34]->Fill(mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][35]->Fill(cmsLogE_te_cov);
-					plotCats[id_idx].hists1D[1][36]->Fill(cmsLogE_tp_cov);
-					plotCats[id_idx].hists1D[1][37]->Fill(cmsLogE_ep_cov);
-					plotCats[id_idx].hists1D[1][38]->Fill(cmsLogE_e_var);
-					plotCats[id_idx].hists1D[1][39]->Fill(cmsLogE_p_var);
-					plotCats[id_idx].hists1D[1][40]->Fill(cmsLogE_t_var);
-					plotCats[id_idx].hists1D[1][41]->Fill(cmsNoE_te_cov);	
-					plotCats[id_idx].hists1D[1][42]->Fill(cmsNoE_tp_cov);	
-					plotCats[id_idx].hists1D[1][43]->Fill(cmsNoE_ep_cov);	
-					plotCats[id_idx].hists1D[1][44]->Fill(cmsNoE_e_var);
-					plotCats[id_idx].hists1D[1][45]->Fill(cmsNoE_p_var);
-					plotCats[id_idx].hists1D[1][46]->Fill(cmsNoE_t_var);
-					plotCats[id_idx].hists1D[1][47]->Fill(cmsNoE_te_cov_unnorm);
-					plotCats[id_idx].hists1D[1][48]->Fill(cmsNoE_tp_cov_unnorm);
-					plotCats[id_idx].hists1D[1][49]->Fill(cmsNoE_ep_cov_unnorm);
-					plotCats[id_idx].hists1D[1][50]->Fill(cmsLogE_te_cov_unnorm);
-					plotCats[id_idx].hists1D[1][51]->Fill(cmsLogE_tp_cov_unnorm);
-					plotCats[id_idx].hists1D[1][52]->Fill(cmsLogE_ep_cov_unnorm);
-					plotCats[id_idx].hists1D[1][53]->Fill(ep_cov_unnorm);
-					plotCats[id_idx].hists1D[1][54]->Fill(cmsNoE_smaj);
-					plotCats[id_idx].hists1D[1][55]->Fill(cmsNoE_smin);
-					plotCats[id_idx].hists1D[1][56]->Fill(cmsLogE_smaj);
-					plotCats[id_idx].hists1D[1][57]->Fill(cmsLogE_smin);
-					plotCats[id_idx].hists1D[1][58]->Fill(noEwCenter.at(2));
-					plotCats[id_idx].hists1D[1][59]->Fill(noEwCenter.at(0));
-					plotCats[id_idx].hists1D[1][60]->Fill(noEwCenter.at(1));
-					plotCats[id_idx].hists1D[1][61]->Fill(cmsNoE_phi2D);
-					plotCats[id_idx].hists1D[1][62]->Fill(cmsNoE_majtime_cov);
-					plotCats[id_idx].hists1D[1][63]->Fill(cmsNoE_mintime_cov);
-					plotCats[id_idx].hists1D[1][64]->Fill(cmsNoE_majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][65]->Fill(cmsNoE_mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][66]->Fill(cmsNoE_rot2D);
-					plotCats[id_idx].hists1D[1][67]->Fill(logEwCenter.at(2));
-					plotCats[id_idx].hists1D[1][68]->Fill(logEwCenter.at(0));
-					plotCats[id_idx].hists1D[1][69]->Fill(logEwCenter.at(1));
-					plotCats[id_idx].hists1D[1][70]->Fill(cmsLogE_phi2D);
-					plotCats[id_idx].hists1D[1][71]->Fill(cmsLogE_majtime_cov);
-					plotCats[id_idx].hists1D[1][72]->Fill(cmsLogE_mintime_cov);
-					plotCats[id_idx].hists1D[1][73]->Fill(cmsLogE_majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][74]->Fill(cmsLogE_mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[1][75]->Fill(cmsLogE_rot2D);
+					procCats[id_idx].hists1D[1][31]->Fill(te_cov_unnorm);
+					procCats[id_idx].hists1D[1][32]->Fill(tp_cov_unnorm);
+					procCats[id_idx].hists1D[1][33]->Fill(majtime_cov_unnorm);
+					procCats[id_idx].hists1D[1][34]->Fill(mintime_cov_unnorm);
+					procCats[id_idx].hists1D[1][35]->Fill(cmsLogE_te_cov);
+					procCats[id_idx].hists1D[1][36]->Fill(cmsLogE_tp_cov);
+					procCats[id_idx].hists1D[1][37]->Fill(cmsLogE_ep_cov);
+					procCats[id_idx].hists1D[1][38]->Fill(cmsLogE_e_var);
+					procCats[id_idx].hists1D[1][39]->Fill(cmsLogE_p_var);
+					procCats[id_idx].hists1D[1][40]->Fill(cmsLogE_t_var);
+					procCats[id_idx].hists1D[1][41]->Fill(cmsNoE_te_cov);	
+					procCats[id_idx].hists1D[1][42]->Fill(cmsNoE_tp_cov);	
+					procCats[id_idx].hists1D[1][43]->Fill(cmsNoE_ep_cov);	
+					procCats[id_idx].hists1D[1][44]->Fill(cmsNoE_e_var);
+					procCats[id_idx].hists1D[1][45]->Fill(cmsNoE_p_var);
+					procCats[id_idx].hists1D[1][46]->Fill(cmsNoE_t_var);
+					procCats[id_idx].hists1D[1][47]->Fill(cmsNoE_te_cov_unnorm);
+					procCats[id_idx].hists1D[1][48]->Fill(cmsNoE_tp_cov_unnorm);
+					procCats[id_idx].hists1D[1][49]->Fill(cmsNoE_ep_cov_unnorm);
+					procCats[id_idx].hists1D[1][50]->Fill(cmsLogE_te_cov_unnorm);
+					procCats[id_idx].hists1D[1][51]->Fill(cmsLogE_tp_cov_unnorm);
+					procCats[id_idx].hists1D[1][52]->Fill(cmsLogE_ep_cov_unnorm);
+					procCats[id_idx].hists1D[1][53]->Fill(ep_cov_unnorm);
+					procCats[id_idx].hists1D[1][54]->Fill(cmsNoE_smaj);
+					procCats[id_idx].hists1D[1][55]->Fill(cmsNoE_smin);
+					procCats[id_idx].hists1D[1][56]->Fill(cmsLogE_smaj);
+					procCats[id_idx].hists1D[1][57]->Fill(cmsLogE_smin);
+					procCats[id_idx].hists1D[1][58]->Fill(noEwCenter.at(2));
+					procCats[id_idx].hists1D[1][59]->Fill(noEwCenter.at(0));
+					procCats[id_idx].hists1D[1][60]->Fill(noEwCenter.at(1));
+					procCats[id_idx].hists1D[1][61]->Fill(cmsNoE_phi2D);
+					procCats[id_idx].hists1D[1][62]->Fill(cmsNoE_majtime_cov);
+					procCats[id_idx].hists1D[1][63]->Fill(cmsNoE_mintime_cov);
+					procCats[id_idx].hists1D[1][64]->Fill(cmsNoE_majtime_cov_unnorm);
+					procCats[id_idx].hists1D[1][65]->Fill(cmsNoE_mintime_cov_unnorm);
+					procCats[id_idx].hists1D[1][66]->Fill(cmsNoE_rot2D);
+					procCats[id_idx].hists1D[1][67]->Fill(logEwCenter.at(2));
+					procCats[id_idx].hists1D[1][68]->Fill(logEwCenter.at(0));
+					procCats[id_idx].hists1D[1][69]->Fill(logEwCenter.at(1));
+					procCats[id_idx].hists1D[1][70]->Fill(cmsLogE_phi2D);
+					procCats[id_idx].hists1D[1][71]->Fill(cmsLogE_majtime_cov);
+					procCats[id_idx].hists1D[1][72]->Fill(cmsLogE_mintime_cov);
+					procCats[id_idx].hists1D[1][73]->Fill(cmsLogE_majtime_cov_unnorm);
+					procCats[id_idx].hists1D[1][74]->Fill(cmsLogE_mintime_cov_unnorm);
+					procCats[id_idx].hists1D[1][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[1][79]->Fill(rot2D);
-						plotCats[id_idx].hists1D[1][83]->Fill(phi2D);
-						plotCats[id_idx].hists1D[1][87]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[1][91]->Fill(te_cov);
+						procCats[id_idx].hists1D[1][79]->Fill(rot2D);
+						procCats[id_idx].hists1D[1][83]->Fill(phi2D);
+						procCats[id_idx].hists1D[1][87]->Fill(ep_cov);
+						procCats[id_idx].hists1D[1][91]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[1][80]->Fill(rot2D);
-						plotCats[id_idx].hists1D[1][84]->Fill(phi2D);
-						plotCats[id_idx].hists1D[1][88]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[1][92]->Fill(te_cov);
+						procCats[id_idx].hists1D[1][80]->Fill(rot2D);
+						procCats[id_idx].hists1D[1][84]->Fill(phi2D);
+						procCats[id_idx].hists1D[1][88]->Fill(ep_cov);
+						procCats[id_idx].hists1D[1][92]->Fill(te_cov);
 					}
 				}
 				else{
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[1][81]->Fill(rot2D);
-						plotCats[id_idx].hists1D[1][85]->Fill(phi2D);
-						plotCats[id_idx].hists1D[1][89]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[1][93]->Fill(te_cov);
+						procCats[id_idx].hists1D[1][81]->Fill(rot2D);
+						procCats[id_idx].hists1D[1][85]->Fill(phi2D);
+						procCats[id_idx].hists1D[1][89]->Fill(ep_cov);
+						procCats[id_idx].hists1D[1][93]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[1][82]->Fill(rot2D);
-						plotCats[id_idx].hists1D[1][86]->Fill(phi2D);
-						plotCats[id_idx].hists1D[1][90]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[1][94]->Fill(te_cov);
+						procCats[id_idx].hists1D[1][82]->Fill(rot2D);
+						procCats[id_idx].hists1D[1][86]->Fill(phi2D);
+						procCats[id_idx].hists1D[1][90]->Fill(ep_cov);
+						procCats[id_idx].hists1D[1][94]->Fill(te_cov);
 
 					}
 				}
@@ -1210,267 +1210,267 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	
 					//2D hists
-					plotCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
-					plotCats[id_idx].hists2D[1][1]->Fill(phi,E_k);
-					plotCats[id_idx].hists2D[1][2]->Fill(rot2D,E_k);
-					plotCats[id_idx].hists2D[1][3]->Fill(ec,pc);
-					plotCats[id_idx].hists2D[1][4]->Fill(tc,ec);
-					plotCats[id_idx].hists2D[1][5]->Fill(tc,pc);
-					plotCats[id_idx].hists2D[1][6]->Fill(tc,pi);
-					plotCats[id_idx].hists2D[1][7]->Fill(E_k,pi);
-					//plotCats[id_idx].hists2D[1][8]->Fill(rot3D,E_k);
-					plotCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
-					plotCats[id_idx].hists2D[1][11]->Fill(nclusters, pi);
-					plotCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
-					plotCats[id_idx].hists2D[1][13]->Fill(t_var, e_var);
-					plotCats[id_idx].hists2D[1][14]->Fill(t_var, p_var);
-					plotCats[id_idx].hists2D[1][15]->Fill(E_k/E_tot, pi);
-					plotCats[id_idx].hists2D[1][16]->Fill(nclusters, E_k/E_tot);
-					plotCats[id_idx].hists2D[1][17]->Fill(t_var, tc);
-					plotCats[id_idx].hists2D[1][18]->Fill(rot2D, phi2D);
-					plotCats[id_idx].hists2D[1][19]->Fill(t_var, E_k/E_tot);
-					plotCats[id_idx].hists2D[1][20]->Fill(t_var, E_tot);
-					plotCats[id_idx].hists2D[1][21]->Fill(te_cov, E_tot);
-					plotCats[id_idx].hists2D[1][22]->Fill(tp_cov, E_tot);
-					plotCats[id_idx].hists2D[1][23]->Fill(t_var, majtime_cov);
-					plotCats[id_idx].hists2D[1][24]->Fill(t_var, mintime_cov);
-					plotCats[id_idx].hists2D[1][25]->Fill(phi2D, majtime_cov);
-					plotCats[id_idx].hists2D[1][26]->Fill(phi2D, mintime_cov);
-					plotCats[id_idx].hists2D[1][27]->Fill(rot2D, majtime_cov);
-					plotCats[id_idx].hists2D[1][28]->Fill(rot2D, mintime_cov);
-					//plotCats[id_idx].hists2D[1][29]->Fill(rot3D, majtime_cov);
-					//plotCats[id_idx].hists2D[1][30]->Fill(rot3D, mintime_cov);
-					plotCats[id_idx].hists2D[1][31]->Fill(majtime_cov, tc);
-					plotCats[id_idx].hists2D[1][32]->Fill(mintime_cov, tc);
-					plotCats[id_idx].hists2D[1][33]->Fill(ep_cov, phi2D);
-					plotCats[id_idx].hists2D[1][34]->Fill(majtime_cov, phi2D);
-					plotCats[id_idx].hists2D[1][35]->Fill(mintime_cov, phi2D);
-					plotCats[id_idx].hists2D[1][36]->Fill(rot2D, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][37]->Fill(rot2D, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][38]->Fill(t_var, te_cov);
-					plotCats[id_idx].hists2D[1][39]->Fill(ep_cov, tc);
-					plotCats[id_idx].hists2D[1][40]->Fill(te_cov, tc);
-					plotCats[id_idx].hists2D[1][41]->Fill(tp_cov, tc);
-					plotCats[id_idx].hists2D[1][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-					plotCats[id_idx].hists2D[1][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-					plotCats[id_idx].hists2D[1][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-					plotCats[id_idx].hists2D[1][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
-					plotCats[id_idx].hists2D[1][46]->Fill(ep_cov, te_cov);
-					plotCats[id_idx].hists2D[1][47]->Fill(te_cov, tp_cov);
-					plotCats[id_idx].hists2D[1][48]->Fill(ep_cov, tp_cov);
-					plotCats[id_idx].hists2D[1][49]->Fill(ep_cov, majtime_cov);
-					plotCats[id_idx].hists2D[1][50]->Fill(ep_cov, mintime_cov);
-					plotCats[id_idx].hists2D[1][51]->Fill(tp_cov, majtime_cov);
-					plotCats[id_idx].hists2D[1][52]->Fill(tp_cov, mintime_cov);
-					plotCats[id_idx].hists2D[1][53]->Fill(te_cov, majtime_cov);
-					plotCats[id_idx].hists2D[1][54]->Fill(te_cov, mintime_cov);
-					plotCats[id_idx].hists2D[1][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
-					plotCats[id_idx].hists2D[1][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
-					plotCats[id_idx].hists2D[1][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
-					plotCats[id_idx].hists2D[1][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[1][64]->Fill(rot2D, ep_cov);
-					plotCats[id_idx].hists2D[1][65]->Fill(rot2D, ep_cov_unnorm);
-					plotCats[id_idx].hists2D[1][66]->Fill(E_k, pc);
-					plotCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
+					procCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
+					procCats[id_idx].hists2D[1][1]->Fill(phi,E_k);
+					procCats[id_idx].hists2D[1][2]->Fill(rot2D,E_k);
+					procCats[id_idx].hists2D[1][3]->Fill(ec,pc);
+					procCats[id_idx].hists2D[1][4]->Fill(tc,ec);
+					procCats[id_idx].hists2D[1][5]->Fill(tc,pc);
+					procCats[id_idx].hists2D[1][6]->Fill(tc,pi);
+					procCats[id_idx].hists2D[1][7]->Fill(E_k,pi);
+					//procCats[id_idx].hists2D[1][8]->Fill(rot3D,E_k);
+					procCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
+					procCats[id_idx].hists2D[1][11]->Fill(nclusters, pi);
+					procCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
+					procCats[id_idx].hists2D[1][13]->Fill(t_var, e_var);
+					procCats[id_idx].hists2D[1][14]->Fill(t_var, p_var);
+					procCats[id_idx].hists2D[1][15]->Fill(E_k/E_tot, pi);
+					procCats[id_idx].hists2D[1][16]->Fill(nclusters, E_k/E_tot);
+					procCats[id_idx].hists2D[1][17]->Fill(t_var, tc);
+					procCats[id_idx].hists2D[1][18]->Fill(rot2D, phi2D);
+					procCats[id_idx].hists2D[1][19]->Fill(t_var, E_k/E_tot);
+					procCats[id_idx].hists2D[1][20]->Fill(t_var, E_tot);
+					procCats[id_idx].hists2D[1][21]->Fill(te_cov, E_tot);
+					procCats[id_idx].hists2D[1][22]->Fill(tp_cov, E_tot);
+					procCats[id_idx].hists2D[1][23]->Fill(t_var, majtime_cov);
+					procCats[id_idx].hists2D[1][24]->Fill(t_var, mintime_cov);
+					procCats[id_idx].hists2D[1][25]->Fill(phi2D, majtime_cov);
+					procCats[id_idx].hists2D[1][26]->Fill(phi2D, mintime_cov);
+					procCats[id_idx].hists2D[1][27]->Fill(rot2D, majtime_cov);
+					procCats[id_idx].hists2D[1][28]->Fill(rot2D, mintime_cov);
+					//procCats[id_idx].hists2D[1][29]->Fill(rot3D, majtime_cov);
+					//procCats[id_idx].hists2D[1][30]->Fill(rot3D, mintime_cov);
+					procCats[id_idx].hists2D[1][31]->Fill(majtime_cov, tc);
+					procCats[id_idx].hists2D[1][32]->Fill(mintime_cov, tc);
+					procCats[id_idx].hists2D[1][33]->Fill(ep_cov, phi2D);
+					procCats[id_idx].hists2D[1][34]->Fill(majtime_cov, phi2D);
+					procCats[id_idx].hists2D[1][35]->Fill(mintime_cov, phi2D);
+					procCats[id_idx].hists2D[1][36]->Fill(rot2D, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[1][37]->Fill(rot2D, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[1][38]->Fill(t_var, te_cov);
+					procCats[id_idx].hists2D[1][39]->Fill(ep_cov, tc);
+					procCats[id_idx].hists2D[1][40]->Fill(te_cov, tc);
+					procCats[id_idx].hists2D[1][41]->Fill(tp_cov, tc);
+					procCats[id_idx].hists2D[1][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
+					procCats[id_idx].hists2D[1][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
+					procCats[id_idx].hists2D[1][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
+					procCats[id_idx].hists2D[1][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+					procCats[id_idx].hists2D[1][46]->Fill(ep_cov, te_cov);
+					procCats[id_idx].hists2D[1][47]->Fill(te_cov, tp_cov);
+					procCats[id_idx].hists2D[1][48]->Fill(ep_cov, tp_cov);
+					procCats[id_idx].hists2D[1][49]->Fill(ep_cov, majtime_cov);
+					procCats[id_idx].hists2D[1][50]->Fill(ep_cov, mintime_cov);
+					procCats[id_idx].hists2D[1][51]->Fill(tp_cov, majtime_cov);
+					procCats[id_idx].hists2D[1][52]->Fill(tp_cov, mintime_cov);
+					procCats[id_idx].hists2D[1][53]->Fill(te_cov, majtime_cov);
+					procCats[id_idx].hists2D[1][54]->Fill(te_cov, mintime_cov);
+					procCats[id_idx].hists2D[1][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+					procCats[id_idx].hists2D[1][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+					procCats[id_idx].hists2D[1][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+					procCats[id_idx].hists2D[1][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[1][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[1][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[1][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[1][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[1][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[1][64]->Fill(rot2D, ep_cov);
+					procCats[id_idx].hists2D[1][65]->Fill(rot2D, ep_cov_unnorm);
+					procCats[id_idx].hists2D[1][66]->Fill(E_k, pc);
+					procCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
 				
 
 				}
 
 				else if(k != leadidx){
 					//centers
-					plotCats[id_idx].hists1D[2][1]->Fill(tc);
-					plotCats[id_idx].hists1D[2][2]->Fill(ec);
-					plotCats[id_idx].hists1D[2][3]->Fill(pc);
+					procCats[id_idx].hists1D[2][1]->Fill(tc);
+					procCats[id_idx].hists1D[2][2]->Fill(ec);
+					procCats[id_idx].hists1D[2][3]->Fill(pc);
 					//4 - phoE filled in .cc
 					//cluster E
-					plotCats[id_idx].hists1D[2][5]->Fill(E_tot);
+					procCats[id_idx].hists1D[2][5]->Fill(E_tot);
 					//slope space - phi/eta
-					//plotCats[id_idx].hists1D[2][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
+					//procCats[id_idx].hists1D[2][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
         				////slope - eta/time
-					//plotCats[id_idx].hists1D[2][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
+					//procCats[id_idx].hists1D[2][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
 					////slope - phi/time
-					//plotCats[id_idx].hists1D[2][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
+					//procCats[id_idx].hists1D[2][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
 					//polar angle in 3D space
-					//plotCats[id_idx].hists1D[2][9]->Fill(theta);
+					//procCats[id_idx].hists1D[2][9]->Fill(theta);
 					//azimuthal angle in 2D space
-					//plotCats[id_idx].hists1D[2][10]->Fill(phi);
+					//procCats[id_idx].hists1D[2][10]->Fill(phi);
 					//subcluster energy
-					plotCats[id_idx].hists1D[2][11]->Fill(E_k);
+					procCats[id_idx].hists1D[2][11]->Fill(E_k);
 					//rotundity measures
-					//plotCats[id_idx].hists1D[2][12]->Fill(rot3D);
-					plotCats[id_idx].hists1D[2][13]->Fill(rot2D);
+					//procCats[id_idx].hists1D[2][12]->Fill(rot3D);
+					procCats[id_idx].hists1D[2][13]->Fill(rot2D);
 					//velocity	
-					//plotCats[id_idx].hists1D[2][14]->Fill(vel);
+					//procCats[id_idx].hists1D[2][14]->Fill(vel);
 					//2D eigenval ratio
-					//plotCats[id_idx].hists1D[2][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
+					//procCats[id_idx].hists1D[2][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 					//get variances
-					plotCats[id_idx].hists1D[2][16]->Fill(e_var);
-					plotCats[id_idx].hists1D[2][17]->Fill(p_var);
-					plotCats[id_idx].hists1D[2][18]->Fill(t_var);
+					procCats[id_idx].hists1D[2][16]->Fill(e_var);
+					procCats[id_idx].hists1D[2][17]->Fill(p_var);
+					procCats[id_idx].hists1D[2][18]->Fill(t_var);
 					//fractional E
-					plotCats[id_idx].hists1D[2][19]->Fill(E_k/E_tot);
+					procCats[id_idx].hists1D[2][19]->Fill(E_k/E_tot);
 					//"azimuth" angle in 2D (angle from x axis)
-					plotCats[id_idx].hists1D[2][20]->Fill(phi2D);
+					procCats[id_idx].hists1D[2][20]->Fill(phi2D);
 					//pos/neg eta split sigma
-					if(ec > 0) plotCats[id_idx].hists1D[2][21]->Fill(e_var);
-					else plotCats[id_idx].hists1D[2][22]->Fill(e_var);
+					if(ec > 0) procCats[id_idx].hists1D[2][21]->Fill(e_var);
+					else procCats[id_idx].hists1D[2][22]->Fill(e_var);
 					//covariances
-					plotCats[id_idx].hists1D[2][23]->Fill(ep_cov);
-					plotCats[id_idx].hists1D[2][24]->Fill(te_cov);
-					plotCats[id_idx].hists1D[2][25]->Fill(tp_cov);
+					procCats[id_idx].hists1D[2][23]->Fill(ep_cov);
+					procCats[id_idx].hists1D[2][24]->Fill(te_cov);
+					procCats[id_idx].hists1D[2][25]->Fill(tp_cov);
 					//major/minor covariances with time
-					plotCats[id_idx].hists1D[2][26]->Fill(majtime_cov);
-					plotCats[id_idx].hists1D[2][27]->Fill(mintime_cov);
-					if(E_tot <= 100) plotCats[id_idx].hists1D[2][28]->Fill(t_var);
-					else if(E_tot > 100 && E_tot <= 200) plotCats[id_idx].hists1D[2][29]->Fill(t_var);
-					else plotCats[id_idx].hists1D[2][30]->Fill(t_var);
-					plotCats[id_idx].hists1D[2][31]->Fill(te_cov_unnorm);
-					plotCats[id_idx].hists1D[2][32]->Fill(tp_cov_unnorm);
-					plotCats[id_idx].hists1D[2][33]->Fill(majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][34]->Fill(mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][35]->Fill(cmsLogE_te_cov);
-					plotCats[id_idx].hists1D[2][36]->Fill(cmsLogE_tp_cov);
-					plotCats[id_idx].hists1D[2][37]->Fill(cmsLogE_ep_cov);
-					plotCats[id_idx].hists1D[2][38]->Fill(cmsLogE_e_var);
-					plotCats[id_idx].hists1D[2][39]->Fill(cmsLogE_p_var);
-					plotCats[id_idx].hists1D[2][40]->Fill(cmsLogE_t_var);
-					plotCats[id_idx].hists1D[2][41]->Fill(cmsNoE_te_cov);	
-					plotCats[id_idx].hists1D[2][42]->Fill(cmsNoE_tp_cov);	
-					plotCats[id_idx].hists1D[2][43]->Fill(cmsNoE_ep_cov);	
-					plotCats[id_idx].hists1D[2][44]->Fill(cmsNoE_e_var);
-					plotCats[id_idx].hists1D[2][45]->Fill(cmsNoE_p_var);
-					plotCats[id_idx].hists1D[2][46]->Fill(cmsNoE_t_var);
-					plotCats[id_idx].hists1D[2][47]->Fill(cmsNoE_te_cov_unnorm);
-					plotCats[id_idx].hists1D[2][48]->Fill(cmsNoE_tp_cov_unnorm);
-					plotCats[id_idx].hists1D[2][49]->Fill(cmsNoE_ep_cov_unnorm);
-					plotCats[id_idx].hists1D[2][50]->Fill(cmsLogE_te_cov_unnorm);
-					plotCats[id_idx].hists1D[2][51]->Fill(cmsLogE_tp_cov_unnorm);
-					plotCats[id_idx].hists1D[2][52]->Fill(cmsLogE_ep_cov_unnorm);
-					plotCats[id_idx].hists1D[2][53]->Fill(ep_cov_unnorm);
-					plotCats[id_idx].hists1D[2][54]->Fill(cmsNoE_smaj);
-					plotCats[id_idx].hists1D[2][55]->Fill(cmsNoE_smin);
-					plotCats[id_idx].hists1D[2][56]->Fill(cmsLogE_smaj);
-					plotCats[id_idx].hists1D[2][57]->Fill(cmsLogE_smin);
-					plotCats[id_idx].hists1D[2][58]->Fill(noEwCenter.at(2));
-					plotCats[id_idx].hists1D[2][59]->Fill(noEwCenter.at(0));
-					plotCats[id_idx].hists1D[2][60]->Fill(noEwCenter.at(1));
-					plotCats[id_idx].hists1D[2][61]->Fill(cmsNoE_phi2D);
-					plotCats[id_idx].hists1D[2][62]->Fill(cmsNoE_majtime_cov);
-					plotCats[id_idx].hists1D[2][63]->Fill(cmsNoE_mintime_cov);
-					plotCats[id_idx].hists1D[2][64]->Fill(cmsNoE_majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][65]->Fill(cmsNoE_mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][66]->Fill(cmsNoE_rot2D);
-					plotCats[id_idx].hists1D[2][67]->Fill(logEwCenter.at(2));
-					plotCats[id_idx].hists1D[2][68]->Fill(logEwCenter.at(0));
-					plotCats[id_idx].hists1D[2][69]->Fill(logEwCenter.at(1));
-					plotCats[id_idx].hists1D[2][70]->Fill(cmsLogE_phi2D);
-					plotCats[id_idx].hists1D[2][71]->Fill(cmsLogE_majtime_cov);
-					plotCats[id_idx].hists1D[2][72]->Fill(cmsLogE_mintime_cov);
-					plotCats[id_idx].hists1D[2][73]->Fill(cmsLogE_majtime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][74]->Fill(cmsLogE_mintime_cov_unnorm);
-					plotCats[id_idx].hists1D[2][75]->Fill(cmsLogE_rot2D);
+					procCats[id_idx].hists1D[2][26]->Fill(majtime_cov);
+					procCats[id_idx].hists1D[2][27]->Fill(mintime_cov);
+					if(E_tot <= 100) procCats[id_idx].hists1D[2][28]->Fill(t_var);
+					else if(E_tot > 100 && E_tot <= 200) procCats[id_idx].hists1D[2][29]->Fill(t_var);
+					else procCats[id_idx].hists1D[2][30]->Fill(t_var);
+					procCats[id_idx].hists1D[2][31]->Fill(te_cov_unnorm);
+					procCats[id_idx].hists1D[2][32]->Fill(tp_cov_unnorm);
+					procCats[id_idx].hists1D[2][33]->Fill(majtime_cov_unnorm);
+					procCats[id_idx].hists1D[2][34]->Fill(mintime_cov_unnorm);
+					procCats[id_idx].hists1D[2][35]->Fill(cmsLogE_te_cov);
+					procCats[id_idx].hists1D[2][36]->Fill(cmsLogE_tp_cov);
+					procCats[id_idx].hists1D[2][37]->Fill(cmsLogE_ep_cov);
+					procCats[id_idx].hists1D[2][38]->Fill(cmsLogE_e_var);
+					procCats[id_idx].hists1D[2][39]->Fill(cmsLogE_p_var);
+					procCats[id_idx].hists1D[2][40]->Fill(cmsLogE_t_var);
+					procCats[id_idx].hists1D[2][41]->Fill(cmsNoE_te_cov);	
+					procCats[id_idx].hists1D[2][42]->Fill(cmsNoE_tp_cov);	
+					procCats[id_idx].hists1D[2][43]->Fill(cmsNoE_ep_cov);	
+					procCats[id_idx].hists1D[2][44]->Fill(cmsNoE_e_var);
+					procCats[id_idx].hists1D[2][45]->Fill(cmsNoE_p_var);
+					procCats[id_idx].hists1D[2][46]->Fill(cmsNoE_t_var);
+					procCats[id_idx].hists1D[2][47]->Fill(cmsNoE_te_cov_unnorm);
+					procCats[id_idx].hists1D[2][48]->Fill(cmsNoE_tp_cov_unnorm);
+					procCats[id_idx].hists1D[2][49]->Fill(cmsNoE_ep_cov_unnorm);
+					procCats[id_idx].hists1D[2][50]->Fill(cmsLogE_te_cov_unnorm);
+					procCats[id_idx].hists1D[2][51]->Fill(cmsLogE_tp_cov_unnorm);
+					procCats[id_idx].hists1D[2][52]->Fill(cmsLogE_ep_cov_unnorm);
+					procCats[id_idx].hists1D[2][53]->Fill(ep_cov_unnorm);
+					procCats[id_idx].hists1D[2][54]->Fill(cmsNoE_smaj);
+					procCats[id_idx].hists1D[2][55]->Fill(cmsNoE_smin);
+					procCats[id_idx].hists1D[2][56]->Fill(cmsLogE_smaj);
+					procCats[id_idx].hists1D[2][57]->Fill(cmsLogE_smin);
+					procCats[id_idx].hists1D[2][58]->Fill(noEwCenter.at(2));
+					procCats[id_idx].hists1D[2][59]->Fill(noEwCenter.at(0));
+					procCats[id_idx].hists1D[2][60]->Fill(noEwCenter.at(1));
+					procCats[id_idx].hists1D[2][61]->Fill(cmsNoE_phi2D);
+					procCats[id_idx].hists1D[2][62]->Fill(cmsNoE_majtime_cov);
+					procCats[id_idx].hists1D[2][63]->Fill(cmsNoE_mintime_cov);
+					procCats[id_idx].hists1D[2][64]->Fill(cmsNoE_majtime_cov_unnorm);
+					procCats[id_idx].hists1D[2][65]->Fill(cmsNoE_mintime_cov_unnorm);
+					procCats[id_idx].hists1D[2][66]->Fill(cmsNoE_rot2D);
+					procCats[id_idx].hists1D[2][67]->Fill(logEwCenter.at(2));
+					procCats[id_idx].hists1D[2][68]->Fill(logEwCenter.at(0));
+					procCats[id_idx].hists1D[2][69]->Fill(logEwCenter.at(1));
+					procCats[id_idx].hists1D[2][70]->Fill(cmsLogE_phi2D);
+					procCats[id_idx].hists1D[2][71]->Fill(cmsLogE_majtime_cov);
+					procCats[id_idx].hists1D[2][72]->Fill(cmsLogE_mintime_cov);
+					procCats[id_idx].hists1D[2][73]->Fill(cmsLogE_majtime_cov_unnorm);
+					procCats[id_idx].hists1D[2][74]->Fill(cmsLogE_mintime_cov_unnorm);
+					procCats[id_idx].hists1D[2][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[2][79]->Fill(rot2D);
-						plotCats[id_idx].hists1D[2][83]->Fill(phi2D);
-						plotCats[id_idx].hists1D[2][87]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[2][91]->Fill(te_cov);
+						procCats[id_idx].hists1D[2][79]->Fill(rot2D);
+						procCats[id_idx].hists1D[2][83]->Fill(phi2D);
+						procCats[id_idx].hists1D[2][87]->Fill(ep_cov);
+						procCats[id_idx].hists1D[2][91]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[2][80]->Fill(rot2D);
-						plotCats[id_idx].hists1D[2][84]->Fill(phi2D);
-						plotCats[id_idx].hists1D[2][88]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[2][92]->Fill(te_cov);
+						procCats[id_idx].hists1D[2][80]->Fill(rot2D);
+						procCats[id_idx].hists1D[2][84]->Fill(phi2D);
+						procCats[id_idx].hists1D[2][88]->Fill(ep_cov);
+						procCats[id_idx].hists1D[2][92]->Fill(te_cov);
 					}
 				}
 				else{
 					if(te_cov < 0){
-						plotCats[id_idx].hists1D[2][81]->Fill(rot2D);
-						plotCats[id_idx].hists1D[2][85]->Fill(phi2D);
-						plotCats[id_idx].hists1D[2][89]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[2][93]->Fill(te_cov);
+						procCats[id_idx].hists1D[2][81]->Fill(rot2D);
+						procCats[id_idx].hists1D[2][85]->Fill(phi2D);
+						procCats[id_idx].hists1D[2][89]->Fill(ep_cov);
+						procCats[id_idx].hists1D[2][93]->Fill(te_cov);
 					}	
 					else{
-						plotCats[id_idx].hists1D[0][82]->Fill(rot2D);
-						plotCats[id_idx].hists1D[0][86]->Fill(phi2D);
-						plotCats[id_idx].hists1D[0][90]->Fill(ep_cov);
-						plotCats[id_idx].hists1D[0][94]->Fill(te_cov);
+						procCats[id_idx].hists1D[0][82]->Fill(rot2D);
+						procCats[id_idx].hists1D[0][86]->Fill(phi2D);
+						procCats[id_idx].hists1D[0][90]->Fill(ep_cov);
+						procCats[id_idx].hists1D[0][94]->Fill(te_cov);
 
 					}
 				}
 
 	
 					//2D hists
-					plotCats[id_idx].hists2D[2][0]->Fill(tc, E_k);
-					plotCats[id_idx].hists2D[2][1]->Fill(phi,E_k);
-					plotCats[id_idx].hists2D[2][2]->Fill(rot2D,E_k);
-					plotCats[id_idx].hists2D[2][3]->Fill(ec,pc);
-					plotCats[id_idx].hists2D[2][4]->Fill(tc,ec);
-					plotCats[id_idx].hists2D[2][5]->Fill(tc,pc);
-					plotCats[id_idx].hists2D[2][6]->Fill(tc,pi);
-					plotCats[id_idx].hists2D[2][7]->Fill(E_k,pi);
-					//plotCats[id_idx].hists2D[2][8]->Fill(rot3D,E_k);
-					plotCats[id_idx].hists2D[2][9]->Fill(norms[k], E_k);
-					plotCats[id_idx].hists2D[2][11]->Fill(nclusters, pi);
-					plotCats[id_idx].hists2D[2][12]->Fill(e_var, p_var);
-					plotCats[id_idx].hists2D[2][13]->Fill(t_var, e_var);
-					plotCats[id_idx].hists2D[2][14]->Fill(t_var, p_var);
-					plotCats[id_idx].hists2D[2][15]->Fill(E_k/E_tot, pi);
-					plotCats[id_idx].hists2D[2][16]->Fill(nclusters, E_k/E_tot);
-					plotCats[id_idx].hists2D[2][17]->Fill(t_var, tc);
-					plotCats[id_idx].hists2D[2][18]->Fill(rot2D, phi2D);
-					plotCats[id_idx].hists2D[2][19]->Fill(t_var, E_k/E_tot);
-					plotCats[id_idx].hists2D[2][20]->Fill(t_var, E_tot);
-					plotCats[id_idx].hists2D[2][21]->Fill(te_cov, E_tot);
-					plotCats[id_idx].hists2D[2][22]->Fill(tp_cov, E_tot);
-					plotCats[id_idx].hists2D[2][23]->Fill(t_var, majtime_cov);
-					plotCats[id_idx].hists2D[2][24]->Fill(t_var, mintime_cov);
-					plotCats[id_idx].hists2D[2][25]->Fill(phi2D, majtime_cov);
-					plotCats[id_idx].hists2D[2][26]->Fill(phi2D, mintime_cov);
-					plotCats[id_idx].hists2D[2][27]->Fill(rot2D, majtime_cov);
-					plotCats[id_idx].hists2D[2][28]->Fill(rot2D, mintime_cov);
-					//plotCats[id_idx].hists2D[2][29]->Fill(rot3D, majtime_cov);
-					//plotCats[id_idx].hists2D[2][30]->Fill(rot3D, mintime_cov);
-					plotCats[id_idx].hists2D[2][31]->Fill(majtime_cov, tc);
-					plotCats[id_idx].hists2D[2][32]->Fill(mintime_cov, tc);
-					plotCats[id_idx].hists2D[2][33]->Fill(ep_cov, phi2D);
-					plotCats[id_idx].hists2D[2][34]->Fill(majtime_cov, phi2D);
-					plotCats[id_idx].hists2D[2][35]->Fill(mintime_cov, phi2D);
-					plotCats[id_idx].hists2D[2][36]->Fill(rot2D, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][37]->Fill(rot2D, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][38]->Fill(t_var, te_cov);
-					plotCats[id_idx].hists2D[2][39]->Fill(ep_cov, tc);
-					plotCats[id_idx].hists2D[2][40]->Fill(te_cov, tc);
-					plotCats[id_idx].hists2D[2][41]->Fill(tp_cov, tc);
-					plotCats[id_idx].hists2D[2][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-					plotCats[id_idx].hists2D[2][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-					plotCats[id_idx].hists2D[2][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-					plotCats[id_idx].hists2D[2][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
-					plotCats[id_idx].hists2D[2][46]->Fill(ep_cov, te_cov);
-					plotCats[id_idx].hists2D[2][47]->Fill(te_cov, tp_cov);
-					plotCats[id_idx].hists2D[2][48]->Fill(ep_cov, tp_cov);
-					plotCats[id_idx].hists2D[2][49]->Fill(ep_cov, majtime_cov);
-					plotCats[id_idx].hists2D[2][50]->Fill(ep_cov, mintime_cov);
-					plotCats[id_idx].hists2D[2][51]->Fill(tp_cov, majtime_cov);
-					plotCats[id_idx].hists2D[2][52]->Fill(tp_cov, mintime_cov);
-					plotCats[id_idx].hists2D[2][53]->Fill(te_cov, majtime_cov);
-					plotCats[id_idx].hists2D[2][54]->Fill(te_cov, mintime_cov);
-					plotCats[id_idx].hists2D[2][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
-					plotCats[id_idx].hists2D[2][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
-					plotCats[id_idx].hists2D[2][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
-					plotCats[id_idx].hists2D[2][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
-					plotCats[id_idx].hists2D[2][64]->Fill(rot2D, ep_cov);
-					plotCats[id_idx].hists2D[2][65]->Fill(rot2D, ep_cov_unnorm);
+					procCats[id_idx].hists2D[2][0]->Fill(tc, E_k);
+					procCats[id_idx].hists2D[2][1]->Fill(phi,E_k);
+					procCats[id_idx].hists2D[2][2]->Fill(rot2D,E_k);
+					procCats[id_idx].hists2D[2][3]->Fill(ec,pc);
+					procCats[id_idx].hists2D[2][4]->Fill(tc,ec);
+					procCats[id_idx].hists2D[2][5]->Fill(tc,pc);
+					procCats[id_idx].hists2D[2][6]->Fill(tc,pi);
+					procCats[id_idx].hists2D[2][7]->Fill(E_k,pi);
+					//procCats[id_idx].hists2D[2][8]->Fill(rot3D,E_k);
+					procCats[id_idx].hists2D[2][9]->Fill(norms[k], E_k);
+					procCats[id_idx].hists2D[2][11]->Fill(nclusters, pi);
+					procCats[id_idx].hists2D[2][12]->Fill(e_var, p_var);
+					procCats[id_idx].hists2D[2][13]->Fill(t_var, e_var);
+					procCats[id_idx].hists2D[2][14]->Fill(t_var, p_var);
+					procCats[id_idx].hists2D[2][15]->Fill(E_k/E_tot, pi);
+					procCats[id_idx].hists2D[2][16]->Fill(nclusters, E_k/E_tot);
+					procCats[id_idx].hists2D[2][17]->Fill(t_var, tc);
+					procCats[id_idx].hists2D[2][18]->Fill(rot2D, phi2D);
+					procCats[id_idx].hists2D[2][19]->Fill(t_var, E_k/E_tot);
+					procCats[id_idx].hists2D[2][20]->Fill(t_var, E_tot);
+					procCats[id_idx].hists2D[2][21]->Fill(te_cov, E_tot);
+					procCats[id_idx].hists2D[2][22]->Fill(tp_cov, E_tot);
+					procCats[id_idx].hists2D[2][23]->Fill(t_var, majtime_cov);
+					procCats[id_idx].hists2D[2][24]->Fill(t_var, mintime_cov);
+					procCats[id_idx].hists2D[2][25]->Fill(phi2D, majtime_cov);
+					procCats[id_idx].hists2D[2][26]->Fill(phi2D, mintime_cov);
+					procCats[id_idx].hists2D[2][27]->Fill(rot2D, majtime_cov);
+					procCats[id_idx].hists2D[2][28]->Fill(rot2D, mintime_cov);
+					//procCats[id_idx].hists2D[2][29]->Fill(rot3D, majtime_cov);
+					//procCats[id_idx].hists2D[2][30]->Fill(rot3D, mintime_cov);
+					procCats[id_idx].hists2D[2][31]->Fill(majtime_cov, tc);
+					procCats[id_idx].hists2D[2][32]->Fill(mintime_cov, tc);
+					procCats[id_idx].hists2D[2][33]->Fill(ep_cov, phi2D);
+					procCats[id_idx].hists2D[2][34]->Fill(majtime_cov, phi2D);
+					procCats[id_idx].hists2D[2][35]->Fill(mintime_cov, phi2D);
+					procCats[id_idx].hists2D[2][36]->Fill(rot2D, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[2][37]->Fill(rot2D, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[2][38]->Fill(t_var, te_cov);
+					procCats[id_idx].hists2D[2][39]->Fill(ep_cov, tc);
+					procCats[id_idx].hists2D[2][40]->Fill(te_cov, tc);
+					procCats[id_idx].hists2D[2][41]->Fill(tp_cov, tc);
+					procCats[id_idx].hists2D[2][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
+					procCats[id_idx].hists2D[2][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
+					procCats[id_idx].hists2D[2][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
+					procCats[id_idx].hists2D[2][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+					procCats[id_idx].hists2D[2][46]->Fill(ep_cov, te_cov);
+					procCats[id_idx].hists2D[2][47]->Fill(te_cov, tp_cov);
+					procCats[id_idx].hists2D[2][48]->Fill(ep_cov, tp_cov);
+					procCats[id_idx].hists2D[2][49]->Fill(ep_cov, majtime_cov);
+					procCats[id_idx].hists2D[2][50]->Fill(ep_cov, mintime_cov);
+					procCats[id_idx].hists2D[2][51]->Fill(tp_cov, majtime_cov);
+					procCats[id_idx].hists2D[2][52]->Fill(tp_cov, mintime_cov);
+					procCats[id_idx].hists2D[2][53]->Fill(te_cov, majtime_cov);
+					procCats[id_idx].hists2D[2][54]->Fill(te_cov, mintime_cov);
+					procCats[id_idx].hists2D[2][55]->Fill(ep_cov_unnorm, te_cov_unnorm);
+					procCats[id_idx].hists2D[2][56]->Fill(te_cov_unnorm, tp_cov_unnorm);
+					procCats[id_idx].hists2D[2][57]->Fill(ep_cov_unnorm, tp_cov_unnorm);
+					procCats[id_idx].hists2D[2][58]->Fill(ep_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[2][59]->Fill(ep_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[2][60]->Fill(tp_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[2][61]->Fill(tp_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[2][62]->Fill(te_cov_unnorm, majtime_cov_unnorm);
+					procCats[id_idx].hists2D[2][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
+					procCats[id_idx].hists2D[2][64]->Fill(rot2D, ep_cov);
+					procCats[id_idx].hists2D[2][65]->Fill(rot2D, ep_cov_unnorm);
 				}
 
 			}
