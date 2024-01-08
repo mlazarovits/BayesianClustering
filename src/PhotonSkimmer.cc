@@ -73,7 +73,6 @@ void PhotonSkimmer::Skim(){
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 		
-			if(gmm->GetNClusters() > 1) cout << gmm->GetNClusters() << " clusters" << endl;	
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
