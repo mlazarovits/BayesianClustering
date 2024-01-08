@@ -79,6 +79,7 @@ There are muliple visualization classes:
 - plots are saved as histograms (not PDFs or TCanvases) so they can be hadded together
 	- if running the skimmer on condor (see below)
 - to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormat.C("[skim.root]")'` from command line
+- to quickly make PDFs for a subset of histograms, run `root -l -b -q 'macros/MakePDFs.C("[input_skim_formatted.root]","[output_dir]","[hist_name_match_string]")'`
 - to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
 	- make sure to add sample to MakeIDHists() in `PhotonSkimmer.hh`
 
@@ -117,7 +118,7 @@ There are muliple visualization classes:
 - If there are errors related to how CGAL needs boost (ie `warning: libboost_thread.so.1.63.0, needed by /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib//libCGAL.so, not found`)
 	- Add the following flags to `GLIBS` (or equivalent) *before* the libraries for CGAL
 	```
-	BCGLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+	GLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
 	```
 
 
