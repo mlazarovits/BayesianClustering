@@ -11,7 +11,7 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
 		phist->SetTitle(("profile_bin"+std::to_string(i)).c_str());	
 		phist->SetName(("profile_bin"+std::to_string(i)).c_str());
-		phist->GetXaxis()->SetTitle("diffDeltaT_recoGen");	
+		phist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());	
 		profs.push_back(phist);
 		outhist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
 		string ytitle = inhist->GetYaxis()->GetTitle();
