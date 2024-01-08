@@ -378,6 +378,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
+	if(isnan(gev) || isinf(gev)){ cout << "Energy-weighting scale factor " << gev << " is not valid." << endl; return gmm; }
 	if(viz){
 		cv3D.SetVerbosity(_verb);
 		cv3D.SetTransfFactor(gev);
