@@ -77,11 +77,9 @@ void JetSkimmer::Skim(){
 
 	
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
-		FillTrueJetHists(jets);
 		for(int i = 0; i < trCats.size(); i++)	
 			//make sure time smearing doesn't happen here when it's turned off by the flag
 			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
-			//FillPVTimeHists(jets, i); //turn off time and spatial smearing
 		
 		jetSelEff++;
 		
