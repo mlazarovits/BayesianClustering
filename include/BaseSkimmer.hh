@@ -87,7 +87,6 @@ class BaseSkimmer{
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
-
 		vector<TH1D*> _hists1D;
 		//0 - # of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
@@ -180,6 +179,41 @@ class BaseSkimmer{
 			
 
 		};
+		vector<plotCat> plotCats;
+		void MakeIDHists(string sample){
+			//total
+			plotCat tot(_hists1D, _hists2D);
+			tot.ids = {-999};
+			plotCats.push_back(tot);	
+			
+			if(sample.find("GMSB") != string::npos){
+				//notSunm
+				plotCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
+				//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
+				notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
+				plotCats.push_back(notSunm);
+				
+				//signal
+				plotCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
+				sig.ids = {22};
+				plotCats.push_back(sig);
+			}
+			else if(sample.find("JetHT") != string::npos){
+				//data
+				plotCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
+				jetht.ids = {-999};
+				plotCats.push_back(jetht);
+			}
+			else if(sample.find("GJets") != string::npos){
+				//data
+				plotCat gjets(_hists1D, _hists2D, "GJets", "GJets");
+				gjets.ids = {-999};
+				plotCats.push_back(gjets);
+			}
+			else return;
+
+		}
+
 
 
 		void SetCMSLabel(string lab){ _cms_label = lab; }
