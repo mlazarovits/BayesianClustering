@@ -186,6 +186,28 @@ string GetCMSLabel(string in_file){
 }
 
 
+
+bool HistCheck(TDirectory* dir){
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	TString th1d("TH1D");
+	TString th2d("TH2D");
+	TString tdir("TDirectoryFile");
+	
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == th1d)
+			return true;
+		else if(key->GetClassName() == th2d)
+			return true;
+		else if(key->GetClassName() == tdir)
+			return false;
+	}
+	return false;
+
+
+}
+
 void HistFormat(string file){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
@@ -242,16 +264,49 @@ void HistFormat(string file){
 			TDirectory* dir = (TDirectory*)key->ReadObj();
 			double ymin, ymax;
 			string ylab, xlab;
-			if(dir){
-				dir->cd();
-				vector<TH1D*> hists;
-				//loop throught types
-				for(int i = 0; i < types.size(); i++){
-					//loop through hists in dir
-					name = dir->GetName();
-					if(!types[i].empty()) name += "_"+types[i];
-					//GetHists(dir, types[i], hists, labels);
-					GetHists(dir, types[i], hists);
+			if(!dir) continue;
+			dir->cd();
+			cout << "dir name: " << dir->GetName() << endl;
+			//get histograms (stack these)
+			vector<TH1D*> hists;
+			//loop through types
+			for(int i = 0; i < types.size(); i++){
+				//loop through hists in dir
+				name = dir->GetName();
+				if(!types[i].empty()) name += "_"+types[i];
+				GetHists(dir, types[i], hists);
+				if(hists.size() < 1) continue;
+				FindListHistBounds(hists, ymin, ymax);
+				if(ymin == 0 && ymax == 0) continue;
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				//draw as tcanvases
+				if(name.find("sigma") != string::npos){
+					xlab = hists[0]->GetXaxis()->GetTitle();
+					ylab = hists[0]->GetYaxis()->GetTitle();
+				}
+				else{
+					xlab = name;
+					ylab = "a.u."; 
+				}
+				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+				cv->Write(); 
+			}
+			//if directory is full of directories (stack by method)
+			//each dir is full of histograms (stack by process)
+			TList* llist = dir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			string name;	
+			while((kkey = (TKey*)iiter())){
+				if(kkey->GetClassName() == tdir){
+					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					if(!ddir) continue;
+					name = ddir->GetName();
+					cout << " dir name: " << name << endl;
+					ddir->cd();
+					//we're in the directory with hists of one method split by procs
+					GetHists(ddir, "", hists);
 					if(hists.size() < 1) continue;
 					FindListHistBounds(hists, ymin, ymax);
 					if(ymin == 0 && ymax == 0) continue;
@@ -259,9 +314,7 @@ void HistFormat(string file){
 					ofile->cd();
 					//draw as tcanvases
 					if(name.find("sigma") != string::npos){
-						xlab = "p^{avg}_{T_{jet}}"; 
 						xlab = hists[0]->GetXaxis()->GetTitle();
-						ylab = "#sigma_{#Delta t}";
 						ylab = hists[0]->GetYaxis()->GetTitle();
 					}
 					else{
@@ -271,6 +324,7 @@ void HistFormat(string file){
 					TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
 					cv->Write(); 
 				}
+
 			}
 		}
 	}
