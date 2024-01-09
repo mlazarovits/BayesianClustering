@@ -56,12 +56,16 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(deltaT_pvGam);	
 			//key figures of merit	
 			_timeHists1D.push_back(diffDeltaT_recoGen);
-			_timeHists1D.push_back(Erh_sigmaDeltaTime_recoGen);
-			_timeHists1D.push_back(ptavg_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen);
+			_timeHists1D.push_back(geopTavg_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(deltaT_pvGam_gen);	
+			_timeHists1D.push_back(minpT_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(Erh_sigmaDeltaTime_dijets);
 
-			_timeHists2D.push_back(Erh_diffDeltaTime_recoGen);
-			_timeHists2D.push_back(ptavg_diffDeltaTime_dijets);	
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
+			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
+			_timeHists2D.push_back(minpT_diffDeltaTime_dijets);	
+			_timeHists2D.push_back(Erh_diffDeltaTime_dijets);	
 
 
 
@@ -222,17 +226,25 @@ class JetSkimmer : public BaseSkimmer{
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
 		//4 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* Erh_sigmaDeltaTime_recoGen = new TH1D("Erh_sigmaDeltaTime_recoGen","Erh_sigmaDeltaTime_recoGen",10,0,1000);
-		//5 - resolution of difference between two jets for PV time as a function of their average pT 	
-		TH1D* ptavg_sigmaDeltaTime_dijets = new TH1D("ptavg_sigmaDeltaTime_dijets","ptavg_sigmaDeltaTime_dijets",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",10,0,1000);
+		//5 - resolution of difference between two jets for PV time as a function of their geo avg pT 	
+		TH1D* geopTavg_sigmaDeltaTime_dijets = new TH1D("geopTavg_sigmaDeltaTime_dijets","geopTavg_sigmaDeltaTime_dijets",10,0,1000);
 		//6 - gen deltaT bw photon and pv
 		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-4,4);	
+		//7 - resolution of difference between two jets for PV time as a function of the min pT 	
+		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
+		//8 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
+		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1000);
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","Erh_diffDeltaTime_recoGen;#sum_{rh} E_{rh} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
-		//1 - 2D histogram for dijets resolution
-		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets;p^{avg}_{T} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{sum_{rh} E^{pho}_{rh} #times sum_{rh} E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
+		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
+		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
+		//2 - 2D histogram for dijets resolution - min E of jets
+		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
+		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
+		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_j sum_rh E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -306,7 +318,9 @@ class JetSkimmer : public BaseSkimmer{
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
 			double ptavg = 0;
+			double geoEavg = 0;
 			double Erh = 0;
+			double Epho = 0;
 			vector<JetPoint> rhs;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			//break down by process for this tr method
@@ -339,11 +353,15 @@ class JetSkimmer : public BaseSkimmer{
 					}
 					double deltaT_jets = GetDeltaTime(hardjets);
 					if(deltaT_jets != -999){
-						ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
+						ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
 						//fill deltaT_jets - 1
 						trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
-						//2D plot for profile
+						//fill geopTavg vs deltaT jets - 1
 						trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
+						//fill minpt vs deltaT jets - 2
+						trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
+						//fill Erh vs deltaT jets - 3
+						trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 					}
 				}	
 				//fill deltaT_pvGam - 2
@@ -353,6 +371,10 @@ class JetSkimmer : public BaseSkimmer{
 				pvtime = CalcPVTime(ts, jets);
 				gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 				deltaT_gampv = gamtime - pvtime;
+				//get sum of pho rh energy
+				vector<JetPoint> phorhs = _phos[0].GetJetPoints();
+				for(auto r : phorhs) Epho += r.E();
+
 				trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
 				if(_data) continue; //no gen info with data
 
@@ -363,13 +385,16 @@ class JetSkimmer : public BaseSkimmer{
 				if(deltaT_gampv_gen != -999){
 					trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
 					//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
-					//need to give Profile2DHist a 2D hist with ptavg on x and deltaT on y
-					trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(Erh, deltaT_gampv - deltaT_gampv_gen);
+					//need to give Profile2DHist a 2D hist with geoEavg on x and deltaT on y
+					trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 				
 				}	
 
 				//do same for subleading photon if it exists
 				if(_phos.size() > 1){
+					phorhs.clear();
+					phorhs = _phos[1].GetJetPoints();
+					for(auto r : phorhs) Epho += r.E();
 					gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
 					deltaT_gampv = gamtime - pvtime;
 					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
@@ -378,7 +403,7 @@ class JetSkimmer : public BaseSkimmer{
 					//only for gen matches
 					if(deltaT_gampv_gen != -999){
 						trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
-						trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(ptavg, deltaT_gampv - deltaT_gampv_gen);
+						trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 					}
 				}
 			}	
@@ -712,36 +737,63 @@ class JetSkimmer : public BaseSkimmer{
 
 		void ProfileTimeRecoCat(TFile* ofile, timeRecoCat& tr){
 			ofile->cd();
-			string name;
+			string name, addname;
 			vector<TH1D*> profs;
+			map<int,int> histpairs;
+			//maps 2D to 1D profile
+			histpairs[0] = 4;
+			histpairs[1] = 5;
+			histpairs[2] = 7;
+			histpairs[3] = 8;
+			int i, j;
 			for(int p = 0; p < tr.procCats.size(); p++){
-				if(!_data){
+				for(map<int,int>::iterator it = histpairs.begin(); it != histpairs.end(); it++){
 					//write recogen hists
-					Profile2DHist(tr.procCats[p].hists2D[0][0],tr.procCats[p].hists1D[0][4], profs);
+					i = it->first;
+					j = it->second;
+					//check if data can be run
+					if(name.find("recoGen") != string::npos && _data) continue;
+					Profile2DHist(tr.procCats[p].hists2D[0][i],tr.procCats[p].hists1D[0][j], profs);
 					//make sure profiles get written
 					for(int i = 0; i < profs.size(); i++){
-						name = profs[i]->GetName();
-						name = name+"_recoGen";
-						if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
-						profs[i]->SetName(name.c_str());
-						profs[i]->SetTitle(name.c_str()); 
+						//name = profs[i]->GetName();
+						//name = name+addname;
+						//if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
+						//profs[i]->SetName(name.c_str());
+						//profs[i]->SetTitle(name.c_str());
 						tr.AddHist(profs[i]);	
 					}	
 					profs.clear();
-				}
-				//write dijet hists
-				Profile2DHist(tr.procCats[p].hists2D[0][1],tr.procCats[p].hists1D[0][5], profs);
-		//		cout << tr.hists1D[5]->GetName() << " entries: " << tr.hists1D[5]->GetEntries() << endl;
-		//		cout << tr.hists2D[1]->GetName() << " entries: " << tr.hists2D[1]->GetEntries() << endl;
-				//make sure profiles get written
-				for(int i = 0; i < profs.size(); i++){
-					name = profs[i]->GetName();
-					name = name+"_dijets";
-					if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
-					profs[i]->SetName(name.c_str());
-					profs[i]->SetTitle(name.c_str()); 
-					tr.AddHist(profs[i]);	
-				}	
+
+
+				}				
+
+//
+//				if(!_data){
+//					//write recogen hists
+//					Profile2DHist(tr.procCats[p].hists2D[0][0],tr.procCats[p].hists1D[0][4], profs);
+//					//make sure profiles get written
+//					for(int i = 0; i < profs.size(); i++){
+//						name = profs[i]->GetName();
+//						name = name+"_recoGen";
+//						if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
+//						profs[i]->SetName(name.c_str());
+//						profs[i]->SetTitle(name.c_str()); 
+//						tr.AddHist(profs[i]);	
+//					}	
+//					profs.clear();
+//				}
+//				//write dijet hists
+//				Profile2DHist(tr.procCats[p].hists2D[0][1],tr.procCats[p].hists1D[0][5], profs);
+//				//make sure profiles get written
+//				for(int i = 0; i < profs.size(); i++){
+//					name = profs[i]->GetName();
+//					name = name+"_dijets";
+//					if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
+//					profs[i]->SetName(name.c_str());
+//					profs[i]->SetTitle(name.c_str()); 
+//					tr.AddHist(profs[i]);	
+//				}	
 	
 			}
 		}
@@ -757,21 +809,27 @@ class JetSkimmer : public BaseSkimmer{
 				//only write sigma plots
 				//if(name.find("sigma") == string::npos) continue;
 				//first tr cat is always median - change to rfind("_")
-				dirname = name.substr(0,name.rfind("_"));
-			//cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
+				dirname = name.substr(0,name.rfind("_"+trs[0].methodName));
+			cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
 				TDirectory* dir = ofile->mkdir((dirname+"_stack").c_str());
-				dir->cd();
 				for(int j = 0; j < trs.size(); j++){
-					//write method as directory within directory
+					dir->cd();
+					//write total method histogram outside process directory
+					if(trs[j].procCats[0].hists1D[0][i] == nullptr) continue;
+					if(trs[j].procCats[0].hists1D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
+					//cout << "writing " << trs[j].procCats[0].hists1D[0][i]->GetName() << " " << trs[j].procCats[0].hists1D[0][i]->GetTitle() << " to " << dir->GetName() << endl;
+					trs[j].procCats[0].hists1D[0][i]->Write();
+					//make process breakdown directory
 					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
 					//cout << "  making dir " << dir2->GetName() << endl;
 					dir2->cd();
-					for(int p = 0; p < trs[j].procCats.size(); p++){
+					for(int p = 1; p < trs[j].procCats.size(); p++){
 					//loop over processes
 			//			cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists1D[0][i]->GetName() << " " << trs[j].procCats[p].hists1D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists1D[0][i]->GetEntries() << endl;			
 						if(trs[j].procCats[p].hists1D[0][i] == nullptr) continue;
 						if(trs[j].procCats[p].hists1D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
 						//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
+						//cout << "writing " << trs[j].procCats[p].hists1D[0][i]->GetName() << " " << trs[j].procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
 						trs[j].procCats[p].hists1D[0][i]->Write();
 					
 
