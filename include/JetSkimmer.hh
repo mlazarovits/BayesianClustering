@@ -94,11 +94,15 @@ class JetSkimmer : public BaseSkimmer{
 		};		
 		//struct for different types of time reco (ie median, eAvg, mmAvg)
 		struct timeRecoCat{
-			vector<TH1D*> hists1D;
-			vector<TH2D*> hists2D;
+			//vector<TH1D*> hists1D;
+			//vector<TH2D*> hists2D;
 			
 			string methodName;
-
+			//histograms stored in each procCat as vector<vector<TH1D>>
+			//procCats[p].hists1D[0] = nominal hists
+			//procCats[p].hists1D[1] = leading hists (not included)
+			//procCats[p].hists1D[2] = subleading hists (not included)
+		
 			vector<procCat> procCats;
 			timeRecoCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, const TimeStrategy& ts, vector<procCat> pcs){
 				//reset proc cat hists to these input hists
@@ -136,12 +140,12 @@ class JetSkimmer : public BaseSkimmer{
 							hist->SetName((name+addname).c_str());
 							if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
 							///hists1D.push_back(hist);
-							cout << "added hist " << hist->GetName() << endl;
+							//cout << "added hist " << hist->GetName() << endl;
 						}
 					//}
 				}
 				//for(auto hist : hists1D) cout << hist->GetName() << " " << hist->GetTitle() << endl;
-cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << procCats[0].hists1D.size() << endl;
+//cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << procCats[0].hists1D.size() << endl;
 				//for each histogram
 					for(int j = 0; j < procCats.size(); j++){
 						for(int i = 0; i < (int)in2dhists.size(); i++){
@@ -153,7 +157,7 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 							hist->SetName((name+addname).c_str());
 							if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
 							///hists2D.push_back(hist);
-							cout << "added hist " << hist->GetName() << " " << name << " " << addname << endl;
+							//cout << "added hist " << hist->GetName() << " " << name << " " << addname << endl;
 						}
 					//}
 				}
@@ -163,26 +167,26 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 		
 			void AddHist(TH1D* inhist){
 				string name, addname;
-				for(int j = 0; j < procCats.size(); j++){
+				for(int p = 0; p < procCats.size(); p++){
 					TH1D* hist = (TH1D*)inhist->Clone();
 					name = hist->GetName();
 					if(!methodName.empty()) addname = "_"+methodName;
-					if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+					if(!procCats[p].plotName.empty()) addname += "_"+procCats[p].plotName;
 					hist->SetName((name+addname).c_str());
 					if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
-					hists1D.push_back(hist);
+					procCats[p].hists1D[0].push_back(hist);
 				}
 			}	
 			void AddHist(TH2D* inhist){
 				string name, addname;
-				for(int j = 0; j < procCats.size(); j++){
+				for(int p = 0; p < procCats.size(); p++){
 					TH2D* hist = (TH2D*)inhist->Clone();
 					name = hist->GetName();
 					if(!methodName.empty()) addname = "_"+methodName;
-					if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+					if(!procCats[p].plotName.empty()) addname += "_"+procCats[p].plotName;
 					hist->SetName((name+addname).c_str());
 					if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
-					hists2D.push_back(hist);
+					procCats[p].hists2D[0].push_back(hist);
 				}
 
 			}	
@@ -249,7 +253,6 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 		void MakeTimeRecoCatHists(){
 			//don't want to separate lead/not lead histograms
 			MakeProcCats(_oname, false);
-			
 			timeRecoCat trmed(_timeHists1D, _timeHists2D, med, _procCats);
 			timeRecoCat treavg(_timeHists1D, _timeHists2D, eavg, _procCats);
 			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg, _procCats);
@@ -306,75 +309,79 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 			double Erh = 0;
 			vector<JetPoint> rhs;
 			TimeStrategy ts = TimeStrategy(tr_idx);
+			//break down by process for this tr method
+			int nProc = trCats[tr_idx].procCats.size();
 			//cout << "method: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << endl;
-			for(int j = 0; j < njets; j++){
-				jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
-				jets[j].SetJetTime(jettime);
-				//cout << " jet #" << j << " time: " << jettime << endl;
-				//fill jet time in pv frame - 0
-				trCats[tr_idx].hists1D[0]->Fill(jettime);
-				//add to pv time calculation
-				jettimes.push_back(jettime);
-				rhs = jets[j].GetJetPoints();
-				for(int r = 0; r < rhs.size(); r++)
-					Erh += rhs[r].E();
-				rhs.clear();
-			}
-			//calculate jet time difference
-			if(njets > 1){
-				pair<Jet,Jet> hardjets;
-				if(jets[0].pt() < jets[1].pt()){
-					FindHardestJetPair(jets, hardjets);
+			for(int p = 0; p < nProc; p++){
+				//cout << " proc " << trCats[tr_idx].procCats[p].plotName << endl;
+				for(int j = 0; j < njets; j++){
+					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
+					jets[j].SetJetTime(jettime);
+					//cout << " jet #" << j << " time: " << jettime << endl;
+					//fill jet time in pv frame - 0
+					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime);
+					//add to pv time calculation
+					jettimes.push_back(jettime);
+					rhs = jets[j].GetJetPoints();
+					for(int r = 0; r < rhs.size(); r++)
+						Erh += rhs[r].E();
+					rhs.clear();
 				}
-				//pt sorted
-				else{
-					hardjets = std::make_pair(jets[0],jets[1]);
-				}
-				double deltaT_jets = GetDeltaTime(hardjets);
-				if(deltaT_jets != -999){
-					ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
-					//fill deltaT_jets - 1
-					trCats[tr_idx].hists1D[1]->Fill(deltaT_jets);
-					//2D plot for profile
-					trCats[tr_idx].hists2D[1]->Fill(ptavg, deltaT_jets);
-				}
-			}	
-			//fill deltaT_pvGam - 2
-			//only fill for two leading photons + weighted avg of jet time
-			if(_phos.size() < 1) return;
-			//this assumes that the time for the jet was set previously with the respective method
-			pvtime = CalcPVTime(ts, jets);
-			gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
-			deltaT_gampv = gamtime - pvtime;
-			trCats[tr_idx].hists1D[2]->Fill( deltaT_gampv );
-			if(_data) return; //no gen info with data
-
-			//fill difference in deltaT_pvGam of reco and gen - 3
-			deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
-			trCats[tr_idx].hists1D[6]->Fill(deltaT_gampv_gen);
-			//only for gen matches
-			if(deltaT_gampv_gen != -999){
-				trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
-				//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
-				//need to give Profile2DHist a 2D hist with ptavg on x and deltaT on y
-				trCats[tr_idx].hists2D[0]->Fill(Erh, deltaT_gampv - deltaT_gampv_gen);
-			
-			}	
-
-			//do same for subleading photon if it exists
-			if(_phos.size() > 1){
-				gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+				//calculate jet time difference
+				if(njets > 1){
+					pair<Jet,Jet> hardjets;
+					if(jets[0].pt() < jets[1].pt()){
+						FindHardestJetPair(jets, hardjets);
+					}
+					//pt sorted
+					else{
+						hardjets = std::make_pair(jets[0],jets[1]);
+					}
+					double deltaT_jets = GetDeltaTime(hardjets);
+					if(deltaT_jets != -999){
+						ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
+						//fill deltaT_jets - 1
+						trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
+						//2D plot for profile
+						trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
+					}
+				}	
+				//fill deltaT_pvGam - 2
+				//only fill for two leading photons + weighted avg of jet time
+				if(_phos.size() < 1) continue;
+				//this assumes that the time for the jet was set previously with the respective method
+				pvtime = CalcPVTime(ts, jets);
+				gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 				deltaT_gampv = gamtime - pvtime;
-				trCats[tr_idx].hists1D[2]->Fill( deltaT_gampv );
+				trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+				if(_data) continue; //no gen info with data
+
+				//fill difference in deltaT_pvGam of reco and gen - 3
 				deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
-				trCats[tr_idx].hists1D[6]->Fill(deltaT_gampv_gen);
+				trCats[tr_idx].procCats[p].hists1D[0][6]->Fill(deltaT_gampv_gen);
 				//only for gen matches
 				if(deltaT_gampv_gen != -999){
-					trCats[tr_idx].hists1D[3]->Fill( deltaT_gampv - deltaT_gampv_gen);
-					trCats[tr_idx].hists2D[0]->Fill(ptavg, deltaT_gampv - deltaT_gampv_gen);
+					trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
+					//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
+					//need to give Profile2DHist a 2D hist with ptavg on x and deltaT on y
+					trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(Erh, deltaT_gampv - deltaT_gampv_gen);
+				
+				}	
+
+				//do same for subleading photon if it exists
+				if(_phos.size() > 1){
+					gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+					deltaT_gampv = gamtime - pvtime;
+					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+					deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
+					trCats[tr_idx].procCats[p].hists1D[0][6]->Fill(deltaT_gampv_gen);
+					//only for gen matches
+					if(deltaT_gampv_gen != -999){
+						trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
+						trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(ptavg, deltaT_gampv - deltaT_gampv_gen);
+					}
 				}
-			}
-		
+			}	
 
 		}
 
@@ -703,91 +710,102 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 			t /= ws; 
 		}
 
-		void WriteTimeRecoCat(TFile* ofile, timeRecoCat& tr){
+		void ProfileTimeRecoCat(TFile* ofile, timeRecoCat& tr){
 			ofile->cd();
 			string name;
 			vector<TH1D*> profs;
-			if(!_data){
-				//write recogen hists
-				Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
+			for(int p = 0; p < tr.procCats.size(); p++){
+				if(!_data){
+					//write recogen hists
+					Profile2DHist(tr.procCats[p].hists2D[0][0],tr.procCats[p].hists1D[0][4], profs);
+					//make sure profiles get written
+					for(int i = 0; i < profs.size(); i++){
+						name = profs[i]->GetName();
+						name = name+"_recoGen";
+						if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
+						profs[i]->SetName(name.c_str());
+						profs[i]->SetTitle(name.c_str()); 
+						tr.AddHist(profs[i]);	
+					}	
+					profs.clear();
+				}
+				//write dijet hists
+				Profile2DHist(tr.procCats[p].hists2D[0][1],tr.procCats[p].hists1D[0][5], profs);
+		//		cout << tr.hists1D[5]->GetName() << " entries: " << tr.hists1D[5]->GetEntries() << endl;
+		//		cout << tr.hists2D[1]->GetName() << " entries: " << tr.hists2D[1]->GetEntries() << endl;
 				//make sure profiles get written
 				for(int i = 0; i < profs.size(); i++){
 					name = profs[i]->GetName();
-					name = name+"_recoGen";
+					name = name+"_dijets";
+					if(!tr.procCats[p].plotName.empty()) name += "_"+tr.procCats[p].plotName;
 					profs[i]->SetName(name.c_str());
 					profs[i]->SetTitle(name.c_str()); 
 					tr.AddHist(profs[i]);	
 				}	
-				profs.clear();
-			}
-			//write dijet hists
-			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
-		//	cout << tr.hists1D[5]->GetName() << " entries: " << tr.hists1D[5]->GetEntries() << endl;
-		//	cout << tr.hists2D[1]->GetName() << " entries: " << tr.hists2D[1]->GetEntries() << endl;
-			//make sure profiles get written
-			for(int i = 0; i < profs.size(); i++){
-				name = profs[i]->GetName();
-				name = name+"_dijets";
-				profs[i]->SetName(name.c_str());
-				profs[i]->SetTitle(name.c_str()); 
-				tr.AddHist(profs[i]);	
-			}	
 	
-			vector<TH1D*> hists1D = tr.hists1D;
-			//write 1D hists
-			for(int i = 0; i < (int)hists1D.size(); i++){
-				if(tr.hists1D[i] == nullptr) continue;
-				name = tr.hists1D[i]->GetName();
-				cout << "writing " << name << endl;
-				if(tr.hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
-				tr.hists1D[i]->Write();
-			}
-			vector<TH2D*> hists2D = tr.hists2D;
-			//write 2D hists
-			for(int i = 0; i < (int)hists2D.size(); i++){
-				if(tr.hists2D[i] == nullptr) continue;
-				name = tr.hists2D[i]->GetName();
-				if(tr.hists2D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
-				tr.hists2D[i]->Write();
 			}
 		}
 		
 		void WriteTimeRecoCatStack(TFile* ofile, const vector<timeRecoCat>& trs){
-			cout << "Stack start" << endl;
 			ofile->cd();
 			string name, dirname;
 			//write 1D hists
 			//variables
 			int nhists = trs[0].procCats[0].hists1D[0].size();
 			for(int i = 0; i < nhists; i++){
-				name = trs[0].hists1D[i]->GetName();
+				name = trs[0].procCats[0].hists1D[0][i]->GetName();
 				//only write sigma plots
 				//if(name.find("sigma") == string::npos) continue;
 				//first tr cat is always median - change to rfind("_")
 				dirname = name.substr(0,name.rfind("_"));
-			cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
+			//cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
 				TDirectory* dir = ofile->mkdir((dirname+"_stack").c_str());
 				dir->cd();
 				for(int j = 0; j < trs.size(); j++){
 					//write method as directory within directory
 					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
-					cout << "  making dir " << dir2->GetName() << endl;
-					for(int k = 0; k < trs[j].procCats.size(); k++){
+					//cout << "  making dir " << dir2->GetName() << endl;
+					dir2->cd();
+					for(int p = 0; p < trs[j].procCats.size(); p++){
 					//loop over processes
-			//cout << "# procs: " << trs[j].procCats.size() << endl;
-						cout << "    proc " << trs[j].procCats[k].plotName << " hist " << trs[j].procCats[k].hists1D[0][i]->GetName() << endl;			
-					//	cout << "  writing " << trs[j].procCats[k].hists1D[0][i]->GetName() << " entries: " << trs[j].hists1D[i]->GetEntries() << endl; 
-					//if(trs[j].procCats[k].hists1D[0][i] == nullptr) continue;
-					//if(trs[j].procCats[k].hists1D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
-					//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
-					//trs[j].procCats[k].hists1D[0][i]->SetTitle(trs[j].methodName.c_str());
-					//trs[j].procCats[k].hists1D[0][i]->Write();
+			//			cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists1D[0][i]->GetName() << " " << trs[j].procCats[p].hists1D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists1D[0][i]->GetEntries() << endl;			
+						if(trs[j].procCats[p].hists1D[0][i] == nullptr) continue;
+						if(trs[j].procCats[p].hists1D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
+						//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
+						trs[j].procCats[p].hists1D[0][i]->Write();
 					
 
 					} 
 				}
 			}
-			cout << "Stack end" << endl;
+			//write 2D hists
+			nhists = trs[0].procCats[0].hists2D[0].size();
+			for(int i = 0; i < nhists; i++){
+				name = trs[0].procCats[0].hists2D[0][i]->GetName();
+				//only write sigma plots
+				//if(name.find("sigma") == string::npos) continue;
+				//first tr cat is always median - change to rfind("_")
+				dirname = name.substr(0,name.rfind("_"));
+			//cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
+				TDirectory* dir = ofile->mkdir((dirname+"_stack").c_str());
+				dir->cd();
+				for(int j = 0; j < trs.size(); j++){
+					//write method as directory within directory
+					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
+					//cout << "  making dir " << dir2->GetName() << endl;
+					dir2->cd();
+					for(int p = 0; p < trs[j].procCats.size(); p++){
+					//loop over processes
+					//	cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists2D[0][i]->GetName() << " " << trs[j].procCats[p].hists2D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists2D[0][i]->GetEntries() << endl;			
+						if(trs[j].procCats[p].hists2D[0][i] == nullptr) continue;
+						if(trs[j].procCats[p].hists2D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
+						//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
+						trs[j].procCats[p].hists2D[0][i]->Write();
+					
+
+					} 
+				}
+			}
 			
 		}
 
@@ -824,8 +842,8 @@ cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << proc
 				//cv->Write();
 				graphs[i]->Write();
 			}
-			//for(int i = 0; i < trCats.size(); i++)
-			//	WriteTimeRecoCat(ofile, trCats[i]);
+			for(int i = 0; i < trCats.size(); i++)
+				ProfileTimeRecoCat(ofile, trCats[i]);
 			WriteTimeRecoCatStack(ofile, trCats);
 
 			ofile->Close();

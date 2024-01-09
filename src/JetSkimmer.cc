@@ -57,7 +57,7 @@ void JetSkimmer::Skim(){
 	
 
 
-	int SKIP = 50;
+	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i);
