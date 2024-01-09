@@ -207,6 +207,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(rot2D_etaPhiCovUnnorm);
 			_hists2D.push_back(E_phi);
                 	_hists2D.push_back(rot2D_phiEll2D);
+			_hists2D.push_back(etaPhiCov_timeEtaCovCounts);
 
 		};
 	
@@ -533,6 +534,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* E_phi = new TH2D("E_phi","E_phi;E_center;phi_center",50,0.,1000,50,-0.2,6.4);
 		//67 - rot2D vs phiE2D
                 TH2D* rot2D_phiEll2D = new TH2D("rot2D_phiE2D","rot2D_phiE2D;rot2D;phiE2D",25,0.4,1.1,25,-3.1,1);
+		//68 - counts of etaphi cov vs timeeta cov
+		TH2D* etaPhiCov_timeEtaCovCounts = new TH2D("etaPhiCov_timeEtaCovCounts","etaPhiCov_timeEtaCovCounts;etaPhiCovCounts;timeEtaCovCounts",2,-1,1,2,-1,1);
 		
 
 	
@@ -580,8 +583,12 @@ class PhotonSkimmer : public BaseSkimmer{
 			ofile->cd();
 			string name;
 			vector<vector<TH2D*>> hists2D = pc.hists2D;
+			
+
 			//write 2D hists
 			for(int i = 0; i < (int)hists2D.size(); i++){
+				//normalize etaphiCov_timeetaCov count plots
+				pc.hists2D[i][68]->Scale(1./pc.hists2D[i][68]->Integral());
 				for(int j = 0; j < hists2D[i].size(); j++){
 					if(pc.hists2D[i][j] == nullptr) continue;
 					//write total hist to file
@@ -1071,6 +1078,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[0][65]->Fill(rot2D, ep_cov_unnorm);
 				_procCats[id_idx].hists2D[0][66]->Fill(E_k, pc);
 				_procCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
+				_procCats[id_idx].hists2D[0][68]->Fill(ep_cov,te_cov);
 
 
 				//histograms for leading/subleading clusters
@@ -1277,6 +1285,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][65]->Fill(rot2D, ep_cov_unnorm);
 					_procCats[id_idx].hists2D[1][66]->Fill(E_k, pc);
 					_procCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
+					_procCats[id_idx].hists2D[1][68]->Fill(ep_cov,te_cov);
 				
 
 				}
@@ -1471,6 +1480,9 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[2][63]->Fill(te_cov_unnorm, mintime_cov_unnorm);
 					_procCats[id_idx].hists2D[2][64]->Fill(rot2D, ep_cov);
 					_procCats[id_idx].hists2D[2][65]->Fill(rot2D, ep_cov_unnorm);
+					_procCats[id_idx].hists2D[2][66]->Fill(E_k, pc);
+					_procCats[id_idx].hists2D[2][67]->Fill(rot2D,phi2D);
+					_procCats[id_idx].hists2D[2][68]->Fill(ep_cov,te_cov);
 				}
 
 			}
