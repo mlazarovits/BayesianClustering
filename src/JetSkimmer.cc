@@ -23,10 +23,8 @@ void JetSkimmer::Skim(){
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//set differences in samples (ie GMSB, data) here
-
-	MakeProcCats(_oname);
 	
-	
+	MakeTimeRecoCatHists();
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = 2*acos(-1)/360.; //1 degree in radians
@@ -59,7 +57,7 @@ void JetSkimmer::Skim(){
 	
 
 
-	int SKIP = 1;
+	int SKIP = 50;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i);

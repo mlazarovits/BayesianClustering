@@ -25,7 +25,7 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 		double low = phist->GetBinLowEdge(0);
 		double high = -low;
 		//check that initial parameter values are ok
-		if( stddev > 0.0 && norm > 0.){
+		if( stddev >= 0.0 && norm > 0.){
 			TF1* fit = new TF1("fit","gaus",low,high);
 			//fit->SetParameter(0,norm);
 			//fit->SetParameter(1,mean);
@@ -38,7 +38,6 @@ void BaseSkimmer::Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& prof
 			//set new contents
 			outhist->SetBinContent(i, fit_stddev);
 			outhist->SetBinError(i, fit_stddev_err);
-		//cout << "bin " << i << ": stddev " << stddev << " fit_stddev " << fit_stddev << " err: " << fit_stddev_err << " norm " << norm << " phist integral: " << phist->Integral() << endl; 	
 			delete fit;
 		}
 	}

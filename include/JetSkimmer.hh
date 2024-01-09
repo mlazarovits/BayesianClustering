@@ -82,7 +82,6 @@ class JetSkimmer : public BaseSkimmer{
 			nrhs_comptime->SetName("nrhs_comptime");
 			nrhs_comptime->SetTitle("nrhs_comptime");
 			graphs.push_back(nrhs_comptime);
-			MakeTimeRecoCatHists();
 
 
 		};
@@ -101,7 +100,12 @@ class JetSkimmer : public BaseSkimmer{
 			string methodName;
 
 			vector<procCat> procCats;
-			timeRecoCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, const TimeStrategy& ts){
+			timeRecoCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, const TimeStrategy& ts, vector<procCat> pcs){
+				//reset proc cat hists to these input hists
+				for(int i = 0; i < pcs.size(); i++){
+					procCats.push_back(pcs[i]);
+					procCats[i].SetHists(in1dhists, in2dhists, false);
+				}
 				if(ts == med)
 					methodName = "median";
 				else if(ts == eavg)
@@ -111,45 +115,75 @@ class JetSkimmer : public BaseSkimmer{
 				else
 					cout << "Error: time strategy " << ts << " not supported." << endl;		
 				string name;
+				string addname;
 				//for each histogram (variable or correlation)
-				for(int i = 0; i < (int)in1dhists.size(); i++){
-						//make sure they have the right add-on name (ie leading, !lead, etc)
-						TH1D* hist = (TH1D*)in1dhists[i]->Clone();
-						name = hist->GetName();
-						if(!methodName.empty()) name += "_"+methodName;
-						hist->SetName(name.c_str());
-						if(!methodName.empty()) hist->SetTitle(methodName.c_str());
-						hists1D.push_back(hist);
-					}
-
-				//for each histogram
-				for(int i = 0; i < (int)in2dhists.size(); i++){
-					TH2D* hist = (TH2D*)in2dhists[i]->Clone();
-					name = hist->GetName();
-					if(!methodName.empty()) name += "_"+methodName;
-					hist->SetName(name.c_str());
-					if(!methodName.empty()) hist->SetTitle(methodName.c_str());
-					hists2D.push_back(hist);
-
+				//	//make sure they have the right add-on name (ie leading, !lead, etc)
+				//	TH1D* hist = (TH1D*)in1dhists[i]->Clone();
+				//	name = hist->GetName();
+				//	if(!methodName.empty()) name += "_"+methodName;
+				//	hist->SetName(name.c_str());
+				//	if(!methodName.empty()) hist->SetTitle(methodName.c_str());
+				//	hists1D.push_back(hist);
+					//do by process breakdown of sigma plots
+					//if(name.find("sigma") != string::npos){
+					for(int j = 0; j < procCats.size(); j++){
+						for(int i = 0; i < (int)in1dhists.size(); i++){
+							TH1D* hist = procCats[j].hists1D[0][i];
+							name = hist->GetName();
+							if(!procCats[j].plotName.empty()) name = name.substr(0,name.find("_"+procCats[j].plotName));
+							if(!methodName.empty()) addname = "_"+methodName;
+							if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+							hist->SetName((name+addname).c_str());
+							if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
+							///hists1D.push_back(hist);
+							cout << "added hist " << hist->GetName() << endl;
+						}
+					//}
 				}
+				//for(auto hist : hists1D) cout << hist->GetName() << " " << hist->GetTitle() << endl;
+cout << "timeRecoCat n hists: " << procCats[0].hists1D[0].size() <<  " " << procCats[0].hists1D.size() << endl;
+				//for each histogram
+					for(int j = 0; j < procCats.size(); j++){
+						for(int i = 0; i < (int)in2dhists.size(); i++){
+							TH2D* hist = procCats[j].hists2D[0][i];
+							name = hist->GetName();
+							if(!procCats[j].plotName.empty()) name = name.substr(0,name.find("_"+procCats[j].plotName));
+							if(!methodName.empty()) addname = "_"+methodName;
+							if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+							hist->SetName((name+addname).c_str());
+							if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
+							///hists2D.push_back(hist);
+							cout << "added hist " << hist->GetName() << " " << name << " " << addname << endl;
+						}
+					//}
+				}
+//cout << "2d timeRecoCat n hists: " << procCats[0].hists2D[0].size() <<  " " << procCats[0].hists2D.size() << endl;
+
 			}
 		
 			void AddHist(TH1D* inhist){
-				//make sure they have the right add-on name (ie leading, !lead, etc)
-				TH1D* hist = (TH1D*)inhist->Clone();
-				string name = hist->GetName();
-				if(!methodName.empty()) name += "_"+methodName;
-				hist->SetName(name.c_str());
-				if(!methodName.empty()) hist->SetTitle(methodName.c_str());
-				hists1D.push_back(hist);
+				string name, addname;
+				for(int j = 0; j < procCats.size(); j++){
+					TH1D* hist = (TH1D*)inhist->Clone();
+					name = hist->GetName();
+					if(!methodName.empty()) addname = "_"+methodName;
+					if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+					hist->SetName((name+addname).c_str());
+					if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
+					hists1D.push_back(hist);
+				}
 			}	
 			void AddHist(TH2D* inhist){
-				TH2D* hist = (TH2D*)inhist->Clone();
-				string name = hist->GetName();
-				if(!methodName.empty()) name += "_"+methodName;
-				hist->SetName(name.c_str());
-				if(!methodName.empty()) hist->SetTitle(methodName.c_str());
-				hists2D.push_back(hist);
+				string name, addname;
+				for(int j = 0; j < procCats.size(); j++){
+					TH2D* hist = (TH2D*)inhist->Clone();
+					name = hist->GetName();
+					if(!methodName.empty()) addname = "_"+methodName;
+					if(!procCats[j].plotName.empty()) addname += "_"+procCats[j].plotName;
+					hist->SetName((name+addname).c_str());
+					if(!methodName.empty()) hist->SetTitle((addname.substr(1)).c_str());
+					hists2D.push_back(hist);
+				}
 
 			}	
 
@@ -174,7 +208,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
 		
 		
-
+		///////////////////// timeHists /////////////
 		//0 - pv time
 		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
 		//1 - delta t between jets (pv time frame)
@@ -184,17 +218,17 @@ class JetSkimmer : public BaseSkimmer{
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
 		//4 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* Erh_sigmaDeltaTime_recoGen = new TH1D("Erh_sigmaDeltaTime_recoGen","Erh_sigmaDeltaTime_recoGen",10,0,700);
+		TH1D* Erh_sigmaDeltaTime_recoGen = new TH1D("Erh_sigmaDeltaTime_recoGen","Erh_sigmaDeltaTime_recoGen",10,0,1000);
 		//5 - resolution of difference between two jets for PV time as a function of their average pT 	
-		TH1D* ptavg_sigmaDeltaTime_dijets = new TH1D("ptavg_sigmaDeltaTime_dijets","ptavg_sigmaDeltaTime_dijets",10,0,700);
+		TH1D* ptavg_sigmaDeltaTime_dijets = new TH1D("ptavg_sigmaDeltaTime_dijets","ptavg_sigmaDeltaTime_dijets",10,0,1000);
 		//6 - gen deltaT bw photon and pv
 		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-4,4);	
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","Erh_diffDeltaTime_recoGen;#sum_{rh} E_{rh} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,700,10,-10,10);
+		TH2D* Erh_diffDeltaTime_recoGen = new TH2D("Erh_diffDeltaTime_recoGen","Erh_diffDeltaTime_recoGen;#sum_{rh} E_{rh} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
 		//1 - 2D histogram for dijets resolution
-		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets;p^{avg}_{T} (GeV); #Delta t^{PV}_{dijet}",10,0,700,10,-10,10);	
+		TH2D* ptavg_diffDeltaTime_dijets = new TH2D("ptavg_diffDeltaTime_dijets","pvavg_diffDeltaTime_dijets;p^{avg}_{T} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -213,9 +247,12 @@ class JetSkimmer : public BaseSkimmer{
 
 		vector<timeRecoCat> trCats;
 		void MakeTimeRecoCatHists(){
-			timeRecoCat trmed(_timeHists1D, _timeHists2D, med);
-			timeRecoCat treavg(_timeHists1D, _timeHists2D, eavg);
-			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg);
+			//don't want to separate lead/not lead histograms
+			MakeProcCats(_oname, false);
+			
+			timeRecoCat trmed(_timeHists1D, _timeHists2D, med, _procCats);
+			timeRecoCat treavg(_timeHists1D, _timeHists2D, eavg, _procCats);
+			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg, _procCats);
 		
 			trCats.push_back(trmed);
 			trCats.push_back(trmmavg);	
@@ -256,6 +293,7 @@ class JetSkimmer : public BaseSkimmer{
 			}
 		}
 
+		//need to break down by procCat - see how this is done in PhotonSkimmer.cc
 		void FillPVTimeHists(vector<Jet>& jets, int tr_idx, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
 			int njets = jets.size();
 			double jettime = -999;
@@ -292,13 +330,14 @@ class JetSkimmer : public BaseSkimmer{
 				else{
 					hardjets = std::make_pair(jets[0],jets[1]);
 				}
-				double deltaT_jets = GetDTime(hardjets);
-				//cout  << " dtime_jets: " << deltaT_jets << endl;
-				ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
-				//fill deltaT_jets - 1
-				trCats[tr_idx].hists1D[1]->Fill(deltaT_jets);
-				//2D plot for profile
-				trCats[tr_idx].hists2D[1]->Fill(ptavg, deltaT_jets);
+				double deltaT_jets = GetDeltaTime(hardjets);
+				if(deltaT_jets != -999){
+					ptavg = (hardjets.first.pt() + hardjets.second.pt())/2.;	
+					//fill deltaT_jets - 1
+					trCats[tr_idx].hists1D[1]->Fill(deltaT_jets);
+					//2D plot for profile
+					trCats[tr_idx].hists2D[1]->Fill(ptavg, deltaT_jets);
+				}
 			}	
 			//fill deltaT_pvGam - 2
 			//only fill for two leading photons + weighted avg of jet time
@@ -501,7 +540,7 @@ class JetSkimmer : public BaseSkimmer{
 			//continue until pair is found
 
 		}
-		double GetDTime(pair<Jet,Jet>& jets){
+		double GetDeltaTime(pair<Jet,Jet>& jets){
 			double pi = acos(-1);
 			//not needed for GMSB
 			if(_data){
@@ -509,7 +548,8 @@ class JetSkimmer : public BaseSkimmer{
 				double phi1 = jets.first.phi_02pi();
 				double phi2 = jets.second.phi_02pi();
 				double dphi = fabs(phi1 - phi2);
-				if(dphi < pi-0.1 || dphi > pi+0.1) return -999;
+				if(dphi > pi) dphi = 2*pi - dphi;
+				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
 			}
 			double t1 = jets.first.time();
 			double t2 = jets.second.time();
@@ -666,20 +706,24 @@ class JetSkimmer : public BaseSkimmer{
 		void WriteTimeRecoCat(TFile* ofile, timeRecoCat& tr){
 			ofile->cd();
 			string name;
-			//write recogen hists
 			vector<TH1D*> profs;
-			Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
-			//make sure profiles get written
-			for(int i = 0; i < profs.size(); i++){
-				name = profs[i]->GetName();
-				name = name+"_recoGen";
-				profs[i]->SetName(name.c_str());
-				profs[i]->SetTitle(name.c_str()); 
-				tr.AddHist(profs[i]);	
-			}	
-			profs.clear();
+			if(!_data){
+				//write recogen hists
+				Profile2DHist(tr.hists2D[0],tr.hists1D[4], profs);
+				//make sure profiles get written
+				for(int i = 0; i < profs.size(); i++){
+					name = profs[i]->GetName();
+					name = name+"_recoGen";
+					profs[i]->SetName(name.c_str());
+					profs[i]->SetTitle(name.c_str()); 
+					tr.AddHist(profs[i]);	
+				}	
+				profs.clear();
+			}
 			//write dijet hists
 			Profile2DHist(tr.hists2D[1],tr.hists1D[5], profs);
+		//	cout << tr.hists1D[5]->GetName() << " entries: " << tr.hists1D[5]->GetEntries() << endl;
+		//	cout << tr.hists2D[1]->GetName() << " entries: " << tr.hists2D[1]->GetEntries() << endl;
 			//make sure profiles get written
 			for(int i = 0; i < profs.size(); i++){
 				name = profs[i]->GetName();
@@ -694,6 +738,7 @@ class JetSkimmer : public BaseSkimmer{
 			for(int i = 0; i < (int)hists1D.size(); i++){
 				if(tr.hists1D[i] == nullptr) continue;
 				name = tr.hists1D[i]->GetName();
+				cout << "writing " << name << endl;
 				if(tr.hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 				tr.hists1D[i]->Write();
 			}
@@ -708,25 +753,41 @@ class JetSkimmer : public BaseSkimmer{
 		}
 		
 		void WriteTimeRecoCatStack(TFile* ofile, const vector<timeRecoCat>& trs){
+			cout << "Stack start" << endl;
 			ofile->cd();
 			string name, dirname;
 			//write 1D hists
 			//variables
-			int nhists = trs[0].hists1D.size();
+			int nhists = trs[0].procCats[0].hists1D[0].size();
 			for(int i = 0; i < nhists; i++){
 				name = trs[0].hists1D[i]->GetName();
 				//only write sigma plots
-				if(name.find("sigma") == string::npos) continue;
-				dirname = name.substr(0,name.find("_median"));
+				//if(name.find("sigma") == string::npos) continue;
+				//first tr cat is always median - change to rfind("_")
+				dirname = name.substr(0,name.rfind("_"));
+			cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
 				TDirectory* dir = ofile->mkdir((dirname+"_stack").c_str());
 				dir->cd();
-				for(int k = 0; k < trs.size(); k++){
-					if(trs[k].hists1D[i] == nullptr) continue;
-					if(trs[k].hists1D[i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[k].plotName << " not filled." << endl; continue; }
-					trs[k].hists1D[i]->SetTitle(trs[k].methodName.c_str());
-					trs[k].hists1D[i]->Write();
+				for(int j = 0; j < trs.size(); j++){
+					//write method as directory within directory
+					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
+					cout << "  making dir " << dir2->GetName() << endl;
+					for(int k = 0; k < trs[j].procCats.size(); k++){
+					//loop over processes
+			//cout << "# procs: " << trs[j].procCats.size() << endl;
+						cout << "    proc " << trs[j].procCats[k].plotName << " hist " << trs[j].procCats[k].hists1D[0][i]->GetName() << endl;			
+					//	cout << "  writing " << trs[j].procCats[k].hists1D[0][i]->GetName() << " entries: " << trs[j].hists1D[i]->GetEntries() << endl; 
+					//if(trs[j].procCats[k].hists1D[0][i] == nullptr) continue;
+					//if(trs[j].procCats[k].hists1D[0][i]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
+					//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
+					//trs[j].procCats[k].hists1D[0][i]->SetTitle(trs[j].methodName.c_str());
+					//trs[j].procCats[k].hists1D[0][i]->Write();
+					
+
+					} 
 				}
 			}
+			cout << "Stack end" << endl;
 			
 		}
 
@@ -763,8 +824,8 @@ class JetSkimmer : public BaseSkimmer{
 				//cv->Write();
 				graphs[i]->Write();
 			}
-			for(int i = 0; i < trCats.size(); i++)
-				WriteTimeRecoCat(ofile, trCats[i]);
+			//for(int i = 0; i < trCats.size(); i++)
+			//	WriteTimeRecoCat(ofile, trCats[i]);
 			WriteTimeRecoCatStack(ofile, trCats);
 
 			ofile->Close();

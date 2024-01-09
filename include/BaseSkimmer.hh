@@ -133,15 +133,15 @@ class BaseSkimmer{
 			vector<vector<TH2D*>> hists2D;
 			vector<double> ids;
 		
-			procCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = ""){
+			procCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = "", bool leadsep = true){
 				hists1D.push_back(hists1D_nom);
-				hists1D.push_back(hists1D_lead);
-				hists1D.push_back(hists1D_notlead);
-				
 				hists2D.push_back(hists2D_nom);
-				hists2D.push_back(hists2D_lead);
-				hists2D.push_back(hists2D_notlead);
-
+				if(leadsep){
+					hists1D.push_back(hists1D_lead);
+					hists1D.push_back(hists1D_notlead);
+					hists2D.push_back(hists2D_lead);
+					hists2D.push_back(hists2D_notlead);
+				}
 				plotName = plotname;
 				legName = legname;
 				
@@ -176,11 +176,88 @@ class BaseSkimmer{
 
 				}
 			}
+				
+			//reset proc cat hists to different hists
+			void SetHists(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, bool leadSep = true){
+				string name;
+				int nhists;
+			//cout << "SetHists for "  << plotName << endl;	
+//cout << "pre clear " << hists1D.size() << " " << hists1D[0].size() << endl;
+				//how many hist categories to loop over
+				if(leadSep) nhists = hists1D.size();
+				else nhists = 1; //just nominal
+				hists1D.clear(); hists2D.clear();
+//cout << "post clear " << hists1D.size() << " " << hists1D[0].size() << endl;
+				for(int i = 0; i < nhists; i++){ hists1D.push_back({}); hists2D.push_back({}); }
+
+				//for each histogram (variable or correlation)
+				for(int i = 0; i < (int)in1dhists.size(); i++){
+					//create a clone for each type
+					for(int j = 0; j < nhists; j++){
+						//make sure they have the right add-on name (ie leading, !lead, etc)
+						TH1D* hist = (TH1D*)in1dhists[i]->Clone();
+						hists1D[j].push_back(hist);
+						name = hist->GetName();
+						if(!plotName.empty()) name += "_"+plotName;
+						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
+						hists1D[j][i]->SetName(name.c_str());
+						if(!plotName.empty()) hists1D[j][i]->SetTitle("");
+					}
+
+				}
+//				cout << "SetHists - n hist: " << hists1D[0].size() << " " << in1dhists.size() << endl;
+				//for each histogram
+				for(int i = 0; i < (int)in2dhists.size(); i++){
+					//create a clone for each type
+					for(int j = 0; j < nhists; j++){
+						TH2D* hist = (TH2D*)in2dhists[i]->Clone();
+						hists2D[j].push_back(hist);
+						name = hist->GetName();
+						if(!plotName.empty()) name += "_"+plotName;
+						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
+						hists2D[j][i]->SetName(name.c_str());
+						if(!plotName.empty()) hists2D[j][i]->SetTitle("");
+					}
+
+				}
+//				cout << "2d SetHists - n hist: " << hists2D[0].size() << " " << in2dhists.size() << endl;
+			}
+			void AddHist(TH1D* inhist){
+				//create a clone for each type
+				int n1dhist;
+				string name;
+				for(int j = 0; j < hists1D.size(); j++){
+					//make sure they have the right add-on name (ie leading, !lead, etc)
+					TH1D* hist = (TH1D*)inhist->Clone();
+					hists1D[j].push_back(hist);
+					n1dhist = hists1D.size()-1;
+					name = hist->GetName();
+					if(!plotName.empty()) name += "_"+plotName;
+					name += "_"+histcatnames[j];
+					hists1D[j][n1dhist]->SetName(name.c_str());
+					if(!plotName.empty()) hists1D[j][n1dhist]->SetTitle("");
+				}
+			}	
+			void AddHist(TH2D* inhist){
+				int n2dhist;
+				string name;
+				for(int j = 0; j < hists1D.size(); j++){
+					TH2D* hist = (TH2D*)inhist->Clone();
+					hists2D[j].push_back(hist);
+					n2dhist = hists2D.size()-1;
+					name = hist->GetName();
+					if(!plotName.empty()) name += "_"+plotName;
+					name += "_"+histcatnames[j];
+					hists2D[j][n2dhist]->SetName(name.c_str());
+					if(!plotName.empty()) hists2D[j][n2dhist]->SetTitle("");
+				}
+			}	
+
 			
 
 		};
 		vector<procCat> _procCats;
-		void MakeProcCats(string sample){
+		void MakeProcCats(string sample, bool leadsep = true){
 			//total
 			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
@@ -188,25 +265,25 @@ class BaseSkimmer{
 			
 			if(sample.find("GMSB") != string::npos){
 				//notSunm
-				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm");
+				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
 				//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
 				notSunm.ids = {29, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
 				_procCats.push_back(notSunm);
 				
 				//signal
-				procCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma");
+				procCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma", leadsep);
 				sig.ids = {22};
 				_procCats.push_back(sig);
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT");
+				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT", leadsep);
 				jetht.ids = {-999};
 				_procCats.push_back(jetht);
 			}
 			else if(sample.find("GJets") != string::npos){
 				//data
-				procCat gjets(_hists1D, _hists2D, "GJets", "GJets");
+				procCat gjets(_hists1D, _hists2D, "GJets", "GJets", leadsep);
 				gjets.ids = {-999};
 				_procCats.push_back(gjets);
 			}
