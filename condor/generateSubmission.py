@@ -87,6 +87,8 @@ def generateSubmission(args):
 	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)
 	if(args.noSmear):
 		flags += ' --noSmear'
+	if(args.timeSmear):
+		flags += ' --timeSmear'
 	if(objName == "jets"):
 		flags += " --object 0"
 	if(objName == "photons"):
@@ -127,7 +129,8 @@ def main():
 	parser.add_argument('--minpt',help='min object pt',default=30.)
 	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
 	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
-	parser.add_argument('--noSmear',help="turn off smearing",default=False,action='store_true')
+	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
+	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
