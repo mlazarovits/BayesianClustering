@@ -8,6 +8,7 @@
 #include "PhotonProducer.hh"
 #include "TSystem.h"
 #include <math.h>
+#include <fstream>
 
 using procCat = BaseSkimmer::procCat;
 class PhotonSkimmer : public BaseSkimmer{
@@ -48,6 +49,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			objE_clusterE->SetTitle("phoE_clusterE");
 			objE_clusterE->SetName("phoE_clusterE");
 
+			SetupDetIDsEB( _detIDmap );
 			//add photon specific histograms
                         _hists1D.push_back(slope_space);
                         _hists1D.push_back(slope_etaT);
@@ -538,6 +540,26 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* etaPhiCov_timeEtaCovCounts = new TH2D("etaPhiCov_timeEtaCovCounts","etaPhiCov_timeEtaCovCounts;etaPhiCovCounts;timeEtaCovCounts",2,-1,1,2,-1,1);
 		
 
+
+		enum weightScheme{
+			noWeight = 0,
+			Eweight = 1,
+			logEweight = 2
+		};
+		
+		struct DetIDStruct {
+			DetIDStruct() {}
+			DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
+			//Int_t i1; // EB: iphi, EE: ix
+			int i1;
+		//	Int_t i2; // EB: ieta, EE: iy
+			int i2;
+			Int_t TT; // trigger tower
+			Int_t ecal; // EB, EM, EP
+		};//<<>>struct DetIDStruct
+
+	
+	 	std::map<UInt_t,DetIDStruct> _detIDmap;
 	
 		void Skim();
 
@@ -554,15 +576,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		double _thresh, _alpha, _emAlpha;
 
 
-
-		enum weightScheme{
-			noWeight = 0,
-			Eweight = 1,
-			logEweight = 2
-		};
-		
-
-	
 
 
 		void WritePlotCat1D(TFile* ofile, const procCat& pc){
@@ -677,9 +690,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		//k = sum_n(E_n)/N
 		void FillModelHists(BasePDFMixture* model, int id_idx){
 			map<string, Matrix> params;
-			vector<double> eigenvals, eigenvals_space, norms, eigenvals_noEw, eigenvals_logEw;
-			vector<Matrix> eigenvecs, eigenvecs_space, eigenvecs_noEw, eigenvecs_logEw;
+			vector<double> eigenvals, eigenvals_space, norms;
+			vector<Matrix> eigenvecs, eigenvecs_space; 
 			Matrix space_mat = Matrix(2,2);
+			Matrix rotmat2D = Matrix(3,3);		
+			Matrix majminCovMat = Matrix(3,3);
+			PointCollection majminpts;
 
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
@@ -689,17 +705,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			double ep_cov_unnorm, te_cov_unnorm, tp_cov_unnorm;
 			double majtime_cov, mintime_cov, majtime_cov_unnorm, mintime_cov_unnorm;
 			
-			double cmsLogE_phi2D, cmsLogE_rot2D, cmsLogE_ec, cmsLogE_pc, cmsLogE_tc;
-			double cmsLogE_ep_cov, cmsLogE_te_cov, cmsLogE_tp_cov, cmsLogE_e_var, cmsLogE_p_var, cmsLogE_t_var;
-			double cmsLogE_ep_cov_unnorm, cmsLogE_te_cov_unnorm, cmsLogE_tp_cov_unnorm;
-			double cmsLogE_majtime_cov, cmsLogE_mintime_cov, cmsLogE_majtime_cov_unnorm, cmsLogE_mintime_cov_unnorm;
-			double cmsLogE_smaj, cmsLogE_smin, cmsNoE_smaj, cmsNoE_smin;
-			
-			double cmsNoE_ep_cov_unnorm, cmsNoE_te_cov_unnorm, cmsNoE_tp_cov_unnorm;
-			double cmsNoE_phi2D, cmsNoE_rot2D, cmsNoE_ec, cmsNoE_pc, cmsNoE_tc;
-			double cmsNoE_ep_cov, cmsNoE_te_cov, cmsNoE_tp_cov, cmsNoE_e_var, cmsNoE_p_var, cmsNoE_t_var;
-			double cmsNoE_majtime_cov, cmsNoE_mintime_cov, cmsNoE_majtime_cov_unnorm, cmsNoE_mintime_cov_unnorm;
-
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
@@ -731,15 +736,13 @@ class PhotonSkimmer : public BaseSkimmer{
 				//eta - time sign convention
 				//define relative sign for eta and time components
 				//based on where the cluster is in the detector
-				for(int i = 0; i < 3; i++){
-					if(ec < 0){
-						//time sign does NOT match eta sign
-						//flip sign of eta-time entry
-						cov.SetEntry(-cov.at(0,2),0,2);	
-						cov.SetEntry(-cov.at(2,0),2,0);	
-					}
-					//else time sign matches eta sign - no change
+				if(ec < 0){
+					//time sign does NOT match eta sign
+					//flip sign of eta-time entry
+					cov.SetEntry(-cov.at(0,2),0,2);	
+					cov.SetEntry(-cov.at(2,0),2,0);	
 				}
+				//else time sign matches eta sign - no change
 
 
 				e_var = sqrt(cov.at(0,0));
@@ -785,11 +788,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				rot2D = Rotundity(space_mat);
 	
 				//rotate points into maj/min axes
-				Matrix rotmat2D = Matrix(3,3);		
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-				PointCollection majminpts;
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
-				Matrix majminCovMat = Matrix(3,3);
 				MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
 				//set time covariance from GMM
 				majminCovMat.SetEntry(cov.at(2,2),2,2);
@@ -798,82 +798,6 @@ class PhotonSkimmer : public BaseSkimmer{
 				majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 				mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
-				//////////////////////calculate CMS No energy weighting variables//////////////////////
-				Matrix noEw = Matrix(3,3);
-				//calculate covariances like in CMSSW
-				MakeCovMat(model->GetData(), noEw, weightScheme(0));	
-				cmsNoE_e_var = sqrt(noEw.at(0,0));
-				cmsNoE_p_var = sqrt(noEw.at(1,1));
-				cmsNoE_t_var = sqrt(noEw.at(2,2));
-
-				cmsNoE_ep_cov = CalcCov(noEw, 1, 0);
-				cmsNoE_te_cov = CalcCov(noEw, 2, 0);
-				cmsNoE_tp_cov = CalcCov(noEw, 2, 1);
-				cmsNoE_ep_cov_unnorm = CalcCov(noEw, 1, 0, false);
-				cmsNoE_te_cov_unnorm = CalcCov(noEw, 2, 0, false);
-				cmsNoE_tp_cov_unnorm = CalcCov(noEw, 2, 1, false);
-				
-				Get2DMat(noEw,space_mat);
-				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
-				cmsNoE_phi2D = PhiEll(space_mat);			
-				cmsNoE_rot2D = Rotundity(space_mat);
-				cmsNoE_smaj = eigenvals_space[1];		
-				cmsNoE_smin = eigenvals_space[0];		
-		
-				//rotate points into maj/min axes
-				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-				RotatePoints(model->GetData(), rotmat2D, majminpts);
-				MakeCovMat(&majminpts, majminCovMat, weightScheme(2));
-				//set time covariance from GMM
-				majminCovMat.SetEntry(cov.at(2,2),2,2);
-				cmsNoE_majtime_cov = CalcCov(majminCovMat,2,0);
-				cmsNoE_mintime_cov = CalcCov(majminCovMat,2,1);
-				cmsNoE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
-				cmsNoE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
-				//for centers
-				Point noEwCenter = GetCMSSWMean(model->GetData(),false);
-				cmsNoE_ec = noEwCenter.at(0);
-				cmsNoE_pc = noEwCenter.at(1);
-				cmsNoE_tc = noEwCenter.at(2);
-
-				//////////////////////calculate CMS Log energy weighting variables//////////////////////
-				Matrix logEw = Matrix(3,3);
-				//calculate covariances like in CMSSW
-				MakeCovMat(model->GetData(), logEw, weightScheme(2));	
-				cmsLogE_e_var = sqrt(logEw.at(0,0));
-				cmsLogE_p_var = sqrt(logEw.at(1,1));
-				cmsLogE_t_var = sqrt(logEw.at(2,2));
-
-				cmsLogE_ep_cov = CalcCov(logEw, 1, 0);
-				cmsLogE_te_cov = CalcCov(logEw, 2, 0);
-				cmsLogE_tp_cov = CalcCov(logEw, 2, 1);
-				cmsLogE_ep_cov_unnorm = CalcCov(logEw, 1, 0, false);
-				cmsLogE_te_cov_unnorm = CalcCov(logEw, 2, 0, false);
-				cmsLogE_tp_cov_unnorm = CalcCov(logEw, 2, 1, false);
-				
-
-				Get2DMat(logEw,space_mat);
-				space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
-				cmsLogE_phi2D = PhiEll(space_mat);			
-				cmsLogE_rot2D = Rotundity(space_mat);
-				cmsLogE_smaj = eigenvals_space[1];		
-				cmsLogE_smin = eigenvals_space[0];		
-				
-				//rotate points into maj/min axes
-				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-				RotatePoints(model->GetData(), rotmat2D, majminpts);
-				MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
-				//set time covariance from GMM
-				majminCovMat.SetEntry(cov.at(2,2),2,2);
-				cmsLogE_majtime_cov = CalcCov(majminCovMat,2,0);
-				cmsLogE_mintime_cov = CalcCov(majminCovMat,2,1);
-				cmsLogE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
-				cmsLogE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
-				//for centers
-				Point logEwCenter = GetCMSSWMean(model->GetData(),true);
-				cmsLogE_ec = logEwCenter.at(0);
-				cmsLogE_pc = logEwCenter.at(1);
-				cmsLogE_tc = logEwCenter.at(2);
 
 			
 				//fill hists
@@ -937,47 +861,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists1D[0][32]->Fill(tp_cov_unnorm);
 				_procCats[id_idx].hists1D[0][33]->Fill(majtime_cov_unnorm);
 				_procCats[id_idx].hists1D[0][34]->Fill(mintime_cov_unnorm);
-				_procCats[id_idx].hists1D[0][35]->Fill(cmsLogE_te_cov);
-				_procCats[id_idx].hists1D[0][36]->Fill(cmsLogE_tp_cov);
-				_procCats[id_idx].hists1D[0][37]->Fill(cmsLogE_ep_cov);
-				_procCats[id_idx].hists1D[0][38]->Fill(cmsLogE_e_var);
-				_procCats[id_idx].hists1D[0][39]->Fill(cmsLogE_p_var);
-				_procCats[id_idx].hists1D[0][40]->Fill(cmsLogE_t_var);
-				_procCats[id_idx].hists1D[0][41]->Fill(cmsNoE_te_cov);	
-				_procCats[id_idx].hists1D[0][42]->Fill(cmsNoE_tp_cov);	
-				_procCats[id_idx].hists1D[0][43]->Fill(cmsNoE_ep_cov);	
-				_procCats[id_idx].hists1D[0][44]->Fill(cmsNoE_e_var);
-				_procCats[id_idx].hists1D[0][45]->Fill(cmsNoE_p_var);
-				_procCats[id_idx].hists1D[0][46]->Fill(cmsNoE_t_var);
-				_procCats[id_idx].hists1D[0][47]->Fill(cmsNoE_te_cov_unnorm);
-				_procCats[id_idx].hists1D[0][48]->Fill(cmsNoE_tp_cov_unnorm);
-				_procCats[id_idx].hists1D[0][49]->Fill(cmsNoE_ep_cov_unnorm);
-				_procCats[id_idx].hists1D[0][50]->Fill(cmsLogE_te_cov_unnorm);
-				_procCats[id_idx].hists1D[0][51]->Fill(cmsLogE_tp_cov_unnorm);
-				_procCats[id_idx].hists1D[0][52]->Fill(cmsLogE_ep_cov_unnorm);
 				_procCats[id_idx].hists1D[0][53]->Fill(ep_cov_unnorm);
-				_procCats[id_idx].hists1D[0][54]->Fill(cmsNoE_smaj);
-				_procCats[id_idx].hists1D[0][55]->Fill(cmsNoE_smin);
-				_procCats[id_idx].hists1D[0][56]->Fill(cmsLogE_smaj);
-				_procCats[id_idx].hists1D[0][57]->Fill(cmsLogE_smin);
-				_procCats[id_idx].hists1D[0][58]->Fill(noEwCenter.at(2));
-				_procCats[id_idx].hists1D[0][59]->Fill(noEwCenter.at(0));
-				_procCats[id_idx].hists1D[0][60]->Fill(noEwCenter.at(1));
-				_procCats[id_idx].hists1D[0][61]->Fill(cmsNoE_phi2D);
-				_procCats[id_idx].hists1D[0][62]->Fill(cmsNoE_majtime_cov);
-				_procCats[id_idx].hists1D[0][63]->Fill(cmsNoE_mintime_cov);
-				_procCats[id_idx].hists1D[0][64]->Fill(cmsNoE_majtime_cov_unnorm);
-				_procCats[id_idx].hists1D[0][65]->Fill(cmsNoE_mintime_cov_unnorm);
-				_procCats[id_idx].hists1D[0][66]->Fill(cmsNoE_rot2D);
-				_procCats[id_idx].hists1D[0][67]->Fill(logEwCenter.at(2));
-				_procCats[id_idx].hists1D[0][68]->Fill(logEwCenter.at(0));
-				_procCats[id_idx].hists1D[0][69]->Fill(logEwCenter.at(1));
-				_procCats[id_idx].hists1D[0][70]->Fill(cmsLogE_phi2D);
-				_procCats[id_idx].hists1D[0][71]->Fill(cmsLogE_majtime_cov);
-				_procCats[id_idx].hists1D[0][72]->Fill(cmsLogE_mintime_cov);
-				_procCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
-				_procCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
-				_procCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
 						_procCats[id_idx].hists1D[0][79]->Fill(rot2D);
@@ -1052,10 +936,6 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[0][39]->Fill(ep_cov, tc);
 				_procCats[id_idx].hists2D[0][40]->Fill(te_cov, tc);
 				_procCats[id_idx].hists2D[0][41]->Fill(tp_cov, tc);
-				_procCats[id_idx].hists2D[0][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-				_procCats[id_idx].hists2D[0][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-				_procCats[id_idx].hists2D[0][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-				_procCats[id_idx].hists2D[0][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
 				_procCats[id_idx].hists2D[0][46]->Fill(ep_cov, te_cov);
 				_procCats[id_idx].hists2D[0][47]->Fill(te_cov, tp_cov);
 				_procCats[id_idx].hists2D[0][48]->Fill(ep_cov, tp_cov);
@@ -1143,47 +1023,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists1D[1][32]->Fill(tp_cov_unnorm);
 					_procCats[id_idx].hists1D[1][33]->Fill(majtime_cov_unnorm);
 					_procCats[id_idx].hists1D[1][34]->Fill(mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[1][35]->Fill(cmsLogE_te_cov);
-					_procCats[id_idx].hists1D[1][36]->Fill(cmsLogE_tp_cov);
-					_procCats[id_idx].hists1D[1][37]->Fill(cmsLogE_ep_cov);
-					_procCats[id_idx].hists1D[1][38]->Fill(cmsLogE_e_var);
-					_procCats[id_idx].hists1D[1][39]->Fill(cmsLogE_p_var);
-					_procCats[id_idx].hists1D[1][40]->Fill(cmsLogE_t_var);
-					_procCats[id_idx].hists1D[1][41]->Fill(cmsNoE_te_cov);	
-					_procCats[id_idx].hists1D[1][42]->Fill(cmsNoE_tp_cov);	
-					_procCats[id_idx].hists1D[1][43]->Fill(cmsNoE_ep_cov);	
-					_procCats[id_idx].hists1D[1][44]->Fill(cmsNoE_e_var);
-					_procCats[id_idx].hists1D[1][45]->Fill(cmsNoE_p_var);
-					_procCats[id_idx].hists1D[1][46]->Fill(cmsNoE_t_var);
-					_procCats[id_idx].hists1D[1][47]->Fill(cmsNoE_te_cov_unnorm);
-					_procCats[id_idx].hists1D[1][48]->Fill(cmsNoE_tp_cov_unnorm);
-					_procCats[id_idx].hists1D[1][49]->Fill(cmsNoE_ep_cov_unnorm);
-					_procCats[id_idx].hists1D[1][50]->Fill(cmsLogE_te_cov_unnorm);
-					_procCats[id_idx].hists1D[1][51]->Fill(cmsLogE_tp_cov_unnorm);
-					_procCats[id_idx].hists1D[1][52]->Fill(cmsLogE_ep_cov_unnorm);
-					_procCats[id_idx].hists1D[1][53]->Fill(ep_cov_unnorm);
-					_procCats[id_idx].hists1D[1][54]->Fill(cmsNoE_smaj);
-					_procCats[id_idx].hists1D[1][55]->Fill(cmsNoE_smin);
-					_procCats[id_idx].hists1D[1][56]->Fill(cmsLogE_smaj);
-					_procCats[id_idx].hists1D[1][57]->Fill(cmsLogE_smin);
-					_procCats[id_idx].hists1D[1][58]->Fill(noEwCenter.at(2));
-					_procCats[id_idx].hists1D[1][59]->Fill(noEwCenter.at(0));
-					_procCats[id_idx].hists1D[1][60]->Fill(noEwCenter.at(1));
-					_procCats[id_idx].hists1D[1][61]->Fill(cmsNoE_phi2D);
-					_procCats[id_idx].hists1D[1][62]->Fill(cmsNoE_majtime_cov);
-					_procCats[id_idx].hists1D[1][63]->Fill(cmsNoE_mintime_cov);
-					_procCats[id_idx].hists1D[1][64]->Fill(cmsNoE_majtime_cov_unnorm);
-					_procCats[id_idx].hists1D[1][65]->Fill(cmsNoE_mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[1][66]->Fill(cmsNoE_rot2D);
-					_procCats[id_idx].hists1D[1][67]->Fill(logEwCenter.at(2));
-					_procCats[id_idx].hists1D[1][68]->Fill(logEwCenter.at(0));
-					_procCats[id_idx].hists1D[1][69]->Fill(logEwCenter.at(1));
-					_procCats[id_idx].hists1D[1][70]->Fill(cmsLogE_phi2D);
-					_procCats[id_idx].hists1D[1][71]->Fill(cmsLogE_majtime_cov);
-					_procCats[id_idx].hists1D[1][72]->Fill(cmsLogE_mintime_cov);
-					_procCats[id_idx].hists1D[1][73]->Fill(cmsLogE_majtime_cov_unnorm);
-					_procCats[id_idx].hists1D[1][74]->Fill(cmsLogE_mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[1][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
 						_procCats[id_idx].hists1D[1][79]->Fill(rot2D);
@@ -1259,10 +1098,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][39]->Fill(ep_cov, tc);
 					_procCats[id_idx].hists2D[1][40]->Fill(te_cov, tc);
 					_procCats[id_idx].hists2D[1][41]->Fill(tp_cov, tc);
-					_procCats[id_idx].hists2D[1][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-					_procCats[id_idx].hists2D[1][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-					_procCats[id_idx].hists2D[1][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-					_procCats[id_idx].hists2D[1][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
 					_procCats[id_idx].hists2D[1][46]->Fill(ep_cov, te_cov);
 					_procCats[id_idx].hists2D[1][47]->Fill(te_cov, tp_cov);
 					_procCats[id_idx].hists2D[1][48]->Fill(ep_cov, tp_cov);
@@ -1342,47 +1177,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists1D[2][32]->Fill(tp_cov_unnorm);
 					_procCats[id_idx].hists1D[2][33]->Fill(majtime_cov_unnorm);
 					_procCats[id_idx].hists1D[2][34]->Fill(mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[2][35]->Fill(cmsLogE_te_cov);
-					_procCats[id_idx].hists1D[2][36]->Fill(cmsLogE_tp_cov);
-					_procCats[id_idx].hists1D[2][37]->Fill(cmsLogE_ep_cov);
-					_procCats[id_idx].hists1D[2][38]->Fill(cmsLogE_e_var);
-					_procCats[id_idx].hists1D[2][39]->Fill(cmsLogE_p_var);
-					_procCats[id_idx].hists1D[2][40]->Fill(cmsLogE_t_var);
-					_procCats[id_idx].hists1D[2][41]->Fill(cmsNoE_te_cov);	
-					_procCats[id_idx].hists1D[2][42]->Fill(cmsNoE_tp_cov);	
-					_procCats[id_idx].hists1D[2][43]->Fill(cmsNoE_ep_cov);	
-					_procCats[id_idx].hists1D[2][44]->Fill(cmsNoE_e_var);
-					_procCats[id_idx].hists1D[2][45]->Fill(cmsNoE_p_var);
-					_procCats[id_idx].hists1D[2][46]->Fill(cmsNoE_t_var);
-					_procCats[id_idx].hists1D[2][47]->Fill(cmsNoE_te_cov_unnorm);
-					_procCats[id_idx].hists1D[2][48]->Fill(cmsNoE_tp_cov_unnorm);
-					_procCats[id_idx].hists1D[2][49]->Fill(cmsNoE_ep_cov_unnorm);
-					_procCats[id_idx].hists1D[2][50]->Fill(cmsLogE_te_cov_unnorm);
-					_procCats[id_idx].hists1D[2][51]->Fill(cmsLogE_tp_cov_unnorm);
-					_procCats[id_idx].hists1D[2][52]->Fill(cmsLogE_ep_cov_unnorm);
-					_procCats[id_idx].hists1D[2][53]->Fill(ep_cov_unnorm);
-					_procCats[id_idx].hists1D[2][54]->Fill(cmsNoE_smaj);
-					_procCats[id_idx].hists1D[2][55]->Fill(cmsNoE_smin);
-					_procCats[id_idx].hists1D[2][56]->Fill(cmsLogE_smaj);
-					_procCats[id_idx].hists1D[2][57]->Fill(cmsLogE_smin);
-					_procCats[id_idx].hists1D[2][58]->Fill(noEwCenter.at(2));
-					_procCats[id_idx].hists1D[2][59]->Fill(noEwCenter.at(0));
-					_procCats[id_idx].hists1D[2][60]->Fill(noEwCenter.at(1));
-					_procCats[id_idx].hists1D[2][61]->Fill(cmsNoE_phi2D);
-					_procCats[id_idx].hists1D[2][62]->Fill(cmsNoE_majtime_cov);
-					_procCats[id_idx].hists1D[2][63]->Fill(cmsNoE_mintime_cov);
-					_procCats[id_idx].hists1D[2][64]->Fill(cmsNoE_majtime_cov_unnorm);
-					_procCats[id_idx].hists1D[2][65]->Fill(cmsNoE_mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[2][66]->Fill(cmsNoE_rot2D);
-					_procCats[id_idx].hists1D[2][67]->Fill(logEwCenter.at(2));
-					_procCats[id_idx].hists1D[2][68]->Fill(logEwCenter.at(0));
-					_procCats[id_idx].hists1D[2][69]->Fill(logEwCenter.at(1));
-					_procCats[id_idx].hists1D[2][70]->Fill(cmsLogE_phi2D);
-					_procCats[id_idx].hists1D[2][71]->Fill(cmsLogE_majtime_cov);
-					_procCats[id_idx].hists1D[2][72]->Fill(cmsLogE_mintime_cov);
-					_procCats[id_idx].hists1D[2][73]->Fill(cmsLogE_majtime_cov_unnorm);
-					_procCats[id_idx].hists1D[2][74]->Fill(cmsLogE_mintime_cov_unnorm);
-					_procCats[id_idx].hists1D[2][75]->Fill(cmsLogE_rot2D);
 				if(ep_cov < 0){
 					if(te_cov < 0){
 						_procCats[id_idx].hists1D[2][79]->Fill(rot2D);
@@ -1456,10 +1250,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[2][39]->Fill(ep_cov, tc);
 					_procCats[id_idx].hists2D[2][40]->Fill(te_cov, tc);
 					_procCats[id_idx].hists2D[2][41]->Fill(tp_cov, tc);
-					_procCats[id_idx].hists2D[2][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
-					_procCats[id_idx].hists2D[2][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
-					_procCats[id_idx].hists2D[2][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
-					_procCats[id_idx].hists2D[2][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
 					_procCats[id_idx].hists2D[2][46]->Fill(ep_cov, te_cov);
 					_procCats[id_idx].hists2D[2][47]->Fill(te_cov, tp_cov);
 					_procCats[id_idx].hists2D[2][48]->Fill(ep_cov, tp_cov);
@@ -1487,6 +1277,176 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			}
 		}
+
+	void FillCMSHists(const vector<Jet>& rhs, int id_idx){
+			double cmsLogE_phi2D, cmsLogE_rot2D, cmsLogE_ec, cmsLogE_pc, cmsLogE_tc;
+			double cmsLogE_ep_cov, cmsLogE_te_cov, cmsLogE_tp_cov, cmsLogE_e_var, cmsLogE_p_var, cmsLogE_t_var;
+			double cmsLogE_ep_cov_unnorm, cmsLogE_te_cov_unnorm, cmsLogE_tp_cov_unnorm;
+			double cmsLogE_majtime_cov, cmsLogE_mintime_cov, cmsLogE_majtime_cov_unnorm, cmsLogE_mintime_cov_unnorm;
+			double cmsLogE_smaj, cmsLogE_smin, cmsNoE_smaj, cmsNoE_smin;
+			
+			double cmsNoE_ep_cov_unnorm, cmsNoE_te_cov_unnorm, cmsNoE_tp_cov_unnorm;
+			double cmsNoE_phi2D, cmsNoE_rot2D, cmsNoE_ec, cmsNoE_pc, cmsNoE_tc;
+			double cmsNoE_ep_cov, cmsNoE_te_cov, cmsNoE_tp_cov, cmsNoE_e_var, cmsNoE_p_var, cmsNoE_t_var;
+			double cmsNoE_majtime_cov, cmsNoE_mintime_cov, cmsNoE_majtime_cov_unnorm, cmsNoE_mintime_cov_unnorm;
+
+			Matrix space_mat = Matrix(2,2);
+			Matrix rotmat2D = Matrix(3,3);		
+			Matrix majminCovMat = Matrix(3,3);
+			vector<double> eigenvals, eigenvals_space;
+			vector<Matrix> eigenvecs, eigenvecs_space; 
+			PointCollection majminpts;
+
+			//create PointCollection of (ieta, iphi, time)
+			PointCollection* ipts = new PointCollection();
+			int ieta, iphi;
+			int max_phi = -10;
+			int min_phi = 100;
+			double time;
+			for(int i = 0; i < rhs.size(); i++){
+				ieta = _detIDmap[rhs[i].GetUserIdx()].i2;
+				ieta = (ieta > 0. ? ieta + 84.5 : ieta + 85.5);
+				iphi = _detIDmap[rhs[i].GetUserIdx()].i1 - 0.5;
+				
+				if(iphi > max_phi) max_phi = iphi;
+				if(iphi < min_phi) min_phi = iphi;
+
+				time = rhs[i].time();
+
+				Point pt({double(ieta), double(iphi), time});
+				pt.SetWeight(rhs[i].E()*_gev);
+				ipts->AddPoint(pt);
+			}
+
+			//////////////////////calculate CMS No energy weighting variables//////////////////////
+			Matrix noEw = Matrix(3,3);
+			//calculate covariances like in CMSSW
+			MakeCovMatCMSSW(ipts, noEw, weightScheme(0));	
+			cmsNoE_e_var = sqrt(noEw.at(0,0));
+			cmsNoE_p_var = sqrt(noEw.at(1,1));
+			cmsNoE_t_var = sqrt(noEw.at(2,2));
+
+			cmsNoE_ep_cov = CalcCov(noEw, 1, 0);
+			cmsNoE_te_cov = CalcCov(noEw, 2, 0);
+			cmsNoE_tp_cov = CalcCov(noEw, 2, 1);
+			cmsNoE_ep_cov_unnorm = CalcCov(noEw, 1, 0, false);
+			cmsNoE_te_cov_unnorm = CalcCov(noEw, 2, 0, false);
+			cmsNoE_tp_cov_unnorm = CalcCov(noEw, 2, 1, false);
+			
+			Get2DMat(noEw,space_mat);
+			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			cmsNoE_phi2D = PhiEll(space_mat);			
+			cmsNoE_rot2D = Rotundity(space_mat);
+			cmsNoE_smaj = eigenvals_space[1];		
+			cmsNoE_smin = eigenvals_space[0];		
+		
+			//rotate points into maj/min axes
+			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
+			RotatePoints(ipts, rotmat2D, majminpts);
+			MakeCovMatCMSSW(&majminpts, majminCovMat, weightScheme(0));
+			//set time covariance from GMM
+			majminCovMat.SetEntry(noEw.at(2,2),2,2);
+			cmsNoE_majtime_cov = CalcCov(majminCovMat,2,0);
+			cmsNoE_mintime_cov = CalcCov(majminCovMat,2,1);
+			cmsNoE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
+			cmsNoE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
+			//for centers
+			Point noEwCenter = GetCMSSWMean(ipts,false);
+			cmsNoE_ec = noEwCenter.at(0);
+			cmsNoE_pc = noEwCenter.at(1);
+			cmsNoE_tc = noEwCenter.at(2);
+
+			//////////////////////calculate CMS Log energy weighting variables//////////////////////
+			Matrix logEw = Matrix(3,3);
+			//calculate covariances like in CMSSW
+			MakeCovMatCMSSW(ipts, logEw, weightScheme(2));	
+			cmsLogE_e_var = sqrt(logEw.at(0,0));
+			cmsLogE_p_var = sqrt(logEw.at(1,1));
+			cmsLogE_t_var = sqrt(logEw.at(2,2));
+
+			cmsLogE_ep_cov = CalcCov(logEw, 1, 0);
+			cmsLogE_te_cov = CalcCov(logEw, 2, 0);
+			cmsLogE_tp_cov = CalcCov(logEw, 2, 1);
+			cmsLogE_ep_cov_unnorm = CalcCov(logEw, 1, 0, false);
+			cmsLogE_te_cov_unnorm = CalcCov(logEw, 2, 0, false);
+			cmsLogE_tp_cov_unnorm = CalcCov(logEw, 2, 1, false);
+			
+
+			Get2DMat(logEw,space_mat);
+			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			cmsLogE_phi2D = PhiEll(space_mat);			
+			cmsLogE_rot2D = Rotundity(space_mat);
+			cmsLogE_smaj = eigenvals_space[1];		
+			cmsLogE_smin = eigenvals_space[0];		
+			
+		
+
+			if(id_idx == 0) cout << "calculated logE sieie: " << cmsLogE_e_var*cmsLogE_e_var << " sipip: " << cmsLogE_p_var*cmsLogE_p_var << endl;
+	cout << "MAJMIN PTS" << endl;
+
+			//rotate points into maj/min axes
+			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
+			RotatePoints(ipts, rotmat2D, majminpts);
+			MakeCovMatCMSSW(&majminpts, majminCovMat, weightScheme(2));
+			//set time covariance from GMM
+			majminCovMat.SetEntry(logEw.at(2,2),2,2);
+			cmsLogE_majtime_cov = CalcCov(majminCovMat,2,0);
+			cmsLogE_mintime_cov = CalcCov(majminCovMat,2,1);
+			cmsLogE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
+			cmsLogE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
+			//for centers
+			Point logEwCenter = GetCMSSWMean(ipts,true);
+			cmsLogE_ec = logEwCenter.at(0);
+			cmsLogE_pc = logEwCenter.at(1);
+			cmsLogE_tc = logEwCenter.at(2);
+
+
+			_procCats[id_idx].hists1D[0][35]->Fill(cmsLogE_te_cov);
+			_procCats[id_idx].hists1D[0][36]->Fill(cmsLogE_tp_cov);
+			_procCats[id_idx].hists1D[0][37]->Fill(cmsLogE_ep_cov);
+			_procCats[id_idx].hists1D[0][38]->Fill(cmsLogE_e_var);
+			_procCats[id_idx].hists1D[0][39]->Fill(cmsLogE_p_var);
+			_procCats[id_idx].hists1D[0][40]->Fill(cmsLogE_t_var);
+			_procCats[id_idx].hists1D[0][41]->Fill(cmsNoE_te_cov);	
+			_procCats[id_idx].hists1D[0][42]->Fill(cmsNoE_tp_cov);	
+			_procCats[id_idx].hists1D[0][43]->Fill(cmsNoE_ep_cov);	
+			_procCats[id_idx].hists1D[0][44]->Fill(cmsNoE_e_var);
+			_procCats[id_idx].hists1D[0][45]->Fill(cmsNoE_p_var);
+			_procCats[id_idx].hists1D[0][46]->Fill(cmsNoE_t_var);
+			_procCats[id_idx].hists1D[0][47]->Fill(cmsNoE_te_cov_unnorm);
+			_procCats[id_idx].hists1D[0][48]->Fill(cmsNoE_tp_cov_unnorm);
+			_procCats[id_idx].hists1D[0][49]->Fill(cmsNoE_ep_cov_unnorm);
+			_procCats[id_idx].hists1D[0][50]->Fill(cmsLogE_te_cov_unnorm);
+			_procCats[id_idx].hists1D[0][51]->Fill(cmsLogE_tp_cov_unnorm);
+			_procCats[id_idx].hists1D[0][52]->Fill(cmsLogE_ep_cov_unnorm);
+			_procCats[id_idx].hists1D[0][54]->Fill(cmsNoE_smaj);
+			_procCats[id_idx].hists1D[0][55]->Fill(cmsNoE_smin);
+			_procCats[id_idx].hists1D[0][56]->Fill(cmsLogE_smaj);
+			_procCats[id_idx].hists1D[0][57]->Fill(cmsLogE_smin);
+			_procCats[id_idx].hists1D[0][58]->Fill(noEwCenter.at(2));
+			_procCats[id_idx].hists1D[0][59]->Fill(noEwCenter.at(0));
+			_procCats[id_idx].hists1D[0][60]->Fill(noEwCenter.at(1));
+			_procCats[id_idx].hists1D[0][61]->Fill(cmsNoE_phi2D);
+			_procCats[id_idx].hists1D[0][62]->Fill(cmsNoE_majtime_cov);
+			_procCats[id_idx].hists1D[0][63]->Fill(cmsNoE_mintime_cov);
+			_procCats[id_idx].hists1D[0][64]->Fill(cmsNoE_majtime_cov_unnorm);
+			_procCats[id_idx].hists1D[0][65]->Fill(cmsNoE_mintime_cov_unnorm);
+			_procCats[id_idx].hists1D[0][66]->Fill(cmsNoE_rot2D);
+			_procCats[id_idx].hists1D[0][67]->Fill(logEwCenter.at(2));
+			_procCats[id_idx].hists1D[0][68]->Fill(logEwCenter.at(0));
+			_procCats[id_idx].hists1D[0][69]->Fill(logEwCenter.at(1));
+			_procCats[id_idx].hists1D[0][70]->Fill(cmsLogE_phi2D);
+			_procCats[id_idx].hists1D[0][71]->Fill(cmsLogE_majtime_cov);
+			_procCats[id_idx].hists1D[0][72]->Fill(cmsLogE_mintime_cov);
+			_procCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
+			_procCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
+			_procCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
+			_procCats[id_idx].hists2D[0][42]->Fill(cmsNoE_smaj, cmsNoE_t_var);
+			_procCats[id_idx].hists2D[0][43]->Fill(cmsNoE_smin, cmsNoE_t_var);
+			_procCats[id_idx].hists2D[0][44]->Fill(cmsLogE_smaj, cmsLogE_t_var);
+			_procCats[id_idx].hists2D[0][45]->Fill(cmsLogE_smin, cmsLogE_t_var);
+
+	}
 
 
 	double sqrtcov(double c){
@@ -1608,6 +1568,84 @@ class PhotonSkimmer : public BaseSkimmer{
 		return mean;
 	}
 
+	void MakeCovMatCMSSW(PointCollection* pc, Matrix& outcov, const weightScheme& ws){
+		if(!outcov.square()) return;
+		if(outcov.GetDims()[0] != pc->Dim()) return;
+		
+		//set weights to logE
+		//og w_i = _gev*E_i
+		int npts = pc->GetNPoints();
+		int maxd = pc->Dim();
+		double E_tot = 0.;
+		//CMSSW value for super clusters
+		double w0 = 4.7;
+		double phiCorrectionFactor = 0.8; //from CMSSW
+		//zero suppression involves a hitsAndFractions transfer factor (noZS in cmssw)
+		//not user here (is 1)
+		for(int i = 0; i < npts; i++){
+			E_tot += pc->at(i).w()/_gev;
+		}
+		PointCollection pcnew;
+		double denom = 0;
+		int max_phi = -10;
+		int min_phi = 100;
+		double newphi, E;
+		for(int i = 0; i < npts; i ++){
+			if(pc->at(i).at(1) > max_phi) max_phi = pc->at(i).at(1);
+			if(pc->at(i).at(1) < min_phi) min_phi = pc->at(i).at(1);
+		}
+		if (max_phi == 359.5 && min_phi == 0.5) {
+			for (int i = 0; i < npts; i++) {
+				if (pc->at(i).at(1) - 179. > 0.)
+				newphi = pc->at(i).at(1) - 360.;
+				Point pt({pc->at(i).at(0), newphi, pc->at(i).at(2)});
+				if(ws == 0) pt.SetWeight( 1.0 );
+				//already e-weighted
+				E = pc->at(i).w()/_gev;
+				if(ws == 2) pt.SetWeight( max(0.0,w0 + log(E/E_tot)) );
+				pcnew.AddPoint(pt);
+			}
+		}
+		else{
+			for (int i = 0; i < npts; i++) {
+				Point pt({pc->at(i).at(0), pc->at(i).at(1), pc->at(i).at(2)});
+				if(ws == 0) pt.SetWeight( 1.0 );
+				//already e-weighted
+				E = pc->at(i).w()/_gev;
+				if(ws == 2) pt.SetWeight( max(0.0,w0 + log(E/E_tot)) );
+				pcnew.AddPoint(pt);
+			}
+
+		}
+		//calculate weighted mean - with phi wraparound
+		Point mean = Point(3);
+		mean.SetValue(pcnew.Centroid(0), 0);
+		mean.SetValue(pcnew.Centroid(1), 1);
+		mean.SetValue(pcnew.Centroid(2), 2);
+		
+		double ent;
+		double ent_pt;
+		for(int d1 = 0; d1 < maxd; d1++){
+			for(int d2 = d1; d2 < maxd; d2++){ 
+				ent = 0;
+				for(int i = 0; i < npts; i++){
+					ent_pt = pcnew.at(i).w() * (pcnew.at(i).at(d1) - mean.at(d1))*(pcnew.at(i).at(d2) - mean.at(d2)) / pcnew.Sumw();
+					if(d1 == 1) ent_pt *= sqrt(phiCorrectionFactor);
+					if(d2 == 1) ent_pt *= sqrt(phiCorrectionFactor);
+					ent += ent_pt;
+				}
+				outcov.SetEntry(ent,d1,d2);
+				if(d1 != d2) outcov.SetEntry(ent,d2,d1);
+			}
+		}
+		//eta time sign convention
+		if(mean.at(0) < 0){
+			//time sign does NOT match eta sign
+			//flip sign of eta-time entry
+			outcov.SetEntry(-outcov.at(0,2),0,2);	
+			outcov.SetEntry(-outcov.at(2,0),2,0);	
+		}
+	}
 
 	void MakeCovMat(PointCollection* pc, Matrix& outcov, const weightScheme& ws){
 		if(!outcov.square()) return;
@@ -1627,23 +1665,40 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 		PointCollection pcnew;
 		Point pt;
+		double degToRad = acos(-1)/180.;
+		double denom = 0;
 		for(int i = 0; i < npts; i ++){
 			pt = pc->at(i);
 			if(ws == 0) pt.SetWeight( 1.0 );
 			//already e-weighted
 			if(ws == 2) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
+			
 			pcnew.AddPoint(pt);
 		}
-		//is weighted mean
+		//calculate weighted mean - with phi wraparound
 		Point mean = Point(maxd);
-		for(int d = 0; d < maxd; d++)
-			mean.SetValue(pcnew.Centroid(d),d);
+		mean.SetValue(pcnew.Centroid(0),0);
+		mean.SetValue(pcnew.Centroid(1),1);
+		mean.SetValue(pcnew.Centroid(2),2);
+		
 		double ent;
+		double ent_pt, dd1, dd2;
+		double pi = acos(-1);
 		for(int d1 = 0; d1 < maxd; d1++){
 			for(int d2 = d1; d2 < maxd; d2++){ 
 				ent = 0;
 				for(int i = 0; i < npts; i++){
-					ent += pcnew.at(i).w() * (pcnew.at(i).at(d1) - mean.at(d1))*(pcnew.at(i).at(d2) - mean.at(d2)) / pcnew.Sumw();
+					dd1 = pcnew.at(i).at(d1) - mean.at(d1);
+					//phi wraparound
+					if(d1 == 1){
+						if(dd1 > pi) dd1 = 2*pi - dd1;
+					}
+					dd2 = pcnew.at(i).at(d2) - mean.at(d2);
+					if(d2 == 1){
+						if(dd2 > pi) dd2 = 2*pi - dd2;
+					}
+					ent_pt = pcnew.at(i).w() * (dd1)*(dd2) / pcnew.Sumw();
+					ent += ent_pt;
 				}
 				outcov.SetEntry(ent,d1,d2);
 				if(d1 != d2) outcov.SetEntry(ent,d2,d1);
@@ -1662,6 +1717,25 @@ class PhotonSkimmer : public BaseSkimmer{
 	}
 
 
+	//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
+	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
+	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
+	
+	    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
+	    std::ifstream infile( detIDConfigEB, std::ios::in);
+	
+	    UInt_t cmsswId, dbID;
+	    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+	    std::string pos;
+	
+	    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
+	        //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
+	        DetIDMap[cmsswId] = {iphi,ieta,TT25,0};
+	        //auto idinfo = DetIDMap[cmsswId];
+	        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
+	    }//while (infile >>
+	
+	}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
 

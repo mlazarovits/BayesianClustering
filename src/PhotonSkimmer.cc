@@ -61,6 +61,8 @@ void PhotonSkimmer::Skim(){
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 
+		cout << "----------- CMS sieie: " << _base->Photon_sieie->at(p) << " sipip: " << _base->Photon_sipip->at(p) << endl;
+
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
@@ -84,6 +86,7 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
 						FillModelHists(gmm, i);
+						FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
 					}
 				}
@@ -91,6 +94,7 @@ void PhotonSkimmer::Skim(){
 			else{
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i);
+					FillCMSHists(rhs,i);
 					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
 				}
 				
