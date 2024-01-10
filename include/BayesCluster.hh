@@ -26,7 +26,6 @@ using std::endl;
 class BayesCluster{
 	public:
 		BayesCluster(const vector<Jet>& pseudojets){ 
-		cout << "BayesCluster ctor start" << endl;
 			// this will ensure that we can point to jets without difficulties
 			// arising.
 			_jets.reserve(pseudojets.size()*2);
