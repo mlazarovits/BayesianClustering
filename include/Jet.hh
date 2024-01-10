@@ -135,6 +135,7 @@ class Jet{
 			for(int r = 0; r < _rhs.size(); r++){
 				rh = Jet(_rhs[r]);
 				rh.SetVertex(_vtx);
+				rh.SetUserIdx(_rhs[r].rhId());
 				rhs.push_back(rh);	
 			}
 		}
