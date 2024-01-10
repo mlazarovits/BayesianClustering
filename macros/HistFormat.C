@@ -266,7 +266,7 @@ void HistFormat(string file){
 			string ylab, xlab;
 			if(!dir) continue;
 			dir->cd();
-			cout << "dir name: " << dir->GetName() << endl;
+			//cout << "dir name: " << dir->GetName() << endl;
 			//get histograms (stack these)
 			vector<TH1D*> hists;
 			//loop through types
@@ -303,7 +303,7 @@ void HistFormat(string file){
 					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
 					if(!ddir) continue;
 					name = ddir->GetName();
-					cout << " dir name: " << name << endl;
+					//cout << " dir name: " << name << endl;
 					ddir->cd();
 					//we're in the directory with hists of one method split by procs
 					GetHists(ddir, "", hists);
@@ -328,7 +328,7 @@ void HistFormat(string file){
 			}
 		}
 	}
-	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
 
 	ofile->Close();
