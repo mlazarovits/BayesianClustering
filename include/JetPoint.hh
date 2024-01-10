@@ -151,11 +151,11 @@ class JetPoint{
 
 		
 		void SetRecHitId(unsigned int id){ _rhId = id; }
-		unsigned int rhId(){ return _rhId; }
+		unsigned int rhId() const{ return _rhId; }
 
 		//set user idx info
 		void SetUserIdx(int i){ _idx = i; }
-		int userIdx(){ return _idx; }
+		int userIdx() const{ return _idx; }
 		
 
 		double _maxRap = 1e5;
