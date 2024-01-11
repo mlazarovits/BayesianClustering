@@ -72,6 +72,8 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 }
 
 void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_label, string title = ""){
+	can->SetGridx();
+	can->SetGridy();
 	can->cd();
 	hist->SetTitle("");
 	hist->UseCurrentStyle();
@@ -80,7 +82,9 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
-	hist->Draw("colz");
+	if(hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2)
+		hist->Draw("colztext");
+	else hist->Draw("colz");
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
 	TLatex lat;
