@@ -61,6 +61,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(deltaT_pvGam_gen);	
 			_timeHists1D.push_back(minpT_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(Erh_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(gamTime);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -235,6 +236,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
 		//8 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
 		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1000);
+		//9 - photon time
+		TH1D* gamTime = new TH1D("gamTime", "gamTime",100,-10,10);	
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
@@ -370,6 +373,7 @@ class JetSkimmer : public BaseSkimmer{
 				//this assumes that the time for the jet was set previously with the respective method
 				pvtime = CalcPVTime(ts, jets);
 				gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
+				trCats[tr_idx].procCats[p].hists1D[0][9]->Fill(gamtime);
 				deltaT_gampv = gamtime - pvtime;
 				//get sum of pho rh energy
 				vector<JetPoint> phorhs = _phos[0].GetJetPoints();
@@ -396,6 +400,7 @@ class JetSkimmer : public BaseSkimmer{
 					phorhs = _phos[1].GetJetPoints();
 					for(auto r : phorhs) Epho += r.E();
 					gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+					trCats[tr_idx].procCats[p].hists1D[0][9]->Fill(gamtime);
 					deltaT_gampv = gamtime - pvtime;
 					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
 					deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
