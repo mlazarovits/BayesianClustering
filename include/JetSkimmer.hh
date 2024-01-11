@@ -238,7 +238,7 @@ class JetSkimmer : public BaseSkimmer{
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{sum_{rh} E^{pho}_{rh} #times sum_{rh} E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{#sum_{rh} E^{pho}_{rh} #times #sum_{rh} E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
 		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
 		//2 - 2D histogram for dijets resolution - min E of jets
