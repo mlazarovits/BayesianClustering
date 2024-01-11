@@ -174,7 +174,7 @@ string GetCMSLabel(string in_file){
 		int cmidx = in_file.rfind("_AOD");
 		cmslab = in_file.substr(vidx,cmidx-vidx);
 		//remove directory prefixes
-		int cnt = count(cmslab.begin(), cmslab.end(), "/");
+		int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
 		for(int i = 0; i < cnt; i++){
 			cmslab = cmslab.substr(cmslab.find("/")+1);
 		}
