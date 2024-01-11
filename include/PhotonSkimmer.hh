@@ -467,7 +467,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//32 - timemin cov vs time center
 		TH2D* timeMinCov_timeCenter = new TH2D("timeMinCov_timeCenter","timeMinCov_timeCenter;timeMinCov;time center",25,-0.5,0.5,25,-0.1,0.1);
 		//33 - eta-phi covariance vs azimuth ellipsoid angle
-		TH2D* etaPhiCov_phiEll2D = new TH2D("etaPhiCov_phiE2D","etaPhiCov_phiE2D;etaPhiCov;ellipsoid phi 2D",25,-10.,10.,25,0,3.5);
+		TH2D* etaPhiCov_phiEll2D = new TH2D("etaPhiCov_phiE2D","etaPhiCov_phiE2D;etaPhiCov;ellipsoid phi 2D",25,-0.2,0.2.,25,0,3.5);
 		//34 - time-maj covariance vs azimuth ellipsoid angle
 		TH2D* timeMajCov_phiEll2D = new TH2D("timeMajCov_phiE2D","timeMajCov_phiE2D;timeMajCov;ellipsoid phi 2D",25,-0.5,0.5,25,0,3.5);
 		//35 - time-min covariance vs azimuth ellipsoid angle
