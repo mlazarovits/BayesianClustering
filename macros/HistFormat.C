@@ -185,6 +185,8 @@ string GetCMSLabel(string in_file){
 	int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
 	for(int i = 0; i < cnt; i++)
 		cmslab = cmslab.substr(cmslab.find("/")+1);
+	if(cmslab.find("condor_") != string::npos)
+		cmslab = cmslab.substr(cmslab.find("condor_")+7);
 	return cmslab;
 }
 
