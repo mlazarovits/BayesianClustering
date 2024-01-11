@@ -219,7 +219,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		///////////////////// timeHists /////////////
 		//0 - pv time
-		TH1D* PVtime = new TH1D("PVtime", "PVtime",100,-10,10);	
+		TH1D* PVtime = new TH1D("PVtime", "PVtime",50,-10,10);	
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
