@@ -18,6 +18,8 @@ def main():
 		proc = proc[:proc.rfind("_AOD")]
 	
 		oname += "_"+proc+".root"
+		oname = "condor_"+oname
+		oname = d.path+"/"+oname
 		#check if file exists
 		if os.path.exists(oname):
 			if(args.force):
@@ -25,10 +27,9 @@ def main():
 			else:
 				print(oname+" exists ")
 				continue
-		oname = "condor_"+oname
-		print(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")	
-		os.system(cmd+" "+d.path+"/"+oname+" "+d.path+"/out/*.root")
-		print("Wrote to "+d.path+"/"+oname)
+		print(cmd+" "+oname+" "+d.path+"/out/*.root")	
+		os.system(cmd+" "+oname+" "+d.path+"/out/*.root")
+		print("Wrote to "+oname)
 
 
 if __name__ == "__main__":
