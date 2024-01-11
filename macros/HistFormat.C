@@ -162,7 +162,6 @@ string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
 	if(in_file.find("output") == string::npos){
-		
 		//get from v[0-9] to cm
 		//get version
 		std::smatch m;
@@ -173,11 +172,6 @@ string GetCMSLabel(string in_file){
 		int vidx = in_file.find(version)+version.size();
 		int cmidx = in_file.rfind("_AOD");
 		cmslab = in_file.substr(vidx,cmidx-vidx);
-		//remove directory prefixes
-		int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
-		for(int i = 0; i < cnt; i++){
-			cmslab = cmslab.substr(cmslab.find("/")+1);
-		}
 	}
 	else{
 		int idx = in_file.find("NperGeV0p");
@@ -187,6 +181,10 @@ string GetCMSLabel(string in_file){
 		cmslab = cmslab.substr(0,cmslab.find("_output"));
 	}
 	cmslab = cmslab.substr(0,cmslab.find(".root"));
+	//remove directory prefixes
+	int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
+	for(int i = 0; i < cnt; i++)
+		cmslab = cmslab.substr(cmslab.find("/")+1);
 	return cmslab;
 }
 
@@ -333,7 +331,7 @@ void HistFormat(string file){
 			}
 		}
 	}
-	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
 
 	ofile->Close();
