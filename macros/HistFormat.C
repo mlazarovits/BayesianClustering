@@ -86,9 +86,35 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
-	vector<int> k = {kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack};	
 
 	string legentry;
+	//sort hists alphabetically
+	map<string, TH1D*> nameToHist;
+	string name;
+	for( int i = 0 ; i < int(hist.size()); i++){
+		name = hist[i]->GetName();
+		nameToHist[name] = hist[i];
+		hist[i] = nullptr;
+	}
+	int h = 0;
+	for(map<string, TH1D*>::iterator it = nameToHist.begin(); it != nameToHist.end(); it++){
+		hist[h] = it->second;
+		h++;
+	}
+	//make color map
+	TColor::SetColorThreshold(0.09);
+	map<string, int> labelToColor;
+	int offset = 1;
+	labelToColor["_chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["_notSunm"] = TColor::GetColor("#9e0059");
+	labelToColor["_GJets"] =   TColor::GetColor("#f6ae2d");
+	labelToColor["_JetHT"] =   TColor::GetColor("#3d348b");
+
+	labelToColor["median"] = TColor::GetColor("#f7a278");
+	labelToColor["eAvg"] = TColor::GetColor("#6859f1");
+	labelToColor["mmAvg"] = TColor::GetColor("#52b788");
+	
+	int col;	
 	for( int i = 0 ; i < int(hist.size()); i++){
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
@@ -97,10 +123,21 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
-		hist[i]->SetLineColor(i+2);
-		hist[i]->SetMarkerStyle(i+25);
-		hist[i]->SetMarkerColor(i+2);
 		legentry = hist[i]->GetTitle();
+		//if a key from labeltocolor is in legentry, set that color
+		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
+			if(legentry.find(it->first) != string::npos){
+				col = it->second;
+				break;
+			}
+			else col = 1;
+			
+		}
+		hist[i]->SetLineColor(col);
+		//hist[i]->SetLineWidth(2);
+		hist[i]->SetMarkerStyle(i+71);
+		hist[i]->SetMarkerColor(col);
+		//hist[i]->SetMarkerSize(1);
 		hist[i]->SetTitle("");
 		if( i == 0 ){
 			hist[i]->Draw("ep");
@@ -118,7 +155,6 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-
 	return;
 }
 
@@ -194,6 +230,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 					if(name.find("_"+type) == string::npos) continue;
 				}
 				if(isnan(hist->Integral())) continue;
+				if(hist->GetEntries() == 0) continue;
 				if(hist->Integral() != 0 && hist->GetEntries() > 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 			}
@@ -238,6 +275,9 @@ void Profile2DHists(TFile* f){
 	string name, newname, histname, newhistname, histtitle, newhisttitle;
 	string dirname, ddirname, dirname_new, ddirname_new;
 
+	string filename = f->GetName();
+	bool print = (filename.find("GMSB") != string::npos);
+
 	f->cd();
 	//loop over all dirs - top level is variable	
 	while((key = (TKey*)iter())){
@@ -258,18 +298,19 @@ void Profile2DHists(TFile* f){
 			vector<TH1D*> profs;
 			GetHists(dir, "", hists);
 			if(hists.size() < 1) continue;
-			//cout << "dir name: " << dirname << " has " << hists.size() << " hists" << endl;
+			//if(print) cout << "dir name: " << dirname << " has " << hists.size() << " hists" << endl;
 			//write only total 1D profile from total 2D (doesn't end in process) to newname
 			for(int h = 0; h < hists.size(); h++){
 				histname = hists[h]->GetName();
 				histname.replace(histname.find("diff"), 4, "sigma");
 				//cout << " getting hist " << dirname_new << "/" << histname << endl;
 				TH1D* outhist = (TH1D*)f->Get((dirname_new+"/"+histname).c_str()); 
+				//if(print) cout << outhist->GetEntries() << " entries in " << outhist->GetName() << endl;
 				if(outhist->GetEntries() > 1) continue;
 				//cout << " writing sigma hist to " << dirname_new+"/"+outhist->GetName() << endl;
 				//profile 1D histograms
 				Profile2DHist(hists[h], outhist, profs);
-				//cout << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and outhist " << histname << " has entries " << outhist->GetEntries() << endl;
+				//if(print) cout << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and outhist " << histname << " has entries " << outhist->GetEntries() << endl;
 				for(int b = 0; b < profs.size(); b++){
 					f->cd();
 					//write total profiles to 
@@ -284,7 +325,7 @@ void Profile2DHists(TFile* f){
 					profdir->cd();
 					if(prof == nullptr){ cout << "profile null" << endl; continue; }
 					//cout << "og entries " << prof->GetEntries() << endl;
-					if(prof->GetEntries() > 1) continue;
+					//if(prof->GetEntries() > 1) continue;
 					prof = (TH1D*)profs[b]->Clone();
 					//cout << "new entries " << prof->GetEntries() << endl;
 				}
@@ -344,13 +385,14 @@ void Profile2DHists(TFile* f){
 							TH1D* prof = (TH1D*)f->Get((profilepath+"/"+profilename).c_str());
 							TDirectory* profdir1 = (TDirectory*)f->Get((profilepath.substr(0,profilepath.rfind("/"))).c_str());
 							TDirectory* profdir2 = (TDirectory*)f->Get((profilepath).c_str());
+							//if(print) cout << "Setting profile " << prof->GetName() << " in dir " << profdir1->GetName() << "/" << profdir2->GetName() << endl;
 							profdir1->cd();
 							profdir2->cd();
 							if(prof == nullptr){ cout << "profile null" << endl; continue; }
-							//cout << "og entries " << prof->GetEntries() << endl;
-							if(prof->GetEntries() > 1) continue;
+							//if(print) cout << "og entries " << prof->GetEntries() << " new prof: " << pprofs[b]->GetEntries() << endl;
+							//if(prof->GetEntries() > 1) continue;
 							prof = (TH1D*)pprofs[b]->Clone();
-							//cout << "new entries " << prof->GetEntries() << endl;
+							//if(print) cout << "new entries " << prof->GetEntries() << endl;
 						}
 						for(int b = 0; b < pprofs.size(); b++)
 							delete pprofs[b];
@@ -540,6 +582,7 @@ void HistFormat(string file){
 					if(name.find("sigma") != string::npos){
 						xlab = hists[0]->GetXaxis()->GetTitle();
 						ylab = hists[0]->GetYaxis()->GetTitle();
+					cout << "hist: " << hists[0]->GetName() << "xlab: " << xlab << " ylab: " << ylab << endl;
 					}
 					else{
 						xlab = name;
