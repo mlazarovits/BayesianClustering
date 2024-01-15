@@ -1454,9 +1454,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			cmsLogE_smin = eigenvals_space[0];		
 			
 		
-			if(id_idx == 0) cout << "calculated logE sieie: " << cmsLogE_e_var*cmsLogE_e_var << " sipip: " << cmsLogE_p_var*cmsLogE_p_var << endl;
-	cout << "MAJMIN PTS" << endl;
-
 			//rotate points into maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 			RotatePoints(ipts, rotmat2D, majminpts);

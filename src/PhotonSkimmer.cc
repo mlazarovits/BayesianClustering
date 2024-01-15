@@ -61,8 +61,6 @@ void PhotonSkimmer::Skim(){
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 
-		cout << "----------- CMS sieie: " << _base->Photon_sieie->at(p) << " sipip: " << _base->Photon_sipip->at(p) << endl;
-
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
