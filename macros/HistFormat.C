@@ -278,6 +278,7 @@ void Profile2DHists(TFile* f){
 	string filename = f->GetName();
 	bool print = (filename.find("GMSB") != string::npos);
 
+	if(filename.find("photons") != string::npos) return;
 	f->cd();
 	//loop over all dirs - top level is variable	
 	while((key = (TKey*)iter())){
@@ -582,7 +583,6 @@ void HistFormat(string file){
 					if(name.find("sigma") != string::npos){
 						xlab = hists[0]->GetXaxis()->GetTitle();
 						ylab = hists[0]->GetYaxis()->GetTitle();
-					cout << "hist: " << hists[0]->GetName() << "xlab: " << xlab << " ylab: " << ylab << endl;
 					}
 					else{
 						xlab = name;
