@@ -549,7 +549,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 //70 - rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH2D* rot2D_etaPhiCov_phiE2Deq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Deq0PiOv2","rot2D_etaPhiCov_phiE2Deq0PiOv2;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //71 - rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* rot2D_etaPhiCov_phiE2Dneq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Dneq0PiOv2 ","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
+                TH2D* rot2D_etaPhiCov_phiE2Dneq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Dneq0PiOv2","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
 		//72 - smaj vs CMS logE smaj	
 		TH2D* trueSmaj_cmsLogESmaj = new TH2D("trueSmaj_cmsLogESmaj","trueSmaj_cmsLogESmaj;trueSmaj;cmsLogESmaj",25,0,4.,25,0.,4.);
 		//73 - smin vs CMS logE smin	
@@ -977,7 +977,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
 				_procCats[id_idx].hists2D[0][68]->Fill(ep_cov,te_cov);
 				_procCats[id_idx].hists2D[0][69]->Fill(tc,phi2D);
-				if((phi2D < 0.1 && phi2D > -0.1) || (fabs(phi2D) < 0.1+acos(-1)/2. && fabs(phi2D) > 0.1+acos(-1)/2.)) _procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
+				if((phi2D < 0.2 && phi2D > -0.2) || (fabs(phi2D) < 0.2+acos(-1)/2. && fabs(phi2D) > -0.2+acos(-1)/2.)) _procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
 				else _procCats[id_idx].hists2D[0][71]->Fill(rot2D,ep_cov);
 		
 
@@ -1143,7 +1143,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
 					_procCats[id_idx].hists2D[1][68]->Fill(ep_cov,te_cov);
 					_procCats[id_idx].hists2D[1][69]->Fill(tc,phi2D);
-					if((phi2D < 0.1 && phi2D > -0.1) || (fabs(phi2D) < 0.1+acos(-1)/2. && fabs(phi2D) > 0.1+acos(-1)/2.)) _procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
+				if((phi2D < 0.2 && phi2D > -0.2) || (fabs(phi2D) < 0.2+acos(-1)/2. && fabs(phi2D) > -0.2+acos(-1)/2.)) _procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 					else _procCats[id_idx].hists2D[1][71]->Fill(rot2D,ep_cov);
 				
 
