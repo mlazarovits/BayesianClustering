@@ -228,7 +228,7 @@ class JetSkimmer : public BaseSkimmer{
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
 		//4 - gen deltaT bw photon and pv
-		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-10,10);	
+		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-20,20);	
 		//5 - photon time
 		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",100,-10,10);	
 
