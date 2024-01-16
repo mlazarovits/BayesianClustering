@@ -220,7 +220,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		///////////////////// timeHists /////////////
 		//0 - pv time
-		TH1D* PVtime = new TH1D("PVtime", "PVtime",50,-10,10);	
+		TH1D* PVtime = new TH1D("jetTime_PV", "jetTime_PV",50,-10,10);	
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
@@ -373,59 +373,83 @@ class JetSkimmer : public BaseSkimmer{
 				//fill deltaT_pvGam - 2
 				//only fill for two leading photons + weighted avg of jet time
 				if(_phos.size() < 1) continue;
-				//fill correct procCat
-				vector<double> ids = trCats[tr_idx].procCats[p].ids;
-				int phoidx = _phos[0].GetUserIdx();
-				int phoid = _base->Photon_genLlpId->at(phoidx);
 				vector<JetPoint> phorhs; 
-				//make sure id is in current vector of ids (or ids does not contain -999)
-				if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
-					//this assumes that the time for the jet was set previously with the respective method
-					pvtime = CalcPVTime(ts, jets);
+				//this assumes that the time for the jet was set previously with the respective method
+				pvtime = CalcPVTime(ts, jets);
+				if(_data){
 					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
-					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
 					deltaT_gampv = gamtime - pvtime;
-					//get sum of pho rh energy
-					phorhs = _phos[0].GetJetPoints();
-					for(auto r : phorhs) Epho += r.E();
-	
+					//should only be one process in data
+					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
 					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
-					if(_data) continue; //no gen info with data
-	
-					//fill difference in deltaT_pvGam of reco and gen - 3
-					deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
-					trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
-					//only for gen matches
-					if(deltaT_gampv_gen != -999){
-						trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
-						//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
-						//sigma deltaT_recoGen as a function of geoEavg
-						trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
-					
-					}	
-	
-				
-				}
+					//do same for subleading photon if it exists
+					if(_phos.size() > 1){
+						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+						deltaT_gampv = gamtime - pvtime;
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+					}			
 
-				//do same for subleading photon if it exists
-				if(_phos.size() > 1){
-					phoidx = _phos[1].GetUserIdx();
-					phoid = _base->Photon_genLlpId->at(phoidx);
+				}
+				else{
+					//fill correct procCat
+					vector<double> ids = trCats[tr_idx].procCats[p].ids;
+					int phoidx = _phos[0].GetUserIdx();
+					cout << "leading phoidx " << phoidx << endl;
+					int phoid = _base->Photon_genLlpId->at(phoidx);
+					cout << "leading phoid " << phoid << endl;
+					cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
 					if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
-						phorhs.clear();
-						phorhs = _phos[1].GetJetPoints();
-						for(auto r : phorhs) Epho += r.E();
-						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
 						deltaT_gampv = gamtime - pvtime;
+					
+						//get sum of pho rh energy
+						phorhs = _phos[0].GetJetPoints();
+						for(auto r : phorhs) Epho += r.E();
+	
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
-						deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
+	
+						//fill difference in deltaT_pvGam of reco and gen - 3
+						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
 						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
-							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
+							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
+							//sigma deltaT_recoGen as a function of geoEavg
 							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+						
+						}	
+	
+					
+					}
+
+					//do same for subleading photon if it exists
+					if(_phos.size() > 1){
+						Epho = 0;
+						phoidx = _phos[1].GetUserIdx();
+						phoid = _base->Photon_genLlpId->at(phoidx);
+						phorhs.clear();
+						//make sure id is in current vector of ids (or ids does not contain -999)
+						cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
+						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
+							phorhs = _phos[1].GetJetPoints();
+							for(auto r : phorhs) Epho += r.E();
+							
+							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n);
+							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+							deltaT_gampv = gamtime - pvtime;
+							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+							
+							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
+							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
+							//only for gen matches
+							if(deltaT_gampv_gen != -999){
+								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							}
 						}
 					}
 				}
