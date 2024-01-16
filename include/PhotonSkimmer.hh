@@ -213,8 +213,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(timeCenter_phiE2D);	
                 	_hists2D.push_back(rot2D_etaPhiCov_phiE2Deq0PiOv2);
                 	_hists2D.push_back(rot2D_etaPhiCov_phiE2Dneq0PiOv2);
-			_hists2D.push_back(etaSig_cmsLogEetaSig);
-			_hists2D.push_back(phiSig_cmsLogEphiSig);
+			_hists2D.push_back(trueSmaj_cmsLogESmaj);
+			_hists2D.push_back(trueSmin_cmsLogESmin);
+			_hists2D.push_back(trueSalpha_cmsLogESalpha);
 
 		};
 	
@@ -549,10 +550,12 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH2D* rot2D_etaPhiCov_phiE2Deq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Deq0PiOv2","rot2D_etaPhiCov_phiE2Deq0PiOv2;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //71 - rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH2D* rot2D_etaPhiCov_phiE2Dneq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Dneq0PiOv2 ","rot2D_etaPhiCov;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
-		//72 - eta var vs CMS logE eta var	
-		TH2D* etaSig_cmsLogEetaSig = new TH2D("etaSig_cmsLogEetaSig","etaSig_cmsLogEetaSig;etaSig;cmsLogEetaSig",25,0.1,0.09,25,0.01,0.09);
-		//73 - phi var vs CMS logE phi var	
-		TH2D* phiSig_cmsLogEphiSig = new TH2D("phiSig_cmsLogEphiSig","phiSig_cmsLogEphiSig;phiSig;cmsLogEphiSig",25,0.1,0.09,25,0.01,0.09);
+		//72 - smaj vs CMS logE smaj	
+		TH2D* trueSmaj_cmsLogESmaj = new TH2D("trueSmaj_cmsLogESmaj","trueSmaj_cmsLogESmaj;trueSmaj;cmsLogESmaj",25,0,4.,25,0.,4.);
+		//73 - smin vs CMS logE smin	
+		TH2D* trueSmin_cmsLogESmin = new TH2D("trueSmin_cmsLogESmin","trueSmin_cmsLogESmin;trueSmin;cmsLogESmin",25,0.,1.8,25,0.,1.8);
+		//74 - salpha vs CMS logE salpha	
+		TH2D* trueSalpha_cmsLogESalpha = new TH2D("trueSalpha_cmsLogESalpha","trueSalpha_cmsLogESalpha;trueSalpha;cmsLogESalpha",25,-1.7,1.7,25,-1.7,1.7);
 		
 
 		enum weightScheme{
@@ -974,7 +977,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[0][67]->Fill(rot2D,phi2D);
 				_procCats[id_idx].hists2D[0][68]->Fill(ep_cov,te_cov);
 				_procCats[id_idx].hists2D[0][69]->Fill(tc,phi2D);
-				if((phi2D < 0.01 && phi2D > -0.01) || (fabs(phi2D) < 0.01+acos(-1)/2. && fabs(phi2D) > 0.01+acos(-1)/2.)) _procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
+				if((phi2D < 0.1 && phi2D > -0.1) || (fabs(phi2D) < 0.1+acos(-1)/2. && fabs(phi2D) > 0.1+acos(-1)/2.)) _procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
 				else _procCats[id_idx].hists2D[0][71]->Fill(rot2D,ep_cov);
 		
 
@@ -1140,7 +1143,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][67]->Fill(rot2D,phi2D);
 					_procCats[id_idx].hists2D[1][68]->Fill(ep_cov,te_cov);
 					_procCats[id_idx].hists2D[1][69]->Fill(tc,phi2D);
-					if((phi2D < 0.01 && phi2D > -0.01) || (fabs(phi2D) < 0.01+acos(-1)/2. && fabs(phi2D) > 0.01+acos(-1)/2.)) _procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
+					if((phi2D < 0.1 && phi2D > -0.1) || (fabs(phi2D) < 0.1+acos(-1)/2. && fabs(phi2D) > 0.1+acos(-1)/2.)) _procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 					else _procCats[id_idx].hists2D[1][71]->Fill(rot2D,ep_cov);
 				
 
@@ -1295,28 +1298,12 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[2][67]->Fill(rot2D,phi2D);
 					_procCats[id_idx].hists2D[2][68]->Fill(ep_cov,te_cov);
 					_procCats[id_idx].hists2D[2][69]->Fill(tc,phi2D);
-					if((phi2D < 0.01 && phi2D > -0.01) || (fabs(phi2D) < 0.01+acos(-1)/2. && fabs(phi2D) > 0.01+acos(-1)/2.)) _procCats[id_idx].hists2D[2][70]->Fill(rot2D,ep_cov);
+					if((phi2D < 0.1 && phi2D > -0.1) || (fabs(phi2D) < 0.1+acos(-1)/2. && fabs(phi2D) > 0.1+acos(-1)/2.)) _procCats[id_idx].hists2D[2][70]->Fill(rot2D,ep_cov);
 					else _procCats[id_idx].hists2D[2][71]->Fill(rot2D,ep_cov);
 				}
 
 			}
 		}
-
-
-	void GetMMVars(BasePDFMixture* model, int id_idx, vector<double>& vars){
-		//only use leading subcluster
-		map<string, Matrix> params = model->GetPriorParameters(0);
-		Matrix cov = params["cov"];	
-		
-		double e_var = sqrt(cov.at(0,0));
-		double p_var = sqrt(cov.at(1,1));
-		double t_var = sqrt(cov.at(2,2));
-
-		vars.clear();	
-		vars.push_back(e_var);	
-		vars.push_back(p_var);	
-		vars.push_back(t_var);	
-	}
 
 
 	void GetCMSVars(const vector<Jet>& rhs, int id_idx, vector<double>& vars){
@@ -1344,11 +1331,17 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix logEw = Matrix(3,3);
 			//calculate covariances like in CMSSW
 			MakeCovMatCMSSW(ipts, logEw, weightScheme(2));	
-			double cmsLogE_e_var = sqrt(logEw.at(0,0));
-			double cmsLogE_p_var = sqrt(logEw.at(1,1));
+			double see = logEw.at(0,0);
+			double sep = logEw.at(0,1);
+			double spp = logEw.at(1,1);
 
-			vars.push_back(cmsLogE_e_var);
-			vars.push_back(cmsLogE_p_var);
+			double smaj = ((see + spp) + sqrt((see - spp) * (see - spp) + 4 * sep * sep)) / 2.;
+			double smin = ((see + spp) - sqrt((see - spp) * (see - spp) + 4 * sep * sep)) / 2.;
+			double alpha = atan((see - spp + sqrt((spp - see)*(spp - see) + 4 * sep * sep)) / (2. * sep));
+
+			vars.push_back(smaj);
+			vars.push_back(smin);
+			vars.push_back(alpha);
 	}
 
 
