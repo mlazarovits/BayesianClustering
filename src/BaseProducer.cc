@@ -1,7 +1,8 @@
 #include "BaseProducer.hh"
 
 
-void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
+void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
+        if(gev == -1) gev = _gev;
         double px, py, pz, pt, phi, eta;
         jets.clear();
 
@@ -81,7 +82,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
-                                rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*_gev);
+                                rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
                                 jet.AddRecHit(rh);
                         }
@@ -94,8 +95,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt){
         }
 }
 
-void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
-        double px, py, pz, pt, phi, eta;
+void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
+        if(gev == -1) gev = _gev;
+	double px, py, pz, pt, phi, eta;
         phos.clear();
 
         if(evt > _nEvts) return;
@@ -176,7 +178,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt){
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
-                                rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*_gev);
+                                rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
                                 pho.AddRecHit(rh);
                         }

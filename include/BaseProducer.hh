@@ -65,8 +65,8 @@ class BaseProducer{
 		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
 
 
-		void GetTrueJets(vector<Jet>& jets, int evt);
-		void GetTruePhotons(vector<Jet>& phos, int evt);
+		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);
+		void GetTruePhotons(vector<Jet>& phos, int evt, double gev = -1);
 
 		bool _isocut;
 		void SetIsoCut(){ _isocut = true; }		
