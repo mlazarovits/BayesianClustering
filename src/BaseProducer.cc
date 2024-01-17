@@ -5,6 +5,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
         if(gev == -1) gev = _gev;
         double px, py, pz, pt, phi, eta;
         jets.clear();
+	//true = skip
+	//false = keep (ok)
+	bool hemVeto = false;	
 
         if(evt > _nEvts) return;
 
@@ -48,6 +51,13 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		jetid = (_base->Jet_neEmEF->at(j) < 0.9) && (_base->Jet_neHEF->at(j) < 0.9) && (_base->Jet_nConstituents->at(j) > 1)
                         && (_base->Jet_chHEF->at(j) > 0.0) && (_base->Jet_chHM->at(j) > 0);
                 if(!jetid) continue;
+		
+		//hem veto?
+		if(_year == 2018 && _data){
+			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
+			//skip whole event
+			if(hemVeto) return;
+		}
 
                 Jet jet(px, py, pz, _base->Jet_energy->at(j));
                 jet.SetVertex(vtx);
@@ -131,7 +141,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	
 		//hem veto?
 		if(_year == 2018 && _data){
-			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) ); 			
+			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
 			//skip whole event
 			if(hemVeto) return;
 		}
