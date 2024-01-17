@@ -50,6 +50,7 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_nConstituents);
 			_hists1D.push_back(TrueJet_twoHardestpT);	
 			_hists1D.push_back(nSubClusters_mm);
+			_hists1D.push_back(TOFgam_rh_pv); 
 			
 			_timeHists1D.push_back(PVtime);
 			_timeHists1D.push_back(deltaT_jet);
@@ -213,6 +214,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,50);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
+		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
@@ -246,7 +248,7 @@ class JetSkimmer : public BaseSkimmer{
 		//may need to adjust binning/windows here
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,10,-10,10);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
-		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
+		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);	
 		//2 - 2D histogram for dijets resolution - min E of jets
 		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,10,-10,10);	
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
@@ -281,6 +283,29 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 	
+		void FillTruePhotonHists(const vector<Jet>& phos){
+			int nphos = phos.size();	
+		
+			vector<JetPoint> rhs;
+			int rhidx;
+			double pvx, pvy, pvz, tof;
+			double rhx, rhy, rhz;
+			for(int p = 0; p < nphos; p++){
+				rhs.clear();
+				rhs = phos[p].GetJetPoints();
+				pvx = phos[p].GetVertex().at(0);
+				pvy = phos[p].GetVertex().at(1);
+				pvz = phos[p].GetVertex().at(2);
+				for(int r = 0; r < rhs.size(); r++){
+					rhx = rhs[r].x();	
+					rhy = rhs[r].y();	
+					rhz = rhs[r].z();	
+					tof = sqrt((rhx - pvx)*(rhx - pvx) + (rhy - pvy)*(rhy - pvy) + (rhz - pvz)*(rhz - pvz))/_c; 
+					TOFgam_rh_pv->Fill(tof);
+				}		
+			}
+		}
+
 
 		void FillTrueJetHists(const vector<Jet>& jets){
 			int njets = jets.size();	
@@ -351,24 +376,24 @@ class JetSkimmer : public BaseSkimmer{
 				if(njets > 1){
 					pair<Jet,Jet> hardjets;
 					if(jets[0].pt() < jets[1].pt()){
-						FindHardestJetPair(jets, hardjets);
+						FindJetPair(jets, hardjets);
 					}
 					//pt sorted
 					else{
 						hardjets = std::make_pair(jets[0],jets[1]);
 					}
+					if(hardjets.empty()) continue; //jets did not pass selectoin
 					double deltaT_jets = GetDeltaTime(hardjets);
-					if(deltaT_jets != -999){
-						ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
-						//fill deltaT_jets - 1
-						trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
-						//fill geopTavg vs deltaT jets - 1
-						trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
-						//fill minpt vs deltaT jets - 2
-						trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
-						//fill Erh vs deltaT jets - 3
-						trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
-					}
+
+					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
+					//fill deltaT_jets - 1
+					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
+					//fill geopTavg vs deltaT jets - 1
+					trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
+					//fill minpt vs deltaT jets - 2
+					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
+					//fill Erh vs deltaT jets - 3
+					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 				}	
 				//fill deltaT_pvGam - 2
 				//only fill for two leading photons + weighted avg of jet time
@@ -395,10 +420,10 @@ class JetSkimmer : public BaseSkimmer{
 					//fill correct procCat
 					vector<double> ids = trCats[tr_idx].procCats[p].ids;
 					int phoidx = _phos[0].GetUserIdx();
-					cout << "leading phoidx " << phoidx << endl;
+					//cout << "leading phoidx " << phoidx << endl;
 					int phoid = _base->Photon_genLlpId->at(phoidx);
-					cout << "leading phoid " << phoid << endl;
-					cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
+					//cout << "leading phoid " << phoid << endl;
+					//cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
 					if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n);
@@ -433,7 +458,7 @@ class JetSkimmer : public BaseSkimmer{
 						phoid = _base->Photon_genLlpId->at(phoidx);
 						phorhs.clear();
 						//make sure id is in current vector of ids (or ids does not contain -999)
-						cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
+						//cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 							phorhs = _phos[1].GetJetPoints();
 							for(auto r : phorhs) Epho += r.E();
@@ -469,7 +494,6 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcGenDeltaT(const Jet& pho){
 			//calc times differently for !sig and sig photons
 			double dpho = -999;
-			double c = 29.9792458; // speed of light in cm/ns
 			int genidx, phoidx;
 			phoidx = pho.GetUserIdx();
 			//gen photon coordinates
@@ -504,16 +528,16 @@ class JetSkimmer : public BaseSkimmer{
 				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
 			
 				//distance bw photon and production point (LLP)
-				dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) )/c;
+				dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) )/_c;
 		
 				//distance bw LLP and PV
-				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(c*beta);	
+				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(_c*beta);	
 
 			}
 			//assume prompt production
 			else{
 				//distance bw photon and production point (PV)
-				dpho = sqrt( (px - pvx)*(px - pvx) + (py - pvy)*(py - pvy) + (pz - pvz)*(pz - pvz) )/c;
+				dpho = sqrt( (px - pvx)*(px - pvx) + (py - pvy)*(py - pvy) + (pz - pvz)*(pz - pvz) )/_c;
 			}
 			
 			return dpho;
@@ -597,39 +621,52 @@ class JetSkimmer : public BaseSkimmer{
 			}
 
 		}
-		void FindHardestJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
-			int njets = (int)injets.size(); 
+		void FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
 			map<double,Jet> pt_jet;
-			map<double, int> pt_idx;
-			for(int i = 0; i < njets; i++){
-				pt_jet[injets[i].pt()] = injets[i];
-				pt_idx[injets[i].pt()] = i;
+			//map<double, int> pt_idx;
+			if(injets[0].pt() <= injets[1].pt()){
+				int njets = (int)injets.size(); 
+				for(int i = 0; i < njets; i++){
+					pt_jet[injets[i].pt()] = injets[i];
+					//pt_idx[injets[i].pt()] = i;
+				}
+			}	
+			else{
+				pt_jet[injets[0].pt()] = injets[0];
+				pt_jet[injets[1].pt()] = injets[1];
 			}
-			map<double,Jet>::reverse_iterator it = pt_jet.rbegin();	
-			map<double,int>::reverse_iterator it_idx = pt_idx.rbegin();	
-			outjets.first = it->second;
-			outjets.first.SetUserIdx(it_idx->second);
+			map<double,Jet>::reverse_iterator it = pt_jet.rbegin();
+			Jet jet1 = it->second;	
 			it++;
-			it_idx++;
-			outjets.second = it->second;
-			outjets.second.SetUserIdx(it_idx->second);
+			Jet jet2 = it->second;
+		//	map<double,int>::reverse_iterator it_idx = pt_idx.rbegin();
 			//if needing to find "true" pair
 			//calculate dphi here
+			double pi = acos(-1);
+			//not needed for GMSB
+			if(_data){
+				//dphi within [pi-0.1,pi+0.1]
+				double phi1 = jet1.phi_02pi();
+				double phi2 = jet2.phi_02pi();
+				double dphi = fabs(phi1 - phi2);
+				if(dphi > pi) dphi = 2*pi - dphi;
+				if(dphi < pi-0.35 || dphi > pi+0.35) return;
+			}
+			//pt asymmetry cut
+			double ptasym = 0.2;
+			if(jet2.pt() / jet1.pt() > 1 - ptasym) return; 
+
+
+			outjets.first = jet1;
+		//	outjets.first.SetUserIdx(it_idx->second);
+		//	it_idx++;
+			outjets.second = jet2;
+		//	outjets.second.SetUserIdx(it_idx->second);
 			//if dphi doesn't satisfy back-to-back pi requirement (see below) check next two jets (ie it->second and it++; it->second;)
 			//continue until pair is found
 
 		}
 		double GetDeltaTime(pair<Jet,Jet>& jets){
-			double pi = acos(-1);
-			//not needed for GMSB
-			if(_data){
-				//dphi within [pi-0.1,pi+0.1]
-				double phi1 = jets.first.phi_02pi();
-				double phi2 = jets.second.phi_02pi();
-				double dphi = fabs(phi1 - phi2);
-				if(dphi > pi) dphi = 2*pi - dphi;
-				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
-			}
 			double t1 = jets.first.time();
 			double t2 = jets.second.time();
 			return t1 - t2;
