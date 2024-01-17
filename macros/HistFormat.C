@@ -196,6 +196,8 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+	string name = hist->GetName();
+	if(hist->Integral() != 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 	hist->Draw();
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
@@ -231,7 +233,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 				}
 				if(isnan(hist->Integral())) continue;
 				if(hist->GetEntries() == 0) continue;
-				if(hist->Integral() != 0 && hist->GetEntries() > 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
+				if(hist->Integral() != 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 			}
 		}
