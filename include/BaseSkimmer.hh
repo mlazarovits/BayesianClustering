@@ -70,6 +70,7 @@ class BaseSkimmer{
 		int _evti, _evtj;
 		string _cms_label, _oname;
 		double _gev;
+		double _c = 29.9792458; // speed of light in cm/ns
 
 		
 		void SetData(bool d){ _data = d; }
