@@ -174,8 +174,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
 				drh = hypo(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx))/_c;
-				//TOF from PV to rh location
-				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(rhidx) - _base->PV_x), (_base->ECALRecHit_rhy->at(rhidx) - _base->PV_y), (_base->ECALRecHit_rhz->at(rhidx) - _base->PV_z))/_c;
+				//dont need (would bring photon into PV frame) - TOF from PV to rh location
+				timecorr = drh;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
                                	//undo adjustment currently made in ntuples (traw - drh/c)
