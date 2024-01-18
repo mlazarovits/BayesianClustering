@@ -268,10 +268,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists1D.push_back(noEphiE2D_phiE2Dneq0PiOv2);
                 	_hists1D.push_back(noErot2D_phiE2Deq0PiOv2);
                 	_hists1D.push_back(noErot2D_phiE2Dneq0PiOv2);
-			_hists1D.push_back(logEweights);
-		
-
-
+			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
                         _hists2D.push_back(rot2D_E);
@@ -836,10 +833,6 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* noErot2D_phiE2Deq0PiOv2 = new TH1D("noErot2D_phiE2Deq0PiOv2","noErot2D_phiE2Deq0PiOv2",25,0.4,1.1);
                 //222 - rot2D cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* noErot2D_phiE2Dneq0PiOv2 = new TH1D("noErot2D_phiE2Dneq0PiOv2","noErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
-		//223 - logE weights
-		TH1D* logEweights = new TH1D("logEweights","logEweights",25,1.4,1.8);
-
-
 
 
 
@@ -2016,9 +2009,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				E_tot += rhs[i].E();
 				ipts->AddPoint(pt);
 			}
-			for(int i = 0; i < rhs.size(); i++){
-				_procCat[id_idx].hists1D[0][223]->Fill(log( 4.7 + (rhs[i].E())/E_tot ) );
-			}
+
 
 			//////////////////////calculate CMS Log energy weighting variables//////////////////////
 			Matrix logEw = Matrix(3,3);
@@ -2207,6 +2198,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			cmsNoE_ec = noEwCenter.at(0);
 			cmsNoE_pc = noEwCenter.at(1);
 			cmsNoE_tc = noEwCenter.at(2);
+
 
 			_procCats[id_idx].hists1D[0][41]->Fill(cmsNoE_te_cov);	
 			_procCats[id_idx].hists1D[0][42]->Fill(cmsNoE_tp_cov);	
