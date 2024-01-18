@@ -88,13 +88,6 @@ void PhotonSkimmer::Skim(){
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
 						
 						vector<double> cmsvars;
-						GetCMSVars(rhs, i, cmsvars);
-						//smaj
-						_procCats[i].hists2D[0][72]->Fill(_base->Photon_smaj->at(p), cmsvars[0]);
-						//smin                                                              
-						_procCats[i].hists2D[0][73]->Fill(_base->Photon_smin->at(p), cmsvars[1]);
-						//salpha                                                              
-						_procCats[i].hists2D[0][74]->Fill(_base->Photon_salp->at(p), cmsvars[2]);
 					}
 				}
 			}
