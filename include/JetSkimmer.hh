@@ -226,13 +226,13 @@ class JetSkimmer : public BaseSkimmer{
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_pvGam_reco","deltaT_pvGam_reco",25,-4,4);	
+		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",25,-4,12);	
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
 		//4 - gen deltaT bw photon and pv
-		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_pvGam_gen","deltaT_pvGam_gen",25,-20,20);	
+		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,-4,20);	
 		//5 - photon time
-		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",100,-10,10);	
+		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",25,-4,20);	
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
@@ -375,14 +375,8 @@ class JetSkimmer : public BaseSkimmer{
 				//calculate jet time difference
 				if(njets > 1){
 					pair<Jet,Jet> hardjets;
-					if(jets[0].pt() < jets[1].pt()){
-						FindJetPair(jets, hardjets);
-					}
-					//pt sorted
-					else{
-						hardjets = std::make_pair(jets[0],jets[1]);
-					}
-					if(hardjets.empty()) continue; //jets did not pass selectoin
+					int pair = FindJetPair(jets, hardjets);
+					if(pair == -999) continue; //jets did not pass selectoin
 					double deltaT_jets = GetDeltaTime(hardjets);
 
 					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
@@ -621,7 +615,7 @@ class JetSkimmer : public BaseSkimmer{
 			}
 
 		}
-		void FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
+		int FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
 			map<double,Jet> pt_jet;
 			//map<double, int> pt_idx;
 			if(injets[0].pt() <= injets[1].pt()){
@@ -650,11 +644,11 @@ class JetSkimmer : public BaseSkimmer{
 				double phi2 = jet2.phi_02pi();
 				double dphi = fabs(phi1 - phi2);
 				if(dphi > pi) dphi = 2*pi - dphi;
-				if(dphi < pi-0.35 || dphi > pi+0.35) return;
+				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
 			}
 			//pt asymmetry cut
 			double ptasym = 0.2;
-			if(jet2.pt() / jet1.pt() > 1 - ptasym) return; 
+			if(jet2.pt() / jet1.pt() > 1 - ptasym) return -999; 
 
 
 			outjets.first = jet1;
@@ -662,9 +656,7 @@ class JetSkimmer : public BaseSkimmer{
 		//	it_idx++;
 			outjets.second = jet2;
 		//	outjets.second.SetUserIdx(it_idx->second);
-			//if dphi doesn't satisfy back-to-back pi requirement (see below) check next two jets (ie it->second and it++; it->second;)
-			//continue until pair is found
-
+			return 0;
 		}
 		double GetDeltaTime(pair<Jet,Jet>& jets){
 			double t1 = jets.first.time();
