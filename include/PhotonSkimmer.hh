@@ -978,7 +978,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//68 - counts of etaphi cov vs timeeta cov
 		TH2D* etaPhiCov_timeEtaCovCounts = new TH2D("etaPhiCov_timeEtaCovCounts","etaPhiCov_timeEtaCovCounts;etaPhiCovCounts;timeEtaCovCounts",2,-1,1,2,-1,1);
 		//69 (nice) - time center vs phiE2D
-		TH2D* timeCenter_phiE2D = new TH2D("timeCenter_phiE2D","timeCenter_phiE2D;timeCenter;phiE2D",25,-5,15,25,-3.1,1);	
+		TH2D* timeCenter_phiE2D = new TH2D("timeCenter_phiE2D","timeCenter_phiE2D;timeCenter;phiE2D",25,-15,15,25,-3.1,1);	
                 //70 - rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH2D* rot2D_etaPhiCov_phiE2Deq0PiOv2 = new TH2D("rot2D_etaPhiCov_phiE2Deq0PiOv2","rot2D_etaPhiCov_phiE2Deq0PiOv2;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //71 - rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -1005,7 +1005,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//80 - logE counts of etaphi cov vs timeeta cov
 		TH2D* logEetaPhiCov_timeEtaCovCounts = new TH2D("logEetaPhiCov_timeEtaCovCounts","logEetaPhiCov_timeEtaCovCounts;etaPhiCovCounts;timeEtaCovCounts",2,-1,1,2,-1,1);
 		//81 - logE time center vs phiE2D
-		TH2D* logEtimeCenter_phiE2D = new TH2D("logEtimeCenter_phiE2D","logEtimeCenter_phiE2D;timeCenter;phiE2D",25,-5,15,25,-3.1,1);	
+		TH2D* logEtimeCenter_phiE2D = new TH2D("logEtimeCenter_phiE2D","logEtimeCenter_phiE2D;timeCenter;phiE2D",25,-15,15,25,-3.1,1);	
                 //82 - logE rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH2D* logErot2D_etaPhiCov_phiE2Deq0PiOv2 = new TH2D("logErot2D_etaPhiCov_phiE2Deq0PiOv2","logErot2D_etaPhiCov_phiE2Deq0PiOv2;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //83 - logE rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -1033,7 +1033,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//92 - noE counts of etaphi cov vs timeeta cov
 		TH2D* noEetaPhiCov_timeEtaCovCounts = new TH2D("noEetaPhiCov_timeEtaCovCounts","noEetaPhiCov_timeEtaCovCounts;etaPhiCovCounts;timeEtaCovCounts",2,-1,1,2,-1,1);
 		//93 - noE time center vs phiE2D
-		TH2D* noEtimeCenter_phiE2D = new TH2D("noEtimeCenter_phiE2D","noEtimeCenter_phiE2D;timeCenter;phiE2D",25,-5,15,25,-3.1,1);	
+		TH2D* noEtimeCenter_phiE2D = new TH2D("noEtimeCenter_phiE2D","noEtimeCenter_phiE2D;timeCenter;phiE2D",25,-15,15,25,-3.1,1);	
                 //94 - noE rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH2D* noErot2D_etaPhiCov_phiE2Deq0PiOv2 = new TH2D("noErot2D_etaPhiCov_phiE2Deq0PiOv2","noErot2D_etaPhiCov_phiE2Deq0PiOv2;rot2D;etaPhiCov",25,0.4,1.1,25,-0.2,0.2);
                 //95 - noE rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
