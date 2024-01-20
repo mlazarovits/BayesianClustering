@@ -80,47 +80,47 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timephi_covUnnorm);
 			_hists1D.push_back(timeMaj_covUnnorm);
 			_hists1D.push_back(timeMin_covUnnorm);
-			_hists1D.push_back(cmsLogE_timeeta_cov);
-			_hists1D.push_back(cmsLogE_timephi_cov);
-			_hists1D.push_back(cmsLogE_etaphi_cov);
-                	_hists1D.push_back(cmsLogE_etaSig);
-                	_hists1D.push_back(cmsLogE_phiSig);
-                	_hists1D.push_back(cmsLogE_timeSig);
-			_hists1D.push_back(cmsNoE_timeeta_cov);
-			_hists1D.push_back(cmsNoE_timephi_cov);
-			_hists1D.push_back(cmsNoE_etaphi_cov);
-                	_hists1D.push_back(cmsNoE_etaSig);
-                	_hists1D.push_back(cmsNoE_phiSig);
-                	_hists1D.push_back(cmsNoE_timeSig);
-			_hists1D.push_back(cmsNoE_timeeta_covUnnorm);
-			_hists1D.push_back(cmsNoE_timephi_covUnnorm);
-			_hists1D.push_back(cmsNoE_etaphi_covUnnorm);
-			_hists1D.push_back(cmsLogE_timeeta_covUnnorm);
-			_hists1D.push_back(cmsLogE_timephi_covUnnorm);
-			_hists1D.push_back(cmsLogE_etaphi_covUnnorm);
+			_hists1D.push_back(logE_timeeta_cov);
+			_hists1D.push_back(logE_timephi_cov);
+			_hists1D.push_back(logE_etaphi_cov);
+                	_hists1D.push_back(logE_etaSig);
+                	_hists1D.push_back(logE_phiSig);
+                	_hists1D.push_back(logE_timeSig);
+			_hists1D.push_back(noE_timeeta_cov);
+			_hists1D.push_back(noE_timephi_cov);
+			_hists1D.push_back(noE_etaphi_cov);
+                	_hists1D.push_back(noE_etaSig);
+                	_hists1D.push_back(noE_phiSig);
+                	_hists1D.push_back(noE_timeSig);
+			_hists1D.push_back(noE_timeeta_covUnnorm);
+			_hists1D.push_back(noE_timephi_covUnnorm);
+			_hists1D.push_back(noE_etaphi_covUnnorm);
+			_hists1D.push_back(logE_timeeta_covUnnorm);
+			_hists1D.push_back(logE_timephi_covUnnorm);
+			_hists1D.push_back(logE_etaphi_covUnnorm);
 			_hists1D.push_back(etaphi_covUnnorm);
-			_hists1D.push_back(cmsNoE_smaj);		
-			_hists1D.push_back(cmsNoE_smin);		
-			_hists1D.push_back(cmsLogE_smaj);		
-			_hists1D.push_back(cmsLogE_smin);		
-			_hists1D.push_back(cmsNoE_time_center);
-			_hists1D.push_back(cmsNoE_eta_center);
-			_hists1D.push_back(cmsNoE_phi_center);
-			_hists1D.push_back(cmsNoE_phiEll);		
-			_hists1D.push_back(cmsNoE_timeSmaj_cov);
-			_hists1D.push_back(cmsNoE_timeSmin_cov);
-			_hists1D.push_back(cmsNoE_timeSmaj_covUnnorm);
-			_hists1D.push_back(cmsNoE_timeSmin_covUnnorm);
-			_hists1D.push_back(cmsNoE_rotundity_2D);
-			_hists1D.push_back(cmsLogE_time_center);
-			_hists1D.push_back(cmsLogE_eta_center);
-			_hists1D.push_back(cmsLogE_phi_center);
-			_hists1D.push_back(cmsLogE_phiEll);	
-			_hists1D.push_back(cmsLogE_timeSmaj_cov);
-			_hists1D.push_back(cmsLogE_timeSmin_cov);
-			_hists1D.push_back(cmsLogE_timeSmaj_covUnnorm);
-			_hists1D.push_back(cmsLogE_timeSmin_covUnnorm);
-			_hists1D.push_back(cmsLogE_rotundity_2D);
+			_hists1D.push_back(noE_smaj);		
+			_hists1D.push_back(noE_smin);		
+			_hists1D.push_back(logE_smaj);		
+			_hists1D.push_back(logE_smin);		
+			_hists1D.push_back(noE_time_center);
+			_hists1D.push_back(noE_eta_center);
+			_hists1D.push_back(noE_phi_center);
+			_hists1D.push_back(noE_phiEll);		
+			_hists1D.push_back(noE_timeSmaj_cov);
+			_hists1D.push_back(noE_timeSmin_cov);
+			_hists1D.push_back(noE_timeSmaj_covUnnorm);
+			_hists1D.push_back(noE_timeSmin_covUnnorm);
+			_hists1D.push_back(noE_rotundity_2D);
+			_hists1D.push_back(logE_time_center);
+			_hists1D.push_back(logE_eta_center);
+			_hists1D.push_back(logE_phi_center);
+			_hists1D.push_back(logE_phiEll);	
+			_hists1D.push_back(logE_timeSmaj_cov);
+			_hists1D.push_back(logE_timeSmin_cov);
+			_hists1D.push_back(logE_timeSmaj_covUnnorm);
+			_hists1D.push_back(logE_timeSmin_covUnnorm);
+			_hists1D.push_back(logE_rotundity_2D);
 			_hists1D.push_back(rotundity_2D_Elo);
 			_hists1D.push_back(rotundity_2D_Emed);
 			_hists1D.push_back(rotundity_2D_Ehi);
@@ -313,8 +313,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(timePhiCov_timeCenter);
 			_hists2D.push_back(cmsSmaj_cmsTimeSig);
 			_hists2D.push_back(cmsSmin_cmsTimeSig);
-			_hists2D.push_back(cmsLogESmaj_cmsLogETimeSig);
-			_hists2D.push_back(cmsLogESmin_cmsLogETimeSig);
+			_hists2D.push_back(logESmaj_logETimeSig);
+			_hists2D.push_back(logESmin_logETimeSig);
 			_hists2D.push_back(etaPhiCov_timeEtaCov);
 			_hists2D.push_back(timeEtaCov_timePhiCov);
 			_hists2D.push_back(etaPhiCov_timePhiCov);
@@ -435,87 +435,87 @@ class PhotonSkimmer : public BaseSkimmer{
 		//34 - unnormalized covariance - time/min
 		TH1D* timeMin_covUnnorm = new TH1D("timeMin_covUnnorm","timeMin_covUnnorm",25,-0.5,0.5);
 		//35 - logE CMS normalized covariance - time/eta
-		TH1D* cmsLogE_timeeta_cov = new TH1D("cmsLogE_timeeta_cov","cmsLogE_timeeta_cov",25,-1.,1.);
+		TH1D* logE_timeeta_cov = new TH1D("logE_timeeta_cov","logE_timeeta_cov",25,-1.,1.);
 		//36 - logE CMS normalized covariance - time/phi
-		TH1D* cmsLogE_timephi_cov = new TH1D("cmsLogE_timephi_cov","cmsLogE_timephi_cov",25,-1.,1.);
+		TH1D* logE_timephi_cov = new TH1D("logE_timephi_cov","logE_timephi_cov",25,-1.,1.);
 		//37 - logE CMS normalized covariance - eta/phi
-		TH1D* cmsLogE_etaphi_cov = new TH1D("cmsLogE_etaphi_cov","cmsLogE_etaphi_cov",25,-1.,1);
+		TH1D* logE_etaphi_cov = new TH1D("logE_etaphi_cov","logE_etaphi_cov",25,-1.,1);
 		//38 - logE CMS eta sigma	
-                TH1D* cmsLogE_etaSig = new TH1D("cmsLogE_etaSig","cmsLogE_etaSig",25,0.01, 0.09);
+                TH1D* logE_etaSig = new TH1D("logE_etaSig","logE_etaSig",25,0.01, 0.09);
 		//39 - logE CMS phi sigma	
-                TH1D* cmsLogE_phiSig = new TH1D("cmsLogE_phiSig","cmsLogE_phiSig",25,0.01,0.09);
+                TH1D* logE_phiSig = new TH1D("logE_phiSig","logE_phiSig",25,0.01,0.09);
 		//40 - logE CMS time sigma	
-                TH1D* cmsLogE_timeSig = new TH1D("cmsLogE_timeSig","cmsLogE_timeSig",25,0,10.);
+                TH1D* logE_timeSig = new TH1D("logE_timeSig","logE_timeSig",25,0,10.);
 		//41 - CMS normalized covariance - time/eta
-		TH1D* cmsNoE_timeeta_cov = new TH1D("cmsNoE_timeeta_cov","cmsNoE_timeeta_cov",25,-1.,1.);
+		TH1D* noE_timeeta_cov = new TH1D("noE_timeeta_cov","noE_timeeta_cov",25,-1.,1.);
 		//42 - CMS normalized covariance - time/phi
-		TH1D* cmsNoE_timephi_cov = new TH1D("cmsNoE_timephi_cov","cmsNoE_timephi_cov",25,-1.,1.);		
+		TH1D* noE_timephi_cov = new TH1D("noE_timephi_cov","noE_timephi_cov",25,-1.,1.);		
 		//43 - CMS normalized covariance - eta/phi
-		TH1D* cmsNoE_etaphi_cov = new TH1D("cmsNoE_etaphi_cov","cmsNoE_etaphi_cov",25,-1.,1.);
+		TH1D* noE_etaphi_cov = new TH1D("noE_etaphi_cov","noE_etaphi_cov",25,-1.,1.);
 		//44 - CMS eta sigma	
-                TH1D* cmsNoE_etaSig = new TH1D("cmsNoE_etaSig","cmsNoE_etaSig",25,0.01, 0.09);
+                TH1D* noE_etaSig = new TH1D("noE_etaSig","noE_etaSig",25,0.01, 0.09);
 		//45 - CMS phi sigma	
-                TH1D* cmsNoE_phiSig = new TH1D("cmsNoE_phiSig","cmsNoE_phiSig",25,0.01,0.09);
+                TH1D* noE_phiSig = new TH1D("noE_phiSig","noE_phiSig",25,0.01,0.09);
 		//46 - CMS time sigma	
-                TH1D* cmsNoE_timeSig = new TH1D("cmsNoE_timeSig","cmsNoE_timeSig",25,0,10.);
+                TH1D* noE_timeSig = new TH1D("noE_timeSig","noE_timeSig",25,0,10.);
 		//47 - CMS unnormalized covariance - time/eta
-		TH1D* cmsNoE_timeeta_covUnnorm = new TH1D("cmsNoE_timeeta_covUnnorm","cmsNoE_timeeta_covUnnorm",25,-1.,1.);
+		TH1D* noE_timeeta_covUnnorm = new TH1D("noE_timeeta_covUnnorm","noE_timeeta_covUnnorm",25,-1.,1.);
 		//48 - CMS unnormalized covariance - time/phi
-		TH1D* cmsNoE_timephi_covUnnorm = new TH1D("cmsNoE_timephi_covUnnorm","cmsNoE_timephi_covUnnorm",25,-1.,1.);
+		TH1D* noE_timephi_covUnnorm = new TH1D("noE_timephi_covUnnorm","noE_timephi_covUnnorm",25,-1.,1.);
 		//49 - CMS unnormalized covariance - eta/phi
-		TH1D* cmsNoE_etaphi_covUnnorm = new TH1D("cmsNoE_etaphi_covUnnorm","cmsNoE_etaphi_covUnnorm",25,-1.,1.);
+		TH1D* noE_etaphi_covUnnorm = new TH1D("noE_etaphi_covUnnorm","noE_etaphi_covUnnorm",25,-1.,1.);
 		//50 - logE CMS unnormalized covariance - time/eta
-		TH1D* cmsLogE_timeeta_covUnnorm = new TH1D("cmsLogE_timeeta_covUnnorm","cmsLogE_timeeta_covUnnorm",25,-1.,1.);
+		TH1D* logE_timeeta_covUnnorm = new TH1D("logE_timeeta_covUnnorm","logE_timeeta_covUnnorm",25,-1.,1.);
 		//51 - logE CMS unnormalized covariance - time/phi
-		TH1D* cmsLogE_timephi_covUnnorm = new TH1D("cmsLogE_timephi_covUnnorm","cmsLogE_timephi_covUnnorm",25,-1.,1.);
+		TH1D* logE_timephi_covUnnorm = new TH1D("logE_timephi_covUnnorm","logE_timephi_covUnnorm",25,-1.,1.);
 		//52 - logE CMS normalized covariance - eta/phi
-		TH1D* cmsLogE_etaphi_covUnnorm = new TH1D("cmsLogE_etaphi_covUnnorm","cmsLogE_etaphi_covUnnorm",25,-1.,1.);
+		TH1D* logE_etaphi_covUnnorm = new TH1D("logE_etaphi_covUnnorm","logE_etaphi_covUnnorm",25,-1.,1.);
 		//53 - unnormalized covariance - eta/phi
 		TH1D* etaphi_covUnnorm = new TH1D("etaphi_covUnnorm","etaphi_covUnnorm",25,-0.1,0.1);
 		//54 - CMS smaj
-		TH1D* cmsNoE_smaj = new TH1D("cmsNoE_smaj","cmsNoE_smaj",25,0.,0.004);		
+		TH1D* noE_smaj = new TH1D("noE_smaj","noE_smaj",25,0.,0.004);		
 		//55 - CMS smin
-		TH1D* cmsNoE_smin = new TH1D("cmsNoE_smin","cmsNoE_smin",25,0.,0.004);		
+		TH1D* noE_smin = new TH1D("noE_smin","noE_smin",25,0.,0.004);		
 		//56 - CMS logE smaj
-		TH1D* cmsLogE_smaj = new TH1D("cmsLogE_smaj","cmsLogE_smaj",25,0.,0.004);		
+		TH1D* logE_smaj = new TH1D("logE_smaj","logE_smaj",25,0.,0.004);		
 		//57 - CMS logE smin
-		TH1D* cmsLogE_smin = new TH1D("cmsLogE_smin","cmsLogE_smin",25,0.,0.004);		
+		TH1D* logE_smin = new TH1D("logE_smin","logE_smin",25,0.,0.004);		
 		//58 - CMS time center
-		TH1D* cmsNoE_time_center = new TH1D("cmsNoE_time_center","cmsNoE_time_center",50,-20,20);
+		TH1D* noE_time_center = new TH1D("noE_time_center","noE_time_center",50,-20,20);
 		//59 - CMS eta center
-		TH1D* cmsNoE_eta_center = new TH1D("cmsNoE_eta_center","cmsNoE_eta_center",50,-3.5,3.5);
+		TH1D* noE_eta_center = new TH1D("noE_eta_center","noE_eta_center",50,-3.5,3.5);
 		//60 - CMS phi center
-		TH1D* cmsNoE_phi_center = new TH1D("cmsNoE_phi_center","cmsNoE_phi_center",50,-0.1,6.3);
+		TH1D* noE_phi_center = new TH1D("noE_phi_center","noE_phi_center",50,-0.1,6.3);
 		//61 - CMS ellipsoid angle (phi2D)
-		TH1D* cmsNoE_phiEll = new TH1D("cmsNoE_phiE2D","cmsNoE_phiE2D",50,-0.1,3.);		
+		TH1D* noE_phiEll = new TH1D("noE_phiE2D","noE_phiE2D",50,-0.1,3.);		
 		//62 - CMS time-smaj covariance
-		TH1D* cmsNoE_timeSmaj_cov = new TH1D("cmsNoE_timeSmaj_cov","cmsNoE_timeSmaj_cov",25,-3.,3.);
+		TH1D* noE_timeSmaj_cov = new TH1D("noE_timeSmaj_cov","noE_timeSmaj_cov",25,-3.,3.);
 		//63 - CMS time-smin covariance
-		TH1D* cmsNoE_timeSmin_cov = new TH1D("cmsNoE_timeSmin_cov","cmsNoE_timeSmin_cov",25,-3.,3.);
+		TH1D* noE_timeSmin_cov = new TH1D("noE_timeSmin_cov","noE_timeSmin_cov",25,-3.,3.);
 		//64 - CMS time-smaj covariance unnormalized 
-		TH1D* cmsNoE_timeSmaj_covUnnorm = new TH1D("cmsNoE_timeSmaj_covUnnorm","cmsNoE_timeSmaj_covUnnorm",25,-0.5,0.5);
+		TH1D* noE_timeSmaj_covUnnorm = new TH1D("noE_timeSmaj_covUnnorm","noE_timeSmaj_covUnnorm",25,-0.5,0.5);
 		//65 - CMS time-smin covariance unnormalized 
-		TH1D* cmsNoE_timeSmin_covUnnorm = new TH1D("cmsNoE_timeSmin_covUnnorm","cmsNoE_timeSmin_covUnnorm",25,-0.5,0.5);
+		TH1D* noE_timeSmin_covUnnorm = new TH1D("noE_timeSmin_covUnnorm","noE_timeSmin_covUnnorm",25,-0.5,0.5);
 		//66 - CMS rotundity 2D
-		TH1D* cmsNoE_rotundity_2D = new TH1D("cmsNoE_rotundity_2D","cmsNoE_rotundity_2D",20,0.4,1.1);
+		TH1D* noE_rotundity_2D = new TH1D("noE_rotundity_2D","noE_rotundity_2D",20,0.4,1.1);
 		//67 - CMS logE time center
-		TH1D* cmsLogE_time_center = new TH1D("cmsLogE_time_center","cmsLogE_time_center",50,-20,20);
+		TH1D* logE_time_center = new TH1D("logE_time_center","logE_time_center",50,-20,20);
 		//68 - CMS logE eta center
-		TH1D* cmsLogE_eta_center = new TH1D("cmsLogE_eta_center","cmsLogE_eta_center",50,-3.5,3.5);
+		TH1D* logE_eta_center = new TH1D("logE_eta_center","logE_eta_center",50,-3.5,3.5);
 		//69 - CMS logE phi center
-		TH1D* cmsLogE_phi_center = new TH1D("cmsLogE_phi_center","cmsLogE_phi_center",50,-0.1,6.3);
+		TH1D* logE_phi_center = new TH1D("logE_phi_center","logE_phi_center",50,-0.1,6.3);
 		//70 - CMS logE ellipsoid angle (phi2D)
-		TH1D* cmsLogE_phiEll = new TH1D("cmsLogE_phiE2D","cmsLogE_phiE2D",50,-0.1,3.);	
+		TH1D* logE_phiEll = new TH1D("logE_phiE2D","logE_phiE2D",50,-0.1,3.);	
 		//71 - CMS logE time-smaj covariance
-		TH1D* cmsLogE_timeSmaj_cov = new TH1D("cmsLogE_timeSmaj_cov","cmsLogE_timeSmaj_cov",25,-3.,3.);
+		TH1D* logE_timeSmaj_cov = new TH1D("logE_timeSmaj_cov","logE_timeSmaj_cov",25,-3.,3.);
 		//72 - CMS logE time-smin covariance
-		TH1D* cmsLogE_timeSmin_cov = new TH1D("cmsLogE_timeSmin_cov","cmsLogE_timeSmin_cov",25,-3.,3.);
+		TH1D* logE_timeSmin_cov = new TH1D("logE_timeSmin_cov","logE_timeSmin_cov",25,-3.,3.);
 		//73 - CMS logE time-smaj covariance unnormalized 
-		TH1D* cmsLogE_timeSmaj_covUnnorm = new TH1D("cmsLogE_timeSmaj_covUnnorm","cmsLogE_timeSmaj_covUnnorm",25,-0.5,0.5);
+		TH1D* logE_timeSmaj_covUnnorm = new TH1D("logE_timeSmaj_covUnnorm","logE_timeSmaj_covUnnorm",25,-0.5,0.5);
 		//74 - CMS logE time-smin covariance unnormalized 
-		TH1D* cmsLogE_timeSmin_covUnnorm = new TH1D("cmsLogE_timeSmin_covUnnorm","cmsLogE_timeSmin_covUnnorm",25,-0.5,0.5);
+		TH1D* logE_timeSmin_covUnnorm = new TH1D("logE_timeSmin_covUnnorm","logE_timeSmin_covUnnorm",25,-0.5,0.5);
 		//75 - CMS logE rotundity 2D
-		TH1D* cmsLogE_rotundity_2D = new TH1D("cmsLogE_rotundity_2D","cmsLogE_rotundity_2D",20,0.4,1.1);
+		TH1D* logE_rotundity_2D = new TH1D("logE_rotundity_2D","logE_rotundity_2D",20,0.4,1.1);
 		//76 - spatial rotundity, E low
 		TH1D* rotundity_2D_Elo = new TH1D("rot2D_Elo","rot2D_Elo",20,0.4,1.1);
 		//77 - spatial rotundity, E med
@@ -692,11 +692,11 @@ class PhotonSkimmer : public BaseSkimmer{
                 //156 - phi sigma, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEphiSig_phiE2Deq0PiOv2 = new TH1D("logEphiSig_phiE2Deq0PiOv2","logEphiSig_phiE2Deq0PiOv2",25,0.01,0.09);
                 //157 - phi sigma, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logEphiSig_phiE2Dneq0PiOv2 = new TH1D("logEphiSig_phiE2Dneq0PiOv2","logEphiSig_phiE2Dneq0PiOv2",25,0.01,0.09);
+                TH1D* logEphiSig_phiE2Dneq0PiOv2 = new TH1D("logEphiSig_phiE2Dneq0PiOv2","logEphiSig_phiE2Dneq0PiOv2",25,0.,0.09);
                 //158 - time sigma, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* logEtimeSig_phiE2Deq0PiOv2 = new TH1D("logEtimeSig_phiE2Deq0PiOv2","logEtimeSig_phiE2Deq0PiOv2",25,0.01,0.09);
+                TH1D* logEtimeSig_phiE2Deq0PiOv2 = new TH1D("logEtimeSig_phiE2Deq0PiOv2","logEtimeSig_phiE2Deq0PiOv2",25,0.,10.);
                 //159 - time sigma, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logEtimeSig_phiE2Dneq0PiOv2 = new TH1D("logEtimeSig_phiE2Dneq0PiOv2","logEtimeSig_phiE2Dneq0PiOv2",25,0.01,0.09);
+                TH1D* logEtimeSig_phiE2Dneq0PiOv2 = new TH1D("logEtimeSig_phiE2Dneq0PiOv2","logEtimeSig_phiE2Dneq0PiOv2",25,0.,10.);
                 //160 - etaPhi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEetaPhiCov_phiE2Deq0PiOv2 = new TH1D("logEetaPhiCov_phiE2Deq0PiOv2","logEetaPhiCov_phiE2Deq0PiOv2",25,-1,1);
                 //161 - etaPhi cov, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -802,9 +802,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //206 - phi sigma, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* noEphiSig_phiE2Dneq0PiOv2 = new TH1D("noEphiSig_phiE2Dneq0PiOv2","noEphiSig_phiE2Dneq0PiOv2",25,0.01,0.09);
                 //207 - time sigma, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* noEtimeSig_phiE2Deq0PiOv2 = new TH1D("noEtimeSig_phiE2Deq0PiOv2","noEtimeSig_phiE2Deq0PiOv2",25,0.01,0.09);
+                TH1D* noEtimeSig_phiE2Deq0PiOv2 = new TH1D("noEtimeSig_phiE2Deq0PiOv2","noEtimeSig_phiE2Deq0PiOv2",25,0.,10.);
                 //208 - time sigma, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* noEtimeSig_phiE2Dneq0PiOv2 = new TH1D("noEtimeSig_phiE2Dneq0PiOv2","noEtimeSig_phiE2Dneq0PiOv2",25,0.01,0.09);
+                TH1D* noEtimeSig_phiE2Dneq0PiOv2 = new TH1D("noEtimeSig_phiE2Dneq0PiOv2","noEtimeSig_phiE2Dneq0PiOv2",25,0.,10.);
                 //209 - etaPhi cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* noEetaPhiCov_phiE2Deq0PiOv2 = new TH1D("noEetaPhiCov_phiE2Deq0PiOv2","noEetaPhiCov_phiE2Deq0PiOv2",25,-1,1);
                 //210 - etaPhi cov, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -924,13 +924,13 @@ class PhotonSkimmer : public BaseSkimmer{
 		//41 - timeeta cov vs time center
 		TH2D* timePhiCov_timeCenter = new TH2D("timePhiCov_timeCenter","timePhiCov_timeCenter;timePhiCov;time center",25,-1,1,25,-5,15);
 		//42 - CMS smaj vs cms sigma_t
-		TH2D* cmsSmaj_cmsTimeSig = new TH2D("cmsNoESmaj_cmsNoETimeSig","cmsNoESmaj_cmsNoETimeSig;cmsNoE_Smaj;cmsNoE_timeSig",25,0.,0.01,25,0,10);
+		TH2D* cmsSmaj_cmsTimeSig = new TH2D("noESmaj_noETimeSig","noESmaj_noETimeSig;noE_Smaj;noE_timeSig",25,0.,0.01,25,0,10);
 		//43 - CMS smin vs cms sigma_t
-		TH2D* cmsSmin_cmsTimeSig = new TH2D("cmsNoESmin_cmsNoETimeSig","cmsNoESmin_cmsNoETimeSig;cmsNoE_Smin;cmsNoE_timeSig",25,0.,0.01,25,0,10);
+		TH2D* cmsSmin_cmsTimeSig = new TH2D("noESmin_noETimeSig","noESmin_noETimeSig;noE_Smin;noE_timeSig",25,0.,0.01,25,0,10);
 		//44 - CMS logE smaj vs cms sigma_t
-		TH2D* cmsLogESmaj_cmsLogETimeSig = new TH2D("cmsLogESmaj_cmsLogETimeSig","cmsLogESmaj_cmsLogETimeSig;cmsLogE_Smaj;cmsLogE_timeSig",25,0.,0.01,25,0,10);
+		TH2D* logESmaj_logETimeSig = new TH2D("logESmaj_logETimeSig","logESmaj_logETimeSig;logE_Smaj;logE_timeSig",25,0.,0.01,25,0,10);
 		//45 - CMS logE smin vs cms sigma_t
-		TH2D* cmsLogESmin_cmsLogETimeSig = new TH2D("cmsLogESmin_cmsLogETimeSig","cmsLogESmin_cmsLogETimeSig;cmsLogE_Smin;cmsLogE_timeSig",25,0.,0.01,25,0,10);
+		TH2D* logESmin_logETimeSig = new TH2D("logESmin_logETimeSig","logESmin_logETimeSig;logE_Smin;logE_timeSig",25,0.,0.01,25,0,10);
 		//46 - etaphi cov vs timeeta cov
 		TH2D* etaPhiCov_timeEtaCov = new TH2D("etaPhiCov_timeEtaCov","etaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
 		//47 - timeeta cov vs timephi cov
