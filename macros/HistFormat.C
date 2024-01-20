@@ -104,17 +104,27 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	//make color map
 	TColor::SetColorThreshold(0.09);
 	map<string, int> labelToColor;
+	map<string, int> labelToMark;
 	int offset = 1;
-	labelToColor["_chiGam"] =  TColor::GetColor("#86bbd8");
-	labelToColor["_notSunm"] = TColor::GetColor("#9e0059");
-	labelToColor["_GJets"] =   TColor::GetColor("#f6ae2d");
-	labelToColor["_JetHT"] =   TColor::GetColor("#3d348b");
+	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
+	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
+	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
 
-	labelToColor["median"] = TColor::GetColor("#f7a278");
-	labelToColor["eAvg"] = TColor::GetColor("#6859f1");
-	labelToColor["mmAvg"] = TColor::GetColor("#52b788");
-	
-	int col;	
+	labelToColor["median_"] = TColor::GetColor("#f7a278");
+	labelToColor["eAvg_"] = TColor::GetColor("#6859f1");
+	labelToColor["mmAvg_"] = TColor::GetColor("#52b788");
+
+	labelToMark["chiGam"] =  71;
+	labelToMark["notSunm"] = 72;
+	labelToMark["GJets"] =   73;
+	labelToMark["JetHT"] =   74;
+
+	labelToMark["median_"] = 71;
+	labelToMark["eAvg_"] =   72; 
+	labelToMark["mmAvg_"] =  73;
+
+	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
@@ -131,11 +141,17 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 				break;
 			}
 			else col = 1;
-			
+		}
+		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
+			if(legentry.find(it->first) != string::npos){
+				mark = it->second;
+				break;
+			}
+			else mark = 1;
 		}
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
-		hist[i]->SetMarkerStyle(i+71);
+		hist[i]->SetMarkerStyle(mark);
 		hist[i]->SetMarkerColor(col);
 		//hist[i]->SetMarkerSize(1);
 		hist[i]->SetTitle("");
