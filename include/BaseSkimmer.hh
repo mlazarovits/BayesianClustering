@@ -92,11 +92,11 @@ class BaseSkimmer{
 		//0 - # of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
 		//1 - mean time - center in t
-		TH1D* time_center = new TH1D("time_center","time_center",50,-20,20);
+		TH1D* time_center = new TH1D("timeCenter","timeCenter",50,-20,20);
 		//2 - mean eta - center in eta
-		TH1D* eta_center = new TH1D("eta_center","eta_center",50,-3.5,3.5);
+		TH1D* eta_center = new TH1D("etaCenter","etaCenter",50,-1.6,1.6);
 		//3 - mean phi - center in phi
-		TH1D* phi_center = new TH1D("phi_center","phi_center",50,-0.1,6.3);
+		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-0.1,6.3);
 		//4 - object energy
 		TH1D* objE = new TH1D("objE","objE",50,0,1000);
 		//5 - cluster energy
