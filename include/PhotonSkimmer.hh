@@ -487,7 +487,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//60 - CMS phi center
 		TH1D* noE_phi_center = new TH1D("noE_phi_center","noE_phi_center",50,-0.1,6.3);
 		//61 - CMS ellipsoid angle (phi2D)
-		TH1D* noE_phiEll = new TH1D("noE_phiE2D","noE_phiE2D",50,-0.1,3.);		
+		TH1D* noE_phiEll = new TH1D("noE_phiE2D","noE_phiE2D",50,-3,3.);		
 		//62 - CMS time-smaj covariance
 		TH1D* noE_timeSmaj_cov = new TH1D("noE_timeSmaj_cov","noE_timeSmaj_cov",25,-1.,1.);
 		//63 - CMS time-smin covariance
@@ -505,7 +505,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//69 - CMS logE phi center
 		TH1D* logE_phi_center = new TH1D("logE_phi_center","logE_phi_center",50,-0.1,6.3);
 		//70 - CMS logE ellipsoid angle (phi2D)
-		TH1D* logE_phiEll = new TH1D("logE_phiE2D","logE_phiE2D",50,-0.1,3.);	
+		TH1D* logE_phiEll = new TH1D("logE_phiE2D","logE_phiE2D",50,-3,3.);	
 		//71 - CMS logE time-smaj covariance
 		TH1D* logE_timeSmaj_cov = new TH1D("logE_timeSmaj_cov","logE_timeSmaj_cov",25,-1.,1.);
 		//72 - CMS logE time-smin covariance
