@@ -618,7 +618,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 //123 - rot2D cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* rot2D_phiE2Deq0PiOv2 = new TH1D("rot2D_phiE2Deq0PiOv2","rot2D_phiE2Deq0PiOv2",25,0.4,1.1);
                 //124 - rot2D cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* rot2D_phiE2Dneq0PiOv2 = new TH1D("rot2D_phiE2Dneq0PiOv2","rot2D_phiE2Dneq0PiOv2",25,0.1,1.1);
+                TH1D* rot2D_phiE2Dneq0PiOv2 = new TH1D("rot2D_phiE2Dneq0PiOv2","rot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
 		
 		
 		//////////logE weighted//////////
@@ -725,7 +725,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 //172 - rot2D cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logErot2D_phiE2Deq0PiOv2 = new TH1D("logErot2D_phiE2Deq0PiOv2","logErot2D_phiE2Deq0PiOv2",25,0.1,1.1);
                 //173 - rot2D cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logErot2D_phiE2Dneq0PiOv2 = new TH1D("logErot2D_phiE2Dneq0PiOv2","logErot2D_phiE2Dneq0PiOv2",25,0.1,1.1);
+                TH1D* logErot2D_phiE2Dneq0PiOv2 = new TH1D("logErot2D_phiE2Dneq0PiOv2","logErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
 		
 
 
