@@ -564,9 +564,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //96 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* etaCenter_phiE2Dneq0PiOv2 = new TH1D("etaCenter_phiE2Dneq0PiOv2","etaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //97 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-0.1,3.6);
+                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-3.2,3.2);
                 //98 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-0.1,3.6);
+                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-3.2,3.2);
                 //99 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* timeCenter_phiE2Deq0PiOv2 = new TH1D("timeCenter_phiE2Deq0PiOv2","timeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //100 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -670,9 +670,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //145 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* logEetaCenter_phiE2Dneq0PiOv2 = new TH1D("logEetaCenter_phiE2Dneq0PiOv2","logEetaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //146 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-0.1,3.6);
+                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-3.2,3.2);
                 //147 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-0.1,3.6);
+                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-3.2,3.2);
                 //148 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEtimeCenter_phiE2Deq0PiOv2 = new TH1D("logEtimeCenter_phiE2Deq0PiOv2","logEtimeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //149 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
