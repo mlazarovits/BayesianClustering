@@ -489,9 +489,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		//61 - CMS ellipsoid angle (phi2D)
 		TH1D* noE_phiEll = new TH1D("noE_phiE2D","noE_phiE2D",50,-0.1,3.);		
 		//62 - CMS time-smaj covariance
-		TH1D* noE_timeSmaj_cov = new TH1D("noE_timeSmaj_cov","noE_timeSmaj_cov",25,-3.,3.);
+		TH1D* noE_timeSmaj_cov = new TH1D("noE_timeSmaj_cov","noE_timeSmaj_cov",25,-1.,1.);
 		//63 - CMS time-smin covariance
-		TH1D* noE_timeSmin_cov = new TH1D("noE_timeSmin_cov","noE_timeSmin_cov",25,-3.,3.);
+		TH1D* noE_timeSmin_cov = new TH1D("noE_timeSmin_cov","noE_timeSmin_cov",25,-1.,1.);
 		//64 - CMS time-smaj covariance unnormalized 
 		TH1D* noE_timeSmaj_covUnnorm = new TH1D("noE_timeSmaj_covUnnorm","noE_timeSmaj_covUnnorm",25,-0.5,0.5);
 		//65 - CMS time-smin covariance unnormalized 
@@ -507,9 +507,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		//70 - CMS logE ellipsoid angle (phi2D)
 		TH1D* logE_phiEll = new TH1D("logE_phiE2D","logE_phiE2D",50,-0.1,3.);	
 		//71 - CMS logE time-smaj covariance
-		TH1D* logE_timeSmaj_cov = new TH1D("logE_timeSmaj_cov","logE_timeSmaj_cov",25,-3.,3.);
+		TH1D* logE_timeSmaj_cov = new TH1D("logE_timeSmaj_cov","logE_timeSmaj_cov",25,-1.,1.);
 		//72 - CMS logE time-smin covariance
-		TH1D* logE_timeSmin_cov = new TH1D("logE_timeSmin_cov","logE_timeSmin_cov",25,-3.,3.);
+		TH1D* logE_timeSmin_cov = new TH1D("logE_timeSmin_cov","logE_timeSmin_cov",25,-1.,1.);
 		//73 - CMS logE time-smaj covariance unnormalized 
 		TH1D* logE_timeSmaj_covUnnorm = new TH1D("logE_timeSmaj_covUnnorm","logE_timeSmaj_covUnnorm",25,-0.5,0.5);
 		//74 - CMS logE time-smin covariance unnormalized 
