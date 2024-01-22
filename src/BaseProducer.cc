@@ -16,7 +16,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
         int nrhs, rhidx;
 	bool jetid;
 	double dr, deta, dphi, eme;
-	double timecorr, drh;
+	double timecorr, drh, dpv;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -69,10 +69,10 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
-				drh = hypo(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx))/_c;
+				drh = _base->ECALRecHit_TOF0->at(rhidx);
+				dpv = _base->ECALRecHit_TOFpv->at(rhidx); 
 				//TOF from PV to rh location
-				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(rhidx) - _base->PV_x), (_base->ECALRecHit_rhy->at(rhidx) - _base->PV_y), (_base->ECALRecHit_rhz->at(rhidx) - _base->PV_z))/_c;
-
+				timecorr = drh - dpv;
                            
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
@@ -82,10 +82,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-                               	//undo adjustment currently made in ntuples (traw - drh/c)
-				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr + drh);
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
                                 
@@ -173,15 +171,13 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
-				drh = hypo(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx))/_c;
+				drh = _base->ECALRecHit_TOF0->at(rhidx);
 				//dont need (would bring photon into PV frame) - TOF from PV to rh location
 				timecorr = drh;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-                               	//undo adjustment currently made in ntuples (traw - drh/c)
-				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr + drh);
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
