@@ -114,6 +114,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         int nrhs, rhidx;
 	double timecorr = 0; //to get photon time in "PV frame"
 	double drh;
+	int scidx;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -135,7 +136,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                 py = pt*sin(phi);
                 pz = pt*sinh(eta);
 
-                nrhs = _base->Photon_rhIds->size();
+		scidx = _base->Photon_scIndex->at(p);
+
+                nrhs = _base->SuperCluster_rhIds->at(scidx)->size();
 	
 		//hem veto?
 		if(_year == 2018 && _data){
@@ -164,7 +167,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                 pho.SetVertex(vtx);
 		pho.SetUserIdx(p);
 		//set rec hits in photon
-		vector<unsigned int> rhs = _base->Photon_rhIds->at(p);
+		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(scidx);
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
