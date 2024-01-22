@@ -650,6 +650,9 @@ class JetSkimmer : public BaseSkimmer{
 			double ptasym = 0.2;
 			if(jet2.pt() / jet1.pt() > 1 - ptasym) return -999; 
 
+			//eta cut - need |eta| approx equal
+			if(fabs(jet1.eta()) > 0.1 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.1)) return -999; 
+
 
 			outjets.first = jet1;
 		//	outjets.first.SetUserIdx(it_idx->second);
