@@ -696,9 +696,16 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg){
 				double norm = 0;
 				double t = 0;
+				double e = 0;
+				vector<JetPoint> rhs;
 				for(int j = 0; j < njets; j++){
+					rhs = jets[j].GetJetPoints();
+					for(int r = 0; r < rhs.size(); r++)
+						e += rhs[r].E();
 					t += jets[j].E()*jets[j].t();
-					norm += jets[j].E();
+					norm += e;
+					e = 0;
+					rhs.clear();
 				}
 				time = t/norm;
 			}	
