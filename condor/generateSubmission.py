@@ -24,15 +24,15 @@ def generateSubmission(args):
 	SH.makeDir(odir)
 
 	if args.inputSample == "GMSB_L500_ctau1000":	
-		inputFile = "GMSB_AOD_v13_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
+		inputFile = "GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L350_ctau200":	
-		inputFile = "GMSB_AOD_v13_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+		inputFile = "GMSB_AOD_v14_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L150_ctau200":	
-		inputFile = "GMSB_AOD_v13_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+		inputFile = "GMSB_AOD_v14_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
-		inputFile = "JetHT_Met150_AOD_v10_JetHT_AOD_Run2018D-15Feb2022_UL2018-v1.root"
+		inputFile = "JetHT_Met150_AOD_v14_JetHT_AOD_Run2018CRun2018D-15Feb2022_UL2018-v1.root"
 	elif args.inputSample == "GJets":
-		inputFile = "GJets_AOD_v13_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
+		inputFile = "GJets_AOD_v14_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
