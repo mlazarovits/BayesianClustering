@@ -29,7 +29,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<Jet> rhs;
 	vector<Jet> phos;
-	double phoid, k;
+	int phoid, genidx;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
@@ -79,10 +79,11 @@ void PhotonSkimmer::Skim(){
 				//0 = all
 				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
 				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
-				phoid = _base->Photon_genLlpId->at(p);
+				genidx = _base->Photon_genIdx->at(p);
+				phoid = _base->Gen_susId->at(genidx);
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = _procCats[i].ids;
-					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
+					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
 						FillModelHists(gmm, i);
 						FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
