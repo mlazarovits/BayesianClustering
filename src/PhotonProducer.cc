@@ -41,7 +41,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	int cnt = 0;
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
-	nphotons = (int)_base->Photon_rhIds->size();
+	nphotons = (int)_base->Photon_energy->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 
 	double timecorr, drh;
@@ -64,7 +64,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		        iso = trksum && ecalrhsum && htowoverem;
 			if(!iso) continue;
 		}
-		scidx = _base->Photon_scIndex(p);
+		scidx = _base->Photon_scIndex->at(p);
 		nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 		unsigned long long id;
 		for(int r = 0; r < nRHs; r++){
@@ -74,7 +74,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 			for(int j = 0; j < nRHs_evt; j++){
 				if(_base->ECALRecHit_ID->at(j) == id){
 					//TOF from 0 to rh location
-					drh = _base->Photon_TOF0->at(p);
+					drh = _base->ECALRecHit_0TOF->at(j);
 					//TOF from PV to rh location
 					timecorr = drh;
 
@@ -109,12 +109,12 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
 	//make sure photon number is in vector
-	if(pho >= (int)_base->Photon_rhIds->size()) return;
-	nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	if(pho >= (int)_base->Photon_energy->size()) return;
+	int scidx = _base->Photon_scIndex->at(pho);	
+	nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
 	double timecorr, drh;
-	int scidx = _base->Photon_scIndex->at(pho);	
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -140,7 +140,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//TOF from 0 to rh location
-				drh = _base->Photon_TOF0->at(p);
+				drh = _base->ECALRecHit_0TOF->at(j);
 				//TOF from PV to rh location
 				timecorr = drh;
 
@@ -172,12 +172,12 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
 	//make sure photon number is in vector
-	if(pho >= (int)_base->Photon_rhIds->size()) return;
-	int nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	if(pho >= (int)_base->Photon_energy->size()) return;
+	int scidx = _base->Photon_scIndex->at(pho);
+	int nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 	int nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
 	double timecorr, drh;
-	int scidx = _base->Photon_scIndex->at(npho);
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -209,7 +209,7 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//TOF from 0 to rh location
-				drh = _base->Photon_TOF0->at(pho);
+				drh = _base->ECALRecHit_0TOF->at(j);
 				//TOF from PV to rh location
 				timecorr = drh;
 				//time = ECALRecHit_time + TOF_rh_0 

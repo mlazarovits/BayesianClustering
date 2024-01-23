@@ -69,8 +69,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
-				drh = _base->ECALRecHit_TOF0->at(rhidx);
-				dpv = _base->ECALRecHit_TOFpv->at(rhidx); 
+				drh = _base->ECALRecHit_0TOF->at(rhidx);
+				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				//TOF from PV to rh location
 				timecorr = drh - dpv;
                            
@@ -138,7 +138,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 		scidx = _base->Photon_scIndex->at(p);
 
-                nrhs = _base->SuperCluster_rhIds->at(scidx)->size();
+                nrhs = _base->SuperCluster_rhIds->at(scidx).size();
 	
 		//hem veto?
 		if(_year == 2018 && _data){
@@ -174,7 +174,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
-				drh = _base->ECALRecHit_TOF0->at(rhidx);
+				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//dont need (would bring photon into PV frame) - TOF from PV to rh location
 				timecorr = drh;
 

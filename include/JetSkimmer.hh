@@ -415,7 +415,8 @@ class JetSkimmer : public BaseSkimmer{
 					vector<double> ids = trCats[tr_idx].procCats[p].ids;
 					int phoidx = _phos[0].GetUserIdx();
 					//cout << "leading phoidx " << phoidx << endl;
-					int phoid = _base->Photon_genLlpId->at(phoidx);
+					int genidx = _base->Photon_genIdx->at(phoidx);
+					int phoid = _base->Gen_susId->at(genidx);
 					//cout << "leading phoid " << phoid << endl;
 					//cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
@@ -449,7 +450,8 @@ class JetSkimmer : public BaseSkimmer{
 					if(_phos.size() > 1){
 						Epho = 0;
 						phoidx = _phos[1].GetUserIdx();
-						phoid = _base->Photon_genLlpId->at(phoidx);
+						genidx = _base->Photon_genIdx->at(phoidx);
+						phoid = _base->Gen_susId->at(genidx);
 						phorhs.clear();
 						//make sure id is in current vector of ids (or ids does not contain -999)
 						//cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
@@ -488,13 +490,14 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcGenDeltaT(const Jet& pho){
 			//calc times differently for !sig and sig photons
 			double dpho = -999;
-			int genidx, phoidx;
-			phoidx = pho.GetUserIdx();
+			int genidx, phoidx, phoid;
 			//gen photon coordinates
 			double px, py, pz, ptheta, peta, pphi, vx, vy, vz;
 			//if no match
-			if(_base->Photon_genLlpId->at(phoidx) == -1) return dpho;
+			phoidx = pho.GetUserIdx();
 			genidx = _base->Photon_genIdx->at(phoidx);
+			phoid = _base->Gen_susId->at(genidx);
+			if(phoid == -1) return dpho;
 			peta = _base->Gen_eta->at(genidx);
 			pphi = _base->Gen_phi->at(genidx);
 			ptheta = 2*atan(exp(-1*peta));
@@ -507,17 +510,19 @@ class JetSkimmer : public BaseSkimmer{
 			double pvz = _base->PV_z;
 
 			double beta;
-			if(_base->Photon_genLlpId->at(phoidx) == 22){
-				vx = _base->Photon_genSigMomVx->at(phoidx);
-				vy = _base->Photon_genSigMomVy->at(phoidx);
-				vz = _base->Photon_genSigMomVz->at(phoidx);
+			if(phoid == 22){
+				int momidx = _base->Photon_genSigMomId->at(phoidx);
+
+				vx = _base->Gen_vx->at(momidx);
+				vy = _base->Gen_vy->at(momidx);
+				vz = _base->Gen_vz->at(momidx);
 		
 				double mompx, mompy, mompz, momE;			
 
-				mompx = _base->Photon_genSigMomPx->at(phoidx);			
-				mompy = _base->Photon_genSigMomPy->at(phoidx);			
-				mompz = _base->Photon_genSigMomPz->at(phoidx);			
-				momE = _base->Photon_genSigMomEnergy->at(phoidx);			
+				mompx = _base->Gen_px->at(momidx);			
+				mompy = _base->Gen_py->at(momidx);			
+				mompz = _base->Gen_pz->at(momidx);			
+				momE = _base->Gen_energy->at(momidx);			
 
 				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
 			
