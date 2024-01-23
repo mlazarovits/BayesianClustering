@@ -106,10 +106,10 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	map<string, int> labelToColor;
 	map<string, int> labelToMark;
 	int offset = 1;
-	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
-	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
-	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
-	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
+	labelToColor["!chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["!notSunm"] = TColor::GetColor("#9e0059");
+	labelToColor["!GJets"] =   TColor::GetColor("#f6ae2d");
+	labelToColor["!JetHT"] =   TColor::GetColor("#3d348b");
 
 	labelToColor["median_"] = TColor::GetColor("#f7a278");
 	labelToColor["eAvg_"] = TColor::GetColor("#6859f1");
@@ -120,9 +120,9 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	labelToMark["GJets"] =   73;
 	labelToMark["JetHT"] =   74;
 
-	labelToMark["median_"] = 71;
-	labelToMark["eAvg_"] =   72; 
-	labelToMark["mmAvg_"] =  73;
+	labelToMark["!median_"] = 71;
+	labelToMark["!eAvg_"] =   72; 
+	labelToMark["!mmAvg_"] =  73;
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
@@ -136,14 +136,18 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		legentry = hist[i]->GetTitle();
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
-			if(legentry.find(it->first) != string::npos){
+			string match = it->first;
+			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
+			if(legentry.find(match) != string::npos){
 				col = it->second;
 				break;
 			}
 			else col = 1;
 		}
 		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
-			if(legentry.find(it->first) != string::npos){
+			string match = it->first;
+			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
+			if(legentry.find(match) != string::npos){
 				mark = it->second;
 				break;
 			}
@@ -227,6 +231,45 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 };
 
 
+
+
+void GetHistsProc(TDirectory* dir, string& proc, vector<TH1D*>& hists){
+	if(!dir) return;
+	dir->cd();
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name;
+	TString tdir("TDirectoryFile");
+	TString th1d("TH1D");
+	hists.clear();
+
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			if(!ddir) continue;
+			ddir->cd();
+			TList* llist = ddir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			string name;
+			while((kkey = (TKey*)iiter())){
+				if(kkey->GetClassName() == th1d){
+					TH1D* hist = (TH1D*)kkey->ReadObj();
+					if(!hist) continue;
+					name = hist->GetName();
+					if(name.find(proc) == string::npos) continue;
+					hists.push_back(hist);
+				}
+			}
+		}
+	}	
+
+
+
+}
+
+
 void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 	TList* list = dir->GetListOfKeys();
 	TIter iter(list);
@@ -281,6 +324,29 @@ void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
 			}
 		}
 	}
+}
+void GetProcs(TDirectory* dir, vector<string>& procs){
+	vector<TH1D*> hists;
+	procs.clear();
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name;
+	TString tdir("TDirectoryFile");
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			GetHists(ddir, "", hists);
+			for(int i = 0; i < hists.size(); i++){
+				name = hists[i]->GetTitle();
+				name = name.substr(name.find("_")+1);
+				//check if name in vector already
+				if(find(procs.begin(), procs.end(), name) == procs.end()) 
+					procs.push_back(name);
+			}
+		}
+	}
+
 }
 
 void Profile2DHists(TFile* f){
@@ -582,8 +648,9 @@ void HistFormat(string file){
 			TList* llist = dir->GetListOfKeys();
 			TIter iiter(llist);
 			TKey* kkey;
-			string name;	
+			string name;
 			while((kkey = (TKey*)iiter())){
+				//writing stack hist - same method different procs
 				if(kkey->GetClassName() == tdir){
 					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
 					if(!ddir) continue;
@@ -611,6 +678,34 @@ void HistFormat(string file){
 				}
 
 			}
+			//writing stack hist - same proc different methods
+			//only do for sigma plots for now
+			string dirname = dir->GetName();
+			if(dirname.find("sigma") == string::npos) continue;	
+			vector<string> procs;
+			GetProcs(dir, procs);
+			for(int p = 0; p < procs.size(); p++){
+				GetHistsProc(dir, procs[p], hists);
+				name = dirname+"_"+procs[p]+"_methodStack";
+				if(hists.size() < 1) continue;
+				FindListHistBounds(hists, ymin, ymax);
+				if(ymin == 0 && ymax == 0) continue;
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				//draw as tcanvases
+				if(name.find("sigma") != string::npos){
+					xlab = hists[0]->GetXaxis()->GetTitle();
+					ylab = hists[0]->GetYaxis()->GetTitle();
+				}
+				else{
+					xlab = name;
+					ylab = "a.u."; 
+				}
+				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+				cv->Write(); 
+				
+			}
+		
 		}
 	}
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
