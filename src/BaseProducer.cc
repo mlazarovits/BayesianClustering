@@ -72,7 +72,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				//TOF from PV to rh location
-				timecorr = drh - dpv;
+				timecorr = 0;//drh - dpv;
                            
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
@@ -176,7 +176,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//dont need (would bring photon into PV frame) - TOF from PV to rh location
-				timecorr = drh;
+				timecorr = 0;//drh;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
