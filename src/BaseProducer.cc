@@ -110,7 +110,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
-        int nPhos = 2;//only take leading + subleading photons //(int)_base->Photon_energy->size();
+        int nPhos = (int)_base->Photon_energy->size();
+	//only take leading and subleading (if these exist)
+	if(nPhos > 2) nPhos = 2;
         int nrhs, rhidx;
 	double timecorr = 0; //to get photon time in "PV frame"
 	double drh;
