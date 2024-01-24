@@ -353,6 +353,7 @@ class JetSkimmer : public BaseSkimmer{
 			double Erh = 0;
 			double Epho = 0;
 			vector<JetPoint> rhs;
+			int phoidx, genidx, phoid;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			//break down by process for this tr method
 			int nProc = trCats[tr_idx].procCats.size();
@@ -413,10 +414,11 @@ class JetSkimmer : public BaseSkimmer{
 				else{
 					//fill correct procCat
 					vector<double> ids = trCats[tr_idx].procCats[p].ids;
-					int phoidx = _phos[0].GetUserIdx();
+					phoidx = _phos[0].GetUserIdx();
 					//cout << "leading phoidx " << phoidx << endl;
-					int genidx = _base->Photon_genIdx->at(phoidx);
-					int phoid = _base->Gen_susId->at(genidx);
+					genidx = _base->Photon_genIdx->at(phoidx);
+					if(genidx == -1) phoid = -1;
+					else phoid = _base->Gen_susId->at(genidx);
 					//cout << "leading phoid " << phoid << endl;
 					//cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
@@ -451,10 +453,11 @@ class JetSkimmer : public BaseSkimmer{
 						Epho = 0;
 						phoidx = _phos[1].GetUserIdx();
 						genidx = _base->Photon_genIdx->at(phoidx);
-						phoid = _base->Gen_susId->at(genidx);
+						if(genidx == -1) phoid = -1;
+						else phoid = _base->Gen_susId->at(genidx);
 						phorhs.clear();
-						//make sure id is in current vector of ids (or ids does not contain -999)
-						//cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
+					      //make sure id is in current vector of ids (or ids does not contain -999)
+					      //cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 							phorhs = _phos[1].GetJetPoints();
 							for(auto r : phorhs) Epho += r.E();
@@ -473,8 +476,9 @@ class JetSkimmer : public BaseSkimmer{
 							}
 						}
 					}
+				
 				}
-			}	
+			}
 
 		}
 
@@ -496,7 +500,8 @@ class JetSkimmer : public BaseSkimmer{
 			//if no match
 			phoidx = pho.GetUserIdx();
 			genidx = _base->Photon_genIdx->at(phoidx);
-			phoid = _base->Gen_susId->at(genidx);
+			if(genidx == -1) phoid = -1;
+			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
 			peta = _base->Gen_eta->at(genidx);
 			pphi = _base->Gen_phi->at(genidx);

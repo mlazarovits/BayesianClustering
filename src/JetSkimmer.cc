@@ -72,11 +72,11 @@ void JetSkimmer::Skim(){
 	
 		totEvt++;	
 	
-		//fill true jet histograms
+
+		////fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i, _gev);
 		if(jets.size() < 1){ cout << endl; continue; }
-		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
 	
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
