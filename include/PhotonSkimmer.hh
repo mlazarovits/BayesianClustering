@@ -1051,9 +1051,9 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//linear E-weighting
 		//100 - etaphi cov vs timeeta cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* etaPhiCov_timeEtaCov_phiE2Deq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Deq0PiOv2","etaPhiCov_timeEtaCov_phiE2Deq0PiOv2;rot2D;timeEtaCov",25,-1,1,25,-1,1);
+                TH2D* etaPhiCov_timeEtaCov_phiE2Deq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Deq0PiOv2","etaPhiCov_timeEtaCov_phiE2Deq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
                 //101 - etaphi cov vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2","etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2;rot2D;timeEtaCov",25,-1,1,25,-1,1);
+                TH2D* etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2","etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
 
 
 		enum weightScheme{
