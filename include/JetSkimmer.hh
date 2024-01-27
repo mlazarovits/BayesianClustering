@@ -236,23 +236,23 @@ class JetSkimmer : public BaseSkimmer{
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",10,0,1500);
 		//7 - resolution of difference between two jets for PV time as a function of their geo avg pT 	
-		TH1D* geopTavg_sigmaDeltaTime_dijets = new TH1D("geopTavg_sigmaDeltaTime_dijets","geopTavg_sigmaDeltaTime_dijets",10,0,1000);
+		TH1D* geopTavg_sigmaDeltaTime_dijets = new TH1D("geopTavg_sigmaDeltaTime_dijets","geopTavg_sigmaDeltaTime_dijets",10,0,1500);
 		//8 - resolution of difference between two jets for PV time as a function of the min pT 	
-		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
+		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1500);
 		//9 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
-		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1000);
+		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1500);
 	
 		//0 - 2D histogram for reco-gen resolution
 		//may need to adjust binning/windows here
-		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1500,25,-10,10);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
-		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);	
+		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
 		//2 - 2D histogram for dijets resolution - min E of jets
-		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);	
+		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
-		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_{j} sum_{rh} E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);	
+		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_{j} sum_{rh} E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -348,10 +348,10 @@ class JetSkimmer : public BaseSkimmer{
 			double pvtime = -999;
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
-			double ptavg = 0;
-			double geoEavg = 0;
-			double Erh = 0;
-			double Epho = 0;
+			double ptavg;
+			double geoEavg;
+			double Erh;
+			double Epho;
 			vector<JetPoint> rhs;
 			int phoidx, genidx, phoid;
 			TimeStrategy ts = TimeStrategy(tr_idx);
@@ -360,6 +360,10 @@ class JetSkimmer : public BaseSkimmer{
 			//cout << "method: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << endl;
 			for(int p = 0; p < nProc; p++){
 				//cout << " proc " << trCats[tr_idx].procCats[p].plotName << endl;
+				Erh = 0;
+				Epho = 0;
+				ptavg = 0;
+				geoEavg = 0;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
@@ -377,7 +381,7 @@ class JetSkimmer : public BaseSkimmer{
 				if(njets > 1){
 					pair<Jet,Jet> hardjets;
 					int pair = FindJetPair(jets, hardjets);
-					if(pair == -999) continue; //jets did not pass selectoin
+					if(pair == -999) continue; //jets did not pass selection
 					double deltaT_jets = GetDeltaTime(hardjets);
 
 					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
@@ -389,6 +393,7 @@ class JetSkimmer : public BaseSkimmer{
 					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
 					//fill Erh vs deltaT jets - 3
 					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
+					if(tr_idx == 0) cout << "process " << trCats[tr_idx].procCats[p].plotName << " filled with " << Erh << ", " << deltaT_jets << " integral so far " << trCats[tr_idx].procCats[p].hists2D[0][3]->Integral() << endl;
 				}	
 				//fill deltaT_pvGam - 2
 				//only fill for two leading photons + weighted avg of jet time
@@ -419,6 +424,7 @@ class JetSkimmer : public BaseSkimmer{
 					genidx = _base->Photon_genIdx->at(phoidx);
 					if(genidx == -1) phoid = -1;
 					else phoid = _base->Gen_susId->at(genidx);
+					
 					//cout << "leading phoid " << phoid << endl;
 					//cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
@@ -442,7 +448,6 @@ class JetSkimmer : public BaseSkimmer{
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
 							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
-						
 						}	
 	
 					
@@ -658,10 +663,10 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			//pt asymmetry cut
 			double ptasym = 0.2;
-			if(jet2.pt() / jet1.pt() > 1 - ptasym) return -999; 
+			if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
 
 			//eta cut - need |eta| approx equal
-			if(fabs(jet1.eta()) > 0.1 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.1)) return -999; 
+			if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
 
 
 			outjets.first = jet1;
