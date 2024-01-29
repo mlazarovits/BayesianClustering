@@ -226,13 +226,13 @@ class JetSkimmer : public BaseSkimmer{
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",25,-4,12);	
+		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",25,0,12);
 		//3 - difference in deltaT_pvGam between gen and reco
-		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-3,3);
+		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-5,5);
 		//4 - gen deltaT bw photon and pv
-		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,-4,20);	
+		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,4,20);	
 		//5 - photon time
-		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",25,-4,20);	
+		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",25,0,20);	
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
@@ -393,7 +393,6 @@ class JetSkimmer : public BaseSkimmer{
 					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
 					//fill Erh vs deltaT jets - 3
 					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
-					if(tr_idx == 0) cout << "process " << trCats[tr_idx].procCats[p].plotName << " filled with " << Erh << ", " << deltaT_jets << " integral so far " << trCats[tr_idx].procCats[p].hists2D[0][3]->Integral() << endl;
 				}	
 				//fill deltaT_pvGam - 2
 				//only fill for two leading photons + weighted avg of jet time
