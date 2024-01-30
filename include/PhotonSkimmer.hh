@@ -371,6 +371,20 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(noErot2D_timeEtaCov_phiE2Dneq0PiOv2);
                 	_hists2D.push_back(etaPhiCov_timeEtaCov_phiE2Deq0PiOv2);
                 	_hists2D.push_back(etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2);
+			_hists2D.push_back(phoE_phiE2D_timeNeg10To0);	
+			_hists2D.push_back(phoE_phiE2D_time0To5);
+			_hists2D.push_back(phoE_phiE2D_time5To10);
+			_hists2D.push_back(phoE_phiE2D_time10To15);
+			_hists2D.push_back(timeCenter_etaCenter);
+			_hists2D.push_back(timeCenter_etaCenter_phiE2Deq0PiOv2);
+			_hists2D.push_back(timeCenter_etaCenter_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(logEetaPhiCov_timeEtaCov);
+                	_hists2D.push_back(logEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2);
+                	_hists2D.push_back(logEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(noEetaPhiCov_timeEtaCov);
+                	_hists2D.push_back(noEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2);
+                	_hists2D.push_back(noEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2);
+			_hists2D.push_back(timeCenter_rot2D);
 
 
 		};
@@ -1047,14 +1061,42 @@ class PhotonSkimmer : public BaseSkimmer{
                 //99 - noE rot 2D vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH2D* noErot2D_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("noErot2D_timeEtaCov_phiE2Dneq0PiOv2","noErot2D_timeEtaCov;rot2D;timeEtaCov",25,0.4,1.1,25,-0.2,0.2);
 
-
-
 		//linear E-weighting
 		//100 - etaphi cov vs timeeta cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH2D* etaPhiCov_timeEtaCov_phiE2Deq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Deq0PiOv2","etaPhiCov_timeEtaCov_phiE2Deq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
                 //101 - etaphi cov vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH2D* etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2","etaPhiCov_timeEtaCov_phiE2Dneq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//102 - phoE vs phiE2D, -10 < t < 0
+		TH2D* phoE_phiE2D_timeNeg10To0 = new TH2D("phoEnergy_phiE2D_timeNeg10To0","phoEnergy_phiE2D_timeNeg10To0;E_{pho};phiE2D",25,0,1000,25,-3.1,1);	
+		//103 - phoE vs phiE2D, 0 < t < 5
+		TH2D* phoE_phiE2D_time0To5 = new TH2D("phoEnergy_phiE2D_time0To5","phoEnergy_phiE2D_time0To5;E_{pho};phiE2D",25,0,1000,25,-3.1,1);
+		//104 - phoE vs phiE2D, 5 < t < 10
+		TH2D* phoE_phiE2D_time5To10 = new TH2D("phoEnergy_phiE2D_time5To10","phoEnergy_phiE2D_time5To10;E_{pho};phiE2D",25,0,1000,25,-3.1,1);
+		//105 - phoE vs phiE2D, 10 < t < 15
+		TH2D* phoE_phiE2D_time10To15 = new TH2D("phoEnergy_phiE2D_time10To15","phoEnergy_phiE2D_time10To15;E_{pho};phiE2D",25,0,1000,25,-3.1,1);
+		//106 - eta center vs time center
+		TH2D* timeCenter_etaCenter = new TH2D("timeCenter_etaCenter","timeCenter_etaCenter;timeCenter;etaCenter",25,-15,15,25,-1.6,1.6);
+		//107 - eta center vs time center, phiE2D ~ 0 && phiE2D ~ pi/2 
+		TH2D* timeCenter_etaCenter_phiE2Deq0PiOv2 = new TH2D("timeCenter_etaCenter_phiE2Deq0PiOv2","timeCenter_etaCenter_phiE2Deq0PiOv2;timeCenter;timeCenter_phiE2Deq0PiOv2",25,-15,15,25,-1.6,1.6);
+		//108 - eta center vs time center, phiE2D !~ 0 && phiE2D !~ pi/2
+		TH2D* timeCenter_etaCenter_phiE2Dneq0PiOv2 = new TH2D("timeCenter_etaCenter_phiE2Dneq0PiOv2","timeCenter_etaCenter_phiE2Dneq0PiOv2;timeCenter;timeCenter_phiE2Dneq0PiOv2",25,-15,15,25,-1.6, 1.6);
 
+		//109 - no E etaPhiCov vs timeEtaCov
+                TH2D* logEetaPhiCov_timeEtaCov = new TH2D("logEetaPhiCov_timeEtaCov","logEetaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//110 - log E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
+                TH2D* logEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2 = new TH2D("logEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2","logEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//111 - log E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
+                TH2D* logEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("logEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2","logEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+
+		//112 - no E etaPhiCov vs timeEtaCov
+                TH2D* noEetaPhiCov_timeEtaCov = new TH2D("noEetaPhiCov_timeEtaCov","noEetaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//113 - no E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
+                TH2D* noEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2 = new TH2D("noEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2","noEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//114 - no E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
+                TH2D* noEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2 = new TH2D("noEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2","noEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+
+		//115 - time center vs rot2D
+		TH2D* timeCenter_rot2D = new TH2D("timeCenter_rot2D","timeCenter_rot2D;timeCenter;rot2D",25,-15,15,25,0.4,1.1);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -1517,14 +1559,24 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
 					_procCats[id_idx].hists2D[0][74]->Fill(rot2D,te_cov);
 					_procCats[id_idx].hists2D[0][100]->Fill(ep_cov,te_cov);
+					_procCats[id_idx].hists2D[0][107]->Fill(tc, ec);
 				}
 				else{
 					_procCats[id_idx].hists2D[0][70]->Fill(rot2D,ep_cov);
 					_procCats[id_idx].hists2D[0][75]->Fill(rot2D,te_cov);
 					_procCats[id_idx].hists2D[0][101]->Fill(ep_cov,te_cov);
+					_procCats[id_idx].hists2D[0][108]->Fill(tc, ec);
 				}
 				_procCats[id_idx].hists2D[0][73]->Fill(te_cov,rot2D);
-		
+				if(-10 < tc && tc < 0) _procCats[id_idx].hists2D[0][102]->Fill(E_tot, phi2D);
+				if(0 < tc && tc < 5) _procCats[id_idx].hists2D[0][103]->Fill(E_tot, phi2D);
+				if(5 < tc && tc < 10) _procCats[id_idx].hists2D[0][104]->Fill(E_tot, phi2D);
+				if(10 < tc && tc < 15) _procCats[id_idx].hists2D[0][105]->Fill(E_tot, phi2D);
+			
+				_procCats[id_idx].hists2D[0][106]->Fill(tc, ec);
+				_procCats[id_idx].hists2D[0][115]->Fill(tc,rot2D);
+
+	
 				
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
@@ -2298,78 +2350,84 @@ class PhotonSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists1D[0][222]->Fill(cmsNoE_rot2D);
 			}
 		
-/*
 		//2D histograms
 		//////////logE weighted//////////
                 //76 - logE rot 2D vs. etaphi cov
-                _procCats[tr_idx].hists2D[0][76]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                _procCats[id_idx].hists2D[0][76]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
 		//77 - logE rot 2D vs. etaphi cov unnorm
-                _procCats[tr_idx].hists2D[0][77]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov_unnorm);
+                _procCats[id_idx].hists2D[0][77]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov_unnorm);
 		//78 - logE phi center vs. energy
-                _procCats[tr_idx].hists2D[0][78]->Fill(cmsLogE_pc, E_tot);
+                _procCats[id_idx].hists2D[0][78]->Fill(cmsLogE_pc, E_tot);
 		//79 - logE rot2D vs phiE2D
-                _procCats[tr_idx].hists2D[0][79]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
-		//80 - logE counts of etaphi cov vs timeeta cov
-                _procCats[tr_idx].hists2D[0][80]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+                _procCats[id_idx].hists2D[0][79]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
+		//80 - logE counts of etaphi cov vs timeeta cov COUNTS
+                _procCats[id_idx].hists2D[0][80]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 		//81 - logE time center vs phiE2D
-                _procCats[tr_idx].hists2D[0][81]->Fill(cmsLogE_tc, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][81]->Fill(cmsLogE_tc, cmsLogE_phi2D);
 		if((cmsNoE_phi2D < 0.2 && cmsNoE_phi2D > -0.2) || (fabs(cmsNoE_phi2D) < 0.2+acos(-1)/2. && fabs(cmsNoE_phi2D) > -0.2+acos(-1)/2.)){
                 	//82 - logE rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[tr_idx].hists2D[0][82]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][82]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
 	                //86 - logE rot 2D vs. timeeta cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[tr_idx].hists2D[0][86]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][86]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
 
 		}
 		else{
                 	//83 - logE rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[tr_idx].hists2D[0][83]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][83]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
 	                //87 - logE rot 2D vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[tr_idx].hists2D[0][84]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][84]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
 
 		}
 		//84 - logE energy vs phiE2D
-                _procCats[tr_idx].hists2D[0][84]->Fill(E_tot, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][84]->Fill(E_tot, cmsLogE_phi2D);
 		//85 - logE timeEtaCov vs rotundity 2D
-                _procCats[tr_idx].hists2D[0][85]->Fill(cmsLogE_te_cov, cmsLogE_rot2D);
+                _procCats[id_idx].hists2D[0][85]->Fill(cmsLogE_te_cov, cmsLogE_rot2D);
 
 		
 
 		//////////noE weighted//////////
                 //88 - noE rot 2D vs. etaphi cov
-                _procCats[tr_idx].hists2D[0][88]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                _procCats[id_idx].hists2D[0][88]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
                 //89 - noE rot 2D vs. etaphi cov unnorm
-                _procCats[tr_idx].hists2D[0][89]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov_unnorm);
+                _procCats[id_idx].hists2D[0][89]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov_unnorm);
 		//90 - noE phi center vs. energy
-                _procCats[tr_idx].hists2D[0][90]->Fill(cmsLogE_pc, E_tot);
+                _procCats[id_idx].hists2D[0][90]->Fill(cmsLogE_pc, E_tot);
 		//91 - noE rot2D vs phiE2D
-                _procCats[tr_idx].hists2D[0][91]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][91]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
 		//92 - noE counts of etaphi cov vs timeeta cov
-                _procCats[tr_idx].hists2D[0][92]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+                _procCats[id_idx].hists2D[0][92]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 		//93 - noE time center vs phiE2D
-                _procCats[tr_idx].hists2D[0][93]->Fill(cmsLogE_tc, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][93]->Fill(cmsLogE_tc, cmsLogE_phi2D);
 		if((cmsNoE_phi2D < 0.2 && cmsNoE_phi2D > -0.2) || (fabs(cmsNoE_phi2D) < 0.2+acos(-1)/2. && fabs(cmsNoE_phi2D) > -0.2+acos(-1)/2.)){
                 	//94 - noE rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[tr_idx].hists2D[0][94]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][94]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
                 	//98 - noE rot 2D vs. timeeta cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[tr_idx].hists2D[0][98]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][98]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+			//110 - log E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
+			_procCats[id_idx].hists2D[0][110]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+			//113 - no E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
+			_procCats[id_idx].hists2D[0][113]->Fill(cmsNoE_ep_cov, cmsNoE_te_cov);
 
 		}
 		else{
                 	//95 - noE rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[tr_idx].hists2D[0][95]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][95]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
                 	//99 - noE rot 2D vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[tr_idx].hists2D[0][96]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][96]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+			//111 - log E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
+			_procCats[id_idx].hists2D[0][111]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+			//114 - no E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
+			_procCats[id_idx].hists2D[0][114]->Fill(cmsNoE_ep_cov, cmsNoE_te_cov);
 
 		}
 		//96 - noE energy vs phiE2D
-                _procCats[tr_idx].hists2D[0][96]->Fill(E_tot, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][96]->Fill(E_tot, cmsLogE_phi2D);
 		//97 - noE timeEtaCov vs rotundity 2D
-                _procCats[tr_idx].hists2D[0][97]->Fill(cmsLogE_te_cov, cmsLogE_rot2D);
-	
-	*/	
-
-
-
+                _procCats[id_idx].hists2D[0][97]->Fill(cmsLogE_te_cov, cmsLogE_rot2D);
+		//109 - log E etaPhiCov vs timeEtaCov
+		_procCats[id_idx].hists2D[0][109]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+		//112 - no E etaPhiCov vs timeEtaCov
+		_procCats[id_idx].hists2D[0][112]->Fill(cmsNoE_ep_cov, cmsNoE_te_cov);
 
 
 
