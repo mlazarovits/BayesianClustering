@@ -80,7 +80,8 @@ void PhotonSkimmer::Skim(){
 				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
 				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
 				genidx = _base->Photon_genIdx->at(p);
-				phoid = _base->Gen_susId->at(genidx);
+				if(genidx == -1) phoid = -1;
+				else phoid = _base->Gen_susId->at(genidx);
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
