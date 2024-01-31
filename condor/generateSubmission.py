@@ -31,8 +31,10 @@ def generateSubmission(args):
 		inputFile = "GMSB_AOD_v14_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v14_JetHT_AOD_Run2018CRun2018D-15Feb2022_UL2018-v1.root"
-	elif args.inputSample == "GJets":
+	elif args.inputSample == "GJets_HT400To600":
 		inputFile = "GJets_AOD_v14_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
+	elif args.inputSample == "GJets_HT600ToInf":
+		inputFile = "GJets_AOD_v14_GJets_HT-600ToInf_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root "
 	else:
 		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
@@ -113,7 +115,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','JetHT','GJets'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','JetHT','GJets_HT400To600','GJets_HT600ToInf'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
