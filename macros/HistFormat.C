@@ -478,7 +478,7 @@ void Profile2DHists(TFile* f){
 							string profiletitle = pprofs[b]->GetTitle();
 							profilepath = profilepath.substr(0,profilepath.find("_"+profiletitle));
 							profilepath = profilepath+"_stack/"+profilepath;
-							profilepath = profilepath+"_"+profiletitle.substr(0,profiletitle.rfind("_")+1)+"procs";
+							profilepath = profilepath+"_"+profiletitle.substr(0,profiletitle.rfind("_")+1)+"procStack";
 							//if method in profile name - add next dir to profile path
 							//cout << "Getting: " << profilepath+"/"+profilename << endl;
 							TH1D* prof = (TH1D*)f->Get((profilepath+"/"+profilename).c_str());

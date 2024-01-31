@@ -882,7 +882,7 @@ class JetSkimmer : public BaseSkimmer{
 					//cout << "writing " << trs[j].procCats[0].hists1D[0][i]->GetName() << " " << trs[j].procCats[0].hists1D[0][i]->GetTitle() << " to " << dir->GetName() << endl;
 					trs[j].procCats[0].hists1D[0][i]->Write();
 					//make process breakdown directory
-					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
+					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procStack").c_str());
 					//cout << "  making dir " << dir2->GetName() << endl;
 					dir2->cd();
 					for(int p = 1; p < trs[j].procCats.size(); p++){
@@ -919,7 +919,7 @@ class JetSkimmer : public BaseSkimmer{
 					//cout << "writing " << trs[j].procCats[0].hists1D[0][i]->GetName() << " " << trs[j].procCats[0].hists1D[0][i]->GetTitle() << " to " << dir->GetName() << endl;
 					trs[j].procCats[0].hists2D[0][i]->Write();
 					//write method as directory within directory
-					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procs").c_str());
+					TDirectory *dir2 = dir->mkdir((dirname+"_"+trs[j].methodName+"_procStack").c_str());
 					//cout << "  making dir " << dir2->GetName() << endl;
 					dir2->cd();
 					for(int p = 1; p < trs[j].procCats.size(); p++){
