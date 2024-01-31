@@ -72,7 +72,7 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 }
 
 
-void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
+void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
 	if(hist.size() == 0)return;
 	can->cd();
 	can->SetGridx(1);
@@ -87,10 +87,12 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
 
+	string name;
+	string canname = can->GetName();
+
 	string legentry;
 	//sort hists alphabetically
 	map<string, TH1D*> nameToHist;
-	string name;
 	for( int i = 0 ; i < int(hist.size()); i++){
 		name = hist[i]->GetName();
 		nameToHist[name] = hist[i];
@@ -107,22 +109,24 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	map<string, int> labelToMark;
 	int offset = 1;
 	labelToColor["!chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["!GMSB"] =  TColor::GetColor("#86bbd8");
 	labelToColor["!notSunm"] = TColor::GetColor("#9e0059");
 	labelToColor["!GJets"] =   TColor::GetColor("#f6ae2d");
 	labelToColor["!JetHT"] =   TColor::GetColor("#3d348b");
 
-	labelToColor["median_"] = TColor::GetColor("#f7a278");
-	labelToColor["eAvg_"] = TColor::GetColor("#6859f1");
-	labelToColor["mmAvg_"] = TColor::GetColor("#52b788");
+	labelToColor["median"] = TColor::GetColor("#f7a278");
+	labelToColor["eAvg"] = TColor::GetColor("#6859f1");
+	labelToColor["mmAvg"] = TColor::GetColor("#52b788");
 
 	labelToMark["chiGam"] =  71;
+	labelToMark["GMSB"] =  71;
 	labelToMark["notSunm"] = 72;
 	labelToMark["GJets"] =   73;
 	labelToMark["JetHT"] =   74;
 
-	labelToMark["!median_"] = 71;
-	labelToMark["!eAvg_"] =   72; 
-	labelToMark["!mmAvg_"] =  73;
+	labelToMark["!median"] = 71;
+	labelToMark["!eAvg"] =   72; 
+	labelToMark["!mmAvg"] =  73;
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
@@ -133,7 +137,17 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
+		
+
 		legentry = hist[i]->GetTitle();
+		if(canname.find("jet") != string::npos){
+			if(legentry.find("notSunm") != string::npos) continue;
+			if(legentry.find("chiGam") != string::npos){
+				legentry.replace(legentry.find("chiGam"),6,"GMSB");
+			}
+		}		
+		
+
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -680,31 +694,33 @@ void HistFormat(string file){
 			}
 			//writing stack hist - same proc different methods
 			//only do for sigma plots for now
-			string dirname = dir->GetName();
-			if(dirname.find("sigma") == string::npos) continue;	
-			vector<string> procs;
-			GetProcs(dir, procs);
-			for(int p = 0; p < procs.size(); p++){
-				GetHistsProc(dir, procs[p], hists);
-				name = dirname+"_"+procs[p]+"_methodStack";
-				if(hists.size() < 1) continue;
-				FindListHistBounds(hists, ymin, ymax);
-				if(ymin == 0 && ymax == 0) continue;
-				TCanvas *cv = new TCanvas(name.c_str(), "");
-				ofile->cd();
-				//draw as tcanvases
-				if(name.find("sigma") != string::npos){
-					xlab = hists[0]->GetXaxis()->GetTitle();
-					ylab = hists[0]->GetYaxis()->GetTitle();
-				}
-				else{
-					xlab = name;
-					ylab = "a.u."; 
-				}
-				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
-				cv->Write(); 
-				
-			}
+			//string dirname = dir->GetName();
+			//if(dirname.find("sigma") == string::npos) continue;	
+			//vector<string> procs;
+			//GetProcs(dir, procs);
+			//for(int p = 0; p < procs.size(); p++){
+			//	GetHistsProc(dir, procs[p], hists);
+			//	name = dirname+"_"+procs[p]+"_methodStack";
+			//	if(name.find("jet") != string::npos && name.find("notSunm") != string::npos) continue;
+			//	if(name.find("jet") != string::npos && name.find("chiGam") != string::npos) name.replace(name.find("chiGam"),6,"GMSB");
+			//	if(hists.size() < 1) continue;
+			//	FindListHistBounds(hists, ymin, ymax);
+			//	if(ymin == 0 && ymax == 0) continue;
+			//	TCanvas *cv = new TCanvas(name.c_str(), "");
+			//	ofile->cd();
+			//	//draw as tcanvases
+			//	if(name.find("sigma") != string::npos){
+			//		xlab = hists[0]->GetXaxis()->GetTitle();
+			//		ylab = hists[0]->GetYaxis()->GetTitle();
+			//	}
+			//	else{
+			//		xlab = name;
+			//		ylab = "a.u."; 
+			//	}
+			//	TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+			//	cv->Write(); 
+			//	
+			//}
 		
 		}
 	}
