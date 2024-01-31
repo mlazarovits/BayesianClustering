@@ -268,6 +268,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists1D.push_back(noEphiE2D_phiE2Dneq0PiOv2);
                 	_hists1D.push_back(noErot2D_phiE2Deq0PiOv2);
                 	_hists1D.push_back(noErot2D_phiE2Dneq0PiOv2);
+			_hists1D.push_back(swCross); 
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1697,7 +1698,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 					}
 				}
-				_procCats[id_idx].hists1D[1][223]->Fill(_swCross);
+				_procCats[id_idx].hists1D[1][223]->Fill(_swcross);
 
 
 
