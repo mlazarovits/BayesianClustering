@@ -49,7 +49,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			objE_clusterE->SetTitle("phoE_clusterE");
 			objE_clusterE->SetName("phoE_clusterE");
 
-			SetupDetIDsEB( _detIDmap );
+			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			//add photon specific histograms
                         _hists1D.push_back(slope_space);
                         _hists1D.push_back(slope_etaT);
@@ -385,6 +385,14 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(noEetaPhiCov_timeEtaCov_phiE2Deq0PiOv2);
                 	_hists2D.push_back(noEetaPhiCov_timeEtaCov_phiE2Dneq0PiOv2);
 			_hists2D.push_back(timeCenter_rot2D);
+			_hists2D.push_back(timeCenter_swCross);
+			_hists2D.push_back(timeCenter_swCross_phiE2Deq0PiOv2);
+			_hists2D.push_back(timeCenter_swCross_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(rot2D_swCross);
+                	_hists2D.push_back(rot2D_swCross_phiE2Deq0PiOv2);
+                	_hists2D.push_back(rot2D_swCross_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(phiE2D_swCross);
+			_hists2D.push_back(phoE_swCross);	
 
 
 		};
@@ -847,7 +855,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* noErot2D_phiE2Deq0PiOv2 = new TH1D("noErot2D_phiE2Deq0PiOv2","noErot2D_phiE2Deq0PiOv2",25,0.4,1.1);
                 //222 - rot2D cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* noErot2D_phiE2Dneq0PiOv2 = new TH1D("noErot2D_phiE2Dneq0PiOv2","noErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
-
+		
+		//223 - swissCross
+		TH1D* swCross = new TH1D("swCross","swCross",25,0.,1.); 
 
 
 
@@ -1097,6 +1107,23 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//115 - time center vs rot2D
 		TH2D* timeCenter_rot2D = new TH2D("timeCenter_rot2D","timeCenter_rot2D;timeCenter;rot2D",25,-15,15,25,0.4,1.1);
+		//116 - time center vs swCross
+		TH2D* timeCenter_swCross = new TH2D("timeCenter_swCross","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		//117 - time center vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
+		TH2D* timeCenter_swCross_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Deq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		//118 - time center vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
+		TH2D* timeCenter_swCross_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Dneq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		//119 - rot2D vs swCross
+                TH2D* rot2D_swCross = new TH2D("rot2D_swCross","rot2D_swCross;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+		//120 - rot2D vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
+                TH2D* rot2D_swCross_phiE2Deq0PiOv2 = new TH2D("rot2D_swCross_phiE2Deq0PiOv2","rot2D_swCross_phiE2Deq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+		//121 - rot2D vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
+                TH2D* rot2D_swCross_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCross_phiE2Dneq0PiOv2","rot2D_swCross_phiE2Dneq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+		//122 - phiE2D vs swCross
+                TH2D* phiE2D_swCross = new TH2D("phiE2D_swCross","phiE2D_swCross;phiE2D;swCross",25,-3.,3.,25,0.,1.);
+		//123 - phoE vs swCross
+		TH2D* phoE_swCross = new TH2D("phoEnergy_swCross","phoEnergy_swCross;phoE;swCross",25,0,1000,25,0,1);	
+
 
 		enum weightScheme{
 			noWeight = 0,
@@ -1118,7 +1145,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	
 
 	 	std::map<UInt_t,DetIDStruct> _detIDmap;
-
+		std::map<pair<int, int>, UInt_t> _ietaiphiID;
 			
 		void Skim();
 
@@ -1132,7 +1159,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetThresh(double t){ _thresh = t; }
 		void SetBHCAlpha(double a){ _alpha = a; }
 		void SetEMAlpha(double a){ _emAlpha = a; }
-		double _thresh, _alpha, _emAlpha;
+		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross; 
 
 
 
@@ -1280,6 +1307,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//sort by mixing coeffs in ascending order (smallest first)
 			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
+	
 
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
@@ -1288,7 +1316,8 @@ class PhotonSkimmer : public BaseSkimmer{
 				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
-				tc = params["mean"].at(2,0);
+				
+				tc = params["mean"].at(2,0) - _timeoffset;
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
 				
@@ -1575,8 +1604,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 				_procCats[id_idx].hists2D[0][106]->Fill(tc, ec);
 				_procCats[id_idx].hists2D[0][115]->Fill(tc,rot2D);
-
-	
+			
 				
 				//histograms for leading/subleading clusters
 				if(k == leadidx){
@@ -1742,12 +1770,20 @@ class PhotonSkimmer : public BaseSkimmer{
 					if((phi2D < 0.2 && phi2D > -0.2) || (fabs(phi2D) < 0.2+acos(-1)/2. && fabs(phi2D) > -0.2+acos(-1)/2.)){
 						_procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 						_procCats[id_idx].hists2D[1][74]->Fill(rot2D,te_cov);
+						_procCats[id_idx].hists2D[1][117]->Fill(tc, _swcross);
+						_procCats[id_idx].hists2D[1][120]->Fill(rot2D, _swcross);
 					}
 					else{
 						_procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 						_procCats[id_idx].hists2D[1][75]->Fill(rot2D,te_cov);
+						_procCats[id_idx].hists2D[1][118]->Fill(tc, _swcross);
+						_procCats[id_idx].hists2D[1][121]->Fill(rot2D, _swcross);
 					}
 					_procCats[id_idx].hists2D[1][73]->Fill(te_cov,rot2D);
+					_procCats[id_idx].hists2D[1][116]->Fill(tc, _swcross);
+					_procCats[id_idx].hists2D[1][119]->Fill(rot2D, _swcross);
+					_procCats[id_idx].hists2D[1][122]->Fill(phi2D, _swcross);
+					_procCats[id_idx].hists2D[1][123]->Fill(E_tot, _swcross);
 				
 
 				}
@@ -2434,6 +2470,8 @@ class PhotonSkimmer : public BaseSkimmer{
 	}
 
 
+
+
 	double sqrtcov(double c){
 		if(c > 0)
 			return sqrt(c);
@@ -2528,21 +2566,98 @@ class PhotonSkimmer : public BaseSkimmer{
 	}
 
 
+	double swissCross(const vector<Jet>& jets){
+		//find seed crystal (highest weight, E = w*_gev)
+		PointCollection sc(1); //save cmsswIds with associated weights for rec hit id
+		JetPoint rh;
+		for(int j = 0; j < jets.size(); j++){
+			//should only have 1 rh per jet
+			if(jets[j].GetNRecHits() > 1) continue;
+			rh = jets[j].GetJetPoints()[0];
+			Point pt(1);
+			pt.SetValue(int(rh.rhId()),0);
+			pt.SetWeight(rh.GetWeight());
+			sc += pt;	
+		}
+		sc.Sort();
+		double e1, e4;
+		e1 = sc.at(0).w()*_gev;
+		int e1id = sc.at(0).at(0);
+		int e1_iphi = _detIDmap[e1id].i1;
+		int e1_ieta = _detIDmap[e1id].i2;
+		//find up, left, right, down crystals (e4)
+		int e4upid = offsetBy(e1_ieta, e1_iphi, 1, 0);
+		int e4downid = offsetBy(e1_ieta, e1_iphi, -1, 0);
+		int e4rightid = offsetBy(e1_ieta, e1_iphi, 0, 1);
+		int e4leftid = offsetBy(e1_ieta, e1_iphi, 0, -1);
+		e4 = 0;
+		for(int i = 0; i < sc.GetNPoints(); i++){
+			if(sc.at(i).at(0) == e4upid)
+				e4 += sc.at(i).w()*_gev;
+			if(sc.at(i).at(0) == e4downid)
+				e4 += sc.at(i).w()*_gev;
+			if(sc.at(i).at(0) == e4leftid)
+				e4 += sc.at(i).w()*_gev;
+			if(sc.at(i).at(0) == e4rightid)
+				e4 += sc.at(i).w()*_gev;
+		}
+		return 1 - e4/e1;
+
+	}
+
+	//from CMSSW: https://cmssdt.cern.ch/lxr/source/DataFormats/EcalDetId/src/EBDetId.cc
+	UInt_t offsetBy(int ieta, int iphi, int nrStepsEta, int nrStepsPhi) const {
+		int newEta = ieta + nrStepsEta;
+		if (newEta * ieta <= 0) {
+		  if (ieta < 0) {
+		    newEta++;
+		  } else if (ieta > 0) {
+		    newEta--;
+		  }
+		}
+		int newPhi = iphi + nrStepsPhi;
+		while (newPhi > 360)
+		  newPhi -= 360;
+		while (newPhi <= 0)
+		  newPhi += 360;
+	
+		pair<int, int> newpair = make_pair(newEta, newPhi);	
+		if (validDetId(newEta, newPhi)) {
+		  UInt_t id = _ietaiphiID.at(newpair);
+		  return id;
+		} else {
+		  return -1;
+		}
+	}
+
+	//from CMSSW: https://cmssdt.cern.ch/lxr/source/DataFormats/EcalDetId/interface/EBDetId.h
+	/// check if a valid index combination
+	static bool validDetId(int i, int j) {
+		int max_ieta = 85;
+		int max_iphi = 360;
+		int min_ieta = 1;
+		int min_iphi = 1;
+		return i != 0 && (std::abs(i) <= max_ieta) && (j >= min_iphi) && (j <= max_iphi);
+	}
+
 
 	//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
 	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
-	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap ){
+	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
 	
 	    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
 	    std::ifstream infile( detIDConfigEB, std::ios::in);
 	
 	    UInt_t cmsswId, dbID;
+            pair<int, int> ietaiphi;
 	    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
 	    std::string pos;
 	
 	    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
 	        //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
 	        DetIDMap[cmsswId] = {iphi,ieta,TT25,0};
+		ietaiphi = make_pair(ieta, iphi);
+		iEtaiPhiToDetID[ietaiphi] = cmsswId;
 	        //auto idinfo = DetIDMap[cmsswId];
 	        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
 	    }//while (infile >>

@@ -48,9 +48,17 @@ void PhotonSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
+	double pvx, pvy, pvz;
+	_timeoffset = 0;
+	_swcross = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		_prod->GetTruePhotons(phos, e);
+		//PV info
+		pvx = _base->PV_x;
+		pvy = _base->PV_y;
+		pvz = _base->PV_z;
+		
 		int nPho = phos.size();
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
@@ -72,7 +80,29 @@ void PhotonSkimmer::Skim(){
 			
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-		
+	
+			//get time offset factor
+			//weighted x,y,z center of rechits
+			double c = 29.9792458;	
+			double x = 0;
+			double y = 0;
+			double z = 0;	
+			double norm = 0;
+			JetPoint rh;
+			for(int r = 0; r < rhs.size(); r++){
+				//one rh per "jet"
+				rh = rhs[r].GetJetPoints()[0];
+				x += rh.x()*rh.GetWeight();
+				y += rh.y()*rh.GetWeight();
+				z += rh.z()*rh.GetWeight();
+				norm += rh.GetWeight();
+			}
+			x = x/norm;
+			y = y/norm;
+			z = z/norm;
+			_timeoffset = sqrt((x - pvx)*(x - pvx) + (y - pvy)*(y - pvy) + (z - pvz)*(z - pvz))/c;
+			_swcross = swissCross(rhs);
+				
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -88,7 +118,6 @@ void PhotonSkimmer::Skim(){
 						FillModelHists(gmm, i);
 						FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
-						
 						vector<double> cmsvars;
 					}
 				}
