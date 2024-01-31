@@ -857,7 +857,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* noErot2D_phiE2Dneq0PiOv2 = new TH1D("noErot2D_phiE2Dneq0PiOv2","noErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
 		
 		//223 - swissCross
-		TH1D* swCross = new TH1D("swCross","swCross",25,0.,1.); 
+		TH1D* swCross = new TH1D("swCross","swCross",25,-2.,2.); 
 
 
 
@@ -1108,21 +1108,21 @@ class PhotonSkimmer : public BaseSkimmer{
 		//115 - time center vs rot2D
 		TH2D* timeCenter_rot2D = new TH2D("timeCenter_rot2D","timeCenter_rot2D;timeCenter;rot2D",25,-15,15,25,0.4,1.1);
 		//116 - time center vs swCross
-		TH2D* timeCenter_swCross = new TH2D("timeCenter_swCross","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		TH2D* timeCenter_swCross = new TH2D("timeCenter_swCross","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
 		//117 - time center vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
-		TH2D* timeCenter_swCross_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Deq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		TH2D* timeCenter_swCross_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Deq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
 		//118 - time center vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
-		TH2D* timeCenter_swCross_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Dneq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.,1.);
+		TH2D* timeCenter_swCross_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Dneq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
 		//119 - rot2D vs swCross
-                TH2D* rot2D_swCross = new TH2D("rot2D_swCross","rot2D_swCross;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+                TH2D* rot2D_swCross = new TH2D("rot2D_swCross","rot2D_swCross;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
 		//120 - rot2D vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* rot2D_swCross_phiE2Deq0PiOv2 = new TH2D("rot2D_swCross_phiE2Deq0PiOv2","rot2D_swCross_phiE2Deq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+                TH2D* rot2D_swCross_phiE2Deq0PiOv2 = new TH2D("rot2D_swCross_phiE2Deq0PiOv2","rot2D_swCross_phiE2Deq0PiOv2;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
 		//121 - rot2D vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* rot2D_swCross_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCross_phiE2Dneq0PiOv2","rot2D_swCross_phiE2Dneq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.,1.);
+                TH2D* rot2D_swCross_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCross_phiE2Dneq0PiOv2","rot2D_swCross_phiE2Dneq0PiOv2;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
 		//122 - phiE2D vs swCross
-                TH2D* phiE2D_swCross = new TH2D("phiE2D_swCross","phiE2D_swCross;phiE2D;swCross",25,-3.,3.,25,0.,1.);
+                TH2D* phiE2D_swCross = new TH2D("phiE2D_swCross","phiE2D_swCross;phiE2D;swCross",25,-3.,3.,25,-1.,2.);
 		//123 - phoE vs swCross
-		TH2D* phoE_swCross = new TH2D("phoEnergy_swCross","phoEnergy_swCross;phoE;swCross",25,0,1000,25,0,1);	
+		TH2D* phoE_swCross = new TH2D("phoEnergy_swCross","phoEnergy_swCross;phoE;swCross",25,0,1000,25,-1.,2.);	
 
 
 		enum weightScheme{
@@ -1697,6 +1697,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 					}
 				}
+				_procCats[id_idx].hists1D[1][223]->Fill(_swCross);
 
 
 
@@ -2581,25 +2582,28 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 		sc.Sort();
 		double e1, e4;
-		e1 = sc.at(0).w()*_gev;
-		int e1id = sc.at(0).at(0);
+		e1 = sc.at(sc.GetNPoints()-1).w()/_gev;
+		int e1id = sc.at(sc.GetNPoints()-1).at(0);
 		int e1_iphi = _detIDmap[e1id].i1;
 		int e1_ieta = _detIDmap[e1id].i2;
+		
 		//find up, left, right, down crystals (e4)
-		int e4upid = offsetBy(e1_ieta, e1_iphi, 1, 0);
-		int e4downid = offsetBy(e1_ieta, e1_iphi, -1, 0);
-		int e4rightid = offsetBy(e1_ieta, e1_iphi, 0, 1);
-		int e4leftid = offsetBy(e1_ieta, e1_iphi, 0, -1);
+		//eta on x-axis - shift in eta = left/right
+		//phi on y-axis - shift in phi = up/down
+		int e4upid = offsetBy(e1_ieta, e1_iphi, 0, 1);
+		int e4downid = offsetBy(e1_ieta, e1_iphi, 0, -1);
+		int e4rightid = offsetBy(e1_ieta, e1_iphi, 1, 0);
+		int e4leftid = offsetBy(e1_ieta, e1_iphi, -1, 0);
 		e4 = 0;
 		for(int i = 0; i < sc.GetNPoints(); i++){
-			if(sc.at(i).at(0) == e4upid)
-				e4 += sc.at(i).w()*_gev;
-			if(sc.at(i).at(0) == e4downid)
-				e4 += sc.at(i).w()*_gev;
-			if(sc.at(i).at(0) == e4leftid)
-				e4 += sc.at(i).w()*_gev;
-			if(sc.at(i).at(0) == e4rightid)
-				e4 += sc.at(i).w()*_gev;
+			if(sc.at(i).at(0) == e4upid && e4upid != -1)
+				e4 += sc.at(i).w()/_gev;
+			if(sc.at(i).at(0) == e4downid && e4downid != -1)
+				e4 += sc.at(i).w()/_gev;
+			if(sc.at(i).at(0) == e4leftid && e4leftid != -1)
+				e4 += sc.at(i).w()/_gev;
+			if(sc.at(i).at(0) == e4rightid && e4rightid != -1)
+				e4 += sc.at(i).w()/_gev;
 		}
 		return 1 - e4/e1;
 
@@ -2620,7 +2624,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		  newPhi -= 360;
 		while (newPhi <= 0)
 		  newPhi += 360;
-	
 		pair<int, int> newpair = make_pair(newEta, newPhi);	
 		if (validDetId(newEta, newPhi)) {
 		  UInt_t id = _ietaiphiID.at(newpair);

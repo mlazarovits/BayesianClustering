@@ -53,7 +53,7 @@ void PhotonSkimmer::Skim(){
 	_swcross = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
-		_prod->GetTruePhotons(phos, e);
+		_prod->GetTruePhotons(phos, e, _gev);
 		//PV info
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
