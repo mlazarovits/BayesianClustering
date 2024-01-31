@@ -693,34 +693,34 @@ void HistFormat(string file){
 
 			}
 			//writing stack hist - same proc different methods
-			//only do for sigma plots for now
-			//string dirname = dir->GetName();
-			//if(dirname.find("sigma") == string::npos) continue;	
-			//vector<string> procs;
-			//GetProcs(dir, procs);
-			//for(int p = 0; p < procs.size(); p++){
-			//	GetHistsProc(dir, procs[p], hists);
-			//	name = dirname+"_"+procs[p]+"_methodStack";
-			//	if(name.find("jet") != string::npos && name.find("notSunm") != string::npos) continue;
-			//	if(name.find("jet") != string::npos && name.find("chiGam") != string::npos) name.replace(name.find("chiGam"),6,"GMSB");
-			//	if(hists.size() < 1) continue;
-			//	FindListHistBounds(hists, ymin, ymax);
-			//	if(ymin == 0 && ymax == 0) continue;
-			//	TCanvas *cv = new TCanvas(name.c_str(), "");
-			//	ofile->cd();
-			//	//draw as tcanvases
-			//	if(name.find("sigma") != string::npos){
-			//		xlab = hists[0]->GetXaxis()->GetTitle();
-			//		ylab = hists[0]->GetYaxis()->GetTitle();
-			//	}
-			//	else{
-			//		xlab = name;
-			//		ylab = "a.u."; 
-			//	}
-			//	TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
-			//	cv->Write(); 
-			//	
-			//}
+			string dirname = dir->GetName();
+			//only do for sigma plots for now - can remove this later to change
+			if(dirname.find("sigma") == string::npos) continue;	
+			vector<string> procs;
+			GetProcs(dir, procs);
+			for(int p = 0; p < procs.size(); p++){
+				GetHistsProc(dir, procs[p], hists);
+				name = dirname+"_"+procs[p]+"_methodStack";
+				if(name.find("jet") != string::npos && name.find("notSunm") != string::npos) continue;
+				
+				if(hists.size() < 1) continue;
+				FindListHistBounds(hists, ymin, ymax);
+				if(ymin == 0 && ymax == 0) continue;
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				//draw as tcanvases
+				if(name.find("sigma") != string::npos){
+					xlab = hists[0]->GetXaxis()->GetTitle();
+					ylab = hists[0]->GetYaxis()->GetTitle();
+				}
+				else{
+					xlab = name;
+					ylab = "a.u."; 
+				}
+				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+				cv->Write(); 
+				
+			}
 		
 		}
 	}
