@@ -1188,7 +1188,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//write 2D hists
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				//normalize etaphiCov_timeetaCov count plots
-				pc.hists2D[i][68]->Scale(1./pc.hists2D[i][68]->Integral());
+				//pc.hists2D[i][68]->Scale(1./pc.hists2D[i][68]->Integral());
 				for(int j = 0; j < hists2D[i].size(); j++){
 					if(pc.hists2D[i][j] == nullptr) continue;
 					//write total hist to file
