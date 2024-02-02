@@ -394,6 +394,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(rot2D_swCross_phiE2Dneq0PiOv2);
                 	_hists2D.push_back(phiE2D_swCross);
 			_hists2D.push_back(phoE_swCross);	
+                	_hists2D.push_back(rot2D_phiEll2D_timeNeg10toNeg2);
+                	_hists2D.push_back(rot2D_phiEll2D_timeNeg2to5);
+                	_hists2D.push_back(rot2D_phiEll2D_time5to15);
 
 
 		};
@@ -858,7 +861,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* noErot2D_phiE2Dneq0PiOv2 = new TH1D("noErot2D_phiE2Dneq0PiOv2","noErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
 		
 		//223 - swissCross
-		TH1D* swCross = new TH1D("swCross","swCross",25,-2.,2.); 
+		TH1D* swCross = new TH1D("swCross","swCross",25,0.9,1.1); 
 
 
 
@@ -1109,21 +1112,27 @@ class PhotonSkimmer : public BaseSkimmer{
 		//115 - time center vs rot2D
 		TH2D* timeCenter_rot2D = new TH2D("timeCenter_rot2D","timeCenter_rot2D;timeCenter;rot2D",25,-15,15,25,0.4,1.1);
 		//116 - time center vs swCross
-		TH2D* timeCenter_swCross = new TH2D("timeCenter_swCross","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
+		TH2D* timeCenter_swCross = new TH2D("timeCenter_swCross","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.9,1.1);
 		//117 - time center vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
-		TH2D* timeCenter_swCross_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Deq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
+		TH2D* timeCenter_swCross_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Deq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.9,1.1);
 		//118 - time center vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
-		TH2D* timeCenter_swCross_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Dneq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,-1.,2.);
+		TH2D* timeCenter_swCross_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCross_phiE2Dneq0PiOv2","timeCenter_swCross;timeCenter;swCross",25,-15,15,25,0.9,1.1);
 		//119 - rot2D vs swCross
-                TH2D* rot2D_swCross = new TH2D("rot2D_swCross","rot2D_swCross;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
+                TH2D* rot2D_swCross = new TH2D("rot2D_swCross","rot2D_swCross;rot2D;swCross",25,0.4,1.1,25,0.9,1.1);
 		//120 - rot2D vs swCross, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* rot2D_swCross_phiE2Deq0PiOv2 = new TH2D("rot2D_swCross_phiE2Deq0PiOv2","rot2D_swCross_phiE2Deq0PiOv2;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
+                TH2D* rot2D_swCross_phiE2Deq0PiOv2 = new TH2D("rot2D_swCross_phiE2Deq0PiOv2","rot2D_swCross_phiE2Deq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.9,1.1);
 		//121 - rot2D vs swCross, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* rot2D_swCross_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCross_phiE2Dneq0PiOv2","rot2D_swCross_phiE2Dneq0PiOv2;rot2D;swCross",25,0.4,1.1,25,-1.,2.);
+                TH2D* rot2D_swCross_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCross_phiE2Dneq0PiOv2","rot2D_swCross_phiE2Dneq0PiOv2;rot2D;swCross",25,0.4,1.1,25,0.9,1.1);
 		//122 - phiE2D vs swCross
-                TH2D* phiE2D_swCross = new TH2D("phiE2D_swCross","phiE2D_swCross;phiE2D;swCross",25,-3.,3.,25,-1.,2.);
+                TH2D* phiE2D_swCross = new TH2D("phiE2D_swCross","phiE2D_swCross;phiE2D;swCross",25,-3.,3.,25,0.9,1.1);
 		//123 - phoE vs swCross
-		TH2D* phoE_swCross = new TH2D("phoEnergy_swCross","phoEnergy_swCross;phoE;swCross",25,0,1000,25,-1.,2.);	
+		TH2D* phoE_swCross = new TH2D("phoEnergy_swCross","phoEnergy_swCross;phoE;swCross",25,0,1000,25,0.9,1.1);	
+		//124 - rot2D vs phiE2D, -10 < t < -2
+                TH2D* rot2D_phiEll2D_timeNeg10toNeg2 = new TH2D("rot2D_phiE2D_timeNeg10toNeg2","rot2D_phiE2D_timeNeg10toNeg2;rot2D;phiE2D_timeNeg10toNeg2",25,0.4,1.1,25,-3.1,1);
+		//125 - rot2D vs phiE2D, -2 < t < 5
+                TH2D* rot2D_phiEll2D_timeNeg2to5 = new TH2D("rot2D_phiE2D_timeNeg2to5","rot2D_phiE2D_timeNeg2to5;rot2D;phiE2D_timeNeg2to5",25,0.4,1.1,25,-3.1,1);
+		//126 - rot2D vs phiE2D, 5 < t < 15
+                TH2D* rot2D_phiEll2D_time5to15 = new TH2D("rot2D_phiE2D_time5to15","rot2D_phiE2D_time5to15;rot2D;phiE2D_time5to15",25,0.4,1.1,25,-3.1,1);
 
 
 		enum weightScheme{
@@ -1598,11 +1607,23 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[0][108]->Fill(tc, ec);
 				}
 				_procCats[id_idx].hists2D[0][73]->Fill(te_cov,rot2D);
-				if(-10 <= tc && tc < -2) _procCats[id_idx].hists2D[0][102]->Fill(E_tot, phi2D);
-				if(-2 <= tc && tc < 5) _procCats[id_idx].hists2D[0][103]->Fill(E_tot, phi2D);
-				if(5 <= tc && tc < 10) _procCats[id_idx].hists2D[0][104]->Fill(E_tot, phi2D);
-				if(10 <= tc && tc < 15) _procCats[id_idx].hists2D[0][105]->Fill(E_tot, phi2D);
-			
+				if(-10 <= tc && tc < -2){
+					_procCats[id_idx].hists2D[0][102]->Fill(E_tot, phi2D);
+					_procCats[id_idx].hists2D[0][124]->Fill(rot2D, phi2D);
+				}
+				if(-2 <= tc && tc < 5){
+					_procCats[id_idx].hists2D[0][103]->Fill(E_tot, phi2D);
+					_procCats[id_idx].hists2D[0][125]->Fill(rot2D, phi2D);
+				}
+				if(5 <= tc && tc < 10){
+					_procCats[id_idx].hists2D[0][104]->Fill(E_tot, phi2D);
+					_procCats[id_idx].hists2D[0][126]->Fill(rot2D, phi2D);
+				}
+				if(10 <= tc && tc < 15){
+					_procCats[id_idx].hists2D[0][105]->Fill(E_tot, phi2D);
+					//below is not a typo - the window for this histogram is 5 < t < 15
+					_procCats[id_idx].hists2D[0][126]->Fill(rot2D, phi2D);
+				}
 				_procCats[id_idx].hists2D[0][106]->Fill(tc, ec);
 				_procCats[id_idx].hists2D[0][115]->Fill(tc,rot2D);
 			
