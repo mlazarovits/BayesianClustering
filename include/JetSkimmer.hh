@@ -63,11 +63,25 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(geopTavg_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(minpT_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(Erh_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam5to6);
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam6to8);
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam8to10);
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam10to12);
+			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen);
+			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_deltaTpvGam5to6);
+			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_deltaTpvGam6to8);
+			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_deltaTpvGam8to10);
+			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_deltaTpvGam10to12);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
 			_timeHists2D.push_back(minpT_diffDeltaTime_dijets);	
 			_timeHists2D.push_back(Erh_diffDeltaTime_dijets);	
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_deltaTpvGam5to6);
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_deltaTpvGam6to8);
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_deltaTpvGam8to10);
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_deltaTpvGam10to12);
+			_timeHists2D.push_back(meanRecoGenDiff_genDeltaTime);
 
 
 
@@ -230,7 +244,7 @@ class JetSkimmer : public BaseSkimmer{
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-5,5);
 		//4 - gen deltaT bw photon and pv
-		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,4,20);	
+		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,0,12);	
 		//5 - photon time
 		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",25,0,20);	
 
@@ -243,9 +257,26 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
 		//9 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
 		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1500);
+		//10 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam5to6 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam5to6","geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam5to6",10,0,1000);
+		//11 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam6to8 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam6to8","geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam6to8",10,0,1000);
+		//12 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam8to10 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam8to10","geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam8to10",10,0,1000);
+		//13 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam10to12 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam10to12","geoEavg_sigmaDeltaTime_recoGen_deltaTpvGam10to12",10,0,1000);
+		//14 - mean of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_meanDeltaTime_recoGen = new TH1D("geoEavg_meanDeltaTime_recoGen","geoEavg_meanDeltaTime_recoGen",10,0,1000);
+		//15 - mean of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_meanDeltaTime_recoGen_deltaTpvGam5to6 = new TH1D("geoEavg_meanDeltaTime_recoGen_deltaTpvGam5to6","geoEavg_meanDeltaTime_recoGen_deltaTpvGam5to6",10,0,1000);
+		//16 - mean of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_meanDeltaTime_recoGen_deltaTpvGam6to8 = new TH1D("geoEavg_meanDeltaTime_recoGen_deltaTpvGam6to8","geoEavg_meanDeltaTime_recoGen_deltaTpvGam6to8",10,0,1000);
+		//17 - mean of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_meanDeltaTime_recoGen_deltaTpvGam8to10 = new TH1D("geoEavg_meanDeltaTime_recoGen_deltaTpvGam8to10","geoEavg_meanDeltaTime_recoGen_deltaTpvGam8to10",10,0,1000);
+		//18 - mean of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
+		TH1D* geoEavg_meanDeltaTime_recoGen_deltaTpvGam10to12 = new TH1D("geoEavg_meanDeltaTime_recoGen_deltaTpvGam10to12","geoEavg_meanDeltaTime_recoGen_deltaTpvGam10to12",10,0,1000);
 	
 		//0 - 2D histogram for reco-gen resolution
-		//may need to adjust binning/windows here
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
 		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);
@@ -253,9 +284,23 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
 		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_{j} sum_{rh} E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
+		//4 - 2D histogram for reco-gen resolution
+		TH2D* geoEavg_diffDeltaTime_recoGen_deltaTpvGam5to6 = new TH2D("geoEavg_diffDeltaTime_recoGen_deltaTpvGam5to6","geoEavg_diffDeltaTime_recoGen_deltaTpvGam5to6;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		//5 - 2D histogram for reco-gen resolution
+		TH2D* geoEavg_diffDeltaTime_recoGen_deltaTpvGam6to8 = new TH2D("geoEavg_diffDeltaTime_recoGen_deltaTpvGam6to8","geoEavg_diffDeltaTime_recoGen_deltaTpvGam6to8;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,26,-10,10);
+		//6 - 2D histogram for reco-gen resolution
+		TH2D* geoEavg_diffDeltaTime_recoGen_deltaTpvGam8to10 = new TH2D("geoEavg_diffDeltaTime_recoGen_deltaTpvGam8to10","geoEavg_diffDeltaTime_recoGen_deltaTpvGam8to10;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,28,-10,10);
+		//7 - 2D histogram for reco-gen resolution
+		TH2D* geoEavg_diffDeltaTime_recoGen_deltaTpvGam10to12 = new TH2D("geoEavg_diffDeltaTime_recoGen_deltaTpvGam10to12","geoEavg_diffDeltaTime_recoGen_deltaTpvGam10to12;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,210,-10,10);
+		//8 - mean of diff recoGen deltaT distribution vs gen deltaT
+		TH2D* meanRecoGenDiff_genDeltaTime = new TH2D("meanRecoGenDiff_genDeltaTime","meanRecoGenDiff_genDeltaTime;meanRecoGenDiff;genDeltaTime",25,-0.1,0.1,25,-3,3);
+
+
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
+
+
 
 		//predicted jet plots
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
@@ -447,6 +492,17 @@ class JetSkimmer : public BaseSkimmer{
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
 							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							//if photon time (gamtime - pvtime) is in different delayed time windows, fill different 2D hists
+							if(deltaT_gampv >= 5 && deltaT_gampv < 6)
+								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							if(deltaT_gampv >= 6 && deltaT_gampv < 8)
+								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							if(deltaT_gampv >= 8 && deltaT_gampv < 10)
+								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							if(deltaT_gampv >= 10 && deltaT_gampv < 12)
+								trCats[tr_idx].procCats[p].hists2D[0][7]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							 
+
 						}	
 	
 					
@@ -682,7 +738,7 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 	
-		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			if(ts == med) return CalcMedianTime(jet);
 			else if(ts == eavg) return CalcEAvgTime(jet);
@@ -690,7 +746,7 @@ class JetSkimmer : public BaseSkimmer{
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters());
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
-				return CalcMMAvgTime(gmm);
+				return CalcMMAvgTime(gmm, pho);
 			}
 			else return -999;
 
@@ -790,7 +846,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		double CalcMMAvgTime(BasePDFMixture* model){
+		double CalcMMAvgTime(BasePDFMixture* model, bool pho){
 			int kmax = model->GetNClusters();
 			double t = 0;
 			double norm = 0;
@@ -799,6 +855,9 @@ class JetSkimmer : public BaseSkimmer{
 				params = model->GetPriorParameters(k);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				norm += params["pi"].at(0,0);
+				if(pho){
+					return t/norm;
+				}
 				//cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
 			}
 			return t/norm; 
