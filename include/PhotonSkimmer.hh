@@ -1598,10 +1598,10 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[0][108]->Fill(tc, ec);
 				}
 				_procCats[id_idx].hists2D[0][73]->Fill(te_cov,rot2D);
-				if(-10 =< tc && tc < -2) _procCats[id_idx].hists2D[0][102]->Fill(E_tot, phi2D);
-				if(-2 =< tc && tc < 5) _procCats[id_idx].hists2D[0][103]->Fill(E_tot, phi2D);
-				if(5 =< tc && tc < 10) _procCats[id_idx].hists2D[0][104]->Fill(E_tot, phi2D);
-				if(10 =< tc && tc < 15) _procCats[id_idx].hists2D[0][105]->Fill(E_tot, phi2D);
+				if(-10 <= tc && tc < -2) _procCats[id_idx].hists2D[0][102]->Fill(E_tot, phi2D);
+				if(-2 <= tc && tc < 5) _procCats[id_idx].hists2D[0][103]->Fill(E_tot, phi2D);
+				if(5 <= tc && tc < 10) _procCats[id_idx].hists2D[0][104]->Fill(E_tot, phi2D);
+				if(10 <= tc && tc < 15) _procCats[id_idx].hists2D[0][105]->Fill(E_tot, phi2D);
 			
 				_procCats[id_idx].hists2D[0][106]->Fill(tc, ec);
 				_procCats[id_idx].hists2D[0][115]->Fill(tc,rot2D);
