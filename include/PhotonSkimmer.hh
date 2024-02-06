@@ -739,7 +739,6 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* logEtimeMajCov_phiE2Deq0PiOv2 = new TH1D("logEtimeMajCov_phiE2Deq0PiOv2","logEtimeMajCov_phiE2Deq0PiOv2",25,-1,1);
                 //167 - timeMaj cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* logEtimeMajCov_phiE2Dneq0PiOv2 = new TH1D("logEtimeMajCov_phiE2Dneq0PiOv2","logEtimeMajCov_phiE2Dneq0PiOv2",25,-1,1);
-                ///////// START RENUMBERING HERE ////////// 
 		//168 - timeMin cov, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEtimeMinCov_phiE2Deq0PiOv2 = new TH1D("logEtimeMinCov_phiE2Deq0PiOv2","logEtimeMinCov_phiE2Deq0PiOv2",25,-1,1);
                 //169 - timeMin cov, phiE2D !~ 0 && phiE2D !~ pi/2
