@@ -2445,22 +2445,22 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//////////noE weighted//////////
                 //88 - noE rot 2D vs. etaphi cov
-                _procCats[id_idx].hists2D[0][88]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                _procCats[id_idx].hists2D[0][88]->Fill(cmsNoE_rot2D, cmsNoE_ep_cov);
                 //89 - noE rot 2D vs. etaphi cov unnorm
-                _procCats[id_idx].hists2D[0][89]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov_unnorm);
+                _procCats[id_idx].hists2D[0][89]->Fill(cmsNoE_rot2D, cmsNoE_ep_cov_unnorm);
 		//90 - noE phi center vs. energy
-                _procCats[id_idx].hists2D[0][90]->Fill(cmsLogE_pc, E_tot);
+                _procCats[id_idx].hists2D[0][90]->Fill(cmsNoE_pc, E_tot);
 		//91 - noE rot2D vs phiE2D
-                _procCats[id_idx].hists2D[0][91]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][91]->Fill(cmsNoE_rot2D, cmsNoE_phi2D);
 		//92 - noE counts of etaphi cov vs timeeta cov
-                _procCats[id_idx].hists2D[0][92]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
+                _procCats[id_idx].hists2D[0][92]->Fill(cmsNoE_ep_cov, cmsNoE_te_cov);
 		//93 - noE time center vs phiE2D
-                _procCats[id_idx].hists2D[0][93]->Fill(cmsLogE_tc, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][93]->Fill(cmsNoE_tc, cmsNoE_phi2D);
 		if((cmsNoE_phi2D < 0.2 && cmsNoE_phi2D > -0.2) || (fabs(cmsNoE_phi2D) < 0.2+acos(-1)/2. && fabs(cmsNoE_phi2D) > -0.2+acos(-1)/2.)){
                 	//94 - noE rot 2D vs. etaphi cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[id_idx].hists2D[0][94]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][94]->Fill(cmsNoE_rot2D, cmsNoE_ep_cov);
                 	//98 - noE rot 2D vs. timeeta cov, phiE2D ~ 0 && phiE2D ~ pi/2
-                	_procCats[id_idx].hists2D[0][98]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][98]->Fill(cmsNoE_rot2D, cmsNoE_te_cov);
 			//110 - log E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
 			_procCats[id_idx].hists2D[0][110]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 			//113 - no E etaPhiCov vs timeEtaCov, phiE2D ~ 0 && phiE2D ~ pi/2
@@ -2469,9 +2469,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 		else{
                 	//95 - noE rot 2D vs. etaphi cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[id_idx].hists2D[0][95]->Fill(cmsLogE_rot2D, cmsLogE_ep_cov);
+                	_procCats[id_idx].hists2D[0][95]->Fill(cmsNoE_rot2D, cmsNoE_ep_cov);
                 	//99 - noE rot 2D vs. timeeta cov, phiE2D !~ 0 && phiE2D !~ pi/2
-                	_procCats[id_idx].hists2D[0][96]->Fill(cmsLogE_rot2D, cmsLogE_te_cov);
+                	_procCats[id_idx].hists2D[0][96]->Fill(cmsNoE_rot2D, cmsNoE_te_cov);
 			//111 - log E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
 			_procCats[id_idx].hists2D[0][111]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 			//114 - no E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -2479,9 +2479,9 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		}
 		//96 - noE energy vs phiE2D
-                _procCats[id_idx].hists2D[0][96]->Fill(E_tot, cmsLogE_phi2D);
+                _procCats[id_idx].hists2D[0][96]->Fill(E_tot, cmsNoE_phi2D);
 		//97 - noE timeEtaCov vs rotundity 2D
-                _procCats[id_idx].hists2D[0][97]->Fill(cmsLogE_te_cov, cmsLogE_rot2D);
+                _procCats[id_idx].hists2D[0][97]->Fill(cmsNoE_te_cov, cmsNoE_rot2D);
 		//109 - log E etaPhiCov vs timeEtaCov
 		_procCats[id_idx].hists2D[0][109]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 		//112 - no E etaPhiCov vs timeEtaCov
