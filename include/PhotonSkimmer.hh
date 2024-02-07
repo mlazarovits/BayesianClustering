@@ -2418,7 +2418,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 _procCats[id_idx].hists2D[0][78]->Fill(cmsLogE_pc, E_tot);
 		//79 - logE rot2D vs phiE2D
                 _procCats[id_idx].hists2D[0][79]->Fill(cmsLogE_rot2D, cmsLogE_phi2D);
-		//80 - logE counts of etaphi cov vs timeeta cov COUNTS
+		//80 - logE counts of etaphi cov vs timeeta cov counts
                 _procCats[id_idx].hists2D[0][80]->Fill(cmsLogE_ep_cov, cmsLogE_te_cov);
 		//81 - logE time center vs phiE2D
                 _procCats[id_idx].hists2D[0][81]->Fill(cmsLogE_tc, cmsLogE_phi2D);
