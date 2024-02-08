@@ -70,8 +70,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
-				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				//TOF from PV to rh location
+				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
                            
 				//redo dr matching tighter - dr = 0.5
