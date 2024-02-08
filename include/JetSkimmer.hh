@@ -277,7 +277,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
 		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_{j} sum_{rh} E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
-		//4 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [0,4)
+		//4 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [3.5,4.5)
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//5 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [4,8)
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
@@ -484,9 +484,9 @@ class JetSkimmer : public BaseSkimmer{
 							//sigma deltaT_recoGen as a function of geoEavg
 							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 							//if photon time (gamtime - pvtime) is in different delayed time windows, fill different 2D hists
-							if(deltaT_gampv_gen >= 0 && deltaT_gampv_gen < 4)
+							if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
 								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
-							if(deltaT_gampv_gen >= 4 && deltaT_gampv_gen < 8)
+							if(deltaT_gampv_gen >= 4.5 && deltaT_gampv_gen < 8)
 								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
 								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
@@ -972,7 +972,7 @@ class JetSkimmer : public BaseSkimmer{
 					dir2->cd();
 					for(int p = 1; p < trs[j].procCats.size(); p++){
 					//loop over processes
-						if(dirname.find("meanRecoGenDeltaT") != string::npos) cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists2D[0][i]->GetName() << " " << trs[j].procCats[p].hists2D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists2D[0][i]->GetEntries() << endl;			
+						//if(dirname.find("meanRecoGenDeltaT") != string::npos) cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists2D[0][i]->GetName() << " " << trs[j].procCats[p].hists2D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists2D[0][i]->GetEntries() << endl;			
 						if(trs[j].procCats[p].hists2D[0][i] == nullptr) continue;
 						if(trs[j].procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
 						//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
