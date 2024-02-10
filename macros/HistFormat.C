@@ -159,7 +159,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	else hist->Draw("colz");
 
 	string name = hist->GetName();
-	if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
+	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
 	TLatex lat;
@@ -446,7 +446,7 @@ void HistFormat(string file){
 			//cout << "dir name: " << dir->GetName() << endl;
 			//get histograms (stack these)
 			vector<TH1D*> hists;
-			//loop through types
+			//loop through types for 1D hists
 			for(int i = 0; i < types.size(); i++){
 				//loop through hists in dir
 				name = dir->GetName();
@@ -458,7 +458,7 @@ void HistFormat(string file){
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
 				//draw as tcanvases
-				if(name.find("sigma") != string::npos){
+				if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
 					xlab = hists[0]->GetXaxis()->GetTitle();
 					ylab = hists[0]->GetYaxis()->GetTitle();
 				}
@@ -468,6 +468,25 @@ void HistFormat(string file){
 				}
 				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
 				cv->Write(); 
+			}
+			//for 2D hists
+			vector<TH2D*> hists2D;
+			//loop through hists in dir
+			//if(!types[i].empty()) name += "_"+types[i];
+			GetHists(dir, "", hists2D);
+			string title;
+			if(hists2D.size() > 0){
+				for(int h = 0; h < hists2D.size(); h++){
+					name = hists2D[h]->GetName();
+					title = hists2D[h]->GetTitle();
+					TCanvas *cv = new TCanvas(name.c_str(), "");
+					ofile->cd();
+					//draw as tcanvases
+					xlab = hists2D[h]->GetXaxis()->GetTitle();
+					ylab = hists2D[h]->GetYaxis()->GetTitle();
+					TDR2DHist(hists2D[h], cv, xlab, ylab, cmslab, title);
+					cv->Write(); 
+				}
 			}
 			//if directory is full of directories (stack by method)
 			//each dir is full of histograms (stack by process)
@@ -490,22 +509,41 @@ void HistFormat(string file){
 					ddir->cd();
 					//we're in the directory with hists of one method split by procs
 					GetHists(ddir, "", hists);
-					if(hists.size() < 1) continue;
-					FindListHistBounds(hists, ymin, ymax);
-					if(ymin == 0 && ymax == 0) continue;
-					TCanvas *cv = new TCanvas(name.c_str(), "");
-					ofile->cd();
-					//draw as tcanvases
-					if(name.find("sigma") != string::npos){
-						xlab = hists[0]->GetXaxis()->GetTitle();
-						ylab = hists[0]->GetYaxis()->GetTitle();
+					if(hists.size() > 0){
+						FindListHistBounds(hists, ymin, ymax);
+						if(ymin == 0 && ymax == 0) continue;
+						TCanvas *cv = new TCanvas(name.c_str(), "");
+						ofile->cd();
+						//draw as tcanvases
+						if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
+							xlab = hists[0]->GetXaxis()->GetTitle();
+							ylab = hists[0]->GetYaxis()->GetTitle();
+						}
+						else{
+							xlab = name;
+							ylab = "a.u."; 
+						}
+						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+						cv->Write(); 
 					}
-					else{
-						xlab = name;
-						ylab = "a.u."; 
+					vector<TH2D*> hhists2D;
+					//loop through hists in dir
+					//if(!types[i].empty()) name += "_"+types[i];
+					GetHists(ddir, "", hhists2D);
+					if(hhists2D.size() > 0){
+						for(int h = 0; h < hhists2D.size(); h++){
+							if(hhists2D[h]->GetEntries() == 0) continue;
+							name = hhists2D[h]->GetName();
+							title = hhists2D[h]->GetTitle();
+							TCanvas *cv = new TCanvas(name.c_str(), "");
+							ofile->cd();
+							//draw as tcanvases
+							xlab = hhists2D[h]->GetXaxis()->GetTitle();
+							ylab = hhists2D[h]->GetYaxis()->GetTitle();
+							TDR2DHist(hhists2D[h], cv, xlab, ylab, cmslab, title);
+							cv->Write(); 
+						}
 					}
-					TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
-					cv->Write(); 
 				}
 
 			}
