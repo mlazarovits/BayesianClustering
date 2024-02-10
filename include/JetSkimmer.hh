@@ -284,7 +284,7 @@ class JetSkimmer : public BaseSkimmer{
 		//6 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [8,12)
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
-		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,-4,4);
+		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,4,12);
 
 
 
@@ -964,6 +964,8 @@ class JetSkimmer : public BaseSkimmer{
 					//write total method histogram outside process directory
 					if(trs[j].procCats[0].hists2D[0][i] == nullptr) continue;
 					if(trs[j].procCats[0].hists2D[0][i]->GetEntries() == 0 && (histname.find("sigma") == string::npos && histname.find("profile") == string::npos && histname.find("meanRecoGenDeltaT") == string::npos)){ continue; }
+					//check if data can be run
+					if(histname.find("recoGen") != string::npos && _data) continue;
 					//cout << "writing " << trs[j].procCats[0].hists1D[0][i]->GetName() << " " << trs[j].procCats[0].hists1D[0][i]->GetTitle() << " to " << dir->GetName() << endl;
 					trs[j].procCats[0].hists2D[0][i]->Write();
 					//write method as directory within directory
@@ -975,6 +977,9 @@ class JetSkimmer : public BaseSkimmer{
 						//if(dirname.find("meanRecoGenDeltaT") != string::npos) cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists2D[0][i]->GetName() << " " << trs[j].procCats[p].hists2D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists2D[0][i]->GetEntries() << endl;			
 						if(trs[j].procCats[p].hists2D[0][i] == nullptr) continue;
 						if(trs[j].procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue; }//cout << "Histogram for proc " << trs[j].plotName << " not filled." << endl; continue; }
+						//check if data can be run
+						histname = trs[j].procCats[p].hists2D[0][i]->GetName();
+						if(histname.find("recoGen") != string::npos && _data) continue;
 						//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
 						trs[j].procCats[p].hists2D[0][i]->Write();
 					
