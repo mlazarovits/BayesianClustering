@@ -51,6 +51,7 @@ void PhotonSkimmer::Skim(){
 	double pvx, pvy, pvz;
 	_timeoffset = 0;
 	_swcross = 0;
+	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		_prod->GetTruePhotons(phos, e, _gev);
@@ -65,6 +66,7 @@ void PhotonSkimmer::Skim(){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
+			phoidx = phos[p].GetUserIdx();
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
@@ -117,8 +119,15 @@ void PhotonSkimmer::Skim(){
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
 						FillModelHists(gmm, i);
 						FillCMSHists(rhs,i);
-						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
-						vector<double> cmsvars;
+						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
+						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
+						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
+		
+						scidx = _base->Photon_scIndex->at(phoidx);
+						_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
+						_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
+						_procCats[i].hists1D[0][228]->Fill(rhs.size());
+
 					}
 				}
 			}

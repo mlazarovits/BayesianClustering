@@ -269,6 +269,11 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists1D.push_back(noErot2D_phiE2Deq0PiOv2);
                 	_hists1D.push_back(noErot2D_phiE2Dneq0PiOv2);
 			_hists1D.push_back(swCross); 
+			_hists1D.push_back(trueSmaj);
+			_hists1D.push_back(trueSmin);
+			_hists1D.push_back(trueSiEtaiEta);
+			_hists1D.push_back(trueSiPhiiPhi);
+			_hists1D.push_back(phoNrhs);		
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -397,6 +402,18 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(rot2D_phiEll2D_timeNeg10toNeg2);
                 	_hists2D.push_back(rot2D_phiEll2D_timeNeg2to5);
                 	_hists2D.push_back(rot2D_phiEll2D_time5to15);
+			_hists2D.push_back(phoE_logEsmaj);
+			_hists2D.push_back(phoE_logEsmin);
+			_hists2D.push_back(phoE_logEetaSig);
+			_hists2D.push_back(phoE_logEphiSig);
+			_hists2D.push_back(phoE_logEetaPhiCov);
+			_hists2D.push_back(phoE_logEtimeEtaCov);
+			_hists2D.push_back(nRhs_logEsmaj);
+			_hists2D.push_back(nRhs_logEsmin);
+			_hists2D.push_back(nRhs_logEetaSig);
+			_hists2D.push_back(nRhs_logEphiSig);
+			_hists2D.push_back(nRhs_logEetaPhiCov);
+			_hists2D.push_back(nRhs_logEtimeEtaCov);
 
 
 		};
@@ -862,10 +879,19 @@ class PhotonSkimmer : public BaseSkimmer{
 		//223 - swissCross
 		TH1D* swCross = new TH1D("swCross","swCross",25,0.9,1.1); 
 
-
+		//224 - true smaj
+		TH1D* trueSmaj = new TH1D("trueSmaj","trueSmaj",25,0,5);
+		//225 - true smaj
+		TH1D* trueSmin = new TH1D("trueSmin","trueSmin",25,0,2);
+		//226 - true sietaieta
+		TH1D* trueSiEtaiEta = new TH1D("trueSiEtaiEta","trueSiEtaiEta",25,0.01,0.09);
+		//227 - true siphiiphi
+		TH1D* trueSiPhiiPhi = new TH1D("trueSiPhiiPhi","trueSiPhiiPhi",25,0.01,0.09);
+		//228 - nrhs
+		TH1D* phoNrhs = new TH1D("phoNrhs","phoNrhs",25,0,100);		
 
 		
-
+	
 		//0 - time v subcl subcluster energy
 		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
 		//1 - azimuthal angle v subcl energy
@@ -1133,6 +1159,32 @@ class PhotonSkimmer : public BaseSkimmer{
 		//126 - rot2D vs phiE2D, 5 < t < 15
                 TH2D* rot2D_phiEll2D_time5to15 = new TH2D("rot2D_phiE2D_time5to15","rot2D_phiE2D_time5to15;rot2D;phiE2D_time5to15",25,0.4,1.1,25,-3.1,1);
 
+
+		//127 - phoE vs logE smaj
+		TH2D* phoE_logEsmaj = new TH2D("phoE_logEsmaj","phoE_logEsmaj;phoE;logEsmaj;a.u.",25,0,1000,25,0,0.004);
+		//128 - phoE vs logE smin
+		TH2D* phoE_logEsmin = new TH2D("phoE_logEsmin","phoE_logEsmin;phoE;logEsmin;a.u.",25,0,1000,25,0,0.004);
+		//129 - phoE vs logE sieie
+		TH2D* phoE_logEetaSig = new TH2D("phoE_logEetaSig","phoE_logEetaSig;phoE;logEetaSig",25,0,1000,25,0.01,0.09);
+		//130 - phoE vs logE sipip
+		TH2D* phoE_logEphiSig = new TH2D("phoE_logEphiSig","phoE_logEphiSig;phoE;logEphiSig",25,0,1000,25,0.01,0.09);
+		//131 - phoE vs logE etaphicov
+		TH2D* phoE_logEetaPhiCov = new TH2D("phoE_logEetaPhiCov","phoE_logEetaPhiCov",25,0,1000,25,-1,1);
+		//132 - phoE vs logE timeetacov
+		TH2D* phoE_logEtimeEtaCov = new TH2D("phoE_logEtimeEtaCov","phoE_logEtimeEtaCov",25,0,1000,25,-1,1);
+		//133 - nRhs vs logE smaj
+		TH2D* nRhs_logEsmaj = new TH2D("nRhs_logEsmaj","nRhs_logEsmaj;nRhs;logEsmaj;a.u.",25,0,100,25,0,0.004);
+		//134 - nRhs vs logE smin
+		TH2D* nRhs_logEsmin = new TH2D("nRhs_logEsmin","nRhs_logEsmin;nRhs;logEsmin;a.u.",25,0,100,25,0,0.004);
+		//135 - nRhs vs logE sieie
+		TH2D* nRhs_logEetaSig = new TH2D("nRhs_logEetaSig","nRhs_logEetaSig;nRhs;logEetaSig;a.u.",25,0,100,25,0.01,0.09);
+		//136 - nRhs vs logE sipip
+		TH2D* nRhs_logEphiSig = new TH2D("nRhs_logEphiSig","nRhs_logEphiSig;nRhs;logEphiSig;a.u.",25,0,100,25,0.01,0.09);
+		//137 - phoE vs logE etaphicov
+		TH2D* nRhs_logEetaPhiCov = new TH2D("nRhs_logEetaPhiCov","nRhs_logEetaPhiCov;nRhs;etaPhiCov;a.u.",25,0,100,25,-1,1);
+		//138 - phoE vs logE timeetacov
+		TH2D* nRhs_logEtimeEtaCov = new TH2D("nRhs_logEtimeEtaCov","nRhs_logEtimeEtaCov;nRhs;timeEtaCov;a.u.",25,0,100,25,-1,1);
+		
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2487,6 +2539,30 @@ class PhotonSkimmer : public BaseSkimmer{
 		//112 - no E etaPhiCov vs timeEtaCov
 		_procCats[id_idx].hists2D[0][112]->Fill(cmsNoE_ep_cov, cmsNoE_te_cov);
 
+		//127 - phoE vs logE smaj
+		_procCats[id_idx].hists2D[0][127]->Fill(E_tot, cmsLogE_smaj);
+		//128 - phoE vs logE smin
+		_procCats[id_idx].hists2D[0][128]->Fill(E_tot, cmsLogE_smin);
+		//129 - phoE vs logE sieie
+		_procCats[id_idx].hists2D[0][129]->Fill(E_tot, cmsLogE_e_var);
+		//130 - phoE vs logE sipip
+		_procCats[id_idx].hists2D[0][130]->Fill(E_tot, cmsLogE_p_var);
+		//131 - phoE vs logE etaphicov
+		_procCats[id_idx].hists2D[0][131]->Fill(E_tot, cmsLogE_ep_cov);
+		//132 - phoE vs logE timeetacov
+		_procCats[id_idx].hists2D[0][132]->Fill(E_tot, cmsLogE_te_cov);
+		//133 - nRhs vs logE smaj
+		_procCats[id_idx].hists2D[0][133]->Fill(rhs.size(), cmsLogE_smaj);
+		//134 - nRhs vs logE smin
+		_procCats[id_idx].hists2D[0][134]->Fill(rhs.size(), cmsLogE_smin);
+		//135 - nRhs vs logE sieie
+		_procCats[id_idx].hists2D[0][135]->Fill(rhs.size(), cmsLogE_e_var);
+		//136 - nRhs vs logE sipip
+		_procCats[id_idx].hists2D[0][136]->Fill(rhs.size(), cmsLogE_p_var);
+		//137 - phoE vs logE etaphicov
+		_procCats[id_idx].hists2D[0][137]->Fill(rhs.size(), cmsLogE_ep_cov);
+		//138 - phoE vs logE timeetacov
+		_procCats[id_idx].hists2D[0][138]->Fill(rhs.size(), cmsLogE_te_cov);
 
 
 	}
