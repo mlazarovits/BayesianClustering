@@ -16,7 +16,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
         int nrhs, rhidx;
 	bool jetid;
 	double dr, deta, dphi, eme;
-	double timecorr, drh, dpv;
+	double timecorr, drh, dpv, calibfactor;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
@@ -73,7 +73,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//TOF from PV to rh location
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
-                           
+                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+ 
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
@@ -83,7 +84,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
                                 
@@ -114,7 +115,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	//only take leading and subleading (if these exist)
 	if(nPhos > 2) nPhos = 2;
         int nrhs, rhidx;
-	double timecorr = 0; //to get photon time in "PV frame"
+	double timecorr, calibfactor; 
 	double drh;
 	int scidx;
 
@@ -179,10 +180,11 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//dont need (would bring photon into PV frame) - TOF from PV to rh location
 				timecorr = drh;
+                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;

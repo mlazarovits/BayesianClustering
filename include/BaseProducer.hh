@@ -11,6 +11,7 @@
 #include "TPad.h"
 #include "TLatex.h"
 #include "TCanvas.h"
+#include <fstream>
 
 class BaseProducer{
 	public:
@@ -22,6 +23,8 @@ class BaseProducer{
 			_minnrhs = 0;
 			_year = 2018;
 			_data = false;
+			_calibmap = nullptr;
+			SetupDetIDsEB();
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -50,11 +53,13 @@ class BaseProducer{
 			//set if data
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
+			_calibmap = nullptr;
+			SetupDetIDsEB();
 
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
-			
+			delete _calibmap;	
 		};
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
@@ -106,5 +111,54 @@ class BaseProducer{
 		double _c = 29.9792458;	
 		bool _data;
 		int _year;
+
+		TH2D* _calibmap;
+		void SetTimeCalibrationMap(TFile* f){
+			_calibmap = (TH2D*)f->Get("AveXtalRatioRecTimeEBMap");
+		};
+		
+		double GetTimeCalibrationFactor(int ieta, int iphi){
+			if(!_calibmap){ cout << "Calibration map not set." << endl; return -999; }
+			if(iphi < 1 || iphi > 360){cout << "Invalid iphi: " << iphi << endl; return -999; }
+			if(ieta < -85 || ieta > 85){cout << "Invalid ieta: " << ieta << endl; return -999; }
+			return _calibmap->GetBinContent(ieta+86, iphi);
+		};
+
+
+		double GetTimeCalibrationFactor(unsigned int rhid){
+			//transform from (rh) -> (ieta, iphi)
+			unsigned int ieta = _detIDMap[rhid].i2;
+			unsigned int iphi = _detIDMap[rhid].i1;
+			return GetTimeCalibrationFactor(ieta, iphi);
+		}
+		struct DetIDStruct {
+                        DetIDStruct() {}
+                        DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
+                        int i1;
+                        int i2;
+                        Int_t TT; 
+                        Int_t ecal; 
+                };
+
+
+		map<UInt_t, DetIDStruct> _detIDMap;
+
+
+		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
+		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
+		void SetupDetIDsEB(){
+		    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
+		    std::ifstream infile( detIDConfigEB, std::ios::in);
+		
+		    UInt_t cmsswId, dbID;
+	            pair<int, int> ietaiphi;
+		    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+		    std::string pos;
+		
+		    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
+		        _detIDMap[cmsswId] = {iphi,ieta,TT25,0};
+		    }
+		}
+
 };
 #endif

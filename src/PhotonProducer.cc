@@ -44,7 +44,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	nphotons = (int)_base->Photon_energy->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 
-	double timecorr, drh;
+	double timecorr, drh, calibfactor;
 	
 	int scidx; //supercluster index
 	for(int p = 0; p < nphotons; p++){
@@ -77,10 +77,11 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					drh = _base->ECALRecHit_0TOF->at(j);
 					//TOF from PV to rh location
 					timecorr = drh;
+					calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
 
 					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr);
+                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
 					
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
@@ -114,7 +115,7 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
-	double timecorr, drh;
+	double timecorr, drh, calibfactor;
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -143,10 +144,12 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				drh = _base->ECALRecHit_0TOF->at(j);
 				//TOF from PV to rh location
 				timecorr = drh;
+				calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
+
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr);
+                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
 				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
