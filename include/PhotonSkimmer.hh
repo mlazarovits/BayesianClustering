@@ -1189,7 +1189,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
-			noEweight = 2
+			logEweight = 2
 		};
 		
 		struct DetIDStruct {
