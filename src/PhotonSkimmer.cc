@@ -135,7 +135,14 @@ void PhotonSkimmer::Skim(){
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i);
 					FillCMSHists(rhs,i);
-					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
+					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
+					_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
+		
+					scidx = _base->Photon_scIndex->at(phoidx);
+					_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
+					_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
+					_procCats[i].hists1D[0][228]->Fill(rhs.size());
 				}
 				
 
