@@ -284,7 +284,7 @@ class JetSkimmer : public BaseSkimmer{
 		//6 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [8,12)
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
-		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,4,12);
+		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
 
 
 
@@ -545,19 +545,19 @@ class JetSkimmer : public BaseSkimmer{
 			double dpho = -999;
 			int genidx, phoidx, phoid;
 			//gen photon coordinates
-			double px, py, pz, ptheta, peta, pphi, vx, vy, vz;
+			double phox, phoy, phoz, photheta, phoeta, phophi, vx, vy, vz;
 			//if no match
 			phoidx = pho.GetUserIdx();
 			genidx = _base->Photon_genIdx->at(phoidx);
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
-			peta = _base->Gen_eta->at(genidx);
-			pphi = _base->Gen_phi->at(genidx);
-			ptheta = 2*atan(exp(-1*peta));
-			px = 120*sin(pphi);
-			py = 120*cos(pphi);
-			pz = 120/tan(ptheta);			
+			phoeta = _base->Gen_eta->at(genidx);
+			phophi = _base->Gen_phi->at(genidx);
+			photheta = 2*atan(exp(-1*phoeta));
+			phox = 120*sin(phophi);
+			phoy = 120*cos(phophi);
+			phoz = 120/tan(photheta);			
 			
 			double pvx = _base->PV_x;
 			double pvy = _base->PV_y;
@@ -581,7 +581,7 @@ class JetSkimmer : public BaseSkimmer{
 				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
 			
 				//distance bw photon and production point (LLP)
-				dpho = sqrt( (px - vx)*(px - vx) + (py - vy)*(py - vy) + (pz - vz)*(pz - vz) )/_c;
+				dpho = sqrt( (phox - vx)*(phox - vx) + (phoy - vy)*(phoy - vy) + (phoz - vz)*(phoz - vz) )/_c;
 		
 				//distance bw LLP and PV
 				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(_c*beta);	
@@ -590,7 +590,7 @@ class JetSkimmer : public BaseSkimmer{
 			//assume prompt production
 			else{
 				//distance bw photon and production point (PV)
-				dpho = sqrt( (px - pvx)*(px - pvx) + (py - pvy)*(py - pvy) + (pz - pvz)*(pz - pvz) )/_c;
+				dpho = sqrt( (phox - pvx)*(phox - pvx) + (phoy - pvy)*(phoy - pvy) + (phoz - pvz)*(phoz - pvz) )/_c;
 			}
 			
 			return dpho;
