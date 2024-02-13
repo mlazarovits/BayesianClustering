@@ -1440,6 +1440,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
 				MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
+
 				//set time covariance from GMM
 				majminCovMat.SetEntry(cov.at(2,2),2,2);
 				majtime_cov = CalcCov(majminCovMat,2,0);
@@ -2084,7 +2085,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//already e-weighted
 			if(ws == 2) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
 			//do phi wraparound
-			if(pt.at(1) > acos(-1)) pt.SetValue(-pt.at(1),1);
+			if(pt.at(1) > acos(-1)) pt.SetValue(pt.at(1)-2*acos(-1),1);
 			meta += pt.w()*pt.at(0); 
 			mphi += pt.w()*pt.at(1);
 			mtime += pt.w()*pt.at(2);		
