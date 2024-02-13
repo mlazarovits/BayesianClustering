@@ -133,6 +133,7 @@ class BaseProducer{
 			//transform from (rh) -> (ieta, iphi)
 			unsigned int ieta = _detIDMap[rhid].i2;
 			unsigned int iphi = _detIDMap[rhid].i1;
+			cout << "id: " << rhid << " ieta: " << ieta << " iphi: " << iphi << endl;
 			return GetTimeCalibrationFactor(ieta, iphi);
 		}
 		struct DetIDStruct {
@@ -151,11 +152,11 @@ class BaseProducer{
 		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
 		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
 		void SetupDetIDsEB(){
+	cout << "SetupDetIDEBs" << endl;	    
 		    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
 		    std::ifstream infile( detIDConfigEB, std::ios::in);
 		
 		    UInt_t cmsswId, dbID;
-	            pair<int, int> ietaiphi;
 		    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
 		    std::string pos;
 		
