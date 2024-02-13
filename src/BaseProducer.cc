@@ -67,6 +67,11 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
+				//if rh is in endcap, skip
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//remove timing reco (ratio) failed fits
+				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location
@@ -77,10 +82,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
 
-				//remove timing reco (ratio) failed fits
-				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
-				//if rh is in endcap, skip
-				if(_base->ECALRecHit_eta->at(rhidx) > 1.479) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
@@ -176,6 +177,11 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
+				//if rh is in endcap, skip
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//remove timing reco (ratio) failed fits
+				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				timecorr = drh;
@@ -187,7 +193,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
-				if(_base->ECALRecHit_eta->at(rhidx) > 1.479) continue;
 				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
