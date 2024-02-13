@@ -42,7 +42,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		eme = _base->Jet_energy->at(j)*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
-                if(fabs(_base->Jet_eta->at(j)) > 1.5) continue;
+                if(fabs(_base->Jet_eta->at(j)) > 1.4) continue;
 		if(eme < _mineme) continue;
 
 		//create jet id (based on tight 2017 Run II recommendations)
@@ -58,7 +58,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 			//skip whole event
 			if(hemVeto) return;
 		}
-
                 Jet jet(px, py, pz, _base->Jet_energy->at(j));
                 jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
@@ -74,13 +73,14 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
                           	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
- 
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
 
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+				//if rh is in endcap, skip
+				if(_base->ECALRecHit_eta->at(rhidx) > 1.479) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
@@ -152,7 +152,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
-		if(fabs(_base->Photon_eta->at(p)) > 1.5) continue;
+		if(fabs(_base->Photon_eta->at(p)) > 1.4) continue;
                 //isolation cuts
 		bool iso;
 		bool trksum;
@@ -178,7 +178,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                                 rhidx = rhit - rhids.begin();
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
-				//dont need (would bring photon into PV frame) - TOF from PV to rh location
 				timecorr = drh;
                           	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 
@@ -188,6 +187,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
+				if(_base->ECALRecHit_eta->at(rhidx) > 1.479) continue;
+				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
