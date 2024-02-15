@@ -78,6 +78,8 @@ There are muliple visualization classes:
 	- fill histogram in the derived object skimmer
 - plots are saved as histograms (not PDFs or TCanvases) so they can be hadded together
 	- if running the skimmer on condor (see below)
+- to create profiles and derived histograms from 2D histograms, run `root -l -b -q 'macros/Profile2D.C("[skim.root]")'
+	- this will edit the passed histograms to fill the respective, empty histograms that depend on profiles
 - to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormat.C("[skim.root]")'` from command line
 - to quickly make PDFs for a subset of histograms, run `root -l -b -q 'macros/MakePDFs.C("[input_skim_formatted.root]","[output_dir]","[hist_name_match_string]")'`
 - to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
