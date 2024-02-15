@@ -152,9 +152,12 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
-	if(hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2){
-		hist->SetMarkerSize(3.);
-		hist->Draw("colztext");
+	string histname = hist->GetName();
+	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
+		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
+			hist->SetMarkerSize(1.3);
+		else hist->SetMarkerSize(3.);
+		hist->Draw("colz1text");
 	}
 	else hist->Draw("colz1");
 
