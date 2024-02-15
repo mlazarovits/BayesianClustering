@@ -156,7 +156,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		hist->SetMarkerSize(3.);
 		hist->Draw("colztext");
 	}
-	else hist->Draw("colz");
+	else hist->Draw("colz1");
 
 	string name = hist->GetName();
 	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
