@@ -71,6 +71,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+				//energy cut
+				if(_base->ECALRecHit_energy->at(rhidx) < 0.5) continue;				
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
@@ -154,7 +156,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
 		if(fabs(_base->Photon_eta->at(p)) > 1.4) continue;
-                //isolation cuts
+
+		//isolation cuts
 		bool iso;
 		bool trksum;
 		bool ecalrhsum;
@@ -181,7 +184,10 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
-				
+				//energy cut
+				if(_base->ECALRecHit_energy->at(rhidx) < 0.5) continue;				
+
+
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location - use this to improve time covariance

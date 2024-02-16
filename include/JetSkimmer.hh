@@ -729,15 +729,35 @@ class JetSkimmer : public BaseSkimmer{
 	
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
-			if(ts == med) return CalcMedianTime(jet);
-			else if(ts == eavg) return CalcEAvgTime(jet);
+			double time = -999;
+			if(ts == med) time = CalcMedianTime(jet);
+			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters());
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
-				return CalcMMAvgTime(gmm, pho);
+				time = CalcMMAvgTime(gmm, pho);
 			}
-			else return -999;
+			else cout << "Error: invalid time reconstruction method specified for calculating jet time" << endl;
+			//if photon, shift time to detector by centroid as defined above
+			if(pho){
+				Point center;
+				if(ts == med) center = CalcMedianCenter(jet);
+				else if(ts == eavg) center = CalcEAvgCenter(jet);
+				else if(ts == mmavg){
+					GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
+					center = CalcMMAvgCenter(gmm, pho);
+				}
+				//else return time;
+				Point pv = jet.GetVertex();
+				double dx = center.at(0) - pv.at(0);
+				double dy = center.at(1) - pv.at(1);
+				double dz = center.at(2) - pv.at(2);
+				double t_shift = sqrt(dx*dx + dy*dy + dz*dz)/_c;
+				//shift from PV to detector face
+				time += t_shift;
+			}	
+			return time;
 
 		}
 		double CalcPVTime(const TimeStrategy& ts, vector<Jet>& jets){
@@ -749,7 +769,7 @@ class JetSkimmer : public BaseSkimmer{
 					times.push_back(jets[i].t());
 				//even - return average of two median times
 				if(njets % 2 == 0)
-					time = (times[int(double(njets)/2.)] + times[int(double(njets)/2.)-1]/2.);
+					time = (times[int(double(njets)/2.)] + times[int(double(njets)/2.)-1])/2.;
 				//odd - return median
 				else
 					time = times[int(double(njets)/2.)];
@@ -789,29 +809,87 @@ class JetSkimmer : public BaseSkimmer{
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++)
 				times.push_back(rhs[i].t());
+			//make sure times are sorted
+			sort(times.begin(), times.end());
 			//even - return average of two median times
 			if(nrhs % 2 == 0)
-				time = (times[int(double(nrhs)/2.)] + times[int(double(nrhs)/2.)-1]/2.);
+				time = (times[int(double(nrhs)/2.)] + times[int(double(nrhs)/2.)-1])/2.;
 			//odd - return median
 			else
 				time = times[int(double(nrhs)/2.)];
 			return time;
 		}		
 
+		Point CalcMedianCenter(Jet& j){
+			map<double,Point> timeLoc;
+			Point center(3);
+			double time = -999;
+			vector<double> times;
+			vector<JetPoint> rhs = j.GetJetPoints();
+			int nrhs = rhs.size();
+			Point pt(3);
+			for(int i = 0; i < nrhs; i++){
+				pt.SetValue(rhs[i].x(),0);
+				pt.SetValue(rhs[i].y(),1);
+				pt.SetValue(rhs[i].z(),2);
+				timeLoc[rhs[i].t()] = pt;
+			}
+			for(auto it = timeLoc.begin(); it != timeLoc.end(); it++){
+				times.push_back(it->first);
+			}
+			//even - return average of two median times
+			if(nrhs % 2 == 0){
+				Point center(3);
+				double t1 = times[int(double(nrhs)/2.)];
+				double t2 = times[int(double(nrhs)/2.)-1];
 
+				center.SetValue((timeLoc[t1].at(0) + timeLoc[t2].at(0))/2.,0);
+				center.SetValue((timeLoc[t1].at(1) + timeLoc[t2].at(1))/2.,1);
+				center.SetValue((timeLoc[t1].at(2) + timeLoc[t2].at(2))/2.,2);
+		
+				return center;	
+			}
+			//odd - return median
+			else{
+				time = times[int(double(nrhs)/2.)];
+				return timeLoc[time];
+			}
+		}		
+
+
+
+		Point CalcEAvgCenter(Jet& j){
+			double norm = 0;
+			double x = 0;
+			double y = 0;
+			double z = 0;
+			Point center(3);
+			vector<JetPoint> rhs = j.GetJetPoints();
+			int nrhs = rhs.size();
+			for(int i = 0; i < nrhs; i++){
+				norm += rhs[i].E();
+				x += rhs[i].E()*rhs[i].x();
+				y += rhs[i].E()*rhs[i].y();
+				z += rhs[i].E()*rhs[i].z();
+			}
+			center.SetValue(x/norm,0);
+			center.SetValue(y/norm,1);
+			center.SetValue(z/norm,2);
+			return center;
+		}
+		
 		double CalcEAvgTime(Jet& j){
 			double t = 0;
 			double norm = 0;
-			double time = -999;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++){
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			}
-			time = t/norm;
-			return time;
+			return t/norm;
 		}
+
 
 
 		GaussianMixture* _subcluster(const Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
@@ -850,6 +928,38 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
 			}
 			return t/norm; 
+		}
+		
+		Point CalcMMAvgCenter(BasePDFMixture* model, bool pho){
+			int kmax = model->GetNClusters();
+			double norm = 0;
+			double x = 0;
+			double y = 0;
+			double z = 0;
+			double phi, eta, theta;
+			Point center(3);
+			map<string, Matrix> params;
+			for(int k = 0; k < kmax; k++){
+				params = model->GetPriorParameters(k);
+				phi = params["mean"].at(0,0);
+				eta = params["mean"].at(1,0);
+				theta = 2*atan(exp(-1*eta));
+				x += params["pi"].at(0,0)*120*sin(phi);
+				y += params["pi"].at(0,0)*120*cos(phi);
+				z += params["pi"].at(0,0)*120/tan(theta);			
+			
+				norm += params["pi"].at(0,0);
+				if(pho){
+					center.SetValue(x/norm,0);
+					center.SetValue(y/norm,1);
+					center.SetValue(z/norm,2);
+					return center;
+				}
+			}
+			center.SetValue(x/norm,0);
+			center.SetValue(y/norm,1);
+			center.SetValue(z/norm,2);
+			return center;
 		}
 
 		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
