@@ -117,7 +117,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	if(nPhos > 2) nPhos = 2;
         int nrhs, rhidx;
 	double timecorr, calibfactor; 
-	double drh;
+	double drh, dpv;
 	int scidx;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
@@ -184,7 +184,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
-				timecorr = drh;
+				//TOF from PV to rh location - use this to improve time covariance
+				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
+				timecorr = drh - dpv;
                           	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
