@@ -802,7 +802,7 @@ class JetSkimmer : public BaseSkimmer{
 					time = times[int(double(njets)/2.)];
 
 			}
-			else if(ts == eavg){
+			else if(ts == eavg || ts == emax){
 				double norm = 0;
 				double t = 0;
 				double e = 0;
