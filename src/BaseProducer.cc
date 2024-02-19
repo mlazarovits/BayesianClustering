@@ -16,7 +16,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 	cout << "Minimum ECAL energy: " << _mineme << endl;
 	cout << "Minimum jet eta: " << minjeteta << endl;
 	cout << "Minimum rh (barrel only) energy: " << minrhE << endl;
-        cout << "Minimum # of in-time rhs: " << _minrhs << endl;
+        cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
 	if(evt > _nEvts) return;
 
         _base->GetEntry(evt);
