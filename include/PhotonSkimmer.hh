@@ -1198,7 +1198,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//138 - phoE vs logE timeetacov
 		TH2D* nRhs_logEtimeEtaCov = new TH2D("nRhs_logEtimeEtaCov","nRhs_logEtimeEtaCov;nRhs;timeEtaCov;a.u.",25,0,100,25,-1,1);
 		//139 - nrhs vs phoE
-		TH2D* phoE_nRhs = new TH2D("phoE_nRhs","phoE_nRhs",25,0,1000,25,0,100);		
+		TH2D* phoE_nRhs = new TH2D("phoE_nRhs","phoE_nRhs;phoEnergy;nRhs;a.u.",25,0,1000,25,0,100);		
 
 
 		enum weightScheme{
@@ -2099,19 +2099,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(ws == 0) pt.SetWeight( 1.0 );
 			//already e-weighted
 			if(ws == 2) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
-			//do phi wraparound
-			if(pt.at(1) > acos(-1)) pt.SetValue(pt.at(1)-2*acos(-1),1);
-			meta += pt.w()*pt.at(0); 
-			mphi += pt.w()*pt.at(1);
-			mtime += pt.w()*pt.at(2);		
-	
 			pcnew.AddPoint(pt);
 		}
+		//center at 0 - [-pi, pi]
+		pcnew.Center();
 		//calculate weighted mean - with phi wraparound
-		mean.SetValue(meta/pcnew.Sumw(),0);
-		mean.SetValue(mphi/pcnew.Sumw(),1);
-		mean.SetValue(mtime/pcnew.Sumw(),2);
-		
+		mean.SetValue(pcnew.Centroid(0),0);
+		mean.SetValue(pcnew.Centroid(1),1);
+		mean.SetValue(pcnew.Centroid(2),2);
 		double ent;
 		double ent_pt, dd1, dd2;
 		double pi = acos(-1);
