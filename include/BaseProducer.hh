@@ -22,6 +22,7 @@ class BaseProducer{
 			_mineme = 0;
 			_minnrhs = 0;
 			_minrhE = 0.5;
+			_minobjeta = 1.4;
 			_year = 2018;
 			_data = false;
 			_calibmap = nullptr;
@@ -46,6 +47,8 @@ class BaseProducer{
 			_minpt = 30;
 			_mineme = 20;
 			_minnrhs = 15;
+			_minrhE = 0.5;
+			_minobjeta = 1.4;
 			
 			//set year
 			string name = file->GetName();
@@ -83,6 +86,14 @@ class BaseProducer{
 
 		ReducedBase* GetBase(){ return _base; }
 
+		void PrintPreselection(){
+			cout << "Default energy transfer factor: " << _gev << endl;
+			cout << "Minimum pt: " << _minpt << endl;
+			cout << "Minimum ECAL energy: " << _mineme << endl;
+			cout << "Minimum object eta: " << _minobjeta << endl;
+			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
+        		cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
+		}
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;
@@ -101,6 +112,8 @@ class BaseProducer{
 		double _mineme;
 		void SetMinRhE(double r){ _minrhE = r; }
 		double _minrhE;
+		void SetMinObjEta(double e){ _minobjeta = e; }
+		double _minobjeta;
 
 		double deltaR2(double e1, double p1, double e2, double p2){
 			double de = e1 - e2;

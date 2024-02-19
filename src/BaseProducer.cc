@@ -9,14 +9,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 	//false = keep (ok)
 	bool hemVeto = false;	
 	double minrhE = 0.5;
-	double minjeteta = 1.4;
-	cout << "Getting true jets with following criteria:" << endl;
-	cout << "Energy transfer factor: " << gev << endl;
-	cout << "Minimum pt: " << _minpt << endl;
-	cout << "Minimum ECAL energy: " << _mineme << endl;
-	cout << "Minimum jet eta: " << minjeteta << endl;
-	cout << "Minimum rh (barrel only) energy: " << minrhE << endl;
-        cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
 	if(evt > _nEvts) return;
 
         _base->GetEntry(evt);
@@ -50,7 +42,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		eme = _base->Jet_energy->at(j)*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
-                if(fabs(_base->Jet_eta->at(j)) > minjeteta) continue;
+                if(fabs(_base->Jet_eta->at(j)) > _minobjeta) continue;
 		if(eme < _mineme) continue;
 
 		//create jet id (based on tight 2017 Run II recommendations)
@@ -119,13 +111,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         if(gev == -1) gev = _gev;
 	double px, py, pz, pt, phi, eta;
         phos.clear();
-	cout << "Getting true photons with following criteria:" << endl;
-	cout << "Energy transfer factor: " << gev << endl;
-	cout << "Minimum pt: 30" << endl;
-	cout << "Minimum photon eta: 1.4" << endl;
-	cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
-        cout << "Minimum # of in-time rhs: 2" << endl;
-
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
         int nPhos = (int)_base->Photon_energy->size();
@@ -169,7 +154,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
-		if(fabs(_base->Photon_eta->at(p)) > 1.4) continue;
+		if(fabs(_base->Photon_eta->at(p)) > _minobjeta) continue;
 
 		//isolation cuts
 		bool iso;
