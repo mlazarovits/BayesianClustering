@@ -8,8 +8,16 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 	//true = skip
 	//false = keep (ok)
 	bool hemVeto = false;	
-
-        if(evt > _nEvts) return;
+	double minrhE = 0.5;
+	double minjeteta = 1.4;
+	cout << "Getting true jets with following criteria:" << endl;
+	cout << "Energy transfer factor: " << gev << endl;
+	cout << "Minimum pt: " << _minpt << endl;
+	cout << "Minimum ECAL energy: " << _mineme << endl;
+	cout << "Minimum jet eta: " << minjeteta << endl;
+	cout << "Minimum rh (barrel only) energy: " << minrhE << endl;
+        cout << "Minimum # of in-time rhs: " << _minrhs << endl;
+	if(evt > _nEvts) return;
 
         _base->GetEntry(evt);
         int nJets = (int)_base->Jet_energy->size();
@@ -42,7 +50,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		eme = _base->Jet_energy->at(j)*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
-                if(fabs(_base->Jet_eta->at(j)) > 1.4) continue;
+                if(fabs(_base->Jet_eta->at(j)) > minjeteta) continue;
 		if(eme < _mineme) continue;
 
 		//create jet id (based on tight 2017 Run II recommendations)
@@ -72,7 +80,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
-				if(_base->ECALRecHit_energy->at(rhidx) < 0.5) continue;				
+				if(_base->ECALRecHit_energy->at(rhidx) < minrhE) continue;				
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
@@ -111,6 +119,12 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         if(gev == -1) gev = _gev;
 	double px, py, pz, pt, phi, eta;
         phos.clear();
+	cout << "Getting true photons with following criteria:" << endl;
+	cout << "Energy transfer factor: " << gev << endl;
+	cout << "Minimum pt: 30" << endl;
+	cout << "Minimum photon eta: 1.4" << endl;
+	cout << "Minimum rh (barrel only) energy: 0.5" << endl;
+        cout << "Minimum # of in-time rhs: 2" << endl;
 
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
