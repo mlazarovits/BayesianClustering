@@ -274,6 +274,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(trueSiEtaiEta);
 			_hists1D.push_back(trueSiPhiiPhi);
 			_hists1D.push_back(phoNrhs);		
+			_hists1D.push_back(phoNrhs_Ebin1);		
+			_hists1D.push_back(phoNrhs_Ebin2);		
+			_hists1D.push_back(phoNrhs_Ebin3);		
+			_hists1D.push_back(phoNrhs_Ebin4);		
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -414,6 +418,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(nRhs_logEphiSig);
 			_hists2D.push_back(nRhs_logEetaPhiCov);
 			_hists2D.push_back(nRhs_logEtimeEtaCov);
+			_hists2D.push_back(phoE_nRhs);		
 
 
 		};
@@ -889,6 +894,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* trueSiPhiiPhi = new TH1D("trueSiPhiiPhi","trueSiPhiiPhi",25,0.01,0.09);
 		//228 - nrhs
 		TH1D* phoNrhs = new TH1D("phoNrhs","phoNrhs",25,0,100);		
+		//229 - nrhs, 0 <= E < 200
+		TH1D* phoNrhs_Ebin1 = new TH1D("phoNrhs_Ebin1","phoNrhs_Ebin1",25,0,100);		
+		//230 - nrhs, 200 <= E < 400
+		TH1D* phoNrhs_Ebin2 = new TH1D("phoNrhs_Ebin2","phoNrhs_Ebin2",25,0,100);		
+		//231 - nrhs, 400 <= E < 600
+		TH1D* phoNrhs_Ebin3 = new TH1D("phoNrhs_Ebin3","phoNrhs_Ebin3",25,0,100);		
+		//232 - nrhs, 600 <= E < 1000
+		TH1D* phoNrhs_Ebin4 = new TH1D("phoNrhs_Ebin4","phoNrhs_Ebin4",25,0,100);		
 
 		
 	
@@ -1184,7 +1197,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* nRhs_logEetaPhiCov = new TH2D("nRhs_logEetaPhiCov","nRhs_logEetaPhiCov;nRhs;etaPhiCov;a.u.",25,0,100,25,-1,1);
 		//138 - phoE vs logE timeetacov
 		TH2D* nRhs_logEtimeEtaCov = new TH2D("nRhs_logEtimeEtaCov","nRhs_logEtimeEtaCov;nRhs;timeEtaCov;a.u.",25,0,100,25,-1,1);
-		
+		//139 - nrhs vs phoE
+		TH2D* phoE_nRhs = new TH2D("phoE_nRhs","phoE_nRhs",25,0,1000,25,0,100);		
+
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2564,6 +2579,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		_procCats[id_idx].hists2D[0][137]->Fill(rhs.size(), cmsLogE_ep_cov);
 		//138 - phoE vs logE timeetacov
 		_procCats[id_idx].hists2D[0][138]->Fill(rhs.size(), cmsLogE_te_cov);
+		//139 - phoE vs nRhs
+		_procCats[id_idx].hists2D[0][139]->Fill(E_tot, rhs.size());
 
 
 	}
