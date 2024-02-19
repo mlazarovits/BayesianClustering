@@ -21,6 +21,7 @@ class BaseProducer{
 			_minpt = 0;
 			_mineme = 0;
 			_minnrhs = 0;
+			_minrhE = 0.5;
 			_year = 2018;
 			_data = false;
 			_calibmap = nullptr;
@@ -98,6 +99,8 @@ class BaseProducer{
 		double _minnrhs;
 		void SetMinEmE(double p){ _mineme = p; }
 		double _mineme;
+		void SetMinRhE(double r){ _minrhE = r; }
+		double _minrhE;
 
 		double deltaR2(double e1, double p1, double e2, double p2){
 			double de = e1 - e2;

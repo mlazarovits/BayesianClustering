@@ -123,7 +123,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	cout << "Energy transfer factor: " << gev << endl;
 	cout << "Minimum pt: 30" << endl;
 	cout << "Minimum photon eta: 1.4" << endl;
-	cout << "Minimum rh (barrel only) energy: 0.5" << endl;
+	cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
         cout << "Minimum # of in-time rhs: 2" << endl;
 
         if(evt > _nEvts) return;
@@ -199,7 +199,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
-				if(_base->ECALRecHit_energy->at(rhidx) < 0.5) continue;				
+				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;				
 
 
 				//TOF from 0 to rh location
