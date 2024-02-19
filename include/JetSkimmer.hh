@@ -79,6 +79,10 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2);
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3);
 			_timeHists2D.push_back(geoEavg_genDeltaTime_meanRecoGenDeltaT);
+			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin1);
+			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin2);
+			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin3);
+			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin4);
 
 
 
@@ -107,7 +111,8 @@ class JetSkimmer : public BaseSkimmer{
 		enum TimeStrategy{
 			med = 0, 
 			mmavg = 1, 
-			eavg = 2
+			eavg = 2,
+			emax = 3
 		};		
 		//struct for different types of time reco (ie median, eAvg, mmAvg)
 		struct timeRecoCat{
@@ -133,6 +138,8 @@ class JetSkimmer : public BaseSkimmer{
 					methodName = "eAvg";
 				else if(ts == mmavg)
 					methodName = "mmAvg";
+				else if(ts == emax)
+					methodName = "emax";
 				else
 					cout << "Error: time strategy " << ts << " not supported." << endl;		
 				string name;
@@ -285,7 +292,14 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
 		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
-
+		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 200
+		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1",25,0,12,25,0,12);
+		//9 - gen delta time vs reco delta time for signal photons - 200 <= E < 400
+		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2",25,0,12,25,0,12);
+		//10 - gen delta time vs reco delta time for signal photons - 400 <= E < 600
+		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3",25,0,12,25,0,12);
+		//11 - gen delta time vs reco delta time for signal photons - 600 <= E < 1000
+		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4",25,0,12,25,0,12);
 
 
 		//comparing predicted jets + true jets
@@ -312,10 +326,12 @@ class JetSkimmer : public BaseSkimmer{
 			timeRecoCat trmed(_timeHists1D, _timeHists2D, med, _procCats);
 			timeRecoCat treavg(_timeHists1D, _timeHists2D, eavg, _procCats);
 			timeRecoCat trmmavg(_timeHists1D, _timeHists2D, mmavg, _procCats);
+			timeRecoCat tremax(_timeHists1D, _timeHists2D, emax, _procCats);
 		
 			trCats.push_back(trmed);
 			trCats.push_back(trmmavg);	
 			trCats.push_back(treavg);
+			trCats.push_back(tremax);
 		}
 
 	
@@ -490,7 +506,15 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
 								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
-							 
+							//fill gen deltaT vs reco deltaT in energy bins
+							if(_phos[0].E() >= 0 && _phos[0].E() < 200)
+								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+							if(_phos[0].E() >= 200 && _phos[0].E() < 400)
+								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+							if(_phos[0].E() >= 400 && _phos[0].E() < 600)
+								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+							if(_phos[0].E() >= 600 && _phos[0].E() < 1000)
+								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 
 						}	
 	
@@ -738,6 +762,8 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 			}
+			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
+			else if(ts == emax && pho) time = CalcMaxTime(jet);
 			else cout << "Error: invalid time reconstruction method specified for calculating jet time" << endl;
 			//if photon, shift time to detector by centroid as defined above
 			if(pho){
@@ -748,6 +774,7 @@ class JetSkimmer : public BaseSkimmer{
 					GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 					center = CalcMMAvgCenter(gmm, pho);
 				}
+				else if(ts == emax) center = CalcMaxCenter(jet);
 				//else return time;
 				Point pv = jet.GetVertex();
 				double dx = center.at(0) - pv.at(0);
@@ -800,6 +827,24 @@ class JetSkimmer : public BaseSkimmer{
 				time = t/double(njets);
 			}	
 			return time;
+		}
+
+		double CalcMaxTime(Jet& j){
+			map<double, double> eneTime;
+			vector<JetPoint> rhs = j.GetJetPoints();
+			for(int i = 0; i < rhs.size(); i++)
+				eneTime[rhs[i].E()] = rhs[i].t();
+			return eneTime.rbegin()->second;
+		}
+
+		Point CalcMaxCenter(Jet& j){
+			map<double, Point> eneLoc;
+			vector<JetPoint> rhs = j.GetJetPoints();
+			for(int i = 0; i < rhs.size(); i++){
+				Point pt({rhs[i].x(), rhs[i].y(), rhs[i].z()});
+				eneLoc[rhs[i].E()] = pt;
+			}
+			return eneLoc.rbegin()->second;
 		}
 
 		double CalcMedianTime(Jet& j){
