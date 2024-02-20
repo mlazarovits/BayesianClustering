@@ -88,7 +88,7 @@ def generateSubmission(args):
 
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
-	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)
+	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)
 	if(args.noSmear):
 		flags += ' --noSmear'
 	if(args.timeSmear):
@@ -133,6 +133,7 @@ def main():
 	parser.add_argument('--minpt',help='min object pt',default=30.)
 	parser.add_argument('--minnrhs',help='min object nrhs',default=15)
 	parser.add_argument('--minemE',help='min object ECAL energy',default=20)
+	parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
 	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
 	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
 	args = parser.parse_args()
