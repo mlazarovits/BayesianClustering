@@ -42,6 +42,7 @@ void PhotonSkimmer::Skim(){
 	_prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
+
 	_prod->PrintPreselection();
 	//loop over events
 	if(_evti == _evtj){

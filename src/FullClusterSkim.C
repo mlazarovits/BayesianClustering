@@ -43,6 +43,7 @@ int main(int argc, char *argv[]){
 	double minpt = 30;
 	double minnrhs = 15;
 	double minEmE = 20;
+	double minRhE = 0.5;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -151,6 +152,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minEmE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minRhE", 8) == 0){
+			i++;
+    	 		minRhE = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -169,6 +174,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
+   		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
    		cout << "   --timeSmear                 turns on time smearing data (default = false)" << endl;
@@ -303,6 +309,7 @@ int main(int argc, char *argv[]){
         	else
 			data = true;
 		skimmer.SetIsoCuts();
+		skimmer.SetMinRhE(minRhE);
 		skimmer.SetData(data);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);

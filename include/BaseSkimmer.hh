@@ -21,7 +21,7 @@ using std::string;
 class BaseSkimmer{
 	public:
 		BaseSkimmer(){ 
-			_gev = 1/10.;
+			_gev = 1;
 			_data = false;
 			_debug = false;
 			_smear = true;
@@ -71,7 +71,6 @@ class BaseSkimmer{
 		string _cms_label, _oname;
 		double _gev;
 		double _c = 29.9792458; // speed of light in cm/ns
-
 		
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
@@ -85,6 +84,7 @@ class BaseSkimmer{
 		void SetMinPt(double p){ _prod->SetMinPt(p); }
 		void SetMinNrhs(double p){ _prod->SetMinNrhs(p); }
 		void SetMinEmE(double p){ _prod->SetMinEmE(p); }
+		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
