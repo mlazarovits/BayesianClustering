@@ -293,13 +293,13 @@ class JetSkimmer : public BaseSkimmer{
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
 		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
 		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 200
-		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1",25,0,12,25,0,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT;recoDeltaT;a.u.",25,0,12,25,0,12);
 		//9 - gen delta time vs reco delta time for signal photons - 200 <= E < 400
-		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2",25,0,12,25,0,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT;recoDeltaT;a.u.",25,0,12,25,0,12);
 		//10 - gen delta time vs reco delta time for signal photons - 400 <= E < 600
-		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3",25,0,12,25,0,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT;recoDeltaT;a.u.",25,0,12,25,0,12);
 		//11 - gen delta time vs reco delta time for signal photons - 600 <= E < 1000
-		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4",25,0,12,25,0,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT;recoDeltaT;a.u.",25,0,12,25,0,12);
 
 
 		//comparing predicted jets + true jets
