@@ -137,7 +137,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
 	return;
@@ -169,7 +169,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
 
@@ -196,7 +196,7 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.1,0.92,lat_cms.c_str());
 
