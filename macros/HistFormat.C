@@ -232,6 +232,7 @@ void GetHistsProc(TDirectory* dir, string& proc, vector<TH1D*>& hists){
 					if(!hist) continue;
 					name = hist->GetName();
 					if(name.find(proc) == string::npos) continue;
+					if(hist->Integral() != 0 && name.find("sigma") == string::npos && name.find("mean") == string::npos) hist->Scale(1./hist->Integral());
 					hists.push_back(hist);
 				}
 			}
