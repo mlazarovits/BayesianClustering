@@ -66,6 +66,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["median"] = TColor::GetColor("#f7a278");
 	labelToColor["eAvg"] = TColor::GetColor("#6859f1");
 	labelToColor["mmAvg"] = TColor::GetColor("#52b788");
+	labelToColor["emax"] = TColor::GetColor("#258EA6");
 
 	labelToMark["chiGam"] =  71;
 	labelToMark["GMSB"] =  71;
@@ -76,6 +77,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToMark["!median"] = 71;
 	labelToMark["!eAvg"] =   72; 
 	labelToMark["!mmAvg"] =  73;
+	labelToMark["!emax"] =   74; 
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
@@ -280,7 +282,7 @@ void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
 
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th2d){
-			//get 1D histograms
+			//get 2D histograms
 			TH2D* hist = (TH2D*)key->ReadObj();
 			if(hist){
 				name = hist->GetName();
@@ -436,6 +438,7 @@ void HistFormat(string file){
 				ofile->cd();
 				//draw as tcanvases
 				TDR2DHist(hist, cv, xtitle, ytitle, cmslab, hist->GetTitle());
+				//cout << "writing hist " << cv->GetName() << " in file " << endl;
 				cv->Write(); 
 			}
 		}
@@ -446,6 +449,7 @@ void HistFormat(string file){
 			string ylab, xlab;
 			if(!dir) continue;
 			dir->cd();
+			//cout << "---in dir " << dir->GetName() << endl;
 			//cout << "dir name: " << dir->GetName() << endl;
 			//get histograms (stack these)
 			vector<TH1D*> hists;
@@ -478,6 +482,7 @@ void HistFormat(string file){
 			//if(!types[i].empty()) name += "_"+types[i];
 			GetHists(dir, "", hists2D);
 			string title;
+			///cout << dir->GetName() << " has " << hists2D.size() << " hists" << endl;
 			if(hists2D.size() > 0){
 				for(int h = 0; h < hists2D.size(); h++){
 					name = hists2D[h]->GetName();
@@ -488,7 +493,8 @@ void HistFormat(string file){
 					xlab = hists2D[h]->GetXaxis()->GetTitle();
 					ylab = hists2D[h]->GetYaxis()->GetTitle();
 					TDR2DHist(hists2D[h], cv, xlab, ylab, cmslab, title);
-					cv->Write(); 
+					//cout << "writing canvas " << cv->GetName() << " in dir " << dir->GetName() << endl;
+					cv->Write("",TObject::kOverwrite); 
 				}
 			}
 			//if directory is full of directories (stack by method)
@@ -501,7 +507,7 @@ void HistFormat(string file){
 				if(kkey->GetClassName() == th2d){
 					TH2D* hist = (TH2D*)kkey->ReadObj();
 					if(!hist) continue;	
-					//cout << "dir: " << dir->GetName() << " getting kkey: " << kkey->GetName() << " hist " << hist->GetName() << " with entries " << hist->GetEntries() << endl;
+					//cout << " getting kkey: " << kkey->GetName() << " hist " << hist->GetName() << " with entries " << hist->GetEntries() << endl;
 				}
 				//writing stack hist - same method different procs
 				if(kkey->GetClassName() == tdir){
@@ -510,6 +516,7 @@ void HistFormat(string file){
 					name = ddir->GetName();
 					//cout << " dir name: " << name << endl;
 					ddir->cd();
+					//cout << " ---in ddir " << ddir->GetName() << endl;
 					//we're in the directory with hists of one method split by procs
 					GetHists(ddir, "", hists);
 					if(hists.size() > 0){
@@ -527,12 +534,14 @@ void HistFormat(string file){
 							ylab = "a.u."; 
 						}
 						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+						//cout << "writing canvas (1D) " << cv->GetName() << endl;
 						cv->Write(); 
 					}
 					vector<TH2D*> hhists2D;
 					//loop through hists in dir
 					//if(!types[i].empty()) name += "_"+types[i];
 					GetHists(ddir, "", hhists2D);
+					//cout << "got hists from dir " << ddir->GetName() << endl;
 					if(hhists2D.size() > 0){
 						for(int h = 0; h < hhists2D.size(); h++){
 							if(hhists2D[h]->GetEntries() == 0) continue;
@@ -544,6 +553,7 @@ void HistFormat(string file){
 							xlab = hhists2D[h]->GetXaxis()->GetTitle();
 							ylab = hhists2D[h]->GetYaxis()->GetTitle();
 							TDR2DHist(hhists2D[h], cv, xlab, ylab, cmslab, title);
+							//cout << "writing canvas " << cv->GetName() << endl;
 							cv->Write(); 
 						}
 					}
