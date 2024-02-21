@@ -1392,7 +1392,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
-				
+				if(isnan(pc)) cout << "pc is nan" << endl;
 				tc = params["mean"].at(2,0) - _timeoffset;
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
