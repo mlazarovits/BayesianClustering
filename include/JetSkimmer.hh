@@ -139,7 +139,7 @@ class JetSkimmer : public BaseSkimmer{
 				else if(ts == mmavg)
 					methodName = "mmAvg";
 				else if(ts == emax)
-					methodName = "emax";
+					methodName = "eMax";
 				else
 					cout << "Error: time strategy " << ts << " not supported." << endl;		
 				string name;
@@ -507,13 +507,13 @@ class JetSkimmer : public BaseSkimmer{
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
 								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 							//fill gen deltaT vs reco deltaT in energy bins
-							if(_phos[0].E() >= 0 && _phos[0].E() < 200)
+							if(_phos[0].E() >= 0 && _phos[0].E() < 50)
 								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(_phos[0].E() >= 200 && _phos[0].E() < 400)
+							if(_phos[0].E() >= 50 && _phos[0].E() < 200)
 								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(_phos[0].E() >= 400 && _phos[0].E() < 600)
+							if(_phos[0].E() >= 200 && _phos[0].E() < 500)
 								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(_phos[0].E() >= 600 && _phos[0].E() < 1000)
+							if(_phos[0].E() >= 500 && _phos[0].E() < 1000)
 								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 
 						}	
