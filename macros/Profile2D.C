@@ -309,15 +309,14 @@ void Make2DHist(TFile* f, string histdirname){
 
 	//only for jets
 	if(filename.find("photons") != string::npos) return;
-	//get histogram to fill
-	TH2D* outhist = nullptr;
 
 
 	//get histograms
 	TDirectory* stackdir = (TDirectory*)f->Get((histdirname+"_stack").c_str());
 	vector<TH2D*> outhists;
+	gDirectory->pwd();
 	GetHists(stackdir,outhists);
-	
+	cout << "got " << outhists.size() << " hists for " << stackdir->GetName() << endl;
 	//outhist_procStack[i][j] - i: tr method, j: process
 	vector<vector<TH2D*>> outhists_procStack;
 	TList* liststack = stackdir->GetListOfKeys();
@@ -337,8 +336,6 @@ void Make2DHist(TFile* f, string histdirname){
 		}
 
 	}
-
-
 	int xbin, ybin;
 	string ybinname;
 	const char* match = "bin";
@@ -349,13 +346,13 @@ void Make2DHist(TFile* f, string histdirname){
 			dir = (TDirectory*)key->ReadObj();
 			if(!dir) continue;
 			dirname = dir->GetName();
-			dir->cd();
 			//grab only profile hists
 			if(dirname.find("profile") == string::npos) continue;
 			//needs to be geoEavg profiles to match 2D hist
 			if(dirname.find("geoEavg") == string::npos) continue;
 			//needs to be binned profile - 2D = 2 "bin"s
 			if(std::count(dirname.begin(), dirname.end(), *match) != 2) continue;
+			dir->cd();
 			xbin = std::stod(dirname.substr(dirname.find("_bin")+4,dirname.find("_stack")-dirname.find("_bin")-4));
 			ybinname = dirname.substr(0,dirname.find("_bin"+to_string(xbin)));
 			ybin = std::stod(ybinname.substr(ybinname.find("bin")+3));
@@ -370,7 +367,6 @@ void Make2DHist(TFile* f, string histdirname){
 			//loop through profiles
 			double mean;
 			string trMethod;
-			TH2D* outhist = nullptr;
 			for(int h = 0; h < hists.size(); h++){
 				mean = GetGausMean(hists[h]);
 				if(mean == -999) continue;	
@@ -379,7 +375,7 @@ void Make2DHist(TFile* f, string histdirname){
 				if(!outhists[h]){ cout << "outhist null" << endl; continue; }
 				//fill TH2D for bin ebin, genbin with mean
 				outhists[h]->SetBinContent(xbin, ybin, mean);
-				//cout << "ebin: " << ebin << " genbin: " << genbin << " mean: " << mean << " outhists " << trMethod << ": " << outhists[trMethod]->GetName() << " current # entries " << outhists[trMethod]->GetEntries() << endl;
+				//cout << "xbin: " << xbin << " ybin: " << ybin << " mean: " << mean << " outhist " << outhists[h]->GetName() << " current # entries " << outhists[h]->GetEntries() << endl;
 			}
 			TList* llist = dir->GetListOfKeys();
 			TIter iiter(llist);
@@ -391,13 +387,13 @@ void Make2DHist(TFile* f, string histdirname){
 					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
 					if(!ddir) continue;
 					ddirname = ddir->GetName();
-					ddir->cd();
 					//grab only profile hists
 					if(ddirname.find("profile") == string::npos) continue;
 					//needs to be geoEavg profiles to match 2D hist
 					if(ddirname.find("geoEavg") == string::npos) continue;
 					//needs to be binned profile - 2D = 2 "bin"s
 					if(std::count(ddirname.begin(), ddirname.end(), *match) != 2) continue;
+					ddir->cd();
 					xbin = std::stod(dirname.substr(ddirname.find("_bin")+4,ddirname.find("_stack")-ddirname.find("_bin")-4));
 					ybinname = ddirname.substr(0,ddirname.find("_bin"+to_string(xbin)));
 					ybin = std::stod(ybinname.substr(ybinname.find("bin")+3));
@@ -423,9 +419,22 @@ void Make2DHist(TFile* f, string histdirname){
 			}
 		}
 	}
-	//cout << "writing total hists to dir ";
-	//gDirectory->pwd();
-	for(auto hist : outhists) hist->Write("",TObject::kOverwrite);
+	list = f->GetListOfKeys();
+	iter = TIter(list);
+	key = nullptr;
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			dir = (TDirectory*)key->ReadObj();
+			if(!dir) continue;
+			dirname = dir->GetName();
+			if(dirname.find(histdirname) == string::npos) continue;
+			dir->cd();
+			//gDirectory->pwd();
+			for(auto hist : outhists) hist->Write("",TObject::kOverwrite); 
+	
+		}
+	}
+
 	for(int i = 0; i < outhists_procStack.size(); i++){
 		procstackdirs[i]->cd();
 		//cout << "writing process hists to dir ";
@@ -435,7 +444,6 @@ void Make2DHist(TFile* f, string histdirname){
 			outhists_procStack[i][j]->Write("", TObject::kOverwrite);
 		}
 	}
-
 }
 
 
