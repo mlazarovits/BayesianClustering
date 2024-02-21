@@ -57,27 +57,27 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	map<string, int> labelToColor;
 	map<string, int> labelToMark;
 	int offset = 1;
-	labelToColor["!chiGam"] =  TColor::GetColor("#86bbd8");
-	labelToColor["!GMSB"] =  TColor::GetColor("#86bbd8");
-	labelToColor["!notSunm"] = TColor::GetColor("#9e0059");
-	labelToColor["!GJets"] =   TColor::GetColor("#f6ae2d");
-	labelToColor["!JetHT"] =   TColor::GetColor("#3d348b");
+	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
+	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
+	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
 
-	labelToColor["median"] = TColor::GetColor("#f7a278");
-	labelToColor["eAvg"] = TColor::GetColor("#6859f1");
-	labelToColor["mmAvg"] = TColor::GetColor("#52b788");
-	labelToColor["emax"] = TColor::GetColor("#258EA6");
+	labelToColor["!median"] = TColor::GetColor("#f7a278");
+	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
+	labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
+	labelToColor["!emax"] = TColor::GetColor("#E2C2FF");
 
-	labelToMark["chiGam"] =  71;
-	labelToMark["GMSB"] =  71;
-	labelToMark["notSunm"] = 72;
-	labelToMark["GJets"] =   73;
-	labelToMark["JetHT"] =   74;
+	labelToMark["!chiGam"] =  71;
+	labelToMark["!GMSB"] =  71;
+	labelToMark["!notSunm"] = 72;
+	labelToMark["!GJets"] =   73;
+	labelToMark["!JetHT"] =   74;
 
-	labelToMark["!median"] = 71;
-	labelToMark["!eAvg"] =   72; 
-	labelToMark["!mmAvg"] =  73;
-	labelToMark["!emax"] =   74; 
+	labelToMark["median"] = 71;
+	labelToMark["eAvg"] =   72; 
+	labelToMark["mmAvg"] =  73;
+	labelToMark["emax"] =   74; 
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
@@ -562,8 +562,8 @@ void HistFormat(string file){
 			}
 			//writing methodStack hist - same proc different methods
 			string dirname = dir->GetName();
-			//only do for sigma plots for now - can remove this later to change
-			if(dirname.find("sigma") == string::npos && dirname.find("mean") == string::npos) continue;	
+			//only do for sigma plots + profiles for now - can remove this later to change
+			if(dirname.find("sigma") == string::npos && dirname.find("mean") == string::npos && dirname.find("profile") == string::npos) continue;	
 			vector<string> procs;
 			GetProcs(dir, procs);
 			for(int p = 0; p < procs.size(); p++){
