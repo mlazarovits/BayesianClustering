@@ -43,8 +43,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_gev = 1/30.;
-			objE->SetTitle("phoE");
-			objE->SetName("phoE");
+			objE->SetTitle("totphoE");
+			objE->SetName("totphoE");
 			
 			objE_clusterE->SetTitle("phoE_clusterE");
 			objE_clusterE->SetName("phoE_clusterE");
