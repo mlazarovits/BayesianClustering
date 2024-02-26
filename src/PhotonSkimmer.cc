@@ -127,7 +127,7 @@ void PhotonSkimmer::Skim(){
 						scidx = _base->Photon_scIndex->at(phoidx);
 						_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
 						_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
-						_procCats[i].hists1D[0][228]->Fill(rhs.size());
+						_procCats[i].hists1D[0][228]->Fill(double(rhs.size()));
 						if(_base->Photon_energy->at(phoidx) >= 0 && _base->Photon_energy->at(phoidx) < 200)
 							_procCats[i].hists1D[0][229]->Fill(rhs.size());
 						if(_base->Photon_energy->at(phoidx) >= 200 && _base->Photon_energy->at(phoidx) < 400)
