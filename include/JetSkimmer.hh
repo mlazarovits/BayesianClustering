@@ -626,7 +626,11 @@ class JetSkimmer : public BaseSkimmer{
 			phoeta = pho.eta();
 			phophi = pho.phi();
 
-			return sqrt( (geneta - phoeta)*(geneta - phoeta) + (genphi - phophi)*(genphi - phophi) );
+			double deta = geneta - phoeta;
+			double dphi = genphi - phophi;
+			if(dphi > acos(-1)) dphi -= 2*acos(-1);
+			if(dphi < -acos(-1)) dphi += 2*acos(-1);
+			return sqrt( deta*deta + dphi*dphi );
 
 		}
 
