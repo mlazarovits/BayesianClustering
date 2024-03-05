@@ -28,10 +28,8 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 	_z = z;
 	_t = t;
 
-	_phi = atan2(y,x);//_invalid_phi;
-	double rho = sqrt(x*x + y*y);
-	_eta = atan2(rho,z);//_invalid_eta;
-	_theta = acos( z / sqrt(x*x + y*y + z*z) );	
+	_set_rap_phi();
+	_theta = atan2( sqrt(_x*_x + _y*_y) , z );	
 	_E = 0;
 
 	_idx = -999;
