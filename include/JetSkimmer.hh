@@ -84,6 +84,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin3);
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin4);
 			_timeHists2D.push_back(recoGenDr_recoGenDeltaTRatio);
+			_timeHists2D.push_back(genEnergy_recoGenDeltaTRatio);
 
 
 			//_hists2D.push_back(erhs_trhs);		
@@ -302,7 +303,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//12 - gen-matched dr vs ratio of reco to gen deltaT
 		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,1,25,0,5);
-
+		//13 - gen energy vs ratio of reco to gen deltaT
+		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -402,7 +404,7 @@ class JetSkimmer : public BaseSkimmer{
 			double pvtime = -999;
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
-			double ptavg, geoEavg, Erh, Epho, dr;
+			double ptavg, geoEavg, Erh, Epho;
 			vector<JetPoint> rhs;
 			int phoidx, genidx, phoid;
 			TimeStrategy ts = TimeStrategy(tr_idx);
@@ -518,8 +520,8 @@ class JetSkimmer : public BaseSkimmer{
 							if(Epho >= 500 && Epho < 1000)
 								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 							
-							dr = CalcGenDr(_phos[0]);
-							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(dr, deltaT_gampv/deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
 
 						}	
 	
@@ -569,8 +571,8 @@ class JetSkimmer : public BaseSkimmer{
 									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 								if(Epho >= 500 && Epho < 1000)
 									trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								dr = CalcGenDr(_phos[1]);
-								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(dr, deltaT_gampv/deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
 	
 							}
 						}
@@ -591,9 +593,8 @@ class JetSkimmer : public BaseSkimmer{
 			return pt/double(njets);
 		}
 
-		double CalcGenDr(const Jet& pho){
+		double GenEnergy(const Jet& pho){
 			//calc times differently for !sig and sig photons
-			double dpho = -999;
 			int genidx, phoidx, phoid;
 			//gen photon coordinates
 			double geneta, genphi, phoeta, phophi;
@@ -602,7 +603,23 @@ class JetSkimmer : public BaseSkimmer{
 			genidx = _base->Photon_genIdx->at(phoidx);
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
-			if(phoid == -1) return dpho;
+			if(phoid == -1) return -999;
+			return _base->Gen_energy->at(genidx);
+
+		}
+
+
+		double CalcGenDr(const Jet& pho){
+			//calc times differently for !sig and sig photons
+			int genidx, phoidx, phoid;
+			//gen photon coordinates
+			double geneta, genphi, phoeta, phophi;
+			//if no match
+			phoidx = pho.GetUserIdx();
+			genidx = _base->Photon_genIdx->at(phoidx);
+			if(genidx == -1) phoid = -1;
+			else phoid = _base->Gen_susId->at(genidx);
+			if(phoid == -1) return -999;
 			geneta = _base->Gen_eta->at(genidx);
 			genphi = _base->Gen_phi->at(genidx);
 
