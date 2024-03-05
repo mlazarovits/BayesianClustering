@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 	int evtj = 0;
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
 	//this should be in N/GeV
-	double gev = 1./30.;
+	double gev = -999;
 	//put cuts on jets (ie min pt) here
 	double minpt = 30;
 	double minnrhs = 15;
@@ -188,6 +188,11 @@ int main(int argc, char *argv[]){
 
 	cout << "Free sha-va-ca-doo!" << endl;
 	
+	if(gev == -999){
+		if(obj == 0) gev = 1./10.;
+		else if(obj == 1) gev = 1./30.;
+	}
+
 	string cmslab, version;	
 	TFile* file = nullptr;
 	/////GET DATA FROM NTUPLE//////

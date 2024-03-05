@@ -66,7 +66,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["!median"] = TColor::GetColor("#f7a278");
 	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
 	labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
-	labelToColor["!emax"] = TColor::GetColor("#E2C2FF");
+	labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
 
 	labelToMark["!chiGam"] =  71;
 	labelToMark["!GMSB"] =  71;
@@ -77,7 +77,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToMark["median"] = 71;
 	labelToMark["eAvg"] =   72; 
 	labelToMark["mmAvg"] =  73;
-	labelToMark["emax"] =   74; 
+	labelToMark["eMax"] =   74; 
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){

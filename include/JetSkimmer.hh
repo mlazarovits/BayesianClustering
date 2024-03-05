@@ -83,7 +83,8 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin2);
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin3);
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin4);
-
+			_timeHists2D.push_back(recoGenDr_recoGenDeltaTRatio);
+			_timeHists2D.push_back(genEnergy_recoGenDeltaTRatio);
 
 
 			//_hists2D.push_back(erhs_trhs);		
@@ -293,14 +294,17 @@ class JetSkimmer : public BaseSkimmer{
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
 		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
 		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 50
-		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT;recoDeltaT;a.u.",25,3,12,25,3,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT_Ebin1;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//9 - gen delta time vs reco delta time for signal photons - 50 <= E < 200
-		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT;recoDeltaT;a.u.",25,3,12,25,3,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT_Ebin2;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//10 - gen delta time vs reco delta time for signal photons - 200 <= E < 500
-		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT;recoDeltaT;a.u.",25,3,12,25,3,12);
+		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT_Ebin3;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//11 - gen delta time vs reco delta time for signal photons - 500 <= E < 1000
-		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT;recoDeltaT;a.u.",25,3,12,25,3,12);
-
+		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
+		//12 - gen-matched dr vs ratio of reco to gen deltaT
+		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,1,25,0,5);
+		//13 - gen energy vs ratio of reco to gen deltaT
+		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 
 		//comparing predicted jets + true jets
 		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
@@ -400,26 +404,23 @@ class JetSkimmer : public BaseSkimmer{
 			double pvtime = -999;
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
-			double ptavg;
-			double geoEavg;
-			double Erh;
-			double Epho;
+			double ptavg, geoEavg, Erh, Epho;
 			vector<JetPoint> rhs;
 			int phoidx, genidx, phoid;
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			//break down by process for this tr method
 			int nProc = trCats[tr_idx].procCats.size();
-			//cout << "method: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << endl;
 			for(int p = 0; p < nProc; p++){
 				//cout << " proc " << trCats[tr_idx].procCats[p].plotName << endl;
 				Erh = 0;
 				Epho = 0;
 				ptavg = 0;
 				geoEavg = 0;
+			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
-					//cout << " jet #" << j << " time: " << jettime << endl;
+					cout << " jet #" << j << " time: " << jettime << endl;
 					//fill jet time in pv frame - 0
 					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime);
 					//add to pv time calculation
@@ -446,12 +447,12 @@ class JetSkimmer : public BaseSkimmer{
 					//fill Erh vs deltaT jets - 3
 					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 				}	
-				//fill deltaT_pvGam - 2
+				//this assumes that the time for the jet was set previously with the respective method
+				pvtime = CalcPVTime(ts, jets);
+				//cout << "pv time " << pvtime << endl;
 				//only fill for two leading photons + weighted avg of jet time
 				if(_phos.size() < 1) continue;
 				vector<JetPoint> phorhs; 
-				//this assumes that the time for the jet was set previously with the respective method
-				pvtime = CalcPVTime(ts, jets);
 				if(_data){
 					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 					deltaT_gampv = gamtime - pvtime;
@@ -480,21 +481,21 @@ class JetSkimmer : public BaseSkimmer{
 					//cout << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 					//make sure id is in current vector of ids (or ids does not contain -999)
 					if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
-						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << endl;
+						//get sum of pho rh energy
+						phorhs = _phos[0].GetJetPoints();
+						for(auto r : phorhs) Epho += r.E();
+						cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
 						deltaT_gampv = gamtime - pvtime;
 					
-						//get sum of pho rh energy
-						phorhs = _phos[0].GetJetPoints();
-						for(auto r : phorhs) Epho += r.E();
 	
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
 	
 						//fill difference in deltaT_pvGam of reco and gen - 3
 						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
-					cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
+					cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
@@ -518,6 +519,9 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 							if(Epho >= 500 && Epho < 1000)
 								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+							
+							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
 
 						}	
 	
@@ -537,6 +541,7 @@ class JetSkimmer : public BaseSkimmer{
 						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 							phorhs = _phos[1].GetJetPoints();
 							for(auto r : phorhs) Epho += r.E();
+							cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 							//cout << "SUBLEAD GAMTIME" << endl;	
 							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 							//cout << "SUBLEAD GAMTIME END" << endl;	
@@ -545,7 +550,7 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
 							
 							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
-					cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
+					cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
 							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
 							//only for gen matches
 							if(deltaT_gampv_gen != -999){
@@ -566,6 +571,8 @@ class JetSkimmer : public BaseSkimmer{
 									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 								if(Epho >= 500 && Epho < 1000)
 									trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
 	
 							}
 						}
@@ -584,6 +591,43 @@ class JetSkimmer : public BaseSkimmer{
 			for(int j = 0; j < njets; j++)
 				pt += jets[j].pt();
 			return pt/double(njets);
+		}
+
+		double GenEnergy(const Jet& pho){
+			//calc times differently for !sig and sig photons
+			int genidx, phoidx, phoid;
+			//gen photon coordinates
+			double geneta, genphi, phoeta, phophi;
+			//if no match
+			phoidx = pho.GetUserIdx();
+			genidx = _base->Photon_genIdx->at(phoidx);
+			if(genidx == -1) phoid = -1;
+			else phoid = _base->Gen_susId->at(genidx);
+			if(phoid == -1) return -999;
+			return _base->Gen_energy->at(genidx);
+
+		}
+
+
+		double CalcGenDr(const Jet& pho){
+			//calc times differently for !sig and sig photons
+			int genidx, phoidx, phoid;
+			//gen photon coordinates
+			double geneta, genphi, phoeta, phophi;
+			//if no match
+			phoidx = pho.GetUserIdx();
+			genidx = _base->Photon_genIdx->at(phoidx);
+			if(genidx == -1) phoid = -1;
+			else phoid = _base->Gen_susId->at(genidx);
+			if(phoid == -1) return -999;
+			geneta = _base->Gen_eta->at(genidx);
+			genphi = _base->Gen_phi->at(genidx);
+
+			phoeta = pho.eta();
+			phophi = pho.phi();
+
+			return sqrt( (geneta - phoeta)*(geneta - phoeta) + (genphi - phophi)*(genphi - phophi) );
+
 		}
 
 		//should be deltaT = gam - pv
@@ -606,16 +650,17 @@ class JetSkimmer : public BaseSkimmer{
 			phox = 129*cos(phophi);
 			phoy = 129*sin(phophi);
 			phoz = 0;
-			if(photheta > acos(-1)/2.) phoz = -129*tan(photheta - acos(-1)/2.); 
-			else phoz = 129*tan(photheta);	
+			//if(photheta > acos(-1)/2.) phoz = -129/tan(photheta - acos(-1)/2.); 
+			//else phoz = 129/tan(photheta);	
+			phoz = 129/tan(photheta);	
 			
 			//for checking calculations
-			double rtheta = atan2(phoz,129);
-			if(phoz < 0) rtheta = atan2(-phoz,129.)+acos(-1)/2.;
+			double rtheta = atan2(129,phoz);
+			//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
 			double reta = -log(tan(rtheta/2));
 			double rphi = atan2(phoy,phox);
 		
-		cout << "gen eta: " << phoeta << " gen phi: " << phophi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << sqrt((phoeta - _base->Photon_eta->at(phoidx))*(phoeta - _base->Photon_eta->at(phoidx)) + (phophi - _base->Photon_phi->at(phoidx))*(phophi - _base->Photon_phi->at(phoidx))) << " reta: " << reta << " rphi: " << rphi << endl;
+		cout << "gen eta: " << phoeta << " rgen eta: " << reta << " gen phi: " << phophi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << sqrt((phoeta - _base->Photon_eta->at(phoidx))*(phoeta - _base->Photon_eta->at(phoidx)) + (phophi - _base->Photon_phi->at(phoidx))*(phophi - _base->Photon_phi->at(phoidx))) << " theta: " << photheta << " rtheta: " << rtheta << endl;
 
 			vector<JetPoint> rhs =  pho.GetJetPoints();
 			//for(auto r : rhs) cout << "rh x: " << r.x() << " rh y: " << r.y() << " rh z: " << r.z() << endl;		
@@ -808,8 +853,9 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters());
-				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
+				if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
 			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
 			else if(ts == emax && pho) time = CalcMaxTime(jet);
@@ -824,7 +870,12 @@ class JetSkimmer : public BaseSkimmer{
 					center = CalcMMAvgCenter(gmm, pho);
 				}
 				else if(ts == emax) center = CalcMaxCenter(jet);
-				cout << "center for " << ts << endl; center.Print();
+				double rtheta = atan2(129,center.at(2));
+				if(center.at(2) < 0) rtheta = atan2(129,-center.at(2))+acos(-1)/2.;
+				double reta = -log(tan(rtheta/2));
+				double rphi = atan2(center.at(1),center.at(0));
+				if(rphi < 0) rphi += 2*acos(-1);
+				//jet.Print();
 				//cout << "PV frame time: " << time << endl;
 				//else return time;
 				Point pv = jet.GetVertex();
@@ -832,7 +883,7 @@ class JetSkimmer : public BaseSkimmer{
 				double dy = center.at(1) - pv.at(1);
 				double dz = center.at(2) - pv.at(2);
 				double t_shift = sqrt(dx*dx + dy*dy + dz*dz)/_c;
-				cout << "t_shift: " << t_shift << endl;
+				cout << "center for " << ts << " eta " << reta << " phi " << rphi << " x " << center.at(0) << " y " << center.at(1) << " z " << center.at(2) << " time " << time << " shift " << t_shift << endl;
 				//shift from PV to detector face
 				time += t_shift;
 			}	
@@ -854,6 +905,7 @@ class JetSkimmer : public BaseSkimmer{
 					time = times[int(double(njets)/2.)];
 
 			}
+			//ECAL energy weighted avg
 			else if(ts == eavg || ts == emax){
 				double norm = 0;
 				double t = 0;
@@ -863,17 +915,18 @@ class JetSkimmer : public BaseSkimmer{
 					rhs = jets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++)
 						e += rhs[r].E();
-					t += jets[j].E()*jets[j].t();
+					t += e*jets[j].t();
 					norm += e;
 					e = 0;
 					rhs.clear();
 				}
+				cout << "pv time: " << t/norm << endl;
 				time = t/norm;
 			}	
 			else if(ts == mmavg){
-				double norm = 0;
 				double t = 0;
 				for(int j = 0; j < njets; j++){
+					cout << "jet time (pv frame) " << jets[j].t() << endl;
 					t += jets[j].t();
 				}
 				time = t/double(njets);
@@ -894,6 +947,7 @@ class JetSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs = j.GetJetPoints();
 			for(int i = 0; i < rhs.size(); i++){
 				Point pt({rhs[i].x(), rhs[i].y(), rhs[i].z()});
+				//cout << "x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
 				eneLoc[rhs[i].E()] = pt;
 			}
 			return eneLoc.rbegin()->second;
@@ -925,10 +979,12 @@ class JetSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			Point pt(3);
+			//cout << "MEDIAN CENTER" << endl;
 			for(int i = 0; i < nrhs; i++){
 				pt.SetValue(rhs[i].x(),0);
 				pt.SetValue(rhs[i].y(),1);
 				pt.SetValue(rhs[i].z(),2);
+				//cout << "x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
 				timeLoc[rhs[i].t()] = pt;
 			}
 			for(auto it = timeLoc.begin(); it != timeLoc.end(); it++){
@@ -943,12 +999,15 @@ class JetSkimmer : public BaseSkimmer{
 				center.SetValue((timeLoc[t1].at(0) + timeLoc[t2].at(0))/2.,0);
 				center.SetValue((timeLoc[t1].at(1) + timeLoc[t2].at(1))/2.,1);
 				center.SetValue((timeLoc[t1].at(2) + timeLoc[t2].at(2))/2.,2);
-		
+				//cout << "even" << endl;
+				//timeLoc[t1].Print(); timeLoc[t2].Print();				
+
 				return center;	
 			}
 			//odd - return median
 			else{
 				time = times[int(double(nrhs)/2.)];
+				//cout << "odd" << endl; timeLoc[time].Print();
 				return timeLoc[time];
 			}
 		}		
@@ -969,7 +1028,7 @@ class JetSkimmer : public BaseSkimmer{
 				y += rhs[i].E()*rhs[i].y();
 				z += rhs[i].E()*rhs[i].z();
 			}
-			cout << "CalcEAvgCenter - eta " << j.eta() << " phi " << j.phi() << endl;
+			//cout << "CalcEAvgCenter - eta " << j.eta() << " phi " << j.phi() << endl;
 			center.SetValue(x/norm,0);
 			center.SetValue(y/norm,1);
 			center.SetValue(z/norm,2);
@@ -985,7 +1044,9 @@ class JetSkimmer : public BaseSkimmer{
 			for(int i = 0; i < nrhs; i++){
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
+			//cout << "time " << rhs[i].t() << " energy " << rhs[i].E() << endl;
 			}
+			//cout << "return " << t/norm << endl;
 			return t/norm;
 		}
 
@@ -1033,7 +1094,7 @@ class JetSkimmer : public BaseSkimmer{
 					//cout << "pho mm time: " << t/norm << endl;
 					return t/norm;
 				}
-				//cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
+				cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
 			}
 			//cout << "jet mm time: " << t/norm << endl;
 			return t/norm; 
@@ -1056,16 +1117,17 @@ class JetSkimmer : public BaseSkimmer{
 				//detector y (in y,z plane) or r (in x,y plane) is 1.29 m
 				x += params["pi"].at(0,0)*129*cos(phi);
 				y += params["pi"].at(0,0)*129*sin(phi);
-				if(theta > acos(-1)/2.) z = params["pi"].at(0,0)*-129*tan(theta - acos(-1)/2.); 
-				else z += params["pi"].at(0,0)*129*tan(theta);	
+				//if(theta > acos(-1)/2.) z = params["pi"].at(0,0)*-129/tan(theta - acos(-1)/2.); 
+				//else z += params["pi"].at(0,0)*129/tan(theta);	
+				z += params["pi"].at(0,0)*129/tan(theta);	
 			//for checking calculations
-			double rtheta = atan2(z,129);
-			if(z < 0) rtheta = atan2(-z,129.)+acos(-1)/2.;
+			double rtheta = atan2(129,z);
+			//if(z < 0) rtheta = atan2(129.,z)+acos(-1)/2.;
 			double reta = -log(tan(rtheta/2));
 			double rphi = atan2(y,x);
 				norm += params["pi"].at(0,0);
 				if(pho){
-		cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << endl;	
+		cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
 					center.SetValue(x/norm,0);
 					center.SetValue(y/norm,1);
 					center.SetValue(z/norm,2);
