@@ -37,10 +37,14 @@ def generateSubmission(args):
 		inputFile = "GJets_AOD_v14_GJets_HT-600ToInf_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root" 
 	elif args.inputSample == "GMSB_L100_ctau0p1":
 		inputFile = "GMSB_AOD_v14_GMSB_L-100TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-	elif args.inputSample == "GJets_HT600ToInf_v15":
+	elif args.inputSample == "GJets_HT400To600_v15":
 		inputFile = "GJets_R17_v15_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GJets_HT600ToInf_v15":
+		inputFile = "GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L300ctau600_v15":
 		inputFile = "GMSB_R17_v15_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GMSB_L150ctau0p1_v15":
+		inputFile = "GMSB_R17_v15_GMSB_L-150TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
 
 	else:
 		print("Sample "+args.inputSample+" not found")
@@ -98,6 +102,8 @@ def generateSubmission(args):
 		flags += ' --noSmear'
 	if(args.timeSmear):
 		flags += ' --timeSmear'
+	if(args.applyFrac):
+		flags += ' --applyFrac'
 	if(objName == "jets"):
 		flags += " --object 0"
 	if(objName == "photons"):
@@ -122,7 +128,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','GMSB_L100_ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','GMSB_L100_ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
@@ -141,6 +147,7 @@ def main():
 	parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
 	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
 	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
+	parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
