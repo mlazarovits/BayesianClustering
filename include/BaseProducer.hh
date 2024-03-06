@@ -27,6 +27,10 @@ class BaseProducer{
 			_data = false;
 			_calibmap = nullptr;
 			_applyFrac = false;
+			if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
+				cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
+				return;
+			}
 			TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
 			SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
@@ -138,6 +142,7 @@ class BaseProducer{
 
 		TH2D* _calibmap;
 		void SetTimeCalibrationMap(TFile* f){
+			if(!f){ cout << "File for calibration map not set." << endl; return; }
 			_calibmap = (TH2D*)f->Get("AveXtalRatioRecTimeEBMap");
 		};
 		

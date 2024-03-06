@@ -1238,7 +1238,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetBHCAlpha(double a){ _alpha = a; }
 		void SetEMAlpha(double a){ _emAlpha = a; }
 		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross; 
-		void ApplyFractions(bool a){ _applyFrac = a; }
+		void ApplyFractions(bool a){ _applyFrac = a; cout << "applyfrac " << _applyFrac << endl;}
 		bool _applyFrac;
 
 

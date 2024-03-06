@@ -1,5 +1,5 @@
 #include "BaseProducer.hh"
-
+#include <iomanip>
 
 void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
         if(gev == -1) gev = _gev;
@@ -179,6 +179,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		pho.SetUserIdx(p);
 		//set rec hits in photon
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(scidx);
+		vector<float> fracs = _base->SuperCluster_rhFracs->at(scidx);
 		double rhe;
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
@@ -212,7 +213,11 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				rhe = _base->ECALRecHit_energy->at(rhidx);
 				//multiply energy by hitsAndFractions fraction
 				//indexed within supercluster
-				if(_applyFrac) rhe*_base->SuperCluster_rhFracs->at(r);
+				if(_applyFrac){
+					rhe *= fracs[r];
+					if(rhe < 0.1) continue;
+				}					
+				//cout << std::setprecision(10) << "rh e og: " << _base->ECALRecHit_energy->at(rhidx) << " frac: " << fracs[r] << " rhE*frac " << _base->ECALRecHit_energy->at(rhidx)*fracs[r] << " new rh e: " << rhe << endl;
 				rh.SetEnergy(rhe);
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
