@@ -116,7 +116,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         _base->GetEntry(evt);
         int nPhos = (int)_base->Photon_energy->size();
 	//only take leading and subleading (if these exist)
-	if(nPhos > 2) nPhos = 2;
+	int selPhoCount = 0; //shouldnt be incremented to >2
+	//if(nPhos > 2) nPhos = 2;
         int nrhs, rhidx;
 	double timecorr, calibfactor; 
 	double drh, dpv;
@@ -134,7 +135,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
 	for(int p = 0; p < nPhos; p++){
-                pt = _base->Photon_pt->at(p);
+		//if selected photons # is already 2, return (only want 2 highest pt photons that pass selection)
+		if(selPhoCount == 2) return;
+		pt = _base->Photon_pt->at(p);
                 phi = _base->Photon_phi->at(p);
                 eta = _base->Photon_eta->at(p);
 
@@ -169,12 +172,14 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         iso = trksum && ecalrhsum && htowoverem;
                 	if(!iso) continue;
                 }
+		
 
                 Jet pho(px, py, pz, _base->Photon_energy->at(p));
                 pho.SetVertex(vtx);
 		pho.SetUserIdx(p);
 		//set rec hits in photon
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(scidx);
+		double rhe;
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
@@ -203,7 +208,12 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 	////cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
-				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
+				
+				rhe = _base->ECALRecHit_energy->at(rhidx);
+				//multiply energy by hitsAndFractions fraction
+				//indexed within supercluster
+				if(_applyFrac) rhe*_base->SuperCluster_rhFracs->at(r);
+				rh.SetEnergy(rhe);
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
@@ -213,6 +223,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
                 }
 		if(pho.GetNRecHits() < 2) continue;
+		selPhoCount++;
 		phos.push_back(pho);
         }
 

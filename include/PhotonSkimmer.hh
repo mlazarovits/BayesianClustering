@@ -22,6 +22,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_gev = 1/30.;
+			_applyFrac = false;
 		};
 		virtual ~PhotonSkimmer(){ };
 
@@ -43,6 +44,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_gev = 1/30.;
+			_applyFrac = false;
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
 			
@@ -1236,8 +1238,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetBHCAlpha(double a){ _alpha = a; }
 		void SetEMAlpha(double a){ _emAlpha = a; }
 		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross; 
-
-
+		void ApplyFractions(bool a){ _applyFrac = a; }
+		bool _applyFrac;
 
 
 		void WritePlotCat1D(TFile* ofile, const procCat& pc){
