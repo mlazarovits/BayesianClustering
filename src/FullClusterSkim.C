@@ -158,7 +158,6 @@ int main(int argc, char *argv[]){
     	 		minRhE = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--applyFrac", 11) == 0){
-    	 		i++;
 			frac = true;
 			cout << "Apply fractions for rec hits." << endl;
    		}
