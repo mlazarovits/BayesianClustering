@@ -129,7 +129,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	//true = skip
 	//false = keep (ok)
 	bool hemVeto = false;	
-
 	Point vtx(3);
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
@@ -159,7 +158,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		//Photon selection
                 if(_base->Photon_pt->at(p) < 30.) continue;
 		if(fabs(_base->Photon_eta->at(p)) > _minobjeta) continue;
-
 		//isolation cuts
 		bool iso;
 		bool trksum;
@@ -172,7 +170,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         iso = trksum && ecalrhsum && htowoverem;
                 	if(!iso) continue;
                 }
-		
 
                 Jet pho(px, py, pz, _base->Photon_energy->at(p));
                 pho.SetVertex(vtx);
