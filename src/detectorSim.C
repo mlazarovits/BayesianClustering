@@ -22,13 +22,14 @@ int main(int argc, char *argv[]){
 	vector<XYZTVector> genpos;
 	vector<XYZTVector> recopos;
 	vector<vector<JetPoint>> ems;
-	int nevts = 10;
+	int nevts = 1;
 	int evt = 0;
 	int verb = 0;
 	bool hprint = false;
 	bool pu = false;
 	bool skim = false;
 	bool ntuple = false;	
+	double gev = 1./10.;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -60,6 +61,10 @@ int main(int argc, char *argv[]){
     	 		i++;
 			nevts = std::atoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--gev", 5) == 0){
+			i++;
+    	 		gev = std::stod(argv[i]);
+   		}
 
 
 	}
@@ -69,9 +74,10 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --pileup(-pu)                 simulate pileup" << endl;
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
-   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
+		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --skim                        make histograms (default = false)" << endl;
-   		cout << "   --ntuple                      save to file (default = true)" << endl;
+   		cout << "   --ntuple                      save to file (default = false)" << endl;
 		return -1;	
 	}
 
@@ -83,11 +89,11 @@ int main(int argc, char *argv[]){
 	det.SetNEvents(nevts);
 	det.SetEnergyThreshold(1.); //set to 1 GeV
 	//set energy transfer factor in N/GeV
-	det.SetTransferFactor(1./10.);
+	det.SetTransferFactor(gev);
 	det.SetVerbosity(verb);
 	det.SimTTbar();
 	if(pu) det.TurnOnPileup();
-	det.TurnOnSpikes(0.01);
+	//det.TurnOnSpikes(0.01);
 
 	
 
