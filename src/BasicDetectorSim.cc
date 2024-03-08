@@ -50,7 +50,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_alpha = 0.5;
 	_emAlpha = 0.1;
 	_thresh = 1.;
-
+	_nSpikes = 0;
 }
 
 //ctor with input pythia cmnd file
@@ -91,6 +91,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_alpha = 0.5;
 	_emAlpha = 0.1;
 	_thresh = 1.;
+	_nSpikes = 0;
 
 }
 
@@ -162,8 +163,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	smear.SetEntry(_dphi*_dphi,1,1);
 	smear.SetEntry(0.,2,2); //no smear in time	
 
-	vector<node*> trees;
-	vector<Jet> predjets;
 
 	for(int i = 0; i < _nevts; i++){
 		if(evt != -1)
@@ -186,6 +185,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
+		cout << "event size: " << sumEvent.size() << endl;
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -257,13 +257,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//do bayesian clustering
 		BayesCluster bc(_cal_rhs);
 		bc.SetDataSmear(smear);
-		bc.SetTimeResSmear(0.2, 0.3*_gev);
+		//bc.SetTimeResSmear(0.2, 0.3*_gev);
 		bc.SetThresh(_thresh);
 		bc.SetAlpha(_alpha);
 		bc.SetSubclusterAlpha(_emAlpha);
 		bc.SetVerbosity(0);
-		trees.clear();
-		trees = bc.NlnNCluster();
+
+		//vector<node*> trees = bc.NlnNCluster();
 		//for(int i = 0; i < trees.size(); i++){
 		//      //TODO: set predicted jets from PointCollection in tree[i]
 		//	if(trees[i] == nullptr) continue;
@@ -273,7 +273,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 
 
-cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << endl;
+cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
 		if(_tree != nullptr) _tree->Fill();
 		//reset event
 		sumEvent.clear();
@@ -552,8 +552,8 @@ void BasicDetectorSim::MakeRecHits(){
 			//get x, y, z based on cell eta phi
 			x = _rmax*cos(phi);
 			y = _rmax*sin(phi);
-			theta = 2*tan(exp(-eta));
-			z = sqrt(x*x + y*y)/tan(theta);
+			theta = 2*atan2(1,exp(eta));
+			z = _rmax/tan(theta);
 			t = _cal[i][j].at(1); 
 			
 			JetPoint jet(x*1e2, y*1e2, z*1e2, t*1e9);
