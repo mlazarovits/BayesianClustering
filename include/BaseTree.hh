@@ -57,11 +57,18 @@ class BaseTree{
 
 			//destructor for node
 			~node(){
+				cout << "~node start" << endl;
+				points = nullptr;
+				cout << "a" << endl;
 				delete points;
+				cout << "b" << endl;
 				model = nullptr;
+				cout << "c" << endl;
 				delete model;
+				cout << "d" << endl;
 				//don't free l + r because those could be freed themselves as nodes
 				if(mirror != NULL) free(mirror);
+				cout << "~node done" << endl;
 			}
 
 		};
