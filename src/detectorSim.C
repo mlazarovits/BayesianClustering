@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
 
 	///////make ntuple///////
 	if(ntuple){
-		det.InitTree();
+		det.InitTree("rootfiles/ttbarPU_BDS.root");
 		det.SimulateEvents();
 		det.WriteTree();
 	}

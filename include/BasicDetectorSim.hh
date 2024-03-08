@@ -99,7 +99,7 @@ struct RecoParticle;
 	
 
 		//init tree
-		void InitTree(string fname = "rootfiles/ttbarPUspikes_BDS.root");
+		void InitTree(string fname);
 		void WriteTree();
 
 
