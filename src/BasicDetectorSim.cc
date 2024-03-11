@@ -234,7 +234,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
-		
+		//Fill gen jet information
+		FillGenJets();	
+	
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
 		ReconstructEnergy();
@@ -677,6 +679,17 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 
+void BasicDetectorSim::FillGenJets(){
+	for(auto jet : _jets){
+		_jgeta.push_back(jet.eta());
+		_jgphi.push_back(jet.phi());
+		_jgenergy.push_back(jet.e());
+		_jgpt.push_back(jet.pt());
+		_jgmass.push_back(jet.m());
+	}
+}
+
+
 //get "Jets" for clustering
 void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
 	rhs.clear();
@@ -751,7 +764,11 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
 
-	//TODO: need to save gen information as "truth" info
+	_tree->Branch("Jet_genEta", &_jgeta)->SetTitle("Jet gen eta - FastJet AK4");
+	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Jet gen phi - FastJet AK4");
+	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
+	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
+	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
 }
 
 
@@ -774,6 +791,12 @@ void BasicDetectorSim::_reset(){
 	_cal_rhs.clear();
 	_recops.clear();
 	_jets.clear();
+
+	_jgeta.clear();
+	_jgphi.clear();
+	_jgenergy.clear();
+	_jgpt.clear();
+	_jgmass.clear();
 }
 
 void BasicDetectorSim::WriteTree(){

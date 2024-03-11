@@ -102,6 +102,8 @@ struct RecoParticle;
 		void InitTree(string fname);
 		void WriteTree();
 
+		//write gen info
+		void FillGenJets();
 
 	private:
 		double _rmax; //max radius of detector (m)
@@ -171,6 +173,8 @@ struct RecoParticle;
 		std::unique_ptr<TFile> _file;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
+		//gen information
+		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
 		int _npredjets, _ntruejets;
 		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
