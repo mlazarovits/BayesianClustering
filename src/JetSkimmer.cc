@@ -39,8 +39,6 @@ void JetSkimmer::Skim(){
 	double jetSelEff = 0;
 	double totEvt = 0;
         
-	//for computational time
-	vector<double> x_nrhs, y_time;
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
@@ -54,7 +52,6 @@ void JetSkimmer::Skim(){
 		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
-		x_nrhs.push_back((double)rhs.size());
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
