@@ -93,9 +93,11 @@ void BHCJetSkimmer::Skim(){
 		}
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
-		
+	
+		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		FillPredJetHists(trees);
 	}
+	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 
 	WriteHists(ofile);
 

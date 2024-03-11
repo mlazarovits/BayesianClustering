@@ -41,34 +41,6 @@ class BHCJetSkimmer : public JetSkimmer{
 			else return; 
 		}
 		
-		//find back to back jets
-		void FillPVHists_PredJets(const vector<node*>& trees){
-			int njets = (int)trees.size(); 
-			double pi = acos(-1);
-
-			double dtime, dphi, dr, phi1, t1, phi2, t2;
-			//find pairs of jets to calculate resolution	
-			//need to be back to back
-			//time of subclusters is measured as center
-			for(int i = 0; i < njets; i++){
-				if(trees[i] == nullptr) continue;
-				CalcMMAvgPhiTime(trees[i]->model, phi1, t1);
-				//PVdeltaT_jet_mmAvg_pred->Fill(t1);	
-				for(int j = i+1; j < njets; j++){
-					if(trees[i] == nullptr) continue;
-					CalcMMAvgPhiTime(trees[j]->model, phi2, t2);
-					//dphi within [pi-0.1,pi+0.1]
-					dphi = fabs(phi1 - phi2);
-					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
-					//median time
-					//energy-weighted average
-					//mm average over subclusters
-					//PVdeltaT_jet_mmAvg_pred->Fill(t1 - t2);	
-				}
-			}
-
-		}
-		
 		void FillPredJetHists(const vector<node*>& trees){
 			int njets = 0;
 			vector<node*> cleaned_trees;
@@ -115,10 +87,6 @@ class BHCJetSkimmer : public JetSkimmer{
 
 		//predicted jet plots
 		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
-		TH1D* PVtime_pred = new TH1D("PVtime_pred","PVtime_pred",100,-10,10);	
-		//difference in tPV between two back-to-back jets
-		//previous time definitions
-		TH1D* deltaT_jet_pred = new TH1D("PVdeltaT_jet_pred","PVdeltaT_jet_pred",100,-10,10);	
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
 		//comp time as a function of number of rechits per event
