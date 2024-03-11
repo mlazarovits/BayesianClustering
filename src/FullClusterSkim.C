@@ -166,7 +166,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
-   		cout << "   --timeSmear                 turns on time smearing data (default = false)" << endl;
+   		cout << "   --timeSmear                   turns on time smearing data (default = false)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6" << endl;
