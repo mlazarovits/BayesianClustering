@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
    		cout << "   --timeSmear                 turns on time smearing data (default = false)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
-   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
+   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6" << endl;
 
    		return 0;
   	}
