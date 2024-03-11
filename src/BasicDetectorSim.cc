@@ -27,7 +27,6 @@ BasicDetectorSim::BasicDetectorSim(){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1/10.; //default
 	_nevts = 1000;
 	//initialize cal - save e, t, n emissions
 	_etamax = 1.479 + _deta/2.; //puts outermost corner at true etamax
@@ -64,7 +63,6 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1/10.; //default
 	_etamax = 1.479;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
@@ -528,7 +526,6 @@ void BasicDetectorSim::MakeRecHits(){
 			jet.SetEnergy(_cal[i][j].at(0));
 			jet.SetEta(eta);
 			jet.SetPhi(phi);
-			jet.SetWeight(_cal[i][j].at(0)*_gev);
 			_cal_rhs.push_back(jet);
 			
 			//save rec hits to tree
@@ -694,9 +691,7 @@ void BasicDetectorSim::FillGenJets(){
 void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
 	rhs.clear();
 	for(int j = 0; j < _cal_rhs.size(); j++){
-		_cal_rhs[j].SetWeight(_cal_rhs[j].E()*_gev);
 		rhs.push_back(Jet(_cal_rhs[j]));
-		//rhs.push_back(Jet(_cal_rhs[j]));
 	}
 }
 

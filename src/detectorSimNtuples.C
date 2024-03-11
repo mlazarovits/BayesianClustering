@@ -29,7 +29,6 @@ int main(int argc, char *argv[]){
 	bool pu = false;
 	bool skim = false;
 	bool ntuple = false;	
-	double gev = 1./10.;
 	string oname = "";
 	bool ttbar = false;
 	bool qcd = false;
@@ -66,10 +65,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--nevts", 7) == 0){
     	 		i++;
 			nevts = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"--gev", 5) == 0){
-			i++;
-    	 		gev = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--output", 8) == 0){
      			i++;
@@ -109,7 +104,6 @@ int main(int argc, char *argv[]){
 		cout << "   --sigBoosted                  simulate boosted signal" << endl;
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		return -1;	
@@ -161,8 +155,6 @@ int main(int argc, char *argv[]){
 	det.SetNEvents(nevts);
 	//for reconstructing rechits
 	det.SetEnergyThreshold(1.); //set to 1 GeV
-	//set energy transfer factor in N/GeV
-	det.SetTransferFactor(gev);
 	det.SetVerbosity(verb);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();

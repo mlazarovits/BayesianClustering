@@ -80,8 +80,6 @@ struct RecoParticle;
 		//get fastjet jets - run on gen particles
 		void GetTrueJets(vector<Jet>& jets);
 
-		//sets transfer factor for rec hit weights
-		void SetTransferFactor(double gev){ _gev = gev; }
 		void SetNEvents(int e){ _nevts = e; _pythia.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
 		void SetVerbosity(int v = 0){
 			_verb = v;
@@ -159,8 +157,6 @@ struct RecoParticle;
 		void _simQCD(); //use pythia to simulate QCD events
 		void _simTTbar(); //use pythia to simulate ttbar events
 
-
-		double _gev; //transfer factor for weighting rechits
 
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
