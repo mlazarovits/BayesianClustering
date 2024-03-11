@@ -620,14 +620,32 @@ class JetSkimmer : public BaseSkimmer{
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return -999;
-			geneta = _base->Gen_eta->at(genidx);
-			genphi = _base->Gen_phi->at(genidx);
+			//geneta = _base->Gen_eta->at(genidx);
+			//genphi = _base->Gen_phi->at(genidx);
 
-			phoeta = pho.eta();
-			phophi = pho.phi();
+			//need to correct for displacement from 0 point
+			double gvx = _base->Gen_vx->at(genidx);
+                        double gvy = _base->Gen_vy->at(genidx);
+                        double gvz = _base->Gen_vz->at(genidx);
 
-			double deta = geneta - phoeta;
-			double dphi = genphi - phophi;
+                        double rx = 129*cos(_base->Photon_phi->at(phoidx));
+                        double ry = 129*sin(_base->Photon_phi->at(phoidx));
+                        double rtheta = 2*atan2(1,exp(_base->Photon_eta->at(phoidx)));
+                        double rz = 129/tan(rtheta);
+
+
+			//phoeta = pho.eta();
+			//phophi = pho.phi();
+			//double deta = geneta - phoeta;
+			//double dphi = genphi - phophi;
+
+			double dx = rx - gvx;
+                        double dy = ry - gvy;
+                        double dz = rz - gvz;
+
+			double deta = asinh(dz/sqrt(dx*dx + dy*dy));
+                        double dphi = atan2(dy,dx);
+
 			if(dphi > acos(-1)) dphi -= 2*acos(-1);
 			if(dphi < -acos(-1)) dphi += 2*acos(-1);
 			return sqrt( deta*deta + dphi*dphi );
