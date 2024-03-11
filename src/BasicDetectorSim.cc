@@ -193,7 +193,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			tnew = particle.zProd()*1e-3 >= 0 ? znew*1./(_sol) : -1./(_sol)*znew;
 			//original pythia coords are in m, convert to mm
 			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
-			
+		
+
+			//TODO: fill PV coordinates in tree
+			_pvx = 0;
+			_pvy = 0;
+			_pvz = 0;
+	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
 			//this is for gen particles
@@ -755,6 +761,10 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALRecHit_eta", &_rheta)->SetTitle("rec hit eta");
 	_tree->Branch("ECALRecHit_phi", &_rhphi)->SetTitle("rec hit phi");
 	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
+	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV");
+	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV");
+	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV");
+
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
@@ -792,6 +802,11 @@ void BasicDetectorSim::_reset(){
 	_jgenergy.clear();
 	_jgpt.clear();
 	_jgmass.clear();
+
+
+	_pvx = 0;
+	_pvy = 0;
+	_pvz = 0;
 }
 
 void BasicDetectorSim::WriteTree(){

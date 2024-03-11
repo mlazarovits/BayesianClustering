@@ -73,9 +73,11 @@ class BaseProducer{
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
+		virtual void GetSimRecHits(vector<Jet>& rhs, int evt){};
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt, int obj) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt, int obj){};
 		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
+		virtual void GetGenJets(vector<Jet>& genjets, int evt){}; 
 
 
 		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);

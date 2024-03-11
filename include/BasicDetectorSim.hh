@@ -171,6 +171,8 @@ struct RecoParticle;
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
 		//gen information
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//pv info
+		double _pvx, _pvy, _pvz;
 		int _npredjets, _ntruejets;
 		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;

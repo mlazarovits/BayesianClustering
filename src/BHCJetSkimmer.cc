@@ -48,7 +48,7 @@ void BHCJetSkimmer::Skim(){
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
-		_prod->GetRecHits(rhs, i);
+		_prod->GetSimRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
@@ -69,7 +69,7 @@ void BHCJetSkimmer::Skim(){
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 		jetSelEff++;
 		
-
+		/*
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
@@ -96,6 +96,7 @@ void BHCJetSkimmer::Skim(){
 	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		FillPredJetHists(trees);
+		*/
 	}
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 

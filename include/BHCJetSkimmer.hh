@@ -12,8 +12,7 @@ class BHCJetSkimmer : public JetSkimmer{
 
 		virtual ~BHCJetSkimmer(){ }
 
-		BHCJetSkimmer(TFile* file) : JetSkimmer(file){
-			/*
+		BHCJetSkimmer(TFile* file){
 			_prod = new JetProducer(file);
 			_prod->SetIsoCut();
 		
@@ -27,7 +26,6 @@ class BHCJetSkimmer : public JetSkimmer{
 				
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
-			*/
 	
 			nrhs_comptime->SetName("nrhs_comptime");
 			nrhs_comptime->SetTitle("nrhs_comptime");
