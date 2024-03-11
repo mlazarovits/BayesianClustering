@@ -169,7 +169,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-	cout << "\nevent #" << i << endl;
+	cout << "event #" << i << endl;
 		sumEvent = _pythia.event;
 
 		_evt = i;		
@@ -185,7 +185,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
-		cout << "event size: " << sumEvent.size() << endl;
+		//cout << "event size: " << sumEvent.size() << endl;
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -273,7 +273,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 
 
-cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
+//cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
 		if(_tree != nullptr) _tree->Fill();
 		//reset event
 		sumEvent.clear();
