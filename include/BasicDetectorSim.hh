@@ -103,11 +103,6 @@ struct RecoParticle;
 		void WriteTree();
 
 
-		//for BayesCluster
-		void SetBayesThreshold(double t){ _thresh = t; }
-		void SetBayesAlpha(double a){ _alpha = a; }
-		void SetBayesSubAlpha(double a){ _emAlpha = a; }
-
 	private:
 		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)
@@ -181,10 +176,6 @@ struct RecoParticle;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
-
-
-		//BayesCluster params
-		double _alpha, _emAlpha, _thresh;
 
 		struct RecoParticle{
 			//associated gen particle

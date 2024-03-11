@@ -2,7 +2,6 @@
 #include "TMath.h"
 #include "Matrix.hh"
 #include "fastjet/ClusterSequence.hh"
-#include "BayesCluster.hh"
 
 #include <TFile.h>
 #include <algorithm>
@@ -47,9 +46,6 @@ BasicDetectorSim::BasicDetectorSim(){
 		for(int j = 0; j < _nphical; j++)
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
-	_alpha = 0.5;
-	_emAlpha = 0.1;
-	_thresh = 1.;
 	_nSpikes = 0;
 }
 
@@ -88,9 +84,6 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	//sets pythia settings by given .cmnd file
 	_pythia.readFile(infile);
 	_nevts = _pythia.mode("Main:numberOfEvents");
-	_alpha = 0.5;
-	_emAlpha = 0.1;
-	_thresh = 1.;
 	_nSpikes = 0;
 
 }
@@ -156,14 +149,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
-	//declare settings for BayesCluster
-	Matrix smear = Matrix(3,3);
-	//diagonal matrix
-	smear.SetEntry(_deta*_deta,0,0);
-	smear.SetEntry(_dphi*_dphi,1,1);
-	smear.SetEntry(0.,2,2); //no smear in time	
-
-
 	for(int i = 0; i < _nevts; i++){
 		if(evt != -1)
 			if(i != evt) continue;
@@ -253,25 +238,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
 		ReconstructEnergy();
-
-		//do bayesian clustering
-		BayesCluster bc(_cal_rhs);
-		bc.SetDataSmear(smear);
-		//bc.SetTimeResSmear(0.2, 0.3*_gev);
-		bc.SetThresh(_thresh);
-		bc.SetAlpha(_alpha);
-		bc.SetSubclusterAlpha(_emAlpha);
-		bc.SetVerbosity(0);
-
-		//vector<node*> trees = bc.NlnNCluster();
-		//for(int i = 0; i < trees.size(); i++){
-		//      //TODO: set predicted jets from PointCollection in tree[i]
-		//	if(trees[i] == nullptr) continue;
-		//	if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
-		//		continue; }
-		//}
-		
-
 
 //cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
 		if(_tree != nullptr) _tree->Fill();
@@ -784,6 +750,8 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
+
+	//TODO: need to save gen information as "truth" info
 }
 
 
