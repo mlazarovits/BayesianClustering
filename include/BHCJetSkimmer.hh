@@ -53,7 +53,6 @@ class BHCJetSkimmer : public JetSkimmer{
 				cleaned_trees.push_back(trees[i]);
 			}
 			nClusters->Fill(njets);
-			FillPVHists_PredJets(cleaned_trees);
 		}
 		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
 			int kmax = model->GetNClusters();
