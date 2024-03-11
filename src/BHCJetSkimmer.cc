@@ -1,18 +1,15 @@
-#include "JetSkimmer.hh"
-#include "Clusterizer.hh"
-#include "BayesCluster.hh"
-#include "Matrix.hh"
-#include <TFile.h>
-#include <time.h>
-//#include <TH1D.h>
-#include <TH2D.h>
+#include "BHCJetSkimmer.hh"
 
-
-//make cluster param histograms
-//if specified, skim from events i to j
-void JetSkimmer::Skim(){
+void BHCJetSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
-	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
+	cout << "Using clustering strategy";
+	if(_strategy == NlnN)
+		cout << " NlnN (Delauney)" << endl;
+	else if(_strategy == N2)
+		cout << " N2 (naive)" << endl;
+	else
+		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
+	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	
 	MakeTimeRecoCatHists();
@@ -46,12 +43,10 @@ void JetSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 	
-	double phogev = 1./30.;
 	_prod->PrintPreselection();
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
-		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
@@ -59,24 +54,47 @@ void JetSkimmer::Skim(){
 			rhTime->Fill(rhs[r].t());
 		}
 //continue;	
-		FillTruePhotonHists(_phos);
 	
 		totEvt++;	
 	
 
-		////fill true jet histograms
-		vector<Jet> jets;
-		_prod->GetTrueJets(jets, i, _gev);
-		if(jets.size() < 1){ cout << endl; continue; }
+		////fill gen jet histograms
+	//	vector<Jet> genjets;
+	//	TODO: make the method below
+	//	_prod->GetGenJets(genjets, i, _gev);
+	//	if(jets.size() < 1){ cout << endl; continue; }
 
 	
-		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
-		for(int i = 0; i < trCats.size(); i++)	
-			//make sure time smearing doesn't happen here when it's turned off by the flag
-			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
-		
+		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
+		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 		jetSelEff++;
+		
 
+		clock_t t;
+		BayesCluster* algo = new BayesCluster(rhs);
+		if(_smear) algo->SetDataSmear(smear);
+		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+		algo->SetThresh(thresh);
+		algo->SetAlpha(alpha);
+		algo->SetSubclusterAlpha(emAlpha);
+		algo->SetVerbosity(0);
+		//run clustering
+		//delauney NlnN version
+		if(_strategy == NlnN){
+			//start clock
+			t = clock();
+			trees = algo->NlnNCluster();
+		}
+		//N^2 version
+		else if(_strategy == N2){
+			//start clock
+			t = clock();
+			trees = algo->N2Cluster();
+		}
+		t = clock() - t;
+		y_time.push_back((double)t/CLOCKS_PER_SEC);
+		
+		FillPredJetHists(trees);
 	}
 
 	WriteHists(ofile);
@@ -84,11 +102,4 @@ void JetSkimmer::Skim(){
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 }
-
-
-
-
-
-
-
 

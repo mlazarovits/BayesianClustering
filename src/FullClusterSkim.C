@@ -199,10 +199,6 @@ int main(int argc, char *argv[]){
 		if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
 		else cout << "Skimming all events for ";
 	}
-	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
-	else{
-		in_file = "BDSIM";
-	} 
 
 	if(gSystem->AccessPathName(in_file.c_str())){
 		cout << "Error: file " << in_file << " not found." << endl;
