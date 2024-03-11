@@ -30,11 +30,12 @@ int main(int argc, char *argv[]){
 	bool skim = false;
 	bool ntuple = false;	
 	double gev = 1./10.;
-	string oname = "ntuples";
+	string oname = "";
 	bool ttbar = false;
 	bool qcd = false;
 	bool sig_delayed = false;
 	bool sig_boosted = false;
+	double spikeProb = 0.;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -90,7 +91,10 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--sigBoosted", 12) == 0){
     	 		sig_boosted = true;
    		}
-
+		if(strncmp(argv[i],"--spikeProb", 11) == 0){
+			i++;
+    	 		spikeProb = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -106,6 +110,7 @@ int main(int argc, char *argv[]){
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
+   		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		return -1;	
 	}
@@ -114,21 +119,58 @@ int main(int argc, char *argv[]){
 	if(!ttbar && !qcd && !sig_delayed && !sig_boosted){
 		cout << "No process specified to simulate. Exiting..." << endl;
 		return -1;
+	}
+	else{
+		if(!oname.empty())
+			oname = "_simNtuples_";
+		else
+			oname += "simNtuples_";
+	}
+	if(spikeProb < 0 || spikeProb > 1){
+		cout << "Invalid spike probability " << spikeProb << ". Must be [0,1]" << endl;
+		return -1;
 	}	
-	//consider doing det from pythia cmnd card
 
+	cout << "Simulating events from ";	
+	if(ttbar){
+		cout << "ttbar " << endl;
+		oname += "ttbar";	
+	}
+	if(qcd){
+		cout << "QCD " << endl;
+		oname += "QCD";
+	}
+
+	//TODO: change onames when processes are decided
+	if(sig_delayed){
+		cout << "delayed signal " << endl;
+		oname += "sig_delayed";
+	}
+
+	if(sig_boosted){
+		cout << "boosted signal " << endl;
+		oname += "sig_boosted";
+	}
+
+	if(pu){
+		cout << "and pileup " << endl;
+		oname += "_PU";
+	}
+	//consider doing det from pythia cmnd card
 	BasicDetectorSim det;
 	det.SetNEvents(nevts);
+	//for reconstructing rechits
 	det.SetEnergyThreshold(1.); //set to 1 GeV
 	//set energy transfer factor in N/GeV
 	det.SetTransferFactor(gev);
 	det.SetVerbosity(verb);
 	if(ttbar) det.SimTTbar();
-	//if(qcd)
+	if(qcd) det.SimQCD();
 	//if(sig_delayed)
 	//if(sig_boosted)
 	if(pu) det.TurnOnPileup();
-	//det.TurnOnSpikes(0.01);
+	if(spikeProb > 0) det.TurnOnSpikes(0.01);
+	
 	///////make ntuple///////
 	det.InitTree("rootfiles/"+oname+".root");
 	det.SimulateEvents();
