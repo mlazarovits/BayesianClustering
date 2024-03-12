@@ -163,7 +163,6 @@ int main(int argc, char *argv[]){
 	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
 	else cout << "Skimming all events for ";
 
-	oname = oname+".root";
 	//make sure evti < evtj
 	if(evti > evtj){
 		int evt = evtj;
@@ -171,10 +170,27 @@ int main(int argc, char *argv[]){
 		evti = evt;
 	}
 	TFile* file = TFile::Open(infile.c_str());
-	
+	if(oname.empty()){
+		oname = file->GetName();
+		cout << "1 ctor oname " << oname << endl;
+		string match = "simNtuples_";
+		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()))+".root";
+		oname = "simSkim_"+oname;
+		cout << "ctor oname " << oname << endl;
+	}
+	else{
+		string oname_extra = file->GetName();
+		cout << "1 ctor oname_extra " << oname_extra << endl;
+		string match = "simNtuples_";
+		oname_extra = oname_extra.substr(oname_extra.find(match)+match.size(),oname_extra.find(".root")-(oname_extra.find(match)+match.size()))+".root";
+		oname = "simSkim_"+oname+"_"+oname_extra;
+		cout << "ctor oname " << oname << endl;
+
+	}	
+
 	BHCJetSkimmer skimmer(file);
-	skimmer.SetMinPt(minpt);
-	skimmer.SetMinNrhs(minnrhs);
+	//skimmer.SetMinPt(minpt);
+	//skimmer.SetMinNrhs(minnrhs);
 	skimmer.SetOutfile(oname);
 	skimmer.SetTransferFactor(gev);
 	skimmer.SetEventRange(evti,evtj);

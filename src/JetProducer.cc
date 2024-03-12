@@ -1,6 +1,6 @@
 #include "JetProducer.hh"
 
-#include "Clusterizer.hh"
+//#include "Clusterizer.hh"
 #include "Matrix.hh"
 #include <TFile.h>
 //#include <TH1D.h>
@@ -127,89 +127,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	}	
 }
 
-void JetProducer::GetSimRecHits(vector<Jet>& rhs, int evt){
-	double t, E, eta, phi;
-	rhs.clear();
-	double timecorr, drh, dpv, calibfactor;	
 
-	if(evt > _nEvts) return;
-
-	_base->GetEntry(evt);
-	int nRHs = (int)_base->ECALRecHit_energy->size();
-	
-	Point vtx = Point(3);
-	vtx.SetValue(_base->PV_x,0);
-	vtx.SetValue(_base->PV_y,1);
-	vtx.SetValue(_base->PV_z,2);
-	//make weights - E/e_avg
-	vector<double> ws;
-	for(int r = 0; r < nRHs; r++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-		
-		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
-		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
-		
-		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
-		rh.SetEta(_base->ECALRecHit_eta->at(r));
-		rh.SetPhi(_base->ECALRecHit_phi->at(r));
-		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
-
-		Jet j(rh);
-		j.SetVertex(vtx);
-		rhs.push_back(j);
-	}	
-
-}
-
-void JetProducer::GetGenJets(vector<Jet>& genjets, int evt){
-	double eta, phi, px, py, pz, pt;
-	genjets.clear();
-
-	if(evt > _nEvts) return;
-
-	_base->GetEntry(evt);
-	int nJets = (int)_base->Jet_genEnergy->size();
-	
-	Point vtx = Point(3);
-	vtx.SetValue(_base->PV_x,0);
-	vtx.SetValue(_base->PV_y,1);
-	vtx.SetValue(_base->PV_z,2);
-	//make weights - E/e_avg
-	vector<double> ws;
-	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
-		pt = _base->Jet_genPt->at(j);
-		phi = _base->Jet_genPhi->at(j);
-		eta = _base->Jet_genEta->at(j);
-
-		px = pt*cos(phi);
-		py = pt*sin(phi);
-		pz = pt*sinh(eta);
-
-		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-		Jet jet(px, py,
-		        pz, _base->Jet_genEnergy->at(j));
-		
-		jet.SetVertex(vtx);
-		//TODO: set constituents from ntuple
-		//TODO: set constituents in ntuple
-	}	
-
-
-
-
-
-}
 
 void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
 	//reset to empty 3-dim point	

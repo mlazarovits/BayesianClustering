@@ -12,7 +12,6 @@
 #include "TSystem.h"
 #include "BaseTree.hh"
 
-using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
 class JetSkimmer : public BaseSkimmer{
 	public:
@@ -89,18 +88,6 @@ class JetSkimmer : public BaseSkimmer{
 
 			//_hists2D.push_back(erhs_trhs);		
 			
-			//predicted jets - from BHC
-			//_hists1D.push_back(nClusters);
-			//_hists1D.push_back(rhTime);
-			//_hists1D.push_back(comptime);
-			//_hists1D.push_back(PVtime_median_pred);
-			//_hists1D.push_back(PVtime_eAvg_pred);
-			//_hists1D.push_back(PVtime_mmAvg_pred);
-			//_hists1D.push_back(PVdeltaT_jet_median_pred);
-			//_hists1D.push_back(PVdeltaT_jet_eAvg_pred);
-			//_hists1D.push_back(PVdeltaT_jet_mmAvg_pred);
-			//_hists2D.push_back(e_nRhs);
-
 
 
 		};
@@ -304,7 +291,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 
 		vector<timeRecoCat> trCats;
-		void MakeTimeRecoCatHists(){
+		virtual void MakeTimeRecoCatHists(){
 			//don't want to separate lead/not lead histograms
 			MakeProcCats(_oname, false);
 			timeRecoCat trmed(_timeHists1D, _timeHists2D, med, _procCats);
@@ -722,36 +709,6 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		//this is for one jet
-		//all hists referenced here are in hists1D
-		void FillModelHists(BasePDFMixture* model){
-			map<string, Matrix> params;
-			vector<double> eigenvals, norms;
-			vector<Matrix> eigenvecs;
-			double theta, phi, r, id, npts, E_k;
-
-			int nclusters = model->GetNClusters();
-			
-			nSubClusters->Fill(nclusters);
-			model->GetNorms(norms);
-		
-			//k clusters = k jets in event -> subclusters are mixture model components
-			for(int k = 0; k < nclusters; k++){
-				E_k = norms[k]/_gev;
-
-				params = model->GetPriorParameters(k);
-				eta_center->Fill(params["mean"].at(0,0));
-				phi_center->Fill(params["mean"].at(1,0));
-				time_center->Fill(params["mean"].at(2,0));
-		
-				//calculate slopes from eigenvectors
-				params["cov"].eigenCalc(eigenvals, eigenvecs);
-				
-				//total cluster energy
-				clusterE->Fill(E_k);
-			}
-		}
-		
-
 
 		int FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
 			map<double,Jet> pt_jet;

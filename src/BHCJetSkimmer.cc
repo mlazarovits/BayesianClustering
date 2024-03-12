@@ -1,4 +1,5 @@
 #include "BHCJetSkimmer.hh"
+#include "BayesCluster.hh"
 
 void BHCJetSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
@@ -11,8 +12,13 @@ void BHCJetSkimmer::Skim(){
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
 	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
-	
-	MakeTimeRecoCatHists();
+
+	cout << "oname " << _oname << endl;	
+	MakeProcCats(_oname, false);
+
+	cout << "n procs: " << _procCats.size() << endl;
+	for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
+
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = 2*acos(-1)/360.; //1 degree in radians
@@ -33,8 +39,6 @@ void BHCJetSkimmer::Skim(){
 	vector<node*> trees;
 	vector<Jet> rhs;
 
-	double jetSelEff = 0;
-	double totEvt = 0;
         
 	//for computational time
 	vector<double> x_nrhs, y_time;
@@ -42,34 +46,28 @@ void BHCJetSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
-	
-	_prod->PrintPreselection();
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
-		_prod->GetSimRecHits(rhs, i);
+		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
-		for(int r = 0; r < rhs.size(); r++){
-			rhTime->Fill(rhs[r].t());
-		}
-//continue;	
+		//for(int r = 0; r < rhs.size(); r++){
+		//	rhTime->Fill(rhs[r].t());
+		//}
 	
-		totEvt++;	
 	
 
 		////fill gen jet histograms
-	//	vector<Jet> genjets;
-	//	TODO: make the method below
-	//	_prod->GetGenJets(genjets, i, _gev);
+		vector<Jet> genjets;
+		_prod->GetGenJets(genjets, i);
 	//	if(jets.size() < 1){ cout << endl; continue; }
 
 	
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-		jetSelEff++;
-		
-		/*
+
+		cout << "Clustering..." << endl;	
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
@@ -96,13 +94,11 @@ void BHCJetSkimmer::Skim(){
 	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		FillPredJetHists(trees);
-		*/
 	}
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 
 	WriteHists(ofile);
 
-	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 }
 
