@@ -608,11 +608,15 @@ class JetSkimmer : public BaseSkimmer{
                         double gvy = _base->Gen_vy->at(genidx);
                         double gvz = _base->Gen_vz->at(genidx);
 
-                        double rx = 129*cos(_base->Photon_phi->at(phoidx));
-                        double ry = 129*sin(_base->Photon_phi->at(phoidx));
-                        double rtheta = 2*atan2(1,exp(_base->Photon_eta->at(phoidx)));
-                        double rz = 129/tan(rtheta);
+                        //double rx = 129*cos(_base->Photon_phi->at(phoidx));
+                        //double ry = 129*sin(_base->Photon_phi->at(phoidx));
+                        //double rtheta = 2*atan2(1,exp(_base->Photon_eta->at(phoidx)));
+                        //double rz = 129/tan(rtheta);
 
+			int scidx = _base->Photon_scIndex->at(phoidx);
+			double rx = _base->SuperCluster_x_calo->at(scidx);
+			double ry = _base->SuperCluster_y_calo->at(scidx);
+			double rz = _base->SuperCluster_z_calo->at(scidx);
 
 			//phoeta = pho.eta();
 			//phophi = pho.phi();
