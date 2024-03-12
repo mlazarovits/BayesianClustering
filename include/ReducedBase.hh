@@ -4,8 +4,8 @@
 // from TTree ReducedBase/KUCMSNtuple
 // found on file: GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root
 //////////////////////////////////////////////////////////
-#ifndef ReducedBase_h
-#define ReducedBase_h
+#ifndef ReducedBase_hh
+#define ReducedBase_hh
 
 #include <TROOT.h>
 #include <TChain.h>
