@@ -286,7 +286,7 @@ class JetSkimmer : public BaseSkimmer{
 		//11 - gen delta time vs reco delta time for signal photons - 500 <= E < 1000
 		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//12 - gen-matched dr vs ratio of reco to gen deltaT
-		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,1,25,0,5);
+		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,0.5,25,0,5);
 		//13 - gen energy vs ratio of reco to gen deltaT
 		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 
