@@ -614,9 +614,13 @@ class JetSkimmer : public BaseSkimmer{
                         double dy = ry - gvy;
                         double dz = rz - gvz;
 
-			double deta = asinh(dz/sqrt(dx*dx + dy*dy));
-                        double dphi = atan2(dy,dx);
-
+			double reta = asinh(dz/sqrt(dx*dx + dy*dy));
+                        double rphi = atan2(dy,dx);
+		
+			double deta = _base->Gen_eta->at(genidx) - reta;
+			double dphi = _base->Gen_phi->at(genidx) - rphi;
+		
+			
 			if(dphi > acos(-1)) dphi -= 2*acos(-1);
 			if(dphi < -acos(-1)) dphi += 2*acos(-1);
 			return sqrt( deta*deta + dphi*dphi );
