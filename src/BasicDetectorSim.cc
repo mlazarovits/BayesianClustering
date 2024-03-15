@@ -134,7 +134,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double zig = 0.05/2.;
 	double znew, tnew;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double zmax = _rmax/tan(theta); //[mm]
 
 	Pythia8::Event sumEvent; //one object where individual events are collected
@@ -265,7 +265,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
 	ROOT::Math::XYZTVector Position = rp.Position;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double halfLength = _rmax/tan(theta); //[m]
 
 	//pythia units are in mm (or mm/c for time, natural units)
@@ -520,7 +520,6 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			//get cell bounds
 			_get_etaphi(i, j, eta, phi);
-	
 			//get x, y, z based on cell eta phi
 			x = _rmax*cos(phi);
 			y = _rmax*sin(phi);
@@ -774,6 +773,8 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
+
 }
 
 
