@@ -41,6 +41,10 @@ def generateSubmission(args):
 		inputFile = "GJets_R17_v15_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GJets_HT600ToInf_v15":
 		inputFile = "GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GJets_HT400To600_2017_v16":
+		inputFile = "GJets_R17_v16_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GJets_HT400To600_2018_v16":
+		inputFile = "GJets_R18_v16_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	elif args.inputSample == "GMSB_L300ctau600_v15":
 		inputFile = "GMSB_R17_v15_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L150ctau0p1_v15":
@@ -128,7 +132,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','GMSB_L100_ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','GMSB_L100_ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15','GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
