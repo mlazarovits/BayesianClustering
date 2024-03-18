@@ -337,7 +337,8 @@ string GetExtraLabel(string in_file){
 string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
-	if(in_file.find("output") == string::npos){
+	string year = "";
+	if(in_file.find("condor") != string::npos){
 		//get from v[0-9] to cm
 		//get version
 		std::smatch m;
@@ -348,6 +349,10 @@ string GetCMSLabel(string in_file){
 		int vidx = in_file.find(version)+version.size();
 		int cmidx = in_file.rfind("_AOD");
 		cmslab = in_file.substr(vidx,cmidx-vidx);
+		m = smatch();
+		re = std::regex("_R[0-9]+");
+		std::regex_search(in_file,m,re);
+		for(auto x : m) year += x;
 	}
 	else{
 		int idx = in_file.find("NperGeV0p");
@@ -357,6 +362,7 @@ string GetCMSLabel(string in_file){
 		cmslab = cmslab.substr(0,cmslab.find("_output"));
 	}
 	cmslab = cmslab.substr(0,cmslab.find(".root"));
+	cmslab += year;	
 	//remove directory prefixes
 	int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
 	for(int i = 0; i < cnt; i++)
@@ -364,6 +370,7 @@ string GetCMSLabel(string in_file){
 	if(cmslab.find("condor_") != string::npos)
 		cmslab = cmslab.substr(cmslab.find("condor_")+7);
 	return cmslab;
+	
 }
 
 

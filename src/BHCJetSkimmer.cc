@@ -75,7 +75,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
-		algo->SetVerbosity(0);
+		algo->SetVerbosity(_verb);
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
@@ -97,7 +97,7 @@ void BHCJetSkimmer::Skim(){
 	}
 	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 
-	WriteHists(ofile);
+	WriteOutput(ofile);
 
 	cout << "Wrote skim to: " << _oname << endl;
 }

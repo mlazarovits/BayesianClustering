@@ -192,6 +192,7 @@ int main(int argc, char *argv[]){
 	//skimmer.SetMinPt(minpt);
 	//skimmer.SetMinNrhs(minnrhs);
 	skimmer.SetOutfile(oname);
+	skimmer.SetVerbosity(verb);
 	skimmer.SetTransferFactor(gev);
 	skimmer.SetEventRange(evti,evtj);
 	skimmer.Skim();

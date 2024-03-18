@@ -50,10 +50,11 @@ class BHCJetSkimmer{
 		}
 		
 		void FillPredJetHists(const vector<node*>& trees){
-			int njets = 0;
+			int njets;
 			vector<node*> cleaned_trees;
 			for(int p = 0; p < _procCats.size(); p++){
 				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				njets = 0;
 				for(int i = 0; i < trees.size(); i++){
 					if(trees[i] == nullptr) continue;
 					//check for mirrored point - would be double counted
@@ -110,20 +111,6 @@ class BHCJetSkimmer{
 			phi /= ws;
 			t /= ws; 
 		}
-		void WriteOutput(TFile* ofile){
-			WriteHists(ofile);
-			string name;
-			ofile->cd();
-			for(int i = 0; i < (int)graphs.size(); i++){
-				//name = graphs[i]->GetName();
-				//TCanvas* cv = new TCanvas(name.c_str(), "");
-				//TDRGraph(graphs[i], cv, name, name, "a.u.");
-				//write cv to file			
-				//cv->Write();
-				graphs[i]->Write();
-			}
-			ofile->Close();
-		}	
 		void MakeProcCats(string sample, bool leadsep = true){
 			//total
 			procCat tot(_hists1D, _hists2D);
@@ -167,6 +154,21 @@ class BHCJetSkimmer{
 			else return;
 
 		}
+		void WriteOutput(TFile* ofile){
+			WriteStackHists(ofile);
+			WriteHists(ofile);
+			string name;
+			ofile->cd();
+			for(int i = 0; i < (int)graphs.size(); i++){
+				//name = graphs[i]->GetName();
+				//TCanvas* cv = new TCanvas(name.c_str(), "");
+				//TDRGraph(graphs[i], cv, name, name, "a.u.");
+				//write cv to file			
+				//cv->Write();
+				graphs[i]->Write();
+			}
+			ofile->Close();
+		}	
 		void WriteHists(TFile* ofile){
 			string name;
 
@@ -180,6 +182,7 @@ class BHCJetSkimmer{
 				//write cv to file			
 			//	cv->SaveAs((fname+"/"+name+".pdf").c_str());
 				//cv->Write();
+				if(_hists1D[i]->GetEntries() == 0) continue;
 				_hists1D[i]->Write();
 			}
 			for(int i = 0; i < (int)_hists2D.size(); i++){
@@ -188,14 +191,14 @@ class BHCJetSkimmer{
 				//TDR2DHist(hists2D[i], cv, name, name, "a.u.");
 				//write cv to file			
 				//cv->Write();
-			_hists2D[i]->Write();
+				if(_hists2D[i]->GetEntries() == 0) continue;
+				_hists2D[i]->Write();
 			}
 
-			ofile->Close();
 
 		}
 		
-		void WriteTimeRecoCatStack(TFile* ofile){
+		void WriteStackHists(TFile* ofile){
 			ofile->cd();
 			string name, dirname, histname;
 			//write 1D hists
@@ -203,15 +206,16 @@ class BHCJetSkimmer{
 			int nhists = _procCats[0].hists1D[0].size();
 			for(int i = 0; i < nhists; i++){
 				name = _procCats[0].hists1D[0][i]->GetName();
+				_procCats[0].hists1D[0][i]->Write();
 				//dirname = name.substr(0,name.rfind("_"+trs[0].methodName));
 			////cout << "i: " << i << " name " << name << " making dir " << dirname+"_stack" << endl;
-				TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
-				dir->cd();
+				//TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
+				//dir->cd();
 				//make process breakdown directory
-				TDirectory *dir2 = dir->mkdir((dirname+"_procStack").c_str());
+				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
 				//cout << "  making dir " << dir2->GetName() << endl;
 				dir2->cd();
-				for(int p = 0; p < _procCats.size(); p++){
+				for(int p = 1; p < _procCats.size(); p++){
 				//loop over processes
 			//		cout << "    proc " << trs[j].procCats[p].plotName << " hist " << trs[j].procCats[p].hists1D[0][i]->GetName() << " " << trs[j].procCats[p].hists1D[0][i]->GetTitle() << " entries " << trs[j].procCats[p].hists1D[0][i]->GetEntries() << endl;			
 					//histname = procCats[p].hists1D[0][i]->GetName();
@@ -221,7 +225,8 @@ class BHCJetSkimmer{
 					//cout << "writing " << trs[j].procCats[p].hists1D[0][i]->GetName() << " " << trs[j].procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
 					_procCats[p].hists1D[0][i]->Write();
 
-				} 
+				}
+				ofile->cd(); 
 			}
 			//write 2D hists
 			
@@ -250,6 +255,8 @@ class BHCJetSkimmer{
 			_prod->SetTransferFactor(_gev);
 		}
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
+		void SetVerbosity(int verb){_verb = verb;}
+		int _verb;
 
 	private:
 		string _oname;
