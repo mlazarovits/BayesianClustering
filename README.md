@@ -24,6 +24,13 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- at least v3.4.1 for compatibility with C++17
 	- at least v3.4.2 for compatibility with C++20 
 
+
+### Branches
+- `main` branch is latest stable release
+- `dev_v15` is compatible with v15, v16 of KUCMS ntuples
+- `dev_v14` is compatible with v14 of KUCMS ntuples
+- `dev` branch is inactive
+
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
 	- this is also the case for the variational EM algorithm, except once the prior parameters are set, the parameters are updated to seed the algorithm (initial M0-step, then alternate between E-M)
@@ -87,13 +94,13 @@ There are muliple visualization classes:
 	- because of this, for JetSkimming, the 1D profiles and time sigma plots are *not* filled (only the 2D diffDeltaTime plots and the other 1D variables are filled) so the user can hadd the 2D histograms together
 		- then, profiling is done in `HistFormat.C` in the macros directory, which also produces formatted TCanvases of all plots
 
-#### Condor
+### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
 
-#### Use as an external package
+### Use as an external package
 - make sure `lib/libBayesianClustering.so` exists
 	- if not, it can be made with `make lib`
 - be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
