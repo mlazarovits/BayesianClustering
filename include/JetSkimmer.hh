@@ -278,13 +278,13 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
 		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
-		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 50
+		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 100
 		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT_Ebin1;recoDeltaT;a.u.",25,0,20,25,0,20);
-		//9 - gen delta time vs reco delta time for signal photons - 50 <= E < 200
+		//9 - gen delta time vs reco delta time for signal photons - 100 <= E < 400
 		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT_Ebin2;recoDeltaT;a.u.",25,0,20,25,0,20);
-		//10 - gen delta time vs reco delta time for signal photons - 200 <= E < 500
+		//10 - gen delta time vs reco delta time for signal photons - 400 <= E < 700
 		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT_Ebin3;recoDeltaT;a.u.",25,0,20,25,0,20);
-		//11 - gen delta time vs reco delta time for signal photons - 500 <= E < 1000
+		//11 - gen delta time vs reco delta time for signal photons - 700 <= E
 		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//12 - gen-matched dr vs ratio of reco to gen deltaT
 		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,0.5,25,0,5);
@@ -381,7 +381,6 @@ class JetSkimmer : public BaseSkimmer{
 			for(int p = 0; p < nProc; p++){
 				//cout << " proc " << trCats[tr_idx].procCats[p].plotName << endl;
 				Erh = 0;
-				Epho = 0;
 				ptavg = 0;
 				geoEavg = 0;
 			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
@@ -451,6 +450,7 @@ class JetSkimmer : public BaseSkimmer{
 					if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 						//get sum of pho rh energy
 						phorhs = _phos[0].GetJetPoints();
+						Epho = 0;
 						for(auto r : phorhs) Epho += r.E();
 						cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
@@ -479,13 +479,13 @@ class JetSkimmer : public BaseSkimmer{
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
 								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 							//fill gen deltaT vs reco deltaT in energy bins
-							if(Epho >= 0 && Epho < 50)
+							if(Epho >= 0 && Epho < 100)
 								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 50 && Epho < 200)
+							if(Epho >= 100 && Epho < 400)
 								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 200 && Epho < 500)
+							if(Epho >= 400 && Epho < 700)
 								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 500 && Epho < 1000)
+							if(Epho >= 700)
 								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 							
 							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
@@ -498,7 +498,6 @@ class JetSkimmer : public BaseSkimmer{
 
 					//do same for subleading photon if it exists
 					if(_phos.size() > 1){
-						Epho = 0;
 						phoidx = _phos[1].GetUserIdx();
 						genidx = _base->Photon_genIdx->at(phoidx);
 						if(genidx == -1) phoid = -1;
@@ -508,6 +507,7 @@ class JetSkimmer : public BaseSkimmer{
 					      //cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 							phorhs = _phos[1].GetJetPoints();
+							Epho = 0;
 							for(auto r : phorhs) Epho += r.E();
 							cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 							//cout << "SUBLEAD GAMTIME" << endl;	
@@ -531,13 +531,13 @@ class JetSkimmer : public BaseSkimmer{
 								if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
 									trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
 								//fill gen deltaT vs reco deltaT in energy bins
-								if(Epho >= 0 && Epho < 50)
+								if(Epho >= 0 && Epho < 100)
 									trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 50 && Epho < 200)
+								if(Epho >= 100 && Epho < 400)
 									trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 200 && Epho < 500)
+								if(Epho >= 400 && Epho < 700)
 									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 500 && Epho < 1000)
+								if(Epho >= 700)
 									trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
 								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
 								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen);

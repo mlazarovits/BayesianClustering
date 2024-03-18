@@ -42,6 +42,7 @@ int main(int argc, char *argv[]){
 	double minnrhs = 15;
 	double minEmE = 20;
 	double minRhE = 0.5;
+	bool frac = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -146,6 +147,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--applyFrac", 11) == 0){
+			frac = true;
+			cout << "Apply fractions for rec hits." << endl;
+   		}
 
 	}
 	if(hprint){
@@ -169,7 +174,8 @@ int main(int argc, char *argv[]){
    		cout << "   --timeSmear                   turns on time smearing data (default = false)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
-   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6" << endl;
+   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false)" << endl;
+   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
   	}
@@ -302,7 +308,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetData(data);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
-        	//skimmer.SetDebug(debug);
+        	skimmer.ApplyFractions(frac);
+		//skimmer.SetDebug(debug);
 		//set EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);

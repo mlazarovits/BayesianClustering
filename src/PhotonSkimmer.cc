@@ -42,6 +42,7 @@ void PhotonSkimmer::Skim(){
 	_prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
+	_prod->ApplyFractions(_applyFrac);
 
 	_prod->PrintPreselection();
 	//loop over events
@@ -72,7 +73,6 @@ void PhotonSkimmer::Skim(){
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 
-			_pv = phos[p].GetVertex();
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
