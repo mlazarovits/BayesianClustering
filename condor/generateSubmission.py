@@ -23,11 +23,11 @@ def generateSubmission(args):
 	# Create output directory for condor results if it does not exist.
 	SH.makeDir(odir)
 
-	if args.inputSample == "GMSB_L500_ctau1000":	
+	if args.inputSample == "GMSB_L500ctau1000":	
 		inputFile = "GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
-	elif args.inputSample == "GMSB_L350_ctau200":	
+	elif args.inputSample == "GMSB_L350ctau200":	
 		inputFile = "GMSB_AOD_v14_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-	elif args.inputSample == "GMSB_L150_ctau200":	
+	elif args.inputSample == "GMSB_L150ctau200":	
 		inputFile = "GMSB_AOD_v14_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "JetHT":
 		inputFile = "JetHT_Met150_AOD_v14_JetHT_AOD_Run2018CRun2018D-15Feb2022_UL2018-v1.root"
@@ -35,7 +35,7 @@ def generateSubmission(args):
 		inputFile = "GJets_AOD_v14_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	elif args.inputSample == "GJets_HT600ToInf":
 		inputFile = "GJets_AOD_v14_GJets_HT-600ToInf_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root" 
-	elif args.inputSample == "GMSB_L100_ctau0p1":
+	elif args.inputSample == "GMSB_L100ctau0p1":
 		inputFile = "GMSB_AOD_v14_GMSB_L-100TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GJets_HT400To600_v15":
 		inputFile = "GJets_R17_v15_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
@@ -49,7 +49,10 @@ def generateSubmission(args):
 		inputFile = "GMSB_R17_v15_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L150ctau0p1_v15":
 		inputFile = "GMSB_R17_v15_GMSB_L-150TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-
+	elif args.inputSample == "GJets_HT600ToInf_2017_v16":
+		inputFile = "GJets_R17_v16_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GMSB_L350ctau200_2017_v16":	
+		inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 	#to use xrootd path cannot be relative
@@ -57,16 +60,7 @@ def generateSubmission(args):
 	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
 	
 	objName = args.object
-	strategyName = ""
-	if args.strategy == 0:
-	        strategyName = "NlnN"
-	elif args.strategy == 1:
-	        strategyName = "N2"
-	elif args.strategy == 2:
-		strategyName = "GMMonly"
-	else:
-	        print("Invalid strategy",args.strategy,"specified")
-	        exit()
+	strategyName = "GMMonly" #only option for CMS jets/photons
 	
 	printstring = "Skimming for "+objName+" in file "+inputFile
 	if(objName == "jets"):
@@ -101,7 +95,7 @@ def generateSubmission(args):
 
 	# grab relevant flags
 	eventnums = SH.eventsSplit(inputFile, args.split)
-	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" -s "+str(args.strategy)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)
+	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+" -s 2"
 	if(args.noSmear):
 		flags += ' --noSmear'
 	if(args.timeSmear):
@@ -132,12 +126,12 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500_ctau1000','GMSB_L350_ctau200','GMSB_L150_ctau200','GMSB_L100_ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15','GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500ctau1000','GMSB_L350ctau200','GMSB_L150ctau200','GMSB_L100ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15','GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L350ctau200_2017_v16'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
 	parser.add_argument('--object',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
-	parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
+	#parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
 	parser.add_argument('--verbosity','-v',help="verbosity",default=0)
 	#add algorithm parameters - alpha, emAlpha, verbosity, thresh
