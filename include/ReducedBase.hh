@@ -4,8 +4,8 @@
 // from TTree ReducedBase/KUCMSNtuple
 // found on file: root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root
 //////////////////////////////////////////////////////////
-#ifndef ReducedBase_h
-#define ReducedBase_h
+#ifndef ReducedBase_hh
+#define ReducedBase_hh
 
 #include <TROOT.h>
 #include <TChain.h>

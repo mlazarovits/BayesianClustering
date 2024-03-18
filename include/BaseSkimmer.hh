@@ -288,6 +288,16 @@ class BaseSkimmer{
 				gjets.ids = {-999};
 				_procCats.push_back(gjets);
 			}
+			else if(sample.find("ttbar") != string::npos){
+				procCat ttbar(_hists1D, _hists2D, "ttbar", "t#bar{t}",leadsep);
+				ttbar.ids = {-999};
+				_procCats.push_back(ttbar);
+			}
+			else if(sample.find("QCD") != string::npos){
+				procCat qcd(_hists1D, _hists2D, "QCD", "QCD multi-jets",leadsep);
+				qcd.ids = {-999};
+				_procCats.push_back(qcd);
+			}
 			else return;
 
 		}

@@ -78,7 +78,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
 #specify what to make
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
-all: FullClusterSingle.x FullClusterSkim.x detectorSim.x 
+all: FullClusterSingle.x FullClusterSkim.x detectorSimNtuples.x detectorSimSkimmer.x 
 local: all
 lpc:   all configtar lpclib
 lib: lib/libBayesCluster.so
@@ -109,9 +109,13 @@ FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch FullClusterSkim.x
 
-detectorSim.x: $(SRCDIR)detectorSim.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o detectorSim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch detectorSim.x
+detectorSimNtuples.x: $(SRCDIR)detectorSimNtuples.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o detectorSimNtuples.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch detectorSimNtuples.x
+
+detectorSimSkimmer.x: $(SRCDIR)detectorSimSkimmer.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch detectorSimSkimmer.x
 
 configtar:
 	cp FullCluster*.x config/

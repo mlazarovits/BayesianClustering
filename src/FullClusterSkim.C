@@ -32,8 +32,6 @@ int main(int argc, char *argv[]){
 	bool timesmear = false;
 	//by default in BayesCluster
 	bool distconst = true;
-	//clustering strategy for skimmer
-	int strat = 0; //0 is NlnN
 	int evti = 0; //for skimming from evti to evtj
 	int evtj = 0;
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
@@ -117,14 +115,6 @@ int main(int argc, char *argv[]){
     	 		distconst = false;
 			cout << "Turning off distance constraint." << endl;
    		}
-		if(strncmp(argv[i],"--strategy", 10) == 0){
-    	 		i++;
-			strat = std::atoi(argv[i]);
-   		}
-		if(strncmp(argv[i],"-s", 2) == 0){
-    	 		i++;
-			strat = std::atoi(argv[i]);
-   		}
 		if(strncmp(argv[i],"--evtFirst", 6) == 0){
     	 		i++;
 			evti = std::atoi(argv[i]);
@@ -173,7 +163,6 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --strategy(-s) [strat]        set clustering strategy for skimmer (0 : NlnN (default), 1 : N^2, 2 : GMM only, does not apply to photons)" << endl;
    		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
    		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
@@ -216,10 +205,6 @@ int main(int argc, char *argv[]){
 		if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
 		else cout << "Skimming all events for ";
 	}
-	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
-	else{
-		in_file = "BDSIM";
-	} 
 
 	if(gSystem->AccessPathName(in_file.c_str())){
 		cout << "Error: file " << in_file << " not found." << endl;
@@ -300,7 +285,6 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinEmE(minEmE);
 		if(in_file.find("JetHT") != string::npos)
 			skimmer.SetData(true);
-		skimmer.SetStrategy(strat);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha

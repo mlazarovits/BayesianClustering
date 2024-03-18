@@ -71,8 +71,9 @@ class BayesCluster{
 
 
 		virtual ~BayesCluster(){
-			for(auto n : _trees) delete n;
-			_trees.clear();
+			////for(auto n : _trees) delete n;
+			for(auto n : _trees) n = nullptr;
+			//_trees.clear();
 			_jets.clear();
 			_points.clear();
 			_history.clear();

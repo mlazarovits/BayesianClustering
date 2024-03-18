@@ -1,6 +1,6 @@
 #include "JetProducer.hh"
 
-#include "Clusterizer.hh"
+//#include "Clusterizer.hh"
 #include "Matrix.hh"
 #include <TFile.h>
 //#include <TH1D.h>
@@ -126,6 +126,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		jets.push_back(j);
 	}	
 }
+
 
 
 void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
