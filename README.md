@@ -24,6 +24,13 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- at least v3.4.1 for compatibility with C++17
 	- at least v3.4.2 for compatibility with C++20 
 
+
+### Branches
+- `main` branch is latest stable release
+- `dev_v15` is compatible with v15, v16 of KUCMS ntuples
+- `dev_v14` is compatible with v14 of KUCMS ntuples
+- `dev` branch is inactive
+
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
 	- this is also the case for the variational EM algorithm, except once the prior parameters are set, the parameters are updated to seed the algorithm (initial M0-step, then alternate between E-M)
