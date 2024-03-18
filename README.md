@@ -27,6 +27,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Branches
 - `main` branch is latest stable release
+- always work on `dev_vXX` branch of latest version
 - `dev_v15` is compatible with v15, v16 of KUCMS ntuples
 - `dev_v14` is compatible with v14 of KUCMS ntuples
 - `dev` branch is inactive
