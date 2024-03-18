@@ -197,7 +197,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
                           	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
-	//cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << endl;
+	cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << endl;
+
+				
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
