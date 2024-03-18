@@ -9,10 +9,10 @@
 #include "PhotonProducer.hh"
 #include <TFile.h>
 #include <TGraph.h>
+#include <TMath.h>
 #include "TSystem.h"
 #include "BaseTree.hh"
 
-using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
 class JetSkimmer : public BaseSkimmer{
 	public:
@@ -89,21 +89,6 @@ class JetSkimmer : public BaseSkimmer{
 
 			//_hists2D.push_back(erhs_trhs);		
 			
-			//predicted jets - from BHC
-			//_hists1D.push_back(nClusters);
-			//_hists1D.push_back(rhTime);
-			//_hists1D.push_back(comptime);
-			//_hists1D.push_back(PVtime_median_pred);
-			//_hists1D.push_back(PVtime_eAvg_pred);
-			//_hists1D.push_back(PVtime_mmAvg_pred);
-			//_hists1D.push_back(PVdeltaT_jet_median_pred);
-			//_hists1D.push_back(PVdeltaT_jet_eAvg_pred);
-			//_hists1D.push_back(PVdeltaT_jet_mmAvg_pred);
-			//_hists2D.push_back(e_nRhs);
-
-			nrhs_comptime->SetName("nrhs_comptime");
-			nrhs_comptime->SetTitle("nrhs_comptime");
-			graphs.push_back(nrhs_comptime);
 
 
 		};
@@ -302,29 +287,12 @@ class JetSkimmer : public BaseSkimmer{
 		//11 - gen delta time vs reco delta time for signal photons - 700 <= E
 		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
 		//12 - gen-matched dr vs ratio of reco to gen deltaT
-		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,1,25,0,5);
+		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,0.5,25,0,5);
 		//13 - gen energy vs ratio of reco to gen deltaT
 		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 
-		//comparing predicted jets + true jets
-		//TH2D* nSubClusters_nConstituents = new TH2D("nSubClusters_nConstituents", "nSubClusters_nConstituents",50,0,20,50,0,20);
-
-
-
-		//predicted jet plots
-		TH1D* nClusters = new TH1D("nClusters","nClusters",20,0,20);
-		TH1D* PVtime_pred = new TH1D("PVtime_pred","PVtime_pred",100,-10,10);	
-		//difference in tPV between two back-to-back jets
-		//previous time definitions
-		TH1D* deltaT_jet_pred = new TH1D("PVdeltaT_jet_pred","PVdeltaT_jet_pred",100,-10,10);	
-		//comp time distribution
-		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
-		//comp time as a function of number of rechits per event
-		TGraph* nrhs_comptime = new TGraph();
-
-
 		vector<timeRecoCat> trCats;
-		void MakeTimeRecoCatHists(){
+		virtual void MakeTimeRecoCatHists(){
 			//don't want to separate lead/not lead histograms
 			MakeProcCats(_oname, false);
 			timeRecoCat trmed(_timeHists1D, _timeHists2D, med, _procCats);
@@ -625,23 +593,34 @@ class JetSkimmer : public BaseSkimmer{
 
 			//need to correct for displacement from 0 point
 			double gvx = _base->Gen_vx->at(genidx);
-			double gvy = _base->Gen_vy->at(genidx);
-			double gvz = _base->Gen_vz->at(genidx);
+                        double gvy = _base->Gen_vy->at(genidx);
+                        double gvz = _base->Gen_vz->at(genidx);
 
-			double rx = 129*cos(_base->Photon_phi->at(phoidx));
-			double ry = 129*sin(_base->Photon_phi->at(phoidx));
-			double rtheta = 2*atan2(1,exp(_base->Photon_eta->at(phoidx)));
-			double rz = 129/tan(rtheta);		
+                        //double rx = 129*cos(_base->Photon_phi->at(phoidx));
+                        //double ry = 129*sin(_base->Photon_phi->at(phoidx));
+                        //double rtheta = 2*atan2(1,exp(_base->Photon_eta->at(phoidx)));
+                        //double rz = 129/tan(rtheta);
+
+			int scidx = _base->Photon_scIndex->at(phoidx);
+			double rx = _base->SuperCluster_x_calo->at(scidx);
+			double ry = _base->SuperCluster_y_calo->at(scidx);
+			double rz = _base->SuperCluster_z_calo->at(scidx);
 
 			//phoeta = pho.eta();
 			//phophi = pho.phi();
+			//double deta = geneta - phoeta;
+			//double dphi = genphi - phophi;
 
 			double dx = rx - gvx;
-			double dy = ry - gvy;
-			double dz = rz - gvz;
+                        double dy = ry - gvy;
+                        double dz = rz - gvz;
 
-			double deta = asinh(dz/sqrt(dx*dx + dy*dy));
-			double dphi = atan2(dy,dx); 
+			double reta = asinh(dz/sqrt(dx*dx + dy*dy));
+                        double rphi = atan2(dy,dx);
+		
+			double deta = _base->Gen_eta->at(genidx) - reta;
+			double dphi = _base->Gen_phi->at(genidx) - rphi;
+		
 			
 			if(dphi > acos(-1)) dphi -= 2*acos(-1);
 			if(dphi < -acos(-1)) dphi += 2*acos(-1);
@@ -655,31 +634,56 @@ class JetSkimmer : public BaseSkimmer{
 			double dpho = -999;
 			int genidx, phoidx, phoid;
 			//gen photon coordinates
-			double phox, phoy, phoz, photheta, phoeta, phophi, vx, vy, vz;
+			double genx, geny, genz, gentheta, geneta, genphi, vx, vy, vz;
 			//if no match
 			phoidx = pho.GetUserIdx();
 			genidx = _base->Photon_genIdx->at(phoidx);
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
-			phoeta = _base->Gen_eta->at(genidx);
-			phophi = _base->Gen_phi->at(genidx);
-			photheta = 2*atan2(1,exp(phoeta));
+			int momidx = _base->Photon_genSigMomId->at(phoidx);
+			//check gen pdgids
+			cout << "gen photon pdgid: " << _base->Gen_pdgId->at(phoidx) << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
+
+			geneta = _base->Gen_eta->at(genidx);
+			genphi = _base->Gen_phi->at(genidx);
+			gentheta = 2*atan2(1,exp(geneta));
 			//detector y (in y,z plane) or r (in x,y plane) is 1.29 m
-			phox = 129*cos(phophi);
-			phoy = 129*sin(phophi);
-			phoz = 0;
-			//if(photheta > acos(-1)/2.) phoz = -129/tan(photheta - acos(-1)/2.); 
-			//else phoz = 129/tan(photheta);	
-			phoz = 129/tan(photheta);	
+			genx = 129*cos(genphi);
+			geny = 129*sin(genphi);
+			genz = 129/tan(gentheta);	
 			
 			//for checking calculations
-			double rtheta = atan2(129,phoz);
+			double rtheta = atan2(129,genz);
 			//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
 			double reta = -log(tan(rtheta/2));
-			double rphi = atan2(phoy,phox);
+			double rphi = atan2(geny,genx);
 		
-		cout << "gen eta: " << phoeta << " rgen eta: " << reta << " gen phi: " << phophi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << sqrt((phoeta - _base->Photon_eta->at(phoidx))*(phoeta - _base->Photon_eta->at(phoidx)) + (phophi - _base->Photon_phi->at(phoidx))*(phophi - _base->Photon_phi->at(phoidx))) << " theta: " << photheta << " rtheta: " << rtheta << endl;
+		cout << "gen eta: " << geneta << " rgen eta: " << reta << " gen phi: " << genphi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << sqrt((geneta - _base->Photon_eta->at(phoidx))*(geneta - _base->Photon_eta->at(phoidx)) + (genphi - _base->Photon_phi->at(phoidx))*(genphi - _base->Photon_phi->at(phoidx))) << " theta: " << gentheta << " rtheta: " << rtheta << endl;
+
+			//propagate gen eta, phi of photon to ECAL face
+			//TODO: check units
+			double rmax = 129;
+			//1.5 is max eta (~1.479)
+			double maxtheta = 2*atan2(1,exp(1.5));
+			double halfLength = rmax/tan(maxtheta);
+			double genpx = _base->Gen_px->at(genidx);
+			double genpy = _base->Gen_py->at(genidx);
+			double genpz = _base->Gen_pz->at(genidx);
+			double genpt2 = genpx*genpx + genpy*genpy;
+			double gene = _base->Gen_energy->at(phoidx);
+			//propagate gen eta/phi (x, y, z) of momentum vector to ECAL surface
+			double tmp = genpx * geny - genpy * genx;
+	      		double tr = (TMath::Sqrt(genpt2 * rmax*rmax - tmp * tmp) - genpx * genx - genpy * geny) / genpt2;
+			double tz = (TMath::Sign(halfLength, genpz) - genz) / genpz;
+			double t = fmin(tr, tz)*(gene/_c); //t*e/c ~ [cm/GeV]*[GeV*ns/cm] = ns
+			//calculate new x, y, z based on time to detector
+			double genx_ECAL = genx + (genpx/gene)*_c*t;
+			double geny_ECAL = geny + (genpy/gene)*_c*t;
+			double genz_ECAL = genz + (genpz/gene)*_c*t;	
+	
+
+
 
 			vector<JetPoint> rhs =  pho.GetJetPoints();
 			//for(auto r : rhs) cout << "rh x: " << r.x() << " rh y: " << r.y() << " rh z: " << r.z() << endl;		
@@ -690,11 +694,11 @@ class JetSkimmer : public BaseSkimmer{
 
 			double beta;
 			if(phoid == 22){
-				int momidx = _base->Photon_genSigMomId->at(phoidx);
-
-				vx = _base->Gen_vx->at(momidx);
-				vy = _base->Gen_vy->at(momidx);
-				vz = _base->Gen_vz->at(momidx);
+				//want production vertex of photon (where LLP -> photon)
+				//not production vertex of mother (close to PV)
+				vx = _base->Gen_vx->at(phoidx);
+				vy = _base->Gen_vy->at(phoidx);
+				vz = _base->Gen_vz->at(phoidx);
 		
 				double mompx, mompy, mompz, momE;			
 
@@ -714,11 +718,13 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << "beta: " << beta << " vel: " << beta*_c << endl;
 				//check gen photon energy	
 				//cout << "photon energy: " << _base->Photon_energy->at(phoidx) << endl;
-				//distance bw photon and production point (LLP)
-				dpho = sqrt( (phox - vx)*(phox - vx) + (phoy - vy)*(phoy - vy) + (phoz - vz)*(phoz - vz) )/_c;
+				//distance bw photon and production point (where LLP decays to photon)
+				dpho = sqrt( (genx - vx)*(genx - vx) + (geny - vy)*(geny - vy) + (genz - vz)*(genz - vz) )/_c;
 		
 			//cout << "vertex to pho: " << dpho << endl;
-				//distance bw LLP and PV
+				//distance bw LLP decay point and PV
+				//LLP is produced close to PV (should take into account?)
+				//LLPdecay - LLPprod?
 				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(_c*beta);	
 			//cout << "vx: " << vx << " vy: " << vy << " vz: " << vz << endl;
 			//cout << "pv to vertex dist: " << sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) ) << endl;	
@@ -727,90 +733,15 @@ class JetSkimmer : public BaseSkimmer{
 			//assume prompt production
 			else{
 				//distance bw photon and production point (PV)
-				dpho = sqrt( (phox - pvx)*(phox - pvx) + (phoy - pvy)*(phoy - pvy) + (phoz - pvz)*(phoz - pvz) )/_c;
+				dpho = sqrt( (genx - pvx)*(genx - pvx) + (geny - pvy)*(geny - pvy) + (genz - pvz)*(genz - pvz) )/_c;
 			}
 			
 			return dpho;
 		}
 
 
-
-		void FillPredJetHists(const vector<node*>& trees){
-			int njets = 0;
-			vector<node*> cleaned_trees;
-			for(int i = 0; i < trees.size(); i++){
-				if(trees[i] == nullptr) continue;
-				//check for mirrored point - would be double counted
-				if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
-				FillModelHists(trees[i]->model);
-				njets++;
-				cleaned_trees.push_back(trees[i]);
-			}
-			nClusters->Fill(njets);
-			FillPVHists_PredJets(cleaned_trees);
-		}
-	
-
 		//this is for one jet
-		//all hists referenced here are in hists1D
-		void FillModelHists(BasePDFMixture* model){
-			map<string, Matrix> params;
-			vector<double> eigenvals, norms;
-			vector<Matrix> eigenvecs;
-			double theta, phi, r, id, npts, E_k;
 
-			int nclusters = model->GetNClusters();
-			
-			nSubClusters->Fill(nclusters);
-			model->GetNorms(norms);
-		
-			nClusters->Fill((double)nclusters);
-			//k clusters = k jets in event -> subclusters are mixture model components
-			for(int k = 0; k < nclusters; k++){
-				E_k = norms[k]/_gev;
-
-				params = model->GetPriorParameters(k);
-				eta_center->Fill(params["mean"].at(0,0));
-				phi_center->Fill(params["mean"].at(1,0));
-				time_center->Fill(params["mean"].at(2,0));
-		
-				//calculate slopes from eigenvectors
-				params["cov"].eigenCalc(eigenvals, eigenvecs);
-				
-				//total cluster energy
-				clusterE->Fill(E_k);
-			}
-		}
-		
-
-
-		//find back to back jets
-		void FillPVHists_PredJets(const vector<node*>& trees){
-			int njets = (int)trees.size(); 
-			double pi = acos(-1);
-
-			double dtime, dphi, dr, phi1, t1, phi2, t2;
-			//find pairs of jets to calculate resolution	
-			//need to be back to back
-			//time of subclusters is measured as center
-			for(int i = 0; i < njets; i++){
-				if(trees[i] == nullptr) continue;
-				CalcMMAvgPhiTime(trees[i]->model, phi1, t1);
-				//PVdeltaT_jet_mmAvg_pred->Fill(t1);	
-				for(int j = i+1; j < njets; j++){
-					if(trees[i] == nullptr) continue;
-					CalcMMAvgPhiTime(trees[j]->model, phi2, t2);
-					//dphi within [pi-0.1,pi+0.1]
-					dphi = fabs(phi1 - phi2);
-					if(dphi < pi-0.1 || dphi > pi+0.1) continue;
-					//median time
-					//energy-weighted average
-					//mm average over subclusters
-					//PVdeltaT_jet_mmAvg_pred->Fill(t1 - t2);	
-				}
-			}
-
-		}
 		int FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
 			map<double,Jet> pt_jet;
 			//map<double, int> pt_idx;
@@ -1159,21 +1090,6 @@ class JetSkimmer : public BaseSkimmer{
 			return center;
 		}
 
-		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
-			int kmax = model->GetNClusters();
-			phi = 0;
-			t = 0;
-			double pi, ws;
-			map<string, Matrix> params;
-			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(k);
-				phi += params["pi"].at(0,0)*params["mean"].at(1,0);
-				t += params["pi"].at(0,0)*params["mean"].at(2,0);
-				ws += params["pi"].at(0,0);
-			}
-			phi /= ws;
-			t /= ws; 
-		}
 		
 		void CalcEAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
 			int kmax = model->GetNClusters();
@@ -1322,14 +1238,6 @@ class JetSkimmer : public BaseSkimmer{
 			_hists2D[i]->Write();
 			}
 			//erhs_trhs->Write();		
-			for(int i = 0; i < (int)graphs.size(); i++){
-				//name = graphs[i]->GetName();
-				//TCanvas* cv = new TCanvas(name.c_str(), "");
-				//TDRGraph(graphs[i], cv, name, name, "a.u.");
-				//write cv to file			
-				//cv->Write();
-				graphs[i]->Write();
-			}
 			for(int i = 0; i < trCats.size(); i++)
 				WriteEmptyProfiles(ofile, trCats[i]);
 			WriteTimeRecoCatStack(ofile, trCats);
@@ -1340,28 +1248,7 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 
-		void SetStrategy(int i){
-			if(i == 0) _strategy = NlnN;
-			else if(i == 1) _strategy = N2;
-			else if(i == 2) _strategy = MM;
-			else return; 
-		}
-
-
 		private:
-			enum Strategy{
-				//Delauney strategy - NlnN time - for 2pi cylinder
-				NlnN = 0,
-				//traditional strategy - N^2 time
-				N2 = 1,
-				//mm only
-				MM = 2
-			};
-		
-		
-			//clustering strategy - N^2 or NlnN
-			Strategy _strategy;
-			vector<TGraph*> graphs;
 			vector<Jet> _phos; //photons for event
 
 };

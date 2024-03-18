@@ -2,7 +2,6 @@
 #include "TMath.h"
 #include "Matrix.hh"
 #include "fastjet/ClusterSequence.hh"
-#include "BayesCluster.hh"
 
 #include <TFile.h>
 #include <algorithm>
@@ -28,7 +27,6 @@ BasicDetectorSim::BasicDetectorSim(){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1/10.; //default
 	_nevts = 1000;
 	//initialize cal - save e, t, n emissions
 	_etamax = 1.479 + _deta/2.; //puts outermost corner at true etamax
@@ -47,10 +45,7 @@ BasicDetectorSim::BasicDetectorSim(){
 		for(int j = 0; j < _nphical; j++)
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
-	_alpha = 0.5;
-	_emAlpha = 0.1;
-	_thresh = 1.;
-
+	_nSpikes = 0;
 }
 
 //ctor with input pythia cmnd file
@@ -68,7 +63,6 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_gev = 1/10.; //default
 	_etamax = 1.479;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
@@ -88,9 +82,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	//sets pythia settings by given .cmnd file
 	_pythia.readFile(infile);
 	_nevts = _pythia.mode("Main:numberOfEvents");
-	_alpha = 0.5;
-	_emAlpha = 0.1;
-	_thresh = 1.;
+	_nSpikes = 0;
 
 }
 
@@ -142,7 +134,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double zig = 0.05/2.;
 	double znew, tnew;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double zmax = _rmax/tan(theta); //[mm]
 
 	Pythia8::Event sumEvent; //one object where individual events are collected
@@ -155,22 +147,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
-	//declare settings for BayesCluster
-	Matrix smear = Matrix(3,3);
-	//diagonal matrix
-	smear.SetEntry(_deta*_deta,0,0);
-	smear.SetEntry(_dphi*_dphi,1,1);
-	smear.SetEntry(0.,2,2); //no smear in time	
-
-	vector<node*> trees;
-	vector<Jet> predjets;
-
 	for(int i = 0; i < _nevts; i++){
 		if(evt != -1)
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-	cout << "\nevent #" << i << endl;
+	cout << "event #" << i << endl;
 		sumEvent = _pythia.event;
 
 		_evt = i;		
@@ -186,6 +168,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
+		//cout << "event size: " << sumEvent.size() << endl;
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -210,7 +193,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			tnew = particle.zProd()*1e-3 >= 0 ? znew*1./(_sol) : -1./(_sol)*znew;
 			//original pythia coords are in m, convert to mm
 			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
-			
+		
+
+			//TODO: fill PV coordinates in tree
+			_pvx = 0;
+			_pvy = 0;
+			_pvz = 0;
+	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
 			//this is for gen particles
@@ -249,31 +238,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
-		
+		//Fill gen jet information
+		FillGenJets();	
+	
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
 		ReconstructEnergy();
 
-		//do bayesian clustering
-		BayesCluster bc(_cal_rhs);
-		bc.SetDataSmear(smear);
-		bc.SetTimeResSmear(0.2, 0.3*_gev);
-		bc.SetThresh(_thresh);
-		bc.SetAlpha(_alpha);
-		bc.SetSubclusterAlpha(_emAlpha);
-		bc.SetVerbosity(0);
-		trees.clear();
-		trees = bc.NlnNCluster();
-		//for(int i = 0; i < trees.size(); i++){
-		//      //TODO: set predicted jets from PointCollection in tree[i]
-		//	if(trees[i] == nullptr) continue;
-		//	if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
-		//		continue; }
-		//}
-		
-
-
-cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << endl;
+//cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
 		if(_tree != nullptr) _tree->Fill();
 		//reset event
 		sumEvent.clear();
@@ -293,7 +265,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
 	ROOT::Math::XYZTVector Position = rp.Position;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double halfLength = _rmax/tan(theta); //[m]
 
 	//pythia units are in mm (or mm/c for time, natural units)
@@ -548,19 +520,17 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			//get cell bounds
 			_get_etaphi(i, j, eta, phi);
-	
 			//get x, y, z based on cell eta phi
 			x = _rmax*cos(phi);
 			y = _rmax*sin(phi);
-			theta = 2*tan(exp(-eta));
-			z = sqrt(x*x + y*y)/tan(theta);
+			theta = 2*atan2(1,exp(eta));
+			z = _rmax/tan(theta);
 			t = _cal[i][j].at(1); 
 			
 			JetPoint jet(x*1e2, y*1e2, z*1e2, t*1e9);
 			jet.SetEnergy(_cal[i][j].at(0));
 			jet.SetEta(eta);
 			jet.SetPhi(phi);
-			jet.SetWeight(_cal[i][j].at(0)*_gev);
 			_cal_rhs.push_back(jet);
 			
 			//save rec hits to tree
@@ -711,13 +681,22 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 
+void BasicDetectorSim::FillGenJets(){
+	for(auto jet : _jets){
+		_jgeta.push_back(jet.eta());
+		_jgphi.push_back(jet.phi());
+		_jgenergy.push_back(jet.e());
+		_jgpt.push_back(jet.pt());
+		_jgmass.push_back(jet.m());
+	}
+}
+
+
 //get "Jets" for clustering
 void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
 	rhs.clear();
 	for(int j = 0; j < _cal_rhs.size(); j++){
-		_cal_rhs[j].SetWeight(_cal_rhs[j].E()*_gev);
 		rhs.push_back(Jet(_cal_rhs[j]));
-		//rhs.push_back(Jet(_cal_rhs[j]));
 	}
 }
 
@@ -781,9 +760,21 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALRecHit_eta", &_rheta)->SetTitle("rec hit eta");
 	_tree->Branch("ECALRecHit_phi", &_rhphi)->SetTitle("rec hit phi");
 	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
+	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV");
+	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV");
+	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV");
+
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
+
+	_tree->Branch("Jet_genEta", &_jgeta)->SetTitle("Jet gen eta - FastJet AK4");
+	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Jet gen phi - FastJet AK4");
+	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
+	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
+	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
+
 }
 
 
@@ -806,6 +797,17 @@ void BasicDetectorSim::_reset(){
 	_cal_rhs.clear();
 	_recops.clear();
 	_jets.clear();
+
+	_jgeta.clear();
+	_jgphi.clear();
+	_jgenergy.clear();
+	_jgpt.clear();
+	_jgmass.clear();
+
+
+	_pvx = 0;
+	_pvy = 0;
+	_pvz = 0;
 }
 
 void BasicDetectorSim::WriteTree(){

@@ -12,17 +12,8 @@
 //if specified, skim from events i to j
 void JetSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
-	cout << "Using clustering strategy";
-	if(_strategy == NlnN)
-		cout << " NlnN (Delauney)" << endl;
-	else if(_strategy == N2)
-		cout << " N2 (naive)" << endl;
-	else if(_strategy == MM)
-		cout << " mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
-	else
-		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
+	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
-	//set differences in samples (ie GMSB, data) here
 	
 	MakeTimeRecoCatHists();
 	//create data smear matrix - smear in eta/phi
@@ -48,8 +39,6 @@ void JetSkimmer::Skim(){
 	double jetSelEff = 0;
 	double totEvt = 0;
         
-	//for computational time
-	vector<double> x_nrhs, y_time;
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
@@ -63,7 +52,6 @@ void JetSkimmer::Skim(){
 		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
-		x_nrhs.push_back((double)rhs.size());
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
@@ -85,47 +73,9 @@ void JetSkimmer::Skim(){
 			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
 		
 		jetSelEff++;
-		
 
-		//fill mm only jet hists - done above
-		if(_strategy == MM){
-			cout << endl;
-			continue;	
-		}
-
-		clock_t t;
-		BayesCluster* algo = new BayesCluster(rhs);
-		if(_smear) algo->SetDataSmear(smear);
-		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
-		algo->SetThresh(thresh);
-		algo->SetAlpha(alpha);
-		algo->SetSubclusterAlpha(emAlpha);
-		algo->SetVerbosity(0);
-		//run clustering
-		//delauney NlnN version
-		if(_strategy == NlnN){
-			if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-			//start clock
-			t = clock();
-			trees = algo->NlnNCluster();
-		}
-		//N^2 version
-		else if(_strategy == N2){
-			if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-			//start clock
-			t = clock();
-			trees = algo->N2Cluster();
-		}
-		t = clock() - t;
-		y_time.push_back((double)t/CLOCKS_PER_SEC);
-		
-		FillPredJetHists(trees);
-		_phos.clear();
-		
 	}
 
-	//do computational time graph
-	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
 	WriteHists(ofile);
 
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;

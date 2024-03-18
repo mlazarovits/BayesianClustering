@@ -314,7 +314,6 @@ int main(int argc, char *argv[]){
 	}
 	else if(obj == 2){
 		BasicDetectorSim det;
-		det.SetTransferFactor(gev);
 		det.SetNEvents(1);
 		det.SetVerbosity(verb);
 		det.SetEnergyThreshold(1.); //set to 1 GeV

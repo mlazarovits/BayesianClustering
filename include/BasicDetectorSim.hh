@@ -80,8 +80,6 @@ struct RecoParticle;
 		//get fastjet jets - run on gen particles
 		void GetTrueJets(vector<Jet>& jets);
 
-		//sets transfer factor for rec hit weights
-		void SetTransferFactor(double gev){ _gev = gev; }
 		void SetNEvents(int e){ _nevts = e; _pythia.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
 		void SetVerbosity(int v = 0){
 			_verb = v;
@@ -99,14 +97,11 @@ struct RecoParticle;
 	
 
 		//init tree
-		void InitTree(string fname = "rootfiles/ttbarPUspikes_BDS.root");
+		void InitTree(string fname);
 		void WriteTree();
 
-
-		//for BayesCluster
-		void SetBayesThreshold(double t){ _thresh = t; }
-		void SetBayesAlpha(double a){ _alpha = a; }
-		void SetBayesSubAlpha(double a){ _emAlpha = a; }
+		//write gen info
+		void FillGenJets();
 
 	private:
 		double _rmax; //max radius of detector (m)
@@ -163,8 +158,6 @@ struct RecoParticle;
 		void _simTTbar(); //use pythia to simulate ttbar events
 
 
-		double _gev; //transfer factor for weighting rechits
-
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
 		void _get_etaphi(int ieta, int iphi, double& eta, double& phi);
@@ -176,15 +169,15 @@ struct RecoParticle;
 		std::unique_ptr<TFile> _file;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
+		//gen information
+		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//pv info
+		double _pvx, _pvy, _pvz;
 		int _npredjets, _ntruejets;
 		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
-
-
-		//BayesCluster params
-		double _alpha, _emAlpha, _thresh;
 
 		struct RecoParticle{
 			//associated gen particle

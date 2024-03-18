@@ -169,7 +169,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			nmirror++;
 			continue; }
 		cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
-		_trees[i]->points->Print();
+		//_trees[i]->points->Print();
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
