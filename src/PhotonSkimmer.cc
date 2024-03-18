@@ -10,7 +10,7 @@ void PhotonSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
-	MakeIDHists(_oname);
+	MakeProcCats(_oname);
 	
 	
 	int nPho;
@@ -29,7 +29,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<Jet> rhs;
 	vector<Jet> phos;
-	double phoid, k;
+	int phoid, genidx;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
@@ -42,21 +42,33 @@ void PhotonSkimmer::Skim(){
 	_prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
+	_prod->ApplyFractions(_applyFrac);
 
+	_prod->PrintPreselection();
 	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
+	double pvx, pvy, pvz;
+	_timeoffset = 0;
+	_swcross = 0;
+	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
-		_prod->GetTruePhotons(phos, e);
+		_prod->GetTruePhotons(phos, e, _gev);
+		//PV info
+		pvx = _base->PV_x;
+		pvy = _base->PV_y;
+		pvz = _base->PV_z;
+		
 		int nPho = phos.size();
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
+			phoidx = phos[p].GetUserIdx();
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
@@ -72,26 +84,55 @@ void PhotonSkimmer::Skim(){
 			
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-		
+	
+			_swcross = swissCross(rhs);
+				
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
 				//0 = all
 				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
 				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
-				phoid = _base->Photon_genLlpId->at(p);
-				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
-					vector<double> ids = plotCats[i].ids;
-					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == phoid) || (iid == -999);})){
+				genidx = _base->Photon_genIdx->at(p);
+				if(genidx == -1) phoid = -1;
+				else phoid = _base->Gen_susId->at(genidx);
+				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
+					vector<double> ids = _procCats[i].ids;
+					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
 						FillModelHists(gmm, i);
-						plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+						FillCMSHists(rhs,i);
+						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
+						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
+						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
+		
+						scidx = _base->Photon_scIndex->at(phoidx);
+						_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
+						_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
+						_procCats[i].hists1D[0][228]->Fill(double(rhs.size()));
+						if(_base->Photon_energy->at(phoidx) >= 0 && _base->Photon_energy->at(phoidx) < 200)
+							_procCats[i].hists1D[0][229]->Fill(rhs.size());
+						if(_base->Photon_energy->at(phoidx) >= 200 && _base->Photon_energy->at(phoidx) < 400)
+							_procCats[i].hists1D[0][230]->Fill(rhs.size());
+						if(_base->Photon_energy->at(phoidx) >= 400 && _base->Photon_energy->at(phoidx) < 600)
+							_procCats[i].hists1D[0][231]->Fill(rhs.size());
+						if(_base->Photon_energy->at(phoidx) >= 600 && _base->Photon_energy->at(phoidx) < 1000)
+							_procCats[i].hists1D[0][232]->Fill(rhs.size());
+
 					}
 				}
 			}
 			else{
-				for(int i = 0; i < (int)plotCats.size(); i++){ //exclude total category - overlaps with above categories
+				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i);
-					plotCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(p));
+					FillCMSHists(rhs,i);
+					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
+					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
+					_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
+		
+					scidx = _base->Photon_scIndex->at(phoidx);
+					_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
+					_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
+					_procCats[i].hists1D[0][228]->Fill(rhs.size());
 				}
 				
 

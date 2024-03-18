@@ -38,11 +38,13 @@ int main(int argc, char *argv[]){
 	int evtj = 0;
 	int obj = 0; //object to cluster (0 : jets, 1 : photons)
 	//this should be in N/GeV
-	double gev = 1./30.;
+	double gev = -999;
 	//put cuts on jets (ie min pt) here
 	double minpt = 30;
 	double minnrhs = 15;
 	double minEmE = 20;
+	double minRhE = 0.5;
+	bool frac = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -151,6 +153,14 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minEmE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minRhE", 8) == 0){
+			i++;
+    	 		minRhE = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--applyFrac", 11) == 0){
+			frac = true;
+			cout << "Apply fractions for rec hits." << endl;
+   		}
 
 	}
 	if(hprint){
@@ -169,11 +179,13 @@ int main(int argc, char *argv[]){
    		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
+   		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
-   		cout << "   --timeSmear                 turns on time smearing data (default = false)" << endl;
+   		cout << "   --timeSmear                   turns on time smearing data (default = false)" << endl;
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
+   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -182,6 +194,11 @@ int main(int argc, char *argv[]){
 
 	cout << "Free sha-va-ca-doo!" << endl;
 	
+	if(gev == -999){
+		if(obj == 0) gev = 1./10.;
+		else if(obj == 1) gev = 1./30.;
+	}
+
 	string cmslab, version;	
 	TFile* file = nullptr;
 	/////GET DATA FROM NTUPLE//////
@@ -303,10 +320,12 @@ int main(int argc, char *argv[]){
         	else
 			data = true;
 		skimmer.SetIsoCuts();
+		skimmer.SetMinRhE(minRhE);
 		skimmer.SetData(data);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
-        	//skimmer.SetDebug(debug);
+        	skimmer.ApplyFractions(frac);
+		//skimmer.SetDebug(debug);
 		//set EMalpha
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);

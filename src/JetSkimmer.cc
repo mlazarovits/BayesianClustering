@@ -24,6 +24,7 @@ void JetSkimmer::Skim(){
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//set differences in samples (ie GMSB, data) here
 	
+	MakeTimeRecoCatHists();
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
 	double dphi = 2*acos(-1)/360.; //1 degree in radians
@@ -54,26 +55,28 @@ void JetSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 	
-
-
+	double phogev = 1./30.;
+	_prod->PrintPreselection();
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
-		_prod->GetTruePhotons(_phos, i);
+		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
 		x_nrhs.push_back((double)rhs.size());
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
-		
+//continue;	
+		FillTruePhotonHists(_phos);
+	
 		totEvt++;	
 	
-		//fill true jet histograms
+
+		////fill true jet histograms
 		vector<Jet> jets;
-		_prod->GetTrueJets(jets, i);
+		_prod->GetTrueJets(jets, i, _gev);
 		if(jets.size() < 1){ cout << endl; continue; }
-		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 
 	
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";

@@ -3,7 +3,7 @@
 using std::string;
 
 
-void MakePDFs(string file, string odir, string histname){
+void MakePDFs(string file, string odir, string histname, bool log = false){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -30,6 +30,10 @@ void MakePDFs(string file, string odir, string histname){
 		cv = (TCanvas*)key->ReadObj();
 		name = cv->GetName();
 		if(name.find(histname) != string::npos){
+			if(log){
+				cv->SetLogz();
+				name += "log";	
+			}
 			cv->SaveAs((odir+name+".pdf").c_str());
 		}
 		

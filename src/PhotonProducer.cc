@@ -41,11 +41,12 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	int cnt = 0;
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
-	nphotons = (int)_base->Photon_rhIds->size();
+	nphotons = (int)_base->Photon_energy->size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 
-	double timecorr, drh;
+	double timecorr, drh, calibfactor;
 	
+	int scidx; //supercluster index
 	for(int p = 0; p < nphotons; p++){
 
 		//base photon selection
@@ -63,24 +64,24 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		        iso = trksum && ecalrhsum && htowoverem;
 			if(!iso) continue;
 		}
-		nRHs = (int)_base->Photon_rhIds->at(p).size();
+		scidx = _base->Photon_scIndex->at(p);
+		nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 		unsigned long long id;
 		for(int r = 0; r < nRHs; r++){
 			//add tof = d_pv to time to get correct RH time
 			//t = rh_time - d_rh/c + d_pv/c
-			id = _base->Photon_rhIds->at(p).at(r);
+			id = _base->SuperCluster_rhIds->at(scidx).at(r);
 			for(int j = 0; j < nRHs_evt; j++){
 				if(_base->ECALRecHit_ID->at(j) == id){
 					//TOF from 0 to rh location
-					drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+					drh = _base->ECALRecHit_0TOF->at(j);
 					//TOF from PV to rh location
-					timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+					timecorr = drh;
+					calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
 
 					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-                        	       	//undo adjustment currently made in ntuples (traw - drh/c)
-					//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
 					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
 					
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
@@ -109,11 +110,12 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
 	//make sure photon number is in vector
-	if(pho >= (int)_base->Photon_rhIds->size()) return;
-	nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	if(pho >= (int)_base->Photon_energy->size()) return;
+	int scidx = _base->Photon_scIndex->at(pho);	
+	nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 	nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
-	double timecorr, drh;
+	double timecorr, drh, calibfactor;
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -135,19 +137,19 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 	for(int r = 0; r < nRHs; r++){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
-		id = _base->Photon_rhIds->at(pho).at(r);
+		id = _base->SuperCluster_rhIds->at(scidx).at(r);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
 				//TOF from 0 to rh location
-				drh = hypo(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j))/_c;
+				drh = _base->ECALRecHit_0TOF->at(j);
 				//TOF from PV to rh location
-				timecorr = drh - hypo((_base->ECALRecHit_rhx->at(j) - _base->PV_x), (_base->ECALRecHit_rhy->at(j) - _base->PV_y), (_base->ECALRecHit_rhz->at(j) - _base->PV_z))/_c;
+				timecorr = drh;
+				calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
+
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-                        	//undo adjustment currently made in ntuples (traw - drh/c)
-				//TODO: UNDO THIS LATER WHEN NTUPLES ARE UPDATED
 				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr + drh);
+                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
 				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
@@ -173,10 +175,12 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
 	//make sure photon number is in vector
-	if(pho >= (int)_base->Photon_rhIds->size()) return;
-	int nRHs = (int)_base->Photon_rhIds->at(pho).size();
+	if(pho >= (int)_base->Photon_energy->size()) return;
+	int scidx = _base->Photon_scIndex->at(pho);
+	int nRHs = (int)_base->SuperCluster_rhIds->at(scidx).size();
 	int nRHs_evt = (int)_base->ECALRecHit_ID->size();
 	unsigned int id;
+	double timecorr, drh;
 
 	//base photon selection
         if(_base->Photon_pt->at(pho) < 30.) return;
@@ -204,11 +208,15 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 	for(int r = 0; r < nRHs; r++){
 		//add tof = d_pv to time to get correct RH time
 		//t = rh_time - d_rh/c + d_pv/c
-		id = _base->Photon_rhIds->at(pho).at(r);
+		id = _base->SuperCluster_rhIds->at(scidx).at(r);
 		for(int j = 0; j < nRHs_evt; j++){
 			if(_base->ECALRecHit_ID->at(j) == id){
-				//time = ECALRecHit_time + TOF = (rh_time - d_rh/c) + TOF
-				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j)+_base->ECALRecHit_TOF->at(j));
+				//TOF from 0 to rh location
+				drh = _base->ECALRecHit_0TOF->at(j);
+				//TOF from PV to rh location
+				timecorr = drh;
+				//time = ECALRecHit_time + TOF_rh_0 
+				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j), _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr);
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
 				rh.SetPhi(_base->ECALRecHit_phi->at(j));

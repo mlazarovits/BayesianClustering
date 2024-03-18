@@ -21,7 +21,7 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 }
 
 
-void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
+void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
 	if(hist.size() == 0)return;
 	can->cd();
 	can->SetGridx(1);
@@ -35,9 +35,51 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
-	vector<int> k = {kMagenta+2,kGreen+2,kBlue+2,kRed+2,kAzure+4,kViolet+7,kOrange+7,kGreen+3,kRed+4,kBlue+4,kGreen+2,kAzure+4,kMagenta+2,kGreen+2,kBlack};	
+
+	string name;
+	string canname = can->GetName();
 
 	string legentry;
+	//sort hists alphabetically
+	map<string, TH1D*> nameToHist;
+	for( int i = 0 ; i < int(hist.size()); i++){
+		name = hist[i]->GetName();
+		nameToHist[name] = hist[i];
+		hist[i] = nullptr;
+	}
+	int h = 0;
+	for(map<string, TH1D*>::iterator it = nameToHist.begin(); it != nameToHist.end(); it++){
+		hist[h] = it->second;
+		h++;
+	}
+	//make color map
+	TColor::SetColorThreshold(0.09);
+	map<string, int> labelToColor;
+	map<string, int> labelToMark;
+	int offset = 1;
+	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
+	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
+	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
+
+	labelToColor["!median"] = TColor::GetColor("#f7a278");
+	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
+	labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
+	labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
+
+	labelToMark["!chiGam"] =  71;
+	labelToMark["!GMSB"] =  71;
+	labelToMark["!notSunm"] = 72;
+	labelToMark["!GJets"] =   73;
+	labelToMark["!JetHT"] =   74;
+
+	labelToMark["median"] = 71;
+	labelToMark["eAvg"] =   72; 
+	labelToMark["mmAvg"] =  73;
+	labelToMark["eMax"] =   74; 
+
+	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
@@ -46,10 +88,41 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
-		hist[i]->SetLineColor(i+2);
-		hist[i]->SetMarkerStyle(i+25);
-		hist[i]->SetMarkerColor(i+2);
+		
+
 		legentry = hist[i]->GetTitle();
+		if(canname.find("jet") != string::npos){
+			if(legentry.find("notSunm") != string::npos) continue;
+			if(legentry.find("chiGam") != string::npos){
+				legentry.replace(legentry.find("chiGam"),6,"GMSB");
+			}
+		}		
+		
+
+		//if a key from labeltocolor is in legentry, set that color
+		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
+			string match = it->first;
+			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
+			if(legentry.find(match) != string::npos){
+				col = it->second;
+				break;
+			}
+			else col = 1;
+		}
+		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
+			string match = it->first;
+			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
+			if(legentry.find(match) != string::npos){
+				mark = it->second;
+				break;
+			}
+			else mark = 1;
+		}
+		hist[i]->SetLineColor(col);
+		//hist[i]->SetLineWidth(2);
+		hist[i]->SetMarkerStyle(mark);
+		hist[i]->SetMarkerColor(col);
+		//hist[i]->SetMarkerSize(1);
 		hist[i]->SetTitle("");
 		if( i == 0 ){
 			hist[i]->Draw("ep");
@@ -64,14 +137,15 @@ void TDRMultiHist(vector<TH1D*> &hist, TCanvas* &can, string plot_title, string 
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-
 	return;
 }
 
 void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_label, string title = ""){
+	can->SetGridx();
+	can->SetGridy();
 	can->cd();
 	hist->SetTitle("");
 	hist->UseCurrentStyle();
@@ -80,12 +154,22 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
-	hist->Draw("colz");
+	string histname = hist->GetName();
+	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
+		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
+			hist->SetMarkerSize(1.3);
+		else hist->SetMarkerSize(3.);
+		hist->Draw("colz1text");
+	}
+	else hist->Draw("colz1");
+
+	string name = hist->GetName();
+	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
 
@@ -105,12 +189,14 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+	string name = hist->GetName();
+	if(hist->Integral() != 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 	hist->Draw();
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.04);
+	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.1,0.92,lat_cms.c_str());
 
@@ -118,7 +204,46 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 };
 
 
-//void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists, set<string>& labels){
+
+
+void GetHistsProc(TDirectory* dir, string& proc, vector<TH1D*>& hists){
+	if(!dir) return;
+	dir->cd();
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name;
+	TString tdir("TDirectoryFile");
+	TString th1d("TH1D");
+	hists.clear();
+
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			if(!ddir) continue;
+			ddir->cd();
+			TList* llist = ddir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			string name;
+			while((kkey = (TKey*)iiter())){
+				if(kkey->GetClassName() == th1d){
+					TH1D* hist = (TH1D*)kkey->ReadObj();
+					if(!hist) continue;
+					name = hist->GetName();
+					if(name.find(proc) == string::npos) continue;
+					if(hist->Integral() != 0 && name.find("sigma") == string::npos && name.find("mean") == string::npos) hist->Scale(1./hist->Integral());
+					hists.push_back(hist);
+				}
+			}
+		}
+	}	
+
+
+
+}
+
+
 void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 	TList* list = dir->GetListOfKeys();
 	TIter iter(list);
@@ -140,11 +265,62 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 					if(name.find("_"+type) == string::npos) continue;
 				}
 				if(isnan(hist->Integral())) continue;
-				if(hist->Integral() != 0 && hist->GetEntries() > 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
+				if(hist->GetEntries() == 0) continue;
+				if(hist->Integral() != 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
 				hists.push_back(hist);
 			}
 		}
 	}
+}
+
+void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name;
+	TString th2d("TH2D");
+	hists.clear();
+
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == th2d){
+			//get 2D histograms
+			TH2D* hist = (TH2D*)key->ReadObj();
+			if(hist){
+				name = hist->GetName();
+				if(type.empty()){
+					if(name.find("lead") != string::npos) continue;
+				}
+				else{
+					if(name.find("_"+type) == string::npos) continue;
+				}
+				if(isnan(hist->Integral())) continue;
+				hists.push_back(hist);
+			}
+		}
+	}
+}
+void GetProcs(TDirectory* dir, vector<string>& procs){
+	vector<TH1D*> hists;
+	procs.clear();
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name;
+	TString tdir("TDirectoryFile");
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			GetHists(ddir, "", hists);
+			for(int i = 0; i < hists.size(); i++){
+				name = hists[i]->GetTitle();
+				name = name.substr(name.find("_")+1);
+				//check if name in vector already
+				if(find(procs.begin(), procs.end(), name) == procs.end()) 
+					procs.push_back(name);
+			}
+		}
+	}
+
 }
 
 
@@ -162,7 +338,6 @@ string GetCMSLabel(string in_file){
 	//get version
 	string cmslab;
 	if(in_file.find("output") == string::npos){
-		
 		//get from v[0-9] to cm
 		//get version
 		std::smatch m;
@@ -182,16 +357,44 @@ string GetCMSLabel(string in_file){
 		cmslab = cmslab.substr(0,cmslab.find("_output"));
 	}
 	cmslab = cmslab.substr(0,cmslab.find(".root"));
+	//remove directory prefixes
+	int cnt = std::count(cmslab.begin(), cmslab.end(), '/');
+	for(int i = 0; i < cnt; i++)
+		cmslab = cmslab.substr(cmslab.find("/")+1);
+	if(cmslab.find("condor_") != string::npos)
+		cmslab = cmslab.substr(cmslab.find("condor_")+7);
 	return cmslab;
 }
 
+
+
+bool HistCheck(TDirectory* dir){
+	TList* list = dir->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	TString th1d("TH1D");
+	TString th2d("TH2D");
+	TString tdir("TDirectoryFile");
+	
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == th1d)
+			return true;
+		else if(key->GetClassName() == th2d)
+			return true;
+		else if(key->GetClassName() == tdir)
+			return false;
+	}
+	return false;
+
+
+}
 
 void HistFormat(string file){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	TFile* f = TFile::Open(file.c_str());
+	TFile* f = TFile::Open(file.c_str(),"UPDATE");
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
@@ -210,6 +413,7 @@ void HistFormat(string file){
 	TString th1d("TH1D");
 	TString th2d("TH2D");
 	TString tdir("TDirectoryFile");
+
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			//get 1D histograms
@@ -225,6 +429,7 @@ void HistFormat(string file){
 		}
 		if(key->GetClassName() == th2d){
 			//get 2D histograms
+			string keyname = key->GetName();
 			TH2D* hist = (TH2D*)key->ReadObj();
 			if(hist){
 				name = hist->GetName();
@@ -234,6 +439,7 @@ void HistFormat(string file){
 				ofile->cd();
 				//draw as tcanvases
 				TDR2DHist(hist, cv, xtitle, ytitle, cmslab, hist->GetTitle());
+				//cout << "writing hist " << cv->GetName() << " in file " << endl;
 				cv->Write(); 
 			}
 		}
@@ -242,41 +448,154 @@ void HistFormat(string file){
 			TDirectory* dir = (TDirectory*)key->ReadObj();
 			double ymin, ymax;
 			string ylab, xlab;
-			if(dir){
-				dir->cd();
-				vector<TH1D*> hists;
-				//loop throught types
-				for(int i = 0; i < types.size(); i++){
-					//loop through hists in dir
-					name = dir->GetName();
-					if(!types[i].empty()) name += "_"+types[i];
-					//GetHists(dir, types[i], hists, labels);
-					GetHists(dir, types[i], hists);
-					if(hists.size() < 1) continue;
-					FindListHistBounds(hists, ymin, ymax);
-					if(ymin == 0 && ymax == 0) continue;
+			if(!dir) continue;
+			dir->cd();
+			//cout << "---in dir " << dir->GetName() << endl;
+			//cout << "dir name: " << dir->GetName() << endl;
+			//get histograms (stack these)
+			vector<TH1D*> hists;
+			//loop through types for 1D hists
+			for(int i = 0; i < types.size(); i++){
+				//loop through hists in dir
+				name = dir->GetName();
+				if(!types[i].empty()) name += "_"+types[i];
+				GetHists(dir, types[i], hists);
+				if(hists.size() < 1) continue;
+				FindListHistBounds(hists, ymin, ymax);
+				if(ymin == 0 && ymax == 0) continue;
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				//draw as tcanvases
+				if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
+					xlab = hists[0]->GetXaxis()->GetTitle();
+					ylab = hists[0]->GetYaxis()->GetTitle();
+				}
+				else{
+					xlab = name;
+					ylab = "a.u."; 
+				}
+				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+				cv->Write(); 
+			}
+			//for 2D hists
+			vector<TH2D*> hists2D;
+			//loop through hists in dir
+			//if(!types[i].empty()) name += "_"+types[i];
+			GetHists(dir, "", hists2D);
+			string title;
+			///cout << dir->GetName() << " has " << hists2D.size() << " hists" << endl;
+			if(hists2D.size() > 0){
+				for(int h = 0; h < hists2D.size(); h++){
+					name = hists2D[h]->GetName();
+					title = hists2D[h]->GetTitle();
 					TCanvas *cv = new TCanvas(name.c_str(), "");
 					ofile->cd();
 					//draw as tcanvases
-					if(name.find("sigma") != string::npos){
-						xlab = "p^{avg}_{T_{jet}}"; 
-						xlab = hists[0]->GetXaxis()->GetTitle();
-						ylab = "#sigma_{#Delta t}";
-						ylab = hists[0]->GetYaxis()->GetTitle();
-					}
-					else{
-						xlab = name;
-						ylab = "a.u."; 
-					}
-					TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
-					cv->Write(); 
+					xlab = hists2D[h]->GetXaxis()->GetTitle();
+					ylab = hists2D[h]->GetYaxis()->GetTitle();
+					TDR2DHist(hists2D[h], cv, xlab, ylab, cmslab, title);
+					//cout << "writing canvas " << cv->GetName() << " in dir " << dir->GetName() << endl;
+					cv->Write("",TObject::kOverwrite); 
 				}
 			}
+			//if directory is full of directories (stack by method)
+			//each dir is full of histograms (stack by process)
+			TList* llist = dir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			string name;
+			while((kkey = (TKey*)iiter())){
+				if(kkey->GetClassName() == th2d){
+					TH2D* hist = (TH2D*)kkey->ReadObj();
+					if(!hist) continue;	
+					//cout << " getting kkey: " << kkey->GetName() << " hist " << hist->GetName() << " with entries " << hist->GetEntries() << endl;
+				}
+				//writing stack hist - same method different procs
+				if(kkey->GetClassName() == tdir){
+					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					if(!ddir) continue;
+					name = ddir->GetName();
+					//cout << " dir name: " << name << endl;
+					ddir->cd();
+					//cout << " ---in ddir " << ddir->GetName() << endl;
+					//we're in the directory with hists of one method split by procs
+					GetHists(ddir, "", hists);
+					if(hists.size() > 0){
+						FindListHistBounds(hists, ymin, ymax);
+						if(ymin == 0 && ymax == 0) continue;
+						TCanvas *cv = new TCanvas(name.c_str(), "");
+						ofile->cd();
+						//draw as tcanvases
+						if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
+							xlab = hists[0]->GetXaxis()->GetTitle();
+							ylab = hists[0]->GetYaxis()->GetTitle();
+						}
+						else{
+							xlab = name;
+							ylab = "a.u."; 
+						}
+						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+						//cout << "writing canvas (1D) " << cv->GetName() << endl;
+						cv->Write(); 
+					}
+					vector<TH2D*> hhists2D;
+					//loop through hists in dir
+					//if(!types[i].empty()) name += "_"+types[i];
+					GetHists(ddir, "", hhists2D);
+					//cout << "got hists from dir " << ddir->GetName() << endl;
+					if(hhists2D.size() > 0){
+						for(int h = 0; h < hhists2D.size(); h++){
+							if(hhists2D[h]->GetEntries() == 0) continue;
+							name = hhists2D[h]->GetName();
+							title = hhists2D[h]->GetTitle();
+							TCanvas *cv = new TCanvas(name.c_str(), "");
+							ofile->cd();
+							//draw as tcanvases
+							xlab = hhists2D[h]->GetXaxis()->GetTitle();
+							ylab = hhists2D[h]->GetYaxis()->GetTitle();
+							TDR2DHist(hhists2D[h], cv, xlab, ylab, cmslab, title);
+							//cout << "writing canvas " << cv->GetName() << endl;
+							cv->Write(); 
+						}
+					}
+				}
+
+			}
+			//writing methodStack hist - same proc different methods
+			string dirname = dir->GetName();
+			//only do for sigma plots + profiles for now - can remove this later to change
+			if(dirname.find("sigma") == string::npos && dirname.find("mean") == string::npos && dirname.find("profile") == string::npos) continue;	
+			vector<string> procs;
+			GetProcs(dir, procs);
+			for(int p = 0; p < procs.size(); p++){
+				GetHistsProc(dir, procs[p], hists);
+				name = dirname+"_"+procs[p]+"_methodStack";
+				if(name.find("jet") != string::npos && name.find("notSunm") != string::npos) continue;
+				
+				if(hists.size() < 1) continue;
+				FindListHistBounds(hists, ymin, ymax);
+				if(ymin == 0 && ymax == 0) continue;
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				//draw as tcanvases
+				if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
+					xlab = hists[0]->GetXaxis()->GetTitle();
+					ylab = hists[0]->GetYaxis()->GetTitle();
+				}
+				else{
+					xlab = name;
+					ylab = "a.u."; 
+				}
+				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+				cv->Write(); 
+				
+			}
+		
 		}
 	}
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
-
 	ofile->Close();
+	f->Close();
 
 };

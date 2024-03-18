@@ -165,6 +165,10 @@ class PointCollection{
 
 
 	void Sort(int d, unsigned long long seed = 123){
+		if(d >= _nDim){
+			cout << "Error: dimension " << d << " not valid for PointCollection with max dimension " << _nDim << endl;
+			return;
+		}
 		int N = _pts.size();
 		if(N < 2) return;
 		RandomSample rs(seed);	
@@ -194,6 +198,45 @@ class PointCollection{
 		}
 		low.Sort(d);
 		high.Sort(d);
+	
+		_pts.clear();
+		for(int i = 0; i < low.GetNPoints(); i++) _pts.push_back(low.at(i));
+		for(int i = 0; i < same.GetNPoints(); i++) _pts.push_back(same.at(i));
+		for(int i = 0; i < high.GetNPoints(); i++) _pts.push_back(high.at(i));
+	
+	}
+	
+	//sort by weight
+	void Sort(unsigned long long seed = 123){
+		int N = _pts.size();
+		if(N < 2) return;
+		RandomSample rs(seed);	
+		
+		PointCollection low;
+		PointCollection same;
+		PointCollection high;
+	
+		rs.SetRange(0,N);
+		int idx = rs.SampleFlat();		
+		Point pivot = _pts[idx];
+		if(pivot.Value().size() < 1){
+			cout << "Error: no value for pivot point #" << idx << " found." << endl;
+			return;
+		}
+		for(int i = 0; i < N; i++){
+			if(_pts[i].size() < 1){
+				cout << "Error: point #" << i << " has no value set." << endl;
+				return;
+			}
+			if( pivot.w() > _pts[i].w() )
+				low += _pts[i];
+			else if( pivot.w() == _pts[i].w() )
+				same += _pts[i];
+			else
+				high += _pts[i];
+		}
+		low.Sort();
+		high.Sort();
 	
 		_pts.clear();
 		for(int i = 0; i < low.GetNPoints(); i++) _pts.push_back(low.at(i));

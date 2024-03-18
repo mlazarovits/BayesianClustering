@@ -11,6 +11,7 @@
 #include "TPad.h"
 #include "TLatex.h"
 #include "TCanvas.h"
+#include <fstream>
 
 class BaseProducer{
 	public:
@@ -20,8 +21,19 @@ class BaseProducer{
 			_minpt = 0;
 			_mineme = 0;
 			_minnrhs = 0;
+			_minrhE = 0.5;
+			_minobjeta = 1.4;
 			_year = 2018;
 			_data = false;
+			_calibmap = nullptr;
+			_applyFrac = false;
+			if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
+				cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
+				return;
+			}
+			TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
+			SetTimeCalibrationMap(calibfile);
+			SetupDetIDsEB();
 		};
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -40,6 +52,9 @@ class BaseProducer{
 			_minpt = 30;
 			_mineme = 20;
 			_minnrhs = 15;
+			_minrhE = 0.5;
+			_minobjeta = 1.4;
+			_applyFrac = false;
 			
 			//set year
 			string name = file->GetName();
@@ -50,11 +65,15 @@ class BaseProducer{
 			//set if data
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
+			_calibmap = nullptr;
+			TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
+			SetTimeCalibrationMap(calibfile);
+			SetupDetIDsEB();
 
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
-			
+			delete _calibmap;	
 		};
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
@@ -65,14 +84,22 @@ class BaseProducer{
 		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
 
 
-		void GetTrueJets(vector<Jet>& jets, int evt);
-		void GetTruePhotons(vector<Jet>& phos, int evt);
+		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);
+		void GetTruePhotons(vector<Jet>& phos, int evt, double gev = -1);
 
 		bool _isocut;
 		void SetIsoCut(){ _isocut = true; }		
 
 		ReducedBase* GetBase(){ return _base; }
 
+		void PrintPreselection(){
+			cout << "Default energy transfer factor: " << _gev << endl;
+			cout << "Minimum pt: " << _minpt << endl;
+			cout << "Minimum ECAL energy: " << _mineme << endl;
+			cout << "Minimum object eta: " << _minobjeta << endl;
+			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
+        		cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
+		}
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;
@@ -89,6 +116,12 @@ class BaseProducer{
 		double _minnrhs;
 		void SetMinEmE(double p){ _mineme = p; }
 		double _mineme;
+		void SetMinRhE(double r){ _minrhE = r; }
+		double _minrhE;
+		void SetMinObjEta(double e){ _minobjeta = e; }
+		double _minobjeta;
+		void ApplyFractions(bool a){ _applyFrac = a; }
+		bool _applyFrac;
 
 		double deltaR2(double e1, double p1, double e2, double p2){
 			double de = e1 - e2;
@@ -106,5 +139,54 @@ class BaseProducer{
 		double _c = 29.9792458;	
 		bool _data;
 		int _year;
+
+		TH2D* _calibmap;
+		void SetTimeCalibrationMap(TFile* f){
+			if(!f){ cout << "File for calibration map not set." << endl; return; }
+			_calibmap = (TH2D*)f->Get("AveXtalRatioRecTimeEBMap");
+		};
+		
+		double GetTimeCalibrationFactor(int ieta, int iphi){
+			if(!_calibmap){ cout << "Calibration map not set." << endl; return -999; }
+			if(iphi < 1 || iphi > 360){cout << "Invalid iphi: " << iphi << endl; return -999; }
+			if(ieta < -85 || ieta > 85){cout << "Invalid ieta: " << ieta << endl; return -999; }
+			return _calibmap->GetBinContent(ieta+86, iphi);
+		};
+
+
+		double GetTimeCalibrationFactor(unsigned int rhid){
+			//transform from (rh) -> (ieta, iphi)
+			unsigned int ieta = _detIDMap[rhid].i2;
+			unsigned int iphi = _detIDMap[rhid].i1;
+			return GetTimeCalibrationFactor(ieta, iphi);
+		}
+		struct DetIDStruct {
+                        DetIDStruct() {}
+                        DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
+                        int i1;
+                        int i2;
+                        Int_t TT; 
+                        Int_t ecal; 
+                };
+
+
+		map<UInt_t, DetIDStruct> _detIDMap;
+
+
+		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
+		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
+		void SetupDetIDsEB(){
+		    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
+		    std::ifstream infile( detIDConfigEB, std::ios::in);
+		
+		    UInt_t cmsswId, dbID;
+		    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+		    std::string pos;
+		
+		    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
+		        _detIDMap[cmsswId] = {iphi,ieta,TT25,0};
+		    }
+		}
+
 };
 #endif
