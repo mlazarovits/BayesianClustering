@@ -39,6 +39,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 	//make weights - E/e_avg
 	vector<double> ws;
 	for(int r = 0; r < nRHs; r++){
+		//not sure if below is needed as long as there is a clear and consistent time frame definition
 		/////TOF from 0 to rh location
 		///drh = _base->ECALRecHit_0TOF->at(r);
 		/////TOF from PV to rh location
