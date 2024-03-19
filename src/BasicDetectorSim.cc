@@ -169,6 +169,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
 		//cout << "event size: " << sumEvent.size() << endl;
+		_pvx = 0;
+		_pvy = 0;
+		_pvz = 0;
+		double norm = 0;
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -193,12 +197,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			tnew = particle.zProd()*1e-3 >= 0 ? znew*1./(_sol) : -1./(_sol)*znew;
 			//original pythia coords are in m, convert to mm
 			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
-		
-
-			//TODO: fill PV coordinates in tree
-			_pvx = 0;
-			_pvy = 0;
-			_pvz = 0;
+			
+			//set PV as momentum weighted sum of particles produced
+			_pvx += particle.xProd()*particle.pT();		
+			_pvy += particle.yProd()*particle.pT();		
+			_pvz += particle.zProd()*particle.pT();		
+			norm += particle.pT();
 	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
@@ -231,6 +235,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_recops.push_back(rp);	
 			
 		}
+		//TODO: fill PV coordinates in tree
+		_pvx /= norm;
+		_pvy /= norm;
+		_pvz /= norm;
 		//run fastjet
 		fastjet::ClusterSequence cs(fjinputs, jetdef);
 		//get jets - min 5 pt
@@ -613,6 +621,8 @@ void BasicDetectorSim::ReconstructEnergy(){
 				jet.SetEnergy(_cal[iieta][iiphi].at(0));
 				jet.SetEta(ceta);
 				jet.SetPhi(cphi);
+				//rhid = iieta0iiphi
+				jet.SetRecHitId(int(iieta*1e4 + iiphi));
 				_recops[p].AddEmission(jet);
 			
 	
