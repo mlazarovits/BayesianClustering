@@ -93,8 +93,7 @@ There are muliple visualization classes:
 - to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
 	- make sure to add sample to MakeIDHists() in `PhotonSkimmer.hh`
 	- because of this, for JetSkimming, the 1D profiles and time sigma plots are *not* filled (only the 2D diffDeltaTime plots and the other 1D variables are filled) so the user can hadd the 2D histograms together
-		- then, profiling is done in `HistFormat.C` in the macros directory, which also produces formatted TCanvases of all plots
-
+		- the user should hadd the skims together first then run `Profile2D` then `HistFormat` for the correct plots
 ### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
