@@ -134,9 +134,6 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		        pz, _base->Jet_genEnergy->at(j));
 		
 		jet.SetVertex(vtx);
-		//TODO: set constituents from ntuple
-		
-		//TODO: set constituents in ntuple
 	}	
 
 
