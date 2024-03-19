@@ -41,7 +41,7 @@ def generateSubmission(args):
 	#	inputFile = "GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
 	#elif args.inputSample == "JetHT":
 	#	inputFile = "JetHT_Met150_AOD_v14_JetHT_AOD_Run2018CRun2018D-15Feb2022_UL2018-v1.root"
-	elif args.inputSample == "GJets_HT400To600_2017_v16":
+	if args.inputSample == "GJets_HT400To600_2017_v16":
 		inputFile = "GJets_R17_v16_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GJets_HT400To600_2018_v16":
 		inputFile = "GJets_R18_v16_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
