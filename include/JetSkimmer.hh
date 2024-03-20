@@ -305,7 +305,7 @@ class JetSkimmer : public BaseSkimmer{
 		//13 - gen energy vs ratio of reco to gen deltaT
 		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
 		//14 - reco energy vs gen deltaT
-		TH2D* recoEnergy_genDeltaTpvGam = new TH2D("recoEnergy_genDeltaTpvGam","recoEnergy_genDeltaTpvGam;recoEnergy;genDeltaTpvGam;a.u.",25,0,500,25,0,12);
+		TH2D* recoEnergy_genDeltaTpvGam = new TH2D("recoEnergy_genDeltaTpvGam","recoEnergy_genDeltaTpvGam;recoEnergy;genDeltaTpvGam;a.u.",25,0,500,25,3.5,12);
 		//15 - reco energy/gen energy vs reco deltaT - gen deltaT
 		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
 
