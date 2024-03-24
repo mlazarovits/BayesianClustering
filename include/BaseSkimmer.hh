@@ -276,11 +276,18 @@ class BaseSkimmer{
 				sig.ids = {22};
 				_procCats.push_back(sig);
 			}
+			//TODO: add other signal points here with different labels (ie sample.find("GMSB_L-350TeV_Ctau-0_1cm")
 			else if(sample.find("JetHT") != string::npos){
 				//data
 				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT", leadsep);
 				jetht.ids = {-999};
 				_procCats.push_back(jetht);
+			}
+			else if(sample.find("MET_AOD") != string::npos){
+				//data
+				procCat met(_hists1D, _hists2D, "METPD", "METPD", leadsep);
+				met.ids = {-999};
+				_procCats.push_back(met);
 			}
 			else if(sample.find("GJets") != string::npos){
 				//data
