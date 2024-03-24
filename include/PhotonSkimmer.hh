@@ -1610,7 +1610,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//_procCats[id_idx].hists2D[1][8]->Fill(rot3D,E_k);
 				_procCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
 				_procCats[id_idx].hists2D[1][11]->Fill(nclusters, pi);
-				_procCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
+				//_procCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
 				_procCats[id_idx].hists2D[1][13]->Fill(t_var, e_var);
 				_procCats[id_idx].hists2D[1][14]->Fill(t_var, p_var);
 				_procCats[id_idx].hists2D[1][15]->Fill(E_k/E_tot, pi);
