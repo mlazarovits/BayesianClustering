@@ -283,7 +283,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
 		skimmer.SetMinEmE(minEmE);
-		if(in_file.find("JetHT") != string::npos)
+		if(in_file.find("_AOD_") != string::npos)
 			skimmer.SetData(true);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
