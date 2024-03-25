@@ -14,9 +14,8 @@ for f in args.files:
                 print("Skipping file",f,"not formatted (run macros/HistFormat.C on this sample)")
                 continue
         if args.log:
-                strlog = "true"
+        	cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+args.observable+'",true)\''
         else:
-                strlog = "false"
-        cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+args.observable+'","'+strlog+'")\''
+        	cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+args.observable+'",false)\''
         print("Executing",cmd)
         subprocess.run(split(cmd))
