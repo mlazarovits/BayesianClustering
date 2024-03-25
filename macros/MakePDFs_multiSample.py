@@ -10,13 +10,13 @@ parser.add_argument("--log",action='store_true')
 args = parser.parse_args()
 
 for f in args.files:
-	if f.find("formatted") == -1:
-		print("Skipping file",f,"not formatted (run macros/HistFormat.C on this sample)")
-		continue
-	if args.log:
-	        strlog = "true"
-	else:
-	        strlog = "false"
-	cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+args.observable+'","'+strlog+'")\''
-	print("Executing",cmd)
-	subprocess.run(split(cmd))
+        if f.find("formatted") == -1:
+                print("Skipping file",f,"not formatted (run macros/HistFormat.C on this sample)")
+                continue
+        if args.log:
+                strlog = "true"
+        else:
+                strlog = "false"
+        cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+args.observable+'","'+strlog+'")\''
+        print("Executing",cmd)
+        subprocess.run(split(cmd))
