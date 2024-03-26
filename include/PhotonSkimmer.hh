@@ -1395,6 +1395,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
 				if(isnan(pc)) cout << "pc is nan" << endl;
+				if(isinf(pc)) cout << "pc is inf" << endl;
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
