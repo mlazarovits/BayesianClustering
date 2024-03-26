@@ -29,7 +29,6 @@ class BHCJetSkimmer{
 			_evtj = _nEvts;
 			_gev = 1./10.;
 				
-			phi_center->SetRangeUser(0.,6.3);
 	
 			graphs.push_back(nrhs_comptime);
 
@@ -87,9 +86,6 @@ class BHCJetSkimmer{
 			double norm = 0;
 			double Etot = 0;
 			PointCollection* pts = model->GetData();
-			double meanphi = 0;
-			for(int i = 0; i < pts->GetNPoints(); i++) meanphi += pts->at(i).at(1);
-			cout << "calc mean phi " << meanphi/double(pts->GetNPoints()) << endl;
 
 	
 			//k clusters = k jets in event -> subclusters are mixture model components
@@ -110,7 +106,6 @@ class BHCJetSkimmer{
 				
 				//total cluster energy
 			}
-			cout << "cphi total " << cphi << " norm " << endl;
 			_procCats[p].hists1D[0][2]->Fill(Etot);
 			_procCats[p].hists1D[0][3]->Fill(ceta/norm);
 			_procCats[p].hists1D[0][4]->Fill(cphi/norm);
@@ -267,13 +262,13 @@ class BHCJetSkimmer{
 		//1
 		TH1D* nSubClusters = new TH1D("nPredSubClusters","nPredSubClusters",50,0,50);
 		//2
-		TH1D* predJet_Energy = new TH1D("predJet_Energy","predJet_Energy",20,0,1000);
+		TH1D* predJet_subClusterEnergy = new TH1D("predJet_subClusterEnergy","predJet_subClusterEnergy",20,0,1000);
 		//3
-		TH1D* predJet_TimeCenter = new TH1D("predJet_timeCenter","predJet_timeCenter",50,-20,20);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("predJet_subClustertimeCenter","predJet_subClustertimeCenter",50,-20,20);
 		//4
-		TH1D* predJet_EtaCenter = new TH1D("predJet_etaCenter","predJet_etaCenter",50,-1.6,1.6);
+		TH1D* predJet_subClusterEtaCenter = new TH1D("predJet_subClusteretaCenter","predJet_subClusteretaCenter",50,-1.6,1.6);
 		//5
-		TH1D* predJet_PhiCenter = new TH1D("predJet_phiCenter","predJet_phiCenter",50,-3.2,3.2);
+		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterphiCenter","predJet_subClusterphiCenter",50,0.,6.3);
 		//6
 		TH1D* predJet_dR = new TH1D("predJet_dR","predJet_dR",50,0,5);
 

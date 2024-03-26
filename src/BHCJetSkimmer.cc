@@ -93,6 +93,9 @@ void BHCJetSkimmer::Skim(){
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
+		//fill model histograms with trees
+		//transform trees to jets
+
 		FillPredJetHists(trees);
 	}
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
