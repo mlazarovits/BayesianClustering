@@ -29,9 +29,8 @@ class BHCJetSkimmer{
 			_evtj = _nEvts;
 			_gev = 1./10.;
 				
+			phi_center->SetRangeUser(0.,6.3);
 	
-			nrhs_comptime->SetName("nrhs_comptime");
-			nrhs_comptime->SetTitle("nrhs_comptime");
 			graphs.push_back(nrhs_comptime);
 
 			_hists1D.push_back(nClusters);
@@ -40,6 +39,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(predJet_EtaCenter);
 			_hists1D.push_back(predJet_PhiCenter);
 			_hists1D.push_back(predJet_TimeCenter);
+			_hists1D.push_back(predJet_dR);
 
 		}
 		void Skim();
@@ -53,12 +53,13 @@ class BHCJetSkimmer{
 			int njets;
 			vector<node*> cleaned_trees;
 			for(int p = 0; p < _procCats.size(); p++){
-				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = 0;
 				for(int i = 0; i < trees.size(); i++){
 					if(trees[i] == nullptr) continue;
 					//check for mirrored point - would be double counted
 					if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
+					cout << "jet #" << njets << " has " << trees[i]->model->GetNClusters() << " subclusters" << endl;
 					FillModelHists(trees[i]->model, p);
 					njets++;
 					cleaned_trees.push_back(trees[i]);
@@ -76,23 +77,44 @@ class BHCJetSkimmer{
 
 			int nclusters = model->GetNClusters();
 			
-			nSubClusters->Fill(nclusters);
+			_procCats[p].hists1D[0][1]->Fill(nclusters);
 			model->GetNorms(norms);
-		
+	
+			//center is mm weighted avg of subclusters
+			double ceta = 0;
+			double cphi = 0;
+			double ctime = 0;
+			double norm = 0;
+			double Etot = 0;
+			PointCollection* pts = model->GetData();
+			double meanphi = 0;
+			for(int i = 0; i < pts->GetNPoints(); i++) meanphi += pts->at(i).at(1);
+			cout << "calc mean phi " << meanphi/double(pts->GetNPoints()) << endl;
+
+	
 			//k clusters = k jets in event -> subclusters are mixture model components
 			for(int k = 0; k < nclusters; k++){
 				E_k = norms[k]/_gev;
+				Etot += E_k;
 
 				params = model->GetPriorParameters(k);
-				_procCats[p].hists1D[0][3]->Fill(params["mean"].at(0,0));
-				_procCats[p].hists1D[0][4]->Fill(params["mean"].at(1,0));
-				_procCats[p].hists1D[0][5]->Fill(params["mean"].at(2,0));
+				ceta += params["pi"].at(0,0)*params["mean"].at(0,0);
+				cphi += params["pi"].at(0,0)*params["mean"].at(1,0);
+				//cout << "pi " << params["pi"].at(0,0) << " ctime " << params["mean"].at(0,2) << " cphi " << params["mean"].at(0,1) << " ceta " << params["mean"].at(0,0) << endl;
+				//cout << "switched indices - pi " << params["pi"].at(0,0) << " ctime " << params["mean"].at(2,0) << " cphi " << params["mean"].at(1,0) << " ceta " << params["mean"].at(0,0) << endl;
+				ctime += params["pi"].at(0,0)*params["mean"].at(2,0);
+				norm += params["pi"].at(0,0);
 		
 				//calculate slopes from eigenvectors
 				params["cov"].eigenCalc(eigenvals, eigenvecs);
 				
 				//total cluster energy
 			}
+			cout << "cphi total " << cphi << " norm " << endl;
+			_procCats[p].hists1D[0][2]->Fill(Etot);
+			_procCats[p].hists1D[0][3]->Fill(ceta/norm);
+			_procCats[p].hists1D[0][4]->Fill(cphi/norm);
+			_procCats[p].hists1D[0][5]->Fill(ctime/norm);
 		}
 		
 
@@ -240,12 +262,20 @@ class BHCJetSkimmer{
 		TGraph* nrhs_comptime = new TGraph();
 		
 		//predicted jet plots
+		//0
 		TH1D* nClusters = new TH1D("nPredJets","nPredJets",20,0,20);
+		//1
 		TH1D* nSubClusters = new TH1D("nPredSubClusters","nPredSubClusters",50,0,50);
+		//2
 		TH1D* predJet_Energy = new TH1D("predJet_Energy","predJet_Energy",20,0,1000);
+		//3
 		TH1D* predJet_TimeCenter = new TH1D("predJet_timeCenter","predJet_timeCenter",50,-20,20);
+		//4
 		TH1D* predJet_EtaCenter = new TH1D("predJet_etaCenter","predJet_etaCenter",50,-1.6,1.6);
+		//5
 		TH1D* predJet_PhiCenter = new TH1D("predJet_phiCenter","predJet_phiCenter",50,-3.2,3.2);
+		//6
+		TH1D* predJet_dR = new TH1D("predJet_dR","predJet_dR",50,0,5);
 
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }

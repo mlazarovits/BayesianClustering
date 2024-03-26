@@ -16,8 +16,8 @@ void BHCJetSkimmer::Skim(){
 	cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
-	cout << "n procs: " << _procCats.size() << endl;
-	for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
+	//cout << "n procs: " << _procCats.size() << endl;
+	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -95,7 +95,11 @@ void BHCJetSkimmer::Skim(){
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		FillPredJetHists(trees);
 	}
-	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
+	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
+	graphs[0]->SetName("nrhs_comptime");
+	graphs[0]->SetTitle("nrhs_comptime");
+	graphs[0]->GetXaxis()->SetTitle("# rhs");
+	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
 	WriteOutput(ofile);
 

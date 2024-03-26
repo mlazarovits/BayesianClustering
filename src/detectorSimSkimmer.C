@@ -172,22 +172,19 @@ int main(int argc, char *argv[]){
 	TFile* file = TFile::Open(infile.c_str());
 	if(oname.empty()){
 		oname = file->GetName();
-		cout << "1 ctor oname " << oname << endl;
 		string match = "simNtuples_";
 		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()))+".root";
 		oname = "simSkim_"+oname;
-		cout << "ctor oname " << oname << endl;
 	}
 	else{
 		string oname_extra = file->GetName();
-		cout << "1 ctor oname_extra " << oname_extra << endl;
 		string match = "simNtuples_";
 		oname_extra = oname_extra.substr(oname_extra.find(match)+match.size(),oname_extra.find(".root")-(oname_extra.find(match)+match.size()))+".root";
 		oname = "simSkim_"+oname+"_"+oname_extra;
-		cout << "ctor oname " << oname << endl;
 
 	}	
 
+	cout << "Energy transfer factor: " << gev << endl;
 	BHCJetSkimmer skimmer(file);
 	//skimmer.SetMinPt(minpt);
 	//skimmer.SetMinNrhs(minnrhs);
