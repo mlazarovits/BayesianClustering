@@ -421,6 +421,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(nRhs_logEetaPhiCov);
 			_hists2D.push_back(nRhs_logEtimeEtaCov);
 			_hists2D.push_back(phoE_nRhs);		
+			_hists2D.push_back(timeCenter_etaCenter_rot2Dge0p6le0p8);
+			_hists2D.push_back(timeCenter_etaCenter_rot2Dle0p6ge0p8);
+			_hists2D.push_back(rot2D_E_phiE2Deq0PiOv2);
+			_hists2D.push_back(rot2D_E_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(phiCenter_rot2D_phiE2Deq0PiOv2);
+                	_hists2D.push_back(phiCenter_rot2D_phiE2Dneq0PiOv2);
+			_hists2D.push_back(phiCenter_etaCenter_rot2Dge0p6le0p8);
+			_hists2D.push_back(phiCenter_etaCenter_rot2Dle0p6ge0p8);
 
 
 		};
@@ -614,9 +622,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //96 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* etaCenter_phiE2Dneq0PiOv2 = new TH1D("etaCenter_phiE2Dneq0PiOv2","etaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //97 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-3.2,3.2);
+                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-0.1,6.3);
                 //98 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-3.2,3.2);
+                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-0.1,6.3);
                 //99 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* timeCenter_phiE2Deq0PiOv2 = new TH1D("timeCenter_phiE2Deq0PiOv2","timeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //100 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -720,9 +728,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //145 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* logEetaCenter_phiE2Dneq0PiOv2 = new TH1D("logEetaCenter_phiE2Dneq0PiOv2","logEetaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //146 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-3.2,3.2);
+                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-3.3,3.3);
                 //147 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-3.2,3.2);
+                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-3.3,3.3);
                 //148 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEtimeCenter_phiE2Deq0PiOv2 = new TH1D("logEtimeCenter_phiE2Deq0PiOv2","logEtimeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //149 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -1201,6 +1209,22 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* nRhs_logEtimeEtaCov = new TH2D("nRhs_logEtimeEtaCov","nRhs_logEtimeEtaCov;nRhs;timeEtaCov;a.u.",25,0,100,25,-1,1);
 		//139 - nrhs vs phoE
 		TH2D* phoE_nRhs = new TH2D("phoE_nRhs","phoE_nRhs;phoEnergy;nRhs;a.u.",25,0,1000,25,0,100);		
+		//140 - time center vs eta center, 0.6 < rot2D < 0.8 
+		TH2D* timeCenter_etaCenter_rot2Dge0p6le0p8 = new TH2D("timeCenter_etaCenter_rot2Dge0p6le0p8","timeCenter_etaCenter_rot2Dge0p6le0p8;timeCenter_rot2Dge0p6le0p8;etaCenter;a.u.",25,-15,15,25,-1.6,1.6);
+		//141 - time center vs eta center, 0.6 > rotE2D && rot2D > 0.8 
+		TH2D* timeCenter_etaCenter_rot2Dle0p6ge0p8 = new TH2D("timeCenter_etaCenter_rot2Dle0p6ge0p8","timeCenter_etaCenter_rot2Dle0p6ge0p8;timeCenter_rot2Dle0p6ge0p8;etaCenter;a.u.",25,-15,15,25,-1.6,1.6);
+		//142 - rotundity (2D) v subcl energy, phiE2D ~ 0 && phiE2D ~ pi/2 
+		TH2D* rot2D_E_phiE2Deq0PiOv2 = new TH2D("rot2D_subclE_phiE2Deq0PiOv2","rot2D_subclE_phiE2Deq0PiOv2;rotundity2D_phiE2Deq0PiOv2;E;a.u.",25,0.4,1.1,25,0,1000);
+		//143 - no E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
+		TH2D* rot2D_E_phiE2Dneq0PiOv2 = new TH2D("rot2D_subclE_phiE2Dneq0PiOv2","rot2D_subclE_phiE2Dneq0PiOv2;rotundity2D_phiE2Dneq0PiOv2;E;a.u.",25,0.4,1.1,25,0,1000);
+                //144 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
+                TH2D* phiCenter_rot2D_phiE2Deq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Deq0PiOv2","phiCenter_rot2D_phiE2Deq0PiOv2;phiCenter_phiE2Deq0PiOv2;rot2D;a.u.",25,-0.1,6.3,25,0.4,1.1);
+                //145 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
+                TH2D* phiCenter_rot2D_phiE2Dneq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Dneq0PiOv2","phiCenter_rot2D_phiE2Dneq0PiOv2;phiCenter_phiE2Dneq0PiOv2;rot2D;a.u.",25,-0.1,6.3,25,0.4,1.1);
+		//146 - phi center vs eta center, 0.6 < rot2D < 0.8
+		TH2D* phiCenter_etaCenter_rot2Dge0p6le0p8 = new TH2D("phiCenter_etaCenter_rot2Dge0p6le0p8","phiCenter_etaCenter_rot2Dge0p6le0p8;phiCenter_rot2Dge0p6le0p8;etaCenter;a.u.",25,-0.1,6.3,25,-1.6,1.6);
+		//147 - eta center vs time center, 0.6 > rotE2D && rot2D > 0.8 
+		TH2D* phiCenter_etaCenter_rot2Dle0p6ge0p8 = new TH2D("phiCenter_etaCenter_rot2Dle0p6ge0p8","phiCenter_etaCenter_rot2Dle0p6ge0p8;phiCenter_rot2Dle0p6ge0p8;etaCenter;a.u.",25,-0.1,6.3,25,-1.6,1.6);
 
 
 		enum weightScheme{
@@ -1672,6 +1696,8 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][107]->Fill(tc, ec);
 					_procCats[id_idx].hists2D[1][117]->Fill(tc, _swcross);
 					_procCats[id_idx].hists2D[1][120]->Fill(rot2D, _swcross);
+					_procCats[id_idx].hists2D[1][142]->Fill(rot2D, E_k);
+					_procCats[id_idx].hists2D[1][144]->Fill(pc, rot2D);
 				}
 				else{
 					_procCats[id_idx].hists2D[1][71]->Fill(rot2D,ep_cov);
@@ -1680,6 +1706,8 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][108]->Fill(tc, ec);
 					_procCats[id_idx].hists2D[1][118]->Fill(tc, _swcross);
 					_procCats[id_idx].hists2D[1][121]->Fill(rot2D, _swcross);
+					_procCats[id_idx].hists2D[1][143]->Fill(rot2D, E_k);
+					_procCats[id_idx].hists2D[1][145]->Fill(pc, rot2D);
 				}
 				_procCats[id_idx].hists2D[1][73]->Fill(te_cov,rot2D);
 				if(-10 <= tc && tc < -2){
@@ -1705,8 +1733,14 @@ class PhotonSkimmer : public BaseSkimmer{
 					_procCats[id_idx].hists2D[1][119]->Fill(rot2D, _swcross);
 					_procCats[id_idx].hists2D[1][122]->Fill(phi2D, _swcross);
 					_procCats[id_idx].hists2D[1][123]->Fill(E_tot, _swcross);
-				
-			
+				}
+				if(rot2D > 0.6 && rot2D < 0.8){
+					_procCats[id_idx].hists2D[1][140]->Fill(tc, ec);
+					_procCats[id_idx].hists2D[1][146]->Fill(pc, ec);
+				}
+				else{
+					_procCats[id_idx].hists2D[1][141]->Fill(tc, ec);
+					_procCats[id_idx].hists2D[1][147]->Fill(pc, ec);
 				}		
 
 			}
