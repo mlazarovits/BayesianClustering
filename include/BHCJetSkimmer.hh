@@ -34,10 +34,10 @@ class BHCJetSkimmer{
 
 			_hists1D.push_back(nClusters);
 			_hists1D.push_back(nSubClusters);	
-			_hists1D.push_back(predJet_Energy);
-			_hists1D.push_back(predJet_EtaCenter);
-			_hists1D.push_back(predJet_PhiCenter);
-			_hists1D.push_back(predJet_TimeCenter);
+			_hists1D.push_back(predJet_subClusterEnergy);
+			_hists1D.push_back(predJet_subClusterEtaCenter);
+			_hists1D.push_back(predJet_subClusterPhiCenter);
+			_hists1D.push_back(predJet_subClusterTimeCenter);
 			_hists1D.push_back(predJet_dR);
 
 		}
@@ -47,24 +47,64 @@ class BHCJetSkimmer{
 			else if(i == 1) _strategy = N2;
 			else return; 
 		}
-		
+	
+
+		void CleanTrees(const vector<node*>& trees){
+			_trees.clear();
+			for(int i = 0; i < trees.size(); i++){
+				if(trees[i] == nullptr) continue;
+				//check for mirrored point - would be double counted
+				if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
+				_trees.push_back(trees[i]);
+			}
+		}
+
+
+		void TreesToJets(vector<Jet>& jets){
+			jets.clear();
+			for(int i = 0; i < _trees.size(); i++){
+				//get points from tree
+				//create new Jet
+				//loop over points
+					//translate eta, phi to x, y, z
+					//declare JetPoint with x, y, z, t
+					//add JetPoint to Jet
+				//add Jet to jets
+			}
+
+		}
+	
 		void FillPredJetHists(const vector<node*>& trees){
+		//void FillPredJetHists(const vector<Jet>& jets){
 			int njets;
-			vector<node*> cleaned_trees;
+			//vector<node*> cleaned_trees;
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = 0;
 				for(int i = 0; i < trees.size(); i++){
+				//for(int i = 0; i < jets.size(); i++){
 					if(trees[i] == nullptr) continue;
 					//check for mirrored point - would be double counted
 					if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
 					cout << "jet #" << njets << " has " << trees[i]->model->GetNClusters() << " subclusters" << endl;
-					FillModelHists(trees[i]->model, p);
-					njets++;
-					cleaned_trees.push_back(trees[i]);
+					//cleaned_trees.push_back(trees[i]);
 				}
 				_procCats[p].hists1D[0][0]->Fill(njets);
 			}
+		}
+
+		void FillModelHists(){
+			for(int p = 0; p < _procCats.size(); p++){
+				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				for(int i = 0; i < _trees.size(); i++){
+					//keep checks in just in case
+					if(_trees[i] == nullptr) continue;
+					//check for mirrored point - would be double counted
+					if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0) continue;
+					FillModelHists(_trees[i]->model, p);
+				}
+			}
+
 		}
 		
 		//all hists referenced here are in hists1D
@@ -260,15 +300,15 @@ class BHCJetSkimmer{
 		//0
 		TH1D* nClusters = new TH1D("nPredJets","nPredJets",20,0,20);
 		//1
-		TH1D* nSubClusters = new TH1D("nPredSubClusters","nPredSubClusters",50,0,50);
+		TH1D* nSubClusters = new TH1D("predJet_nSubClusters","predJet_nSubClusters",50,0,50);
 		//2
 		TH1D* predJet_subClusterEnergy = new TH1D("predJet_subClusterEnergy","predJet_subClusterEnergy",20,0,1000);
 		//3
-		TH1D* predJet_subClusterTimeCenter = new TH1D("predJet_subClustertimeCenter","predJet_subClustertimeCenter",50,-20,20);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("predJet_subClusterTimeCenter","predJet_subClusterTimeCenter",50,-20,20);
 		//4
-		TH1D* predJet_subClusterEtaCenter = new TH1D("predJet_subClusteretaCenter","predJet_subClusteretaCenter",50,-1.6,1.6);
+		TH1D* predJet_subClusterEtaCenter = new TH1D("predJet_subClusterEtaCenter","predJet_subClusterEtaCenter",50,-1.6,1.6);
 		//5
-		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterphiCenter","predJet_subClusterphiCenter",50,0.,6.3);
+		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterPhiCenter","predJet_subClusterPhiCenter",50,-0.1,6.3);
 		//6
 		TH1D* predJet_dR = new TH1D("predJet_dR","predJet_dR",50,0,5);
 
@@ -290,6 +330,7 @@ class BHCJetSkimmer{
 		vector<TGraph*> graphs;
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
+		vector<node*> _trees;
 		bool _smear, _timesmear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder
