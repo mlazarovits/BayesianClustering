@@ -622,9 +622,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //96 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* etaCenter_phiE2Dneq0PiOv2 = new TH1D("etaCenter_phiE2Dneq0PiOv2","etaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //97 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-0.1,6.3);
+                TH1D* phiCenter_phiE2Deq0PiOv2 = new TH1D("phiCenter_phiE2Deq0PiOv2","phiCenter_phiE2Deq0PiOv2",25,-0.6,6.6);
                 //98 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-0.1,6.3);
+                TH1D* phiCenter_phiE2Dneq0PiOv2 = new TH1D("phiCenter_phiE2Dneq0PiOv2","phiCenter_phiE2Dneq0PiOv2",25,-0.6,6.6);
                 //99 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* timeCenter_phiE2Deq0PiOv2 = new TH1D("timeCenter_phiE2Deq0PiOv2","timeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //100 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -728,9 +728,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //145 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* logEetaCenter_phiE2Dneq0PiOv2 = new TH1D("logEetaCenter_phiE2Dneq0PiOv2","logEetaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //146 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-3.3,3.3);
+                TH1D* logEphiCenter_phiE2Deq0PiOv2 = new TH1D("logEphiCenter_phiE2Deq0PiOv2","logEphiCenter_phiE2Deq0PiOv2",25,-3.5,3.5);
                 //147 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-3.3,3.3);
+                TH1D* logEphiCenter_phiE2Dneq0PiOv2 = new TH1D("logEphiCenter_phiE2Dneq0PiOv2","logEphiCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //148 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* logEtimeCenter_phiE2Deq0PiOv2 = new TH1D("logEtimeCenter_phiE2Deq0PiOv2","logEtimeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //149 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -835,9 +835,9 @@ class PhotonSkimmer : public BaseSkimmer{
                 //194 - subcluster eta center, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* noEetaCenter_phiE2Dneq0PiOv2 = new TH1D("noEetaCenter_phiE2Dneq0PiOv2","noEetaCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //195 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH1D* noEphiCenter_phiE2Deq0PiOv2 = new TH1D("noEphiCenter_phiE2Deq0PiOv2","noEphiCenter_phiE2Deq0PiOv2",25,-0.1,3.6);
+                TH1D* noEphiCenter_phiE2Deq0PiOv2 = new TH1D("noEphiCenter_phiE2Deq0PiOv2","noEphiCenter_phiE2Deq0PiOv2",25,-3.5,3.5);
                 //196 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH1D* noEphiCenter_phiE2Dneq0PiOv2 = new TH1D("noEphiCenter_phiE2Dneq0PiOv2","noEphiCenter_phiE2Dneq0PiOv2",25,-0.1,3.6);
+                TH1D* noEphiCenter_phiE2Dneq0PiOv2 = new TH1D("noEphiCenter_phiE2Dneq0PiOv2","noEphiCenter_phiE2Dneq0PiOv2",25,-3.5,3.5);
                 //197 - subcluster time center, phiE2D ~ 0 && phiE2D ~ pi/2
                 TH1D* noEtimeCenter_phiE2Deq0PiOv2 = new TH1D("noEtimeCenter_phiE2Deq0PiOv2","noEtimeCenter_phiE2Deq0PiOv2",25,-20,20);
                 //198 - subcluster time center, phiE2D !~ 0 && phiE2D !~ pi/2
@@ -1218,13 +1218,13 @@ class PhotonSkimmer : public BaseSkimmer{
 		//143 - no E etaPhiCov vs timeEtaCov, phiE2D !~ 0 && phiE2D !~ pi/2
 		TH2D* rot2D_E_phiE2Dneq0PiOv2 = new TH2D("rot2D_subclE_phiE2Dneq0PiOv2","rot2D_subclE_phiE2Dneq0PiOv2;rotundity2D_phiE2Dneq0PiOv2;E;a.u.",25,0.4,1.1,25,0,1000);
                 //144 - subcluster phi center, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* phiCenter_rot2D_phiE2Deq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Deq0PiOv2","phiCenter_rot2D_phiE2Deq0PiOv2;phiCenter_phiE2Deq0PiOv2;rot2D;a.u.",25,-0.1,6.3,25,0.4,1.1);
+                TH2D* phiCenter_rot2D_phiE2Deq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Deq0PiOv2","phiCenter_rot2D_phiE2Deq0PiOv2;phiCenter_phiE2Deq0PiOv2;rot2D;a.u.",25,-0.6,6.6,25,0.4,1.1);
                 //145 - subcluster phi center, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* phiCenter_rot2D_phiE2Dneq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Dneq0PiOv2","phiCenter_rot2D_phiE2Dneq0PiOv2;phiCenter_phiE2Dneq0PiOv2;rot2D;a.u.",25,-0.1,6.3,25,0.4,1.1);
+                TH2D* phiCenter_rot2D_phiE2Dneq0PiOv2 = new TH2D("phiCenter_rot2D_phiE2Dneq0PiOv2","phiCenter_rot2D_phiE2Dneq0PiOv2;phiCenter_phiE2Dneq0PiOv2;rot2D;a.u.",25,-0.6,6.6,25,0.4,1.1);
 		//146 - phi center vs eta center, 0.6 < rot2D < 0.8
-		TH2D* phiCenter_etaCenter_rot2Dge0p6le0p8 = new TH2D("phiCenter_etaCenter_rot2Dge0p6le0p8","phiCenter_etaCenter_rot2Dge0p6le0p8;phiCenter_rot2Dge0p6le0p8;etaCenter;a.u.",25,-0.1,6.3,25,-1.6,1.6);
+		TH2D* phiCenter_etaCenter_rot2Dge0p6le0p8 = new TH2D("phiCenter_etaCenter_rot2Dge0p6le0p8","phiCenter_etaCenter_rot2Dge0p6le0p8;phiCenter_rot2Dge0p6le0p8;etaCenter;a.u.",25,-0.6,6.6,25,-1.6,1.6);
 		//147 - eta center vs time center, 0.6 > rotE2D && rot2D > 0.8 
-		TH2D* phiCenter_etaCenter_rot2Dle0p6ge0p8 = new TH2D("phiCenter_etaCenter_rot2Dle0p6ge0p8","phiCenter_etaCenter_rot2Dle0p6ge0p8;phiCenter_rot2Dle0p6ge0p8;etaCenter;a.u.",25,-0.1,6.3,25,-1.6,1.6);
+		TH2D* phiCenter_etaCenter_rot2Dle0p6ge0p8 = new TH2D("phiCenter_etaCenter_rot2Dle0p6ge0p8","phiCenter_etaCenter_rot2Dle0p6ge0p8;phiCenter_rot2Dle0p6ge0p8;etaCenter;a.u.",25,-0.6,6.6,25,-1.6,1.6);
 
 
 		enum weightScheme{
@@ -1420,6 +1420,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				pc = params["mean"].at(1,0);
 				if(isnan(pc)) cout << "pc is nan" << endl;
 				if(isinf(pc)) cout << "pc is inf" << endl;
+				if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
