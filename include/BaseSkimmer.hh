@@ -96,7 +96,7 @@ class BaseSkimmer{
 		//2 - mean eta - center in eta
 		TH1D* eta_center = new TH1D("etaCenter","etaCenter",50,-1.6,1.6);
 		//3 - mean phi - center in phi
-		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-0.1,6.3);
+		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-0.2,6.4);
 		//4 - object energy
 		TH1D* objE = new TH1D("objE","objE",50,0,1000);
 		//5 - cluster energy
@@ -272,11 +272,33 @@ class BaseSkimmer{
 				_procCats.push_back(notSunm);
 				
 				//signal
-				procCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma", leadsep);
+				//TODO: add other signal points here with different labels (ie sample.find("GMSB_L-350TeV_Ctau-0_1cm")
+				//do string matching to find specific grid point
+				string lambda, ctau;
+				string lmatch = "L-";
+				string sample_l = sample.substr(sample.find(lmatch));
+				lambda = sample_l.substr(0,sample_l.find("_"));
+				
+				string ctmatch = "Ctau";
+				string sample_ctau = sample.substr(sample.find(ctmatch));
+				ctau = sample_ctau.substr(0,sample_ctau.find("_"));
+				
+				cout << "lambda " << lambda << " ctau " << ctau << endl;
+
+				string lfancy = lambda.substr(lambda.find("-")+1);
+				lfancy.insert(lfancy.find("TeV")-2," ");
+				string ctfancy = ctau.substr(ctau.find("-")+1);
+				ctfancy.insert(ctfancy.find("cm")," ");
+				
+				string plotName = "chiGam_"+lambda+"_"+ctau;
+				while(plotName.find("-") != string::npos)
+					plotName.replace(plotName.find("-"),1,"");
+
+				string legName = "#Chi^{0} #rightarrow #gamma, L = "+lfancy+" c#tau = "+ctfancy;
+				procCat sig(_hists1D, _hists2D, plotName, legName, leadsep);
 				sig.ids = {22};
 				_procCats.push_back(sig);
 			}
-			//TODO: add other signal points here with different labels (ie sample.find("GMSB_L-350TeV_Ctau-0_1cm")
 			else if(sample.find("JetHT") != string::npos){
 				//data
 				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT", leadsep);
