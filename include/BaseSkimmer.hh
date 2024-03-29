@@ -272,7 +272,6 @@ class BaseSkimmer{
 				_procCats.push_back(notSunm);
 				
 				//signal
-				//TODO: add other signal points here with different labels (ie sample.find("GMSB_L-350TeV_Ctau-0_1cm")
 				//do string matching to find specific grid point
 				string lambda, ctau;
 				string lmatch = "L-";
@@ -283,13 +282,16 @@ class BaseSkimmer{
 				string sample_ctau = sample.substr(sample.find(ctmatch));
 				ctau = sample_ctau.substr(0,sample_ctau.find("_"));
 				
-				cout << "lambda " << lambda << " ctau " << ctau << endl;
+				//cout << "lambda " << lambda << " ctau " << ctau << endl;
 
 				string lfancy = lambda.substr(lambda.find("-")+1);
-				lfancy.insert(lfancy.find("TeV")-2," ");
+				//lfancy.insert(lfancy.find("TeV")-2," ");
+				lfancy += " TeV";
 				string ctfancy = ctau.substr(ctau.find("-")+1);
-				ctfancy.insert(ctfancy.find("cm")," ");
-				
+				//ctfancy.insert(ctfancy.find("cm")," ");
+				ctfancy += " cm";
+
+	
 				string plotName = "chiGam_"+lambda+"_"+ctau;
 				while(plotName.find("-") != string::npos)
 					plotName.replace(plotName.find("-"),1,"");
