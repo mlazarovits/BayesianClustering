@@ -62,17 +62,21 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
 	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
+	labelToColor["MET"] =   TColor::GetColor("#671E76");
 
 	labelToColor["!median"] = TColor::GetColor("#f7a278");
 	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
 	labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
 	labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
 
+	//MC symbols - primary shapes
 	labelToMark["!chiGam"] =  71;
 	labelToMark["!GMSB"] =  71;
 	labelToMark["!notSunm"] = 72;
 	labelToMark["!GJets"] =   73;
-	labelToMark["!JetHT"] =   74;
+	//data symbols - some form of open cross
+	labelToMark["!JetHT"] =   75;
+	labelToMark["!MET"] =   85;
 
 	labelToMark["median"] = 71;
 	labelToMark["eAvg"] =   72; 
@@ -158,7 +162,11 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
 		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
 			hist->SetMarkerSize(1.3);
-		else hist->SetMarkerSize(3.);
+		//count histograms
+		else{
+			hist->Scale(1./hist->Integral());
+			hist->SetMarkerSize(3.);
+		}
 		hist->Draw("colz1text");
 	}
 	else hist->Draw("colz1");
