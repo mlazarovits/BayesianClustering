@@ -6,6 +6,33 @@
 using std::string;
 
 
+string SignalLegEntry(string label){
+	//cout << "label " << label << endl;
+	string lambda, ctau;
+	string lmatch = "_L";
+	string sample_l = label.substr(label.find(lmatch)+2);
+	lambda = sample_l.substr(0,sample_l.find("_"));
+	
+	string ctmatch = "Ctau";
+	string sample_ctau = label.substr(label.find(ctmatch)+ctmatch.size());
+	ctau = sample_ctau.substr(0,sample_ctau.find("_"));
+	
+	//cout << "sample_l "<< sample_l << " lambda " << lambda << " ctau " << ctau << endl;
+
+	string lfancy = lambda.substr(lambda.find("_")+1);
+	//lfancy.insert(lfancy.find("TeV")-2," ");
+	lfancy += " TeV";
+	string ctfancy = ctau.substr(ctau.find("_")+1);
+	if(ctfancy.find("p") != string::npos)
+		ctfancy.replace(ctfancy.find("p"),1,".");
+	//ctfancy.insert(ctfancy.find("cm")," ");
+	ctfancy += " cm";
+
+	//string legName = "#Chi^{0} #rightarrow #gamma, L = "+lfancy+" c#tau = "+ctfancy;
+	string legName = "GMSB, L = "+lfancy+" c#tau = "+ctfancy;
+	return legName;
+}
+
 void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 	//insert to find max, min
 	int N = (int)hists.size();
@@ -27,11 +54,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	can->SetGridx(1);
 	can->SetGridy(1);
 	can->SetTitle("");
-	TLegend* myleg = new TLegend(0.7, 0.7, 0.9, 0.9);
+	TLegend* myleg = new TLegend(0.6, 0.7, 0.9, 0.9);
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
 	myleg->SetTextFont(42);
-	myleg->SetTextSize(0.04);
+	if(hist.size() > 4) myleg->SetTextSize(0.025);	
+	else myleg->SetTextSize(0.04);
 
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
@@ -59,6 +87,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	int offset = 1;
 	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
 	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+	//TODO (maybe): set different signal grid points to different shades of above color	
+
 	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
 	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
@@ -70,13 +100,18 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
 
 	//MC symbols - primary shapes
-	labelToMark["!chiGam"] =  71;
-	labelToMark["!GMSB"] =  71;
+	labelToMark["!chiGam"] =  20;
+	labelToMark["!GMSB"] =  20;
 	labelToMark["!notSunm"] = 72;
 	labelToMark["!GJets"] =   73;
 	//data symbols - some form of open cross
 	labelToMark["!JetHT"] =   75;
 	labelToMark["!MET"] =   85;
+	//signal point additions
+	labelToMark["L150"] = -1;
+	labelToMark["L350"] = 1;
+	labelToMark["Ctau0p1"] = 1;
+	labelToMark["Ctau200"] = 2;
 
 	labelToMark["median"] = 71;
 	labelToMark["eAvg"] =   72; 
@@ -94,15 +129,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
 		
 
-		legentry = hist[i]->GetTitle();
-		if(canname.find("jet") != string::npos){
-			if(legentry.find("notSunm") != string::npos) continue;
-			if(legentry.find("chiGam") != string::npos){
-				legentry.replace(legentry.find("chiGam"),6,"GMSB");
-			}
-		}		
-		
 
+		legentry = hist[i]->GetTitle();
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -121,6 +149,21 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 				break;
 			}
 			else mark = 1;
+		}
+		//do different signal points
+		if(legentry.find("chiGam") != string::npos){
+			for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
+				string match = it->first;
+				if(match.find("!") != string::npos) continue; //already looped over above
+				if(legentry.find(match) != string::npos){
+					mark += it->second; //need to loop over all additions bc signal point has two (L, ctau)
+				}
+			}
+		}
+		
+		if(legentry.find("notSunm") != string::npos) continue;
+		if(legentry.find("chiGam") != string::npos){
+			legentry = SignalLegEntry(legentry);
 		}
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
