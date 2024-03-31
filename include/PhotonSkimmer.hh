@@ -1949,7 +1949,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists1D[0][72]->Fill(cmsLogE_mintime_cov);
 			_procCats[id_idx].hists1D[0][73]->Fill(cmsLogE_majtime_cov_unnorm);
 			_procCats[id_idx].hists1D[0][74]->Fill(cmsLogE_mintime_cov_unnorm);
-			_procCats[id_idx].hists1D[0][72]->Fill(cmsLogE_rot2D);
+			_procCats[id_idx].hists1D[0][75]->Fill(cmsLogE_rot2D);
 			if(E_tot <= 100){
 				_procCats[id_idx].hists1D[0][125]->Fill(cmsLogE_rot2D);	
 			}
