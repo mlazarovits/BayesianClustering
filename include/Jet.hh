@@ -24,8 +24,8 @@ class Jet{
 	public:
 		Jet();
 		Jet(double px, double py, double pz, double E);
-		Jet(JetPoint rh);
-		Jet(const vector<JetPoint>& rhs);
+		Jet(JetPoint rh, Point vtx);
+		Jet(const vector<JetPoint>& rhs, Point vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -105,8 +105,9 @@ class Jet{
   		double mperp2() const {return (_E+_pz)*(_E-_pz);}
 		//invariant mass squared: m^2 = E^2 - p^2
 		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
-		//invariant mass
-		double mass() const{return sqrt(m2()); }
+		//invariant mass - https://fastjet.fr/repo/doxygen-3.4.0/PseudoJet_8hh_source.html L1059
+		//https://gitlab.cern.ch/CLHEP/CLHEP/-/blob/develop/Vector/Vector/LorentzVector.icc#L150
+		double mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
 
 	
 		//squared transverse momentum
@@ -133,7 +134,7 @@ class Jet{
 			rhs.clear();
 			Jet rh;
 			for(int r = 0; r < _rhs.size(); r++){
-				rh = Jet(_rhs[r]);
+				rh = Jet(_rhs[r], _vtx);
 				rh.SetVertex(_vtx);
 				rh.SetUserIdx(_rhs[r].rhId());
 				rhs.push_back(rh);	

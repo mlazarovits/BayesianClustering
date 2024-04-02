@@ -55,8 +55,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 
-		Jet j(rh);
-		j.SetVertex(vtx);
+		Jet j(rh, vtx);
 		rhs.push_back(j);
 	}	
 

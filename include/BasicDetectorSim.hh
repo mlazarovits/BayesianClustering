@@ -178,6 +178,7 @@ struct RecoParticle;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
+		Point _PV;
 
 		struct RecoParticle{
 			//associated gen particle

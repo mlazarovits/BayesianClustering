@@ -239,6 +239,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_pvx /= norm;
 		_pvy /= norm;
 		_pvz /= norm;
+		_PV = Point({_pvx, _pvy, _pvz});
 		//run fastjet
 		fastjet::ClusterSequence cs(fjinputs, jetdef);
 		//get jets - min 5 pt
@@ -539,7 +540,7 @@ void BasicDetectorSim::MakeRecHits(){
 			jet.SetEnergy(_cal[i][j].at(0));
 			jet.SetEta(eta);
 			jet.SetPhi(phi);
-			_cal_rhs.push_back(jet);
+			_cal_rhs.push_back(Jet(jet, _PV));
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
@@ -668,7 +669,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 					jet.SetEnergy(reco_e);
 					jet.SetEta(eta);
 					jet.SetPhi(phi);
-					_cal_rhs.push_back(jet);
+					_cal_rhs.push_back(Jet(jet,_PV));
 					
 					//save spikes to tree
 					_spikeE.push_back(reco_e);			

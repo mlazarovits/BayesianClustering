@@ -51,18 +51,30 @@ void BHCJetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
+		
+		//safety
+		if(rhs.size() < 1) continue;
+
 		x_nrhs.push_back((double)rhs.size());
 		//for(int r = 0; r < rhs.size(); r++){
 		//	rhTime->Fill(rhs[r].t());
 		//}
-	
-	
 
+		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
+		//this should be true for all events
+		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
+		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
+			
 		////fill gen jet histograms
 		vector<Jet> genjets;
 		_prod->GetGenJets(genjets, i);
 	//	if(jets.size() < 1){ cout << endl; continue; }
 
+
+		//get PV info
+		_pvx = _base->PV_x;
+		_pvy = _base->PV_y;
+		_pvz = _base->PV_z;
 	
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
@@ -93,10 +105,16 @@ void BHCJetSkimmer::Skim(){
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
+		//clean trees (remove mirror point or nullptrs)
+		CleanTrees(trees);
 		//fill model histograms with trees
-		//transform trees to jets
-
-		FillPredJetHists(trees);
+		//for subclusters
+		FillModelHists();	
+		//transform trees (nodes) to jets
+		vector<Jet> predjets;
+		TreesToJets(predjets);
+		//fill pred jet hists with jets
+		FillPredJetHists(predjets);
 	}
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
 	graphs[0]->SetName("nrhs_comptime");

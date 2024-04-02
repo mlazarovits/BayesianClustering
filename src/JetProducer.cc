@@ -121,8 +121,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 
-		Jet j(rh);
-		j.SetVertex(vtx);
+		Jet j(rh, vtx);
 		jets.push_back(j);
 	}	
 }

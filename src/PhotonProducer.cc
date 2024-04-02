@@ -225,8 +225,7 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 				//cleaning cuts
 				if(!cleanRH(rh)) break;
 			
-				Jet jet(rh);
-				jet.SetVertex(vtx);	
+				Jet jet(rh, vtx);
 				rhs.push_back(jet);
 				break;
 			}

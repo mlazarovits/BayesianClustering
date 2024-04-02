@@ -1100,8 +1100,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
-				rhs_jet.push_back( Jet(rhs[r]) );
-				rhs_jet[r].SetVertex(jet.GetVertex());
+				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			if(_smear && !smear.empty()) algo->SetDataSmear(smear);

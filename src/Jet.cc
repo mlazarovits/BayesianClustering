@@ -48,15 +48,16 @@ Jet::Jet(double px, double py, double pz, double E){
 
 }
 
-Jet::Jet(JetPoint rh){
+Jet::Jet(JetPoint rh, Point vtx){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
+	
+	_vtx = vtx;
 
 	_E = rh.E();
 	_eta = rh.eta();
 	_phi = rh.phi();
 	_t = rh.t();
-	_mass = mass();
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
@@ -66,6 +67,8 @@ Jet::Jet(JetPoint rh){
 	_py = pt*sin(_phi);
 	_pz = pt*sinh(_eta);
 	_kt2 = sqrt(pt); 		
+	_mass = mass();
+	
 	_parent1 = nullptr;
 	_parent2 = nullptr;
 	_child = nullptr; 
@@ -75,19 +78,22 @@ Jet::Jet(JetPoint rh){
 }
 
 
-Jet::Jet(const vector<JetPoint>& rhs){
+Jet::Jet(const vector<JetPoint>& rhs, Point vtx){
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
 	_phi = _invalid_phi;
 	_eta = _invalid_eta;
+	
+	_vtx = vtx;
 	for(int i = 0; i < _nRHs; i++){
 		
-		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x();
-		y = rhs[i].y();
-		z = rhs[i].z();
+		//theta is calculated between beamline (z-dir) and vector in x-y plane	
+		x = rhs[i].x() - _vtx.at(0);
+		y = rhs[i].y() - _vtx.at(1);
+		z = rhs[i].z() - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
+		//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
 		_px += pt*cos(rhs[i].phi());
 		_py += pt*sin(rhs[i].phi());

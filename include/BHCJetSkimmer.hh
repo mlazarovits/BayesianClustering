@@ -15,6 +15,7 @@ class BHCJetSkimmer{
 			_evtj = 0;
 			_gev = 1./10.;
 			_oname = "";
+			_radius = 0;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -28,6 +29,7 @@ class BHCJetSkimmer{
 			_evti = 0;
 			_evtj = _nEvts;
 			_gev = 1./10.;
+			_radius = 0;
 				
 	
 			graphs.push_back(nrhs_comptime);
@@ -62,32 +64,62 @@ class BHCJetSkimmer{
 
 		void TreesToJets(vector<Jet>& jets){
 			jets.clear();
+			vector<JetPoint> rhs;
+			double x, y, z, eta, phi, t, theta;
+			Point vertex({_pvx, _pvy, _pvz});
+
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
-				//create new Jet
+				PointCollection* pc = _trees[i]->points;
+				rhs.clear();
 				//loop over points
+				//pc->Print();
+				double jeta = 0;
+				double jphi = 0;
+				for(int p = 0; p < pc->GetNPoints(); p++){
+					eta = pc->at(p).at(0);
+					phi = pc->at(p).at(1);
+					t = pc->at(p).at(2);
 					//translate eta, phi to x, y, z
+					theta = 2*atan2(1,exp(eta));
+					x = _radius*cos(phi);
+					y = _radius*sin(phi);
+					z = _radius/tan(theta);	
+					
+					//for checking calculations
+					double rtheta = atan2(_radius,z);
+					//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
+					double reta = -log(tan(rtheta/2));
+					double rphi = atan2(y,x);
+		
+					//cout << "eta: " << eta << " reta: " << reta << " phi: " << phi << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;
+					
 					//declare JetPoint with x, y, z, t
-					//add JetPoint to Jet
-				//add Jet to jets
+					JetPoint jp(x, y, z, t);
+					//cout << "jp eta " << jp.eta() << " eta " << eta << " jp phi " << jp.phi() << " phi " << phi << endl;
+					//add JetPoint to list of rhs
+					jp.SetEnergy(pc->at(p).w()/_gev);
+					jp.SetWeight(pc->at(p).w());
+					rhs.push_back(jp);
+					jeta += eta;
+					jphi += phi;
+				}
+				//create new Jet
+				//set PV info
+				Jet predJet(rhs, vertex);
+				//add Jet to jets	
+				jets.push_back(predJet);	
 			}
 
 		}
 	
-		void FillPredJetHists(const vector<node*>& trees){
-		//void FillPredJetHists(const vector<Jet>& jets){
+		void FillPredJetHists(const vector<Jet>& jets){
 			int njets;
-			//vector<node*> cleaned_trees;
 			for(int p = 0; p < _procCats.size(); p++){
-				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
-				njets = 0;
-				for(int i = 0; i < trees.size(); i++){
-				//for(int i = 0; i < jets.size(); i++){
-					if(trees[i] == nullptr) continue;
-					//check for mirrored point - would be double counted
-					if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
-					cout << "jet #" << njets << " has " << trees[i]->model->GetNClusters() << " subclusters" << endl;
-					//cleaned_trees.push_back(trees[i]);
+				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				njets = jets.size();
+				for(int j = 0; j < jets.size(); j++){
+					cout << "jet #" << j << " phi " << jets[j].phi() << " eta " << jets[j].eta() << " energy " << jets[j].E() <<  " mass " << jets[j].mass() << endl;
 				}
 				_procCats[p].hists1D[0][0]->Fill(njets);
 			}
@@ -306,7 +338,7 @@ class BHCJetSkimmer{
 		//3
 		TH1D* predJet_subClusterTimeCenter = new TH1D("predJet_subClusterTimeCenter","predJet_subClusterTimeCenter",50,-20,20);
 		//4
-		TH1D* predJet_subClusterEtaCenter = new TH1D("predJet_subClusterEtaCenter","predJet_subClusterEtaCenter",50,-1.6,1.6);
+		TH1D* predJet_subClusterEtaCenter = new TH1D("predJet_subClusterEtaCenter","predJet_subClusterEtaCenter",50,-1.8,1.8);
 		//5
 		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterPhiCenter","predJet_subClusterPhiCenter",50,-0.1,6.3);
 		//6
@@ -348,6 +380,7 @@ class BHCJetSkimmer{
 		int _evti, _evtj;
 		double _gev;
 		double _c = 29.9792458; // speed of light in cm/ns
-		
+		double _radius; //radius of detector set by rhs in event (used for constructing jets)
+		double _pvx, _pvy, _pvz;	
 };
 #endif
