@@ -280,6 +280,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(phoNrhs_Ebin2);		
 			_hists1D.push_back(phoNrhs_Ebin3);		
 			_hists1D.push_back(phoNrhs_Ebin4);		
+			_hists1D.push_back(swCrossPrime);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -429,6 +430,14 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(phiCenter_rot2D_phiE2Dneq0PiOv2);
 			_hists2D.push_back(phiCenter_etaCenter_rot2Dge0p6le0p8);
 			_hists2D.push_back(phiCenter_etaCenter_rot2Dle0p6ge0p8);
+			_hists2D.push_back(timeCenter_swCrossPrime);
+			_hists2D.push_back(timeCenter_swCrossPrime_phiE2Deq0PiOv2);
+			_hists2D.push_back(timeCenter_swCrossPrime_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(rot2D_swCrossPrime);
+                	_hists2D.push_back(rot2D_swCrossPrime_phiE2Deq0PiOv2);
+                	_hists2D.push_back(rot2D_swCrossPrime_phiE2Dneq0PiOv2);
+                	_hists2D.push_back(phiE2D_swCrossPrime);
+			_hists2D.push_back(phoE_swCrossPrime);	
 
 
 		};
@@ -912,8 +921,10 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* phoNrhs_Ebin3 = new TH1D("phoNrhs_Ebin3","phoNrhs_Ebin3",25,0,100);		
 		//232 - nrhs, 600 <= E < 1000
 		TH1D* phoNrhs_Ebin4 = new TH1D("phoNrhs_Ebin4","phoNrhs_Ebin4",25,0,100);		
-
+		//233 - swiss cross prime (swiss cross recreation from subcluster information)
+		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.1,1.1);
 		
+
 	
 		//0 - time v subcl subcluster energy
 		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
@@ -1225,6 +1236,22 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* phiCenter_etaCenter_rot2Dge0p6le0p8 = new TH2D("phiCenter_etaCenter_rot2Dge0p6le0p8","phiCenter_etaCenter_rot2Dge0p6le0p8;phiCenter_rot2Dge0p6le0p8;etaCenter;a.u.",25,-0.6,6.6,25,-1.6,1.6);
 		//147 - eta center vs time center, 0.6 > rotE2D && rot2D > 0.8 
 		TH2D* phiCenter_etaCenter_rot2Dle0p6ge0p8 = new TH2D("phiCenter_etaCenter_rot2Dle0p6ge0p8","phiCenter_etaCenter_rot2Dle0p6ge0p8;phiCenter_rot2Dle0p6ge0p8;etaCenter;a.u.",25,-0.6,6.6,25,-1.6,1.6);
+		//147 - time center vs swCrossPrime
+		TH2D* timeCenter_swCrossPrime = new TH2D("timeCenter_swCrossPrime","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,0.9,1.1);
+		//148 - time center vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
+		TH2D* timeCenter_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Deq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,0.9,1.1);
+		//149 - time center vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
+		TH2D* timeCenter_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Dneq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,0.9,1.1);
+		//150 - rot2D vs swCrossPrime
+                TH2D* rot2D_swCrossPrime = new TH2D("rot2D_swCrossPrime","rot2D_swCrossPrime;rot2D;swCrossPrime",25,0.4,1.1,25,0.9,1.1);
+		//151 - rot2D vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
+                TH2D* rot2D_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Deq0PiOv2","rot2D_swCrossPrime_phiE2Deq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,0.9,1.1);
+		//152 - rot2D vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
+                TH2D* rot2D_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Dneq0PiOv2","rot2D_swCrossPrime_phiE2Dneq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,0.9,1.1);
+		//153 - phiE2D vs swCrossPrime
+                TH2D* phiE2D_swCrossPrime = new TH2D("phiE2D_swCrossPrime","phiE2D_swCrossPrime;phiE2D;swCrossPrime",25,-3.,3.,25,0.9,1.1);
+		//154 - phoE vs swCrossPrime
+		TH2D* phoE_swCrossPrime = new TH2D("phoEnergy_swCrossPrime","phoEnergy_swCrossPrime;phoE;swCrossPrime",25,0,1000,25,0.9,1.1);	
 
 
 		enum weightScheme{
@@ -1391,6 +1418,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			double ep_cov_unnorm, te_cov_unnorm, tp_cov_unnorm;
 			double majtime_cov, mintime_cov, majtime_cov_unnorm, mintime_cov_unnorm;
 			
+			//for swiss cross prime - wmax/N_k	
+			double wmax;
+			double swCP;
+			PointCollection* points = model->GetData();
+			points->Sort();
+			wmax = points->at(npts-1).w();
+			Point xmax = points->at(npts-1);
+	
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
@@ -1412,7 +1447,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 				E_k = norms[k]/_gev; 
-				
+			
+				swCP = 1 - norms[k]/wmax;
+	
 				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
@@ -1422,7 +1459,14 @@ class PhotonSkimmer : public BaseSkimmer{
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
+
+				//distance from xmax to mean_k
+				double dist = 0;
+				for(int d = 0; d < xmax.Dim(); d++)
+					dist += (xmax.at(d) - params["mean"].at(d,0))*(xmax.at(d) - params["mean"].at(d,0));
+				dist = sqrt(dist);
 				
+				cout << "wmax " << wmax << " norms_k " << norms[k] << " Nk/wmax " << -(swCP-1) << " wmax/Nk " << wmax/norms[k] << " E_k " << E_k << " Emax " << wmax/_gev << " distance to mean " << dist << " wmax/Nk * (1/dist) " << wmax/(norms[k]*dist) << endl;
 				//eta - time sign convention
 				//define relative sign for eta and time components
 				//based on where the cluster is in the detector
