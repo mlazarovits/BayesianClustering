@@ -79,6 +79,8 @@ Jet::Jet(const vector<JetPoint>& rhs){
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
+	_phi = _invalid_phi;
+	_eta = _invalid_eta;
 	for(int i = 0; i < _nRHs; i++){
 		
 		//theta is calculated between beamline (z-dir) and x-y vector	
@@ -92,7 +94,6 @@ Jet::Jet(const vector<JetPoint>& rhs){
 		_pz += pt*cosh(rhs[i].eta());
 		
 		_E += rhs[i].E();
-
 
 	}
 	_kt2 = _px*_px + _py*_py;
