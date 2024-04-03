@@ -42,6 +42,12 @@ struct RecoParticle;
 					// particles from PV to detector (cal) face
 					// see pgs_track_res in PGS
 
+		//this add "track" information to ntuples
+		//not real tracks because there is no tracker in this sim :)
+		//this is just the gen momentum information at the detector face
+		//you could also smear this information here OR in CalcTrajectory where you would smear the radius of curvature (see PGS)
+		void SaveTracks(RecoParticle& rp);
+
 		//this is what creates the showers from the reco particles
 		void FillCal(RecoParticle& rp); // for energy depositions
 				// see pgs_fill_cal in PGS
@@ -173,6 +179,8 @@ struct RecoParticle;
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
 		//pv info
 		double _pvx, _pvy, _pvz;
+		//track info
+		vector<double> _trackpx, _trackpy, _trackpz, _tracketa, _trackphi;
 		int _npredjets, _ntruejets;
 		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
