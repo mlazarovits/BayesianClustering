@@ -54,13 +54,19 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	can->SetGridx(1);
 	can->SetGridy(1);
 	can->SetTitle("");
-	TLegend* myleg = new TLegend(0.6, 0.7, 0.9, 0.9);
+	TLegend* myleg = nullptr;
+	if(cms_label.find("photon") != string::npos) myleg = new TLegend(0.6, 0.7, 0.9, 0.9);
+	else if(cms_label.find("jet") != string::npos){
+		myleg = new TLegend(0.543,0.686,0.958,0.875);
+		myleg->SetMargin(0.1);
+	}
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
 	myleg->SetTextFont(42);
-	if(hist.size() > 4) myleg->SetTextSize(0.025);	
+	if(hist.size() > 4) myleg->SetTextSize(0.025);
+	else if(cms_label.find("jet") != string::npos && plot_title.find("chiGam") != string::npos) myleg->SetTextSize(0.03);	
 	else myleg->SetTextSize(0.04);
-
+	
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
 
@@ -107,11 +113,16 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//data symbols - some form of open cross
 	labelToMark["!JetHT"] =   75;
 	labelToMark["!MET"] =   85;
+	
+	//for photons only(?)
+	//in jets causes methodStack plots to have different colors *and* shapes for plots in legend
 	//signal point additions
-	labelToMark["L150"] = -1;
-	labelToMark["L350"] = 1;
-	labelToMark["Ctau0p1"] = 1;
-	labelToMark["Ctau200"] = 2;
+	if(cms_label.find("photons") != string::npos){
+		labelToMark["L150"] = -1;
+		labelToMark["L350"] = 1;
+		labelToMark["Ctau0p1"] = 1;
+		labelToMark["Ctau200"] = 2;
+	}
 
 	labelToMark["median"] = 71;
 	labelToMark["eAvg"] =   72; 
@@ -161,9 +172,15 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			}
 		}
 		
+		//if jets - need to grab method name
+		string methodName;
+		if(cms_label.find("jet") != string::npos)
+			methodName = legentry.substr(0,legentry.find("_"));
 		if(legentry.find("notSunm") != string::npos) continue;
 		if(legentry.find("chiGam") != string::npos){
 			legentry = SignalLegEntry(legentry);
+			if(cms_label.find("jet") != string::npos)
+				legentry = methodName+", "+legentry;
 		}
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
