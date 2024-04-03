@@ -103,13 +103,26 @@ class BHCJetSkimmer{
 					rhs.push_back(jp);
 					jeta += eta;
 					jphi += phi;
+
+
 				}
+				//TODO: set constituents (subclusters) here with model from tree
 				//create new Jet
 				//set PV info
 				Jet predJet(rhs, vertex);
 				//add Jet to jets	
 				jets.push_back(predJet);	
 			}
+
+		}
+
+
+
+		//matches jets (with set rhs and subclusters/constituents to match to tracks) to tracks by dR
+		//this way we can get momentum information to calculate mass
+		//TODO: start and finish this
+		void MatchJetsToTracks(vector<Jet>& jets){
+
 
 		}
 	
