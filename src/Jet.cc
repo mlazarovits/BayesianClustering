@@ -107,9 +107,9 @@ Jet::Jet(const vector<JetPoint>& rhs){
 		_E += rhs[i].E();
 
 		_eta += rhs[i].eta();
-		if(rhs[i].phi() < 0) 
-			_phi += rhs[i].phi()+2*acos(-1);
-		else
+		//if(rhs[i].phi() < 0) 
+		//	_phi += rhs[i].phi()+2*acos(-1);
+		//else
 			_phi += rhs[i].phi();
 	}
 	_eta /= double(_nRHs);
