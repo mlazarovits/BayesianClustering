@@ -146,7 +146,7 @@ class Jet{
 		void add(const JetPoint& rh);
 		
 		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)_rhs.size(); j++) energies.push_back(_rhs[j].E()); }
-		void GetEtaPhiConstituents(PointCollection& pc) const{
+		void GetEtaPhiTimePoints(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)_rhs.size(); i++){
 				pc += Point({_rhs[i].eta(), _rhs[i].phi_02pi(), _rhs[i].time()});
@@ -156,12 +156,6 @@ class Jet{
 		int GetNPoints() const{return (int)_rhs.size(); }	
 		int GetNRecHits() const{return (int)_rhs.size(); }	
 		
-		//parents in cluster
-		void GetParents(Jet& p1, Jet& p2) const;
-		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
-
-		//children in cluster
-		Jet GetBaby() const;
 
 		void AddRecHit(const JetPoint& rh){
 			_rhs.push_back(rh); 
@@ -228,6 +222,47 @@ class Jet{
 		void Print() const{
 			for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
 		}
+		//constituents can be subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
+		void AddConstituent(map<std::string, Matrix> params, double E){
+			_subcl_mu.push_back(params["mean"]);
+			_subcl_cov.push_back(params["cov"]);
+			_subcl_pi.push_back(params["pi"].at(0,0));
+
+			//don't have any momentum information until this constituent is matched to a track
+			Jet j(0., 0., 0., E);
+			j.SetCenter(params["mean"]);
+			j.SetCovariance(params["cov"]);
+			j.SetVertex(_vtx);
+
+			_constituents.push_back(j);
+		}
+		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
+		const vector<Jet>& GetConstituents(){
+			return _constituents;
+		}
+		
+		int GetNConstituents() const{
+			return (int)_constituents.size();
+		}
+		void SetCenter(Matrix& mu){
+			_eta = mu.at(0,0);
+			_phi = mu.at(1,0);
+			_t = mu.at(2,0);
+			_mu = mu;
+		}
+		void SetCovariance(Matrix& cov){
+			_cov = cov;
+		}
+		
+
+		//parents and baby are set by hierarchical clustering and will be defined as the Jets (groups of rhs) that came together to form this jet (parents) or the resultant jet of a combination (baby)
+		//parents in cluster
+		void GetParents(Jet& p1, Jet& p2) const;
+		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
+
+		//children in cluster
+		Jet GetBaby() const;
+		void SetBaby(Jet* child){ _child = child; }
 
 
 	
@@ -262,7 +297,8 @@ class Jet{
 				if (_pz > 0) {_eta = - _eta;}
 			}
 		}
-		void SetBaby(Jet* child){ _child = child; }
+		
+
 
 		//set time to be energy weighted time
 		void _set_time(){
@@ -300,13 +336,22 @@ class Jet{
 		//cluster params - modeling jet as gaussian in time, space + energy
 		Matrix _mu;
 		Matrix _cov;
+		//constituent parameters - parameters of subclusters
+		vector<Matrix> _subcl_mu;
+		vector<Matrix> _subcl_cov;	
+		vector<double> _subcl_pi;
 
+		//TODO: remove with obsolete classes
 		//parents + child info
 		Jet* _parent1 = nullptr;
 		Jet* _parent2 = nullptr;
 
 		Jet* _child = nullptr;
-	
+
+		//vector of subjets (NOT rhs)
+		vector<Jet> _constituents;	
+
+		
 		//user index	
 		int _idx;
 		//history index

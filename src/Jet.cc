@@ -168,6 +168,11 @@ Jet::Jet(const Jet& j){
 	_rhs = j.GetJetPoints();
 	_nRHs = (int)_rhs.size();
 
+	_constituents = j._constituents;
+	_subcl_mu = j._subcl_mu;
+	_subcl_cov = j._subcl_cov;
+	_subcl_pi = j._subcl_pi;
+
 }
 
 Jet::~Jet(){
