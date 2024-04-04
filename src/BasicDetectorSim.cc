@@ -415,7 +415,13 @@ void BasicDetectorSim::SaveTracks(RecoParticle& rp){
 	_trackpz.push_back(rp.Momentum.pz());
 
 	_tracketa.push_back(rp.Momentum.eta());
-	_trackphi.push_back(rp.Momentum.phi());
+	//put phi on [0, 2pi] domain
+	if(rp.Momentum.phi() < 0)
+		_trackphi.push_back(rp.Momentum.phi()+2*acos(-1));
+	else if(rp.Momentum.phi() >= 2*acos(-1))
+		_trackphi.push_back(rp.Momentum.phi()-2*acos(-1));
+	else
+		_trackphi.push_back(rp.Momentum.phi());
 }
 
 
