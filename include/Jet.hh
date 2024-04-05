@@ -25,7 +25,7 @@ class Jet{
 		Jet();
 		Jet(double px, double py, double pz, double E);
 		Jet(JetPoint rh, Point vtx);
-		Jet(const vector<JetPoint>& rhs, Point vtx);
+		Jet(const vector<JetPoint>& rhs);
 		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -63,6 +63,13 @@ class Jet{
 				return;
 			}
 			_vtx = vtx;
+		}
+
+		//setting the momentum of eg subclusters with track information
+		void SetP(double px, double py, double pz){
+			_px = px;
+			_py = py;
+			_pz = pz;
 		}
 		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
