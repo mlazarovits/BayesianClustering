@@ -182,10 +182,11 @@ Jet::Jet(const Jet& j){
 	_nRHs = (int)_rhs.size();
 
 	_constituents = j._constituents;
+	_mu = j._mu;
+	_cov = j._cov;
 	_subcl_mu = j._subcl_mu;
 	_subcl_cov = j._subcl_cov;
 	_subcl_pi = j._subcl_pi;
-
 }
 
 Jet::~Jet(){

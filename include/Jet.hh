@@ -50,8 +50,15 @@ class Jet{
 				_parent2 = j._parent2;
 				_idx = j.GetUserIdx();
 				_vtx = j.GetVertex();
-				_nRHs = j.GetNPoints();
 				_rhs = j.GetJetPoints();
+				_nRHs = (int)_rhs.size();
+				
+				_constituents = j._constituents;
+				_mu = j._mu;
+				_cov = j._cov;
+				_subcl_mu = j._subcl_mu;
+				_subcl_cov = j._subcl_cov;
+				_subcl_pi = j._subcl_pi;
 		}
 
 		//return four vector for clustering
@@ -66,11 +73,39 @@ class Jet{
 		}
 
 		//setting the momentum of eg subclusters with track information
+		void SetP(double px, double py, double pz, int p){
+			_constituents[p]._px = px;
+			_constituents[p]._py = py;
+			_constituents[p]._pz = pz;
+		
+			_constituents[p]._kt2 = px*px + py*py;
+			_constituents[p]._mass = _constituents[p].mass();
+		}
 		void SetP(double px, double py, double pz){
 			_px = px;
 			_py = py;
 			_pz = pz;
+		
+			_kt2 = px*px + py*py;
+			_mass = mass();
 		}
+		//setting momentum to sum of constituents
+		void SetP(){
+			_px = 0;
+			_py = 0;
+			_pz = 0;
+			cout << "Jet::SetP() - n constituents "<< _constituents.size() << endl;
+			for(int c = 0; c < _constituents.size(); c++){
+				cout << "c " << c << " px " << _constituents[c].px() << endl;
+				_px += _constituents[c].px();
+				_py += _constituents[c].py();
+				_pz += _constituents[c].pz();
+			}
+			_kt2 = _px*_px + _py*_py;
+			_mass = mass();
+		}
+
+
 		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
 		double px() const{ return _px; }
@@ -242,12 +277,21 @@ class Jet{
 			j.SetVertex(_vtx);
 
 			_constituents.push_back(j);
+			cout << "AddConstituent " << _constituents.size() << " E " << E << endl;
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		const vector<Jet>& GetConstituents(){
+		vector<Jet>& GetConstituents(){
 			return _constituents;
 		}
-		
+	
+		Jet& GetConstituent(int c){
+			if(c > _constituents.size()){
+				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
+				return *this;
+			}
+			return _constituents[c];
+		}
+	
 		int GetNConstituents() const{
 			return (int)_constituents.size();
 		}

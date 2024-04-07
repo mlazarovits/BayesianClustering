@@ -62,8 +62,8 @@ class BHCJetSkimmer{
 		}
 
 
-		void TreesToJets(vector<Jet>& jets){
-			jets.clear();
+		void TreesToJets(){
+			_predJets.clear();
 			vector<JetPoint> rhs;
 			double x, y, z, eta, phi, t, theta;
 			Point vertex({_pvx, _pvy, _pvz});
@@ -76,6 +76,7 @@ class BHCJetSkimmer{
 				//pc->Print();
 				double jeta = 0;
 				double jphi = 0;
+				double je = 0;
 				for(int p = 0; p < pc->GetNPoints(); p++){
 					eta = pc->at(p).at(0);
 					phi = pc->at(p).at(1);
@@ -101,17 +102,32 @@ class BHCJetSkimmer{
 					jp.SetEnergy(pc->at(p).w()/_gev);
 					jp.SetWeight(pc->at(p).w());
 					rhs.push_back(jp);
-					jeta += eta;
-					jphi += phi;
-
-
+					jeta += eta;//*pc->at(p).w()/_gev;
+					jphi += phi;//*pc->at(p).w()/_gev;
+					je += pc->at(p).w()/_gev;
 				}
-				//TODO: set constituents (subclusters) here with model from tree
 				//create new Jet
+				Jet predJet(rhs);
 				//set PV info
-				Jet predJet(rhs, vertex);
+				predJet.SetVertex(Point({_pvx,_pvy,_pvz}));
+				//set constituents (subclusters) here with model from tree
+				int nsubclusters = _trees[i]->model->GetNClusters();
+				double Ek; //effective energy of constituent
+				vector<double> norms;
+				_trees[i]->model->GetNorms(norms);
+				map<string,Matrix> params;
+				for(int k = 0; k < nsubclusters; k++){
+					params = _trees[i]->model->GetPriorParameters(k);
+					Ek = norms[k]/_gev;
+					predJet.AddConstituent(params,Ek);
+				}
+				//cout << "jet mean eta " << jeta/je << " mean phi " << jphi/je << " total e " << je << endl;
+				cout << "jet mean eta " << jeta/(double)pc->GetNPoints() << " mean phi " << jphi/(double)pc->GetNPoints() << " total e " << je << endl;
+				//pc->Print();
 				//add Jet to jets	
-				jets.push_back(predJet);	
+				_predJets.push_back(predJet);	
+				//vector<Jet> babies = _predJets[_predJets.size()-1].GetConstituents();
+				//vector<JetPoint> rrhs = _predJets[_predJets.size()-1].GetJetPoints();
 			}
 
 		}
@@ -121,18 +137,45 @@ class BHCJetSkimmer{
 		//matches jets (with set rhs and subclusters/constituents to match to tracks) to tracks by dR
 		//this way we can get momentum information to calculate mass
 		//TODO: start and finish this
-		void MatchJetsToTracks(vector<Jet>& jets){
+		void MatchJetsToTracks(){
+			int nTracks = _base->Track_px->size();
+			cout << "nTracks " << nTracks << endl;
+			int nConsts; //# of constituents
+			for(int j = 0; j < _predJets.size(); j++){
+				vector<Jet>& consts = _predJets[j].GetConstituents();
+				for(int c = 0; c < consts.size(); c++){
+					//consider putting a minimum dR cut on subcluster/track matching
+					double drmin = 999;
+					double dr;
+					int bestIdx;
+					for(int t = 0; t < nTracks; t++){
+						//find min dR bw constituent and track
+						//may want to do a momentum or energy matching too
+						dr = dR(consts[c].eta(), consts[c].phi(), _base->Track_eta->at(t), _base->Track_phi->at(t));
+						if(dr < drmin){ drmin = dr; bestIdx = t; }
+					}
+					cout << "jet #" << j << " eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " E " << _predJets[j].E() << " constituent #" << c << " eta " << consts[c].eta() << " phi " << consts[c].phi() << " E " << consts[c].E() << " best track match track #" << bestIdx << " with dR " << drmin << endl;
+					//cout << "jet #" << j << " eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " E " << _predJets[j].E() << " constituent #" << c << " eta " << subcl.eta() << " phi " << subcl.phi() << " E " << subcl.E() << " best track match track #" << bestIdx << " with dR " << drmin << endl;
+					//set momentum of constituent based on track momentum
+					consts[c].SetP(_base->Track_px->at(bestIdx), _base->Track_py->at(bestIdx), _base->Track_pz->at(bestIdx));
+					//cout << "consts #" << c << " px " << consts[c].px() << " py " << consts[c].py() << " pz " << consts[c].pz() << endl;
+				}
+				//set momentum of jet to sum of constituents
+				cout << "Nconsts " << _predJets[j].GetNConstituents() << endl;
+				_predJets[j].SetP();
+				cout << "jet #" << j << " px " << _predJets[j].px() << " py " << _predJets[j].py() << " pz " << _predJets[j].pz() << " mass " << _predJets[j].mass() << " energy " << _predJets[j].E() << endl;
+			}
 
 
 		}
 	
-		void FillPredJetHists(const vector<Jet>& jets){
+		void FillPredJetHists(){
 			int njets;
 			for(int p = 0; p < _procCats.size(); p++){
 				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
-				njets = jets.size();
-				for(int j = 0; j < jets.size(); j++){
-					cout << "jet #" << j << " phi " << jets[j].phi() << " eta " << jets[j].eta() << " energy " << jets[j].E() <<  " mass " << jets[j].mass() << endl;
+				njets = _predJets.size();
+				for(int j = 0; j < _predJets.size(); j++){
+					cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << endl;
 				}
 				_procCats[p].hists1D[0][0]->Fill(njets);
 			}
@@ -376,6 +419,7 @@ class BHCJetSkimmer{
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
 		vector<node*> _trees;
+		vector<Jet> _predJets;
 		bool _smear, _timesmear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder
@@ -395,5 +439,11 @@ class BHCJetSkimmer{
 		double _c = 29.9792458; // speed of light in cm/ns
 		double _radius; //radius of detector set by rhs in event (used for constructing jets)
 		double _pvx, _pvy, _pvz;	
+
+
+		double dR(double eta1, double phi1, double eta2, double phi2){
+			return sqrt((eta1-eta2)*(eta1-eta2) + (phi1-phi2)*(phi1-phi2));
+		}
+		
 };
 #endif

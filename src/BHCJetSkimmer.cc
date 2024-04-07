@@ -111,10 +111,11 @@ void BHCJetSkimmer::Skim(){
 		//for subclusters
 		FillModelHists();	
 		//transform trees (nodes) to jets
-		vector<Jet> predjets;
-		TreesToJets(predjets);
+		TreesToJets();
+		//match jets to tracks to get momentum information
+		MatchJetsToTracks();
 		//fill pred jet hists with jets
-		FillPredJetHists(predjets);
+		//FillPredJetHists();
 	}
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
 	graphs[0]->SetName("nrhs_comptime");
