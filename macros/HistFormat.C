@@ -49,6 +49,7 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 
 
 void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
+	if(can == nullptr) return;
 	if(hist.size() == 0)return;
 	can->cd();
 	can->SetGridx(1);
@@ -56,9 +57,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	can->SetTitle("");
 	TLegend* myleg = nullptr;
 	if(cms_label.find("photon") != string::npos) myleg = new TLegend(0.6, 0.7, 0.9, 0.9);
-	else if(cms_label.find("jet") != string::npos){
-		myleg = new TLegend(0.543,0.686,0.958,0.875);
-		myleg->SetMargin(0.1);
+	else{
+		myleg = new TLegend(0.737,0.675,0.878,0.882);
+		//myleg->SetMargin(0.1);
 	}
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
@@ -70,6 +71,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
 
+	string title;
 	string name;
 	string canname = can->GetName();
 
@@ -161,32 +163,38 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			}
 			else mark = 1;
 		}
-		//do different signal points
-		if(legentry.find("chiGam") != string::npos){
-			for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
-				string match = it->first;
-				if(match.find("!") != string::npos) continue; //already looped over above
-				if(legentry.find(match) != string::npos){
-					mark += it->second; //need to loop over all additions bc signal point has two (L, ctau)
+		if(cms_label.find("photon") != string::npos){
+			//do different signal points
+			if(legentry.find("chiGam") != string::npos){
+				for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
+					string match = it->first;
+					if(match.find("!") != string::npos) continue; //already looped over above
+					if(legentry.find(match) != string::npos){
+						mark += it->second; //need to loop over all additions bc signal point has two (L, ctau)
+					}
 				}
 			}
 		}
 		
 		//if jets - need to grab method name
 		string methodName;
-		if(cms_label.find("jet") != string::npos)
-			methodName = legentry.substr(0,legentry.find("_"));
-		if(legentry.find("notSunm") != string::npos) continue;
-		if(legentry.find("chiGam") != string::npos){
-			legentry = SignalLegEntry(legentry);
-			if(cms_label.find("jet") != string::npos)
-				legentry = methodName+", "+legentry;
-		}
+		if(cms_label.find("jet") != string::npos && legentry.find("_") != string::npos)
+			legentry = legentry.substr(0,legentry.find("_"));
+			//methodName = legentry.substr(0,legentry.find("_"));
+		//if(legentry.find("notSunm") != string::npos) continue;
+		//if(legentry.find("chiGam") != string::npos){
+		//	legentry = SignalLegEntry(legentry);
+		//	if(cms_label.find("jet") != string::npos)
+		//		legentry = methodName+", "+legentry;
+		//}
+		cout << "cms_label " << cms_label << " hist " << hist[i]->GetName() << " legentry " << legentry << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
 		hist[i]->SetMarkerColor(col);
 		//hist[i]->SetMarkerSize(1);
+		if(i == 0)
+			title = hist[i]->GetTitle();
 		hist[i]->SetTitle("");
 		if( i == 0 ){
 			hist[i]->Draw("ep");
@@ -196,6 +204,11 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 		gPad->Update();
 	}
+	cout << "title " << title << endl;
+	title = title.substr(title.find("_")+1);
+	if(title.find("chiGam") != string::npos){
+		title = SignalLegEntry(title);
+	}
 	myleg->Draw("same"); 
 	gPad->Update();
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
@@ -204,6 +217,11 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	lat.SetTextSize(0.025);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+	TLatex lat1;
+	lat1.SetNDC();
+	lat1.SetTextSize(0.04);
+	lat1.SetTextFont(42);
+	lat1.DrawLatex(0.69,0.92,title.c_str());
 	return;
 }
 
@@ -548,17 +566,18 @@ void HistFormat(string file){
 				else{
 					xlab = name;
 					ylab = "a.u."; 
-				}
+				}	
 				TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
 				cv->Write(); 
 			}
+			//cout << "getting 2D hists" << endl;
 			//for 2D hists
 			vector<TH2D*> hists2D;
 			//loop through hists in dir
 			//if(!types[i].empty()) name += "_"+types[i];
 			GetHists(dir, "", hists2D);
 			string title;
-			///cout << dir->GetName() << " has " << hists2D.size() << " hists" << endl;
+			//cout << dir->GetName() << " has " << hists2D.size() << " hists" << endl;
 			if(hists2D.size() > 0){
 				for(int h = 0; h < hists2D.size(); h++){
 					name = hists2D[h]->GetName();
