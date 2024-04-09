@@ -477,7 +477,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//16 - eta sigma	
-                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.05);
+                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.09);
 		//17 - phi sigma	
                 TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.01,0.09);
 		//18 - time sigma	
@@ -963,7 +963,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//11 - nsubclusters vs mm coeff
 		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.1);
                 //12 - eta sigma v phi sigma
-		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig",25,0.1,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig",25,0.01,0.09,25,0.01,0.09);
                 //13 - time sigma v phi sigma
                 TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig",25,0,5.,25,0.01,0.09);
                 //14 - time sigma v phi sigma
@@ -1271,9 +1271,9 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//BEAM HALO CR PLOTS
                 //156 - eta sigma v phi sigma, phiE2D ~ 0
-		TH2D* etaSig_phiSig_phiE2Deq0 = new TH2D("etaSig_phiSig_phiE2Deq0","etaSig_phiSig_phiE2Deq0;etaSig;phiSig_phiE2Deq0",25,0.1,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig_phiE2Deq0 = new TH2D("etaSig_phiSig_phiE2Deq0","etaSig_phiSig_phiE2Deq0;etaSig;phiSig_phiE2Deq0",25,0.01,0.09,25,0.01,0.09);
                 //157 - eta sigma v phi sigma, phiE2D !~ 0
-		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.1,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.01,0.09,25,0.01,0.09);
 		//158 - eta center vs phi center, E > 100 && E < 200 && rot2D > 0.7 && rot2D < 0.8 (isolate population in rot2D vs E plot)
 		TH2D* etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8 = new TH2D("etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8","etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8;etaCenter;phiCenter_Ege100le200_rot2Dge0p7le0p8",25,-1.6,1.6,25,-0.2,6.4);	
 		//159 - eta center vs phi center, phiE2D ~ 0 
