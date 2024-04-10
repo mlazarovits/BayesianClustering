@@ -319,7 +319,7 @@ void Make2DHist(TFile* f, string histdirname){
 	//get histograms
 	TDirectory* stackdir = (TDirectory*)f->Get((histdirname+"_stack").c_str());
 	vector<TH2D*> outhists;
-	gDirectory->pwd();
+	//gDirectory->pwd();
 	GetHists(stackdir,outhists);
 	//cout << "got " << outhists.size() << " hists for " << stackdir->GetName() << endl;
 	//outhist_procStack[i][j] - i: tr method, j: process
