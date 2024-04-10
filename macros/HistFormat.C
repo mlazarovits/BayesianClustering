@@ -187,7 +187,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//	if(cms_label.find("jet") != string::npos)
 		//		legentry = methodName+", "+legentry;
 		//}
-		cout << "cms_label " << cms_label << " hist " << hist[i]->GetName() << " legentry " << legentry << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -204,7 +203,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 		gPad->Update();
 	}
-	cout << "title " << title << endl;
 	title = title.substr(title.find("_")+1);
 	if(title.find("chiGam") != string::npos){
 		title = SignalLegEntry(title);
@@ -221,7 +219,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.69,0.92,title.c_str());
+	lat1.DrawLatex(0.60,0.92,title.c_str());
 	return;
 }
 
