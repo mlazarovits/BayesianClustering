@@ -97,10 +97,15 @@ void BasicDetectorSim::_simQCD(){
 	if(_verb > 1) cout << "Simulating QCD" << endl;
 }
 
+//https://pythia.org/latest-manual/TopProcesses.html
 void BasicDetectorSim::_simTTbar(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
 	_pythia.readString("Top:all = on");
+	//ttbar specific (not tqbar production)
+	//_pythia.readString("Top:gg2ttbar = on");
+	//_pythia.readString("Top:qqbar2ttbar = on");
+	//_pythia.readString("Top:ffbar2ttbar(s:gmZ) = on");
 	_pythia.readString("PhaseSpace:pTHatMin = 20.");
 	_pythia.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
@@ -173,6 +178,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_pvy = 0;
 		_pvz = 0;
 		double norm = 0;
+		vector<int> daughters;
+		//for(int p = 0; p < sumEvent.size(); p++){
+		//	//reset reco particle four momentum
+		//	Pythia8::Particle particle = sumEvent[p];
+		//	if(abs(particle.id()) == 6){
+		//		if(particle.daughter1() > 0 && particle.daughter1() < particle.daughter2()){
+		//			cout << "top quark produced id = " << particle.id() <<  " with " << particle.daughterList().size() << " daughters and " << particle.daughterListRecursive().size() << " recursive daughters - daughters1 " << particle.daughter1() << " daughters2 " << particle.daughter2() << endl;
+		//			for(auto i : particle.daughterListRecursive()) daughters.push_back(i);
+		//		}
+		//	}
+		//}
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -215,7 +231,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 			//create new particle for reco one
 			RecoParticle rp(particle); 
-			
 			//calculate new pt (does full pvec but same pz)
 			CalcTrajectory(rp);
 			//check if in cal cell crack
@@ -225,7 +240,28 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
 			//fill ecal cell with reco particle
 			FillCal(rp);
-		
+			
+			
+
+			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
+				//if(find(daughters.begin(), daughters.end(), rp.Particle.mother1()) != daughters.end()){
+				//	cout << "daughter of " << rp.Particle.mother1() << " is " << rp.Particle.id() << " at idx " << p << " with charge " << particle.charge() << " id " << particle.id() << " mother id " << sumEvent[particle.mother1()].id() << endl;
+				//}
+				vector<int> mothers;
+				int momidx = 999;
+				int thisp = p;
+				while(thisp > 0){
+					momidx = sumEvent[thisp].mother1();
+					mothers.push_back(abs(sumEvent[momidx].id()));
+					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
+					thisp = momidx;
+				}
+				//look for top quark in mother chain
+				//if(find(mothers.begin(),mothers.end(),6) != mothers.end()) cout << "jet particle eta " << rp.Position.eta() << " phi " << rp.Position.phi() << " E " << rp.Momentum.E() << endl;
+			}
+	
+
+	
 			//save tracks (gen information of momentum propagated to detector)
 			//don't save if particle doesn't make it to detector face (with if statement above)
 			SaveTracks(rp);
@@ -238,7 +274,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_recops.push_back(rp);	
 			
 		}
-		//TODO: fill PV coordinates in tree
 		_pvx /= norm;
 		_pvy /= norm;
 		_pvz /= norm;
@@ -250,6 +285,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
+		
+
 		//Fill gen jet information
 		FillGenJets();	
 	
@@ -304,9 +341,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double x_c, y_c, r_c, vz;
 	double phi0, phid, phit, pio, etad;
 	double xd, yd, zd, td, dpv;
-	cout << "charge " << q << endl;
-	cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
-	cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
+	//cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
+	//cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
 	//uncharged trajectory or no mag field
 	if(fabs(q) < 1e-9 || fabs(_b) < 1e-9){
 		//calculate time to detector
@@ -338,7 +374,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		gammam = e * 1e9 / (_sol * _sol); //gammam in [eV/c^2], c needs to be in [m/s]
 		omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
 		r = pt * 1e9 / (q * _b * _sol); //in [m]
-
+//cout << "radius of curvature " << r << " energy " << rp.Momentum.E() << endl;
 		phi0 = atan2(py, px); // [rad] in [-pi, pi]
 		//2. helix axis coordinates
 		x_c = x + r * sin(phi0);
@@ -347,7 +383,6 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		
 		// time of closest approach
 		td = (phi0 + atan2(x_c, y_c)) / omega; //original delphes
-		//td = (phi0 + atan2(y_c, x_c)) / omega; //original delphes
 
 		// remove all the modulo pi that might have come from the atan
 		pio = fabs(TMath::Pi()/omega);
@@ -368,7 +403,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		// momentum at closest approach
 		px = pt * TMath::Cos(phid);
 		py = pt * TMath::Sin(phid);
-		cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << endl;//" " << atan2(y_c, x_c) << endl;
+		//cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << endl;//" " << atan2(y_c, x_c) << endl;
 		//reset momentum
 		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
 		// 3. time evaluation t = TMath::Min(t_r, t_z)
@@ -399,8 +434,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		if(r_t > 0.0)
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
 	}
-	cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
-	cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << "\n" << endl; 
+	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
+	//cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << endl; 
 
 	
 }
@@ -510,8 +545,8 @@ void BasicDetectorSim::MakeRecHits(){
 	double e_sig, t_sig;
 	double eta, phi;
 	int nrhs = 0;
-	int etot = 0;
-
+	double etot = 0;
+	double etot_og = 0;
 	//do energy first to get transfer factor
 	for(int i = 0; i < _netacal; i++){
 		for(int j = 0; j < _nphical; j++){
@@ -523,6 +558,8 @@ void BasicDetectorSim::MakeRecHits(){
 			//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
 			e_sig = _s*_s/e + _n*_n/(e*e) + _c*_c;
 			e_sig = sqrt(e_sig);
+			//e_sig is in units %, need to convert to units energy
+			e_sig = e_sig/100. * e;
 			//smear total energy in cell
 			//update random sampling range to match
 			//energy in this cell
@@ -548,9 +585,10 @@ void BasicDetectorSim::MakeRecHits(){
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
 			
-			
+			//cout << "og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
 			etot += e_cell;
+			etot_og += e;
 			nrhs++;			
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
@@ -712,6 +750,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
+		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " phi " << _recops[p].Particle.phi() << endl;
 		_nRecoParticles++;
 
 	}	
@@ -721,12 +760,19 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 void BasicDetectorSim::FillGenJets(){
+	int njets = 0;
+	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
+		//consts = jet.constituents();
+		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+		//for(auto c : consts)
+			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
 		_jgeta.push_back(jet.eta());
 		_jgphi.push_back(jet.phi());
 		_jgenergy.push_back(jet.e());
 		_jgpt.push_back(jet.pt());
 		_jgmass.push_back(jet.m());
+		njets++;
 	}
 }
 
