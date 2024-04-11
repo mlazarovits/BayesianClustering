@@ -78,7 +78,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 }
 
 
-Jet::Jet(const vector<JetPoint>& rhs){
+Jet::Jet(const vector<JetPoint>& rhs, Point vtx){
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
@@ -92,17 +92,23 @@ Jet::Jet(const vector<JetPoint>& rhs){
 
 	_eta = 0;
 	_phi = 0;
+
+	_vtx = vtx;
+	double phi, eta;
 	for(int i = 0; i < _nRHs; i++){		
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
-		x = rhs[i].x();// - _vtx.at(0);
-		y = rhs[i].y();// - _vtx.at(1);
-		z = rhs[i].z();// - _vtx.at(2);
+		x = rhs[i].x() - _vtx.at(0);
+		y = rhs[i].y() - _vtx.at(1);
+		z = rhs[i].z() - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
-	//	//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
-	//	pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-	//	_px += pt*cos(rhs[i].phi());
-	//	_py += pt*sin(rhs[i].phi());
-	//	_pz += pt*cosh(rhs[i].eta());
+		phi = atan2(y, x);
+		eta = -log(tan(theta/2.)); 
+		//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
+		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
+		_px += pt*cos(phi);
+		_py += pt*sin(phi);
+		_pz += pt*sinh(eta);
+	//cout << "i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*cosh(eta) << " " << pt*sinh(eta) << endl;
 		
 		_E += rhs[i].E();
 
@@ -116,6 +122,7 @@ Jet::Jet(const vector<JetPoint>& rhs){
 	_phi /= double(_nRHs);
 	
 	_kt2 = _px*_px + _py*_py;
+	_mass = mass();
 	_parent1 = nullptr;
 	_parent2 = nullptr;
 	_child = nullptr; 
@@ -143,7 +150,7 @@ Jet::Jet(const vector<Jet>& jets){
 		pt = _rhs[i].E()*sin(theta); //consistent with mass = 0
 		_px += pt*cos(_rhs[i].phi());
 		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*cosh(_rhs[i].eta());
+		_pz += pt*sinh(_rhs[i].eta());
 		
 		_E += _rhs[i].E();
 

@@ -25,7 +25,7 @@ class Jet{
 		Jet();
 		Jet(double px, double py, double pz, double E);
 		Jet(JetPoint rh, Point vtx);
-		Jet(const vector<JetPoint>& rhs);
+		Jet(const vector<JetPoint>& rhs, Point vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -73,14 +73,6 @@ class Jet{
 		}
 
 		//setting the momentum of eg subclusters with track information
-		void SetP(double px, double py, double pz, int p){
-			_constituents[p]._px = px;
-			_constituents[p]._py = py;
-			_constituents[p]._pz = pz;
-		
-			_constituents[p]._kt2 = px*px + py*py;
-			_constituents[p]._mass = _constituents[p].mass();
-		}
 		void SetP(double px, double py, double pz){
 			_px = px;
 			_py = py;
@@ -277,7 +269,7 @@ class Jet{
 			j.SetVertex(_vtx);
 
 			_constituents.push_back(j);
-			cout << "AddConstituent " << _constituents.size() << " E " << E << endl;
+			//cout << "AddConstituent " << _constituents.size() << " E " << E << endl;
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
 		vector<Jet>& GetConstituents(){
