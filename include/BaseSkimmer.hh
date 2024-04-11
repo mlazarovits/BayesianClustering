@@ -170,7 +170,7 @@ class BaseSkimmer{
 						hists2D[j].push_back(hist);
 						name = hist->GetName();
 						if(!plotName.empty()) name += "_"+plotName;
-						name += "_"+histcatnames[j];
+						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
 						hists2D[j][i]->SetName(name.c_str());
 						if(!plotName.empty()) hists2D[j][i]->SetTitle("");
 					}
