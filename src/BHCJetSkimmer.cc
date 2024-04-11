@@ -66,8 +66,7 @@ void BHCJetSkimmer::Skim(){
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
 			
 		////fill gen jet histograms
-		vector<Jet> genjets;
-		_prod->GetGenJets(genjets, i);
+		_prod->GetGenJets(_genjets, i);
 	//	if(jets.size() < 1){ cout << endl; continue; }
 
 
@@ -113,9 +112,10 @@ void BHCJetSkimmer::Skim(){
 		//transform trees (nodes) to jets
 		TreesToJets();
 		//match jets to tracks to get momentum information
-		MatchJetsToTracks();
+		//MatchJetsToTracks();
 		//fill pred jet hists with jets
-		//FillPredJetHists();
+		FillPredJetHists();
+		FillResolutionHists();
 	}
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
 	graphs[0]->SetName("nrhs_comptime");
