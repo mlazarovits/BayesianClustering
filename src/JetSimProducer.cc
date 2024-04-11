@@ -134,6 +134,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		        pz, _base->Jet_genEnergy->at(j));
 		
 		jet.SetVertex(vtx);
+		genjets.push_back(jet);
 	}	
 
 
