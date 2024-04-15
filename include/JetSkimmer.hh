@@ -277,19 +277,19 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* deltaT_pvGam_gen_Ebin4 = new TH1D("deltaT_gamPV_gen_Ebin4","deltaT_gamPV_gen_Ebin4",25,0,12);	
 	
 		//0 - 2D histogram for reco-gen resolution
-		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,120,-5,5);
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,120,-4,4);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
-		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-5,5);
+		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);
 		//2 - 2D histogram for dijets resolution - min E of jets
-		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-5,5);
+		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
-		TH2D* geoAvgEecal_diffDeltaTime_dijets = new TH2D("geoAvgEecal_diffDeltaTime_dijets","geoAvgEecal_diffDeltaTime_dijets;#sqrt{E^{jet 1}_{ECAL} #times E^{jet 2}_{ECAL}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-5,5);	
+		TH2D* geoAvgEecal_diffDeltaTime_dijets = new TH2D("geoAvgEecal_diffDeltaTime_dijets","geoAvgEecal_diffDeltaTime_dijets;#sqrt{E^{jet 1}_{ECAL} #times E^{jet 2}_{ECAL}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);	
 		//4 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [3.5,4.5)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-5,5);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-4,4);
 		//5 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [4,8)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-5,5);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-4,4);
 		//6 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [8,12)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-5,5);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,0,600,120,-4,4);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
 		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
 		
@@ -789,7 +789,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 //cout << "px " << px << " py " << py << " pz " << pz << " vx " << vx << " vy " << vy << " vz " << vz << " genx_ECAL " << genx_ECAL << " geny_ECAL " << geny_ECAL << " genz_ECAL " << genz_ECAL << " rR " << sqrt(genx_ECAL*genx_ECAL + geny_ECAL*geny_ECAL) << " final gen eta " << feta << " reco eta " << _base->Photon_eta->at(phoidx) << " gen (p) eta " << _base->Gen_eta->at(genidx) << " gen (p) mom eta " << _base->Gen_eta->at(momidx) << " gen mom eta " << -log(tan((atan2(sqrt(_base->Gen_vx->at(momidx)*_base->Gen_vx->at(momidx) + _base->Gen_py->at(momidx)*_base->Gen_py->at(momidx)), _base->Gen_vz->at(momidx))/2))) << endl;
 
 				//check gen pdgids
-				cout << "gen photon idx: " << genidx << " pho sus id: " << phoid << " gen photon pdgid: " << _base->Gen_pdgId->at(genidx) << " gen sig mom idx: " << momidx << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
+				//cout << "gen photon idx: " << genidx << " pho sus id: " << phoid << " gen photon pdgid: " << _base->Gen_pdgId->at(genidx) << " gen sig mom idx: " << momidx << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
 				//want production vertex of photon (where LLP -> photon)
 				//not production vertex of mother (close to PV)
 				vx = _base->Gen_vx->at(genidx);
@@ -868,6 +868,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			//if needing to find "true" pair
 			//calculate dphi here
 			double pi = acos(-1);
+			double ptasym = 0.4;
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]
@@ -876,13 +877,24 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 				double dphi = fabs(phi1 - phi2);
 				if(dphi > pi) dphi = 2*pi - dphi;
 				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
+				//pt asymmetry cut
+				if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
 			}
-			//pt asymmetry cut
-			double ptasym = 0.2;
-			if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
+			else{
+				//use only ECAL energy for asymmetry cut
+				double e1 = 0;
+				double e2 = 0;
+				for(auto r : jet1.GetJetPoints()) e1 += r.e();
+				for(auto r : jet2.GetJetPoints()) e2 += r.e();
+				if(e2 < e1)
+					if(e2 / e1 < 1 - ptasym) return -999; 
+				else
+					if(e1 / e2 < 1 - ptasym) return -999; 
+			
+			}
 
-			//eta cut - need |eta| approx equal
-			if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
+			//remove - eta cut - need |eta| approx equal
+			//if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
 
 
 			outjets.first = jet1;
@@ -1033,7 +1045,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			Point pt(3);
-			cout << "MEDIAN CENTER" << endl;
+			//cout << "MEDIAN CENTER" << endl;
 			//cout << nrhs << " rhs" << endl;
 			for(int i = 0; i < nrhs; i++){
 				pt.SetValue(rhs[i].x(),0);
@@ -1185,7 +1197,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			double rphi = atan2(y,x);
 				norm += params["pi"].at(0,0);
 				if(pho){
-		cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
+		//cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
 					center.SetValue(x/norm,0);
 					center.SetValue(y/norm,1);
 					center.SetValue(z/norm,2);
