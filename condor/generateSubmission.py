@@ -39,8 +39,6 @@ def generateSubmission(args):
 	#	inputFile = "GJets_R17_v15_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
 	#elif args.inputSample == "GJets_HT600ToInf_v15":
 	#	inputFile = "GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
-	#elif args.inputSample == "JetHT":
-	#	inputFile = "JetHT_Met150_AOD_v14_JetHT_AOD_Run2018CRun2018D-15Feb2022_UL2018-v1.root"
 	#elif args.inputSample == "GMSB_L300ctau600_v15":
 	#	inputFile = "GMSB_R17_v15_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
 	#elif args.inputSample == "GMSB_L150ctau0p1_v15":
@@ -61,7 +59,10 @@ def generateSubmission(args):
 		inputFile = "GMSB_R17_v16_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "MET_RunB_2017_v16":
 		inputFile = "MET_R17_v16_MET_AOD_Run2017B_17Nov2017.root"
-	#add EGamma PD when available in ntuples
+	elif args.inputSample == "JetHT_RunF_2017_v18":
+		inputFile = "JetHT_R17_v18_JetHT_AOD_Run2017F_17Nov2017.root"
+	elif args.inputSample == "EGamma_RunF_2017_v18":
+		inputFile = "DEG_R17_v18_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 		exit()
@@ -137,7 +138,7 @@ def main():
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
 	#parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500ctau1000','GMSB_L350ctau200','GMSB_L150ctau200','GMSB_L100ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15','GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L350ctau200_2017_v16'])
-	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16'])
+	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
