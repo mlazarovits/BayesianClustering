@@ -934,7 +934,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//232 - nrhs, 600 <= E < 1000
 		TH1D* phoNrhs_Ebin4 = new TH1D("phoNrhs_Ebin4","phoNrhs_Ebin4",25,0,100);		
 		//233 - swiss cross prime (swiss cross recreation from subcluster information)
-		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.1,20.1);
+		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.05,0.05);
 		
 
 	
@@ -1253,27 +1253,27 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 		//SPIKE CR PLOTS
 		//148 - time center vs swCrossPrime
-		TH2D* timeCenter_swCrossPrime = new TH2D("timeCenter_swCrossPrime","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.1,20.1);
+		TH2D* timeCenter_swCrossPrime = new TH2D("timeCenter_swCrossPrime","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
 		//150 - time center vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
-		TH2D* timeCenter_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Deq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.1,20.1);
+		TH2D* timeCenter_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Deq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
 		//151 - time center vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
-		TH2D* timeCenter_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Dneq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.1,20.1);
+		TH2D* timeCenter_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Dneq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
 		//151 - rot2D vs swCrossPrime
-                TH2D* rot2D_swCrossPrime = new TH2D("rot2D_swCrossPrime","rot2D_swCrossPrime;rot2D;swCrossPrime",25,0.4,1.1,25,-0.1,20.1);
+                TH2D* rot2D_swCrossPrime = new TH2D("rot2D_swCrossPrime","rot2D_swCrossPrime;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
 		//152 - rot2D vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* rot2D_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Deq0PiOv2","rot2D_swCrossPrime_phiE2Deq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.1,20.1);
+                TH2D* rot2D_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Deq0PiOv2","rot2D_swCrossPrime_phiE2Deq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
 		//153 - rot2D vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* rot2D_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Dneq0PiOv2","rot2D_swCrossPrime_phiE2Dneq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.1,20.1);
+                TH2D* rot2D_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Dneq0PiOv2","rot2D_swCrossPrime_phiE2Dneq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
 		//154 - phiE2D vs swCrossPrime
-                TH2D* phiE2D_swCrossPrime = new TH2D("phiE2D_swCrossPrime","phiE2D_swCrossPrime;phiE2D;swCrossPrime",25,-3.,3.,25,-0.1,20.1);
+                TH2D* phiE2D_swCrossPrime = new TH2D("phiE2D_swCrossPrime","phiE2D_swCrossPrime;phiE2D;swCrossPrime",25,-3.,3.,25,-0.05,0.05);
 		//155 - phoE vs swCrossPrime
-		TH2D* phoE_swCrossPrime = new TH2D("phoEnergy_swCrossPrime","phoEnergy_swCrossPrime;phoE;swCrossPrime",25,0,1000,25,-0.1,20.1);	
+		TH2D* phoE_swCrossPrime = new TH2D("phoEnergy_swCrossPrime","phoEnergy_swCrossPrime;phoE;swCrossPrime",25,0,1000,25,-0.05,0.05);	
 
 		//BEAM HALO CR PLOTS
                 //156 - eta sigma v phi sigma, phiE2D ~ 0
 		TH2D* etaSig_phiSig_phiE2Deq0 = new TH2D("etaSig_phiSig_phiE2Deq0","etaSig_phiSig_phiE2Deq0;etaSig;phiSig_phiE2Deq0",25,0.01,0.09,25,0.01,0.09);
                 //157 - eta sigma v phi sigma, phiE2D !~ 0
-		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.01,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.1,0.09,25,0.01,0.09);
 		//158 - eta center vs phi center, E > 100 && E < 200 && rot2D > 0.7 && rot2D < 0.8 (isolate population in rot2D vs E plot)
 		TH2D* etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8 = new TH2D("etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8","etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8;etaCenter;phiCenter_Ege100le200_rot2Dge0p7le0p8",25,-1.6,1.6,25,-0.2,6.4);	
 		//159 - eta center vs phi center, phiE2D ~ 0 
@@ -1471,25 +1471,30 @@ class PhotonSkimmer : public BaseSkimmer{
 			wmax = points->at(npts-1).w();
 			Point xmax = points->at(npts-1);
 			//find 4 closest neighbors to xmax
-			map<double, Point> distToMax;
-			double dist, deta, dphi, dtime;
+			//map<double, Point> distToMax;
+			double dist, deta, dphi;
+			//distance threshold to include rh in sw+'
+			double distThresh = 0.02;
+			int nNeighbors = 0;
+			double sumNeighbors = 0;
 			for(int i = 0; i < npts; i++){
 				//skip xmax
 				if(xmax == points->at(i)) continue;
 				deta = points->at(i).at(0) - xmax.at(0);
 				dphi = points->at(i).at(1) - xmax.at(1);
-				dtime = points->at(i).at(2) - xmax.at(2);
-				dist = sqrt(deta*deta + dphi*dphi + dtime*dtime);
-				distToMax[dist] = points->at(i);
+				dist = sqrt(deta*deta + dphi*dphi);
+				if(dist < distThresh){
+					sumNeighbors += points->at(i).w();
+					nNeighbors++;
+				}
+				//distToMax[dist] = points->at(i);
 			}
+			cout << "nNeighbors included in sw+' calculation " << nNeighbors << endl;
 			//get first four entries in map - smallest distance to xmax
-			double sumNeighbors = 0;
-			int nNeighbors = 0;
-			for(auto it = distToMax.begin(); it != distToMax.end(); it++){
-				if(nNeighbors > 3) break;
-				sumNeighbors += it->second.w();
-				nNeighbors++;
-			}	
+		//	for(auto it = distToMax.begin(); it != distToMax.end(); it++){
+		//		if(nNeighbors > 3) break;
+		//		sumNeighbors += it->second.w();
+		//	}	
 			
 			double E_tot = 0.;
 			for(int i = 0; i < npts; i++){
@@ -1513,7 +1518,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 				E_k = norms[k]/_gev; 
 			
-				swCP = wmax/sumNeighbors;
+				swCP = sumNeighbors/wmax;
 				
 				params = model->GetPriorParameters(k);
 				ec = params["mean"].at(0,0);
