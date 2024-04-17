@@ -303,13 +303,19 @@ class BaseSkimmer{
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT", leadsep);
+				procCat jetht(_hists1D, _hists2D, "JetHTPD", "JetHTPD", leadsep);
 				jetht.ids = {-999};
 				_procCats.push_back(jetht);
 			}
 			else if(sample.find("MET") != string::npos){
 				//data
 				procCat met(_hists1D, _hists2D, "METPD", "METPD", leadsep);
+				met.ids = {-999};
+				_procCats.push_back(met);
+			}
+			else if(sample.find("DEG") != string::npos){
+				//data
+				procCat met(_hists1D, _hists2D, "DoubleEGPD", "METPD", leadsep);
 				met.ids = {-999};
 				_procCats.push_back(met);
 			}
