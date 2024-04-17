@@ -43,6 +43,8 @@ void JetSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
+
+	double metThresh = 50;
 	
 	double phogev = 1./30.;
 	_prod->PrintPreselection();
@@ -55,7 +57,12 @@ void JetSkimmer::Skim(){
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
-//continue;	
+		//do data MET selection
+		if(_data){
+			if(_base->Met_sumEt > metThresh) continue;
+		}
+
+
 		FillTruePhotonHists(_phos);
 	
 		totEvt++;	
