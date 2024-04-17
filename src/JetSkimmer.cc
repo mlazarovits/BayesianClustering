@@ -50,6 +50,7 @@ void JetSkimmer::Skim(){
 	_prod->PrintPreselection();
 	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
+		//do data MET selection
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
@@ -57,9 +58,8 @@ void JetSkimmer::Skim(){
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
-		//do data MET selection
 		if(_data){
-			if(_base->Met_sumEt > metThresh) continue;
+			if(_base->Met_pt > metThresh){ cout << endl; continue; }
 		}
 
 
