@@ -980,7 +980,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//233 - swiss cross prime (swiss cross recreation from subcluster information)
 		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.05,0.05);
 		//234 - difference between eta mean from points and eta center from GMM
-		TH1D* etaDiff = new TH1D("etaDiff","etaDiff",25,-0.5,0.5);
+		TH1D* etaDiff = new TH1D("etaDiff","etaDiff",25,-0.02,0.02);
 
 
 
