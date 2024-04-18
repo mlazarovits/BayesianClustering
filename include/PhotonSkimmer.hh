@@ -2083,14 +2083,71 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			if(tc > -15 && tc <= -1){
 				_procCats[id_idx].hists2D[1][191]->Fill(ec,pc);
+				if((phi2D < 0.5 && phi2D > -0.5)){
+					_procCats[id_idx].hists2D[1][196]->Fill(ec,pc);
+				
+				}
+				else{
+					_procCats[id_idx].hists2D[1][197]->Fill(ec,pc);
 
+				}
+				if(p_var < 0.03 && e_var > 0.03){
+					_procCats[id_idx].hists2D[1][202]->Fill(ec,pc);
+					if((phi2D < 0.5 && phi2D > -0.5)){
+						_procCats[id_idx].hists2D[1][208]->Fill(ec,pc);
+					
+					}
+				}
+				else{
+					_procCats[id_idx].hists2D[1][205]->Fill(ec,pc);
+				
+				}	
 			}
 			if(tc > -1 && tc <= 3){
 				_procCats[id_idx].hists2D[1][192]->Fill(ec,pc);
-		
+				if((phi2D < 0.5 && phi2D > -0.5)){
+					_procCats[id_idx].hists2D[1][198]->Fill(ec,pc);
+				
+				}
+				else{
+					_procCats[id_idx].hists2D[1][199]->Fill(ec,pc);
+
+				}
+				if(p_var < 0.03 && e_var > 0.03){
+					_procCats[id_idx].hists2D[1][203]->Fill(ec,pc);
+					if((phi2D < 0.5 && phi2D > -0.5)){
+						_procCats[id_idx].hists2D[1][209]->Fill(ec,pc);
+					
+					}
+				}
+				else{
+					_procCats[id_idx].hists2D[1][206]->Fill(ec,pc);
+				
+				}	
+
+	
 			}
 			if(tc > 3 && tc <= 15){
 				_procCats[id_idx].hists2D[1][193]->Fill(ec,pc);
+				if((phi2D < 0.5 && phi2D > -0.5)){
+					_procCats[id_idx].hists2D[1][200]->Fill(ec,pc);
+				
+				}
+				else{
+					_procCats[id_idx].hists2D[1][201]->Fill(ec,pc);
+
+				}
+				if(p_var < 0.03 && e_var > 0.03){
+					_procCats[id_idx].hists2D[1][204]->Fill(ec,pc);
+					if((phi2D < 0.5 && phi2D > -0.5)){
+						_procCats[id_idx].hists2D[1][210]->Fill(ec,pc);
+					
+					}
+				}
+				else{
+					_procCats[id_idx].hists2D[1][207]->Fill(ec,pc);
+				
+				}	
 
 			}
 
