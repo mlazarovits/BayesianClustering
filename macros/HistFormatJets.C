@@ -5,6 +5,13 @@
 
 using std::string;
 
+enum plotFormat{
+	allStack = 0, //default original
+	procStack = 1,
+	methodStack = 2,
+	dijetRecoGenStack = 3
+};
+
 
 string SignalLegEntry(string label){
 	//cout << "label " << label << endl;
@@ -48,7 +55,8 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 }
 
 
-void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label){
+
+void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label, plotFormat pf = allStack){
 	if(can == nullptr) return;
 	if(hist.size() == 0)return;
 	can->cd();
@@ -56,16 +64,13 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	can->SetGridy(1);
 	can->SetTitle("");
 	TLegend* myleg = nullptr;
-	if(cms_label.find("photon") != string::npos) myleg = new TLegend(0.6, 0.7, 0.9, 0.9);
-	else{
-		myleg = new TLegend(0.737,0.675,0.878,0.882);
-		//myleg->SetMargin(0.1);
-	}
+	if(pf == 1) myleg = new TLegend(0.512,0.684,0.876,0.882);
+	else myleg = new TLegend(0.696,0.696,0.875,0.882);
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
 	myleg->SetTextFont(42);
 	if(hist.size() > 4) myleg->SetTextSize(0.025);
-	else if(cms_label.find("jet") != string::npos && plot_title.find("chiGam") != string::npos) myleg->SetTextSize(0.03);	
+	//else if(pf == 1) myleg->SetTextSize(0.03);	
 	else myleg->SetTextSize(0.04);
 	
 	//offset for log scale
@@ -93,43 +98,94 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	map<string, int> labelToColor;
 	map<string, int> labelToMark;
 	int offset = 1;
-	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
-	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
-	//TODO (maybe): set different signal grid points to different shades of above color	
+	//default
+	if(pf == 0){
+		labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
 
-	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
-	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
-	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
-	labelToColor["MET"] =   TColor::GetColor("#671E76");
+		labelToColor["notSunm"] = TColor::GetColor("#9e0059");
+		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
+		labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
+		labelToColor["MET"] =   TColor::GetColor("#671E76");
 
-	labelToColor["!median"] = TColor::GetColor("#f7a278");
-	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
-	labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
-	labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
+		labelToColor["!median"] = TColor::GetColor("#f7a278");
+		labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
+		labelToColor["!mmAvg"] = TColor::GetColor("#52b788");
+		labelToColor["!eMax"] = TColor::GetColor("#E2C2FF");
 
-	//MC symbols - primary shapes
-	labelToMark["!chiGam"] =  20;
-	labelToMark["!GMSB"] =  20;
-	labelToMark["!notSunm"] = 72;
-	labelToMark["!GJets"] =   73;
-	//data symbols - some form of open cross
-	labelToMark["!JetHT"] =   75;
-	labelToMark["!MET"] =   85;
+		//MC symbols - primary shapes
+		labelToMark["!chiGam"] =  20;
+		labelToMark["!GMSB"] =  20;
+		labelToMark["!notSunm"] = 72;
+		labelToMark["!GJets"] =   73;
+		//data symbols - some form of open cross
+		labelToMark["!JetHT"] =   75;
+		labelToMark["!MET"] =   85;
+		
+		//signal point additions
+		if(cms_label.find("photons") != string::npos){
+			labelToMark["L150"] = -1;
+			labelToMark["L350"] = 1;
+			labelToMark["Ctau0p1"] = 1;
+			labelToMark["Ctau200"] = 2;
+		}
+
+		labelToMark["median"] = 71;
+		labelToMark["eAvg"] =   72; 
+		labelToMark["mmAvg"] =  73;
+		labelToMark["eMax"] =   74; 
+
+
+	}
+	//procStack formatting
+	if(pf == 1){
+		labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+		labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		//TODO (maybe): set different signal grid points to different shades of above color	
+		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
+		labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
+		labelToColor["MET"] =   TColor::GetColor("#671E76");
+		labelToColor["DEG"] = TColor::GetColor("#9e0059");
+
+		//MC symbols - primary shapes
+		labelToMark["chiGam"] =  20;
+		labelToMark["GMSB"] =  20;
+		labelToMark["notSunm"] = 72;
+		labelToMark["GJets"] =   73;
+		//data symbols - some form of open cross
+		labelToMark["JetHT"] =   75;
+		labelToMark["MET"] =   85;
+		labelToMark["DEG"] =   83;
+
+
+
+	}
+	//methodStack formatting
+	else if(pf == 2){
+		labelToColor["median"] = TColor::GetColor("#f7a278");
+		labelToColor["eAvg"] = TColor::GetColor("#6859f1");
+		labelToColor["mmAvg"] = TColor::GetColor("#52b788");
+		labelToColor["eMax"] = TColor::GetColor("#E2C2FF");
 	
-	//for photons only(?)
-	//in jets causes methodStack plots to have different colors *and* shapes for plots in legend
-	//signal point additions
-	if(cms_label.find("photons") != string::npos){
-		labelToMark["L150"] = -1;
-		labelToMark["L350"] = 1;
-		labelToMark["Ctau0p1"] = 1;
-		labelToMark["Ctau200"] = 2;
+		labelToMark["median"] = 71;
+		labelToMark["eAvg"] =   72; 
+		labelToMark["mmAvg"] =  73;
+		labelToMark["eMax"] =   74; 
+
+	}
+	//dijetRecoGenStack formatting
+	else if(pf == 3){
+		labelToColor["dijets"] = TColor::GetColor("#776DA7"); 
+		labelToMark["recoGen"] = TColor::GetColor("#CA5743");
+		
+		labelToMark["dijets"] = 106;
+		labelToMark["recoGen"] = 104;
+
+	}
+	else{
+		cout << "plotFormat option " << pf << " not available." << endl;
+		return;
 	}
 
-	labelToMark["median"] = 71;
-	labelToMark["eAvg"] =   72; 
-	labelToMark["mmAvg"] =  73;
-	labelToMark["eMax"] =   74; 
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
@@ -142,8 +198,39 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
 		
 
-
+		cout << "pf " << pf << " hist name " << hist[i]->GetName() << " title " << hist[i]->GetTitle();
 		legentry = hist[i]->GetTitle();
+		title = legentry;	 
+		if(pf == 0){
+			legentry = hist[i]->GetTitle(); 
+			title = title.substr(title.find("_")+1);
+			if(title.find("chiGam") != string::npos){
+				title = SignalLegEntry(title);
+			}
+		}
+		else if(pf == 1){
+			legentry = legentry.substr(legentry.find("_")+1);
+			title = title.substr(0,title.find("_"));
+			if(legentry.find("chiGam") != string::npos){
+				legentry = SignalLegEntry(legentry);
+			}
+		}
+		else if(pf == 2){ 
+			legentry = legentry.substr(0,legentry.find("_"));
+			title = title.substr(title.find("_")+1);
+			if(title.find("chiGam") != string::npos){
+				title = SignalLegEntry(title);
+			}
+		}
+		else if(pf == 3){ 
+			string title = hist[i]->GetTitle();
+			title = "_"+title;
+			string name = hist[i]->GetName();
+			legentry = name.substr(0,name.find(title));
+			legentry = legentry.substr(legentry.rfind("_")+1);
+		}
+		else continue;
+		cout << " legentry " << legentry << " title " << title << endl;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -163,30 +250,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			}
 			else mark = 1;
 		}
-		if(cms_label.find("photon") != string::npos){
-			//do different signal points
-			if(legentry.find("chiGam") != string::npos){
-				for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
-					string match = it->first;
-					if(match.find("!") != string::npos) continue; //already looped over above
-					if(legentry.find(match) != string::npos){
-						mark += it->second; //need to loop over all additions bc signal point has two (L, ctau)
-					}
-				}
-			}
-		}
+		cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		
-		//if jets - need to grab method name
-		string methodName;
-		if(cms_label.find("jet") != string::npos && legentry.find("_") != string::npos)
-			legentry = legentry.substr(0,legentry.find("_"));
-			//methodName = legentry.substr(0,legentry.find("_"));
-		//if(legentry.find("notSunm") != string::npos) continue;
-		//if(legentry.find("chiGam") != string::npos){
-		//	legentry = SignalLegEntry(legentry);
-		//	if(cms_label.find("jet") != string::npos)
-		//		legentry = methodName+", "+legentry;
-		//}
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -202,10 +267,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		}
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 		gPad->Update();
-	}
-	title = title.substr(title.find("_")+1);
-	if(title.find("chiGam") != string::npos){
-		title = SignalLegEntry(title);
 	}
 	myleg->Draw("same"); 
 	gPad->Update();
@@ -761,7 +822,6 @@ void AllHists(string file){
 
 
 
-//void ProcStackHists(string file, vector<string>& procs, string method){
 void ProcStackHists(string file, vector<string>& procs, string method, TFile *ofile){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
@@ -841,7 +901,7 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 							xlab = name;
 							ylab = "a.u."; 
 						}
-						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, procStack);
 						cout << "writing canvas (1D) " << cv->GetName() << endl;
 						cv->Write(); 
 					}
@@ -859,7 +919,6 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 
 
 
-//void MethodStackHists(string file, string proc, vector<string>& methods){
 void MethodStackHists(string file, string proc, vector<string>& methods, TFile* ofile){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
@@ -930,7 +989,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 				xlab = name;
 				ylab = "a.u."; 
 			}
-			TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab);
+			TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, methodStack);
 			cv->Write(); 
 			cout << "writing canvas (1D) " << cv->GetName() << endl;
 				
@@ -943,25 +1002,123 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 };
 
 
+
+
+void DijetRecoGenStackHists(string file, string proc, string method, TFile* ofile){
+	if(gSystem->AccessPathName(file.c_str())){
+		cout << "File " << file << " does not exist." << endl;
+		return;
+	}
+	TFile* f = TFile::Open(file.c_str(),"UPDATE");
+	TList* list = f->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name, xtitle, ytitle;
+	string oname = f->GetName();
+	oname = oname.substr(0,oname.find(".root"));
+	oname = oname+"_formatted.root";
+	//TFile* ofile = new TFile(oname.c_str(),"RECREATE");
+	vector<string> types = {"","lead","notlead"};
+
+	//TODO: change CMS label to something more descriptive
+	//ie time resolution, time reco method, process
+	string cmslab = GetCMSLabel(file);
+	string extra = "";
+	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	if(!extra.empty()) cmslab += " "+extra;	
+
+	TString th1d("TH1D");
+	TString th2d("TH2D");
+	TString tdir("TDirectoryFile");
+
+	//dir names for recogen + dijet resolutions
+	string recogenDir = "geoEavg_sigmaDeltaTime_recoGen_stack";
+	string dijetDir = "geoAvgEecal_sigmaDeltaTime_dijets_stack";
+	vector<TH1D*> hists;
+
+	string dirname;
+	string ddirname;
+	string histname;
+
+	while((key = (TKey*)iter())){
+		if(key->GetClassName() == tdir){
+			TDirectory* dir = (TDirectory*)key->ReadObj();
+			double ymin, ymax;
+			string ylab, xlab;
+			if(!dir) continue;
+			dirname = dir->GetName();
+			if(dirname.find(recogenDir) == string::npos && dirname.find(dijetDir) == string::npos) continue;
+			cout << "\ndir name: " << dir->GetName() << endl;
+			dir->cd();
+			TList* llist = dir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			//get subdir - per method all procs
+			while((kkey = (TKey*)iiter())){
+				if(kkey->GetClassName() == tdir){
+					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					if(!ddir) continue;
+					ddirname = ddir->GetName();
+					//make sure this is for the specified method
+					if(ddirname.find(method) == string::npos) continue;
+					ddir->cd();
+					//cout << " ---in ddir " << ddir->GetName() << endl;
+					//we're in the directory with hists of one method split by procs
+					histname = ddirname;
+					histname = histname.substr(0,histname.find("_procStack"));
+					histname += "_"+proc;
+					TH1D* hist = (TH1D*)f->Get((dirname+"/"+ddirname+"/"+histname).c_str());
+					//if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << endl;
+					//else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
+					if(hist) hists.push_back(hist);
+				}
+			}	
+
+
+		}
+	}
+	double ymin, ymax;
+	string ylab, xlab;
+	if(hists.size() > 0){
+		FindListHistBounds(hists, ymin, ymax);
+		if(ymin == 0 && ymax == 0) return;
+		string name = "geoEavg_sigmaDeltaTime_dijetRecoGen_stack_"+proc+"_"+method;
+		TCanvas *cv = new TCanvas(name.c_str(), "");
+		ofile->cd();
+		//draw as tcanvases
+		xlab = hists[0]->GetXaxis()->GetTitle();
+		ylab = hists[0]->GetYaxis()->GetTitle();
+		TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, dijetRecoGenStack);
+		cout << "writing canvas (1D) " << cv->GetName() << endl;
+		cv->Write(); 
+	}
+
+}
+
+
+
+
+
+
 void HistFormatJets(string file){
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
 	oname = oname+"_formatted.root";
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	
-	//TODO: fix formatting for procstack
 	//same method in legend, only 1 proc in plot label
 	vector<string> procs = {"chiGam","GJets"};
 	string method = "median";
 	ProcStackHists(file, procs, method, ofile);
 	
-
+	cout << "----------METHODSTACK----------" << endl;
 	string proc = "GJets";
 	vector<string> methods = {"median","eAvg"};
 	MethodStackHists(file, proc, methods, ofile);
 
-	//TODO: add method to plot PV dijets and recoGen time resolutions on same
-	//PVRecoGenHists(file, proc, method);
+	cout << "----------DIJETRGSTACK----------" << endl;
+	DijetRecoGenStackHists(file, proc, method, ofile);
+	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
 	ofile->Close();
 
