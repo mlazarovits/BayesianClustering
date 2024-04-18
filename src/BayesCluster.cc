@@ -341,10 +341,19 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		points->AddPoints(point);
 	}
 	int maxK = points->GetNPoints();
+	//checking eta center
+	//Point mean = points->mean();
+	//cout << "original mean" << endl;
+	//mean.Print();
+	
+
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 
 	_phi_wraparound(*points);
 
+	//mean = points->mean();
+	//cout << "after phi wraparound" << endl;
+	//mean.Print();
 	//put in local coordinates
 	//transform points into local coordinates
 	//for GMM parameter estimation
@@ -353,6 +362,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//copy points for parameter estimation
 	//so original points don't get overwritten
 	Point center = points->Center();//Translate(center);
+	//mean = points->mean();
+	//cout << "after centering" << endl;
+	//mean.Print();
 
 	
 	gmm->SetData(points);
@@ -423,9 +435,11 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	}
 
 	//need to put GMM parameters AND points back in detector coordinates (not local)
-	//add shift function to BasePDFMixture
 	center.Scale(-1);
 	gmm->Shift(center);
+	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
+	//auto params1 = gmm->GetPriorParameters(0);
+	//params1["mean"].Print();
 
 	if(_verb > 1){
 		vector<double> norms;
