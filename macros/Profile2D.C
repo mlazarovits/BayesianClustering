@@ -11,14 +11,18 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 	string profilename = "";
 	string profiletitle = "";
 	//skip overflow + underflow bins
+	//cout << "PROFILING HIST " << inhist->GetName() << " has " << nbins << " bins" << " sighist bins " << sig_outhist->GetNbinsX() << endl;
 	for(int i = 1; i < nbins; i++){
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
+		if(!phist) continue;
+		if(phist->GetEntries() == 0) continue;
+		//cout << "bin #" << i << " nentries in profile " << phist->GetEntries() << endl;
 		profilename = inhist->GetName();
 		profiletitle = inhist->GetTitle();
 		profilename.insert(profilename.find("_"+profiletitle),"_bin"+std::to_string(i));
 		phist->SetTitle(profiletitle.c_str());	
 		phist->SetName(("profile_"+profilename).c_str());
-		phist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());	
+		phist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
 		profs.push_back(phist);
 
 		sig_outhist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
@@ -54,6 +58,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			//set new contents
 			sig_outhist->SetBinContent(i, fit_stddev);
 			sig_outhist->SetBinError(i, fit_stddev_err);
+			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
 				mean_outhist->SetBinContent(i, fit_mean);
 				mean_outhist->SetBinError(i, fit_mean_err);
@@ -61,6 +66,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			delete fit;
 		}
 	}
+	//cout << "return" << endl;
 }
 
 
@@ -79,7 +85,7 @@ void GetHists(TDirectory* dir, vector<TH1D*>& hists){
 			name = key->GetName();
 			hist = (TH1D*)dir->Get((name).c_str());
 			if(!hist) continue;
-			//cout << "getting hist " << path << "/" << hist->GetName() << " with entries " << hist->GetEntries() << endl;
+			//cout << "getting hist " << dir->GetName() << "/" << hist->GetName() << " with entries " << hist->GetEntries() << endl;
 			if(hist) hists.push_back(hist);
 		}
 	}
@@ -162,6 +168,7 @@ void Profile2DHists(TFile* f){
 				//if(print && mean_outhist) cout << mean_outhist->GetEntries() << " entries in " << mean_outhist->GetName() << endl;
 				//profile 1D histograms
 				Profile2DHist(hists[h], sig_outhist, mean_outhist, profs);
+				//cout << "1 - " << profs.size() << " profiles for " << hists[h]->GetNbinsX() << " bins" << endl;
 				//if(print && mean_outhist) cout << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and mean_outhist " << histname << " has entries " <<  sig_outhist->GetEntries() << " mean: " << mean_outhist->GetEntries() << endl;
 				for(int b = 0; b < profs.size(); b++){
 					f->cd();
@@ -173,9 +180,9 @@ void Profile2DHists(TFile* f){
 					profilepath = profilepath+"_stack";
 					//if method in profile name - add next dir to profile path
 					TH1D* prof = (TH1D*)f->Get((profilepath+"/"+profilename).c_str()); 
+					if(prof == nullptr){ cout << "profile " << profilepath+"/"+profilename << " null" << endl; continue; }
 					TDirectory* profdir = (TDirectory*)f->Get(profilepath.c_str());
 					profdir->cd();
-					if(prof == nullptr){ cout << "profile null" << endl; continue; }
 					//cout << "og entries " << prof->GetEntries() << " in " << prof->GetName() << endl;
 					//if(prof->GetEntries() > 1) continue;
 					prof = (TH1D*)profs[b]->Clone();
@@ -206,14 +213,14 @@ void Profile2DHists(TFile* f){
 					vector<TH1D*> pprofs;
 					GetHists(ddir, hhists);
 					if(hhists.size() < 1) continue;
-					//cout << " dir name: " << ddirname << " has " << hhists.size() << " hists" << endl;
+				//	cout << " dir name: " << ddirname << " has " << hhists.size() << " hists" << endl;
 					sig_ddirname_new.replace(sig_ddirname_new.find("diff"), 4, "sigma");
 					sig_ddirname_new = sig_dirname_new+"/"+sig_ddirname_new;
 					mean_ddirname_new.replace(mean_ddirname_new.find("diff"), 4, "mean");
 					mean_ddirname_new = mean_dirname_new+"/"+mean_ddirname_new;
 					//want to profile the rest of the histograms
 					for(int h = 0; h < hhists.size(); h++){
-						//cout << " i: " << i << " hist: " << hists[i]->GetName() << " newname: " << newname << " newhistname: " << newhistname << endl;
+						//cout << " h: " << h << " hist: " << hists[h]->GetName() << " newname: " << newname << " newhistname: " << newhistname << endl;
 						histname = hhists[h]->GetName();
 						newhistname = histname;
 						newhistname.replace(newhistname.find("diff"), 4, "sigma");
@@ -230,8 +237,9 @@ void Profile2DHists(TFile* f){
 						//cout << "  i: " << h << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and already has profiles, outhist " << newhistname << endl; 	
 						//profile 1D histograms
 						Profile2DHist(hhists[h], sig_outhist2, mean_outhist2, pprofs);
-	//cout << "  i: " << h << " inhist has " << hists[h]->GetEntries() << " entries and " << profs.size() << " profiles, outhist " << newhistname << " has entries "<< endl;
+						//cout << "2 - " << pprofs.size() << " profiles for " << hhists[h]->GetNbinsX() << " bins" << endl;
 						for(int b = 0; b < pprofs.size(); b++){
+							//cout << "pprof #" << b << endl;
 							f->cd();
 							//write by process profiles to 
 							string profilename = pprofs[b]->GetName();
@@ -250,25 +258,29 @@ void Profile2DHists(TFile* f){
 							//if method in profile name - add next dir to profile path
 							//cout << "Getting: " << profilepath << " / " << profilename << endl;
 							TH1D* prof = (TH1D*)f->Get((profilepath+"/"+profilename).c_str());
+							if(prof == nullptr){ cout << "profile " << profilepath+"/"+profilename << " null" << endl; continue; }
 							TDirectory* profdir1 = (TDirectory*)f->Get((profilepath.substr(0,profilepath.rfind("/"))).c_str());
 							TDirectory* profdir2 = (TDirectory*)f->Get((profilepath).c_str());
-							//if(print) cout << "Setting profile " << prof->GetName() << " in dir " << profdir1->GetName() << "/" << profdir2->GetName() << endl;
+							//cout << "Setting profile " << prof->GetName() << " in dir " << profdir1->GetName() << "/" << profdir2->GetName() << endl;
 							profdir1->cd();
 							profdir2->cd();
-							if(prof == nullptr){ cout << "profile null" << endl; continue; }
-							//if(print) cout << "og entries " << prof->GetEntries() << " new prof: " << pprofs[b]->GetEntries() << endl;
+							//cout << "og entries " << prof->GetEntries() << " new prof: " << pprofs[b]->GetEntries() << endl;
 							//if(prof->GetEntries() > 1) continue;
 							prof = (TH1D*)pprofs[b]->Clone();
-							//if(print) cout << "new entries " << prof->GetEntries() << endl;
+							//cout << "new entries " << prof->GetEntries() << endl;
 						}
-						for(int b = 0; b < pprofs.size(); b++)
+						for(int b = 0; b < pprofs.size(); b++){
+							//cout << " 1 - delete prof #" << b << endl;
 							delete pprofs[b];
+							//cout << " 2 - delete prof #" << b << endl;
+						}
 					}
 				}
 
 			}
 		}
 	}
+	//cout << "writing" << endl;
 	f->Write("",TObject::kOverwrite);
 }
 
@@ -312,9 +324,6 @@ void Make2DHist(TFile* f, string histdirname){
 	string filename = f->GetName();
 	bool print = (filename.find("GMSB") != string::npos);
 
-	//only for jets
-	if(filename.find("photons") != string::npos) return;
-
 
 	//get histograms
 	TDirectory* stackdir = (TDirectory*)f->Get((histdirname+"_stack").c_str());
@@ -322,6 +331,7 @@ void Make2DHist(TFile* f, string histdirname){
 	//gDirectory->pwd();
 	GetHists(stackdir,outhists);
 	//cout << "got " << outhists.size() << " hists for " << stackdir->GetName() << endl;
+	return;
 	//outhist_procStack[i][j] - i: tr method, j: process
 	vector<vector<TH2D*>> outhists_procStack;
 	TList* liststack = stackdir->GetListOfKeys();
@@ -341,6 +351,8 @@ void Make2DHist(TFile* f, string histdirname){
 		}
 
 	}
+	//cout << outhists.size() << " # outhists" << endl;
+//cout << "A" << endl;
 	int xbin, ybin;
 	string ybinname;
 	const char* match = "bin";
@@ -361,13 +373,12 @@ void Make2DHist(TFile* f, string histdirname){
 			xbin = std::stod(dirname.substr(dirname.find("_bin")+4,dirname.find("_stack")-dirname.find("_bin")-4));
 			ybinname = dirname.substr(0,dirname.find("_bin"+to_string(xbin)));
 			ybin = std::stod(ybinname.substr(ybinname.find("bin")+3));
-			//cout << "dirname: " << dirname << " xbin: " << xbin << " ybin: " << ybin << endl;
 			//should be in bin (alphabetical) order
 			//do process integrated 2D plots
 			vector<TH1D*> hists;
 			//get profiles - for all time reco methods
 			GetHists(dir, hists);
-			//if(print) cout << "dir name: " << dirname << " has " << hists.size() << " hists" << endl;
+			//cout << "dirname: " << dirname << " xbin: " << xbin << " ybin: " << ybin << " dir name: " << dirname << " has " << hists.size() << " hists" << endl;
 			if(hists.size() < 1) continue;
 			//loop through profiles
 			double mean;
@@ -376,8 +387,8 @@ void Make2DHist(TFile* f, string histdirname){
 				mean = GetGausMean(hists[h]);
 				if(mean == -999) continue;	
 				//get TH2D for time reco h
-				//cout << " hist 1D " << hists[h]->GetName() << " mean: " << mean << " hist 2D " << outhists[h]->GetName() << endl;	
-				if(!outhists[h]){ cout << "outhist null" << endl; continue; }
+				//cout << "h " << h << " hist 1D " << hists[h]->GetName() << " mean: " << mean << " hist 2D " << outhists[h]->GetName() << endl;	
+				if(!outhists[h]){ cout << "1 - outhist " << h <<  " null" << endl; continue; }
 				//fill TH2D for bin ebin, genbin with mean
 				outhists[h]->SetBinContent(xbin, ybin, mean);
 				//cout << "xbin: " << xbin << " ybin: " << ybin << " mean: " << mean << " outhist " << outhists[h]->GetName() << " current # entries " << outhists[h]->GetEntries() << endl;
@@ -414,7 +425,7 @@ void Make2DHist(TFile* f, string histdirname){
 						mean = GetGausMean(hhists[h]);
 						if(mean == -999) continue;	
 						//get TH2D for time reco h
-						if(!outhists_procStack[itr][h]){ cout << "outhist null" << endl; continue; }
+						if(!outhists_procStack[itr][h]){ cout << "2 - outhist null" << endl; continue; }
 						//fill TH2D for bin ebin, genbin with mean
 						outhists_procStack[itr][h]->SetBinContent(xbin, ybin, mean);
 //						cout << "xbin: " << xbin << " ybin: " << ybin << " mean: " << mean << " outhist: " << outhists_procStack[itr][h]->GetName() << " current # entries " << outhists_procStack[itr][h]->GetEntries() << endl;
