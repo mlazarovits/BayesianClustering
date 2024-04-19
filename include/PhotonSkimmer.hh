@@ -1322,7 +1322,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 //156 - eta sigma v phi sigma, phiE2D ~ 0
 		TH2D* etaSig_phiSig_phiE2Deq0 = new TH2D("etaSig_phiSig_phiE2Deq0","etaSig_phiSig_phiE2Deq0;etaSig;phiSig_phiE2Deq0",25,0.01,0.09,25,0.01,0.09);
                 //157 - eta sigma v phi sigma, phiE2D !~ 0
-		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.1,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig_phiE2Dneq0 = new TH2D("etaSig_phiSig_phiE2Dneq0","etaSig_phiSig_phiE2Dneq0;etaSig;phiSig_phiE2Dneq0",25,0.01,0.09,25,0.01,0.09);
 		//158 - eta center vs phi center, E > 100 && E < 200 && rot2D > 0.7 && rot2D < 0.8 (isolate population in rot2D vs E plot)
 		TH2D* etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8 = new TH2D("etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8","etaCenter_phiCenter_Ege100le200_rot2Dge0p7le0p8;etaCenter;phiCenter_Ege100le200_rot2Dge0p7le0p8",25,-1.6,1.6,25,-0.2,6.4);	
 		//159 - eta center vs phi center, phiE2D ~ 0 
