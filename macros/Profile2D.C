@@ -11,7 +11,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 	string profilename = "";
 	string profiletitle = "";
 	//skip overflow + underflow bins
-	cout << "PROFILING HIST " << inhist->GetName() << " has " << nbins << " bins" << " sighist bins " << sig_outhist->GetNbinsX() << endl;
+	//cout << "PROFILING HIST " << inhist->GetName() << " has " << nbins << " bins" << " sighist bins " << sig_outhist->GetNbinsX() << endl;
 	for(int i = 1; i < nbins+1; i++){
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
 		if(!phist) continue;
@@ -58,7 +58,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			//set new contents
 			sig_outhist->SetBinContent(i, fit_stddev);
 			sig_outhist->SetBinError(i, fit_stddev_err);
-			cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
+			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
 				mean_outhist->SetBinContent(i, fit_mean);
 				mean_outhist->SetBinError(i, fit_mean_err);
