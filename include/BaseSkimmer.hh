@@ -263,7 +263,7 @@ class BaseSkimmer{
 			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
 			_procCats.push_back(tot);	
-			cout << "sample " << sample << endl;	
+			//cout << "sample " << sample << endl;	
 			if(sample.find("GMSB") != string::npos){
 				//notSunm
 				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
@@ -313,11 +313,11 @@ class BaseSkimmer{
 				met.ids = {-999};
 				_procCats.push_back(met);
 			}
-			else if(sample.find("DEG") != string::npos){
+			else if(sample.find("EGamma") != string::npos || sample.find("DoubleEG") != string::npos){
 				//data
-				procCat met(_hists1D, _hists2D, "DoubleEGPD", "METPD", leadsep);
-				met.ids = {-999};
-				_procCats.push_back(met);
+				procCat egam(_hists1D, _hists2D, "DoubleEGPD", "DoubleEGPD", leadsep);
+				egam.ids = {-999};
+				_procCats.push_back(egam);
 			}
 			else if(sample.find("GJets") != string::npos){
 				//data
