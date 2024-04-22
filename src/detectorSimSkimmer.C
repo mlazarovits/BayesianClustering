@@ -8,6 +8,7 @@
 #include <TH2D.h>
 #include <TTree.h>
 #include <TBranch.h>
+#include <sstream>
 
 using std::string;
 using std::cout;
@@ -173,8 +174,20 @@ int main(int argc, char *argv[]){
 	if(oname.empty()){
 		oname = file->GetName();
 		string match = "simNtuples_";
-		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()))+".root";
+		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()));
 		oname = "simSkim_"+oname;
+		
+		std::stringstream stream;
+		string gev_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << gev;
+		gev_string = stream.str();
+		int idx = gev_string.find(".");
+		gev_string.replace(idx,1,"p");	
+		oname += "_NperGeV"+gev_string;
+
+
+		oname += ".root";
 	}
 	else{
 		string oname_extra = file->GetName();
