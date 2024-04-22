@@ -121,14 +121,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["!JetHT"] =   75;
 		labelToMark["!MET"] =   85;
 		
-		//signal point additions
-		if(cms_label.find("photons") != string::npos){
-			labelToMark["L150"] = -1;
-			labelToMark["L350"] = 1;
-			labelToMark["Ctau0p1"] = 1;
-			labelToMark["Ctau200"] = 2;
-		}
-
 		labelToMark["median"] = 71;
 		labelToMark["eAvg"] =   72; 
 		labelToMark["mmAvg"] =  73;
@@ -140,7 +132,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	if(pf == 1){
 		labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
 		labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
-		//TODO (maybe): set different signal grid points to different shades of above color	
 		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
 		labelToColor["MET"] =   TColor::GetColor("#671E76");
@@ -198,7 +189,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
 		
 
-		cout << "pf " << pf << " hist name " << hist[i]->GetName() << " title " << hist[i]->GetTitle();
+		//cout << "pf " << pf << " hist name " << hist[i]->GetName() << " title " << hist[i]->GetTitle();
 		legentry = hist[i]->GetTitle();
 		title = legentry;	 
 		if(pf == 0){
@@ -230,7 +221,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			legentry = legentry.substr(legentry.rfind("_")+1);
 		}
 		else continue;
-		cout << " legentry " << legentry << " title " << title << endl;
+		//cout << " legentry " << legentry << " title " << title << endl;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -250,7 +241,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			}
 			else mark = 1;
 		}
-		cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
+		//cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
@@ -261,6 +252,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			title = hist[i]->GetTitle();
 		hist[i]->SetTitle("");
 		if( i == 0 ){
+			if(canname.find("meanDeltaTime") != string::npos) hist[i]->GetYaxis()->SetTitleOffset(1.2);	
 			hist[i]->Draw("ep");
 		}else{
 			hist[i]->Draw("epsame");
@@ -270,17 +262,17 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	}
 	myleg->Draw("same"); 
 	gPad->Update();
-	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
+	string lat_cms = "#bf{CMS} #it{Work in Progress} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.025);
+	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
 	TLatex lat1;
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.60,0.92,title.c_str());
+	lat1.DrawLatex(0.60,0.92,plot_title.c_str());
 	return;
 }
 
@@ -361,7 +353,7 @@ void GetHistsProc(TDirectory* dir, string& proc, vector<TH1D*>& hists){
 	hists.clear();
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == tdir){
-			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			TDirectory* ddir = dynamic_cast<TDirectory*>(key->ReadObj());
 			if(!ddir) continue;
 			ddir->cd();
 			TList* llist = ddir->GetListOfKeys();
@@ -370,7 +362,7 @@ void GetHistsProc(TDirectory* dir, string& proc, vector<TH1D*>& hists){
 			string name;
 			while((kkey = (TKey*)iiter())){
 				if(kkey->GetClassName() == th1d){
-					TH1D* hist = (TH1D*)kkey->ReadObj();
+					TH1D* hist = dynamic_cast<TH1D*>(kkey->ReadObj());
 					if(!hist) continue;
 					name = hist->GetName();
 					if(name.find(proc) == string::npos) continue;
@@ -396,7 +388,7 @@ void GetHistsProcMethods(TDirectory* dir, string& proc, vector<TH1D*>& hists, ve
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == tdir){
 			for(int m = 0; m < methods.size(); m++){
-				TDirectory* ddir = (TDirectory*)key->ReadObj();
+				TDirectory* ddir = dynamic_cast<TDirectory*>(key->ReadObj());
 				if(!ddir) continue;
 				string name = ddir->GetName();
 				if(name.find(methods[m]) == string::npos) continue; 
@@ -407,7 +399,7 @@ void GetHistsProcMethods(TDirectory* dir, string& proc, vector<TH1D*>& hists, ve
 				TKey* kkey;
 				while((kkey = (TKey*)iiter())){
 					if(kkey->GetClassName() == th1d){
-						TH1D* hist = (TH1D*)kkey->ReadObj();
+						TH1D* hist = dynamic_cast<TH1D*>(kkey->ReadObj());
 						if(!hist) continue;
 						name = hist->GetName();
 						if(name.find(proc) == string::npos) continue;
@@ -434,7 +426,7 @@ void GetHistsProcs(TDirectory* dir, vector<string>& procs, vector<TH1D*>& hists)
 	hists.clear();
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
-			TH1D* hist = (TH1D*)key->ReadObj();
+			TH1D* hist = dynamic_cast<TH1D*>(key->ReadObj());
 			if(!hist) continue;
 			name = hist->GetName();
 			for(int s = 0; s < procs.size(); s++){
@@ -461,7 +453,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			//get 1D histograms
-			TH1D* hist = (TH1D*)key->ReadObj();
+			TH1D* hist = dynamic_cast<TH1D*>(key->ReadObj());
 			if(hist){
 				name = hist->GetName();
 				if(type.empty()){
@@ -490,7 +482,7 @@ void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th2d){
 			//get 2D histograms
-			TH2D* hist = (TH2D*)key->ReadObj();
+			TH2D* hist = dynamic_cast<TH2D*>(key->ReadObj());
 			if(hist){
 				name = hist->GetName();
 				if(type.empty()){
@@ -515,7 +507,7 @@ void GetProcs(TDirectory* dir, vector<string>& procs){
 	TString tdir("TDirectoryFile");
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == tdir){
-			TDirectory* ddir = (TDirectory*)key->ReadObj();
+			TDirectory* ddir = dynamic_cast<TDirectory*>(key->ReadObj());
 			GetHists(ddir, "", hists);
 			for(int i = 0; i < hists.size(); i++){
 				name = hists[i]->GetTitle();
@@ -631,7 +623,7 @@ void AllHists(string file){
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			//get 1D histograms
-			TH1D* hist = (TH1D*)key->ReadObj();
+			TH1D* hist = dynamic_cast<TH1D*>(key->ReadObj());
 			if(hist){
 				name = hist->GetName();
 				TCanvas *cv = new TCanvas(name.c_str(), "");
@@ -644,7 +636,7 @@ void AllHists(string file){
 		if(key->GetClassName() == th2d){
 			//get 2D histograms
 			string keyname = key->GetName();
-			TH2D* hist = (TH2D*)key->ReadObj();
+			TH2D* hist = dynamic_cast<TH2D*>(key->ReadObj());
 			if(hist){
 				name = hist->GetName();
 				xtitle = hist->GetXaxis()->GetTitle();
@@ -659,7 +651,7 @@ void AllHists(string file){
 		}
 		if(key->GetClassName() == tdir){
 			//get stack histograms - in directory
-			TDirectory* dir = (TDirectory*)key->ReadObj();
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
 			double ymin, ymax;
 			string ylab, xlab;
 			if(!dir) continue;
@@ -721,13 +713,13 @@ void AllHists(string file){
 			string name;
 			while((kkey = (TKey*)iiter())){
 				if(kkey->GetClassName() == th2d){
-					TH2D* hist = (TH2D*)kkey->ReadObj();
+					TH2D* hist = dynamic_cast<TH2D*>(kkey->ReadObj());
 					if(!hist) continue;	
 					//cout << " getting kkey: " << kkey->GetName() << " hist " << hist->GetName() << " with entries " << hist->GetEntries() << endl;
 				}
 				//writing stack hist - same method different procs
 				if(kkey->GetClassName() == tdir){
-					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					TDirectory* ddir = dynamic_cast<TDirectory*>(kkey->ReadObj());
 					if(!ddir) continue;
 					name = ddir->GetName();
 					//cout << " dir name: " << name << endl;
@@ -809,7 +801,7 @@ void AllHists(string file){
 		}
 	}
 
-	ofile->Close();
+	//ofile->Close();
 	f->Close();
 
 };
@@ -822,26 +814,29 @@ void AllHists(string file){
 
 
 
-void ProcStackHists(string file, vector<string>& procs, string method, TFile *ofile){
+//void ProcStackHists(string file, vector<string>& procs, string method, TFile *ofile, string match=""){
+void ProcStackHists(string file, vector<string>& procs, string method, string oname, string match=""){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	TFile* f = TFile::Open(file.c_str(),"UPDATE");
+	TFile* f = TFile::Open(file.c_str(),"READ");
+	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
 	string name, xtitle, ytitle;
-	string oname = f->GetName();
-	oname = oname.substr(0,oname.find(".root"));
-	oname = oname+"_formatted.root";
+//	string oname = f->GetName();
+//	oname = oname.substr(0,oname.find(".root"));
+//	oname = oname+"_formatted.root";
 	//TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	vector<string> types = {"","lead","notlead"};
 
-	string cmslab = GetCMSLabel(file);
-	string extra = "";
-	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
-	if(!extra.empty()) cmslab += " "+extra;	
+	//string cmslab = method;
+	//string cmslab = GetCMSLabel(file);
+	//string extra = "";
+	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	//if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
 	TString th2d("TH2D");
@@ -849,16 +844,20 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 
 	string procsname = "";
 	for(auto s : procs) procsname += "_"+s;
-	cout << "addition name " << procsname << endl;
 
+	double ymin, ymax;
+	string ylab, xlab;
 
 	while((key = (TKey*)iter())){
+		name = key->GetName();
+		//skip these dirs
+		if(name.find("genDeltaTpvGambin") != string::npos) continue;
 		if(key->GetClassName() == tdir){
 			//get stack histograms - in directory
-			TDirectory* dir = (TDirectory*)key->ReadObj();
-			double ymin, ymax;
-			string ylab, xlab;
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
 			if(!dir) continue;
+			name = dir->GetName();
+			if(!match.empty() && name.find(match) == string::npos) continue;
 			dir->cd();
 			//if directory is full of directories (stack by method)
 			//each dir is full of histograms (stack by process)
@@ -867,25 +866,23 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 			TKey* kkey;
 			string name;
 			vector<TH1D*> hists;
-			name = dir->GetName();
-			if(name.find("geoEavg_sigmaDeltaTime_recoGen") == string::npos) continue;
-			cout << "\ndir name: " << dir->GetName() << endl;
+			//cout << "\ndir name: " << dir->GetName() << endl;
 
 			while((kkey = (TKey*)iiter())){
 				//writing stack hist - same method different procs
 				if(kkey->GetClassName() == tdir){
-					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					TDirectory* ddir = dynamic_cast<TDirectory*>(kkey->ReadObj());
 					if(!ddir) continue;
 					name = ddir->GetName();
 					//method in this subdir needs to match what's given
 					if(name.find(method) == string::npos) continue;
 					ddir->cd();
-					cout << " ---in ddir " << ddir->GetName() << endl;
+					//cout << " ---in ddir " << ddir->GetName() << endl;
 					//we're in the directory with hists of one method split by procs
 					GetHistsProcs(ddir, procs, hists);
 					if(hists.size() > 0){
-						cout << "hists got" << endl;
-						for(auto h : hists) cout << h->GetName() << endl;
+						//cout << "hists got" << endl;
+						//for(auto h : hists) cout << h->GetName() << endl;
 						FindListHistBounds(hists, ymin, ymax);
 						if(ymin == 0 && ymax == 0) continue;
 						name = dir->GetName();
@@ -901,7 +898,7 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 							xlab = name;
 							ylab = "a.u."; 
 						}
-						TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, procStack);
+						TDRMultiHist(hists, cv, method, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", procStack);
 						cout << "writing canvas (1D) " << cv->GetName() << endl;
 						cv->Write(); 
 					}
@@ -912,33 +909,45 @@ void ProcStackHists(string file, vector<string>& procs, string method, TFile *of
 		}
 	}
 	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
-
+	ofile->Write();
+	ofile->Close();
 	f->Close();
 
 };
 
 
 
-void MethodStackHists(string file, string proc, vector<string>& methods, TFile* ofile){
+void MethodStackHists(string file, string proc, vector<string>& methods, string oname, string match =""){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	TFile* f = TFile::Open(file.c_str(),"UPDATE");
+	TFile* f = TFile::Open(file.c_str(),"READ");
+	TFile* ofile = TFile::Open(oname.c_str(), "UPDATE");
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
 	string name, xtitle, ytitle;
-	string oname = f->GetName();
-	oname = oname.substr(0,oname.find(".root"));
-	oname = oname+"_formatted.root";
+	//string oname = f->GetName();
+	//oname = oname.substr(0,oname.find(".root"));
+	//oname = oname+"_formatted.root";
 	//TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	vector<string> types = {"","lead","notlead"};
 
-	string cmslab = GetCMSLabel(file);
-	string extra = "";
-	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
-	if(!extra.empty()) cmslab += " "+extra;	
+	string cmslab = "";
+	if(proc == "GJets"){
+		cmslab = "GJets, HT 600 to Inf 2017";
+	}
+	else if(proc == "JetHT"){
+		cmslab = "JetHT, Run F 2017";
+	}
+	else if(proc == "DEG"){
+		cmslab = "DoubleEG, Run F 2017";
+	}
+	//string cmslab = GetCMSLabel(file);
+	//string extra = "";
+	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	//if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
 	TString th2d("TH2D");
@@ -948,15 +957,19 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 	for(auto s : methods) methodsname += "_"+s;
 	
 	while((key = (TKey*)iter())){
+		name = key->GetName();
+		//skip these dirs
+		if(name.find("genDeltaTpvGambin") != string::npos) continue;
 		if(key->GetClassName() == tdir){
 			//get stack histograms - in directory
-			TDirectory* dir = (TDirectory*)key->ReadObj();
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
 			double ymin, ymax;
 			string ylab, xlab;
 			if(!dir) continue;
 			name = dir->GetName();
-			if(name.find("geoEavg_sigmaDeltaTime_recoGen") == string::npos) continue;
-			cout << "\ndir name: " << dir->GetName() << endl;
+			if(!match.empty() && name.find(match) == string::npos) continue;
+			//if(name.find("geoEavg_sigmaDeltaTime_recoGen") == string::npos) continue;
+			//cout << "\ndir name: " << dir->GetName() << endl;
 			dir->cd();
 			//cout << "---in dir " << dir->GetName() << endl;
 			//cout << "dir name: " << dir->GetName() << endl;
@@ -973,7 +986,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 			//only do for sigma plots + profiles for now - can remove this later to change
 			if(dirname.find("sigma") == string::npos && dirname.find("mean") == string::npos && dirname.find("profile") == string::npos) continue;	
 			GetHistsProcMethods(dir, proc, hists, methods);
-			for(auto h : hists) cout << "got hist " << h->GetName() << endl;
+			//for(auto h : hists) cout << "got hist " << h->GetName() << endl;
 			name = dirname+"_"+proc+"_methodStack"+methodsname;
 			if(hists.size() < 1) continue;
 			FindListHistBounds(hists, ymin, ymax);
@@ -989,14 +1002,15 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 				xlab = name;
 				ylab = "a.u."; 
 			}
-			TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, methodStack);
+			TDRMultiHist(hists, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", methodStack);
 			cv->Write(); 
 			cout << "writing canvas (1D) " << cv->GetName() << endl;
 				
 		}
 	}
 	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
-
+	ofile->Write();
+	ofile->Close();
 	f->Close();
 
 };
@@ -1004,28 +1018,33 @@ void MethodStackHists(string file, string proc, vector<string>& methods, TFile* 
 
 
 
-void DijetRecoGenStackHists(string file, string proc, string method, TFile* ofile){
+void DijetRecoGenStackHists(string file, string proc, string method, string oname){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	TFile* f = TFile::Open(file.c_str(),"UPDATE");
+	TFile* f = TFile::Open(file.c_str(),"READ");
+	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	TList* list = f->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
 	string name, xtitle, ytitle;
-	string oname = f->GetName();
-	oname = oname.substr(0,oname.find(".root"));
-	oname = oname+"_formatted.root";
+	//string oname = f->GetName();
+	//oname = oname.substr(0,oname.find(".root"));
+	//oname = oname+"_formatted.root";
 	//TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	vector<string> types = {"","lead","notlead"};
 
-	//TODO: change CMS label to something more descriptive
-	//ie time resolution, time reco method, process
-	string cmslab = GetCMSLabel(file);
-	string extra = "";
-	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
-	if(!extra.empty()) cmslab += " "+extra;	
+	string cmslab = "";
+	if(proc == "GJets"){
+		cmslab = "GJets HT 600 to Inf 2017";
+	}
+	cmslab += " ,"+method;
+	//string cmslab = GetCMSLabel(file);
+	//string extra = "";
+	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	//if(!extra.empty()) cmslab += " "+extra;	
+
 
 	TString th1d("TH1D");
 	TString th2d("TH2D");
@@ -1041,14 +1060,17 @@ void DijetRecoGenStackHists(string file, string proc, string method, TFile* ofil
 	string histname;
 
 	while((key = (TKey*)iter())){
+		name = key->GetName();
+		//skip these dirs
+		if(name.find("genDeltaTpvGambin") != string::npos) continue;
 		if(key->GetClassName() == tdir){
-			TDirectory* dir = (TDirectory*)key->ReadObj();
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
 			double ymin, ymax;
 			string ylab, xlab;
 			if(!dir) continue;
 			dirname = dir->GetName();
 			if(dirname.find(recogenDir) == string::npos && dirname.find(dijetDir) == string::npos) continue;
-			cout << "\ndir name: " << dir->GetName() << endl;
+			//cout << "\ndir name: " << dir->GetName() << endl;
 			dir->cd();
 			TList* llist = dir->GetListOfKeys();
 			TIter iiter(llist);
@@ -1056,7 +1078,7 @@ void DijetRecoGenStackHists(string file, string proc, string method, TFile* ofil
 			//get subdir - per method all procs
 			while((kkey = (TKey*)iiter())){
 				if(kkey->GetClassName() == tdir){
-					TDirectory* ddir = (TDirectory*)kkey->ReadObj();
+					TDirectory* ddir = dynamic_cast<TDirectory*>(kkey->ReadObj());
 					if(!ddir) continue;
 					ddirname = ddir->GetName();
 					//make sure this is for the specified method
@@ -1088,11 +1110,13 @@ void DijetRecoGenStackHists(string file, string proc, string method, TFile* ofil
 		//draw as tcanvases
 		xlab = hists[0]->GetXaxis()->GetTitle();
 		ylab = hists[0]->GetYaxis()->GetTitle();
-		TDRMultiHist(hists, cv, name, xlab, ylab, ymin, ymax, cmslab, dijetRecoGenStack);
+		TDRMultiHist(hists, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", dijetRecoGenStack);
 		cout << "writing canvas (1D) " << cv->GetName() << endl;
 		cv->Write(); 
 	}
-
+	ofile->Write();
+	ofile->Close();
+	f->Close();
 }
 
 
@@ -1105,22 +1129,31 @@ void HistFormatJets(string file){
 	oname = oname.substr(0,oname.find(".root"));
 	oname = oname+"_formatted.root";
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
-	
+	ofile->Close();	
 	//same method in legend, only 1 proc in plot label
-	vector<string> procs = {"chiGam","GJets"};
-	string method = "median";
-	ProcStackHists(file, procs, method, ofile);
+	vector<string> jetHT_GJets = {"JetHT","GJets"};
+	vector<string> DEG_GJets = {"DEG","GJets"};
+	vector<string> chiGam_GJets = {"chiGam","GJets"};
+	vector<string> med_eAvg = {"median","eAvg"};
+	//PV dijets for data (JetHT) + MC for median
+	ProcStackHists(file, jetHT_GJets, "median", oname,"geoAvgEecal");
+	////PV dijets for data (DEG) + MC for median
+	ProcStackHists(file, DEG_GJets, "median", oname,"geoAvgEecal");
+	////PV dijets for data (JetHT) + MC for eAvg
+	ProcStackHists(file, jetHT_GJets, "eAvg", oname,"geoAvgEecal");
+	////PV dijets for data (DEG) + MC for eAvg
+	ProcStackHists(file, DEG_GJets, "eAvg", oname,"geoAvgEecal");
+	//recoGen for GJets + GMSB for eAvg
+	ProcStackHists(file, chiGam_GJets, "eAvg", oname, "geoEavg");
 	
-	cout << "----------METHODSTACK----------" << endl;
-	string proc = "GJets";
-	vector<string> methods = {"median","eAvg"};
-	MethodStackHists(file, proc, methods, ofile);
-
-	cout << "----------DIJETRGSTACK----------" << endl;
-	DijetRecoGenStackHists(file, proc, method, ofile);
+	//PV dijets for median + eAvg for GJets
+	MethodStackHists(file, "GJets", med_eAvg, oname, "geoAvgEecal");
+	//recoGen for med + eAvg for GJets
+	MethodStackHists(file, "GJets", med_eAvg, oname, "geoEavg");
+	
+	//PV dijets + reocGen for GJets eAvg
+	DijetRecoGenStackHists(file, "GJets", "eAvg", oname);
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
-
-	ofile->Close();
 
 
 };

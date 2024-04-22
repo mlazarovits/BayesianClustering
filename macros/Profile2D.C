@@ -60,6 +60,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			sig_outhist->SetBinError(i, fit_stddev_err);
 			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
+				//cout << "bin #" << i << " mean " << fit_mean << " nentries in profile " << phist->GetEntries() << endl;
 				mean_outhist->SetBinContent(i, fit_mean);
 				mean_outhist->SetBinError(i, fit_mean_err);
 			}
