@@ -9,11 +9,11 @@ void BHCJetSkimmer::Skim(){
 	else if(_strategy == N2)
 		cout << " N2 (naive)" << endl;
 	else
-		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
+		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
 	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
-	cout << "oname " << _oname << endl;	
+	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
 	//cout << "n procs: " << _procCats.size() << endl;
