@@ -11,8 +11,8 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 	string profilename = "";
 	string profiletitle = "";
 	//skip overflow + underflow bins
-	//cout << "PROFILING HIST " << inhist->GetName() << " has " << nbins << " bins" << " sighist bins " << sig_outhist->GetNbinsX() << endl;
-	for(int i = 1; i < nbins; i++){
+	cout << "PROFILING HIST " << inhist->GetName() << " has " << nbins << " bins" << " sighist bins " << sig_outhist->GetNbinsX() << endl;
+	for(int i = 1; i < nbins+1; i++){
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
 		if(!phist) continue;
 		if(phist->GetEntries() == 0) continue;
@@ -58,7 +58,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			//set new contents
 			sig_outhist->SetBinContent(i, fit_stddev);
 			sig_outhist->SetBinError(i, fit_stddev_err);
-			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
+			cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
 				mean_outhist->SetBinContent(i, fit_mean);
 				mean_outhist->SetBinError(i, fit_mean_err);
@@ -135,7 +135,7 @@ void Profile2DHists(TFile* f){
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == tdir){
 			//get stack histograms - in directory
-			TDirectory* dir = (TDirectory*)key->ReadObj();
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
 			if(!dir) continue;
 			dirname = dir->GetName();
 			//cout << "In dir " << dirname << endl;
@@ -151,7 +151,7 @@ void Profile2DHists(TFile* f){
 			vector<TH2D*> hists;
 			vector<TH1D*> profs;
 			GetHists(dir, hists);
-			//if(print) cout << "dir name: " << dirname << " has " << hists.size() << " hists" << endl;
+			//cout << "dir name: " << dirname << " has " << hists.size() << " hists" << endl;
 			if(hists.size() < 1) continue;
 			//write only total 1D profile from total 2D (doesn't end in process) to newname
 			for(int h = 0; h < hists.size(); h++){
