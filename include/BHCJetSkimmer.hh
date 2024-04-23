@@ -282,18 +282,32 @@ class BHCJetSkimmer{
 		//can change to rhs later
 		double CalcDr(const Jet& jet){
 			double dr = 0;
+			double maxDr = 0;
 			//if 1 subcluster (should be >1 but idk could happen ig)
 			//dR =  sqrt(sigeta*sigeta + sigphi*sigphi)?
 			//get n subclusters
 			int nSCs = jet.GetNConstituents();
-			
+			//if 1 subcluster, take dR to be 1 sigma
+			if(nSCs < 2){
+				Matrix cov, mu;
+				jet.GetClusterParams(mu, cov);
+				return max(sqrt(cov.at(0,0)), sqrt(cov.at(1,1)));
+
+			}
+
+
+			Jet subjet_i, subjet_j;			
+
 			for(int i = 0; i < nSCs; i++){
 				for(int j = i; j < nSCs; j++){
 					//get center in eta, phi for subcluster i and j
-					//dR(
+					subjet_i = jet.GetConstituent(i);
+					subjet_j = jet.GetConstituent(j);
+					dr = subjet_i.deltaR(subjet_j);
+					if(dr > maxDr) maxDr = dr;
 				}
 			}	
-
+			return maxDr;
 		}
 	
 

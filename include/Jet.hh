@@ -214,7 +214,7 @@ class Jet{
 		void SetHistoryIndex(int i){ _hist_idx = i; }
 		int GetHistoryIndex() const{ return _hist_idx; }
 		
-		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
+		void GetClusterParams(Matrix& mu, Matrix& cov) const{ mu = _mu; cov = _cov; }
 	
 		//define jet time from cluster parameters
 		double GetJetTime() const{ return _t; }
@@ -276,7 +276,7 @@ class Jet{
 			return _constituents;
 		}
 	
-		Jet& GetConstituent(int c){
+		const Jet& GetConstituent(int c) const{
 			if(c > _constituents.size()){
 				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
 				return *this;
