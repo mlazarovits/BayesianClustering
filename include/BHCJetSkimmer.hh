@@ -181,7 +181,7 @@ class BHCJetSkimmer{
 				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _predJets.size();
 				for(int j = 0; j < _predJets.size(); j++){
-					//cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+					cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
 					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
@@ -192,7 +192,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][6]->Fill(CalcDr(_predJets[j]));	
 				}
 				_procCats[p].hists1D[0][0]->Fill(njets);
-				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
+				cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
 			}
 		}
@@ -288,7 +288,7 @@ class BHCJetSkimmer{
 			int nSCs = jet.GetNConstituents();
 			
 			for(int i = 0; i < nSCs; i++){
-				for(int j = i; j < nSCs; i++){
+				for(int j = i; j < nSCs; j++){
 					//get center in eta, phi for subcluster i and j
 					//dR(
 				}
