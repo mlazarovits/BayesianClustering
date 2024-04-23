@@ -127,13 +127,14 @@ int main(int argc, char *argv[]){
 
 	cout << "Simulating events from ";	
 	if(ttbar){
-		cout << "ttbar " << endl;
+		cout << "ttbar ";
 		oname += "ttbar";	
 	}
 	if(qcd){
-		cout << "QCD " << endl;
+		cout << "QCD ";
 		oname += "QCD";
 	}
+	cout << endl;
 
 	//TODO: change onames when processes are decided
 	if(sig_delayed){
