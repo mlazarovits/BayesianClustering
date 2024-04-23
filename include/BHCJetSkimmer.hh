@@ -129,6 +129,12 @@ class BHCJetSkimmer{
 					Ek = norms[k]/_gev;
 					predJet.AddConstituent(params,Ek);
 				}
+				//TODO: set covariance and mean for jets with 1+ subcluster
+				if(nsubclusters < 2){
+					params = _trees[i]->model->GetPriorParameters(0);
+					predJet.SetCovariance(params["cov"]);
+					predJet.SetCenter(params["mean"]);
+				}
 				//cout << "jet mean eta " << jeta/je << " mean phi " << jphi/je << " total e " << je << endl;
 				//cout << "jet mean eta " << jeta/(double)pc->GetNPoints() << " mean phi " << jphi/(double)pc->GetNPoints() << " total e " << je << " " << predJet.E() << " mass " << predJet.mass() << endl;
 				//pc->Print();
@@ -494,7 +500,7 @@ class BHCJetSkimmer{
 		//5
 		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterPhiCenter","predJet_subClusterPhiCenter",50,-0.1,6.3);
 		//6
-		TH1D* predJet_dR = new TH1D("predJet_dR","predJet_dR",50,0,5);
+		TH1D* predJet_dR = new TH1D("predJet_dR","predJet_dR",50,0,4);
 		//7
 		TH1D* predJet_energy = new TH1D("predJet_energy","predJet_energy",50,0,1000);
 		//8
