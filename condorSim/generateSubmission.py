@@ -8,7 +8,7 @@ import os
 import argparse
 import shutil
 import submissionHelper as SH
-
+from fractions import Fraction
 
 
 # Create workspace and condor submit files.
@@ -39,6 +39,24 @@ def generateSubmission(args):
 
 	dirname = odir+sampleNameShort
 	ofilename = "condorSim_"+sampleNameShort
+	if args.output is not None:
+                ofilename = ofilename+"_"+args.output
+                dirname = dirname+"_"+args.output
+	#put algo config in file name
+	kname = "%.3f" % args.alpha
+	kname = kname.replace(".","p")
+	paramsname = "_bhcAlpha"+kname
+	kname = "%.3f" % args.EMalpha
+	kname = kname.replace(".","p")
+	paramsname += "_emAlpha"+kname
+	thresh = str(args.thresh).replace(".","p")
+	paramsname += "_thresh"+thresh
+	k = float(sum(Fraction(s) for s in args.gev.split()))
+	kname = "%.3f" % k
+	kname = kname.replace(".","p")
+	paramsname += "_NperGeV"+kname
+	ofilename += paramsname
+	dirname += paramsname
 	print("Preparing sample directory: {0}".format(dirname))
 	##### Create a workspace (remove existing directory) #####
 	if os.path.exists(dirname):
@@ -86,7 +104,7 @@ def main():
 	parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
 	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
 	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
-	parser.add_argument('--gev',help='energy transfer factor',default=1./10.)
+	parser.add_argument('--gev',help='energy transfer factor',default=1/10)
 	parser.add_argument('--minpt',help='min object pt',default=10.)
 	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
 	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
