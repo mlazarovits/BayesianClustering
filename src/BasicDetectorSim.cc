@@ -46,6 +46,8 @@ BasicDetectorSim::BasicDetectorSim(){
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
 	_nSpikes = 0;
+	_evti = 0;
+	_evtj = _nevts;
 }
 
 //ctor with input pythia cmnd file
@@ -83,6 +85,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_pythia.readFile(infile);
 	_nevts = _pythia.mode("Main:numberOfEvents");
 	_nSpikes = 0;
+	_evti = 0;
+	_evtj = _nevts;
 
 }
 
@@ -125,12 +129,20 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	if(_pu){
   		if(_verb == 0) pileup.readString("Print:quiet = on");
 		pileup.readString("Random:setSeed = on");
-  		pileup.readString("Random:seed = 10000002");
+  		pileup.readString("Random:seed = 10"+std::to_string(_evti));
 		pileup.readString("SoftQCD:nonDiffractive = on"); //minbias events only
   		pileup.settings.parm("Beams:eCM = 13000.");
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
+
+	//set random number seed - 
+	//The seed to be used, if setSeed is on.
+	//A negative value gives the default seed,
+	//a value 0 gives a random seed based on the time, and
+	//a value between 1 and 900,000,000 a unique different random number sequence.
+	_pythia.readString("Random:setSeed = on");
+	_pythia.readString("Random:seed = "+std::to_string(_evti+1));	
 
 	_pythia.init();
 
@@ -152,7 +164,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
-	for(int i = 0; i < _nevts; i++){
+	if(_evti == _evtj){
+		_evti = 0;
+		_evtj = _nevts;
+	}
+
+	for(int i = _evti; i < _evtj; i++){
 		if(evt != -1)
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;

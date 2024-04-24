@@ -100,7 +100,9 @@ struct RecoParticle;
 			}
 			//_pythia.readString("Print:errors = "+std::to_string(v));
 		}
-	
+
+
+		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }	
 
 		//init tree
 		void InitTree(string fname);
@@ -187,6 +189,8 @@ struct RecoParticle;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
 		Point _PV;
+
+		int _evti, _evtj;
 
 		struct RecoParticle{
 			//associated gen particle

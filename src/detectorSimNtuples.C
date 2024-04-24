@@ -24,6 +24,8 @@ int main(int argc, char *argv[]){
 	vector<vector<JetPoint>> ems;
 	int nevts = 1;
 	int evt = 0;
+	int evti = 0;
+	int evtj = 0;
 	int verb = 0;
 	bool hprint = false;
 	bool pu = false;
@@ -90,6 +92,14 @@ int main(int argc, char *argv[]){
 			i++;
     	 		spikeProb = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--evtFirst", 6) == 0){
+                        i++;
+                        evti = std::atoi(argv[i]);
+                }
+                if(strncmp(argv[i],"--evtLast", 6) == 0){
+                        i++;
+                        evtj = std::atoi(argv[i]);
+                }
 
 	}
 	if(hprint){
@@ -105,6 +115,7 @@ int main(int argc, char *argv[]){
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
+		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		return -1;	
 	}
@@ -116,9 +127,9 @@ int main(int argc, char *argv[]){
 	}
 	else{
 		if(!oname.empty())
-			oname = "_simNtuples_";
+			oname = "simNtuples_"+oname;
 		else
-			oname += "simNtuples_";
+			oname = "simNtuples_";
 	}
 	if(spikeProb < 0 || spikeProb > 1){
 		cout << "Invalid spike probability " << spikeProb << ". Must be [0,1]" << endl;
@@ -128,11 +139,11 @@ int main(int argc, char *argv[]){
 	cout << "Simulating events from ";	
 	if(ttbar){
 		cout << "ttbar ";
-		oname += "ttbar";	
+		oname += "_ttbar";	
 	}
 	if(qcd){
 		cout << "QCD ";
-		oname += "QCD";
+		oname += "_QCD";
 	}
 	cout << endl;
 
@@ -151,12 +162,21 @@ int main(int argc, char *argv[]){
 		cout << "and pileup " << endl;
 		oname += "_PU";
 	}
+       //make sure evti < evtj
+       if(evti > evtj){
+       	int evt = evtj;
+       	evtj = evti;
+       	evti = evt;
+       }
+
+
 	//consider doing det from pythia cmnd card
 	BasicDetectorSim det;
 	det.SetNEvents(nevts);
 	//for reconstructing rechits
 	det.SetEnergyThreshold(1.); //set to 1 GeV
 	det.SetVerbosity(verb);
+	det.SetEventRange(evti,evtj);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	//if(sig_delayed)
