@@ -126,8 +126,10 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 	else{
-		if(!oname.empty())
-			oname = "simNtuples_"+oname;
+		if(!oname.empty()){
+			if(oname.find("condor") == string::npos)
+				oname = "simNtuples_"+oname;
+		}
 		else
 			oname = "simNtuples_";
 	}
@@ -139,11 +141,11 @@ int main(int argc, char *argv[]){
 	cout << "Simulating events from ";	
 	if(ttbar){
 		cout << "ttbar ";
-		oname += "_ttbar";	
+		if(oname.find("ttbar") == string::npos) oname += "_ttbar";	
 	}
 	if(qcd){
 		cout << "QCD ";
-		oname += "_QCD";
+		if(oname.find("QCD") == string::npos) oname += "_QCD";	
 	}
 	cout << endl;
 
@@ -185,7 +187,7 @@ int main(int argc, char *argv[]){
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
 	
 	///////make ntuple///////
-	det.InitTree("rootfiles/"+oname+".root");
+	det.InitTree(oname+".root");
 	det.SimulateEvents();
 	det.WriteTree();
 	

@@ -124,6 +124,7 @@ configtar:
 simconfigtar:
 	cp detectorSim*.x configSim/
 	tar -czf condorSim/configSim.tgz configSim/
+	tar -czf condorSimNtuples/configSim.tgz configSim/
 
 #make shared library
 lib/libBayesCluster.so: $(SOBJ_FILES)
