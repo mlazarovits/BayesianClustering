@@ -23,10 +23,11 @@ def generateSubmission(args):
 	# Create output directory for condor results if it does not exist.
 	SH.makeDir(odir)
 
+
 	if args.inputSample == "ttbar":
-	        inputFile = "simNtuples_ttbar.root"
-	if args.inputSample == "ttbar_QCD":
-	        inputFile = "simNtuples_ttbarQCD.root"
+	        inputFile = "condorSimNtuples_ttbar.root"
+	elif args.inputSample == "QCD":
+	        inputFile = "condorSimNtuples_QCD.root"
 	else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -95,7 +96,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','ttbar_QCD'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--strategy','-st',help='which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=[1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
