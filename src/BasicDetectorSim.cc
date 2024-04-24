@@ -157,7 +157,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-	cout << "event #" << i << endl;
+	if(i % _nevts*0.1 == 0) cout << "event #" << i << endl;
 		sumEvent = _pythia.event;
 
 		_evt = i;		
