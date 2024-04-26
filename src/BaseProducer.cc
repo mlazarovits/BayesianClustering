@@ -79,15 +79,22 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//TOF from PV to rh location
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
-                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
 
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+				JetPoint rh;
+				if(_calibmap){
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+				}
+				else{	
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				}
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
@@ -97,7 +104,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
-                                jet.AddRecHit(rh);
+                                cout << "jet #" << j << " rh #" << r << " time " << rh.t() << endl;
+				jet.AddRecHit(rh);
                         }
 
                 }

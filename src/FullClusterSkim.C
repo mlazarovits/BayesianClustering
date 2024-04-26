@@ -43,6 +43,7 @@ int main(int argc, char *argv[]){
 	double minEmE = 20;
 	double minRhE = 0.5;
 	bool frac = false;
+	bool calib = true;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -151,6 +152,10 @@ int main(int argc, char *argv[]){
 			frac = true;
 			cout << "Apply fractions for rec hits." << endl;
    		}
+		if(strncmp(argv[i],"--noCalibrate", 13) == 0){
+			calib = false;
+			cout << "Not applying time calibration to rhs" << endl;
+   		}
 
 	}
 	if(hprint){
@@ -175,6 +180,7 @@ int main(int argc, char *argv[]){
    		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
    		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
    		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false)" << endl;
+   		cout << "   --noCalibrate                 turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -275,6 +281,19 @@ int main(int argc, char *argv[]){
 		evtj = evti;
 		evti = evt;
 	}
+	//choose time calibration file
+	string calibfile = "";
+        if(oname.find("GJets") != string::npos)
+                calibfile = "info/KUCMS_GJets_v14_met50_rhE5_Cali.root";
+        else if(oname.find("JetHT") != string::npos)
+                calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
+        else if(oname.find("DEG") != string::npos || oname.find("DoubleEG"))
+                calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
+        else if(oname.find("QCD") != string::npos)
+                calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
+        //else default to GJets
+        else
+                calibfile = "info/KUCMS_GJets_v14_met50_rhE5_Cali.root";
 
 	if(obj == 0){
 		cout << "jets" << endl;
@@ -285,6 +304,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinEmE(minEmE);
 		if(in_file.find("_AOD_") != string::npos)
 			skimmer.SetData(true);
+		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
@@ -303,6 +323,7 @@ int main(int argc, char *argv[]){
 			data = false;
         	else
 			data = true;
+		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetData(data);

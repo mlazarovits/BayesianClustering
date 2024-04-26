@@ -345,6 +345,14 @@ class BaseSkimmer{
 
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
+		void SetTimeCalibrationMap(string f){
+                        if(gSystem->AccessPathName(f.c_str())){
+                                cout << "Error: file " << f << " does not exist. Time calibration file could not be set." << endl;
+                                return;
+                        }
+                        TFile* file = TFile::Open(f.c_str());
+                        _prod->SetTimeCalibrationMap(file);
+                }
 		bool _smear, _timesmear;
 
 
