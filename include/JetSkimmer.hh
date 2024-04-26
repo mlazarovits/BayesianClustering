@@ -320,7 +320,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
 		
 		//16 - 2D histogram for gamPV resolution 
-		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",7,&xbins[0],120,-4,4);
+		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",7,&xbins[0],120,0,12);
 		
 
 		vector<timeRecoCat> trCats;
@@ -501,7 +501,7 @@ class JetSkimmer : public BaseSkimmer{
 								Epho = 0;
 								phorhs = _phos[1].GetJetPoints();
 								for(auto r : phorhs) Epho += r.E();
-								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv);
+								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets), deltaT_gampv);
 							}
 						}
 					}			
