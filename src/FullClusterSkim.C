@@ -284,7 +284,7 @@ int main(int argc, char *argv[]){
 	//choose time calibration file
 	string calibfile = "";
         if(oname.find("GJets") != string::npos)
-                calibfile = "info/KUCMS_GJets_v14_met50_rhE5_Cali.root";
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
         else if(oname.find("JetHT") != string::npos)
                 calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
         else if(oname.find("DEG") != string::npos || oname.find("DoubleEG"))
@@ -293,8 +293,8 @@ int main(int argc, char *argv[]){
                 calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
         //else default to GJets
         else
-                calibfile = "info/KUCMS_GJets_v14_met50_rhE5_Cali.root";
-
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
+	cout << "Using calibration file " << calibfile << endl;
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
