@@ -104,7 +104,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
-                                cout << "jet #" << j << " rh #" << r << " time " << rh.t() << endl;
 				jet.AddRecHit(rh);
                         }
 
@@ -217,8 +216,16 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+				JetPoint rh;
+				if(_calibmap){
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+				}
+				else{	
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				}
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
