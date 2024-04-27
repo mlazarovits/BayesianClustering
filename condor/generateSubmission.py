@@ -63,7 +63,7 @@ def generateSubmission(args):
 		inputFile = "JetHT_R17_v18_JetHT_AOD_Run2017F_17Nov2017.root"
 	elif args.inputSample == "EGamma_RunF_2017_v18":
 		inputFile = "DEG_R17_v18_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
-	elif args.inputSample = "QCD_HT500To700_2017_v16":
+	elif args.inputSample == "QCD_HT500To700_2017_v16":
 		inputFile = "QCD_R17_v16_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
