@@ -48,7 +48,7 @@ void JetSkimmer::Skim(){
 	
 	double phogev = 1./30.;
 	_prod->PrintPreselection();
-	int SKIP = 1;
+	int SKIP = 100;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//do data MET selection
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
