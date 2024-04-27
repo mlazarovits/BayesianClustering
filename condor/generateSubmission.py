@@ -49,6 +49,8 @@ def generateSubmission(args):
 		inputFile = "GJets_R18_v16_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	elif args.inputSample == "GJets_HT600ToInf_2017_v16":
 		inputFile = "GJets_R17_v16_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GMSB_L-350_Ctau-1000_2017_v16":
+		inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L-350_Ctau-200_2017_v16":	
 		inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L-350_Ctau-0p1_2017_v16":
@@ -63,6 +65,8 @@ def generateSubmission(args):
 		inputFile = "JetHT_R17_v18_JetHT_AOD_Run2017F_17Nov2017.root"
 	elif args.inputSample == "EGamma_RunF_2017_v18":
 		inputFile = "DEG_R17_v18_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
+	elif args.inputSample == "QCD_HT500To700_2017_v16":
+		inputFile = "QCD_R17_v16_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
 	else:
 		print("Sample "+args.inputSample+" not found")
 		exit()
@@ -113,6 +117,8 @@ def generateSubmission(args):
 		flags += ' --timeSmear'
 	if(args.applyFrac):
 		flags += ' --applyFrac'
+	if(args.noCalibrate):
+		flags += ' --noCalibrate'
 	if(objName == "jets"):
 		flags += " --object 0"
 	if(objName == "photons"):
@@ -137,8 +143,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	#parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L500ctau1000','GMSB_L350ctau200','GMSB_L150ctau200','GMSB_L100ctau0p1','JetHT','GJets_HT400To600','GJets_HT600ToInf','GJets_HT400To600_v15','GJets_HT600ToInf_v15','GMSB_L300ctau600_v15','GMSB_L150ctau0p1_v15','GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L350ctau200_2017_v16'])
-	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18'])
+	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-1000_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT500To700_2017_v16'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
@@ -158,6 +163,7 @@ def main():
 	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
 	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
 	parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
+	parser.add_argument('--noCalibrate',help="turn off channel-by-channel time calibration",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
