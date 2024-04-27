@@ -143,7 +143,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT500To700_2017_v16'])
+	parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v16','GJets_HT400To600_2018_v16','GJets_HT600ToInf_2017_v16','GMSB_L-350_Ctau-1000_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunB_2017_v16','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT500To700_2017_v16'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--year',help='year of sample',default=2017)
 	#which object to analyze (jets or photons currently supported)
