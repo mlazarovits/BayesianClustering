@@ -49,6 +49,8 @@ def generateSubmission(args):
 		inputFile = "GJets_R18_v16_GJets_HT-400To600_AODSIM_RunIISummer20UL18RECO-106X_upgrade2018.root"
 	elif args.inputSample == "GJets_HT600ToInf_2017_v16":
 		inputFile = "GJets_R17_v16_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+	elif args.inputSample == "GMSB_L-350_Ctau-1000_2017_v16":
+		inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L-350_Ctau-200_2017_v16":	
 		inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
 	elif args.inputSample == "GMSB_L-350_Ctau-0p1_2017_v16":
@@ -115,6 +117,8 @@ def generateSubmission(args):
 		flags += ' --timeSmear'
 	if(args.applyFrac):
 		flags += ' --applyFrac'
+	if(args.noCalibrate):
+		flags += ' --noCalibrate'
 	if(objName == "jets"):
 		flags += " --object 0"
 	if(objName == "photons"):
@@ -159,6 +163,7 @@ def main():
 	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
 	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
 	parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
+	parser.add_argument('--noCalibrate',help="turn off channel-by-channel time calibration",default=False,action='store_true')
 	args = parser.parse_args()
 
 	generateSubmission(args)
