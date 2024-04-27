@@ -44,8 +44,8 @@ void JetSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 
-	double metThresh = 50;
-	
+	double metThresh = 0.4;
+	double geoAvgJets;
 	double phogev = 1./30.;
 	_prod->PrintPreselection();
 	int SKIP = 1;
@@ -58,9 +58,6 @@ void JetSkimmer::Skim(){
 		for(int r = 0; r < rhs.size(); r++){
 			rhTime->Fill(rhs[r].t());
 		}
-		if(_data){
-			if(_base->Met_pt > metThresh){ cout << endl; continue; }
-		}
 
 
 		FillTruePhotonHists(_phos);
@@ -72,6 +69,15 @@ void JetSkimmer::Skim(){
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i, _gev);
 		if(jets.size() < 1){ cout << endl; continue; }
+		if(_data){
+			//cut on ratio of MET pt to geo average of 2 leading jets
+			geoAvgJets = jets[0].pt();
+			if(jets.size() > 1){
+				geoAvgJets *= jets[1].pt();
+				geoAvgJets = sqrt(geoAvgJets);
+			}
+			if(_base->Met_pt/geoAvgJets > metThresh){ cout << endl; continue; }
+		}
 
 	
 		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
