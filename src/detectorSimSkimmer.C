@@ -200,6 +200,7 @@ int main(int argc, char *argv[]){
 			oname = "simSkim_"+oname+"_"+oname_extra;
 		}
 	}	
+
 	cout << "Energy transfer factor: " << gev << endl;
 	BHCJetSkimmer skimmer(file);
 	//skimmer.SetMinPt(minpt);
