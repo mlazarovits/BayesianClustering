@@ -96,10 +96,15 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
 	//TODO (maybe): set different signal grid points to different shades of above color	
 
-	labelToColor["notSunm"] = TColor::GetColor("#9e0059");
-	labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
-	labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
-	labelToColor["MET"] =   TColor::GetColor("#671E76");
+	labelToColor["notSunm"] =  TColor::GetColor("#9e0059");
+	labelToColor["GJets"] 	=  TColor::GetColor("#f6ae2d");
+	labelToColor["JetHT"] 	=  TColor::GetColor("#3d348b");
+	labelToColor["MET"]   	=  TColor::GetColor("#671E76");
+	labelToColor["ttbar"] 	=  TColor::GetColor("#CA5743");
+	labelToColor["QCD"]   	=  TColor::GetColor("#9E0059");
+	//later colors to use
+	//"#CA5743" - jasper (burnt orange)
+	//"#BEB583" - sage
 
 	labelToColor["!median"] = TColor::GetColor("#f7a278");
 	labelToColor["!eAvg"] = TColor::GetColor("#6859f1");
@@ -111,6 +116,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToMark["!GMSB"] =  20;
 	labelToMark["!notSunm"] = 72;
 	labelToMark["!GJets"] =   73;
+	labelToMark["ttbar"] = 24;
+	labelToMark["QCD"] = 25;
 	//data symbols - some form of open cross
 	labelToMark["!JetHT"] =   75;
 	labelToMark["!MET"] =   85;
@@ -140,13 +147,15 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		
 
 
-		legentry = hist[i]->GetTitle();
+		title = hist[i]->GetTitle();
+		legentry = title.empty() ? hist[i]->GetName() : title;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
 			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
 			if(legentry.find(match) != string::npos){
 				col = it->second;
+				if(title.empty()) legentry = match;
 				break;
 			}
 			else col = 1;
@@ -461,7 +470,7 @@ bool HistCheck(TDirectory* dir){
 
 }
 
-void HistFormatPhotons(string file){
+void HistFormat(string file){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -484,6 +493,7 @@ void HistFormatPhotons(string file){
 
 	TString th1d("TH1D");
 	TString th2d("TH2D");
+	TString tgraph("TGraph");
 	TString tdir("TDirectoryFile");
 
 	while((key = (TKey*)iter())){
@@ -512,6 +522,23 @@ void HistFormatPhotons(string file){
 				//draw as tcanvases
 				TDR2DHist(hist, cv, xtitle, ytitle, cmslab, hist->GetTitle());
 				//cout << "writing hist " << cv->GetName() << " in file " << endl;
+				cv->Write(); 
+			}
+		}
+		if(key->GetClassName() == tgraph){
+			//get TGraphs
+			string keyname = key->GetName();
+			TGraph* gr = (TGraph*)key->ReadObj();
+			if(gr){
+				name = gr->GetName();
+				xtitle = gr->GetXaxis()->GetTitle();
+				ytitle = gr->GetYaxis()->GetTitle();
+				TCanvas *cv = new TCanvas(name.c_str(), "");
+				ofile->cd();
+				gr->SetMarkerStyle(20);
+				//draw as tcanvases
+				gr->Draw("AP");
+				//cout << "writing gr " << cv->GetName() << " in file " << endl;
 				cv->Write(); 
 			}
 		}
