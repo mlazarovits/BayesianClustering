@@ -12,6 +12,18 @@ enum plotFormat{
 	dijetRecoGenStack = 3
 };
 
+//TODO: test this function
+//then test writing fit to file in TDRMultiHist 
+void FitResHistogram(TH1D* hist, TF1* fit){
+	string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
+	fit = nullptr;
+	double x_low = hist->GetXaxis()->GetBinLowEdge(hist->GetXaxis()->GetFirst());
+	double x_up  = hist->GetXaxis()->GetBinUpEdge (hist->GetXaxis()->GetLast());
+	fit = new TF1("fit",formula,xlo,xhi); 
+	fit->SetLineColor(hist->GetLineColor());
+	hist->Fit("fit","RQM0");
+}
+
 
 string SignalLegEntry(string label){
 	//cout << "label " << label << endl;
