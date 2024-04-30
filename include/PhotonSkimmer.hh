@@ -507,7 +507,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(phiCenter_recoMet);
 			_hists2D.push_back(timeCenter_recoMet);
 			_hists2D.push_back(etaSig_timeEtaCov_timeNeg15toNeg1);
-			_hists2D.push_back(etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi);
+			_hists2D.push_back(etaSig_timeEtaCov_timeNeg15toNeg1_phiCenter0pi);
 			_hists2D.push_back(etaSig_timeEtaCov_time3to15);
 			_hists2D.push_back(etaSig_etaPhiCov_timeNeg15toNeg1);
 			_hists2D.push_back(etaSig_etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi);
@@ -1477,7 +1477,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//221 - etaSig vs timeEtaCov, early times
 		TH2D* etaSig_timeEtaCov_timeNeg15toNeg1 = new TH2D("etaSig_timeEtaCov_timeNeg15toNeg1","etaSig_timeEtaCov_timeNeg15toNeg1;etaSig;timeEtaCov_timeNeg15toNeg1",25,-0.01,0.09,25,-1,1);
 		//222 - etaSig vs timeEtaCov, early times, phiCenter ~ 0, pi
-		TH2D* etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi = new TH2D("etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi","etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi;etaSig;timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi",25,-0.01,0.09,25,-1,1);
+		TH2D* etaSig_timeEtaCov_timeNeg15toNeg1_phiCenter0pi = new TH2D("etaSig_timeEtaCov_timeNeg15toNeg1_phiCenter0pi","etaSig_timeEtaCov_timeNeg15toNeg1_phiCenter0pi;etaSig;timeEtaCov_timeNeg15toNeg1_phiCenter0pi",25,-0.01,0.09,25,-1,1);
 		//223 - etaSig vs timeEtaCov, late times
 		TH2D* etaSig_timeEtaCov_time3to15 = new TH2D("etaSig_timeEtaCov_time3to15","etaSig_timeEtaCov_time3to15;etaSig;timeEtaCov_time3to15",25,-0.01,0.09,25,-1,1);
 		//224 - etaSig vs etaPhiCov, early times
