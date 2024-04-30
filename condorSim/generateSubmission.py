@@ -31,7 +31,7 @@ def generateSubmission(args):
 	else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
+	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
 	
 	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
 	#find .root and then find the / before that (if it exists) - everything in between is the file name
