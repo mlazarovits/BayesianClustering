@@ -999,7 +999,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//232 - nrhs, 600 <= E < 1000
 		TH1D* phoNrhs_Ebin4 = new TH1D("phoNrhs_Ebin4","phoNrhs_Ebin4",25,0,100);		
 		//233 - swiss cross prime (swiss cross recreation from subcluster information)
-		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.05,0.05);
+		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.05,1.5);
 		//234 - difference between eta mean from points and eta center from GMM
 		TH1D* etaDiff = new TH1D("etaDiff","etaDiff",25,-0.02,0.02);
 		//235 - dPhi bw phiCenter and MET	
@@ -1327,21 +1327,21 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 		//SPIKE CR PLOTS
 		//148 - time center vs swCrossPrime
-		TH2D* timeCenter_swCrossPrime = new TH2D("timeCenter_swCrossPrime","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
+		TH2D* timeCenter_swCrossPrime = new TH2D("timeCenter_swCrossPrime","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,1.5);
 		//150 - time center vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
-		TH2D* timeCenter_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Deq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
+		TH2D* timeCenter_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Deq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,1.5);
 		//151 - time center vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
-		TH2D* timeCenter_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Dneq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,0.05);
+		TH2D* timeCenter_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("timeCenter_swCrossPrime_phiE2Dneq0PiOv2","timeCenter_swCrossPrime;timeCenter;swCrossPrime",25,-15,15,25,-0.05,1.5);
 		//151 - rot2D vs swCrossPrime
-                TH2D* rot2D_swCrossPrime = new TH2D("rot2D_swCrossPrime","rot2D_swCrossPrime;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
+                TH2D* rot2D_swCrossPrime = new TH2D("rot2D_swCrossPrime","rot2D_swCrossPrime;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,1.5);
 		//152 - rot2D vs swCrossPrime, phiE2D ~ 0 && phiE2D ~ pi/2
-                TH2D* rot2D_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Deq0PiOv2","rot2D_swCrossPrime_phiE2Deq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
+                TH2D* rot2D_swCrossPrime_phiE2Deq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Deq0PiOv2","rot2D_swCrossPrime_phiE2Deq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,1.5);
 		//153 - rot2D vs swCrossPrime, phiE2D !~ 0 && phiE2D !~ pi/2
-                TH2D* rot2D_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Dneq0PiOv2","rot2D_swCrossPrime_phiE2Dneq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,0.05);
+                TH2D* rot2D_swCrossPrime_phiE2Dneq0PiOv2 = new TH2D("rot2D_swCrossPrime_phiE2Dneq0PiOv2","rot2D_swCrossPrime_phiE2Dneq0PiOv2;rot2D;swCrossPrime",25,0.4,1.1,25,-0.05,1.5);
 		//154 - phiE2D vs swCrossPrime
-                TH2D* phiE2D_swCrossPrime = new TH2D("phiE2D_swCrossPrime","phiE2D_swCrossPrime;phiE2D;swCrossPrime",25,-3.,3.,25,-0.05,0.05);
+                TH2D* phiE2D_swCrossPrime = new TH2D("phiE2D_swCrossPrime","phiE2D_swCrossPrime;phiE2D;swCrossPrime",25,-3.,3.,25,-0.05,1.5);
 		//155 - phoE vs swCrossPrime
-		TH2D* phoE_swCrossPrime = new TH2D("phoEnergy_swCrossPrime","phoEnergy_swCrossPrime;phoE;swCrossPrime",25,0,1000,25,-0.05,0.05);	
+		TH2D* phoE_swCrossPrime = new TH2D("phoEnergy_swCrossPrime","phoEnergy_swCrossPrime;phoE;swCrossPrime",25,0,1000,25,-0.05,1.5);	
 
 		//BEAM HALO CR PLOTS
                 //156 - eta sigma v phi sigma, phiE2D ~ 0
@@ -1457,11 +1457,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//211 - rot2D vs subcl E, !(phi center ~ 0 && phi center ~ pi) 
 		TH2D* rot2D_E_phiCenterneq0Pi = new TH2D("rot2D_subclE_phiCenterneq0Pi","rot2D_subclE_phiCenterneq0Pi;rotundity2D_phiCenterneq0Pi;E;a.u.",25,0.4,1.1,25,0,1000);
 		//212 - phiE2D vs sw+', early times
-                TH2D* phiE2D_swCrossPrime_timeNeg15toNeg1 = new TH2D("phiE2D_swCrossPrime_timeNeg15toNeg1","phiE2D_swCrossPrime_timeNeg15toNeg1;phiE2D;swCrossPrime_timeNeg15toNeg1",25,-3.,3.,25,-0.05,0.05);
+                TH2D* phiE2D_swCrossPrime_timeNeg15toNeg1 = new TH2D("phiE2D_swCrossPrime_timeNeg15toNeg1","phiE2D_swCrossPrime_timeNeg15toNeg1;phiE2D;swCrossPrime_timeNeg15toNeg1",25,-3.,3.,25,-0.05,1.5);
 		//213 - phiE2D vs sw+', prompt times
-                TH2D* phiE2D_swCrossPrime_timeNeg1to3 = new TH2D("phiE2D_swCrossPrime_timeNeg1to3","phiE2D_swCrossPrime_timeNeg1to3;phiE2D;swCrossPrime_timeNeg1to3",25,-3.,3.,25,-0.05,0.05);
+                TH2D* phiE2D_swCrossPrime_timeNeg1to3 = new TH2D("phiE2D_swCrossPrime_timeNeg1to3","phiE2D_swCrossPrime_timeNeg1to3;phiE2D;swCrossPrime_timeNeg1to3",25,-3.,3.,25,-0.05,1.5);
 		//214 - phiE2D vs sw+', late times
-                TH2D* phiE2D_swCrossPrime_time3to15 = new TH2D("phiE2D_swCrossPrime_time3to15","phiE2D_swCrossPrime_time3to15;phiE2D;swCrossPrime_time3to15",25,-3,3.,25,-0.05,0.05);
+                TH2D* phiE2D_swCrossPrime_time3to15 = new TH2D("phiE2D_swCrossPrime_time3to15","phiE2D_swCrossPrime_time3to15;phiE2D;swCrossPrime_time3to15",25,-3,3.,25,-0.05,1.5);
 		//215 - phiE2D vs reco MET
 		TH2D* phiE2D_recoMet = new TH2D("phiE2D_recoMet","phiE2D_recoMet;phiE2D;recoMet",25,-3,3,25,0,1000);
 		//216 - etaSig vs reco MET
