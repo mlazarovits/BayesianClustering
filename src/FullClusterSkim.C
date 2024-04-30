@@ -3,7 +3,6 @@
 #include "PhotonSkimmer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
-#include "Clusterizer.hh"
 //#include "VarClusterViz3D.hh"
 #include <TSystem.h>
 #include <TFile.h>

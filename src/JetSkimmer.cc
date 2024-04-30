@@ -1,5 +1,4 @@
 #include "JetSkimmer.hh"
-#include "Clusterizer.hh"
 #include "BayesCluster.hh"
 #include "Matrix.hh"
 #include <TFile.h>

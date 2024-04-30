@@ -1,5 +1,4 @@
 #include "Jet.hh"
-//TODO: change default space coords to eta phi
 #include <iostream>
 using std::cerr;
 

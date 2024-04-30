@@ -1,6 +1,5 @@
 #include "JetProducer.hh"
 
-//#include "Clusterizer.hh"
 #include "Matrix.hh"
 #include <TFile.h>
 //#include <TH1D.h>
