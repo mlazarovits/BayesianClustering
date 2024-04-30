@@ -25,6 +25,7 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_smear = true;
+			_timesmear = false;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -44,6 +45,7 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_smear = true;
+			_timesmear = false;
 			
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);
