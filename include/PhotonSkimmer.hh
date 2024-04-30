@@ -282,6 +282,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(phoNrhs_Ebin4);		
 			_hists1D.push_back(swCrossPrime);
 			_hists1D.push_back(etaDiff);
+			_hists1D.push_back(dPhi_phiCenterMet);
+			_hists1D.push_back(dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -495,6 +497,25 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(etaCenter_phiCenter_timeNeg1to3_phiSigle0p3ANDetaSigge0p3_phiE2Deq0);	
 			_hists2D.push_back(etaCenter_phiCenter_time3to15_phiSigle0p3ANDetaSigge0p3_phiE2Deq0);	
 			_hists2D.push_back(rot2D_E_phiCenterneq0Pi);
+                	_hists2D.push_back(phiE2D_swCrossPrime_timeNeg15toNeg1);
+                	_hists2D.push_back(phiE2D_swCrossPrime_timeNeg1to3);
+                	_hists2D.push_back(phiE2D_swCrossPrime_time3to15);
+			_hists2D.push_back(phiE2D_recoMet);
+			_hists2D.push_back(etaSig_recoMet);
+			_hists2D.push_back(phiSig_recoMet);
+			_hists2D.push_back(etaCenter_recoMet);
+			_hists2D.push_back(phiCenter_recoMet);
+			_hists2D.push_back(timeCenter_recoMet);
+			_hists2D.push_back(etaSig_timeEtaCov_timeNeg15toNeg1);
+			_hists2D.push_back(etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi);
+			_hists2D.push_back(etaSig_timeEtaCov_time3to15);
+			_hists2D.push_back(etaSig_etaPhiCov_timeNeg15toNeg1);
+			_hists2D.push_back(etaSig_etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi);
+			_hists2D.push_back(etaSig_etaPhiCov_time3to15);
+			_hists2D.push_back(metPhi_phiCenter);
+			_hists2D.push_back(metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3);
+			_hists2D.push_back(metPhi_phiCenter_etaSigge0p3ORphiSigle0p3);
+			
 
 
 		};
@@ -981,7 +1002,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* swCrossPrime = new TH1D("swCrossPrime","swCrossPrime",25,-0.05,0.05);
 		//234 - difference between eta mean from points and eta center from GMM
 		TH1D* etaDiff = new TH1D("etaDiff","etaDiff",25,-0.02,0.02);
-
+		//235 - dPhi bw phiCenter and MET	
+		TH1D* dPhi_phiCenterMet = new TH1D("dPhi_phiCenterMet","dPhi_phiCenterMet",25,-3.5,3.5);
+		//236 - dPhi bw phiCenter and MET, etaSig + phiSig cuts
+		TH1D* dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3 = new TH1D("dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3","dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5);
+	
 
 
 		
@@ -1431,10 +1456,43 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* etaCenter_phiCenter_time3to15_phiSigle0p3ANDetaSigge0p3_phiE2Deq0 = new TH2D("etaCenter_phiCenter_time3to15_phiSigle0p3ANDetaSigge0p3_phiE2Deq0","etaCenter_phiCenter_time3to15_phiSigle0p3ANDetaSigge0p3_phiE2Deq0;etaCenter;phiCenter_time3to15_phiSigle0p3ANDetaSigge0p3_phiE2Deq0",25,-1.6,1.6,25,-0.2,6.4);	
 		//211 - rot2D vs subcl E, !(phi center ~ 0 && phi center ~ pi) 
 		TH2D* rot2D_E_phiCenterneq0Pi = new TH2D("rot2D_subclE_phiCenterneq0Pi","rot2D_subclE_phiCenterneq0Pi;rotundity2D_phiCenterneq0Pi;E;a.u.",25,0.4,1.1,25,0,1000);
-
-
-
-
+		//212 - phiE2D vs sw+', early times
+                TH2D* phiE2D_swCrossPrime_timeNeg15toNeg1 = new TH2D("phiE2D_swCrossPrime_timeNeg15toNeg1","phiE2D_swCrossPrime_timeNeg15toNeg1;phiE2D;swCrossPrime_timeNeg15toNeg1",25,-3.,3.,25,-0.05,0.05);
+		//213 - phiE2D vs sw+', prompt times
+                TH2D* phiE2D_swCrossPrime_timeNeg1to3 = new TH2D("phiE2D_swCrossPrime_timeNeg1to3","phiE2D_swCrossPrime_timeNeg1to3;phiE2D;swCrossPrime_timeNeg1to3",25,-3.,3.,25,-0.05,0.05);
+		//214 - phiE2D vs sw+', late times
+                TH2D* phiE2D_swCrossPrime_time3to15 = new TH2D("phiE2D_swCrossPrime_time3to15","phiE2D_swCrossPrime_time3to15;phiE2D;swCrossPrime_time3to15",25,-3,3.,25,-0.05,0.05);
+		//215 - phiE2D vs reco MET
+		TH2D* phiE2D_recoMet = new TH2D("phiE2D_recoMet","phiE2D_recoMet;phiE2D;recoMet",25,-3,3,25,0,1000);
+		//216 - etaSig vs reco MET
+		TH2D* etaSig_recoMet = new TH2D("etaSig_recoMet","etaSig_recoMet;etaSig;recoMet",25,-0.01,0.09,25,0,1000);
+		//217 - phiSig vs reco MET
+		TH2D* phiSig_recoMet = new TH2D("phiSig_recoMet","phiSig_recoMet;phiSig;recoMet",25,-0.01,0.09,25,0,1000);
+		//218 - etaCenter vs reco MET
+		TH2D* etaCenter_recoMet = new TH2D("etaCenter_recoMet","etaCenter_recoMet;etaCenter;recoMet",25,-1.6,1.6,25,0,1000);
+		//219 - phiCenter vs reco MET
+		TH2D* phiCenter_recoMet = new TH2D("phiCenter_recoMet","phiCenter_recoMet;phiCenter;recoMet",25,-0.2,6.4,25,0,1000);
+		//220 - time center vs reco MET
+		TH2D* timeCenter_recoMet = new TH2D("timeCenter_recoMet","timeCenter_recoMet;timeCenter;recoMet",25,-15,15,25,0,1000);
+		//221 - etaSig vs timeEtaCov, early times
+		TH2D* etaSig_timeEtaCov_timeNeg15toNeg1 = new TH2D("etaSig_timeEtaCov_timeNeg15toNeg1","etaSig_timeEtaCov_timeNeg15toNeg1;etaSig;timeEtaCov_timeNeg15toNeg1",25,-0.01,0.09,25,-1,1);
+		//222 - etaSig vs timeEtaCov, early times, phiCenter ~ 0, pi
+		TH2D* etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi = new TH2D("etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi","etaSig_timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi;etaSig;timeEtaCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi",25,-0.01,0.09,25,-1,1);
+		//223 - etaSig vs timeEtaCov, late times
+		TH2D* etaSig_timeEtaCov_time3to15 = new TH2D("etaSig_timeEtaCov_time3to15","etaSig_timeEtaCov_time3to15;etaSig;timeEtaCov_time3to15",25,-0.01,0.09,25,-1,1);
+		//224 - etaSig vs etaPhiCov, early times
+		TH2D* etaSig_etaPhiCov_timeNeg15toNeg1 = new TH2D("etaSig_etaPhiCov_timeNeg15toNeg1","etaSig_etaPhiCov_timeNeg15toNeg1;etaSig;etaPhiCov_timeNeg15toNeg1",25,-0.01,0.09,25,-1,1);
+		//225 - etaSig vs etaPhiCov, early times, phiCenter ~ 0, pi
+		TH2D* etaSig_etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi = new TH2D("etaSig_etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi","etaSig_etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi;etaSig;etaPhiCov_timeNeg1_phiCenter0pi5toNeg1_phiCenter0pi",25,-0.01,0.09,25,-1,1);
+		//226 - etaSig vs etaPhiCov, late times
+		TH2D* etaSig_etaPhiCov_time3to15 = new TH2D("etaSig_etaPhiCov_time3to15","etaSig_etaPhiCov_time3to15;etaSig;etaPhiCov_time3to15",25,-0.01,0.09,25,-1,1);
+		//227 - MET phi vs phiCenter
+		TH2D* metPhi_phiCenter = new TH2D("metPhi_phiCenter","metPhi_phiCenter;metPhi;phiCenter",25,-0.2,6.4,25,-3.2,3.2);
+		//228 - MET phi vs phiCenter, etaSig + phiSig cuts
+		TH2D* metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3","metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3;metPhi;phiCenter_etaSigge0p3ANDphiSigle0p3",25,-0.2,6.4,25,-3.2,3.2);
+		//228 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
+		TH2D* metPhi_phiCenter_etaSigge0p3ORphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ORphiSigle0p3","metPhi_phiCenter_etaSigge0p3ORphiSigle0p3;metPhi;phiCenter_etaSigge0p3ORphiSigle0p3",25,-0.2,6.4,25,-3.2,3.2);
+			
 
 
 		enum weightScheme{
@@ -1875,6 +1933,14 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists1D[1][223]->Fill(_swcross);
 			_procCats[id_idx].hists1D[1][233]->Fill(swCP);
 			_procCats[id_idx].hists1D[1][234]->Fill(etaCentroid - ec);
+			double dPhiMetpc = _base->Met_phi - pc;
+			if(dPhiMetpc > acos(-1)) dPhiMetpc -= 2*acos(-1);
+			else if(dPhiMetpc < -acos(-1)) dPhiMetpc += 2*acos(-1);
+			_procCats[id_idx].hists1D[1][235]->Fill(dPhiMetpc);
+			if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
+
+
+
 	
 			//2D hists
 			_procCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
@@ -2150,6 +2216,33 @@ class PhotonSkimmer : public BaseSkimmer{
 				}	
 
 			}
+			if(tc > -15 && tc < -1) _procCats[id_idx].hists2D[1][212]->Fill(phi2D,swCP);
+			if(tc > -1 && tc < 3) _procCats[id_idx].hists2D[1][213]->Fill(phi2D,swCP);		
+			if(tc > 3 && tc < 15) _procCats[id_idx].hists2D[1][214]->Fill(phi2D,swCP);		
+
+			_procCats[id_idx].hists2D[1][215]->Fill(phi2D,_base->Met_pt);
+			_procCats[id_idx].hists2D[1][216]->Fill(e_var,_base->Met_pt);
+			_procCats[id_idx].hists2D[1][217]->Fill(p_var,_base->Met_pt);
+			_procCats[id_idx].hists2D[1][218]->Fill(ec,_base->Met_pt);
+			_procCats[id_idx].hists2D[1][219]->Fill(pc,_base->Met_pt);
+			_procCats[id_idx].hists2D[1][220]->Fill(tc,_base->Met_pt);
+			if(tc > -15 && tc < -1) _procCats[id_idx].hists2D[1][221]->Fill(e_var,te_cov);
+			if(tc > -15 && tc < -1){
+				if(pc > -0.2 && pc < 0.2) _procCats[id_idx].hists2D[1][222]->Fill(e_var,te_cov);
+				if(pc > acos(-1)-0.2 && pc < acos(-1)+0.2) _procCats[id_idx].hists2D[1][222]->Fill(e_var,te_cov);
+				if(pc > 2*acos(-1)-0.2 && pc < 2*acos(-1)+0.2) _procCats[id_idx].hists2D[1][222]->Fill(e_var,te_cov);
+			}
+			if(tc > 3 && tc < 15) _procCats[id_idx].hists2D[1][223]->Fill(e_var,te_cov);
+			if(tc > -15 && tc < -1) _procCats[id_idx].hists2D[1][224]->Fill(e_var,ep_cov);
+			if(tc > -15 && tc < -1){
+				if(pc > -0.2 && pc < 0.2) _procCats[id_idx].hists2D[1][225]->Fill(e_var,ep_cov);
+				if(pc > acos(-1)-0.2 && pc < acos(-1)+0.2) _procCats[id_idx].hists2D[1][225]->Fill(e_var,ep_cov);
+				if(pc > 2*acos(-1)-0.2 && pc < 2*acos(-1)+0.2) _procCats[id_idx].hists2D[1][225]->Fill(e_var,ep_cov);
+			}
+			if(tc > 3 && tc < 15) _procCats[id_idx].hists2D[1][226]->Fill(e_var,ep_cov);
+			_procCats[id_idx].hists2D[1][227]->Fill(_base->Met_phi,pc);	
+			if(p_var < 0.03 && e_var > 0.03) _procCats[id_idx].hists2D[1][228]->Fill(_base->Met_phi,pc);	
+			else _procCats[id_idx].hists2D[1][229]->Fill(_base->Met_phi,pc);	
 
 
 		}
