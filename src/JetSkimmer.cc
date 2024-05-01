@@ -47,7 +47,7 @@ void JetSkimmer::Skim(){
 	double geoAvgJets;
 	double phogev = 1./30.;
 	_prod->PrintPreselection();
-	int SKIP = 100;
+	int SKIP = 1;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//do data MET selection
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
