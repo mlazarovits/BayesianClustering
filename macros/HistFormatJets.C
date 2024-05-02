@@ -245,7 +245,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(legentry.find("PD") != string::npos)
 			legentry = legentry.substr(0,legentry.find("PD"));		
 
-		//cout << " legentry " << legentry << " title " << title << endl;
+		cout << " legentry " << legentry << " title " << title << endl;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -311,7 +311,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			std::ostringstream ss;
 			ss << setprecision(5) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], C = " << val1 << " #pm " << err1 << " [ns]";
 			string teststr = ss.str();
-			fitparams.DrawLatex(0.4,0.3+i*0.05,teststr.c_str());
+			fitparams.DrawLatex(0.4,0.2+i*0.05,teststr.c_str());
 		} 
 
 	}
@@ -327,7 +327,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.60,0.92,plot_title.c_str());
+	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
 
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -339,7 +339,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		string sigstr = hist[0]->GetYaxis()->GetTitle();
 		if(xstr.find("(GeV)") != string::npos) xstr.replace(xstr.find("(GeV)"),5,"");
 		string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + 2C^{2}";
-		sigFormula.DrawLatex(0.4, 0.25, paramsStr.c_str());
+		sigFormula.DrawLatex(0.4, 0.2+(hist.size()+1)*0.05, paramsStr.c_str());
 	}
 
 	return;
@@ -1008,10 +1008,10 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 	if(proc == "QCD"){
 		cmslab = "QCD Multijets, HT 500 to 700 2017";
 	}
-	else if(proc == "JetHT"){
+	else if(proc == "JetHTPD"){
 		cmslab = "JetHT, Run F 2017";
 	}
-	else if(proc == "DEG"){
+	else if(proc == "DEGPD"){
 		cmslab = "DoubleEG, Run F 2017";
 	}
 	//string cmslab = GetCMSLabel(file);
@@ -1111,6 +1111,12 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 	else if(proc == "QCD"){
 		cmslab = "QCD Multijets, HT 500 to 700 2017";
 	}
+	else if(proc == "JetHTPD"){
+		cmslab = "JetHT, Run F 2017";
+	}
+	else if(proc == "DEGPD"){
+		cmslab = "DoubleEG, Run F 2017";
+	}
 	else cmslab = "process";
 	cmslab += " ,"+method;
 	//string cmslab = GetCMSLabel(file);
@@ -1164,8 +1170,8 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 					histname = histname.substr(0,histname.find("_procStack"));
 					histname += "_"+proc;
 					TH1D* hist = (TH1D*)f->Get((dirname+"/"+ddirname+"/"+histname).c_str());
-					//if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << endl;
-					//else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
+					if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << endl;
+					else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
 					if(hist) hists.push_back(hist);
 				}
 			}	
@@ -1194,40 +1200,19 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 }
 
 
-/*
-size_t FindNth(string& instr, string& match, int n){
-	int cnt = 0;
-	size_t pos = 0;
-	while(cnt != n){
-		pos++;
-		pos = instr.find(match,pos);
-		if(pos == string::npos) return -1;
-		cnt++;
-	}
-	return pos;
-}
-//assume file labels are after third underscore
-void GetFileLabels(vector<string>& files, vector<string>& labels){
-	string l;
-	size_t s, s1;
-	string match = "_";
-	vector<string> procs = {"GJets","QCD","JetHT","DEG"};
-	for(auto file : files){
-		s = FindNth(file,match,3)+1;
-		s1 = FindNth(file,match,4);
-		//cout << "file " << file << " substr " << file.substr(s,s1-s) << endl;
-		l = file.substr(s,s1-s);
-		if(find(procs.begin(), procs.end(), l) != procs.end()) l = "";
-		labels.push_back(l);
-	}
-
-}
-*/
 
 
 void FileStackHists(vector<string>& files, vector<string>& labels, string proc, string method, string oname, string match=""){
 	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
-	string cmslab;
+	string cmslab = "";
+	if(proc == "JetHTPD"){
+		cmslab = "JetHT, Run F 2017";
+	}
+	else if(proc == "DEGPD"){
+		cmslab = "DoubleEG, Run F 2017";
+	}
+	else cmslab = "";
+	cmslab += " "+method;
 	vector<TH1D> hists;
 	//GetFileLabels(files,labels);
 	for(auto file : files){
