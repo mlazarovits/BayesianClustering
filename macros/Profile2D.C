@@ -15,8 +15,8 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 	for(int i = 1; i < nbins+1; i++){
 		TH1D* phist = (TH1D*)inhist->ProjectionY("tmp",i,i);
 		if(!phist) continue;
-		if(phist->GetEntries() == 0) continue;
-		//cout << "bin #" << i << " nentries in profile " << phist->GetEntries() << endl;
+		if(phist->GetEntries() == 0 || phist->Integral() == 0) continue;
+		//cout << "bin #" << i << " nentries in profile " << phist->GetEntries() << " integral " << phist->Integral() << endl;
 		profilename = inhist->GetName();
 		profiletitle = inhist->GetTitle();
 		profilename.insert(profilename.find("_"+profiletitle),"_bin"+std::to_string(i));
@@ -42,6 +42,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 		double norm = phist->Integral();
 		double low = phist->GetBinLowEdge(0);
 		double high = -low;
+		//for(int b = 0; b < phist->GetNbinsX(); b++) cout << "bin #" << b << " error " << phist->GetBinError(b) << " content " << phist->GetBinContent(b) << endl;
 		//check that initial parameter values are ok
 		if( stddev >= 0.0 && norm > 0.){
 			TF1* fit = new TF1("fit","gaus",low,high);
@@ -58,7 +59,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			//set new contents
 			sig_outhist->SetBinContent(i, fit_stddev);
 			sig_outhist->SetBinError(i, fit_stddev_err);
-			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
+		//	cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
 				//cout << "bin #" << i << " mean " << fit_mean << " nentries in profile " << phist->GetEntries() << endl;
 				mean_outhist->SetBinContent(i, fit_mean);
