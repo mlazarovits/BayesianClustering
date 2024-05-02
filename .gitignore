@@ -42,3 +42,4 @@ plots_local/*
 rootfiles/*
 skims/*
 condor/Output/*
+condor*/*.tgz
