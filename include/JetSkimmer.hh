@@ -24,7 +24,6 @@ class JetSkimmer : public BaseSkimmer{
 			_gev = 1./10.;
 			_swts.Init();
 			_weight = 1.;
-			_skip = 1;
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -38,7 +37,6 @@ class JetSkimmer : public BaseSkimmer{
 			_prod->SetIsoCut();
 	
 
-			_skip = 1;
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -228,12 +226,6 @@ class JetSkimmer : public BaseSkimmer{
 
 		};
 
-		//for sample weights
-		SampleWeight _swts;
-		//weight to apply to all histograms
-		double _weight;
-		//skip for event loop
-		int _skip;
 
 		void Skim();
 		vector<TH1D*> _timeHists1D;	
@@ -362,7 +354,6 @@ class JetSkimmer : public BaseSkimmer{
 			trCats.push_back(tremax);
 		}
 
-		void SetSkip(int i){ _skip = i; _weight *= _skip; }
 
 	
 		void FillTruePhotonHists(const vector<Jet>& phos){

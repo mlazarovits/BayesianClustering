@@ -44,6 +44,7 @@ int main(int argc, char *argv[]){
 	bool frac = false;
 	bool calib = true;
 	bool spikes = false;
+	int skip = 1;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -160,6 +161,10 @@ int main(int argc, char *argv[]){
 			spikes = true;
 			cout << "Rejecting spikes with swiss cross cut" << endl;
    		}
+		if(strncmp(argv[i],"--skip", 6) == 0){
+			i++;
+    	 		skip = std::stoi(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -178,6 +183,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --skip [skip]                 set skip for event loop (default = 1)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --noSmear                     turns off smearing data (default = true, on)" << endl;
    		cout << "   --timeSmear                   turns on time smearing data (default = false, off)" << endl;
@@ -307,6 +313,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinNrhs(minnrhs);
 		skimmer.SetMinEmE(minEmE);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
+		skimmer.SetSkip(skip);
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);

@@ -15,6 +15,8 @@
 #include "TTree.h"
 #include <string>
 #include <vector>
+#include "SampleWeight.hh"
+using weights = SampleWeight::weights;
 
 using std::vector;
 using std::string;
@@ -26,6 +28,7 @@ class BaseSkimmer{
 			_debug = false;
 			_smear = true;
 			_timesmear = false;
+			_skip = 1;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -45,6 +48,7 @@ class BaseSkimmer{
 			_debug = false;
 			_smear = true;
 			_timesmear = false;
+			_skip = 1;
 			
 			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
@@ -118,6 +122,15 @@ class BaseSkimmer{
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
 
 
+
+		//for sample weights
+		SampleWeight _swts;
+		//weight to apply to all histograms
+		double _weight;
+		//skip for event loop
+		int _skip;
+		void SetSkip(int i){ _skip = i; _weight *= _skip; }
+		
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct procCat{
