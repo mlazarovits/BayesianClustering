@@ -53,6 +53,7 @@ class JetSkimmer : public BaseSkimmer{
 				_base->GetEntry(0); //for gen weight
 				double scale, xsec;
 				_swts.GetWeights(file,scale,xsec);
+				//xsecs are saved as inverse picobarns -> need to be inverse femtobarns
 				_weight = scale * (xsec * 1000) * (_base->Evt_genWgt / _nEvts);
 			} 
 	
