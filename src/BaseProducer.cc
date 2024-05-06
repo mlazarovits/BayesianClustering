@@ -91,13 +91,14 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
 				}
-				else{	
+				else{
+					calibfactor = 0;	
 					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
 				}
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
-	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
+	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << rh.t() << " calib " << calibfactor << endl;			
                                 
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
@@ -210,7 +211,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//TOF from PV to rh location - use this to improve time covariance
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
-                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 	//cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << endl;
 
 				
