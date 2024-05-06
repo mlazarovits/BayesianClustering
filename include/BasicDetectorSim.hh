@@ -177,8 +177,10 @@ struct RecoParticle;
 		std::unique_ptr<TFile> _file;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
-		//gen information
+		//gen jets 
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//reco jets
+		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		//pv info
 		double _pvx, _pvy, _pvz;
 		//track info

@@ -877,6 +877,15 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
 	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
 
+
+	//reco jets - cells clustered with FJ AK4
+	_tree->Branch("Jet_eta",&_jeta)->SetTitle("Jet eta - FastJet AK4, reco");
+	_tree->Branch("Jet_phi",&_jphi)->SetTitle("Jet phi - FastJet AK4, reco");
+	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
+	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
+	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
+
+
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
 	_tree->Branch("Track_py", &_trackpy)->SetTitle("Track py");
 	_tree->Branch("Track_pz", &_trackpz)->SetTitle("Track pz");
