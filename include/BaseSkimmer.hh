@@ -362,6 +362,7 @@ class BaseSkimmer{
                 }
 		bool _smear, _timesmear;
 
+		void SetSpikeRejection(bool s){ _prod->RejectSpikes(s); }
 
 };
 #endif

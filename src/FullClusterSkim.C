@@ -43,6 +43,7 @@ int main(int argc, char *argv[]){
 	double minRhE = 0.5;
 	bool frac = false;
 	bool calib = true;
+	bool spikes = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -155,6 +156,10 @@ int main(int argc, char *argv[]){
 			calib = false;
 			cout << "Not applying time calibration to rhs" << endl;
    		}
+		if(strncmp(argv[i],"--rejectSpikes", 14) == 0){
+			spikes = true;
+			cout << "Rejecting spikes with swiss cross cut" << endl;
+   		}
 
 	}
 	if(hprint){
@@ -174,12 +179,13 @@ int main(int argc, char *argv[]){
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
-   		cout << "   --timeSmear                   turns on time smearing data (default = false)" << endl;
-   		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
-   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
-   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false)" << endl;
+   		cout << "   --noSmear                     turns off smearing data (default = true, on)" << endl;
+   		cout << "   --timeSmear                   turns on time smearing data (default = false, off)" << endl;
+   		cout << "   --noWeight                    turns off weighting data points (default = false, on)" << endl;
+   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;
+   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
    		cout << "   --noCalibrate                 turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
+   		cout << "   --rejectSpikes                reject spikes based on swiss cross cut (default = false, off)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -300,6 +306,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
 		skimmer.SetMinEmE(minEmE);
+		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);

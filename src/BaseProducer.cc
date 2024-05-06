@@ -58,6 +58,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 			//skip whole event
 			if(hemVeto) return;
 		}
+
+
                 Jet jet(px, py, pz, _base->Jet_energy->at(j));
                 jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
@@ -73,6 +75,12 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
 				if(_base->ECALRecHit_energy->at(rhidx) < minrhE) continue;				
+				//spike rejection? - only for rhE > 4 GeV
+				if(_spikes && _data && _base->ECALRecHit_energy->at(rhidx) > 4){
+					cout << "rejecting spikes" << endl;
+					if( _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
+						continue;
+				}
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
