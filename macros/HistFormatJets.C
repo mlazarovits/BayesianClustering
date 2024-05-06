@@ -286,8 +286,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 
 		if(canname.find("sigma") != string::npos && hist[i]->GetEntries() > 3){
-			string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
-			//string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1])+([2]*[2]/x))"
+			//string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
+			string formula = "sqrt((([0]*[0])/(x*x))+([1]*[1]/x)+(2*[2]*[2]))"
 			TFormula* form = new TFormula("resFormula",formula.c_str());
 			
 			double xlo = hist[i]->GetXaxis()->GetBinLowEdge(hist[i]->GetXaxis()->GetFirst());
@@ -306,10 +306,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			fitparams.SetTextColor(col);
 			double val0 = fit->GetParameter(0);
 			double val1 = fit->GetParameter(1);
+			double val2 = fit->GetParameter(2);
 			double err0 = fit->GetParError(0);
 			double err1 = fit->GetParError(1);
+			double err2 = fit->GetParError(2);
 			std::ostringstream ss;
-			ss << setprecision(5) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], C = " << val1 << " #pm " << err1 << " [ns]";
+			ss << setprecision(5) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], S = " << val1 << " #pm " << err1 << " [#sqrt{GeV}*ns],  C = " << val2 << " #pm " << err2 << " [ns]";
 			string teststr = ss.str();
 			fitparams.DrawLatex(0.4,0.2+i*0.05,teststr.c_str());
 		} 
@@ -1333,6 +1335,11 @@ void HistFormatJets(string file, string file2 = ""){
 	ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
 	//recoGen and gamPV for QCD + GMSB for eAvg
 	ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
+	//gamPV for QCD + JetHT
+	ProcStackHists(file, jetHT_QCD, "eAvg", oname, "geoEavg");
+	ProcStackHists(file, jetHT_QCD, "median", oname, "geoEavg");
+	//gamPV for QCD + DEG
+	ProcStackHists(file, DEG_QCD, "median", oname, "geoEavg");
 	
 	//PV dijets for median + eAvg for QCD
 	MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
