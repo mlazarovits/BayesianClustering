@@ -42,10 +42,15 @@ class BaseSkimmer{
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
 			_gev = 1;
-			_data = false;
 			_debug = false;
 			_smear = true;
 			_timesmear = false;
+			
+			string filename = file->GetName();	
+			if(filename.find("SIM") != string::npos)
+				_data = false;
+			else
+				_data = true;
 			
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);

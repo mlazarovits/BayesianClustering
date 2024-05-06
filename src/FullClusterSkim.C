@@ -282,13 +282,13 @@ int main(int argc, char *argv[]){
 	}
 	//choose time calibration file
 	string calibfile = "";
-        if(oname.find("GJets") != string::npos)
+        if(fname.find("GJets") != string::npos)
                 calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
-        else if(oname.find("JetHT") != string::npos)
+        else if(fname.find("JetHT") != string::npos)
                 calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
-        else if(oname.find("DEG") != string::npos || oname.find("DoubleEG") != string::npos)
+        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos)
                 calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
-        else if(oname.find("QCD") != string::npos)
+        else if(fname.find("QCD") != string::npos)
                 calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
         //else default to GJets
         else
@@ -300,8 +300,6 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
 		skimmer.SetMinEmE(minEmE);
-		if(in_file.find("_AOD_") != string::npos)
-			skimmer.SetData(true);
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
@@ -324,7 +322,6 @@ int main(int argc, char *argv[]){
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
-		skimmer.SetData(data);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
         	skimmer.ApplyFractions(frac);
