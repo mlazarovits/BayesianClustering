@@ -12,10 +12,8 @@
 #include <TMath.h>
 #include "TSystem.h"
 #include "BaseTree.hh"
-#include "SampleWeight.hh"
 
 using procCat = BaseSkimmer::procCat;
-using weights = SampleWeight::weights;
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){
@@ -47,12 +45,12 @@ class JetSkimmer : public BaseSkimmer{
 			//set histogram weights
 			if(_data){ _weight = 1.; }
 			else{
-				cout << "not data" << endl;
 				_base->GetEntry(0); //for gen weight
 				double scale, xsec;
 				_swts.GetWeights(file,scale,xsec);
 				//xsecs are saved as inverse picobarns -> need to be inverse femtobarns
 				_weight = scale * (xsec * 1000) * (_base->Evt_genWgt / _nEvts);
+				cout << "_weight " << _weight << " xsec " << xsec << endl;
 			} 
 	
 			objE_clusterE->SetTitle("jetE_clusterE");
