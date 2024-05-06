@@ -12,14 +12,19 @@
 #include <TMath.h>
 #include "TSystem.h"
 #include "BaseTree.hh"
+#include "SampleWeight.hh"
 
 using procCat = BaseSkimmer::procCat;
+using weights = SampleWeight::weights;
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){
 			_evti = 0;
 			_evtj = 0;
 			_gev = 1./10.;
+			_swts.Init();
+			_weight = 1.;
+			_skip = 1;
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -31,15 +36,26 @@ class JetSkimmer : public BaseSkimmer{
 
 			_prod = new JetProducer(file);
 			_prod->SetIsoCut();
-		
+	
 
+			_skip = 1;
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
 			_evtj = _nEvts;
 			_oname = "plots/jet_skims_"+_cms_label+".root";
 			_gev = 1./10.;
-				
+			_swts.Init();
+			//set histogram weights
+			if(_data){ _weight = 1.; }
+			else{
+				cout << "not data" << endl;
+				_base->GetEntry(0); //for gen weight
+				double scale, xsec;
+				_swts.GetWeights(file,scale,xsec);
+				_weight = scale * (xsec * 1000) * (_base->Evt_genWgt / _nEvts);
+			} 
+	
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
 			//true jet hists
@@ -211,6 +227,13 @@ class JetSkimmer : public BaseSkimmer{
 
 		};
 
+		//for sample weights
+		SampleWeight _swts;
+		//weight to apply to all histograms
+		double _weight;
+		//skip for event loop
+		int _skip;
+
 		void Skim();
 		vector<TH1D*> _timeHists1D;	
 		vector<TH2D*> _timeHists2D;	
@@ -338,6 +361,8 @@ class JetSkimmer : public BaseSkimmer{
 			trCats.push_back(tremax);
 		}
 
+		void SetSkip(int i){ _skip = i; _weight *= _skip; }
+
 	
 		void FillTruePhotonHists(const vector<Jet>& phos){
 			int nphos = phos.size();	
@@ -357,7 +382,7 @@ class JetSkimmer : public BaseSkimmer{
 					rhy = rhs[r].y();	
 					rhz = rhs[r].z();	
 					tof = sqrt((rhx - pvx)*(rhx - pvx) + (rhy - pvy)*(rhy - pvy) + (rhz - pvz)*(rhz - pvz))/_c; 
-					TOFgam_rh_pv->Fill(tof);
+					TOFgam_rh_pv->Fill(tof,_weight);
 				}		
 			}
 		}
@@ -365,32 +390,32 @@ class JetSkimmer : public BaseSkimmer{
 
 		void FillTrueJetHists(const vector<Jet>& jets){
 			int njets = jets.size();	
-			nTrueJets->Fill((double)njets);
+			nTrueJets->Fill((double)njets,_weight);
 		
 			double eECAL = 0;
 			int ijet = 0;
 			vector<JetPoint> rhs;
 			for(int j = 0; j < njets; j++){
-				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
-				objE->Fill(jets[j].E());
-				TrueJet_pT->Fill(jets[j].pt());
-				TrueJet_nRhs->Fill(jets[j].GetNRecHits());
+				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits(), _weight);
+				objE->Fill(jets[j].E(), _weight);
+				TrueJet_pT->Fill(jets[j].pt(), _weight);
+				TrueJet_nRhs->Fill(jets[j].GetNRecHits(), _weight);
 				ijet = jets[j].GetUserIdx();
 				eECAL = _base->Jet_neEmEF->at(ijet) + _base->Jet_chEmEF->at(ijet);
 				eECAL *= jets[j].E();
-				TrueJet_EmE->Fill(eECAL);
-				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet));			
+				TrueJet_EmE->Fill(eECAL, _weight);
+				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet), _weight);
 			
 				
 				rhs.clear();
 				rhs = jets[j].GetJetPoints();
 				for(int r = 0; r < rhs.size(); r++){
-					erhs_trhs->Fill(rhs[r].E(), rhs[r].t());
+					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
 				if(njets < 2) continue;
 				if(j == 0 || j == 1){	
-					TrueJet_twoHardestpT->Fill(jets[j].pt());
-					TrueJet_twoHardestpT->Fill(jets[j].pt());
+					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
+					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
 				}
 			}
 		}
@@ -422,7 +447,7 @@ class JetSkimmer : public BaseSkimmer{
 					jets[j].SetJetTime(jettime);
 					//cout << " jet #" << j << " time: " << jettime << endl;
 					//fill jet time in pv frame - 0
-					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime);
+					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime, _weight);
 					vector<JetPoint> rhs = jets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++)
 						Erh += rhs[r].E();
@@ -451,13 +476,13 @@ class JetSkimmer : public BaseSkimmer{
 				
 	
 					//fill deltaT_jets - 1
-					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
+					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets, _weight);
 					//fill geopTavg vs deltaT jets - 1
-					trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
+					trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets, _weight);
 					//fill minpt vs deltaT jets - 2
-					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
+					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets, _weight);
 					//fill geoAvgEecal vs deltaT jets - 3
-					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(sqrt(Erh1*Erh2), deltaT_jets);
+					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(sqrt(Erh1*Erh2), deltaT_jets, _weight);
 					//trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 				}	
 				//this assumes that the time for the jet was set previously with the respective method
@@ -475,8 +500,8 @@ class JetSkimmer : public BaseSkimmer{
 					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 					deltaT_gampv = gamtime - pvtime;
 					//should only be one process in data
-					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
-					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 					//gampv resolution
 					if(_phos[0].pt() > 70){
 						dphi_phoJets = deltaPhi(_phos[0], jets);
@@ -484,8 +509,8 @@ class JetSkimmer : public BaseSkimmer{
 							Epho = 0;
 							phorhs = _phos[0].GetJetPoints();
 							for(auto r : phorhs) Epho += r.E();
-						cout << "x " << sqrt(Epho*Ejets) << " y " << deltaT_gampv << endl;
-							trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv);
+						//cout << "x " << sqrt(Epho*Ejets) << " y " << deltaT_gampv << endl;
+							trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 						}
 					}
 
@@ -493,8 +518,8 @@ class JetSkimmer : public BaseSkimmer{
 					if(_phos.size() > 1){
 						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 						deltaT_gampv = gamtime - pvtime;
-						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
-						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 						//gampv resolution
 						if(_phos[1].pt() > 70){
 							dphi_phoJets = deltaPhi(_phos[1], jets);
@@ -502,7 +527,7 @@ class JetSkimmer : public BaseSkimmer{
 								Epho = 0;
 								phorhs = _phos[1].GetJetPoints();
 								for(auto r : phorhs) Epho += r.E();
-								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets), deltaT_gampv);
+								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets), deltaT_gampv, _weight);
 							}
 						}
 					}			
@@ -528,52 +553,52 @@ class JetSkimmer : public BaseSkimmer{
 						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						deltaT_gampv = gamtime - pvtime;
 					
 	
-						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 	
 						//fill difference in deltaT_pvGam of reco and gen - 3
 						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
 					//cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << " Epho: " << Epho << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
+						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
-							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
+							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
-							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							//if photon time (gamtime - pvtime) is in different delayed time windows, fill different 2D hists
 							if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
-								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							if(deltaT_gampv_gen >= 4.5 && deltaT_gampv_gen < 8)
-								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
-								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							//fill gen deltaT vs reco deltaT in energy bins
 							if(Epho >= 0 && Epho < 100){
-								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv); 
+								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv, _weight); 
 							}
 							if(Epho >= 100 && Epho < 400){
-								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv); 
+								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv, _weight); 
 							}
 							if(Epho >= 400 && Epho < 700){
-								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv); 
+								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv, _weight); 
 							}
 							if(Epho >= 700){
-								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv); 
+								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv, _weight); 
 							}
 							
-							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
-							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
-							trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen);
-							trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[0]), deltaT_gampv - deltaT_gampv_gen);
-							if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv);
+							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[0]), deltaT_gampv - deltaT_gampv_gen, _weight);
+							if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 
 						}	
 	
@@ -597,45 +622,45 @@ class JetSkimmer : public BaseSkimmer{
 							//cout << "SUBLEAD GAMTIME" << endl;	
 							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 							//cout << "SUBLEAD GAMTIME END" << endl;	
-							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 							deltaT_gampv = gamtime - pvtime;
-							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 							
 							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
 					//cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
-							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 							//only for gen matches
 							if(deltaT_gampv_gen != -999){
-								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
-									trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 4.5 && deltaT_gampv_gen < 8)
-									trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
-									trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								//fill gen deltaT vs reco deltaT in energy bins
 								if(Epho >= 0 && Epho < 100){
-									trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-									trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv); 
+									trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv, _weight); 
 								}
 								if(Epho >= 100 && Epho < 400){
-									trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-									trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv); 
+									trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv, _weight); 
 								}
 								if(Epho >= 400 && Epho < 700){
-									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-									trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv); 
+									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv, _weight); 
 								}
 								if(Epho >= 700){
 									trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-									trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv); 
+									trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv, _weight); 
 								}
-								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[1]), deltaT_gampv - deltaT_gampv_gen);
-								if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv);
+								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[1]), deltaT_gampv - deltaT_gampv_gen, _weight);
+								if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 	
 							}
 						}
@@ -976,7 +1001,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				nSubClusters_mm->Fill(gmm->GetNClusters());
+				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;

@@ -43,19 +43,35 @@ void JetSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 
+	if(!_data){	
+		int nSelEvts = 0;
+		//get total number of selected events for weighting
+		for(int i = 0; i < _nEvts; i+=_skip){
+			_base->GetEntry(i);
+			vector<Jet> jets;
+			_prod->GetTrueJets(jets, i, _gev);
+			if(jets.size() < 1){ continue; }
+			//other selection in skim with MET is only for data - N/A
+			nSelEvts++;
+		}
+		//divide by number of selected events
+		//initial set to total events in ctor
+		_weight *= (double)_nEvts/(double)nSelEvts;
+	}
+	cout << setprecision(10) << "weight " << _weight << endl; 
+
 	double metThresh = 0.4;
 	double geoAvgJets;
 	double phogev = 1./30.;
 	_prod->PrintPreselection();
-	int SKIP = 1;
-	for(int i = _evti; i < _evtj; i+=SKIP){
+	for(int i = _evti; i < _evtj; i+=_skip){
 		//do data MET selection
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i, phogev);
-		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
+		if(i % (_skip) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
 		for(int r = 0; r < rhs.size(); r++){
-			rhTime->Fill(rhs[r].t());
+			rhTime->Fill(rhs[r].t(),_weight);
 		}
 
 
@@ -79,7 +95,7 @@ void JetSkimmer::Skim(){
 		}
 
 	
-		if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
+		if(i % (_skip) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		cout << endl;
 		for(int i = 0; i < trCats.size(); i++)	
 			//make sure time smearing doesn't happen here when it's turned off by the flag
