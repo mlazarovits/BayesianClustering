@@ -17,15 +17,15 @@ SampleWeight::SampleWeight(){
 
 void SampleWeight::Init(){
 	//scale
-	_sampleToWeights["QCD_HT50to100"].SetScale(1.);
-	_sampleToWeights["QCD_HT100to200"].SetScale(1.);
-	_sampleToWeights["QCD_HT200to300"].SetScale(1.);
-	_sampleToWeights["QCD_HT300to500"].SetScale(1.);
-	_sampleToWeights["QCD_HT500to700"].SetScale(1.);
-	_sampleToWeights["QCD_HT700to1000"].SetScale(1.);
-	_sampleToWeights["QCD_HT1000to1500"].SetScale(1.);
-	_sampleToWeights["QCD_HT1500to2000"].SetScale(1.);
-	_sampleToWeights["QCD_HT2000toInf"].SetScale(1.);
+	_sampleToWeights["QCD_HT50to100"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT100to200"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT200to300"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT300to500"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT500to700"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT700to1000"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT1000to1500"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT1500to2000"].SetLumiScale(1.);
+	_sampleToWeights["QCD_HT2000toInf"].SetLumiScale(1.);
 
 
 	//xsec

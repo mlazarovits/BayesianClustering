@@ -21,14 +21,14 @@ class SampleWeight{
 				scale = 0.;
 				xsec = 0.;
 			}
-			void SetScale(double s){scale = s;}
+			void SetLumiScale(double s){scale = s;}
 			void SetXsec(double s){xsec = s; }
 		};
 
-		double GetScale(string samp){ return _sampleToWeights[samp].scale; }
+		double GetLumiScale(string samp){ return _sampleToWeights[samp].scale; }
 		double GetXsec(string samp){ return _sampleToWeights[samp].xsec; }
 
-		double GetScale(TFile* f){
+		double GetLumiScale(TFile* f){
 			string name = f->GetName();
 			string key;
 			for(auto it = _sampleToWeights.begin(); it != _sampleToWeights.end(); it++){
