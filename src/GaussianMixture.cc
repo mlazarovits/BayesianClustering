@@ -12,7 +12,7 @@ using std::cout;
 using std::endl;
 using std::vector;
 using boost::math::digamma;
-
+using std::isnan;
 //k = # of clusters (cols)
 //n = # of data pts (rows)
 GaussianMixture::GaussianMixture(){ 

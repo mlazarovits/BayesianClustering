@@ -39,6 +39,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 	//make weights - E/e_avg
 	vector<double> ws;
 	for(int r = 0; r < nRHs; r++){
+		//not sure if below is needed as long as there is a clear and consistent time frame definition
 		/////TOF from 0 to rh location
 		///drh = _base->ECALRecHit_0TOF->at(r);
 		/////TOF from PV to rh location
@@ -54,8 +55,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 
-		Jet j(rh);
-		j.SetVertex(vtx);
+		Jet j(rh, vtx);
 		rhs.push_back(j);
 	}	
 
@@ -134,9 +134,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		        pz, _base->Jet_genEnergy->at(j));
 		
 		jet.SetVertex(vtx);
-		//TODO: set constituents from ntuple
-		
-		//TODO: set constituents in ntuple
+		genjets.push_back(jet);
 	}	
 
 

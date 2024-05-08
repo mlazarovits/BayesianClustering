@@ -24,8 +24,8 @@ class Jet{
 	public:
 		Jet();
 		Jet(double px, double py, double pz, double E);
-		Jet(JetPoint rh);
-		Jet(const vector<JetPoint>& rhs);
+		Jet(JetPoint rh, Point vtx);
+		Jet(const vector<JetPoint>& rhs, Point vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -50,8 +50,15 @@ class Jet{
 				_parent2 = j._parent2;
 				_idx = j.GetUserIdx();
 				_vtx = j.GetVertex();
-				_nRHs = j.GetNPoints();
 				_rhs = j.GetJetPoints();
+				_nRHs = (int)_rhs.size();
+				
+				_constituents = j._constituents;
+				_mu = j._mu;
+				_cov = j._cov;
+				_subcl_mu = j._subcl_mu;
+				_subcl_cov = j._subcl_cov;
+				_subcl_pi = j._subcl_pi;
 		}
 
 		//return four vector for clustering
@@ -64,6 +71,33 @@ class Jet{
 			}
 			_vtx = vtx;
 		}
+
+		//setting the momentum of eg subclusters with track information
+		void SetP(double px, double py, double pz){
+			_px = px;
+			_py = py;
+			_pz = pz;
+		
+			_kt2 = px*px + py*py;
+			_mass = mass();
+		}
+		//setting momentum to sum of constituents
+		void SetP(){
+			_px = 0;
+			_py = 0;
+			_pz = 0;
+			cout << "Jet::SetP() - n constituents "<< _constituents.size() << endl;
+			for(int c = 0; c < _constituents.size(); c++){
+				cout << "c " << c << " px " << _constituents[c].px() << endl;
+				_px += _constituents[c].px();
+				_py += _constituents[c].py();
+				_pz += _constituents[c].pz();
+			}
+			_kt2 = _px*_px + _py*_py;
+			_mass = mass();
+		}
+
+
 		//AK4 PF jets don't have x, y, z (only eta, phi)
 		//return element i in four vector
 		double px() const{ return _px; }
@@ -105,8 +139,9 @@ class Jet{
   		double mperp2() const {return (_E+_pz)*(_E-_pz);}
 		//invariant mass squared: m^2 = E^2 - p^2
 		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
-		//invariant mass
-		double mass() const{return sqrt(m2()); }
+		//invariant mass - https://fastjet.fr/repo/doxygen-3.4.0/PseudoJet_8hh_source.html L1059
+		//https://gitlab.cern.ch/CLHEP/CLHEP/-/blob/develop/Vector/Vector/LorentzVector.icc#L150
+		double mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
 
 	
 		//squared transverse momentum
@@ -133,7 +168,7 @@ class Jet{
 			rhs.clear();
 			Jet rh;
 			for(int r = 0; r < _rhs.size(); r++){
-				rh = Jet(_rhs[r]);
+				rh = Jet(_rhs[r], _vtx);
 				rh.SetVertex(_vtx);
 				rh.SetUserIdx(_rhs[r].rhId());
 				rhs.push_back(rh);	
@@ -145,7 +180,7 @@ class Jet{
 		void add(const JetPoint& rh);
 		
 		void GetEnergies(vector<double>& energies) const{ energies.clear(); for(int j = 0; j < (int)_rhs.size(); j++) energies.push_back(_rhs[j].E()); }
-		void GetEtaPhiConstituents(PointCollection& pc) const{
+		void GetEtaPhiTimePoints(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)_rhs.size(); i++){
 				pc += Point({_rhs[i].eta(), _rhs[i].phi_02pi(), _rhs[i].time()});
@@ -155,12 +190,6 @@ class Jet{
 		int GetNPoints() const{return (int)_rhs.size(); }	
 		int GetNRecHits() const{return (int)_rhs.size(); }	
 		
-		//parents in cluster
-		void GetParents(Jet& p1, Jet& p2) const;
-		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
-
-		//children in cluster
-		Jet GetBaby() const;
 
 		void AddRecHit(const JetPoint& rh){
 			_rhs.push_back(rh); 
@@ -185,7 +214,7 @@ class Jet{
 		void SetHistoryIndex(int i){ _hist_idx = i; }
 		int GetHistoryIndex() const{ return _hist_idx; }
 		
-		void GetClusterParams(Matrix& mu, Matrix& cov){ mu = _mu; cov = _cov; }
+		void GetClusterParams(Matrix& mu, Matrix& cov) const{ mu = _mu; cov = _cov; }
 	
 		//define jet time from cluster parameters
 		double GetJetTime() const{ return _t; }
@@ -227,6 +256,56 @@ class Jet{
 		void Print() const{
 			for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
 		}
+		//constituents can be subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
+		void AddConstituent(map<std::string, Matrix> params, double E){
+			_subcl_mu.push_back(params["mean"]);
+			_subcl_cov.push_back(params["cov"]);
+			_subcl_pi.push_back(params["pi"].at(0,0));
+
+			//don't have any momentum information until this constituent is matched to a track
+			Jet j(0., 0., 0., E);
+			j.SetCenter(params["mean"]);
+			j.SetCovariance(params["cov"]);
+			j.SetVertex(_vtx);
+
+			_constituents.push_back(j);
+			//cout << "AddConstituent " << _constituents.size() << " E " << E << endl;
+		}
+		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
+		vector<Jet>& GetConstituents(){
+			return _constituents;
+		}
+	
+		const Jet& GetConstituent(int c) const{
+			if(c > _constituents.size()){
+				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
+				return *this;
+			}
+			return _constituents[c];
+		}
+	
+		int GetNConstituents() const{
+			return (int)_constituents.size();
+		}
+		void SetCenter(Matrix& mu){
+			_eta = mu.at(0,0);
+			_phi = mu.at(1,0);
+			_t = mu.at(2,0);
+			_mu = mu;
+		}
+		void SetCovariance(Matrix& cov){
+			_cov = cov;
+		}
+		
+
+		//parents and baby are set by hierarchical clustering and will be defined as the Jets (groups of rhs) that came together to form this jet (parents) or the resultant jet of a combination (baby)
+		//parents in cluster
+		void GetParents(Jet& p1, Jet& p2) const;
+		void SetParents(Jet* p1, Jet* p2){ _parent1 = p1; _parent2 = p2; p1->SetBaby(this); p2->SetBaby(this); }
+
+		//children in cluster
+		Jet GetBaby() const;
+		void SetBaby(Jet* child){ _child = child; }
 
 
 	
@@ -261,7 +340,8 @@ class Jet{
 				if (_pz > 0) {_eta = - _eta;}
 			}
 		}
-		void SetBaby(Jet* child){ _child = child; }
+		
+
 
 		//set time to be energy weighted time
 		void _set_time(){
@@ -299,13 +379,22 @@ class Jet{
 		//cluster params - modeling jet as gaussian in time, space + energy
 		Matrix _mu;
 		Matrix _cov;
+		//constituent parameters - parameters of subclusters
+		vector<Matrix> _subcl_mu;
+		vector<Matrix> _subcl_cov;	
+		vector<double> _subcl_pi;
 
+		//TODO: remove with obsolete classes
 		//parents + child info
 		Jet* _parent1 = nullptr;
 		Jet* _parent2 = nullptr;
 
 		Jet* _child = nullptr;
-	
+
+		//vector of subjets (NOT rhs)
+		vector<Jet> _constituents;	
+
+		
 		//user index	
 		int _idx;
 		//history index

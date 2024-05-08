@@ -4,8 +4,8 @@ ROOTGLIBS   = $(shell root-config --glibs)
 #include pythia cflags and libraries
 local: PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
 local: PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
-lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/include
-lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/lib -Wl,-rpath,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/pythia8/240/lib -lpythia8 -ldl
+lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/include
+lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/lib -Wl,-rpath,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/lib -lpythia8 -ldl
 
 #specify compiler
 CXX         = g++
@@ -21,29 +21,30 @@ GLIBS      += $(PYTHIAGLIBS)
 
 #add eigen include path
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
-lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/eigen/1ae2849542a7892089f81f2ee460b510cdb0a16d/include/eigen3/
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
 #add digamma include path
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.82.0_1/include/
-lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/include/ 
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/include/ 
 #add jsoncpp flags
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
-lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/json/3.7.3/include/ 
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/json/3.10.2-a6d86565b09ec3d0e02bf7b52c31bbfc/include/ 
 #add CGAL flags and libraries
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6/include/
-#CGAL is at v4.2 on LPC - not a header-only version ig
-lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/include/
-lpc:   GLIBS       += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib/
-lpc:   GLIBS       += -lCGAL -lCGAL_Core
+#include necessary CGAL libraries BEFORE the include file so the compile knows about them
+lpc:   GLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
+lpc:   CXXFLAGS     += -I$(CMSSW_BASE)/src/CGAL-5.6.1/include
+#lpc:   CXXFLAGS     += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include/
 #boost for CGAL
 #example from KUEWkinoAnalysis makefile #lpc:   GLIBS += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_5/external/slc7_amd64_gcc700/lib/ -lvdt -lboost_program_options -lboost_filesystem -lboost_regex -lboost_system
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
-lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+lpc:   GLIBS       += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+#lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
 #include FastJet cxxflags and libraries
 local: CXXFLAGS  += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
-lpc: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --cxxflags)
-lpc: GLIBS     += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --libs)
+lpc: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config  --cxxflags)
+lpc: GLIBS     += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config --libs)
 
 #add to make lib ig?
 lpc: CXXFLAGS += -fPIC
@@ -59,8 +60,9 @@ lpclib: SGLIBS       += -lRooFit -lRooFitCore
 lpclib: SGLIBS       += $(shell /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/fastjet/3.3.0/bin/fastjet-config --libs)
 #pythia
 lpclib: SGLIBS       += $(PYTHIAGLIBS)
-lpclib: SGLIBS       += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib/
-lpclib: SGLIBS       += -lCGAL -lCGAL_Core
+lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
+#lpclib: SGLIBS       += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib/
+#lpclib: SGLIBS       += -lCGAL -lCGAL_Core
 
 #specify local paths
 INCLUDEDIR  = ./include/
@@ -80,7 +82,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
 all: FullClusterSingle.x FullClusterSkim.x detectorSimNtuples.x detectorSimSkimmer.x 
 local: all
-lpc:   all configtar lpclib
+lpc:   all configtar lpclib simconfigtar
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
@@ -120,6 +122,11 @@ detectorSimSkimmer.x: $(SRCDIR)detectorSimSkimmer.C $(OBJ_FILES) $(HH_FILES)
 configtar:
 	cp FullCluster*.x config/
 	tar -czf condor/config.tgz config/
+
+simconfigtar:
+	cp detectorSim*.x configSim/
+	tar -czf condorSim/configSim.tgz configSim/
+	tar -czf condorSimNtuples/configSim.tgz configSim/
 
 #make shared library
 lib/libBayesCluster.so: $(SOBJ_FILES)

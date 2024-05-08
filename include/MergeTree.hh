@@ -223,7 +223,7 @@ class MergeTree : BaseTree{
 			int it = 0;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
-		if(isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
+		if(std::isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 				dLogL = newLogL - oldLogL;
 				oldLogL = newLogL;
 				it++;

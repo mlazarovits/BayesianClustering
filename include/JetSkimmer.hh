@@ -20,6 +20,8 @@ class JetSkimmer : public BaseSkimmer{
 			_evti = 0;
 			_evtj = 0;
 			_gev = 1./10.;
+			_swts.Init();
+			_weight = 1.;
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -31,7 +33,7 @@ class JetSkimmer : public BaseSkimmer{
 
 			_prod = new JetProducer(file);
 			_prod->SetIsoCut();
-		
+	
 
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -39,7 +41,18 @@ class JetSkimmer : public BaseSkimmer{
 			_evtj = _nEvts;
 			_oname = "plots/jet_skims_"+_cms_label+".root";
 			_gev = 1./10.;
-				
+			_swts.Init();
+			//set histogram weights
+			if(_data){ _weight = 1.; }
+			else{
+				_base->GetEntry(0); //for gen weight
+				double scale, xsec;
+				_swts.GetWeights(file,scale,xsec);
+				//xsecs are saved as inverse picobarns -> need to be inverse femtobarns
+				_weight = scale * (xsec * 1000) * (_base->Evt_genWgt / _nEvts);
+				cout << "_weight " << _weight << " xsec " << xsec << endl;
+			} 
+	
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
 			//true jet hists
@@ -62,7 +75,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen);
 			_timeHists1D.push_back(geopTavg_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(minpT_sigmaDeltaTime_dijets);
-			_timeHists1D.push_back(Erh_sigmaDeltaTime_dijets);
+			_timeHists1D.push_back(geoAvgEecal_sigmaDeltaTime_dijets);
 			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1);
 			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2);
 			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3);
@@ -70,11 +83,16 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1);
 			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2);
 			_timeHists1D.push_back(geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3);
+			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin1);	
+			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin2);	
+			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin3);	
+			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin4);	
+			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_gamPV);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
 			_timeHists2D.push_back(minpT_diffDeltaTime_dijets);	
-			_timeHists2D.push_back(Erh_diffDeltaTime_dijets);	
+			_timeHists2D.push_back(geoAvgEecal_diffDeltaTime_dijets);	
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1);
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2);
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3);
@@ -85,10 +103,11 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(genDeltaT_recoDeltaT_Ebin4);
 			_timeHists2D.push_back(recoGenDr_recoGenDeltaTRatio);
 			_timeHists2D.push_back(genEnergy_recoGenDeltaTRatio);
+			_timeHists2D.push_back(recoEnergy_genDeltaTpvGam);
+			_timeHists2D.push_back(recoGenEnergyRatio_recoGenDeltaT);
+			_timeHists2D.push_back(geoEavg_diffDeltaTime_gamPV);
 
 
-			//_hists2D.push_back(erhs_trhs);		
-			
 
 
 		};
@@ -205,6 +224,7 @@ class JetSkimmer : public BaseSkimmer{
 
 		};
 
+
 		void Skim();
 		vector<TH1D*> _timeHists1D;	
 		vector<TH2D*> _timeHists2D;	
@@ -224,6 +244,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
 		
 		
+		//bins for variable binning for resolution/mean plots
+		vector<double> xbins = {0, 100, 200, 300, 400, 600, 1000}; 
 		///////////////////// timeHists /////////////
 		//0 - pv time
 		TH1D* PVtime = new TH1D("jetTime_PV", "jetTime_PV",50,-10,10);	
@@ -240,56 +262,80 @@ class JetSkimmer : public BaseSkimmer{
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",6,&xbins[0]);
 		//7 - resolution of difference between two jets for PV time as a function of their geo avg pT 	
 		TH1D* geopTavg_sigmaDeltaTime_dijets = new TH1D("geopTavg_sigmaDeltaTime_dijets","geopTavg_sigmaDeltaTime_dijets",10,0,1000);
 		//8 - resolution of difference between two jets for PV time as a function of the min pT 	
 		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
 		//9 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
-		TH1D* Erh_sigmaDeltaTime_dijets = new TH1D("Erh_sigmaDeltaTime_dijets","Erh_sigmaDeltaTime_dijets",10,0,1500);
+		TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",6,&xbins[0]);
+		//TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",10,0,1500);
 		//10 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins[0]);
 		//11 - resolution of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins[0]);
 		//12 - resolution of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3",10,0,1000);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins[0]);
 		//13 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen = new TH1D("geoEavg_meanDeltaTime_recoGen","geoEavg_meanDeltaTime_recoGen",10,0,1000);
+		TH1D* geoEavg_meanDeltaTime_recoGen = new TH1D("geoEavg_meanDeltaTime_recoGen","geoEavg_meanDeltaTime_recoGen",6,&xbins[0]);
 		//14 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1",10,0,1000);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins[0]);
 		//15 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2",10,0,1000);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins[0]);
 		//16 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3",10,0,1000);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins[0]);
+		//17 - gen deltaT bw photon and pv, reco E bin 1
+		TH1D* deltaT_pvGam_gen_Ebin1 = new TH1D("deltaT_gamPV_gen_Ebin1","deltaT_gamPV_gen_Ebin1",25,0,12);	
+		//18 - gen deltaT bw photon and pv, reco E bin 2
+		TH1D* deltaT_pvGam_gen_Ebin2 = new TH1D("deltaT_gamPV_gen_Ebin2","deltaT_gamPV_gen_Ebin2",25,0,12);	
+		//19 - gen deltaT bw photon and pv, reco E bin 3
+		TH1D* deltaT_pvGam_gen_Ebin3 = new TH1D("deltaT_gamPV_gen_Ebin3","deltaT_gamPV_gen_Ebin3",25,0,12);	
+		//20 - gen deltaT bw photon and pv, reco E bin 4
+		TH1D* deltaT_pvGam_gen_Ebin4 = new TH1D("deltaT_gamPV_gen_Ebin4","deltaT_gamPV_gen_Ebin4",25,0,12);	
+		//21 - resolution of difference in gam - pv
+		TH1D* geoEavg_sigmaDeltaTime_gamPV = new TH1D("geoEavg_sigmaDeltaTime_gamPV","geoEavg_sigmaDeltaTime_gamPV",6,&xbins[0]);
 	
 		//0 - 2D histogram for reco-gen resolution
-		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],120,-4,4);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
-		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);
+		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);
 		//2 - 2D histogram for dijets resolution - min E of jets
-		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,25,-10,10);
+		TH2D* minpT_diffDeltaTime_dijets = new TH2D("minpT_diffDeltaTime_dijets","minpT_diffDeltaTime_dijets;min(pT^{jet1}, pT^{jet2}) (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);
+		
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
-		TH2D* Erh_diffDeltaTime_dijets = new TH2D("Erh_diffDeltaTime_dijets","Erh_diffDeltaTime_dijets;sum_{j} sum_{rh} E^{jet_{j}}_{rh} (GeV); #Delta t^{PV}_{dijet}",10,0,1500,25,-10,10);	
+		//variable binning
+		TH2D* geoAvgEecal_diffDeltaTime_dijets = new TH2D("geoAvgEecal_diffDeltaTime_dijets","geoAvgEecal_diffDeltaTime_dijets;#sqrt{E^{jet 1}_{ECAL} #times E^{jet 2}_{ECAL}} (GeV); #Delta t^{PV}_{dijet}",6,&xbins[0],120,-4,4);	
 		//4 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [3.5,4.5)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],120,-4,4);
 		//5 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [4,8)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],120,-4,4);
 		//6 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [8,12)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",10,0,1000,25,-10,10);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],120,-4,4);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
-		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",10,0,1000,3,0,3);
+		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",6,&xbins[0],3,0,3);
+		
+
+		//below are for checking gen deltaT calculation
 		//8 - gen delta time vs reco delta time for signal photons - 0 <= E < 100
-		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT_Ebin1;recoDeltaT;a.u.",25,0,20,25,0,20);
+		TH2D* genDeltaT_recoDeltaT_Ebin1 = new TH2D("genDeltaT_recoDeltaT_Ebin1","genDeltaT_recoDeltaT_Ebin1;genDeltaT_Ebin1;recoDeltaT;a.u.",25,0,15,25,0,15);
 		//9 - gen delta time vs reco delta time for signal photons - 100 <= E < 400
-		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT_Ebin2;recoDeltaT;a.u.",25,0,20,25,0,20);
+		TH2D* genDeltaT_recoDeltaT_Ebin2 = new TH2D("genDeltaT_recoDeltaT_Ebin2","genDeltaT_recoDeltaT_Ebin2;genDeltaT_Ebin2;recoDeltaT;a.u.",25,0,15,25,0,15);
 		//10 - gen delta time vs reco delta time for signal photons - 400 <= E < 700
-		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT_Ebin3;recoDeltaT;a.u.",25,0,20,25,0,20);
+		TH2D* genDeltaT_recoDeltaT_Ebin3 = new TH2D("genDeltaT_recoDeltaT_Ebin3","genDeltaT_recoDeltaT_Ebin3;genDeltaT_Ebin3;recoDeltaT;a.u.",25,0,15,25,0,15);
 		//11 - gen delta time vs reco delta time for signal photons - 700 <= E
-		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,20,25,0,20);
+		TH2D* genDeltaT_recoDeltaT_Ebin4 = new TH2D("genDeltaT_recoDeltaT_Ebin4","genDeltaT_recoDeltaT_Ebin4;genDeltaT_Ebin4;recoDeltaT;a.u.",25,0,15,25,0,15);
 		//12 - gen-matched dr vs ratio of reco to gen deltaT
 		TH2D* recoGenDr_recoGenDeltaTRatio = new TH2D("recoGenDr_recoGenDeltaTRatio","recoGenDr_recoGenDeltaTRatio;recoGenDr;recoGenDeltaTRatio;a.u.",25,0,0.5,25,0,5);
 		//13 - gen energy vs ratio of reco to gen deltaT
 		TH2D* genEnergy_recoGenDeltaTRatio = new TH2D("genEnergy_recoGenDeltaTRatio","genEnergy_recoGenDeltaTRatio;genEnergy;recoGenDeltaTRatio;a.u.",25,0,1000,25,0,5);
+		//14 - reco energy vs gen deltaT
+		TH2D* recoEnergy_genDeltaTpvGam = new TH2D("recoEnergy_genDeltaTpvGam","recoEnergy_genDeltaTpvGam;recoEnergy;genDeltaTpvGam;a.u.",25,0,500,25,3.5,12);
+		//15 - reco energy/gen energy vs reco deltaT - gen deltaT
+		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
+		
+		//16 - 2D histogram for gamPV resolution 
+		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins[0],120,0,12);
+		
 
 		vector<timeRecoCat> trCats;
 		virtual void MakeTimeRecoCatHists(){
@@ -305,6 +351,7 @@ class JetSkimmer : public BaseSkimmer{
 			trCats.push_back(treavg);
 			trCats.push_back(tremax);
 		}
+
 
 	
 		void FillTruePhotonHists(const vector<Jet>& phos){
@@ -325,7 +372,7 @@ class JetSkimmer : public BaseSkimmer{
 					rhy = rhs[r].y();	
 					rhz = rhs[r].z();	
 					tof = sqrt((rhx - pvx)*(rhx - pvx) + (rhy - pvy)*(rhy - pvy) + (rhz - pvz)*(rhz - pvz))/_c; 
-					TOFgam_rh_pv->Fill(tof);
+					TOFgam_rh_pv->Fill(tof,_weight);
 				}		
 			}
 		}
@@ -333,32 +380,32 @@ class JetSkimmer : public BaseSkimmer{
 
 		void FillTrueJetHists(const vector<Jet>& jets){
 			int njets = jets.size();	
-			nTrueJets->Fill((double)njets);
+			nTrueJets->Fill((double)njets,_weight);
 		
 			double eECAL = 0;
 			int ijet = 0;
 			vector<JetPoint> rhs;
 			for(int j = 0; j < njets; j++){
-				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits());
-				objE->Fill(jets[j].E());
-				TrueJet_pT->Fill(jets[j].pt());
-				TrueJet_nRhs->Fill(jets[j].GetNRecHits());
+				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits(), _weight);
+				objE->Fill(jets[j].E(), _weight);
+				TrueJet_pT->Fill(jets[j].pt(), _weight);
+				TrueJet_nRhs->Fill(jets[j].GetNRecHits(), _weight);
 				ijet = jets[j].GetUserIdx();
 				eECAL = _base->Jet_neEmEF->at(ijet) + _base->Jet_chEmEF->at(ijet);
 				eECAL *= jets[j].E();
-				TrueJet_EmE->Fill(eECAL);
-				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet));			
+				TrueJet_EmE->Fill(eECAL, _weight);
+				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet), _weight);
 			
 				
 				rhs.clear();
 				rhs = jets[j].GetJetPoints();
 				for(int r = 0; r < rhs.size(); r++){
-					erhs_trhs->Fill(rhs[r].E(), rhs[r].t());
+					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
 				if(njets < 2) continue;
 				if(j == 0 || j == 1){	
-					TrueJet_twoHardestpT->Fill(jets[j].pt());
-					TrueJet_twoHardestpT->Fill(jets[j].pt());
+					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
+					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
 				}
 			}
 		}
@@ -372,9 +419,10 @@ class JetSkimmer : public BaseSkimmer{
 			double pvtime = -999;
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
-			double ptavg, geoEavg, Erh, Epho;
-			vector<JetPoint> rhs;
+			double ptavg, geoEavg, Epho, Erh, Ejets;
 			int phoidx, genidx, phoid;
+			double dphi_phoJets = -999;
+			double pi = acos(-1);
 			TimeStrategy ts = TimeStrategy(tr_idx);
 			//break down by process for this tr method
 			int nProc = trCats[tr_idx].procCats.size();
@@ -383,19 +431,19 @@ class JetSkimmer : public BaseSkimmer{
 				Erh = 0;
 				ptavg = 0;
 				geoEavg = 0;
-			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
+			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
-					cout << " jet #" << j << " time: " << jettime << endl;
+					//cout << " jet #" << j << " time: " << jettime << endl;
 					//fill jet time in pv frame - 0
-					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime);
-					//add to pv time calculation
-					jettimes.push_back(jettime);
-					rhs = jets[j].GetJetPoints();
+					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime, _weight);
+					vector<JetPoint> rhs = jets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++)
 						Erh += rhs[r].E();
 					rhs.clear();
+					//add to pv time calculation
+					jettimes.push_back(jettime);
 				}
 				//calculate jet time difference
 				if(njets > 1){
@@ -404,15 +452,28 @@ class JetSkimmer : public BaseSkimmer{
 					if(pair == -999) continue; //jets did not pass selection
 					double deltaT_jets = GetDeltaTime(hardjets);
 
-					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);	
+					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);
+					double Erh1, Erh2;
+					Erh1 = 0;
+					Erh2 = 0;	
+					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
+					for(int r = 0; r < rhs.size(); r++)
+						Erh1 += rhs[r].E();
+					rhs.clear();
+					rhs = hardjets.second.GetJetPoints();
+					for(int r = 0; r < rhs.size(); r++)
+						Erh2 += rhs[r].E();
+				
+	
 					//fill deltaT_jets - 1
-					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets);
+					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets, _weight);
 					//fill geopTavg vs deltaT jets - 1
-					trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets);
+					trCats[tr_idx].procCats[p].hists2D[0][1]->Fill(ptavg, deltaT_jets, _weight);
 					//fill minpt vs deltaT jets - 2
-					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets);
-					//fill Erh vs deltaT jets - 3
-					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
+					trCats[tr_idx].procCats[p].hists2D[0][2]->Fill(hardjets.second.pt(), deltaT_jets, _weight);
+					//fill geoAvgEecal vs deltaT jets - 3
+					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(sqrt(Erh1*Erh2), deltaT_jets, _weight);
+					//trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 				}	
 				//this assumes that the time for the jet was set previously with the respective method
 				pvtime = CalcPVTime(ts, jets);
@@ -420,18 +481,45 @@ class JetSkimmer : public BaseSkimmer{
 				//only fill for two leading photons + weighted avg of jet time
 				if(_phos.size() < 1) continue;
 				vector<JetPoint> phorhs; 
+				Ejets = 0;
+				for(auto j : jets){
+					vector<JetPoint> jrhs = j.GetJetPoints();
+					for(auto r : jrhs) Ejets += r.E(); 
+				}
 				if(_data){
 					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 					deltaT_gampv = gamtime - pvtime;
 					//should only be one process in data
-					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
-					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
+					//gampv resolution
+					if(_phos[0].pt() > 70){
+						dphi_phoJets = deltaPhi(_phos[0], jets);
+						if(dphi_phoJets > pi-0.35 && dphi_phoJets < pi+0.35){
+							Epho = 0;
+							phorhs = _phos[0].GetJetPoints();
+							for(auto r : phorhs) Epho += r.E();
+						//cout << "x " << sqrt(Epho*Ejets) << " y " << deltaT_gampv << endl;
+							trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
+						}
+					}
+
 					//do same for subleading photon if it exists
 					if(_phos.size() > 1){
 						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 						deltaT_gampv = gamtime - pvtime;
-						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
-						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
+						//gampv resolution
+						if(_phos[1].pt() > 70){
+							dphi_phoJets = deltaPhi(_phos[1], jets);
+							if(dphi_phoJets > pi-0.35 && dphi_phoJets < pi+0.35){
+								Epho = 0;
+								phorhs = _phos[1].GetJetPoints();
+								for(auto r : phorhs) Epho += r.E();
+								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets), deltaT_gampv, _weight);
+							}
+						}
 					}			
 
 				}
@@ -452,44 +540,55 @@ class JetSkimmer : public BaseSkimmer{
 						phorhs = _phos[0].GetJetPoints();
 						Epho = 0;
 						for(auto r : phorhs) Epho += r.E();
-						cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
+						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						deltaT_gampv = gamtime - pvtime;
 					
 	
-						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 	
 						//fill difference in deltaT_pvGam of reco and gen - 3
 						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
-					cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
+					//cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << " Epho: " << Epho << endl;
+						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
-							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);	
+							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
-							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							//if photon time (gamtime - pvtime) is in different delayed time windows, fill different 2D hists
 							if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
-								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							if(deltaT_gampv_gen >= 4.5 && deltaT_gampv_gen < 8)
-								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
-								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 							//fill gen deltaT vs reco deltaT in energy bins
-							if(Epho >= 0 && Epho < 100)
-								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 100 && Epho < 400)
-								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 400 && Epho < 700)
-								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-							if(Epho >= 700)
-								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
+							if(Epho >= 0 && Epho < 100){
+								trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv, _weight); 
+							}
+							if(Epho >= 100 && Epho < 400){
+								trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv, _weight); 
+							}
+							if(Epho >= 400 && Epho < 700){
+								trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv, _weight); 
+							}
+							if(Epho >= 700){
+								trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+								trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv, _weight); 
+							}
 							
-							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
-							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen);
+							trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[0]), deltaT_gampv/deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[0]), deltaT_gampv - deltaT_gampv_gen, _weight);
+							if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 
 						}	
 	
@@ -509,38 +608,49 @@ class JetSkimmer : public BaseSkimmer{
 							phorhs = _phos[1].GetJetPoints();
 							Epho = 0;
 							for(auto r : phorhs) Epho += r.E();
-							cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
+							//cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " Epho " << Epho << endl;
 							//cout << "SUBLEAD GAMTIME" << endl;	
 							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 							//cout << "SUBLEAD GAMTIME END" << endl;	
-							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime);
+							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 							deltaT_gampv = gamtime - pvtime;
-							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill( deltaT_gampv );
+							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 							
 							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
-					cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
-							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen);
+					//cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
+							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 							//only for gen matches
 							if(deltaT_gampv_gen != -999){
-								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill( deltaT_gampv - deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
-									trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 4.5 && deltaT_gampv_gen < 8)
-									trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][5]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 8 && deltaT_gampv_gen < 12)
-									trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists2D[0][6]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								//fill gen deltaT vs reco deltaT in energy bins
-								if(Epho >= 0 && Epho < 100)
-									trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 100 && Epho < 400)
-									trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 400 && Epho < 700)
-									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								if(Epho >= 700)
+								if(Epho >= 0 && Epho < 100){
+									trCats[tr_idx].procCats[p].hists2D[0][8]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][17]->Fill(deltaT_gampv, _weight); 
+								}
+								if(Epho >= 100 && Epho < 400){
+									trCats[tr_idx].procCats[p].hists2D[0][9]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][18]->Fill(deltaT_gampv, _weight); 
+								}
+								if(Epho >= 400 && Epho < 700){
+									trCats[tr_idx].procCats[p].hists2D[0][10]->Fill(deltaT_gampv_gen, deltaT_gampv, _weight); 
+									trCats[tr_idx].procCats[p].hists1D[0][19]->Fill(deltaT_gampv, _weight); 
+								}
+								if(Epho >= 700){
 									trCats[tr_idx].procCats[p].hists2D[0][11]->Fill(deltaT_gampv_gen, deltaT_gampv); 
-								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
-								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen);
+									trCats[tr_idx].procCats[p].hists1D[0][20]->Fill(deltaT_gampv, _weight); 
+								}
+								trCats[tr_idx].procCats[p].hists2D[0][12]->Fill(CalcGenDr(_phos[1]), deltaT_gampv/deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[1]), deltaT_gampv - deltaT_gampv_gen, _weight);
+								if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 	
 							}
 						}
@@ -641,10 +751,8 @@ class JetSkimmer : public BaseSkimmer{
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
-			int momidx = _base->Photon_genSigMomId->at(phoidx);
-			//check gen pdgids
-			cout << "gen photon pdgid: " << _base->Gen_pdgId->at(phoidx) << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
 
+			/*
 			geneta = _base->Gen_eta->at(genidx);
 			genphi = _base->Gen_phi->at(genidx);
 			gentheta = 2*atan2(1,exp(geneta));
@@ -654,15 +762,48 @@ class JetSkimmer : public BaseSkimmer{
 			genz = 129/tan(gentheta);	
 			
 			//for checking calculations
-			double rtheta = atan2(129,genz);
+			double rtheta = atan2(1.29,genz);
 			//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
 			double reta = -log(tan(rtheta/2));
 			double rphi = atan2(geny,genx);
 		
-		cout << "gen eta: " << geneta << " rgen eta: " << reta << " gen phi: " << genphi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << sqrt((geneta - _base->Photon_eta->at(phoidx))*(geneta - _base->Photon_eta->at(phoidx)) + (genphi - _base->Photon_phi->at(phoidx))*(genphi - _base->Photon_phi->at(phoidx))) << " theta: " << gentheta << " rtheta: " << rtheta << endl;
+		cout << "gen eta: " << geneta << " rgen eta: " << reta << " gen phi: " << genphi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << CalcGenDr(pho) << " theta: " << gentheta << " rtheta: " << rtheta << endl;
+			*/
 
+			//photon production vertex coordinates
+			vx = _base->Gen_vx->at(genidx);
+			vy = _base->Gen_vy->at(genidx);
+			vz = _base->Gen_vz->at(genidx);		
+			//momentum components
+			double px = _base->Gen_px->at(genidx);
+			double py = _base->Gen_py->at(genidx);
+			double pz = _base->Gen_pz->at(genidx);		
+
+			//energy
+			double e = _base->Gen_energy->at(genidx);
+
+			//find path length from photon production vertex to detector
+			double R = 129; //radius of ECAL
+			double vt = sqrt(vx*vx + vy*vy); //(l) distance to prod vertex in transverse plane from (0, 0)
+			double pt = _base->Gen_pt->at(genidx); //momentum in transverse plane (for betaT)
+			double dot = px*vx + py*vy; //pT \dot vT
+			double L = sqrt(R*R - vt*vt + (dot/pt)*(dot/pt)) - dot/pt; //flight path from prod vertex to detector
+			
+			double betaT = pt/e; //beta in transverse plane (would be 1 for photons with z component of momentum)
+			double tof = L/(_c*betaT); //time of flight to detector along calculated path length
+
+			double genx_ECAL = vx + (px/e)*_c*tof;
+			double geny_ECAL = vy + (py/e)*_c*tof;
+			double genz_ECAL = vz + (pz/e)*_c*tof; 
+
+			double ftheta = atan2(sqrt(genx_ECAL*genx_ECAL + geny_ECAL*geny_ECAL),genz_ECAL);
+			double feta = -log(tan(ftheta/2.));
+			//calculate TOF for that path (transverse plane only)
+			//use TOF to propagate x, y, z from gen vertex position (vi) to detector (geni_ECAL)
+
+
+			/*
 			//propagate gen eta, phi of photon to ECAL face
-			//TODO: check units
 			double rmax = 129;
 			//1.5 is max eta (~1.479)
 			double maxtheta = 2*atan2(1,exp(1.5));
@@ -670,23 +811,30 @@ class JetSkimmer : public BaseSkimmer{
 			double genpx = _base->Gen_px->at(genidx);
 			double genpy = _base->Gen_py->at(genidx);
 			double genpz = _base->Gen_pz->at(genidx);
+			double gene = _base->Gen_energy->at(genidx);
 			double genpt2 = genpx*genpx + genpy*genpy;
-			double gene = _base->Gen_energy->at(phoidx);
 			//propagate gen eta/phi (x, y, z) of momentum vector to ECAL surface
 			double tmp = genpx * geny - genpy * genx;
 	      		double tr = (TMath::Sqrt(genpt2 * rmax*rmax - tmp * tmp) - genpx * genx - genpy * geny) / genpt2;
 			double tz = (TMath::Sign(halfLength, genpz) - genz) / genpz;
-			double t = fmin(tr, tz)*(gene/_c); //t*e/c ~ [cm/GeV]*[GeV*ns/cm] = ns
+			double t = fmin(tr, tz)*(gene/(_c)); //t*e/c ~ [cm/GeV]*[GeV*ns/cm] = ns
 			//calculate new x, y, z based on time to detector
-			double genx_ECAL = genx + (genpx/gene)*_c*t;
-			double geny_ECAL = geny + (genpy/gene)*_c*t;
-			double genz_ECAL = genz + (genpz/gene)*_c*t;	
-	
+			double genx_ECAL = genx + (genpx/gene)*(_c)*t;
+			double geny_ECAL = geny + (genpy/gene)*(_c)*t;
+			double genz_ECAL = genz + (genpz/gene)*(_c)*t;	
+			//double genx_ECAL = genx + (genpx/gene)*(_c*1e7)*t;
+			//double geny_ECAL = geny + (genpy/gene)*(_c*1e7)*t;
+			//double genz_ECAL = genz + (genpz/gene)*(_c*1e7)*t;	
+			
+			//genx_ECAL *= 1e9;
+			//geny_ECAL *= 1e9;
+			//genz_ECAL *= 1e9;
 
-
-
+//cout << setprecision(10) << "tmp " << tmp <<" " << (genpx * geny) - (genpy * genx) << " first " << genpx*geny << " second " << genpy*genx << " halfLength " << halfLength << " gene " << gene << endl;
+cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << " geny_ECAL: " << geny_ECAL << " genz: " << genz << " genz_ECAL: " << genz_ECAL << " t: " << t << " tr: " << tr << " tz: " << tz << " genpt2: " << genpt2 <<  " genpx " << genpx << " " << _base->Gen_px->at(genidx) << " genx " << genx << " genpy " << genpy << " geny " << geny << " genpz " << genpz << " genz " << genz << " tmp " << tmp << endl;
 			vector<JetPoint> rhs =  pho.GetJetPoints();
-			//for(auto r : rhs) cout << "rh x: " << r.x() << " rh y: " << r.y() << " rh z: " << r.z() << endl;		
+			//for(auto r : rhs) cout << "rh x: " << r.x() << " rh y: " << r.y() << " rh z: " << r.z() << endl;	 " tr: " << tr << " tz: " << tz <<	
+			*/	
 			
 			double pvx = _base->PV_x;
 			double pvy = _base->PV_y;
@@ -694,12 +842,23 @@ class JetSkimmer : public BaseSkimmer{
 
 			double beta;
 			if(phoid == 22){
+				int momidx = _base->Photon_genSigMomId->at(phoidx);
+//cout << "px " << px << " py " << py << " pz " << pz << " vx " << vx << " vy " << vy << " vz " << vz << " genx_ECAL " << genx_ECAL << " geny_ECAL " << geny_ECAL << " genz_ECAL " << genz_ECAL << " rR " << sqrt(genx_ECAL*genx_ECAL + geny_ECAL*geny_ECAL) << " final gen eta " << feta << " reco eta " << _base->Photon_eta->at(phoidx) << " gen (p) eta " << _base->Gen_eta->at(genidx) << " gen (p) mom eta " << _base->Gen_eta->at(momidx) << " gen mom eta " << -log(tan((atan2(sqrt(_base->Gen_vx->at(momidx)*_base->Gen_vx->at(momidx) + _base->Gen_py->at(momidx)*_base->Gen_py->at(momidx)), _base->Gen_vz->at(momidx))/2))) << endl;
+
+				//check gen pdgids
+				//cout << "gen photon idx: " << genidx << " pho sus id: " << phoid << " gen photon pdgid: " << _base->Gen_pdgId->at(genidx) << " gen sig mom idx: " << momidx << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
 				//want production vertex of photon (where LLP -> photon)
 				//not production vertex of mother (close to PV)
-				vx = _base->Gen_vx->at(phoidx);
-				vy = _base->Gen_vy->at(phoidx);
-				vz = _base->Gen_vz->at(phoidx);
+				vx = _base->Gen_vx->at(genidx);
+				vy = _base->Gen_vy->at(genidx);
+				vz = _base->Gen_vz->at(genidx);
 		
+				//production vertex of mother particle (should be close to PV)
+				double momvx, momvy, momvz;
+				momvx = _base->Gen_vx->at(momidx);
+				momvy = _base->Gen_vy->at(momidx);
+				momvz = _base->Gen_vz->at(momidx);
+
 				double mompx, mompy, mompz, momE;			
 
 				mompx = _base->Gen_px->at(momidx);			
@@ -719,29 +878,46 @@ class JetSkimmer : public BaseSkimmer{
 				//check gen photon energy	
 				//cout << "photon energy: " << _base->Photon_energy->at(phoidx) << endl;
 				//distance bw photon and production point (where LLP decays to photon)
-				dpho = sqrt( (genx - vx)*(genx - vx) + (geny - vy)*(geny - vy) + (genz - vz)*(genz - vz) )/_c;
+				dpho = sqrt( (genx_ECAL - vx)*(genx_ECAL - vx) + (geny_ECAL - vy)*(geny_ECAL - vy) + (genz_ECAL - vz)*(genz_ECAL - vz) )/_c;
 		
 			//cout << "vertex to pho: " << dpho << endl;
 				//distance bw LLP decay point and PV
 				//LLP is produced close to PV (should take into account?)
 				//LLPdecay - LLPprod?
-				dpho += sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) )/(_c*beta);	
-			//cout << "vx: " << vx << " vy: " << vy << " vz: " << vz << endl;
-			//cout << "pv to vertex dist: " << sqrt( (vx - pvx)*(vx - pvx) + (vy - pvy)*(vy - pvy) + (vz - pvz)*(vz - pvz) ) << endl;	
+				dpho += sqrt( (vx - momvx)*(vx - momvx) + (vy - momvy)*(vy - momvy) + (vz - momvz)*(vz - momvz) )/(_c*beta);	
+			//cout << "mom decay vertex - vx:    " << vx << " vy:    " << vy << " vz:    " << vz << endl;
+			//cout << "mom prod vertex  - momvx: " << momvx << " momvy: " << momvy << " momvz: " << momvz << endl;
+			//cout << "primary vertex   - pvx:   " << _base->PV_x << " pv_y:   " << _base->PV_y << " pv_z:   " << _base->PV_z << endl;   
+			//cout << "momv decay to momv production vertex dist: " << sqrt( (vx - momvx)*(vx - momvx) + (vy - momvy)*(vy - momvy) + (vz - momvz)*(vz - momvz) ) << endl;	
 
 			}
 			//assume prompt production
 			else{
 				//distance bw photon and production point (PV)
-				dpho = sqrt( (genx - pvx)*(genx - pvx) + (geny - pvy)*(geny - pvy) + (genz - pvz)*(genz - pvz) )/_c;
+				dpho = sqrt( (genx_ECAL - pvx)*(genx_ECAL - pvx) + (geny_ECAL - pvy)*(geny_ECAL - pvy) + (genz_ECAL - pvz)*(genz_ECAL - pvz) )/_c;
 			}
 			
 			return dpho;
 		}
 
-
-		//this is for one jet
-
+		//dphi bw photon and jet system
+		double deltaPhi(const Jet& pho, const vector<Jet>& jets){
+			double r = 129;
+			double jx = 0;
+			double jy = 0;
+			//vector sum of jets
+			for(auto j : jets){
+				jx += r*cos(j.phi());
+				jy += r*sin(j.phi());
+			}
+			double jphi = atan2(jx,jy);
+			double dphi = fabs(pho.phi() - jphi);
+			double pi = acos(-1);
+			if(dphi > pi) return 2*pi - dphi;
+			else return dphi;	
+			
+		}
+		
 		int FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
 			map<double,Jet> pt_jet;
 			//map<double, int> pt_idx;
@@ -764,6 +940,7 @@ class JetSkimmer : public BaseSkimmer{
 			//if needing to find "true" pair
 			//calculate dphi here
 			double pi = acos(-1);
+			double ptasym = 0.4;
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]
@@ -772,13 +949,25 @@ class JetSkimmer : public BaseSkimmer{
 				double dphi = fabs(phi1 - phi2);
 				if(dphi > pi) dphi = 2*pi - dphi;
 				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
+				//pt asymmetry cut
+				if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
 			}
-			//pt asymmetry cut
-			double ptasym = 0.2;
-			if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
+			else{
+				//use only ECAL energy for asymmetry cut
+				double e1 = 0;
+				double e2 = 0;
+				for(auto r : jet1.GetJetPoints()) e1 += r.e();
+				for(auto r : jet2.GetJetPoints()) e2 += r.e();
+				if(e2 < e1){
+					if(e2 / e1 < 1 - ptasym) return -999; 
+				}
+				else{
+					if(e1 / e2 < 1 - ptasym) return -999; 
+				}
+			}
 
-			//eta cut - need |eta| approx equal
-			if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
+			//remove - eta cut - need |eta| approx equal
+			//if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
 
 
 			outjets.first = jet1;
@@ -802,10 +991,10 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				nSubClusters_mm->Fill(gmm->GetNClusters());
-				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
+				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
-				if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
+				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
 			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
 			else if(ts == emax && pho) time = CalcMaxTime(jet);
@@ -833,7 +1022,7 @@ class JetSkimmer : public BaseSkimmer{
 				double dy = center.at(1) - pv.at(1);
 				double dz = center.at(2) - pv.at(2);
 				double t_shift = sqrt(dx*dx + dy*dy + dz*dz)/_c;
-				cout << "center for " << ts << " eta " << reta << " phi " << rphi << " x " << center.at(0) << " y " << center.at(1) << " z " << center.at(2) << " time " << time << " shift " << t_shift << endl;
+				//cout << "center for " << ts << " eta " << reta << " phi " << rphi << " x " << center.at(0) << " y " << center.at(1) << " z " << center.at(2) << " time " << time << " shift " << t_shift << endl;
 				//shift from PV to detector face
 				time += t_shift;
 			}	
@@ -870,13 +1059,13 @@ class JetSkimmer : public BaseSkimmer{
 					e = 0;
 					rhs.clear();
 				}
-				cout << "pv time: " << t/norm << endl;
+				//cout << "pv time: " << t/norm << endl;
 				time = t/norm;
 			}	
 			else if(ts == mmavg){
 				double t = 0;
 				for(int j = 0; j < njets; j++){
-					cout << "jet time (pv frame) " << jets[j].t() << endl;
+					//cout << "jet time (pv frame) " << jets[j].t() << endl;
 					t += jets[j].t();
 				}
 				time = t/double(njets);
@@ -930,22 +1119,27 @@ class JetSkimmer : public BaseSkimmer{
 			int nrhs = rhs.size();
 			Point pt(3);
 			//cout << "MEDIAN CENTER" << endl;
+			//cout << nrhs << " rhs" << endl;
 			for(int i = 0; i < nrhs; i++){
 				pt.SetValue(rhs[i].x(),0);
 				pt.SetValue(rhs[i].y(),1);
 				pt.SetValue(rhs[i].z(),2);
-				//cout << "x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
+				//cout << "i " << i << " x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
 				timeLoc[rhs[i].t()] = pt;
+				//cout << "i " << i << " x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " t " << rhs[i].t() << endl;
 			}
+			//cout << "# times " << timeLoc.size() << endl;
 			for(auto it = timeLoc.begin(); it != timeLoc.end(); it++){
+				//cout << "time " << it->first << " size " << times.size() << endl;
 				times.push_back(it->first);
 			}
 			//even - return average of two median times
 			if(nrhs % 2 == 0){
 				Point center(3);
+				//cout << "idx1 " << int(double(nrhs)/2.) << " idx2 " << int(double(nrhs)/2.)-1 << endl;
 				double t1 = times[int(double(nrhs)/2.)];
 				double t2 = times[int(double(nrhs)/2.)-1];
-
+				//cout << "t1 " << t1 << " t2 " << t2 << endl;
 				center.SetValue((timeLoc[t1].at(0) + timeLoc[t2].at(0))/2.,0);
 				center.SetValue((timeLoc[t1].at(1) + timeLoc[t2].at(1))/2.,1);
 				center.SetValue((timeLoc[t1].at(2) + timeLoc[t2].at(2))/2.,2);
@@ -1006,8 +1200,7 @@ class JetSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
-				rhs_jet.push_back( Jet(rhs[r]) );
-				rhs_jet[r].SetVertex(jet.GetVertex());
+				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
@@ -1044,7 +1237,7 @@ class JetSkimmer : public BaseSkimmer{
 					//cout << "pho mm time: " << t/norm << endl;
 					return t/norm;
 				}
-				cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
+				//cout << "cluster " << k << " has time " << params["mean"].at(2,0) << " and MM coeff " << params["pi"].at(0,0) << endl;
 			}
 			//cout << "jet mm time: " << t/norm << endl;
 			return t/norm; 
@@ -1077,7 +1270,7 @@ class JetSkimmer : public BaseSkimmer{
 			double rphi = atan2(y,x);
 				norm += params["pi"].at(0,0);
 				if(pho){
-		cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
+		//cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
 					center.SetValue(x/norm,0);
 					center.SetValue(y/norm,1);
 					center.SetValue(z/norm,2);
@@ -1122,7 +1315,7 @@ class JetSkimmer : public BaseSkimmer{
 				//make sure profiles get written
 				nprofs = tr.procCats[0].hists2D[0][i]->GetNbinsX();
 				//histname = histname.substr(0,histname.find(match));		
-				for(int k = 1; k < nprofs; k++){
+				for(int k = 1; k < nprofs+1; k++){
 					histname = tr.procCats[0].hists2D[0][i]->GetName();
 					profname = "profile_"+histname;
 					profname.insert(profname.find("_"+tr.methodName),"_bin"+std::to_string(k));

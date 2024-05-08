@@ -27,12 +27,13 @@ class BaseProducer{
 			_data = false;
 			_calibmap = nullptr;
 			_applyFrac = false;
-			if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
-				cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
-				return;
-			}
-			TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
-			SetTimeCalibrationMap(calibfile);
+			_spikes = false;
+			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
+			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
+			//	return;
+			//}
+			//TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
+			//SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
 		};
 		BaseProducer(TFile* file){
@@ -55,6 +56,7 @@ class BaseProducer{
 			_minrhE = 0.5;
 			_minobjeta = 1.4;
 			_applyFrac = false;
+			_spikes = false;
 			
 			//set year
 			string name = file->GetName();
@@ -66,8 +68,8 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calibmap = nullptr;
-			TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
-			SetTimeCalibrationMap(calibfile);
+			//TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
+			//SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
 
 		}
@@ -124,6 +126,8 @@ class BaseProducer{
 		double _minobjeta;
 		void ApplyFractions(bool a){ _applyFrac = a; }
 		bool _applyFrac;
+		void RejectSpikes(bool s){ _spikes = s; }
+		bool _spikes;
 
 		double deltaR2(double e1, double p1, double e2, double p2){
 			double de = e1 - e2;

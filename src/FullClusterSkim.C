@@ -3,7 +3,6 @@
 #include "PhotonSkimmer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
-#include "Clusterizer.hh"
 //#include "VarClusterViz3D.hh"
 #include <TSystem.h>
 #include <TFile.h>
@@ -43,6 +42,9 @@ int main(int argc, char *argv[]){
 	double minEmE = 20;
 	double minRhE = 0.5;
 	bool frac = false;
+	bool calib = true;
+	bool spikes = false;
+	int skip = 1;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -151,6 +153,18 @@ int main(int argc, char *argv[]){
 			frac = true;
 			cout << "Apply fractions for rec hits." << endl;
    		}
+		if(strncmp(argv[i],"--noCalibrate", 13) == 0){
+			calib = false;
+			cout << "Not applying time calibration to rhs" << endl;
+   		}
+		if(strncmp(argv[i],"--rejectSpikes", 14) == 0){
+			spikes = true;
+			cout << "Rejecting spikes with swiss cross cut" << endl;
+   		}
+		if(strncmp(argv[i],"--skip", 6) == 0){
+			i++;
+    	 		skip = std::stoi(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -169,12 +183,15 @@ int main(int argc, char *argv[]){
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --skip [skip]                 set skip for event loop (default = 1)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --noSmear                     turns off smearing data (default = true)" << endl;
-   		cout << "   --timeSmear                   turns on time smearing data (default = false)" << endl;
-   		cout << "   --noWeight                    turns off weighting data points (default = false)" << endl;
-   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false)" << endl;
-   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false)" << endl;
+   		cout << "   --noSmear                     turns off smearing data (default = true, on)" << endl;
+   		cout << "   --timeSmear                   turns on time smearing data (default = false, off)" << endl;
+   		cout << "   --noWeight                    turns off weighting data points (default = false, on)" << endl;
+   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;
+   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
+   		cout << "   --noCalibrate                 turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
+   		cout << "   --rejectSpikes                reject spikes based on swiss cross cut (default = false, off)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -275,7 +292,19 @@ int main(int argc, char *argv[]){
 		evtj = evti;
 		evti = evt;
 	}
-
+	//choose time calibration file
+	string calibfile = "";
+        if(fname.find("GJets") != string::npos)
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
+        else if(fname.find("JetHT") != string::npos)
+                calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
+        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos)
+                calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
+        else if(fname.find("QCD") != string::npos)
+                calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
+        //else default to GJets
+        else
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(file);
@@ -283,8 +312,9 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
 		skimmer.SetMinEmE(minEmE);
-		if(in_file.find("JetHT") != string::npos)
-			skimmer.SetData(true);
+		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
+		skimmer.SetSkip(skip);
+		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set alpha, EMalpha
@@ -303,9 +333,9 @@ int main(int argc, char *argv[]){
 			data = false;
         	else
 			data = true;
+		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
-		skimmer.SetData(data);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
         	skimmer.ApplyFractions(frac);
@@ -316,6 +346,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTimeSmear(timesmear); 
         	skimmer.Skim();
 	}
+	if(calib) cout << "Using calibration file " << calibfile << endl;
+	else cout << "No timing calibration applied" << endl;
         return 0;
 
 }

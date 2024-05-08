@@ -27,6 +27,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Branches
 - `main` branch is latest stable release
+- always work on `dev_vXX` branch of latest version
 - `dev_v15` is compatible with v15, v16 of KUCMS ntuples
 - `dev_v14` is compatible with v14 of KUCMS ntuples
 - `dev` branch is inactive
@@ -87,13 +88,12 @@ There are muliple visualization classes:
 	- if running the skimmer on condor (see below)
 - to create profiles and derived histograms from 2D histograms, run `root -l -b -q 'macros/Profile2D.C("[skim.root]")'
 	- this will edit the passed histograms to fill the respective, empty histograms that depend on profiles
-- to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormat.C("[skim.root]")'` from command line
+- to format histograms and save them as TCanvases, run `root -l -b -q 'macros/HistFormatJets.C("[skim.root]")'` or the photon/sim version (`macros/HistFormat.C("[skim.root")'`) from command line
 - to quickly make PDFs for a subset of histograms, run `root -l -b -q 'macros/MakePDFs.C("[input_skim_formatted.root]","[output_dir]","[hist_name_match_string]")'`
 - to add a sample to an overlaid (stack) plot (ie when looking at data as a proxy for background) you can run that sample (like JetHT) separately then hadd the total root files to the ones with signal and other backgrounds
 	- make sure to add sample to MakeIDHists() in `PhotonSkimmer.hh`
 	- because of this, for JetSkimming, the 1D profiles and time sigma plots are *not* filled (only the 2D diffDeltaTime plots and the other 1D variables are filled) so the user can hadd the 2D histograms together
-		- then, profiling is done in `HistFormat.C` in the macros directory, which also produces formatted TCanvases of all plots
-
+		- the user should hadd the skims together first then run `Profile2D` then `HistFormat` for the correct plots
 ### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor

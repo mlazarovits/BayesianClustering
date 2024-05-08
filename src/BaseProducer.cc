@@ -58,6 +58,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 			//skip whole event
 			if(hemVeto) return;
 		}
+
+
                 Jet jet(px, py, pz, _base->Jet_energy->at(j));
                 jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
@@ -73,31 +75,45 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
 				if(_base->ECALRecHit_energy->at(rhidx) < minrhE) continue;				
+				//spike rejection? - only for rhE > 4 GeV
+				if(_spikes && _data && _base->ECALRecHit_energy->at(rhidx) > 4){
+					cout << "rejecting spikes" << endl;
+					if( _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
+						continue;
+				}
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
-                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
 
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+				JetPoint rh;
+				if(_calibmap){
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+				}
+				else{
+					calibfactor = 0;	
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				}
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
-	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
+	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << rh.t() << " calib " << calibfactor << endl;			
                                 
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
-                                jet.AddRecHit(rh);
+				jet.AddRecHit(rh);
                         }
 
                 }
@@ -178,11 +194,18 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(scidx);
 		vector<float> fracs = _base->SuperCluster_rhFracs->at(scidx);
 		double rhe;
+		int nrhs = 0;
+		vector<unsigned int> jrhids;
+		//cout << rhs.size() << " in SC " << rhids.size() << " in ECAL" << endl;
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
+				//TODO: removed when ntuples are fixed!
+				//skip rhs that have already been looked at - avoids duplicates in SC
+				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
+				if(jrhit != jrhids.end()) continue;
 				//if rh is in endcap, skip
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
 				//remove timing reco (ratio) failed fits
@@ -196,14 +219,21 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//TOF from PV to rh location - use this to improve time covariance
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
 				timecorr = drh - dpv;
-                          	calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 	//cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << endl;
 
 				
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+				JetPoint rh;
+				if(_calibmap){
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                         _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+				}
+				else{	
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				}
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
@@ -222,13 +252,20 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
+	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;
+				nrhs++; 
                                 pho.AddRecHit(rh);
-                        }
+                		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
+		        }
 
                 }
 		if(pho.GetNRecHits() < 2) continue;
 		selPhoCount++;
+	//	cout << jrhids.size() << " nrhs in pho" << endl;
+	//	for(auto rh : jrhids) cout << "rh id  " << rh << " count " << count(jrhids.begin(), jrhids.end(), rh) << endl;
+
 		phos.push_back(pho);
+		jrhids.clear();
         }
 
 
