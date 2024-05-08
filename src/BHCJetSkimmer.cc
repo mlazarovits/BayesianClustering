@@ -67,7 +67,10 @@ void BHCJetSkimmer::Skim(){
 			
 		////fill gen jet histograms
 		_prod->GetGenJets(_genjets, i);
+		////fill reco jet histograms
+		_prod->GetRecoJets(_recojets, i);
 	//	if(jets.size() < 1){ cout << endl; continue; }
+		FillRecoJetHists();
 
 
 		//get PV info
