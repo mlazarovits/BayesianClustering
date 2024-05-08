@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Apr  4 10:57:04 2024 by ROOT version 6.28/06
+// Wed May  8 12:57:42 2024 by ROOT version 6.28/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: rootfiles/simNtuples_ttbar.root
+// found on file: simNtuples_test_ttbar.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -44,6 +44,11 @@ public :
    vector<double>  *Jet_genEnergy;
    vector<double>  *Jet_genPt;
    vector<double>  *Jet_genMass;
+   vector<double>  *Jet_eta;
+   vector<double>  *Jet_phi;
+   vector<double>  *Jet_energy;
+   vector<double>  *Jet_pt;
+   vector<double>  *Jet_mass;
    vector<double>  *Track_px;
    vector<double>  *Track_py;
    vector<double>  *Track_pz;
@@ -71,6 +76,11 @@ public :
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genPt;   //!
    TBranch        *b_Jet_genMass;   //!
+   TBranch        *b_Jet_eta;   //!
+   TBranch        *b_Jet_phi;   //!
+   TBranch        *b_Jet_energy;   //!
+   TBranch        *b_Jet_pt;   //!
+   TBranch        *b_Jet_mass;   //!
    TBranch        *b_Track_px;   //!
    TBranch        *b_Track_py;   //!
    TBranch        *b_Track_pz;   //!
@@ -96,11 +106,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("rootfiles/simNtuples_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_test_ttbar.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("rootfiles/simNtuples_ttbar.root");
+         f = new TFile("simNtuples_test_ttbar.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("rootfiles/simNtuples_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_test_ttbar.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -157,6 +167,11 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_genEnergy = 0;
    Jet_genPt = 0;
    Jet_genMass = 0;
+   Jet_eta = 0;
+   Jet_phi = 0;
+   Jet_energy = 0;
+   Jet_pt = 0;
+   Jet_mass = 0;
    Track_px = 0;
    Track_py = 0;
    Track_pz = 0;
@@ -188,6 +203,11 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
    fChain->SetBranchAddress("Jet_genMass", &Jet_genMass, &b_Jet_genMass);
+   fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
+   fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
+   fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
+   fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
+   fChain->SetBranchAddress("Jet_mass", &Jet_mass, &b_Jet_mass);
    fChain->SetBranchAddress("Track_px", &Track_px, &b_Track_px);
    fChain->SetBranchAddress("Track_py", &Track_py, &b_Track_py);
    fChain->SetBranchAddress("Track_pz", &Track_pz, &b_Track_pz);
