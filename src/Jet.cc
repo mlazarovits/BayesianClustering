@@ -1,5 +1,4 @@
 #include "Jet.hh"
-//TODO: change default space coords to eta phi
 #include <iostream>
 using std::cerr;
 
@@ -48,15 +47,16 @@ Jet::Jet(double px, double py, double pz, double E){
 
 }
 
-Jet::Jet(JetPoint rh){
+Jet::Jet(JetPoint rh, Point vtx){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
+	
+	_vtx = vtx;
 
 	_E = rh.E();
 	_eta = rh.eta();
 	_phi = rh.phi();
 	_t = rh.t();
-	_mass = mass();
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
@@ -66,6 +66,8 @@ Jet::Jet(JetPoint rh){
 	_py = pt*sin(_phi);
 	_pz = pt*sinh(_eta);
 	_kt2 = sqrt(pt); 		
+	_mass = mass();
+	
 	_parent1 = nullptr;
 	_parent2 = nullptr;
 	_child = nullptr; 
@@ -75,27 +77,51 @@ Jet::Jet(JetPoint rh){
 }
 
 
-Jet::Jet(const vector<JetPoint>& rhs){
+Jet::Jet(const vector<JetPoint>& rhs, Point vtx){
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
-	for(int i = 0; i < _nRHs; i++){
-		
-		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = rhs[i].x();
-		y = rhs[i].y();
-		z = rhs[i].z();
+	_phi = _invalid_phi;
+	_eta = _invalid_eta;
+	
+	_E = 0;
+	_px = 0;
+	_py = 0;
+	_pz = 0;
+
+	_eta = 0;
+	_phi = 0;
+
+	_vtx = vtx;
+	double phi, eta;
+	for(int i = 0; i < _nRHs; i++){		
+		//theta is calculated between beamline (z-dir) and vector in x-y plane	
+		x = rhs[i].x() - _vtx.at(0);
+		y = rhs[i].y() - _vtx.at(1);
+		z = rhs[i].z() - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
+		phi = atan2(y, x);
+		eta = -log(tan(theta/2.)); 
+		//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
 		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
-		_px += pt*cos(rhs[i].phi());
-		_py += pt*sin(rhs[i].phi());
-		_pz += pt*cosh(rhs[i].eta());
+		_px += pt*cos(phi);
+		_py += pt*sin(phi);
+		_pz += pt*sinh(eta);
+	//cout << "i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*cosh(eta) << " " << pt*sinh(eta) << endl;
 		
 		_E += rhs[i].E();
 
-
+		_eta += rhs[i].eta();
+		//if(rhs[i].phi() < 0) 
+		//	_phi += rhs[i].phi()+2*acos(-1);
+		//else
+			_phi += rhs[i].phi();
 	}
+	_eta /= double(_nRHs);
+	_phi /= double(_nRHs);
+	
 	_kt2 = _px*_px + _py*_py;
+	_mass = mass();
 	_parent1 = nullptr;
 	_parent2 = nullptr;
 	_child = nullptr; 
@@ -123,7 +149,7 @@ Jet::Jet(const vector<Jet>& jets){
 		pt = _rhs[i].E()*sin(theta); //consistent with mass = 0
 		_px += pt*cos(_rhs[i].phi());
 		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*cosh(_rhs[i].eta());
+		_pz += pt*sinh(_rhs[i].eta());
 		
 		_E += _rhs[i].E();
 
@@ -161,6 +187,12 @@ Jet::Jet(const Jet& j){
 	_rhs = j.GetJetPoints();
 	_nRHs = (int)_rhs.size();
 
+	_constituents = j._constituents;
+	_mu = j._mu;
+	_cov = j._cov;
+	_subcl_mu = j._subcl_mu;
+	_subcl_cov = j._subcl_cov;
+	_subcl_pi = j._subcl_pi;
 }
 
 Jet::~Jet(){

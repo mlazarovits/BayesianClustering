@@ -46,6 +46,8 @@ BasicDetectorSim::BasicDetectorSim(){
 			_cal[i].push_back(Point({0.,0.,0.}));
 	}
 	_nSpikes = 0;
+	_evti = 0;
+	_evtj = _nevts;
 }
 
 //ctor with input pythia cmnd file
@@ -83,6 +85,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_pythia.readFile(infile);
 	_nevts = _pythia.mode("Main:numberOfEvents");
 	_nSpikes = 0;
+	_evti = 0;
+	_evtj = _nevts;
 
 }
 
@@ -97,10 +101,15 @@ void BasicDetectorSim::_simQCD(){
 	if(_verb > 1) cout << "Simulating QCD" << endl;
 }
 
+//https://pythia.org/latest-manual/TopProcesses.html
 void BasicDetectorSim::_simTTbar(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
 	_pythia.readString("Top:all = on");
+	//ttbar specific (not tqbar production)
+	//_pythia.readString("Top:gg2ttbar = on");
+	//_pythia.readString("Top:qqbar2ttbar = on");
+	//_pythia.readString("Top:ffbar2ttbar(s:gmZ) = on");
 	_pythia.readString("PhaseSpace:pTHatMin = 20.");
 	_pythia.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
@@ -120,12 +129,20 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	if(_pu){
   		if(_verb == 0) pileup.readString("Print:quiet = on");
 		pileup.readString("Random:setSeed = on");
-  		pileup.readString("Random:seed = 10000002");
+  		pileup.readString("Random:seed = 10"+std::to_string(_evti));
 		pileup.readString("SoftQCD:nonDiffractive = on"); //minbias events only
   		pileup.settings.parm("Beams:eCM = 13000.");
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
+
+	//set random number seed - 
+	//The seed to be used, if setSeed is on.
+	//A negative value gives the default seed,
+	//a value 0 gives a random seed based on the time, and
+	//a value between 1 and 900,000,000 a unique different random number sequence.
+	_pythia.readString("Random:setSeed = on");
+	_pythia.readString("Random:seed = "+std::to_string(_evti+1));	
 
 	_pythia.init();
 
@@ -134,7 +151,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double zig = 0.05/2.;
 	double znew, tnew;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double zmax = _rmax/tan(theta); //[mm]
 
 	Pythia8::Event sumEvent; //one object where individual events are collected
@@ -147,12 +164,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
 	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
-	for(int i = 0; i < _nevts; i++){
+	if(_evti == _evtj){
+		_evti = 0;
+		_evtj = _nevts;
+	}
+
+	for(int i = _evti; i < _evtj; i++){
 		if(evt != -1)
 			if(i != evt) continue;
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-	cout << "event #" << i << endl;
+		cout << "event #" << i << endl;
 		sumEvent = _pythia.event;
 
 		_evt = i;		
@@ -169,6 +191,21 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
 		//cout << "event size: " << sumEvent.size() << endl;
+		_pvx = 0;
+		_pvy = 0;
+		_pvz = 0;
+		double norm = 0;
+		vector<int> daughters;
+		//for(int p = 0; p < sumEvent.size(); p++){
+		//	//reset reco particle four momentum
+		//	Pythia8::Particle particle = sumEvent[p];
+		//	if(abs(particle.id()) == 6){
+		//		if(particle.daughter1() > 0 && particle.daughter1() < particle.daughter2()){
+		//			cout << "top quark produced id = " << particle.id() <<  " with " << particle.daughterList().size() << " daughters and " << particle.daughterListRecursive().size() << " recursive daughters - daughters1 " << particle.daughter1() << " daughters2 " << particle.daughter2() << endl;
+		//			for(auto i : particle.daughterListRecursive()) daughters.push_back(i);
+		//		}
+		//	}
+		//}
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
@@ -193,12 +230,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			tnew = particle.zProd()*1e-3 >= 0 ? znew*1./(_sol) : -1./(_sol)*znew;
 			//original pythia coords are in m, convert to mm
 			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
-		
-
-			//TODO: fill PV coordinates in tree
-			_pvx = 0;
-			_pvy = 0;
-			_pvz = 0;
+			
+			//set PV as momentum weighted sum of particles produced
+			_pvx += particle.xProd()*particle.pT();		
+			_pvy += particle.yProd()*particle.pT();		
+			_pvz += particle.zProd()*particle.pT();		
+			norm += particle.pT();
 	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
@@ -211,7 +248,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 			//create new particle for reco one
 			RecoParticle rp(particle); 
-			
 			//calculate new pt (does full pvec but same pz)
 			CalcTrajectory(rp);
 			//check if in cal cell crack
@@ -221,7 +257,31 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
 			//fill ecal cell with reco particle
 			FillCal(rp);
-		
+			
+			
+
+			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
+				//if(find(daughters.begin(), daughters.end(), rp.Particle.mother1()) != daughters.end()){
+				//	cout << "daughter of " << rp.Particle.mother1() << " is " << rp.Particle.id() << " at idx " << p << " with charge " << particle.charge() << " id " << particle.id() << " mother id " << sumEvent[particle.mother1()].id() << endl;
+				//}
+				vector<int> mothers;
+				int momidx = 999;
+				int thisp = p;
+				while(thisp > 0){
+					momidx = sumEvent[thisp].mother1();
+					mothers.push_back(abs(sumEvent[momidx].id()));
+					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
+					thisp = momidx;
+				}
+				//look for top quark in mother chain
+				//if(find(mothers.begin(),mothers.end(),6) != mothers.end()) cout << "jet particle eta " << rp.Position.eta() << " phi " << rp.Position.phi() << " E " << rp.Momentum.E() << endl;
+			}
+	
+
+	
+			//save tracks (gen information of momentum propagated to detector)
+			//don't save if particle doesn't make it to detector face (with if statement above)
+			SaveTracks(rp);
 
 			//add particle to fastjet
 			//running fastjet on gen particles, no shower, etc.
@@ -231,6 +291,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_recops.push_back(rp);	
 			
 		}
+		_pvx /= norm;
+		_pvy /= norm;
+		_pvz /= norm;
+		_PV = Point({_pvx, _pvy, _pvz});
 		//run fastjet
 		fastjet::ClusterSequence cs(fjinputs, jetdef);
 		//get jets - min 5 pt
@@ -238,6 +302,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
+		
+
 		//Fill gen jet information
 		FillGenJets();	
 	
@@ -265,7 +331,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
 	ROOT::Math::XYZTVector Position = rp.Position;
 	//calculate halflength from max eta
-	double theta = 2*atan(exp(-_etamax));
+	double theta = 2*atan2(1,exp(_etamax));
 	double halfLength = _rmax/tan(theta); //[m]
 
 	//pythia units are in mm (or mm/c for time, natural units)
@@ -292,6 +358,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double x_c, y_c, r_c, vz;
 	double phi0, phid, phit, pio, etad;
 	double xd, yd, zd, td, dpv;
+	//cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
+	//cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
 	//uncharged trajectory or no mag field
 	if(fabs(q) < 1e-9 || fabs(_b) < 1e-9){
 		//calculate time to detector
@@ -314,7 +382,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	else{
 		//do helix calculation
 		// 1. initial transverse momentum p_{T0}: Part->pt
-		//    initial transverse momentum direction phi_0 = -atan(p_{X0} / p_{Y0})
+		//    initial transverse momentum direction phi_0 = -atan(p_{X0} / p_{Y0})                omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
+
       		//    relativistic gamma: gamma = E / mc^2; gammam = gamma * m
       		//    gyration frequency omega = q * Bz / (gammam)
       		//    helix radius r = p_{T0} / (omega * gammam)
@@ -322,7 +391,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		gammam = e * 1e9 / (_sol * _sol); //gammam in [eV/c^2], c needs to be in [m/s]
 		omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
 		r = pt * 1e9 / (q * _b * _sol); //in [m]
-
+//cout << "radius of curvature " << r << " energy " << rp.Momentum.E() << endl;
 		phi0 = atan2(py, px); // [rad] in [-pi, pi]
 		//2. helix axis coordinates
 		x_c = x + r * sin(phi0);
@@ -351,7 +420,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		// momentum at closest approach
 		px = pt * TMath::Cos(phid);
 		py = pt * TMath::Sin(phid);
-
+		//cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << endl;//" " << atan2(y_c, x_c) << endl;
 		//reset momentum
 		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
 		// 3. time evaluation t = TMath::Min(t_r, t_z)
@@ -382,10 +451,30 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		if(r_t > 0.0)
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
 	}
+	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
+	//cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << endl; 
 
+	
 }
 
 
+//this also fills the "track" information which is just gen because there is no tracker in this sim :)
+//this is used to get the momentum of the resulting groups of rhs s.t. quantities like masses can be calculated
+void BasicDetectorSim::SaveTracks(RecoParticle& rp){
+	//particle has already been propagated to detector face
+	_trackpx.push_back(rp.Momentum.px());
+	_trackpy.push_back(rp.Momentum.py());
+	_trackpz.push_back(rp.Momentum.pz());
+
+	_tracketa.push_back(rp.Momentum.eta());
+	//put phi on [0, 2pi] domain
+	if(rp.Momentum.phi() < 0)
+		_trackphi.push_back(rp.Momentum.phi()+2*acos(-1));
+	else if(rp.Momentum.phi() >= 2*acos(-1))
+		_trackphi.push_back(rp.Momentum.phi()-2*acos(-1));
+	else
+		_trackphi.push_back(rp.Momentum.phi());
+}
 
 
 
@@ -473,8 +562,8 @@ void BasicDetectorSim::MakeRecHits(){
 	double e_sig, t_sig;
 	double eta, phi;
 	int nrhs = 0;
-	int etot = 0;
-
+	double etot = 0;
+	double etot_og = 0;
 	//do energy first to get transfer factor
 	for(int i = 0; i < _netacal; i++){
 		for(int j = 0; j < _nphical; j++){
@@ -486,6 +575,8 @@ void BasicDetectorSim::MakeRecHits(){
 			//(sig/E)^2 = (s/sqrt(E))^2 + (n/E)^2 + c^2
 			e_sig = _s*_s/e + _n*_n/(e*e) + _c*_c;
 			e_sig = sqrt(e_sig);
+			//e_sig is in units %, need to convert to units energy
+			e_sig = e_sig/100. * e;
 			//smear total energy in cell
 			//update random sampling range to match
 			//energy in this cell
@@ -511,16 +602,16 @@ void BasicDetectorSim::MakeRecHits(){
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
 			
-			
+			//cout << "og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
 			etot += e_cell;
+			etot_og += e;
 			nrhs++;			
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
 			
 			//get cell bounds
 			_get_etaphi(i, j, eta, phi);
-	
 			//get x, y, z based on cell eta phi
 			x = _rmax*cos(phi);
 			y = _rmax*sin(phi);
@@ -528,11 +619,11 @@ void BasicDetectorSim::MakeRecHits(){
 			z = _rmax/tan(theta);
 			t = _cal[i][j].at(1); 
 			
-			JetPoint jet(x*1e2, y*1e2, z*1e2, t*1e9);
-			jet.SetEnergy(_cal[i][j].at(0));
-			jet.SetEta(eta);
-			jet.SetPhi(phi);
-			_cal_rhs.push_back(jet);
+			JetPoint jp(x*1e2, y*1e2, z*1e2, t*1e9);
+			jp.SetEnergy(_cal[i][j].at(0));
+			jp.SetEta(eta);
+			jp.SetPhi(phi);
+			_cal_rhs.push_back(Jet(jp, _PV));
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
@@ -610,11 +701,13 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//add emission to particle
 				//doesn't include tof correction to time
 				//save time in ns, space in cm
-				JetPoint jet(x*1e2, y*1e2, z*1e2, t*1e9);
-				jet.SetEnergy(_cal[iieta][iiphi].at(0));
-				jet.SetEta(ceta);
-				jet.SetPhi(cphi);
-				_recops[p].AddEmission(jet);
+				JetPoint jp(x*1e2, y*1e2, z*1e2, t*1e9);
+				jp.SetEnergy(_cal[iieta][iiphi].at(0));
+				jp.SetEta(ceta);
+				jp.SetPhi(cphi);
+				//rhid = iieta0iiphi
+				jp.SetRecHitId(int(iieta*1e4 + iiphi));
+				_recops[p].AddEmission(jp);
 			
 	
 				//simulate spikes
@@ -655,11 +748,11 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 					//doesn't include tof correction to time
 					//save time in ns, space in cm
-					JetPoint jet(x*1e2, y*1e2, z*1e2, reco_t*1e9);
-					jet.SetEnergy(reco_e);
-					jet.SetEta(eta);
-					jet.SetPhi(phi);
-					_cal_rhs.push_back(jet);
+					JetPoint jp(x*1e2, y*1e2, z*1e2, reco_t*1e9);
+					jp.SetEnergy(reco_e);
+					jp.SetEta(eta);
+					jp.SetPhi(phi);
+					_cal_rhs.push_back(Jet(jp,_PV));
 					
 					//save spikes to tree
 					_spikeE.push_back(reco_e);			
@@ -674,6 +767,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
+		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " phi " << _recops[p].Particle.phi() << endl;
 		_nRecoParticles++;
 
 	}	
@@ -683,12 +777,19 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 void BasicDetectorSim::FillGenJets(){
+	int njets = 0;
+	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
+		//consts = jet.constituents();
+		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+		//for(auto c : consts)
+			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
 		_jgeta.push_back(jet.eta());
 		_jgphi.push_back(jet.phi());
 		_jgenergy.push_back(jet.e());
 		_jgpt.push_back(jet.pt());
 		_jgmass.push_back(jet.m());
+		njets++;
 	}
 }
 
@@ -774,6 +875,23 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
+
+
+	//reco jets - cells clustered with FJ AK4
+	_tree->Branch("Jet_eta",&_jeta)->SetTitle("Jet eta - FastJet AK4, reco");
+	_tree->Branch("Jet_phi",&_jphi)->SetTitle("Jet phi - FastJet AK4, reco");
+	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
+	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
+	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
+
+
+	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
+	_tree->Branch("Track_py", &_trackpy)->SetTitle("Track py");
+	_tree->Branch("Track_pz", &_trackpz)->SetTitle("Track pz");
+	_tree->Branch("Track_eta", &_tracketa)->SetTitle("Track eta");
+	_tree->Branch("Track_phi", &_trackphi)->SetTitle("Track phi");
+	
 }
 
 

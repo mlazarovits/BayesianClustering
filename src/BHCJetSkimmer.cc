@@ -9,15 +9,15 @@ void BHCJetSkimmer::Skim(){
 	else if(_strategy == N2)
 		cout << " N2 (naive)" << endl;
 	else
-		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2), 2 (MM)" << endl;
+		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
 	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
-	cout << "oname " << _oname << endl;	
+	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
-	cout << "n procs: " << _procCats.size() << endl;
-	for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
+	//cout << "n procs: " << _procCats.size() << endl;
+	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -51,18 +51,29 @@ void BHCJetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecHits(rhs, i);
+		
+		//safety
+		if(rhs.size() < 1) continue;
+
 		x_nrhs.push_back((double)rhs.size());
 		//for(int r = 0; r < rhs.size(); r++){
 		//	rhTime->Fill(rhs[r].t());
 		//}
-	
-	
 
+		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
+		//this should be true for all events
+		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
+		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
+			
 		////fill gen jet histograms
-		vector<Jet> genjets;
-		_prod->GetGenJets(genjets, i);
+		_prod->GetGenJets(_genjets, i);
 	//	if(jets.size() < 1){ cout << endl; continue; }
 
+
+		//get PV info
+		_pvx = _base->PV_x;
+		_pvy = _base->PV_y;
+		_pvz = _base->PV_z;
 	
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
@@ -75,7 +86,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetThresh(thresh);
 		algo->SetAlpha(alpha);
 		algo->SetSubclusterAlpha(emAlpha);
-		algo->SetVerbosity(0);
+		algo->SetVerbosity(_verb);
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
@@ -93,11 +104,26 @@ void BHCJetSkimmer::Skim(){
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
-		FillPredJetHists(trees);
+		//clean trees (remove mirror point or nullptrs)
+		CleanTrees(trees);
+		//fill model histograms with trees
+		//for subclusters
+		FillModelHists();	
+		//transform trees (nodes) to jets
+		TreesToJets();
+		//match jets to tracks to get momentum information
+		//MatchJetsToTracks();
+		//fill pred jet hists with jets
+		FillPredJetHists();
+		FillResolutionHists();
 	}
-	nrhs_comptime = new TGraph(_nEvts, &x_nrhs[0], &y_time[0]);
+	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
+	graphs[0]->SetName("nrhs_comptime");
+	graphs[0]->SetTitle("nrhs_comptime");
+	graphs[0]->GetXaxis()->SetTitle("# rhs");
+	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
-	WriteHists(ofile);
+	WriteOutput(ofile);
 
 	cout << "Wrote skim to: " << _oname << endl;
 }

@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jan 22 15:02:07 2024 by ROOT version 6.14/09
+// Wed Mar  6 10:19:33 2024 by ROOT version 6.14/09
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root
+// found on file: root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBase_hh
 #define ReducedBase_hh
@@ -59,10 +59,21 @@ public :
    vector<float>   *SuperCluster_clcx;
    vector<float>   *SuperCluster_clcy;
    vector<float>   *SuperCluster_clcz;
+   vector<float>   *SuperCluster_nOExDr;
+   vector<unsigned int> *SuperCluster_otherMatchSeedID;
+   Int_t           SuperCluster_nOther;
+   Int_t           SuperCluster_nOtherEx;
+   Int_t           SuperCluster_nOtherIn;
+   vector<unsigned int> *SuperCluster_otherSeedID;
+   vector<int>     *SuperCluster_nXtalOverlap;
+   Int_t           SuperCluster_nSuperCluster;
+   vector<unsigned int> *SuperCluster_nRHXtals;
    vector<float>   *SuperCluster_phi;
+   vector<vector<float> > *SuperCluster_rhFracs;
    vector<vector<unsigned int> > *SuperCluster_rhIds;
    vector<unsigned int> *SuperCluster_XtalSeedID;
-   vector<unsigned int> *SuperCluster_nXtals;
+   vector<unsigned int> *SuperCluster_nHFXtals;
+   vector<unsigned int> *SuperCluster_diffXtrals;
    vector<float>   *SuperCluster_x_calo;
    vector<float>   *SuperCluster_y_calo;
    vector<float>   *SuperCluster_z_calo;
@@ -220,10 +231,21 @@ public :
    TBranch        *b_SuperCluster_clcx;   //!
    TBranch        *b_SuperCluster_clcy;   //!
    TBranch        *b_SuperCluster_clcz;   //!
+   TBranch        *b_SuperCluster_nOExDr;   //!
+   TBranch        *b_SuperCluster_otherMatchSeedID;   //!
+   TBranch        *b_SuperCluster_nOther;   //!
+   TBranch        *b_SuperCluster_nOtherEx;   //!
+   TBranch        *b_SuperCluster_nOtherIn;   //!
+   TBranch        *b_SuperCluster_otherSeedID;   //!
+   TBranch        *b_SuperCluster_nXtalOverlap;   //!
+   TBranch        *b_SuperCluster_nSuperCluster;   //!
+   TBranch        *b_SuperCluster_nRHXtals;   //!
    TBranch        *b_SuperCluster_phi;   //!
+   TBranch        *b_SuperCluster_rhFracs;   //!
    TBranch        *b_SuperCluster_rhIds;   //!
    TBranch        *b_SuperCluster_XtalSeedID;   //!
-   TBranch        *b_SuperCluster_nXtals;   //!
+   TBranch        *b_SuperCluster_nHFXtals;   //!
+   TBranch        *b_SuperCluster_diffXtrals;   //!
    TBranch        *b_SuperCluster_x_calo;   //!
    TBranch        *b_SuperCluster_y_calo;   //!
    TBranch        *b_SuperCluster_z_calo;   //!
@@ -364,11 +386,11 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root");
+         f = new TFile("root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("GMSB_AOD_v14_GMSB_L-500TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/GJets_R17_v15_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root:/tree");
       dir->GetObject("ReducedBase",tree);
 
    }
@@ -447,10 +469,17 @@ inline void ReducedBase::Init(TTree *tree)
    SuperCluster_clcx = 0;
    SuperCluster_clcy = 0;
    SuperCluster_clcz = 0;
+   SuperCluster_nOExDr = 0;
+   SuperCluster_otherMatchSeedID = 0;
+   SuperCluster_otherSeedID = 0;
+   SuperCluster_nXtalOverlap = 0;
+   SuperCluster_nRHXtals = 0;
    SuperCluster_phi = 0;
+   SuperCluster_rhFracs = 0;
    SuperCluster_rhIds = 0;
    SuperCluster_XtalSeedID = 0;
-   SuperCluster_nXtals = 0;
+   SuperCluster_nHFXtals = 0;
+   SuperCluster_diffXtrals = 0;
    SuperCluster_x_calo = 0;
    SuperCluster_y_calo = 0;
    SuperCluster_z_calo = 0;
@@ -594,10 +623,21 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("SuperCluster_clcx", &SuperCluster_clcx, &b_SuperCluster_clcx);
    fChain->SetBranchAddress("SuperCluster_clcy", &SuperCluster_clcy, &b_SuperCluster_clcy);
    fChain->SetBranchAddress("SuperCluster_clcz", &SuperCluster_clcz, &b_SuperCluster_clcz);
+   fChain->SetBranchAddress("SuperCluster_nOExDr", &SuperCluster_nOExDr, &b_SuperCluster_nOExDr);
+   fChain->SetBranchAddress("SuperCluster_otherMatchSeedID", &SuperCluster_otherMatchSeedID, &b_SuperCluster_otherMatchSeedID);
+   fChain->SetBranchAddress("SuperCluster_nOther", &SuperCluster_nOther, &b_SuperCluster_nOther);
+   fChain->SetBranchAddress("SuperCluster_nOtherEx", &SuperCluster_nOtherEx, &b_SuperCluster_nOtherEx);
+   fChain->SetBranchAddress("SuperCluster_nOtherIn", &SuperCluster_nOtherIn, &b_SuperCluster_nOtherIn);
+   fChain->SetBranchAddress("SuperCluster_otherSeedID", &SuperCluster_otherSeedID, &b_SuperCluster_otherSeedID);
+   fChain->SetBranchAddress("SuperCluster_nXtalOverlap", &SuperCluster_nXtalOverlap, &b_SuperCluster_nXtalOverlap);
+   fChain->SetBranchAddress("SuperCluster_nSuperCluster", &SuperCluster_nSuperCluster, &b_SuperCluster_nSuperCluster);
+   fChain->SetBranchAddress("SuperCluster_nRHXtals", &SuperCluster_nRHXtals, &b_SuperCluster_nRHXtals);
    fChain->SetBranchAddress("SuperCluster_phi", &SuperCluster_phi, &b_SuperCluster_phi);
+   fChain->SetBranchAddress("SuperCluster_rhFracs", &SuperCluster_rhFracs, &b_SuperCluster_rhFracs);
    fChain->SetBranchAddress("SuperCluster_rhIds", &SuperCluster_rhIds, &b_SuperCluster_rhIds);
    fChain->SetBranchAddress("SuperCluster_XtalSeedID", &SuperCluster_XtalSeedID, &b_SuperCluster_XtalSeedID);
-   fChain->SetBranchAddress("SuperCluster_nXtals", &SuperCluster_nXtals, &b_SuperCluster_nXtals);
+   fChain->SetBranchAddress("SuperCluster_nHFXtals", &SuperCluster_nHFXtals, &b_SuperCluster_nHFXtals);
+   fChain->SetBranchAddress("SuperCluster_diffXtrals", &SuperCluster_diffXtrals, &b_SuperCluster_diffXtrals);
    fChain->SetBranchAddress("SuperCluster_x_calo", &SuperCluster_x_calo, &b_SuperCluster_x_calo);
    fChain->SetBranchAddress("SuperCluster_y_calo", &SuperCluster_y_calo, &b_SuperCluster_y_calo);
    fChain->SetBranchAddress("SuperCluster_z_calo", &SuperCluster_z_calo, &b_SuperCluster_z_calo);

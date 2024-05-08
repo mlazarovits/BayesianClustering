@@ -8,6 +8,7 @@
 void PhotonSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
+	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);
@@ -42,6 +43,7 @@ void PhotonSkimmer::Skim(){
 	_prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
+	_prod->ApplyFractions(_applyFrac);
 
 	_prod->PrintPreselection();
 	//loop over events
@@ -84,26 +86,6 @@ void PhotonSkimmer::Skim(){
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	
-			//get time offset factor
-			//weighted x,y,z center of rechits
-			double c = 29.9792458;	
-			double x = 0;
-			double y = 0;
-			double z = 0;	
-			double norm = 0;
-			JetPoint rh;
-			for(int r = 0; r < rhs.size(); r++){
-				//one rh per "jet"
-				rh = rhs[r].GetJetPoints()[0];
-				x += rh.x()*rh.GetWeight();
-				y += rh.y()*rh.GetWeight();
-				z += rh.z()*rh.GetWeight();
-				norm += rh.GetWeight();
-			}
-			x = x/norm;
-			y = y/norm;
-			z = z/norm;
-			_timeoffset = sqrt((x - pvx)*(x - pvx) + (y - pvy)*(y - pvy) + (z - pvz)*(z - pvz))/c;
 			_swcross = swissCross(rhs);
 				
 			if(!_data){

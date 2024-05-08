@@ -10,13 +10,13 @@ cmssw_setup() {
     ###################################
     #Download and extract sandbox
     tar xjf "$1"
-    
+   
     #Keep track of release sandbox version 
     basedir=$PWD
     rel=$(dirname $(tar -tvjf "$1" | head -1 | awk '{print $NF}'))
     #rel=$(echo CMSSW_*)
-    arch=$(ls $rel/.SCRAM/|grep slc)
-    old_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment)
+    arch=$(ls $rel/.SCRAM/|grep el)
+    old_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/el*/Environment)
     tmp=$basedir/$rel
     
     # Creating new release
@@ -26,7 +26,7 @@ cmssw_setup() {
     mkdir cmssw-tmp
     cd cmssw-tmp
     scramv1 project -f CMSSW $rel
-    new_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/slc*/Environment)
+    new_release_top=$(awk -F= '/RELEASETOP/ {print $2}' $rel/.SCRAM/el*/Environment)
     cd $rel
     echo ">>> preparing sandbox release $rel"
     for i in bin lib python src; do
@@ -47,7 +47,7 @@ cmssw_setup() {
     
     echo "[$(date '+%F %T')] wrapper ready"
     echo "current directory: $PWD"
-    # cd $CMSSW_BASE
+    #cd $CMSSW_BASE
     echo $CMSSW_BASE
 }
 

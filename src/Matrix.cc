@@ -350,6 +350,9 @@ vector<int> Matrix::GetDims() const{
 }
 
 double Matrix::at(int i, int j) const{
+	if(i > m_row-1 || j > m_col-1){
+		cout << "Error: accessing element (" << i << "," << j << ") for matrix of dimension (" << m_row << "," << m_col << ")" << endl; 
+		return -999; }
 	return m_entries[i][j];
 }
 
@@ -464,6 +467,7 @@ void Matrix::add(const Matrix& mat1, const Matrix& mat2){
 
 void Matrix::add(const Matrix& mat){
 	//check dims are compatible
+	//cout << "MATRIX::ADD - START" << endl;
 	vector<int> dims1 = mat.GetDims();
 	if(dims1[0] != m_row || dims1[1] != m_col){
 		cout << "Error: matrix dimensions are not compatible for addition: " << dims1[0] << "x" << dims1[1] << " and " << m_row << "x" << m_col << endl;
@@ -471,9 +475,12 @@ void Matrix::add(const Matrix& mat){
 	}
 	for(int i = 0; i < dims1[0]; i++){
 		for(int j = 0; j < dims1[1]; j++){
+			//cout << "i " << i << " j " << j << " og entry " << m_entries[i][j] << " + " << mat.at(i,j) << endl;
 			m_entries[i][j] += mat.at(i,j);
+			//cout << "i " << i << " j " << j << " new entry " << m_entries[i][j] << endl;
 		}
 	}
+	//cout << "MATRIX::ADD - END" << endl;
 	
 }
 

@@ -15,6 +15,8 @@
 #include "TTree.h"
 #include <string>
 #include <vector>
+#include "SampleWeight.hh"
+using weights = SampleWeight::weights;
 
 using std::vector;
 using std::string;
@@ -25,6 +27,8 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_smear = true;
+			_timesmear = false;
+			_skip = 1;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -41,9 +45,16 @@ class BaseSkimmer{
 			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
 		
 			_gev = 1;
-			_data = false;
 			_debug = false;
 			_smear = true;
+			_timesmear = false;
+			_skip = 1;
+			
+			string filename = file->GetName();	
+			if(filename.find("SIM") != string::npos)
+				_data = false;
+			else
+				_data = true;
 			
 			_hists1D.push_back(nSubClusters);
 			_hists1D.push_back(time_center);
@@ -96,7 +107,7 @@ class BaseSkimmer{
 		//2 - mean eta - center in eta
 		TH1D* eta_center = new TH1D("etaCenter","etaCenter",50,-1.6,1.6);
 		//3 - mean phi - center in phi
-		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-3.2,3.2);
+		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-0.2,6.4);
 		//4 - object energy
 		TH1D* objE = new TH1D("objE","objE",50,0,1000);
 		//5 - cluster energy
@@ -111,6 +122,15 @@ class BaseSkimmer{
 		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
 
 
+
+		//for sample weights
+		SampleWeight _swts;
+		//weight to apply to all histograms
+		double _weight;
+		//skip for event loop
+		int _skip;
+		void SetSkip(int i){ _skip = i; _weight *= _skip; }
+		
 
 		//struct for different types of plots (ie signal, ISR, fakes, etc.)
 		struct procCat{
@@ -170,7 +190,7 @@ class BaseSkimmer{
 						hists2D[j].push_back(hist);
 						name = hist->GetName();
 						if(!plotName.empty()) name += "_"+plotName;
-						name += "_"+histcatnames[j];
+						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
 						hists2D[j][i]->SetName(name.c_str());
 						if(!plotName.empty()) hists2D[j][i]->SetTitle("");
 					}
@@ -263,7 +283,7 @@ class BaseSkimmer{
 			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
 			_procCats.push_back(tot);	
-			
+			//cout << "sample " << sample << endl;	
 			if(sample.find("GMSB") != string::npos){
 				//notSunm
 				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
@@ -272,15 +292,52 @@ class BaseSkimmer{
 				_procCats.push_back(notSunm);
 				
 				//signal
-				procCat sig(_hists1D, _hists2D, "chiGam","#Chi^{0} #rightarrow #gamma", leadsep);
+				//do string matching to find specific grid point
+				string lambda, ctau;
+				string lmatch = "L-";
+				string sample_l = sample.substr(sample.find(lmatch));
+				lambda = sample_l.substr(0,sample_l.find("_"));
+				
+				string ctmatch = "Ctau";
+				string sample_ctau = sample.substr(sample.find(ctmatch));
+				ctau = sample_ctau.substr(0,sample_ctau.find("_"));
+				
+				//cout << "lambda " << lambda << " ctau " << ctau << endl;
+
+				string lfancy = lambda.substr(lambda.find("-")+1);
+				//lfancy.insert(lfancy.find("TeV")-2," ");
+				lfancy += " TeV";
+				string ctfancy = ctau.substr(ctau.find("-")+1);
+				//ctfancy.insert(ctfancy.find("cm")," ");
+				ctfancy += " cm";
+
+	
+				string plotName = "chiGam_"+lambda+"_"+ctau;
+				while(plotName.find("-") != string::npos)
+					plotName.replace(plotName.find("-"),1,"");
+
+				string legName = "#Chi^{0} #rightarrow #gamma, L = "+lfancy+" c#tau = "+ctfancy;
+				procCat sig(_hists1D, _hists2D, plotName, legName, leadsep);
 				sig.ids = {22};
 				_procCats.push_back(sig);
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
-				procCat jetht(_hists1D, _hists2D, "JetHT", "JetHT", leadsep);
+				procCat jetht(_hists1D, _hists2D, "JetHTPD", "JetHTPD", leadsep);
 				jetht.ids = {-999};
 				_procCats.push_back(jetht);
+			}
+			else if(sample.find("MET") != string::npos){
+				//data
+				procCat met(_hists1D, _hists2D, "METPD", "METPD", leadsep);
+				met.ids = {-999};
+				_procCats.push_back(met);
+			}
+			else if(sample.find("EGamma") != string::npos || sample.find("DoubleEG") != string::npos){
+				//data
+				procCat egam(_hists1D, _hists2D, "DoubleEGPD", "DoubleEGPD", leadsep);
+				egam.ids = {-999};
+				_procCats.push_back(egam);
 			}
 			else if(sample.find("GJets") != string::npos){
 				//data
@@ -308,8 +365,17 @@ class BaseSkimmer{
 
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
+		void SetTimeCalibrationMap(string f){
+                        if(gSystem->AccessPathName(f.c_str())){
+                                cout << "Error: file " << f << " does not exist. Time calibration file could not be set." << endl;
+                                return;
+                        }
+                        TFile* file = TFile::Open(f.c_str());
+                        _prod->SetTimeCalibrationMap(file);
+                }
 		bool _smear, _timesmear;
 
+		void SetSpikeRejection(bool s){ _prod->RejectSpikes(s); }
 
 };
 #endif
