@@ -48,6 +48,22 @@ BasicDetectorSim::BasicDetectorSim(){
 	_nSpikes = 0;
 	_evti = 0;
 	_evtj = _nevts;
+	//fastjet objects - "AK4" jets
+	_Rparam = 0.4;
+	_strategy = fastjet::Best;
+	_recomb = fastjet::E_scheme;
+	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
+
+	//default PV is detector center
+	_PV = Point({0.,0.,0.});
+
+	//set beam spot spread in z (mm) and time (mm/c)
+	//z spread = 0.05/2. = 0.025 cm = 0.25 mm
+	_pythia.readString("Beams:allowVertexSpread = on");
+	_pythia.readString("Beams:sigmaVertexZ = 0.25");
+	_pythia.readString("Beams:sigmaTime = "+std::to_string(0.25/_sol));
+	_pythia.readString("Beams:maxDevVertex = 1");
+	_pythia.readString("Beams:maxDevTime = 1");	
 }
 
 //ctor with input pythia cmnd file
@@ -87,7 +103,14 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_nSpikes = 0;
 	_evti = 0;
 	_evtj = _nevts;
+	//fastjet objects - "AK4" jets
+	_Rparam = 0.4;
+	_strategy = fastjet::Best;
+	_recomb = fastjet::E_scheme;
+	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
 
+	//default PV is detector center
+	_PV = Point({0.,0.,0.});
 }
 
 
@@ -149,7 +172,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	//sigma for z-smearing
 	//beamspot spread is ~5 cm = 0.05 m to use with _sol
 	double zig = 0.05/2.;
-	double znew, tnew;
+	double zshift, tnew;
 	//calculate halflength from max eta
 	double theta = 2*atan2(1,exp(_etamax));
 	double zmax = _rmax/tan(theta); //[mm]
@@ -158,11 +181,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	
 	//declare fjinput/output containers
 	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
-	//fastjet objects - "AK4" jets
-	double Rparam = 0.4;
-	fastjet::Strategy strategy = fastjet::Best;
-	fastjet::RecombinationScheme recomb = fastjet::E_scheme;
-	fastjet::JetDefinition jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, Rparam, recomb, strategy); 
 	
 	if(_evti == _evtj){
 		_evti = 0;
@@ -176,7 +194,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//store event info if pileup is on
 		cout << "event #" << i << endl;
 		sumEvent = _pythia.event;
-
 		_evt = i;		
 
 		if(_pu){
@@ -191,11 +208,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
 		//cout << "event size: " << sumEvent.size() << endl;
-		_pvx = 0;
-		_pvy = 0;
-		_pvz = 0;
-		double norm = 0;
-		vector<int> daughters;
+		
+		//set PV for event - look at first particle in record
+		Pythia8::Particle evtRec = sumEvent[1];//sumEvent.back();
+		_PV = Point({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
+		//vector<int> daughters;
 		//for(int p = 0; p < sumEvent.size(); p++){
 		//	//reset reco particle four momentum
 		//	Pythia8::Particle particle = sumEvent[p];
@@ -206,9 +223,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//		}
 		//	}
 		//}
+		
+		//set production vertex for this event from z-smearing
+		//simulate z-shift from Gaussian
+		//zig is nominal beam spot spread - should be 3 sigma for distribution
+		//_rs.SetRange(-zig/3., zig/3.);
+		//zshift = _rs.SampleGaussian(0., zig/3., 1).at(0);	
+
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
+			//if(abs(particle.status()) == 22) cout << std::setprecision(10) << "particle #" << p << " status " << particle.status() << " prod vertex x " << particle.xProd()*1e-1 << " cm, y " << particle.yProd()*1e-1 << " cm, z " << particle.zProd()*1e-1 << " cm id " << particle.id() << " hepMC status " << particle.statusHepMC() << endl;	
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
 			// No neutrinos
@@ -219,30 +244,27 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//extreme gen momentum eta cut	
 			if(fabs(particle.eta()) > 2.4) continue;	
 
-			//puT in pT cut hehe
+			//puT in pT cut hehe (charged particles only)
 			//muon would need ~3.5 GeV to get to muon chambers so this should be the ceiling for the cut
-			if(particle.pT() < 3.) continue;
-			
-			//set production vertex from z-smearing
-			_rs.SetRange(particle.zProd()*1e-3 - zig, particle.zProd()*1e-3 + zig);
-			znew = _rs.SampleGaussian(particle.zProd()*1e-3, zig, 1).at(0);	
+			if(particle.pT() < 3. && particle.charge() != 0) continue;
+		
 			//set time from linear model with slope = { z > 0 ? 1/sol : -1/sol }
-			tnew = particle.zProd()*1e-3 >= 0 ? znew*1./(_sol) : -1./(_sol)*znew;
+			//tnew = (particle.zProd()*1e-3 +zshift) >= 0 ? (particle.zProd()*1e-3+zshift)*1./(_sol) : -1./(_sol)*(particle.zProd()*1e-3+zshift);
 			//original pythia coords are in m, convert to mm
-			particle.vProd(particle.xProd(), particle.yProd(), znew*1e3, tnew*1e-3);
+			//particle.vProd(particle.xProd(), particle.yProd(), particle.zProd()+(zshift*1e3), tnew);
 			
 			//set PV as momentum weighted sum of particles produced
-			_pvx += particle.xProd()*particle.pT();		
-			_pvy += particle.yProd()*particle.pT();		
-			_pvz += particle.zProd()*particle.pT();		
-			norm += particle.pT();
+			//_pvx += particle.xProd()*particle.pT();		
+			//_pvy += particle.yProd()*particle.pT();		
+			//_pvz += particle.zProd()*particle.pT();		
+			//norm += particle.pT();
 	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
 			//this is for gen particles
 			//include z offset
 			//z and eta are one to one
-			if(fabs(particle.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
+			if(fabs(particle.eta() + particle.zProd()*(_etamax/(zmax))) > _etamax) continue;
 			//if(fabs(rp.Position.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//reset phi for reco particle to include zshift
 			
@@ -291,12 +313,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_recops.push_back(rp);	
 			
 		}
-		_pvx /= norm;
-		_pvy /= norm;
-		_pvz /= norm;
-		_PV = Point({_pvx, _pvy, _pvz});
 		//run fastjet
-		fastjet::ClusterSequence cs(fjinputs, jetdef);
+		fastjet::ClusterSequence cs(fjinputs, _jetdef);
 		//get jets - min 5 pt
 		fjoutputs = cs.inclusive_jets(5.);
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
@@ -310,6 +328,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
 		ReconstructEnergy();
+
+		//fill reco jets after cells have been reconstructed
+		FillRecoJets();
 
 //cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
 		if(_tree != nullptr) _tree->Fill();
@@ -654,6 +675,8 @@ void BasicDetectorSim::ReconstructEnergy(){
 	int ieta, iphi, iieta, iiphi;	
 	double reco_e, reco_t, reco_nrh;
 	double x, y, z, t, r, q;
+	//declare fjinput/output containers
+	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
 	for(int p = 0; p < _recops.size(); p++){
 		Position = _recops[p].Position;
 		Momentum = _recops[p].Momentum;
@@ -708,6 +731,14 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//rhid = iieta0iiphi
 				jp.SetRecHitId(int(iieta*1e4 + iiphi));
 				_recops[p].AddEmission(jp);
+				Jet jet(jp,_PV);
+				_cal_rhs.push_back(jet);
+			
+				//cout << "cell px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << endl;	
+				//add particle to fastjet
+				//running fastjet on reco cells
+      				fjinputs.push_back( fastjet::PseudoJet( jet.px(),
+      				  jet.py(), jet.pz(), jet.e() ) );
 			
 	
 				//simulate spikes
@@ -752,8 +783,15 @@ void BasicDetectorSim::ReconstructEnergy(){
 					jp.SetEnergy(reco_e);
 					jp.SetEta(eta);
 					jp.SetPhi(phi);
-					_cal_rhs.push_back(Jet(jp,_PV));
-					
+					jp.SetRecHitId(int(iieta*1e4 + iiphi));
+					Jet j(jp,_PV);
+					_cal_rhs.push_back(j);
+				
+					//add particle to fastjet
+					//running fastjet on reco cells
+      					fjinputs.push_back( fastjet::PseudoJet( j.px(),
+      					  j.py(), j.pz(), j.e() ) );
+		
 					//save spikes to tree
 					_spikeE.push_back(reco_e);			
 					_nSpikes++;
@@ -770,7 +808,15 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " phi " << _recops[p].Particle.phi() << endl;
 		_nRecoParticles++;
 
-	}	
+	}
+	//cluster reco particles with fastjet	
+	//run fastjet
+	fastjet::ClusterSequence cs(fjinputs, _jetdef);
+	//get jets - min 5 pt
+	fjoutputs = cs.inclusive_jets(5.);
+	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
+	//sort jets by pt
+	_jetsReco = sorted_by_pt(_jetsReco);
 
 }
 
@@ -793,6 +839,22 @@ void BasicDetectorSim::FillGenJets(){
 	}
 }
 
+void BasicDetectorSim::FillRecoJets(){
+	int njets = 0;
+	vector<fastjet::PseudoJet> consts;
+	for(auto jet : _jetsReco){
+		//consts = jet.constituents();
+		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+		//for(auto c : consts)
+			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
+		_jeta.push_back(jet.eta());
+		_jphi.push_back(jet.phi());
+		_jenergy.push_back(jet.e());
+		_jpt.push_back(jet.pt());
+		_jmass.push_back(jet.m());
+		njets++;
+	}
+}
 
 //get "Jets" for clustering
 void BasicDetectorSim::GetRecHits(vector<Jet>& rhs){
