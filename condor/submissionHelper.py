@@ -51,41 +51,41 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
 
 #splits by event number
 def eventsSplit(infile, nChunk):
-	if nChunk == 0:
-                nChunk += 1
-        print("Splitting each file into "+str(nChunk)+" jobs ")
-        #should split by event number in file
-	rfile = ROOT.TFile.Open(infile)
-        tree = rfile.Get("tree/llpgtree")
-	nevts = tree.GetEntries()
-        evts = range(nevts+1)
-        #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
-        #make sure to count first event in every chunk after first
-        arr = [[min(i)-1, max(i)] for i in np.array_split(evts,nChunk)]
-	#set first entry to 0
-	arr[0][0] = 0
-	return arr
+    if nChunk == 0:
+        nChunk += 1
+    print("Splitting each file into "+str(nChunk)+" jobs ")
+    #should split by event number in file
+    rfile = ROOT.TFile.Open(infile)
+    tree = rfile.Get("tree/llpgtree")
+    nevts = tree.GetEntries()
+    evts = range(nevts+1)
+    #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
+    #make sure to count first event in every chunk after first
+    arr = [[min(i)-1, max(i)] for i in np.array_split(evts,nChunk)]
+    #set first entry to 0
+    arr[0][0] = 0
+    return arr
 
 
 
 # Write each job to the condor submit file.
 def writeQueueList( subf, inFile, ofilename, evts, flags ):
-        if evts == 0 or evts is None:
-		print "No events found"
-		return
-	#.root is set in exe
-	outFileArg = ofilename+".$(Process)"
-
-        #infile should only be file name (no path)
-        #inFile = inFile[inFile.rfind("/")+1:]
-	#inFile = "root://cmsxrootd.fnal.gov/"+inFile
-
-        jobCtr=0
-        for e in evts:
-                inFileArg = " -i "+inFile
-                Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
-                subf.write("\n\n\n")
-                subf.write("###### job"+str(jobCtr)+ "######\n")
-                subf.write(Args)
-                subf.write("Queue\n")
-                jobCtr=jobCtr+1
+    if evts == 0 or evts is None:
+        print("No events found")
+        return
+    #.root is set in exe
+    outFileArg = ofilename+".$(Process)"
+    
+    #infile should only be file name (no path)
+    #inFile = inFile[inFile.rfind("/")+1:]
+    #inFile = "root://cmsxrootd.fnal.gov/"+inFile
+    
+    jobCtr=0
+    for e in evts:
+            inFileArg = " -i "+inFile
+            Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+            subf.write("\n\n\n")
+            subf.write("###### job"+str(jobCtr)+ "######\n")
+            subf.write(Args)
+            subf.write("Queue\n")
+            jobCtr=jobCtr+1

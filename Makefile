@@ -32,12 +32,14 @@ lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/json/3.10.2-
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6/include/
 #include necessary CGAL libraries BEFORE the include file so the compile knows about them
 lpc:   GLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
-lpc:   CXXFLAGS     += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include/
+lpc:   CXXFLAGS     += -I$(CMSSW_BASE)/src/CGAL-5.6.1/include
+#lpc:   CXXFLAGS     += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include/
 #boost for CGAL
 #example from KUEWkinoAnalysis makefile #lpc:   GLIBS += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_5/external/slc7_amd64_gcc700/lib/ -lvdt -lboost_program_options -lboost_filesystem -lboost_regex -lboost_system
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
-lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+lpc:   GLIBS       += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+#lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
 #include FastJet cxxflags and libraries
 local: CXXFLAGS  += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
