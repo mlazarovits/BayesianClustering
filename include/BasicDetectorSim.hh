@@ -12,6 +12,7 @@
 #include "Pythia8/Pythia.h"
 #include "Jet.hh"
 #include "fastjet/PseudoJet.hh"
+#include "fastjet/JetDefinition.hh"
 #include <Math/Vector4D.h>
 #include <TH1D.h>
 #include <TFile.h>
@@ -110,6 +111,8 @@ struct RecoParticle;
 
 		//write gen info
 		void FillGenJets();
+		//write reco info
+		void FillRecoJets();
 
 	private:
 		double _rmax; //max radius of detector (m)
@@ -151,6 +154,11 @@ struct RecoParticle;
 		//vector<JetPoint> _cal_rhs; //ecal rec hits
 		vector<Jet> _cal_rhs; //ecal rec hits
 		vector<fastjet::PseudoJet>  _jets; //outputs from fastjet
+		vector<fastjet::PseudoJet>  _jetsReco; //outputs from fastjet
+		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
+		double _Rparam;
+		fastjet::Strategy _strategy; //fastjet clustering strategy
+		fastjet::RecombinationScheme _recomb; //fastjet recombination strategy
 
 		vector<RecoParticle> _recops; //reco particles
 		Pythia8::Pythia _pythia; //pythia object for main event generation

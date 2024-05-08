@@ -59,6 +59,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 	_t = rh.t();
 
 	//theta is calculated between beamline (z-dir) and x-y vector	
+	//centered at (0,0,0)
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
 	double pt = _E*sin(theta); //mass = 0
 	
@@ -96,6 +97,7 @@ Jet::Jet(const vector<JetPoint>& rhs, Point vtx){
 	double phi, eta;
 	for(int i = 0; i < _nRHs; i++){		
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
+		//centered at (0,0,0)
 		x = rhs[i].x() - _vtx.at(0);
 		y = rhs[i].y() - _vtx.at(1);
 		z = rhs[i].z() - _vtx.at(2);
