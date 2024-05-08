@@ -536,6 +536,7 @@ void HistFormat(string file){
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
 				gr->SetMarkerStyle(20);
+				gr->SetMarkerSize(0.3);
 				//draw as tcanvases
 				gr->Draw("AP");
 				//cout << "writing gr " << cv->GetName() << " in file " << endl;
