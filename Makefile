@@ -38,7 +38,8 @@ lpc:   CXXFLAGS     += -I$(CMSSW_BASE)/src/CGAL-5.6.1/include
 #example from KUEWkinoAnalysis makefile #lpc:   GLIBS += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_5/external/slc7_amd64_gcc700/lib/ -lvdt -lboost_program_options -lboost_filesystem -lboost_regex -lboost_system
 #need to dynamically link the boost shared library so CGAL can use it
 #use -Wl comma separated to pass to linker
-lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+lpc:   GLIBS       += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
+#lpc:   GLIBS       += -Wl,-rpath-link,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/lib/ -lboost_thread
 #include FastJet cxxflags and libraries
 local: CXXFLAGS  += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
