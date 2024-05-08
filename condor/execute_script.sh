@@ -9,32 +9,35 @@ export SCRAM_ARCH=el9_amd64_gcc11
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 ##sets up CMSSW environment from a sandbox
 source ./config/cmssw_setup_connect.sh
-cmssw_setup sandboxClean_13_0_13.tar.bz2 
-#cmssw_setup sandbox-CMSSW_10_6_5-6403d6f.tar.bz2
+cmssw_setup sandbox-CMSSW_13_0_13.tar.bz2 
+#######cmssw_setup sandbox-CMSSW_10_6_5-6403d6f.tar.bz2
 ##
 ###
 ####don't need restframes library
 ####source ./config/setup_RestFrames_connect.sh 
-echo "--ld"
-echo $LD_LIBRARY_PATH
-ls
-echo "--config"
-ls config
-echo "--cmssw base $CMSSW_BASE"
-ls $CMSSW_BASE/src
-cd $CMSSW_BASE/src
-cmsenv
-cd BayesianClustering
-make clean
-make lpc -j 4
-echo "--repo post make"
-ls
+#ls
+#echo "--config"
+#ls config
+#echo "--cmssw base $CMSSW_BASE"
+#ls $CMSSW_BASE/src
+#cd $CMSSW_BASE/src
+#cmsenv
+#cd BayesianClustering
+#make clean
+#make lpc -j 4
+#echo "--repo post make"
+#ls
 #cd config
-#mv config/info .
-##
-###don't need lhapdf library - but may need to do this for cgal, etc.
-###export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
-#./config/FullClusterSkim.x "$@"
-echo $@
-./FullClusterSkim.x "$@"
+mv config/info .
+###
+####don't need lhapdf library - but may need to do this for cgal, etc.
+####export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
+./config/FullClusterSkim.x "$@"
+#pwd
+#echo "--done run"
+#ls
+#echo "--config"
+#ls config
+#echo $@
+#./FullClusterSkim.x "$@"
 
