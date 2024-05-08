@@ -136,11 +136,50 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		jet.SetVertex(vtx);
 		genjets.push_back(jet);
 	}	
-
-
-
-
-
 }
 
-void JetSimProducer::GetPrimaryVertex(Point& vtx, int evt){}
+void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
+	double eta, phi, px, py, pz, pt;
+	recojets.clear();
+
+	if(evt > _nEvts) return;
+
+	_base->GetEntry(evt);
+	int nJets = (int)_base->Jet_energy->size();
+	
+	Point vtx = Point(3);
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
+	//make weights - E/e_avg
+	vector<double> ws;
+	for(int j = 0; j < nJets; j++){
+		/////TOF from 0 to rh location
+		///drh = _base->ECALRecHit_0TOF->at(r);
+		/////TOF from PV to rh location
+		///dpv = _base->ECALRecHit_pvTOF->at(r); 
+		///timecorr = drh - dpv;
+
+		pt = _base->Jet_pt->at(j);
+		phi = _base->Jet_phi->at(j);
+		eta = _base->Jet_eta->at(j);
+
+		px = pt*cos(phi);
+		py = pt*sin(phi);
+		pz = pt*sinh(eta);
+
+		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+		Jet jet(px, py,
+		        pz, _base->Jet_energy->at(j));
+		
+		jet.SetVertex(vtx);
+		recojets.push_back(jet);
+	}	
+}
+
+void JetSimProducer::GetPrimaryVertex(Point& vtx, int evt){
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
+
+}
