@@ -843,10 +843,10 @@ void BasicDetectorSim::FillRecoJets(){
 	int njets = 0;
 	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jetsReco){
-		//consts = jet.constituents();
-		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
-		//for(auto c : consts)
-			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
+//		//consts = jet.constituents();
+//		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+//		//for(auto c : consts)
+//			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
 		_jeta.push_back(jet.eta());
 		_jphi.push_back(jet.phi());
 		_jenergy.push_back(jet.e());
@@ -976,6 +976,7 @@ void BasicDetectorSim::_reset(){
 	_cal_rhs.clear();
 	_recops.clear();
 	_jets.clear();
+	_jetsReco.clear();
 
 	_jgeta.clear();
 	_jgphi.clear();
@@ -983,6 +984,17 @@ void BasicDetectorSim::_reset(){
 	_jgpt.clear();
 	_jgmass.clear();
 
+	_jeta.clear();
+	_jphi.clear();
+	_jenergy.clear();
+	_jpt.clear();
+	_jmass.clear();
+	
+	_trackpx.clear();
+	_trackpy.clear();
+	_trackpz.clear();
+	_tracketa.clear();
+	_trackphi.clear();
 
 	_pvx = 0;
 	_pvy = 0;
