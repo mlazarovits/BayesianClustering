@@ -224,14 +224,15 @@ class BHCJetSkimmer{
 				njets = _recojets.size();
 				for(int j = 0; j < _recojets.size(); j++){
 					//cout << "jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << endl;
-					_procCats[p].hists1D[0][19]->Fill(_recojets[j].e());
-					//dr hist is #18
-					_procCats[p].hists1D[0][20]->Fill(_recojets[j].pt());
-					_procCats[p].hists1D[0][21]->Fill(_recojets[j].mass());
+					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
+					//dr hist is #19
+					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
+					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
 				}
-				_procCats[p].hists1D[0][17]->Fill(njets);
+				_procCats[p].hists1D[0][18]->Fill(njets);
+				cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
-				_procCats[p].hists1D[0][23]->Fill(njets - (int)_genjets.size());
+				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
 			}
 		}
 
@@ -557,17 +558,17 @@ class BHCJetSkimmer{
 		//11 - # pred jets - # gen jets
 		TH1D* predGen_nJets = new TH1D("predGen_diffNJets","predGen_diffNJets",20,-10,10);
 		//for subclusters
-		//11 - eta sigma
+		//12 - eta sigma
 		TH1D* predJet_subClusterEtaSigma = new TH1D("predJet_subClusterEtaSigma","predJet_subClusterEtaSigma",25,0.01,0.09);
-		//12 - phi sigma
+		//13 - phi sigma
 		TH1D* predJet_subClusterPhiSigma = new TH1D("predJet_subClusterPhiSigma","predJet_subClusterPhiSigma",25,0.01, 0.09);
-		//13 - time sigma
+		//14 - time sigma
 		TH1D* predJet_subClusterTimeSigma = new TH1D("predJet_subClusterTimeSigma","predJet_subClusterTimeSigma",25,0.01,0.09);
-		//14 - eta-phi covariance
+		//15 - eta-phi covariance
 		TH1D* predJet_subClusteretaPhiCov = new TH1D("predJet_subClusteretaPhiCov","predJet_subClusteretaPhiCov",25,-1,1);
-		//15 - time-eta covariance
+		//16 - time-eta covariance
 		TH1D* predJet_subClustertimeEtaCov = new TH1D("predJet_subClustertimeEtaCov","predJet_subClustertimeEtaCov",25,-1,1);
-		//16 - time-phi covariance
+		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("predJet_subClustertimePhiCov","predJet_subClustertimePhiCov",25,-1,1);
 		//2D plots
 		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
@@ -575,19 +576,19 @@ class BHCJetSkimmer{
 
 
 		//reco jet plots
-		//17
-		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
 		//18
-		TH1D* recoJet_dR = new TH1D("recoJet_dR","recoJet_dR",50,0,2);
+		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
 		//19
-		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,400);
+		TH1D* recoJet_dR = new TH1D("recoJet_dR","recoJet_dR",50,0,2);
 		//20
-		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,1000);
+		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,400);
 		//21
+		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,1000);
+		//22
 		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,1000);
-		//22 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
+		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",5,0,100);
-		//23 - # reco jets - # gen jets
+		//24 - # reco jets - # gen jets
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
