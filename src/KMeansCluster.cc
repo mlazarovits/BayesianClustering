@@ -88,12 +88,12 @@ void KMeansCluster::Initialize_pp(unsigned long long seed){
 //E-step: estimate assignments
 void KMeansCluster::Estimate(){
 	double dmin, dist;
-	int kmin;
+	int kmin = -1;
 	//reset stats
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 1e6;
+		dmin = 1e10;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance squared as optimization metric
