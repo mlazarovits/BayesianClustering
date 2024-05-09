@@ -167,7 +167,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	_pythia.settings.readString("Random:setSeed = on");
 	_pythia.settings.readString("Random:seed = "+std::to_string(_evti+1));	
 
-	_pythia.settings.listChanged();
+	//list changed parameters
+	//_pythia.settings.listChanged();
 	_pythia.init();
 
 	//sigma for z-smearing
