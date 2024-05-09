@@ -99,7 +99,6 @@ struct RecoParticle;
 				_pythia.settings.readString("Next:numberShowInfo = 0");
 				_pythia.settings.readString("Next:numberShowProcess = 0");
 			}
-			//_pythia.settings.readString("Print:errors = "+std::to_string(v));
 		}
 
 
