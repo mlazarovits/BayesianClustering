@@ -167,6 +167,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	_pythia.readString("Random:setSeed = on");
 	_pythia.readString("Random:seed = "+std::to_string(_evti+1));	
 
+	_pythia.settings.listAll();
 	_pythia.init();
 
 	//sigma for z-smearing
@@ -188,8 +189,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	}
 
 	for(int i = _evti; i < _evtj; i++){
-		if(evt != -1)
+		if(evt != -1){
 			if(i != evt) continue;
+		}
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
 		cout << "event #" << i << endl;
