@@ -4,8 +4,8 @@ ROOTGLIBS   = $(shell root-config --glibs)
 #include pythia cflags and libraries
 local: PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
 local: PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
-lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/include
-lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/lib -Wl,-rpath,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/309-c48e277ae4ccb32ab17f6e0b5f0c5d07/lib -lpythia8 -ldl
+lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/include
+lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/lib -Wl,-rpath,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/lib -lpythia8 -ldl
 
 #specify compiler
 CXX         = g++
