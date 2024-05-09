@@ -59,11 +59,11 @@ BasicDetectorSim::BasicDetectorSim(){
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//z spread = 0.05/2. = 0.025 cm = 0.25 mm
-	_pythia.readString("Beams:allowVertexSpread = on");
-	_pythia.readString("Beams:sigmaVertexZ = 0.25");
-	_pythia.readString("Beams:sigmaTime = "+std::to_string(0.25/_sol));
-	_pythia.readString("Beams:maxDevVertex = 1");
-	_pythia.readString("Beams:maxDevTime = 1");	
+	_pythia.settings.readString("Beams:allowVertexSpread = on");
+	_pythia.settings.readString("Beams:sigmaVertexZ = 0.25");
+	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(0.25/_sol));
+	_pythia.settings.readString("Beams:maxDevVertex = 1");
+	_pythia.settings.readString("Beams:maxDevTime = 1");	
 }
 
 //ctor with input pythia cmnd file
@@ -118,9 +118,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 void BasicDetectorSim::_simQCD(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
-	_pythia.readString("HardQCD:all = on");
-	_pythia.readString("PhaseSpace:pTHatMin = 20.");
-	_pythia.readString("Beams:eCM = 13000.");
+	_pythia.settings.readString("HardQCD:all = on");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = 20.");
+	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating QCD" << endl;
 }
 
@@ -128,13 +128,13 @@ void BasicDetectorSim::_simQCD(){
 void BasicDetectorSim::_simTTbar(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
-	_pythia.readString("Top:all = on");
+	_pythia.settings.readString("Top:all = on");
 	//ttbar specific (not tqbar production)
-	//_pythia.readString("Top:gg2ttbar = on");
-	//_pythia.readString("Top:qqbar2ttbar = on");
-	//_pythia.readString("Top:ffbar2ttbar(s:gmZ) = on");
-	_pythia.readString("PhaseSpace:pTHatMin = 20.");
-	_pythia.readString("Beams:eCM = 13000.");
+	//_pythia.settings.readString("Top:gg2ttbar = on");
+	//_pythia.settings.readString("Top:qqbar2ttbar = on");
+	//_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = 20.");
+	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
 }
 
@@ -150,10 +150,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_simQCD();
 	}	
 	if(_pu){
-  		if(_verb == 0) pileup.readString("Print:quiet = on");
-		pileup.readString("Random:setSeed = on");
-  		pileup.readString("Random:seed = 10"+std::to_string(_evti));
-		pileup.readString("SoftQCD:nonDiffractive = on"); //minbias events only
+  		if(_verb == 0) pileup.settings.readString("Print:quiet = on");
+		pileup.settings.readString("Random:setSeed = on");
+  		pileup.settings.readString("Random:seed = 10"+std::to_string(_evti));
+		pileup.settings.readString("SoftQCD:nonDiffractive = on"); //minbias events only
   		pileup.settings.parm("Beams:eCM = 13000.");
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
@@ -164,10 +164,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	//A negative value gives the default seed,
 	//a value 0 gives a random seed based on the time, and
 	//a value between 1 and 900,000,000 a unique different random number sequence.
-	_pythia.readString("Random:setSeed = on");
-	_pythia.readString("Random:seed = "+std::to_string(_evti+1));	
+	_pythia.settings.readString("Random:setSeed = on");
+	_pythia.settings.readString("Random:seed = "+std::to_string(_evti+1));	
 
-	_pythia.settings.listAll();
+	_pythia.settings.listChanged();
 	_pythia.init();
 
 	//sigma for z-smearing

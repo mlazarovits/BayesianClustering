@@ -87,19 +87,19 @@ struct RecoParticle;
 		//get fastjet jets - run on gen particles
 		void GetTrueJets(vector<Jet>& jets);
 
-		void SetNEvents(int e){ _nevts = e; _pythia.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
+		void SetNEvents(int e){ _nevts = e; _pythia.settings.readString("Main:numberOfEvents = "+std::to_string(_nevts)); }
 		void SetVerbosity(int v = 0){
 			_verb = v;
 			if(v == 0)
-				_pythia.readString("Print:quiet = on");
+				_pythia.settings.readString("Print:quiet = on");
 			else if(v == 1){
-				//_pythia.readString("Print:next = off");
-				_pythia.readString("Next:numberShowEvent = 0");
-				_pythia.readString("Next:numberShowLHA = 0");
-				_pythia.readString("Next:numberShowInfo = 0");
-				_pythia.readString("Next:numberShowProcess = 0");
+				//_pythia.settings.readString("Print:next = off");
+				_pythia.settings.readString("Next:numberShowEvent = 0");
+				_pythia.settings.readString("Next:numberShowLHA = 0");
+				_pythia.settings.readString("Next:numberShowInfo = 0");
+				_pythia.settings.readString("Next:numberShowProcess = 0");
 			}
-			//_pythia.readString("Print:errors = "+std::to_string(v));
+			//_pythia.settings.readString("Print:errors = "+std::to_string(v));
 		}
 
 
