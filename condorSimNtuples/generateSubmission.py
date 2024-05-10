@@ -13,69 +13,69 @@ from fractions import Fraction
 
 # Create workspace and condor submit files.
 def generateSubmission(args):
- 	# Ensure that the directory includes "/" at the end.
-	odir = args.directory
-	if odir[-1] != "/":
-		odir += "/"
-	
-	print("Directory for condor submission: {0}".format(odir))
-	print("------------------------------------------------------------")
-	# Create output directory for condor results if it does not exist.
-	SH.makeDir(odir)
-
-	sampleOptions = ['ttbar','QCD']
-	sampleName = ""
-	if args.ttbar:
-		sampleName = "ttbar"
-	elif args.QCD:
-		sampleName = "QCD"
-	else:
+    # Ensure that the directory includes "/" at the end.
+    odir = args.directory
+    if odir[-1] != "/":
+    	odir += "/"
+    
+    print("Directory for condor submission: {0}".format(odir))
+    print("------------------------------------------------------------")
+    # Create output directory for condor results if it does not exist.
+    SH.makeDir(odir)
+    
+    sampleOptions = ['ttbar','QCD']
+    sampleName = ""
+    if args.ttbar:
+    	sampleName = "ttbar"
+    elif args.QCD:
+    	sampleName = "QCD"
+    else:
                 print("Sample must be provided, current options are",sampleOptions)
                 exit()
-	
-
-	dirname = odir+sampleName
-	ofilename = "condorSimNtuples_"+sampleName
-	if args.output is not None:
+    
+    
+    dirname = odir+sampleName
+    ofilename = "condorSimNtuples_"+sampleName
+    if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-	#put algo config in file name
-	print("Preparing sample directory: {0}".format(dirname))
-	##### Create a workspace (remove existing directory) #####
-	if os.path.exists(dirname):
-		print("Removing existing directory: {0}".format(dirname))
-		shutil.rmtree(dirname)
+    #put algo config in file name
+    print("Preparing sample directory: {0}".format(dirname))
+    ##### Create a workspace (remove existing directory) #####
+    if os.path.exists(dirname):
+    	print("Removing existing directory: {0}".format(dirname))
+    	shutil.rmtree(dirname)
+    
+    # Create directories for work area.
+    SH.createWorkArea(dirname)
+    
+    # grab relevant flags
+    eventnums = SH.eventsSplit(int(args.nevts), args.split)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)
+    if(args.ttbar):
+        flags += ' --ttbar'
+    if(args.QCD):
+        flags += ' --QCD'
+    if(args.sigDelayed):
+        flags += ' --sigDelayed'
+    if(args.sigBoosted):
+        flags += ' --sigBoosted'
+    if(args.pileup):
+        flags += ' --pileup'
 
-	# Create directories for work area.
-	SH.createWorkArea(dirname)
-
-	# grab relevant flags
-	eventnums = SH.eventsSplit(int(args.nevts), args.split)
-	flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)
-	if(args.ttbar):
-		flags += ' --ttbar'
-	if(args.QCD):
-		flags += ' --QCD'
-	if(args.sigDelayed):
-		flags += ' --sigDelayed'
-	if(args.sigBoosted):
-		flags += ' --sigBoosted'
-	if(args.pileup):
-		flags += ' --pileup'
-
-	##### Create condor submission script in src directory #####
-	condorSubmitFile = dirname + "/src/submit.sh"
-	subf = open(condorSubmitFile, "w")
-	print("outputfile name "+ofilename)
-	SH.writeSubmissionBase(subf, dirname, ofilename)
-	SH.writeQueueList(subf, ofilename, eventnums, flags)
-	#subf.close()
-	if eventnums == 0 or eventnums is None:
-		return
-	
-	print("------------------------------------------------------------")
-	print("Submission ready, to run use:")
-	print("condor_submit "+condorSubmitFile)
+    ##### Create condor submission script in src directory #####
+    condorSubmitFile = dirname + "/src/submit.sh"
+    subf = open(condorSubmitFile, "w")
+    print("outputfile name "+ofilename)
+    SH.writeSubmissionBase(subf, dirname, ofilename)
+    SH.writeQueueList(subf, ofilename, eventnums, flags)
+    #subf.close()
+    if eventnums == 0 or eventnums is None:
+    	return
+    
+    print("------------------------------------------------------------")
+    print("Submission ready, to run use:")
+    print("condor_submit "+condorSubmitFile)
 
 def main():
 	# options
