@@ -23,11 +23,11 @@ def generateSubmission(args):
 	# Create output directory for condor results if it does not exist.
 	SH.makeDir(odir)
 
-
+    #make sure ntuple names are updated for latest version otherwise skimmer might crash
 	if args.inputSample == "ttbar":
-	        inputFile = "condorSimNtuples_ttbar.root"
+	        inputFile = "condorSimNtuples_ttbar_v2.root"
 	elif args.inputSample == "QCD":
-	        inputFile = "condorSimNtuples_QCD.root"
+	        inputFile = "condorSimNtuples_QCD_v2.root"
 	else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -81,7 +81,7 @@ def generateSubmission(args):
 	condorSubmitFile = dirname + "/src/submit.sh"
 	subf = open(condorSubmitFile, "w")
 	print("outputfile name "+ofilename)
-	SH.writeSubmissionBase(subf, dirname, ofilename, inputFile)
+	SH.writeSubmissionBase(subf, dirname, ofilename)
 	SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
 	#subf.close()
 	if eventnums == 0 or eventnums is None:
