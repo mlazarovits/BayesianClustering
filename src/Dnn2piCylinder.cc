@@ -120,10 +120,10 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
   if(!(phi >= 0.0 && phi < 2*pi)){ cout << "bad phi: " << phi << endl; cylinder_point.Print(); }
   assert(phi >= 0.0 && phi < 2*pi);
 
-// cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
+ //cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
 if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
 	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
- } 
+ }
   // do main point
   MirrorVertexInfo mvi;
   mvi.main_index = _cylinder_index_of_plane_vertex.size();
@@ -132,6 +132,7 @@ if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
   mvi.mirror_index = INEXISTENT_VERTEX;
   // 
   _mirror_info.push_back(mvi);
+  //cout << "RegisterCylinderPoint end" << endl;
 }
 
 
@@ -323,7 +324,6 @@ cout << "adding points" << endl;
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
 			     plane_indices_added, updated_plane_neighbours);
-
 if(_verbose){ 
   cout << "added points: ";
   std::vector<int>::iterator it;

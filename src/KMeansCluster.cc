@@ -93,7 +93,7 @@ void KMeansCluster::Estimate(){
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 1e10;
+		dmin = 1e90;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance squared as optimization metric
@@ -102,9 +102,12 @@ void KMeansCluster::Estimate(){
 		//	dist = sqrt(dist);
 			dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
+			//considering saving all dists and sorting to get min
 			if(dist < dmin){ dmin = dist; kmin = k; }
 			//cout << "k: " << k << " current kmin: " << kmin << " dist: " << dist << " current dmin: " << dmin << endl;
 		}
+		//if no cluster assigned - assign to first cluster
+		if(kmin == -1) kmin = 0;
 		//track number of points that change assignments
 		if(kmin != m_assigns[n]) m_nchg++; //+= m_data->at(n).w();//m_nchg++; 
 		//update assignment
@@ -123,12 +126,14 @@ void KMeansCluster::Update(){
 	}
 	double val, w;
 	double test = 0;
+	//	cout << "m_n " << m_n << " m_k " << m_k << " d " << m_dim << " means " << m_means.size() << " assigns " << m_assigns.size() << " counts " << m_counts.size() << " data " << m_data->GetNPoints() << " data dim " << m_data->Dim() << endl;
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
 		w = m_data->at(n).w();
 		for(int d = 0; d < m_dim; d++){
 			val = m_means[m_assigns[n]].at(d,0);
 			//unweighted data -> w = 1
+			//cout << "setting entry for n " << n << " d " << d << " assignment " << m_assigns[n] << " means size  " << m_means[m_assigns[n]].GetDims()[0] << " " << m_means[m_assigns[n]].GetDims()[1] << endl;
 			m_means[m_assigns[n]].SetEntry(val + w*m_data->at(n).Value(d),d,0);
 		}
 	}

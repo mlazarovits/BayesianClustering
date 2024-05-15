@@ -216,8 +216,7 @@ void DnnPlane::RemoveAndAddPoints(
 			  const vector<EtaPhi> & points_to_add,
 			  vector<int> & indices_added,
 			  vector<int> & indices_of_updated_neighbours) {
-
-  if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
+	if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
 
   // build set of UNION of Voronoi neighbours of a pair of nearest
   // neighbours
@@ -841,11 +840,11 @@ void DnnPlane::_SetAndUpdateNearest(
      if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
     if(_verbose) cout << "more probable "; 
-    }    
+    }
       if (_verbose){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
         cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
-	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
-	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
+        cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
+        cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
       }
 
       if (_is_closer_to_with_hint(vc->point(), current->point(), 
