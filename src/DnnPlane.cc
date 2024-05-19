@@ -534,6 +534,8 @@ cout << points_to_add.size() << " points to add" << endl;
   // update set, triangulation and supervertex info
   for (size_t ir = 0; ir < indices_to_remove.size(); ir++) {
     int index = indices_to_remove[ir];
+    ///if already removed, skip
+    if(_supervertex[index].vertex == NULL) continue;
     if (_verbose) cout << "  removing " << index << endl;
 
     // NeighbourUnion should not contain the points to be removed
@@ -572,7 +574,7 @@ cout << points_to_add.size() << " points to add" << endl;
       _supervertex[index].n = NULL;
       continue;
     }
-
+	if(_verbose) cout << "vertex already null? " << (_supervertex[index].vertex == NULL) << endl;
     // points to be removed should also be eliminated from the
     // triangulation and the supervertex structure should be updated
     // to reflect the fact that the points are no longer valid.

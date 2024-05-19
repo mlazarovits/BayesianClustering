@@ -419,7 +419,7 @@ inline double DnnPlane::NearestNeighbourProb(const int ii) const{
   return _supervertex[ii].MaxRk;}
 
 inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
-  return _supervertex[ii].n;}
+	return _supervertex[ii].n;}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {
