@@ -16,6 +16,8 @@ class BHCJetSkimmer{
 			_gev = 1./10.;
 			_oname = "";
 			_radius = 0;
+			_smear = true;
+			_timesmear = false;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -30,6 +32,8 @@ class BHCJetSkimmer{
 			_evtj = _nEvts;
 			_gev = 1./10.;
 			_radius = 0;
+			_smear = true;
+			_timesmear = false;
 				
 	
 			graphs.push_back(nrhs_comptime);
