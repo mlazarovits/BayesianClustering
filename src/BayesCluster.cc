@@ -100,7 +100,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
  			//also need to erase any impossible merges from map too
 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
-			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
+			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() >= 1); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
@@ -114,16 +114,17 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 				jet_i = BestDistPair.first;
 				jet_j = BestDistPair.second;
 				if (_verb > 0) cout << "BayesCluster found distance recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
-			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << endl;
+			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " validity constraint " << (!DNN->Valid(jet_i) || !DNN->Valid(jet_j)) << " " << (DNN->Valid(jet_i) && DNN->Valid(jet_j)) << endl;
 				//check validity (to see if it has been clustered before)
 				//if best match is between mirrored points AND there are no points that haven't been geometrically clustered yet,
 				//we're done
-				if(!DNN->Valid(jet_i) || !DNN->Valid(jet_j)){ done = true; break; }
 				//also need to erase any impossible merges from map too
-				DistMap.erase(map_it_dist);
-			break;
+				if(DNN->Valid(jet_i) && DNN->Valid(jet_j)){ done = true; break; 
+				DistMap.erase(map_it_dist);}
+				else continue;
 			} 
 		}
+		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; break; }	
 
