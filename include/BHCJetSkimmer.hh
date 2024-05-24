@@ -588,9 +588,9 @@ class BHCJetSkimmer{
 		//20
 		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,400);
 		//21
-		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,1000);
+		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,500);
 		//22
-		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,1000);
+		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,500);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",5,0,100);
 		//24 - # reco jets - # gen jets
