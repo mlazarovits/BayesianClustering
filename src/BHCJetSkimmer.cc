@@ -69,7 +69,7 @@ void BHCJetSkimmer::Skim(){
 		_prod->GetGenJets(_genjets, i);
 		////fill reco jet histograms
 		_prod->GetRecoJets(_recojets, i);
-	//	if(jets.size() < 1){ cout << endl; continue; }
+		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 		FillRecoJetHists();
 
 

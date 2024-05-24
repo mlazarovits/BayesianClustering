@@ -51,14 +51,15 @@ def writeSubmissionBase(subf, dirname, ofilename):
         subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")	
 
 #splits by event number
-def eventsSplit(nevts, nChunk):
+def eventsSplit(infile, nChunk):
     if nChunk == 0:
         nChunk += 1
     print("Splitting each file into "+str(nChunk)+" jobs ")
     #should split by event number in file
-    #rfile = ROOT.TFile.Open(infile)
-    #tree = rfile.Get("tree/llpgtree")
-    #nevts = tree.GetEntries()
+    rfile = ROOT.TFile.Open(infile)
+    tree = rfile.Get("tree/llpgtree")
+    nevts = tree.GetEntries()
+    print("nevts",nevts)
     evts = range(nevts+1)
     #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
     #make sure to count first event in every chunk after first
@@ -70,7 +71,7 @@ def eventsSplit(nevts, nChunk):
 
 
 # Write each job to the condor submit file.
-def writeQueueList( subf, ofilename, evts, flags ):
+def writeQueueList( subf, inFile, ofilename, evts, flags ):
     if evts == 0 or evts is None:
         print("No events found")
         return
@@ -79,7 +80,8 @@ def writeQueueList( subf, ofilename, evts, flags ):
     
     jobCtr=0
     for e in evts:
-            Args = "Arguments ="+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+            inFileArg = " -i "+inFile
+            Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
             subf.write("\n\n\n")
             subf.write("###### job"+str(jobCtr)+ "######\n")
             subf.write(Args)

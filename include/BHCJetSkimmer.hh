@@ -230,7 +230,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
 				}
 				_procCats[p].hists1D[0][18]->Fill(njets);
-				cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
+				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
 			}
@@ -242,6 +242,7 @@ class BHCJetSkimmer{
 			for(int p = 0; p < _procCats.size(); p++){
 				double dr;
 				int bestIdx = 0;
+				//cout << "proc " << p << " # reco jets " << _recojets.size() << " # gen jets " << _genjets.size() << endl;
 				//reco jets
 				for(int j = 0; j < _recojets.size(); j++){
 					dr = 999;
@@ -251,7 +252,7 @@ class BHCJetSkimmer{
 							bestIdx = g;
 						}
 					}
-					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _predJets[j].E() << " gen energy " << _genjets[bestIdx].E() << endl;
+					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _predJets[j].E() << " gen energy " << _genjets[bestIdx].E() << " reco pt " << _recojets[j].pt() << " gen pt " << _genjets[bestIdx].pt() << endl;
 					_procCats[p].hists2D[0][1]->Fill(_genjets[bestIdx].E(), _recojets[j].pt() - _genjets[bestIdx].pt());
 				}
 				//predicted jets

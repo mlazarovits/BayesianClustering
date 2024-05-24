@@ -216,8 +216,7 @@ void DnnPlane::RemoveAndAddPoints(
 			  const vector<EtaPhi> & points_to_add,
 			  vector<int> & indices_added,
 			  vector<int> & indices_of_updated_neighbours) {
-
-  if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
+	if (_verbose) cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
 
   // build set of UNION of Voronoi neighbours of a pair of nearest
   // neighbours
@@ -535,6 +534,8 @@ cout << points_to_add.size() << " points to add" << endl;
   // update set, triangulation and supervertex info
   for (size_t ir = 0; ir < indices_to_remove.size(); ir++) {
     int index = indices_to_remove[ir];
+    ///if already removed, skip
+    if(_supervertex[index].vertex == NULL) continue;
     if (_verbose) cout << "  removing " << index << endl;
 
     // NeighbourUnion should not contain the points to be removed
@@ -573,7 +574,7 @@ cout << points_to_add.size() << " points to add" << endl;
       _supervertex[index].n = NULL;
       continue;
     }
-
+	if(_verbose) cout << "vertex already null? " << (_supervertex[index].vertex == NULL) << endl;
     // points to be removed should also be eliminated from the
     // triangulation and the supervertex structure should be updated
     // to reflect the fact that the points are no longer valid.
@@ -841,11 +842,11 @@ void DnnPlane::_SetAndUpdateNearest(
      if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
     if(_verbose) cout << "more probable "; 
-    }    
+    }
       if (_verbose){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
         cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
-	cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
-	cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
+        cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
+        cout << "this rk: " << rk << " best rk so far: " << maxrk << "\n" << endl;
       }
 
       if (_is_closer_to_with_hint(vc->point(), current->point(), 
