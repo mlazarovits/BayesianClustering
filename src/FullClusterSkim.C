@@ -292,13 +292,14 @@ int main(int argc, char *argv[]){
 		evtj = evti;
 		evti = evt;
 	}
+cout << "fname " << fname << endl;
 	//choose time calibration file
 	string calibfile = "";
         if(fname.find("GJets") != string::npos)
                 calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
         else if(fname.find("JetHT") != string::npos)
                 calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
-        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos)
+        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos || fname.find("EGamma") != string::npos)
                 calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
         else if(fname.find("QCD") != string::npos)
                 calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
