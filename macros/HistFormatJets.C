@@ -77,8 +77,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//offset for log scale
 	if(miny == 0) miny += 1e-6;
 
-	string title;
-	string name;
+	string title, name, histtitle;
 	string canname = can->GetName();
 
 	string legentry;
@@ -117,6 +116,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//MC symbols - primary shapes
 		labelToMark["!chiGam"] =  20;
 		labelToMark["!GMSB"] =  20;
+		labelToMark["!Ctau200"] = -1;
+		labelToMark["!Ctau0p1"] = 1;
+		labelToMark["!Ctau1000"] = 2;
 		labelToMark["!notSunm"] = 72;
 		labelToMark["!GJets"] =   73;
 		labelToMark["!QCD"] =   73;
@@ -143,8 +145,11 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToColor["DoubleEG"] = TColor::GetColor("#9e0059");
 
 		//MC symbols - primary shapes
-		labelToMark["chiGam"] =  20;
-		labelToMark["GMSB"] =  20;
+		//labelToMark["chiGam"] =  20;
+		//labelToMark["GMSB"] =  20;
+		labelToMark["Ctau200"] = 2;
+		labelToMark["Ctau0p1"] = 3;
+		labelToMark["Ctau1000"] = 4;
 		labelToMark["notSunm"] = 72;
 		labelToMark["GJets"] =   73;
 		labelToMark["QCD"] =   73;
@@ -175,18 +180,22 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToColor["recoGen"] = TColor::GetColor("#D05340");
 		labelToColor["gamPV"] = TColor::GetColor("#48A9A6");
 		
-		labelToMark["dijets"] = 106;
-		labelToMark["recoGen"] = 104;
-		labelToMark["gamPV"] = 105;
+		labelToMark["dijets"] = 104;
+		labelToMark["recoGen"] = 105;
+		labelToMark["gamPV"] = 106;
 
 	}
 	//prePostCalibStack formatting
 	else if(pf == 4){
 		labelToColor["preCalib"] = TColor::GetColor("#F5B700");
 		labelToColor["postCalib"] = TColor::GetColor("#306B34");
+		labelToColor["wSpikes"] = TColor::GetColor("#F5B700");
+		labelToColor["woSpikes"] = TColor::GetColor("#306B34");
 		
 		labelToMark["preCalib"] = 114;
 		labelToMark["postCalib"] = 115;
+		labelToMark["wSpikes"] = 114;
+		labelToMark["woSpikes"] = 115;
 
 	}
 	else{
@@ -202,12 +211,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
 		hist[i]->GetYaxis()->CenterTitle(true);
-		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
+		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
+		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
 		
 
 		legentry = hist[i]->GetTitle();
 		title = legentry;	 
+		histtitle = hist[i]->GetTitle();
 		if(pf == 0){
 			legentry = hist[i]->GetTitle(); 
 			title = title.substr(title.find("_")+1);
@@ -245,7 +256,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(legentry.find("PD") != string::npos)
 			legentry = legentry.substr(0,legentry.find("PD"));		
 
-		cout << " legentry " << legentry << " title " << title << endl;
+		cout << " legentry " << legentry << " title " << title << " histtitle " << histtitle << endl;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -259,11 +270,21 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
 			string match = it->first;
 			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
-			if(legentry.find(match) != string::npos){
-				mark = it->second;
-				break;
+			if(pf != 3){
+				if(histtitle.find(match) != string::npos){
+					mark = it->second;
+					break;
+				}
+				else mark = 1;
 			}
-			else mark = 1;
+			else{
+				if(legentry.find(match) != string::npos){
+					mark = it->second;
+					break;
+				}
+				else mark = 1;
+
+			}
 		}
 		//cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		
@@ -287,9 +308,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 		if(canname.find("sigma") != string::npos && hist[i]->GetEntries() > 3){
 			//string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
-			string formula = "sqrt((([0]*[0])/(x*x))+([1]*[1]/x)+(2*[2]*[2]))"
+			string formula = "sqrt((([0]*[0])/(x*x))+([1]*[1]/x)+(2*[2]*[2]))";
 			TFormula* form = new TFormula("resFormula",formula.c_str());
-			
+	
 			double xlo = hist[i]->GetXaxis()->GetBinLowEdge(hist[i]->GetXaxis()->GetFirst());
 			double xhi = hist[i]->GetXaxis()->GetBinUpEdge (hist[i]->GetXaxis()->GetLast());
 			TF1* fit = new TF1("fit",form->GetName(),xlo,xhi); 
@@ -311,9 +332,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			double err1 = fit->GetParError(1);
 			double err2 = fit->GetParError(2);
 			std::ostringstream ss;
-			ss << setprecision(5) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], S = " << val1 << " #pm " << err1 << " [#sqrt{GeV}*ns],  C = " << val2 << " #pm " << err2 << " [ns]";
+			ss << setprecision(3) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], S = " << val1 << " #pm " << err1 << " [#sqrt{GeV}*ns],  C = " << fabs(val2) << " #pm " << err2 << " [ns]";
 			string teststr = ss.str();
-			fitparams.DrawLatex(0.4,0.2+i*0.05,teststr.c_str());
+			fitparams.DrawLatex(0.3,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		} 
 
 	}
@@ -340,8 +361,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		string xstr = hist[0]->GetXaxis()->GetTitle();
 		string sigstr = hist[0]->GetYaxis()->GetTitle();
 		if(xstr.find("(GeV)") != string::npos) xstr.replace(xstr.find("(GeV)"),5,"");
-		string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + 2C^{2}";
-		sigFormula.DrawLatex(0.4, 0.2+(hist.size()+1)*0.05, paramsStr.c_str());
+		string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + #frac{S^{2}}{("+xstr+")} + 2C^{2}";
+		//string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + C^{2}";
+		sigFormula.DrawLatex(0.3, 0.4+(hist.size()+1)*0.05, paramsStr.c_str());
 	}
 
 	return;
@@ -1008,7 +1030,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 		cmslab = "GJets, HT 600 to Inf 2017";
 	}
 	if(proc == "QCD"){
-		cmslab = "QCD Multijets, HT 500 to 700 2017";
+		cmslab = "QCD Multijets 2017";
 	}
 	else if(proc == "JetHTPD"){
 		cmslab = "JetHT, Run F 2017";
@@ -1204,7 +1226,7 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 
 
 
-void FileStackHists(vector<string>& files, vector<string>& labels, string proc, string method, string oname, string match=""){
+void FileStackHists(vector<string>& files, vector<string>& labels, string proc, string method, string oname, string match="",string plottitle=""){
 	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	string cmslab = "";
 	if(proc == "JetHTPD"){
@@ -1298,7 +1320,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 			for(vector<TH1D>::iterator h = hists.begin(); h != hists.end(); h++) histsp.push_back(&(*h));
 			FindListHistBounds(histsp, ymin, ymax);
 			if(ymin == 0 && ymax == 0) return;
-			string name = match+"_PrePostCalibration_"+proc+"_"+method;
+			string name = match+"_"+plottitle+"_"+proc+"_"+method;
 			TCanvas *cv = new TCanvas(name.c_str(), "");
 			ofile->cd();
 			//draw as tcanvases
@@ -1320,11 +1342,17 @@ void HistFormatJets(string file, string file2 = ""){
 	oname = oname+"_formatted.root";
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	ofile->Close();	
+
+	vector<string> med_eAvg = {"median","eAvg"};
+	vector<string> chiGam_QCD = {"chiGam","QCD"};
+	//PV dijets for median + eAvg for QCD
+	MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
+	//recoGen and gamPV for med + eAvg for QCD
+	MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
+
 	//same method in legend, only 1 proc in plot label
 	vector<string> jetHT_QCD = {"JetHT","QCD"};
 	vector<string> DEG_QCD = {"DoubleEG","QCD"};
-	vector<string> chiGam_QCD = {"chiGam","QCD"};
-	vector<string> med_eAvg = {"median","eAvg"};
 	//PV dijets for data (JetHT) + MC for median
 	ProcStackHists(file, jetHT_QCD, "median", oname,"geoAvgEecal");
 	////PV dijets for data (DEG) + MC for median
@@ -1340,15 +1368,12 @@ void HistFormatJets(string file, string file2 = ""){
 	ProcStackHists(file, jetHT_QCD, "median", oname, "geoEavg");
 	//gamPV for QCD + DEG
 	ProcStackHists(file, DEG_QCD, "median", oname, "geoEavg");
+	ProcStackHists(file, DEG_QCD, "eAvg", oname, "geoEavg");
 	
-	//PV dijets for median + eAvg for QCD
-	MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
-	//recoGen and gamPV for med + eAvg for QCD
-	MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
 	
 	//PV dijets + reocGen + gamPV for QCD eAvg
 	ResolutionStackHists(file, "QCD", "eAvg", oname);
-	
+
 	//pre + post calibration for JetHT
 	//pre + post calibraiton for DoubleEG
 	vector<string> files;
@@ -1357,7 +1382,11 @@ void HistFormatJets(string file, string file2 = ""){
 		files.push_back(file2);
 		vector<string> labels = {"postCalib","preCalib"};
 		for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
-		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets");
+		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","PrePostCalibration");
+		labels = {"wSpikes","woSpikes"};
+		for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
+		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
+		//FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
 	}
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
