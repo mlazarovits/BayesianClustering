@@ -597,7 +597,7 @@ class BHCJetSkimmer{
 		//24 - # reco jets - # gen jets
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
 		//25 - reco jet pt/gen jet pt
-		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,-0.1,5);
+		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,0,4);
 		
 
 		//2D plots
