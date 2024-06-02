@@ -33,8 +33,8 @@ BasicDetectorSim::BasicDetectorSim(){
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
-	_ethresh = 1.0;//0.7; //(GeV)
-	_ncell = 1;
+	_ethresh = 0;//0.7; //(GeV)
+	_ncell = 2;
 	_pu = false; //pileup switch
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
@@ -86,7 +86,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
 	_ethresh = 0.1; //(GeV)
-	_ncell = 1;
+	_ncell = 2;
 	_pu = false; //pileup switch
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
@@ -538,6 +538,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 
 	double aeta, beta, aphi, bphi, ceta, cphi; //integral bounds
 	int iieta, iiphi;
+	double e_check = 0;
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
 			//get ieta, iphi for cell in grid
@@ -570,10 +571,11 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(1)+t, 1);	
 			//add number of emissions to right ieta, iphi cell	
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(2)+1,2);
-
+			e_check += e_cell;
 
 		}
 	}
+	//cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
 }
 
 
@@ -707,7 +709,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//also do zero suppression here so
 				//this rh doesn't get counted in time average
 				if(_cal[iieta][iiphi].at(0) < _ethresh) continue; //_cal[iieta][iiphi].SetValue(0., 0.);
-			
 				//get integral bounds
 				_get_etaphi(iieta, iiphi, ceta, cphi);
 	
@@ -808,7 +809,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
-		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " phi " << _recops[p].Particle.phi() << endl;
+		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " energy " << _recops[p].Momentum.E() << " gen energy " << _recops[p].Particle.e() << " reco_e " << reco_e << endl;
 		_nRecoParticles++;
 
 	}
