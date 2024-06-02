@@ -63,7 +63,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoJet_mass);
 			_hists1D.push_back(jetGenE_sigmaDeltaPt_recoGen);
 			_hists1D.push_back(recoGen_nJets);
-
+			_hists1D.push_back(recoGen_jetPtRatio);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -258,6 +258,7 @@ class BHCJetSkimmer{
 					}
 					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _predJets[j].E() << " gen energy " << _genjets[bestIdx].E() << " reco pt " << _recojets[j].pt() << " gen pt " << _genjets[bestIdx].pt() << endl;
 					_procCats[p].hists2D[0][1]->Fill(_genjets[bestIdx].E(), _recojets[j].pt() - _genjets[bestIdx].pt());
+					_procCats[p].hists1D[0][25]->Fill(_recojets[j].pt()/_genjets[bestIdx].pt());
 				}
 				//predicted jets
 				for(int j = 0; j < _predJets.size(); j++){
@@ -595,6 +596,10 @@ class BHCJetSkimmer{
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",5,0,100);
 		//24 - # reco jets - # gen jets
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
+		//25 - reco jet pt/gen jet pt
+		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,-0.1,5);
+		
+
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",5,0,100,50,-50,50);
