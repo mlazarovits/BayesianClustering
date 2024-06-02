@@ -71,6 +71,7 @@ void BHCJetSkimmer::Skim(){
 		_prod->GetRecoJets(_recojets, i);
 		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 		FillRecoJetHists();
+		FillResolutionHists();
 
 
 		//get PV info
@@ -80,7 +81,7 @@ void BHCJetSkimmer::Skim(){
 	
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-
+continue; //only doing det validation rn dont worry abt algo
 		cout << "Clustering..." << endl;	
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
@@ -118,7 +119,6 @@ void BHCJetSkimmer::Skim(){
 		//MatchJetsToTracks();
 		//fill pred jet hists with jets
 		FillPredJetHists();
-		FillResolutionHists();
 	}
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
 	graphs[0]->SetName("nrhs_comptime");
