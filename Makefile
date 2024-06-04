@@ -23,13 +23,13 @@ GLIBS      += $(PYTHIAGLIBS)
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
 #add digamma include path
-local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.82.0_1/include/
+local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.85.0/include/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/include/ 
 #add jsoncpp flags
-local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.2/include/
+local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.3/include/
 lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/json/3.10.2-a6d86565b09ec3d0e02bf7b52c31bbfc/include/ 
 #add CGAL flags and libraries
-local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6/include/
+local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6.1/include/
 #include necessary CGAL libraries BEFORE the include file so the compile knows about them
 lpc:   GLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
 lpc:   CXXFLAGS     += -I$(CMSSW_BASE)/src/CGAL-5.6.1/include
