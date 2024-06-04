@@ -56,8 +56,15 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	nRHs = (int)_base->ECALRecHit_energy->size();
 	vector<double> ws;
 	//need to transfer from GeV (energy) -> unitless (number of points
-	
 	for(int r = 0; r < nRHs; r++){
+		//spike rejection? - only studied for rhE > 4 GeV
+		if(_spikes && _data){
+                        cout << "rejecting spikes" << endl;
+                        if(1 - _base->ECALRecHit_swCross->at(r) < 0.02*log10(_base->ECALRecHit_energy->at(r))+0.02)
+                                continue;
+                }
+
+
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
 		//TOF from 0 to rh location
@@ -94,6 +101,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	_base->GetEntry(evt);
 	int nRHs = (int)_base->ECALRecHit_ID->size();
 
+
 	Point vtx = Point(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
@@ -102,6 +110,12 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	vector<double> ws;
 
 	for(int r = 0; r < nRHs; r++){
+		//spike rejection? - only studied for rhE > 4 GeV
+		if(_spikes && _data){
+                        //cout << "rejecting spikes" << endl;
+                        if(1 - _base->ECALRecHit_swCross->at(r) < 0.02*log10(_base->ECALRecHit_energy->at(r))+0.02)
+                                continue;
+                }
 		//clean out photon ids - if rh id is in phoIds continue
 		rhId = _base->ECALRecHit_ID->at(r);
 		//TOF from 0 to rh location
@@ -123,6 +137,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 		Jet j(rh, vtx);
 		jets.push_back(j);
 	}	
+//cout << "spikes " << _spikes << " data " << _data << " nrhs  " << jets.size() << " nRhs " << nRHs << " n entries " << _base->GetEntries() << endl;
 }
 
 

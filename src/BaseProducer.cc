@@ -75,10 +75,10 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
 				if(_base->ECALRecHit_energy->at(rhidx) < minrhE) continue;				
-				//spike rejection? - only for rhE > 4 GeV
-				if(_spikes && _data && _base->ECALRecHit_energy->at(rhidx) > 4){
+				//spike rejection? - only studied for rhE > 4 GeV
+				if(_spikes && _data){
 					cout << "rejecting spikes" << endl;
-					if( _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
+					if(1 - _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
 						continue;
 				}
 				
