@@ -2,8 +2,8 @@
 
 
 UniformPDF::UniformPDF(){ _a = 0; _b = 0; m_dim = 0; 
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
 
 
 }
@@ -11,8 +11,8 @@ UniformPDF::UniformPDF(){ _a = 0; _b = 0; m_dim = 0;
 UniformPDF::UniformPDF(int d){
 	if(d != 1){ cout << "Error: uniform PDF is only defined for univariate case." << endl; }
 	_a = 0; _b = 1; m_dim = d;
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
 }
 
 
@@ -22,7 +22,7 @@ double UniformPDF::Prob(double x){
 
 }
 
-double UniformPDF::Prob(const Point& x){
+double UniformPDF::Prob(const BayesPoint& x){
 	if(x.Dim() != m_dim){ cout << "Error: point dimension is " << x.Dim() << ". Should be d = 1." << endl; return -999; }
 	
 	return Prob(x.at(0));
@@ -41,7 +41,7 @@ void UniformPDF::InitParameters(unsigned long long seed){
 	_a = 0;
 	_b = 1;
 
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
 
 }

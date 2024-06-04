@@ -13,7 +13,7 @@ class Matrix{
 		Matrix(int row, int col);
 		Matrix(vector<double> in);
 		Matrix(double pt);
-		Matrix(Point pt);
+		Matrix(BayesPoint pt);
 		Matrix(PointCollection pts);
 		//copy constructor
 		Matrix(const Matrix& mat);
@@ -57,7 +57,7 @@ class Matrix{
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
 		PointCollection MatToPoints();
 		void PointsToMat(PointCollection& pc);
-		void PointToMat(const Point& pc);
+		void PointToMat(const BayesPoint& pc);
 		void mean(const PointCollection& data);
 		void scatter(const PointCollection& data);
 
@@ -67,14 +67,14 @@ class Matrix{
 		void Print() const;
 		void reset(){ clear(); InitEmpty(); }
 		//sets this to be a shift matrix
-		void PointToShift(const Point& pt){
+		void PointToShift(const BayesPoint& pt){
 			if(pt.Dim() != m_row) return;
 			for(int i = 0; i < m_row; i++)
 				for(int j = 0; j < m_col; j++)
 					SetEntry(pt.at(i),i,j);
 		}
 		//sets this to be a scale matrix
-		void PointToScale(const Point& pt){
+		void PointToScale(const BayesPoint& pt){
 			if(pt.Dim() != m_row) return;
 			for(int i = 0; i < m_row; i++)
 				SetEntry(pt.at(i),i,i);

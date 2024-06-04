@@ -11,7 +11,7 @@ class NormalWishart : public BasePDF{
 		NormalWishart(Matrix scalemat, Matrix mean, double dof, double scale);
 		virtual ~NormalWishart(){ };
 
-		double Prob(const Point& x);
+		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x){ return -1; }
 		double Prob(const Matrix& mu, const Matrix& precision);		
 

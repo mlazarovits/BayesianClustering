@@ -76,8 +76,8 @@ double RandomSample::SampleFlat(){
 }
 
 //get random n-dim x value according to flat distribuion
-Point RandomSample::SampleNDimFlat(int dim){
-	Point x = Point(dim);
+BayesPoint RandomSample::SampleNDimFlat(int dim){
+	BayesPoint x = BayesPoint(dim);
 	for(int i = 0; i < dim; i++)
 		x.SetValue(_xmin + (_xmax - _xmin)*rand(), i);
 	return x;

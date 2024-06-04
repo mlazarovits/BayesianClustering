@@ -17,7 +17,7 @@ class PhotonProducer : public BaseProducer{
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<JetPoint>& rhs, int evt, int pho);
 		void GetRecHits(vector<Jet>& rhs, int evt, int pho);
-		void GetPrimaryVertex(Point& vtx, int evt);
+		void GetPrimaryVertex(BayesPoint& vtx, int evt);
 
 		bool cleanRH(const JetPoint& rh){
 			if(fabs(rh.t()) > 20) return false;

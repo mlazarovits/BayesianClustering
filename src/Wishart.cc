@@ -16,7 +16,7 @@ Wishart::Wishart(const Matrix& W, double nu){
 }
 
 //Wishart is only for matrices
-double Wishart::Prob(const Point& x){
+double Wishart::Prob(const BayesPoint& x){
 	return -1;
 }
 

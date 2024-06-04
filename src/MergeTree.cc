@@ -124,6 +124,6 @@ void MergeTree::_remap_phi(PointCollection& points){
 	double phi = points.mean().at(1);
 	double shift;
 	if (phi < pi) { shift = twopi ;} else {shift = -twopi;}
-	Point transl = Point({0., -shift, 0.});
+	BayesPoint transl = BayesPoint({0., -shift, 0.});
 	points.Translate(transl);
 }

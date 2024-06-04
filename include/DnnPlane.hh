@@ -158,13 +158,13 @@ private:
   }
  
   //not in OG fastjet - dependent on Point in this framework 
-  inline double _euclid_distance_2d(const Point& p1, const Point& p2) const {
+  inline double _euclid_distance_2d(const BayesPoint& p1, const BayesPoint& p2) const {
     double distx= p1.at(0)-p2.at(0);
     double disty= p1.at(1)-p2.at(1);
     return sqrt(distx*distx+disty*disty);
   }
 
-  inline double _euclid_distance_3d(const Point& p1, const Point& p2) const {
+  inline double _euclid_distance_3d(const BayesPoint& p1, const BayesPoint& p2) const {
     double distx= p1.at(0)-p2.at(0);
     double disty= p1.at(1)-p2.at(1);
     double distz= p1.at(2)-p2.at(2);

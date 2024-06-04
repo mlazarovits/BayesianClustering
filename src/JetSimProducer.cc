@@ -32,7 +32,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 	int nRHs = (int)_base->ECALRecHit_energy->size();
 
 	
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -72,7 +72,7 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	int nRHs = (int)_base->ECALRecHit_energy->size();
 
 	
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -108,7 +108,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 	_base->GetEntry(evt);
 	int nJets = (int)_base->Jet_genEnergy->size();
 	
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -147,7 +147,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 	_base->GetEntry(evt);
 	int nJets = (int)_base->Jet_energy->size();
 	
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -177,7 +177,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 	}	
 }
 
-void JetSimProducer::GetPrimaryVertex(Point& vtx, int evt){
+void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);

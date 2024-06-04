@@ -40,8 +40,8 @@ class VarClusterViz3D : public ClusterVizBase{
 		string GetFileName(){ return _fname; }
 
 	private:
-		Point _scale;
-		Point _shift;
+		BayesPoint _scale;
+		BayesPoint _shift;
 };
 
 #endif

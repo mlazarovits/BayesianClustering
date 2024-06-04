@@ -16,7 +16,7 @@ class JetSimProducer{
 		void GetRecHits(vector<Jet>& rhs, int evt);
 		void GetGenJets(vector<Jet>& genjets, int evt);
 		void GetRecoJets(vector<Jet>& recojets, int evt);
-		void GetPrimaryVertex(Point& vtx, int evt);
+		void GetPrimaryVertex(BayesPoint& vtx, int evt);
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
 

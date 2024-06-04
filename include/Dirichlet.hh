@@ -17,7 +17,7 @@ class Dirichlet : public BasePDF{
 		
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		
-		double Prob(const Point& x);
+		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x){ return -1.; }
 		BasePDF* Posterior(){ return nullptr; }
 

@@ -53,7 +53,7 @@ class BayesCluster{
 				//if jet has no rec hits - skip
 				if(_jets[i].GetNRecHits() < 1) continue;
 				PointCollection pc;
-				Point pt(3);
+				BayesPoint pt(3);
 				pt.SetValue(_jets[i].rap(), 0);
 				pt.SetValue(_jets[i].phi_02pi(), 1);
 				pt.SetValue(_jets[i].time(), 2);
@@ -156,7 +156,7 @@ class BayesCluster{
 			/// if max_rk < 0.5, clustering can stop
 			double max_rk_so_far;
 		};
-		void _sanitize(Point pt){
+		void _sanitize(BayesPoint pt){
 			if(pt.Dim() < 2) return;
   			double twopi = 6.28318530717;
 			double second = pt.at(1);

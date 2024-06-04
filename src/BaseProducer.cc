@@ -21,7 +21,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
 	vector<unsigned int>::iterator rhit;
 
-	Point vtx(3);
+	BayesPoint vtx(3);
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
@@ -145,7 +145,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	//true = skip
 	//false = keep (ok)
 	bool hemVeto = false;	
-	Point vtx(3);
+	BayesPoint vtx(3);
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);

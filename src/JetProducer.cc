@@ -102,7 +102,7 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 	int nRHs = (int)_base->ECALRecHit_ID->size();
 
 
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -142,9 +142,9 @@ void JetProducer::GetRecHits(vector<Jet>& jets, int evt){
 
 
 
-void JetProducer::GetPrimaryVertex(Point& vtx, int evt){
+void JetProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
 	//reset to empty 3-dim point	
-	vtx = Point(3);
+	vtx = BayesPoint(3);
 
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);

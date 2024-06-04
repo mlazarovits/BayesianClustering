@@ -1,6 +1,6 @@
 #include "BasePDFMixture.hh"
 
-double BasePDFMixture::Prob(const Point& x){
+double BasePDFMixture::Prob(const BayesPoint& x){
 	double ret = 0.;
 	for(int i = 0; i < m_k; i++)
 		ret += m_coeffs[i]*m_model[i]->Prob(x);

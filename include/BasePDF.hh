@@ -6,14 +6,13 @@
 #include <string>
 using std::string;
 
-
 class BasePDF{
 	public:
 		BasePDF(){ m_prefactor = 1; }
 		BasePDF(int d){ m_dim = d; m_prefactor = 1; }
 		virtual ~BasePDF(){ }	
 
-		virtual double Prob(const Point& x) = 0;
+		virtual double Prob(const BayesPoint& x) = 0;
 		virtual double Prob(const PointCollection& x) = 0;
 
 		virtual void InitParameters(unsigned long long seed = 123) = 0;

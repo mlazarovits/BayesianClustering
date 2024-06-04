@@ -47,7 +47,7 @@ class GaussianMixture : public BasePDFMixture{
 
 
 		//shift data + learned model parameters
-		void Shift(const Point& pt){
+		void Shift(const BayesPoint& pt){
 			m_data->Translate(pt);
 
 			//only need to shift Gaussian means + prior mean

@@ -4,7 +4,7 @@
 using boost::math::tgamma;
 using boost::math::lgamma;
 
-double Dirichlet::Prob(const Point& x){
+double Dirichlet::Prob(const BayesPoint& x){
 	//x needs to be k-dimensional
 	if(x.Dim() != m_dim){
 		cout << "Error: x dimensions"  << x.Dim() << " and PDF dimension " << (int)m_alphas.size() << " incompatible." << endl;

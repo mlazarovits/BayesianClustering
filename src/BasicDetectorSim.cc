@@ -43,7 +43,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	for(int i = 0; i < _netacal; i++){
 		_cal.push_back({});
 		for(int j = 0; j < _nphical; j++)
-			_cal[i].push_back(Point({0.,0.,0.}));
+			_cal[i].push_back(BayesPoint({0.,0.,0.}));
 	}
 	_nSpikes = 0;
 	_evti = 0;
@@ -55,7 +55,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
 
 	//default PV is detector center
-	_PV = Point({0.,0.,0.});
+	_PV = BayesPoint({0.,0.,0.});
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//z spread = 0.05/2. = 0.025 cm = 0.25 mm
@@ -94,7 +94,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	for(int i = 0; i < _netacal; i++){
 		_cal.push_back({});
 		for(int j = 0; j < _nphical; j++)
-			_cal[i].push_back(Point({0.,0.,0.}));
+			_cal[i].push_back(BayesPoint({0.,0.,0.}));
 	}
 
 	//sets pythia settings by given .cmnd file
@@ -110,7 +110,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
 
 	//default PV is detector center
-	_PV = Point({0.,0.,0.});
+	_PV = BayesPoint({0.,0.,0.});
 }
 
 
@@ -214,7 +214,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 		//set PV for event - look at first particle in record
 		Pythia8::Particle evtRec = sumEvent[1];//sumEvent.back();
-		_PV = Point({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
+		_PV = BayesPoint({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
 		//vector<int> daughters;
 		//for(int p = 0; p < sumEvent.size(); p++){
 		//	//reset reco particle four momentum
@@ -976,7 +976,7 @@ void BasicDetectorSim::_reset(){
 	_nSpikes = 0;
 	for(int i = 0; i < _netacal; i++)
 		for(int j = 0; j < _nphical; j++)
-			_cal[i][j] = Point({0., 0., 0.});
+			_cal[i][j] = BayesPoint({0., 0., 0.});
 	_cal_rhs.clear();
 	_recops.clear();
 	_jets.clear();

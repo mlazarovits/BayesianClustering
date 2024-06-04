@@ -8,20 +8,20 @@ class UniformPDF : public BasePDF{
 		UniformPDF();
 		UniformPDF(int d);
 		UniformPDF(double a, double b){ _a = a; _b = b; 
-			m_params["a"] = Matrix(Point(_a));
-			m_params["b"] = Matrix(Point(_b));
+			m_params["a"] = Matrix(BayesPoint(_a));
+			m_params["b"] = Matrix(BayesPoint(_b));
 		}
 		virtual ~UniformPDF(){ };
 
 		double Prob(double x);
-		double Prob(const Point& x);
+		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x);
 
 		void InitParameters(unsigned long long seed = 123);
 
 		void UpdateParameters(){ _a = m_params["a"].at(0,0); _b = m_params["b"].at(0,0);
-			m_params["a"] = Matrix(Point(_a));
-			m_params["b"] = Matrix(Point(_b));
+			m_params["a"] = Matrix(BayesPoint(_a));
+			m_params["b"] = Matrix(BayesPoint(_b));
 		 }	
 
 	private:

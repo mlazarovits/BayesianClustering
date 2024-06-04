@@ -1004,7 +1004,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			else cout << "Error: invalid time reconstruction method specified for calculating jet time" << endl;
 			//if photon, shift time to detector by centroid as defined above
 			if(pho){
-				Point center;
+				BayesPoint center;
 				if(ts == med) center = CalcMedianCenter(jet);
 				else if(ts == eavg) center = CalcEAvgCenter(jet);
 				else if(ts == mmavg){
@@ -1020,7 +1020,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 				//jet.Print();
 				//cout << "PV frame time: " << time << endl;
 				//else return time;
-				Point pv = jet.GetVertex();
+				BayesPoint pv = jet.GetVertex();
 				double dx = center.at(0) - pv.at(0);
 				double dy = center.at(1) - pv.at(1);
 				double dz = center.at(2) - pv.at(2);
@@ -1084,11 +1084,11 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			return eneTime.rbegin()->second;
 		}
 
-		Point CalcMaxCenter(Jet& j){
-			map<double, Point> eneLoc;
+		BayesPoint CalcMaxCenter(Jet& j){
+			map<double, BayesPoint> eneLoc;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			for(int i = 0; i < rhs.size(); i++){
-				Point pt({rhs[i].x(), rhs[i].y(), rhs[i].z()});
+				BayesPoint pt({rhs[i].x(), rhs[i].y(), rhs[i].z()});
 				//cout << "x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
 				eneLoc[rhs[i].E()] = pt;
 			}
@@ -1113,14 +1113,14 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			return time;
 		}		
 
-		Point CalcMedianCenter(Jet& j){
-			map<double,Point> timeLoc;
-			Point center(3);
+		BayesPoint CalcMedianCenter(Jet& j){
+			map<double,BayesPoint> timeLoc;
+			BayesPoint center(3);
 			double time = -999;
 			vector<double> times;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
-			Point pt(3);
+			BayesPoint pt(3);
 			//cout << "MEDIAN CENTER" << endl;
 			//cout << nrhs << " rhs" << endl;
 			for(int i = 0; i < nrhs; i++){
@@ -1138,7 +1138,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			}
 			//even - return average of two median times
 			if(nrhs % 2 == 0){
-				Point center(3);
+				BayesPoint center(3);
 				//cout << "idx1 " << int(double(nrhs)/2.) << " idx2 " << int(double(nrhs)/2.)-1 << endl;
 				double t1 = times[int(double(nrhs)/2.)];
 				double t2 = times[int(double(nrhs)/2.)-1];
@@ -1161,12 +1161,12 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 
 
 
-		Point CalcEAvgCenter(Jet& j){
+		BayesPoint CalcEAvgCenter(Jet& j){
 			double norm = 0;
 			double x = 0;
 			double y = 0;
 			double z = 0;
-			Point center(3);
+			BayesPoint center(3);
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++){
@@ -1246,14 +1246,14 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			return t/norm; 
 		}
 		
-		Point CalcMMAvgCenter(BasePDFMixture* model, bool pho){
+		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho){
 			int kmax = model->GetNClusters();
 			double norm = 0;
 			double x = 0;
 			double y = 0;
 			double z = 0;
 			double phi, eta, theta;
-			Point center(3);
+			BayesPoint center(3);
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
 				params = model->GetPriorParameters(k);

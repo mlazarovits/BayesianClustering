@@ -41,7 +41,7 @@ void KMeansCluster::Initialize(const PointCollection& pc){
 //kmeans++ initialization
 void KMeansCluster::Initialize_pp(unsigned long long seed){
 	//randomly select first point
-	Point c = m_data->SelectPoints(1, seed).at(0);
+	BayesPoint c = m_data->SelectPoints(1, seed).at(0);
 	PointCollection* means = new PointCollection();
 	PointCollection* pts = new PointCollection;
 	means->AddPoint(c);

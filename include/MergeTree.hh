@@ -147,7 +147,7 @@ class MergeTree : BaseTree{
 			return theta*phi;		
 		}
 
-		void AddLeaf(const Point* pt = nullptr){
+		void AddLeaf(const BayesPoint* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			_clusters.push_back(nullptr);
 			node* x = (node*)malloc(sizeof *x);
@@ -192,7 +192,7 @@ class MergeTree : BaseTree{
 			//copy points for parameter estimation
 			//so original points don't get overwritten
 			PointCollection newpts = PointCollection(*x->points);
-			Point center = newpts.Center();//Translate(center);
+			BayesPoint center = newpts.Center();//Translate(center);
 
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);

@@ -83,7 +83,7 @@ class BaseProducer{
 		virtual void GetSimRecHits(vector<Jet>& rhs, int evt){};
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt, int obj) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt, int obj){};
-		virtual void GetPrimaryVertex(Point& vtx, int evt) = 0;
+		virtual void GetPrimaryVertex(BayesPoint& vtx, int evt) = 0;
 		virtual void GetGenJets(vector<Jet>& genjets, int evt){}; 
 
 

@@ -36,7 +36,7 @@ class BasePDFMixture : public BasePDF{
 		}
 
 		void SetVerbosity(int v){ _verb = v; }
-		double Prob(const Point& x);
+		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x);
 
 		void SetData(PointCollection* data){
@@ -221,7 +221,7 @@ class BasePDFMixture : public BasePDF{
 		}
 
 		//shift data + learned parameters
-		virtual void Shift(const Point& pt) = 0;
+		virtual void Shift(const BayesPoint& pt) = 0;
 
 		PointCollection* m_data;
 		//number of data points

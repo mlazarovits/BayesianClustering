@@ -200,7 +200,7 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 
 
 	//set vertex info
-	Point vtx = Point(3);
+	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
@@ -236,9 +236,9 @@ void PhotonProducer::GetRecHits(vector<Jet>& rhs, int evt, int pho){
 
 //ctor from rec hit collection - integrating into ntuplizer - in CMSSW
 
-void PhotonProducer::GetPrimaryVertex(Point& vtx, int evt){
+void PhotonProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
 	//reset to empty 3-dim point	
-	vtx = Point(3);
+	vtx = BayesPoint(3);
 	if(evt > _nEvts) return;
 
 	_base->GetEntry(evt);

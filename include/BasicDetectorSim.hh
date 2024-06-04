@@ -149,7 +149,7 @@ struct RecoParticle;
 		RandomSample _rs; //random sampler for smearing
 		int _nevts; //number of events to simulate
 		//this needs to be separate from JetPoint bc there is no field in JetPoint to track how many emissions are in a cell
-		vector<vector<Point>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
+		vector<vector<BayesPoint>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		//vector<JetPoint> _cal_rhs; //ecal rec hits
 		vector<Jet> _cal_rhs; //ecal rec hits
 		vector<fastjet::PseudoJet>  _jets; //outputs from fastjet
@@ -197,7 +197,7 @@ struct RecoParticle;
 		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
 		vector<double> _spikeE;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
-		Point _PV;
+		BayesPoint _PV;
 
 		int _evti, _evtj;
 

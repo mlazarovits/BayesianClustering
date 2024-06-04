@@ -2,9 +2,9 @@
 #include "RandomSample.hh"
 
 TriangularPDF::TriangularPDF(){ _a = 0; _b = 0; _c = 0; m_dim = 1;
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
-	m_params["c"] = Matrix(Point(_c));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
+	m_params["c"] = Matrix(BayesPoint(_c));
 }
 
 TriangularPDF::TriangularPDF(int d){ 
@@ -12,9 +12,9 @@ TriangularPDF::TriangularPDF(int d){
 	_a = 0; _b = 0; _c = 0;
 	m_dim = 1;
 
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
-	m_params["c"] = Matrix(Point(_c));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
+	m_params["c"] = Matrix(BayesPoint(_c));
 }
 
 //x is nonzero within a < x < b
@@ -25,7 +25,7 @@ double TriangularPDF::Prob(double x){
 	else return 0;  
 }
 
-double TriangularPDF::Prob(const Point& x){
+double TriangularPDF::Prob(const BayesPoint& x){
 	if(x.Dim() != m_dim){ cout << "Error: point dimension is " << x.Dim() << ". Should be d = 1." << endl; return -999; }
 
 	return Prob(x.at(0));
@@ -45,9 +45,9 @@ void TriangularPDF::InitParameters(unsigned long long seed){
 	_b = 1;
 	_c = 0;
 
-	m_params["a"] = Matrix(Point(_a));
-	m_params["b"] = Matrix(Point(_b));
-	m_params["c"] = Matrix(Point(_c));
+	m_params["a"] = Matrix(BayesPoint(_a));
+	m_params["b"] = Matrix(BayesPoint(_b));
+	m_params["c"] = Matrix(BayesPoint(_c));
 
 }
 

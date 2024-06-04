@@ -143,7 +143,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
 		PointCollection newpts = PointCollection();
 		for(int i = 0; i < (int)jps.size(); i++){
-			Point pt = Point({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
+			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
 			newpts += pt;
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
@@ -362,7 +362,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//Point center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
 	//copy points for parameter estimation
 	//so original points don't get overwritten
-	Point center = points->Center();//Translate(center);
+	BayesPoint center = points->Center();//Translate(center);
 	//mean = points->mean();
 	//cout << "after centering" << endl;
 	//mean.Print();
@@ -466,7 +466,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 
 void BayesCluster::_phi_wraparound(PointCollection& pc){
-	Point mean = pc.mean();
+	BayesPoint mean = pc.mean();
 	double pi = acos(-1);
 
 	//calculate max distance from mean for all points (O(n))
@@ -483,7 +483,7 @@ void BayesCluster::_phi_wraparound(PointCollection& pc){
 	//else, mirror all points above pi to below 0
 	PointCollection mirrorpts;
 	for(int i = 0; i < pc.GetNPoints(); i++){
-		Point pt = pc.at(i);
+		BayesPoint pt = pc.at(i);
 		if(pt.at(1) > pi){ 
 			pt.SetValue(2*pi - pt.at(1),1);
 		}

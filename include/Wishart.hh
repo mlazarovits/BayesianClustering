@@ -20,7 +20,7 @@ class Wishart : public BasePDF{
 		}	
 		BasePDF* Posterior(){ return nullptr; }
 		double Prob(const Matrix& x);
-		double Prob(const Point& x);
+		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x){ return -1.; }
 
 		double lnB();

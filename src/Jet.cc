@@ -47,7 +47,7 @@ Jet::Jet(double px, double py, double pz, double E){
 
 }
 
-Jet::Jet(JetPoint rh, Point vtx){
+Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 	
@@ -78,7 +78,7 @@ Jet::Jet(JetPoint rh, Point vtx){
 }
 
 
-Jet::Jet(const vector<JetPoint>& rhs, Point vtx){
+Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
@@ -173,7 +173,7 @@ Jet::Jet(const Jet& j){
 	_py = j.py();
 	_pz = j.pz();
 	_E = j.E();
-	_mom = Point({_px, _py, _pz, _E});
+	_mom = BayesPoint({_px, _py, _pz, _E});
 	_eta = j.eta();
 	_phi = j.phi();
 	_t = j.time();

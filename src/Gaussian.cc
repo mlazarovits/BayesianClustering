@@ -12,7 +12,7 @@ Gaussian::Gaussian(int d) : BasePDF(d){
 	m_prior = nullptr;
 }
 
-Gaussian::Gaussian(Point mu, Matrix cov){
+Gaussian::Gaussian(BayesPoint mu, Matrix cov){
 	if(!cov.square()){ cout << "Error: non-square covariance." << endl; return;}
 	if(!cov.symmetric()){ cout << "Error: non-symmetric covariance." << endl; return; }
 	m_dim = mu.Dim();
@@ -43,7 +43,7 @@ Gaussian::Gaussian(Matrix mu, Matrix cov){
 	m_prefactor = 1./(pow(m_cov.det(),0.5)*pow(2*acos(-1),0.5*m_dim));
 }
 
-double Gaussian::Prob(const Point& x){
+double Gaussian::Prob(const BayesPoint& x){
 	if(m_dim != x.Dim()){ cout << "Point dimensions " << x.Dim() << " incompatible. " << m_dim << endl; return -999;}
 
 	Matrix x_min_mu = Matrix(x);
@@ -92,7 +92,7 @@ double Gaussian::Prob(const PointCollection& x){
 	Gaussian* prob = new Gaussian(m,m_cov);
 	Matrix p = Matrix(m_dim, 1);
 	p.mult(m_mu,sqrt(n));
-	Point pt = Point(m_dim);
+	BayesPoint pt = BayesPoint(m_dim);
 	for(int i = 0; i < m_dim; i++) pt.SetValue(p.at(i,0),i);
 
 	prob->SetPrefactor(prefactor);
@@ -139,7 +139,7 @@ Gaussian* Gaussian::mult(Gaussian* p1){
 	//then invert added covariances for overall distribution
 	new_cov.invert(new_cov); 
 
-	Point x = mu1.MatToPoints().at(0);
+	BayesPoint x = mu1.MatToPoints().at(0);
 	double coeff = gaus_coeff->Prob(x);	
 
 	ret->SetParameter("mean",new_mu);

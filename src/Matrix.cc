@@ -48,7 +48,7 @@ Matrix::Matrix(double pt){
 
 }
 
-Matrix::Matrix(Point pt){
+Matrix::Matrix(BayesPoint pt){
 	m_row = pt.Dim();
 	m_col = 1;
 
@@ -510,7 +510,7 @@ PointCollection Matrix::MatToPoints(){
 		for(int i = 0; i < m_row; i++){
 			val.push_back(m_entries[i][j]);
 		}
-		Point pt = Point(val);
+		BayesPoint pt = BayesPoint(val);
 		pc += pt;
 	}
 	return pc;
@@ -646,7 +646,7 @@ void Matrix::PointsToMat(PointCollection& pc){
 	}
 }
 //stores pc as mat in this
-void Matrix::PointToMat(const Point& pc){
+void Matrix::PointToMat(const BayesPoint& pc){
 	m_col = 1;
 	m_row = pc.Dim();
 

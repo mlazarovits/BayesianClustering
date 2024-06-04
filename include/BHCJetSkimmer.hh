@@ -92,7 +92,7 @@ class BHCJetSkimmer{
 			_predJets.clear();
 			vector<JetPoint> rhs;
 			double x, y, z, eta, phi, t, theta;
-			Point vertex({_pvx, _pvy, _pvz});
+			BayesPoint vertex({_pvx, _pvy, _pvz});
 
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
@@ -133,7 +133,7 @@ class BHCJetSkimmer{
 					je += pc->at(p).w()/_gev;
 				}
 				//create new Jet
-				Jet predJet(rhs, Point({_pvx, _pvy, _pvz}));
+				Jet predJet(rhs, BayesPoint({_pvx, _pvy, _pvz}));
 				//set PV info
 				//predJet.SetVertex(Point({_pvx,_pvy,_pvz}));
 				//set constituents (subclusters) here with model from tree

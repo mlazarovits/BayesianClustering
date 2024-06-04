@@ -10,14 +10,15 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+
 class PointCollection{
 	public:
 		PointCollection() = default;
-		PointCollection(Point pt){
+		PointCollection(BayesPoint pt){
 			_pts.push_back(pt);
 			_nDim = pt.Dim();
 		}
-		PointCollection(const vector<Point>& pts){
+		PointCollection(const vector<BayesPoint>& pts){
 			_nDim = pts[0].Dim();
 			for(auto p : pts){
 				if(p.Dim() != _nDim){
@@ -54,7 +55,7 @@ class PointCollection{
 		}
 		
 		//add only unique points
-		PointCollection& operator +=(Point& pt){
+		PointCollection& operator +=(BayesPoint& pt){
 			//cout << "PointCollection+=Point" << endl;
 				if(!this->Has(pt)){
 					_pts.push_back(pt);
@@ -63,7 +64,7 @@ class PointCollection{
 			return *this;
 		}
 		
-		const Point& at(int i) const{
+		const BayesPoint& at(int i) const{
 			return _pts.at(i);
 		}
 		
@@ -83,7 +84,7 @@ class PointCollection{
 		int Dim() const{ return _nDim; }
 		
 		//check if point is in this collection
-		bool Has(const Point& pt) const{		
+		bool Has(const BayesPoint& pt) const{		
 		//cout << "PointCollection::Has" << endl;
 		//cout << "size for for loop:" << (int)_pts.size() << endl;
 			for(int p = 0; p < (int)_pts.size(); p++){
@@ -95,7 +96,7 @@ class PointCollection{
 		}
 		
 		//add only unique points
-		void AddPoint(const Point& pt){
+		void AddPoint(const BayesPoint& pt){
 		//cout << "addpoint: " << &pt << endl;
 		//pt.Print();
 		if(_nDim == 0) _nDim = pt.Dim();
@@ -129,7 +130,7 @@ class PointCollection{
 			}
 		}
 
-		void AddPoints(vector<Point> pts){
+		void AddPoints(vector<BayesPoint> pts){
 			_nDim = pts[0].Dim();
 			for(auto p : pts){
 				if(p.Dim() != _nDim){
@@ -179,7 +180,7 @@ class PointCollection{
 	
 		rs.SetRange(0,N);
 		int idx = rs.SampleFlat();		
-		Point pivot = _pts[idx];
+		BayesPoint pivot = _pts[idx];
 		if(pivot.Value().size() < 1){
 			cout << "Error: no value for pivot point #" << idx << " found." << endl;
 			return;
@@ -218,7 +219,7 @@ class PointCollection{
 	
 		rs.SetRange(0,N);
 		int idx = rs.SampleFlat();		
-		Point pivot = _pts[idx];
+		BayesPoint pivot = _pts[idx];
 		if(pivot.Value().size() < 1){
 			cout << "Error: no value for pivot point #" << idx << " found." << endl;
 			return;
@@ -263,9 +264,9 @@ class PointCollection{
 
 	//center all dimensions independently
 	//shifts average to zero
-	Point Center(){
+	BayesPoint Center(){
 		//includes weights
-		Point avg = mean();//Point(_nDim);//mean();
+		BayesPoint avg = mean();//BayesPoint(_nDim);//mean();
 		for(int d = 0; d < _nDim; d++){
 			//avg.SetValue(Centroid(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
@@ -277,9 +278,9 @@ class PointCollection{
 	}
 
 	//shifts min to zero
-	Point MinCenter(){
+	BayesPoint MinCenter(){
 		//vector<double> min;
-		Point min = Point(_nDim);
+		BayesPoint min = BayesPoint(_nDim);
 		for(int d = 0; d < _nDim; d++){
 			//min.push_back(this->min(d));
 			min.SetValue(this->min(d),d);
@@ -289,7 +290,7 @@ class PointCollection{
 		}
 		return min;
 	}
-	void Translate(Point t){
+	void Translate(BayesPoint t){
 		if(t.Dim() != _nDim) return;
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
@@ -318,12 +319,12 @@ class PointCollection{
 
 	//normalize all dimensions indepedently
 	//vector<double> Normalize(){
-	Point Normalize(){
+	BayesPoint Normalize(){
 		//translate first
 		MinCenter();
 		double min, max;
 		//vector<double> scale;
-		Point scale = Point(_nDim);
+		BayesPoint scale = BayesPoint(_nDim);
 		for(int d = 0; d < _nDim; d++){
 			min = this->min(d);
 			max = this->max(d);
@@ -336,7 +337,7 @@ class PointCollection{
 		return scale;
 	}
 	
-	void Scale(Point s){
+	void Scale(BayesPoint s){
 		if(s.Dim() != _nDim) return;
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
@@ -363,8 +364,8 @@ class PointCollection{
 	}
 	
 
-	Point mean() const{
-		Point m = Point(_nDim);
+	BayesPoint mean() const{
+		BayesPoint m = BayesPoint(_nDim);
 		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
 		for(int i = 0; i < (int)_pts.size(); i++){
 			for(int d = 0; d < _nDim; d++){
@@ -375,9 +376,9 @@ class PointCollection{
 		return m;
 	}
 
-	Point stddev() const{
-		Point sd = Point(_nDim);
-		Point m = mean();
+	BayesPoint stddev() const{
+		BayesPoint sd = BayesPoint(_nDim);
+		BayesPoint m = mean();
 		double val;
 		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
 		for(int i = 0; i < (int)_pts.size(); i++){
@@ -417,7 +418,7 @@ class PointCollection{
 
 	private:
 		int _nDim = 0;
-		vector<Point> _pts;
+		vector<BayesPoint> _pts;
 
 
 

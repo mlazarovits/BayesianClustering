@@ -35,7 +35,7 @@ NormalWishart::NormalWishart(Matrix scalemat, Matrix mean, double dof, double sc
 }
 
 //not defined
-double NormalWishart::Prob(const Point& x){ return -999; }
+double NormalWishart::Prob(const BayesPoint& x){ return -999; }
 
 double NormalWishart::Prob(const Matrix& mu, const Matrix& precision){
 	Matrix gaus_cov = Matrix(m_dim, m_dim);
@@ -44,7 +44,7 @@ double NormalWishart::Prob(const Matrix& mu, const Matrix& precision){
 	
 	Gaussian* gaus = new Gaussian(m_mean, gaus_cov);
 	Wishart* wish = new Wishart(m_scalemat, m_dof);
-	Point x = Point(m_dim);
+	BayesPoint x = BayesPoint(m_dim);
 	for(int i = 0; i < m_dim; i++) x.SetValue(mu.at(i,0), i);
 
 	return gaus->Prob(x)*wish->Prob(precision);

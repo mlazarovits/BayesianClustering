@@ -31,7 +31,7 @@ void MultivarT::InitParameters(unsigned long long seed){
 }
 
 
-double MultivarT::Prob(const Point& x){
+double MultivarT::Prob(const BayesPoint& x){
 	//undefined case
 	if(m_dof <= 1){ cout << "MultivarT dof not >1: " << m_dof << endl; return -1; }
 

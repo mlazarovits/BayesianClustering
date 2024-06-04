@@ -54,13 +54,14 @@
 /// use a class instead of a pair so that phi can be sanitized
 /// and put into proper range on initialization.
 /// \endif
+
 class EtaPhi {
 public:
   double first, second;
   EtaPhi() {}
   EtaPhi(double a, double b) {first = a; second = b;}
   //include ctor from framework point
-  EtaPhi(Point p){
+  EtaPhi(BayesPoint p){
 	if(p.Dim() < 2) return;
 	first = p.at(0);
 	second = p.at(1);

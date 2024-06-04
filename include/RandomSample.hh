@@ -20,7 +20,7 @@ class RandomSample{
 		double Gaussian(double x, double mu, double sigma);
 		double Poisson(int x, double rate);
 		double SampleFlat();
-		Point SampleNDimFlat(int dim);
+		BayesPoint SampleNDimFlat(int dim);
 		void SetRange(double xmin, double xmax);
 		vector<double> SampleGaussian(double mean, double sigma, int Nsample);
 		vector<double> SamplePoisson(double rate, int Nsample);

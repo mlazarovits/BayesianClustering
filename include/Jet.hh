@@ -24,8 +24,8 @@ class Jet{
 	public:
 		Jet();
 		Jet(double px, double py, double pz, double E);
-		Jet(JetPoint rh, Point vtx);
-		Jet(const vector<JetPoint>& rhs, Point vtx);
+		Jet(JetPoint rh, BayesPoint vtx);
+		Jet(const vector<JetPoint>& rhs, BayesPoint vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -37,7 +37,7 @@ class Jet{
 				_py = j.py();
 				_pz = j.pz();
 				_E = j.E();
-				_mom = Point({_px, _py, _pz, _E});
+				_mom = BayesPoint({_px, _py, _pz, _E});
 				_eta = j.eta();
 				_phi = j.phi();
 				_t = j.time();
@@ -62,9 +62,9 @@ class Jet{
 		}
 
 		//return four vector for clustering
-		Point four_mom() const{ return _mom; }
+		BayesPoint four_mom() const{ return _mom; }
 
-		void SetVertex(Point vtx){
+		void SetVertex(BayesPoint vtx){
 			if(vtx.Dim() != 3){
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 				return;
@@ -183,7 +183,7 @@ class Jet{
 		void GetEtaPhiTimePoints(PointCollection& pc) const{
 			pc.Clear();
 			for(int i = 0; i < (int)_rhs.size(); i++){
-				pc += Point({_rhs[i].eta(), _rhs[i].phi_02pi(), _rhs[i].time()});
+				pc += BayesPoint({_rhs[i].eta(), _rhs[i].phi_02pi(), _rhs[i].time()});
 			}
 		}
 		
@@ -220,7 +220,7 @@ class Jet{
 		double GetJetTime() const{ return _t; }
 		void SetJetTime(double t){ _t = t; }
 	
-		Point GetVertex() const{return _vtx; }
+		BayesPoint GetVertex() const{return _vtx; }
 
 		//check IR + collinear safety?
 
@@ -367,8 +367,8 @@ class Jet{
 		double _E;
 		double _mass;
 		double _t;
-		Point _mom;
-		Point _vtx;
+		BayesPoint _mom;
+		BayesPoint _vtx;
 
 		//mutable double _eta, _phi, _theta;
 		//rec hits (ids) in jet

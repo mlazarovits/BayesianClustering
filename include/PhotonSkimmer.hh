@@ -1660,37 +1660,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			double majtime_cov, mintime_cov, majtime_cov_unnorm, mintime_cov_unnorm;
 			
 			//for swiss cross prime - wmax/N_k	
-			double wmax;
-			double swCP;
 			PointCollection* points = model->GetData();
-			points->Sort();
-			wmax = points->at(npts-1).w();
-			Point xmax = points->at(npts-1);
-			//find 4 closest neighbors to xmax
-			//map<double, Point> distToMax;
-			double dist, deta, dphi;
-			//distance threshold to include rh in sw+'
-			double distThresh = 0.02;
-			int nNeighbors = 0;
-			double sumNeighbors = 0;
-			for(int i = 0; i < npts; i++){
-				//skip xmax
-				if(xmax == points->at(i)) continue;
-				deta = points->at(i).at(0) - xmax.at(0);
-				dphi = points->at(i).at(1) - xmax.at(1);
-				dist = sqrt(deta*deta + dphi*dphi);
-				if(dist < distThresh){
-					sumNeighbors += points->at(i).w();
-					nNeighbors++;
-				}
-				//distToMax[dist] = points->at(i);
-			}
-			//get first four entries in map - smallest distance to xmax
-		//	for(auto it = distToMax.begin(); it != distToMax.end(); it++){
-		//		if(nNeighbors > 3) break;
-		//		sumNeighbors += it->second.w();
-		//	}	
-		
+			vector<double> spikeObs;
+			SpikeObs(points, spikeObs);
+			double swCP = spikeObs[0];
 			//calculate weighted eta mean of points to check eta calculation
 			double etaCentroid = points->Centroid(0);
 
@@ -1717,7 +1690,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 			E_k = norms[k]/_gev; 
 			
-			swCP = sumNeighbors/wmax;
 			
 			params = model->GetPriorParameters(k);
 			ec = params["mean"].at(0,0);
@@ -2248,7 +2220,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 
 
-	Point GetCMSSWMean(PointCollection* pc, bool logw = false){
+	BayesPoint GetCMSSWMean(PointCollection* pc, bool logw = false){
 		int npts = pc->GetNPoints();
 		int maxd = pc->Dim();
 		double E_tot = 0.;
@@ -2260,7 +2232,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			E_tot += pc->at(i).w()/_gev;
 		}
 		PointCollection pcnew;
-		Point pt;
+		BayesPoint pt;
 		for(int i = 0; i < npts; i ++){
 			pt = pc->at(i);
 			if(logw) pt.SetWeight( log( w0 + (pc->at(i).w()/_gev)/E_tot ) );
@@ -2270,7 +2242,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			pcnew.AddPoint(pt);
 		}
 		//is weighted mean
-		Point mean = Point(maxd);
+		BayesPoint mean = BayesPoint(maxd);
 		for(int d = 0; d < maxd; d++)
 			mean.SetValue(pcnew.Centroid(d),d);
 
@@ -2294,9 +2266,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			E_tot += pc->at(i).w()/_gev;
 		}
 		PointCollection pcnew;
-		Point pt;
+		BayesPoint pt;
 		double denom = 0;
-		Point mean = Point(maxd);
+		BayesPoint mean = BayesPoint(maxd);
 		double meta = 0;
 		double mphi = 0;
 		double mtime = 0;
@@ -2383,7 +2355,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				if(phi > acos(-1)) phi -= 2*acos(-1);	
 				time = rhs[i].time();
 
-				Point pt({eta, phi, time});
+				BayesPoint pt({eta, phi, time});
 				pt.SetWeight(rhs[i].E()*_gev);
 				E_tot += rhs[i].E();
 				ipts->AddPoint(pt);
@@ -2425,7 +2397,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			cmsLogE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 			cmsLogE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 			//for centers
-			Point logEwCenter = GetCMSSWMean(ipts,true);
+			BayesPoint logEwCenter = GetCMSSWMean(ipts,true);
 			cmsLogE_ec = logEwCenter.at(0);
 			cmsLogE_pc = logEwCenter.at(1);
 			cmsLogE_tc = logEwCenter.at(2);
@@ -2573,7 +2545,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			cmsNoE_majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 			cmsNoE_mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 			//for centers
-			Point noEwCenter = GetCMSSWMean(ipts,false);
+			BayesPoint noEwCenter = GetCMSSWMean(ipts,false);
 			cmsNoE_ec = noEwCenter.at(0);
 			cmsNoE_pc = noEwCenter.at(1);
 			cmsNoE_tc = noEwCenter.at(2);
@@ -2835,6 +2807,53 @@ class PhotonSkimmer : public BaseSkimmer{
 		return phi;
 	}
 
+	void SpikeObs(PointCollection* pc, vector<double>& obs){
+		obs.clear();
+		pc->Sort();
+		int npts = pc->GetNPoints();
+		double wmax = pc->at(npts-1).w();
+		BayesPoint xmax = pc->at(npts-1);
+		//find 4 closest neighbors to xmax
+		//map<double, Point> distToMax;
+		double dist, deta, dphi;
+		//distance threshold to include rh in sw+'
+		double distThresh = 0.02;
+		int nNeighbors = 0;
+		double sumNeighbors = 0;
+		for(int i = 0; i < npts; i++){
+			//skip xmax
+			if(xmax == pc->at(i)) continue;
+			deta = pc->at(i).at(0) - xmax.at(0);
+			dphi = pc->at(i).at(1) - xmax.at(1);
+			dist = sqrt(deta*deta + dphi*dphi);
+			if(dist < distThresh){
+				sumNeighbors += pc->at(i).w();
+				nNeighbors++;
+			}
+			//distToMax[dist] = points->at(i);
+		}
+		//swCP
+		obs.push_back(sumNeighbors/wmax);
+
+	}
+
+
+	//potential BH variables
+	void BeamHaloObs(PointCollection* pc, vector<double>& obs){
+		obs.clear();	
+		//find seed crystal -> largest weight
+		pc->Sort();
+		//seed crystal is last one
+		BayesPoint seed = pc->at(pc->GetNPoints()-1);
+		//ie looking at neighbor eta energy ratio + neighbor phi energy ratio
+		
+			// double ratio
+		//ratio of center crystal to 2 neighbors in eta (smaller), phi (larger)
+		//ratio of eta strips to surrounding eta strips in phi
+		
+
+	}
+
 	//is a 3D rotation matrix but only does 2D rotation
 	void Get2DRotationMatrix(vector<Matrix> eigenvecs, Matrix& rotmat){
 		if(rotmat.GetDims()[0] != 3) return;
@@ -2855,7 +2874,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//calculate points rotated into major/minor axes
 		for(int i = 0; i < pc->GetNPoints(); i++){
 			//put eta/phi coordinates into major/minor coordinates
-			Point pt = pc->at(i);
+			BayesPoint pt = pc->at(i);
 			oldpt.SetEntry(pt.at(0),0,0);
 			oldpt.SetEntry(pt.at(1),1,0);
 			oldpt.SetEntry(pt.at(2),2,0);	
@@ -2864,7 +2883,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			newpt.mult(rotmat,oldpt);
 			//may need to preserve weight
 			PointCollection tmp_newpts = newpt.MatToPoints();
-			Point newpoint = tmp_newpts.at(0);
+			BayesPoint newpoint = tmp_newpts.at(0);
 			newpoint.SetWeight(pt.w());
 			newpts.AddPoint(newpoint);	
 		}
@@ -2891,7 +2910,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//should only have 1 rh per jet
 			if(jets[j].GetNRecHits() > 1) continue;
 			rh = jets[j].GetJetPoints()[0];
-			Point pt(1);
+			BayesPoint pt(1);
 			pt.SetValue(int(rh.rhId()),0);
 			pt.SetWeight(rh.GetWeight());
 			sc += pt;	
