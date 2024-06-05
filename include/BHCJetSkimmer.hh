@@ -67,6 +67,7 @@ class BHCJetSkimmer{
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
+			_hists2D.push_back(genPt_recoPt);
 
 		}
 		void Skim();
@@ -259,6 +260,7 @@ class BHCJetSkimmer{
 					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _predJets[j].E() << " gen energy " << _genjets[bestIdx].E() << " reco pt " << _recojets[j].pt() << " gen pt " << _genjets[bestIdx].pt() << endl;
 					_procCats[p].hists2D[0][1]->Fill(_genjets[bestIdx].E(), _recojets[j].pt() - _genjets[bestIdx].pt());
 					_procCats[p].hists1D[0][25]->Fill(_recojets[j].pt()/_genjets[bestIdx].pt());
+					_procCats[p].hists2D[0][2]->Fill(_genjets[bestIdx].pt(), _recojets[j].pt());
 				}
 				//predicted jets
 				for(int j = 0; j < _predJets.size(); j++){
@@ -512,6 +514,7 @@ class BHCJetSkimmer{
 				if(_procCats[0].hists2D[0][i]->GetEntries() == 0 && histname.find("sigma") == string::npos){ continue; }
 				//check if data can be run
 				//if(histname.find("recoGen") != string::npos && _data) continue;
+				cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
 				_procCats[0].hists2D[0][i]->Write();
 				//write method as directory within directory
 				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
@@ -528,6 +531,7 @@ class BHCJetSkimmer{
 					//cout << "  n hists " << _procCats[0].hists1D[0].size() << endl;
 					_procCats[p].hists2D[0][i]->Write();
 				} 
+				ofile->cd(); 
 			}
 		}
 
@@ -587,11 +591,11 @@ class BHCJetSkimmer{
 		//19
 		TH1D* recoJet_dR = new TH1D("recoJet_dR","recoJet_dR",50,0,2);
 		//20
-		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,400);
+		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,150);
 		//21
-		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,500);
+		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,150);
 		//22
-		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,500);
+		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,150);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",5,0,100);
 		//24 - # reco jets - # gen jets
@@ -603,7 +607,8 @@ class BHCJetSkimmer{
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",5,0,100,50,-50,50);
-
+		//2 - 2D histogram of gen pT vs reco pT
+		TH2D* genPt_recoPt = new TH2D("genPt_recoPt","genPt_recoPt;genpt;recopt",50,5,50,50,5,50);
 
 	
 		void SetSmear(bool t){ _smear = t; }
