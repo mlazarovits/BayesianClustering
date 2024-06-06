@@ -286,7 +286,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 			}
 		}
-		//cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
+		cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
@@ -302,10 +302,13 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		}else{
 			hist[i]->Draw("epsame");
 		}
+cout << "a" << endl;
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
+
+cout << "b" << endl;
 		gPad->Update();
 
-
+cout << "c" << endl;
 		if(canname.find("sigma") != string::npos && hist[i]->GetEntries() > 3){
 			//string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
 			string formula = "sqrt((([0]*[0])/(x*x))+([1]*[1]/x)+(2*[2]*[2]))";
@@ -337,20 +340,26 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			fitparams.DrawLatex(0.3,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		} 
 
+		cout << "d" << endl;
 	}
+		cout << "d1a" << endl;
 	myleg->Draw("same"); 
+		cout << "d1b" << endl;
 	gPad->Update();
+		cout << "d1" << endl;
 	string lat_cms = "#bf{CMS} #it{Work in Progress} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+		cout << "d2" << endl;
 	TLatex lat1;
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
 	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
+cout << "b" << endl;
 
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -1142,7 +1151,7 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 		cmslab = "DoubleEG, Run F 2017";
 	}
 	else cmslab = "process";
-	cmslab += " ,"+method;
+	cmslab += ", "+method;
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
 	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
@@ -1239,13 +1248,13 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 	cmslab += " "+method;
 	vector<TH1D> hists;
 	//GetFileLabels(files,labels);
-	for(auto file : files){
-		if(gSystem->AccessPathName(file.c_str())){
-			cout << "File " << file << " does not exist." << endl;
+	for(int f = 0; f < files.size(); f++){
+		if(gSystem->AccessPathName(files[f].c_str())){
+			cout << "File " << files[f] << " does not exist." << endl;
 			return;
 		}
-		TFile* f = TFile::Open(file.c_str(),"READ");
-		TList* list = f->GetListOfKeys();
+		TFile* file = TFile::Open(files[f].c_str(),"READ");
+		TList* list = file->GetListOfKeys();
 		TIter iter(list);
 		TKey* key;
 		string name, xtitle, ytitle;
@@ -1277,7 +1286,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 				if(!dir) continue;
 				dirname = dir->GetName();
 				if(dirname.find(match) == string::npos) continue;
-				//cout << "\ndir name: " << dir->GetName() << endl;
+				cout << "\ndir name: " << dir->GetName() << endl;
 				dir->cd();
 				TList* llist = dir->GetListOfKeys();
 				TIter iiter(llist);
@@ -1291,17 +1300,17 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 						//make sure this is for the specified method
 						if(ddirname.find(method) == string::npos) continue;
 						ddir->cd();
-						//cout << " ---in ddir " << ddir->GetName() << endl;
+						cout << " ---in ddir " << ddir->GetName() << endl;
 						//we're in the directory with hists of one method split by procs
 						histname = ddirname;
 						histname = histname.substr(0,histname.find("_procStack"));
 						histname += "_"+proc;
-						TH1D* hist = (TH1D*)f->Get((dirname+"/"+ddirname+"/"+histname).c_str());
-						//if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << endl;
-						//else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
+						TH1D* hist = (TH1D*)file->Get((dirname+"/"+ddirname+"/"+histname).c_str());
+						if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << " " << hist->GetTitle() << endl;
+						else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
 						histtitle = hist->GetTitle();
 						histname += "_"+labels[hists.size()];
-						hist->SetTitle((histtitle+"_"+labels[hists.size()]).c_str());	
+						hist->SetTitle((histtitle+"_"+labels[f]).c_str());	
 						hist->SetName(histname.c_str());	
 						if(hist) hists.push_back(*hist);
 					}
@@ -1310,7 +1319,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 
 			}
 		}
-		f->Close();
+		file->Close();
 	}
 		double ymin, ymax;
 		string ylab, xlab;
@@ -1318,6 +1327,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 		if(hists.size() > 0){
 			//make into pointers because...yeah...
 			for(vector<TH1D>::iterator h = hists.begin(); h != hists.end(); h++) histsp.push_back(&(*h));
+			cout << histsp.size() << " hists" << endl;
 			FindListHistBounds(histsp, ymin, ymax);
 			if(ymin == 0 && ymax == 0) return;
 			string name = match+"_"+plottitle+"_"+proc+"_"+method;
@@ -1339,41 +1349,48 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 void HistFormatJets(string file, string file2 = ""){
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
+	if(!file2.empty()){
+		string oname2 = file2;
+		oname2 = oname2.substr(0,oname2.find(".root"));
+		oname2 = oname2.substr(oname2.find("/")+1);
+		oname += "_"+oname2;
+	}
 	oname = oname+"_formatted.root";
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	ofile->Close();	
 
-	vector<string> med_eAvg = {"median","eAvg"};
-	vector<string> chiGam_QCD = {"chiGam","QCD"};
-	//PV dijets for median + eAvg for QCD
-	MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
-	//recoGen and gamPV for med + eAvg for QCD
-	MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
+	if(file2.empty()){
+		vector<string> med_eAvg = {"median","eAvg"};
+		vector<string> chiGam_QCD = {"chiGam","QCD"};
+		//PV dijets for median + eAvg for QCD
+		MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
+		//recoGen and gamPV for med + eAvg for QCD
+		MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
 
-	//same method in legend, only 1 proc in plot label
-	vector<string> jetHT_QCD = {"JetHT","QCD"};
-	vector<string> DEG_QCD = {"DoubleEG","QCD"};
-	//PV dijets for data (JetHT) + MC for median
-	ProcStackHists(file, jetHT_QCD, "median", oname,"geoAvgEecal");
-	////PV dijets for data (DEG) + MC for median
-	ProcStackHists(file, DEG_QCD, "median", oname,"geoAvgEecal");
-	////PV dijets for data (JetHT) + MC for eAvg
-	ProcStackHists(file, jetHT_QCD, "eAvg", oname,"geoAvgEecal");
-	////PV dijets for data (DEG) + MC for eAvg
-	ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
-	//recoGen and gamPV for QCD + GMSB for eAvg
-	ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
-	//gamPV for QCD + JetHT
-	ProcStackHists(file, jetHT_QCD, "eAvg", oname, "geoEavg");
-	ProcStackHists(file, jetHT_QCD, "median", oname, "geoEavg");
-	//gamPV for QCD + DEG
-	ProcStackHists(file, DEG_QCD, "median", oname, "geoEavg");
-	ProcStackHists(file, DEG_QCD, "eAvg", oname, "geoEavg");
-	
-	
-	//PV dijets + reocGen + gamPV for QCD eAvg
-	ResolutionStackHists(file, "QCD", "eAvg", oname);
-
+		//same method in legend, only 1 proc in plot label
+		vector<string> jetHT_QCD = {"JetHT","QCD"};
+		vector<string> DEG_QCD = {"DoubleEG","QCD"};
+		//PV dijets for data (JetHT) + MC for median
+		ProcStackHists(file, jetHT_QCD, "median", oname,"geoAvgEecal");
+		////PV dijets for data (DEG) + MC for median
+		ProcStackHists(file, DEG_QCD, "median", oname,"geoAvgEecal");
+		////PV dijets for data (JetHT) + MC for eAvg
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname,"geoAvgEecal");
+		////PV dijets for data (DEG) + MC for eAvg
+		ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
+		//recoGen and gamPV for QCD + GMSB for eAvg
+		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
+		//gamPV for QCD + JetHT
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "geoEavg");
+		ProcStackHists(file, jetHT_QCD, "median", oname, "geoEavg");
+		//gamPV for QCD + DEG
+		ProcStackHists(file, DEG_QCD, "median", oname, "geoEavg");
+		ProcStackHists(file, DEG_QCD, "eAvg", oname, "geoEavg");
+		
+		
+		//PV dijets + reocGen + gamPV for QCD eAvg
+		ResolutionStackHists(file, "QCD", "eAvg", oname);
+	}
 	//pre + post calibration for JetHT
 	//pre + post calibraiton for DoubleEG
 	vector<string> files;
@@ -1381,11 +1398,12 @@ void HistFormatJets(string file, string file2 = ""){
 	if(!file2.empty()){
 		files.push_back(file2);
 		vector<string> labels = {"postCalib","preCalib"};
+		//for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
+		//FileStackHists(files,labels,"JetHTPD","eAvg",oname,"profile_geoAvgEecal","PrePostCalibration");
+		FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","PrePostCalibration");
+		//labels = {"wSpikes","woSpikes"};
 		for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
-		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","PrePostCalibration");
-		labels = {"wSpikes","woSpikes"};
-		for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
-		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
+		//FileStackHists(files,labels,"JetHTPD","eAvg",oname,"profile_geoAvgEecal","wWoSpikes");
 		//FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
 	}
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;

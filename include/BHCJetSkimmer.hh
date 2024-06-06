@@ -430,6 +430,7 @@ class BHCJetSkimmer{
 
 		}
 		void WriteOutput(TFile* ofile){
+			WriteEmptyProfiles(ofile);
 			WriteStackHists(ofile);
 			WriteHists(ofile);
 			string name;
@@ -482,22 +483,24 @@ class BHCJetSkimmer{
 			for(int i = 0; i < nhists; i++){
 				name = _procCats[0].hists1D[0][i]->GetName();
 				_procCats[0].hists1D[0][i]->Write();
-				//dirname = name.substr(0,name.rfind("_"+trs[0].methodName));
-			//cout << "i: " << i << " name " << name << " making dir " << name+"_stack" << endl;
-				//TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
-				//dir->cd();
-				//make process breakdown directory
+				//make process breakdown directory - not making these profiles rn
 				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
-				//cout << "  making dir " << dir2->GetName() << endl;
+				//cout << "  making dir " << dir2->GetName() << " name " << name << endl;
 				dir2->cd();
 				for(int p = 1; p < _procCats.size(); p++){
 				//loop over processes
-					histname = _procCats[p].hists1D[0][i]->GetName();
+					//if(name.find("profile") != string::npos) continue;
 					if(_procCats[p].hists1D[0][i] == nullptr) continue;
+					histname = _procCats[p].hists1D[0][i]->GetName();
 					//cout << "    proc " << _procCats[p].plotName << " hist " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " entries " << _procCats[p].hists1D[0][i]->GetEntries() << endl;			
 					if(_procCats[p].hists1D[0][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
-					//cout << "  n hists " << trs[j].procCats[0].hists1D[0].size() << endl;
-					//cout << "writing " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
+					if(histname.find("profile") != string::npos){
+						histname = histname.substr(0,histname.rfind("_"));
+						_procCats[p].hists1D[0][i]->SetName(histname.c_str());
+						_procCats[p].hists1D[0][i]->SetTitle(_procCats[p].plotName.c_str());
+					}
+					//cout << "  n hists " << _procCats[0].hists1D[0].size() << endl;
+					//cout << "i " << i << " p " << p << " writing " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
 					_procCats[p].hists1D[0][i]->Write();
 
 				}
@@ -513,8 +516,8 @@ class BHCJetSkimmer{
 				if(_procCats[0].hists2D[0][i] == nullptr) continue;
 				if(_procCats[0].hists2D[0][i]->GetEntries() == 0 && histname.find("sigma") == string::npos){ continue; }
 				//check if data can be run
-				//if(histname.find("recoGen") != string::npos && _data) continue;
-				cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
+				if(histname.find("recoGen") != string::npos && _data) continue;
+				//cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
 				_procCats[0].hists2D[0][i]->Write();
 				//write method as directory within directory
 				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
@@ -527,8 +530,7 @@ class BHCJetSkimmer{
 					if(_procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue; }//cout << "Histogram for proc " << _plotName << " not filled." << endl; continue; }
 					//check if data can be run
 					histname = _procCats[p].hists2D[0][i]->GetName();
-					//if(histname.find("recoGen") != string::npos && _data) continue;
-					//cout << "  n hists " << _procCats[0].hists1D[0].size() << endl;
+					_procCats[p].hists2D[0][i]->SetTitle(_procCats[p].plotName.c_str());
 					_procCats[p].hists2D[0][i]->Write();
 				} 
 				ofile->cd(); 
@@ -536,6 +538,37 @@ class BHCJetSkimmer{
 		}
 
 
+		void WriteEmptyProfiles(TFile* ofile){
+			ofile->cd();
+			string name, addname;
+			int i, j, nbins, nprofs;
+			string profname, histname, match;
+			for(int p = 0; p < _procCats.size(); p++){
+				for(int i = 0; i < _procCats[p].hists2D[0].size(); i++){
+					histname = _procCats[p].hists2D[0][i]->GetName();
+					//make sure taking info from 2D diff histogram
+					if(histname.find("diffDelta") == string::npos) continue;
+					//make sure profiles get written
+					nprofs = _procCats[p].hists2D[0][i]->GetNbinsX();
+					for(int k = 1; k < nprofs+1; k++){
+						histname = _procCats[p].hists2D[0][i]->GetName();
+						profname = "profile_"+histname;
+						//profname.insert(profname.size(),"_bin"+std::to_string(k));
+			//cout << "p " << p << " profname " << profname << " plotname " << _procCats[p].plotName << endl;
+						if(!_procCats[p].plotName.empty()) profname.insert(profname.find("_"+_procCats[p].plotName),"_bin"+std::to_string(k));
+						else profname = profname += "_bin"+std::to_string(k);
+						nbins = _procCats[p].hists2D[0][i]->GetNbinsY();
+						TH1D* prof = new TH1D(profname.c_str(), profname.c_str(), nbins, _procCats[0].hists2D[0][i]->GetYaxis()->GetBinLowEdge(1), _procCats[0].hists2D[0][i]->GetYaxis()->GetBinUpEdge(nbins));
+						prof->SetTitle(_procCats[p].plotName.c_str());
+						prof->GetXaxis()->SetTitle(_procCats[p].hists2D[0][i]->GetXaxis()->GetTitle());	
+						//cout << "adding hist " << prof->GetName() <<  " " << prof->GetTitle() << endl;
+						_procCats[p].AddHist(prof);	
+						//cout << "current list of hists " << endl;
+						//for(int i = 0; i < _procCats[p].hists1D[0].size(); i++) cout << "i " << i << " p " << p << " " << _procCats[p].hists1D[0][i]->GetName() << endl;
+					}	
+				}				
+		}	
+	}
 		
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
@@ -586,6 +619,7 @@ class BHCJetSkimmer{
 
 
 		//reco jet plots
+		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//18
 		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
 		//19
@@ -597,7 +631,7 @@ class BHCJetSkimmer{
 		//22
 		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,150);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
-		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",5,0,100);
+		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPt_recoGen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
 		//25 - reco jet pt/gen jet pt
@@ -606,7 +640,7 @@ class BHCJetSkimmer{
 
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
-		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",5,0,100,50,-50,50);
+		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",4,&xbins_recoGenPt[0],50,-50,50);
 		//2 - 2D histogram of gen pT vs reco pT
 		TH2D* genPt_recoPt = new TH2D("genPt_recoPt","genPt_recoPt;genpt;recopt",50,5,50,50,5,50);
 
