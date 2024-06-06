@@ -251,10 +251,10 @@ class BaseSkimmer{
 					//make sure they have the right add-on name (ie leading, !lead, etc)
 					TH1D* hist = (TH1D*)inhist->Clone();
 					hists1D[j].push_back(hist);
-					n1dhist = hists1D.size()-1;
+					n1dhist = hists1D[j].size()-1;
 					name = hist->GetName();
 					if(!plotName.empty()) name += "_"+plotName;
-					name += "_"+histcatnames[j];
+					if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
 					hists1D[j][n1dhist]->SetName(name.c_str());
 					if(!plotName.empty()) hists1D[j][n1dhist]->SetTitle("");
 				}
@@ -265,10 +265,10 @@ class BaseSkimmer{
 				for(int j = 0; j < hists1D.size(); j++){
 					TH2D* hist = (TH2D*)inhist->Clone();
 					hists2D[j].push_back(hist);
-					n2dhist = hists2D.size()-1;
+					n2dhist = hists2D[j].size()-1;
 					name = hist->GetName();
 					if(!plotName.empty()) name += "_"+plotName;
-					name += "_"+histcatnames[j];
+					if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
 					hists2D[j][n2dhist]->SetName(name.c_str());
 					if(!plotName.empty()) hists2D[j][n2dhist]->SetTitle("");
 				}
