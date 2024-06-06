@@ -561,7 +561,6 @@ class BHCJetSkimmer{
 						TH1D* prof = new TH1D(profname.c_str(), profname.c_str(), nbins, _procCats[0].hists2D[0][i]->GetYaxis()->GetBinLowEdge(1), _procCats[0].hists2D[0][i]->GetYaxis()->GetBinUpEdge(nbins));
 						prof->SetTitle(_procCats[p].plotName.c_str());
 						prof->GetXaxis()->SetTitle(_procCats[p].hists2D[0][i]->GetYaxis()->GetTitle());	
-						cout << "x axis " << prof->GetXaxis()->GetTitle() << " og " << _procCats[p].hists2D[0][i]->GetXaxis()->GetTitle() << endl;
 						//cout << "adding hist " << prof->GetName() <<  " " << prof->GetTitle() << endl;
 						_procCats[p].AddHist(prof);	
 						//cout << "current list of hists " << endl;
