@@ -203,8 +203,6 @@ int main(int argc, char *argv[]){
 
 	cout << "Energy transfer factor: " << gev << endl;
 	BHCJetSkimmer skimmer(file);
-	//skimmer.SetMinPt(minpt);
-	//skimmer.SetMinNrhs(minnrhs);
 	skimmer.SetOutfile(oname);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
