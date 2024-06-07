@@ -10,7 +10,7 @@ enum plotFormat{
 	procStack = 1,
 	methodStack = 2,
 	dijetRecoGenStack = 3,
-	prePostCalibStack = 4
+	diFileStack = 4
 };
 
 
@@ -185,7 +185,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["gamPV"] = 106;
 
 	}
-	//prePostCalibStack formatting
+	//diFileStack formatting
 	else if(pf == 4){
 		labelToColor["preCalib"] = TColor::GetColor("#F5B700");
 		labelToColor["postCalib"] = TColor::GetColor("#306B34");
@@ -206,10 +206,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
+		cout << "i " << i << " hists size " << hist.size() << endl;
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
+cout << "title " << xtit << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
@@ -302,14 +304,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		}else{
 			hist[i]->Draw("epsame");
 		}
-cout << "a" << endl;
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 
-cout << "b" << endl;
 		gPad->Update();
 
-cout << "c" << endl;
 		if(canname.find("sigma") != string::npos && hist[i]->GetEntries() > 3){
+			cout << "do fit for sigma" << endl;
 			//string formula = "sqrt((([0]*[0])/(x*x))+(2*[1]*[1]))";
 			string formula = "sqrt((([0]*[0])/(x*x))+([1]*[1]/x)+(2*[2]*[2]))";
 			TFormula* form = new TFormula("resFormula",formula.c_str());
@@ -338,28 +338,21 @@ cout << "c" << endl;
 			ss << setprecision(3) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], S = " << val1 << " #pm " << err1 << " [#sqrt{GeV}*ns],  C = " << fabs(val2) << " #pm " << err2 << " [ns]";
 			string teststr = ss.str();
 			fitparams.DrawLatex(0.3,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
-		} 
-
-		cout << "d" << endl;
+		}
 	}
-		cout << "d1a" << endl;
 	myleg->Draw("same"); 
-		cout << "d1b" << endl;
 	gPad->Update();
-		cout << "d1" << endl;
 	string lat_cms = "#bf{CMS} #it{Work in Progress} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
-		cout << "d2" << endl;
 	TLatex lat1;
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
 	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
-cout << "b" << endl;
 
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -1309,9 +1302,10 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 						if(hist) cout << "got histogram " << hist->GetName() << " " << hist->GetEntries() << " " << hist->GetTitle() << endl;
 						else cout << "hist null " << dirname+"/"+ddirname+"/"+histname << endl;
 						histtitle = hist->GetTitle();
-						histname += "_"+labels[hists.size()];
+						histname += "_"+labels[f];
 						hist->SetTitle((histtitle+"_"+labels[f]).c_str());	
 						hist->SetName(histname.c_str());	
+						//if(match.find("profile") != string::npos) hist->Scale(1./hist->Integral());
 						if(hist) hists.push_back(*hist);
 					}
 				}	
@@ -1327,17 +1321,22 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 		if(hists.size() > 0){
 			//make into pointers because...yeah...
 			for(vector<TH1D>::iterator h = hists.begin(); h != hists.end(); h++) histsp.push_back(&(*h));
-			cout << histsp.size() << " hists" << endl;
 			FindListHistBounds(histsp, ymin, ymax);
 			if(ymin == 0 && ymax == 0) return;
 			string name = match+"_"+plottitle+"_"+proc+"_"+method;
 			TCanvas *cv = new TCanvas(name.c_str(), "");
 			ofile->cd();
 			//draw as tcanvases
-			xlab = histsp[0]->GetXaxis()->GetTitle();
-			ylab = histsp[0]->GetYaxis()->GetTitle();
-			cout << "making canvas" << endl;
-			TDRMultiHist(histsp, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", prePostCalibStack);
+			if(match.find("profile") != string::npos){
+				xlab = histsp[0]->GetName();
+				ylab = histsp[0]->GetYaxis()->GetTitle();
+
+			}
+			else{
+				xlab = histsp[0]->GetXaxis()->GetTitle();
+				ylab = histsp[0]->GetYaxis()->GetTitle();
+			}
+			TDRMultiHist(histsp, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", diFileStack);
 			cout << "writing canvas (1D) " << cv->GetName() << endl;
 			cv->Write(); 
 		}
@@ -1400,10 +1399,12 @@ void HistFormatJets(string file, string file2 = ""){
 		vector<string> labels = {"postCalib","preCalib"};
 		//for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
 		//FileStackHists(files,labels,"JetHTPD","eAvg",oname,"profile_geoAvgEecal","PrePostCalibration");
-		FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","PrePostCalibration");
-		//labels = {"wSpikes","woSpikes"};
+		//FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","PrePostCalibration");
+		labels = {"wSpikes","woSpikes"};
 		for(int i = 0; i < labels.size(); i++) cout << "file " << files[i] << " has label " << labels[i] << endl;
-		//FileStackHists(files,labels,"JetHTPD","eAvg",oname,"profile_geoAvgEecal","wWoSpikes");
+		for(int i = 0; i < 6; i++)
+			FileStackHists(files,labels,"JetHTPD","eAvg",oname,"profile_geoAvgEecal_diffDeltaTime_dijets_bin"+std::to_string(i+1),"wWoSpikes");
+		FileStackHists(files,labels,"JetHTPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
 		//FileStackHists(files,labels,"DoubleEGPD","eAvg",oname,"geoAvgEecal_sigmaDeltaTime_dijets","wWoSpikes");
 	}
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
