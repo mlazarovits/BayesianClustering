@@ -31,7 +31,9 @@ void MakePDFs(string file, string odir, string histname, bool log = false){
 		name = cv->GetName();
 		if(name.find(histname) != string::npos){
 			if(log){
-				cv->SetLogz();
+				if(name.find("profile") != string::npos)
+					cv->SetLogy();
+				else cv->SetLogz();
 				name += "log";	
 			}
 			cv->SaveAs((odir+name+".pdf").c_str());
