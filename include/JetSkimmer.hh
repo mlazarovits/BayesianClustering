@@ -296,7 +296,7 @@ class JetSkimmer : public BaseSkimmer{
 		//20 - gen deltaT bw photon and pv, reco E bin 4
 		TH1D* deltaT_pvGam_gen_Ebin4 = new TH1D("deltaT_gamPV_gen_Ebin4","deltaT_gamPV_gen_Ebin4",25,0,12);	
 		//21 - resolution of difference in gam - pv
-		TH1D* geoEavg_sigmaDeltaTime_gamPV = new TH1D("geoEavg_sigmaDeltaTime_gamPV","geoEavg_sigmaDeltaTime_gamPV",6,&xbins_gamPV[0]);
+		TH1D* geoEavg_sigmaDeltaTime_gamPV = new TH1D("geoEavg_sigmaDeltaTime_gamPV","geoEavg_sigmaDeltaTime_gamPV",5,&xbins_gamPV[0]);
 	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins_recoGen[0],100,-2,2);
@@ -337,7 +337,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
 		
 		//16 - 2D histogram for gamPV resolution 
-		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins_gamPV[0],100,3,8);
+		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",5,&xbins_gamPV[0],100,3,8);
 		
 
 		vector<timeRecoCat> trCats;
