@@ -67,20 +67,34 @@ def generateSubmission(args):
     	inputFile = "DEG_R17_v18_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
     elif args.inputSample == "QCD_HT500To700_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT500To700_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT1000To1500_2017_v19":
     	inputFile = "QCD_R17_v19_MET75_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT100To200_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT100To200_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT1500To2000_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT1500To2000_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT2000ToInf_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT2000ToInf_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT200To300_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT200To300_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT50To100_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT50To100_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "QCD_HT700To1000_2017_v16":
     	inputFile = "QCD_R17_v16_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "QCD_HT700To1000_2017_v19":
+    	inputFile = "QCD_R17_v19_MET75_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
