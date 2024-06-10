@@ -13,6 +13,12 @@ void PhotonSkimmer::Skim(){
 
 	MakeProcCats(_oname);
 	
+	//make output csv file
+	_csvname = _oname.substr(0,_oname.find(".root"));
+	_csvname += ".csv";
+	_csvfile.open(_csvname);
+	//write header
+	_csvfile << "Event	nPho	time_center";
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi

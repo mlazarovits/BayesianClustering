@@ -69,7 +69,7 @@ class BaseProducer{
 			else _data = false;
 			_calibmap = nullptr;
 			//SetTimeCalibrationMap(calibfile);
-			//SetupDetIDsEB();
+			SetupDetIDsEB();
 
 		}
 		virtual ~BaseProducer(){ 
