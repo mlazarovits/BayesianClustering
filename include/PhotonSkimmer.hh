@@ -1775,7 +1775,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
 
-			
+			_obs.clear();
+			_obs.push_back(t_c);
+	
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
@@ -3008,6 +3010,9 @@ class PhotonSkimmer : public BaseSkimmer{
 	string _csvname;
 	ofstream _csvfile;
 	void WriteObs(int evt, int npho, vector<double> inputs){
+		_csvfile << evt << "	" << npho;
+		for(auto d : inputs)
+			_csvfile << "	" << d; 
 	}
 
 
