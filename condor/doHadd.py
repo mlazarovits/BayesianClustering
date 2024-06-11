@@ -20,6 +20,9 @@ def main():
         proc = proc[:proc.find("/")]
         proc = proc[:proc.rfind("_AOD")]
 
+        bashfilename = "doHadd_"+proc+"_"+oname+".sh"
+        bashfile = open(bashfilename,"w")
+        #write cmds to bash script
         if(args.big):
             for i in range(10):
                 oname = d.name+"_"+proc+"_"+str(i)+".root"
@@ -35,11 +38,11 @@ def main():
                         continue
                 else:
                     cmd = cmdHadd
-                print(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
-                if not args.dryRun:
-                    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
-                print("Wrote to "+oname)
-                print()
+                #print(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")
+                bashfile.write(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root\n")
+                #if not args.dryRun:
+                #    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
+                #print("Wrote to "+oname)
             oname = d.name+"_"+proc+".root"
             oname = "condor_"+oname
             oname = d.path+"/"+oname
@@ -49,11 +52,12 @@ def main():
             		cmd = cmdHadd+" -f"
             	else:
             		print(oname+" exists ")
-            print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
-            if not args.dir:
-                os.system(cmd+" "+oname+" "+d.path+"/condor_*.root")	
-            print("Wrote to "+oname)
-            print()
+            #print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
+            bashfile.write(cmd+" "+oname+" "+d.path+"/condor_*.root\n")	
+            #if not args.dryRun:
+            #    os.system(cmd+" "+oname+" "+d.path+"/condor_*.root")	
+            #print("Wrote to "+oname)
+            bashfile.close()
         else:
             oname += "_"+proc+".root"
             oname = "condor_"+oname
@@ -66,11 +70,14 @@ def main():
             	else:
             		print(oname+" exists ")
             		continue
-            print(cmd+" "+oname+" "+d.path+"/out/*.root")	
-            if not args.dryRun:
-                os.system(cmd+" "+oname+" "+d.path+"/out/*.root")
-            print("Wrote to "+oname)
-            print()
+            #print(cmd+" "+oname+" "+d.path+"/out/*.root")	
+            bashfile.write(cmd+" "+oname+" "+d.path+"/out/*.root\n")	
+            #if not args.dryRun:
+            #    os.system(cmd+" "+oname+" "+d.path+"/out/*.root")
+            #print("Wrote to "+oname)
+            bashfile.close()
+        print("To hadd run:")
+        print("source",bashfilename)
 
 if __name__ == "__main__":
 	main()
