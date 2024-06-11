@@ -1776,7 +1776,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 			_obs.clear();
-			_obs.push_back(t_c);
+			_obs.push_back(tc);
 	
 			//fill hists - lead only
 			//centers
@@ -3009,6 +3009,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	//create function to write photon subcluster variables to CSV file for MVA training
 	string _csvname;
 	ofstream _csvfile;
+	vector<double> _obs;
 	void WriteObs(int evt, int npho, vector<double> inputs){
 		_csvfile << evt << "	" << npho;
 		for(auto d : inputs)
