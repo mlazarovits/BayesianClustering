@@ -14,9 +14,16 @@ void PhotonSkimmer::Skim(){
 	MakeProcCats(_oname);
 	
 	//make output csv file
-	_csvname = _oname.substr(_oname.find("/"));
-	_csvname = _csvname.substr(0,_csvname.find(".root"));
-	_csvname = "csv"+_csvname+".csv";
+	//write to csv dir if not condor job else write to current dir
+	if(_oname.find("condor") == string::npos){
+		_csvname = _oname.substr(_oname.find("/"));
+		_csvname = _csvname.substr(0,_csvname.find(".root"));
+		_csvname = "csv"+_csvname+".csv";
+	}
+	else{
+		_csvname = _oname.substr(0,_oname.find(".root"));
+		_csvname = _csvname+".csv";
+	}
 	_csvfile.open(_csvname);
 	//write header
 	SetObs();
