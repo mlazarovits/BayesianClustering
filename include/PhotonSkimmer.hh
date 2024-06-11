@@ -1413,7 +1413,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//189 - time center vs eta center, phiE2D ~ 0, phiSigge0p3ORetaSigle0p3
 		TH2D* timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Deq0 = new TH2D("timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Deq0","timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Deq0;timeCenter;etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Deq0;a.u.",25,-15,15,25,-1.6,1.6);
 		//190 - time center vs eta center, phiE2D !~ 0, phiSigge0p3ORetaSigle0p3
-		TH2D* timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Dneq0 = new TH2D("timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3","timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3;timeCenter;etaCenter_phiSigge0p3ORetaSigle0p3;a.u.",25,-15,15,25,-1.6,1.6);
+		TH2D* timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Dneq0 = new TH2D("timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Dneq0","timeCenter_etaCenter_phiSigge0p3ORetaSigle0p3_phiE2Dneq0;timeCenter;etaCenter_phiSigge0p3ORetaSigle0p3;a.u.",25,-15,15,25,-1.6,1.6);
 		//191 - eta center vs phi center, timeNeg15toNeg1
 		TH2D* etaCenter_phiCenter_timeNeg15toNeg1 = new TH2D("etaCenter_phiCenter_timeNeg15toNeg1","etaCenter_phiCenter_timeNeg15toNeg1;etaCenter;phiCenter_timeNeg15toNeg1",25,-1.6,1.6,25,-0.2,6.4);	
 		//192 - eta center vs phi center, timeNeg1to3
@@ -1775,7 +1775,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
 
-			
+			_obs.clear();
+			_obs.push_back(t_c);
+	
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
@@ -3003,6 +3005,15 @@ class PhotonSkimmer : public BaseSkimmer{
 	}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
+
+	//create function to write photon subcluster variables to CSV file for MVA training
+	string _csvname;
+	ofstream _csvfile;
+	void WriteObs(int evt, int npho, vector<double> inputs){
+		_csvfile << evt << "	" << npho;
+		for(auto d : inputs)
+			_csvfile << "	" << d; 
+	}
 
 
 };

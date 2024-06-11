@@ -13,6 +13,15 @@ void PhotonSkimmer::Skim(){
 
 	MakeProcCats(_oname);
 	
+	//make output csv file
+	_csvname = _oname.substr(_oname.find("/"));
+	_csvname = _csvname.substr(0,_csvname.find(".root"));
+	_csvname = "csv"+_csvname+".csv";
+	cout << "Writing MVA inputs to " << _csvname << endl;
+	_csvfile.open(_csvname);
+	//write header
+	_csvfile << "Event	nPho	time_center";
+	_csvfile.close();
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi
