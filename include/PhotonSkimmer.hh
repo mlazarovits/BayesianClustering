@@ -1642,7 +1642,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 		//k = sum_n(E_n)/N
-		void FillModelHists(BasePDFMixture* model, int id_idx){
+		void FillModelHists(BasePDFMixture* model, int id_idx, vector<double>& obs){
 			map<string, Matrix> params;
 			vector<double> eigenvals, eigenvals_space, norms;
 			vector<Matrix> eigenvecs, eigenvecs_space; 
@@ -1684,7 +1684,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			//sort by mixing coeffs in ascending order (smallest first)
 			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
-	
+
+			obs.clear();	
 			//fill for lead subcluster only
 			int k = leadidx;
 			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
@@ -1774,9 +1775,15 @@ class PhotonSkimmer : public BaseSkimmer{
 			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
-
-			_obs.clear();
-			_obs.push_back(tc);
+			obs.push_back(ec);
+			obs.push_back(pc);
+			obs.push_back(tc);
+			obs.push_back(e_var);
+			obs.push_back(p_var);
+			obs.push_back(ep_cov);
+			obs.push_back(te_cov);
+			obs.push_back(E_k);
+			obs.push_back(swCP);
 	
 			//fill hists - lead only
 			//centers
@@ -3009,11 +3016,16 @@ class PhotonSkimmer : public BaseSkimmer{
 	//create function to write photon subcluster variables to CSV file for MVA training
 	string _csvname;
 	ofstream _csvfile;
-	vector<double> _obs;
+	void SetObs(){
+		_csvfile << "Event, subcl, eta_center, phi_center, time_center, eta_sig, phi_sig, etaphi_cov, timeeta_cov, energy, sw+" << endl;
+
+	}
+	//photons should be 1:1 with subclusters (1 subcluster per photon)
 	void WriteObs(int evt, int npho, vector<double> inputs){
-		_csvfile << evt << "	" << npho;
+		_csvfile << evt << ", " << npho;
 		for(auto d : inputs)
-			_csvfile << "	" << d; 
+			_csvfile << ", " << d;
+		_csvfile << endl; 
 	}
 
 

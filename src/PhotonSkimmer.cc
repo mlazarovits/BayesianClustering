@@ -17,11 +17,9 @@ void PhotonSkimmer::Skim(){
 	_csvname = _oname.substr(_oname.find("/"));
 	_csvname = _csvname.substr(0,_csvname.find(".root"));
 	_csvname = "csv"+_csvname+".csv";
-	cout << "Writing MVA inputs to " << _csvname << endl;
 	_csvfile.open(_csvname);
 	//write header
-	_csvfile << "Event	nPho	time_center";
-	_csvfile.close();
+	SetObs();
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi
@@ -96,7 +94,7 @@ void PhotonSkimmer::Skim(){
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	
 			_swcross = swissCross(rhs);
-				
+			vector<double> obs;				
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -109,7 +107,7 @@ void PhotonSkimmer::Skim(){
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
-						FillModelHists(gmm, i);
+						FillModelHists(gmm, i, obs);
 						FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
@@ -133,7 +131,7 @@ void PhotonSkimmer::Skim(){
 			}
 			else{
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
-					FillModelHists(gmm, i);
+					FillModelHists(gmm, i, obs);
 					FillCMSHists(rhs,i);
 					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
@@ -147,6 +145,7 @@ void PhotonSkimmer::Skim(){
 				
 
 			}
+			WriteObs(e,p,obs);
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
 		}
 	}
@@ -154,6 +153,8 @@ void PhotonSkimmer::Skim(){
 	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
 	cout << "Wrote skim to: " << _oname << endl;
+	cout << "Wrote MVA inputs to " << _csvname << endl;
+	_csvfile.close();
 
 }
 
