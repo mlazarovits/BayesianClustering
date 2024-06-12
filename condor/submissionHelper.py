@@ -40,6 +40,11 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         subf.write("should_transfer_files = YES\n")
         subf.write("when_to_transfer_output = ON_EXIT\n")
         outname = ofilename+".$(Process).root"
+        #if photons, write csv file for MVA
+        if "photon" in dirname:
+            outname += ", "+ofilename+".$(Process).csv"
+        if "jet" in dirname:
+            subf.write("request_memory=4096\n")
         subf.write("transfer_output_files = "+outname+"\n")
         # need to supply absolute path for remap
         #absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
