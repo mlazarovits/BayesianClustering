@@ -1596,7 +1596,7 @@ class PhotonSkimmer : public BaseSkimmer{
 					for(int k = 0; k < pcs.size(); k++){
 						if(pcs[k].hists1D[i][j] == nullptr) continue;
 						if(pcs[k].hists1D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
-			//			cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
+						//cout << "		adding proc " << pcs[k].plotName << " to plot with hist " << pcs[k].hists1D[i][j]->GetName() << endl;
 						pcs[k].hists1D[i][j]->SetTitle(pcs[k].plotName.c_str());
 						pcs[k].hists1D[i][j]->Write();
 					}
@@ -1632,7 +1632,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int i = 0; i < (int)_procCats.size(); i++)
 				WritePlotCat2D(ofile, _procCats[i]);
 			vector<procCat> id_cats(_procCats.begin()+1, _procCats.end());
-			WritePlotCatStack(ofile, id_cats);
+			
+			if(_procCats.size() > 1) WritePlotCatStack(ofile, id_cats);
 
 			ofile->Close();
 
