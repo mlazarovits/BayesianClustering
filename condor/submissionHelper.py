@@ -39,22 +39,29 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         subf.write("MY.wantOS=\"el9\"\n")
         subf.write("should_transfer_files = YES\n")
         subf.write("when_to_transfer_output = ON_EXIT\n")
-        outname = ofilename+".$(Process).root"
-        #if photons, write csv file for MVA
-        if "photon" in dirname:
-            outname += ", "+ofilename+".$(Process).csv"
         if "jet" in dirname:
             subf.write("request_memory=4096\n")
-        subf.write("transfer_output_files = "+outname+"\n")
+        outnames = []
+        outnames.append(ofilename+".$(Process).root")
+        #if photons, write csv file for MVA
+        if "photon" in dirname:
+            outnames.append(ofilename+".$(Process).csv")
+        #subf.write("transfer_output_files = "+outname+"\n")
+        subf.write("transfer_output_files = ")
+        [subf.write(o+", ") for o in outnames]
+        subf.write("\n")
         # need to supply absolute path for remap
         #absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
         #absCWD = os.getcwd()
         absCWD = os.popen('pwd').readline().rstrip()
         #print("abs path is "+ absCWD)
-        remap= absCWD+"/"+dirname+"/out/"+outname
-        #print("remap is "+ remap)
-	#print("outname is "+outname)
-        subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")	
+        subf.write("transfer_output_remaps = \"")	
+        for outname in outnames:
+            remap= absCWD+"/"+dirname+"/out/"+outname
+            #print("remap is "+ remap)
+	        #print("outname is "+outname)
+            subf.write(outname+"="+remap+";")	
+        subf.write("\"\n")
 
 #splits by event number
 def eventsSplit(infile, nChunk):
