@@ -46,22 +46,27 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         #if photons, write csv file for MVA
         if "photon" in dirname:
             outnames.append(ofilename+".$(Process).csv")
+        outname = ""
+        for o in outnames:
+            outname += o+", "
+        #remove last comma and space
+        outname = outname[:-2]
         #subf.write("transfer_output_files = "+outname+"\n")
-        subf.write("transfer_output_files = ")
-        [subf.write(o+", ") for o in outnames]
-        subf.write("\n")
+        subf.write("transfer_output_files = "+outname+"\n")
         # need to supply absolute path for remap
         #absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
         #absCWD = os.getcwd()
         absCWD = os.popen('pwd').readline().rstrip()
         #print("abs path is "+ absCWD)
-        subf.write("transfer_output_remaps = \"")	
-        for outname in outnames:
-            remap= absCWD+"/"+dirname+"/out/"+outname
+        remap = ""
+        for o in outnames:
+            remap += o+"="+absCWD+"/"+dirname+"/out/"+o+";"
             #print("remap is "+ remap)
 	        #print("outname is "+outname)
-            subf.write(outname+"="+remap+";")	
-        subf.write("\"\n")
+        #remove last semicolon 
+        remap = remap[:-1]
+        print("remap",remap)
+        subf.write("transfer_output_remaps = \""+remap+"\"\n")	
 
 #splits by event number
 def eventsSplit(infile, nChunk):
