@@ -59,7 +59,8 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			double fit_mean = fit->GetParameter(1);
 			double fit_mean_err = fit->GetParError(1);
 			//set new contents
-			sig_outhist->SetBinContent(i, fit_stddev);
+			//sig_outhist->SetBinContent(i, fit_stddev);
+			sig_outhist->SetBinContent(i, fit_stddev / (inhist->GetXaxis()->GetBinLowEdge(i)+inhist->GetXaxis()->GetBinWidth(i)));
 			sig_outhist->SetBinError(i, fit_stddev_err);
 			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
@@ -164,21 +165,21 @@ void Profile2DHists(TFile* f){
 				histname = hists[h]->GetName();
 				//cout << "h " << h << " histname: " << histname << endl;
 				histname.replace(histname.find("diff"), 4, "sigma");
-				//cout << " histname: " << histname << endl;
+				cout << " sig_dirname_new: " << sig_dirname_new << " histname: " << histname << endl;
 				TH1D* sig_outhist = (TH1D*)f->Get((sig_dirname_new+"/"+histname).c_str());
 				if(!sig_outhist){ cout << "Error: cannot find " << sig_dirname_new << "/" << histname << endl; continue; }
 				if(sig_outhist->GetEntries() > 1) continue;
-				histname = hists[h]->GetName();
-				histname.replace(histname.find("diff"), 4, "mean");
+				//histname = hists[h]->GetName();
+				//histname.replace(histname.find("diff"), 4, "mean");
 				TH1D* mean_outhist = nullptr;
 			//if(dirname.find("recoGen") != string::npos) mean_outhist = (TH1D*)f->Get((mean_dirname_new+"/"+histname).c_str()); 
-				if(mean_outhist && mean_outhist->GetEntries() > 1) continue;
+				//if(mean_outhist && mean_outhist->GetEntries() > 1) continue;
 				//if(print) cout << sig_outhist->GetEntries() << " entries in " << sig_outhist->GetName() << endl;
 				//if(print && mean_outhist) cout << mean_outhist->GetEntries() << " entries in " << mean_outhist->GetName() << endl;
 				//profile 1D histograms
 				Profile2DHist(hists[h], sig_outhist, mean_outhist, profs);
-				//cout << "1 - " << profs.size() << " profiles for " << hists[h]->GetNbinsX() << " bins" << endl;
-				//if(print) cout << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and sig_outhist " << histname << " has entries " <<  sig_outhist->GetEntries() << endl;
+				cout << "1 - " << profs.size() << " profiles for " << hists[h]->GetNbinsX() << " bins" << endl;
+				cout << " inhist " << hists[h]->GetName() << " has " << hists[h]->GetEntries() << " entries and sig_outhist " << histname << " has entries " <<  sig_outhist->GetEntries() << endl;
 				for(int b = 0; b < profs.size(); b++){
 					f->cd();
 					//write total profiles to 
