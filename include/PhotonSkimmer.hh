@@ -284,6 +284,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(etaDiff);
 			_hists1D.push_back(dPhi_phiCenterMet);
 			_hists1D.push_back(dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3);
+			_hists1D.push_back(dR_trackSubcl);	
+			_hists1D.push_back(dE_trackSubcl);	
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -515,6 +517,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(metPhi_phiCenter);
 			_hists2D.push_back(metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3);
 			_hists2D.push_back(metPhi_phiCenter_etaSigge0p3ORphiSigle0p3);
+			_hists2D.push_back(dRtrack_timeSubcl);	
+			_hists2D.push_back(dEtrack_timeSubcl);	
+			_hists2D.push_back(dRtrack_dEtrack);	
 			
 
 
@@ -1006,7 +1011,10 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dPhi_phiCenterMet = new TH1D("dPhi_phiCenterMet","dPhi_phiCenterMet",25,-3.5,3.5);
 		//236 - dPhi bw phiCenter and MET, etaSig + phiSig cuts
 		TH1D* dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3 = new TH1D("dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3","dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5);
-	
+		//237 - dR bw subcluster and closest matching track
+		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",25,0,2);	
+		//238 - dE bw subcluster and closest matching track	
+		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,0,10);	
 
 
 		
@@ -1490,9 +1498,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* metPhi_phiCenter = new TH2D("metPhi_phiCenter","metPhi_phiCenter;metPhi;phiCenter",25,-3.5,3.5,25,-0.2,6.2);
 		//228 - MET phi vs phiCenter, etaSig + phiSig cuts
 		TH2D* metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3","metPhi_phiCenter_etaSigge0p3ANDphiSigle0p3;metPhi;phiCenter_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5,25,-0.2,6.2);
-		//228 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
+		//229 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
 		TH2D* metPhi_phiCenter_etaSigge0p3ORphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ORphiSigle0p3","metPhi_phiCenter_etaSigge0p3ORphiSigle0p3;metPhi;phiCenter_etaSigge0p3ORphiSigle0p3",25,-3.5,3.5,25,-0.2,6.2);
-			
+		//230 - dR trackSubcl vs subcl time
+		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",25,0,2,25,-15,15);	
+		//231 - dE trackSubcl vs subcl time	
+		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,0,20,25,-15,15);	
+		//232 - dR trackSubcl vs dE trackSubcl	
+		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,2,25,0,20);	
 
 
 		enum weightScheme{
@@ -1644,6 +1657,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//k = sum_n(E_n)/N
 		void FillModelHists(BasePDFMixture* model, int id_idx, vector<double>& obs){
+			obs.clear();	
 			map<string, Matrix> params;
 			vector<double> eigenvals, eigenvals_space, norms;
 			vector<Matrix> eigenvecs, eigenvecs_space; 
@@ -1678,18 +1692,17 @@ class PhotonSkimmer : public BaseSkimmer{
 			int nclusters = model->GetNClusters();
 			_procCats[id_idx].hists1D[0][0]->Fill(nclusters);
 			_procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
-			model->GetNorms(norms);
 			
+
+			//fill for lead subcluster only
 			//get leading cluster index
 			vector<int> idxs;
 			//sort by mixing coeffs in ascending order (smallest first)
 			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
-
-			obs.clear();	
-			//fill for lead subcluster only
 			int k = leadidx;
 			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
+			model->GetNorms(norms);
 			E_k = norms[k]/_gev; 
 			
 			
@@ -1775,6 +1788,29 @@ class PhotonSkimmer : public BaseSkimmer{
 			mintime_cov = CalcCov(majminCovMat,2,1);
 			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
+
+
+
+			//do track matching
+			int nTracks = _base->ECALTrack_nTracks;
+			double bestTrackDr = 999;
+			//double maxTrackDr;
+			double dr, teta, tphi, de;
+			for(int t = 0; t < nTracks; t++){
+				teta = _base->ECALTrack_eta->at(t);
+				tphi = _base->ECALTrack_phi->at(t);
+				
+				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc)*(tphi - pc));
+				
+				if(dr < bestTrackDr){
+					bestTrackDr = dr;
+					//E = p for photons
+					de = E_k - _base->ECALTrack_p->at(t);
+				}
+			}
+
+
+
 
 			obs.push_back(ec);
 			obs.push_back(pc);
@@ -1920,6 +1956,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			else if(dPhiMetpc < -acos(-1)) dPhiMetpc += 2*acos(-1);
 			_procCats[id_idx].hists1D[1][235]->Fill(dPhiMetpc);
 			if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
+			_procCats[id_idx].hists1D[1][237]->Fill(dr);
+			_procCats[id_idx].hists1D[1][238]->Fill(de);
 
 
 
@@ -2225,6 +2263,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][227]->Fill(_base->Met_phi,pc);	
 			if(p_var < 0.03 && e_var > 0.03) _procCats[id_idx].hists2D[1][228]->Fill(_base->Met_phi,pc);	
 			else _procCats[id_idx].hists2D[1][229]->Fill(_base->Met_phi,pc);	
+			_procCats[id_idx].hists2D[1][230]->Fill(dr,tc);	
+			_procCats[id_idx].hists2D[1][231]->Fill(de,tc);	
+			_procCats[id_idx].hists2D[1][232]->Fill(dr,de);	
 
 
 		}
@@ -3014,10 +3055,39 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
-	void TrackMatch(int evt, int npho, GaussianMixture* gmm){
 
 
 
+
+
+	//labels
+	//unmatched = -1
+	//signal = 0
+	//spikes = 1
+	//beam halo = 2
+	//photons should be 1:1 with subclusters (1 subcluster per photon)
+	int GetTrainingLabel(int npho, BasePDFMixture* gmm){
+		//labels
+		//unmatched = -1
+		//signal = 0
+		//!signal = 1 (includes !signal (MC), all data (ie BH, spikes)) - will probably want to change later to separate out BH, spike subclusters
+		int label = -1;
+		//signal
+		if(!_data){
+			if(_base->Gen_susId->at(_base->Photon_genIdx->at(npho)) == 22)
+				label = 0;
+			else
+				label = -1;
+		}
+		//else in data - could be spikes or BH
+		else{
+			//do track matching for spikes
+		
+			//do eta-time curve for BH
+			label = -1;
+		}
+
+		return label;
 	}
 
 
@@ -3029,34 +3099,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		_csvfile << "Event,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
 
 	}
-	//photons should be 1:1 with subclusters (1 subcluster per photon)
-	//labels: 0 = signal
-	//1 = beam halo
-	//2 = spike
 
-	void WriteObs(int evt, int npho, vector<double> inputs){
+	void WriteObs(int evt, int npho, vector<double> inputs, int label){
 		_csvfile << evt << "," << npho;
 		for(auto d : inputs)
 			_csvfile << "," << d;
 
-		//labels
-		//unmatched = -1
-		//signal = 0
-		//!signal = 1 (includes !signal (MC), all data (ie BH, spikes)) - will probably want to change later to separate out BH, spike subclusters
-		int label = -1;
-		//signal
-		if(!_data){
-			if(_base->Photon_genIdx->at(npho) == -1)
-				label = -1;
-			else if(_base->Gen_susId->at(_base->Photon_genIdx->at(npho)) == 22)
-				label = 0;
-			else
-				label = 1;
-		}
-		//if in data, !signal (would be true in data CR...not true everywhere potentially?)
-		//this is also where the BH/spike label would be applied based on cuts on the inputs
-		else
-			label = 1;
 		//_csvfile << ", " << proc << endl;
 		_csvfile << "," << label << endl;
 	}

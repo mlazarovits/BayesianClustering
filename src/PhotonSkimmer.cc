@@ -152,7 +152,8 @@ void PhotonSkimmer::Skim(){
 				
 
 			}
-			WriteObs(e,p,obs);
+			int label = GetTrainingLabel(p,gmm);
+			WriteObs(e,p,obs,label);
 			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
 		}
 	}
