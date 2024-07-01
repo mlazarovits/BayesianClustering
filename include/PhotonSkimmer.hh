@@ -3015,18 +3015,43 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 	//create function to write photon subcluster variables to CSV file for MVA training
+	//include column for process?
 	string _csvname;
 	ofstream _csvfile;
 	void SetObs(){
-		_csvfile << "Event, subcl, eta_center, phi_center, time_center, eta_sig, phi_sig, etaphi_cov, timeeta_cov, energy, sw+" << endl;
+		_csvfile << "Event,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
 
 	}
 	//photons should be 1:1 with subclusters (1 subcluster per photon)
+	//labels: 0 = signal
+	//1 = beam halo
+	//2 = spike
+
 	void WriteObs(int evt, int npho, vector<double> inputs){
-		_csvfile << evt << ", " << npho;
+		_csvfile << evt << "," << npho;
 		for(auto d : inputs)
-			_csvfile << ", " << d;
-		_csvfile << endl; 
+			_csvfile << "," << d;
+
+		//labels
+		//unmatched = -1
+		//signal = 0
+		//!signal = 1 (includes !signal (MC), all data (ie BH, spikes)) - will probably want to change later to separate out BH, spike subclusters
+		int label = -1;
+		//signal
+		if(!_data){
+			if(_base->Photon_genIdx->at(npho) == -1)
+				label = -1;
+			else if(_base->Gen_susId->at(_base->Photon_genIdx->at(npho)) == 22)
+				label = 0;
+			else
+				label = 1;
+		}
+		//if in data, !signal (would be true in data CR...not true everywhere potentially?)
+		//this is also where the BH/spike label would be applied based on cuts on the inputs
+		else
+			label = 1;
+		//_csvfile << ", " << proc << endl;
+		_csvfile << "," << label << endl;
 	}
 
 
