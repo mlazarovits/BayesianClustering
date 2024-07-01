@@ -39,6 +39,9 @@ void BHCJetSkimmer::Skim(){
 	vector<node*> trees;
 	vector<Jet> rhs;
 
+
+	_prod->SetRecoPtMin(20);
+
         
 	//for computational time
 	vector<double> x_nrhs, y_time;

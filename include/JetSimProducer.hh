@@ -20,9 +20,12 @@ class JetSimProducer{
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
 
+		void SetRecoPtMin(double pt){_recoptmin = pt; }
+
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
+		double _recoptmin;
 };
 #endif

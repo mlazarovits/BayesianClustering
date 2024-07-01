@@ -4,6 +4,7 @@
 JetSimProducer::JetSimProducer(){
 	_gev = 1;
 	//_minobjeta = 1.5;
+	_recoptmin = 0;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -17,6 +18,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_nEvts = _base->fChain->GetEntries();
 	//default to 1 GeV = 1 entry -> gev = 1
 	_gev = 1;
+	_recoptmin = 0;
 	//_minobjeta = 1.5;
 	
 }
@@ -125,6 +127,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		phi = _base->Jet_genPhi->at(j);
 		eta = _base->Jet_genEta->at(j);
 
+
 		px = pt*cos(phi);
 		py = pt*sin(phi);
 		pz = pt*sinh(eta);
@@ -163,6 +166,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		pt = _base->Jet_pt->at(j);
 		phi = _base->Jet_phi->at(j);
 		eta = _base->Jet_eta->at(j);
+		
+		if(pt < _recoptmin) continue;
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);
