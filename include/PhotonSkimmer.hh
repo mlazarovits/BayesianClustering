@@ -3014,6 +3014,13 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
+	void TrackMatch(int evt, int npho, GaussianMixture* gmm){
+
+
+
+	}
+
+
 	//create function to write photon subcluster variables to CSV file for MVA training
 	//include column for process?
 	string _csvname;
