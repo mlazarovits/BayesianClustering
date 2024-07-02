@@ -1012,7 +1012,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//236 - dPhi bw phiCenter and MET, etaSig + phiSig cuts
 		TH1D* dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3 = new TH1D("dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3","dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5);
 		//237 - dR bw subcluster and closest matching track
-		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",25,0,2);	
+		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,1);	
 		//238 - dE bw subcluster and closest matching track	
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,0,10);	
 
@@ -1501,11 +1501,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//229 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
 		TH2D* metPhi_phiCenter_etaSigge0p3ORphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ORphiSigle0p3","metPhi_phiCenter_etaSigge0p3ORphiSigle0p3;metPhi;phiCenter_etaSigge0p3ORphiSigle0p3",25,-3.5,3.5,25,-0.2,6.2);
 		//230 - dR trackSubcl vs subcl time
-		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",25,0,2,25,-15,15);	
+		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,1,50,-10,10);	
 		//231 - dE trackSubcl vs subcl time	
-		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,0,20,25,-15,15);	
+		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,0,20,50,-10,10);	
 		//232 - dR trackSubcl vs dE trackSubcl	
-		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,2,25,0,20);	
+		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,1,25,0,20);	
 
 
 		enum weightScheme{
