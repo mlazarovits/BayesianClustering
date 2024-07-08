@@ -345,6 +345,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		// Reset Fastjet input
     		fjinputs.clear();
 		fjinputs.resize(0);
+		fjoutputs.clear();
+		fjoutputs.resize(0);
 	}
 }
 
@@ -822,13 +824,18 @@ void BasicDetectorSim::ReconstructEnergy(){
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
 
+	fjinputs.clear();
+	fjinputs.resize(0);
+	fjoutputs.clear();
+	fjoutputs.resize(0);
+
 }
 
 
 
 void BasicDetectorSim::FillGenJets(){
 	int njets = 0;
-	vector<fastjet::PseudoJet> consts;
+	//vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
 		//consts = jet.constituents();
 		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
@@ -845,7 +852,7 @@ void BasicDetectorSim::FillGenJets(){
 
 void BasicDetectorSim::FillRecoJets(){
 	int njets = 0;
-	vector<fastjet::PseudoJet> consts;
+	//vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jetsReco){
 //		//consts = jet.constituents();
 //		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
