@@ -65,7 +65,6 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
 	        #print("outname is "+outname)
         #remove last semicolon 
         remap = remap[:-1]
-        print("remap",remap)
         subf.write("transfer_output_remaps = \""+remap+"\"\n")	
 
 #splits by event number
