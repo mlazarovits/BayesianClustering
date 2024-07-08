@@ -43,3 +43,4 @@ rootfiles/*
 skims/*
 condor/Output/*
 condor*/*.tgz
+condor*/*.sh
