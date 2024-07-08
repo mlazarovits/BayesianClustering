@@ -43,21 +43,6 @@ void JetSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 
-	if(!_data){	
-		int nSelEvts = 0;
-		//get total number of selected events for weighting
-		for(int i = 0; i < _nEvts; i+=_skip){
-			_base->GetEntry(i);
-			vector<Jet> jets;
-			_prod->GetTrueJets(jets, i, _gev);
-			if(jets.size() < 1){ continue; }
-			//other selection in skim with MET is only for data - N/A
-			nSelEvts++;
-		}
-		//divide by number of selected events
-		//initial set to total events in ctor
-		_weight *= (double)_nEvts/(double)nSelEvts;
-	}
 	cout << setprecision(10) << "weight " << _weight << endl; 
 
 	double metThresh = 0.4;

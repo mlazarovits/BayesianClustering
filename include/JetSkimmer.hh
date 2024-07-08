@@ -42,15 +42,21 @@ class JetSkimmer : public BaseSkimmer{
 			_oname = "plots/jet_skims_"+_cms_label+".root";
 			_gev = 1./10.;
 			_swts.Init();
+			_weight = 1;
 			//set histogram weights
 			if(_data){ _weight = 1.; }
 			else{
-				_base->GetEntry(0); //for gen weight
-				double scale, xsec;
-				_swts.GetWeights(file,scale,xsec);
-				//xsecs are saved as inverse picobarns -> need to be inverse femtobarns
-				_weight = scale * (xsec * 1000) * (_base->Evt_genWgt / _nEvts);
-				cout << "_weight " << _weight << " xsec " << xsec << endl;
+				ifstream weights("info/EventWeights.txt", std::ios::in);
+				string filein;
+				string filename = file->GetName();
+				double jet_weight, pho_weight;
+				while( weights >> filein >> jet_weight >> pho_weight){
+					if(filename.find(filein) == string::npos) continue;
+					else{
+						_weight = jet_weight;
+						break;
+					}
+				}
 			} 
 	
 			objE_clusterE->SetTitle("jetE_clusterE");
