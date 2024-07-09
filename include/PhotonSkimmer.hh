@@ -1013,8 +1013,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3 = new TH1D("dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3","dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5);
 		//237 - dR bw subcluster and closest matching track
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,1);	
-		//238 - dE bw subcluster and closest matching track	
-		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,0,10);	
+		//238 - normalized dE bw subcluster and closest matching track	
+		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-5,5);	
 
 
 		
@@ -1796,16 +1796,20 @@ class PhotonSkimmer : public BaseSkimmer{
 			double bestTrackDr = 999;
 			//double maxTrackDr;
 			double dr, teta, tphi, de;
+			unsigned int detid;
+			int ieta, iphi;
 			for(int t = 0; t < nTracks; t++){
-				teta = _base->ECALTrack_eta->at(t);
-				tphi = _base->ECALTrack_phi->at(t);
+				//use TrackDetId to see where in ECAL track was propagated to
+				detid = _base->ECALTrackDetID_detId->at(t);
+				iphi = _detIDmap[detid].i1;
+				ieta = _detIDmap[detid].i2;
 				
 				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc)*(tphi - pc));
 				
 				if(dr < bestTrackDr){
 					bestTrackDr = dr;
 					//E = p for photons
-					de = E_k - _base->ECALTrack_p->at(t);
+					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
 				}
 			}
 
