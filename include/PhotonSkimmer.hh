@@ -1014,7 +1014,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//237 - dR bw subcluster and closest matching track
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - normalized dE bw subcluster and closest matching track	
-		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-5,5);	
+		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
 
 
 		
@@ -1503,9 +1503,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		//230 - dR trackSubcl vs subcl time
 		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,5,50,-10,10);	
 		//231 - dE trackSubcl vs subcl time	
-		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,0,20,50,-10,10);	
+		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,-2,2,50,-10,10);	
 		//232 - dR trackSubcl vs dE trackSubcl	
-		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,5,25,0,20);	
+		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,5,25,-2,2);	
 
 
 		enum weightScheme{
