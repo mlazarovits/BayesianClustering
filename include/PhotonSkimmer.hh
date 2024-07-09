@@ -1012,7 +1012,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//236 - dPhi bw phiCenter and MET, etaSig + phiSig cuts
 		TH1D* dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3 = new TH1D("dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3","dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3",25,-3.5,3.5);
 		//237 - dR bw subcluster and closest matching track
-		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,1);	
+		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - normalized dE bw subcluster and closest matching track	
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-5,5);	
 
@@ -1501,11 +1501,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//229 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
 		TH2D* metPhi_phiCenter_etaSigge0p3ORphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ORphiSigle0p3","metPhi_phiCenter_etaSigge0p3ORphiSigle0p3;metPhi;phiCenter_etaSigge0p3ORphiSigle0p3",25,-3.5,3.5,25,-0.2,6.2);
 		//230 - dR trackSubcl vs subcl time
-		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,1,50,-10,10);	
+		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,5,50,-10,10);	
 		//231 - dE trackSubcl vs subcl time	
 		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,0,20,50,-10,10);	
 		//232 - dR trackSubcl vs dE trackSubcl	
-		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,1,25,0,20);	
+		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,5,25,0,20);	
 
 
 		enum weightScheme{
@@ -1798,13 +1798,22 @@ class PhotonSkimmer : public BaseSkimmer{
 			double dr, teta, tphi, de;
 			unsigned int detid;
 			int ieta, iphi;
+			pair<double, double> tcoords;
+			double pc_02pi = pc;
+			if(pc_02pi < 0) pc_02pi += 2*pi;
 			for(int t = 0; t < nTracks; t++){
 				//use TrackDetId to see where in ECAL track was propagated to
 				detid = _base->ECALTrackDetID_detId->at(t);
+				//check if detid in map
+				if(_detIDmap.count(detid) == 0) continue;
 				iphi = _detIDmap[detid].i1;
 				ieta = _detIDmap[detid].i2;
-				
-				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc)*(tphi - pc));
+		
+				tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+				teta = tcoords.first;
+				tphi = tcoords.second;			
+	
+				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc_02pi)*(tphi - pc_02pi));
 				
 				if(dr < bestTrackDr){
 					bestTrackDr = dr;
@@ -1812,8 +1821,6 @@ class PhotonSkimmer : public BaseSkimmer{
 					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
 				}
 			}
-
-
 
 
 			obs.push_back(ec);
@@ -1960,7 +1967,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			else if(dPhiMetpc < -acos(-1)) dPhiMetpc += 2*acos(-1);
 			_procCats[id_idx].hists1D[1][235]->Fill(dPhiMetpc);
 			if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
-			_procCats[id_idx].hists1D[1][237]->Fill(dr);
+			_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 			_procCats[id_idx].hists1D[1][238]->Fill(de);
 
 
@@ -2267,9 +2274,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][227]->Fill(_base->Met_phi,pc);	
 			if(p_var < 0.03 && e_var > 0.03) _procCats[id_idx].hists2D[1][228]->Fill(_base->Met_phi,pc);	
 			else _procCats[id_idx].hists2D[1][229]->Fill(_base->Met_phi,pc);	
-			_procCats[id_idx].hists2D[1][230]->Fill(dr,tc);	
+			_procCats[id_idx].hists2D[1][230]->Fill(bestTrackDr,tc);	
 			_procCats[id_idx].hists2D[1][231]->Fill(de,tc);	
-			_procCats[id_idx].hists2D[1][232]->Fill(dr,de);	
+			_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,de);	
 
 
 		}
@@ -3059,7 +3066,14 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
-
+	pair<double, double> iEtaiPhi2EtaPhi(int ieta, int iphi){
+		//offset by 10 (+1 for starting at 1)?
+		if(iphi > 11) iphi -= 11;
+		else iphi += 349; 	
+		double phinew = iphi*acos(-1)/180;
+		double etanew = ieta*0.017453292519943295;
+		return make_pair(etanew, phinew);
+	}
 
 
 
