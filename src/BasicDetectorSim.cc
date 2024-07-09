@@ -611,7 +611,7 @@ void BasicDetectorSim::MakeRecHits(){
 			//out to 5 sigma
 			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
 			//smear energy in each cell
-			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			e_cell = e;//_rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
 			//make sure e can't be negative
 			if(e_cell < 0) continue;	
 			//in each cell to find energy deposited
