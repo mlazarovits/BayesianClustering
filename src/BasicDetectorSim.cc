@@ -20,7 +20,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_b = 3.8; //field of CMS solenoid (T)
 	_netacal = 170; //number of cells in eta in ECAL barrel (2*85)
 	_nphical = 360; //number of cells in phi in ECAL barrel (neta*nphi = 61200 total cells in barrel)
-	_deta = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
+	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
 	_calTresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
