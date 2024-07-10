@@ -574,10 +574,11 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			//add number of emissions to right ieta, iphi cell	
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(2)+1,2);
 			e_check += e_cell;
+			//cout << "filling cell ieta " << iieta << " iphi " << iiphi << endl;
 
 		}
 	}
-	//cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
+	cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
 }
 
 
@@ -630,7 +631,7 @@ void BasicDetectorSim::MakeRecHits(){
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
 			
-			//cout << "og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
+			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
 			etot += e_cell;
 			etot_og += e;
@@ -697,7 +698,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 		reco_nrh = 0;
 		//get ieta, iphi
 		_get_etaphi_idx(eta, phi, ieta, iphi);
-		//loop through corresponding nxn grind
+		//loop through corresponding nxn grid
 		for(int i = -_ncell; i < _ncell+1; i++){
 			for(int j = -_ncell; j < _ncell+1; j++){
 				//get ieta, iphi for cell in grid
@@ -710,6 +711,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				
 				//also do zero suppression here so
 				//this rh doesn't get counted in time average
+				//cout << "particle #" << p << " filling cell ieta " << iieta << " iphi " << iiphi << " cell e " << _cal[iieta][iiphi].at(0) << endl;
 				if(_cal[iieta][iiphi].at(0) < _ethresh) continue; //_cal[iieta][iiphi].SetValue(0., 0.);
 				//get integral bounds
 				_get_etaphi(iieta, iiphi, ceta, cphi);
@@ -743,8 +745,9 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//cout << "cell px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << endl;	
 				//add particle to fastjet
 				//running fastjet on reco cells
-      				fjinputs.push_back( fastjet::PseudoJet( jet.px(),
-      				  jet.py(), jet.pz(), jet.e() ) );
+				//TURN ON HERE TO RUN FASTJET ON RECHITS
+      				//fjinputs.push_back( fastjet::PseudoJet( jet.px(),
+      				//  jet.py(), jet.pz(), jet.e() ) );
 			
 	
 				//simulate spikes
@@ -811,7 +814,10 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
-		//cout << "reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " energy " << _recops[p].Momentum.E() << " gen energy " << _recops[p].Particle.e() << " reco_e " << reco_e << endl;
+		cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " energy " << _recops[p].Momentum.E() << " gen energy " << _recops[p].Particle.e() << " reco_e " << reco_e << " ratio reco e / gen e " << reco_e/_recops[p].Particle.e() << endl;
+      		//RUN FASTJET ON RECO PARTICLES (NOT RECHITS)
+		fjinputs.push_back( fastjet::PseudoJet( _recops[p].Momentum.px(),
+      		  _recops[p].Momentum.py(), _recops[p].Momentum.pz(), _recops[p].Momentum.e() ) );
 		_nRecoParticles++;
 
 	}
@@ -823,6 +829,13 @@ void BasicDetectorSim::ReconstructEnergy(){
 	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
+
+	cout << _jetsReco.size() << " reco jets " << fjoutputs.size() <<  " fj outputs " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets" << endl;
+	for(auto j : _jetsReco)
+		cout << "reco jet e " << j.E() << endl;
+	for(auto j : _jets)
+		cout << "gen jet e " << j.E() << endl;
+	
 
 	fjinputs.clear();
 	fjinputs.resize(0);
