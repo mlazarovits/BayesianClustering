@@ -520,6 +520,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(dRtrack_timeSubcl);	
 			_hists2D.push_back(dEtrack_timeSubcl);	
 			_hists2D.push_back(dRtrack_dEtrack);	
+			_hists2D.push_back(dRtrack_dEtrack_early);	
+			_hists2D.push_back(dRtrack_dEtrack_prompt);
+			_hists2D.push_back(dRtrack_dEtrack_late);	
 			
 
 
@@ -1506,7 +1509,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* dEtrack_timeSubcl = new TH2D("dEtrack_timeSubcl","dEtrack_timeSubcl;dEtrack;timeSubcl",25,-2,2,50,-10,10);	
 		//232 - dR trackSubcl vs dE trackSubcl	
 		TH2D* dRtrack_dEtrack = new TH2D("dRtrack_dEtrack","dRtrack_dEtrack;dRtrack;dEtrack",25,0,5,25,-2,2);	
-
+		//233 - dR trackSubcl vs dE trackSubck, -10 < time subclust < -2	
+		TH2D* dRtrack_dEtrack_early = new TH2D("dRtrack_dEtrack_early","dRtrack_dEtrack_timeSubclNeg10toNeg2;dRtrack;dEtrack",25,0,5,25,-2,2);	
+		//234 - dR trackSubcl vs dE trackSubck, -2 < time subclust < 2	
+		TH2D* dRtrack_dEtrack_prompt = new TH2D("dRtrack_dEtrack_prompt","dRtrack_dEtrack_timeSubclNeg2to2;dRtrack;dEtrack",25,0,5,25,-2,2);
+		//235 - dR trackSubcl vs dE trackSubck, 2 < time subclust < 10	
+		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);	
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2277,7 +2285,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][230]->Fill(bestTrackDr,tc);	
 			_procCats[id_idx].hists2D[1][231]->Fill(de,tc);	
 			_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,de);	
-
+			if(tc > -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,de);
+			if(tc > -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,de);
+			if(tc > 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,de);
 
 		}
 
