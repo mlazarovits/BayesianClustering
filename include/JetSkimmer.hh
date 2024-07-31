@@ -251,7 +251,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		
 		//bins for variable binning for resolution/mean plots
-		vector<double> xbins_dijets = {0, 200, 300, 400, 600, 1000, 1200}; 
+		vector<double> xbins_dijets = {0, 200, 300, 500, 600, 1000, 1200}; 
 		vector<double> xbins_recoGen = {0, 200, 300, 500, 700, 900, 1100}; 
 		vector<double> xbins_gamPV = {0, 200, 300, 400, 600, 1000}; 
 		//original binning - vector<double> xbins = {0, 100, 200, 300, 400, 600, 1000}; 
