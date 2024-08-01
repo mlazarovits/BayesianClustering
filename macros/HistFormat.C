@@ -102,6 +102,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	labelToColor["MET"]   	=  TColor::GetColor("#671E76");
 	labelToColor["ttbar"] 	=  TColor::GetColor("#CA5743");
 	labelToColor["QCD"]   	=  TColor::GetColor("#9E0059");
+	labelToColor["DoubleEG"] = TColor::GetColor("#9e0059");
 	//later colors to use
 	//"#CA5743" - jasper (burnt orange)
 	//"#BEB583" - sage
@@ -121,6 +122,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//data symbols - some form of open cross
 	labelToMark["!JetHT"] =   75;
 	labelToMark["!MET"] =   85;
+	labelToMark["!DoubleEG"] =   83;
 	
 	//signal point additions
 	if(cms_label.find("photons") != string::npos){
@@ -214,7 +216,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.60,0.92,title.c_str());
+	//lat1.DrawLatex(0.60,0.92,title.c_str());
 	return;
 }
 
