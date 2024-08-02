@@ -61,12 +61,13 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	//theta is calculated between beamline (z-dir) and x-y vector	
 	//centered at (0,0,0)
 	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
-	double pt = _E*sin(theta); //mass = 0
-	
+	//double pt = _E*sin(theta); //mass = 0
+	double pt = _E/cosh(_eta);
+
 	_px = pt*cos(_phi);
 	_py = pt*sin(_phi);
 	_pz = pt*sinh(_eta);
-	_kt2 = sqrt(pt); 		
+	_kt2 = _px*_px + _py*_py; 		
 	_mass = mass();
 	
 	_parent1 = nullptr;
