@@ -541,6 +541,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	double aeta, beta, aphi, bphi, ceta, cphi; //integral bounds
 	int iieta, iiphi;
 	double e_check = 0;
+	
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
 			//get ieta, iphi for cell in grid
@@ -575,6 +576,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(2)+1,2);
 			e_check += e_cell;
 			//cout << "filling cell ieta " << iieta << " iphi " << iiphi << endl;
+			cout << "eta " << eta << " phi " << phi << " iieta " << iieta << " iiphi " << iiphi << " e_cell " << e_cell << " e " << _cal[iieta][iiphi].at(0) << endl;		
 
 		}
 	}
@@ -593,6 +595,8 @@ void BasicDetectorSim::MakeRecHits(){
 	int nrhs = 0;
 	double etot = 0;
 	double etot_og = 0;
+	//declare fjinput/output containers
+	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
 	//do energy first to get transfer factor
 	for(int i = 0; i < _netacal; i++){
 		for(int j = 0; j < _nphical; j++){
@@ -652,7 +656,14 @@ void BasicDetectorSim::MakeRecHits(){
 			jp.SetEnergy(_cal[i][j].at(0));
 			jp.SetEta(eta);
 			jp.SetPhi(phi);
-			_cal_rhs.push_back(Jet(jp, _PV));
+			Jet jet(jp, _PV);
+			_cal_rhs.push_back(jet);
+			//cout << "cell px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << endl;	
+			//add particle to fastjet
+			//running fastjet on reco cells
+			//TURN ON HERE TO RUN FASTJET ON RECHITS
+      			fjinputs.push_back( fastjet::PseudoJet( jet.px(),
+      			  jet.py(), jet.pz(), jet.e() ) );
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
@@ -666,6 +677,26 @@ void BasicDetectorSim::MakeRecHits(){
 
 		}
 	}
+	//cluster reco particles with fastjet	
+	//run fastjet
+	fastjet::ClusterSequence cs(fjinputs, _jetdef);
+	//get jets - min 5 pt
+	fjoutputs = cs.inclusive_jets(5.);
+	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
+	//sort jets by pt
+	_jetsReco = sorted_by_pt(_jetsReco);
+
+	cout << _jetsReco.size() << " reco jets " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets from " << _recops.size() << " gen inputs" << endl;
+	for(auto j : _jetsReco)
+		cout << "reco jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	for(auto j : _jets)
+		cout << "gen jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	
+
+	fjinputs.clear();
+	fjinputs.resize(0);
+	fjoutputs.clear();
+	fjoutputs.resize(0);
 
 }
 
@@ -683,8 +714,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 	int ieta, iphi, iieta, iiphi;	
 	double reco_e, reco_t, reco_nrh;
 	double x, y, z, t, r, q;
-	//declare fjinput/output containers
-	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
 	for(int p = 0; p < _recops.size(); p++){
 		Position = _recops[p].Position;
 		Momentum = _recops[p].Momentum;
@@ -728,7 +757,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//get cal time for iieta and iiphi (this time is itself an E-weighted average)
 				reco_t += _cal[iieta][iiphi].at(1);
 				reco_nrh++;
-				
+		
 				//add emission to particle
 				//doesn't include tof correction to time
 				//save time in ns, space in cm
@@ -739,15 +768,10 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//rhid = iieta0iiphi
 				jp.SetRecHitId(int(iieta*1e4 + iiphi));
 				_recops[p].AddEmission(jp);
-				Jet jet(jp,_PV);
-				_cal_rhs.push_back(jet);
-			
-				//cout << "cell px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << endl;	
-				//add particle to fastjet
-				//running fastjet on reco cells
-				//TURN ON HERE TO RUN FASTJET ON RECHITS
-      				//fjinputs.push_back( fastjet::PseudoJet( jet.px(),
-      				//  jet.py(), jet.pz(), jet.e() ) );
+				//Jet jet(jp,_PV);
+				//_cal_rhs.push_back(jet);
+				//double theta = atan2( sqrt(jp.x()*jp.x() + jp.y()*jp.y()), jp.z() );
+				//cout << "iieta " << iieta << " iiphi " << iiphi << " e " << _cal[iieta][iiphi].at(0) << " jet e " << jet.e() << " jet pt " << jet.pt() << " jet px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " e*sin(theta) " << jp.e()*sin(theta) << " e/cosh(eta) " << jp.e()/cosh(jp.eta()) << endl;	
 			
 	
 				//simulate spikes
@@ -796,11 +820,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 					Jet j(jp,_PV);
 					_cal_rhs.push_back(j);
 				
-					//add particle to fastjet
-					//running fastjet on reco cells
-      					fjinputs.push_back( fastjet::PseudoJet( j.px(),
-      					  j.py(), j.pz(), j.e() ) );
-		
 					//save spikes to tree
 					_spikeE.push_back(reco_e);			
 					_nSpikes++;
@@ -813,34 +832,17 @@ void BasicDetectorSim::ReconstructEnergy(){
 		}
 		//reset e and t for reco particle
 		_recops[p].Momentum.SetE(reco_e);
+		//set pt wrt to new energy and m = 0
+		//p = cosh(eta) = E for m = 0
+		_recops[p].Momentum.SetPt(reco_e / cosh(_recops[p].Momentum.eta()) );
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
-		cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " energy " << _recops[p].Momentum.E() << " gen energy " << _recops[p].Particle.e() << " reco_e " << reco_e << " ratio reco e / gen e " << reco_e/_recops[p].Particle.e() << endl;
+		cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " reco pt " << _recops[p].Momentum.pt() << " gen pt " << _recops[p].Particle.pT() << " reco_e " << reco_e << " gen e " << _recops[p].Particle.e() << " ratio reco E / gen E " << _recops[p].Momentum.E()/_recops[p].Particle.e() << " mom eta " << _recops[p].Momentum.eta() << " pos eta " << _recops[p].Position.eta() << endl;
       		//RUN FASTJET ON RECO PARTICLES (NOT RECHITS)
-		fjinputs.push_back( fastjet::PseudoJet( _recops[p].Momentum.px(),
-      		  _recops[p].Momentum.py(), _recops[p].Momentum.pz(), _recops[p].Momentum.e() ) );
+		//fjinputs.push_back( fastjet::PseudoJet( _recops[p].Momentum.px(),
+      		//  _recops[p].Momentum.py(), _recops[p].Momentum.pz(), _recops[p].Momentum.e() ) );
 		_nRecoParticles++;
 
 	}
-	//cluster reco particles with fastjet	
-	//run fastjet
-	fastjet::ClusterSequence cs(fjinputs, _jetdef);
-	//get jets - min 5 pt
-	fjoutputs = cs.inclusive_jets(5.);
-	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
-	//sort jets by pt
-	_jetsReco = sorted_by_pt(_jetsReco);
-
-	cout << _jetsReco.size() << " reco jets " << fjoutputs.size() <<  " fj outputs " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets" << endl;
-	for(auto j : _jetsReco)
-		cout << "reco jet e " << j.E() << endl;
-	for(auto j : _jets)
-		cout << "gen jet e " << j.E() << endl;
-	
-
-	fjinputs.clear();
-	fjinputs.resize(0);
-	fjoutputs.clear();
-	fjoutputs.resize(0);
 
 }
 
