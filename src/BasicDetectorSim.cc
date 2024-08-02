@@ -576,11 +576,11 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(2)+1,2);
 			e_check += e_cell;
 			//cout << "filling cell ieta " << iieta << " iphi " << iiphi << endl;
-			cout << "eta " << eta << " phi " << phi << " iieta " << iieta << " iiphi " << iiphi << " e_cell " << e_cell << " e " << _cal[iieta][iiphi].at(0) << endl;		
+			//cout << "eta " << eta << " phi " << phi << " iieta " << iieta << " iiphi " << iiphi << " e_cell " << e_cell << " e " << _cal[iieta][iiphi].at(0) << endl;		
 
 		}
 	}
-	cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
+	//cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
 }
 
 
@@ -686,11 +686,11 @@ void BasicDetectorSim::MakeRecHits(){
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
 
-	cout << _jetsReco.size() << " reco jets " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets from " << _recops.size() << " gen inputs" << endl;
-	for(auto j : _jetsReco)
-		cout << "reco jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
-	for(auto j : _jets)
-		cout << "gen jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	//cout << _jetsReco.size() << " reco jets " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets from " << _recops.size() << " gen inputs" << endl;
+	//for(auto j : _jetsReco)
+	//	cout << "reco jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	//for(auto j : _jets)
+	//	cout << "gen jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
 	
 
 	fjinputs.clear();
@@ -836,7 +836,7 @@ void BasicDetectorSim::ReconstructEnergy(){
 		//p = cosh(eta) = E for m = 0
 		_recops[p].Momentum.SetPt(reco_e / cosh(_recops[p].Momentum.eta()) );
 		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
-		cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " reco pt " << _recops[p].Momentum.pt() << " gen pt " << _recops[p].Particle.pT() << " reco_e " << reco_e << " gen e " << _recops[p].Particle.e() << " ratio reco E / gen E " << _recops[p].Momentum.E()/_recops[p].Particle.e() << " mom eta " << _recops[p].Momentum.eta() << " pos eta " << _recops[p].Position.eta() << endl;
+		//cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " reco pt " << _recops[p].Momentum.pt() << " gen pt " << _recops[p].Particle.pT() << " reco_e " << reco_e << " gen e " << _recops[p].Particle.e() << " ratio reco E / gen E " << _recops[p].Momentum.E()/_recops[p].Particle.e() << " mom eta " << _recops[p].Momentum.eta() << " pos eta " << _recops[p].Position.eta() << endl;
       		//RUN FASTJET ON RECO PARTICLES (NOT RECHITS)
 		//fjinputs.push_back( fastjet::PseudoJet( _recops[p].Momentum.px(),
       		//  _recops[p].Momentum.py(), _recops[p].Momentum.pz(), _recops[p].Momentum.e() ) );
