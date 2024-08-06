@@ -513,11 +513,11 @@ class BHCJetSkimmer{
 			for(int i = 0; i < nhists; i++){
 				name = _procCats[0].hists2D[0][i]->GetName();
 				histname = _procCats[0].hists2D[0][i]->GetName();
+				//cout << "writing for " << name << " i " << i << " entries " << _procCats[0].hists2D[0][i]->GetEntries() << endl;
 				//write total method histogram outside process directory
 				if(_procCats[0].hists2D[0][i] == nullptr) continue;
+				//cout << "passed null" << endl;
 				if(_procCats[0].hists2D[0][i]->GetEntries() == 0 && histname.find("sigma") == string::npos){ continue; }
-				//check if data can be run
-				if(histname.find("recoGen") != string::npos && _data) continue;
 				//cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
 				_procCats[0].hists2D[0][i]->Write();
 				//write method as directory within directory
@@ -527,7 +527,7 @@ class BHCJetSkimmer{
 				for(int p = 1; p < _procCats.size(); p++){
 					//loop over processes
 					if(_procCats[p].hists2D[0][i] == nullptr) continue;
-					if(_procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue; }//cout << "Histogram for proc " << _plotName << " not filled." << endl; continue; }
+					if(_procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue;}// cout << "Histogram for proc " << _procCats[p].hists2D[0][i]->GetName() << " not filled." << endl; continue; }
 					//check if data can be run
 					//cout << "writing " << _procCats[p].hists2D[0][i]->GetName() <<  " " <<  _procCats[p].hists2D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;
 					histname = _procCats[p].hists2D[0][i]->GetName();
