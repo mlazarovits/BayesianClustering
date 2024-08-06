@@ -257,8 +257,9 @@ class BHCJetSkimmer{
 							bestIdx = g;
 						}
 					}
-					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _predJets[j].E() << " gen energy " << _genjets[bestIdx].E() << " reco pt " << _recojets[j].pt() << " gen pt " << _genjets[bestIdx].pt() << endl;
+					//cout << "jet #" << j << " has best match with gen jet #" << bestIdx << " with dr " << dr << " reco E " << _recojets[j].E() << " gen energy " << _genjets[bestIdx].E() << " reco pt " << _recojets[j].pt() << " gen pt " << _genjets[bestIdx].pt() << endl;
 					_procCats[p].hists2D[0][1]->Fill(_genjets[bestIdx].E(), _recojets[j].pt() - _genjets[bestIdx].pt());
+					//cout << "hist has " << _procCats[p].hists2D[0][1]->GetEntries() << " entries" << endl;
 					_procCats[p].hists1D[0][25]->Fill(_recojets[j].pt()/_genjets[bestIdx].pt());
 					_procCats[p].hists2D[0][2]->Fill(_genjets[bestIdx].pt(), _recojets[j].pt());
 				}
@@ -523,12 +524,12 @@ class BHCJetSkimmer{
 				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
 				//cout << "  making dir " << dir2->GetName() << endl;
 				dir2->cd();
-				//cout << "writing " << _procCats[0].hists2D[0][i]->GetName() << " " << name << " " <<  _procCats[0].hists2D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;
 				for(int p = 1; p < _procCats.size(); p++){
 					//loop over processes
 					if(_procCats[p].hists2D[0][i] == nullptr) continue;
 					if(_procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue; }//cout << "Histogram for proc " << _plotName << " not filled." << endl; continue; }
 					//check if data can be run
+					//cout << "writing " << _procCats[p].hists2D[0][i]->GetName() <<  " " <<  _procCats[p].hists2D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;
 					histname = _procCats[p].hists2D[0][i]->GetName();
 					_procCats[p].hists2D[0][i]->SetTitle(_procCats[p].plotName.c_str());
 					_procCats[p].hists2D[0][i]->Write();
@@ -635,7 +636,7 @@ class BHCJetSkimmer{
 		//24 - # reco jets - # gen jets
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
 		//25 - reco jet pt/gen jet pt
-		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,0,4);
+		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,0,1.5);
 		
 
 		//2D plots
@@ -643,7 +644,6 @@ class BHCJetSkimmer{
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",4,&xbins_recoGenPt[0],50,-50,50);
 		//2 - 2D histogram of gen pT vs reco pT
 		TH2D* genPt_recoPt = new TH2D("genPt_recoPt","genPt_recoPt;genpt;recopt",50,5,50,50,5,50);
-
 	
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
