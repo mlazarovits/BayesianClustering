@@ -25,9 +25,13 @@ def generateSubmission(args):
 
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
 	if args.inputSample == "ttbar":
-	        inputFile = "condorSimNtuples_ttbar_v2.root"
+	        inputFile = "condorSimNtuples_ttbar_defaultv4.root"
+	elif args.inputSample == "ttbar_v3_noEnergySmear":
+	        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear.root"
+	elif args.inputSample == "ttbar_v3_noEnergySmear_clusterFromRecoParticles":
+	        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear_clusterFromRecoParticles.root"
 	elif args.inputSample == "QCD":
-	        inputFile = "condorSimNtuples_QCD_v2.root"
+	        inputFile = "condorSimNtuples_QCD_defaultv4.root"
 	else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -96,7 +100,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','ttbar_v3_noEnergySmear_clusterFromRecoParticles','ttbar_v3_noEnergySmear'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--strategy','-st',help='which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=[1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
