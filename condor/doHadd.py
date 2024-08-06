@@ -12,6 +12,7 @@ def main():
 	
     cmdHadd = "hadd -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
     for d in os.scandir(args.dir):
+        print(d.path)
         if not os.path.exists(d.path+"/out"):
             continue
         oname = d.name
