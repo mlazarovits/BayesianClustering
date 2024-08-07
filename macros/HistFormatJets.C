@@ -3,6 +3,7 @@
 #include "TH2D.h"
 #include <string>
 #include <sstream>
+#include <iostream>
 using std::string;
 
 enum plotFormat{
@@ -65,8 +66,10 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	can->SetGridy(1);
 	can->SetTitle("");
 	TLegend* myleg = nullptr;
-	if(pf == 1) myleg = new TLegend(0.512,0.684,0.876,0.882);
-	else myleg = new TLegend(0.696,0.696,0.875,0.882);
+	//if(pf == 1) myleg = new TLegend(0.512,0.684,0.876,0.882);
+	//if(pf == 1) myleg = new TLegend(0.512,0.684,0.876,0.882);
+	myleg = new TLegend(0.143,0.686,0.345,0.884);
+	//else myleg = new TLegend(0.696,0.696,0.875,0.882);
 	myleg->SetFillColor(0);
 	myleg->SetBorderSize(0);
 	myleg->SetTextFont(42);
@@ -215,7 +218,8 @@ cout << "title " << xtit << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
-		hist[i]->GetYaxis()->SetRangeUser(miny, maxy + maxy/10.);
+		cout << "miny " << miny << " max " << 3*maxy << endl;
+		hist[i]->GetYaxis()->SetRangeUser(miny, 3*maxy);
 		
 
 		legentry = hist[i]->GetTitle();
@@ -335,9 +339,41 @@ cout << "title " << xtit << endl;
 			double err1 = fit->GetParError(1);
 			double err2 = fit->GetParError(2);
 			std::ostringstream ss;
-			ss << setprecision(3) << "N = " << val0 << " #pm " << err0 << " [GeV*ns], S = " << val1 << " #pm " << err1 << " [#sqrt{GeV}*ns],  C = " << fabs(val2) << " #pm " << err2 << " [ns]";
+			ss << setprecision(2); 
+			if(fabs(val0) < 9e-3)
+				ss << std::scientific;
+			ss << "N = " << val0;
+			if(fabs(err0) < 9e-3)
+				ss << std::scientific;
+			else
+				ss << std::fixed;	
+			ss << " #pm " << err0 << " [GeV*ns],";
+		
+			if(fabs(val1) < 9e-3)
+				ss << std::scientific;
+			else
+				ss << std::fixed;	
+			ss << " S = " << val1;
+			if(fabs(err1) < 9e-3)
+				ss << std::scientific;
+			else
+				ss << std::fixed;	
+			ss << " #pm " << err1 << " [#sqrt{GeV}*ns],";
+			
+			if(fabs(val2) < 9e-3)
+				ss << std::scientific; 
+			else
+				ss << std::fixed;	
+			ss << " C = " << fabs(val2);
+			if(fabs(err2) < 9e-3)
+				ss << std::scientific; 
+			else
+				ss << std::fixed;	
+			ss << " #pm " << err2 << " [ns]";
+			
 			string teststr = ss.str();
-			fitparams.DrawLatex(0.3,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
+			cout << "params " << i << " Y: " << 0.3+(hist.size()+1)*0.05-i*0.05 << endl;
+			fitparams.DrawLatex(0.2,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		}
 	}
 	myleg->Draw("same"); 
@@ -365,7 +401,8 @@ cout << "title " << xtit << endl;
 		if(xstr.find("(GeV)") != string::npos) xstr.replace(xstr.find("(GeV)"),5,"");
 		string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + #frac{S^{2}}{("+xstr+")} + 2C^{2}";
 		//string paramsStr = "("+sigstr+")^{2} = #frac{N^{2}}{("+xstr+")^{2}} + C^{2}";
-		sigFormula.DrawLatex(0.3, 0.4+(hist.size()+1)*0.05, paramsStr.c_str());
+		cout << "formula Y: " << 0.4+(hist.size()+1)*0.05 << endl;
+		sigFormula.DrawLatex(0.4, 0.4+(hist.size()+1)*0.05, paramsStr.c_str());
 	}
 
 	return;
