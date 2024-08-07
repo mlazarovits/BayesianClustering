@@ -1,3 +1,8 @@
+if [ -z "$1" ]
+then
+	echo "Please pass directory with out/*.csv files to concatenate"
+	return
+fi
 echo "Combining .csv files in" $1
 part1=$(dirname "$1")
 part2=$(basename "$part1")
