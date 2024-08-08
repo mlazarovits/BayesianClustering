@@ -761,24 +761,6 @@ class JetSkimmer : public BaseSkimmer{
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
 
-			/*
-			geneta = _base->Gen_eta->at(genidx);
-			genphi = _base->Gen_phi->at(genidx);
-			gentheta = 2*atan2(1,exp(geneta));
-			//detector y (in y,z plane) or r (in x,y plane) is 1.29 m
-			genx = 129*cos(genphi);
-			geny = 129*sin(genphi);
-			genz = 129/tan(gentheta);	
-			
-			//for checking calculations
-			double rtheta = atan2(1.29,genz);
-			//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
-			double reta = -log(tan(rtheta/2));
-			double rphi = atan2(geny,genx);
-		
-		cout << "gen eta: " << geneta << " rgen eta: " << reta << " gen phi: " << genphi << " rgen phi: " << rphi << " reco eta: " << _base->Photon_eta->at(phoidx) << " reco phi: " << _base->Photon_phi->at(phoidx) << " dr: " << CalcGenDr(pho) << " theta: " << gentheta << " rtheta: " << rtheta << endl;
-			*/
-
 			//photon production vertex coordinates
 			vx = _base->Gen_vx->at(genidx);
 			vy = _base->Gen_vy->at(genidx);
@@ -811,40 +793,6 @@ class JetSkimmer : public BaseSkimmer{
 			//use TOF to propagate x, y, z from gen vertex position (vi) to detector (geni_ECAL)
 
 
-			/*
-			//propagate gen eta, phi of photon to ECAL face
-			double rmax = 129;
-			//1.5 is max eta (~1.479)
-			double maxtheta = 2*atan2(1,exp(1.5));
-			double halfLength = rmax/tan(maxtheta);
-			double genpx = _base->Gen_px->at(genidx);
-			double genpy = _base->Gen_py->at(genidx);
-			double genpz = _base->Gen_pz->at(genidx);
-			double gene = _base->Gen_energy->at(genidx);
-			double genpt2 = genpx*genpx + genpy*genpy;
-			//propagate gen eta/phi (x, y, z) of momentum vector to ECAL surface
-			double tmp = genpx * geny - genpy * genx;
-	      		double tr = (TMath::Sqrt(genpt2 * rmax*rmax - tmp * tmp) - genpx * genx - genpy * geny) / genpt2;
-			double tz = (TMath::Sign(halfLength, genpz) - genz) / genpz;
-			double t = fmin(tr, tz)*(gene/(_c)); //t*e/c ~ [cm/GeV]*[GeV*ns/cm] = ns
-			//calculate new x, y, z based on time to detector
-			double genx_ECAL = genx + (genpx/gene)*(_c)*t;
-			double geny_ECAL = geny + (genpy/gene)*(_c)*t;
-			double genz_ECAL = genz + (genpz/gene)*(_c)*t;	
-			//double genx_ECAL = genx + (genpx/gene)*(_c*1e7)*t;
-			//double geny_ECAL = geny + (genpy/gene)*(_c*1e7)*t;
-			//double genz_ECAL = genz + (genpz/gene)*(_c*1e7)*t;	
-			
-			//genx_ECAL *= 1e9;
-			//geny_ECAL *= 1e9;
-			//genz_ECAL *= 1e9;
-
-//cout << setprecision(10) << "tmp " << tmp <<" " << (genpx * geny) - (genpy * genx) << " first " << genpx*geny << " second " << genpy*genx << " halfLength " << halfLength << " gene " << gene << endl;
-cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << " geny_ECAL: " << geny_ECAL << " genz: " << genz << " genz_ECAL: " << genz_ECAL << " t: " << t << " tr: " << tr << " tz: " << tz << " genpt2: " << genpt2 <<  " genpx " << genpx << " " << _base->Gen_px->at(genidx) << " genx " << genx << " genpy " << genpy << " geny " << geny << " genpz " << genpz << " genz " << genz << " tmp " << tmp << endl;
-			vector<JetPoint> rhs =  pho.GetJetPoints();
-			//for(auto r : rhs) cout << "rh x: " << r.x() << " rh y: " << r.y() << " rh z: " << r.z() << endl;	 " tr: " << tr << " tz: " << tz <<	
-			*/	
-			
 			double pvx = _base->PV_x;
 			double pvy = _base->PV_y;
 			double pvz = _base->PV_z;
@@ -852,10 +800,7 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 			double beta;
 			if(phoid == 22){
 				int momidx = _base->Photon_genSigMomId->at(phoidx);
-//cout << "px " << px << " py " << py << " pz " << pz << " vx " << vx << " vy " << vy << " vz " << vz << " genx_ECAL " << genx_ECAL << " geny_ECAL " << geny_ECAL << " genz_ECAL " << genz_ECAL << " rR " << sqrt(genx_ECAL*genx_ECAL + geny_ECAL*geny_ECAL) << " final gen eta " << feta << " reco eta " << _base->Photon_eta->at(phoidx) << " gen (p) eta " << _base->Gen_eta->at(genidx) << " gen (p) mom eta " << _base->Gen_eta->at(momidx) << " gen mom eta " << -log(tan((atan2(sqrt(_base->Gen_vx->at(momidx)*_base->Gen_vx->at(momidx) + _base->Gen_py->at(momidx)*_base->Gen_py->at(momidx)), _base->Gen_vz->at(momidx))/2))) << endl;
-
 				//check gen pdgids
-				//cout << "gen photon idx: " << genidx << " pho sus id: " << phoid << " gen photon pdgid: " << _base->Gen_pdgId->at(genidx) << " gen sig mom idx: " << momidx << " gen mom pdgid: " << _base->Gen_pdgId->at(momidx) << endl;
 				//want production vertex of photon (where LLP -> photon)
 				//not production vertex of mother (close to PV)
 				vx = _base->Gen_vx->at(genidx);
@@ -879,7 +824,6 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 				double m = _base->Gen_mass->at(momidx);
 				double gam1 = sqrt(1 + (p/(m))*(p/(m)));
 				double beta1 = sqrt(1 - 1/(gam1*gam1));
-			//cout << "gam1: " << gam1 << " beta1: " << beta1 << " mass: " << m << " p: " << p << " e: " << momE << endl; 
 
 				//beta/c = p/E = v
 				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
@@ -889,15 +833,10 @@ cout << "genx: " << genx << " genx_ECAL: " << genx_ECAL << " geny: " << geny << 
 				//distance bw photon and production point (where LLP decays to photon)
 				dpho = sqrt( (genx_ECAL - vx)*(genx_ECAL - vx) + (geny_ECAL - vy)*(geny_ECAL - vy) + (genz_ECAL - vz)*(genz_ECAL - vz) )/_c;
 		
-			//cout << "vertex to pho: " << dpho << endl;
 				//distance bw LLP decay point and PV
 				//LLP is produced close to PV (should take into account?)
 				//LLPdecay - LLPprod?
 				dpho += sqrt( (vx - momvx)*(vx - momvx) + (vy - momvy)*(vy - momvy) + (vz - momvz)*(vz - momvz) )/(_c*beta);	
-			//cout << "mom decay vertex - vx:    " << vx << " vy:    " << vy << " vz:    " << vz << endl;
-			//cout << "mom prod vertex  - momvx: " << momvx << " momvy: " << momvy << " momvz: " << momvz << endl;
-			//cout << "primary vertex   - pvx:   " << _base->PV_x << " pv_y:   " << _base->PV_y << " pv_z:   " << _base->PV_z << endl;   
-			//cout << "momv decay to momv production vertex dist: " << sqrt( (vx - momvx)*(vx - momvx) + (vy - momvy)*(vy - momvy) + (vz - momvz)*(vz - momvz) ) << endl;	
 
 			}
 			//assume prompt production
