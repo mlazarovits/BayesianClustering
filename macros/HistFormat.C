@@ -267,11 +267,13 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	hist->UseCurrentStyle();
 	hist->SetStats(false);
 	hist->GetXaxis()->CenterTitle(true);
-	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
+	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->SetTitle(ytit.c_str());
 	string name = hist->GetName();
-	if(hist->Integral() != 0 && name.find("sigma") == string::npos) hist->Scale(1./hist->Integral());
+	if(hist->Integral() != 0 && name.find("sigma") == string::npos){
+		hist->Scale(1./hist->Integral());
+	}
 	hist->Draw();
 	
 	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
@@ -490,7 +492,7 @@ void HistFormat(string file){
 
 	string cmslab = GetCMSLabel(file);
 	string extra = "";
-	if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	if(file.find("condor") == string::npos) extra = GetExtraLabel(file);
 	if(!extra.empty()) cmslab += " "+extra;	
 
 	TString th1d("TH1D");
@@ -504,10 +506,15 @@ void HistFormat(string file){
 			TH1D* hist = (TH1D*)key->ReadObj();
 			if(hist){
 				name = hist->GetName();
+				//draw as tcanvases
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
-				//draw as tcanvases
-				TDRHist(hist, cv, name, name, "a.u",cmslab);
+				if(name.find("sigma") != string::npos){
+					TDRHist(hist, cv, name, hist->GetXaxis()->GetTitle(), hist->GetYaxis()->GetTitle(),cmslab);
+				}
+				else{
+					TDRHist(hist, cv, name, name, "a.u",cmslab);
+				}
 				cv->Write(); 
 			}
 		}
