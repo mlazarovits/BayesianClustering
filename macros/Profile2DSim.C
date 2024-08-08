@@ -20,7 +20,10 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 		profilename = inhist->GetName();
 		profiletitle = inhist->GetTitle();
 		//cout << "bin #" << i << " name " << profilename << " title " << profiletitle << endl;	
-		profilename.insert(profilename.find("_"+profiletitle),"_bin"+std::to_string(i));
+		if(profilename != profiletitle)
+			profilename.insert(profilename.find("_"+profiletitle),"_bin"+std::to_string(i));
+		else
+			profilename += "_bin"+std::to_string(i);
 		//profilename = profilename+"_bin"+std::to_string(i);
 		phist->SetTitle(profiletitle.c_str());	
 		phist->SetName(("profile_"+profilename).c_str());
@@ -75,7 +78,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 }
 
 
-void GetHists(TDirectory* dir, vector<TH1D*>& hists){
+void GetHists(TDirectory* dir, vector<TH1D*>& hists, string match = ""){
 	dir->cd();
 
 	TList* list = dir->GetListOfKeys();
@@ -88,6 +91,7 @@ void GetHists(TDirectory* dir, vector<TH1D*>& hists){
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == th1d){
 			name = key->GetName();
+			if(!match.empty() && name.find(match) == string::npos) continue;
 			hist = (TH1D*)dir->Get((name).c_str());
 			if(!hist) continue;
 			//cout << "getting hist " << dir->GetName() << "/" << hist->GetName() << " with entries " << hist->GetEntries() << endl;
@@ -137,6 +141,59 @@ void Profile2DHists(TFile* f){
 	f->cd();
 	//loop over all dirs - top level is variable	
 	while((key = (TKey*)iter())){
+		//do total resolution hist
+		if(key->GetClassName() == th2d){
+			TH2D* hist = dynamic_cast<TH2D*>(key->ReadObj());
+			if(!hist) continue;
+			histname = hist->GetName();
+			if(histname.find("diffDelta") == string::npos)
+				continue;
+			vector<TH1D*> profs;
+			//write only total 1D profile from total 2D (doesn't end in process) to newname
+			//cout << "h " << h << " histname: " << histname << endl;
+			newhistname = histname.replace(histname.find("diff"), 4, "sigma");
+			//cout << "th2d newnewhistname: " << newhistname << endl;
+			TH1D* sig_outhist = (TH1D*)f->Get((newhistname).c_str());
+			if(!sig_outhist){ cout << "Error: cannot find " << newhistname << endl; continue; }
+			if(sig_outhist->GetEntries() > 1) continue;
+			//histname = hists[h]->GetName();
+			//histname.replace(histname.find("diff"), 4, "mean");
+			TH1D* mean_outhist = nullptr;
+			//if(dirname.find("recoGen") != string::npos) mean_outhist = (TH1D*)f->Get((mean_dirname_new+"/"+histname).c_str()); 
+			//if(mean_outhist && mean_outhist->GetEntries() > 1) continue;
+			//if(print) cout << sig_outhist->GetEntries() << " entries in " << sig_outhist->GetName() << endl;
+			//if(print && mean_outhist) cout << mean_outhist->GetEntries() << " entries in " << mean_outhist->GetName() << endl;
+			//profile 1D histograms
+			Profile2DHist(hist, sig_outhist, mean_outhist, profs);
+			//cout << "1 - " << profs.size() << " profiles for " << hist->GetNbinsX() << " bins" << endl;
+			//cout << " inhist " << hist->GetName() << " has " << hist->GetEntries() << " entries and sig_outhist " << histname << " has entries " <<  sig_outhist->GetEntries() << endl;
+			for(int b = 0; b < profs.size(); b++){
+				f->cd();
+				//write total profiles to 
+				string profilename = profs[b]->GetName();
+				string profilepath = profilename;
+				string profiletitle = profs[b]->GetTitle();
+				profilepath = profilename;
+				if(!profiletitle.empty() && profilepath.find(profiletitle) != string::npos)
+					profilepath = profilepath.substr(0,profilepath.find("_"+profiletitle));
+				//profilepath = profilepath.substr(0,profilepath.rfind("_"));
+				profilepath = profilepath+"_procStack";
+				//cout << "profilepath " << profilepath << " profiletitle " << profiletitle << " " << profilename << endl;
+				//if method in profile name - add next dir to profile path
+				TH1D* prof = (TH1D*)f->Get((profilepath+"/"+profilename).c_str()); 
+				if(prof == nullptr){ cout << "profile " << profilepath+"/"+profilename << " null" << endl; continue; }
+				TDirectory* profdir = (TDirectory*)f->Get(profilepath.c_str());
+				profdir->cd();
+				//cout << "og entries " << prof->GetEntries() << " in " << prof->GetName() << endl;
+				//if(prof->GetEntries() > 1) continue;
+				prof = (TH1D*)profs[b]->Clone();
+				//cout << "new entries " << prof->GetEntries() <<" in " << prof->GetName() <<  endl;
+			}
+			for(int b = 0; b < profs.size(); b++)
+				delete profs[b];
+			
+			f->cd();
+		}
 		if(key->GetClassName() == tdir){
 			//only doing process separate histograms rn
 			//if want to add total histograms, do so above this if statement for ClassName == th1d with string matching for diffDelta hists
