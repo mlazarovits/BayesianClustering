@@ -541,7 +541,19 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	double aeta, beta, aphi, bphi, ceta, cphi; //integral bounds
 	int iieta, iiphi;
 	double e_check = 0;
-	
+	//if these indices are out of bounds for detector indices, skip
+	if(ieta >= _netacal || ieta < 0) return;
+	if(iphi >= _nphical || iphi < 0) return;
+	//add energy to right ieta, iphi cell
+	if(_cal[ieta][iphi].at(0) < e_cell){	
+		_cal[ieta][iphi].SetValue(e_cell, 0);	
+		//add time to right ieta, iphi cell	
+		_cal[ieta][iphi].SetValue(t, 1);	
+		//add number of emissions to right ieta, iphi cell	
+		_cal[ieta][iphi].SetValue(1,2);
+	}
+
+	/*	
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
 			//get ieta, iphi for cell in grid
@@ -580,6 +592,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 
 		}
 	}
+	*/
 	//cout << "original energy " << e << " showered energy " << e_check << " ratio " << e_check/e << " _ncell " << _ncell << endl;
 }
 
