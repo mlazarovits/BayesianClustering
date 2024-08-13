@@ -41,6 +41,6 @@ obj/*.o
 plots_local/*
 rootfiles/*
 skims/*
-condor/Output/*
+condor*/Output/*
 condor*/*.tgz
 condor*/*.sh
