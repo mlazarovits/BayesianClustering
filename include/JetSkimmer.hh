@@ -44,7 +44,11 @@ class JetSkimmer : public BaseSkimmer{
 			_swts.Init();
 			_weight = 1;
 			//set histogram weights
-			if(_data){ _weight = 1.; }
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			string fname = file->GetName();
+			cout << "fname " << fname << endl;
+			//if(_data){ _weight = 1.; }
+			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
 			else{
 				ifstream weights("info/EventWeights.txt", std::ios::in);
 				string filein;
@@ -58,7 +62,8 @@ class JetSkimmer : public BaseSkimmer{
 					}
 				}
 			} 
-	
+
+
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
 			//true jet hists
