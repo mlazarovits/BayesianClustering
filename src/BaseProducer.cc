@@ -270,3 +270,127 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 
 }
+int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double gev){
+        if(gev == -1) gev = _gev;
+	double px, py, pz, pt, phi, eta;
+        supercls.clear();
+        if(evt > _nEvts) return -1;
+        _base->GetEntry(evt);
+	//apply beam halo filter - other noise filters needed for full Run2 recommendations
+	//if(!_base->Flag_globalSuperTightHalo2016Filter) return -1;
+	
+
+        int nSCs = (int)_base->SuperCluster_energy->size();
+        int nrhs, rhidx;
+	double timecorr, calibfactor; 
+	double drh, dpv;
+	int scidx;
+
+	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
+	vector<unsigned int>::iterator rhit;
+
+	//true = skip
+	//false = keep (ok)
+	bool hemVeto = false;	
+	BayesPoint vtx(3);
+	vtx.SetValue(_base->PV_x, 0);
+	vtx.SetValue(_base->PV_y, 1);
+	vtx.SetValue(_base->PV_z, 2);
+
+	vector<JetPoint> sc_rhs;
+	for(int sc = 0; sc < nSCs; sc++){
+                phi = _base->SuperCluster_phi->at(sc);
+                eta = _base->SuperCluster_eta->at(sc);
+
+                nrhs = _base->SuperCluster_rhIds->at(sc).size();
+	
+		//hem veto?
+		if(_year == 2018 && _data){
+			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
+			//skip whole event
+			if(hemVeto) return -1;
+		}
+
+		//SuperCluster selection
+                if(_base->SuperCluster_energy->at(sc) < 30.) continue;
+		if(fabs(eta) > _minobjeta) continue;
+                
+		//set rec hits in sc
+		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
+		vector<float> fracs = _base->SuperCluster_rhFracs->at(sc);
+		double rhe;
+		int nrhs = 0;
+		vector<unsigned int> jrhids;
+		//cout << rhs.size() << " in SC " << rhids.size() << " in ECAL" << endl;
+                for(int r = 0; r < rhs.size(); r++){
+                        unsigned int rhid = rhs[r];
+                        rhit = std::find(rhids.begin(), rhids.end(), rhid);
+                        if(rhit != rhids.end()){
+                                rhidx = rhit - rhids.begin();
+				//skip rhs that have already been looked at - avoids duplicates in SC
+				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
+				if(jrhit != jrhids.end()) continue;
+				//if rh is in endcap, skip
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//remove timing reco (ratio) failed fits
+				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+				//energy cut
+				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;				
+
+
+				//TOF from 0 to rh location
+				drh = _base->ECALRecHit_0TOF->at(rhidx);
+				//TOF from PV to rh location - use this to improve time covariance
+				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
+				timecorr = drh - dpv;
+
+				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+				JetPoint rh;
+				if(_calibmap){
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+//	cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << " timecorr " << timecorr << " calibfactor " << calibfactor << endl;
+				}
+				else{	
+					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				}
+                               
+				//rec hit selection
+				if(fabs(rh.t()) > 20) continue;
+//	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
+				
+				rhe = _base->ECALRecHit_energy->at(rhidx);
+				//multiply energy by hitsAndFractions fraction
+				//indexed within supercluster
+				if(_applyFrac){
+					rhe *= fracs[r];
+					if(rhe < 0.1) continue;
+				}					
+				//cout << std::setprecision(10) << "rh e og: " << _base->ECALRecHit_energy->at(rhidx) << " frac: " << fracs[r] << " rhE*frac " << _base->ECALRecHit_energy->at(rhidx)*fracs[r] << " new rh e: " << rhe << endl;
+				rh.SetEnergy(rhe);
+                                rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
+                                rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
+                                rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
+                                rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
+	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;
+				nrhs++; 
+                                sc_rhs.push_back(rh);
+                		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
+		        }
+
+                }
+
+		Jet supercl(sc_rhs, vtx);
+		supercl.SetUserIdx(sc);
+		if(supercl.GetNRecHits() < 2) continue;
+	//	cout << jrhids.size() << " nrhs in pho" << endl;
+	//	for(auto rh : jrhids) cout << "rh id  " << rh << " count " << count(jrhids.begin(), jrhids.end(), rh) << endl;
+		supercls.push_back(supercl);
+		jrhids.clear();
+		sc_rhs.clear();
+        }
+
+	return 0;
+}

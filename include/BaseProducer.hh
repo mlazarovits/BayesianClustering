@@ -22,7 +22,7 @@ class BaseProducer{
 			_mineme = 0;
 			_minnrhs = 0;
 			_minrhE = 0.5;
-			_minobjeta = 1.4;
+			_minobjeta = 1.5;
 			_year = 2018;
 			_data = false;
 			_calibmap = nullptr;
@@ -54,7 +54,7 @@ class BaseProducer{
 			_mineme = 20;
 			_minnrhs = 15;
 			_minrhE = 0.5;
-			_minobjeta = 1.4;
+			_minobjeta = 1.5;
 			_applyFrac = false;
 			_spikes = false;
 			
@@ -70,6 +70,9 @@ class BaseProducer{
 			_calibmap = nullptr;
 			//SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
+			
+			if(name.find("_v20_")) useFilters = true;
+
 
 		}
 		virtual ~BaseProducer(){ 
@@ -77,6 +80,8 @@ class BaseProducer{
 			delete _calibmap;	
 		};
 
+
+		bool useFilters = false;
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
@@ -89,6 +94,7 @@ class BaseProducer{
 
 		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);
 		void GetTruePhotons(vector<Jet>& phos, int evt, double gev = -1);
+		int GetTrueSuperClusters(vector<Jet>& phos, int evt, double gev = -1);
 
 		bool _isocut;
 		void SetIsoCut(){ _isocut = true; }		
@@ -176,7 +182,6 @@ class BaseProducer{
 
 
 		map<UInt_t, DetIDStruct> _detIDMap;
-
 
 		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
 		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
