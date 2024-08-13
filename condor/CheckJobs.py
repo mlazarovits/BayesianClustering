@@ -29,6 +29,8 @@ def checkJobs(outputDir):
     
     # grep Queue for possible jobs submitted
     for folder in subfolders:
+        if "QCD_HT100t" not in folder:
+            continue
         if "jets_defaultv3p2" not in folder:
             continue
         Strategy = folder.split("/")[-1]
@@ -60,10 +62,10 @@ def checkJobs(outputDir):
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err > count.txt"
         #bash = "grep -c \"Warning\" -c \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err"
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" " + folder +"/log/*.err > count.txt"
-        bash = "grep -e \"ERROR\|FATAL\" " + folder +"/log/*.err > errcount.txt"
+        bash = "grep -e \"ERROR\|FATAL\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
         os.system(bash)
         with open("errcount.txt","r") as f:
-        	print(len(f.readlines()),"jobs with errors: see errcount.txt for more")	
+        	print(len(f.readlines()),"jobs with errors: see "+folder+"/errcount.txt for more")	
         #output4 = subprocess.check_output(['bash','-c',bash]).decode()
         #print(output4)	
         print("------------------------------------------------------------")	
