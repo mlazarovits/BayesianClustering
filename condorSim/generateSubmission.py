@@ -13,94 +13,102 @@ from fractions import Fraction
 
 # Create workspace and condor submit files.
 def generateSubmission(args):
- 	# Ensure that the directory includes "/" at the end.
-	odir = args.directory
-	if odir[-1] != "/":
-		odir += "/"
-	
-	print("Directory for condor submission: {0}".format(odir))
-	print("------------------------------------------------------------")
-	# Create output directory for condor results if it does not exist.
-	SH.makeDir(odir)
-
+    # Ensure that the directory includes "/" at the end.
+    odir = args.directory
+    if odir[-1] != "/":
+    	odir += "/"
+    
+    print("Directory for condor submission: {0}".format(odir))
+    print("------------------------------------------------------------")
+    # Create output directory for condor results if it does not exist.
+    SH.makeDir(odir)
+    
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
-	if args.inputSample == "ttbar":
-	        inputFile = "condorSimNtuples_ttbar_defaultv4.root"
-	elif args.inputSample == "ttbar_v3_noEnergySmear":
-	        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear.root"
-	elif args.inputSample == "ttbar_v3_noEnergySmear_clusterFromRecoParticles":
-	        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear_clusterFromRecoParticles.root"
-	elif args.inputSample == "QCD":
-	        inputFile = "condorSimNtuples_QCD_defaultv4.root"
-	else:
+    if args.inputSample == "ttbar":
+            inputFile = "condorSimNtuples_ttbar_defaultv4.root"
+    elif args.inputSample == "ttbar_v3_noEnergySmear":
+            inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear.root"
+    elif args.inputSample == "ttbar_v3_noEnergySmear_clusterFromRecoParticles":
+            inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear_clusterFromRecoParticles.root"
+    elif args.inputSample == "ttbar_defaultv4_noSpatialSmear":
+            inputFile = "condorSimNtuples_ttbar_defaultv4_noSpatialSmear.root"
+    elif args.inputSample == "ttbar_noSpatialSmear_highEnergySmear":
+            inputFile = "condorSimNtuples_ttbar_v4_noSpatialSmear_highEnergySmear.root"
+    elif args.inputSample == "QCD":
+            inputFile = "condorSimNtuples_QCD_defaultv4.root"
+    elif args.inputSample == "QCD_noSpatialSmear":
+            inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear.root"
+    elif args.inputSample == "QCD_noSpatialSmear_highEnergySmear":
+            inputFile = "condorSimNtuples_QCD_v4_noSpatialSmear_highEnergySmear.root"
+    else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-	inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
-	
-	#organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
-	#find .root and then find the / before that (if it exists) - everything in between is the file name
-	sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
-	sampleNameShort = sampleName[  sampleName.find("_")+1 : ]
-
-	dirname = odir+sampleNameShort
-	ofilename = "condorSim_"+sampleNameShort
-	if args.output is not None:
+    inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
+    
+    #organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
+    #find .root and then find the / before that (if it exists) - everything in between is the file name
+    sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
+    sampleNameShort = sampleName[  sampleName.find("_")+1 : ]
+    
+    dirname = odir+sampleNameShort
+    ofilename = "condorSim_"+sampleNameShort
+    if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-	#put algo config in file name
-	kname = "%.3f" % args.alpha
-	kname = kname.replace(".","p")
-	paramsname = "_bhcAlpha"+kname
-	kname = "%.3f" % args.EMalpha
-	kname = kname.replace(".","p")
-	paramsname += "_emAlpha"+kname
-	thresh = str(args.thresh).replace(".","p")
-	paramsname += "_thresh"+thresh
-	k = float(sum(Fraction(s) for s in args.gev.split()))
-	kname = "%.3f" % k
-	kname = kname.replace(".","p")
-	paramsname += "_NperGeV"+kname
-	ofilename += paramsname
-	dirname += paramsname
-	print("Preparing sample directory: {0}".format(dirname))
-	##### Create a workspace (remove existing directory) #####
-	if os.path.exists(dirname):
-		print("Removing existing directory: {0}".format(dirname))
-		shutil.rmtree(dirname)
-
-	# Create directories for work area.
-	SH.createWorkArea(dirname)
-
-	# grab relevant flags
-	eventnums = SH.eventsSplit(inputFile, args.split)
-	flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+str(args.strategy)
-	if(args.noSmear):
-		flags += ' --noSmear'
-	if(args.timeSmear):
-		flags += ' --timeSmear'
-	if(args.applyFrac):
-		flags += ' --applyFrac'
-
-	##### Create condor submission script in src directory #####
-	condorSubmitFile = dirname + "/src/submit.sh"
-	subf = open(condorSubmitFile, "w")
-	print("outputfile name "+ofilename)
-	SH.writeSubmissionBase(subf, dirname, ofilename)
-	SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
-	#subf.close()
-	if eventnums == 0 or eventnums is None:
-		return
-	
-	print("------------------------------------------------------------")
-	print("Submission ready, to run use:")
-	print("condor_submit "+condorSubmitFile)
+    #put algo config in file name
+    kname = "%.3f" % args.alpha
+    kname = kname.replace(".","p")
+    paramsname = "_bhcAlpha"+kname
+    kname = "%.3f" % args.EMalpha
+    kname = kname.replace(".","p")
+    paramsname += "_emAlpha"+kname
+    thresh = str(args.thresh).replace(".","p")
+    paramsname += "_thresh"+thresh
+    k = float(sum(Fraction(s) for s in args.gev.split()))
+    kname = "%.3f" % k
+    kname = kname.replace(".","p")
+    paramsname += "_NperGeV"+kname
+    ofilename += paramsname
+    dirname += paramsname
+    print("Preparing sample directory: {0}".format(dirname))
+    ##### Create a workspace (remove existing directory) #####
+    if os.path.exists(dirname):
+    	print("Removing existing directory: {0}".format(dirname))
+    	shutil.rmtree(dirname)
+    
+    # Create directories for work area.
+    SH.createWorkArea(dirname)
+    
+    # grab relevant flags
+    eventnums = SH.eventsSplit(inputFile, args.split)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+str(args.strategy)
+    if(args.noSmear):
+    	flags += ' --noSmear'
+    if(args.timeSmear):
+    	flags += ' --timeSmear'
+    if(args.applyFrac):
+    	flags += ' --applyFrac'
+    
+    ##### Create condor submission script in src directory #####
+    condorSubmitFile = dirname + "/src/submit.sh"
+    subf = open(condorSubmitFile, "w")
+    print("outputfile name "+ofilename)
+    SH.writeSubmissionBase(subf, dirname, ofilename)
+    SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
+    #subf.close()
+    if eventnums == 0 or eventnums is None:
+    	return
+    
+    print("------------------------------------------------------------")
+    print("Submission ready, to run use:")
+    print("condor_submit "+condorSubmitFile)
 
 def main():
 	# options
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','ttbar_v3_noEnergySmear_clusterFromRecoParticles','ttbar_v3_noEnergySmear'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','ttbar_v3_noEnergySmear_clusterFromRecoParticles','ttbar_v3_noEnergySmear','ttbar_defaultv4_noSpatialSmear','ttbar_v4_noSpatialSmear_highEnergySmear','QCD_defaultv4_noSpatialSmear','QCD_v4_noSpatialSmear_highEnergySmear'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--strategy','-st',help='which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=[1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
