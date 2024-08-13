@@ -29,7 +29,7 @@ def checkJobs(outputDir):
     
     # grep Queue for possible jobs submitted
     for folder in subfolders:
-        if "QCD_HT100t" not in folder:
+        if "QCD_HT200t" not in folder:
             continue
         if "jets_defaultv3p2" not in folder:
             continue
