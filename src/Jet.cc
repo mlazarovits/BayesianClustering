@@ -106,7 +106,8 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		phi = atan2(y, x);
 		eta = -log(tan(theta/2.)); 
 		//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
-		pt = rhs[i].E()*sin(theta); //consistent with mass = 0
+		//pt = _E*sin(theta); //mass = 0
+		pt = rhs[i].E()/cosh(eta);
 		_px += pt*cos(phi);
 		_py += pt*sin(phi);
 		_pz += pt*sinh(eta);
