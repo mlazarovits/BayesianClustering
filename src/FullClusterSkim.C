@@ -1,6 +1,7 @@
 #include "JetProducer.hh"
 #include "JetSkimmer.hh"
 #include "PhotonSkimmer.hh"
+#include "SuperClusterSkimmer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
 //#include "VarClusterViz3D.hh"
@@ -177,7 +178,7 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : photons)" << endl;
+   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : superclusters, 2 : photons)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
    		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]){
 	
 	if(gev == -999){
 		if(obj == 0) gev = 1./10.;
-		else if(obj == 1) gev = 1./30.;
+		else gev = 1./30.;
 	}
 
 	string cmslab, version;	
@@ -232,9 +233,11 @@ int main(int argc, char *argv[]){
 	if(obj == 0)
 		fname = "jets";
 	else if(obj == 1)
+		fname = "supercluster";
+	else if(obj == 2)
 		fname = "photon";
 	else{
-		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : photons." << endl;
+		cout << "Object number " << obj << " not supported. Only 0 : jets, 1 : superclusters, 2 : photons." << endl;
 		return -1;
 	}
 
@@ -276,8 +279,6 @@ int main(int argc, char *argv[]){
 
 		
 		if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
-		if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
-		else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
 		fname += "NperGeV"+gev_string+"_";
 		fname += cmslab; //long sample name
 		//fname += cmslab.substr(0,cmslab.find("_")); //short sample name
@@ -326,6 +327,27 @@ cout << "fname " << fname << endl;
 		skimmer.Skim();
 	}
 	else if(obj == 1){
+		cout << "superclusters" << endl;
+		SuperClusterSkimmer skimmer(file);
+		skimmer.SetCMSLabel(cmslab);
+		bool data;
+		if(in_file.find("SIM") != string::npos)
+			data = false;
+        	else
+			data = true;
+		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
+		skimmer.SetMinRhE(minRhE);
+		skimmer.SetOutfile(fname);
+		skimmer.SetTransferFactor(gev);
+        	skimmer.ApplyFractions(frac);
+		//skimmer.SetDebug(debug);
+		//set EMalpha
+		skimmer.SetEventRange(evti,evtj);
+		skimmer.SetSmear(smear);
+		skimmer.SetTimeSmear(timesmear); 
+        	skimmer.Skim();
+	}
+	else if(obj == 2){
 		cout << "photons" << endl;
 		PhotonSkimmer skimmer(file);
 		skimmer.SetCMSLabel(cmslab);
