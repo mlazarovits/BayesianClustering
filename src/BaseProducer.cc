@@ -277,7 +277,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
         if(evt > _nEvts) return -1;
         _base->GetEntry(evt);
 	//apply beam halo filter - other noise filters needed for full Run2 recommendations
-	//if(!_base->Flag_globalSuperTightHalo2016Filter) return -1;
+	if(!_base->Flag_globalSuperTightHalo2016Filter) return -1;
 	
 
         int nSCs = (int)_base->SuperCluster_energy->size();
