@@ -37,6 +37,7 @@ int main(int argc, char *argv[]){
 	bool sig_delayed = false;
 	bool sig_boosted = false;
 	double spikeProb = 0.;
+	double energy_c = 0.26;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -100,6 +101,10 @@ int main(int argc, char *argv[]){
                         i++;
                         evtj = std::atoi(argv[i]);
                 }
+		if(strncmp(argv[i],"--energyCte", 11) == 0){
+			i++;
+    	 		energy_c = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -115,6 +120,7 @@ int main(int argc, char *argv[]){
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
+   		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		return -1;	
@@ -179,6 +185,7 @@ int main(int argc, char *argv[]){
 	det.SetEnergyThreshold(0.1);
 	det.SetVerbosity(verb);
 	det.SetEventRange(evti,evtj);
+	det.SetEnergySmear(energy_c);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	//if(sig_delayed)

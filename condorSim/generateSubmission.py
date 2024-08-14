@@ -30,16 +30,16 @@ def generateSubmission(args):
             inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear.root"
     elif args.inputSample == "ttbar_v3_noEnergySmear_clusterFromRecoParticles":
             inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear_clusterFromRecoParticles.root"
-    elif args.inputSample == "ttbar_defaultv4_noSpatialSmear":
+    elif args.inputSample == "ttbar_noSpatialSmear":
             inputFile = "condorSimNtuples_ttbar_defaultv4_noSpatialSmear.root"
     elif args.inputSample == "ttbar_noSpatialSmear_highEnergySmear":
-            inputFile = "condorSimNtuples_ttbar_v4_noSpatialSmear_highEnergySmear.root"
+            inputFile = "condorSimNtuples_ttbar_defaultv4_noSpatialSmear_highEnergySmear.root"
     elif args.inputSample == "QCD":
             inputFile = "condorSimNtuples_QCD_defaultv4.root"
     elif args.inputSample == "QCD_noSpatialSmear":
             inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear.root"
     elif args.inputSample == "QCD_noSpatialSmear_highEnergySmear":
-            inputFile = "condorSimNtuples_QCD_v4_noSpatialSmear_highEnergySmear.root"
+            inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear_highEnergySmear.root"
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -81,6 +81,8 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(inputFile, args.split)
+    if eventnums is None:
+        return
     flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+str(args.strategy)
     if(args.noSmear):
     	flags += ' --noSmear'
@@ -108,7 +110,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
 	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','ttbar_v3_noEnergySmear_clusterFromRecoParticles','ttbar_v3_noEnergySmear','ttbar_defaultv4_noSpatialSmear','ttbar_v4_noSpatialSmear_highEnergySmear','QCD_defaultv4_noSpatialSmear','QCD_v4_noSpatialSmear_highEnergySmear'])
+	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','ttbar_v3_noEnergySmear_clusterFromRecoParticles','ttbar_v3_noEnergySmear','ttbar_noSpatialSmear','ttbar_noSpatialSmear_highEnergySmear','QCD_noSpatialSmear','QCD_noSpatialSmear_highEnergySmear'])
 	parser.add_argument('--output','-o',help='output label')
 	parser.add_argument('--strategy','-st',help='which strategy to use for BHC (NlnN = 0 default, N2 = 1)',default=0,type=int,choices=[1,0])
 	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
