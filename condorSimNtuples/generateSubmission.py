@@ -63,6 +63,8 @@ def generateSubmission(args):
     if(args.pileup):
         flags += ' --pileup'
 
+    flags += ' --energyCte '+args.energyCte
+
     ##### Create condor submission script in src directory #####
     condorSubmitFile = dirname + "/src/submit.sh"
     subf = open(condorSubmitFile, "w")
@@ -78,23 +80,24 @@ def generateSubmission(args):
     print("condor_submit "+condorSubmitFile)
 
 def main():
-	# options
-	parser = argparse.ArgumentParser()
-	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
-	#Ntuple file to run over
-	parser.add_argument('--output','-o',help='output label')
-	parser.add_argument('--nevts',help='number of events to simulate (default = 100)',default=100)
-	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
-	parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-	parser.add_argument('--ttbar',help="run ttbar process",action='store_true')
-	parser.add_argument('--QCD',help="run QCD process",action='store_true')
-	parser.add_argument('--sigDelayed',help="run sigDelayed process",action='store_true')
-	parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
-	parser.add_argument('--pileup','-pu',help="run pileup process",action='store_true')
-	parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
-	args = parser.parse_args()
-
-	generateSubmission(args)
+    # options
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    #Ntuple file to run over
+    parser.add_argument('--output','-o',help='output label')
+    parser.add_argument('--nevts',help='number of events to simulate (default = 100)',default=100)
+    parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
+    parser.add_argument('--verbosity','-v',help="verbosity",default=0)
+    parser.add_argument('--ttbar',help="run ttbar process",action='store_true')
+    parser.add_argument('--QCD',help="run QCD process",action='store_true')
+    parser.add_argument('--sigDelayed',help="run sigDelayed process",action='store_true')
+    parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
+    parser.add_argument('--pileup','-pu',help="run pileup process",action='store_true')
+    parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
+    parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = '0.26')
+    args = parser.parse_args()
+    
+    generateSubmission(args)
 
 if __name__ == "__main__":
     main()
