@@ -113,6 +113,8 @@ struct RecoParticle;
 		//write reco info
 		void FillRecoJets();
 
+		//set energy smear constant
+		void SetEnergySmear(double c){ _c = c; }
 	private:
 		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)

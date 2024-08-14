@@ -545,8 +545,9 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	if(ieta >= _netacal || ieta < 0) return;
 	if(iphi >= _nphical || iphi < 0) return;
 	//add energy to right ieta, iphi cell
-	if(_cal[ieta][iphi].at(0) < e_cell){	
-		_cal[ieta][iphi].SetValue(e_cell, 0);	
+	//set as max energy
+	if(_cal[ieta][iphi].at(0) < e){	
+		_cal[ieta][iphi].SetValue(e, 0);	
 		//add time to right ieta, iphi cell	
 		_cal[ieta][iphi].SetValue(t, 1);	
 		//add number of emissions to right ieta, iphi cell	
