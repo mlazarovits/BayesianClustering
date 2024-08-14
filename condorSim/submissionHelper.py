@@ -55,11 +55,14 @@ def writeSubmissionBase(subf, dirname, ofilename):
 def eventsSplit(infile, nChunk):
     if nChunk == 0:
         nChunk += 1
-    print("Splitting each file into "+str(nChunk)+" jobs ")
     #should split by event number in file
     rfile = ROOT.TFile.Open(infile)
     tree = rfile.Get("tree/llpgtree")
     nevts = tree.GetEntries()
+    if nChunk > nevts:
+            print("Please pass split of at least",nevts)
+            return
+    print("Splitting each file into "+str(nChunk)+" jobs ")
     print("nevts",nevts)
     evts = range(nevts+1)
     #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
