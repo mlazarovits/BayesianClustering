@@ -1,12 +1,11 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Aug 14 11:00:14 2024 by ROOT version 6.26/11
+// Mon Jul  1 12:19:05 2024 by ROOT version 6.30/06
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: output_999.root
+// found on file: rootfiles/GJets_R17_v19_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_output8.root
 //////////////////////////////////////////////////////////
-
-#ifndef ReducedBase_h
-#define ReducedBase_h
+#ifndef ReducedBase_hh
+#define ReducedBase_hh
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -14,7 +13,6 @@
 
 // Header file for the classes stored in the TTree if any.
 #include "vector"
-
 
 using namespace std;
 
@@ -39,10 +37,6 @@ public :
    vector<int>     *DisplacedElectron_indexGen;
    vector<int>     *DisplacedElectron_indexSC;
    vector<int>     *DisplacedElectron_indexTrack;
-   vector<float>   *DisplacedElectron_ip2D;
-   vector<float>   *DisplacedElectron_ip2Dbs;
-   vector<float>   *DisplacedElectron_ip3D;
-   vector<float>   *DisplacedElectron_ip3Dbs;
    vector<bool>    *DisplacedElectron_isBarrel;
    vector<bool>    *DisplacedElectron_isConversion;
    vector<bool>    *DisplacedElectron_isEndCap;
@@ -62,16 +56,9 @@ public :
    Int_t           DisplacedElectron_nTotal;
    vector<float>   *DisplacedElectron_p;
    vector<int>     *DisplacedElectron_pdgId;
-   vector<float>   *DisplacedElectron_pfIso0p4;
    vector<float>   *DisplacedElectron_phi;
    vector<float>   *DisplacedElectron_phiECAL;
    vector<float>   *DisplacedElectron_pt;
-   vector<float>   *DisplacedElectron_scIso0p4;
-   vector<float>   *DisplacedElectron_sip2D;
-   vector<float>   *DisplacedElectron_sip2Dbs;
-   vector<float>   *DisplacedElectron_sip3D;
-   vector<float>   *DisplacedElectron_sip3Dbs;
-   vector<float>   *DisplacedElectron_trackIso0p4;
    vector<float>   *DisplacedElectron_x;
    vector<float>   *DisplacedElectron_xECAL;
    vector<float>   *DisplacedElectron_y;
@@ -200,17 +187,6 @@ public :
    vector<float>   *Electron_trackz;
    Int_t           Electron_nElectrons;
    vector<int>     *Electron_scIndex;
-   Bool_t          Flag_BadChargedCandidateFilter;
-   Bool_t          Flag_BadPFMuonDzFilter;
-   Bool_t          Flag_BadPFMuonFilter;
-   Bool_t          Flag_EcalDeadCellTriggerPrimitiveFilter;
-   Bool_t          Flag_HBHENoiseFilter;
-   Bool_t          Flag_HBHENoiseIsoFilter;
-   Bool_t          Flag_ecalBadCalibFilter;
-   Bool_t          Flag_eeBadScFilter;
-   Bool_t          Flag_globalSuperTightHalo2016Filter;
-   Bool_t          Flag_goodVertices;
-   Bool_t          Flag_hfNoisyHitsFilter;
    UInt_t          Evt_luminosityBlock;
    UInt_t          Evt_run;
    UInt_t          Evt_event;
@@ -303,12 +279,10 @@ public :
    vector<float>   *Photon_trkSumPtSolidConeDR04;
    vector<float>   *Photon_ecalPFClusterIso;
    vector<bool>    *Photon_electronVeto;
-   vector<vector<unsigned int> > *Photon_gloResRhId;
    vector<bool>    *hasConversionTracks;
    vector<bool>    *Photon_pixelSeed;
    vector<float>   *Photon_hcalPFClusterIso;
    vector<float>   *Photon_Hoe_PUcorr;
-   vector<vector<unsigned int> > *Photon_locResRhId;
    Int_t           Photon_nPhoton;
    vector<float>   *Photon_pfChargedIso;
    vector<float>   *Photon_pfChargedIsoPFPV;
@@ -335,10 +309,6 @@ public :
    TBranch        *b_DisplacedElectron_indexGen;   //!
    TBranch        *b_DisplacedElectron_indexSC;   //!
    TBranch        *b_DisplacedElectron_indexTrack;   //!
-   TBranch        *b_DisplacedElectron_ip2D;   //!
-   TBranch        *b_DisplacedElectron_ip2Dbs;   //!
-   TBranch        *b_DisplacedElectron_ip3D;   //!
-   TBranch        *b_DisplacedElectron_ip3Dbs;   //!
    TBranch        *b_DisplacedElectron_isBarrel;   //!
    TBranch        *b_DisplacedElectron_isConversion;   //!
    TBranch        *b_DisplacedElectron_isEndCap;   //!
@@ -358,16 +328,9 @@ public :
    TBranch        *b_DisplacedElectron_nTotal;   //!
    TBranch        *b_DisplacedElectron_p;   //!
    TBranch        *b_DisplacedElectron_pdgId;   //!
-   TBranch        *b_DisplacedElectron_pfIso0p4;   //!
    TBranch        *b_DisplacedElectron_phi;   //!
    TBranch        *b_DisplacedElectron_phiECAL;   //!
    TBranch        *b_DisplacedElectron_pt;   //!
-   TBranch        *b_DisplacedElectron_scIso0p4;   //!
-   TBranch        *b_DisplacedElectron_sip2D;   //!
-   TBranch        *b_DisplacedElectron_sip2Dbs;   //!
-   TBranch        *b_DisplacedElectron_sip3D;   //!
-   TBranch        *b_DisplacedElectron_sip3Dbs;   //!
-   TBranch        *b_DisplacedElectron_trackIso0p4;   //!
    TBranch        *b_DisplacedElectron_x;   //!
    TBranch        *b_DisplacedElectron_xECAL;   //!
    TBranch        *b_DisplacedElectron_y;   //!
@@ -496,17 +459,6 @@ public :
    TBranch        *b_Electron_trackz;   //!
    TBranch        *b_Electron_nElectrons;   //!
    TBranch        *b_Electron_scIndex;   //!
-   TBranch        *b_Flag_BadChargedCandidateFilter;   //!
-   TBranch        *b_Flag_BadPFMuonDzFilter;   //!
-   TBranch        *b_Flag_BadPFMuonFilter;   //!
-   TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
-   TBranch        *b_Flag_HBHENoiseFilter;   //!
-   TBranch        *b_Flag_HBHENoiseIsoFilter;   //!
-   TBranch        *b_Flag_ecalBadCalibFilter;   //!
-   TBranch        *b_Flag_eeBadScFilter;   //!
-   TBranch        *b_Flag_globalSuperTightHalo2016Filter;   //!
-   TBranch        *b_Flag_goodVertices;   //!
-   TBranch        *b_Flag_hfNoisyHitsFilter;   //!
    TBranch        *b_Evt_luminosityBlock;   //!
    TBranch        *b_Evt_run;   //!
    TBranch        *b_Evt_event;   //!
@@ -599,12 +551,10 @@ public :
    TBranch        *b_Photon_trkSumPtSolidConeDR04;   //!
    TBranch        *b_Photon_ecalPFClusterIso;   //!
    TBranch        *b_Photon_electronVeto;   //!
-   TBranch        *b_Photon_gloResRhId;   //!
    TBranch        *b_hasConversionTracks;   //!
    TBranch        *b_Photon_pixelSeed;   //!
    TBranch        *b_Photon_hcalPFClusterIso;   //!
    TBranch        *b_Photon_Hoe_PUcorr;   //!
-   TBranch        *b_Photon_locResRhId;   //!
    TBranch        *b_Photon_nPhoton;   //!
    TBranch        *b_Photon_pfChargedIso;   //!
    TBranch        *b_Photon_pfChargedIsoPFPV;   //!
@@ -636,11 +586,11 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("output_999.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("rootfiles/GJets_R17_v19_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_output8.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("output_999.root");
+         f = new TFile("rootfiles/GJets_R17_v19_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_output8.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("output_999.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("rootfiles/GJets_R17_v19_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_output8.root:/tree");
       dir->GetObject("ReducedBase",tree);
 
    }
@@ -695,10 +645,6 @@ inline void ReducedBase::Init(TTree *tree)
    DisplacedElectron_indexGen = 0;
    DisplacedElectron_indexSC = 0;
    DisplacedElectron_indexTrack = 0;
-   DisplacedElectron_ip2D = 0;
-   DisplacedElectron_ip2Dbs = 0;
-   DisplacedElectron_ip3D = 0;
-   DisplacedElectron_ip3Dbs = 0;
    DisplacedElectron_isBarrel = 0;
    DisplacedElectron_isConversion = 0;
    DisplacedElectron_isEndCap = 0;
@@ -714,16 +660,9 @@ inline void ReducedBase::Init(TTree *tree)
    DisplacedElectron_nHits = 0;
    DisplacedElectron_p = 0;
    DisplacedElectron_pdgId = 0;
-   DisplacedElectron_pfIso0p4 = 0;
    DisplacedElectron_phi = 0;
    DisplacedElectron_phiECAL = 0;
    DisplacedElectron_pt = 0;
-   DisplacedElectron_scIso0p4 = 0;
-   DisplacedElectron_sip2D = 0;
-   DisplacedElectron_sip2Dbs = 0;
-   DisplacedElectron_sip3D = 0;
-   DisplacedElectron_sip3Dbs = 0;
-   DisplacedElectron_trackIso0p4 = 0;
    DisplacedElectron_x = 0;
    DisplacedElectron_xECAL = 0;
    DisplacedElectron_y = 0;
@@ -917,12 +856,10 @@ inline void ReducedBase::Init(TTree *tree)
    Photon_trkSumPtSolidConeDR04 = 0;
    Photon_ecalPFClusterIso = 0;
    Photon_electronVeto = 0;
-   Photon_gloResRhId = 0;
    hasConversionTracks = 0;
    Photon_pixelSeed = 0;
    Photon_hcalPFClusterIso = 0;
    Photon_Hoe_PUcorr = 0;
-   Photon_locResRhId = 0;
    Photon_pfChargedIso = 0;
    Photon_pfChargedIsoPFPV = 0;
    Photon_pfChargedIsoWorstVtx = 0;
@@ -952,10 +889,6 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("DisplacedElectron_indexGen", &DisplacedElectron_indexGen, &b_DisplacedElectron_indexGen);
    fChain->SetBranchAddress("DisplacedElectron_indexSC", &DisplacedElectron_indexSC, &b_DisplacedElectron_indexSC);
    fChain->SetBranchAddress("DisplacedElectron_indexTrack", &DisplacedElectron_indexTrack, &b_DisplacedElectron_indexTrack);
-   fChain->SetBranchAddress("DisplacedElectron_ip2D", &DisplacedElectron_ip2D, &b_DisplacedElectron_ip2D);
-   fChain->SetBranchAddress("DisplacedElectron_ip2Dbs", &DisplacedElectron_ip2Dbs, &b_DisplacedElectron_ip2Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_ip3D", &DisplacedElectron_ip3D, &b_DisplacedElectron_ip3D);
-   fChain->SetBranchAddress("DisplacedElectron_ip3Dbs", &DisplacedElectron_ip3Dbs, &b_DisplacedElectron_ip3Dbs);
    fChain->SetBranchAddress("DisplacedElectron_isBarrel", &DisplacedElectron_isBarrel, &b_DisplacedElectron_isBarrel);
    fChain->SetBranchAddress("DisplacedElectron_isConversion", &DisplacedElectron_isConversion, &b_DisplacedElectron_isConversion);
    fChain->SetBranchAddress("DisplacedElectron_isEndCap", &DisplacedElectron_isEndCap, &b_DisplacedElectron_isEndCap);
@@ -975,16 +908,9 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("DisplacedElectron_nTotal", &DisplacedElectron_nTotal, &b_DisplacedElectron_nTotal);
    fChain->SetBranchAddress("DisplacedElectron_p", &DisplacedElectron_p, &b_DisplacedElectron_p);
    fChain->SetBranchAddress("DisplacedElectron_pdgId", &DisplacedElectron_pdgId, &b_DisplacedElectron_pdgId);
-   fChain->SetBranchAddress("DisplacedElectron_pfIso0p4", &DisplacedElectron_pfIso0p4, &b_DisplacedElectron_pfIso0p4);
    fChain->SetBranchAddress("DisplacedElectron_phi", &DisplacedElectron_phi, &b_DisplacedElectron_phi);
    fChain->SetBranchAddress("DisplacedElectron_phiECAL", &DisplacedElectron_phiECAL, &b_DisplacedElectron_phiECAL);
    fChain->SetBranchAddress("DisplacedElectron_pt", &DisplacedElectron_pt, &b_DisplacedElectron_pt);
-   fChain->SetBranchAddress("DisplacedElectron_scIso0p4", &DisplacedElectron_scIso0p4, &b_DisplacedElectron_scIso0p4);
-   fChain->SetBranchAddress("DisplacedElectron_sip2D", &DisplacedElectron_sip2D, &b_DisplacedElectron_sip2D);
-   fChain->SetBranchAddress("DisplacedElectron_sip2Dbs", &DisplacedElectron_sip2Dbs, &b_DisplacedElectron_sip2Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_sip3D", &DisplacedElectron_sip3D, &b_DisplacedElectron_sip3D);
-   fChain->SetBranchAddress("DisplacedElectron_sip3Dbs", &DisplacedElectron_sip3Dbs, &b_DisplacedElectron_sip3Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_trackIso0p4", &DisplacedElectron_trackIso0p4, &b_DisplacedElectron_trackIso0p4);
    fChain->SetBranchAddress("DisplacedElectron_x", &DisplacedElectron_x, &b_DisplacedElectron_x);
    fChain->SetBranchAddress("DisplacedElectron_xECAL", &DisplacedElectron_xECAL, &b_DisplacedElectron_xECAL);
    fChain->SetBranchAddress("DisplacedElectron_y", &DisplacedElectron_y, &b_DisplacedElectron_y);
@@ -1113,17 +1039,6 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Electron_trackz", &Electron_trackz, &b_Electron_trackz);
    fChain->SetBranchAddress("Electron_nElectrons", &Electron_nElectrons, &b_Electron_nElectrons);
    fChain->SetBranchAddress("Electron_scIndex", &Electron_scIndex, &b_Electron_scIndex);
-   fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
-   fChain->SetBranchAddress("Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter, &b_Flag_BadPFMuonDzFilter);
-   fChain->SetBranchAddress("Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter, &b_Flag_BadPFMuonFilter);
-   fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
-   fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
-   fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
-   fChain->SetBranchAddress("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, &b_Flag_ecalBadCalibFilter);
-   fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
-   fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);
-   fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
-   fChain->SetBranchAddress("Flag_hfNoisyHitsFilter", &Flag_hfNoisyHitsFilter, &b_Flag_hfNoisyHitsFilter);
    fChain->SetBranchAddress("Evt_luminosityBlock", &Evt_luminosityBlock, &b_Evt_luminosityBlock);
    fChain->SetBranchAddress("Evt_run", &Evt_run, &b_Evt_run);
    fChain->SetBranchAddress("Evt_event", &Evt_event, &b_Evt_event);
@@ -1216,12 +1131,10 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_trkSumPtSolidConeDR04", &Photon_trkSumPtSolidConeDR04, &b_Photon_trkSumPtSolidConeDR04);
    fChain->SetBranchAddress("Photon_ecalPFClusterIso", &Photon_ecalPFClusterIso, &b_Photon_ecalPFClusterIso);
    fChain->SetBranchAddress("Photon_electronVeto", &Photon_electronVeto, &b_Photon_electronVeto);
-   fChain->SetBranchAddress("Photon_gloResRhId", &Photon_gloResRhId, &b_Photon_gloResRhId);
    fChain->SetBranchAddress("hasConversionTracks", &hasConversionTracks, &b_hasConversionTracks);
    fChain->SetBranchAddress("Photon_pixelSeed", &Photon_pixelSeed, &b_Photon_pixelSeed);
    fChain->SetBranchAddress("Photon_hcalPFClusterIso", &Photon_hcalPFClusterIso, &b_Photon_hcalPFClusterIso);
    fChain->SetBranchAddress("Photon_Hoe_PUcorr", &Photon_Hoe_PUcorr, &b_Photon_Hoe_PUcorr);
-   fChain->SetBranchAddress("Photon_locResRhId", &Photon_locResRhId, &b_Photon_locResRhId);
    fChain->SetBranchAddress("Photon_nPhoton", &Photon_nPhoton, &b_Photon_nPhoton);
    fChain->SetBranchAddress("Photon_pfChargedIso", &Photon_pfChargedIso, &b_Photon_pfChargedIso);
    fChain->SetBranchAddress("Photon_pfChargedIsoPFPV", &Photon_pfChargedIsoPFPV, &b_Photon_pfChargedIsoPFPV);
