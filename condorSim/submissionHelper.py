@@ -37,7 +37,7 @@ def writeSubmissionBase(subf, dirname, ofilename):
         #subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, configSim.tgz, \n")
         subf.write("transfer_input_files = /uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_0_13.tar.bz2, configSim.tgz, \n")
         subf.write("should_transfer_files = YES\n")
-        subf.write("request_memory = 4096\n")
+        #subf.write("request_memory = 4096\n")
         subf.write("when_to_transfer_output = ON_EXIT\n")
         outname = ofilename+".$(Process).root"
         subf.write("transfer_output_files = "+outname+"\n")
