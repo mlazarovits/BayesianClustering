@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
 	BasicDetectorSim det;
 	det.SetNEvents(nevts);
 	//for reconstructing rechits
-	det.SetEnergyThreshold(0.1);
+	det.SetEnergyThreshold(0.);
 	det.SetVerbosity(verb);
 	det.SetEventRange(evti,evtj);
 	det.SetEnergySmear(energy_c);

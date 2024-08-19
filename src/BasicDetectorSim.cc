@@ -310,12 +310,19 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 			//add particle to fastjet
 			//running fastjet on gen particles, no shower, etc.
-      			fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
-      			  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
+			int tieta, tiphi;
+			_get_etaphi_idx(rp.Position.eta(), rp.Position.phi(), tieta, tiphi);
+			//cout << "gen input eta " << sumEvent[p].eta() << " " << rp.Position.eta() << " ieta " << tieta << " phi " << sumEvent[p].phi() << " " << rp.Position.phi() << " iphi " << tiphi << " energy " << sumEvent[p].e() << endl; 
+			cout << "gen input px " << rp.Momentum.px() <<  " py " << sumEvent[p].py() << " pz " << rp.Momentum.pz() << " energy " << sumEvent[p].e() << " eta " << rp.Position.eta() << " tieta " << tieta << " phi " << rp.Position.phi() << " tiphi " << tiphi <<endl; 
+      			
+			fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
+			//fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
+      			//  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 			
 		}
+		
 		//run fastjet
 		fastjet::ClusterSequence cs(fjinputs, _jetdef);
 		//get jets - min 5 pt
@@ -323,7 +330,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
-		
+		cout << _jets.size() << " gen jets from " << fjinputs.size() << " inputs" << endl;
 
 		//Fill gen jet information
 		FillGenJets();	
@@ -542,18 +549,22 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	int iieta, iiphi;
 	double e_check = 0;
 	//if these indices are out of bounds for detector indices, skip
-	if(ieta >= _netacal || ieta < 0) return;
-	if(iphi >= _nphical || iphi < 0) return;
+	if(ieta >= _netacal || ieta < 0){cout << "FillCal - invalid eta " << eta << " ieta " << ieta << endl; return; }
+	if(iphi >= _nphical || iphi < 0){cout << "FillCal - invalid phi " << phi << " iphi " << iphi << endl; return;}
 	//add energy to right ieta, iphi cell
 	//set as max energy
-	if(_cal[ieta][iphi].at(0) < e){	
-		_cal[ieta][iphi].SetValue(e, 0);	
+//	if(_cal[ieta][iphi].at(0) < e){	
+		_cal[ieta][iphi].SetValue(e+_cal[ieta][iphi].at(0), 0);	
 		//add time to right ieta, iphi cell	
 		_cal[ieta][iphi].SetValue(t, 1);	
 		//add number of emissions to right ieta, iphi cell	
-		_cal[ieta][iphi].SetValue(1,2);
-	}
-
+		_cal[ieta][iphi].SetValue(1+_cal[ieta][iphi].at(2),2);
+//	}
+	double teta, tphi;
+	//check transformation
+	_get_etaphi(ieta, iphi, teta, tphi);
+	//cout << "FillCal - eta " << eta << " ieta " << ieta << " phi " << phi << " iphi " << iphi << " teta " << teta << " tphi " << tphi << " energy " << _cal[ieta][iphi].at(0) << " emissions " << _cal[ieta][iphi].at(2) << endl;
+	
 	/*	
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
@@ -616,6 +627,9 @@ void BasicDetectorSim::MakeRecHits(){
 		for(int j = 0; j < _nphical; j++){
 			e = _cal[i][j].at(0);
 			if(e == 0.) continue;
+			//get cell bounds
+			_get_etaphi(i, j, eta, phi);
+			
 			//time in cell ieta, jphi is energy weighted average
 			//do amplitude dependent energy smearing
 			//that follows equation 1.2 in CMS TDR
@@ -630,12 +644,17 @@ void BasicDetectorSim::MakeRecHits(){
 			//out to 5 sigma
 			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
 			//smear energy in each cell
-			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			e_cell = e;//_rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
 			//make sure e can't be negative
 			if(e_cell < 0) continue;	
 			//in each cell to find energy deposited
 			//if integral is below some threshold e_cell = 0
 			if(e_cell < _ethresh) continue;
+
+			//cout << "# emissions " << _cal[i][j].at(2) << " original e " << e << " smeared e " << e_cell << " e sig " << e_sig << endl;
+			double teta, tphi;
+			_get_etaphi(i, j, teta, tphi);
+			//cout << "MakeRecHits - eta " << eta << " ieta " << i << " phi " << phi << " iphi " << j << " teta " << teta << " tphi " << tphi << " energy " << _cal[i][j].at(0) << " " << e << " emissions " << _cal[i][j].at(2) << endl;
 
 			t = _cal[i][j].at(1)/((double)_cal[i][j].at(2));
 			
@@ -657,8 +676,6 @@ void BasicDetectorSim::MakeRecHits(){
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
 			
-			//get cell bounds
-			_get_etaphi(i, j, eta, phi);
 			//get x, y, z based on cell eta phi
 			x = _rmax*cos(phi);
 			y = _rmax*sin(phi);
@@ -672,10 +689,10 @@ void BasicDetectorSim::MakeRecHits(){
 			jp.SetPhi(phi);
 			Jet jet(jp, _PV);
 			_cal_rhs.push_back(jet);
-			//cout << "cell px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << endl;	
 			//add particle to fastjet
 			//running fastjet on reco cells
 			//TURN ON HERE TO RUN FASTJET ON RECHITS
+			cout << "reco inputs px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " energy " << jet.e() << " eta " << eta << " ieta " << i << " phi " << phi << " iphi " << j << endl;	
       			fjinputs.push_back( fastjet::PseudoJet( jet.px(),
       			  jet.py(), jet.pz(), jet.e() ) );
 			
@@ -700,11 +717,11 @@ void BasicDetectorSim::MakeRecHits(){
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
 
-	//cout << _jetsReco.size() << " reco jets " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets from " << _recops.size() << " gen inputs" << endl;
-	//for(auto j : _jetsReco)
-	//	cout << "reco jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
-	//for(auto j : _jets)
-	//	cout << "gen jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	cout << _jetsReco.size() << " reco jets " << fjinputs.size() << " fj inputs and " << _jets.size() << " gen jets from " << _recops.size() << " gen inputs" << endl;
+	for(auto j : _jetsReco)
+		cout << "reco jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
+	for(auto j : _jets)
+		cout << "gen jet e " << j.E() << " eta " << j.eta() << " phi " << j.phi_std() << endl;
 	
 
 	fjinputs.clear();
