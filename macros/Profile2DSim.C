@@ -33,7 +33,7 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 
 		sig_outhist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
 		string ytitle = inhist->GetYaxis()->GetTitle();
-		ytitle = "#sigma "+ytitle;
+		ytitle = "#frac{#sigma "+ytitle+"}{"+inhist->GetXaxis()->GetTitle()+"}";
 		sig_outhist->GetYaxis()->SetTitle(ytitle.c_str());
 	
 		if(mean_outhist){	
