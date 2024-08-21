@@ -1847,7 +1847,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 			//do track matching
-			int nTracks = _base->ECALTrack_nTracks;
+			int nIDs = _base->ECALTrackDetID_detId->size();
 			double bestTrackDr = 999;
 			//double maxTrackDr;
 			double dr, teta, tphi, de;
@@ -1859,11 +1859,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			else if(pc_02pi > 2*pi) pc_02pi -= 2*pi; 
 			else pc_02pi = pc;
 
-			int bestTrackidx = 999;
+			int bestTrackIdx = 999;
 			double dphi = -999;
-			for(int t = 0; t < nTracks; t++){
+			//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
+			//there are multiple detIDs that match to one track
+			//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
+			for(int id = 0; id < nID; id++){
 				//use TrackDetId to see where in ECAL track was propagated to
-				detid = _base->ECALTrackDetID_detId->at(t);
+				detid = _base->ECALTrackDetID_detId->at(id);
 				//check if detid in map
 				if(_detIDmap.count(detid) == 0) continue;
 				iphi = _detIDmap[detid].i1;
@@ -1880,21 +1883,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				
 				if(dr < bestTrackDr){
 					bestTrackDr = dr;
+					//get track info from detid
+					bestTrackIdx = _base->ECALTrackDetID_trackIndex->at(id);
 					//E = p for photons
-					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
-					bestTrackidx = t;
+					de = (E_k - _base->ECALTrack_p->at(bestTrackIdx))/E_k;
 				}
-<<<<<<< HEAD
-				//cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
-=======
 			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
->>>>>>> 93d98cc4f163bf3373a3942ea76777a7680b3f9f
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
-			//cout << "bestTrackidx " << bestTrackidx << endl;
-			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid ";
-			if(_base->ECALTrack_pdgId->size() != 0) cout << _base->ECALTrack_pdgId->at(bestTrackidx) << endl;
-			else cout << endl;
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track idx " << bestTrackIdx << endl;
 			//ieta = -85;
 			//iphi = 1;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
