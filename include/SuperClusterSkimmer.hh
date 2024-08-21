@@ -1884,7 +1884,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
 					bestTrackidx = t;
 				}
+<<<<<<< HEAD
 				//cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
+=======
+			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
+>>>>>>> 93d98cc4f163bf3373a3942ea76777a7680b3f9f
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
 			//cout << "bestTrackidx " << bestTrackidx << endl;
@@ -3213,7 +3217,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	//beam halo = 2
 	//photons should be 1:1 with subclusters (1 subcluster per photon)
 	int GetTrainingLabel(int nsc, BasePDFMixture* gmm){
-		cout << "GetTrainingLabel - start" << endl;
 		//labels
 		//unmatched = -1
 		//signal = 0
@@ -3249,7 +3252,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			label = -1;
 		}
 
-		cout << "GetTrainingLabel - end" << endl;
 		return label;
 	}
 
