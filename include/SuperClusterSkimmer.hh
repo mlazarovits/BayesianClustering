@@ -1018,7 +1018,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//237 - dR bw subcluster and closest matching track
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - normalized dE bw subcluster and closest matching track	
-		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
+		TH1D* dE_trackSubcl = new TH1D("dE_subclTrack","dE_subclTrack",25,-2,2);	
 
 
 		
@@ -1811,6 +1811,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			pair<double, double> tcoords;
 			double pc_02pi = pc;
 			if(pc_02pi < 0) pc_02pi += 2*pi;
+			else if(pc_02pi > 2*pi) pc_02pi -= 2*pi; 
+			else pc_02pi = pc;
+
+			int bestTrackidx = 999;
+			double dphi = -999;
 			for(int t = 0; t < nTracks; t++){
 				//use TrackDetId to see where in ECAL track was propagated to
 				detid = _base->ECALTrackDetID_detId->at(t);
@@ -1822,15 +1827,59 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
 				teta = tcoords.first;
 				tphi = tcoords.second;			
+
+				dphi = tphi - pc_02pi;
+				if(dphi > acos(-1)) dphi -= pi;
+
 	
-				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc_02pi)*(tphi - pc_02pi));
+				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 				
 				if(dr < bestTrackDr){
 					bestTrackDr = dr;
 					//E = p for photons
 					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
+					bestTrackidx = t;
 				}
+				//cout << "track eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
+			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid " << _base->ECALTrack_pdgId->at(bestTrackidx) << endl;
+			//ieta = -85;
+			//iphi = 1;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+			//
+			//
+			//ieta = 85;
+			//iphi = 360;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = -1;
+			//iphi = 180;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 90;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+	
+			//ieta = 1;
+			//iphi = 2;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 10;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 11;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+			
 
 
 			obs.push_back(ec);
@@ -3080,8 +3129,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 	pair<double, double> iEtaiPhi2EtaPhi(int ieta, int iphi){
 		//offset by 10 (+1 for starting at 1)?
-		if(iphi > 11) iphi -= 11;
-		else iphi += 349; 	
+		//if(iphi > 10) iphi = iphi;//iphi -= 10;
+		//else iphi += 349; 	
 		double phinew = iphi*acos(-1)/180;
 		double etanew = ieta*0.017453292519943295;
 		return make_pair(etanew, phinew);
@@ -3111,10 +3160,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nsc);
 			//matched to photon
 			if(phoidx != -1){
-				if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
-					label = 0;
-				else
-					label = 1;
+				if(_base->Photon_genIdx->at(phoidx) != -1){
+					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+						label = 0;
+					else
+						label = 1;
+				}
+				else //no gen match
+					label = -1;
 
 			}
 			else
