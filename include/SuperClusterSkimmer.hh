@@ -1873,9 +1873,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				teta = tcoords.first;
 				tphi = tcoords.second;			
 
-				dphi = tphi - pc_02pi;
-				if(dphi > acos(-1)) dphi -= pi;
-
+				dphi = fabs(tphi - pc_02pi);
+				dphi = acos(cos(dphi));
 	
 				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 				
@@ -3199,9 +3198,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 	pair<double, double> iEtaiPhi2EtaPhi(int ieta, int iphi){
-		//offset by 10 (+1 for starting at 1)?
-		//if(iphi > 10) iphi = iphi;//iphi -= 10;
-		//else iphi += 349; 	
 		double phinew = iphi*acos(-1)/180;
 		double etanew = ieta*0.017453292519943295;
 		return make_pair(etanew, phinew);
