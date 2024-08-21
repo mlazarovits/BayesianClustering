@@ -106,7 +106,7 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(inputFile, args.split)
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)#+" -s 2"
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
@@ -117,10 +117,16 @@ def generateSubmission(args):
     	flags += ' --noCalibrate'
     if(args.rejectSpikes):
         flags += ' --rejectSpikes'
+    
     if(objName == "jets"):
     	flags += " --object 0"
-    if(objName == "photons"):
+    elif(objName == "superclusters"):
     	flags += " --object 1"
+    elif(objName == "photons"):
+    	flags += " --object 2"
+    else:
+        print("Object",objName,"not recognized")
+        exit()
 
     ##### Create condor submission script in src directory #####
     condorSubmitFile = dirname + "/src/submit.sh"
@@ -141,11 +147,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v19','GMSB_L-350_Ctau-1000_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunE_2017_v19','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT1000To1500_2017_v19','QCD_HT100To200_2017_v19','QCD_HT1500To2000_2017_v19','QCD_HT2000ToInf_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','QCD_HT700To1000_2017_v19','QCD_HT300To500_2017_v19','QCD_HT500To700_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017_v19','GMSB_L-350_Ctau-1000_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunE_2017_v19','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT1000To1500_2017_v19','QCD_HT100To200_2017_v19','QCD_HT1500To2000_2017_v19','QCD_HT2000ToInf_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','QCD_HT700To1000_2017_v19','QCD_HT300To500_2017_v19','QCD_HT500To700_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','MET_RunE_2017_v20'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
-    parser.add_argument('--object',help='which object to skim (currently only jets or photons supported)',choices=["jets","photons"],required=True)
+    parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
@@ -163,6 +169,7 @@ def main():
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--noCalibrate',help="turn off channel-by-channel time calibration",default=False,action='store_true')
     parser.add_argument('--rejectSpikes',help="reject spikes based on swiss cross cut (default = false, off)",default=False,action='store_true')
+    parser.add_argument('--beamHaloFilter',help="apply BH filter (0: off, 1: on - default, 2: inverse)",default=1)
     args = parser.parse_args()
 
     generateSubmission(args)

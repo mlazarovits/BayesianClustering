@@ -44,7 +44,7 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         outnames = []
         outnames.append(ofilename+".$(Process).root")
         #if photons, write csv file for MVA
-        if "photon" in dirname:
+        if "photon" in dirname or "superclusters" in dirname:
             outnames.append(ofilename+".$(Process).csv")
         outname = ""
         for o in outnames:

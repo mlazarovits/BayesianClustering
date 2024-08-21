@@ -31,6 +31,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
+			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
 			_prod = new PhotonProducer(file);
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -1553,6 +1554,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross; 
 		void ApplyFractions(bool a){ _applyFrac = a; if(_applyFrac) cout << "Applying RH fractions" << endl; }
 		bool _applyFrac;
+		void SetBeamHaloFilter(int bh){ _prod->SetBeamHaloFilter(bh); }
 
 
 		void WritePlotCat1D(TFile* ofile, const procCat& pc){

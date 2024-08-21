@@ -57,6 +57,7 @@ void SuperClusterSkimmer::Skim(){
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
+	
 
 	_prod->PrintPreselection();
 	//loop over events

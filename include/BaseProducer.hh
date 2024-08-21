@@ -99,6 +99,19 @@ class BaseProducer{
 		bool _isocut;
 		void SetIsoCut(){ _isocut = true; }		
 
+		enum beamHaloFilter{
+			notApplied = 0,
+			applied = 1,
+			invApplied = 2
+		};
+		beamHaloFilter _bh;
+		void SetBeamHaloFilter(int bh){ 
+			_bh = beamHaloFilter(bh); 
+			if(_bh == notApplied) cout << "Not applying beam halo filter." << endl;
+			else if(_bh == applied) cout << "Applying beam halo filter." << endl;
+			else cout << "Applying inverse beam halo filter." << endl;
+		} 
+
 		ReducedBase* GetBase(){ return _base; }
 
 		void PrintPreselection(){
