@@ -2367,12 +2367,15 @@ class PhotonSkimmer : public BaseSkimmer{
 					dd1 = pcnew.at(i).at(d1) - mean.at(d1);
 					//phi wraparound
 					if(d1 == 1){
-						if(dd1 > pi) dd1 = 2*pi - dd1;
+						//if(dd1 > pi) dd1 = 2*pi - dd1;
+						dd1 = acos(cos(dd1));
 						if(dd1 > pi) cout << "dd1: " << dd1 << endl;
+						
 					}
 					dd2 = pcnew.at(i).at(d2) - mean.at(d2);
 					if(d2 == 1){
-						if(dd2 > pi) dd2 = 2*pi - dd2;
+						//if(dd2 > pi) dd2 = 2*pi - dd2;
+						dd2 = acos(cos(dd2));
 						if(dd2 > pi) cout << "dd2: " << dd2 << endl;
 					}
 					ent_pt = pcnew.at(i).w() * (dd1)*(dd2) / pcnew.Sumw();

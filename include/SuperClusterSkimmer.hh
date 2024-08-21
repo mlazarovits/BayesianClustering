@@ -1826,9 +1826,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				teta = tcoords.first;
 				tphi = tcoords.second;			
 
-				dphi = tphi - pc_02pi;
-				if(dphi > acos(-1)) dphi -= pi;
-
+				dphi = fabs(tphi - pc_02pi);
+				dphi = acos(cos(dphi));
 	
 				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 				
@@ -1841,7 +1840,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//cout << "track eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
-			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid " << _base->ECALTrack_pdgId->at(bestTrackidx) << endl;
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid " << _base->ECALTrack_pdgId->at(bestTrackidx) << " p " << _base->ECALTrack_p->at(bestTrackidx) << endl;
 			//ieta = -85;
 			//iphi = 1;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
@@ -3126,9 +3125,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 	pair<double, double> iEtaiPhi2EtaPhi(int ieta, int iphi){
-		//offset by 10 (+1 for starting at 1)?
-		//if(iphi > 10) iphi = iphi;//iphi -= 10;
-		//else iphi += 349; 	
 		double phinew = iphi*acos(-1)/180;
 		double etanew = ieta*0.017453292519943295;
 		return make_pair(etanew, phinew);
