@@ -524,8 +524,22 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(dRtrack_dEtrack_early);	
 			_hists2D.push_back(dRtrack_dEtrack_prompt);
 			_hists2D.push_back(dRtrack_dEtrack_late);	
-			
-
+			_hists2D.push_back(etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3);
+			_hists2D.push_back(phiSig_phiCenter_timele0ANDphiSigle0p3ANDetaSigge0p3);
+                	_hists2D.push_back(etaPhiCov_timeEtaCov_timele0ANDphiSigle0p3ANDetaSigge0p3);
+			_hists2D.push_back(etaPhiCov_timeEtaCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3);
+			_hists2D.push_back(etaSig_phiSig_early);
+			_hists2D.push_back(etaSig_phiSig_prompt);
+			_hists2D.push_back(etaSig_phiSig_late);
+			_hists2D.push_back(energy_etaSig);
+			_hists2D.push_back(BHFilter_etaSig);
+			_hists2D.push_back(BHFilter_phiSig);
+			_hists2D.push_back(BHFilter_timeSig);
+			_hists2D.push_back(BHFilter_timeCenter);
+			_hists2D.push_back(BHFilter_phiCenter);
+			_hists2D.push_back(BHFilter_etaCenter);
+                	_hists2D.push_back(BHFilter_etaPhiCov);
+                	_hists2D.push_back(BHFilter_timeEtaCov);
 
 		};
 	
@@ -1516,7 +1530,39 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* dRtrack_dEtrack_prompt = new TH2D("dRtrack_dEtrack_prompt","dRtrack_dEtrack_timeSubclNeg2to2;dRtrack;dEtrack",25,0,5,25,-2,2);
 		//235 - dR trackSubcl vs dE trackSubck, 2 < time subclust < 10	
 		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);	
-
+		//236 - eta sig vs phi sig, t < 0, phiSigle0p3ANDetaSigge0p3
+		TH2D* etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3","etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3;etaSig;phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3",25,0.01,0.09,25,0.01,0.09);
+		//237 - phi sig vs phi center, t < 0, phiSigle0p3ANDetaSigge0p3
+		TH2D* phiSig_phiCenter_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("phiSig_phiCenter_timele0ANDphiSigle0p3ANDetaSigge0p3","phiSig_phiCenter_timele0ANDphiSigle0p3ANDetaSigge0p3;etaSig;phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3",25,0.01,0.09,25,-0.2,6.4);
+		//238 - etaphi cov vs timeeta cov, t < 0, phiSigle0p3ANDetaSigge0p3
+                TH2D* etaPhiCov_timeEtaCov_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("noEetaPhiCov_timeEtaCov_timele0ANDphiSigle0p3ANDetaSigge0p3","noEetaPhiCov_timeEtaCov_timele0ANDphiSigle0p3ANDetaSigge0p3;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
+		//239 - counts of etaphi cov vs timeeta cov, t < 0, phiSigle0p3ANDetaSigge0p3
+		TH2D* etaPhiCov_timeEtaCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("etaPhiCov_timeEtaCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3","etaPhiCov_timeEtaCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3;etaPhiCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3;timeEtaCovCounts_timele0ANDphiSigle0p3ANDetaSigge0p3",2,-1,1,2,-1,1);
+		//240 - eta sig vs phi sig, early times	
+		TH2D* etaSig_phiSig_early = new TH2D("etaSig_phiSig_early","etaSig_phiSig_early;etaSig;phiSig_early",25,0.01,0.09,25,0.01,0.09);
+		//241 - eta sig vs phi sig, prompt times
+		TH2D* etaSig_phiSig_prompt = new TH2D("etaSig_phiSig_prompt","etaSig_phiSig_prompt;etaSig;phiSig_prompt",25,0.01,0.09,25,0.01,0.09);
+		//242 - eta sig vs phi sig, late times
+		TH2D* etaSig_phiSig_late = new TH2D("etaSig_phiSig_late","etaSig_phiSig_late;etaSig;phiSig_late",25,0.01,0.09,25,0.01,0.09);
+		//243 - SC energy vs eta sig
+		TH2D* energy_etaSig = new TH2D("energy_etaSig","energy_etaSig;energy_etaSig;phiSig_late",25,0,1000.,25,0.01,0.09);
+		//244 - BH filter vs eta sig
+		TH2D* BHFilter_etaSig = new TH2D("BHFilter_etaSig","BHFilter_etaSig;BHFilter_etaSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		//245 - BH filter vs phi sig
+		TH2D* BHFilter_phiSig = new TH2D("BHFilter_phiSig","BHFilter_phiSig;BHFilter_phiSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		//246 - BH filter vs time sig
+		TH2D* BHFilter_timeSig = new TH2D("BHFilter_timeSig","BHFilter_timeSig;BHFilter_timeSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		//247 - BH filter vs time center
+		TH2D* BHFilter_timeCenter = new TH2D("BHFilter_timeCenter","BHFilter_timeCenter;BHFilter_timeCenter;phiCenter_late",2,0,2.,25,-10,10);
+		//248 - BH filter vs phi center
+		TH2D* BHFilter_phiCenter = new TH2D("BHFilter_phiCenter","BHFilter_phiCenter;BHFilter_phiCenter;phiCenter_late",2,0,2.,25,-0.2,6.4);
+		//249 - BH filter vs eta center
+		TH2D* BHFilter_etaCenter = new TH2D("BHFilter_etaCenter","BHFilter_etaCenter;BHFilter_etaCenter;etaCenter_late",2,0,2.,25,-1.6,1.6);
+		//250 - BH filter vs etaPhi cov
+                TH2D* BHFilter_etaPhiCov = new TH2D("noEBHFilter_etaPhiCov","noEBHFilter_etaPhiCov;etaPhiCov;timeEtaCov",2,0,2,25,-1,1);
+		//251 - BH filter vs timeEta cov	
+                TH2D* BHFilter_timeEtaCov = new TH2D("noEBHFilter_timeEtaCov","noEBHFilter_timeEtaCov;timeEtaCov;timeEtaCov",2,0,2,25,-1,1);
+		
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
@@ -1677,7 +1723,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			PointCollection majminpts;
 
 			double npts = (double)model->GetData()->GetNPoints();
-		//	cout << "FillHists - starting subcluster loop" << endl;	
 			double E_k, phi, rot2D, ec, pc, tc, pi, E_lead, phi2D;
 			//double theta, r, rot3D, vel, v_x, v_y, v_z;
 			double ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
@@ -1840,10 +1885,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
 					bestTrackidx = t;
 				}
-				//cout << "track eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
+				cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
-			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid " << _base->ECALTrack_pdgId->at(bestTrackidx) << endl;
+			//cout << "bestTrackidx " << bestTrackidx << endl;
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de " << de << " best track pdgid ";
+			if(_base->ECALTrack_pdgId->size() != 0) cout << _base->ECALTrack_pdgId->at(bestTrackidx) << endl;
+			else cout << endl;
 			//ieta = -85;
 			//iphi = 1;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
@@ -2336,9 +2384,32 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][230]->Fill(bestTrackDr,tc);	
 			_procCats[id_idx].hists2D[1][231]->Fill(de,tc);	
 			_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,de);	
-			if(tc > -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,de);
-			if(tc > -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,de);
-			if(tc > 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,de);
+			if(tc >= -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,de);
+			if(tc >= -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,de);
+			if(tc >= 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,de);
+
+			if(tc < 0 && p_var < 0.03 && e_var > 0.03){
+				_procCats[id_idx].hists2D[1][236]->Fill(e_var, p_var);
+				_procCats[id_idx].hists2D[1][237]->Fill(p_var, pc);
+				_procCats[id_idx].hists2D[1][238]->Fill(ep_cov, te_cov);
+				_procCats[id_idx].hists2D[1][239]->Fill(ep_cov, te_cov);
+			}
+		/*
+			if(tc >= -10 && tc < -2) _procCats[id_idx].hists2D[1][240]->Fill(e_var, p_var); 
+			if(tc >= -2 && tc < 2) _procCats[id_idx].hists2D[1][241]->Fill(e_var, p_var); 
+			if(tc >= 2 && tc < 10) _procCats[id_idx].hists2D[1][242]->Fill(e_var, p_var); 
+			
+			_procCats[id_idx].hists2D[1][243]->Fill(E_k, e_var);
+			_procCats[id_idx].hists2D[1][244]->Fill(_base->Flag_globalSuperTightHalo2016Filter, e_var);
+			_procCats[id_idx].hists2D[1][245]->Fill(_base->Flag_globalSuperTightHalo2016Filter, p_var);
+			_procCats[id_idx].hists2D[1][246]->Fill(_base->Flag_globalSuperTightHalo2016Filter, t_var);
+			_procCats[id_idx].hists2D[1][247]->Fill(_base->Flag_globalSuperTightHalo2016Filter, tc);
+			_procCats[id_idx].hists2D[1][248]->Fill(_base->Flag_globalSuperTightHalo2016Filter, pc);
+			_procCats[id_idx].hists2D[1][249]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ec);
+			_procCats[id_idx].hists2D[1][250]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ep_cov);
+			_procCats[id_idx].hists2D[1][251]->Fill(_base->Flag_globalSuperTightHalo2016Filter, te_cov);
+			*/
+
 
 		}
 
@@ -3146,6 +3217,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	//beam halo = 2
 	//photons should be 1:1 with subclusters (1 subcluster per photon)
 	int GetTrainingLabel(int nsc, BasePDFMixture* gmm){
+		cout << "GetTrainingLabel - start" << endl;
 		//labels
 		//unmatched = -1
 		//signal = 0
@@ -3181,6 +3253,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			label = -1;
 		}
 
+		cout << "GetTrainingLabel - end" << endl;
 		return label;
 	}
 
