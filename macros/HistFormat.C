@@ -453,7 +453,6 @@ string GetCMSLabel(string in_file){
 		cmslab = cmslab.substr(cmslab.find("/")+1);
 	if(cmslab.find("condor_") != string::npos)
 		cmslab = cmslab.substr(cmslab.find("condor_")+7);
-	cout << "cmslab " << cmslab << endl;
 	return cmslab;
 	
 }
