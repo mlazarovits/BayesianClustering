@@ -424,13 +424,19 @@ string GetCMSLabel(string in_file){
 		string version = "";
 		std::regex_search(in_file,m,re);
 		for(auto x : m) version += x;
-		int vidx = in_file.find(version)+version.size();
-		int cmidx = in_file.rfind("_AOD");
-		cmslab = in_file.substr(vidx,cmidx-vidx);
+		//year
 		m = smatch();
 		re = std::regex("_R[0-9]+");
 		std::regex_search(in_file,m,re);
 		for(auto x : m) year += x;
+		int vidx = in_file.find(version)+version.size();
+		int cmidx = in_file.rfind("_AOD");
+		if(cmidx != -1){ //MC
+			cmslab = in_file.substr(vidx,cmidx-vidx);
+		}
+		else{
+			cmslab = in_file;
+		}
 	}
 	else{
 		int idx = in_file.find("NperGeV0p");
@@ -447,6 +453,7 @@ string GetCMSLabel(string in_file){
 		cmslab = cmslab.substr(cmslab.find("/")+1);
 	if(cmslab.find("condor_") != string::npos)
 		cmslab = cmslab.substr(cmslab.find("condor_")+7);
+	cout << "cmslab " << cmslab << endl;
 	return cmslab;
 	
 }
@@ -494,7 +501,7 @@ void HistFormat(string file){
 	string extra = "";
 	if(file.find("condor") == string::npos) extra = GetExtraLabel(file);
 	if(!extra.empty()) cmslab += " "+extra;	
-
+	
 	TString th1d("TH1D");
 	TString th2d("TH2D");
 	TString tgraph("TGraph");
