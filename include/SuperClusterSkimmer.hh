@@ -1547,21 +1547,21 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//243 - SC energy vs eta sig
 		TH2D* energy_etaSig = new TH2D("energy_etaSig","energy_etaSig;energy_etaSig;phiSig_late",25,0,1000.,25,0.01,0.09);
 		//244 - BH filter vs eta sig
-		TH2D* BHFilter_etaSig = new TH2D("BHFilter_etaSig","BHFilter_etaSig;BHFilter_etaSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		TH2D* BHFilter_etaSig = new TH2D("BHFilter_etaSig","BHFilter_etaSig;BHFilter_etaSig;etaSig",2,0,2.,25,0.01,0.09);
 		//245 - BH filter vs phi sig
-		TH2D* BHFilter_phiSig = new TH2D("BHFilter_phiSig","BHFilter_phiSig;BHFilter_phiSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		TH2D* BHFilter_phiSig = new TH2D("BHFilter_phiSig","BHFilter_phiSig;BHFilter_phiSig;phiSig",2,0,2.,25,0.01,0.09);
 		//246 - BH filter vs time sig
-		TH2D* BHFilter_timeSig = new TH2D("BHFilter_timeSig","BHFilter_timeSig;BHFilter_timeSig;phiSig_late",2,0,2.,25,0.01,0.09);
+		TH2D* BHFilter_timeSig = new TH2D("BHFilter_timeSig","BHFilter_timeSig;BHFilter_timeSig;timeSig",2,0,2.,25,0.01,0.09);
 		//247 - BH filter vs time center
-		TH2D* BHFilter_timeCenter = new TH2D("BHFilter_timeCenter","BHFilter_timeCenter;BHFilter_timeCenter;phiCenter_late",2,0,2.,25,-10,10);
+		TH2D* BHFilter_timeCenter = new TH2D("BHFilter_timeCenter","BHFilter_timeCenter;BHFilter_timeCenter;timeCenter",2,0,2.,25,-10,10);
 		//248 - BH filter vs phi center
-		TH2D* BHFilter_phiCenter = new TH2D("BHFilter_phiCenter","BHFilter_phiCenter;BHFilter_phiCenter;phiCenter_late",2,0,2.,25,-0.2,6.4);
+		TH2D* BHFilter_phiCenter = new TH2D("BHFilter_phiCenter","BHFilter_phiCenter;BHFilter_phiCenter;phiCenter",2,0,2.,25,-0.2,6.4);
 		//249 - BH filter vs eta center
-		TH2D* BHFilter_etaCenter = new TH2D("BHFilter_etaCenter","BHFilter_etaCenter;BHFilter_etaCenter;etaCenter_late",2,0,2.,25,-1.6,1.6);
+		TH2D* BHFilter_etaCenter = new TH2D("BHFilter_etaCenter","BHFilter_etaCenter;BHFilter_etaCenter;etaCenter",2,0,2.,25,-1.6,1.6);
 		//250 - BH filter vs etaPhi cov
-                TH2D* BHFilter_etaPhiCov = new TH2D("noEBHFilter_etaPhiCov","noEBHFilter_etaPhiCov;etaPhiCov;timeEtaCov",2,0,2,25,-1,1);
+                TH2D* BHFilter_etaPhiCov = new TH2D("BHFilter_etaPhiCov","BHFilter_etaPhiCov;etaPhiCov;timeEtaCov",2,0,2,25,-1,1);
 		//251 - BH filter vs timeEta cov	
-                TH2D* BHFilter_timeEtaCov = new TH2D("noEBHFilter_timeEtaCov","noEBHFilter_timeEtaCov;timeEtaCov;timeEtaCov",2,0,2,25,-1,1);
+                TH2D* BHFilter_timeEtaCov = new TH2D("BHFilter_timeEtaCov","BHFilter_timeEtaCov;timeEtaCov;timeEtaCov",2,0,2,25,-1,1);
 		
 		enum weightScheme{
 			noWeight = 0,
