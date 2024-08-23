@@ -2409,7 +2409,6 @@ cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALT
 				_procCats[id_idx].hists2D[1][238]->Fill(ep_cov, te_cov);
 				_procCats[id_idx].hists2D[1][239]->Fill(ep_cov, te_cov);
 			}
-		/*
 			if(tc >= -10 && tc < -2) _procCats[id_idx].hists2D[1][240]->Fill(e_var, p_var); 
 			if(tc >= -2 && tc < 2) _procCats[id_idx].hists2D[1][241]->Fill(e_var, p_var); 
 			if(tc >= 2 && tc < 10) _procCats[id_idx].hists2D[1][242]->Fill(e_var, p_var); 
@@ -2423,7 +2422,6 @@ cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALT
 			_procCats[id_idx].hists2D[1][249]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ec);
 			_procCats[id_idx].hists2D[1][250]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ep_cov);
 			_procCats[id_idx].hists2D[1][251]->Fill(_base->Flag_globalSuperTightHalo2016Filter, te_cov);
-			*/
 
 
 		}
