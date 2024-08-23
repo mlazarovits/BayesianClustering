@@ -1862,13 +1862,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			int bestTrackIdx = 999;
 			double dphi = -999;
 			double bestp_id = -999;
-			double best_de = -999;
+			double best_de = 999;
 			double bestdr_de, bestde_dr;
 			int trackidx;
+			double trackidx_phi;
 			//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
 			//there are multiple detIDs that match to one track
 			//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
-cout << "ntracks " << _base->ECALTrack_p->size() << " nids " << nIDs << endl;
+			/*
 			for(int id = 0; id < nIDs; id++){
 				//use TrackDetId to see where in ECAL track was propagated to
 				detid = _base->ECALTrackDetID_detId->at(id);
@@ -1889,7 +1890,7 @@ cout << "ntracks " << _base->ECALTrack_p->size() << " nids " << nIDs << endl;
 				//get track info from detid
 				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
 				//E = p for photons
-				de = (E_k - _base->ECALTrack_p->at(trackidx))/E_k;
+				de = fabs(E_k - _base->ECALTrack_p->at(trackidx))/E_k;
 				if(dr < bestTrackDr){
 					bestTrackDr = dr;
 					bestde_dr = de;
@@ -1899,47 +1900,15 @@ cout << "ntracks " << _base->ECALTrack_p->size() << " nids " << nIDs << endl;
 					best_de = de;
 					bestdr_de = dr;
 				}
+				trackidx_phi = _base->ECALTrack_phi->at(trackidx);
+				if(trackidx_phi < 0) trackidx_phi += 2*acos(-1);
+cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALTrack_eta->at(trackidx) << " phi " << trackidx_phi << " ieta " << ieta << " iphi " << iphi << " trackidx p " << _base->ECALTrack_p->at(trackidx) << " trackidx " << trackidx << " of " << _base->ECALTrack_nTracks << " tracks" << endl;
 			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
 			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best track idx " << bestTrackIdx << " p " << _base->ECALTrack_p->at(bestTrackIdx) << " best de overall " << best_de << " best dr from best de match " << bestdr_de << endl;
-			//ieta = -85;
-			//iphi = 1;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-			//
-			//
-			//ieta = 85;
-			//iphi = 360;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = -1;
-			//iphi = 180;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 90;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-	
-			//ieta = 1;
-			//iphi = 2;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 10;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 11;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-			
-
+			de = bestde_dr;
+		*/
 
 			obs.push_back(ec);
 			obs.push_back(pc);

@@ -89,7 +89,6 @@ void SuperClusterSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
 
-			if(_base->SuperCluster_ElectronIndx->at(scidx) == -1) continue;
 			cout << "sc photon matched?  " << _base->SuperCluster_PhotonIndx->at(scidx) << " electron matched " << _base->SuperCluster_ElectronIndx->at(scidx) << endl;
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
