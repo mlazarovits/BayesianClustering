@@ -1869,6 +1869,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//there are multiple detIDs that match to one track
 			//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
 cout << "ntracks " << _base->ECALTrack_p->size() << " nids " << nIDs << endl;
+			/*
 			for(int id = 0; id < nIDs; id++){
 				//use TrackDetId to see where in ECAL track was propagated to
 				detid = _base->ECALTrackDetID_detId->at(id);
@@ -1938,7 +1939,7 @@ cout << "ntracks " << _base->ECALTrack_p->size() << " nids " << nIDs << endl;
 			//iphi = 11;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
 			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-			
+			*/
 
 
 			obs.push_back(ec);
