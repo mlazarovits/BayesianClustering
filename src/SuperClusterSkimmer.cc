@@ -102,24 +102,27 @@ void SuperClusterSkimmer::Skim(){
 	
 			_swcross = swissCross(rhs);
 			vector<double> obs;				
-			FillModelHists(gmm, 0, obs);
-			FillCMSHists(rhs,0);
+			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
+			int id_idx = -999;
+			//skip "total" procCat for always separated hists
+			FillModelHists(gmm, 1, obs);
+			FillCMSHists(rhs,1);
 			//no separate categories for SCs - only fill "total" category
-			_procCats[0].hists1D[0][4]->Fill(_base->SuperCluster_energy->at(scidx));
-			_procCats[0].hists1D[0][226]->Fill(_base->SuperCluster_covEtaEta->at(scidx));
-			_procCats[0].hists1D[0][227]->Fill(_base->SuperCluster_covPhiPhi->at(scidx));
+			_procCats[1].hists1D[0][4]->Fill(_base->SuperCluster_energy->at(scidx));
+			_procCats[1].hists1D[0][226]->Fill(_base->SuperCluster_covEtaEta->at(scidx));
+			_procCats[1].hists1D[0][227]->Fill(_base->SuperCluster_covPhiPhi->at(scidx));
 		
-			_procCats[0].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
-			_procCats[0].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
-			_procCats[0].hists1D[0][228]->Fill(double(rhs.size()));
+			_procCats[1].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
+			_procCats[1].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
+			_procCats[1].hists1D[0][228]->Fill(double(rhs.size()));
 			if(_base->SuperCluster_energy->at(scidx) >= 0 && _base->SuperCluster_energy->at(scidx) < 200)
-				_procCats[0].hists1D[0][229]->Fill(rhs.size());
+				_procCats[1].hists1D[0][229]->Fill(rhs.size());
 			if(_base->SuperCluster_energy->at(scidx) >= 200 && _base->SuperCluster_energy->at(scidx) < 400)
-				_procCats[0].hists1D[0][230]->Fill(rhs.size());
+				_procCats[1].hists1D[0][230]->Fill(rhs.size());
 			if(_base->SuperCluster_energy->at(scidx) >= 400 && _base->SuperCluster_energy->at(scidx) < 600)
-				_procCats[0].hists1D[0][231]->Fill(rhs.size());
+				_procCats[1].hists1D[0][231]->Fill(rhs.size());
 			if(_base->SuperCluster_energy->at(scidx) >= 600 && _base->SuperCluster_energy->at(scidx) < 1000)
-				_procCats[0].hists1D[0][232]->Fill(rhs.size());
+				_procCats[1].hists1D[0][232]->Fill(rhs.size());
 
 			int label = GetTrainingLabel(scidx,gmm);
 			WriteObs(e,scidx,obs,label);
