@@ -1907,8 +1907,43 @@ cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALT
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
 			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best track idx " << bestTrackIdx << " p " << _base->ECALTrack_p->at(bestTrackIdx) << " best de overall " << best_de << " best dr from best de match " << bestdr_de << endl;
-			de = bestde_dr;
-		*/
+			//ieta = -85;
+			//iphi = 1;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+			//
+			//
+			//ieta = 85;
+			//iphi = 360;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = -1;
+			//iphi = 180;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 90;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+	
+			//ieta = 1;
+			//iphi = 2;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 10;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+
+			//ieta = 1;
+			//iphi = 11;
+			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
+			*/
+
 
 			obs.push_back(ec);
 			obs.push_back(pc);

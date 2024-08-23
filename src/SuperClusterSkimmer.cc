@@ -89,7 +89,6 @@ void SuperClusterSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
 
-			cout << "sc photon matched?  " << _base->SuperCluster_PhotonIndx->at(scidx) << " electron matched " << _base->SuperCluster_ElectronIndx->at(scidx) << endl;
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
@@ -98,7 +97,6 @@ void SuperClusterSkimmer::Skim(){
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(0);
-			
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	
