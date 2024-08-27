@@ -1945,7 +1945,38 @@ cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALT
 			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
-			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best track idx " << bestTrackIdx << " p " << _base->ECALTrack_p->at(bestTrackIdx) << " best de overall " << best_de << " best dr from best de match " << bestdr_de << endl;
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << endl;
+			*/
+			int nTracks = _base->ECALTrack_nTracks;
+			for(int t = 0; t < nTracks; t++){
+				double bestDr = 999;
+				for(int id = 0; id < nIDs; id++){
+					//multiple IDs matched to track
+					if(_base->ECALTrackDetID_trackIndex->at(id) != t) continue;
+					//use TrackDetId to see where in ECAL track was propagated to
+					detid = _base->ECALTrackDetID_detId->at(id);
+					//check if detid in map
+					if(_detIDmap.count(detid) == 0) continue;
+					iphi = _detIDmap[detid].i1;
+					ieta = _detIDmap[detid].i2;
+		
+					tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
+					teta = tcoords.first;
+					tphi = tcoords.second;			
+
+					dphi = fabs(tphi - pc_02pi);
+					dphi = acos(cos(dphi));
+	
+					dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
+					de = fabs(E_k - _base->ECALTrack_p->at(t))/E_k;
+					if(dr < bestTrackDr){
+						bestTrackDr = dr;
+						bestde_dr = de;
+					}
+									
+				}
+			}
+			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << endl;
 			//ieta = -85;
 			//iphi = 1;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
@@ -1981,7 +2012,6 @@ cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALT
 			//iphi = 11;
 			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
 			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-			*/
 
 
 			obs.push_back(ec);
