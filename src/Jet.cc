@@ -76,6 +76,7 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 
 	_idx = 999;
 	_set_time();
+	_ensure_valid_rap_phi();
 }
 
 
