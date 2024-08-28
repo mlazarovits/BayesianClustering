@@ -1592,9 +1592,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//260 - time vs BHF cluster size
 		TH2D* timeCenter_BHFClusterSize = new TH2D("timeCenter_BHFClusterSize","timeCenter_BHFClusterSize;timeCenter;BHFClusterSize",25,-15,15,15,0,15);
 		//261 - etaSig vs BHF cluster size
-		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize;etaSig;BHFClusterSize,25,0.01,0.09,15,0,15);
+		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize;etaSig;BHFClusterSize",25,0.01,0.09,15,0,15);
 		//262 - phiSig vs BHF cluster size	
-		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize;phiSig;BHFClusterSize,25,0.01,0.09,15,0,15);
+		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize;phiSig;BHFClusterSize",25,0.01,0.09,15,0,15);
 
 
 
