@@ -72,6 +72,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(genJetMass_recoGenPtRatio);
 
 		}
+		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;

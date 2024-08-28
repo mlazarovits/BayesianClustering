@@ -5,6 +5,7 @@ JetSimProducer::JetSimProducer(){
 	_gev = 1;
 	//_minobjeta = 1.5;
 	_recoptmin = 0;
+	_minrhE = 0.5;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -19,6 +20,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	//default to 1 GeV = 1 entry -> gev = 1
 	_gev = 1;
 	_recoptmin = 0;
+	_minrhE = 0.5;
 	//_minobjeta = 1.5;
 	
 }
@@ -49,6 +51,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		///timecorr = drh - dpv;
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
 		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
 		
@@ -88,6 +91,8 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		///timecorr = drh - dpv;
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
+	
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
 		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
 		
@@ -188,3 +193,4 @@ void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
 	vtx.SetValue(_base->PV_z,2);
 
 }
+

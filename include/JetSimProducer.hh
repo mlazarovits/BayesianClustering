@@ -21,11 +21,12 @@ class JetSimProducer{
 		void SetTransferFactor(double g){ _gev = g; }
 
 		void SetRecoPtMin(double pt){_recoptmin = pt; }
+		void SetMinRhE(double r){ _minrhE = r; }
 
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
-		double _recoptmin;
+		double _recoptmin, _minrhE;
 };
 #endif

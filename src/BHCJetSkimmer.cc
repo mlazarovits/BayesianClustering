@@ -84,7 +84,6 @@ void BHCJetSkimmer::Skim(){
 	
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
-continue; //only doing det validation rn dont worry abt algo
 		cout << "Clustering..." << endl;	
 		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
