@@ -24,8 +24,6 @@ int main(int argc, char *argv[]){
 	vector<vector<JetPoint>> ems;
 	int nevts = 1;
 	int evt = 0;
-	int evti = 0;
-	int evtj = 0;
 	int verb = 0;
 	bool hprint = false;
 	bool pu = false;
@@ -93,14 +91,6 @@ int main(int argc, char *argv[]){
 			i++;
     	 		spikeProb = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--evtFirst", 6) == 0){
-                        i++;
-                        evti = std::atoi(argv[i]);
-                }
-                if(strncmp(argv[i],"--evtLast", 6) == 0){
-                        i++;
-                        evtj = std::atoi(argv[i]);
-                }
 		if(strncmp(argv[i],"--energyCte", 11) == 0){
 			i++;
     	 		energy_c = std::stod(argv[i]);
@@ -170,12 +160,6 @@ int main(int argc, char *argv[]){
 		cout << "and pileup " << endl;
 		oname += "_PU";
 	}
-       //make sure evti < evtj
-       if(evti > evtj){
-       	int evt = evtj;
-       	evtj = evti;
-       	evti = evt;
-       }
 
 
 	//consider doing det from pythia cmnd card
@@ -184,7 +168,6 @@ int main(int argc, char *argv[]){
 	//for reconstructing rechits
 	det.SetEnergyThreshold(0.);
 	det.SetVerbosity(verb);
-	det.SetEventRange(evti,evtj);
 	det.SetEnergySmear(energy_c);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
