@@ -1590,11 +1590,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//259 - etaPhiCov vs timeEtaCov vs cluster pass
 		TH2D* etaPhiCov_timeEtaCov_passClusterSize = new TH2D("etaPhiCov_timeEtaCov_passClusterSize","etaPhiCov_timeEtaCov_passClusterSize;etaPhiCov_passClusterSize;timeEtaCov_passClusterSize",25,-1,1,25,-1,1);
 		//260 - time vs BHF cluster size
-		TH2D* timeCenter_BHFClusterSize = new TH2D("timeCenter_BHFClusterSize","timeCenter_BHFClusterSize",25,-15,15,15,0,15);
+		TH2D* timeCenter_BHFClusterSize = new TH2D("timeCenter_BHFClusterSize","timeCenter_BHFClusterSize;timeCenter;BHFClusterSize",25,-15,15,15,0,15);
 		//261 - etaSig vs BHF cluster size
-		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize",25,0.01,0.09,15,0,15);
+		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize;etaSig;BHFClusterSize,25,0.01,0.09,15,0,15);
 		//262 - phiSig vs BHF cluster size	
-		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize",25,0.01,0.09,15,0,15);
+		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize;phiSig;BHFClusterSize,25,0.01,0.09,15,0,15);
 
 
 
