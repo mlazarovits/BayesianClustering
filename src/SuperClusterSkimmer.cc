@@ -69,6 +69,11 @@ void SuperClusterSkimmer::Skim(){
 	_timeoffset = 0;
 	_swcross = 0;
 	int scidx;
+	vector<JetPoint> bhRhs;
+	double BHclusterPass = 0;
+	double BHclusterFail = 0;
+	double BHPass = 0;
+	double BHFail = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		_prod->GetTrueSuperClusters(scs, e, _gev);
@@ -76,7 +81,8 @@ void SuperClusterSkimmer::Skim(){
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
 		pvz = _base->PV_z;
-		
+	
+			
 		int nSC = scs.size();
 		//loop over selected scs
 		for(int s = 0; s < nSC; s++){
@@ -100,7 +106,43 @@ void SuperClusterSkimmer::Skim(){
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	
+			//make swiss cross
 			_swcross = swissCross(rhs);
+			//make BH filter
+			_clusterSize = MakeBHFilterCluster(scs[s],bhRhs);
+			if(_clusterSize <= 3) _BHcluster = false;
+			else if(_clusterSize >= 6) _BHcluster = true;
+			else{
+				double td = BHTimeDiscriminant(bhRhs);
+				if(_clusterSize == 4){
+					//make sure seed > 10 GeV
+					double maxE = 0;
+					for(auto rh : bhRhs){
+						if(rh.E() > maxE) maxE = rh.E();
+					}
+					if(maxE <= 10) _BHcluster = false;
+					else{
+						if(!BHclusterIso(bhRhs)) _BHcluster = false;
+						else{
+							if(td < 0) _BHcluster = true;
+							else _BHcluster = false;
+						}
+					}
+					//cout << "clustersize 4 - maxE " << maxE << " iso " << BHclusterIso(bhRhs) << " td " << td << " ~BH " << _BHcluster << endl;
+				}
+				if(_clusterSize == 5){
+					if(td < 0) _BHcluster = true;
+					else _BHcluster = false;
+				}
+			}
+			if(!_base->Flag_globalSuperTightHalo2016Filter){
+				BHFail++;
+				if(_BHcluster) BHclusterPass++;
+				else BHclusterFail++;
+			}
+			else BHPass++;
+		//if(_clusterSize > 3) cout << "~BH " << _BHcluster << " cluster size " << _clusterSize << " true BH filter " << _base->Flag_globalSuperTightHalo2016Filter << endl;
+		
 			vector<double> obs;				
 			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 			int id_idx = -999;
@@ -135,7 +177,7 @@ void SuperClusterSkimmer::Skim(){
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
 	_csvfile.close();
-
+	cout << "Total events that passed " << BHPass << " failed BH Filter " << BHFail << "\% events that passed cluster selection " << BHclusterPass/BHFail << " and \% of events that failed cluster selection given (for both) that the event failed the BH filter " << BHclusterFail/BHFail << endl;
 }
 
 

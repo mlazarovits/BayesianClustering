@@ -540,6 +540,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(BHFilter_etaCenter);
                 	_hists2D.push_back(BHFilter_etaPhiCov);
                 	_hists2D.push_back(BHFilter_timeEtaCov);
+			_hists2D.push_back(timeCenter_etaCenter_failBHF_passClusterSize);
+			_hists2D.push_back(etaPhiCov_timeEtaCov_failBHF_passClusterSize);
+			_hists2D.push_back(etaSig_phiSig_failBHF_passClusterSize);
+			_hists2D.push_back(etaSig_phiSig_failBHF_passClusterSize_early);
+			_hists2D.push_back(etaSig_phiSig_failBHF_passClusterSize_late);
+			_hists2D.push_back(timeCenter_etaCenter_passClusterSize);
+			_hists2D.push_back(phiSig_phiCenter_passClusterSize);
+			_hists2D.push_back(etaPhiCov_timeEtaCov_passClusterSize);
+			_hists2D.push_back(timeCenter_BHFClusterSize);
+			_hists2D.push_back(etaSig_BHFClusterSize);
+			_hists2D.push_back(phiSig_BHFClusterSize);
 
 		};
 	
@@ -1562,7 +1573,33 @@ class SuperClusterSkimmer : public BaseSkimmer{
                 TH2D* BHFilter_etaPhiCov = new TH2D("BHFilter_etaPhiCov","BHFilter_etaPhiCov;etaPhiCov;timeEtaCov",2,0,2,25,-1,1);
 		//251 - BH filter vs timeEta cov	
                 TH2D* BHFilter_timeEtaCov = new TH2D("BHFilter_timeEtaCov","BHFilter_timeEtaCov;timeEtaCov;timeEtaCov",2,0,2,25,-1,1);
-		
+		//252 - time vs eta for csc fail (!BH && clusterPass)
+		TH2D* timeCenter_etaCenter_failBHF_passClusterSize = new TH2D("timeCenter_etaCenter_failBHF_passClusterSize","timeCenter_etaCenter_failBHF_passClusterSize;timeCenter;etaCenter_failBHF_passClusterSize",25,-15,15,25,-1.6,1.6);
+		//253 - etaPhiCov vs timeEtaCov for csc fail
+		TH2D* etaPhiCov_timeEtaCov_failBHF_passClusterSize = new TH2D("etaPhiCov_timeEtaCov_failBHF_passClusterSize","etaPhiCov_timeEtaCov_failBHF_passClusterSize;etaPhiCov_failBHF_passClusterSize;timeEtaCov_failBHF_passClusterSize",25,-1,1,25,-1,1);
+		//254 - etaSig vs phiSig for csc fail
+		TH2D* etaSig_phiSig_failBHF_passClusterSize = new TH2D("etaSig_phiSig_failBHF_passClusterSize","etaSig_phiSig_failBHF_passClusterSize;etaSig;phiSig_failBHF_passClusterSize",25,0.01,0.09,25,0.01,0.09);
+		//255 - etaSig vs phiSig for csc fail (early)
+		TH2D* etaSig_phiSig_failBHF_passClusterSize_early = new TH2D("etaSig_phiSig_failBHF_passClusterSize_early","etaSig_phiSig_failBHF_passClusterSize_early;etaSig;phiSig_failBHF_passClusterSize_early",25,0.01,0.09,25,0.01,0.09);
+		//256 - etaSig vs phiSig for csc fail (late)
+		TH2D* etaSig_phiSig_failBHF_passClusterSize_late = new TH2D("etaSig_phiSig_failBHF_passClusterSize_late","etaSig_phiSig_failBHF_passClusterSize_late;etaSig;phiSig_failBHF_passClusterSize_late",25,0.01,0.09,25,0.01,0.09);
+		//257 - time vs eta for cluster pass	
+		TH2D* timeCenter_etaCenter_passClusterSize = new TH2D("timeCenter_etaCenter_passClusterSize","timeCenter_etaCenter_passClusterSize;timeCenter;etaCenter_passClusterSize",25,-15,15,25,-1.6,1.6);
+		//258 - phi sig vs phi center for cluster pass
+		TH2D* phiSig_phiCenter_passClusterSize = new TH2D("phiSig_phiCenter_passClusterSize","phiSig_phiCenter;phiSig_passClusterSize;phiCenter",25,0.01,0.09,25,-0.2,6.4);
+		//259 - etaPhiCov vs timeEtaCov vs cluster pass
+		TH2D* etaPhiCov_timeEtaCov_passClusterSize = new TH2D("etaPhiCov_timeEtaCov_passClusterSize","etaPhiCov_timeEtaCov_passClusterSize;etaPhiCov_passClusterSize;timeEtaCov_passClusterSize",25,-1,1,25,-1,1);
+		//260 - time vs BHF cluster size
+		TH2D* timeCenter_BHFClusterSize = new TH2D("timeCenter_BHFClusterSize","timeCenter_BHFClusterSize",25,-15,15,15,0,15);
+		//261 - etaSig vs BHF cluster size
+		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize",25,0.01,0.09,15,0,15);
+		//262 - phiSig vs BHF cluster size	
+		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize",25,0.01,0.09,15,0,15);
+
+
+
+
+
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
@@ -1597,7 +1634,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		void SetThresh(double t){ _thresh = t; }
 		void SetBHCAlpha(double a){ _alpha = a; }
 		void SetEMAlpha(double a){ _emAlpha = a; }
-		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross; 
+		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross;
+		bool _BHcluster;
+		int _clusterSize;
 		void ApplyFractions(bool a){ _applyFrac = a; if(_applyFrac) cout << "Applying RH fractions" << endl; }
 		bool _applyFrac;
 		void SetBeamHaloFilter(int bh){ _prod->SetBeamHaloFilter(bh); }
@@ -2450,8 +2489,23 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][249]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ec);
 			_procCats[id_idx].hists2D[1][250]->Fill(_base->Flag_globalSuperTightHalo2016Filter, ep_cov);
 			_procCats[id_idx].hists2D[1][251]->Fill(_base->Flag_globalSuperTightHalo2016Filter, te_cov);
-
-
+			if(_BHcluster){
+				if(!_base->Flag_globalSuperTightHalo2016Filter && _BHcluster){
+					_procCats[id_idx].hists2D[1][252]->Fill(tc,ec);
+					_procCats[id_idx].hists2D[1][253]->Fill(ep_cov,te_cov);
+					_procCats[id_idx].hists2D[1][254]->Fill(e_var,p_var);
+					if(tc > 0)
+						_procCats[id_idx].hists2D[1][255]->Fill(e_var,p_var);
+					else
+						_procCats[id_idx].hists2D[1][256]->Fill(e_var,p_var);
+				}
+				_procCats[id_idx].hists2D[1][257]->Fill(tc,ec);
+				_procCats[id_idx].hists2D[1][258]->Fill(p_var,pc);
+				_procCats[id_idx].hists2D[1][259]->Fill(ep_cov,te_cov);
+				_procCats[id_idx].hists2D[1][260]->Fill(tc,_clusterSize);
+				_procCats[id_idx].hists2D[1][261]->Fill(e_var,_clusterSize);
+				_procCats[id_idx].hists2D[1][262]->Fill(p_var,_clusterSize);
+			}
 		}
 
 
@@ -3312,6 +3366,93 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		_csvfile << "," << label << endl;
 	}
 
+	//return BH cluster size, rhs to use in time discriminant
+	int MakeBHFilterCluster(Jet& sc, vector<JetPoint>& bh_rhs){
+		bh_rhs.clear();
+		//get rhs
+		vector<JetPoint> rhs = sc.GetJetPoints();
+		//find seed xtal
+		double maxE = 0;
+		pair<int, int> iSeed; //ieta, iphi of seed
+		unsigned int seedId;
+		for(int i = 0; i < rhs.size(); i++){
+			if(rhs[i].E() > maxE){
+				maxE = rhs[i].E();
+				iSeed = make_pair(_detIDmap[rhs[i].rhId()].i2, _detIDmap[rhs[i].rhId()].i1);
+				seedId = rhs[i].rhId();
+			}
+		}
+		//seed must be at least 5 GeV
+		if(maxE < 5) return -1;
+		//build SC band
+		double deta = acos(-1)/180;
+		double dphi = acos(-1)/180;
+		double maxEta = 0.4;
+		double maxPhi = 0.16;
 
-};
+		int maxiEta = round(maxEta/deta);
+		int maxiPhi = round(maxPhi/dphi); 
+
+		unsigned int rhid;
+		int ieta, iphi;
+		int nRhs = 0;
+		for(int i = 0; i < rhs.size(); i++){
+			rhid = rhs[i].rhId();
+			//skip seed
+			if(rhid == seedId) continue;
+			//check if rh is in grid
+			ieta = _detIDmap[rhid].i2;
+			iphi = _detIDmap[rhid].i1;
+			if(fabs(ieta - iSeed.first) > maxiEta/2) continue;
+			if(fabs(iphi - iSeed.second) > maxiPhi/2) continue;
+			//if in grid, check that meets energy threshold
+			if(rhs[i].E() <= 1) continue;
+			//make sure no rhs with E too high is found on outer phi edges
+			if(fabs(iphi - iSeed.second) > 1){
+				if(rhs[i].E() > 2) continue;
+			}
+			//grab rhs in central and neighbor bands for time discriminant
+			if(fabs(iphi - iSeed.second < 2)) bh_rhs.push_back(rhs[i]);
+			//get cluster size from central band
+			if(fabs(iphi - iSeed.second == 0) && rhs[i].E() > 2) nRhs++;
+		}
+		return nRhs;
+	}	
+	double BHTimeDiscriminant(vector<JetPoint>& rhs){
+		double td = 0;
+		double fsep;
+		int ieta;
+		for(auto rh : rhs){
+			ieta = _detIDmap[rh.rhId()].i2;
+			fsep = -0.5 * (sqrt( 130*130 + 9*ieta*ieta) - 3*ieta)/30;
+			td += (rh.t() - fsep)*log10(rh.E());
+		}
+		return td;
+	}
+
+	bool BHclusterIso(vector<JetPoint>& rhs){
+		unsigned int rhid, seedId;
+		int ieta, iphi;
+		//find seed xtal
+		double maxE = 0;
+		pair<int, int> iSeed; //ieta, iphi of seed
+		for(int i = 0; i < rhs.size(); i++){
+			if(rhs[i].E() > maxE){
+				maxE = rhs[i].E();
+				iSeed = make_pair(_detIDmap[rhs[i].rhId()].i2, _detIDmap[rhs[i].rhId()].i1);
+				seedId = rhs[i].rhId();
+			}
+		}
+		for(int i = 0; i < rhs.size(); i++){
+			rhid = rhs[i].rhId();
+			//check if rh is in grid
+			ieta = _detIDmap[rhid].i2;
+			iphi = _detIDmap[rhid].i1;
+			//if any rhs in neighbor bands, return false (failed isolation) 
+			if(fabs(iphi - iSeed.second == 1)) return false;
+		}
+		return true;
+	}
+
+};		
 #endif
