@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
+   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
    		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
