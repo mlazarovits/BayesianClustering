@@ -64,10 +64,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(jetGenE_sigmaDeltaPt_recoGen);
 			_hists1D.push_back(recoGen_nJets);
 			_hists1D.push_back(recoGen_jetPtRatio);
+			_hists1D.push_back(recoGen_jetERatio);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
+			_hists2D.push_back(genJetMass_recoGenPtRatio);
 
 		}
 		void Skim();
@@ -165,48 +167,13 @@ class BHCJetSkimmer{
 
 		}
 
-
-		/*
-		void MatchJetsToTracks(){
-			int nTracks = _base->Track_px->size();
-			cout << "nTracks " << nTracks << endl;
-			int nConsts; //# of constituents
-			for(int j = 0; j < _predJets.size(); j++){
-				vector<Jet>& consts = _predJets[j].GetConstituents();
-				for(int c = 0; c < consts.size(); c++){
-					//consider putting a minimum dR cut on subcluster/track matching
-					double drmin = 999;
-					double dr;
-					int bestIdx;
-					for(int t = 0; t < nTracks; t++){
-						//find min dR bw constituent and track
-						//may want to do a momentum or energy matching too
-						dr = dR(consts[c].eta(), consts[c].phi(), _base->Track_eta->at(t), _base->Track_phi->at(t));
-						if(dr < drmin){ drmin = dr; bestIdx = t; }
-					}
-					cout << "jet #" << j << " eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " E " << _predJets[j].E() << " constituent #" << c << " eta " << consts[c].eta() << " phi " << consts[c].phi() << " E " << consts[c].E() << " best track match track #" << bestIdx << " with dR " << drmin << endl;
-					//cout << "jet #" << j << " eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " E " << _predJets[j].E() << " constituent #" << c << " eta " << subcl.eta() << " phi " << subcl.phi() << " E " << subcl.E() << " best track match track #" << bestIdx << " with dR " << drmin << endl;
-					//set momentum of constituent based on track momentum
-					consts[c].SetP(_base->Track_px->at(bestIdx), _base->Track_py->at(bestIdx), _base->Track_pz->at(bestIdx));
-					//cout << "consts #" << c << " px " << consts[c].px() << " py " << consts[c].py() << " pz " << consts[c].pz() << endl;
-				}
-				//set momentum of jet to sum of constituents
-				cout << "Nconsts " << _predJets[j].GetNConstituents() << endl;
-				_predJets[j].SetP();
-				cout << "jet #" << j << " px " << _predJets[j].px() << " py " << _predJets[j].py() << " pz " << _predJets[j].pz() << " mass " << _predJets[j].mass() << " energy " << _predJets[j].E() << endl;
-			}
-
-
-		}
-		*/
-	
 		void FillPredJetHists(){
 			int njets;
 			for(int p = 0; p < _procCats.size(); p++){
-				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _predJets.size();
 				for(int j = 0; j < _predJets.size(); j++){
-					//cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+					cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
 					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
@@ -261,7 +228,9 @@ class BHCJetSkimmer{
 					_procCats[p].hists2D[0][1]->Fill(_genjets[bestIdx].E(), _recojets[j].pt() - _genjets[bestIdx].pt());
 					//cout << "hist has " << _procCats[p].hists2D[0][1]->GetEntries() << " entries" << endl;
 					_procCats[p].hists1D[0][25]->Fill(_recojets[j].pt()/_genjets[bestIdx].pt());
+					_procCats[p].hists1D[0][26]->Fill(_recojets[j].e()/_genjets[bestIdx].e());
 					_procCats[p].hists2D[0][2]->Fill(_genjets[bestIdx].pt(), _recojets[j].pt());
+					_procCats[p].hists2D[0][3]->Fill(_genjets[bestIdx].mass(), _recojets[j].pt()/_genjets[bestIdx].pt());
 				}
 				//predicted jets
 				for(int j = 0; j < _predJets.size(); j++){
@@ -637,13 +606,16 @@ class BHCJetSkimmer{
 		TH1D* recoGen_nJets = new TH1D("recoGen_diffNJets","recoGen_diffNJets",20,-10,10);
 		//25 - reco jet pt/gen jet pt
 		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,0,1.5);
-		
+		//26 - reco jet e - gen jet e		
+		TH1D* recoGen_jetERatio = new TH1D("recoGen_jetERatio","recoGen_jetERatio",20,-10,10);
 
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",4,&xbins_recoGenPt[0],50,-50,50);
 		//2 - 2D histogram of gen pT vs reco pT
 		TH2D* genPt_recoPt = new TH2D("genPt_recoPt","genPt_recoPt;genpt;recopt",50,5,50,50,5,50);
+		//3 - gen jet mass vs reco/gen pt
+		TH2D* genJetMass_recoGenPtRatio = new TH2D("genJetMass_recoGenPtRatio","genJetMass_recoGenPtRatio",20,0,10,20,0.8,1.2);
 	
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }

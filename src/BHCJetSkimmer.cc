@@ -118,8 +118,6 @@ continue; //only doing det validation rn dont worry abt algo
 		FillModelHists();	
 		//transform trees (nodes) to jets
 		TreesToJets();
-		//match jets to tracks to get momentum information
-		//MatchJetsToTracks();
 		//fill pred jet hists with jets
 		FillPredJetHists();
 	}
