@@ -186,6 +186,8 @@ int main(int argc, char *argv[]){
 		gev_string.replace(idx,1,"p");	
 		oname += "_NperGeV"+gev_string;
 
+		if(strat == 0) oname += "_NlnN";
+		else oname += "_N2";
 
 		oname += ".root";
 	}
