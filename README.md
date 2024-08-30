@@ -99,6 +99,7 @@ There are muliple visualization classes:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
 		- needs to be run in python2 because on the LPC in CMSSW_10_X_X PyROOT is not available in python3
 - run the python scripts and submit scripts from the condor folder
+- to combine CSV files for MVA inputs, run `source combineCSVs.h` from the `condor/` folder, passing the directory to the `out/*.csv` path as a positional argument
 
 ### Use as an external package
 - make sure `lib/libBayesianClustering.so` exists
