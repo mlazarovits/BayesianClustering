@@ -86,7 +86,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+args.strategy
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+args.strategy
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
@@ -122,7 +122,7 @@ def main():
 	parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
 	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
 	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
-	parser.add_argument('--gev',help='energy transfer factor',default=1/10)
+	parser.add_argument('--gev',help='energy transfer factor',default='1/10')
 	parser.add_argument('--minpt',help='min object pt',default=10.)
 	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
 	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
