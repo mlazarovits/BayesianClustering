@@ -169,8 +169,11 @@ void SuperClusterSkimmer::Skim(){
 			if(_base->SuperCluster_energy->at(scidx) >= 600 && _base->SuperCluster_energy->at(scidx) < 1000)
 				_procCats[1].hists1D[0][232]->Fill(rhs.size());
 
-			int label = GetTrainingLabel(scidx,gmm);
-			WriteObs(e,scidx,obs,label);
+			int ncl = gmm->GetNClusters();
+			for(int c = 0; c < ncl; c++){
+				int label = GetTrainingLabel(scidx,c,gmm);
+				WriteObs(e,scidx,c,obs,label);
+			}
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		}
 	}

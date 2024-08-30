@@ -3324,24 +3324,31 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 
-	//labels
-	//unmatched = -1
-	//signal = 0
-	//spikes = 1
-	//beam halo = 2
-	//photons should be 1:1 with subclusters (1 subcluster per photon)
-	int GetTrainingLabel(int nsc, BasePDFMixture* gmm){
+	int GetTrainingLabel(int nsc, int ncl, BasePDFMixture* gmm){
 		//labels
 		//unmatched = -1
 		//signal = 0
 		//!signal = 1 
-		//spike = 2
-		//BH = 3
+		//BH = 2
+		//spike = 3
+	
+		double ec, pc, tc;
+		auto params = gmm->GetPriorParameters(ncl);
+		ec = params["mean"].at(0,0);
+		pc = params["mean"].at(1,0);
+		tc = params["mean"].at(2,0);
+		//for BH definition
+		bool pcFilter, tcFilterEarly, tcFilterPrompt;
+		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
+		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+		//early times
+		tcFilterEarly = tc <= -2;
+		tcFilterPrompt = (-2 < tc && tc < 2);
 		
 		int label = -1;
 		//signal
 		if(!_data){
-			//find photon associated with super cluster
+			//find photon associated with subcluster
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nsc);
 			//matched to photon
 			if(phoidx != -1){
@@ -3362,8 +3369,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		else{
 			//do track matching for spikes
 		
-			//do eta-time curve for BH
-			label = -1;
+			//early times, phi left/right for BH
+			//if subcl is BH
+			if(pcFilter && tcFilterEarly)	
+				label = 2;
+			//if subcl is not BH
+			if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
+				label = 1;
 		}
 
 		return label;
@@ -3375,16 +3387,26 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	string _csvname;
 	ofstream _csvfile;
 	void SetObs(){
-		_csvfile << "Event,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
+		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
 
 	}
 
-	void WriteObs(int evt, int npho, vector<double> inputs, int label){
-		_csvfile << evt << "," << npho;
+	void WriteObs(int evt, int sc, int ncl, vector<double> inputs, int label){
+		string samp = "";
+		if(_oname.find("MET") != string::npos)
+			samp = "METPD";
+		else if(_oname.find("JetHT") != string::npos)
+			samp = "JetHTPD";
+		else if(_oname.find("GMSB") != string::npos){
+			samp = _oname.substr(_oname.find("GMSB"),_oname.find("cm") - _oname.find("GMSB") + 2);
+		}
+		else if(_oname.find("GJets") != string::npos)
+			samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
+		else samp = "notFound";
+		_csvfile << samp << "," << evt << "," << sc << "," << ncl;
 		for(auto d : inputs)
 			_csvfile << "," << d;
 
-		//_csvfile << ", " << proc << endl;
 		_csvfile << "," << label << endl;
 	}
 
