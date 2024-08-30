@@ -74,6 +74,7 @@ void SuperClusterSkimmer::Skim(){
 	double BHclusterFail = 0;
 	double BHPass = 0;
 	double BHFail = 0;
+	int nscran = 0;	
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		_prod->GetTrueSuperClusters(scs, e, _gev);
@@ -93,6 +94,7 @@ void SuperClusterSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
+
 
 
 			BayesCluster *algo = new BayesCluster(rhs);
@@ -149,6 +151,7 @@ void SuperClusterSkimmer::Skim(){
 			//skip "total" procCat for always separated hists
 			FillModelHists(gmm, 1, obs);
 			FillCMSHists(rhs,1);
+			nscran++;
 			//no separate categories for SCs - only fill "total" category
 			_procCats[1].hists1D[0][4]->Fill(_base->SuperCluster_energy->at(scidx));
 			_procCats[1].hists1D[0][226]->Fill(_base->SuperCluster_covEtaEta->at(scidx));
@@ -174,10 +177,11 @@ void SuperClusterSkimmer::Skim(){
 	cout << "\n" << endl;
 	ofile->WriteTObject(objE_clusterE);
 	WriteHists(ofile);
+	cout << "Ran over " << nscran << " superclusters" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
 	_csvfile.close();
-	cout << "Total events that passed " << BHPass << " failed BH Filter " << BHFail << "\% events that passed cluster selection " << BHclusterPass/BHFail << " and \% of events that failed cluster selection given (for both) that the event failed the BH filter " << BHclusterFail/BHFail << endl;
+	cout << "Total events that passed " << BHPass << " failed BH Filter " << BHFail << " \% events that passed cluster selection " << BHclusterPass/BHFail << "\% and \% of events that failed cluster selection given (for both) that the event failed the BH filter " << BHclusterFail/BHFail << "\%" << endl;
 }
 
 

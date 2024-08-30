@@ -551,6 +551,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(timeCenter_BHFClusterSize);
 			_hists2D.push_back(etaSig_BHFClusterSize);
 			_hists2D.push_back(phiSig_BHFClusterSize);
+			_hists2D.push_back(etaPhi_overlaidsubcl);
+			_hists2D.push_back(etaPhi_overlaidsubcl_BHsample);
+			_hists2D.push_back(etaPhi_overlaidsubcl_notBHsample);
 
 		};
 	
@@ -1595,7 +1598,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* etaSig_BHFClusterSize = new TH2D("etaSig_BHFClusterSize","etaSig_BHFClusterSize;etaSig;BHFClusterSize",25,0.01,0.09,15,0,15);
 		//262 - phiSig vs BHF cluster size	
 		TH2D* phiSig_BHFClusterSize = new TH2D("phiSig_BHFClusterSize","phiSig_BHFClusterSize;phiSig;BHFClusterSize",25,0.01,0.09,15,0,15);
-
+		//263 - eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
+		//deta = dphi = pi/180 -> etamax = deta * nbins / 2 = -etamin
+		TH2D* etaPhi_overlaidsubcl = new TH2D("etaPhi_overlaidsubcl","etaPhi_overlaidsubcl;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
+		//264 - BH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
+		TH2D* etaPhi_overlaidsubcl_BHsample = new TH2D("etaPhi_overlaidsubcl_BHsample","etaPhi_overlaidsubcl_BHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
+		//265 - notBH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
+		TH2D* etaPhi_overlaidsubcl_notBHsample = new TH2D("etaPhi_overlaidsubcl_notBHsample","etaPhi_overlaidsubcl_notBHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 
 
 
@@ -1810,13 +1819,26 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			pi = params["pi"].at(0,0);
 			cov = params["cov"];	
 
-			//distance from xmax to mean_k
-			///double dist = 0;
-			///for(int d = 0; d < xmax.Dim(); d++)
-			///	dist += (xmax.at(d) - params["mean"].at(d,0))*(xmax.at(d) - params["mean"].at(d,0));
-			///dist = sqrt(dist);
-			///
-			///cout << "wmax " << wmax << " norms_k " << norms[k] << " Nk/wmax " << -(swCP-1) << " wmax/Nk " << wmax/norms[k] << " E_k " << E_k << " Emax " << wmax/_gev << " distance to mean " << dist << " wmax/Nk * (1/dist) " << wmax/(norms[k]*dist) << endl;
+			//defining requirements for BH subclusters
+			bool pcFilter, tcFilterEarly, tcFilterPrompt;
+			//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
+			pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+			//early times
+			tcFilterEarly = tc <= -2;
+			tcFilterPrompt = (-2 < tc && tc < 2);
+			//fill 2D SC eta-phi map - centered on subcluster, weighted by energy 
+			for(int r = 0; r < npts; r++){
+				//cout << "r " << r << " x " << points->at(r).at(0) - ec << " y " << points->at(r).at(1) - pc << " w " << points->at(r).w()/_gev << endl;
+				_procCats[id_idx].hists2D[1][263]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
+				//if subcl is BH: fill 264
+				if(pcFilter && tcFilterEarly)	
+					_procCats[id_idx].hists2D[1][264]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
+				//if subcl is not BH: fill 265
+				if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
+					_procCats[id_idx].hists2D[1][265]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
+
+
+			}
 			//eta - time sign convention
 			//define relative sign for eta and time components
 			//based on where the cluster is in the detector
@@ -1942,7 +1964,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
-			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best p " << _base->ECALTrack_p->at(bestTrackIdx) << endl;
+			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best p " << _base->ECALTrack_p->at(bestTrackIdx) << endl;
 			/*
 			int nTracks = _base->ECALTrack_nTracks;
 			for(int t = 0; t < nTracks; t++){
