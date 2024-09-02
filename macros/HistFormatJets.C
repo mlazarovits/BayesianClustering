@@ -103,7 +103,10 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	int offset = 1;
 	//default
 	if(pf == 0){
-		labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		//labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
+		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
+		labelToColor["c#tau = 1000"] = TColor::GetColor("#39A2AE");
 		labelToColor["notSunm"] = TColor::GetColor("#9e0059");
 		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["QCD"] =   TColor::GetColor("#f6ae2d");
@@ -140,7 +143,10 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//procStack formatting
 	if(pf == 1){
 		labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
-		labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		//labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
+		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
+		labelToColor["c#tau = 1000"] = TColor::GetColor("#39A2AE");
 		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["QCD"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
@@ -272,6 +278,7 @@ cout << "title " << xtit << endl;
 				break;
 			}
 			else col = 1;
+			if(match.find("chiGam") != string::npos) cout << "legentry " << legentry << " match " << match << " col " << col << endl;
 		}
 		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
 			string match = it->first;
