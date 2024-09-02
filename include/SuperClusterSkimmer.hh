@@ -3323,6 +3323,35 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 
+	//recreate R9 variable
+	double sc3x3E(vector<JetPoint>& rhs){
+		//find seed xtal
+		double maxE = 0;
+		JetPoint seed;
+		for(auto rh : rhs){
+			if(rh.E() > maxE){ seed = rh; maxE = seed.E(); } 
+		}
+		//find 3x3 grid centered on xmax
+		int detid = seed.rhId();
+		int ieta = _detIDmap[detid].i2;
+		int iphi = _detIDmap[detid].i1;
+		double gridE = 0;
+			
+		int id, ie, ip, ide, idp;
+		for(auto rh : rhs){
+			id = rh.rhId();
+			ie = _detIDmap[detid].i2;
+			ip = _detIDmap[detid].i1;
+			ide = ieta - ie;
+			idp = iphi - ip;
+			if(fabs(ide) < 2 && fabs(idp) < 2){
+				gridE += rh.E();
+			}
+		}
+		cout << "gridE " << gridE << " seed E " << maxE << endl;
+		return gridE;	
+	}
+
 
 	int GetTrainingLabel(int nsc, int ncl, BasePDFMixture* gmm){
 		//labels
@@ -3387,7 +3416,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	string _csvname;
 	ofstream _csvfile;
 	void SetObs(){
-		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
+		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,label" << endl;
 
 	}
 
