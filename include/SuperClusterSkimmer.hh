@@ -3393,16 +3393,30 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 	void WriteObs(int evt, int sc, int ncl, vector<double> inputs, int label){
 		string samp = "";
-		if(_oname.find("MET") != string::npos)
-			samp = "METPD";
-		else if(_oname.find("JetHT") != string::npos)
-			samp = "JetHTPD";
-		else if(_oname.find("GMSB") != string::npos){
-			samp = _oname.substr(_oname.find("GMSB"),_oname.find("cm") - _oname.find("GMSB") + 2);
+		if(_oname.find("condor") == string::npos){
+			if(_oname.find("MET") != string::npos)
+				samp = "METPD";
+			else if(_oname.find("JetHT") != string::npos)
+				samp = "JetHTPD";
+			else if(_oname.find("GMSB") != string::npos){
+				samp = _oname.substr(_oname.find("GMSB"),_oname.find("cm") - _oname.find("GMSB") + 2);
+			}
+			else if(_oname.find("GJets") != string::npos)
+				samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
+			else samp = "notFound";
 		}
-		else if(_oname.find("GJets") != string::npos)
-			samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
-		else samp = "notFound";
+		else{
+			if(_oname.find("MET") != string::npos)
+				samp = "METPD";
+			else if(_oname.find("JetHT") != string::npos)
+				samp = "JetHTPD";
+			else if(_oname.find("GMSB") != string::npos){
+				samp = _oname.substr(_oname.find("GMSB"),_oname.find("_superclusters") - _oname.find("GMSB"));
+			}
+			else if(_oname.find("GJets") != string::npos)
+				samp = _oname.substr(_oname.find("GJets"),_oname.find("_superclusters") - _oname.find("GJets"));
+			else samp = "notFound";
+		}
 		_csvfile << samp << "," << evt << "," << sc << "," << ncl;
 		for(auto d : inputs)
 			_csvfile << "," << d;
