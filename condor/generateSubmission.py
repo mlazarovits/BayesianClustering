@@ -25,16 +25,8 @@ def generateSubmission(args):
     
     if args.inputSample == "GJets_HT400To600_2017":
     	inputFile = "GJets_R17_MET75_v20_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-1000_2017_v16":
-    	inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-200_2017_v16":	
-    	inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-0p1_2017_v16":
-    	inputFile = "GMSB_R17_v16_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-150_Ctau-0p1_2017_v16":
-    	inputFile = "GMSB_R17_v16_GMSB_L-150TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-150_Ctau-200_2017_v16":
-    	inputFile = "GMSB_R17_v16_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "GMSB_L-350_Ctau-1000":
+        inputFile = "GMSB_R17_MET75_v20_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "MET_RunE_2017_v19":
     	inputFile = "MET_R17_v19_MET_AOD_Run2017E_17Nov2017.root"
     elif args.inputSample == "MET_RunE_2017_v20":
@@ -147,7 +139,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017','GMSB_L-350_Ctau-1000_2017_v16','GMSB_L-350_Ctau-200_2017_v16','GMSB_L-350_Ctau-0p1_2017_v16','GMSB_L-150_Ctau-200_2017_v16','GMSB_L-150_Ctau-0p1_2017_v16','MET_RunE_2017_v19','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT1000To1500_2017_v19','QCD_HT100To200_2017_v19','QCD_HT1500To2000_2017_v19','QCD_HT2000ToInf_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','QCD_HT700To1000_2017_v19','QCD_HT300To500_2017_v19','QCD_HT500To700_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','MET_RunE_2017_v20'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400To600_2017','GMSB_L-350_Ctau-1000','MET_RunE_2017_v19','JetHT_RunF_2017_v18','EGamma_RunF_2017_v18','QCD_HT1000To1500_2017_v19','QCD_HT100To200_2017_v19','QCD_HT1500To2000_2017_v19','QCD_HT2000ToInf_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','QCD_HT700To1000_2017_v19','QCD_HT300To500_2017_v19','QCD_HT500To700_2017_v19','QCD_HT200To300_2017_v19','QCD_HT50To100_2017_v19','MET_RunE_2017_v20'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
