@@ -307,6 +307,11 @@ class Jet{
 		Jet GetBaby() const;
 		void SetBaby(Jet* child){ _child = child; }
 
+		//calculate invariant mass with jet
+		double invMass(Jet jet){
+			jet.add(*this);
+			return jet.mass();	
+		}
 
 	
 	protected:
