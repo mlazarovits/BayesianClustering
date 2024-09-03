@@ -106,11 +106,6 @@ class BHCJetSkimmer{
 				//get points from tree
 				PointCollection* pc = _trees[i]->points;
 				rhs.clear();
-				double pxtot = 0;
-				double pytot = 0;
-				double pztot = 0;
-				double e = 0;
-				double p = 0;
 				//loop over points
 				for(int p = 0; p < pc->GetNPoints(); p++){
 					//declare JetPoint with x, y, z, t
@@ -127,14 +122,6 @@ class BHCJetSkimmer{
 					jp.SetEnergy(pc->at(p).w()/_gev);
 					jp.SetWeight(pc->at(p).w());
 					//cout << "x " << x << " y " << y << " z " << z << " jp eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
-					e += jp.e();
-					px = jp.e()*cos(jp.phi())/cosh(jp.eta());
-					pxtot += px;
-					py = jp.e()*sin(jp.phi())/cosh(jp.eta());
-					pytot += py;
-					pz = jp.e()*sinh(jp.eta())/cosh(jp.eta());
-					pztot += pz;
-					p += sqrt(px*px + py*py + pz*pz);
 					rhs.push_back(jp);
 				}
 				//create new Jet
@@ -160,6 +147,8 @@ class BHCJetSkimmer{
 					predJet.SetCovariance(params["cov"]);
 					predJet.SetCenter(params["mean"]);
 				}
+				//put pt cut in for predjets of 20 GeV
+				if(predJet.pt() < 20) continue; 
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
 			}
