@@ -77,11 +77,13 @@ void BHCJetSkimmer::Skim(){
 		FillResolutionHists();
 
 
+		//print gen info
+
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
 		_pvz = _base->PV_z;
-	
+
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 		cout << "Clustering..." << endl;	

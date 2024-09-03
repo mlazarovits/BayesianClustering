@@ -65,6 +65,10 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoGen_nJets);
 			_hists1D.push_back(recoGen_jetPtRatio);
 			_hists1D.push_back(recoGen_jetERatio);
+			_hists1D.push_back(recoJet_Wmass);
+			_hists1D.push_back(recoJet_topmass);
+			_hists1D.push_back(predJet_Wmass);
+			_hists1D.push_back(predJet_topmass);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -95,49 +99,48 @@ class BHCJetSkimmer{
 		void TreesToJets(){
 			_predJets.clear();
 			vector<JetPoint> rhs;
-			double x, y, z, eta, phi, t, theta;
+			double x, y, z, eta, phi, t, theta, px, py, pz;
 			BayesPoint vertex({_pvx, _pvy, _pvz});
 
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
 				PointCollection* pc = _trees[i]->points;
 				rhs.clear();
+				double pxtot = 0;
+				double pytot = 0;
+				double pztot = 0;
+				double e = 0;
+				double p = 0;
 				//loop over points
-				//pc->Print();
-				double jeta = 0;
-				double jphi = 0;
-				double je = 0;
 				for(int p = 0; p < pc->GetNPoints(); p++){
+					//declare JetPoint with x, y, z, t
 					eta = pc->at(p).at(0);
 					phi = pc->at(p).at(1);
 					t = pc->at(p).at(2);
-					//translate eta, phi to x, y, z
-					theta = 2*atan2(1,exp(eta));
 					x = _radius*cos(phi);
 					y = _radius*sin(phi);
-					z = _radius/tan(theta);	
-					
-					//for checking calculations
-					double rtheta = atan2(_radius,z);
-					//if(phoz < 0) rtheta = atan2(129.,phoz)+acos(-1)/2.;
-					double reta = -log(tan(rtheta/2));
-					double rphi = atan2(y,x);
-		
-					//cout << "eta: " << eta << " reta: " << reta << " phi: " << phi << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;
-					
-					//declare JetPoint with x, y, z, t
+					theta = 2*atan2(1,exp(eta));
+					z = _radius/tan(theta); 
+
 					JetPoint jp(x, y, z, t);
-					//cout << "jp eta " << jp.eta() << " eta " << eta << " jp phi " << jp.phi() << " phi " << phi << endl;
 					//add JetPoint to list of rhs
 					jp.SetEnergy(pc->at(p).w()/_gev);
 					jp.SetWeight(pc->at(p).w());
+					//cout << "x " << x << " y " << y << " z " << z << " jp eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
+					e += jp.e();
+					px = jp.e()*cos(jp.phi())/cosh(jp.eta());
+					pxtot += px;
+					py = jp.e()*sin(jp.phi())/cosh(jp.eta());
+					pytot += py;
+					pz = jp.e()*sinh(jp.eta())/cosh(jp.eta());
+					pztot += pz;
+					p += sqrt(px*px + py*py + pz*pz);
 					rhs.push_back(jp);
-					jeta += eta;//*pc->at(p).w()/_gev;
-					jphi += phi;//*pc->at(p).w()/_gev;
-					je += pc->at(p).w()/_gev;
 				}
 				//create new Jet
 				Jet predJet(rhs, BayesPoint({_pvx, _pvy, _pvz}));
+				//cout << "additive p: (" << pxtot << ", " << pytot << ", " << pztot << ", " << e << ")" << " mass " << sqrt((e*e) - (pxtot*pxtot + pytot*pytot + pztot*pztot)) << endl;
+				//cout << "jet p: (" << predJet.px() << ", " << predJet.py() << ", " << predJet.pz() << ", " << predJet.e() << ") mass " << predJet.mass() << endl;
 				//set PV info
 				//predJet.SetVertex(Point({_pvx,_pvy,_pvz}));
 				//set constituents (subclusters) here with model from tree
@@ -157,24 +160,20 @@ class BHCJetSkimmer{
 					predJet.SetCovariance(params["cov"]);
 					predJet.SetCenter(params["mean"]);
 				}
-				//cout << "jet mean eta " << jeta/je << " mean phi " << jphi/je << " total e " << je << endl;
-				//cout << "jet mean eta " << jeta/(double)pc->GetNPoints() << " mean phi " << jphi/(double)pc->GetNPoints() << " total e " << je << " " << predJet.E() << " mass " << predJet.mass() << endl;
-				//pc->Print();
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
-				//vector<Jet> babies = _predJets[_predJets.size()-1].GetConstituents();
-				//vector<JetPoint> rrhs = _predJets[_predJets.size()-1].GetJetPoints();
 			}
 
 		}
 
 		void FillPredJetHists(){
 			int njets;
+			double wmass, topmass;
 			for(int p = 0; p < _procCats.size(); p++){
-				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _predJets.size();
 				for(int j = 0; j < _predJets.size(); j++){
-					cout << "jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
 					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
@@ -187,16 +186,20 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][0]->Fill(njets);
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
+				FindResonances(_predJets,wmass, topmass);
+				if(wmass != -999) _procCats[p].hists1D[0][29]->Fill(wmass);
+				if(topmass != -999) _procCats[p].hists1D[0][30]->Fill(topmass);
 			}
 		}
-		
+	
 		void FillRecoJetHists(){
 			int njets;
+			double wmass, topmass;
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
 				for(int j = 0; j < _recojets.size(); j++){
-					//cout << "jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << endl;
+					//if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << endl;
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					//dr hist is #19
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
@@ -206,6 +209,9 @@ class BHCJetSkimmer{
 				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
+				FindResonances(_recojets,wmass, topmass);
+				if(wmass != -999) _procCats[p].hists1D[0][27]->Fill(wmass);
+				if(topmass != -999) _procCats[p].hists1D[0][28]->Fill(topmass);
 			}
 		}
 
@@ -564,7 +570,7 @@ class BHCJetSkimmer{
 		//7
 		TH1D* predJet_energy = new TH1D("predJet_energy","predJet_energy",50,0,400);
 		//8
-		TH1D* predJet_pt = new TH1D("predJet_pt","predJet_pt",50,0,300);
+		TH1D* predJet_pt = new TH1D("predJet_pt","predJet_pt",50,0,150);
 		//9
 		TH1D* predJet_mass = new TH1D("predJet_mass","predJet_mass",50,0,200);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
@@ -600,7 +606,7 @@ class BHCJetSkimmer{
 		//21
 		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,150);
 		//22
-		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,150);
+		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",50,0,200);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoGen","jetGenE_sigmaDeltaPtOvJetGenE_recoGen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
@@ -609,6 +615,14 @@ class BHCJetSkimmer{
 		TH1D* recoGen_jetPtRatio = new TH1D("recoGen_jetPtRatio","recoGen_jetPtRatio",20,0,1.5);
 		//26 - reco jet e - gen jet e		
 		TH1D* recoGen_jetERatio = new TH1D("recoGen_jetERatio","recoGen_jetERatio",20,-10,10);
+		//27 - reco jet W invariant mass
+		TH1D* recoJet_Wmass = new TH1D("recoJet_Wmass","recoJet_Wmass;Invariant mass for best W candidate",100,0,100);
+		//28 - reco jet top invariant mass
+		TH1D* recoJet_topmass = new TH1D("recoJet_topmass","recoJet_topmass;Invariant mass for best top candidate",50,100,250);
+		//29 - pred jet W invariant mass
+		TH1D* predJet_Wmass = new TH1D("predJet_Wmass","predJet_Wmass;Invariant mass for best W candidate",100,0,100);
+		//30 - pred jet top invariant mass
+		TH1D* predJet_topmass = new TH1D("predJet_topmass","predJet_topmass;Invariant mass for best top candidate",50,100,250);
 
 		//2D plots
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
@@ -628,6 +642,51 @@ class BHCJetSkimmer{
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
 		void SetVerbosity(int verb){_verb = verb;}
 		int _verb;
+
+		void FindResonances(vector<Jet>& jets, double& wmass, double& tmass){
+			//find W candidates
+			double mW = 80.377;
+			double diff = 999;
+			double mij;
+			int j1, j2;
+			if(jets.size() < 1){
+				wmass = -999;
+				tmass = -999;
+				return;
+			}
+			for(int i = 0; i < jets.size(); i++){
+				for(int j = i; j < jets.size(); j++){
+					mij = jets[i].invMass(jets[j]);
+					if(fabs(mij - mW) < diff){
+						diff = fabs(mij - mW);
+						wmass = mij;
+						j1 = i;
+						j2 = j;
+					}
+				}
+			}
+			if(jets.size() < 3){
+				tmass = -999;
+				return;
+			}
+			//find top candidates
+			double mTop = 172.69;
+			mij = -999;
+			diff = 999;
+			Jet wJet = jets[j1];
+			wJet.add(jets[j2]);
+			for(int i = 0; i < jets.size(); i++){
+				if(i != j1 && i != j2){
+					mij = jets[i].invMass(wJet);
+					if(fabs(mij - mTop) < diff){
+						diff = fabs(mij - mTop);
+						tmass = mij;
+					}
+				}
+			}
+
+		}
+
 
 	private:
 		string _oname;
@@ -662,7 +721,10 @@ class BHCJetSkimmer{
 
 
 		double dR(double eta1, double phi1, double eta2, double phi2){
-			return sqrt((eta1-eta2)*(eta1-eta2) + (phi1-phi2)*(phi1-phi2));
+			//phi wraparound
+			double dphi = (phi1-phi2);
+			dphi = acos(cos(dphi));
+			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
 		}
 		
 };
