@@ -23,6 +23,8 @@ class JetSimProducer{
 		void SetRecoPtMin(double pt){_recoptmin = pt; }
 		void SetMinRhE(double r){ _minrhE = r; }
 
+		void SortJets(vector<Jet>& jets);
+
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;

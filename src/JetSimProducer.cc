@@ -1,5 +1,6 @@
 #include "JetSimProducer.hh"
 #include "TSystem.h"
+#include "RandomSample.hh"
 
 JetSimProducer::JetSimProducer(){
 	_gev = 1;
@@ -154,7 +155,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 
 	_base->GetEntry(evt);
 	int nJets = (int)_base->Jet_energy->size();
-	
 	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
 	vtx.SetValue(_base->PV_y,1);
@@ -171,7 +171,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		pt = _base->Jet_pt->at(j);
 		phi = _base->Jet_phi->at(j);
 		eta = _base->Jet_eta->at(j);
-		
 		if(pt < _recoptmin) continue;
 
 		px = pt*cos(phi);
@@ -184,7 +183,9 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		
 		jet.SetVertex(vtx);
 		recojets.push_back(jet);
-	}	
+	}
+	//sort by pt
+	if(recojets.size() > 0) SortJets(recojets);
 }
 
 void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
@@ -194,3 +195,30 @@ void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
 
 }
 
+void JetSimProducer::SortJets(vector<Jet>& jets){
+	vector<Jet> low;
+	vector<Jet> high;
+	vector<Jet> same;
+
+	int n = jets.size();
+	if(n < 2) return;
+	RandomSample rs(111);
+	rs.SetRange(0,n);
+	int idx = rs.SampleFlat();	
+	Jet pivot = jets[idx];
+	for(int i = 0; i < n; i++){
+		if( pivot.pt() > jets[i].pt() )
+			low.push_back(jets[i]);
+		else if( pivot.pt() == jets[i].pt() )
+			same.push_back(jets[i]);
+		else
+			high.push_back(jets[i]);
+	}
+	SortJets(low);
+	SortJets(high);
+	
+	jets.clear();
+	for(int i = 0; i < high.size(); i++) jets.push_back(high[i]);
+	for(int i = 0; i < same.size(); i++) jets.push_back(same[i]);
+	for(int i = 0; i < low.size(); i++) jets.push_back(low[i]);
+}
