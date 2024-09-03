@@ -119,7 +119,7 @@ void BasicDetectorSim::_simQCD(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
 	_pythia.settings.readString("HardQCD:all = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = 20.");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating QCD" << endl;
 }
