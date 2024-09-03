@@ -133,7 +133,7 @@ void BasicDetectorSim::_simTTbar(){
 	//_pythia.settings.readString("Top:gg2ttbar = on");
 	//_pythia.settings.readString("Top:qqbar2ttbar = on");
 	//_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = 100.");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
 }
