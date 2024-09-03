@@ -169,6 +169,16 @@ void SuperClusterSkimmer::Skim(){
 			if(_base->SuperCluster_energy->at(scidx) >= 600 && _base->SuperCluster_energy->at(scidx) < 1000)
 				_procCats[1].hists1D[0][232]->Fill(rhs.size());
 
+
+
+			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
+			double r9 = sc3x3E(bhRhs)/_base->SuperCluster_energy->at(scidx);
+			cout << "r9 " << r9 << endl;
+			obs.push_back(r9);
+			obs.push_back(_base->SuperCluster_covEtaEta->at(scidx));
+			obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
+			obs.push_back(_base->SuperCluster_smaj->at(scidx));
+			obs.push_back(_base->SuperCluster_smin->at(scidx));
 			int ncl = gmm->GetNClusters();
 			for(int c = 0; c < ncl; c++){
 				int label = GetTrainingLabel(scidx,c,gmm);
