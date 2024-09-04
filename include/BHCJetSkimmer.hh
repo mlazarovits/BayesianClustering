@@ -687,17 +687,17 @@ class BHCJetSkimmer{
 		TH1D* predGen_nJets = new TH1D("predGen_diffNJets","predGen_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaVar = new TH1D("predJet_subClusterEtaVar","predJet_subClusterEtaVar",25,0.01,0.09);
+		TH1D* predJet_subClusterEtaVar = new TH1D("predJet_subClusterEtaVar","predJet_subClusterEtaVar",25,0.,3.);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiVar = new TH1D("predJet_subClusterPhiVar","predJet_subClusterPhiVar",25,0.01, 0.09);
+		TH1D* predJet_subClusterPhiVar = new TH1D("predJet_subClusterPhiVar","predJet_subClusterPhiVar",25,0.,3.);
 		//14 - time sigma
-		TH1D* predJet_subClusterTimeVar = new TH1D("predJet_subClusterTimeVar","predJet_subClusterTimeVar",25,0.01,0.09);
+		TH1D* predJet_subClusterTimeVar = new TH1D("predJet_subClusterTimeVar","predJet_subClusterTimeVar",25,0.,5.);
 		//15 - eta-phi covariance
-		TH1D* predJet_subClusteretaPhiCov = new TH1D("predJet_subClusteretaPhiCov","predJet_subClusteretaPhiCov",25,-1,1);
+		TH1D* predJet_subClusteretaPhiCov = new TH1D("predJet_subClusteretaPhiCov","predJet_subClusteretaPhiCov",25,-1.5,1.5);
 		//16 - time-eta covariance
-		TH1D* predJet_subClustertimeEtaCov = new TH1D("predJet_subClustertimeEtaCov","predJet_subClustertimeEtaCov",25,-1,1);
+		TH1D* predJet_subClustertimeEtaCov = new TH1D("predJet_subClustertimeEtaCov","predJet_subClustertimeEtaCov",25,-1.5,1.5);
 		//17 - time-phi covariance
-		TH1D* predJet_subClustertimePhiCov = new TH1D("predJet_subClustertimePhiCov","predJet_subClustertimePhiCov",25,-1,1);
+		TH1D* predJet_subClustertimePhiCov = new TH1D("predJet_subClustertimePhiCov","predJet_subClustertimePhiCov",25,-1.5,1.5);
 		//18
 		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
 		//19
@@ -757,17 +757,17 @@ class BHCJetSkimmer{
 		//46 - !W jet pair time variance
 		TH1D* predJet_timeVar_notWjj = new TH1D("predJet_timeVar_notWjj","predJet_timeVar_notWjj",50,-1,1);
 		//47 - eta sigma for jet
-		TH1D* predJet_EtaVar = new TH1D("predJet_EtaVar","predJet_EtaVar",25,0.01,0.09);
+		TH1D* predJet_EtaVar = new TH1D("predJet_EtaVar","predJet_EtaVar",25,0.,3.);
 		//48 - phi sigma for jet
-		TH1D* predJet_PhiVar = new TH1D("predJet_PhiVar","predJet_PhiVar",25,0.01, 0.09);
+		TH1D* predJet_PhiVar = new TH1D("predJet_PhiVar","predJet_PhiVar",25,0., 3.);
 		//49 - time sigma for jet
-		TH1D* predJet_TimeVar = new TH1D("predJet_TimeVar","predJet_TimeVar",25,0.01,0.09);
+		TH1D* predJet_TimeVar = new TH1D("predJet_TimeVar","predJet_TimeVar",25,0.,3.);
 		//50 - eta-phi covariance for jet
-		TH1D* predJet_etaPhiCov = new TH1D("predJet_etaPhiCov","predJet_etaPhiCov",25,-1,1);
+		TH1D* predJet_etaPhiCov = new TH1D("predJet_etaPhiCov","predJet_etaPhiCov",25,-1.5,1.5);
 		//51 - time-eta covariance for jet
-		TH1D* predJet_timeEtaCov = new TH1D("predJet_timeEtaCov","predJet_timeEtaCov",25,-1,1);
+		TH1D* predJet_timeEtaCov = new TH1D("predJet_timeEtaCov","predJet_timeEtaCov",25,-1.5,1.5);
 		//52 - time-phi covariance for jet
-		TH1D* predJet_timePhiCov = new TH1D("predJet_timePhiCov","predJet_timePhiCov",25,-1,1);
+		TH1D* predJet_timePhiCov = new TH1D("predJet_timePhiCov","predJet_timePhiCov",25,-1.5,1.5);
 		
 
 
