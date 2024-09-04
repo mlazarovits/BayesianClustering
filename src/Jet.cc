@@ -16,10 +16,9 @@ Jet::Jet(){
 	
 	_nRHs = 0;
 	
-	_parent1 = nullptr;
-	_parent2 = nullptr;
-	_child = nullptr; 
-
+	_cov = Matrix();
+	_mu = Matrix();
+	_pi = 0;
 }
 
 
@@ -39,11 +38,10 @@ Jet::Jet(double px, double py, double pz, double E){
 	_t = 0;
 	
 	_nRHs = 0;
+	_cov = Matrix();
+	_mu = Matrix();
+	_pi = 0;
 	
-	_parent1 = nullptr;
-	_parent2 = nullptr;
-	_child = nullptr; 
-
 
 }
 
@@ -70,13 +68,13 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_kt2 = _px*_px + _py*_py; 		
 	_mass = mass();
 	
-	_parent1 = nullptr;
-	_parent2 = nullptr;
-	_child = nullptr; 
-
 	_idx = 999;
 	_set_time();
 	_ensure_valid_rap_phi();
+	
+	_cov = Matrix();
+	_mu = Matrix();
+	_pi = 0;
 }
 
 
@@ -127,13 +125,14 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
-	_parent1 = nullptr;
-	_parent2 = nullptr;
-	_child = nullptr; 
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
+	
+	_cov = Matrix();
+	_mu = Matrix();
+	_pi = 0;
 
 }
 
@@ -144,14 +143,9 @@ Jet::Jet(const vector<Jet>& jets){
 		_rhs.push_back(rhs[j]);
 	}
 	_nRHs = (int)_rhs.size();	
-	double theta, pt, x, y, z;
+	double pt;
 	for(int i = 0; i < _nRHs; i++){
-		//theta is calculated between beamline (z-dir) and x-y vector	
-		x = _rhs[i].x();
-		y = _rhs[i].y();
-		z = _rhs[i].z();
-		theta = atan2( sqrt(x*x + y*y), z );
-		pt = _rhs[i].E()*sin(theta); //consistent with mass = 0
+		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
 		_px += pt*cos(_rhs[i].phi());
 		_py += pt*sin(_rhs[i].phi());
 		_pz += pt*sinh(_rhs[i].eta());
@@ -161,15 +155,40 @@ Jet::Jet(const vector<Jet>& jets){
 
 	}
 	_kt2 = _px*_px + _py*_py;
-	_parent1 = nullptr;
-	_parent2 = nullptr;
-	_child = nullptr; 
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
+	
+	_cov = Matrix();
+	_mu = Matrix();
+	_pi = 0;
 }
 
+//_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
+Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx){
+	_E = E;
+	_eta =  mu.at(0,0);
+	_phi =  mu.at(1,0);
+	_t = mu.at(2,0);
+	double pt = E/cosh(_eta);
+	_px = pt*cos(_phi);
+	_py = pt*sin(_phi);
+	_pz = pt*sinh(_eta);
+	
+	_kt2 = _px*_px + _py*_py;
+	_mass = mass();
+
+	_idx = 999;
+	_ensure_valid_rap_phi();
+
+	_mu = mu;
+	_cov = cov;
+	_pi = pi;
+
+	_vtx = vtx;
+
+}
 
 Jet::Jet(const Jet& j){
 	_px = j.px();
@@ -184,9 +203,6 @@ Jet::Jet(const Jet& j){
 	_kt2 = j.kt2();
 	_mass = j.mass();
 	
-	_child = j._child;
-	_parent1 = j._parent1;
-	_parent2 = j._parent2;
 	_idx = j.GetUserIdx();
 	_vtx = j.GetVertex();
 	_rhs = j.GetJetPoints();
@@ -195,9 +211,7 @@ Jet::Jet(const Jet& j){
 	_constituents = j._constituents;
 	_mu = j._mu;
 	_cov = j._cov;
-	_subcl_mu = j._subcl_mu;
-	_subcl_cov = j._subcl_cov;
-	_subcl_pi = j._subcl_pi;
+	_pi = j._pi;
 }
 
 Jet::~Jet(){
@@ -234,6 +248,10 @@ void Jet::add(const Jet& jt){
 	_kt2 = _px*_px + _py*_py;
 	//recalculate eta and phi of cluster
 	_set_rap_phi();
+
+	//add subclusters (aka constituents)
+	for(auto j : jt._constituents)
+		_constituents.push_back(j);
 }
 
 
@@ -267,24 +285,6 @@ void Jet::add(const JetPoint& rh){
 
 }
 
-void Jet::GetParents(Jet& p1, Jet& p2) const{
-	//check if jet has parents that combined to make this
-	//if no parents found, fills with nullptr
-	p1 = *_parent1;
-	p2 = *_parent2;
-}
-
-
-Jet Jet::GetBaby() const{
-	return *_child;
-}
-
-
-//TODO: set after clustering
-void Jet::GetSubJets(vector<Jet>& subjets, int depth) const{
-
-
-}
 
 
 //set after clustering
