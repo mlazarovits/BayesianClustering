@@ -24,6 +24,12 @@ class JetSimProducer{
 		void SetMinRhE(double r){ _minrhE = r; }
 
 		void SortJets(vector<Jet>& jets);
+		
+		void PrintPreselection(){
+			cout << "Default energy transfer factor: " << _gev << endl;
+			cout << "Minimum reco pt: " << _recoptmin << endl;
+			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
+		}
 
 	private:
 		double _gev;
