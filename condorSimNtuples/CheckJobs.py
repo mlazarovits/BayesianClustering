@@ -19,7 +19,7 @@ def scanOutDirs(outputDir, subfolders):
 				scanOutDirs(f, subfolders) 
 	return subfolders
 # Check condor jobs
-def checkJobs(outputDir):
+def checkJobs(outputDir,match_string):
     print("Running over the directory '{0}'.".format(outputDir))
     print("------------------------------------------------------------")
     # get list of directories
@@ -29,6 +29,8 @@ def checkJobs(outputDir):
     
     # grep Queue for possible jobs submitted
     for folder in subfolders:
+        if match_string is not None and match_string not in folder:
+                continue
         DataSetName = folder.split("/")[-1]
         print( "Evaluating Dataset "+DataSetName)
         bash = "grep -c \"Queue\" "+folder+"/src/submit.sh"
@@ -66,14 +68,14 @@ def checkJobs(outputDir):
         print("")
 
 def main():
-	# options
-	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
-
-	options = parser.parse_args()
-	directory = options.directory	
-
-	checkJobs(directory)
+    # options
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    parser.add_argument("--matchString","-s",default="",help="string to match for directory scan")
+    options = parser.parse_args()
+    directory = options.directory	
+    
+    checkJobs(directory,options.matchString)
 
 if __name__ == "__main__":
     main()

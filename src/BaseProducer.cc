@@ -202,7 +202,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
-				//TODO: removed when ntuples are fixed!
 				//skip rhs that have already been looked at - avoids duplicates in SC
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
