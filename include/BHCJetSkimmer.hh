@@ -50,9 +50,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(predJet_mass);
 			_hists1D.push_back(jetGenE_sigmaDeltaPt_predGen);
 			_hists1D.push_back(predGen_nJets);
-			_hists1D.push_back(predJet_subClusterEtaSigma);
-			_hists1D.push_back(predJet_subClusterPhiSigma);
-			_hists1D.push_back(predJet_subClusterTimeSigma);
+			_hists1D.push_back(predJet_subClusterEtaVar);
+			_hists1D.push_back(predJet_subClusterPhiVar);
+			_hists1D.push_back(predJet_subClusterTimeVar);
 			_hists1D.push_back(predJet_subClusteretaPhiCov);
 			_hists1D.push_back(predJet_subClustertimeEtaCov);
 			_hists1D.push_back(predJet_subClustertimePhiCov);
@@ -69,11 +69,39 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoJet_topmass);
 			_hists1D.push_back(predJet_Wmass);
 			_hists1D.push_back(predJet_topmass);
+			_hists1D.push_back(predJet_Wmass_pTjjl100);
+			_hists1D.push_back(predJet_Wmass_pTjjge100);
+			_hists1D.push_back(recoJet_Wmass_pTjjl100);
+			_hists1D.push_back(recoJet_Wmass_pTjjge100);
+			_hists1D.push_back(predJet_etaVar_Wjj);
+			_hists1D.push_back(predJet_etaVar_W_pTl100);
+			_hists1D.push_back(predJet_etaVar_W_pTge100);
+			_hists1D.push_back(predJet_etaVar_notWjj);
+			_hists1D.push_back(predJet_phiVar_Wjj);
+			_hists1D.push_back(predJet_phiVar_W_pTl100);
+			_hists1D.push_back(predJet_phiVar_W_pTge100);
+			_hists1D.push_back(predJet_phiVar_notWjj);
+			_hists1D.push_back(predJet_timeVar_Wjj);
+			_hists1D.push_back(predJet_timeVar_W_pTl100);
+			_hists1D.push_back(predJet_timeVar_W_pTge100);
+			_hists1D.push_back(predJet_timeVar_notWjj);
+			_hists1D.push_back(predJet_EtaVar);
+			_hists1D.push_back(predJet_PhiVar);
+			_hists1D.push_back(predJet_TimeVar);
+			_hists1D.push_back(predJet_etaPhiCov);
+			_hists1D.push_back(predJet_timeEtaCov);
+			_hists1D.push_back(predJet_timePhiCov);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
 			_hists2D.push_back(genJetMass_recoGenPtRatio);
+			_hists2D.push_back(recoJetMass_recoJetPt);
+			_hists2D.push_back(recoJetMass_recoJetdR);
+			_hists2D.push_back(recoJetInvMassW_recoJetPairdR); 
+			_hists2D.push_back(predJetMass_predJetPt);
+			_hists2D.push_back(predJetMass_predJetdR);
+			_hists2D.push_back(predJetInvMassW_predJetPairdR); 
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -132,20 +160,15 @@ class BHCJetSkimmer{
 				//predJet.SetVertex(Point({_pvx,_pvy,_pvz}));
 				//set constituents (subclusters) here with model from tree
 				int nsubclusters = _trees[i]->model->GetNClusters();
-				double Ek; //effective energy of constituent
+				double Ek; 
 				vector<double> norms;
 				_trees[i]->model->GetNorms(norms);
 				map<string,Matrix> params;
 				for(int k = 0; k < nsubclusters; k++){
 					params = _trees[i]->model->GetPriorParameters(k);
 					Ek = norms[k]/_gev;
-					predJet.AddConstituent(params,Ek);
-				}
-				//TODO: set covariance and mean for jets with 1+ subcluster
-				if(nsubclusters < 2){
-					params = _trees[i]->model->GetPriorParameters(0);
-					predJet.SetCovariance(params["cov"]);
-					predJet.SetCenter(params["mean"]);
+					Jet jet(params["mean"], params["cov"], Ek, params["pi"].at(0,0));
+					predJet.AddConstituent(jet);
 				}
 				//put pt cut in for predjets of 20 GeV
 				if(predJet.pt() < 20) continue; 
@@ -157,50 +180,139 @@ class BHCJetSkimmer{
 
 		void FillPredJetHists(){
 			int njets;
-			double wmass, topmass;
+			double wmass, topmass, dr, dr_pair;
+			int tmass_idx;
+			pair<int,int> wmass_idxs;
+			Jet w, top;
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
-				njets = _predJets.size();
-				for(int j = 0; j < _predJets.size(); j++){
-					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
-					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
-					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
-					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
-					//fill dR hist - max dR is max dR bw rhs or sub clusters?
-					//if subclusters - essentially matching subclusters to particles
-					//if rhs - no notion of particles	
-					//use subclusters for now (can change to rhs later)
-					_procCats[p].hists1D[0][6]->Fill(CalcDr(_predJets[j]));	
-				}
 				_procCats[p].hists1D[0][0]->Fill(njets);
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
-				FindResonances(_predJets,wmass, topmass);
-				if(wmass != -999) _procCats[p].hists1D[0][29]->Fill(wmass);
-				if(topmass != -999) _procCats[p].hists1D[0][30]->Fill(topmass);
+				FindResonances(_predJets,wmass_idxs,tmass_idx);
+				//W mass
+				if(wmass_idxs.first != -999){
+					w = _predJets[wmass_idxs.first];
+					w.add(_predJets[wmass_idxs.second]);
+					wmass = w.mass();
+					dr_pair = dR(_predJets[wmass_idxs.first].eta(), _predJets[wmass_idxs.first].phi(), _predJets[wmass_idxs.second].eta(), _predJets[wmass_idxs.second].phi());
+					_procCats[p].hists1D[0][29]->Fill(wmass);
+					Matrix cov1 = _predJets[wmass_idxs.first].GetCovariance();
+					Matrix cov2 = _predJets[wmass_idxs.second].GetCovariance();
+					Matrix covw = w.GetCovariance();
+					_procCats[p].hists1D[0][35]->Fill(cov1.at(0,0));
+					_procCats[p].hists1D[0][35]->Fill(cov2.at(0,0));
+					_procCats[p].hists1D[0][39]->Fill(cov1.at(1,1));
+					_procCats[p].hists1D[0][39]->Fill(cov2.at(1,1));
+					_procCats[p].hists1D[0][43]->Fill(cov1.at(2,2));
+					_procCats[p].hists1D[0][43]->Fill(cov2.at(2,2));
+
+
+
+					_procCats[p].hists2D[0][9]->Fill(wmass, dr_pair);
+					if(w.pt() < 100){
+						_procCats[p].hists1D[0][31]->Fill(w.mass());
+						_procCats[p].hists1D[0][36]->Fill(covw.at(0,0));
+						_procCats[p].hists1D[0][40]->Fill(covw.at(1,1));
+						_procCats[p].hists1D[0][44]->Fill(covw.at(2,2));
+					}
+					else{
+						_procCats[p].hists1D[0][32]->Fill(w.mass());
+						_procCats[p].hists1D[0][37]->Fill(covw.at(0,0));
+						_procCats[p].hists1D[0][41]->Fill(covw.at(1,1));
+						_procCats[p].hists1D[0][45]->Fill(covw.at(2,2));
+					}
+				}
+				//top mass
+				if(tmass_idx != -999){
+					top = _predJets[tmass_idx];
+					top.add(w);
+					topmass = top.mass();
+					_procCats[p].hists1D[0][30]->Fill(topmass);
+				}
+				njets = _predJets.size();
+				for(int j = 0; j < _predJets.size(); j++){
+					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+					dr = CalcDr(_predJets[j]);
+					Matrix cov = _predJets[j].GetCovariance();
+				
+					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
+					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
+					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
+					_procCats[p].hists1D[0][6]->Fill(dr);	
+					_procCats[p].hists1D[0][47]->Fill(cov.at(0,0));	
+					_procCats[p].hists1D[0][48]->Fill(cov.at(1,1));	
+					_procCats[p].hists1D[0][49]->Fill(cov.at(2,2));	
+					_procCats[p].hists1D[0][50]->Fill(cov.at(0,1));	
+					_procCats[p].hists1D[0][51]->Fill(cov.at(0,2));	
+					_procCats[p].hists1D[0][52]->Fill(cov.at(2,1));	
+					
+					_procCats[p].hists2D[0][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
+					_procCats[p].hists2D[0][8]->Fill(_predJets[j].mass(), dr);
+
+
+					//get subcluster information
+					for(auto subcl : _predJets[j].GetConstituents()){
+						Matrix subcl_cov = subcl.GetCovariance();
+						_procCats[p].hists1D[0][12]->Fill(subcl_cov.at(0,0));
+						_procCats[p].hists1D[0][13]->Fill(subcl_cov.at(1,1));
+						_procCats[p].hists1D[0][14]->Fill(subcl_cov.at(2,2));
+						_procCats[p].hists1D[0][15]->Fill(subcl_cov.at(0,1));
+						_procCats[p].hists1D[0][16]->Fill(subcl_cov.at(0,2));
+						_procCats[p].hists1D[0][17]->Fill(subcl_cov.at(1,2));
+					}
+
+
+
+					if(j != wmass_idxs.first && j != wmass_idxs.second){
+						_procCats[p].hists1D[0][38]->Fill(cov.at(0,0));
+						_procCats[p].hists1D[0][42]->Fill(cov.at(1,1));
+						_procCats[p].hists1D[0][46]->Fill(cov.at(2,2));
+					}
+				}
 			}
 		}
 	
 		void FillRecoJetHists(){
 			int njets;
-			double wmass, topmass;
+			double wmass, topmass, dr, dr_pair;
+			pair<int, int> wmass_idxs;
+			int tmass_idx;
+			Jet w, top;
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
 				for(int j = 0; j < _recojets.size(); j++){
 					//if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << endl;
+					dr = CalcDr(_recojets[j]);
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					//dr hist is #19
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
+					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
+					_procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), dr);
 				}
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
 				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
-				FindResonances(_recojets,wmass, topmass);
-				if(wmass != -999) _procCats[p].hists1D[0][27]->Fill(wmass);
-				if(topmass != -999) _procCats[p].hists1D[0][28]->Fill(topmass);
+				FindResonances(_predJets,wmass_idxs,tmass_idx);
+				if(wmass_idxs.first != -999){
+					w = _predJets[wmass_idxs.first];
+					w.add(_predJets[wmass_idxs.second]);
+					wmass = w.mass();
+					dr_pair = dR(_predJets[wmass_idxs.first].eta(), _predJets[wmass_idxs.first].phi(), _predJets[wmass_idxs.second].eta(), _predJets[wmass_idxs.second].phi());
+					_procCats[p].hists1D[0][29]->Fill(wmass);
+					_procCats[p].hists2D[0][6]->Fill(wmass,dr_pair);
+					if(w.pt() < 100) _procCats[p].hists1D[0][31]->Fill(w.mass());
+					else _procCats[p].hists1D[0][32]->Fill(w.mass());
+				}
+				if(tmass_idx != -999){
+					top = _predJets[tmass_idx];
+					top.add(w);
+					topmass = top.mass();
+					_procCats[p].hists1D[0][30]->Fill(topmass);
+				}
 			}
 		}
 
@@ -307,33 +419,39 @@ class BHCJetSkimmer{
 		//use subclusters
 		//can change to rhs later
 		double CalcDr(const Jet& jet){
-			double dr = 0;
-			double maxDr = 0;
-			//if 1 subcluster (should be >1 but idk could happen ig)
-			//dR =  sqrt(sigeta*sigeta + sigphi*sigphi)?
-			//get n subclusters
 			int nSCs = jet.GetNConstituents();
-			//if 1 subcluster, take dR to be 1 sigma
+			
+			//if no subclusters (ie reco jet), take dR to be max distance between rechits
+			if(nSCs < 1){
+				double maxDr = -999;
+				vector<JetPoint> rhs = jet.GetJetPoints();
+				for(int i = 0; i < rhs.size(); i++){
+					for(int j = i; j < rhs.size(); j++){
+						double dr = dR(rhs[i].eta(), rhs[i].phi(), rhs[j].eta(), rhs[j].phi());
+						if(dr > maxDr) maxDr = dr;
+					}
+				}	
+				return maxDr;
+			}
+			//if 1 subcluster, take dR to be 1 sigma (for pred jets)
 			if(nSCs < 2){
 				Matrix cov, mu;
 				jet.GetClusterParams(mu, cov);
-				return max(sqrt(cov.at(0,0)), sqrt(cov.at(1,1)));
+				return sqrt(cov.at(0,0) + cov.at(1,1));
 
 			}
 
-
-			Jet subjet_i, subjet_j;			
-
+			//else, weighted average of subcluster dRs
+			double dR = 0;
+			double norm = 0;
+			Jet subjet;
 			for(int i = 0; i < nSCs; i++){
-				for(int j = i; j < nSCs; j++){
-					//get center in eta, phi for subcluster i and j
-					subjet_i = jet.GetConstituent(i);
-					subjet_j = jet.GetConstituent(j);
-					dr = subjet_i.deltaR(subjet_j);
-					if(dr > maxDr) maxDr = dr;
-				}
+				//get center in eta, phi for subcluster i and j
+				subjet = jet.GetConstituent(i);
+				dR += CalcDr(subjet)*subjet.GetCoefficient();
+				norm += subjet.GetCoefficient();
 			}	
-			return maxDr;
+			return dR/norm;
 		}
 	
 
@@ -542,6 +660,7 @@ class BHCJetSkimmer{
 		TGraph* nrhs_comptime = new TGraph();
 		
 		//predicted jet plots
+		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0
 		TH1D* nClusters = new TH1D("nPredJets","nPredJets",10,0,10);
 		//1
@@ -568,24 +687,17 @@ class BHCJetSkimmer{
 		TH1D* predGen_nJets = new TH1D("predGen_diffNJets","predGen_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaSigma = new TH1D("predJet_subClusterEtaSigma","predJet_subClusterEtaSigma",25,0.01,0.09);
+		TH1D* predJet_subClusterEtaVar = new TH1D("predJet_subClusterEtaVar","predJet_subClusterEtaVar",25,0.01,0.09);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiSigma = new TH1D("predJet_subClusterPhiSigma","predJet_subClusterPhiSigma",25,0.01, 0.09);
+		TH1D* predJet_subClusterPhiVar = new TH1D("predJet_subClusterPhiVar","predJet_subClusterPhiVar",25,0.01, 0.09);
 		//14 - time sigma
-		TH1D* predJet_subClusterTimeSigma = new TH1D("predJet_subClusterTimeSigma","predJet_subClusterTimeSigma",25,0.01,0.09);
+		TH1D* predJet_subClusterTimeVar = new TH1D("predJet_subClusterTimeVar","predJet_subClusterTimeVar",25,0.01,0.09);
 		//15 - eta-phi covariance
 		TH1D* predJet_subClusteretaPhiCov = new TH1D("predJet_subClusteretaPhiCov","predJet_subClusteretaPhiCov",25,-1,1);
 		//16 - time-eta covariance
 		TH1D* predJet_subClustertimeEtaCov = new TH1D("predJet_subClustertimeEtaCov","predJet_subClustertimeEtaCov",25,-1,1);
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("predJet_subClustertimePhiCov","predJet_subClustertimePhiCov",25,-1,1);
-		//2D plots
-		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
-		TH2D* jetGenE_diffDeltaPt_predGen = new TH2D("jetGenE_diffDeltaPt_predGen","jetGenE_diffDeltaPt_predGen;jet_{gen} E (GeV);#Delta p_{T}_{pred, gen} (GeV)",5,0,100,50,-50,50);
-
-
-		//reco jet plots
-		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//18
 		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
 		//19
@@ -612,14 +724,75 @@ class BHCJetSkimmer{
 		TH1D* predJet_Wmass = new TH1D("predJet_Wmass","predJet_Wmass;Invariant mass for best W candidate",100,0,100);
 		//30 - pred jet top invariant mass
 		TH1D* predJet_topmass = new TH1D("predJet_topmass","predJet_topmass;Invariant mass for best top candidate",50,100,250);
+		//31 - pred jet W invariant mass, pT_jj < 100
+		TH1D* predJet_Wmass_pTjjl100 = new TH1D("predJet_Wmass_pTjjl100","predJet_Wmass_pTjjl100;Invariant mass_pTjjl100 for best W candidate",100,0,100);
+		//32 - pred jet W invariant mass, pT_jj >= 100
+		TH1D* predJet_Wmass_pTjjge100 = new TH1D("predJet_Wmass_pTjjge100","predJet_Wmass_pTjjge100;Invariant mass_pTjjge100 for best W candidate",100,0,100);
+		//33 - reco jet W invariant mass, pT_jj < 100
+		TH1D* recoJet_Wmass_pTjjl100 = new TH1D("recoJet_Wmass_pTjjl100","recoJet_Wmass_pTjjl100;Invariant mass_pTjjl100 for best W candidate",100,0,100);
+		//34 - reco jet W invariant mass, pT_jj >= 100
+		TH1D* recoJet_Wmass_pTjjge100 = new TH1D("recoJet_Wmass_pTjjge100","recoJet_Wmass_pTjjge100;Invariant mass_pTjjge100 for best W candidate",100,0,100);
+		//35 - W jet pair eta variance
+		TH1D* predJet_etaVar_Wjj = new TH1D("predJet_etaVar_Wjj","predJet_etaVar_Wjj",50,-1,1);
+		//36 - W jet eta variance, pT < 100 (resolved)
+		TH1D* predJet_etaVar_W_pTl100 = new TH1D("predJet_etaVar_W_pTl100","predJet_etaVar_W_pTl100",50,-1,1);
+		//37 - W jet eta variance, pT >= 100 (boosted)
+		TH1D* predJet_etaVar_W_pTge100 = new TH1D("predJet_etaVar_W_pTge100","predJet_etaVar_W_pTge100",50,-1,1);
+		//38 - !W jet pair eta variance
+		TH1D* predJet_etaVar_notWjj = new TH1D("predJet_etaVar_notWjj","predJet_etaVar_notWjj",50,-1,1);
+		//39 - W jet pair phi variance
+		TH1D* predJet_phiVar_Wjj = new TH1D("predJet_phiVar_Wjj","predJet_phiVar_Wjj",50,-1,1);
+		//40 - W jet phi variance, pT < 100 (resolved)
+		TH1D* predJet_phiVar_W_pTl100 = new TH1D("predJet_phiVar_W_pTl100","predJet_phiVar_W_pTl100",50,-1,1);
+		//41 - W jet phi variance, pT >= 100 (boosted)
+		TH1D* predJet_phiVar_W_pTge100 = new TH1D("predJet_phiVar_W_pTge100","predJet_phiVar_W_pTge100",50,-1,1);
+		//42 - !W jet pair phi variance
+		TH1D* predJet_phiVar_notWjj = new TH1D("predJet_phiVar_notWjj","predJet_phiVar_notWjj",50,-1,1);
+		//43 - W jet pair time variance
+		TH1D* predJet_timeVar_Wjj = new TH1D("predJet_timeVar_Wjj","predJet_timeVar_Wjj",50,-1,1);
+		//44 - W jet time variance, pT < 100 (resolved)
+		TH1D* predJet_timeVar_W_pTl100 = new TH1D("predJet_timeVar_W_pTl100","predJet_timeVar_W_pTl100",50,-1,1);
+		//45 - W jet time variance, pT >= 100 (boosted)
+		TH1D* predJet_timeVar_W_pTge100 = new TH1D("predJet_timeVar_W_pTge100","predJet_timeVar_W_pTge100",50,-1,1);
+		//46 - !W jet pair time variance
+		TH1D* predJet_timeVar_notWjj = new TH1D("predJet_timeVar_notWjj","predJet_timeVar_notWjj",50,-1,1);
+		//47 - eta sigma for jet
+		TH1D* predJet_EtaVar = new TH1D("predJet_EtaVar","predJet_EtaVar",25,0.01,0.09);
+		//48 - phi sigma for jet
+		TH1D* predJet_PhiVar = new TH1D("predJet_PhiVar","predJet_PhiVar",25,0.01, 0.09);
+		//49 - time sigma for jet
+		TH1D* predJet_TimeVar = new TH1D("predJet_TimeVar","predJet_TimeVar",25,0.01,0.09);
+		//50 - eta-phi covariance for jet
+		TH1D* predJet_etaPhiCov = new TH1D("predJet_etaPhiCov","predJet_etaPhiCov",25,-1,1);
+		//51 - time-eta covariance for jet
+		TH1D* predJet_timeEtaCov = new TH1D("predJet_timeEtaCov","predJet_timeEtaCov",25,-1,1);
+		//52 - time-phi covariance for jet
+		TH1D* predJet_timePhiCov = new TH1D("predJet_timePhiCov","predJet_timePhiCov",25,-1,1);
+		
+
 
 		//2D plots
+		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
+		TH2D* jetGenE_diffDeltaPt_predGen = new TH2D("jetGenE_diffDeltaPt_predGen","jetGenE_diffDeltaPt_predGen;jet_{gen} E (GeV);#Delta p_{T}_{pred, gen} (GeV)",5,0,100,50,-50,50);
+
 		//1 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",4,&xbins_recoGenPt[0],50,-50,50);
 		//2 - 2D histogram of gen pT vs reco pT
 		TH2D* genPt_recoPt = new TH2D("genPt_recoPt","genPt_recoPt;genpt;recopt",50,5,50,50,5,50);
 		//3 - gen jet mass vs reco/gen pt
 		TH2D* genJetMass_recoGenPtRatio = new TH2D("genJetMass_recoGenPtRatio","genJetMass_recoGenPtRatio",20,0,10,20,0.8,1.2);
+		//4 - reco jet mass vs reco jet pt
+		TH2D* recoJetMass_recoJetPt = new TH2D("recoJetMass_recoJetPt","recoJetMass_recoJetPt;recoJetMass;recoJetPt",50,0,200,50,0,200);
+		//5 - reco jet mass vs reco jet dr
+		TH2D* recoJetMass_recoJetdR = new TH2D("recoJetMass_recoJetdR","recoJetMass_recoJetdR;recoJetMass;recoJetdR",50,0,200,50,0,2);
+		//6 - reco m_jj ~ W mass vs jet pair dr
+		TH2D* recoJetInvMassW_recoJetPairdR = new TH2D("recoJetInvMassW_recoJetPairdR","recoJetInvMassW_recoJetPairdR;reco m_jj;dR_jj",50,0,150,50,0,2); 
+		//7 - pred jet mass vs pred jet pt
+		TH2D* predJetMass_predJetPt = new TH2D("predJetMass_predJetPt","predJetMass_predJetPt;predJetMass;predJetPt",50,0,200,50,0,200);
+		//8 - pred jet mass vs pred jet dr
+		TH2D* predJetMass_predJetdR = new TH2D("predJetMass_predJetdR","predJetMass_predJetdR;predJetMass;predJetdR",50,0,200,50,0,2);
+		//9 - pred m_jj ~ W mass vs jet pair dr 
+		TH2D* predJetInvMassW_predJetPairdR = new TH2D("predJetInvMassW_predJetPairdR","predJetInvMassW_predJetPairdR;pred m_jj;dR_jj",50,0,150,50,0,2); 
 	
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
@@ -632,15 +805,16 @@ class BHCJetSkimmer{
 		void SetVerbosity(int verb){_verb = verb;}
 		int _verb;
 
-		void FindResonances(vector<Jet>& jets, double& wmass, double& tmass){
+		//void FindResonances(vector<Jet>& jets, double& wmass, double& tmass){
+		void FindResonances(vector<Jet>& jets, pair<int,int>& wmass_idxs, int& tmass_idx){
 			//find W candidates
 			double mW = 80.377;
 			double diff = 999;
 			double mij;
 			int j1, j2;
 			if(jets.size() < 1){
-				wmass = -999;
-				tmass = -999;
+				wmass_idxs = make_pair(-999,-999);
+				tmass_idx = -999;
 				return;
 			}
 			for(int i = 0; i < jets.size(); i++){
@@ -648,14 +822,14 @@ class BHCJetSkimmer{
 					mij = jets[i].invMass(jets[j]);
 					if(fabs(mij - mW) < diff){
 						diff = fabs(mij - mW);
-						wmass = mij;
 						j1 = i;
 						j2 = j;
 					}
 				}
 			}
+			wmass_idxs = make_pair(j1, j2);
 			if(jets.size() < 3){
-				tmass = -999;
+				tmass_idx = -999;
 				return;
 			}
 			//find top candidates
@@ -669,7 +843,7 @@ class BHCJetSkimmer{
 					mij = jets[i].invMass(wJet);
 					if(fabs(mij - mTop) < diff){
 						diff = fabs(mij - mTop);
-						tmass = mij;
+						tmass_idx = i;
 					}
 				}
 			}

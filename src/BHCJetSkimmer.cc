@@ -41,7 +41,7 @@ void BHCJetSkimmer::Skim(){
 
 
 	_prod->SetRecoPtMin(20);
-
+	_prod->PrintPreselection();
         
 	//for computational time
 	vector<double> x_nrhs, y_time;
@@ -67,7 +67,6 @@ void BHCJetSkimmer::Skim(){
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
-			
 		////fill gen jet histograms
 		_prod->GetGenJets(_genjets, i);
 		////fill reco jet histograms
