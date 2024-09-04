@@ -1951,8 +1951,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
 				//E = p for photons
 				//de = fabs(E_k - _base->ECALTrack_p->at(trackidx))/E_k;
-				de = E_k/_base->ECALTrack_p->at(trackidx);
 				if(dr < bestTrackDr){
+					de = E_k/_base->ECALTrack_p->at(trackidx);
 					bestTrackDr = dr;
 					bestde_dr = de;
 					bestTrackIdx = trackidx; 
@@ -3349,7 +3349,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				gridE += rh.E();
 			}
 		}
-		cout << "gridE " << gridE << " seed E " << maxE << endl;
 		return gridE;	
 	}
 

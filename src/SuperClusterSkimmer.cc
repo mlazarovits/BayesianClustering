@@ -90,6 +90,7 @@ void SuperClusterSkimmer::Skim(){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			scs[s].GetJets(rhs);
+			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size()  << endl;
@@ -172,13 +173,40 @@ void SuperClusterSkimmer::Skim(){
 
 
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
-			double r9 = sc3x3E(bhRhs)/_base->SuperCluster_energy->at(scidx);
-			cout << "r9 " << r9 << endl;
-			obs.push_back(r9);
-			obs.push_back(_base->SuperCluster_covEtaEta->at(scidx));
-			obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
-			obs.push_back(_base->SuperCluster_smaj->at(scidx));
-			obs.push_back(_base->SuperCluster_smin->at(scidx));
+			//add CMS benchmark variable - isolation information
+			//need to find associated photon
+			int npho = _base->Photon_energy->size();
+			int np = -999;
+			for(int p = 0; p < npho; p++){
+				if(_base->Photon_scIndex->at(p) == scidx){
+					np = p;
+					break;
+				}
+			}
+			if(np != -999){
+				double r9 = sc3x3E(bhRhs)/_base->SuperCluster_energy->at(scidx);
+				obs.push_back(r9);
+				obs.push_back(_base->SuperCluster_covEtaEta->at(scidx));
+				obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
+				obs.push_back(_base->SuperCluster_smaj->at(scidx));
+				obs.push_back(_base->SuperCluster_smin->at(scidx));
+				obs.push_back(_base->Photon_ecalPFClusterIso->at(np));
+				obs.push_back(_base->Photon_hcalPFClusterIso->at(np));
+				obs.push_back(_base->Photon_trkSumPtHollowConeDR03->at(np));
+			}
+			else{ //not matched to photon
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+			}
+			
+			
+			
 			int ncl = gmm->GetNClusters();
 			for(int c = 0; c < ncl; c++){
 				int label = GetTrainingLabel(scidx,c,gmm);
