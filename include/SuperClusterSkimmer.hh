@@ -46,6 +46,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_emAlpha = 0.5;
 			_gev = 1/30.;
 			_applyFrac = false;
+
+			
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
 			
@@ -3416,7 +3418,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	string _csvname;
 	ofstream _csvfile;
 	void SetObs(){
-		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,ecalPFClusterIso,hcalPFClusterIso,trkSumPtHollowConeDR03,label" << endl;
+		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,ecalPFClusterIsoOvPt,hcalPFClusterIsoOvPt,trkSumPtHollowConeDR03OvPt,HovE_PUcorr,label" << endl;
 
 	}
 
@@ -3432,6 +3434,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			else if(_oname.find("GJets") != string::npos)
 				samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
+			else if(_oname.find("DEG") != string::npos)
+				samp = _oname.substr(_oname.find("DEG"),_oname.find("_AODSIM") - _oname.find("DEG"));
 			else samp = "notFound";
 		}
 		else{
@@ -3444,6 +3448,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			else if(_oname.find("GJets") != string::npos)
 				samp = _oname.substr(_oname.find("GJets"),_oname.find("_superclusters") - _oname.find("GJets"));
+			else if(_oname.find("DEG") != string::npos)
+				samp = _oname.substr(_oname.find("DEG"),_oname.find("_superclusters") - _oname.find("DEG"));
 			else samp = "notFound";
 		}
 		_csvfile << samp << "," << evt << "," << sc << "," << ncl;

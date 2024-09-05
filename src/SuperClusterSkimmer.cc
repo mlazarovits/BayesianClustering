@@ -184,17 +184,42 @@ void SuperClusterSkimmer::Skim(){
 				}
 			}
 			if(np != -999){
-				double r9 = sc3x3E(bhRhs)/_base->SuperCluster_energy->at(scidx);
-				obs.push_back(r9);
-				obs.push_back(_base->SuperCluster_covEtaEta->at(scidx));
-				obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
-				obs.push_back(_base->SuperCluster_smaj->at(scidx));
-				obs.push_back(_base->SuperCluster_smin->at(scidx));
-				obs.push_back(_base->Photon_ecalPFClusterIso->at(np));
-				obs.push_back(_base->Photon_hcalPFClusterIso->at(np));
-				obs.push_back(_base->Photon_trkSumPtHollowConeDR03->at(np));
+				//do 2017 preselection
+				double r9 = _base->Photon_r9->at(np);
+				double HoE = _base->Photon_Hoe_PUcorr->at(np);
+				double Sieie = _base->Photon_SigmaIEtaIEta->at(np);
+				double eIso = _base->Photon_ecalPFClusterIso->at(np);
+				double hIso = _base->Photon_hcalPFClusterIso->at(np);
+				double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
+				double pt = _base->Photon_pt->at(np);
+				
+				if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt){
+					obs.push_back(r9);
+					obs.push_back(Sieie);
+					obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
+					obs.push_back(_base->SuperCluster_smaj->at(scidx));
+					obs.push_back(_base->SuperCluster_smin->at(scidx));
+					//iso/pT
+					obs.push_back(eIso/pt);
+					obs.push_back(hIso/pt);
+					obs.push_back(tIso/pt);
+					//H/E
+					obs.push_back(HoE);
+				}
+				else{ //failed preselection
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+					obs.push_back(-999);
+				}
 			}
 			else{ //not matched to photon
+				obs.push_back(-999);
 				obs.push_back(-999);
 				obs.push_back(-999);
 				obs.push_back(-999);
