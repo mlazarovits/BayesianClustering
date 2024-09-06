@@ -21,7 +21,7 @@ def main():
         proc = proc[:proc.find("/")]
         proc = proc[:proc.rfind("_AOD")]
 
-        bashfilename = "doHadd_"+proc+"_"+oname+".sh"
+        bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
         bashfile = open(bashfilename,"w")
         #write cmds to bash script
         if(args.big):
