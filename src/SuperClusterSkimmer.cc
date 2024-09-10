@@ -186,14 +186,14 @@ void SuperClusterSkimmer::Skim(){
 			if(np != -999){
 				//do 2017 preselection
 				double r9 = _base->Photon_r9->at(np);
-				double HoE = _base->Photon_Hoe_PUcorr->at(np);
+				double HoE = _base->Photon_hadOverEM->at(np);
 				double Sieie = _base->Photon_SigmaIEtaIEta->at(np);
-				double eIso = _base->Photon_ecalPFClusterIso->at(np);
-				double hIso = _base->Photon_hcalPFClusterIso->at(np);
+				double eIso = _base->Photon_ecalRHSumEtConeDR04->at(np);//_base->Photon_ecalPFClusterIso->at(np);
+				double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(np);//_base->Photon_hcalPFClusterIso->at(np);
 				double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
 				double pt = _base->Photon_pt->at(np);
-				
-				if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt){
+				cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+				if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
 					obs.push_back(r9);
 					obs.push_back(Sieie);
 					obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
@@ -203,11 +203,8 @@ void SuperClusterSkimmer::Skim(){
 					obs.push_back(eIso/pt);
 					obs.push_back(hIso/pt);
 					obs.push_back(tIso/pt);
-					//H/E
-					obs.push_back(HoE);
 				}
 				else{ //failed preselection
-					obs.push_back(-999);
 					obs.push_back(-999);
 					obs.push_back(-999);
 					obs.push_back(-999);
@@ -227,9 +224,8 @@ void SuperClusterSkimmer::Skim(){
 				obs.push_back(-999);
 				obs.push_back(-999);
 				obs.push_back(-999);
-				obs.push_back(-999);
 			}
-			
+		cout << "n obs " << obs.size() << endl;			
 			
 			
 			int ncl = gmm->GetNClusters();

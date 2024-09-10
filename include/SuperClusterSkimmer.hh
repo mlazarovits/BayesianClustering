@@ -3418,7 +3418,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	string _csvname;
 	ofstream _csvfile;
 	void SetObs(){
-		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,ecalPFClusterIsoOvPt,hcalPFClusterIsoOvPt,trkSumPtHollowConeDR03OvPt,HovE_PUcorr,label" << endl;
+		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,ecalPFClusterIsoOvPt,hcalPFClusterIsoOvPt,trkSumPtHollowConeDR03OvPt,label" << endl;
 
 	}
 
@@ -3453,6 +3453,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			else samp = "notFound";
 		}
 		_csvfile << samp << "," << evt << "," << sc << "," << ncl;
+		cout << "n inputs " << inputs.size() << endl;
 		for(auto d : inputs)
 			_csvfile << "," << d;
 
