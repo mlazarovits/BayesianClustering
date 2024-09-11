@@ -3387,7 +3387,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
 						label = 0;
 					else
-						label = 1;
+						label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target)
 				}
 				else //no gen match
 					label = -1;
@@ -3434,6 +3434,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			else if(_oname.find("GJets") != string::npos)
 				samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
+			else if(_oname.find("QCD") != string::npos)
+				samp = _oname.substr(_oname.find("QCD"),_oname.find("_AODSIM") - _oname.find("QCD"));
 			else if(_oname.find("DEG") != string::npos)
 				samp = _oname.substr(_oname.find("DEG"),_oname.find("_AODSIM") - _oname.find("DEG"));
 			else samp = "notFound";
@@ -3448,6 +3450,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			else if(_oname.find("GJets") != string::npos)
 				samp = _oname.substr(_oname.find("GJets"),_oname.find("_superclusters") - _oname.find("GJets"));
+			else if(_oname.find("QCD") != string::npos)
+				samp = _oname.substr(_oname.find("QCD"),_oname.find("_superclusters") - _oname.find("QCD"));
 			else if(_oname.find("DEG") != string::npos)
 				samp = _oname.substr(_oname.find("DEG"),_oname.find("_superclusters") - _oname.find("DEG"));
 			else samp = "notFound";
