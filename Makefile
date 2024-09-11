@@ -1,3 +1,4 @@
+
 #include ROOT cflags and libraries
 ROOTCFLAGS  = $(shell root-config --cflags)
 ROOTGLIBS   = $(shell root-config --glibs)
@@ -78,9 +79,10 @@ OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
+
 #specify what to make
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
-all: FullClusterSingle.x FullClusterSkim.x detectorSimNtuples.x detectorSimSkimmer.x SpikeCheck.x 
+all: FullClusterSingle.x FullClusterSkim.x detectorSimNtuples.x detectorSimSkimmer.x SpikeCheck.x
 local: all
 lpc:   all configtar lpclib simconfigtar
 lib: lib/libBayesCluster.so
@@ -137,6 +139,7 @@ lib/libBayesCluster.so: $(SOBJ_FILES)
 	mkdir -p lib
 	$(CXX) -shared -o lib/libBayesianClustering.so $(SOBJ_FILES) $(SGLIBS) -fPIC
 	touch lib/libBayesianClustering.so
+
 
 #where to put object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh

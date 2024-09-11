@@ -135,6 +135,21 @@ There are muliple visualization classes:
 - Then, in your executable be sure to include the header `#include BayesianClustering/BayesianClustering.hh`
 
 
+### Including classes as dictionaries in ROOT
+Sometimes, you may need to add more classes to the ROOT compiler. For example, ROOT cannot fill TBranches with `vector<vector<type>>`. In this case, you will have to add the required class as a dictionary. First, you need to create a `LinkDef.h` file defining the classes. An example of this for the `vector<vector<int>>` class is in the base directory of this repository. Then, you will have to create the dictionary by running the following command
+```
+ rootcling -v4 -f myDict.cxx  -rmf libmyDict.rootmap -rml libmyDict.so LinkDef.h
+```
+Once the dictionary is made, you then need to compile it as a shared library to include in the compilation of the framework. This is done with
+```
+g++ -shared -o libmyDict.so myDict.cxx `root-config --cflags --libs`
+```
+After this step, I usually move the `libmyDict.so` and `libmydict_rdict.pcm` files to the `lib` directory to keep things clean. Then, you will want to add the following commands to all the constructors of the classes that require the new dictionary-based classes
+```
+gSystem->Load("lib/libmyDict.so”);
+```
+I also include this line in the `rootlogon.C` script so it can be read by the interpreter.
+
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
 - The seeding for the Bayesian Hierarchical Clustering is based on the Voronoi diagram implementation of finding geometric nearest neighbors as done in [FastJet](https://arxiv.org/abs/1111.6097)
