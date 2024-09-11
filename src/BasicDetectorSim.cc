@@ -2,7 +2,7 @@
 #include "TMath.h"
 #include "Matrix.hh"
 #include "fastjet/ClusterSequence.hh"
-
+#include <TSystem.h>
 #include <TFile.h>
 #include <algorithm>
 
@@ -12,8 +12,8 @@
 //all energies, masses and momenta are in GeV (same for JetPoints)
 ///////////////////////////
 
-
 BasicDetectorSim::BasicDetectorSim(){
+	gSystem->Load("lib/libvecDict.so");
 	//init parameters to CMS ECAL geometry
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
@@ -47,7 +47,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	}
 	_nSpikes = 0;
 	_evti = 0;
-	_evtj = _nevts;
+	_evtj = 0;
 	//fastjet objects - "AK4" jets
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
@@ -68,6 +68,7 @@ BasicDetectorSim::BasicDetectorSim(){
 
 //ctor with input pythia cmnd file
 BasicDetectorSim::BasicDetectorSim(string infile){
+	gSystem->Load("lib/libvecDict.so");
 	//init parameters to CMS ECAL geometry
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
@@ -102,7 +103,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_nevts = _pythia.mode("Main:numberOfEvents");
 	_nSpikes = 0;
 	_evti = 0;
-	_evtj = _nevts;
+	_evtj = 0;
 	//fastjet objects - "AK4" jets
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
@@ -329,9 +330,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		evt_Etot = 0;
 		
 		//run fastjet
-		fastjet::ClusterSequence cs(fjinputs, _jetdef);
+		_gencs = fastjet::ClusterSequence(fjinputs, _jetdef);
 		//get jets - min 5 pt
-		fjoutputs = cs.inclusive_jets(5.);
+		fjoutputs = _gencs.inclusive_jets(5.);
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
@@ -670,7 +671,6 @@ void BasicDetectorSim::MakeRecHits(){
 			//reset e and t for cal cells
 			etot += e_cell;
 			etot_og += e;
-			nrhs++;			
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
 			
@@ -683,30 +683,15 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			JetPoint jp(x*1e2, y*1e2, z*1e2, t*1e9);
 			jp.SetEnergy(_cal[i][j].at(0));
-			//jp.SetEta(eta);
-			//jp.SetPhi(phi);
 			Jet jet(jp, _PV);
-			//for(auto particle : _recops){
-			//	if(particle.Particle.e() == _cal[i][j].at(0)){
-			//		jet.SetP(particle.Momentum.px(), particle.Momentum.py(), particle.Momentum.pz());
-			//		break;
-			//	}
-			//}
-		
-			//for(auto particle : _recops){
-			//	if(particle.Particle.e() == _cal[i][j].at(0)){
-			//		cout << "gen eta " << particle.Momentum.eta() << " phi " << particle.Momentum.phi() << " energy " << particle.Momentum.e() << " pt " << particle.Momentum.pt() << " mass " << fabs(particle.Momentum.mass()) << " px " << particle.Momentum.px() << " py " << particle.Momentum.py() << " pz " << particle.Momentum.pz() << " reco - gen pt " << jet.pt()  - particle.Momentum.pt() << " reco px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " eta " << jet.eta() << " phi " << jet.phi() << " e " << jet.e() << " reco e^2 - p^2 " << jet.mass() << endl;
-
-			//		break;
-			//	}
-			//}
-			//cout << "jet eta " << jet.eta() << " phi " << jet.phi_std() << " energy " << jet.e() << " pt " << jet.pt() << " mass " << fabs(jet.mass()) << " px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << "\n" << endl;
 			_cal_rhs.push_back(jet);
 			//add particle to fastjet
 			//running fastjet on reco cells
 			//TURN ON HERE TO RUN FASTJET ON RECHITS
-			fjinputs.push_back( fastjet::PseudoJet( jet.px(),
-      			  jet.py(), jet.pz(), jet.e() ) );
+			fastjet::PseudoJet input(jet.px(), jet.py(), jet.pz(), jet.e());
+			input.set_user_index(i*1000 + j); //i = idx / 1000, j = idx % 1000`
+			nrhs++;			
+			fjinputs.push_back(input); 
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
@@ -725,13 +710,13 @@ void BasicDetectorSim::MakeRecHits(){
 	//cout << "reco event total energy " << etot << endl;
 	//cluster reco particles with fastjet	
 	//run fastjet
-	fastjet::ClusterSequence cs(fjinputs, _jetdef);
+	_recocs = fastjet::ClusterSequence(fjinputs, _jetdef);
 	//get jets - min 5 pt
-	fjoutputs = cs.inclusive_jets(5.);
+	fjoutputs = _recocs.inclusive_jets(5.);
 	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
-
+	cout << "fjinputs # " << fjinputs.size() << " " << nrhs << endl;
 	//cout << fjoutputs.size() << " " << " reco jets from " << fjinputs.size() << " inputs " << endl;
 	//for(auto j : _jetsReco){
 	//	cout << "reco jet e " << j.E() << " pt " << j.pt() << " eta " << j.eta() << " phi " << j.phi_std() << " m " << j.m() << endl;
@@ -914,11 +899,14 @@ void BasicDetectorSim::FillGenJets(){
 }
 
 void BasicDetectorSim::FillRecoJets(){
+	cout << "FillRecoJets" << endl;
 	int njets = 0;
-	//vector<fastjet::PseudoJet> consts;
+	vector<fastjet::PseudoJet> consts;
+	vector<fastjet::PseudoJet> uncl_consts = _recocs.unclustered_particles();
+	cout << "# unclustered particles " << uncl_consts.size() << endl;
 	for(auto jet : _jetsReco){
-//		//consts = jet.constituents();
-//		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+		consts = jet.constituents();
+		cout << "# constituents " << consts.size() << endl; 
 //		//for(auto c : consts)
 //			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
 		_jeta.push_back(jet.eta());
@@ -1011,7 +999,6 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
-	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
 
 
 	//reco jets - cells clustered with FJ AK4
@@ -1020,6 +1007,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
 	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
 	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
+	_tree->Branch("Jet_RhIdxs",&_jrhidxs)->SetTitle("Jet rh idxs - FastJet AK4");
 
 
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");

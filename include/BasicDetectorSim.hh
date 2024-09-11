@@ -181,6 +181,11 @@ struct RecoParticle;
 
 		int _verb;
 
+		//cluster sequences for gen and reco jets
+		fastjet::ClusterSequence _gencs;
+		fastjet::ClusterSequence _recocs;
+		
+
 		//for writing
 		TTree* _tree = nullptr;
 		std::unique_ptr<TFile> _file;
@@ -190,6 +195,7 @@ struct RecoParticle;
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
+		vector<vector<int>> _jrhidxs;
 		//pv info
 		double _pvx, _pvy, _pvz;
 		//track info
