@@ -701,6 +701,7 @@ void BasicDetectorSim::MakeRecHits(){
 			_rht.push_back(t*1e9);
 			_rheta.push_back(eta);
 			_rhphi.push_back(phi);
+			_rhids.push_back(i*1000 + j);
 			_nRhs++;
 
 		}
@@ -716,7 +717,6 @@ void BasicDetectorSim::MakeRecHits(){
 	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
-	cout << "fjinputs # " << fjinputs.size() << " " << nrhs << endl;
 	//cout << fjoutputs.size() << " " << " reco jets from " << fjinputs.size() << " inputs " << endl;
 	//for(auto j : _jetsReco){
 	//	cout << "reco jet e " << j.E() << " pt " << j.pt() << " eta " << j.eta() << " phi " << j.phi_std() << " m " << j.m() << endl;
@@ -899,16 +899,14 @@ void BasicDetectorSim::FillGenJets(){
 }
 
 void BasicDetectorSim::FillRecoJets(){
-	cout << "FillRecoJets" << endl;
 	int njets = 0;
 	vector<fastjet::PseudoJet> consts;
-	vector<fastjet::PseudoJet> uncl_consts = _recocs.unclustered_particles();
-	cout << "# unclustered particles " << uncl_consts.size() << endl;
 	for(auto jet : _jetsReco){
 		consts = jet.constituents();
-		cout << "# constituents " << consts.size() << endl; 
-//		//for(auto c : consts)
-//			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
+		_jrhids.push_back({});
+		for(auto c : consts){
+			_jrhids[_jrhids.size()-1].push_back(c.user_index());
+		}	
 		_jeta.push_back(jet.eta());
 		_jphi.push_back(jet.phi());
 		_jenergy.push_back(jet.e());
@@ -985,7 +983,9 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALRecHit_time", &_rht)->SetTitle("rec hit time (ns)");
 	_tree->Branch("ECALRecHit_eta", &_rheta)->SetTitle("rec hit eta");
 	_tree->Branch("ECALRecHit_phi", &_rhphi)->SetTitle("rec hit phi");
+	_tree->Branch("ECALRecHit_ID", &_rhids)->SetTitle("rec hit id");
 	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
+	
 	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV");
 	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV");
 	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV");
@@ -1007,7 +1007,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
 	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
 	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
-	_tree->Branch("Jet_RhIdxs",&_jrhidxs)->SetTitle("Jet rh idxs - FastJet AK4");
+	_tree->Branch("Jet_RhIDs",&_jrhids)->SetTitle("Jet rh ids - FastJet AK4");
 
 
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
@@ -1027,6 +1027,7 @@ void BasicDetectorSim::_reset(){
 	_rht.clear();
 	_rheta.clear();
 	_rhphi.clear();
+	_rhids.clear();
 	_spikeE.clear();
 	_evt = 0;
 	_nRhs = 0;
@@ -1051,6 +1052,10 @@ void BasicDetectorSim::_reset(){
 	_jenergy.clear();
 	_jpt.clear();
 	_jmass.clear();
+
+	for(auto j : _jrhids)
+		j.clear();
+	_jrhids.clear();
 	
 	_trackpx.clear();
 	_trackpy.clear();
