@@ -199,6 +199,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		cout << std::setprecision(5) << "event #" << i << endl;
 		sumEvent = _pythia.event;
 		_evt = i;		
+		//save w idxs
+		set<int> w_idxs;
+		set<int> top_idxs;
 
 		if(_pu){
 			//simulate n pileup events
@@ -290,23 +293,25 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 
 			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
-				//if(find(daughters.begin(), daughters.end(), rp.Particle.mother1()) != daughters.end()){
-				//	cout << "daughter of " << rp.Particle.mother1() << " is " << rp.Particle.id() << " at idx " << p << " with charge " << particle.charge() << " id " << particle.id() << " mother id " << sumEvent[particle.mother1()].id() << endl;
-				//}
-				vector<int> mothers;
+				vector<int> mothers_id;
+				vector<int> mothers_idx;
 				int momidx = 999;
 				int thisp = p;
+				//cout << "mother search for particle " << p << ": " << sumEvent[p].id() << endl;
 				while(thisp > 0){
 					momidx = sumEvent[thisp].mother1();
-					mothers.push_back(abs(sumEvent[momidx].id()));
+					mothers_id.push_back(fabs(sumEvent[momidx].id()));
+					mothers_idx.push_back(momidx);
 					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
-				//look for top quark in mother chain
-				//if(find(mothers.begin(),mothers.end(),6) != mothers.end()) cout << "jet particle eta " << rp.Position.eta() << " phi " << rp.Position.phi() << " E " << rp.Momentum.E() << endl;
+				//need to catch W's from tops
+				vector<int>::iterator momit_top = find(mothers_id.begin(), mothers_id.end(), 6);
+				if(momit_top != mothers_id.end()){
+					int topIdx = mothers_idx[momit_top - mothers_id.begin()];
+					top_idxs.insert(topIdx);
+				}
 			}
-	
-
 	
 			//save tracks (gen information of momentum propagated to detector)
 			//don't save if particle doesn't make it to detector face (with if statement above)
@@ -336,28 +341,74 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
+		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
+			vector<int> kids_id;
+			vector<int> kids_idx = sumEvent[*t].daughterList();
+			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
+			for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
+			cout << endl;
+			//look for W in mother chain
+			vector<int>::iterator momit_w = find(kids_id.begin(),kids_id.end(),24);
+			int Widx;
+			vector<int> wkids_idx;
+			if(momit_w != kids_id.end()){
+				//get W index
+				Widx = kids_idx[momit_w - kids_id.begin()];
+				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
+				cout << "kid idx " << Widx << " id " << kids_id[momit_w - kids_id.begin()] << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
+				while(sumEvent[Widx].daughter1() == sumEvent[Widx].daughter2() || fabs(sumEvent[sumEvent[Widx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[Widx].daughter2()].id()) == 24){
+					cout << "getting daughters of copy for idx " << Widx << endl;
+					//get daughters of W copy decay
+					Widx = sumEvent[Widx].daughter1();
+				}
+				wkids_idx = sumEvent[Widx].daughterList();
 
+			}
+			for(int kk = 0; kk < wkids_idx.size(); kk++)
+				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
+			w_idxs.insert(Widx);
 
-		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
-		//Fill gen jet information
-		FillGenJets();	
-	
-		//make rhs and reconstruct time + energy for particles in evt	
-		MakeRecHits();
-		ReconstructEnergy();
-
-		//fill reco jets after cells have been reconstructed
-		FillRecoJets();
-
-//cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
-		if(_tree != nullptr) _tree->Fill();
-		//reset event
-		sumEvent.clear();
-		_reset();
-		//if only simulating one event, save for GetRecHits
-		if(evt != -1) _cal_rhs.clear();
-		// Reset Fastjet input
-    		fjinputs.clear();
+		}
+		//save info on gen top decays
+		//-1 : not top
+		//0  : fully hadronic (to light quarks)
+		//1  : semi-leptonic
+		//2  : fully leptonic (no taus, including neutrinos)
+		int wid[2];
+		int wcnt = 0;
+		int _genTopId;
+		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
+			vector<int> wkids_idx = sumEvent[*w].daughterList();
+			//W daughters
+			//check for 2 daughters
+			if(wkids_idx.size() == 2){
+				vector<int> had = {1, 2, 3, 4};
+				vector<int> lep = {11, 12, 13, 14};
+				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
+				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
+				//if both W decay products are had -> w1 = 0
+				//if both W decay products are lep -> w1 = 1
+				//else (1 decay product had, the other lep) -> w1 = -1 (shouldnt happen)
+				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()) 
+					wid[wcnt] = 0;
+				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
+					wid[wcnt] = 1;
+				else wid[wcnt] = -1;
+			}
+			wcnt++; 
+		}
+		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
+		if(top_idxs.size() > 1){
+			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
+			//if both had -> fully had
+			//if 1 had -> semi lep
+			//if both lep -> fully lep
+			if(wid[0] == 0 && wid[1] == 0) _genTopId = 0;
+			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
+			else _genTopId = 1;
+		}
+		else _genTopId = -1;
+		cout << "gentopid " << _genTopId << endl;	
 		fjinputs.resize(0);
 		fjoutputs.clear();
 		fjoutputs.resize(0);

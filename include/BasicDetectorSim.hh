@@ -23,7 +23,7 @@
 
 using std::string;
 using Pythia = Pythia8::Pythia;
-
+using std::set;
 using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
 using XYZTVector = ROOT::Math::XYZTVector;
 class BasicDetectorSim{
