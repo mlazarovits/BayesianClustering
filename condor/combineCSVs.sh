@@ -10,9 +10,10 @@ do
 	part2=$(basename "$part1")
 	part3=$(basename "$i")
 	
-	outname=$i$part2"_"$part3
+	outname=$i"/"$part2"_"$part3
 	head -n 1 $i/out/*.0.csv > $outname.csv
 	tail -n+2 -q $i/out/*.csv >> $outname.csv
 	
 	echo "Wrote to" $outname".csv"
+	echo ""
 done
