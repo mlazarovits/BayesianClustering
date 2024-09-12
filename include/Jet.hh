@@ -297,7 +297,7 @@ class Jet{
 			//set jet center as weighted sum of subclusters
 			_eta = _mu.at(0,0);
 			_phi = _mu.at(2,0);
-			_time = _mu.at(2,0);
+			_t = _mu.at(2,0);
 	
 			_kt2 = _px*_px + _py*_py;
 			_mass = mass();
