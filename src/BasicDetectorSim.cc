@@ -196,8 +196,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		}
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-		cout << std::setprecision(5) << "event #" << i << endl;
+		//cout << std::setprecision(5) << "event #" << i << endl;
 		sumEvent = _pythia.event;
+		cout << std::setprecision(5) << "event #" << i << " has " << sumEvent.size() << " particles" << endl;
 		_evt = i;		
 		//save w idxs
 		set<int> w_idxs;
@@ -341,15 +342,36 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
+
+		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
+		//Fill gen jet information
+		FillGenJets();	
+	
+		//make rhs and reconstruct time + energy for particles in evt	
+		MakeRecHits();
+		ReconstructEnergy();
+
+		//fill reco jets after cells have been reconstructed
+		FillRecoJets();
+
+		
+		//get top decay gen info
+		cout << "top_idxs size " << top_idxs.size() << endl;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
 			vector<int> kids_id;
 			vector<int> kids_idx = sumEvent[*t].daughterList();
 			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
 			for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
 			cout << endl;
+			cout << "this top - mother1 " << sumEvent[*t].mother1() << " mother2 " << sumEvent[*t].mother2() << endl;
+			vector<int> moms_idx = sumEvent[*t].motherList();
+			cout << "top idx " << *t << " has " << moms_idx.size() << " mothers";
+			for(auto k : moms_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; }
+			cout << endl;
+			
 			//look for W in mother chain
 			vector<int>::iterator momit_w = find(kids_id.begin(),kids_id.end(),24);
-			int Widx;
+			int Widx = -999;
 			vector<int> wkids_idx;
 			if(momit_w != kids_id.end()){
 				//get W index
@@ -366,7 +388,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			}
 			for(int kk = 0; kk < wkids_idx.size(); kk++)
 				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
-			w_idxs.insert(Widx);
+			if(Widx != -999) w_idxs.insert(Widx);
 
 		}
 		//save info on gen top decays
@@ -377,41 +399,75 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		int wid[2];
 		int wcnt = 0;
 		int _genTopId;
+		vector<int> had = {1, 2, 3, 4};
+		vector<int> lep = {11, 12, 13, 14};
+		cout << "w_idxs size " << w_idxs.size() << endl;
 		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
+			cout << "w idx " << *w << endl;
 			vector<int> wkids_idx = sumEvent[*w].daughterList();
 			//W daughters
 			//check for 2 daughters
 			if(wkids_idx.size() == 2){
-				vector<int> had = {1, 2, 3, 4};
-				vector<int> lep = {11, 12, 13, 14};
+				cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
 				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
 				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
+				cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
 				//if both W decay products are had -> w1 = 0
 				//if both W decay products are lep -> w1 = 1
-				//else (1 decay product had, the other lep) -> w1 = -1 (shouldnt happen)
+				//else (1 W decay product had, the other lep) -> w1 = -1 (shouldnt happen)
+				cout << "wnct " << wcnt << endl;
 				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()) 
 					wid[wcnt] = 0;
 				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
 					wid[wcnt] = 1;
 				else wid[wcnt] = -1;
+				wcnt++; 
 			}
-			wcnt++; 
+			cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
 		}
+		cout << "Finished categorizing W decays" << endl;
 		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
 		if(top_idxs.size() > 1){
 			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
+			int top_idx1, top_idx2;
+			top_idx1 = *top_idxs.begin();
+			top_idx2 = *next(top_idxs.begin());
+			cout << "top idx1 " << top_idx1 << " top idx2 " << top_idx2 << endl;
 			//if both had -> fully had
 			//if 1 had -> semi lep
 			//if both lep -> fully lep
 			if(wid[0] == 0 && wid[1] == 0) _genTopId = 0;
 			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
 			else _genTopId = 1;
+			
+			if(_genTopId == 0){
+				_topPt_had.push_back(sumEvent[top_idx1].pT());
+				_topPt_had.push_back(sumEvent[top_idx2].pT());
+			}
+			if(_genTopId == 1){
+				_topPt_hadlep.push_back(sumEvent[top_idx1].pT());
+				_topPt_hadlep.push_back(sumEvent[top_idx2].pT());
+			}
+			if(_genTopId == 2){
+				_topPt_lep.push_back(sumEvent[top_idx1].pT());
+				_topPt_lep.push_back(sumEvent[top_idx2].pT());
+			}
 		}
 		else _genTopId = -1;
-		cout << "gentopid " << _genTopId << endl;	
+		cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
+		
+		if(_tree != nullptr) _tree->Fill();
+		//reset event
+		sumEvent.clear();
+		_reset();
+		//if only simulating one event, save for GetRecHits
+		if(evt != -1) _cal_rhs.clear();
+		// Reset Fastjet input
+	
 		fjinputs.resize(0);
 		fjoutputs.clear();
 		fjoutputs.resize(0);
+		cout << endl;
 	}
 }
 
@@ -1050,6 +1106,11 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	
+	//gen top info
+	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
+	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
+	_tree->Branch("Top_genPt_leptonic",&_topPt_had)->SetTitle("gen top pt, fully leptonic system");
 
 
 	//reco jets - cells clustered with FJ AK4
@@ -1097,6 +1158,9 @@ void BasicDetectorSim::_reset(){
 	_jgenergy.clear();
 	_jgpt.clear();
 	_jgmass.clear();
+	_topPt_had.clear();
+	_topPt_hadlep.clear();
+	_topPt_lep.clear();
 
 	_jeta.clear();
 	_jphi.clear();

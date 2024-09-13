@@ -194,6 +194,8 @@ struct RecoParticle;
 		vector<unsigned int> _rhids;
 		//gen jets 
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//gen info - top
+		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		vector<vector<unsigned int>> _jrhids;
