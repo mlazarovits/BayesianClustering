@@ -190,6 +190,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_evtj = _nevts;
 	}
 	double evt_Etot = 0;
+	int nhad = 0;
+	int nlep = 0;
 	for(int i = _evti; i < _evtj; i++){
 		if(evt != -1){
 			if(i != evt) continue;
@@ -439,19 +441,24 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(wid[0] == 0 && wid[1] == 0) _genTopId = 0;
 			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
 			else _genTopId = 1;
-			
+		
+
+			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;	
 			if(_genTopId == 0){
 				_topPt_had.push_back(sumEvent[top_idx1].pT());
 				_topPt_had.push_back(sumEvent[top_idx2].pT());
+				nhad++;
 			}
-			if(_genTopId == 1){
+			else if(_genTopId == 1){
 				_topPt_hadlep.push_back(sumEvent[top_idx1].pT());
 				_topPt_hadlep.push_back(sumEvent[top_idx2].pT());
+				nlep++;
 			}
-			if(_genTopId == 2){
+			else if(_genTopId == 2){
 				_topPt_lep.push_back(sumEvent[top_idx1].pT());
 				_topPt_lep.push_back(sumEvent[top_idx2].pT());
 			}
+			else continue;
 		}
 		else _genTopId = -1;
 		cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
@@ -469,6 +476,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		fjoutputs.resize(0);
 		cout << endl;
 	}
+cout << "nhad " << nhad << " nlep " << nlep << endl;
 }
 
 //updates pvec of p
@@ -1110,7 +1118,7 @@ void BasicDetectorSim::InitTree(string fname){
 	//gen top info
 	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
 	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
-	_tree->Branch("Top_genPt_leptonic",&_topPt_had)->SetTitle("gen top pt, fully leptonic system");
+	_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
 
 
 	//reco jets - cells clustered with FJ AK4
