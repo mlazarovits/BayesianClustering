@@ -247,6 +247,7 @@ class Jet{
 		}
 		//constituents can be subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
 		//also makes sure constituent and overall jet have same vertex
+		//if jet is made of subclusters, set the jet's four vector to be weighted avg of subcluster four-vectors
 		void AddConstituent(Jet& jt){
 			jt.SetVertex(_vtx);
 			_constituents.push_back(jt);
@@ -259,21 +260,50 @@ class Jet{
 				_mu = _constituents[0]._mu;
 				_pi = _constituents[0]._pi; //should be 1
 			}
-			else{
-				for(int j = 0; j < _constituents.size(); j++){
+			else{ //set mean as probability-weighted center and covariance from that center
+				double norm = 0;
+				for(int k = 0; k < _constituents.size(); k++){
 					Matrix mu;
-					mu.mult(_constituents[j]._mu, _constituents[j]._pi);
+					mu.mult(_constituents[k]._mu, _constituents[k]._pi);
 					_mu.add(mu);
-
-					Matrix cov;	
-					cov.mult(_constituents[j]._cov, _constituents[j]._pi);
-					_cov.add(cov);
-					
-					norm += _constituents[j]._pi;
+					norm += _constituents[k]._pi;
+				}
+				//for covariance, take into account covariance of constituents with extra term x'_k = x_k +- sig_k
+				_cov = Matrix(3,3);
+				for(int k = 0; k < _constituents.size(); k++){
+					double entry = 0;
+					for(int i = 0; i < 3; i++){
+						for(int j = 0; j < 3; j++){
+							entry += _constituents[k]._pi*((_constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j)) - _mu.at(i,0))*((_constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j)) - _mu.at(j,0));
+						}
+					}
 				}
 				_mu.mult(_mu,1./norm);		 
 				_cov.mult(_cov,1./norm);		 
-			} 
+			}
+			//reset jet's four-vector to be sum of constituent four-vectors
+			for(auto jet : _constituents){
+				_px += jet.GetCoefficient()*jet.px();
+				_py += jet.GetCoefficient()*jet.py();
+				_pz += jet.GetCoefficient()*jet.pz();
+				_E  += jet.GetCoefficient()*jet.E();
+				
+			}
+			_px /= norm;
+			_py /= norm;
+			_pz /= norm;
+			_E /= norm;
+		
+			//set jet center as weighted sum of subclusters
+			_eta = _mu.at(0,0);
+			_phi = _mu.at(2,0);
+			_t = _mu.at(2,0);
+	
+			_kt2 = _px*_px + _py*_py;
+			_mass = mass();
+
+			_ensure_valid_rap_phi();
+ 
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
 		vector<Jet>& GetConstituents(){

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed May  8 12:57:42 2024 by ROOT version 6.28/06
+// Wed Sep 11 14:43:24 2024 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
 // found on file: simNtuples_test_ttbar.root
 //////////////////////////////////////////////////////////
@@ -32,6 +32,7 @@ public :
    vector<double>  *ECALRecHit_time;
    vector<double>  *ECALRecHit_eta;
    vector<double>  *ECALRecHit_phi;
+   vector<unsigned int> *ECALRecHit_ID;
    Int_t           nRHs;
    Double_t        PV_x;
    Double_t        PV_y;
@@ -49,6 +50,7 @@ public :
    vector<double>  *Jet_energy;
    vector<double>  *Jet_pt;
    vector<double>  *Jet_mass;
+   vector<vector<unsigned int> > *Jet_RhIDs;
    vector<double>  *Track_px;
    vector<double>  *Track_py;
    vector<double>  *Track_pz;
@@ -64,6 +66,7 @@ public :
    TBranch        *b_ECALRecHit_time;   //!
    TBranch        *b_ECALRecHit_eta;   //!
    TBranch        *b_ECALRecHit_phi;   //!
+   TBranch        *b_ECALRecHit_ID;   //!
    TBranch        *b_nRHs;   //!
    TBranch        *b_PV_x;   //!
    TBranch        *b_PV_y;   //!
@@ -81,6 +84,7 @@ public :
    TBranch        *b_Jet_energy;   //!
    TBranch        *b_Jet_pt;   //!
    TBranch        *b_Jet_mass;   //!
+   TBranch        *b_Jet_RhIDs;   //!
    TBranch        *b_Track_px;   //!
    TBranch        *b_Track_py;   //!
    TBranch        *b_Track_pz;   //!
@@ -161,6 +165,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    ECALRecHit_time = 0;
    ECALRecHit_eta = 0;
    ECALRecHit_phi = 0;
+   ECALRecHit_ID = 0;
    ECALSpike_energy = 0;
    Jet_genEta = 0;
    Jet_genPhi = 0;
@@ -172,6 +177,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_energy = 0;
    Jet_pt = 0;
    Jet_mass = 0;
+   Jet_RhIDs = 0;
    Track_px = 0;
    Track_py = 0;
    Track_pz = 0;
@@ -191,6 +197,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("ECALRecHit_time", &ECALRecHit_time, &b_ECALRecHit_time);
    fChain->SetBranchAddress("ECALRecHit_eta", &ECALRecHit_eta, &b_ECALRecHit_eta);
    fChain->SetBranchAddress("ECALRecHit_phi", &ECALRecHit_phi, &b_ECALRecHit_phi);
+   fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
    fChain->SetBranchAddress("nRHs", &nRHs, &b_nRHs);
    fChain->SetBranchAddress("PV_x", &PV_x, &b_PV_x);
    fChain->SetBranchAddress("PV_y", &PV_y, &b_PV_y);
@@ -208,6 +215,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
    fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
    fChain->SetBranchAddress("Jet_mass", &Jet_mass, &b_Jet_mass);
+   fChain->SetBranchAddress("Jet_RhIDs", &Jet_RhIDs, &b_Jet_RhIDs);
    fChain->SetBranchAddress("Track_px", &Track_px, &b_Track_px);
    fChain->SetBranchAddress("Track_py", &Track_py, &b_Track_py);
    fChain->SetBranchAddress("Track_pz", &Track_pz, &b_Track_pz);

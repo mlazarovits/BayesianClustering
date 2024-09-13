@@ -166,6 +166,7 @@ Jet::Jet(const vector<Jet>& jets){
 }
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
+//no weighting yet because if this is the only component, weight (ie pi) should be 1
 Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx){
 	_E = E;
 	_eta =  mu.at(0,0);

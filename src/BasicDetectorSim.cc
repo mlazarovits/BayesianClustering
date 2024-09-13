@@ -2,7 +2,7 @@
 #include "TMath.h"
 #include "Matrix.hh"
 #include "fastjet/ClusterSequence.hh"
-
+#include <TSystem.h>
 #include <TFile.h>
 #include <algorithm>
 
@@ -12,8 +12,8 @@
 //all energies, masses and momenta are in GeV (same for JetPoints)
 ///////////////////////////
 
-
 BasicDetectorSim::BasicDetectorSim(){
+	gSystem->Load("lib/libvecDict.so");
 	//init parameters to CMS ECAL geometry
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
@@ -47,7 +47,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	}
 	_nSpikes = 0;
 	_evti = 0;
-	_evtj = _nevts;
+	_evtj = 0;
 	//fastjet objects - "AK4" jets
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
@@ -68,6 +68,7 @@ BasicDetectorSim::BasicDetectorSim(){
 
 //ctor with input pythia cmnd file
 BasicDetectorSim::BasicDetectorSim(string infile){
+	gSystem->Load("lib/libvecDict.so");
 	//init parameters to CMS ECAL geometry
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
@@ -102,7 +103,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_nevts = _pythia.mode("Main:numberOfEvents");
 	_nSpikes = 0;
 	_evti = 0;
-	_evtj = _nevts;
+	_evtj = 0;
 	//fastjet objects - "AK4" jets
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
@@ -195,9 +196,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		}
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
-		cout << std::setprecision(5) << "event #" << i << endl;
+		//cout << std::setprecision(5) << "event #" << i << endl;
 		sumEvent = _pythia.event;
+		cout << std::setprecision(5) << "event #" << i << " has " << sumEvent.size() << " particles" << endl;
 		_evt = i;		
+		//save w idxs
+		set<int> w_idxs;
+		set<int> top_idxs;
 
 		if(_pu){
 			//simulate n pileup events
@@ -289,23 +294,25 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 
 			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
-				//if(find(daughters.begin(), daughters.end(), rp.Particle.mother1()) != daughters.end()){
-				//	cout << "daughter of " << rp.Particle.mother1() << " is " << rp.Particle.id() << " at idx " << p << " with charge " << particle.charge() << " id " << particle.id() << " mother id " << sumEvent[particle.mother1()].id() << endl;
-				//}
-				vector<int> mothers;
+				vector<int> mothers_id;
+				vector<int> mothers_idx;
 				int momidx = 999;
 				int thisp = p;
+				//cout << "mother search for particle " << p << ": " << sumEvent[p].id() << endl;
 				while(thisp > 0){
 					momidx = sumEvent[thisp].mother1();
-					mothers.push_back(abs(sumEvent[momidx].id()));
+					mothers_id.push_back(fabs(sumEvent[momidx].id()));
+					mothers_idx.push_back(momidx);
 					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
-				//look for top quark in mother chain
-				//if(find(mothers.begin(),mothers.end(),6) != mothers.end()) cout << "jet particle eta " << rp.Position.eta() << " phi " << rp.Position.phi() << " E " << rp.Momentum.E() << endl;
+				//need to catch W's from tops
+				vector<int>::iterator momit_top = find(mothers_id.begin(), mothers_id.end(), 6);
+				if(momit_top != mothers_id.end()){
+					int topIdx = mothers_idx[momit_top - mothers_id.begin()];
+					top_idxs.insert(topIdx);
+				}
 			}
-	
-
 	
 			//save tracks (gen information of momentum propagated to detector)
 			//don't save if particle doesn't make it to detector face (with if statement above)
@@ -329,13 +336,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		evt_Etot = 0;
 		
 		//run fastjet
-		fastjet::ClusterSequence cs(fjinputs, _jetdef);
+		_gencs = fastjet::ClusterSequence(fjinputs, _jetdef);
 		//get jets - min 5 pt
-		fjoutputs = cs.inclusive_jets(5.);
+		fjoutputs = _gencs.inclusive_jets(5.);
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
-
 
 		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
 		//Fill gen jet information
@@ -348,7 +354,108 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//fill reco jets after cells have been reconstructed
 		FillRecoJets();
 
-//cout << "event: " << i << " " << _recops.size() << " particles " << _jets.size() << " true jets - rhEs: " << _rhE.size() << " nRhs: " << _nRhs << " nSpikes: " << _nSpikes << " nentries " << _tree->GetEntries() << endl;
+		
+		//get top decay gen info
+		cout << "top_idxs size " << top_idxs.size() << endl;
+		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
+			vector<int> kids_id;
+			vector<int> kids_idx = sumEvent[*t].daughterList();
+			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
+			for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
+			cout << endl;
+			cout << "this top - mother1 " << sumEvent[*t].mother1() << " mother2 " << sumEvent[*t].mother2() << endl;
+			vector<int> moms_idx = sumEvent[*t].motherList();
+			cout << "top idx " << *t << " has " << moms_idx.size() << " mothers";
+			for(auto k : moms_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; }
+			cout << endl;
+			
+			//look for W in mother chain
+			vector<int>::iterator momit_w = find(kids_id.begin(),kids_id.end(),24);
+			int Widx = -999;
+			vector<int> wkids_idx;
+			if(momit_w != kids_id.end()){
+				//get W index
+				Widx = kids_idx[momit_w - kids_id.begin()];
+				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
+				cout << "kid idx " << Widx << " id " << kids_id[momit_w - kids_id.begin()] << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
+				while(sumEvent[Widx].daughter1() == sumEvent[Widx].daughter2() || fabs(sumEvent[sumEvent[Widx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[Widx].daughter2()].id()) == 24){
+					cout << "getting daughters of copy for idx " << Widx << endl;
+					//get daughters of W copy decay
+					Widx = sumEvent[Widx].daughter1();
+				}
+				wkids_idx = sumEvent[Widx].daughterList();
+
+			}
+			for(int kk = 0; kk < wkids_idx.size(); kk++)
+				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
+			if(Widx != -999) w_idxs.insert(Widx);
+
+		}
+		//save info on gen top decays
+		//-1 : not top
+		//0  : fully hadronic (to light quarks)
+		//1  : semi-leptonic
+		//2  : fully leptonic (no taus, including neutrinos)
+		int wid[2];
+		int wcnt = 0;
+		int _genTopId;
+		vector<int> had = {1, 2, 3, 4};
+		vector<int> lep = {11, 12, 13, 14};
+		cout << "w_idxs size " << w_idxs.size() << endl;
+		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
+			cout << "w idx " << *w << endl;
+			vector<int> wkids_idx = sumEvent[*w].daughterList();
+			//W daughters
+			//check for 2 daughters
+			if(wkids_idx.size() == 2){
+				cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
+				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
+				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
+				cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
+				//if both W decay products are had -> w1 = 0
+				//if both W decay products are lep -> w1 = 1
+				//else (1 W decay product had, the other lep) -> w1 = -1 (shouldnt happen)
+				cout << "wnct " << wcnt << endl;
+				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()) 
+					wid[wcnt] = 0;
+				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
+					wid[wcnt] = 1;
+				else wid[wcnt] = -1;
+				wcnt++; 
+			}
+			cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
+		}
+		cout << "Finished categorizing W decays" << endl;
+		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
+		if(top_idxs.size() > 1){
+			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
+			int top_idx1, top_idx2;
+			top_idx1 = *top_idxs.begin();
+			top_idx2 = *next(top_idxs.begin());
+			cout << "top idx1 " << top_idx1 << " top idx2 " << top_idx2 << endl;
+			//if both had -> fully had
+			//if 1 had -> semi lep
+			//if both lep -> fully lep
+			if(wid[0] == 0 && wid[1] == 0) _genTopId = 0;
+			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
+			else _genTopId = 1;
+			
+			if(_genTopId == 0){
+				_topPt_had.push_back(sumEvent[top_idx1].pT());
+				_topPt_had.push_back(sumEvent[top_idx2].pT());
+			}
+			if(_genTopId == 1){
+				_topPt_hadlep.push_back(sumEvent[top_idx1].pT());
+				_topPt_hadlep.push_back(sumEvent[top_idx2].pT());
+			}
+			if(_genTopId == 2){
+				_topPt_lep.push_back(sumEvent[top_idx1].pT());
+				_topPt_lep.push_back(sumEvent[top_idx2].pT());
+			}
+		}
+		else _genTopId = -1;
+		cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
+		
 		if(_tree != nullptr) _tree->Fill();
 		//reset event
 		sumEvent.clear();
@@ -356,10 +463,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//if only simulating one event, save for GetRecHits
 		if(evt != -1) _cal_rhs.clear();
 		// Reset Fastjet input
-    		fjinputs.clear();
+	
 		fjinputs.resize(0);
 		fjoutputs.clear();
 		fjoutputs.resize(0);
+		cout << endl;
 	}
 }
 
@@ -670,7 +778,6 @@ void BasicDetectorSim::MakeRecHits(){
 			//reset e and t for cal cells
 			etot += e_cell;
 			etot_og += e;
-			nrhs++;			
 			_cal[i][j].SetValue(e_cell, 0);
 			_cal[i][j].SetValue(t_cell, 1);		
 			
@@ -683,30 +790,15 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			JetPoint jp(x*1e2, y*1e2, z*1e2, t*1e9);
 			jp.SetEnergy(_cal[i][j].at(0));
-			//jp.SetEta(eta);
-			//jp.SetPhi(phi);
 			Jet jet(jp, _PV);
-			//for(auto particle : _recops){
-			//	if(particle.Particle.e() == _cal[i][j].at(0)){
-			//		jet.SetP(particle.Momentum.px(), particle.Momentum.py(), particle.Momentum.pz());
-			//		break;
-			//	}
-			//}
-		
-			//for(auto particle : _recops){
-			//	if(particle.Particle.e() == _cal[i][j].at(0)){
-			//		cout << "gen eta " << particle.Momentum.eta() << " phi " << particle.Momentum.phi() << " energy " << particle.Momentum.e() << " pt " << particle.Momentum.pt() << " mass " << fabs(particle.Momentum.mass()) << " px " << particle.Momentum.px() << " py " << particle.Momentum.py() << " pz " << particle.Momentum.pz() << " reco - gen pt " << jet.pt()  - particle.Momentum.pt() << " reco px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " eta " << jet.eta() << " phi " << jet.phi() << " e " << jet.e() << " reco e^2 - p^2 " << jet.mass() << endl;
-
-			//		break;
-			//	}
-			//}
-			//cout << "jet eta " << jet.eta() << " phi " << jet.phi_std() << " energy " << jet.e() << " pt " << jet.pt() << " mass " << fabs(jet.mass()) << " px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << "\n" << endl;
 			_cal_rhs.push_back(jet);
 			//add particle to fastjet
 			//running fastjet on reco cells
 			//TURN ON HERE TO RUN FASTJET ON RECHITS
-			fjinputs.push_back( fastjet::PseudoJet( jet.px(),
-      			  jet.py(), jet.pz(), jet.e() ) );
+			fastjet::PseudoJet input(jet.px(), jet.py(), jet.pz(), jet.e());
+			input.set_user_index(i*1000 + j); //i = idx / 1000, j = idx % 1000`
+			nrhs++;			
+			fjinputs.push_back(input); 
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
@@ -716,6 +808,7 @@ void BasicDetectorSim::MakeRecHits(){
 			_rht.push_back(t*1e9);
 			_rheta.push_back(eta);
 			_rhphi.push_back(phi);
+			_rhids.push_back(i*1000 + j);
 			_nRhs++;
 
 		}
@@ -725,13 +818,12 @@ void BasicDetectorSim::MakeRecHits(){
 	//cout << "reco event total energy " << etot << endl;
 	//cluster reco particles with fastjet	
 	//run fastjet
-	fastjet::ClusterSequence cs(fjinputs, _jetdef);
+	_recocs = fastjet::ClusterSequence(fjinputs, _jetdef);
 	//get jets - min 5 pt
-	fjoutputs = cs.inclusive_jets(5.);
+	fjoutputs = _recocs.inclusive_jets(5.);
 	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
 	//sort jets by pt
 	_jetsReco = sorted_by_pt(_jetsReco);
-
 	//cout << fjoutputs.size() << " " << " reco jets from " << fjinputs.size() << " inputs " << endl;
 	//for(auto j : _jetsReco){
 	//	cout << "reco jet e " << j.E() << " pt " << j.pt() << " eta " << j.eta() << " phi " << j.phi_std() << " m " << j.m() << endl;
@@ -915,12 +1007,13 @@ void BasicDetectorSim::FillGenJets(){
 
 void BasicDetectorSim::FillRecoJets(){
 	int njets = 0;
-	//vector<fastjet::PseudoJet> consts;
+	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jetsReco){
-//		//consts = jet.constituents();
-//		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
-//		//for(auto c : consts)
-//			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
+		consts = jet.constituents();
+		_jrhids.push_back({});
+		for(auto c : consts){
+			_jrhids[_jrhids.size()-1].push_back(c.user_index());
+		}	
 		_jeta.push_back(jet.eta());
 		_jphi.push_back(jet.phi());
 		_jenergy.push_back(jet.e());
@@ -997,7 +1090,9 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALRecHit_time", &_rht)->SetTitle("rec hit time (ns)");
 	_tree->Branch("ECALRecHit_eta", &_rheta)->SetTitle("rec hit eta");
 	_tree->Branch("ECALRecHit_phi", &_rhphi)->SetTitle("rec hit phi");
+	_tree->Branch("ECALRecHit_ID", &_rhids)->SetTitle("rec hit id");
 	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
+	
 	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV");
 	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV");
 	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV");
@@ -1011,7 +1106,11 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
-	//_tree->Branch("Jet_genRhIdxs",&_jgrhidxs)->SetTitle("Jet gen rh idxs - FastJet AK4");
+	
+	//gen top info
+	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
+	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
+	_tree->Branch("Top_genPt_leptonic",&_topPt_had)->SetTitle("gen top pt, fully leptonic system");
 
 
 	//reco jets - cells clustered with FJ AK4
@@ -1020,6 +1119,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
 	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
 	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
+	_tree->Branch("Jet_RhIDs",&_jrhids)->SetTitle("Jet rh ids - FastJet AK4");
 
 
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
@@ -1039,6 +1139,7 @@ void BasicDetectorSim::_reset(){
 	_rht.clear();
 	_rheta.clear();
 	_rhphi.clear();
+	_rhids.clear();
 	_spikeE.clear();
 	_evt = 0;
 	_nRhs = 0;
@@ -1057,12 +1158,19 @@ void BasicDetectorSim::_reset(){
 	_jgenergy.clear();
 	_jgpt.clear();
 	_jgmass.clear();
+	_topPt_had.clear();
+	_topPt_hadlep.clear();
+	_topPt_lep.clear();
 
 	_jeta.clear();
 	_jphi.clear();
 	_jenergy.clear();
 	_jpt.clear();
 	_jmass.clear();
+
+	for(auto j : _jrhids)
+		j.clear();
+	_jrhids.clear();
 	
 	_trackpx.clear();
 	_trackpy.clear();

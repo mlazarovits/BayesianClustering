@@ -23,7 +23,7 @@
 
 using std::string;
 using Pythia = Pythia8::Pythia;
-
+using std::set;
 using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
 using XYZTVector = ROOT::Math::XYZTVector;
 class BasicDetectorSim{
@@ -181,15 +181,24 @@ struct RecoParticle;
 
 		int _verb;
 
+		//cluster sequences for gen and reco jets
+		fastjet::ClusterSequence _gencs;
+		fastjet::ClusterSequence _recocs;
+		
+
 		//for writing
 		TTree* _tree = nullptr;
 		std::unique_ptr<TFile> _file;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
+		vector<unsigned int> _rhids;
 		//gen jets 
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//gen info - top
+		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
+		vector<vector<unsigned int>> _jrhids;
 		//pv info
 		double _pvx, _pvy, _pvz;
 		//track info

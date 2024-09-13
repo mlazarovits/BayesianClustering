@@ -109,7 +109,7 @@ void BHCJetSkimmer::Skim(){
 		}
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
-		cout << "y time entry " << y_time[i-1] << endl;	
+		cout << "y time entry " << y_time[i-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		//clean trees (remove mirror point or nullptrs)
 		CleanTrees(trees);

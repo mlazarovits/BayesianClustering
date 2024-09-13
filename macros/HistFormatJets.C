@@ -225,7 +225,7 @@ cout << "title " << xtit << endl;
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
-		hist[i]->GetYaxis()->SetRangeUser(miny, 3*maxy);
+		hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
 		
 
 		legentry = hist[i]->GetTitle();
