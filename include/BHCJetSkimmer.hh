@@ -106,6 +106,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(predJetMass_predJetPt);
 			_hists2D.push_back(predJetMass_predJetSize);
 			_hists2D.push_back(predJetInvMassW_predJetPairjetSize); 
+			_hists2D.push_back(predJetPt_predJetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -238,14 +239,15 @@ class BHCJetSkimmer{
 				njets = _predJets.size();
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+					//cout << "calc jet size for jet " << j << endl;
 					dr = CalcJetSize(_predJets[j]);
-					if(p != 0) cout << "pred jet j " << j << " dr " << dr << endl;
+					//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
 					Matrix cov = _predJets[j].GetCovariance();
 				
 					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
 					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
-					_procCats[p].hists1D[0][6]->Fill(dr);	
+					if(dr != -999) _procCats[p].hists1D[0][6]->Fill(dr);	
 					_procCats[p].hists1D[0][47]->Fill(cov.at(0,0));	
 					_procCats[p].hists1D[0][48]->Fill(cov.at(1,1));	
 					_procCats[p].hists1D[0][49]->Fill(cov.at(2,2));	
@@ -255,6 +257,7 @@ class BHCJetSkimmer{
 					
 					_procCats[p].hists2D[0][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
 					_procCats[p].hists2D[0][8]->Fill(_predJets[j].mass(), dr);
+					_procCats[p].hists2D[0][10]->Fill(_predJets[j].pt(), dr);
 
 
 					//get subcluster information
@@ -290,14 +293,14 @@ class BHCJetSkimmer{
 				njets = _recojets.size();
 				for(int j = 0; j < _recojets.size(); j++){
 					dr = CalcJetSize(_recojets[j]);
-					//cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " dr " << dr << endl;
+					cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " dr " << dr << endl;
 					_procCats[p].hists1D[0][19]->Fill(_recojets[j].e());
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					//dr hist is #19
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
 					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
-					_procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), dr);
+					if(dr != -999) _procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), dr);
 				}
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
@@ -430,7 +433,6 @@ class BHCJetSkimmer{
 		//can change to rhs later
 		double CalcJetSize(const Jet& jet){
 			int nSCs = jet.GetNConstituents();
-			
 			//if no subclusters (ie reco jet), take dR to be max distance between rechits
 			if(nSCs < 1){
 				double maxsize = -999;
@@ -786,9 +788,9 @@ class BHCJetSkimmer{
 		//54 - dr between reco jets for W candidate
 		TH1D* recoJet_WjjDr = new TH1D("recoJet_WjjDr","recoJet dR between W candidate jets",25,0,3.5);
 		//55 - pt of W candidate from pred jets
-		TH1D* predJet_Wpt = new TH1D("predJet_Wpt","predJet dR between W candidate jets",25,0,3.5);
+		TH1D* predJet_Wpt = new TH1D("predJet_Wpt","predJet W candidate pt",25,0,250.);
 		//56 - pt of W candidate from reco jets
-		TH1D* recoJet_Wpt = new TH1D("recoJet_Wpt","recoJet dR between W candidate jets",25,0,3.5);
+		TH1D* recoJet_Wpt = new TH1D("recoJet_Wpt","recoJet W candidate pt",25,0,250.);
 
 
 		//2D plots
@@ -813,6 +815,8 @@ class BHCJetSkimmer{
 		TH2D* predJetMass_predJetSize = new TH2D("predJetMass_predJetSize","predJetMass_predJetSize;predJetMass;predJetSize",50,0,250,50,0,1);
 		//9 - pred m_jj ~ W mass vs jet pair jetSize 
 		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("predJetInvMassW_predJetPairjetSize","predJetInvMassW_predJetPairjetSize;pred m_jj;jetSize_jj",50,0,250,50,0,1.); 
+		//10 - pred jet pt vs pred jet jetSize
+		TH2D* predJetPt_predJetSize = new TH2D("predJetPt_predJetSize","predJetPt_predJetSize;predJetPt;predJetSize",50,0,250,50,0,1);
 	
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
