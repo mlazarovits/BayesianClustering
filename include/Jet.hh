@@ -333,7 +333,9 @@ class Jet{
 
 
 		int GetNConstituents() const{
-			return (int)_constituents.size();
+			//if only 1 subcluster, jet is its own constituent
+			if(_constituents.size() == 0 && !_cov.empty()) return 1;
+			else return (int)_constituents.size();
 		}
 		void SetCenter(Matrix& mu){
 			_eta = mu.at(0,0);
