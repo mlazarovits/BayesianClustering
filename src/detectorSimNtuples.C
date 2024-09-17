@@ -24,6 +24,8 @@ int main(int argc, char *argv[]){
 	vector<vector<JetPoint>> ems;
 	int nevts = 1;
 	int evt = 0;
+	int evti = 0;
+	int evtj = 0;
 	int verb = 0;
 	bool hprint = false;
 	bool pu = false;
@@ -95,6 +97,14 @@ int main(int argc, char *argv[]){
 			i++;
     	 		energy_c = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--evtFirst", 6) == 0){
+                        i++;
+                        evti = std::atoi(argv[i]);
+                }
+                if(strncmp(argv[i],"--evtLast", 6) == 0){
+                        i++;
+                        evtj = std::atoi(argv[i]);
+                }
 
 	}
 	if(hprint){
@@ -112,6 +122,8 @@ int main(int argc, char *argv[]){
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
+		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
+
 		return -1;	
 	}
 
@@ -159,6 +171,12 @@ int main(int argc, char *argv[]){
 		cout << "and pileup " << endl;
 		oname += "_PU";
 	}
+       //make sure evti < evtj
+       if(evti > evtj){
+       	int evt = evtj;
+       	evtj = evti;
+       	evti = evt;
+       }
 
 
 	//consider doing det from pythia cmnd card
@@ -166,6 +184,7 @@ int main(int argc, char *argv[]){
 	det.SetNEvents(nevts);
 	//for reconstructing rechits
 	det.SetEnergyThreshold(0.);
+	det.SetEventRange(evti,evtj);
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
 	if(ttbar) det.SimTTbar();
