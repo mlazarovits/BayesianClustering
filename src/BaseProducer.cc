@@ -308,6 +308,9 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
                 eta = _base->SuperCluster_eta->at(sc);
 
                 nrhs = _base->SuperCluster_rhIds->at(sc).size();
+
+		//if excluded flag is up, skip (means this one should be skipped in favor of an OOT in same collection)
+		if(_base->SuperCluster_excluded->at(sc)) continue;
 	
 		//hem veto?
 		if(_year == 2018 && _data){
