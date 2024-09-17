@@ -25,9 +25,9 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-            inputFile = "condorSimNtuples_ttbar_defaultv5.root"
+            inputFile = "condorSimNtuples_ttbar_defaultv6.root"
     elif args.inputSample == "QCD":
-            inputFile = "condorSimNtuples_QCD_defaultv5.root"
+            inputFile = "condorSimNtuples_QCD_defaultv6.root"
     #elif args.inputSample == "QCD_noSpatialSmear":
     #        inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear.root"
     #elif args.inputSample == "QCD_noSpatialSmear_highEnergySmear":
