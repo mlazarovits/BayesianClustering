@@ -146,7 +146,7 @@ g++ -shared -o libmyDict.so myDict.cxx `root-config --cflags --libs`
 ```
 After this step, I usually move the `libmyDict.so` and `libmydict_rdict.pcm` files to the `lib` directory to keep things clean. Then, you will want to add the following commands to all the constructors of the classes that require the new dictionary-based classes
 ```
-gSystem->Load("lib/libmyDict.so”);
+gSystem->Load("lib/libmyDict.so");
 ```
 I also include this line in the `rootlogon.C` script so it can be read by the interpreter.
 
