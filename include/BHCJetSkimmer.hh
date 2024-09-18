@@ -18,6 +18,9 @@ class BHCJetSkimmer{
 			_radius = 0;
 			_smear = true;
 			_timesmear = false;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			_thresh = 1.;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -34,6 +37,9 @@ class BHCJetSkimmer{
 			_radius = 0;
 			_smear = true;
 			_timesmear = false;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			_thresh = 1.;
 				
 	
 			graphs.push_back(nrhs_comptime);
@@ -134,12 +140,14 @@ class BHCJetSkimmer{
 			vector<JetPoint> rhs;
 			double x, y, z, eta, phi, t, theta, px, py, pz;
 			BayesPoint vertex({_pvx, _pvy, _pvz});
-
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
 				PointCollection* pc = _trees[i]->points;
+				//at least 2 points (rhs)
+				if(pc->GetNPoints() < 2) continue;
 				rhs.clear();
 				//loop over points
+				cout << "TREE " << i << endl;
 				for(int p = 0; p < pc->GetNPoints(); p++){
 					//declare JetPoint with x, y, z, t
 					eta = pc->at(p).at(0);
@@ -154,7 +162,9 @@ class BHCJetSkimmer{
 					//add JetPoint to list of rhs
 					jp.SetEnergy(pc->at(p).w()/_gev);
 					jp.SetWeight(pc->at(p).w());
-					//cout << "x " << x << " y " << y << " z " << z << " jp eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
+					jp.SetEta(eta);
+					jp.SetPhi(phi);
+					cout << "rh - eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
 					rhs.push_back(jp);
 				}
 				//create new Jet
@@ -173,8 +183,8 @@ class BHCJetSkimmer{
 				for(int k = 0; k < nsubclusters; k++){
 					params = _trees[i]->model->GetPriorParameters(k);
 					Ek = norms[k]/_gev;
+					cout << "mu" << endl; params["mean"].Print();
 					Jet jet(params["mean"], params["cov"], Ek, params["pi"].at(0,0));
-					cout << "subcluster " << k << " Ek " << Ek << " pi " << params["pi"].at(0,0) << endl;
 					predJet.AddConstituent(jet);
 				}
 				//put pt cut in for predjets of 20 GeV
@@ -839,17 +849,14 @@ class BHCJetSkimmer{
 			double diff = 999;
 			double mij;
 			int j1, j2;
-		cout << "FindResonances - n jets " << jets.size() << endl;
 			if(jets.size() < 2){
 				wmass_idxs = make_pair(-999,-999);
 				tmass_idx = -999;
 				return;
 			}
-			cout << "diff " << diff << endl;
 			for(int i = 0; i < jets.size(); i++){
-				for(int j = i; j < jets.size(); j++){
+				for(int j = i+1; j < jets.size(); j++){
 					mij = jets[i].invMass(jets[j]);
-					cout << "i " << i << " j " << j << " mij " << mij << " best diff " << diff << " mi " << jets[i].mass() << " mj " << jets[j].mass() << " inv mass " << 2*jets[i].pt()*jets[j].pt()*(cosh( jets[i].eta() - jets[j].eta() ) - cos(jets[i].phi() - jets[j].phi())) << endl;
 					if(fabs(mij - mW) < diff){
 						diff = fabs(mij - mW);
 						j1 = i;
@@ -880,6 +887,10 @@ class BHCJetSkimmer{
 			}
 
 		}
+
+	void SetAlpha(double a){_alpha = a;}
+	void SetSubclusterAlpha(double a){_emAlpha = a; }
+	void SetThreshold(double t){ _thresh = t; }
 
 
 	private:
@@ -912,7 +923,7 @@ class BHCJetSkimmer{
 		double _c = 29.9792458; // speed of light in cm/ns
 		double _radius; //radius of detector set by rhs in event (used for constructing jets)
 		double _pvx, _pvy, _pvz;	
-
+		double _alpha, _emAlpha, _thresh;
 
 		double dR(double eta1, double phi1, double eta2, double phi2){
 			//phi wraparound

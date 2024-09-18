@@ -31,9 +31,6 @@ void BHCJetSkimmer::Skim(){
 	double tres_c = 0.2;
 	double tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
 
-	double alpha = 0.1;
-	double emAlpha = 0.5;
-	double thresh = 1.;
 	
 	map<string, Matrix> params;
 	vector<node*> trees;
@@ -90,9 +87,9 @@ void BHCJetSkimmer::Skim(){
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
 		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
-		algo->SetThresh(thresh);
-		algo->SetAlpha(alpha);
-		algo->SetSubclusterAlpha(emAlpha);
+		algo->SetThresh(_thresh);
+		algo->SetAlpha(_alpha);
+		algo->SetSubclusterAlpha(_emAlpha);
 		algo->SetVerbosity(_verb);
 		//run clustering
 		//delauney NlnN version
@@ -107,18 +104,17 @@ void BHCJetSkimmer::Skim(){
 			t = clock();
 			trees = algo->N2Cluster();
 		}
-		return;
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		cout << "y time entry " << y_time[i-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);	
 		//clean trees (remove mirror point or nullptrs)
 		CleanTrees(trees);
+		//transform trees (nodes) to jets
+		TreesToJets();
 		//fill model histograms with trees
 		//for subclusters
 		FillModelHists();	
-		//transform trees (nodes) to jets
-		TreesToJets();
 		//fill pred jet hists with jets
 		FillPredJetHists();
 	}

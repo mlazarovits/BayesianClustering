@@ -253,16 +253,16 @@ class Jet{
 			jt.SetVertex(_vtx);
 			_constituents.push_back(jt);
 			_constituents[_constituents.size()-1].SetVertex(_vtx);
-			
+		
 			//reset overall cluster parameters
 			double norm = 0; //should be 1
 			if(_constituents.size() == 1){
 				_cov = _constituents[0]._cov;
 				_mu = _constituents[0]._mu;
 				_pi = _constituents[0]._pi; //should be 1
+				norm = 1;
 			}
 			else{ //set mean as probability-weighted center and covariance from that center
-				double norm = 0;
 				for(int k = 0; k < _constituents.size(); k++){
 					Matrix mu;
 					mu.mult(_constituents[k]._mu, _constituents[k]._pi);
@@ -282,29 +282,40 @@ class Jet{
 				_mu.mult(_mu,1./norm);		 
 				_cov.mult(_cov,1./norm);		 
 			}
-			//reset jet's four-vector to be sum of constituent four-vectors
+			//phi wraparound
+			_mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
+			//set fourvector by subcluster when hyperparameters are tuned s.t. there are enough subclusters in a jet
+			/*	
+			_px = 0;
+			_py = 0;
+			_pz = 0;
+			_E = 0;
 			for(auto jet : _constituents){
+				cout << "subcl px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " E " << jet.E() << " coeff " << jet.GetCoefficient() << endl;
 				_px += jet.GetCoefficient()*jet.px();
 				_py += jet.GetCoefficient()*jet.py();
 				_pz += jet.GetCoefficient()*jet.pz();
-				_E  += jet.GetCoefficient()*jet.E();
+				_E  += jet.E();
 				
 			}
 			_px /= norm;
 			_py /= norm;
 			_pz /= norm;
-			_E /= norm;
-		
-			//set jet center as weighted sum of subclusters
-			_eta = _mu.at(0,0);
-			_phi = _mu.at(2,0);
-			_t = _mu.at(2,0);
-	
 			_kt2 = _px*_px + _py*_py;
 			_mass = mass();
 
+			*/
+
+		
+			//set jet center as weighted sum of subclusters
+			_eta = _mu.at(0,0);
+			_phi = _mu.at(1,0);
+			_t = _mu.at(2,0);
+			cout << "mu" << endl; _mu.Print();
+	
 			_ensure_valid_rap_phi();
- 
+cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
+
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
 		vector<Jet>& GetConstituents(){

@@ -95,17 +95,18 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 
 	_vtx = vtx;
 	double phi, eta;
+	double norm = 0;
 	for(int i = 0; i < _nRHs; i++){		
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
 		//centered at (0,0,0)
-		x = rhs[i].x() - _vtx.at(0);
-		y = rhs[i].y() - _vtx.at(1);
-		z = rhs[i].z() - _vtx.at(2);
+		x = rhs[i].x();// - _vtx.at(0);
+		y = rhs[i].y();// - _vtx.at(1);
+		z = rhs[i].z();// - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
 		phi = atan2(y, x);
 		eta = -log(tan(theta/2.)); 
 		//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
-		//pt = _E*sin(theta); //mass = 0
+		//pt = _E*sin(theta); //mass = 0, equivalent to below
 		pt = rhs[i].E()/cosh(eta);
 		_px += pt*cos(phi);
 		_py += pt*sin(phi);
@@ -118,13 +119,18 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		//if(rhs[i].phi() < 0) 
 		//	_phi += rhs[i].phi()+2*acos(-1);
 		//else
-			_phi += rhs[i].phi();
+		_phi += rhs[i].phi();
+		norm += 1.;//rhs[i].GetWeight();
 	}
-	_eta /= double(_nRHs);
-	_phi /= double(_nRHs);
+	
+	_eta /= norm;
+	_phi /= norm;
 	
 	_kt2 = _px*_px + _py*_py;
+	//wraparound
+	//_phi = acos(cos(_phi));
 	_mass = mass();
+cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << " n pts " << rhs.size() << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
@@ -183,9 +189,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
-	cout << "JET FROM SUBCLUSTER" << endl;
-	cout << "mu" << endl; mu.Print();
-cout << "eta " << _eta << " px " << _px << " py " << _py << " pz " << _pz << " _kt2 " << _kt2 << " energy " << _E << " mass " << _mass << " " << sqrt((_E+_pz)*(_E-_pz)-_kt2) << endl;
+cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
