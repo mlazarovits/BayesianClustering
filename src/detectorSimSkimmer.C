@@ -210,6 +210,9 @@ int main(int argc, char *argv[]){
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
 	skimmer.SetTransferFactor(gev);
+	skimmer.SetAlpha(alpha);
+	skimmer.SetSubclusterAlpha(emAlpha);
+	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
 	skimmer.Skim();
 
