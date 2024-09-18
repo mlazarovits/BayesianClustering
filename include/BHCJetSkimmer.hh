@@ -168,11 +168,13 @@ class BHCJetSkimmer{
 				double Ek; 
 				vector<double> norms;
 				_trees[i]->model->GetNorms(norms);
+				cout << "jet " << _predJets.size() << " norms size " << norms.size() << " nsubcluster " << nsubclusters << endl;
 				map<string,Matrix> params;
 				for(int k = 0; k < nsubclusters; k++){
 					params = _trees[i]->model->GetPriorParameters(k);
 					Ek = norms[k]/_gev;
 					Jet jet(params["mean"], params["cov"], Ek, params["pi"].at(0,0));
+					cout << "subcluster " << k << " Ek " << Ek << " pi " << params["pi"].at(0,0) << endl;
 					predJet.AddConstituent(jet);
 				}
 				//put pt cut in for predjets of 20 GeV
@@ -180,11 +182,12 @@ class BHCJetSkimmer{
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
 			}
-
+			cout << _predJets.size() << " pred jets" << endl;
+			for(auto j : _predJets) cout << "jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " mass " << j.mass() << endl;
 		}
 
 		void FillPredJetHists(){
-			int njets;
+			int njets = _predJets.size();
 			double wmass, topmass, dr, dr_pair;
 			int tmass_idx;
 			pair<int,int> wmass_idxs;
@@ -192,7 +195,7 @@ class BHCJetSkimmer{
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				_procCats[p].hists1D[0][0]->Fill(njets);
-				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
+				cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
 				FindResonances(_predJets,wmass_idxs,tmass_idx);
 				//W mass
@@ -304,7 +307,7 @@ class BHCJetSkimmer{
 				}
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
-				//cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
+				cout << "# reco jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
 				FindResonances(_recojets,wmass_idxs,tmass_idx);
 				if(wmass_idxs.first != -999){
@@ -836,14 +839,17 @@ class BHCJetSkimmer{
 			double diff = 999;
 			double mij;
 			int j1, j2;
-			if(jets.size() < 1){
+		cout << "FindResonances - n jets " << jets.size() << endl;
+			if(jets.size() < 2){
 				wmass_idxs = make_pair(-999,-999);
 				tmass_idx = -999;
 				return;
 			}
+			cout << "diff " << diff << endl;
 			for(int i = 0; i < jets.size(); i++){
 				for(int j = i; j < jets.size(); j++){
 					mij = jets[i].invMass(jets[j]);
+					cout << "i " << i << " j " << j << " mij " << mij << " best diff " << diff << " mi " << jets[i].mass() << " mj " << jets[j].mass() << " inv mass " << 2*jets[i].pt()*jets[j].pt()*(cosh( jets[i].eta() - jets[j].eta() ) - cos(jets[i].phi() - jets[j].phi())) << endl;
 					if(fabs(mij - mW) < diff){
 						diff = fabs(mij - mW);
 						j1 = i;
@@ -860,6 +866,7 @@ class BHCJetSkimmer{
 			double mTop = 172.69;
 			mij = -999;
 			diff = 999;
+			cout << "j1 " << j1 << " make w jet from jet " << jets[j1].px()  << endl;
 			Jet wJet = jets[j1];
 			wJet.add(jets[j2]);
 			for(int i = 0; i < jets.size(); i++){

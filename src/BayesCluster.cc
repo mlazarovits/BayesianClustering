@@ -28,6 +28,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//remember time is already in ns
 	//e = w/gev
 	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
+	cout << "BayesCluster thresh " << _thresh << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);

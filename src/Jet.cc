@@ -144,6 +144,10 @@ Jet::Jet(const vector<Jet>& jets){
 	}
 	_nRHs = (int)_rhs.size();	
 	double pt;
+	_E = 0;
+	_px = 0;
+	_py = 0;
+	_pz = 0;
 	for(int i = 0; i < _nRHs; i++){
 		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
 		_px += pt*cos(_rhs[i].phi());
@@ -176,9 +180,12 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_px = pt*cos(_phi);
 	_py = pt*sin(_phi);
 	_pz = pt*sinh(_eta);
-	
+
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
+	cout << "JET FROM SUBCLUSTER" << endl;
+	cout << "mu" << endl; mu.Print();
+cout << "eta " << _eta << " px " << _px << " py " << _py << " pz " << _pz << " _kt2 " << _kt2 << " energy " << _E << " mass " << _mass << " " << sqrt((_E+_pz)*(_E-_pz)-_kt2) << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();

@@ -243,7 +243,7 @@ class Jet{
 		}
 
 		void Print() const{
-			cout << "px: " << _px << " py: " << _py << " pz: " << _pz << " E " << _E << endl;
+			cout << "px: " << _px << " py: " << _py << " pz: " << _pz << " E: " << _E << " mass: " << _mass << endl;
 			for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
 		}
 		//constituents can be subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
