@@ -20,7 +20,7 @@ class JetPoint{
 		void SetPhi(double p){ _phi = p; _ensure_valid_rap_phi(); }
 		void SetEta(double e){ _eta = e; _ensure_valid_rap_phi(); }
 		void SetWeight(double w){ _w = w; } 
-		double GetWeight(){ return _w; } 
+		double GetWeight() const{ return _w; } 
 
 
 		//sets phi [0,2pi]
