@@ -61,6 +61,8 @@ def checkJobs(outputDir,match_string):
         #bash = "grep -c \"Warning\" -c \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err"
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" " + folder +"/log/*.err > count.txt"
         bash = "grep -e \"ERROR\|FATAL\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
+        bash = "grep -e \"Aborted\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
+        bash = "grep -e \"segmentation violation\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
         os.system(bash)
         with open(folder+"/errcount.txt","r") as f:
         	print(len(f.readlines()),"jobs with errors: see "+folder+"/errcount.txt for more")	
