@@ -28,7 +28,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//remember time is already in ns
 	//e = w/gev
 	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
-	cout << "BayesCluster thresh " << _thresh << endl;
+	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
 	mt->SetDistanceConstraint(0,acos(-1)/2.);
@@ -161,22 +161,25 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		if(_verb > 0) cout << "\n" << endl;
 	}
 
-	_trees = mt->GetClusters();
-	cout << mt->GetNClusters() << " final clusters" << endl;
+	vector<node*> trees = mt->GetClusters();
+	cout << mt->GetNClusters() << " final clusters " << _trees.size() << " final trees"  << endl;
 	double nmirror = 0;
-	for(int i = 0; i < _trees.size(); i++){
+		
+	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
-		if(_trees[i] == nullptr) continue;
-		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
+		if(trees[i] == nullptr) continue;
+		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
 			continue; }
-		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 
-		//_trees[i]->points->Print();
+		//cout << "tree " << trees[i]->idx << " has " << trees[i]->model->GetNClusters() << " subclusters and " << trees[i]->points->Sumw() << " total weight and " <<  trees[i]->points->GetNPoints() << " points" << endl;
+		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
+		_trees.push_back(trees[i]);
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
+	_trees = trees;
 	return _trees;
 	
 	

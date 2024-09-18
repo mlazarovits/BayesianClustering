@@ -42,6 +42,11 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
 	double rk = pi*p_dk_h1/p_dk_tk;
+	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
+	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
+	//can put a requirement on predicted jets that # pts >= 2
+	if(x->points->Sumw() + _alpha < _thresh) rk = 0;
+
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	

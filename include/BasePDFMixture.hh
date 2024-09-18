@@ -132,7 +132,7 @@ class BasePDFMixture : public BasePDF{
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				if(m_norms[k] + m_alpha0 < thresh){
 					if(_verb > 1) 
-						cout << "Removing cluster " << k << " with alpha: " << m_alphas[k] << endl;
+						cout << "Removing cluster " << k << " with alpha " << m_alphas[k] << " and norm " << m_norms[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
 					//if the above call removes all clusters
