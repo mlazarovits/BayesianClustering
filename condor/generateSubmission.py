@@ -53,7 +53,7 @@ def generateSubmission(args):
         inputFile = "GMSB_R17_MET75_v20_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-400_Ctau-200":
         inputFile = "GMSB_R17_MET75_v20_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "MET_RunE_2017_v20":
+    elif args.inputSample == "MET_RunE_2017":
     	inputFile = "MET_R17E_MET75_v20_MET_AOD_Run2017E_17Nov2017.root"
     elif args.inputSample == "JetHT_RunF_2017_v18":
     	inputFile = "JetHT_R17_v18_JetHT_AOD_Run2017F_17Nov2017.root"
@@ -163,7 +163,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600_2017','GJets_HT100to200_2017','GJets_HT200to400_2017','GJets_HT40to100_2017','GJets_HT600toInf_2017','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-200','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE_2017_v20','JetHT_RunF_2017_v18','EGamma_RunF_2017','QCD_HT200to1500_2017','QCD_HT100to200_2017','QCD_HT1500to2000_2017','QCD_HT2000toInf_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT700to1000_2017','QCD_HT300to500_2017','QCD_HT500to700_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT1000to1500_2017'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600_2017','GJets_HT100to200_2017','GJets_HT200to400_2017','GJets_HT40to100_2017','GJets_HT600toInf_2017','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-200','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE_2017','JetHT_RunF_2017_v18','EGamma_RunF_2017','QCD_HT200to1500_2017','QCD_HT100to200_2017','QCD_HT1500to2000_2017','QCD_HT2000toInf_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT700to1000_2017','QCD_HT300to500_2017','QCD_HT500to700_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT1000to1500_2017'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
@@ -185,7 +185,7 @@ def main():
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--noCalibrate',help="turn off channel-by-channel time calibration",default=False,action='store_true')
     parser.add_argument('--rejectSpikes',help="reject spikes based on swiss cross cut (default = false, off)",default=False,action='store_true')
-    parser.add_argument('--beamHaloFilter',help="apply BH filter (0: off, 1: on - default, 2: inverse)",default=1)
+    parser.add_argument('--beamHaloFilter',help="apply BH filter (0: off - default, 1: on, 2: inverse)",default=0)
     args = parser.parse_args()
 
     generateSubmission(args)
