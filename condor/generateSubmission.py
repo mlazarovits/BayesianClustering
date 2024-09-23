@@ -24,7 +24,7 @@ def generateSubmission(args):
     SH.makeDir(odir)
     
     if args.inputSample == "GJets_HT400to600_2017":
-    	inputFile = "GJets_R17_MET75_v20_GJets_HT-400to600_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET75_v20_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GJets_HT100to200_2017":
     	inputFile = "GJets_R17_MET75_v20_GJets_HT-100to200_AODSIM_RunIIFall17DRPremix1.root"
     elif args.inputSample == "GJets_HT200to400_2017":
