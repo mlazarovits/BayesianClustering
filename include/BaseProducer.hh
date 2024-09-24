@@ -100,9 +100,9 @@ class BaseProducer{
 			double s = 0;
 			double c = 0.1083;
 
+			//sigma^2
 			double sigma = (n/amp)*(n/amp) + (s*s)/(amp) + 2*c*c;
-			sigma = sigma/sqrt(2); //calculated for 2 rhs, need for 1
-			sigma = sqrt(sigma);
+			sigma = sqrt(sigma/2); //calculated for 2 rhs, need for 1
 			RandomSample rs;
 			rs.SetRange(time-5*sigma,time+5*sigma);
 			double newtime = rs.SampleGaussian(time,sigma,1).at(0);
