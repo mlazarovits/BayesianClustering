@@ -4,7 +4,6 @@
 #include "JetPoint.hh"
 #include <TFile.h>
 #include "BaseSkimmer.hh"
-#include "BasePDFMixture.hh"
 #include "PhotonProducer.hh"
 #include "TSystem.h"
 #include <math.h>
@@ -1753,7 +1752,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			ep_cov_unnorm = CalcCov(cov, 1, 0, false);
 			te_cov_unnorm = CalcCov(cov, 2, 0, false);
 			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
-	
+
+
+			vector<Matrix> eigvecs;
+			vector<double> eigvals;
+			cov.eigenCalc(eigvals,eigvecs);
+			double majLength = sqrt(eigvals[1]);	
+			double minLength = sqrt(eigvals[0]);	
 
 			//calculate slopes from eigenvectors
 			//cov.eigenCalc(eigenvals, eigenvecs);
@@ -1840,6 +1845,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			obs.push_back(te_cov);
 			obs.push_back(E_k);
 			obs.push_back(swCP);
+			obs.push_back(majLength);
+			obs.push_back(minLength);
+			
+			//get max weighted point
+			points->Sort();
+			double maxE = points->at(points->GetNPoints() - 1).w();
+			obs.push_back(maxE/E_k);
 	
 			//fill hists - lead only
 			//centers
@@ -3091,54 +3103,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
-	//labels
-	//unmatched = -1
-	//signal = 0
-	//spikes = 1
-	//beam halo = 2
-	//photons should be 1:1 with subclusters (1 subcluster per photon)
-	int GetTrainingLabel(int npho, BasePDFMixture* gmm){
-		//labels
-		//unmatched = -1
-		//signal = 0
-		//!signal = 1 (includes !signal (MC), all data (ie BH, spikes)) - will probably want to change later to separate out BH, spike subclusters
-		int label = -1;
-		//signal
-		if(!_data){
-			if(_base->Gen_susId->at(_base->Photon_genIdx->at(npho)) == 22)
-				label = 0;
-			else
-				label = -1;
-		}
-		//else in data - could be spikes or BH
-		else{
-			//do track matching for spikes
-		
-			//do eta-time curve for BH
-			label = -1;
-		}
 
-		return label;
-	}
-
-
-	//create function to write photon subcluster variables to CSV file for MVA training
-	//include column for process?
-	string _csvname;
-	ofstream _csvfile;
-	void SetObs(){
-		_csvfile << "Event,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,label" << endl;
-
-	}
-
-	void WriteObs(int evt, int npho, vector<double> inputs, int label){
-		_csvfile << evt << "," << npho;
-		for(auto d : inputs)
-			_csvfile << "," << d;
-
-		//_csvfile << ", " << proc << endl;
-		_csvfile << "," << label << endl;
-	}
 
 
 };

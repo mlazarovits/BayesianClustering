@@ -84,6 +84,7 @@ void PhotonSkimmer::Skim(){
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
 			phoidx = phos[p].GetUserIdx();
+			scidx = _base->Photon_scIndex->at(phoidx);
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
@@ -120,7 +121,6 @@ void PhotonSkimmer::Skim(){
 						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
 						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
 		
-						scidx = _base->Photon_scIndex->at(phoidx);
 						_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
 						_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
 						_procCats[i].hists1D[0][228]->Fill(double(rhs.size()));
@@ -152,9 +152,49 @@ void PhotonSkimmer::Skim(){
 				
 
 			}
-			int label = GetTrainingLabel(p,gmm);
-			WriteObs(e,p,obs,label);
-			objE_clusterE->Fill(_base->Photon_energy->at(p), sumE);
+			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
+			//add CMS benchmark variable - isolation information
+			//need to find associated photon
+			//do 2017 preselection
+			double r9 = _base->Photon_r9->at(phoidx);
+			double HoE = _base->Photon_hadOverEM->at(phoidx);
+			double Sieie = _base->Photon_SigmaIEtaIEta->at(phoidx);
+			double eIso = _base->Photon_ecalRHSumEtConeDR04->at(phoidx);//_base->Photon_ecalPFClusterIso->at(phoidx);
+			double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx);//_base->Photon_hcalPFClusterIso->at(phoidx);
+			double tIso = _base->Photon_trkSumPtHollowConeDR03->at(phoidx);
+			double pt = _base->Photon_pt->at(phoidx);
+			cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
+				obs.push_back(r9);
+				obs.push_back(Sieie);
+				obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
+				obs.push_back(_base->SuperCluster_smaj->at(scidx));
+				obs.push_back(_base->SuperCluster_smin->at(scidx));
+				//iso/pT
+				obs.push_back(eIso/pt);
+				obs.push_back(hIso/pt);
+				obs.push_back(tIso/pt);
+			
+			
+			}
+			else{ //failed preselection
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+				obs.push_back(-999);
+			}
+		cout << "n obs " << obs.size() << endl;			
+			
+			
+			int ncl = gmm->GetNClusters();
+			//only get lead subcluster -> ncl = 0
+			int label = GetTrainingLabel(phoidx,0,gmm);
+			WriteObs(e,phoidx,0,obs,label);
+			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		}
 	}
 	cout << "\n" << endl;

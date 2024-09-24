@@ -234,7 +234,7 @@ void SuperClusterSkimmer::Skim(){
 			int ncl = gmm->GetNClusters();
 			for(int c = 0; c < ncl; c++){
 				int label = GetTrainingLabel(scidx,c,gmm);
-				WriteObs(e,scidx,c,obs,label);
+				BaseSkimmer::WriteObs(e,scidx,c,obs,label);
 			}
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		}

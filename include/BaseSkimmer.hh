@@ -3,6 +3,7 @@
 
 //#include "ReducedBase.hh"
 #include "JetPoint.hh"
+#include "BasePDFMixture.hh"
 #include "BaseProducer.hh"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -360,6 +361,167 @@ class BaseSkimmer{
 		}
 
 
+
+		//create function to write photon subcluster variables to CSV file for MVA training
+		//include column for process?
+		string _csvname;
+		ofstream _csvfile;
+		int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
+			//labels
+			//unmatched = -1
+			//signal = 0
+			//!signal = 1 
+			//BH = 2
+			//spike = 3
+		
+			double ec, pc, tc;
+			auto params = gmm->GetPriorParameters(ncl);
+			ec = params["mean"].at(0,0);
+			pc = params["mean"].at(1,0);
+			tc = params["mean"].at(2,0);
+			//for BH definition
+			bool pcFilter, tcFilterEarly, tcFilterPrompt;
+			//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
+			pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+			//early times
+			tcFilterEarly = tc <= -2;
+			tcFilterPrompt = (-2 < tc && tc < 2);
+			
+			int label = -1;
+			//signal
+			if(!_data){
+				//find photon associated with subcluster
+				int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
+				//matched to photon
+				if(phoidx != -1){
+					if(_base->Photon_genIdx->at(phoidx) != -1){
+						if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+							label = 0;
+						else
+							label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target), removed in data processing pre-MVA
+					}
+					else //no gen match
+						label = -1;
+
+				}
+				else
+					label = -1;
+			}
+			//else in data - could be spikes or BH
+			else{
+				//do track matching for spikes
+			
+				//early times, phi left/right for BH
+				//if subcl is BH
+				if(pcFilter && tcFilterEarly)	
+					label = 2;
+				//if subcl is not BH
+				if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
+					label = 1;
+			}
+
+			return label;
+		}
+	
+		void SetObs(){
+			vector<string> inputs;
+			//sample
+			inputs.push_back("sample");
+			//event
+			inputs.push_back("event");
+			//supercl
+			inputs.push_back("supercl");
+			//subcl
+			inputs.push_back("subcl");
+			//etacenter
+			inputs.push_back("eta_center");
+			//phicenter
+			inputs.push_back("phi_center");
+			//timecenter
+			inputs.push_back("time_center");
+			//etasig
+			inputs.push_back("eta_sig");
+			//phisig
+			inputs.push_back("phi_sig");
+			//etaphicov
+			inputs.push_back("etaphi_cov");
+			//timeetacov
+			inputs.push_back("timeeta_cov");
+			//energy
+			inputs.push_back("energy");
+			//sw+
+			inputs.push_back("sw+");
+			//subcl major length
+			inputs.push_back("major_length");
+			//subcl minor length
+			inputs.push_back("minor_length");
+			//R9
+			inputs.push_back("R9");
+			//Sietaieta
+			inputs.push_back("Sietaieta");
+			//Siphiiphi
+			inputs.push_back("Siphiiphi");
+			//Smajor
+			inputs.push_back("Smajor");
+			//Sminor
+			inputs.push_back("Sminor");
+			//seed E/total E
+			inputs.push_back("seedOvTotE");
+			//ecalPFClusterIsoOvPt
+			inputs.push_back("ecalPFClusterIsoOvPt");
+			//hcalPFClusterIsoOvPt
+			inputs.push_back("hcalPFClusterIsoOvPt");
+			//trkSumPtHollowConeDR03OvPt
+			inputs.push_back("trkSumPtHollowConeDR03OvPt");
+			//label
+			inputs.push_back("label");
+			for(auto s : inputs){
+				if(s != "label") _csvfile << s << ","; 
+				else _csvfile << s << endl;
+			}
+
+		}
+		void WriteObs(int evt, int obj, int ncl, vector<double> inputs, int label){
+			string samp = "";
+			if(_oname.find("condor") == string::npos){
+				if(_oname.find("MET") != string::npos)
+					samp = "METPD";
+				else if(_oname.find("JetHT") != string::npos)
+					samp = "JetHTPD";
+				else if(_oname.find("GMSB") != string::npos){
+					samp = _oname.substr(_oname.find("GMSB"),_oname.find("cm") - _oname.find("GMSB") + 2);
+				}
+				else if(_oname.find("GJets") != string::npos)
+					samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
+				else if(_oname.find("QCD") != string::npos)
+					samp = _oname.substr(_oname.find("QCD"),_oname.find("_AODSIM") - _oname.find("QCD"));
+				else if(_oname.find("DEG") != string::npos)
+					samp = _oname.substr(_oname.find("DEG"),_oname.find("_AODSIM") - _oname.find("DEG"));
+				else samp = "notFound";
+			}
+			else{
+				if(_oname.find("MET") != string::npos)
+					samp = "METPD";
+				else if(_oname.find("JetHT") != string::npos)
+					samp = "JetHTPD";
+				else if(_oname.find("GMSB") != string::npos){
+					samp = _oname.substr(_oname.find("GMSB"),_oname.find("_superclusters") - _oname.find("GMSB"));
+				}
+				else if(_oname.find("GJets") != string::npos)
+					samp = _oname.substr(_oname.find("GJets"),_oname.find("_superclusters") - _oname.find("GJets"));
+				else if(_oname.find("QCD") != string::npos)
+					samp = _oname.substr(_oname.find("QCD"),_oname.find("_superclusters") - _oname.find("QCD"));
+				else if(_oname.find("DEG") != string::npos)
+					samp = _oname.substr(_oname.find("DEG"),_oname.find("_superclusters") - _oname.find("DEG"));
+				else samp = "notFound";
+			}
+			_csvfile << samp << "," << evt << "," << obj << "," << ncl;
+			cout << "n inputs " << inputs.size() << endl;
+			for(auto d : inputs)
+				_csvfile << "," << d;
+
+			_csvfile << "," << label << endl;
+		}
 
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 

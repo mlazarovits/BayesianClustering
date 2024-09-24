@@ -4,7 +4,6 @@
 #include "JetPoint.hh"
 #include <TFile.h>
 #include "BaseSkimmer.hh"
-#include "BasePDFMixture.hh"
 #include "PhotonProducer.hh"
 #include "TSystem.h"
 #include <math.h>
@@ -1863,6 +1862,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			ep_cov_unnorm = CalcCov(cov, 1, 0, false);
 			te_cov_unnorm = CalcCov(cov, 2, 0, false);
 			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
+			
+			vector<Matrix> eigvecs;
+			vector<double> eigvals;
+			cov.eigenCalc(eigvals,eigvecs);
+			double majLength = sqrt(eigvals[1]);	
+			double minLength = sqrt(eigvals[0]);	
 	
 
 			//calculate slopes from eigenvectors
@@ -2046,7 +2051,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			obs.push_back(te_cov);
 			obs.push_back(E_k);
 			obs.push_back(swCP);
-	
+			obs.push_back(majLength);	
+			obs.push_back(minLength);	
+			//get max weighted point
+			points->Sort();
+			double maxE = points->at(points->GetNPoints() - 1).w();
+			obs.push_back(maxE/E_k);
+
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
@@ -3355,63 +3366,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	}
 
 
-	int GetTrainingLabel(int nsc, int ncl, BasePDFMixture* gmm){
-		//labels
-		//unmatched = -1
-		//signal = 0
-		//!signal = 1 
-		//BH = 2
-		//spike = 3
-	
-		double ec, pc, tc;
-		auto params = gmm->GetPriorParameters(ncl);
-		ec = params["mean"].at(0,0);
-		pc = params["mean"].at(1,0);
-		tc = params["mean"].at(2,0);
-		//for BH definition
-		bool pcFilter, tcFilterEarly, tcFilterPrompt;
-		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
-		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
-		//early times
-		tcFilterEarly = tc <= -2;
-		tcFilterPrompt = (-2 < tc && tc < 2);
-		
-		int label = -1;
-		//signal
-		if(!_data){
-			//find photon associated with subcluster
-			int phoidx = _base->SuperCluster_PhotonIndx->at(nsc);
-			//matched to photon
-			if(phoidx != -1){
-				if(_base->Photon_genIdx->at(phoidx) != -1){
-					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
-						label = 0;
-					else
-						label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target)
-				}
-				else //no gen match
-					label = -1;
-
-			}
-			else
-				label = -1;
-		}
-		//else in data - could be spikes or BH
-		else{
-			//do track matching for spikes
-		
-			//early times, phi left/right for BH
-			//if subcl is BH
-			if(pcFilter && tcFilterEarly)	
-				label = 2;
-			//if subcl is not BH
-			if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
-				label = 1;
-		}
-
-		return label;
-	}
-
 
 	//create function to write photon subcluster variables to CSV file for MVA training
 	//include column for process?
@@ -3471,63 +3425,22 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	void WriteObs(){
 		auto it = _mvainputs.begin();
 		for(auto it = _mvainputs.begin(); it != _mvainputs.end(); it++){
-			if(it.first != "label") _cvsfile << it.first << ","; 
-			else _cvsfile << it.first << endl;
+			if(it->first != "label") _csvfile << it->first << ","; 
+			else _csvfile << it->first << endl;
 		}
 		//number of samples
 		int row = 0;
 		while(row <= _mvainputs["sample"].size()){
 			for(auto it = _mvainputs.begin(); it != _mvainputs.end(); it++){
-				if(it.first != "label"){
-					_cvsfile << it.second[row] << ","; 
+				if(it->first != "label"){
+					_csvfile << it->second[row] << ","; 
 				}
-				else _cvsfile << it.second[row] << endl;
+				else _csvfile << it->second[row] << endl;
 			}
 			row++;
 		}
 	}
 
-	void WriteObs(int evt, int sc, int ncl, vector<double> inputs, int label){
-		string samp = "";
-		if(_oname.find("condor") == string::npos){
-			if(_oname.find("MET") != string::npos)
-				samp = "METPD";
-			else if(_oname.find("JetHT") != string::npos)
-				samp = "JetHTPD";
-			else if(_oname.find("GMSB") != string::npos){
-				samp = _oname.substr(_oname.find("GMSB"),_oname.find("cm") - _oname.find("GMSB") + 2);
-			}
-			else if(_oname.find("GJets") != string::npos)
-				samp = _oname.substr(_oname.find("GJets"),_oname.find("_AODSIM") - _oname.find("GJets"));
-			else if(_oname.find("QCD") != string::npos)
-				samp = _oname.substr(_oname.find("QCD"),_oname.find("_AODSIM") - _oname.find("QCD"));
-			else if(_oname.find("DEG") != string::npos)
-				samp = _oname.substr(_oname.find("DEG"),_oname.find("_AODSIM") - _oname.find("DEG"));
-			else samp = "notFound";
-		}
-		else{
-			if(_oname.find("MET") != string::npos)
-				samp = "METPD";
-			else if(_oname.find("JetHT") != string::npos)
-				samp = "JetHTPD";
-			else if(_oname.find("GMSB") != string::npos){
-				samp = _oname.substr(_oname.find("GMSB"),_oname.find("_superclusters") - _oname.find("GMSB"));
-			}
-			else if(_oname.find("GJets") != string::npos)
-				samp = _oname.substr(_oname.find("GJets"),_oname.find("_superclusters") - _oname.find("GJets"));
-			else if(_oname.find("QCD") != string::npos)
-				samp = _oname.substr(_oname.find("QCD"),_oname.find("_superclusters") - _oname.find("QCD"));
-			else if(_oname.find("DEG") != string::npos)
-				samp = _oname.substr(_oname.find("DEG"),_oname.find("_superclusters") - _oname.find("DEG"));
-			else samp = "notFound";
-		}
-		_csvfile << samp << "," << evt << "," << sc << "," << ncl;
-		cout << "n inputs " << inputs.size() << endl;
-		for(auto d : inputs)
-			_csvfile << "," << d;
-
-		_csvfile << "," << label << endl;
-	}
 
 	//return BH cluster size, rhs to use in time discriminant
 	int MakeBHFilterCluster(Jet& sc, vector<JetPoint>& bh_rhs){
