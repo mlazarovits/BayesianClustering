@@ -3417,9 +3417,74 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	//include column for process?
 	string _csvname;
 	ofstream _csvfile;
+	map<string,vector<double>> _mvainputs;
 	void SetObs(){
+		//sample
+		_mvainputs["sample"] = {};
+		//event
+		_mvainputs["event"] = {};
+		//supercl
+		_mvainputs["supercl"] = {};
+		//subcl
+		_mvainputs["subcl"] = {};
+		//etacenter
+		_mvainputs["eta_center"] = {};
+		//phicenter
+		_mvainputs["phi_center"] = {};
+		//timecenter
+		_mvainputs["time_center"] = {};
+		//etasig
+		_mvainputs["eta_sig"] = {};
+		//phisig
+		_mvainputs["phi_sig"] = {};
+		//etaphicov
+		_mvainputs["etaphi_cov"] = {};
+		//timeetacov
+		_mvainputs["timeeta_cov"] = {};
+		//energy
+		_mvainputs["energy"] = {};
+		//sw+
+		_mvainputs["sw+"] = {};
+		//R9
+		_mvainputs["R9"] = {};
+		//Sietaieta
+		_mvainputs["Sietaieta"] = {};
+		//Siphiiphi
+		_mvainputs["Siphiiphi"] = {};
+		//Smajor
+		_mvainputs["Smajor"] = {};
+		//Sminor
+		_mvainputs["Sminor"] = {};
+		//ecalPFClusterIsoOvPt
+		_mvainputs["ecalPFClusterIsoOvPt"] = {};
+		//hcalPFClusterIsoOvPt
+		_mvainputs["hcalPFClusterIsoOvPt"] = {};
+		//trkSumPtHollowConeDR03OvPt
+		_mvainputs["trkSumPtHollowConeDR03OvPt"] = {};
+		//label
+		_mvainputs["label"] = {};
 		_csvfile << "Sample,Event,supercl,subcl,eta_center,phi_center,time_center,eta_sig,phi_sig,etaphi_cov,timeeta_cov,energy,sw+,R9,Sietaieta,Siphiiphi,Smajor,Sminor,ecalPFClusterIsoOvPt,hcalPFClusterIsoOvPt,trkSumPtHollowConeDR03OvPt,label" << endl;
 
+	}
+
+	//if need to pivot to different way of writing inputs s.t. the observable is mapped to vector of values (1/subcl)
+	void WriteObs(){
+		auto it = _mvainputs.begin();
+		for(auto it = _mvainputs.begin(); it != _mvainputs.end(); it++){
+			if(it.first != "label") _cvsfile << it.first << ","; 
+			else _cvsfile << it.first << endl;
+		}
+		//number of samples
+		int row = 0;
+		while(row <= _mvainputs["sample"].size()){
+			for(auto it = _mvainputs.begin(); it != _mvainputs.end(); it++){
+				if(it.first != "label"){
+					_cvsfile << it.second[row] << ","; 
+				}
+				else _cvsfile << it.second[row] << endl;
+			}
+			row++;
+		}
 	}
 
 	void WriteObs(int evt, int sc, int ncl, vector<double> inputs, int label){

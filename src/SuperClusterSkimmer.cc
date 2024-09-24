@@ -58,7 +58,7 @@ void SuperClusterSkimmer::Skim(){
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
 	
-
+	_prod->SetTimeSmear(_timesmear);
 	_prod->PrintPreselection();
 	//loop over events
 	if(_evti == _evtj){
@@ -85,6 +85,7 @@ void SuperClusterSkimmer::Skim(){
 	
 			
 		int nSC = scs.size();
+		int npho = _base->Photon_energy->size();
 		//loop over selected scs
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
@@ -175,7 +176,6 @@ void SuperClusterSkimmer::Skim(){
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
 			//add CMS benchmark variable - isolation information
 			//need to find associated photon
-			int npho = _base->Photon_energy->size();
 			int np = -999;
 			for(int p = 0; p < npho; p++){
 				if(_base->Photon_scIndex->at(p) == scidx){
@@ -203,6 +203,9 @@ void SuperClusterSkimmer::Skim(){
 					obs.push_back(eIso/pt);
 					obs.push_back(hIso/pt);
 					obs.push_back(tIso/pt);
+			
+					_mvainputs["R9"].push_back(r9);
+			
 				}
 				else{ //failed preselection
 					obs.push_back(-999);
