@@ -286,12 +286,6 @@ class BaseSkimmer{
 			_procCats.push_back(tot);	
 			//cout << "sample " << sample << endl;	
 			if(sample.find("GMSB") != string::npos){
-				//notSunm
-				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
-				//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
-				notSunm.ids = {97, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
-				_procCats.push_back(notSunm);
-				
 				//signal
 				//do string matching to find specific grid point
 				string lambda, ctau;
@@ -321,6 +315,12 @@ class BaseSkimmer{
 				procCat sig(_hists1D, _hists2D, plotName, legName, leadsep);
 				sig.ids = {22};
 				_procCats.push_back(sig);
+				
+				//notSunm
+				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
+				//bkg is id < 9 but anything other than -1 shouldn't happen but just to be safe
+				notSunm.ids = {97, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
+				_procCats.push_back(notSunm);
 			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
