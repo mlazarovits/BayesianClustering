@@ -94,16 +94,20 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
+					time = time + timecorr - calibfactor;
 				}
 				else{
 					calibfactor = 0;	
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+                                        time =  time + timecorr;
 				}
+				if(_timesmear){
+					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
+				}
+				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                _base->ECALRecHit_rhz->at(rhidx), time);
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << rh.t() << " calib " << calibfactor << endl;			
@@ -223,16 +227,20 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
-//	cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << " timecorr " << timecorr << " calibfactor " << calibfactor << endl;
+					time = time + timecorr - calibfactor;
 				}
-				else{	
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				else{
+					calibfactor = 0;	
+                                        time =  time + timecorr;
 				}
+				if(_timesmear){
+					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
+				}
+				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                _base->ECALRecHit_rhz->at(rhidx), time);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
@@ -354,16 +362,20 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor);
-//	cout << "pho #" << p << " rh # " << r << " time " << _base->ECALRecHit_time->at(rhidx) << " drh " << drh << " dpv " << dpv << " saved time (with other factors) " << _base->ECALRecHit_time->at(rhidx) + timecorr - calibfactor << " timecorr " << timecorr << " calibfactor " << calibfactor << endl;
+					time = time + timecorr - calibfactor;
 				}
-				else{	
-					rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                        _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx) + timecorr);
+				else{
+					calibfactor = 0;	
+                                        time =  time + timecorr;
 				}
+				if(_timesmear){
+					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
+				}
+				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
+                                _base->ECALRecHit_rhz->at(rhidx), time);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;

@@ -2,6 +2,7 @@
 #define BaseProducer_HH
 
 #include "ReducedBase.hh"
+#include "RandomSample.hh"
 #include "Jet.hh"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -28,6 +29,7 @@ class BaseProducer{
 			_calibmap = nullptr;
 			_applyFrac = false;
 			_spikes = false;
+			_timesmear = false;
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
 			//	return;
@@ -57,6 +59,7 @@ class BaseProducer{
 			_minobjeta = 1.5;
 			_applyFrac = false;
 			_spikes = false;
+			_timesmear = false;
 			
 			//set year
 			string name = file->GetName();
@@ -91,7 +94,22 @@ class BaseProducer{
 		virtual void GetPrimaryVertex(BayesPoint& vtx, int evt) = 0;
 		virtual void GetGenJets(vector<Jet>& genjets, int evt){}; 
 
+		//amp = ampeff = amp/sigma
+		double SmearRecHitTime(double amp, double time){
+			double n = 14;
+			double s = 0;
+			double c = 0.1083;
 
+			double sigma = (n/amp)*(n/amp) + (s*s)/(amp) + 2*c*c;
+			sigma = sigma/sqrt(2); //calculated for 2 rhs, need for 1
+			sigma = sqrt(sigma);
+			RandomSample rs;
+			rs.SetRange(time-5*sigma,time+5*sigma);
+			double newtime = rs.SampleGaussian(time,sigma,1).at(0);
+			return newtime;
+		}
+		void SetTimeSmear(bool t){_timesmear = t;}
+		bool _timesmear;
 		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);
 		void GetTruePhotons(vector<Jet>& phos, int evt, double gev = -1);
 		int GetTrueSuperClusters(vector<Jet>& phos, int evt, double gev = -1);
@@ -121,7 +139,9 @@ class BaseProducer{
 			cout << "Minimum object eta: " << _minobjeta << endl;
 			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
         		cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
+			cout << "Rechit time smear? " << _timesmear << endl;
 		}
+
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;
