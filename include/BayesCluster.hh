@@ -42,7 +42,7 @@ class BayesCluster{
 			_subalpha = 0.5;
 			_smear = Matrix();
 			_verb = 0;
-			_trees = {nullptr};
+			_trees = {};
 			_tresSmear_c = -1;
 			_tresSmear_n = -1;
 			

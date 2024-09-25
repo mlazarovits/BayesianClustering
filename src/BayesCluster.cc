@@ -171,6 +171,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
 			continue; }
+		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
 
 		//cout << "tree " << trees[i]->idx << " has " << trees[i]->model->GetNClusters() << " subclusters and " << trees[i]->points->Sumw() << " total weight and " <<  trees[i]->points->GetNPoints() << " points" << endl;
 		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
@@ -179,7 +180,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
 	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
-	_trees = trees;
 	return _trees;
 	
 	
