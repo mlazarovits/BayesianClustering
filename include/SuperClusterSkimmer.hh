@@ -1047,7 +1047,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//237 - dR bw subcluster and closest matching track
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - E/p bw subcluster and closest matching track	
-		TH1D* EovP_trackSubcl = new TH1D("EovP_subclTrack","EovP_subclTrack",25,0,2);	
+		TH1D* EovP_trackSubcl = new TH1D("EovP_subclTrack","EovP_subclTrack",25,0,10);	
 
 
 		
@@ -1536,15 +1536,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//230 - dR trackSubcl vs subcl time
 		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,5,50,-10,10);	
 		//231 - EovP trackSubcl vs subcl time	
-		TH2D* EovPtrack_timeSubcl = new TH2D("EovPtrack_timeSubcl","EovPtrack_timeSubcl;EovPtrack;timeSubcl",25,-2,2,50,-10,10);	
+		TH2D* EovPtrack_timeSubcl = new TH2D("EovPtrack_timeSubcl","EovPtrack_timeSubcl;EovPtrack;timeSubcl",25,-2,2,50,0,10);	
 		//232 - dR trackSubcl vs EovP trackSubcl	
-		TH2D* dRtrack_EovPtrack = new TH2D("dRtrack_EovPtrack","dRtrack_EovPtrack;dRtrack;EovPtrack",25,0,5,25,-2,2);	
+		TH2D* dRtrack_EovPtrack = new TH2D("dRtrack_EovPtrack","dRtrack_EovPtrack;dRtrack;EovPtrack",25,0,5,25,0.,10);	
 		//233 - dR trackSubcl vs EovP trackSubck, -10 < time subclust < -2	
-		TH2D* dRtrack_EovPtrack_early = new TH2D("dRtrack_EovPtrack_early","dRtrack_EovPtrack_timeSubclNeg10toNeg2;dRtrack;EovPtrack",25,0,5,25,-2,2);	
+		TH2D* dRtrack_EovPtrack_early = new TH2D("dRtrack_EovPtrack_early","dRtrack_EovPtrack_timeSubclNeg10toNeg2;dRtrack;EovPtrack",25,0,5,25,0,10);	
 		//234 - dR trackSubcl vs EovP trackSubck, -2 < time subclust < 2	
-		TH2D* dRtrack_EovPtrack_prompt = new TH2D("dRtrack_EovPtrack_prompt","dRtrack_EovPtrack_timeSubclNeg2to2;dRtrack;EovPtrack",25,0,5,25,-2,2);
+		TH2D* dRtrack_EovPtrack_prompt = new TH2D("dRtrack_EovPtrack_prompt","dRtrack_EovPtrack_timeSubclNeg2to2;dRtrack;EovPtrack",25,0,5,25,0,10);
 		//235 - dR trackSubcl vs EovP trackSubck, 2 < time subclust < 10	
-		TH2D* dRtrack_EovPtrack_late = new TH2D("dRtrack_EovPtrack_late","dRtrack_EovPtrack_timeSubcl2to10;dRtrack;EovPtrack",25,0,5,25,-2,2);	
+		TH2D* dRtrack_EovPtrack_late = new TH2D("dRtrack_EovPtrack_late","dRtrack_EovPtrack_timeSubcl2to10;dRtrack;EovPtrack",25,0,5,25,0,10);	
 		//236 - eta sig vs phi sig, t < 0, phiSigle0p3ANDetaSigge0p3
 		TH2D* etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3","etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3;etaSig;phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3",25,0.01,0.09,25,0.01,0.09);
 		//237 - phi sig vs phi center, t < 0, phiSigle0p3ANDetaSigge0p3
@@ -1618,11 +1618,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		
 		struct DetIDStruct {
 			DetIDStruct() {}
-			DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
+			DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal, const double eta, const double phi) : i1(ni1), i2(ni2), TT(nTT), ecal(necal), deteta(eta), detphi(phi){}
 			//Int_t i1; // EB: iphi, EE: ix
 			int i1;
 		//	Int_t i2; // EB: ieta, EE: iy
 			int i2;
+			double deteta, detphi;
 			Int_t TT; // trigger tower
 			Int_t ecal; // EB, EM, EP
 		};//<<>>struct DetIDStruct
@@ -1922,10 +1923,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			unsigned int detid;
 			int ieta, iphi;
 			pair<double, double> tcoords;
-			double pc_02pi = pc;
-			if(pc_02pi < 0) pc_02pi += 2*pi;
-			else if(pc_02pi > 2*pi) pc_02pi -= 2*pi; 
-			else pc_02pi = pc;
 
 			int bestTrackIdx = 999;
 			double dphi = -999;
@@ -1942,35 +1939,34 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				detid = _base->ECALTrackDetID_detId->at(id);
 				//check if detid in map
 				if(_detIDmap.count(detid) == 0) continue;
-				iphi = _detIDmap[detid].i1;
-				ieta = _detIDmap[detid].i2;
-		
-				tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-				teta = tcoords.first;
-				tphi = tcoords.second;			
-
-				dphi = fabs(tphi - pc_02pi);
-				dphi = acos(cos(dphi));
+				tphi = _detIDmap[detid].detphi;
+				teta = _detIDmap[detid].deteta;
 	
-				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
+				double tphi_02pi = tphi;
+				if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
+				else if(tphi_02pi > 2*pi) tphi_02pi -= 2*acos(-1); 
+				else tphi_02pi = tphi;
 				
+				dphi = fabs(pc - tphi_02pi);
+                                dphi = acos(cos(dphi));
+
+				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 				//get track info from detid
 				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
 				//E = p for photons
-				//de = fabs(E_k - _base->ECALTrack_p->at(trackidx))/E_k;
+				de = E_k / _base->ECALTrack_p->at(trackidx);
 				if(dr < bestTrackDr){
 					de = E_k/_base->ECALTrack_p->at(trackidx);
 					bestTrackDr = dr;
 					bestde_dr = de;
 					bestTrackIdx = trackidx; 
+			cout << "DR MATCH - subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " track phi " << tphi << " tphi02pi " << tphi_02pi << " p " << _base->ECALTrack_p->at(trackidx)  << " current dr " << dr << " best dr " << bestTrackDr << " current de " << E_k/_base->ECALTrack_p->at(trackidx) << " best de " << bestde_dr << endl;
 				}
 				if(de < best_de){
 					best_de = de;
 					bestdr_de = dr;
+			 cout << "DE MATCH - subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " track phi " << tphi << " tphi02pi " << tphi_02pi << " p " << _base->ECALTrack_p->at(trackidx)  << " current dr " << dr << " best dr " << bestdr_de << " current de " << E_k/_base->ECALTrack_p->at(trackidx) << " best de " << best_de << endl;
 				}
-//cout << "id eta " << teta << " phi " << tphi << " trackidx eta " << _base->ECALTrack_eta->at(trackidx) << " phi " << trackidx_phi << " ieta " << ieta << " iphi " << iphi << " trackidx p " << _base->ECALTrack_p->at(trackidx) << " trackidx " << trackidx << " of " << _base->ECALTrack_nTracks << " tracks" << endl;
-			//	cout << "track " << t << " eta " << teta << " ieta  " << ieta << " phi " << tphi << " iphi " << iphi << endl;
-			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " " << ieta << " track phi " << tphi << " " << iphi << " p " << _base->ECALTrack_p->at(t) << " current dr " << dr << " best dr " << bestTrackDr << " current de " << (E_k - _base->ECALTrack_p->at(t))/E_k << " best de " << de << endl;
 			}
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best p " << _base->ECALTrack_p->at(bestTrackIdx) << endl;
 			/*
@@ -2005,41 +2001,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << endl;
 			*/
-			//ieta = -85;
-			//iphi = 1;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-			//
-			//
-			//ieta = 85;
-			//iphi = 360;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = -1;
-			//iphi = 180;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 90;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-	
-			//ieta = 1;
-			//iphi = 2;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 10;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
-
-			//ieta = 1;
-			//iphi = 11;
-			//tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-			//cout << "ieta " << ieta << " eta " << tcoords.first << " iphi " << iphi << " phi " << tcoords.second << endl;
 
 
 			obs.push_back(ec);
@@ -3307,33 +3268,26 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
 	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
 	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
-	
-	    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
-	    std::ifstream infile( detIDConfigEB, std::ios::in);
-	
-	    UInt_t cmsswId, dbID;
-            pair<int, int> ietaiphi;
-	    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-	    std::string pos;
-	
-	    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
-	        //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-	        DetIDMap[cmsswId] = {iphi,ieta,TT25,0};
-		ietaiphi = make_pair(ieta, iphi);
-		iEtaiPhiToDetID[ietaiphi] = cmsswId;
-	        //auto idinfo = DetIDMap[cmsswId];
-	        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-	    }//while (infile >>
+		const std::string detIDConfigEB("info/fullinfo_v2_detids_EB.txt");
+		std::ifstream infile( detIDConfigEB, std::ios::in);
+		
+		UInt_t cmsswId, dbID;
+		pair<int, int> ietaiphi;
+		int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+		double deteta, detphi;	
+		std::string pos;
+		
+		while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> deteta >> detphi){
+		    //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
+		    DetIDMap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi};
+		    ietaiphi = make_pair(ieta, iphi);
+		    iEtaiPhiToDetID[ietaiphi] = cmsswId;
+		    //auto idinfo = DetIDMap[cmsswId];
+		    //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
+		}//while (infile >>
 	
 	}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
-
-
-	pair<double, double> iEtaiPhi2EtaPhi(int ieta, int iphi){
-		double phinew = iphi*acos(-1)/180;
-		double etanew = ieta*0.017453292519943295;
-		return make_pair(etanew, phinew);
-	}
 
 
 
