@@ -164,7 +164,7 @@ class BHCJetSkimmer{
 					jp.SetWeight(pc->at(p).w());
 					jp.SetEta(eta);
 					jp.SetPhi(phi);
-					cout << "rh - eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
+					//cout << "rh - eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
 					rhs.push_back(jp);
 				}
 				//create new Jet
