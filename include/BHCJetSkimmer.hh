@@ -209,6 +209,7 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
 				FindResonances(_predJets,wmass_idxs,tmass_idx);
 				//W mass
+				cout << "wmass idxs " << wmass_idxs.first << " " << wmass_idxs.second << endl;
 				if(wmass_idxs.first != -999){
 					w = _predJets[wmass_idxs.first];
 					w.add(_predJets[wmass_idxs.second]);
@@ -244,6 +245,7 @@ class BHCJetSkimmer{
 				}
 				//top mass
 				if(tmass_idx != -999){
+					cout << "adding w jet with pt " << w.pt() << endl;
 					top = _predJets[tmass_idx];
 					top.add(w);
 					topmass = top.mass();
@@ -320,6 +322,7 @@ class BHCJetSkimmer{
 				cout << "# reco jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
 				FindResonances(_recojets,wmass_idxs,tmass_idx);
+				cout << "wmass idxs " << wmass_idxs.first << " " << wmass_idxs.second << " top idx " << tmass_idx << endl;
 				if(wmass_idxs.first != -999){
 					w = _recojets[wmass_idxs.first];
 					w.add(_recojets[wmass_idxs.second]);
@@ -842,11 +845,10 @@ class BHCJetSkimmer{
 		void SetVerbosity(int verb){_verb = verb;}
 		int _verb;
 
-		//void FindResonances(vector<Jet>& jets, double& wmass, double& tmass){
 		void FindResonances(vector<Jet>& jets, pair<int,int>& wmass_idxs, int& tmass_idx){
 			//find W candidates
 			double mW = 80.377;
-			double diff = 999;
+			double diff = 1e6;
 			double mij;
 			int j1, j2;
 			if(jets.size() < 2){
@@ -854,7 +856,10 @@ class BHCJetSkimmer{
 				tmass_idx = -999;
 				return;
 			}
-			for(int i = 0; i < jets.size(); i++){
+			diff = fabs(jets[0].invMass(jets[1]) - diff);
+			j1 = 0;
+			j2 = 1;
+			for(int i = 1; i < jets.size(); i++){
 				for(int j = i+1; j < jets.size(); j++){
 					mij = jets[i].invMass(jets[j]);
 					if(fabs(mij - mW) < diff){
@@ -872,11 +877,11 @@ class BHCJetSkimmer{
 			//find top candidates
 			double mTop = 172.69;
 			mij = -999;
-			diff = 999;
-			cout << "j1 " << j1 << " make w jet from jet " << jets[j1].px()  << endl;
 			Jet wJet = jets[j1];
 			wJet.add(jets[j2]);
-			for(int i = 0; i < jets.size(); i++){
+			diff = fabs(jets[2].invMass(wJet) - mTop);
+			tmass_idx = 2;
+			for(int i = 2; i < jets.size(); i++){
 				if(i != j1 && i != j2){
 					mij = jets[i].invMass(wJet);
 					if(fabs(mij - mTop) < diff){
