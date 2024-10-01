@@ -1954,7 +1954,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//get track info from detid
 				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
 				//E = p for photons
-				de = E_k / _base->ECALTrack_p->at(trackidx);
+				//de = E_k / _base->ECALTrack_p->at(trackidx);
 				if(dr < bestTrackDr){
 					de = E_k/_base->ECALTrack_p->at(trackidx);
 					bestTrackDr = dr;
@@ -1965,7 +1965,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if(de < best_de){
 					best_de = de;
 					bestdr_de = dr;
-			 cout << "DE MATCH - subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " track phi " << tphi << " tphi02pi " << tphi_02pi << " p " << _base->ECALTrack_p->at(trackidx)  << " current dr " << dr << " best dr " << bestdr_de << " current de " << E_k/_base->ECALTrack_p->at(trackidx) << " best de " << best_de << endl;
+			 //cout << "DE MATCH - subcl eta " << ec << " phi " << pc << " energy " << E_k << " track eta " << teta << " track phi " << tphi << " tphi02pi " << tphi_02pi << " p " << _base->ECALTrack_p->at(trackidx)  << " current dr " << dr << " best dr " << bestdr_de << " current de " << E_k/_base->ECALTrack_p->at(trackidx) << " best de " << best_de << endl;
 				}
 			}
 			//cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << " best p " << _base->ECALTrack_p->at(bestTrackIdx) << endl;
@@ -2154,7 +2154,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists1D[1][235]->Fill(dPhiMetpc);
 			if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
 			_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
-			_procCats[id_idx].hists1D[1][238]->Fill(de);
+			_procCats[id_idx].hists1D[1][238]->Fill(bestde_dr);
 
 
 
@@ -3277,7 +3277,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		double deteta, detphi;	
 		std::string pos;
 		
-		while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> deteta >> detphi){
+		while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
 		    //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
 		    DetIDMap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi};
 		    ietaiphi = make_pair(ieta, iphi);
