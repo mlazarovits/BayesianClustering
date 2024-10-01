@@ -156,6 +156,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	for(int p = 0; p < nPhos; p++){
 		//if selected photons # is already 2, return (only want 2 highest pt photons that pass selection)
 		if(selPhoCount == 2) return;
+		//if excluded flag is up, skip (means this one should be skipped in favor of an OOT in same collection)
+		if(_base->Photon_excluded->at(p)) continue;
+		
 		pt = _base->Photon_pt->at(p);
                 phi = _base->Photon_phi->at(p);
                 eta = _base->Photon_eta->at(p);
