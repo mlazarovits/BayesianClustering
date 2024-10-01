@@ -1839,34 +1839,21 @@ class PhotonSkimmer : public BaseSkimmer{
 				}
 			}
 
-		/*
-                        obs.push_back(ec);
-                        obs.push_back(pc);
-                        obs.push_back(tc);
-                        obs.push_back(e_var);
-                        obs.push_back(p_var);
-                        obs.push_back(ep_cov);
-                        obs.push_back(te_cov);
-                        obs.push_back(E_k);
-                        obs.push_back(swCP);
-                        obs.push_back(majLength);       
-                        obs.push_back(minLength);       
-                        */
-                        obs[_inputs[4]] = ec;
-                        obs[_inputs[5]] = pc;
-                        obs[_inputs[6]] = tc;
-                        obs[_inputs[7]] = e_var;
-                        obs[_inputs[8]] = p_var;
-                        obs[_inputs[9]] = ep_cov;
-                        obs[_inputs[10]] = te_cov;
-                        obs[_inputs[11]] = E_k;
-                        obs[_inputs[12]] = swCP;
-                        obs[_inputs[13]] = majLength;
-                        obs[_inputs[14]] = minLength;	
+                        obs["eta_center"] = ec;
+                        obs["phi_center"] = pc;
+                        obs["time_center"] = tc;
+                        obs["eta_sig"] = e_var;
+                        obs["phi_sig"] = p_var;
+                        obs["etaphi_cov"] = ep_cov;
+                        obs["timeeta_cov"] = te_cov;
+                        obs["energy"] = E_k;
+                        obs["sw+"] = swCP;
+                        obs["major_length"] = majLength;
+                        obs["minor_length"] = minLength;	
 			//get max weighted point
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
-			obs[_inputs[15]] = maxE/E_k;	
+			obs["maxOvtotE"] = maxE/E_k;	
 			
 			//fill hists - lead only
 			//centers

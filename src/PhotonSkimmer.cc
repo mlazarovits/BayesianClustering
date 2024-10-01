@@ -103,7 +103,10 @@ void PhotonSkimmer::Skim(){
 	
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
-			map<string,double> obs;				
+			map<string,double> obs;
+			for(int d = 0; d < _inputs.size(); d++)
+				obs[_inputs[d]] = -99;
+
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -167,60 +170,37 @@ void PhotonSkimmer::Skim(){
 			double pt = _base->Photon_pt->at(phoidx);
 			cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
-		/*
-                                        obs.push_back(r9);
-                                        obs.push_back(Sieie);
-                                        obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
-                                        obs.push_back(_base->SuperCluster_smaj->at(scidx));
-                                        obs.push_back(_base->SuperCluster_smin->at(scidx));
+                                        obs["R9"] = r9;
+                                        obs["Sietaieta"] = Sieie;
+					obs["Siphiiphi"] = Sipip;
+                                        obs["Smajor"] = _base->SuperCluster_smaj->at(scidx);
+                                        obs["Sminor"] = _base->SuperCluster_smin->at(scidx);
                                         //iso/pT
-                                        obs.push_back(eIso/pt);
-                                        obs.push_back(hIso/pt);
-                                        obs.push_back(tIso/pt);
-                                        */
-                                        obs[_inputs[16]] = r9;
-                                        obs[_inputs[17]] = Sieie;
-					obs[_inputs[18]] = Sipip;
-                                        obs[_inputs[19]] = _base->SuperCluster_covPhiPhi->at(scidx);
-                                        obs[_inputs[20]] = _base->SuperCluster_smaj->at(scidx);
-                                        obs[_inputs[21]] = _base->SuperCluster_smin->at(scidx);
-                                        //iso/pT
-                                        obs[_inputs[22]] = eIso/pt;
-                                        obs[_inputs[23]] = hIso/pt;
-                                        obs[_inputs[24]] = tIso/pt;	
+                                        obs["ecalPFClusterIsoOvPt"] = eIso/pt;
+                                        obs["hcalPFClusterIsoOvPt"] = hIso/pt;
+                                        obs["trkSumPtHollowConeDR03OvPt"] = tIso/pt;	
 			
 			}
 			else{ //failed preselection
-			/*
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        obs.push_back(-999);
-                                        */
-                                        obs[_inputs[16]] = -999; 
-                                        obs[_inputs[17]] = -999; 
-					obs[_inputs[18]] = -999; 
-                                        obs[_inputs[19]] = -999; 
-                                        obs[_inputs[20]] = -999; 
-                                        obs[_inputs[21]] = -999; 
+                                        obs["R9"] = -999;
+                                        obs["Sietaieta"] = -999;
+					obs["Siphiiphi"] = -999;
+                                        obs["Smajor"] = -999;
+                                        obs["Sminor"] = -999;
                                         //iso/pT
-                                        obs[_inputs[22]] = -999; 
-                                        obs[_inputs[23]] = -999; 
-                                        obs[_inputs[24]] = -999; 
+                                        obs["ecalPFClusterIsoOvPt"] = -999;
+                                        obs["hcalPFClusterIsoOvPt"] = -999;
+                                        obs["trkSumPtHollowConeDR03OvPt"] = -999;	
 			}
 			
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);
-				obs[_inputs[1]] = e;
-                                obs[_inputs[2]] = phoidx;
+				obs["event"] = e;
+                                obs["object"] = phoidx;
 			//only get lead subcluster -> ncl = 0
-                                obs[_inputs[3]] = 0;
-                                obs[_inputs[25]] = label;
+                                obs["subcl"] = 0;
+                                obs["label"] = label;
 				BaseSkimmer::WriteObs(obs);
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		cout << "n obs " << obs.size() << " " << _inputs.size() << endl;

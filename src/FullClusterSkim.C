@@ -47,6 +47,7 @@ int main(int argc, char *argv[]){
 	bool spikes = false;
 	int skip = 1;
 	int bh = 1;
+	bool iso = true;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -171,6 +172,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		skip = std::stoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--noIso", 7) == 0){
+			iso = false;
+			cout << "Not applying isolation to photons" << endl;
+   		}
 
 	}
 	if(hprint){
@@ -199,6 +204,7 @@ int main(int argc, char *argv[]){
    		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
    		cout << "   --noCalibrate                 turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
    		cout << "   --rejectSpikes                reject spikes based on swiss cross cut (default = false, off)" << endl;
+   		cout << "   --noIso                       turn off isolation in preselection (photons only, default = true, on)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -364,7 +370,7 @@ cout << "fname " << fname << endl;
         	else
 			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
-		skimmer.SetIsoCuts();
+		if(iso) skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);

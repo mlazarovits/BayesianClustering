@@ -456,7 +456,7 @@ class BaseSkimmer{
 			//subcl minor length
 			_inputs.push_back("minor_length");
 			//subcl max pt / total E
-			_inputs.push_back("max/totE");
+			_inputs.push_back("maxOvtotE");
 			//R9
 			_inputs.push_back("R9");
 			//Sietaieta
@@ -467,8 +467,6 @@ class BaseSkimmer{
 			_inputs.push_back("Smajor");
 			//Sminor
 			_inputs.push_back("Sminor");
-			//seed E/total E
-			_inputs.push_back("seedOvTotE");
 			//ecalPFClusterIsoOvPt
 			_inputs.push_back("ecalPFClusterIsoOvPt");
 			//hcalPFClusterIsoOvPt
