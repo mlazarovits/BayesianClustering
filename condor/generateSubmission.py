@@ -26,13 +26,13 @@ def generateSubmission(args):
     if args.inputSample == "GJets_HT400to600_2017":
     	inputFile = "GJets_R17_MET75_v20_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GJets_HT100to200_2017":
-    	inputFile = "GJets_R17_MET75_v20_GJets_HT-100to200_AODSIM_RunIIFall17DRPremix1.root"
+    	inputFile = "GJets_R17_MET75_v20_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix1.root"
     elif args.inputSample == "GJets_HT200to400_2017":
-    	inputFile = "GJets_R17_MET75_v20_GJets_HT-200to400_AODSIM_RunIIFall17DRPremix1.root"
+    	inputFile = "GJets_R17_MET75_v20_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix1.root"
     elif args.inputSample == "GJets_HT40to100_2017":
-    	inputFile = "GJets_R17_MET75_v20_GJets_HT-40to100_AODSIM_RunIIFall17DRPremix01.root"
+    	inputFile = "GJets_R17_MET75_v20_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix01.root"
     elif args.inputSample == "GJets_HT600toInf_2017":
-    	inputFile = "GJets_R17_MET75_v20_GJets_HT-600toInf_AODSIM_RunIIFall17DRPremix3.root"
+    	inputFile = "GJets_R17_MET75_v20_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix3.root"
     elif args.inputSample == "GMSB_L-250_Ctau-10":
         inputFile = "GMSB_R17_MET75_v20_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-300_Ctau-400":
