@@ -102,7 +102,8 @@ void PhotonSkimmer::Skim(){
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	
 			_swcross = swissCross(rhs);
-			vector<double> obs;				
+			//vector<double> obs;				
+			map<string,double> obs;				
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -158,43 +159,76 @@ void PhotonSkimmer::Skim(){
 			//do 2017 preselection
 			double r9 = _base->Photon_r9->at(phoidx);
 			double HoE = _base->Photon_hadOverEM->at(phoidx);
-			double Sieie = _base->Photon_SigmaIEtaIEta->at(phoidx);
+			double Sieie = _base->Photon_sieie->at(phoidx);
+			double Sipip = _base->Photon_sipip->at(phoidx);
 			double eIso = _base->Photon_ecalRHSumEtConeDR04->at(phoidx);//_base->Photon_ecalPFClusterIso->at(phoidx);
 			double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx);//_base->Photon_hcalPFClusterIso->at(phoidx);
 			double tIso = _base->Photon_trkSumPtHollowConeDR03->at(phoidx);
 			double pt = _base->Photon_pt->at(phoidx);
 			cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
-				obs.push_back(r9);
-				obs.push_back(Sieie);
-				obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
-				obs.push_back(_base->SuperCluster_smaj->at(scidx));
-				obs.push_back(_base->SuperCluster_smin->at(scidx));
-				//iso/pT
-				obs.push_back(eIso/pt);
-				obs.push_back(hIso/pt);
-				obs.push_back(tIso/pt);
-			
+		/*
+                                        obs.push_back(r9);
+                                        obs.push_back(Sieie);
+                                        obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
+                                        obs.push_back(_base->SuperCluster_smaj->at(scidx));
+                                        obs.push_back(_base->SuperCluster_smin->at(scidx));
+                                        //iso/pT
+                                        obs.push_back(eIso/pt);
+                                        obs.push_back(hIso/pt);
+                                        obs.push_back(tIso/pt);
+                                        */
+                                        obs[_inputs[16]] = r9;
+                                        obs[_inputs[17]] = Sieie;
+					obs[_inputs[18]] = Sipip;
+                                        obs[_inputs[19]] = _base->SuperCluster_covPhiPhi->at(scidx);
+                                        obs[_inputs[20]] = _base->SuperCluster_smaj->at(scidx);
+                                        obs[_inputs[21]] = _base->SuperCluster_smin->at(scidx);
+                                        //iso/pT
+                                        obs[_inputs[22]] = eIso/pt;
+                                        obs[_inputs[23]] = hIso/pt;
+                                        obs[_inputs[24]] = tIso/pt;	
 			
 			}
 			else{ //failed preselection
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
+			/*
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        obs.push_back(-999);
+                                        */
+                                        obs[_inputs[16]] = -999; 
+                                        obs[_inputs[17]] = -999; 
+					obs[_inputs[18]] = -999; 
+                                        obs[_inputs[19]] = -999; 
+                                        obs[_inputs[20]] = -999; 
+                                        obs[_inputs[21]] = -999; 
+                                        //iso/pT
+                                        obs[_inputs[22]] = -999; 
+                                        obs[_inputs[23]] = -999; 
+                                        obs[_inputs[24]] = -999; 
 			}
-		cout << "n obs " << obs.size() << endl;			
 			
 			
 			int ncl = gmm->GetNClusters();
-			//only get lead subcluster -> ncl = 0
 			int label = GetTrainingLabel(phoidx,0,gmm);
-			WriteObs(e,phoidx,0,obs,label);
+				obs[_inputs[1]] = e;
+                                obs[_inputs[2]] = phoidx;
+			//only get lead subcluster -> ncl = 0
+                                obs[_inputs[3]] = 0;
+                                obs[_inputs[25]] = label;
+				BaseSkimmer::WriteObs(obs);
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
+		cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
+		//for(auto o : obs)
+		//	cout << o.first << ": " << o.second << endl;
+		//cout << endl;
+		//for(int o = 0; o < _inputs.size(); o++)
+		//	cout << o << ": " << _inputs[o] << endl;	
 		}
 	}
 	cout << "\n" << endl;

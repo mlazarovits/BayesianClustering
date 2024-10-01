@@ -1762,7 +1762,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 		//k = sum_n(E_n)/N
-		void FillModelHists(BasePDFMixture* model, int id_idx, vector<double>& obs){
+		//void FillModelHists(BasePDFMixture* model, int id_idx, vector<double>& obs){
+		void FillModelHists(BasePDFMixture* model, int id_idx, map<string,double>& obs){
 			obs.clear();	
 			map<string, Matrix> params;
 			vector<double> eigenvals, eigenvals_space, norms;
@@ -1868,8 +1869,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vector<double> eigvals;
 			cov.eigenCalc(eigvals,eigvecs);
 			double majLength = sqrt(eigvals[1]);	
-			double minLength = sqrt(eigvals[0]);	
-	
+			if(eigvals[0] < 0) cout << "negative eigenvalue " << eigvals[0] << endl;
+                        double minLength; 
+                        if(eigvals[0] < 0) minLength = -sqrt(-eigvals[0]);
+                        else minLength = sqrt(eigvals[0]);	
 
 			//calculate slopes from eigenvectors
 			//cov.eigenCalc(eigenvals, eigenvecs);
@@ -2002,7 +2005,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			cout << "subcl eta " << ec << " phi " << pc << " energy " << E_k << " best dr " << bestTrackDr << " best de from dr match " << bestde_dr << endl;
 			*/
 
-
+			/*
 			obs.push_back(ec);
 			obs.push_back(pc);
 			obs.push_back(tc);
@@ -2014,10 +2017,23 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			obs.push_back(swCP);
 			obs.push_back(majLength);	
 			obs.push_back(minLength);	
+			*/
+			obs[_inputs[4]] = ec;
+			obs[_inputs[5]] = pc;
+			obs[_inputs[6]] = tc;
+			obs[_inputs[7]] = e_var;
+			obs[_inputs[8]] = p_var;
+			obs[_inputs[9]] = ep_cov;
+			obs[_inputs[10]] = te_cov;
+			obs[_inputs[11]] = E_k;
+			obs[_inputs[12]] = swCP;
+			obs[_inputs[13]] = majLength;	
+			obs[_inputs[14]] = minLength;	
 			//get max weighted point
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
-			obs.push_back(maxE/E_k);
+			obs[_inputs[15]] = maxE/E_k;	
+			//obs.push_back(maxE/E_k);
 
 			//fill hists - lead only
 			//centers
