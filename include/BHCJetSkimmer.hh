@@ -328,7 +328,7 @@ class BHCJetSkimmer{
 					w.add(_recojets[wmass_idxs.second]);
 					wmass = w.mass();
 					dr_pair = dR(_recojets[wmass_idxs.first].eta(), _recojets[wmass_idxs.first].phi(), _recojets[wmass_idxs.second].eta(), _recojets[wmass_idxs.second].phi());
-					_procCats[p].hists1D[0][29]->Fill(wmass);
+					_procCats[p].hists1D[0][27]->Fill(wmass);
 					_procCats[p].hists1D[0][54]->Fill(dr_pair);
 					_procCats[p].hists1D[0][56]->Fill(w.pt());
 
