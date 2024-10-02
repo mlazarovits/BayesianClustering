@@ -309,7 +309,7 @@ class BHCJetSkimmer{
 				for(int j = 0; j < _recojets.size(); j++){
 					dr = CalcJetSize(_recojets[j]);
 					cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " dr " << dr << endl;
-					_procCats[p].hists1D[0][19]->Fill(_recojets[j].e());
+					_procCats[p].hists1D[0][19]->Fill(dr);
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					//dr hist is #19
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
