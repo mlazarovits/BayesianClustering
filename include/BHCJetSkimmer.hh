@@ -750,11 +750,11 @@ class BHCJetSkimmer{
 		//27 - reco jet W invariant mass
 		TH1D* recoJet_Wmass = new TH1D("recoJet_Wmass","recoJet_Wmass;Invariant mass for best W candidate",50,50,250);
 		//28 - reco jet top invariant mass
-		TH1D* recoJet_topmass = new TH1D("recoJet_topmass","recoJet_topmass;Invariant mass for best top candidate",25,100,250);
+		TH1D* recoJet_topmass = new TH1D("recoJet_topmass","recoJet_topmass;Invariant mass for best top candidate",25,50,250);
 		//29 - pred jet W invariant mass
 		TH1D* predJet_Wmass = new TH1D("predJet_Wmass","predJet_Wmass;Invariant mass for best W candidate",50,50,250);
 		//30 - pred jet top invariant mass
-		TH1D* predJet_topmass = new TH1D("predJet_topmass","predJet_topmass;Invariant mass for best top candidate",25,100,250);
+		TH1D* predJet_topmass = new TH1D("predJet_topmass","predJet_topmass;Invariant mass for best top candidate",25,50,250);
 		//31 - pred jet W invariant mass, pT_jj < 100
 		TH1D* predJet_Wmass_pTjjl100 = new TH1D("predJet_Wmass_pTjjl100","predJet_Wmass_pTjjl100;Invariant mass_pTjjl100 for best W candidate",50,0,250);
 		//32 - pred jet W invariant mass, pT_jj >= 100
