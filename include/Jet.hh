@@ -269,6 +269,7 @@ class Jet{
 					_mu.add(mu);
 					norm += _constituents[k]._pi;
 				}
+				_mu.mult(_mu,1./norm);		 
 				//for covariance, take into account covariance of constituents with extra term x'_k = x_k +- sig_k
 				_cov = Matrix(3,3);
 				for(int k = 0; k < _constituents.size(); k++){
@@ -279,7 +280,6 @@ class Jet{
 						}
 					}
 				}
-				_mu.mult(_mu,1./norm);		 
 				_cov.mult(_cov,1./norm);		 
 			}
 			//phi wraparound
