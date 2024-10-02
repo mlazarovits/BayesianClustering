@@ -45,7 +45,7 @@ class BHCJetSkimmer{
 			graphs.push_back(nrhs_comptime);
 
 			_hists1D.push_back(nClusters);
-			_hists1D.push_back(nSubClusters);	
+			_hists1D.push_back(nSubclusters);	
 			_hists1D.push_back(predJet_subClusterEnergy);
 			_hists1D.push_back(predJet_subClusterEtaCenter);
 			_hists1D.push_back(predJet_subClusterPhiCenter);
@@ -113,6 +113,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(predJetMass_predJetSize);
 			_hists2D.push_back(predJetInvMassW_predJetPairjetSize); 
 			_hists2D.push_back(predJetPt_predJetSize);
+			_hists2D.push_back(prednSubclusters_jetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -252,10 +253,13 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][30]->Fill(topmass);
 				}
 				njets = _predJets.size();
+				int nsubs;
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 					//cout << "calc jet size for jet " << j << endl;
 					dr = CalcJetSize(_predJets[j]);
+					nsubs = _predJets[j].GetNConstituents();
+					_procCats[p].hists2D[0][11]->Fill(nsubs,dr);
 					//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
 					Matrix cov = _predJets[j].GetCovariance();
 				
@@ -695,7 +699,7 @@ class BHCJetSkimmer{
 		//0
 		TH1D* nClusters = new TH1D("nPredJets","nPredJets",10,0,10);
 		//1
-		TH1D* nSubClusters = new TH1D("predJet_nSubClusters","predJet_nSubClusters",10,0,10);
+		TH1D* nSubclusters = new TH1D("predJet_nSubclusters","predJet_nSubclusters",10,0,10);
 		//2
 		TH1D* predJet_subClusterEnergy = new TH1D("predJet_subClusterEnergy","predJet_subClusterEnergy",20,0,500);
 		//3
@@ -833,7 +837,9 @@ class BHCJetSkimmer{
 		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("predJetInvMassW_predJetPairjetSize","predJetInvMassW_predJetPairjetSize;pred m_jj;jetSize_jj",50,0,250,50,0,1.); 
 		//10 - pred jet pt vs pred jet jetSize
 		TH2D* predJetPt_predJetSize = new TH2D("predJetPt_predJetSize","predJetPt_predJetSize;predJetPt;predJetSize",50,0,250,50,0,1);
-	
+		//11 - pred jet n subclusters vs jet size
+		TH2D* prednSubclusters_jetSize = new TH2D("prednSubclusters_jetSize","prednSubclusters_jetSize;nSubclusters;jetsize",10,0,10,50,0,1);
+
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
 		void SetOutfile(string fname){ _oname = fname; }

@@ -272,11 +272,18 @@ class Jet{
 				_mu.mult(_mu,1./norm);		 
 				//for covariance, take into account covariance of constituents with extra term x'_k = x_k +- sig_k
 				_cov = Matrix(3,3);
+				double xi, xj;
 				for(int k = 0; k < _constituents.size(); k++){
 					double entry = 0;
 					for(int i = 0; i < 3; i++){
 						for(int j = 0; j < 3; j++){
-							entry += _constituents[k]._pi*((_constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j)) - _mu.at(i,0))*((_constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j)) - _mu.at(j,0));
+							/*
+							xi = _constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j);
+							xj = _constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j);
+							*/
+							xi = _constituents[k]._mu.at(i,0);
+							xj = _constituents[k]._mu.at(j,0);
+							entry += _constituents[k]._pi*(xi - _mu.at(i,0))*(xj - _mu.at(j,0));
 						}
 					}
 				}
