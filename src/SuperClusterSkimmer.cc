@@ -147,8 +147,8 @@ void SuperClusterSkimmer::Skim(){
 			else BHPass++;
 		//if(_clusterSize > 3) cout << "~BH " << _BHcluster << " cluster size " << _clusterSize << " true BH filter " << _base->Flag_globalSuperTightHalo2016Filter << endl;
 		
-			//vector<double> obs;
-			map<string,double> mapobs;			
+			//one map per subcluster
+			vector<map<string,double>> mapobs;			
 			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 			int id_idx = -999;
 			//skip "total" procCat for always separated hists
@@ -177,102 +177,67 @@ void SuperClusterSkimmer::Skim(){
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
 			//add CMS benchmark variable - isolation information
 			//need to find associated photon
-			int np = -999;
-			for(int p = 0; p < npho; p++){
-				if(_base->Photon_scIndex->at(p) == scidx){
-					np = p;
-					break;
-				}
-			}
-			if(np != -999){
-				//do 2017 preselection
-				double r9 = _base->Photon_r9->at(np);
-				double HoE = _base->Photon_hadOverEM->at(np);
-				double Sieie = _base->Photon_SigmaIEtaIEta->at(np);
-				double eIso = _base->Photon_ecalRHSumEtConeDR04->at(np);//_base->Photon_ecalPFClusterIso->at(np);
-				double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(np);//_base->Photon_hcalPFClusterIso->at(np);
-				double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
-				double pt = _base->Photon_pt->at(np);
-				cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
-				if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
-					/*
-					obs.push_back(r9);
-					obs.push_back(Sieie);
-					obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
-					obs.push_back(_base->SuperCluster_smaj->at(scidx));
-					obs.push_back(_base->SuperCluster_smin->at(scidx));
-					//iso/pT
-					obs.push_back(eIso/pt);
-					obs.push_back(hIso/pt);
-					obs.push_back(tIso/pt);
-					*/
-					mapobs[_inputs[16]] = r9;
-					mapobs[_inputs[17]] = Sieie;
-					mapobs[_inputs[18]] = _base->SuperCluster_covPhiPhi->at(scidx);
-					mapobs[_inputs[19]] = _base->SuperCluster_smaj->at(scidx);
-					mapobs[_inputs[20]] = _base->SuperCluster_smin->at(scidx);
-					//iso/pT
-					mapobs[_inputs[21]] = eIso/pt;
-					mapobs[_inputs[22]] = hIso/pt;
-					mapobs[_inputs[23]] = tIso/pt;
+			//SuperCluster_photonIndx
+			int np = _base->SuperCluster_PhotonIndx->at(scidx);
 			
+			
+			for(int k = 0; k < mapobs.size(); k++){
+				if(np != -999){
+					//do 2017 preselection
+					double r9 = _base->Photon_r9->at(np);
+					double HoE = _base->Photon_hadOverEM->at(np);
+					double Sieie = _base->Photon_SigmaIEtaIEta->at(np);
+					double eIso = _base->Photon_ecalRHSumEtConeDR04->at(np);//_base->Photon_ecalPFClusterIso->at(np);
+					double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(np);//_base->Photon_hcalPFClusterIso->at(np);
+					double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
+					double pt = _base->Photon_pt->at(np);
+					cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+					if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
+						mapobs[k]["R9"] = r9;
+						mapobs[k]["Sietaieta"] = Sieie;
+						mapobs[k]["Siphiiphi"] = _base->SuperCluster_covPhiPhi->at(scidx);
+						mapobs[k]["Smajor"] = _base->SuperCluster_smaj->at(scidx);
+						mapobs[k]["Sminor"] = _base->SuperCluster_smin->at(scidx);
+						//iso/pT
+						mapobs[k]["ecalPFClusterIsoOvPt"] = eIso/pt;
+						mapobs[k]["hcalPFClusterIsoOvPt"] = hIso/pt;
+						mapobs[k]["trkSumPtHollowConeDR03OvPt"] = tIso/pt;
+				
+					}
+					else{ //failed preselection
+						mapobs[k]["R9"] = -999;
+						mapobs[k]["Sietaieta"] = -999;
+						mapobs[k]["Siphiiphi"] = -999;
+						mapobs[k]["Smajor"] = -999;
+						mapobs[k]["Sminor"] = -999;
+						//iso/pT
+						mapobs[k]["ecalPFClusterIsoOvPt"] = -999;
+						mapobs[k]["hcalPFClusterIsoOvPt"] = -999;
+						mapobs[k]["trkSumPtHollowConeDR03OvPt"] = -999;
+					}
 				}
-				else{ //failed preselection
-					/*
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					obs.push_back(-999);
-					*/
-					mapobs[_inputs[16]] = -999;
-					mapobs[_inputs[17]] = -999;
-					mapobs[_inputs[18]] = -999;  
-					mapobs[_inputs[19]] = -999;  
-					mapobs[_inputs[20]] = -999;  
+				else{ //not matched to photon
+					mapobs[k]["R9"] = -999;
+					mapobs[k]["Sietaieta"] = -999;
+					mapobs[k]["Siphiiphi"] = -999;
+					mapobs[k]["Smajor"] = -999;
+					mapobs[k]["Sminor"] = -999;
 					//iso/pT
-					mapobs[_inputs[21]] = -999;
-					mapobs[_inputs[22]] = -999;
-					mapobs[_inputs[23]] = -999;
+					mapobs[k]["ecalPFClusterIsoOvPt"] = -999;
+					mapobs[k]["hcalPFClusterIsoOvPt"] = -999;
+					mapobs[k]["trkSumPtHollowConeDR03OvPt"] = -999;
 				}
-			}
-			else{ //not matched to photon
-				/*
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				obs.push_back(-999);
-				*/
-				mapobs[_inputs[16]] = -999;
-				mapobs[_inputs[17]] = -999;
-				mapobs[_inputs[18]] = -999;  
-				mapobs[_inputs[19]] = -999;  
-				mapobs[_inputs[20]] = -999;  
-				//iso/pT
-				mapobs[_inputs[21]] = -999;
-				mapobs[_inputs[22]] = -999;
-				mapobs[_inputs[23]] = -999;
+				mapobs[k]["event"] = e;
+				mapobs[k]["object"] = scidx;
+				mapobs[k]["subcl"] = k;
+				int label = GetTrainingLabel(scidx, k, gmm);
+				mapobs[k]["label"] = label;
+
+				BaseSkimmer::WriteObs(mapobs[k]);
 			}
 		cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
 			
 			
-			int ncl = gmm->GetNClusters();
-			for(int c = 0; c < ncl; c++){
-				int label = GetTrainingLabel(scidx,c,gmm);
-				mapobs[_inputs[1]] = e;
-				mapobs[_inputs[2]] = scidx;
-				mapobs[_inputs[3]] = c;
-				mapobs[_inputs[24]] = label;
-				//BaseSkimmer::WriteObs(e,scidx,c,obs,label);
-				BaseSkimmer::WriteObs(mapobs);
-			}
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		}
 	}
