@@ -94,7 +94,7 @@ void SuperClusterSkimmer::Skim(){
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size()  << endl;
+			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << " SC center eta " << _base->SuperCluster_eta->at(scidx) << " SC center phi " << _base->SuperCluster_phi->at(scidx)  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
 
@@ -147,11 +147,12 @@ void SuperClusterSkimmer::Skim(){
 			else BHPass++;
 		//if(_clusterSize > 3) cout << "~BH " << _BHcluster << " cluster size " << _clusterSize << " true BH filter " << _base->Flag_globalSuperTightHalo2016Filter << endl;
 		
-			vector<double> obs;				
+			//vector<double> obs;
+			map<string,double> mapobs;			
 			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 			int id_idx = -999;
 			//skip "total" procCat for always separated hists
-			FillModelHists(gmm, 1, obs);
+			FillModelHists(gmm, 1, mapobs);
 			FillCMSHists(rhs,1);
 			nscran++;
 			//no separate categories for SCs - only fill "total" category
@@ -194,6 +195,7 @@ void SuperClusterSkimmer::Skim(){
 				double pt = _base->Photon_pt->at(np);
 				cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 				if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
+					/*
 					obs.push_back(r9);
 					obs.push_back(Sieie);
 					obs.push_back(_base->SuperCluster_covPhiPhi->at(scidx));
@@ -203,11 +205,20 @@ void SuperClusterSkimmer::Skim(){
 					obs.push_back(eIso/pt);
 					obs.push_back(hIso/pt);
 					obs.push_back(tIso/pt);
-			
-					_mvainputs["R9"].push_back(r9);
+					*/
+					mapobs[_inputs[16]] = r9;
+					mapobs[_inputs[17]] = Sieie;
+					mapobs[_inputs[18]] = _base->SuperCluster_covPhiPhi->at(scidx);
+					mapobs[_inputs[19]] = _base->SuperCluster_smaj->at(scidx);
+					mapobs[_inputs[20]] = _base->SuperCluster_smin->at(scidx);
+					//iso/pT
+					mapobs[_inputs[21]] = eIso/pt;
+					mapobs[_inputs[22]] = hIso/pt;
+					mapobs[_inputs[23]] = tIso/pt;
 			
 				}
 				else{ //failed preselection
+					/*
 					obs.push_back(-999);
 					obs.push_back(-999);
 					obs.push_back(-999);
@@ -216,9 +227,20 @@ void SuperClusterSkimmer::Skim(){
 					obs.push_back(-999);
 					obs.push_back(-999);
 					obs.push_back(-999);
+					*/
+					mapobs[_inputs[16]] = -999;
+					mapobs[_inputs[17]] = -999;
+					mapobs[_inputs[18]] = -999;  
+					mapobs[_inputs[19]] = -999;  
+					mapobs[_inputs[20]] = -999;  
+					//iso/pT
+					mapobs[_inputs[21]] = -999;
+					mapobs[_inputs[22]] = -999;
+					mapobs[_inputs[23]] = -999;
 				}
 			}
 			else{ //not matched to photon
+				/*
 				obs.push_back(-999);
 				obs.push_back(-999);
 				obs.push_back(-999);
@@ -227,14 +249,29 @@ void SuperClusterSkimmer::Skim(){
 				obs.push_back(-999);
 				obs.push_back(-999);
 				obs.push_back(-999);
+				*/
+				mapobs[_inputs[16]] = -999;
+				mapobs[_inputs[17]] = -999;
+				mapobs[_inputs[18]] = -999;  
+				mapobs[_inputs[19]] = -999;  
+				mapobs[_inputs[20]] = -999;  
+				//iso/pT
+				mapobs[_inputs[21]] = -999;
+				mapobs[_inputs[22]] = -999;
+				mapobs[_inputs[23]] = -999;
 			}
-		cout << "n obs " << obs.size() << endl;			
+		cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
 			
 			
 			int ncl = gmm->GetNClusters();
 			for(int c = 0; c < ncl; c++){
 				int label = GetTrainingLabel(scidx,c,gmm);
-				BaseSkimmer::WriteObs(e,scidx,c,obs,label);
+				mapobs[_inputs[1]] = e;
+				mapobs[_inputs[2]] = scidx;
+				mapobs[_inputs[3]] = c;
+				mapobs[_inputs[24]] = label;
+				//BaseSkimmer::WriteObs(e,scidx,c,obs,label);
+				BaseSkimmer::WriteObs(mapobs);
 			}
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		}

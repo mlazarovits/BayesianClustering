@@ -423,65 +423,70 @@ class BaseSkimmer{
 			return label;
 		}
 	
+		vector<string> _inputs;
 		void SetObs(){
-			vector<string> inputs;
 			//sample
-			inputs.push_back("sample");
+			_inputs.push_back("sample");
 			//event
-			inputs.push_back("event");
+			_inputs.push_back("event");
 			//supercl
-			inputs.push_back("supercl");
+			_inputs.push_back("object");
 			//subcl
-			inputs.push_back("subcl");
+			_inputs.push_back("subcl");
 			//etacenter
-			inputs.push_back("eta_center");
+			_inputs.push_back("eta_center");
 			//phicenter
-			inputs.push_back("phi_center");
+			_inputs.push_back("phi_center");
 			//timecenter
-			inputs.push_back("time_center");
+			_inputs.push_back("time_center");
 			//etasig
-			inputs.push_back("eta_sig");
+			_inputs.push_back("eta_sig");
 			//phisig
-			inputs.push_back("phi_sig");
+			_inputs.push_back("phi_sig");
 			//etaphicov
-			inputs.push_back("etaphi_cov");
+			_inputs.push_back("etaphi_cov");
 			//timeetacov
-			inputs.push_back("timeeta_cov");
+			_inputs.push_back("timeeta_cov");
 			//energy
-			inputs.push_back("energy");
+			_inputs.push_back("energy");
 			//sw+
-			inputs.push_back("sw+");
+			_inputs.push_back("sw+");
 			//subcl major length
-			inputs.push_back("major_length");
+			_inputs.push_back("major_length");
 			//subcl minor length
-			inputs.push_back("minor_length");
+			_inputs.push_back("minor_length");
+			//subcl max pt / total E
+			_inputs.push_back("max/totE");
 			//R9
-			inputs.push_back("R9");
+			_inputs.push_back("R9");
 			//Sietaieta
-			inputs.push_back("Sietaieta");
+			_inputs.push_back("Sietaieta");
 			//Siphiiphi
-			inputs.push_back("Siphiiphi");
+			_inputs.push_back("Siphiiphi");
 			//Smajor
-			inputs.push_back("Smajor");
+			_inputs.push_back("Smajor");
 			//Sminor
-			inputs.push_back("Sminor");
+			_inputs.push_back("Sminor");
 			//seed E/total E
-			inputs.push_back("seedOvTotE");
+			_inputs.push_back("seedOvTotE");
 			//ecalPFClusterIsoOvPt
-			inputs.push_back("ecalPFClusterIsoOvPt");
+			_inputs.push_back("ecalPFClusterIsoOvPt");
 			//hcalPFClusterIsoOvPt
-			inputs.push_back("hcalPFClusterIsoOvPt");
+			_inputs.push_back("hcalPFClusterIsoOvPt");
 			//trkSumPtHollowConeDR03OvPt
-			inputs.push_back("trkSumPtHollowConeDR03OvPt");
+			_inputs.push_back("trkSumPtHollowConeDR03OvPt");
 			//label
-			inputs.push_back("label");
-			for(auto s : inputs){
+			_inputs.push_back("label");
+			for(auto s : _inputs){
 				if(s != "label") _csvfile << s << ","; 
 				else _csvfile << s << endl;
 			}
 
 		}
 		void WriteObs(int evt, int obj, int ncl, vector<double> inputs, int label){
+		
+		}	
+		void WriteObs(map<string,double> inputs){
 			string samp = "";
 			if(_oname.find("condor") == string::npos){
 				if(_oname.find("MET") != string::npos)
@@ -515,12 +520,12 @@ class BaseSkimmer{
 					samp = _oname.substr(_oname.find("DEG"),_oname.find("_superclusters") - _oname.find("DEG"));
 				else samp = "notFound";
 			}
-			_csvfile << samp << "," << evt << "," << obj << "," << ncl;
-			cout << "n inputs " << inputs.size() << endl;
-			for(auto d : inputs)
-				_csvfile << "," << d;
-
-			_csvfile << "," << label << endl;
+			_csvfile << samp;// << evt << "," << obj << "," << ncl;
+			for(int d = 1; d < _inputs.size(); d++){
+				cout << _inputs[d] << ": " << inputs[_inputs[d]] << endl; 
+				_csvfile << "," << inputs[_inputs[d]];
+			}
+			_csvfile << endl;
 		}
 
 		void SetCMSLabel(string lab){ _cms_label = lab; }
