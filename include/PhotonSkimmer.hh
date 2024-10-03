@@ -3106,6 +3106,55 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 
+      int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
+      	//labels
+      	//unmatched = -1
+      	//signal = 0
+      	//!signal = 1 
+      	//BH = 2
+      	//spike = 3
+      
+      	double ec, pc, tc;
+      	auto params = gmm->GetPriorParameters(ncl);
+      	ec = params["mean"].at(0,0);
+      	pc = params["mean"].at(1,0);
+      	tc = params["mean"].at(2,0);
+      	//for BH definition
+      	bool pcFilter, tcFilterEarly, tcFilterPrompt;
+      	//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
+      	pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+      	//early times
+      	tcFilterEarly = tc <= -2;
+      	tcFilterPrompt = (-2 < tc && tc < 2);
+      	
+      	int label = -1;
+      	//signal
+      	if(!_data){
+      		if(_base->Photon_genIdx->at(phoidx) != -1){
+      			if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+      				label = 0;
+      			else
+      				label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target), removed in data processing pre-MVA
+      		}
+      		else //no gen match
+      			label = -1;
+      	}
+      	//else in data - could be spikes or BH
+      	else{
+      		//do track matching for spikes
+      	
+      		//early times, phi left/right for BH
+      		//if subcl is BH
+      		if(pcFilter && tcFilterEarly)	
+      			label = 2;
+      		//if subcl is not BH or spike
+      		if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
+      			label = 1;
+      	
+      	}
+
+      	return label;
+      }
 
 
 };
