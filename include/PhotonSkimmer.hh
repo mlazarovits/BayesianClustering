@@ -3130,8 +3130,8 @@ class PhotonSkimmer : public BaseSkimmer{
       	int label = -1;
       	//signal
       	if(!_data){
-      		if(_base->Photon_genIdx->at(phoidx) != -1){
-      			if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+      		if(_base->Photon_genIdx->at(nobj) != -1){
+      			if(_base->Gen_susId->at(_base->Photon_genIdx->at(nobj)) == 22)
       				label = 0;
       			else
       				label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target), removed in data processing pre-MVA
