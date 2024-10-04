@@ -281,9 +281,10 @@ class Jet{
 							xi = _constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j);
 							xj = _constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j);
 							*/
+							double w = _constituents[k]._pi;
 							xi = _constituents[k]._mu.at(i,0);
 							xj = _constituents[k]._mu.at(j,0);
-							entry += _constituents[k]._pi*(xi - _mu.at(i,0))*(xj - _mu.at(j,0));
+							entry += w*(xi - _mu.at(i,0))*(xj - _mu.at(j,0));
 						}
 						_cov.SetEntry(entry/norm,i,j);	
 					}

@@ -176,6 +176,8 @@ class BHCJetSkimmer{
 				//predJet.SetVertex(Point({_pvx,_pvy,_pvz}));
 				//set constituents (subclusters) here with model from tree
 				int nsubclusters = _trees[i]->model->GetNClusters();
+				Matrix post = _trees[i]->model->GetPosterior(); //responsibilities of each point to every subcluster
+				cout << "posterior has dims " << post.GetDims()[0] << " " << post.GetDims()[1] << endl;
 				double Ek; 
 				vector<double> norms;
 				_trees[i]->model->GetNorms(norms);
@@ -194,7 +196,7 @@ class BHCJetSkimmer{
 				_predJets.push_back(predJet);	
 			}
 			cout << _predJets.size() << " pred jets" << endl;
-			for(auto j : _predJets) cout << "jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " mass " << j.mass() << endl;
+			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " mass " << j.mass() << endl;
 		}
 
 		void FillPredJetHists(){
