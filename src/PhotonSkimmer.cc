@@ -201,7 +201,7 @@ void PhotonSkimmer::Skim(){
 			//only get lead subcluster -> ncl = 0
                                 obs["subcl"] = 0;
                                 obs["label"] = label;
-				BaseSkimmer::WriteObs(obs);
+				BaseSkimmer::WriteObs(obs,"photons");
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
 		//for(auto o : obs)
