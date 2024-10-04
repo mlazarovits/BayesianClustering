@@ -182,7 +182,7 @@ void SuperClusterSkimmer::Skim(){
 			
 			
 			for(int k = 0; k < mapobs.size(); k++){
-				if(np != -999){
+				if(np != -1){
 					//do 2017 preselection
 					double r9 = _base->Photon_r9->at(np);
 					double HoE = _base->Photon_hadOverEM->at(np);
@@ -233,7 +233,7 @@ void SuperClusterSkimmer::Skim(){
 				int label = GetTrainingLabel(scidx, k, gmm);
 				mapobs[k]["label"] = label;
 
-				BaseSkimmer::WriteObs(mapobs[k]);
+				BaseSkimmer::WriteObs(mapobs[k],"superclusters");
 			}
 		cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
 			
