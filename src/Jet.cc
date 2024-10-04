@@ -130,7 +130,7 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	//wraparound
 	//_phi = acos(cos(_phi));
 	_mass = mass();
-cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << " n pts " << rhs.size() << endl;
+//cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << " n pts " << rhs.size() << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
