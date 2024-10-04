@@ -273,10 +273,10 @@ class Jet{
 				//for covariance, take into account covariance of constituents with extra term x'_k = x_k +- sig_k
 				_cov = Matrix(3,3);
 				double xi, xj;
-				for(int k = 0; k < _constituents.size(); k++){
-					double entry = 0;
-					for(int i = 0; i < 3; i++){
-						for(int j = 0; j < 3; j++){
+				for(int i = 0; i < 3; i++){
+					for(int j = 0; j < 3; j++){
+						double entry = 0;
+						for(int k = 0; k < _constituents.size(); k++){
 							/*
 							xi = _constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j);
 							xj = _constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j);
@@ -285,9 +285,9 @@ class Jet{
 							xj = _constituents[k]._mu.at(j,0);
 							entry += _constituents[k]._pi*(xi - _mu.at(i,0))*(xj - _mu.at(j,0));
 						}
+						_cov.SetEntry(entry/norm,i,j);	
 					}
 				}
-				_cov.mult(_cov,1./norm);		 
 			}
 			//phi wraparound
 			_mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);

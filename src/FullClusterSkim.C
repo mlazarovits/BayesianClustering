@@ -42,6 +42,7 @@ int main(int argc, char *argv[]){
 	double minnrhs = 15;
 	double minEmE = 20;
 	double minRhE = 0.5;
+	double maxRhE = -999;
 	bool frac = false;
 	bool calib = true;
 	bool spikes = false;
@@ -152,6 +153,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--maxRhE", 8) == 0){
+			i++;
+    	 		maxRhE = std::stod(argv[i]);
+   		}
 		if(strncmp(argv[i],"--applyFrac", 11) == 0){
 			frac = true;
 			cout << "Apply fractions for rec hits." << endl;
@@ -194,6 +199,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --maxRhE [maxRhe]             set maximum ECAL rechit energy (default = -999, off)" << endl;
    		cout << "   --BHFilter [bh]               set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
    		cout << "   --skip [skip]                 set skip for event loop (default = 1)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
@@ -325,6 +331,8 @@ cout << "fname " << fname << endl;
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
+		skimmer.SetMinRhE(minRhE);
+		if(maxRhE != -999) skimmer.SetMaxRhE(maxRhE);
 		skimmer.SetMinEmE(minEmE);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetSkip(skip);
