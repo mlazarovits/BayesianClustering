@@ -23,6 +23,7 @@ class BaseProducer{
 			_mineme = 0;
 			_minnrhs = 0;
 			_minrhE = 0.5;
+			_maxrhE = -999;
 			_minobjeta = 1.5;
 			_year = 2018;
 			_data = false;
@@ -56,6 +57,7 @@ class BaseProducer{
 			_mineme = 20;
 			_minnrhs = 15;
 			_minrhE = 0.5;
+			_maxrhE = -999;
 			_minobjeta = 1.5;
 			_applyFrac = false;
 			_spikes = false;
@@ -160,6 +162,8 @@ class BaseProducer{
 		double _mineme;
 		void SetMinRhE(double r){ _minrhE = r; }
 		double _minrhE;
+		void SetMaxRhE(double r){ _maxrhE = r; }
+		double _maxrhE; 
 		void SetMinObjEta(double e){ _minobjeta = e; }
 		double _minobjeta;
 		void ApplyFractions(bool a){ _applyFrac = a; }

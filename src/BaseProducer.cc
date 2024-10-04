@@ -8,7 +8,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 	//true = skip
 	//false = keep (ok)
 	bool hemVeto = false;	
-	double minrhE = 0.5;
 	if(evt > _nEvts) return;
 
         _base->GetEntry(evt);
@@ -74,7 +73,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
-				if(_base->ECALRecHit_energy->at(rhidx) < minrhE) continue;				
+				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;
+				if(_maxrhE != -999 && _base->ECALRecHit_energy->at(rhidx) > _maxrhE) continue;				
 				//spike rejection? - only studied for rhE > 4 GeV
 				if(_spikes && _data){
 					cout << "rejecting spikes" << endl;
