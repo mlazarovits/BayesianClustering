@@ -182,7 +182,7 @@ void SuperClusterSkimmer::Skim(){
 			
 			
 			for(int k = 0; k < mapobs.size(); k++){
-				if(np != -999){
+				if(np != -1){
 					//do 2017 preselection
 					double r9 = _base->Photon_r9->at(np);
 					double HoE = _base->Photon_hadOverEM->at(np);
@@ -191,7 +191,7 @@ void SuperClusterSkimmer::Skim(){
 					double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(np);//_base->Photon_hcalPFClusterIso->at(np);
 					double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
 					double pt = _base->Photon_pt->at(np);
-					cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+					//cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 					if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
 						mapobs[k]["R9"] = r9;
 						mapobs[k]["Sietaieta"] = Sieie;
@@ -235,7 +235,7 @@ void SuperClusterSkimmer::Skim(){
 
 				BaseSkimmer::WriteObs(mapobs[k]);
 			}
-		cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
+		//cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
 			
 			
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);

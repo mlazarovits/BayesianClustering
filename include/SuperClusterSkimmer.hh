@@ -555,6 +555,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(etaPhi_overlaidsubcl);
 			_hists2D.push_back(etaPhi_overlaidsubcl_BHsample);
 			_hists2D.push_back(etaPhi_overlaidsubcl_notBHsample);
+			_hists2D.push_back(dRtrack_EovPtrack_BHreq);	
 
 		};
 	
@@ -1606,6 +1607,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* etaPhi_overlaidsubcl_BHsample = new TH2D("etaPhi_overlaidsubcl_BHsample","etaPhi_overlaidsubcl_BHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 		//265 - notBH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
 		TH2D* etaPhi_overlaidsubcl_notBHsample = new TH2D("etaPhi_overlaidsubcl_notBHsample","etaPhi_overlaidsubcl_notBHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
+		//266 - dR trackSubcl vs EovP trackSubcl for BH requirements	
+		TH2D* dRtrack_EovPtrack_BHreq = new TH2D("dRtrack_EovPtrack_BHreq","dRtrack_EovPtrack_BHreq;dRtrack;EovPtrack_BHreq",25,0,5,25,0.,10);	
 
 
 
@@ -1759,6 +1762,50 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 
 
+		void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
+			//do track matching
+			int nIDs = _base->ECALTrackDetID_detId->size();
+			double bestTrackDr = 999;
+			//double maxTrackDr;
+			double dr, teta, tphi, de;
+			unsigned int detid;
+
+			double dphi = -999;
+			//double bestde_dr;
+			int trackidx;
+			auto params = model->GetPriorParameters(subcl);
+			double ec = params["mean"].at(0,0);
+			double pc = params["mean"].at(1,0);
+			//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
+			//there are multiple detIDs that match to one track
+			//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
+			for(int id = 0; id < nIDs; id++){
+				//use TrackDetId to see where in ECAL track was propagated to
+				detid = _base->ECALTrackDetID_detId->at(id);
+				//check if detid in map
+				if(_detIDmap.count(detid) == 0) continue;
+				tphi = _detIDmap[detid].detphi;
+				teta = _detIDmap[detid].deteta;
+	
+				double tphi_02pi = tphi;
+				if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
+				else if(tphi_02pi > 2*acos(-1)) tphi_02pi -= 2*acos(-1); 
+				else tphi_02pi = tphi;
+				
+				dphi = fabs(pc - tphi_02pi);
+                                dphi = acos(cos(dphi));
+
+				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
+				//get track info from detid
+				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
+				//E = p for photons
+				if(dr < bestTrackDr){
+					bestTrackDr = dr;
+					bestp = _base->ECALTrack_p->at(trackidx);
+				}
+			}
+			bestdr = bestTrackDr;
+		}
 
 
 		//k = sum_n(E_n)/N
@@ -1787,6 +1834,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			double swCP = spikeObs[0];
 			//calculate weighted eta mean of points to check eta calculation
 			double etaCentroid = points->Centroid(0);
+			model->GetNorms(norms);
 
 	
 			double E_tot = 0.;
@@ -1802,7 +1850,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
-				model->GetNorms(norms);
 				E_k = norms[k]/_gev; 
 				
 				
@@ -1910,50 +1957,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 				mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
+				double bestTrackDr, bestde_dr;
+				TrackMatched(model, k, bestTrackDr, bestde_dr);
+				bestde_dr = E_k/bestde_dr;
 
-
-				//do track matching
-				int nIDs = _base->ECALTrackDetID_detId->size();
-				double bestTrackDr = 999;
-				//double maxTrackDr;
-				double dr, teta, tphi, de;
-				unsigned int detid;
-				int ieta, iphi;
-
-				double dphi = -999;
-				double bestde_dr;
-				int trackidx;
-				double trackidx_phi;
-				//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
-				//there are multiple detIDs that match to one track
-				//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
-				for(int id = 0; id < nIDs; id++){
-					//use TrackDetId to see where in ECAL track was propagated to
-					detid = _base->ECALTrackDetID_detId->at(id);
-					//check if detid in map
-					if(_detIDmap.count(detid) == 0) continue;
-					tphi = _detIDmap[detid].detphi;
-					teta = _detIDmap[detid].deteta;
-	
-					double tphi_02pi = tphi;
-					if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
-					else if(tphi_02pi > 2*pi) tphi_02pi -= 2*acos(-1); 
-					else tphi_02pi = tphi;
-					
-					dphi = fabs(pc - tphi_02pi);
-                        	        dphi = acos(cos(dphi));
-
-					dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
-					//get track info from detid
-					trackidx = _base->ECALTrackDetID_trackIndex->at(id);
-					//E = p for photons
-					//de = E_k / _base->ECALTrack_p->at(trackidx);
-					if(dr < bestTrackDr){
-						de = E_k/_base->ECALTrack_p->at(trackidx);
-						bestTrackDr = dr;
-						bestde_dr = de;
-					}
-				}
 
 				map<string, double> mapobs;
 				mapobs["eta_center"] = ec;
@@ -2415,11 +2422,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if(p_var < 0.03 && e_var > 0.03) _procCats[id_idx].hists2D[1][228]->Fill(_base->Met_phi,pc);	
 				else _procCats[id_idx].hists2D[1][229]->Fill(_base->Met_phi,pc);	
 				_procCats[id_idx].hists2D[1][230]->Fill(bestTrackDr,tc);	
-				_procCats[id_idx].hists2D[1][231]->Fill(de,tc);	
-				_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,de);	
-				if(tc >= -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,de);
-				if(tc >= -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,de);
-				if(tc >= 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,de);
+				_procCats[id_idx].hists2D[1][231]->Fill(bestde_dr,tc);	
+				_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,bestde_dr);	
+				if((tc <= -2) && (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc ))
+					_procCats[id_idx].hists2D[1][266]->Fill(bestTrackDr,bestde_dr);	
+				if(tc >= -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
+				if(tc >= -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,bestde_dr);
+				if(tc >= 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,bestde_dr);
 
 				if(tc < 0 && p_var < 0.03 && e_var > 0.03){
 					_procCats[id_idx].hists2D[1][236]->Fill(e_var, p_var);
@@ -3363,6 +3372,73 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			if(fabs(iphi - iSeed.second == 1)) return false;
 		}
 		return true;
+	}
+	int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
+		//labels
+		//unmatched = -1
+		//signal = 0
+		//!signal = 1 
+		//BH = 2
+		//spike = 3
+	
+		double ec, pc, tc;
+		vector<double> norms;
+		gmm->GetNorms(norms);
+		double E = norms[ncl]/_gev; 
+		auto params = gmm->GetPriorParameters(ncl);
+		ec = params["mean"].at(0,0);
+		pc = params["mean"].at(1,0);
+		tc = params["mean"].at(2,0);
+		//for BH definition
+		bool pcFilter, tcFilterEarly, tcFilterPrompt;
+		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
+		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+		//early times
+		tcFilterEarly = tc <= -2;
+		tcFilterPrompt = (-2 < tc && tc < 2);
+		
+		int label = -1;
+		//signal
+		if(!_data){
+			//find photon associated with subcluster
+			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
+			//matched to photon
+			if(phoidx != -1){
+				if(_base->Photon_genIdx->at(phoidx) != -1){
+					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+						label = 0;
+					else
+						label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target), removed in data processing pre-MVA
+				}
+				else //no gen match
+					label = -1;
+
+			}
+			else
+				label = -1;
+		}
+		//else in data - could be spikes or BH
+		else{
+			//do track matching for spikes
+			double bestdr, bestp;
+			TrackMatched(gmm,ncl,bestdr, bestp);
+			bool trackmatch = (bestdr < 0.02) && (E/bestp > 0.9 && E/bestp < 1.1);
+		
+			if(trackmatch) cout << "spike match with track dr " << bestdr << " and E/p " << E/bestp << endl;
+			//early times, phi left/right for BH
+			//if subcl is spike
+			if(trackmatch)
+				label = 3;
+			//if subcl is BH
+			if(pcFilter && tcFilterEarly && !trackmatch)	
+				label = 2;
+			//if subcl is not BH or spike
+			if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt && !trackmatch)
+				label = 1;
+		
+		}
+
+		return label;
 	}
 
 };		
