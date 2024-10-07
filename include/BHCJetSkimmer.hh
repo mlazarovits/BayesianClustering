@@ -709,13 +709,13 @@ class BHCJetSkimmer{
 		//5
 		TH1D* predJet_subClusterPhiCenter = new TH1D("predJet_subClusterPhiCenter","predJet_subClusterPhiCenter",25,-0.1,6.3);
 		//6
-		TH1D* predJet_jetSize = new TH1D("predJet_jetSize","predJet_jetSize",50,0,2);
+		TH1D* predJet_jetSize = new TH1D("predJet_jetSize","predJet_jetSize",50,0,1);
 		//7
 		TH1D* predJet_energy = new TH1D("predJet_energy","predJet_energy",50,0,400);
 		//8
-		TH1D* predJet_pt = new TH1D("predJet_pt","predJet_pt",50,0,150);
+		TH1D* predJet_pt = new TH1D("predJet_pt","predJet_pt",50,0,500);
 		//9
-		TH1D* predJet_mass = new TH1D("predJet_mass","predJet_mass",50,0,200);
+		TH1D* predJet_mass = new TH1D("predJet_mass","predJet_mass",50,0,150);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # gen jets
@@ -738,9 +738,9 @@ class BHCJetSkimmer{
 		//19
 		TH1D* recoJet_jetSize = new TH1D("recoJet_jetSize","recoJet_jetSize",50,0,1);
 		//20
-		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,200);
+		TH1D* recoJet_energy = new TH1D("recoJet_energy","recoJet_energy",50,0,400);
 		//21
-		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,200);
+		TH1D* recoJet_pt = new TH1D("recoJet_pt","recoJet_pt",50,0,500);
 		//22
 		TH1D* recoJet_mass = new TH1D("recoJet_mass","recoJet_mass",60,0,60);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
