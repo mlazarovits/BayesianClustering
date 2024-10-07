@@ -1535,17 +1535,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//229 - MET phi vs phiCenter, !(etaSig + phiSig cuts)
 		TH2D* metPhi_phiCenter_etaSigge0p3ORphiSigle0p3 = new TH2D("metPhi_phiCenter_etaSigge0p3ORphiSigle0p3","metPhi_phiCenter_etaSigge0p3ORphiSigle0p3;metPhi;phiCenter_etaSigge0p3ORphiSigle0p3",25,-3.5,3.5,25,-0.2,6.2);
 		//230 - dR trackSubcl vs subcl time
-		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,5,50,-10,10);	
+		TH2D* dRtrack_timeSubcl = new TH2D("dRtrack_timeSubcl","dRtrack_timeSubcl;dRtrack;timeSubcl",50,0,0.75,50,-10,10);	
 		//231 - EovP trackSubcl vs subcl time	
 		TH2D* EovPtrack_timeSubcl = new TH2D("EovPtrack_timeSubcl","EovPtrack_timeSubcl;EovPtrack;timeSubcl",25,-2,2,50,0,10);	
 		//232 - dR trackSubcl vs EovP trackSubcl	
-		TH2D* dRtrack_EovPtrack = new TH2D("dRtrack_EovPtrack","dRtrack_EovPtrack;dRtrack;EovPtrack",25,0,5,25,0.,10);	
+		TH2D* dRtrack_EovPtrack = new TH2D("dRtrack_EovPtrack","dRtrack_EovPtrack;dRtrack;EovPtrack",25,0,0.75,25,0.,10);	
 		//233 - dR trackSubcl vs EovP trackSubck, -10 < time subclust < -2	
-		TH2D* dRtrack_EovPtrack_early = new TH2D("dRtrack_EovPtrack_early","dRtrack_EovPtrack_timeSubclNeg10toNeg2;dRtrack;EovPtrack",25,0,5,25,0,10);	
+		TH2D* dRtrack_EovPtrack_early = new TH2D("dRtrack_EovPtrack_early","dRtrack_EovPtrack_timeSubclNeg10toNeg2;dRtrack;EovPtrack",25,0,0.75,25,0,10);	
 		//234 - dR trackSubcl vs EovP trackSubck, -2 < time subclust < 2	
-		TH2D* dRtrack_EovPtrack_prompt = new TH2D("dRtrack_EovPtrack_prompt","dRtrack_EovPtrack_timeSubclNeg2to2;dRtrack;EovPtrack",25,0,5,25,0,10);
+		TH2D* dRtrack_EovPtrack_prompt = new TH2D("dRtrack_EovPtrack_prompt","dRtrack_EovPtrack_timeSubclNeg2to2;dRtrack;EovPtrack",25,0,0.75,25,0,10);
 		//235 - dR trackSubcl vs EovP trackSubck, 2 < time subclust < 10	
-		TH2D* dRtrack_EovPtrack_late = new TH2D("dRtrack_EovPtrack_late","dRtrack_EovPtrack_timeSubcl2to10;dRtrack;EovPtrack",25,0,5,25,0,10);	
+		TH2D* dRtrack_EovPtrack_late = new TH2D("dRtrack_EovPtrack_late","dRtrack_EovPtrack_timeSubcl2to10;dRtrack;EovPtrack",25,0,0.75,25,0,10);	
 		//236 - eta sig vs phi sig, t < 0, phiSigle0p3ANDetaSigge0p3
 		TH2D* etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3 = new TH2D("etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3","etaSig_phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3;etaSig;phiSig_timele0ANDphiSigle0p3ANDetaSigge0p3",25,0.01,0.09,25,0.01,0.09);
 		//237 - phi sig vs phi center, t < 0, phiSigle0p3ANDetaSigge0p3
@@ -1608,7 +1608,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//265 - notBH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
 		TH2D* etaPhi_overlaidsubcl_notBHsample = new TH2D("etaPhi_overlaidsubcl_notBHsample","etaPhi_overlaidsubcl_notBHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 		//266 - dR trackSubcl vs EovP trackSubcl for BH requirements	
-		TH2D* dRtrack_EovPtrack_BHreq = new TH2D("dRtrack_EovPtrack_BHreq","dRtrack_EovPtrack_BHreq;dRtrack;EovPtrack_BHreq",25,0,5,25,0.,10);	
+		TH2D* dRtrack_EovPtrack_BHreq = new TH2D("dRtrack_EovPtrack_BHreq","dRtrack_EovPtrack_BHreq;dRtrack;EovPtrack_BHreq",25,0,0.75,25,0.,10);	
 
 
 
