@@ -456,8 +456,8 @@ class BaseSkimmer{
 					samp = _oname.substr(_oname.find("GJets"),_oname.find("_"+object) - _oname.find("GJets"));
 				else if(_oname.find("QCD") != string::npos)
 					samp = _oname.substr(_oname.find("QCD"),_oname.find("_"+object) - _oname.find("QCD"));
-				else if(_oname.find("DEG") != string::npos)
-					samp = _oname.substr(_oname.find("DEG"),_oname.find("_"+object) - _oname.find("DEG"));
+				else if(_oname.find("EGamma") != string::npos)
+					samp = _oname.substr(_oname.find("EGamma"),_oname.find("_"+object) - _oname.find("EGamma"));
 				else samp = "notFound";
 			}
 			_csvfile << samp;// << evt << "," << obj << "," << ncl;
