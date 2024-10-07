@@ -75,6 +75,7 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_twoHardestpT);	
 			_hists1D.push_back(nSubClusters_mm);
 			_hists1D.push_back(TOFgam_rh_pv); 
+		
 			
 			_timeHists1D.push_back(PVtime);
 			_timeHists1D.push_back(deltaT_jet);
@@ -99,6 +100,42 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin3);	
 			_timeHists1D.push_back(deltaT_pvGam_gen_Ebin4);	
 			_timeHists1D.push_back(geoEavg_sigmaDeltaTime_gamPV);
+			_timeHists1D.push_back(jetNrhs_Ebin1);
+			_timeHists1D.push_back(jetNrhs_Ebin2);
+			_timeHists1D.push_back(jetNrhs_Ebin3);
+			_timeHists1D.push_back(jetNrhs_Ebin4);
+			_timeHists1D.push_back(jetNrhs_Ebin5);
+			_timeHists1D.push_back(jetNrhs_Ebin6);
+			_timeHists1D.push_back(jetPt_Ebin1);
+			_timeHists1D.push_back(jetPt_Ebin2);
+			_timeHists1D.push_back(jetPt_Ebin3);
+			_timeHists1D.push_back(jetPt_Ebin4);
+			_timeHists1D.push_back(jetPt_Ebin5);
+			_timeHists1D.push_back(jetPt_Ebin6);
+			_timeHists1D.push_back(jetEta_Ebin1);
+			_timeHists1D.push_back(jetEta_Ebin2);
+			_timeHists1D.push_back(jetEta_Ebin3);
+			_timeHists1D.push_back(jetEta_Ebin4);
+			_timeHists1D.push_back(jetEta_Ebin5);
+			_timeHists1D.push_back(jetEta_Ebin6);
+			_timeHists1D.push_back(jetPhi_Ebin1);
+			_timeHists1D.push_back(jetPhi_Ebin2);
+			_timeHists1D.push_back(jetPhi_Ebin3);
+			_timeHists1D.push_back(jetPhi_Ebin4);
+			_timeHists1D.push_back(jetPhi_Ebin5);
+			_timeHists1D.push_back(jetPhi_Ebin6);
+			_timeHists1D.push_back(jetTime_Ebin1);
+			_timeHists1D.push_back(jetTime_Ebin2);
+			_timeHists1D.push_back(jetTime_Ebin3);
+			_timeHists1D.push_back(jetTime_Ebin4);
+			_timeHists1D.push_back(jetTime_Ebin5);
+			_timeHists1D.push_back(jetTime_Ebin6);
+			_timeHists1D.push_back(jetNSubclusters_Ebin1);
+			_timeHists1D.push_back(jetNSubclusters_Ebin2);
+			_timeHists1D.push_back(jetNSubclusters_Ebin3);
+			_timeHists1D.push_back(jetNSubclusters_Ebin4);
+			_timeHists1D.push_back(jetNSubclusters_Ebin5);
+			_timeHists1D.push_back(jetNSubclusters_Ebin6);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -117,6 +154,8 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(recoEnergy_genDeltaTpvGam);
 			_timeHists2D.push_back(recoGenEnergyRatio_recoGenDeltaT);
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_gamPV);
+			_timeHists2D.push_back(jetTime_Energy);
+			_timeHists2D.push_back(rhTime_Energy);
 
 
 
@@ -248,7 +287,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
 		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,50);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
-		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",20,0,20);
+		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
@@ -256,10 +295,7 @@ class JetSkimmer : public BaseSkimmer{
 		
 		
 		//bins for variable binning for resolution/mean plots
-		vector<double> xbins_dijets = {0, 200, 400, 600, 800, 1000, 1200}; 
-		vector<double> xbins_recoGen = {0, 200, 400, 600, 800, 1000, 1200}; 
-		vector<double> xbins_gamPV = {0, 200, 400, 600, 800, 1000, 1200}; 
-		//original binning - vector<double> xbins = {0, 100, 200, 300, 400, 600, 1000}; 
+		vector<double> xbins = {0, 200, 400, 600, 800, 1000, 1200}; 
 		///////////////////// timeHists /////////////
 		//0 - pv time
 		TH1D* PVtime = new TH1D("jetTime_PV", "jetTime_PV",50,-10,10);	
@@ -276,28 +312,28 @@ class JetSkimmer : public BaseSkimmer{
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen = new TH1D("geoEavg_sigmaDeltaTime_recoGen","geoEavg_sigmaDeltaTime_recoGen",6,&xbins[0]);
 		//7 - resolution of difference between two jets for PV time as a function of their geo avg pT 	
 		TH1D* geopTavg_sigmaDeltaTime_dijets = new TH1D("geopTavg_sigmaDeltaTime_dijets","geopTavg_sigmaDeltaTime_dijets",10,0,1000);
 		//8 - resolution of difference between two jets for PV time as a function of the min pT 	
 		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
 		//9 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
-		TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",6,&xbins_dijets[0]);
+		TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",6,&xbins[0]);
 		//TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",10,0,1500);
 		//10 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins[0]);
 		//11 - resolution of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins[0]);
 		//12 - resolution of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins[0]);
 		//13 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen = new TH1D("geoEavg_meanDeltaTime_recoGen","geoEavg_meanDeltaTime_recoGen",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_meanDeltaTime_recoGen = new TH1D("geoEavg_meanDeltaTime_recoGen","geoEavg_meanDeltaTime_recoGen",6,&xbins[0]);
 		//14 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins[0]);
 		//15 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin2",6,&xbins[0]);
 		//16 - mean of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
-		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins_recoGen[0]);
+		TH1D* geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3 = new TH1D("geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_meanDeltaTime_recoGen_genDeltaTpvGambin3",6,&xbins[0]);
 		//17 - gen deltaT bw photon and pv, reco E bin 1
 		TH1D* deltaT_pvGam_gen_Ebin1 = new TH1D("deltaT_gamPV_gen_Ebin1","deltaT_gamPV_gen_Ebin1",25,0,12);	
 		//18 - gen deltaT bw photon and pv, reco E bin 2
@@ -307,10 +343,86 @@ class JetSkimmer : public BaseSkimmer{
 		//20 - gen deltaT bw photon and pv, reco E bin 4
 		TH1D* deltaT_pvGam_gen_Ebin4 = new TH1D("deltaT_gamPV_gen_Ebin4","deltaT_gamPV_gen_Ebin4",25,0,12);	
 		//21 - resolution of difference in gam - pv
-		TH1D* geoEavg_sigmaDeltaTime_gamPV = new TH1D("geoEavg_sigmaDeltaTime_gamPV","geoEavg_sigmaDeltaTime_gamPV",6,&xbins_gamPV[0]);
-	
+		TH1D* geoEavg_sigmaDeltaTime_gamPV = new TH1D("geoEavg_sigmaDeltaTime_gamPV","geoEavg_sigmaDeltaTime_gamPV",6,&xbins[0]);
+
+		//22 - nrhs per jet (E bin1)
+		TH1D* jetNrhs_Ebin1 = new TH1D("jetNrhs_Ebin0to200","jetNrhs_Ebin0to200",50,0,100);
+		//23 - nrhs per jet (E bin2)
+		TH1D* jetNrhs_Ebin2 = new TH1D("jetNrhs_Ebin200to400","jetNrhs_Ebin200to400",50,0,100);
+		//24 - nrhs per jet (E bin3)
+		TH1D* jetNrhs_Ebin3 = new TH1D("jetNrhs_Ebin400to600","jetNrhs_Ebin400to600",50,0,100);
+		//25 - nrhs per jet (E bin4)
+		TH1D* jetNrhs_Ebin4 = new TH1D("jetNrhs_Ebin600to800","jetNrhs_Ebin600to800",50,0,100);
+		//26 - nrhs per jet (E bin5)
+		TH1D* jetNrhs_Ebin5 = new TH1D("jetNrhs_Ebin800to1000","jetNrhs_Ebin800to1000",50,0,100);
+		//27 - nrhs per jet (E bin6)
+		TH1D* jetNrhs_Ebin6 = new TH1D("jetNrhs_Ebin1000to1200","jetNrhs_Ebin1000to1200",50,0,100);
+		//28 - jet pt (E bin1)
+		TH1D* jetPt_Ebin1 = new TH1D("jetPt_Ebin0to200","jetPt_Ebin0to200",50,0,500);
+		//29 - jet pt (E bin2)
+		TH1D* jetPt_Ebin2 = new TH1D("jetPt_Ebin200to400","jetPt_Ebin200to400",50,0,500);
+		//30 - jet pt (E bin3)
+		TH1D* jetPt_Ebin3 = new TH1D("jetPt_Ebin400to600","jetPt_Ebin400to600",50,0,500);
+		//31 - jet pt (E bin4)
+		TH1D* jetPt_Ebin4 = new TH1D("jetPt_Ebin600to800","jetPt_Ebin600to800",50,0,500);
+		//32 - jet pt (E bin5)
+		TH1D* jetPt_Ebin5 = new TH1D("jetPt_Ebin800to1000","jetPt_Ebin800to1000",50,0,500);
+		//33 - jet pt (E bin6)
+		TH1D* jetPt_Ebin6 = new TH1D("jetPt_Ebin1000to1200","jetPt_Ebin1000to1200",50,0,500);
+		//34 - jet eta (E bin1)
+		TH1D* jetEta_Ebin1 = new TH1D("jetEta_Ebin0to200","jetEta_Ebin0to200",50,-1.5,1.5);
+		//35 - jet eta (E bin2)
+		TH1D* jetEta_Ebin2 = new TH1D("jetEta_Ebin200to400","jetEta_Ebin200to400",50,-1.5,1.5);
+		//36 - jet eta (E bin3)
+		TH1D* jetEta_Ebin3 = new TH1D("jetEta_Ebin400to600","jetEta_Ebin400to600",50,-1.5,1.5);
+		//37 - jet eta (E bin4)
+		TH1D* jetEta_Ebin4 = new TH1D("jetEta_Ebin600to800","jetEta_Ebin600to800",50,-1.5,1.5);
+		//38 - jet eta (E bin5)
+		TH1D* jetEta_Ebin5 = new TH1D("jetEta_Ebin800to1000","jetEta_Ebin800to1000",50,-1.5,1.5);
+		//39 - jet eta (E bin6)
+		TH1D* jetEta_Ebin6 = new TH1D("jetEta_Ebin1000to1200","jetEta_Ebin1000to1200",50,-1.5,1.5);
+		//40 - jet phi (E bin1)
+		TH1D* jetPhi_Ebin1 = new TH1D("jetPhi_Ebin0to200","jetPhi_Ebin0to200",50,-3.4,3.4);
+		//41 - jet phi (E bin2)
+		TH1D* jetPhi_Ebin2 = new TH1D("jetPhi_Ebin200to400","jetPhi_Ebin200to400",50,-3.4,3.4);
+		//42 - jet phi (E bin3)
+		TH1D* jetPhi_Ebin3 = new TH1D("jetPhi_Ebin400to600","jetPhi_Ebin400to600",50,-3.4,3.4);
+		//43 - jet phi (E bin4)
+		TH1D* jetPhi_Ebin4 = new TH1D("jetPhi_Ebin600to800","jetPhi_Ebin600to800",50,-3.4,3.4);
+		//44 - jet phi (E bin5)
+		TH1D* jetPhi_Ebin5 = new TH1D("jetPhi_Ebin800to1000","jetPhi_Ebin800to1000",50,-3.4,3.4);
+		//45 - jet phi (E bin6)
+		TH1D* jetPhi_Ebin6 = new TH1D("jetPhi_Ebin1000to1200","jetPhi_Ebin1000to1200",50,-3.4,3.4);
+		//46 - jet time (E bin1)
+		TH1D* jetTime_Ebin1 = new TH1D("jetTime_Ebin0to200","jetTime_Ebin0to200",50,-20,20);
+		//47 - jet time (E bin2)
+		TH1D* jetTime_Ebin2 = new TH1D("jetTime_Ebin200to400","jetTime_Ebin200to400",50,-20,20);
+		//48 - jet time (E bin3)
+		TH1D* jetTime_Ebin3 = new TH1D("jetTime_Ebin400to600","jetTime_Ebin400to600",50,-20,20);
+		//49 - jet time (E bin4)
+		TH1D* jetTime_Ebin4 = new TH1D("jetTime_Ebin600to800","jetTime_Ebin600to800",50,-20,20);
+		//50 - jet time (E bin5)
+		TH1D* jetTime_Ebin5 = new TH1D("jetTime_Ebin800to1000","jetTime_Ebin800to1000",50,-20,20);
+		//51 - jet time (E bin6)
+		TH1D* jetTime_Ebin6 = new TH1D("jetTime_Ebin1000to1200","jetTime_Ebin1000to1200",50,-20,20);
+		//52 - n subclusters (E bin1)
+		TH1D* jetNSubclusters_Ebin1 = new TH1D("jetNSubclusters_Ebin0to200","jetNSubclusters_Ebin0to200",50,-0,10);
+		//53 - n subclusters (E bin2)
+		TH1D* jetNSubclusters_Ebin2 = new TH1D("jetNSubclusters_Ebin200to400","jetNSubclusters_Ebin200to400",50,-0,10);
+		//54 - n subclusters (E bin3)
+		TH1D* jetNSubclusters_Ebin3 = new TH1D("jetNSubclusters_Ebin400to600","jetNSubclusters_Ebin400to600",50,-0,10);
+		//55 - n subclusters (E bin4)
+		TH1D* jetNSubclusters_Ebin4 = new TH1D("jetNSubclusters_Ebin600to800","jetNSubclusters_Ebin600to800",50,-0,10);
+		//56 - n subclusters (E bin5)
+		TH1D* jetNSubclusters_Ebin5 = new TH1D("jetNSubclusters_Ebin800to1000","jetNSubclusters_Ebin800to1000",50,-0,10);
+		//57 - n subclusters (E bin6)
+		TH1D* jetNSubclusters_Ebin6 = new TH1D("jetNSubclusters_Ebin1000to1200","jetNSubclusters_Ebin1000to1200",50,-0,10);
+
+
+
+
 		//0 - 2D histogram for reco-gen resolution
-		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins_recoGen[0],100,-2,2);
+		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
 		TH2D* geopTavg_diffDeltaTime_dijets = new TH2D("geopTavg_diffDeltaTime_dijets","geopTavg_diffDeltaTime_dijets;#sqrt{pT^{jet1} #times pT^{jet2}} (GeV); #Delta t^{PV}_{dijet}",10,0,1000,120,-4,4);
 		//2 - 2D histogram for dijets resolution - min E of jets
@@ -318,15 +430,15 @@ class JetSkimmer : public BaseSkimmer{
 		
 		//3 - 2D histogram for dijets resolution - sum_rh E_rh of jets
 		//variable binning
-		TH2D* geoAvgEecal_diffDeltaTime_dijets = new TH2D("geoAvgEecal_diffDeltaTime_dijets","geoAvgEecal_diffDeltaTime_dijets;#sqrt{E^{jet 1}_{ECAL} #times E^{jet 2}_{ECAL}} (GeV); #Delta t^{PV}_{dijet}",6,&xbins_dijets[0],120,-4,4);	
+		TH2D* geoAvgEecal_diffDeltaTime_dijets = new TH2D("geoAvgEecal_diffDeltaTime_dijets","geoAvgEecal_diffDeltaTime_dijets;#sqrt{E^{jet 1}_{ECAL} #times E^{jet 2}_{ECAL}} (GeV); #Delta t^{PV}_{dijet}",6,&xbins[0],120,-4,4);	
 		//4 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [3.5,4.5)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins_recoGen[0],100,-2,2);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin1;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//5 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [4,8)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins_recoGen[0],100,-2,2);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin2;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//6 - 2D histogram for reco-gen resolution - genDeltaTpvGam ~ [8,12)
-		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins_recoGen[0],100,-2,2);
+		TH2D* geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3 = new TH2D("geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3","geoEavg_diffDeltaTime_recoGen_genDeltaTpvGambin3;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//7 - mean of diff recoGen deltaT distribution as a function of geoEavg and gen deltaT
-		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",6,&xbins_recoGen[0],3,0,3);
+		TH2D* geoEavg_genDeltaTime_meanRecoGenDeltaT = new TH2D("geoEavg_genDeltaTime_meanRecoGenDeltaT","geoEavg_genDeltaTime_meanRecoGenDeltaT;geoEavg;genDeltaTime;meanRecoGenDeltaT",6,&xbins[0],3,0,3);
 		
 
 		//below are for checking gen deltaT calculation
@@ -348,8 +460,12 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
 		
 		//16 - 2D histogram for gamPV resolution 
-		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins_gamPV[0],100,3,8);
+		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins[0],100,3,8);
 		
+		//17 - jet time vs jet E
+		TH2D* jetTime_Energy = new TH2D("jetTime_Energy","jetTime_Energy",50,-20,20,50,0,500);
+		//18 - rh time vs rh E
+		TH2D* rhTime_Energy = new TH2D("rhTime_Energy","rhTime_Energy",50,-20,20,50,0,500);
 
 		vector<timeRecoCat> trCats;
 		virtual void MakeTimeRecoCatHists(){
@@ -445,7 +561,7 @@ class JetSkimmer : public BaseSkimmer{
 				Erh = 0;
 				ptavg = 0;
 				geoEavg = 0;
-			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
+			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
@@ -461,23 +577,28 @@ class JetSkimmer : public BaseSkimmer{
 				}
 				//calculate jet time difference
 				if(njets > 1){
+					cout << " njets > 1" << endl;
 					pair<Jet,Jet> hardjets;
 					int pair = FindJetPair(jets, hardjets);
 					if(pair == -999) continue; //jets did not pass selection
 					double deltaT_jets = GetDeltaTime(hardjets);
+					cout << " jets passed selection" << endl;
 
 					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);
 					double Erh1, Erh2;
 					Erh1 = 0;
 					Erh2 = 0;	
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
-					for(int r = 0; r < rhs.size(); r++)
+					for(int r = 0; r < rhs.size(); r++){
 						Erh1 += rhs[r].E();
+						trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+					}
 					rhs.clear();
 					rhs = hardjets.second.GetJetPoints();
-					for(int r = 0; r < rhs.size(); r++)
+					for(int r = 0; r < rhs.size(); r++){
 						Erh2 += rhs[r].E();
-				
+						trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+					}
 	
 					//fill deltaT_jets - 1
 					trCats[tr_idx].procCats[p].hists1D[0][1]->Fill(deltaT_jets, _weight);
@@ -488,6 +609,142 @@ class JetSkimmer : public BaseSkimmer{
 					//fill geoAvgEecal vs deltaT jets - 3
 					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(sqrt(Erh1*Erh2), deltaT_jets, _weight);
 					//trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
+					//fill jet property hists
+			cout << " E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << endl;
+					if(xbins[0] <= sqrt(Erh1*Erh2) < xbins[1]){
+						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.second.GetNRecHits());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][28]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][28]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][34]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][34]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][40]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][40]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][46]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][46]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][52]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][52]->Fill(hardjets.second.GetNConstituents());
+						}
+
+					}
+					if(xbins[1] <= sqrt(Erh1*Erh2) < xbins[2]){
+						trCats[tr_idx].procCats[p].hists1D[0][23]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][23]->Fill(hardjets.second.GetNRecHits());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][29]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][29]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][35]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][35]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][41]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][41]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][47]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][47]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][53]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][53]->Fill(hardjets.second.GetNConstituents());
+						}
+					
+					}
+					if(xbins[2] <= sqrt(Erh1*Erh2) < xbins[3]){
+						trCats[tr_idx].procCats[p].hists1D[0][24]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][24]->Fill(hardjets.second.GetNRecHits());
+
+						trCats[tr_idx].procCats[p].hists1D[0][30]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][30]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][36]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][36]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][42]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][42]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][48]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][48]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][54]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][54]->Fill(hardjets.second.GetNConstituents());
+						}
+					}
+					if(xbins[3] <= sqrt(Erh1*Erh2) < xbins[4]){
+						trCats[tr_idx].procCats[p].hists1D[0][25]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][25]->Fill(hardjets.second.GetNRecHits());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][31]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][31]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][37]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][37]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][43]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][43]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][49]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][49]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][55]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][55]->Fill(hardjets.second.GetNConstituents());
+						}
+
+					}
+					if(xbins[4] <= sqrt(Erh1*Erh2) < xbins[5]){
+						trCats[tr_idx].procCats[p].hists1D[0][26]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][26]->Fill(hardjets.second.GetNRecHits());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][32]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][32]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][38]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][38]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][44]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][44]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][50]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][50]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][56]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][56]->Fill(hardjets.second.GetNConstituents());
+						}
+
+					}
+					if(xbins[5] <= sqrt(Erh1*Erh2) < xbins[6]){
+						trCats[tr_idx].procCats[p].hists1D[0][27]->Fill(hardjets.first.GetNRecHits());
+						trCats[tr_idx].procCats[p].hists1D[0][27]->Fill(hardjets.second.GetNRecHits());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][33]->Fill(hardjets.first.pt());
+						trCats[tr_idx].procCats[p].hists1D[0][33]->Fill(hardjets.second.pt());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][39]->Fill(hardjets.first.eta());
+						trCats[tr_idx].procCats[p].hists1D[0][39]->Fill(hardjets.second.eta());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][45]->Fill(hardjets.first.phi());
+						trCats[tr_idx].procCats[p].hists1D[0][45]->Fill(hardjets.second.phi());
+						
+						trCats[tr_idx].procCats[p].hists1D[0][51]->Fill(hardjets.first.time());
+						trCats[tr_idx].procCats[p].hists1D[0][51]->Fill(hardjets.second.time());
+					
+						if(ts == mmavg){	
+							trCats[tr_idx].procCats[p].hists1D[0][57]->Fill(hardjets.first.GetNConstituents());
+							trCats[tr_idx].procCats[p].hists1D[0][57]->Fill(hardjets.second.GetNConstituents());
+						}
+
+					}
+					trCats[tr_idx].procCats[p].hists2D[0][17]->Fill(hardjets.first.time(), Erh1);
+					trCats[tr_idx].procCats[p].hists2D[0][17]->Fill(hardjets.second.time(), Erh2);
+					
 				}	
 				//this assumes that the time for the jet was set previously with the respective method
 				pvtime = CalcPVTime(ts, jets);
@@ -901,9 +1158,17 @@ class JetSkimmer : public BaseSkimmer{
 				double phi2 = jet2.phi_02pi();
 				double dphi = fabs(phi1 - phi2);
 				if(dphi > pi) dphi = 2*pi - dphi;
-				if(dphi < pi-0.35 || dphi > pi+0.35) return -999;
+				cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
+				cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
+				if(dphi < pi-0.35 || dphi > pi+0.35){
+					cout << "failed dphi cut" << endl;
+					return -999;
+				}
 				//pt asymmetry cut
-				if(jet2.pt() / jet1.pt() < 1 - ptasym) return -999; 
+				if(jet2.pt() / jet1.pt() < 1 - ptasym){
+					cout << "failed pt cut with thresh " << 1 - ptasym << endl;
+					return -999;
+				}
 			}
 			else{
 				//use only ECAL energy for asymmetry cut
@@ -945,8 +1210,20 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
-				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
+				//set constituents
+				vector<double> norms;
+				gmm->GetNorms(norms);
+				for(int k = 0; k < gmm->GetNClusters(); k++){
+					auto params = gmm->GetPriorParameters(k);
+					double E_k = norms[k]/_gev;
+					Matrix mu = params["mean"];
+					Matrix cov = params["cov"];
+					double pi = params["pi"].at(0,0);
+					Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
+					//jet.AddConstituent(subcl);
+				}	
 				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
 			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
@@ -960,6 +1237,18 @@ class JetSkimmer : public BaseSkimmer{
 				else if(ts == mmavg){
 					GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 					center = CalcMMAvgCenter(gmm, pho);
+					//set constituents
+					vector<double> norms;
+					gmm->GetNorms(norms);
+					for(int k = 0; k < gmm->GetNClusters(); k++){
+						auto params = gmm->GetPriorParameters(k);
+						double E_k = norms[k]/_gev;
+						Matrix mu = params["mean"];
+						Matrix cov = params["cov"];
+						double pi = params["pi"].at(0,0);
+						Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
+						jet.AddConstituent(subcl);
+					}	
 				}
 				else if(ts == emax) center = CalcMaxCenter(jet);
 				double rtheta = atan2(129,center.at(2));

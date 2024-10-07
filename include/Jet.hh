@@ -318,10 +318,10 @@ class Jet{
 			_eta = _mu.at(0,0);
 			_phi = _mu.at(1,0);
 			_t = _mu.at(2,0);
-			cout << "mu" << endl; _mu.Print();
+			//cout << "mu" << endl; _mu.Print();
 	
 			_ensure_valid_rap_phi();
-cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
+//cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
 
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
