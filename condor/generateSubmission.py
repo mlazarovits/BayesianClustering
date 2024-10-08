@@ -23,16 +23,16 @@ def generateSubmission(args):
     # Create output directory for condor results if it does not exist.
     SH.makeDir(odir)
     
-    if args.inputSample == "GJets_HT400to600_2017":
+    if args.inputSample == "GJets_HT400to600":
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GJets_HT100to200_2017":
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix1.root"
-    elif args.inputSample == "GJets_HT200to400_2017":
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix1.root"
-    elif args.inputSample == "GJets_HT40to100_2017":
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix01.root"
-    elif args.inputSample == "GJets_HT600toInf_2017":
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix3.root"
+    elif args.inputSample == "GJets_HT100to200":
+    	inputFile = "GJets_R17_MET100_v21_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "GJets_HT200to400":
+    	inputFile = "GJets_R17_MET100_v21_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "GJets_HT40to100":
+    	inputFile = "GJets_R17_MET100_v21_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix.root"
+    elif args.inputSample == "GJets_HT600toInf":
+    	inputFile = "GJets_R17_MET100_v21_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-250_Ctau-10":
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-300_Ctau-400":
@@ -53,31 +53,31 @@ def generateSubmission(args):
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-400_Ctau-200":
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "MET_RunE_2017":
+    elif args.inputSample == "MET_RunE":
     	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
-    elif args.inputSample == "JetHT_RunF_2017":
+    elif args.inputSample == "JetHT_RunF":
     	inputFile = "JetHT_R17_MET100_v21_JetHT_AOD_Run2017F_17Nov2017.root"
-    elif args.inputSample == "QCD_HT500to700_2017":
+    elif args.inputSample == "QCD_HT500to700":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT1000to1500_2017":
+    elif args.inputSample == "QCD_HT1000to1500":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT100to200_2017":
+    elif args.inputSample == "QCD_HT100to200":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT1500to2000_2017":
+    elif args.inputSample == "QCD_HT1500to2000":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT2000toInf_2017":
+    elif args.inputSample == "QCD_HT2000toInf":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT300to500_2017":
+    elif args.inputSample == "QCD_HT300to500":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT500to700_2017":
+    elif args.inputSample == "QCD_HT500to700":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT700to1000_2017":
+    elif args.inputSample == "QCD_HT700to1000":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT200to300_2017":
+    elif args.inputSample == "QCD_HT200to300":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT50to100_2017":
+    elif args.inputSample == "QCD_HT50to100":
     	inputFile = "QCD_R17_MET100_v21_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "EGamma_RunF_2017":
+    elif args.inputSample == "EGamma_RunF":
     	inputFile = "DEG_R17_MET100_v21_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
     else:
     	print("Sample "+args.inputSample+" not found")
@@ -165,7 +165,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600_2017','GJets_HT100to200_2017','GJets_HT200to400_2017','GJets_HT40to100_2017','GJets_HT600toInf_2017','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE_2017','JetHT_RunF_2017','EGamma_RunF_2017','QCD_HT200to1500_2017','QCD_HT100to200_2017','QCD_HT1500to2000_2017','QCD_HT2000toInf_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT700to1000_2017','QCD_HT300to500_2017','QCD_HT500to700_2017','QCD_HT200to300_2017','QCD_HT50to100_2017','QCD_HT1000to1500_2017'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)

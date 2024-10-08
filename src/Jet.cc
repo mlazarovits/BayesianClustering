@@ -11,6 +11,8 @@ Jet::Jet(){
 	_phi = _invalid_phi;
 	_eta = _invalid_eta;
 
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	//will set from GMM	
 	_t = 0;
 	
@@ -19,10 +21,13 @@ Jet::Jet(){
 	_cov = Matrix();
 	_mu = Matrix();
 	_pi = 0;
+	_update_mom();
 }
 
 
 Jet::Jet(double px, double py, double pz, double E){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	_E = E;
 	_px = px;
 	_py = py;
@@ -42,10 +47,13 @@ Jet::Jet(double px, double py, double pz, double E){
 	_mu = Matrix();
 	_pi = 0;
 	
+	_update_mom();
 
 }
 
 Jet::Jet(JetPoint rh, BayesPoint vtx){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 	
@@ -75,10 +83,13 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_cov = Matrix();
 	_mu = Matrix();
 	_pi = 0;
+	_update_mom();
 }
 
 
 Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
@@ -139,10 +150,13 @@ cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz 
 	_cov = Matrix();
 	_mu = Matrix();
 	_pi = 0;
+	_update_mom();
 
 }
 
 Jet::Jet(const vector<Jet>& jets){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	for(int i = 0; i < (int)jets.size(); i++){
 		vector<JetPoint> rhs = jets[i].GetJetPoints();
 		for(int j = 0; j < (int)rhs.size(); j++)
@@ -173,11 +187,14 @@ Jet::Jet(const vector<Jet>& jets){
 	_cov = Matrix();
 	_mu = Matrix();
 	_pi = 0;
+	_update_mom();
 }
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
 //no weighting yet because if this is the only component, weight (ie pi) should be 1
 Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
 	_E = E;
 	_eta =  mu.at(0,0);
 	_phi =  mu.at(1,0);
@@ -189,7 +206,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
-cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
+//cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
@@ -200,6 +217,7 @@ cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << 
 
 	_vtx = vtx;
 
+	_update_mom();
 }
 
 Jet::Jet(const Jet& j){
