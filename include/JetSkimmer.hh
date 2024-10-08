@@ -561,7 +561,7 @@ class JetSkimmer : public BaseSkimmer{
 				Erh = 0;
 				ptavg = 0;
 				geoEavg = 0;
-			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << endl;
+			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
@@ -577,12 +577,10 @@ class JetSkimmer : public BaseSkimmer{
 				}
 				//calculate jet time difference
 				if(njets > 1){
-					cout << " njets > 1" << endl;
 					pair<Jet,Jet> hardjets;
 					int pair = FindJetPair(jets, hardjets);
 					if(pair == -999) continue; //jets did not pass selection
 					double deltaT_jets = GetDeltaTime(hardjets);
-					cout << " jets passed selection" << endl;
 
 					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);
 					double Erh1, Erh2;
@@ -610,7 +608,7 @@ class JetSkimmer : public BaseSkimmer{
 					trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(sqrt(Erh1*Erh2), deltaT_jets, _weight);
 					//trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 					//fill jet property hists
-			cout << " E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << endl;
+			//cout << " E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << endl;
 					if(xbins[0] <= sqrt(Erh1*Erh2) < xbins[1]){
 						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.second.GetNRecHits());
@@ -1158,15 +1156,15 @@ class JetSkimmer : public BaseSkimmer{
 				double phi2 = jet2.phi_02pi();
 				double dphi = fabs(phi1 - phi2);
 				if(dphi > pi) dphi = 2*pi - dphi;
-				cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
-				cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
+				//cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
+				//cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
 				if(dphi < pi-0.35 || dphi > pi+0.35){
-					cout << "failed dphi cut" << endl;
+					//cout << "failed dphi cut" << endl;
 					return -999;
 				}
 				//pt asymmetry cut
 				if(jet2.pt() / jet1.pt() < 1 - ptasym){
-					cout << "failed pt cut with thresh " << 1 - ptasym << endl;
+					//cout << "failed pt cut with thresh " << 1 - ptasym << endl;
 					return -999;
 				}
 			}
@@ -1210,7 +1208,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
-				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//set constituents
 				vector<double> norms;
@@ -1222,7 +1220,7 @@ class JetSkimmer : public BaseSkimmer{
 					Matrix cov = params["cov"];
 					double pi = params["pi"].at(0,0);
 					Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
-					//jet.AddConstituent(subcl);
+					jet.AddConstituent(subcl);
 				}	
 				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
@@ -1267,7 +1265,8 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << "center for " << ts << " eta " << reta << " phi " << rphi << " x " << center.at(0) << " y " << center.at(1) << " z " << center.at(2) << " time " << time << " shift " << t_shift << endl;
 				//shift from PV to detector face
 				time += t_shift;
-			}	
+			}
+			//cout << "return time " << time << " for jet with energy " << jet.E() << endl;	
 			return time;
 
 		}
