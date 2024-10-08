@@ -250,10 +250,6 @@ class Jet{
 		//also makes sure constituent and overall jet have same vertex
 		//if jet is made of subclusters, set the jet's four vector to be weighted avg of subcluster four-vectors
 		void AddConstituent(Jet& jt){
-			cout << "adding jet" << endl; jt.Print();
-			cout << "1 - # constituents " << _constituents.size() << endl;	
-			for(auto c : _constituents)
-				c.Print();	
 			//check to make sure jet isn't in constituents list
 			auto it = find(_constituents.begin(), _constituents.end(), jt);
 			if(it != _constituents.end()) return;	
@@ -261,7 +257,6 @@ class Jet{
 			jt.SetVertex(_vtx);
 			_constituents.push_back(jt);
 			_constituents[_constituents.size()-1].SetVertex(_vtx);
-			cout << "2 - # constituents " << _constituents.size() << endl;	
 			//reset overall cluster parameters
 			double norm = 0; //should be 1
 			if(_constituents.size() == 1){
@@ -297,9 +292,9 @@ class Jet{
 					}
 				}
 			}
-			cout << "mu pre phi wraparound" << endl; _mu.Print();
 			//phi wraparound
-			_mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
+			//cout << "mu pre phi wraparound " << endl; _mu.Print();
+			if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
 			//set fourvector by subcluster when hyperparameters are tuned s.t. there are enough subclusters in a jet
 			/*	
 			_px = 0;
@@ -327,8 +322,8 @@ class Jet{
 			_eta = _mu.at(0,0);
 			_phi = _mu.at(1,0);
 			_t = _mu.at(2,0);
-			cout << "norm " << norm << " mu" << endl; _mu.Print();
-			cout << "const mu" << endl; _constituents[0]._mu.Print();
+			//cout << "norm " << norm << " mu" << endl; _mu.Print();
+			//cout << "const mu" << endl; _constituents[0]._mu.Print();
 
 			_ensure_valid_rap_phi();
 //cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
