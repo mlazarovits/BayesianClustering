@@ -149,6 +149,7 @@ class BHCJetSkimmer{
 				rhs.clear();
 				//loop over points
 				cout << "TREE " << i << endl;
+				/*
 				for(int p = 0; p < pc->GetNPoints(); p++){
 					//declare JetPoint with x, y, z, t
 					eta = pc->at(p).at(0);
@@ -167,8 +168,10 @@ class BHCJetSkimmer{
 					jp.SetPhi(phi);
 					//cout << "rh - eta " << jp.eta() << " jp phi " << jp.phi() << " energy " << jp.e() << endl;
 					rhs.push_back(jp);
-				}
+				}*/
 				//create new Jet
+				Jet predJet(_trees[i]->model, BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
+				/*
 				Jet predJet(rhs, BayesPoint({_pvx, _pvy, _pvz}));
 				//cout << "additive p: (" << pxtot << ", " << pytot << ", " << pztot << ", " << e << ")" << " mass " << sqrt((e*e) - (pxtot*pxtot + pytot*pytot + pztot*pztot)) << endl;
 				//cout << "jet p: (" << predJet.px() << ", " << predJet.py() << ", " << predJet.pz() << ", " << predJet.e() << ") mass " << predJet.mass() << endl;
@@ -190,6 +193,7 @@ class BHCJetSkimmer{
 					Jet jet(params["mean"], params["cov"], Ek, params["pi"].at(0,0));
 					predJet.AddConstituent(jet);
 				}
+				*/
 				//put pt cut in for predjets of 20 GeV
 				if(predJet.pt() < 20) continue; 
 				//add Jet to jets	
@@ -258,8 +262,8 @@ class BHCJetSkimmer{
 				int nsubs;
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
-					//cout << "calc jet size for jet " << j << endl;
 					dr = CalcJetSize(_predJets[j]);
+					cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
 					nsubs = _predJets[j].GetNConstituents();
 					_procCats[p].hists2D[0][11]->Fill(nsubs,dr);
 					//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
@@ -314,6 +318,7 @@ class BHCJetSkimmer{
 				njets = _recojets.size();
 				for(int j = 0; j < _recojets.size(); j++){
 					dr = CalcJetSize(_recojets[j]);
+					cout << "calc reco jet size " << j << ": " << dr << endl;
 					cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " dr " << dr << endl;
 					_procCats[p].hists1D[0][19]->Fill(dr);
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
@@ -455,8 +460,37 @@ class BHCJetSkimmer{
 		//can change to rhs later
 		double CalcJetSize(const Jet& jet){
 			int nSCs = jet.GetNConstituents();
-			//if no subclusters (ie reco jet), take dR to be max distance between rechits
+			double jetsize;
+			//if no subclusters (ie reco jet), take jet size to be sqrt(etavar + phivar) from discrete covariance 
 			if(nSCs < 1){
+				Matrix recocov = Matrix(3,3);
+				vector<JetPoint> rhs = jet.GetJetPoints();
+				int nrhs = rhs.size();
+				
+				vector<double> rhv, jetv;
+				jetv = {jet.eta(), jet.phi_std(), jet.time()};
+				double diffi, diffj;
+				for(int r = 0; r < nrhs; r++){
+					rhv = {rhs[r].eta(), rhs[r].phi(), rhs[r].time()};
+					for(int i = 0; i < 3; i++){
+						for(int j = 0; j < 3; j++){
+							//phi wraparound
+							diffi = rhv[i] - jetv[i];
+							diffj = rhv[j] - jetv[j];
+							if(i == 1){
+								if(diffi > 4*atan(1)) diffi -= 8*atan(1);
+							}
+							if(j == 1){
+								if(diffj > 4*atan(1)) diffj -= 8*atan(1);
+							}
+						
+							recocov.SetEntry( recocov.at(i,j) + diffi*diffj, i, j );
+						}
+					}
+				}
+				recocov.mult(recocov,1./nrhs);
+				jetsize = sqrt(recocov.at(0,0) + recocov.at(1,1));
+				/* //old reco jet size definition
 				double maxsize = -999;
 				double size;
 				vector<JetPoint> rhs = jet.GetJetPoints();
@@ -469,26 +503,15 @@ class BHCJetSkimmer{
 					}
 				}	
 				return maxsize;
+				*/
 			}
-			//if 1 subcluster, take dR to be 1 sigma (for pred jets)
-			if(nSCs < 2){
+			else{
 				Matrix cov, mu;
 				jet.GetClusterParams(mu, cov);
-				return sqrt(cov.at(0,0) + cov.at(1,1));
-
-			}
-
-			//else, weighted average of subcluster sizes
-			double size = 0;
-			double norm = 0;
-			Jet subjet;
-			for(int i = 0; i < nSCs; i++){
-				//get center in eta, phi for subcluster i and j
-				subjet = jet.GetConstituent(i);
-				size += CalcJetSize(subjet)*subjet.GetCoefficient();
-				norm += subjet.GetCoefficient();
+				cout << "pred eta var " << cov.at(0,0) << " phi var " << cov.at(1,1) << endl;
+				jetsize = sqrt(cov.at(0,0) + cov.at(1,1));
 			}	
-			return size/norm;
+			return jetsize;
 		}
 	
 
