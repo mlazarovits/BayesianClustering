@@ -288,6 +288,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists1D.push_back(dPhi_phiCenterMet_etaSigge0p3ANDphiSigle0p3);
 			_hists1D.push_back(dR_trackSubcl);	
 			_hists1D.push_back(EovP_trackSubcl);	
+			_hists1D.push_back(EovP_subclTrack_early_smalldR);	
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1049,6 +1050,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - E/p bw subcluster and closest matching track	
 		TH1D* EovP_trackSubcl = new TH1D("EovP_subclTrack","EovP_subclTrack",25,0,10);	
+		//239 - E/p bw subcluster and closest matching track for early times + small dRs	
+		TH1D* EovP_subclTrack_early_smalldR = new TH1D("EovP_subclTrack_early_smalldR","EovP_subclTrack_early_smalldR",25,0,10);	
 
 
 		
@@ -2116,7 +2119,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
 				_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 				_procCats[id_idx].hists1D[1][238]->Fill(bestde_dr);
-
+				if(-10 >= tc && tc < -2){
+					if(bestTrackDr < 0.02){
+						_procCats[id_idx].hists1D[1][239]->Fill(bestde_dr);
+					}
+				}
 
 
 	
