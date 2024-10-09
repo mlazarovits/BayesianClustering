@@ -418,6 +418,8 @@ class BaseSkimmer{
 			_inputs.push_back("hcalPFClusterIsoOvPt");
 			//trkSumPtHollowConeDR03OvPt
 			_inputs.push_back("trkSumPtHollowConeDR03OvPt");
+			//lead photon? 1 = yes, 0 = no
+			_inputs.push_back("lead");
 			//label
 			_inputs.push_back("label");
 			for(auto s : _inputs){
