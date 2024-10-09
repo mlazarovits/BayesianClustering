@@ -162,7 +162,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	}
 
 	vector<node*> trees = mt->GetClusters();
-	cout << mt->GetNClusters() << " final clusters " << _trees.size() << " final trees"  << endl;
+	if(_verb > 0) cout << mt->GetNClusters() << " final clusters " << endl;
 	double nmirror = 0;
 		
 	for(int i = 0; i < trees.size(); i++){
@@ -179,7 +179,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		_trees.push_back(trees[i]);
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
+	if(_verb > 0) cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
 	return _trees;
 	
 	
