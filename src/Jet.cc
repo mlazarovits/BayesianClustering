@@ -324,7 +324,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_constituents.push_back(subcl);
 	}
 	_kt2 = _px*_px + _py*_py;
-cout << "pt " << sqrt(_kt2) << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
