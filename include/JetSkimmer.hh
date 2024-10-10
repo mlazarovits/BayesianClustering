@@ -1064,6 +1064,8 @@ cout << "fill pv end" << endl;
 			if(phoid == 22){
 				int momidx = _base->Photon_genSigMomId->at(phoidx);
 				cout << "signal - phoid " << phoid << " phoidx " << phoidx << " genidx " << genidx << " momidx " << momidx << endl;
+				//TODO: remove when ntuples are fixed (10/9/24)
+				if(momidx < 0) return dpho;
 				//check gen pdgids
 				//want production vertex of photon (where LLP -> photon)
 				//not production vertex of mother (close to PV)
