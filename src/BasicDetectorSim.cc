@@ -292,10 +292,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
 
 	
-
-			//don't reco muons
-			if(sumEvent[p].idAbs() == 13) continue;	
-			
 			//fill ecal cell with reco particle
 			FillCal(rp);
 			
@@ -324,7 +320,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	
 			//save tracks (gen information of momentum propagated to detector)
 			//don't save if particle doesn't make it to detector face (with if statement above)
-			SaveTracks(rp);
+			FillTracks(rp);
 
 			//add particle to fastjet
 			//running fastjet on gen particles, no shower, etc.
@@ -334,8 +330,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//cout << "gen input px " << rp.Momentum.px() <<  " py " << rp.Momentum.py() << " pz " << rp.Momentum.pz() << " energy " << rp.Momentum.e() << " eta " << rp.Position.eta() << " tieta " << tieta << " phi " << rp.Position.phi() << " tiphi " << tiphi << " q " << rp.Particle.charge() << " pt " << rp.Momentum.pt() << endl; 
       			
 			//don't include leptons in reco jet clustering (or save to reco particles)
-			if(rp.Particle.idAbs() == 13 || rp.Particle.idAbs() == 11)
+			if(rp.Particle.idAbs() == 13 || rp.Particle.idAbs() == 11){
+				_leptons.push_back(fastjet::PseudoJet( rp.Particle.px(), rp.Particle.py(), rp.Particle.pz(), rp.Particle.e() ));
+				_leptonids.push_back(rp.Particle.id());
 				continue;
+			}
 
 			fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
 			//fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
@@ -358,6 +357,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
 		//Fill gen jet information
 		FillGenJets();	
+
+		//fill gen lepton
+		FillGenLeptons();
 	
 		//make rhs and reconstruct time + energy for particles in evt	
 		MakeRecHits();
@@ -408,7 +410,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//0  : fully hadronic (to light quarks)
 		//1  : semi-leptonic
 		//2  : fully leptonic (no taus, including neutrinos)
-		int wid[2];
+		int wid[2] = {-999, -999};
 		int wcnt = 0;
 		int _genTopId;
 		vector<int> had = {1, 2, 3, 4};
@@ -625,7 +627,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 
 //this also fills the "track" information which is just gen because there is no tracker in this sim :)
 //this is used to get the momentum of the resulting groups of rhs s.t. quantities like masses can be calculated
-void BasicDetectorSim::SaveTracks(RecoParticle& rp){
+void BasicDetectorSim::FillTracks(RecoParticle& rp){
 	//particle has already been propagated to detector face
 	_trackpx.push_back(rp.Momentum.px());
 	_trackpy.push_back(rp.Momentum.py());
@@ -1006,8 +1008,25 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 
 
+void BasicDetectorSim::FillGenLeptons(){
+	_nleptons = (int)_leptons.size();
+	cout << _nleptons << " # leptons" << endl;
+	//vector<fastjet::PseudoJet> consts;
+	for(int l = 0; l < _leptons.size(); l++){
+		//consts = jet.constituents();
+		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
+		//for(auto c : consts)
+			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
+		_lepgeta.push_back(_leptons[l].eta());
+		_lepgphi.push_back(_leptons[l].phi());
+		_lepgenergy.push_back(_leptons[l].e());
+		_lepgpt.push_back(_leptons[l].pt());
+		_lepgmass.push_back(_leptons[l].m());
+		_lepgid.push_back(_leptonids[l]);	
+	}
+}
+
 void BasicDetectorSim::FillGenJets(){
-	int njets = 0;
 	//vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
 		//consts = jet.constituents();
@@ -1019,7 +1038,6 @@ void BasicDetectorSim::FillGenJets(){
 		_jgenergy.push_back(jet.e());
 		_jgpt.push_back(jet.pt());
 		_jgmass.push_back(jet.m());
-		njets++;
 	}
 }
 
@@ -1124,6 +1142,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	_tree->Branch("Jet_genNJet",&_njets)->SetTitle("Number of gen jets - FastJet AK4");
 	
 	//gen top info
 	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
@@ -1138,6 +1157,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
 	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
 	_tree->Branch("Jet_RhIDs",&_jrhids)->SetTitle("Jet rh ids - FastJet AK4");
+	_tree->Branch("Jet_NJet",&_njetsReco)->SetTitle("Number of jets - FastJet AK4");
 
 
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
@@ -1152,6 +1172,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("lep_genPt",&_lepgpt)->SetTitle("lepton gen pt");
 	_tree->Branch("lep_genMass",&_lepgmass)->SetTitle("lepton gen mass");
 	_tree->Branch("lep_genId",&_lepgid)->SetTitle("lepton gen pdg id");
+	_tree->Branch("lep_Nlep",&_nleptons)->SetTitle("number of gen leptons");
 }
 
 
@@ -1191,6 +1212,16 @@ void BasicDetectorSim::_reset(){
 	_jenergy.clear();
 	_jpt.clear();
 	_jmass.clear();
+
+	_leptons.clear();
+	_leptonids.clear();
+	_lepgeta.clear();
+	_lepgphi.clear();
+	_lepgenergy.clear();
+	_lepgpt.clear();
+	_lepgmass.clear();
+	_lepgid.clear();	
+	
 
 	for(auto j : _jrhids)
 		j.clear();

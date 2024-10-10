@@ -47,7 +47,7 @@ struct RecoParticle;
 		//not real tracks because there is no tracker in this sim :)
 		//this is just the gen momentum information at the detector face
 		//you could also smear this information here OR in CalcTrajectory where you would smear the radius of curvature (see PGS)
-		void SaveTracks(RecoParticle& rp);
+		void FillTracks(RecoParticle& rp);
 
 		//this is what creates the showers from the reco particles
 		void FillCal(RecoParticle& rp); // for energy depositions
@@ -108,10 +108,12 @@ struct RecoParticle;
 		void InitTree(string fname);
 		void WriteTree();
 
-		//write gen info
+		//write gen jet info
 		void FillGenJets();
-		//write reco info
+		//write reco jet info
 		void FillRecoJets();
+		//write gen lepton info
+		void FillGenLeptons();
 
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
@@ -154,8 +156,11 @@ struct RecoParticle;
 		vector<vector<BayesPoint>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		//vector<JetPoint> _cal_rhs; //ecal rec hits
 		vector<Jet> _cal_rhs; //ecal rec hits
-		vector<fastjet::PseudoJet>  _jets; //outputs from fastjet
-		vector<fastjet::PseudoJet>  _jetsReco; //outputs from fastjet
+		vector<fastjet::PseudoJet>  _jets; //gen outputs from fastjet
+		vector<fastjet::PseudoJet>  _jetsReco; //reco outputs from fastjet
+		vector<fastjet::PseudoJet>  _leptons; //gen leptons
+		vector<int> _leptonids; //gen lepton ids
+		int _njets, _njetsReco, _nleptons; //# of objects
 		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
 		double _Rparam;
 		fastjet::Strategy _strategy; //fastjet clustering strategy
@@ -194,8 +199,10 @@ struct RecoParticle;
 		vector<unsigned int> _rhids;
 		//gen jets 
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
-		//gen info - top
+		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
+		//gen lepton info
+		vector<double> _lepgeta, _lepgphi, _lepgenergy, _lepgpt, _lepgmass, _lepgid;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		vector<vector<unsigned int>> _jrhids;
@@ -203,12 +210,12 @@ struct RecoParticle;
 		double _pvx, _pvy, _pvz;
 		//track info
 		vector<double> _trackpx, _trackpy, _trackpz, _tracketa, _trackphi;
-		int _npredjets, _ntruejets;
-		vector<double> _predjeteta, _predjetphi, _predjetpt, _predjetmass, _predjetnparts;
-		vector<double> _truejeteta, _truejetphi, _truejetpt, _truejetmass, _truejetnparts;
+		//spike info	
 		vector<double> _spikeE;
+		//event info
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
 		BayesPoint _PV;
+
 
 		int _evti, _evtj;
 
