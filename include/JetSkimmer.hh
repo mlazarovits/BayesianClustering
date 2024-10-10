@@ -1060,6 +1060,8 @@ class JetSkimmer : public BaseSkimmer{
 			double beta;
 			if(phoid == 22){
 				int momidx = _base->Photon_genSigMomId->at(phoidx);
+				//TODO: remove when ntuples are fixed (10/9/24)
+				if(momidx < 0) return dpho;
 				//check gen pdgids
 				//want production vertex of photon (where LLP -> photon)
 				//not production vertex of mother (close to PV)
