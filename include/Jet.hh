@@ -13,6 +13,7 @@
 #include <math.h>
 #include <cmath>
 #include "Matrix.hh"
+#include "BasePDFMixture.hh"
 #include "Point.hh"
 #include "JetPoint.hh"
 
@@ -28,6 +29,7 @@ class Jet{
 		Jet(const vector<JetPoint>& rhs, BayesPoint vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.})); //constructor from subcluster information
+		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR); //need detector radius to convert eta, phi to x, y, z
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
@@ -250,6 +252,7 @@ class Jet{
 		//also makes sure constituent and overall jet have same vertex
 		//if jet is made of subclusters, set the jet's four vector to be weighted avg of subcluster four-vectors
 		void AddConstituent(Jet& jt){
+		/*
 			//check to make sure jet isn't in constituents list
 			auto it = find(_constituents.begin(), _constituents.end(), jt);
 			if(it != _constituents.end()) return;	
@@ -280,10 +283,6 @@ class Jet{
 					for(int j = 0; j < 3; j++){
 						double entry = 0;
 						for(int k = 0; k < _constituents.size(); k++){
-							/*
-							xi = _constituents[k]._mu.at(i,0) + _constituents[k]._cov.at(i,j);
-							xj = _constituents[k]._mu.at(j,0) + _constituents[k]._cov.at(i,j);
-							*/
 							double w = _constituents[k]._pi;
 							xi = _constituents[k]._mu.at(i,0);
 							xj = _constituents[k]._mu.at(j,0);
@@ -297,7 +296,6 @@ class Jet{
 			//cout << "mu pre phi wraparound " << endl; _mu.Print();
 			if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
 			//set fourvector by subcluster when hyperparameters are tuned s.t. there are enough subclusters in a jet
-			/*	
 			_px = 0;
 			_py = 0;
 			_pz = 0;
@@ -316,7 +314,6 @@ class Jet{
 			_kt2 = _px*_px + _py*_py;
 			_mass = mass();
 			_update_mom();
-			*/
 
 		
 			//set jet center as weighted sum of subclusters
@@ -329,6 +326,7 @@ class Jet{
 			_ensure_valid_rap_phi();
 //cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
 
+		*/
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
 		vector<Jet>& GetConstituents(){

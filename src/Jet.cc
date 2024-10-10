@@ -75,6 +75,7 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_pz = pt*sinh(_eta);
 	_kt2 = _px*_px + _py*_py; 		
 	_mass = mass();
+
 	
 	_idx = 999;
 	_set_time();
@@ -199,6 +200,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_eta =  mu.at(0,0);
 	_phi =  mu.at(1,0);
 	_t = mu.at(2,0);
+	//0 mass hypothesis default sets four vector
 	double pt = E/cosh(_eta);
 	_px = pt*cos(_phi);
 	_py = pt*sin(_phi);
@@ -218,6 +220,120 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_vtx = vtx;
 
 	_update_mom();
+}
+
+
+Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
+	_vtx = vtx;
+	_mom = BayesPoint(4);
+	
+	Matrix r_nk = model->GetPosterior();
+	double Ek;
+	vector<double> norms;
+	model->GetNorms(norms);
+	int nsubcl = model->GetNClusters();
+	_nRHs = model->GetData()->GetNPoints();
+	double pt = 0;
+	_E = 0;
+	_px = 0;
+	_py = 0;
+	_pz = 0;
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
+	_pi = 0;
+	double x, y, z, t, eta, phi, theta, w;
+	map<string, Matrix> params;
+	//set mean
+	//pi-weighted average of subcluster means
+	for(int i = 0; i < 3; i++){
+		double entry = 0;
+		double norm = 0;
+		for(int k = 0; k < nsubcl; k++){
+			params = model->GetPriorParameters(k); 
+			entry += params["pi"].at(0,0)*params["mean"].at(i,0); 
+			norm += params["pi"].at(0,0); 
+		}
+		_mu.SetEntry(entry/norm,i,0);
+	}
+	
+	for(int i = 0; i < _nRHs; i++){
+		//add rhs to jet
+		BayesPoint rh = model->GetData()->at(i);
+		//transform eta, phi to x, y, z
+		eta = rh.at(0);
+		phi = rh.at(1);
+		t = rh.at(2);
+		x = detR*cos(phi);
+		y = detR*sin(phi);
+		theta = 2*atan2(1,exp(eta));
+		z = detR/tan(theta);
+		//push back as jet point to _rhs	
+		_rhs.push_back(JetPoint(x,y,z,t));
+		_rhs[i].SetEnergy(rh.w()/gev);	
+	
+		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
+		_px += pt*cos(_rhs[i].phi());
+		_py += pt*sin(_rhs[i].phi());
+		_pz += pt*sinh(_rhs[i].eta());
+		
+		_E += _rhs[i].E();
+
+		//weights are sum of weights over all subclusters
+		//without additional weights, this w_rh = sum_k r_rh,k = 1
+		//if subcluster is downweighted this w_rh != 1
+		w = 0;
+		for(int k = 0; k < nsubcl; k++)
+			w += r_nk.at(i,k);	 
+		//set probabilistic coefficient
+		//pi = sum_rh sum_k r_nk
+		_pi += w;	
+
+
+		//set covariance 
+		//weighted sum of rechit covariances
+		for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+					_cov.SetEntry((_cov.at(i,j) + w*(rh.at(i) - _mu.at(i,0))*(rh.at(j) - _mu.at(j,0))),i,j); 
+				}
+			}
+		}	
+		_cov.mult(_cov,1/_pi);
+	//set subcluster (ie constituent) parameters + 4vectors	
+	for(int k = 0; k < nsubcl; k++){
+		params = model->GetPriorParameters(k);
+		Ek = norms[k]/gev;
+		Jet subcl(params["mean"], params["cov"], Ek, params["pi"].at(0,0), _vtx);
+		//subcluster momentom 3vector is r_nk weighted average over rechits for cluster k
+		double pxk = 0;
+		double pyk = 0;
+		double pzk = 0;
+		double wnorm = 0;
+		for(int r = 0; r < _nRHs; r++){
+			Jet rh(_rhs[r], _vtx);
+			pxk += r_nk.at(r,k)*rh.px();	
+			pyk += r_nk.at(r,k)*rh.py();	
+			pzk += r_nk.at(r,k)*rh.pz();	
+			wnorm += r_nk.at(r,k);
+		}
+		pxk /= wnorm;
+		pyk /= wnorm;
+		pzk /= wnorm;
+
+		subcl.SetP(pxk, pyk, pzk);
+
+		_constituents.push_back(subcl);
+	}
+	_kt2 = _px*_px + _py*_py;
+cout << "pt " << sqrt(_kt2) << endl;
+
+	_idx = 999;
+	_ensure_valid_rap_phi();
+	_set_time();
+
+
+	_update_mom();
+
+
 }
 
 Jet::Jet(const Jet& j){
