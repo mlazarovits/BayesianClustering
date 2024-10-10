@@ -168,8 +168,13 @@ void PhotonSkimmer::Skim(){
 			double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx);//_base->Photon_hcalPFClusterIso->at(phoidx);
 			double tIso = _base->Photon_trkSumPtHollowConeDR03->at(phoidx);
 			double pt = _base->Photon_pt->at(phoidx);
+			double ptmin;
+			if(p == 0)
+				ptmin = 70;
+			else
+				ptmin = 40;
 			cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
-			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
+			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > ptmin){
                                         obs["R9"] = r9;
                                         obs["Sietaieta"] = Sieie;
 					obs["Siphiiphi"] = Sipip;
@@ -200,15 +205,20 @@ void PhotonSkimmer::Skim(){
                                 obs["object"] = phoidx;
 			//only get lead subcluster -> ncl = 0
                                 obs["subcl"] = 0;
+				obs["lead"] = 0;
+				if(p == 0)
+					obs["lead"] = 1;
                                 obs["label"] = label;
 				BaseSkimmer::WriteObs(obs,"photons");
 			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
-		cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
+		//cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
+		//int no = 0;
 		//for(auto o : obs)
 		//	cout << o.first << ": " << o.second << endl;
 		//cout << endl;
 		//for(int o = 0; o < _inputs.size(); o++)
 		//	cout << o << ": " << _inputs[o] << endl;	
+		//}
 		}
 	}
 	cout << "\n" << endl;
