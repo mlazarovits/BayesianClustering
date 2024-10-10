@@ -290,11 +290,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				continue;
 			//if track curls up/exceeds zmax
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
+
+	
+
+			//don't reco muons
+			if(sumEvent[p].idAbs() == 13) continue;	
+			
 			//fill ecal cell with reco particle
 			FillCal(rp);
 			
 			
-
+			//get top from this particle's history (if it exists)
 			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
@@ -327,6 +333,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_get_etaphi_idx(rp.Position.eta(), rp.Position.phi(), tieta, tiphi);
 			//cout << "gen input px " << rp.Momentum.px() <<  " py " << rp.Momentum.py() << " pz " << rp.Momentum.pz() << " energy " << rp.Momentum.e() << " eta " << rp.Position.eta() << " tieta " << tieta << " phi " << rp.Position.phi() << " tiphi " << tiphi << " q " << rp.Particle.charge() << " pt " << rp.Momentum.pt() << endl; 
       			
+			//don't include leptons in reco jet clustering (or save to reco particles)
+			if(rp.Particle.idAbs() == 13 || rp.Particle.idAbs() == 11)
+				continue;
+
 			fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
 			//fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
       			//  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
@@ -1136,6 +1146,12 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Track_eta", &_tracketa)->SetTitle("Track eta");
 	_tree->Branch("Track_phi", &_trackphi)->SetTitle("Track phi");
 	
+	_tree->Branch("lep_genEta", &_lepgeta)->SetTitle("lepton gen eta");
+	_tree->Branch("lep_genPhi", &_lepgphi)->SetTitle("lepton gen phi");
+	_tree->Branch("lep_genEnergy",&_lepgenergy)->SetTitle("lepton gen energy");
+	_tree->Branch("lep_genPt",&_lepgpt)->SetTitle("lepton gen pt");
+	_tree->Branch("lep_genMass",&_lepgmass)->SetTitle("lepton gen mass");
+	_tree->Branch("lep_genId",&_lepgid)->SetTitle("lepton gen pdg id");
 }
 
 

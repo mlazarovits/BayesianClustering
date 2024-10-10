@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
 				oname = "simNtuples_"+oname;
 		}
 		else
-			oname = "simNtuples_";
+			oname = "simNtuples";
 	}
 	if(spikeProb < 0 || spikeProb > 1){
 		cout << "Invalid spike probability " << spikeProb << ". Must be [0,1]" << endl;
