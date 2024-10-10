@@ -135,6 +135,8 @@ def generateSubmission(args):
         flags += ' --rejectSpikes'
     if(args.noIso):
         flags += ' --noIso'
+    if(args.maxRhE != -999):
+        flags += ' --maxRhE '+str(args.maxRhE)
 
     if(objName == "jets"):
     	flags += " --object 0"
@@ -182,6 +184,7 @@ def main():
     parser.add_argument('--minnrhs',help='min object nrhs',default=15)
     parser.add_argument('--minemE',help='min object ECAL energy',default=20)
     parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
+    parser.add_argument('--maxRhE',help='max rechit ECAL energy (-999 = off)',default=-999)
     parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
