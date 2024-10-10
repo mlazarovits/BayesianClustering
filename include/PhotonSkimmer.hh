@@ -1758,11 +1758,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<Matrix> eigvecs;
 			vector<double> eigvals;
 			cov.eigenCalc(eigvals,eigvecs);
-			double majLength = sqrt(eigvals[1]);
-			if(eigvals[0] < 0) cout << "negative eigenvalue " << eigvals[0] << endl;	
+			double majLength = sqrt(eigvals[2]);
+			if(eigvals[1] < 0) cout << "negative eigenvalue " << eigvals[1] << endl;
 			double minLength; 
-			if(eigvals[0] < 0) minLength = -sqrt(-eigvals[0]);
-			else minLength = sqrt(eigvals[0]);	
+			if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
+			else minLength = sqrt(eigvals[1]);	
 
 			//calculate slopes from eigenvectors
 			//cov.eigenCalc(eigenvals, eigenvecs);
