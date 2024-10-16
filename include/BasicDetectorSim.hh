@@ -112,8 +112,8 @@ struct RecoParticle;
 		void FillGenJets();
 		//write reco jet info
 		void FillRecoJets();
-		//write gen lepton info
-		void FillGenLeptons();
+		//write gen particle info
+		void FillGenParticles();
 
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
@@ -158,9 +158,10 @@ struct RecoParticle;
 		vector<Jet> _cal_rhs; //ecal rec hits
 		vector<fastjet::PseudoJet>  _jets; //gen outputs from fastjet
 		vector<fastjet::PseudoJet>  _jetsReco; //reco outputs from fastjet
-		vector<fastjet::PseudoJet>  _leptons; //gen leptons
-		vector<int> _leptonids; //gen lepton ids
-		int _njets, _njetsReco, _nleptons; //# of objects
+		vector<fastjet::PseudoJet>  _genparts; //gen particles
+		vector<int> _genpartids; //genpart ids
+		vector<int> _genpartTopWmom; //if particle came from top -> W decay (1 = yes, 0 = no)
+		int _njets, _njetsReco, _ngenparts; //# of objects
 		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
 		double _Rparam;
 		fastjet::Strategy _strategy; //fastjet clustering strategy
@@ -201,8 +202,8 @@ struct RecoParticle;
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
 		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
-		//gen lepton info
-		vector<double> _lepgeta, _lepgphi, _lepgenergy, _lepgpt, _lepgmass, _lepgid;
+		//gen particle info (even intermediate particles)
+		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		vector<vector<unsigned int>> _jrhids;
