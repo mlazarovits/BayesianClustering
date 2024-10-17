@@ -252,7 +252,6 @@ class Jet{
 		//also makes sure constituent and overall jet have same vertex
 		//if jet is made of subclusters, set the jet's four vector to be weighted avg of subcluster four-vectors
 		void AddConstituent(Jet& jt){
-		/*
 			//check to make sure jet isn't in constituents list
 			auto it = find(_constituents.begin(), _constituents.end(), jt);
 			if(it != _constituents.end()) return;	
@@ -260,6 +259,7 @@ class Jet{
 			jt.SetVertex(_vtx);
 			_constituents.push_back(jt);
 			_constituents[_constituents.size()-1].SetVertex(_vtx);
+			/*
 			//reset overall cluster parameters
 			double norm = 0; //should be 1
 			if(_constituents.size() == 1){
