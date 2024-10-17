@@ -3095,6 +3095,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			if(xmax == pc->at(i)) continue;
 			deta = pc->at(i).at(0) - xmax.at(0);
 			dphi = pc->at(i).at(1) - xmax.at(1);
+			if(dphi > 4*atan(1)) dphi -= 8*atan(1);
 			dist = sqrt(deta*deta + dphi*dphi);
 			if(dist < distThresh){
 				sumNeighbors += pc->at(i).w();
