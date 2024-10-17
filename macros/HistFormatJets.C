@@ -523,16 +523,21 @@ void GetHistsProcMethods(TDirectory* dir, string& proc, vector<TH1D*>& hists, ve
 	TString tdir("TDirectoryFile");
 	TString th1d("TH1D");
 	hists.clear();
-//cout << "GETHISTSPROCMETHOD with dir " << dir->GetName() << " for proc " << proc << endl;
+cout << "GETHISTSPROCMETHOD with dir " << dir->GetName() << " for proc " << proc << endl;
 	while((key = (TKey*)iter())){
 		if(key->GetClassName() == tdir){
+			cout << "key " << key->GetName() << endl;
 			for(int m = 0; m < methods.size(); m++){
+				cout << "m " << m << endl;
 				TDirectory* ddir = dynamic_cast<TDirectory*>(key->ReadObj());
 				if(!ddir) continue;
+				cout << "ddir not null" << endl;
 				string name = ddir->GetName();
+				cout << "name " << name << " method " << methods[m] << endl;
 				if(name.find(methods[m]) == string::npos) continue; 
+				cout << "methods[m] " << methods[m] << endl;
 				ddir->cd();
-				//cout << "--in dir " << ddir->GetName() << endl;
+				cout << "--in dir " << ddir->GetName() << endl;
 				TList* llist = ddir->GetListOfKeys();
 				TIter iiter(llist);
 				TKey* kkey;
@@ -543,7 +548,7 @@ void GetHistsProcMethods(TDirectory* dir, string& proc, vector<TH1D*>& hists, ve
 						name = hist->GetName();
 						if(name.find(proc) == string::npos) continue;
 						if(hist->Integral() != 0 && name.find("sigma") == string::npos && name.find("mean") == string::npos) hist->Scale(1./hist->Integral());
-						//cout << "getting hist " << name << " for method " << methods[m] << endl;
+						cout << "getting hist " << name << " for method " << methods[m] << endl;
 						hists.push_back(hist);
 					}
 				}
@@ -610,7 +615,7 @@ void GetHists(TDirectory* dir, string type, vector<TH1D*>& hists){
 	}
 }
 
-void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
+void GetHists(TDirectory* dir, string proc, vector<TH2D*>& hists){
 	TList* list = dir->GetListOfKeys();
 	TIter iter(list);
 	TKey* key;
@@ -624,12 +629,7 @@ void GetHists(TDirectory* dir, string type, vector<TH2D*>& hists){
 			TH2D* hist = dynamic_cast<TH2D*>(key->ReadObj());
 			if(hist){
 				name = hist->GetName();
-				if(type.empty()){
-					if(name.find("lead") != string::npos) continue;
-				}
-				else{
-					if(name.find("_"+type) == string::npos) continue;
-				}
+				if(name.find(proc) == string::npos) continue;
 				if(isnan(hist->Integral())) continue;
 				hists.push_back(hist);
 			}
@@ -1078,10 +1078,10 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 	if(proc == "QCD"){
 		cmslab = "QCD Multijets 2017";
 	}
-	else if(proc == "JetHTPD"){
+	else if(proc == "JetHT"){
 		cmslab = "JetHT, Run F 2017";
 	}
-	else if(proc == "DEGPD"){
+	else if(proc == "DEG"){
 		cmslab = "DoubleEG, Run F 2017";
 	}
 	//string cmslab = GetCMSLabel(file);
@@ -1109,10 +1109,10 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 			name = dir->GetName();
 			if(!match.empty() && name.find(match) == string::npos) continue;
 			//if(name.find("geoEavg_sigmaDeltaTime_recoGen") == string::npos) continue;
-			//cout << "\ndir name: " << dir->GetName() << endl;
+			cout << "\ndir name: " << dir->GetName() << endl;
 			dir->cd();
-			//cout << "---in dir " << dir->GetName() << endl;
-			//cout << "dir name: " << dir->GetName() << endl;
+			cout << "---in dir " << dir->GetName() << endl;
+			cout << "dir name: " << dir->GetName() << endl;
 			//get histograms (stack these)
 			vector<TH1D*> hists;
 			//if directory is full of directories (stack by method)
@@ -1121,12 +1121,14 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 			TIter iiter(llist);
 			TKey* kkey;
 			string name;
+			
 			//writing methodStack hist - same proc different methods
 			string dirname = dir->GetName();
 			//only do for sigma plots + profiles for now - can remove this later to change
 			if(dirname.find("sigma") == string::npos && dirname.find("mean") == string::npos && dirname.find("profile") == string::npos) continue;	
+			cout << "about to gethistsprocmethods" << endl;
 			GetHistsProcMethods(dir, proc, hists, methods);
-			//for(auto h : hists) cout << "got hist " << h->GetName() << endl;
+			for(auto h : hists) cout << "got hist " << h->GetName() << endl;
 			name = dirname+"_"+proc+"_methodStack"+methodsname;
 			if(hists.size() < 1) continue;
 			FindListHistBounds(hists, ymin, ymax);
@@ -1147,8 +1149,9 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 			cout << "writing canvas (1D) " << cv->GetName() << endl;
 				
 		}
+		cout << "end for loop - name " << name << endl;
 	}
-	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 	ofile->Write();
 	ofile->Close();
 	f->Close();
@@ -1156,6 +1159,114 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 };
 
 
+
+void Hist2D(string file, string proc, string method, string oname, string match){
+	if(gSystem->AccessPathName(file.c_str())){
+		cout << "File " << file << " does not exist." << endl;
+		return;
+	}
+	TFile* f = TFile::Open(file.c_str(),"READ");
+	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
+	TList* list = f->GetListOfKeys();
+	TIter iter(list);
+	TKey* key;
+	string name, xtitle, ytitle;
+	//string oname = f->GetName();
+	//oname = oname.substr(0,oname.find(".root"));
+	//oname = oname+"_formatted.root";
+	//TFile* ofile = new TFile(oname.c_str(),"RECREATE");
+
+	string cmslab = "";
+	if(proc == "GJets"){
+		cmslab = "GJets 2017";
+	}
+	else if(proc == "QCD"){
+		cmslab = "QCD Multijets, 2017";
+	}
+	else if(proc == "JetHT"){
+		cmslab = "JetHT, Run F 2017";
+	}
+	else if(proc == "DEG"){
+		cmslab = "DoubleEG, Run F 2017";
+	}
+	else cmslab = "process";
+	cmslab += ", "+method;
+	//string cmslab = GetCMSLabel(file);
+	//string extra = "";
+	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	//if(!extra.empty()) cmslab += " "+extra;	
+
+
+	TString th2d("TH2D");
+	TString tdir("TDirectoryFile");
+
+	string dirname, ddirname, histname, xlab, ylab;
+
+	while((key = (TKey*)iter())){
+		name = key->GetName();
+		if(key->GetClassName() == tdir){
+			//get stack histograms - in directory
+			TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
+			if(!dir) continue;
+			name = dir->GetName();
+			if(!match.empty() && name.find(match) == string::npos) continue;
+			dir->cd();
+			//if directory is full of directories (stack by method)
+			//each dir is full of histograms (stack by process)
+			TList* llist = dir->GetListOfKeys();
+			TIter iiter(llist);
+			TKey* kkey;
+			string name;
+			vector<TH2D*> hists;
+			TH2D* hist;
+			//cout << "\ndir name: " << dir->GetName() << endl;
+
+			while((kkey = (TKey*)iiter())){
+				//writing stack hist - same method different procs
+				if(kkey->GetClassName() == tdir){
+					TDirectory* ddir = dynamic_cast<TDirectory*>(kkey->ReadObj());
+					if(!ddir) continue;
+					name = ddir->GetName();
+					//method in this subdir needs to match what's given
+					if(name.find(method) == string::npos) continue;
+					ddir->cd();
+					cout << " ---in ddir " << ddir->GetName() << endl;
+					//we're in the directory with hists of one method split by procs
+					GetHists(ddir, proc, hists);
+					if(hists.size() > 0){
+						//cout << "hists got" << endl;
+						//for(auto h : hists) cout << h->GetName() << endl;
+						hist = hists[0];
+						name = hist->GetName();
+						string cvname = name;
+						TCanvas *cv = new TCanvas(cvname.c_str(), "");
+						ofile->cd();
+						//draw as tcanvases
+						xlab = hist->GetXaxis()->GetTitle();
+						ylab = hist->GetYaxis()->GetTitle();
+						if(xlab.empty() && ylab.empty()){
+							xlab = name.substr(0,name.find("_"));
+							ylab = name.substr(xlab.size()+1,name.find("_")-1);
+						}
+						cout << "x " << xlab << " y " << ylab << " name " << name << endl;
+						TDR2DHist(hist, cv, xlab, ylab, cmslab, "");
+						cout << "writing canvas (2D) " << cv->GetName() << endl;
+						cv->Write(); 
+					}
+				}
+
+			}
+		
+		}
+	}
+
+	ofile->Write();
+	ofile->Close();
+	f->Close();
+
+
+
+}
 
 
 void ResolutionStackHists(string file, string proc, string method, string oname){
@@ -1407,6 +1518,9 @@ void HistFormatJets(string file, string file2 = ""){
 		vector<string> chiGam_QCD = {"chiGam","QCD"};
 		//PV dijets for median + eAvg for QCD
 		MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
+		//PV dijets for median + eAvg for JetHT
+		MethodStackHists(file, "JetHT", med_eAvg, oname, "geoAvgEecal");
+		MethodStackHists(file, "DoubleEG", med_eAvg, oname, "geoAvgEecal");
 		//recoGen and gamPV for med + eAvg for QCD
 		MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
 
@@ -1433,6 +1547,25 @@ void HistFormatJets(string file, string file2 = ""){
 		
 		//PV dijets + reocGen + gamPV for QCD eAvg
 		ResolutionStackHists(file, "QCD", "eAvg", oname);
+
+		//jet properties hists - eavg vs med in data
+		Hist2D(file, "JetHT", "eAvg", oname, "jetTime_Energy");
+		Hist2D(file, "JetHT", "med", oname, "jetTime_Energy");
+		Hist2D(file, "QCD", "eAvg", oname, "jetTime_Energy");
+		Hist2D(file, "QCD", "med", oname, "jetTime_Energy");
+
+		Hist2D(file, "JetHT", "eAvg", oname, "rhTime_Energy");
+		Hist2D(file, "QCD", "eAvg", oname, "rhTime_Energy");
+		
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
+		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
+		ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "jetNSubclusters");
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "jetTime");
+		ProcStackHists(file, jetHT_QCD, "med", oname, "jetTime");
+
+
 	}
 	//pre + post calibration for JetHT
 	//pre + post calibraiton for DoubleEG
