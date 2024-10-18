@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Sep 11 14:43:24 2024 by ROOT version 6.30/06
+// Thu Oct 17 19:26:04 2024 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_test_ttbar.root
+// found on file: simNtuples_ttbar.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -45,17 +45,29 @@ public :
    vector<double>  *Jet_genEnergy;
    vector<double>  *Jet_genPt;
    vector<double>  *Jet_genMass;
+   Int_t           Jet_genNJet;
+   vector<double>  *Top_genPt_hadronic;
+   vector<double>  *Top_genPt_semiLep;
+   vector<double>  *Top_genPt_leptonic;
    vector<double>  *Jet_eta;
    vector<double>  *Jet_phi;
    vector<double>  *Jet_energy;
    vector<double>  *Jet_pt;
    vector<double>  *Jet_mass;
    vector<vector<unsigned int> > *Jet_RhIDs;
+   Int_t           Jet_NJet;
    vector<double>  *Track_px;
    vector<double>  *Track_py;
    vector<double>  *Track_pz;
    vector<double>  *Track_eta;
    vector<double>  *Track_phi;
+   vector<double>  *genpart_eta;
+   vector<double>  *genpart_phi;
+   vector<double>  *genpart_energy;
+   vector<double>  *genpart_pt;
+   vector<double>  *genpart_mass;
+   vector<int>     *genpart_id;
+   Int_t           genpart_ngenpart;
 
    // List of branches
    TBranch        *b_event;   //!
@@ -79,17 +91,29 @@ public :
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genPt;   //!
    TBranch        *b_Jet_genMass;   //!
+   TBranch        *b_Jet_genNJet;   //!
+   TBranch        *b_Top_genPt_hadronic;   //!
+   TBranch        *b_Top_genPt_semiLep;   //!
+   TBranch        *b_Top_genPt_leptonic;   //!
    TBranch        *b_Jet_eta;   //!
    TBranch        *b_Jet_phi;   //!
    TBranch        *b_Jet_energy;   //!
    TBranch        *b_Jet_pt;   //!
    TBranch        *b_Jet_mass;   //!
    TBranch        *b_Jet_RhIDs;   //!
+   TBranch        *b_Jet_NJet;   //!
    TBranch        *b_Track_px;   //!
    TBranch        *b_Track_py;   //!
    TBranch        *b_Track_pz;   //!
    TBranch        *b_Track_eta;   //!
    TBranch        *b_Track_phi;   //!
+   TBranch        *b_genpart_eta;   //!
+   TBranch        *b_genpart_phi;   //!
+   TBranch        *b_genpart_energy;   //!
+   TBranch        *b_genpart_pt;   //!
+   TBranch        *b_genpart_mass;   //!
+   TBranch        *b_genpart_id;   //!
+   TBranch        *b_genpart_ngenpart;   //!
 
    ReducedBaseSim(TTree *tree=0);
    virtual ~ReducedBaseSim();
@@ -110,11 +134,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_test_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_ttbar.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_test_ttbar.root");
+         f = new TFile("simNtuples_ttbar.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_test_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_ttbar.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -172,6 +196,9 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_genEnergy = 0;
    Jet_genPt = 0;
    Jet_genMass = 0;
+   Top_genPt_hadronic = 0;
+   Top_genPt_semiLep = 0;
+   Top_genPt_leptonic = 0;
    Jet_eta = 0;
    Jet_phi = 0;
    Jet_energy = 0;
@@ -183,6 +210,12 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Track_pz = 0;
    Track_eta = 0;
    Track_phi = 0;
+   genpart_eta = 0;
+   genpart_phi = 0;
+   genpart_energy = 0;
+   genpart_pt = 0;
+   genpart_mass = 0;
+   genpart_id = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -210,17 +243,29 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
    fChain->SetBranchAddress("Jet_genMass", &Jet_genMass, &b_Jet_genMass);
+   fChain->SetBranchAddress("Jet_genNJet", &Jet_genNJet, &b_Jet_genNJet);
+   fChain->SetBranchAddress("Top_genPt_hadronic", &Top_genPt_hadronic, &b_Top_genPt_hadronic);
+   fChain->SetBranchAddress("Top_genPt_semiLep", &Top_genPt_semiLep, &b_Top_genPt_semiLep);
+   fChain->SetBranchAddress("Top_genPt_leptonic", &Top_genPt_leptonic, &b_Top_genPt_leptonic);
    fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
    fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
    fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
    fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
    fChain->SetBranchAddress("Jet_mass", &Jet_mass, &b_Jet_mass);
    fChain->SetBranchAddress("Jet_RhIDs", &Jet_RhIDs, &b_Jet_RhIDs);
+   fChain->SetBranchAddress("Jet_NJet", &Jet_NJet, &b_Jet_NJet);
    fChain->SetBranchAddress("Track_px", &Track_px, &b_Track_px);
    fChain->SetBranchAddress("Track_py", &Track_py, &b_Track_py);
    fChain->SetBranchAddress("Track_pz", &Track_pz, &b_Track_pz);
    fChain->SetBranchAddress("Track_eta", &Track_eta, &b_Track_eta);
    fChain->SetBranchAddress("Track_phi", &Track_phi, &b_Track_phi);
+   fChain->SetBranchAddress("genpart_eta", &genpart_eta, &b_genpart_eta);
+   fChain->SetBranchAddress("genpart_phi", &genpart_phi, &b_genpart_phi);
+   fChain->SetBranchAddress("genpart_energy", &genpart_energy, &b_genpart_energy);
+   fChain->SetBranchAddress("genpart_pt", &genpart_pt, &b_genpart_pt);
+   fChain->SetBranchAddress("genpart_mass", &genpart_mass, &b_genpart_mass);
+   fChain->SetBranchAddress("genpart_id", &genpart_id, &b_genpart_id);
+   fChain->SetBranchAddress("genpart_ngenpart", &genpart_ngenpart, &b_genpart_ngenpart);
    Notify();
 }
 
