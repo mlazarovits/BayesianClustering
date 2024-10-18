@@ -289,6 +289,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists1D.push_back(dR_trackSubcl);	
 			_hists1D.push_back(EovP_trackSubcl);	
 			_hists1D.push_back(EovP_subclTrack_early_smalldR);	
+			_hists1D.push_back(E_spikeSel);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -556,7 +557,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(etaPhi_overlaidsubcl);
 			_hists2D.push_back(etaPhi_overlaidsubcl_BHsample);
 			_hists2D.push_back(etaPhi_overlaidsubcl_notBHsample);
-			_hists2D.push_back(dRtrack_EovPtrack_BHreq);	
+			_hists2D.push_back(EovP_dRtrack_BHreq);	
 			_hists2D.push_back(EovP_swCrossPrime_spikeSel);
 			_hists2D.push_back(EovP_E_spikeSel);
 			_hists2D.push_back(EovP_dRtrack_spikeSel);
@@ -1064,7 +1065,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH1D* EovP_trackSubcl = new TH1D("EovP_subclTrack","EovP_subclTrack",25,0,15);	
 		//239 - E/p bw subcluster and closest matching track for early times + small dRs	
 		TH1D* EovP_subclTrack_early_smalldR = new TH1D("EovP_subclTrack_early_smalldR","EovP_subclTrack_early_smalldR",25,0,15);	
-
+		//240 - E of spike SCs
+		TH1D* E_spikeSel = new TH1D("E_spikeSel","E_spikeSel;EovP;E",25,0,1000);
 
 		
 
@@ -1623,13 +1625,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//265 - notBH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
 		TH2D* etaPhi_overlaidsubcl_notBHsample = new TH2D("etaPhi_overlaidsubcl_notBHsample","etaPhi_overlaidsubcl_notBHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 		//266 - dR trackSubcl vs EovP trackSubcl for BH requirements	
-		TH2D* dRtrack_EovPtrack_BHreq = new TH2D("dRtrack_EovPtrack_BHreq","dRtrack_EovPtrack_BHreq;dRtrack;EovPtrack_BHreq",25,0,0.75,25,0.,15);	
+		TH2D* EovP_dRtrack_BHreq = new TH2D("EovP_dRtrack_BHreq","EovP_dRtrack_BHreq;EovP;dRtrack",25,0,0.1,25,0.,15);	
 		//267 - E/p vs sw+ with spike sel (dR < 0.02 && -10 <= Sc time < -2)
 		TH2D* EovP_swCrossPrime_spikeSel = new TH2D("EovP_swCrossPrime_spikeSel","EovP_swCrossPrime_spikeSel;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//268 - E/p vs E with spike sel (dR < 0.02 && -10 <= Sc time < -2)
 		TH2D* EovP_E_spikeSel = new TH2D("EovP_E_spikeSel","EovP_E_spikeSel;EovP;E",25,0.,15,25,0,1000);
 		//269 - E/p vs dR with spike sel (dR < 0.02 && -10 <= Sc time < -2)
-		TH2D* EovP_dRtrack_spikeSel = new TH2D("EovP_dRtrack_spikeSel","EovP_dRtrack_spikeSel;EovP;dRtrack",25,0.,15,25,0,0.02);
+		TH2D* EovP_dRtrack_spikeSel = new TH2D("EovP_dRtrack_spikeSel","EovP_dRtrack_spikeSel;EovP;dRtrack",25,0.,15,25,0,0.1);
 		//270 - time vs eta with spike sel
 		TH2D* timeCenter_etaCenter_spikeSel = new TH2D("timeCenter_etaCenter_spikeSel","timeCenter_etaCenter_spikeSel;timeCenter;etaCenter_spikeSel",25,-15,15,25,-1.6,1.6);
 		//271 - phi sig vs phi center with spike sel	
@@ -1655,22 +1657,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			logEweight = 2
 		};
 		
-		struct DetIDStruct {
-			DetIDStruct() {}
-			DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal, const double eta, const double phi) : i1(ni1), i2(ni2), TT(nTT), ecal(necal), deteta(eta), detphi(phi){}
-			//Int_t i1; // EB: iphi, EE: ix
-			int i1;
-		//	Int_t i2; // EB: ieta, EE: iy
-			int i2;
-			double deteta, detphi;
-			Int_t TT; // trigger tower
-			Int_t ecal; // EB, EM, EP
-		};//<<>>struct DetIDStruct
 
 	
 
-	 	std::map<UInt_t,DetIDStruct> _detIDmap;
-		std::map<pair<int, int>, UInt_t> _ietaiphiID;
 			
 		void Skim();
 
@@ -2158,6 +2147,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
 					if(bestTrackDr < 0.02){
 						_procCats[id_idx].hists1D[1][239]->Fill(bestde_dr);
+						_procCats[id_idx].hists1D[1][240]->Fill(E_k);
 						_procCats[id_idx].hists2D[1][267]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][268]->Fill(bestde_dr,E_k);
 						_procCats[id_idx].hists2D[1][270]->Fill(tc,ec);
@@ -2472,7 +2462,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[1][231]->Fill(bestde_dr,tc);	
 				_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,bestde_dr);	
 				if((tc <= -2) && (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc ))
-					_procCats[id_idx].hists2D[1][266]->Fill(bestTrackDr,bestde_dr);	
+					_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);	
 				if(tc >= -10 && tc < -2){
 					_procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
 					_procCats[id_idx].hists2D[1][272]->Fill(bestde_dr,swCP);
@@ -3290,28 +3280,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	}
 
 
-	//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
-	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
-	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
-		const std::string detIDConfigEB("info/fullinfo_v2_detids_EB.txt");
-		std::ifstream infile( detIDConfigEB, std::ios::in);
-		
-		UInt_t cmsswId, dbID;
-		pair<int, int> ietaiphi;
-		int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-		double deteta, detphi;	
-		std::string pos;
-		
-		while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
-		    //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-		    DetIDMap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi};
-		    ietaiphi = make_pair(ieta, iphi);
-		    iEtaiPhiToDetID[ietaiphi] = cmsswId;
-		    //auto idinfo = DetIDMap[cmsswId];
-		    //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-		}//while (infile >>
-	
-	}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
 
