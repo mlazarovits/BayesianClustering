@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu Oct 17 19:26:04 2024 by ROOT version 6.30/06
+// Mon Oct 21 15:03:11 2024 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
 // found on file: simNtuples_ttbar.root
 //////////////////////////////////////////////////////////
@@ -49,6 +49,7 @@ public :
    vector<double>  *Top_genPt_hadronic;
    vector<double>  *Top_genPt_semiLep;
    vector<double>  *Top_genPt_leptonic;
+   vector<int>     *Top_decayId;
    vector<double>  *Jet_eta;
    vector<double>  *Jet_phi;
    vector<double>  *Jet_energy;
@@ -95,6 +96,7 @@ public :
    TBranch        *b_Top_genPt_hadronic;   //!
    TBranch        *b_Top_genPt_semiLep;   //!
    TBranch        *b_Top_genPt_leptonic;   //!
+   TBranch        *b_Top_decayId;   //!
    TBranch        *b_Jet_eta;   //!
    TBranch        *b_Jet_phi;   //!
    TBranch        *b_Jet_energy;   //!
@@ -199,6 +201,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Top_genPt_hadronic = 0;
    Top_genPt_semiLep = 0;
    Top_genPt_leptonic = 0;
+   Top_decayId = 0;
    Jet_eta = 0;
    Jet_phi = 0;
    Jet_energy = 0;
@@ -247,6 +250,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Top_genPt_hadronic", &Top_genPt_hadronic, &b_Top_genPt_hadronic);
    fChain->SetBranchAddress("Top_genPt_semiLep", &Top_genPt_semiLep, &b_Top_genPt_semiLep);
    fChain->SetBranchAddress("Top_genPt_leptonic", &Top_genPt_leptonic, &b_Top_genPt_leptonic);
+   fChain->SetBranchAddress("Top_decayId", &Top_decayId, &b_Top_decayId);
    fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
    fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
    fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
