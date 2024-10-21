@@ -1542,13 +1542,13 @@ void HistFormatJets(string file, string file2 = ""){
 		////PV dijets for data (DEG) + MC for eAvg
 		ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
 		//recoGen and gamPV for QCD + GMSB for eAvg
-		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "recoGen");
+		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
 		//gamPV for QCD + JetHT
-		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "gamPV");
-		ProcStackHists(file, jetHT_QCD, "median", oname, "gamPV");
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "sigmaDeltaTime_gamPV");
+		ProcStackHists(file, jetHT_QCD, "median", oname, "sigmaDeltaTime_gamPV");
 		//gamPV for QCD + DEG
-		ProcStackHists(file, DEG_QCD, "median", oname, "gamPV");
-		ProcStackHists(file, DEG_QCD, "eAvg", oname, "gamPV");
+		ProcStackHists(file, DEG_QCD, "median", oname, "sigmaDeltaTime_gamPV");
+		ProcStackHists(file, DEG_QCD, "eAvg", oname, "sigmaDeltaTime_gamPV");
 		
 		
 		//PV dijets + reocGen + gamPV for QCD eAvg
@@ -1562,6 +1562,12 @@ void HistFormatJets(string file, string file2 = ""){
 
 		Hist2D(file, "JetHT", "med", oname, "rhTime_Energy");
 		Hist2D(file, "QCD", "med", oname, "rhTime_Energy");
+		
+		Hist2D(file, "JetHT", "med", oname, "rhTime_eta");
+		Hist2D(file, "QCD", "med", oname, "rhTime_eta");
+		
+		Hist2D(file, "JetHT", "med", oname, "rhPhi_eta");
+		Hist2D(file, "QCD", "med", oname, "rhPhi_eta");
 		
 		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
 		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
