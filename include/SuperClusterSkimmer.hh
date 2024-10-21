@@ -563,12 +563,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(EovP_dRtrack_spikeSel);
 			_hists2D.push_back(timeCenter_etaCenter_spikeSel);
 			_hists2D.push_back(phiSig_phiCenter_spikeSel);
-			_hists2D.push_back(EovP_swCrossPrime_early);
-			_hists2D.push_back(EovP_swCrossPrime_prompt);
-			_hists2D.push_back(EovP_swCrossPrime_late);
-			_hists2D.push_back(EovP_E_early);
-			_hists2D.push_back(EovP_E_prompt);
-			_hists2D.push_back(EovP_E_late);
+			_hists2D.push_back(EovP_swCrossPrime_early_dRMatch);
+			_hists2D.push_back(EovP_swCrossPrime_prompt_dRMatch);
+			_hists2D.push_back(EovP_swCrossPrime_late_dRMatch);
+			_hists2D.push_back(EovP_E_early_dRMatch);
+			_hists2D.push_back(EovP_E_prompt_dRMatch);
+			_hists2D.push_back(EovP_E_late_dRMatch);
 			_hists2D.push_back(EovP_timeCenter);
 
 		};
@@ -1637,17 +1637,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//271 - phi sig vs phi center with spike sel	
 		TH2D* phiSig_phiCenter_spikeSel = new TH2D("phiSig_phiCenter_spikeSel","phiSig_phiCenter_spikeSel;phiSig;phiCenter_spikeSel",25,0.01,0.09,25,-0.2,6.4);
 		//272 - E/p vs sw+ early
-		TH2D* EovP_swCrossPrime_early = new TH2D("EovP_swCrossPrime_early","EovP_swCrossPrime_early;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_early_dRMatch = new TH2D("EovP_swCrossPrime_early_dRMatch","EovP_swCrossPrime_early_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//273 - E/p vs sw+ prompt
-		TH2D* EovP_swCrossPrime_prompt = new TH2D("EovP_swCrossPrime_prompt","EovP_swCrossPrime_prompt;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_prompt_dRMatch = new TH2D("EovP_swCrossPrime_prompt_dRMatch","EovP_swCrossPrime_prompt_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//274 - E/p vs sw+ late
-		TH2D* EovP_swCrossPrime_late = new TH2D("EovP_swCrossPrime_late","EovP_swCrossPrime_late;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_late_dRMatch = new TH2D("EovP_swCrossPrime_late_dRMatch","EovP_swCrossPrime_late_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//275 - E/p vs E early 
-		TH2D* EovP_E_early = new TH2D("EovP_E_early","EovP_E_early;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_early_dRMatch = new TH2D("EovP_E_early_dRMatch","EovP_E_early_dRMatch;EovP;E",25,0.,15,25,0,1000);
 		//276 - E/p vs E prompt 
-		TH2D* EovP_E_prompt = new TH2D("EovP_E_prompt","EovP_E_prompt;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_prompt_dRMatch = new TH2D("EovP_E_prompt_dRMatch","EovP_E_prompt_dRMatch;EovP;E",25,0.,15,25,0,1000);
 		//277 - E/p vs E late 
-		TH2D* EovP_E_late = new TH2D("EovP_E_late","EovP_E_late;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_late_dRMatch = new TH2D("EovP_E_late_dRMatch","EovP_E_late_dRMatch;EovP;E",25,0.,15,25,0,1000);
 		//278 - E/p vs time center
 		TH2D* EovP_timeCenter = new TH2D("EovP_timeCenter","EovP_timeCenter;EovP;E",25,0.,15,25,-15,15);
 
@@ -2464,20 +2464,26 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if((tc <= -2) && (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc ))
 					_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);	
 				if(tc >= -10 && tc < -2){
-					_procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
-					_procCats[id_idx].hists2D[1][272]->Fill(bestde_dr,swCP);
-					_procCats[id_idx].hists2D[1][275]->Fill(bestde_dr,E_k);
+					if(bestTrackDr < 0.02){
+						_procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
+						_procCats[id_idx].hists2D[1][272]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][275]->Fill(bestde_dr,E_k);
+					}
 				}
 				if(tc >= -2 && tc < 2){
-					_procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,bestde_dr);
-					_procCats[id_idx].hists2D[1][273]->Fill(bestde_dr,swCP);
-					_procCats[id_idx].hists2D[1][276]->Fill(bestde_dr,E_k);
+					if(bestTrackDr < 0.02){
+						_procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,bestde_dr);
+						_procCats[id_idx].hists2D[1][273]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][276]->Fill(bestde_dr,E_k);
+				
+					}
 				}
 				if(tc >= 2 && tc < 10){
-					_procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,bestde_dr);
-					_procCats[id_idx].hists2D[1][274]->Fill(bestde_dr,swCP);
-					_procCats[id_idx].hists2D[1][277]->Fill(bestde_dr,E_k);
-
+					if(bestTrackDr < 0.02){
+						_procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,bestde_dr);
+						_procCats[id_idx].hists2D[1][274]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][277]->Fill(bestde_dr,E_k);
+					}
 				}
 				if(tc < 0 && p_var < 0.03 && e_var > 0.03){
 					_procCats[id_idx].hists2D[1][236]->Fill(e_var, p_var);
