@@ -107,6 +107,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
 		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
 		labelToColor["c#tau = 1000"] = TColor::GetColor("#39A2AE");
+		labelToColor["c#tau = 800"] = TColor::GetColor("#39A2AE");
 		labelToColor["notSunm"] = TColor::GetColor("#9e0059");
 		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["QCD"] =   TColor::GetColor("#f6ae2d");
@@ -125,6 +126,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["!Ctau200"] = -1;
 		labelToMark["!Ctau0p1"] = 1;
 		labelToMark["!Ctau1000"] = 2;
+		labelToMark["!Ctau800"] = 2;
 		labelToMark["!notSunm"] = 72;
 		labelToMark["!GJets"] =   73;
 		labelToMark["!QCD"] =   73;
@@ -147,6 +149,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
 		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
 		labelToColor["c#tau = 1000"] = TColor::GetColor("#39A2AE");
+		labelToColor["c#tau = 800"] = TColor::GetColor("#39A2AE");
 		labelToColor["GJets"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["QCD"] =   TColor::GetColor("#f6ae2d");
 		labelToColor["JetHT"] =   TColor::GetColor("#3d348b");
@@ -159,6 +162,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["Ctau200"] = 2;
 		labelToMark["Ctau0p1"] = 3;
 		labelToMark["Ctau1000"] = 4;
+		labelToMark["Ctau800"] = 4;
 		labelToMark["notSunm"] = 72;
 		labelToMark["GJets"] =   73;
 		labelToMark["QCD"] =   73;
@@ -220,12 +224,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->SetStats(false);
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
-cout << "title " << xtit << endl;
+cout << "title " << xtit << " canname " << canname << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
 		hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
+		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
+		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
 		
 
 		legentry = hist[i]->GetTitle();
@@ -1219,7 +1225,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 			string name;
 			vector<TH2D*> hists;
 			TH2D* hist;
-			//cout << "\ndir name: " << dir->GetName() << endl;
+			cout << "\ndir name: " << dir->GetName() << endl;
 
 			while((kkey = (TKey*)iiter())){
 				//writing stack hist - same method different procs
@@ -1234,8 +1240,8 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 					//we're in the directory with hists of one method split by procs
 					GetHists(ddir, proc, hists);
 					if(hists.size() > 0){
-						//cout << "hists got" << endl;
-						//for(auto h : hists) cout << h->GetName() << endl;
+						cout << "hists got" << endl;
+						for(auto h : hists) cout << h->GetName() << endl;
 						hist = hists[0];
 						name = hist->GetName();
 						string cvname = name;
@@ -1536,13 +1542,13 @@ void HistFormatJets(string file, string file2 = ""){
 		////PV dijets for data (DEG) + MC for eAvg
 		ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
 		//recoGen and gamPV for QCD + GMSB for eAvg
-		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
+		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "recoGen");
 		//gamPV for QCD + JetHT
-		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "geoEavg");
-		ProcStackHists(file, jetHT_QCD, "median", oname, "geoEavg");
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "gamPV");
+		ProcStackHists(file, jetHT_QCD, "median", oname, "gamPV");
 		//gamPV for QCD + DEG
-		ProcStackHists(file, DEG_QCD, "median", oname, "geoEavg");
-		ProcStackHists(file, DEG_QCD, "eAvg", oname, "geoEavg");
+		ProcStackHists(file, DEG_QCD, "median", oname, "gamPV");
+		ProcStackHists(file, DEG_QCD, "eAvg", oname, "gamPV");
 		
 		
 		//PV dijets + reocGen + gamPV for QCD eAvg
@@ -1554,12 +1560,12 @@ void HistFormatJets(string file, string file2 = ""){
 		Hist2D(file, "QCD", "eAvg", oname, "jetTime_Energy");
 		Hist2D(file, "QCD", "med", oname, "jetTime_Energy");
 
-		Hist2D(file, "JetHT", "eAvg", oname, "rhTime_Energy");
-		Hist2D(file, "QCD", "eAvg", oname, "rhTime_Energy");
+		Hist2D(file, "JetHT", "med", oname, "rhTime_Energy");
+		Hist2D(file, "QCD", "med", oname, "rhTime_Energy");
 		
 		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
 		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
-		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
 		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
 		ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "jetNSubclusters");
 		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "jetTime");
