@@ -477,6 +477,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
 					wid[wcnt] = 1;
 				else wid[wcnt] = -1;
+		
+				_topDecayId.push_back(wid[wcnt]);	
 				wcnt++; 
 			}
 			cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
@@ -497,7 +499,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			else _genTopId = 1;
 		
 			cout << "status of top idx1 " << sumEvent[top_idx1].statusHepMC() << " status top idx2 " << sumEvent[top_idx2].statusHepMC() << endl;
-			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;	
+			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;
 			if(_genTopId == 0){
 				_topPt_had.push_back(sumEvent[top_idx1].pT());
 				_topPt_had.push_back(sumEvent[top_idx2].pT());
@@ -1187,6 +1189,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
 	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
 	_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
+	_tree->Branch("Top_decayId",&_topDecayId)->SetTitle("gen top decay type (0 = had, 1 = lep, -1 = neither)");
 
 
 	//reco jets - cells clustered with FJ AK4
@@ -1245,6 +1248,7 @@ void BasicDetectorSim::_reset(){
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
+	_topDecayId.clear();
 
 	_jeta.clear();
 	_jphi.clear();

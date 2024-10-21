@@ -160,7 +160,6 @@ struct RecoParticle;
 		vector<fastjet::PseudoJet>  _jetsReco; //reco outputs from fastjet
 		vector<fastjet::PseudoJet>  _genparts; //gen particles
 		vector<int> _genpartids; //genpart ids
-		vector<int> _genpartTopWmom; //if particle came from top -> W decay (1 = yes, 0 = no)
 		int _njets, _njetsReco, _ngenparts; //# of objects
 		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
 		double _Rparam;
@@ -202,6 +201,7 @@ struct RecoParticle;
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
 		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
+		vector<int> _topDecayId;
 		//gen particle info (even intermediate particles)
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass;
 		//reco jets
