@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Oct 21 15:03:11 2024 by ROOT version 6.30/06
+// Mon Oct 21 15:32:10 2024 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
 // found on file: simNtuples_ttbar.root
 //////////////////////////////////////////////////////////
@@ -68,6 +68,7 @@ public :
    vector<double>  *genpart_pt;
    vector<double>  *genpart_mass;
    vector<int>     *genpart_id;
+   vector<double>  *genpart_momIdx;
    Int_t           genpart_ngenpart;
 
    // List of branches
@@ -115,6 +116,7 @@ public :
    TBranch        *b_genpart_pt;   //!
    TBranch        *b_genpart_mass;   //!
    TBranch        *b_genpart_id;   //!
+   TBranch        *b_genpart_momIdx;   //!
    TBranch        *b_genpart_ngenpart;   //!
 
    ReducedBaseSim(TTree *tree=0);
@@ -219,6 +221,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    genpart_pt = 0;
    genpart_mass = 0;
    genpart_id = 0;
+   genpart_momIdx = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
@@ -269,6 +272,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("genpart_pt", &genpart_pt, &b_genpart_pt);
    fChain->SetBranchAddress("genpart_mass", &genpart_mass, &b_genpart_mass);
    fChain->SetBranchAddress("genpart_id", &genpart_id, &b_genpart_id);
+   fChain->SetBranchAddress("genpart_momIdx", &genpart_momIdx, &b_genpart_momIdx);
    fChain->SetBranchAddress("genpart_ngenpart", &genpart_ngenpart, &b_genpart_ngenpart);
    Notify();
 }
