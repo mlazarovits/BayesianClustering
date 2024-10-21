@@ -83,7 +83,45 @@ class BaseSkimmer{
 		string _cms_label, _oname;
 		double _gev;
 		double _c = 29.9792458; // speed of light in cm/ns
+		struct DetIDStruct {
+		        DetIDStruct() {}
+		        DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal, const double eta, const double phi) : i1(ni1), i2(ni2), TT(nTT), ecal(necal), deteta(eta), detphi(phi){}
+		        //Int_t i1; // EB: iphi, EE: ix
+		        int i1;
+		//      Int_t i2; // EB: ieta, EE: iy
+		        int i2;
+		        double deteta, detphi;
+		        Int_t TT; // trigger tower
+		        Int_t ecal; // EB, EM, EP
+		};//<<>>struct DetIDStruct
+	
+		std::map<UInt_t,DetIDStruct> _detIDmap;		
+		std::map<pair<int, int>, UInt_t> _ietaiphiID;	
 		
+		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
+		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh  
+		void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
+		        const std::string detIDConfigEB("info/fullinfo_v2_detids_EB.txt");
+		        std::ifstream infile( detIDConfigEB, std::ios::in);
+		
+		        UInt_t cmsswId, dbID;
+		        pair<int, int> ietaiphi;
+		        int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
+		        double deteta, detphi;
+		        std::string pos;
+		
+		        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
+		            //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
+		            DetIDMap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi};
+		            ietaiphi = make_pair(ieta, iphi);
+		            iEtaiPhiToDetID[ietaiphi] = cmsswId;
+		            //auto idinfo = DetIDMap[cmsswId];
+		            //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
+		        }//while (infile >>
+		
+		}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
+
+
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
