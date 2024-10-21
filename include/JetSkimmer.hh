@@ -30,7 +30,8 @@ class JetSkimmer : public BaseSkimmer{
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time		
-
+			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			
 			_prod = new JetProducer(file);
 			_prod->SetIsoCut();
 	
@@ -156,6 +157,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_gamPV);
 			_timeHists2D.push_back(jetTime_Energy);
 			_timeHists2D.push_back(rhTime_Energy);
+			_timeHists2D.push_back(rhTime_eta);
+			_timeHists2D.push_back(rhPhi_eta);
+			_timeHists2D.push_back(rhEovP_dRtrack);
 
 
 
@@ -463,10 +467,19 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins[0],100,3,8);
 		
 		//17 - jet time vs jet E
-		TH2D* jetTime_Energy = new TH2D("jetTime_Energy","jetTime_Energy",50,-20,20,50,0,500);
+		TH2D* jetTime_Energy = new TH2D("jetTime_Energy","jetTime_Energy;jetTime;Energy",50,-20,20,50,0,500);
 		//18 - rh time vs rh E
-		TH2D* rhTime_Energy = new TH2D("rhTime_Energy","rhTime_Energy",50,-20,20,50,0,500);
-
+		TH2D* rhTime_Energy = new TH2D("rhTime_Energy","rhTime_Energy;rhTime;Energy",50,-20,20,50,0,500);
+		//19 - rh time v eta, time + E cuts
+		TH2D* rhTime_eta = new TH2D("rhTime_eta","rhTime_eta;rhTime;eta",50,-20,20,50,-1.5,1.5);
+		//20 - rh eta vs phi, time + E cuts
+		TH2D* rhPhi_eta = new TH2D("rhPhi_eta","rhPhi_eta;rhPhi;eta",50,-3.4,3.4,50,-1.5,1.5);
+		//21 - E/p vs drTrack, time + E cuts	
+		TH2D* rhEovP_dRtrack = new TH2D("rhEovP_dRtrack","rhEovP_dRtrack;rhEovP;dRtrack",50,0,15,50,0,0.09);
+		
+		
+		
+		
 		vector<timeRecoCat> trCats;
 		virtual void MakeTimeRecoCatHists(){
 			//don't want to separate lead/not lead histograms
@@ -586,18 +599,36 @@ class JetSkimmer : public BaseSkimmer{
 					double Erh1, Erh2;
 					Erh1 = 0;
 					Erh2 = 0;	
+					double bestp, bestdr;
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						Erh1 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
-						if(tr_idx == 0) trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+						if(tr_idx == 0){
+							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+							if(rhs[r].E() > 50 && rhs[r].t() < -2){
+								TrackMatched(rhs[r], bestdr, bestp);
+								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
+								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
+							}
+						}
 					}
 					rhs.clear();
 					rhs = hardjets.second.GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						Erh2 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
-						if(tr_idx == 0) trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+						if(tr_idx == 0){
+							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+							if(rhs[r].E() > 50 && rhs[r].t() < -2){
+								TrackMatched(rhs[r], bestdr, bestp);
+								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
+								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
+							}
+					
+						}
 					}
 	
 					//fill deltaT_jets - 1
@@ -1696,6 +1727,52 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		}
+
+
+		//void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
+		void TrackMatched(JetPoint& rh, double& bestdr, double& bestp){
+                        //do track matching
+                        int nIDs = _base->ECALTrackDetID_detId->size();
+                        double bestTrackDr = 999;
+                        //double maxTrackDr;
+                        double dr, teta, tphi, de;
+                        unsigned int detid;
+
+                        double dphi = -999;
+                        //double bestde_dr;
+                        int trackidx;
+                        double ec = rh.eta();
+                        double pc = rh.phi();
+                        //because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
+                        //there are multiple detIDs that match to one track
+                        //similar to what's done in BaseProducer to get rhs in SC (matched via detid)
+                        for(int id = 0; id < nIDs; id++){
+                                //use TrackDetId to see where in ECAL track was propagated to
+                                detid = _base->ECALTrackDetID_detId->at(id);
+                                //check if detid in map
+                                if(_detIDmap.count(detid) == 0) continue;
+                                tphi = _detIDmap[detid].detphi;
+                                teta = _detIDmap[detid].deteta;
+
+                                double tphi_02pi = tphi;
+                                if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
+                                else if(tphi_02pi > 2*acos(-1)) tphi_02pi -= 2*acos(-1);
+                                else tphi_02pi = tphi;
+
+                                dphi = fabs(pc - tphi_02pi);
+                                dphi = acos(cos(dphi));
+dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
+                                //get track info from detid
+                                trackidx = _base->ECALTrackDetID_trackIndex->at(id);
+                                //E = p for photons
+                                if(dr < bestTrackDr){
+                                        bestTrackDr = dr;
+                                        bestp = _base->ECALTrack_p->at(trackidx);
+                                }
+                        }
+                        bestdr = bestTrackDr;
+                }
+
 
 
 		private:
