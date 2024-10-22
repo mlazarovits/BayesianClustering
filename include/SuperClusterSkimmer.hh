@@ -1637,17 +1637,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//271 - phi sig vs phi center with spike sel	
 		TH2D* phiSig_phiCenter_spikeSel = new TH2D("phiSig_phiCenter_spikeSel","phiSig_phiCenter_spikeSel;phiSig;phiCenter_spikeSel",25,0.01,0.09,25,-0.2,6.4);
 		//272 - E/p vs sw+ early
-		TH2D* EovP_swCrossPrime_early_dRMatch = new TH2D("EovP_swCrossPrime_early_dRMatch","EovP_swCrossPrime_early_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_early_dRMatch = new TH2D("EovP_swCrossPrime_early_dRMatch","EovP_swCrossPrime_early_dRMatch;EovP_early;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//273 - E/p vs sw+ prompt
-		TH2D* EovP_swCrossPrime_prompt_dRMatch = new TH2D("EovP_swCrossPrime_prompt_dRMatch","EovP_swCrossPrime_prompt_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_prompt_dRMatch = new TH2D("EovP_swCrossPrime_prompt_dRMatch","EovP_swCrossPrime_prompt_dRMatch;EovP_prompt;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//274 - E/p vs sw+ late
-		TH2D* EovP_swCrossPrime_late_dRMatch = new TH2D("EovP_swCrossPrime_late_dRMatch","EovP_swCrossPrime_late_dRMatch;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		TH2D* EovP_swCrossPrime_late_dRMatch = new TH2D("EovP_swCrossPrime_late_dRMatch","EovP_swCrossPrime_late_dRMatch;EovP_late;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//275 - E/p vs E early 
-		TH2D* EovP_E_early_dRMatch = new TH2D("EovP_E_early_dRMatch","EovP_E_early_dRMatch;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_early_dRMatch = new TH2D("EovP_E_early_dRMatch","EovP_E_early_dRMatch;EovP_early;E",25,0.,15,25,0,1000);
 		//276 - E/p vs E prompt 
-		TH2D* EovP_E_prompt_dRMatch = new TH2D("EovP_E_prompt_dRMatch","EovP_E_prompt_dRMatch;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_prompt_dRMatch = new TH2D("EovP_E_prompt_dRMatch","EovP_E_prompt_dRMatch;EovP_prompt;E",25,0.,15,25,0,1000);
 		//277 - E/p vs E late 
-		TH2D* EovP_E_late_dRMatch = new TH2D("EovP_E_late_dRMatch","EovP_E_late_dRMatch;EovP;E",25,0.,15,25,0,1000);
+		TH2D* EovP_E_late_dRMatch = new TH2D("EovP_E_late_dRMatch","EovP_E_late_dRMatch;EovP_late;E",25,0.,15,25,0,1000);
 		//278 - E/p vs time center
 		TH2D* EovP_timeCenter = new TH2D("EovP_timeCenter","EovP_timeCenter;EovP;E",25,0.,15,25,-15,15);
 
