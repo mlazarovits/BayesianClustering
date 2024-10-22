@@ -280,27 +280,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 			//debug jet pt reco - skip charged particles s.t. pos vec == mom vec
 			//if(particle.charge() != 0) continue;
-	
-			//create new particle for reco one
-			RecoParticle rp(particle); 
-			//calculate new pt (does full pvec but same pz)
-			CalcTrajectory(rp);
-			//check if in cal cell crack
-			if(_in_cell_crack(rp))
-				continue;
-			//if track curls up/exceeds zmax
-			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
-
-	
-			//fill ecal cell with reco particle
-			FillCal(rp);
-			
-			
-			
 
 			//get top from this particle's history (if it exists)
-			if(rp.Particle.mother1() > 0 && rp.Particle.mother2() == 0){
-				
+			if(particle.mother1() > 0 && particle.mother2() == 0){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
 				int momidx = 999;
@@ -321,6 +303,28 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					//need to see if particle came from W - check if W is in mother chain (if top in mother chain, assuming top -> W -> this particle)
 				}
 			}
+
+			//dont reconstruct muons - they would only mildly interact with an EM cal anyway
+			if(particle.idAbs() == 13)
+				continue;
+		
+	
+			//create new particle for reco one
+			RecoParticle rp(particle); 
+			//calculate new pt (does full pvec but same pz)
+			CalcTrajectory(rp);
+			//check if in cal cell crack
+			if(_in_cell_crack(rp))
+				continue;
+			//if track curls up/exceeds zmax
+			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
+			
+			//add gen particle to be clustered for gen jet
+			//don't include electrons in gen jet clustering (or save to reco particles), muons are skipped above bc they are not showered
+			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
+
+			//fill ecal cell with reco particle
+			FillCal(rp);
 	
 			//save tracks (gen information of momentum propagated to detector)
 			//don't save if particle doesn't make it to detector face (with if statement above)
@@ -333,16 +337,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			_get_etaphi_idx(rp.Position.eta(), rp.Position.phi(), tieta, tiphi);
 			//cout << "gen input px " << rp.Momentum.px() <<  " py " << rp.Momentum.py() << " pz " << rp.Momentum.pz() << " energy " << rp.Momentum.e() << " eta " << rp.Position.eta() << " tieta " << tieta << " phi " << rp.Position.phi() << " tiphi " << tiphi << " q " << rp.Particle.charge() << " pt " << rp.Momentum.pt() << endl; 
       			
-					
-	
-			//don't include leptons in reco jet clustering (or save to reco particles)
-			if(rp.Particle.idAbs() == 13 || rp.Particle.idAbs() == 11){
-				continue;
-			}
-
-			fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
-			//fjinputs.push_back( fastjet::PseudoJet( sumEvent[p].px(),
-      			//  sumEvent[p].py(), sumEvent[p].pz(), sumEvent[p].e() ) );
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 			
@@ -1077,6 +1071,7 @@ void BasicDetectorSim::FillGenParticles(){
 
 void BasicDetectorSim::FillGenJets(){
 	//vector<fastjet::PseudoJet> consts;
+	_njets = _jets.size();
 	for(auto jet : _jets){
 		//consts = jet.constituents();
 		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
@@ -1091,6 +1086,7 @@ void BasicDetectorSim::FillGenJets(){
 }
 
 void BasicDetectorSim::FillRecoJets(){
+	_njetsReco = _jetsReco.size();
 	int njets = 0;
 	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jetsReco){
