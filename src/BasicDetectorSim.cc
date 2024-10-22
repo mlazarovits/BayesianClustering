@@ -370,8 +370,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//fill reco jets after cells have been reconstructed
 		FillRecoJets();
 
+
 		
 		//get top decay gen info
+		map<int, int> WevtIdx_treeIdx;
 		cout << "top_idxs size " << top_idxs.size() << endl;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
 			vector<int> kids_id;
@@ -404,11 +406,15 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				CalcTrajectory(genpart);
 				_genparts.push_back(fastjet::PseudoJet( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() ));
 				_genpartids.push_back(genpart.Particle.id());
+				cout << "W idx in ntuple " << _genpartids.size() << endl;
+				WevtIdx_treeIdx[Widx] = (int)_genpartids.size()-1;
+				
+				_genpartMomIdx.push_back(-1); //not saving W mother (ie top) info
 				
 				wkids_idx = sumEvent[Widx].daughterList();
 
 			}
-			//look for W in mother chain
+			//look for b in mother chain
 			vector<int>::iterator momit_b = find(kids_id.begin(),kids_id.end(),5);
 			int bidx = -999;
 			if(momit_b != kids_id.end()){
@@ -426,6 +432,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				CalcTrajectory(genpart);
 				_genparts.push_back(fastjet::PseudoJet( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() ));
 				_genpartids.push_back(genpart.Particle.id());
+				_genpartMomIdx.push_back(-1); //not saving b mother (ie top) info
 					
 
 			}
@@ -461,11 +468,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				CalcTrajectory(genpart1);
 				_genparts.push_back(fastjet::PseudoJet( genpart1.Momentum.px(), genpart1.Momentum.py(), genpart1.Momentum.pz(), genpart1.Momentum.e() ));
 				_genpartids.push_back(genpart1.Particle.id());
+				_genpartMomIdx.push_back(WevtIdx_treeIdx[*w]);
 				
 				RecoParticle genpart2(sumEvent[wkids_idx[1]]);
 				CalcTrajectory(genpart2);
 				_genparts.push_back(fastjet::PseudoJet( genpart2.Momentum.px(), genpart2.Momentum.py(), genpart2.Momentum.pz(), genpart2.Momentum.e() ));
 				_genpartids.push_back(genpart2.Particle.id());
+				_genpartMomIdx.push_back(WevtIdx_treeIdx[*w]);
 				
 			
 				//if both W decay products are had -> w1 = 0
@@ -477,6 +486,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
 					wid[wcnt] = 1;
 				else wid[wcnt] = -1;
+		
+				_topDecayId.push_back(wid[wcnt]);	
 				wcnt++; 
 			}
 			cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
@@ -497,7 +508,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			else _genTopId = 1;
 		
 			cout << "status of top idx1 " << sumEvent[top_idx1].statusHepMC() << " status top idx2 " << sumEvent[top_idx2].statusHepMC() << endl;
-			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;	
+			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;
 			if(_genTopId == 0){
 				_topPt_had.push_back(sumEvent[top_idx1].pT());
 				_topPt_had.push_back(sumEvent[top_idx2].pT());
@@ -1187,6 +1198,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
 	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
 	_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
+	_tree->Branch("Top_decayId",&_topDecayId)->SetTitle("gen top decay type (0 = had, 1 = lep, -1 = neither)");
 
 
 	//reco jets - cells clustered with FJ AK4
@@ -1211,6 +1223,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("genpart_pt",&_genpartpt)->SetTitle("genpart pt");
 	_tree->Branch("genpart_mass",&_genpartmass)->SetTitle("genpart mass");
 	_tree->Branch("genpart_id",&_genpartids)->SetTitle("genpart pdg id");
+	_tree->Branch("genpart_momIdx",&_genpartMomIdx)->SetTitle("genpart momIdx");
 	_tree->Branch("genpart_ngenpart",&_ngenparts)->SetTitle("number of genparts");
 }
 
@@ -1245,6 +1258,7 @@ void BasicDetectorSim::_reset(){
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
+	_topDecayId.clear();
 
 	_jeta.clear();
 	_jphi.clear();
@@ -1254,6 +1268,7 @@ void BasicDetectorSim::_reset(){
 
 	_genparts.clear();
 	_genpartids.clear();
+	_genpartMomIdx.clear();
 	_genparteta.clear();
 	_genpartphi.clear();
 	_genpartenergy.clear();

@@ -1541,6 +1541,10 @@ void HistFormatJets(string file, string file2 = ""){
 		ProcStackHists(file, jetHT_QCD, "eAvg", oname,"geoAvgEecal");
 		////PV dijets for data (DEG) + MC for eAvg
 		ProcStackHists(file, DEG_QCD, "eAvg", oname,"geoAvgEecal");
+		///PV dijets for data (JetHT) + MC for mmAvg
+		ProcStackHists(file, jetHT_QCD, "mmAvg", oname,"geoAvgEecal");
+		///PV dijets for data (DEG) + MC for mmAvg
+		ProcStackHists(file, DEG_QCD, "mmAvg", oname,"geoAvgEecal");
 		//recoGen and gamPV for QCD + GMSB for eAvg
 		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
 		//gamPV for QCD + JetHT
