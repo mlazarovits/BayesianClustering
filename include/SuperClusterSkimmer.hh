@@ -570,6 +570,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(EovP_E_prompt_dRMatch);
 			_hists2D.push_back(EovP_E_late_dRMatch);
 			_hists2D.push_back(EovP_timeCenter);
+			_hists2D.push_back(EovP_swCrossPrime_early_dRMatch_zoomOut);
+			_hists2D.push_back(EovP_swCrossPrime_prompt_dRMatch_zoomOut);
+			_hists2D.push_back(EovP_swCrossPrime_late_dRMatch_zoomOut);
+			_hists2D.push_back(EovP_swCrossPrime_timeNeg10toNeg2_dRMatch);
+			_hists2D.push_back(EovP_swCrossPrime_timeLessNeg10_dRMatch);
 
 		};
 	
@@ -1650,6 +1655,16 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* EovP_E_late_dRMatch = new TH2D("EovP_E_late_dRMatch","EovP_E_late_dRMatch;EovP_late;E",25,0.,15,25,0,1000);
 		//278 - E/p vs time center
 		TH2D* EovP_timeCenter = new TH2D("EovP_timeCenter","EovP_timeCenter;EovP;time",25,0.,15,25,-15,15);
+		//279 - E/p vs sw+ early
+		TH2D* EovP_swCrossPrime_early_dRMatch_zoomOut = new TH2D("EovP_swCrossPrime_early_dRMatch_zoomOut","EovP_swCrossPrime_early_dRMatch_zoomOut;EovP_early;swCrossPrime",25,0.,15,25,-0.05,2.);
+		//280 - E/p vs sw+ prompt
+		TH2D* EovP_swCrossPrime_prompt_dRMatch_zoomOut = new TH2D("EovP_swCrossPrime_prompt_dRMatch_zoomOut","EovP_swCrossPrime_prompt_dRMatch_zoomOut;EovP_prompt;swCrossPrime",25,0.,15,25,-0.05,2.);
+		//281 - E/p vs sw+ late
+		TH2D* EovP_swCrossPrime_late_dRMatch_zoomOut = new TH2D("EovP_swCrossPrime_late_dRMatch_zoomOut","EovP_swCrossPrime_late_dRMatch_zoomOut;EovP_late;swCrossPrime",25,0.,15,25,-0.05,2.);
+		//2EovP_swCrossPrime_late_dRMatch_zoomOut82 - E/p vs sw+, -10 < time < -2
+		TH2D* EovP_swCrossPrime_timeNeg10toNeg2_dRMatch = new TH2D("EovP_swCrossPrime_timeNeg10toNeg2_dRMatch","EovP_swCrossPrime_timeNeg10toNeg2_dRMatch;EovP_timeNeg10toNeg2_dRMatch;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		//283 - E/p vs sw+, time < -10
+		TH2D* EovP_swCrossPrime_timeLessNeg10_dRMatch = new TH2D("EovP_swCrossPrime_timeLessNeg10_dRMatch","EovP_swCrossPrime_timeLessNeg10_dRMatch;EovP_timeLessNeg10_dRMatch;swCrossPrime",25,0.,15,25,-0.05,0.4);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2142,7 +2157,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 				_procCats[id_idx].hists1D[1][238]->Fill(bestde_dr);
 				//spike selection
-				if(-10 >= tc && tc < -2){
+				if(-10 <= tc && tc < -5){
 					if(bestTrackDr < 0.088)
 						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
 					if(bestTrackDr < 0.02){
@@ -2462,29 +2477,36 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[1][231]->Fill(bestde_dr,tc);	
 				_procCats[id_idx].hists2D[1][232]->Fill(bestTrackDr,bestde_dr);	
 				if((tc <= -2) && (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc ))
-					_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);	
-				if(tc >= -10 && tc < -2){
-					if(bestTrackDr < 0.02){
+					_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);
+				if(bestTrackDr < 0.02){
+					if(tc >= -10 && tc < -5){
 						_procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
 						_procCats[id_idx].hists2D[1][272]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][275]->Fill(bestde_dr,E_k);
+						_procCats[id_idx].hists2D[1][279]->Fill(bestde_dr,swCP);
+				
 					}
-				}
-				if(tc >= -2 && tc < 2){
-					if(bestTrackDr < 0.02){
+					if(tc >= -5 && tc < 2){
 						_procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,bestde_dr);
 						_procCats[id_idx].hists2D[1][273]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][276]->Fill(bestde_dr,E_k);
-				
+						_procCats[id_idx].hists2D[1][280]->Fill(bestde_dr,swCP);
 					}
-				}
-				if(tc >= 2 && tc < 10){
-					if(bestTrackDr < 0.02){
+					if(tc >= 2 && tc < 10){
 						_procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,bestde_dr);
 						_procCats[id_idx].hists2D[1][274]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][277]->Fill(bestde_dr,E_k);
+						_procCats[id_idx].hists2D[1][281]->Fill(bestde_dr,swCP);
 					}
+					if(tc >= -10 && tc < -2){
+						_procCats[id_idx].hists2D[1][282]->Fill(bestde_dr,swCP);
+					}
+					if(tc <= -10){
+						_procCats[id_idx].hists2D[1][283]->Fill(bestde_dr,swCP);
+					}
+				
 				}
+				
 				if(tc < 0 && p_var < 0.03 && e_var > 0.03){
 					_procCats[id_idx].hists2D[1][236]->Fill(e_var, p_var);
 					_procCats[id_idx].hists2D[1][237]->Fill(p_var, pc);
