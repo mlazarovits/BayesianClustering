@@ -142,7 +142,7 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	//wraparound
 	//_phi = acos(cos(_phi));
 	_mass = mass();
-cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << sqrt(_kt2) << " mass " << _mass << " n pts " << rhs.size() << endl;
+//cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << sqrt(_kt2) << " mass " << _mass << " n pts " << rhs.size() << endl;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
@@ -255,6 +255,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		}
 		_mu.SetEntry(entry/norm,i,0);
 	}
+	if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
 	
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
@@ -271,10 +272,11 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
 	
-		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
+		pt = _rhs[i].E()/cosh(_rhs[i].eta()); //consistent with mass = 0
 		_px += pt*cos(_rhs[i].phi());
 		_py += pt*sin(_rhs[i].phi());
 		_pz += pt*sinh(_rhs[i].eta());
+		//cout << "total pts r " << i << " pt " << pt << " E " << _rhs[i].E() << " px " << pt*cos(_rhs[i].phi()) << " py " << pt*sin(_rhs[i].phi()) << " pz " << pt*sinh(_rhs[i].eta()) << " eta " << _rhs[i].eta() << " phi " << _rhs[i].phi() << endl;
 		
 		_E += _rhs[i].E();
 
@@ -291,14 +293,29 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 		//set covariance 
 		//weighted sum of rechit covariances
+		double diffi, diffj;
 		for(int i = 0; i < 3; i++){
 			for(int j = 0; j < 3; j++){
-					_cov.SetEntry((_cov.at(i,j) + w*(rh.at(i) - _mu.at(i,0))*(rh.at(j) - _mu.at(j,0))),i,j); 
+				//phi wraparound
+				diffi = rh.at(i) - _mu.at(i,0);
+				diffj = rh.at(j) - _mu.at(j,0);
+				if(i == 1){
+					if(diffi > 4*atan(1)) diffi -= 8*atan(1);
 				}
+				if(j == 1){
+					if(diffj > 4*atan(1)) diffj -= 8*atan(1);
+				}
+				_cov.SetEntry((_cov.at(i,j) + w*(diffi*diffj)),i,j); 
 			}
-		}	
-		_cov.mult(_cov,1/_pi);
-	//set subcluster (ie constituent) parameters + 4vectors	
+		}
+	}	
+	_cov.mult(_cov,1/_pi); //see 10/9/24 notes for math
+	//set subcluster (ie constituent) parameters + 4vectors
+	double pxt = 0;
+	double pyt = 0;
+	double pzt = 0;
+	double Et = 0;
+	double mt = 0;	
 	for(int k = 0; k < nsubcl; k++){
 		params = model->GetPriorParameters(k);
 		Ek = norms[k]/gev;
@@ -307,22 +324,29 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		double pxk = 0;
 		double pyk = 0;
 		double pzk = 0;
-		double wnorm = 0;
 		for(int r = 0; r < _nRHs; r++){
 			Jet rh(_rhs[r], _vtx);
 			pxk += r_nk.at(r,k)*rh.px();	
 			pyk += r_nk.at(r,k)*rh.py();	
 			pzk += r_nk.at(r,k)*rh.pz();	
-			wnorm += r_nk.at(r,k);
+			//cout << "subcl pts k " << k << " r " << r << " pt " << rh.pt() << " E " << rh.E() << " px " << rh.px() << " py " << rh.py() << " pz " << rh.pz() << " eta " << rh.eta() << " phi " << rh.phi() << endl;
 		}
-		pxk /= wnorm;
-		pyk /= wnorm;
-		pzk /= wnorm;
 
 		subcl.SetP(pxk, pyk, pzk);
-
+	//cout << "subcluster k " << k << " px " << subcl.px() << " py " << subcl.py() << " pz " << subcl.pz() << " E " << subcl.E() << " m2 " << subcl.m2() << " mass " << subcl.mass() << endl;
+		pxt += pxk;
+		pyt += pyk;
+		pzt += pzk;
+		Et += Ek;
 		_constituents.push_back(subcl);
 	}
+	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
+	//set momentum from subclusters
+	_px = pxt;
+	_py = pyt;
+	_pz = pzt;
+
+
 	_kt2 = _px*_px + _py*_py;
 
 	_idx = 999;
@@ -331,7 +355,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 
 	_update_mom();
-
+//cout << "jet from GMM px " << _px << " py " << _py << " pz " << _pz << " m2 " << m2() << " mass " << mass() << " E " << _E << endl;
 
 }
 
