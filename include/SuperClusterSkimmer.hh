@@ -1649,7 +1649,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//277 - E/p vs E late 
 		TH2D* EovP_E_late_dRMatch = new TH2D("EovP_E_late_dRMatch","EovP_E_late_dRMatch;EovP_late;E",25,0.,15,25,0,1000);
 		//278 - E/p vs time center
-		TH2D* EovP_timeCenter = new TH2D("EovP_timeCenter","EovP_timeCenter;EovP;E",25,0.,15,25,-15,15);
+		TH2D* EovP_timeCenter = new TH2D("EovP_timeCenter","EovP_timeCenter;EovP;time",25,0.,15,25,-15,15);
 
 		enum weightScheme{
 			noWeight = 0,
