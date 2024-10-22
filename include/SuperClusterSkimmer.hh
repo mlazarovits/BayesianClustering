@@ -1625,7 +1625,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//265 - notBH eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
 		TH2D* etaPhi_overlaidsubcl_notBHsample = new TH2D("etaPhi_overlaidsubcl_notBHsample","etaPhi_overlaidsubcl_notBHsample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 		//266 - dR trackSubcl vs EovP trackSubcl for BH requirements	
-		TH2D* EovP_dRtrack_BHreq = new TH2D("EovP_dRtrack_BHreq","EovP_dRtrack_BHreq;EovP;dRtrack",25,0,0.1,25,0.,15);	
+		TH2D* EovP_dRtrack_BHreq = new TH2D("EovP_dRtrack_BHreq","EovP_dRtrack_BHreq;EovP;dRtrack",25,0,15,25,0.,0.1);	
 		//267 - E/p vs sw+ with spike sel (dR < 0.02 && -10 <= Sc time < -2)
 		TH2D* EovP_swCrossPrime_spikeSel = new TH2D("EovP_swCrossPrime_spikeSel","EovP_swCrossPrime_spikeSel;EovP;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//268 - E/p vs E with spike sel (dR < 0.02 && -10 <= Sc time < -2)
