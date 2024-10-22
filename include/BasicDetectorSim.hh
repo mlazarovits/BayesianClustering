@@ -204,6 +204,7 @@ struct RecoParticle;
 		vector<int> _topDecayId;
 		//gen particle info (even intermediate particles)
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass;
+		vector<double> _genpartMomIdx;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		vector<vector<unsigned int>> _jrhids;
