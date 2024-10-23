@@ -422,7 +422,8 @@ class BHCJetSkimmer{
 					if(p == 0)cout << "widx " << widx << endl;
 					if(widx != -1) _procCats[p].hists2D[0][18]->Fill(dr,_base->genpart_energy->at(widx));
 					//fill gen match hists
-					_procCats[p].hists1D[0][69]->Fill(id);
+					if(fabs(id) != 13 && fabs(id) != 11 && fabs(id) != 15) _procCats[p].hists1D[0][69]->Fill(fabs(id));
+					else _procCats[p].hists1D[0][69]->Fill(0);
 					//b's
 					if(fabs(id) == 5){
 						_procCats[p].hists1D[0][57]->Fill(dr);
@@ -989,9 +990,9 @@ class BHCJetSkimmer{
 		//68 - bhc dr match to gen l's  
 		TH1D* BHCJet_genOvRecoE_lep = new TH1D("BHCJet_genOvRecoE_lep","BHCJet_genOvRecoE_lep",25,0,5.);
 		//69 - types of quarks in reco jets - d, u, s, c, b (sign agnostic)
-		TH1D* qType_recoJet = new TH1D("qType_recoJet","qType_recoJet",5,1,6);
+		TH1D* qType_recoJet = new TH1D("qType_recoJet","qType_recoJet",6,0,6);
 		//70 - types of quarks in BHC jets - d, u, s, c, b (sign agnostic)
-		TH1D* qType_BHCJet = new TH1D("qType_BHCJet","qType_BHCJet",5,1,6);
+		TH1D* qType_BHCJet = new TH1D("qType_BHCJet","qType_BHCJet",6,0,6);
 		//71 - n reco jets, tt fully had
 		TH1D* reco_nJets_fullHad = new TH1D("reco_nJets_fullHad","reco_nJets_fullHad",10,0,10);
 		//72 - n reco jets, tt semi lep
@@ -1141,6 +1142,7 @@ class BHCJetSkimmer{
 			}
 		}
 		vector<int> best_idxs; //one per jet
+		//go back through jets can check to see if there are overlapping matches
 		for(int j = 0; j < jets.size(); j++){
 			for(int g = 0; g < nGen; g++){
 				cout << "jet " << j << " and gen particle " << g << " have dr " << drs[j][g] << endl;
@@ -1152,18 +1154,19 @@ class BHCJetSkimmer{
 			best_idxs.push_back(genidx);
 			thisgenidx = genidx;
 			thisJet = j;
-			while(count(best_idxs.begin(), best_idxs.end(), genidx) > 1){
+			//if other jets have the same genidx matched, go through and disambiguate until there is only 1 instance of genidx
+			while(count(best_idxs.begin(), best_idxs.end(), genidx) > 1 && genidx != -1){
 				otherJet = find(best_idxs.begin(), best_idxs.end(), genidx) - best_idxs.begin();
 				//this happens if the "otherJet" to be analyzed comes before thisjet (ie it gets found first)
-				//skip otherJet (ie thisJet) in this case
+				//skip otherJet (ie thisJet) in this case and look at all other jets
 				if(otherJet == thisJet){
 					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), genidx) - best_idxs.begin();
 				}
 				for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
 				cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
-				//if other dr is less than this dr
+				//if other dr is less than current mindr
 				if(drs[otherJet][genidx] < mindr){
-					//set this dr to 999 (is invalid), find new min, reset genidx to this index
+					//set this dr to 999 (is invalid), find new min for this jet, reset genidx to this index
 					drs[thisJet][genidx] = 999;
 					mindr = *min_element(drs[thisJet].begin(), drs[thisJet].end());
 					if(mindr == 999) genidx = -1;
@@ -1172,6 +1175,7 @@ class BHCJetSkimmer{
 					cout << " reset gen match of this jet " << thisJet << " to particle " << genidx << " with dr " << mindr << endl;
 		
 				}
+				//if this dr is less than (or equal to) current mindr
 				else{
 					//set other dr to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
 					drs[otherJet][genidx] = 999;
