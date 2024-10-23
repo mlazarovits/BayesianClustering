@@ -414,14 +414,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(momit_b != kids_id.end()){
 				//get b index
 				bidx = kids_idx[momit_b - kids_id.begin()];
-				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "kid idx " << Widx << " id " << kids_id[momit_w - kids_id.begin()] << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
-				while(sumEvent[bidx].daughter1() == sumEvent[bidx].daughter2() || fabs(sumEvent[sumEvent[bidx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[bidx].daughter2()].id()) == 5){
-					cout << "getting daughters of copy for idx " << Widx << endl;
+				//make sure b doesnt decay into a copy of itself, or the next decay isn't just a radiation 
+				cout << "kid idx " << bidx << " id " << kids_id[momit_b - kids_id.begin()] << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
+				//b's can fragment and that daughter could have copy daughters so make sure that any copies are still b's
+				while(sumEvent[bidx].daughter1() == sumEvent[bidx].daughter2() && (fabs(sumEvent[sumEvent[bidx].daughter1()].id()) == 5 || fabs(sumEvent[sumEvent[bidx].daughter2()].id()) == 5)){
+					cout << "getting daughters of copy for idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
 					//get daughters of b copy decay
 					bidx = sumEvent[bidx].daughter1();
+					cout << "NEW idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
 				}
 				//save gen info of b at detector
+				cout << "got b with id " << sumEvent[bidx].id() << " at " << bidx << " with parents " << sumEvent[sumEvent[bidx].mother1()].id() << " at " << sumEvent[bidx].mother1() << " and mother 2 is " << sumEvent[bidx].mother2() << " if valid id is " << sumEvent[sumEvent[bidx].mother2()].id() << endl;
 				RecoParticle genpart(sumEvent[bidx]);
 				CalcTrajectory(genpart);
 				_genparts.push_back(fastjet::PseudoJet( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() ));
