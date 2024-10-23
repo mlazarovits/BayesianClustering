@@ -120,6 +120,13 @@ def generateSubmission(args):
     # Create directories for work area.
     SH.createWorkArea(dirname)
     
+    if(args.gev == -999):
+        if(args.objects == "jets"):
+            args.gev = 1./10.
+        else:
+            args.gev = 1./30.
+    
+
     # grab relevant flags
     eventnums = SH.eventsSplit(inputFile, args.split)
     flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)
@@ -179,7 +186,7 @@ def main():
     parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
-    parser.add_argument('--gev',help='energy transfer factor',default=1./30.)
+    parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=-999)
     parser.add_argument('--minpt',help='min object pt',default=30.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=15)
     parser.add_argument('--minemE',help='min object ECAL energy',default=20)
