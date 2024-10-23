@@ -4,6 +4,7 @@
 #include "BaseSkimmer.hh"
 #include "BaseTree.hh"
 #include "TGraph.h"
+#include <set>
 
 using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
@@ -333,7 +334,9 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][46]->Fill(cov.at(2,2));
 					}
 					
+					//TODO: update to exclusive gen match
 					//do gen matching
+					/*
 					GenMatchJet(_predJets[j],genpart,id);
 					cout << "found gen match to pred jet " << j << " with id " << id << " and dr " << dR(genpart.eta(), genpart.phi(), _predJets[j].eta(), _predJets[j].phi()) << " and gen/pred E ratio " << genpart.E()/_predJets[j].E() << " user idx " << genpart.GetUserIdx() << endl;
 					dr = dR(genpart.eta(), genpart.phi(), _predJets[j].eta(), _predJets[j].phi());
@@ -361,6 +364,7 @@ class BHCJetSkimmer{
 
 					}
 					else{ }
+					*/
 				}
 				cout << "fill bhc njet plots" << endl;
 				//fill njets based on top decay type
@@ -378,12 +382,20 @@ class BHCJetSkimmer{
 		}
 	
 		void FillRecoJetHists(){
-			int njets, tmass_idx, id, widx;
+			int njets, tmass_idx, widx, genidx, id;
 			double wmass, topmass, dr, dr_pair, jetsize;
 			pair<int, int> wmass_idxs;
-			Jet w, top, genpart, genW;
+			Jet w, top, genW;
+			//do gen matching
+			vector<int> genMatchIdxs; //one per jet, follows same indexing as jets
+			GenMatchJet(_recojets,genMatchIdxs);
+			cout << "final best matches" << endl;
+			for(int b = 0; b < genMatchIdxs.size(); b++){
+				if(genMatchIdxs[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[b]), _base->genpart_phi->at(genMatchIdxs[b]), _recojets[b].eta(), _recojets[b].phi()) << endl;
+				 else cout << " jet " << b << " could not be gen matched" << endl;
 
-
+			}
+			
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
@@ -397,12 +409,16 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
 					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
 					if(jetsize != -999) _procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
-				
-					//do gen matching
-					GenMatchJet(_recojets[j],genpart,id);
-					if(p == 0) cout << "found gen match to reco jet " << j << " with id " << id << " and dr " << dR(genpart.eta(), genpart.phi(), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << genpart.E()/_recojets[j].E() << " user idx " << genpart.GetUserIdx() << endl;
-					dr = dR(genpart.eta(), genpart.phi(), _recojets[j].eta(), _recojets[j].phi());
-					widx = _base->genpart_momIdx->at(genpart.GetUserIdx()); //this branch only filled for products of Ws
+			
+					//fill gen match histograms
+					//if no gen match, skip
+					if(genMatchIdxs[j] == -1) continue;
+					genidx = genMatchIdxs[j];	
+					if(p == 0) cout << "found gen match to reco jet " << j << " with id " << _base->genpart_id->at(genidx) << " and dr " << dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << _base->genpart_energy->at(genidx)/_recojets[j].E() << " user idx " << genidx << endl;
+					//get matched gen particle here
+					dr = dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi());
+					id = _base->genpart_id->at(genidx);
+					widx = _base->genpart_momIdx->at(genidx); //this branch only filled for products of Ws
 					if(p == 0)cout << "widx " << widx << endl;
 					if(widx != -1) _procCats[p].hists2D[0][18]->Fill(dr,_base->genpart_energy->at(widx));
 					//fill gen match hists
@@ -410,18 +426,18 @@ class BHCJetSkimmer{
 					//b's
 					if(fabs(id) == 5){
 						_procCats[p].hists1D[0][57]->Fill(dr);
-						_procCats[p].hists1D[0][63]->Fill(genpart.E()/_recojets[j].E());
+						_procCats[p].hists1D[0][63]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
 					}
 					//g's, q's (not b's)
 					else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
 						_procCats[p].hists1D[0][59]->Fill(dr);
-						_procCats[p].hists1D[0][65]->Fill(genpart.E()/_recojets[j].E());
+						_procCats[p].hists1D[0][65]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
 
 					}
 					//leptons
 					else if(fabs(id) == 13 || fabs(id) == 14){
 						_procCats[p].hists1D[0][61]->Fill(dr);
-						_procCats[p].hists1D[0][67]->Fill(genpart.E()/_recojets[j].E());
+						_procCats[p].hists1D[0][67]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
 
 					}
 					else{ }
@@ -1092,35 +1108,88 @@ class BHCJetSkimmer{
 		}
 
 
+
 	//find gen particle that most closely is dr matched to jet
-	void GenMatchJet(Jet& jet, Jet& genpart, int& id){
+	void GenMatchJet(vector<Jet>& jets, vector<int>& bestGenMatchIdxs){
 		//loop through gen particles
 		//dr match to jet
-		double dr, pt, px, py, pz;
-		double bestDr = 999;
-		int bestId = -999;
-		Jet bestParticle;
+		double bestDr, dr;
 		int nGen = _base->genpart_ngenpart;
-		for(int g = 0; g < nGen; g++){
-			//skip W's
-			if(fabs(_base->genpart_id->at(g)) == 24) continue;
-			//skip neutrinos
-			if(fabs(_base->genpart_id->at(g)) == 14 || fabs(_base->genpart_id->at(g)) == 12 || fabs(_base->genpart_id->at(g)) == 16) continue;
-			dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), jet.eta(), jet.phi());
-			if(dr < bestDr){
-				bestDr = dr;
-				bestId = _base->genpart_id->at(g);
-				pt = _base->genpart_pt->at(g);
-				px = pt*cos(_base->genpart_phi->at(g));
-				py = pt*sin(_base->genpart_phi->at(g));
-				pz = pt*sinh(_base->genpart_eta->at(g));
-				bestParticle = Jet(px, py, pz, _base->genpart_energy->at(g));
-				bestParticle.SetUserIdx(g);
-			}
+		int otherJet, thisgenidx, thisJet;
+		bestGenMatchIdxs.clear();
+		bestGenMatchIdxs = {};
 
+		if(jets.size() < 1) return;
+
+		//vector<double> drs;
+		//drs[i][j] = dr for jet i and gen particle j
+		vector<vector<double>> drs;
+		vector<int> genIdxs;
+		for(int j = 0; j < jets.size(); j++){
+			drs.push_back({});
+			for(int g = 0; g < nGen; g++){
+				//skip W's
+				drs[j].push_back(999);
+				if(fabs(_base->genpart_id->at(g)) == 24) continue;
+				//skip neutrinos
+				if(fabs(_base->genpart_id->at(g)) == 14 || fabs(_base->genpart_id->at(g)) == 12 || fabs(_base->genpart_id->at(g)) == 16) continue;
+				//rough acceptance cut - if gen particles are out of acceptance any associated jets wouldn't be reconstructed
+				if(fabs(_base->genpart_eta->at(g)) > 1.5) continue;
+			
+				dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), jets[j].eta(), jets[j].phi());
+				drs[j][g] = dr;
+			}
 		}
-		id = bestId;
-		genpart = bestParticle;
+		vector<int> best_idxs; //one per jet
+		for(int j = 0; j < jets.size(); j++){
+			for(int g = 0; g < nGen; g++){
+				cout << "jet " << j << " and gen particle " << g << " have dr " << drs[j][g] << endl;
+			}
+			cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at gen particle " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+			double mindr = *min_element(drs[j].begin(), drs[j].end());
+			int genidx = find(drs[j].begin(), drs[j].end(), mindr) - drs[j].begin();
+			if(mindr == 999) genidx = -1; //no match found (ie no available gen particle for best match)
+			best_idxs.push_back(genidx);
+			thisgenidx = genidx;
+			thisJet = j;
+			while(count(best_idxs.begin(), best_idxs.end(), genidx) > 1){
+				otherJet = find(best_idxs.begin(), best_idxs.end(), genidx) - best_idxs.begin();
+				//this happens if the "otherJet" to be analyzed comes before thisjet (ie it gets found first)
+				//skip otherJet (ie thisJet) in this case
+				if(otherJet == thisJet){
+					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), genidx) - best_idxs.begin();
+				}
+				for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
+				cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+				//if other dr is less than this dr
+				if(drs[otherJet][genidx] < mindr){
+					//set this dr to 999 (is invalid), find new min, reset genidx to this index
+					drs[thisJet][genidx] = 999;
+					mindr = *min_element(drs[thisJet].begin(), drs[thisJet].end());
+					if(mindr == 999) genidx = -1;
+					else genidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
+					best_idxs[thisJet] = genidx;
+					cout << " reset gen match of this jet " << thisJet << " to particle " << genidx << " with dr " << mindr << endl;
+		
+				}
+				else{
+					//set other dr to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
+					drs[otherJet][genidx] = 999;
+					thisgenidx = genidx;
+					mindr = *min_element(drs[otherJet].begin(), drs[otherJet].end());
+					if(mindr == 999) genidx = -1;
+					else genidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
+					thisJet = otherJet;
+					best_idxs[thisJet] = genidx;
+					cout << " reset gen match of other jet " << otherJet << " to particle " << genidx << " with dr " << mindr << endl;
+				}	
+				cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
+
+			}
+			cout << "jet " << j << " has best exclusive gen match with " << best_idxs[j] << "\n" << endl;
+		}
+		bestGenMatchIdxs = best_idxs;
+
 	}
 
 
