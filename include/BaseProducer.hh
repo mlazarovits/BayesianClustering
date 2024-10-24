@@ -54,7 +54,7 @@ class BaseProducer{
 			_gev = 1;
 			_isocut = false;
 			_minpt = 30;
-			_mineme = 20;
+			_mineme = 30;
 			_minnrhs = 15;
 			_minrhE = 0.5;
 			_maxrhE = -999;

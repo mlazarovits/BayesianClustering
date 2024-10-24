@@ -189,7 +189,7 @@ def main():
     parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=-999)
     parser.add_argument('--minpt',help='min object pt',default=30.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=15)
-    parser.add_argument('--minemE',help='min object ECAL energy',default=20)
+    parser.add_argument('--minemE',help='min object ECAL energy',default=30)
     parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
     parser.add_argument('--maxRhE',help='max rechit ECAL energy (-999 = off)',default=-999)
     parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
