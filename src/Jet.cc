@@ -256,7 +256,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_mu.SetEntry(entry/norm,i,0);
 	}
 	if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
-	
+	_eta = _mu.at(0,0);
+	_phi = _mu.at(1,0);
+	_t = _mu.at(2,0);
+
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
