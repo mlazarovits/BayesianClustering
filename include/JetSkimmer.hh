@@ -162,6 +162,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(rhTime_eta);
 			_timeHists2D.push_back(rhPhi_eta);
 			_timeHists2D.push_back(rhEovP_dRtrack);
+			_timeHists2D.push_back(rhTime_Energy_zoomed);
 
 
 
@@ -478,6 +479,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* rhPhi_eta = new TH2D("rhPhi_eta","rhPhi_eta;rhPhi;eta",50,-3.4,3.4,50,-1.5,1.5);
 		//21 - E/p vs drTrack, time + E cuts	
 		TH2D* rhEovP_dRtrack = new TH2D("rhEovP_dRtrack","rhEovP_dRtrack;rhEovP;dRtrack",50,0,15,50,0,0.09);
+		//22 - rh time vs rh E zoomed
+		TH2D* rhTime_Energy_zoomed = new TH2D("rhTime_Energy_zoomed","rhTime_Energy_zoomed;rhTime;Energy_zoomed",50,-15,0,50,0,200);
 		
 		
 		
@@ -608,6 +611,7 @@ class JetSkimmer : public BaseSkimmer{
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
 							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E());
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
 								TrackMatched(rhs[r], bestdr, bestp);
 								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
@@ -623,6 +627,7 @@ class JetSkimmer : public BaseSkimmer{
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
 							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E());
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
 								TrackMatched(rhs[r], bestdr, bestp);
 								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
