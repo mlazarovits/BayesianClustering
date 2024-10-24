@@ -14,7 +14,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
         int nJets = (int)_base->Jet_energy->size();
         int nrhs, rhidx;
 	bool jetid;
-	double dr, deta, dphi, eme;
+	double dr, deta, dphi, eme, et;
 	double timecorr, drh, dpv, calibfactor;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
@@ -38,7 +38,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		rhs = _base->Jet_drRhIds->at(j);
                 nrhs = rhs.size();
 
-		eme = _base->Jet_energy->at(j)*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
+		//using transverse energy
+		et = sqrt(_base->Jet_mass->at(j)*_base->Jet_mass->at(j) + pt*pt)
+		eme = et*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
                 if(fabs(_base->Jet_eta->at(j)) > _minobjeta) continue;
