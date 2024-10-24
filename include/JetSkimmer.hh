@@ -365,17 +365,17 @@ class JetSkimmer : public BaseSkimmer{
 		//27 - nrhs per jet (E bin6)
 		TH1D* jetNrhs_Ebin6 = new TH1D("jetNrhs_Ebin1000to1200","jetNrhs_Ebin1000to1200",50,0,100);
 		//28 - jet pt (E bin1)
-		TH1D* jetPt_Ebin1 = new TH1D("jetPt_Ebin0to200","jetPt_Ebin0to200",50,0,1000);
+		TH1D* jetPt_Ebin1 = new TH1D("jetPt_Ebin0to200","jetPt_Ebin0to200",50,0,2000);
 		//29 - jet pt (E bin2)
-		TH1D* jetPt_Ebin2 = new TH1D("jetPt_Ebin200to400","jetPt_Ebin200to400",50,0,1000);
+		TH1D* jetPt_Ebin2 = new TH1D("jetPt_Ebin200to400","jetPt_Ebin200to400",50,0,2000);
 		//30 - jet pt (E bin3)
-		TH1D* jetPt_Ebin3 = new TH1D("jetPt_Ebin400to600","jetPt_Ebin400to600",50,0,1000);
+		TH1D* jetPt_Ebin3 = new TH1D("jetPt_Ebin400to600","jetPt_Ebin400to600",50,0,2000);
 		//31 - jet pt (E bin4)
-		TH1D* jetPt_Ebin4 = new TH1D("jetPt_Ebin600to800","jetPt_Ebin600to800",50,0,1000);
+		TH1D* jetPt_Ebin4 = new TH1D("jetPt_Ebin600to800","jetPt_Ebin600to800",50,0,2000);
 		//32 - jet pt (E bin5)
-		TH1D* jetPt_Ebin5 = new TH1D("jetPt_Ebin800to1000","jetPt_Ebin800to1000",50,0,1000);
+		TH1D* jetPt_Ebin5 = new TH1D("jetPt_Ebin800to1000","jetPt_Ebin800to1000",50,0,2000);
 		//33 - jet pt (E bin6)
-		TH1D* jetPt_Ebin6 = new TH1D("jetPt_Ebin1000to1200","jetPt_Ebin1000to1200",50,0,1000);
+		TH1D* jetPt_Ebin6 = new TH1D("jetPt_Ebin1000to1200","jetPt_Ebin1000to1200",50,0,2000);
 		//34 - jet eta (E bin1)
 		TH1D* jetEta_Ebin1 = new TH1D("jetEta_Ebin0to200","jetEta_Ebin0to200",50,-1.5,1.5);
 		//35 - jet eta (E bin2)
