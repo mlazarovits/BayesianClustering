@@ -102,7 +102,6 @@ void BHCJetSkimmer::Skim(){
 		_pvz = _base->PV_z;
 
 
-		continue;
 		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
 		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
 		cout << "Clustering..." << endl;	
