@@ -401,17 +401,17 @@ class JetSkimmer : public BaseSkimmer{
 		//45 - jet phi (E bin6)
 		TH1D* jetPhi_Ebin6 = new TH1D("jetPhi_Ebin1000to1200","jetPhi_Ebin1000to1200",50,-0.2,6.4);
 		//46 - jet time (E bin1)
-		TH1D* jetTime_Ebin1 = new TH1D("jetTime_Ebin0to200","jetTime_Ebin0to200",50,-20,20);
+		TH1D* jetTime_Ebin1 = new TH1D("jetTime_Ebin0to200","jetTime_Ebin0to200",50,-10,10);
 		//47 - jet time (E bin2)
-		TH1D* jetTime_Ebin2 = new TH1D("jetTime_Ebin200to400","jetTime_Ebin200to400",50,-20,20);
+		TH1D* jetTime_Ebin2 = new TH1D("jetTime_Ebin200to400","jetTime_Ebin200to400",50,-10,10);
 		//48 - jet time (E bin3)
-		TH1D* jetTime_Ebin3 = new TH1D("jetTime_Ebin400to600","jetTime_Ebin400to600",50,-20,20);
+		TH1D* jetTime_Ebin3 = new TH1D("jetTime_Ebin400to600","jetTime_Ebin400to600",50,-10,10);
 		//49 - jet time (E bin4)
-		TH1D* jetTime_Ebin4 = new TH1D("jetTime_Ebin600to800","jetTime_Ebin600to800",50,-20,20);
+		TH1D* jetTime_Ebin4 = new TH1D("jetTime_Ebin600to800","jetTime_Ebin600to800",50,-10,10);
 		//50 - jet time (E bin5)
-		TH1D* jetTime_Ebin5 = new TH1D("jetTime_Ebin800to1000","jetTime_Ebin800to1000",50,-20,20);
+		TH1D* jetTime_Ebin5 = new TH1D("jetTime_Ebin800to1000","jetTime_Ebin800to1000",50,-10,10);
 		//51 - jet time (E bin6)
-		TH1D* jetTime_Ebin6 = new TH1D("jetTime_Ebin1000to1200","jetTime_Ebin1000to1200",50,-20,20);
+		TH1D* jetTime_Ebin6 = new TH1D("jetTime_Ebin1000to1200","jetTime_Ebin1000to1200",50,-10,10);
 		//52 - n subclusters (E bin1)
 		TH1D* jetNSubclusters_Ebin1 = new TH1D("jetNSubclusters_Ebin0to200","jetNSubclusters_Ebin0to200",50,-0,10);
 		//53 - n subclusters (E bin2)
