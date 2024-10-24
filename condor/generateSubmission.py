@@ -121,7 +121,7 @@ def generateSubmission(args):
     SH.createWorkArea(dirname)
     
     if(args.gev == -999):
-        if(args.objects == "jets"):
+        if(args.object == "jets"):
             args.gev = 1./10.
         else:
             args.gev = 1./30.
