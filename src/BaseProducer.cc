@@ -39,7 +39,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                 nrhs = rhs.size();
 
 		//using transverse energy
-		et = sqrt(_base->Jet_mass->at(j)*_base->Jet_mass->at(j) + pt*pt)
+		et = sqrt(_base->Jet_mass->at(j)*_base->Jet_mass->at(j) + pt*pt);
 		eme = et*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
