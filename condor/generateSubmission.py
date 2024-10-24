@@ -38,9 +38,9 @@ def generateSubmission(args):
     elif args.inputSample == "GMSB_L-300_Ctau-400":
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-400cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-350_Ctau-0p1":
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
+        inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-350_Ctau-200":
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+        inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-400_Ctau-800":
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GMSB_L-300_Ctau-1000":
