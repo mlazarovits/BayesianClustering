@@ -493,7 +493,7 @@ class BHCJetSkimmer{
 			GenMatchJetToJet(_recojets,genMatchIdxs_reco);
 			GenMatchJetToJet(_predJets,genMatchIdxs_bhc);
 			int bestIdx;
-			cout << "n reco jets " << _recojets.size() << " n idxs " << genMatchIdxs_reco.size() << endl;
+			cout << "n reco jets " << _recojets.size() << " n idxs " << genMatchIdxs_reco.size() << " n pred jets " << _predJets.size() << " n pred idxs " << genMatchIdxs_bhc.size() <<  endl;
 			for(int p = 0; p < _procCats.size(); p++){
 				cout << "proc " << p << " # reco jets " << _recojets.size() << " # gen jets " << _genjets.size() << endl;
 				//reco jets
@@ -510,7 +510,7 @@ class BHCJetSkimmer{
 				}
 				//predicted jets
 				for(int j = 0; j < _predJets.size(); j++){
-					if(genMatchIdxs_bhc[j] != -1) cout << " bhc jet " << j << " is exclusively matched to gen jet " << genMatchIdxs_bhc[j] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_bhc[j]), _base->genpart_phi->at(genMatchIdxs_bhc[j]), _predJets[j].eta(), _predJets[j].phi()) << endl;
+					if(genMatchIdxs_bhc[j] != -1) cout << " bhc jet " << j << " is exclusively matched to gen jet " << genMatchIdxs_bhc[j] << " with dr " << dR(_base->Jet_genEta->at(genMatchIdxs_bhc[j]), _base->Jet_genPhi->at(genMatchIdxs_bhc[j]), _predJets[j].eta(), _predJets[j].phi()) << endl;
 					 else{ cout << " jet " << j << " could not be gen matched" << endl; continue; }
 					 bestIdx = genMatchIdxs_bhc[j];
 					_procCats[p].hists2D[0][0]->Fill(_genjets[bestIdx].E(), _predJets[j].pt() - _genjets[bestIdx].pt());
