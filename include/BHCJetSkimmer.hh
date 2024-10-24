@@ -1116,10 +1116,16 @@ class BHCJetSkimmer{
 		//dr match to jet
 		double bestDr, dr;
 		int nGen = _base->genpart_ngenpart;
+		cout << "nGen " << nGen << endl;
 		int otherJet, thisgenidx, thisJet;
 		bestGenMatchIdxs.clear();
 		bestGenMatchIdxs = {};
-
+	
+		//no gen particles to match, set all jets to unmatched	
+		if(nGen < 1){
+			for(auto j : jets) bestGenMatchIdxs.push_back(-1);
+			return;
+		}
 		if(jets.size() < 1) return;
 
 		//vector<double> drs;
