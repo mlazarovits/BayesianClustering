@@ -14,6 +14,8 @@
 #include "BaseTree.hh"
 
 using procCat = BaseSkimmer::procCat;
+
+static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){
@@ -795,7 +797,8 @@ class JetSkimmer : public BaseSkimmer{
 					for(auto r : jrhs) Ejets += r.E(); 
 				}
 				if(_data){
-					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
+					//want difference in PV frame (no shift to detector)
+					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, false);
 					deltaT_gampv = gamtime - pvtime;
 					//should only be one process in data
 					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
@@ -814,7 +817,8 @@ class JetSkimmer : public BaseSkimmer{
 
 					//do same for subleading photon if it exists
 					if(_phos.size() > 1){
-						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
+						//want difference in PV frame (no shift to detector)
+						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, false);
 						deltaT_gampv = gamtime - pvtime;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
@@ -849,6 +853,7 @@ class JetSkimmer : public BaseSkimmer{
 						Epho = 0;
 						for(auto r : phorhs) Epho += r.E();
 						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
+						//want the photon time at the detector so we can compare it to the gen version
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
@@ -1172,25 +1177,12 @@ class JetSkimmer : public BaseSkimmer{
 			
 		}
 		
-		int FindJetPair(const vector<Jet>& injets, pair<Jet,Jet>& outjets){
-			map<double,Jet> pt_jet;
-			//map<double, int> pt_idx;
-			if(injets[0].pt() <= injets[1].pt()){
-				int njets = (int)injets.size(); 
-				for(int i = 0; i < njets; i++){
-					pt_jet[injets[i].pt()] = injets[i];
-					//pt_idx[injets[i].pt()] = i;
-				}
-			}	
-			else{
-				pt_jet[injets[0].pt()] = injets[0];
-				pt_jet[injets[1].pt()] = injets[1];
-			}
-			map<double,Jet>::reverse_iterator it = pt_jet.rbegin();
-			Jet jet1 = it->second;	
-			it++;
-			Jet jet2 = it->second;
-		//	map<double,int>::reverse_iterator it_idx = pt_idx.rbegin();
+		int FindJetPair(vector<Jet>& injets, pair<Jet,Jet>& outjets){
+			//sort
+			sort(injets.begin(), injets.end(), ptsort);
+			Jet jet1 = injets[0];
+			Jet jet2 = injets[1];	
+		
 			//if needing to find "true" pair
 			//calculate dphi here
 			double pi = acos(-1);
@@ -1215,6 +1207,18 @@ class JetSkimmer : public BaseSkimmer{
 				}
 			}
 			else{
+				//make MC selection as similar to data as possible
+				//dphi within [pi-0.1,pi+0.1]
+				double phi1 = jet1.phi_02pi();
+				double phi2 = jet2.phi_02pi();
+				double dphi = fabs(phi1 - phi2);
+				if(dphi > pi) dphi = 2*pi - dphi;
+				//cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
+				//cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
+				if(dphi < pi-0.35 || dphi > pi+0.35){
+					//cout << "failed dphi cut" << endl;
+					return -999;
+				}
 				//use only ECAL energy for asymmetry cut
 				double e1 = 0;
 				double e2 = 0;
@@ -1228,15 +1232,8 @@ class JetSkimmer : public BaseSkimmer{
 				}
 			}
 
-			//remove - eta cut - need |eta| approx equal
-			//if(fabs(jet1.eta()) > 0.2 + fabs(jet2.eta()) || fabs(jet1.eta()) < fabs(fabs(jet2.eta()) - 0.2)) return -999; 
-
-
 			outjets.first = jet1;
-		//	outjets.first.SetUserIdx(it_idx->second);
-		//	it_idx++;
 			outjets.second = jet2;
-		//	outjets.second.SetUserIdx(it_idx->second);
 			return 0;
 		}
 		double GetDeltaTime(pair<Jet,Jet>& jets){
@@ -1245,7 +1242,7 @@ class JetSkimmer : public BaseSkimmer{
 			return t1 - t2;
 		}
 
-	
+		//if pho, add TOF back to time (shift to detector)	
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			double time = -999;
