@@ -230,7 +230,7 @@ class BHCJetSkimmer{
 				_predJets.push_back(predJet);	
 			}
 			cout << _predJets.size() << " pred jets" << endl;
-			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << endl;
+			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
 		}
 
 		void FillPredJetHists(){
@@ -239,6 +239,10 @@ class BHCJetSkimmer{
 			double wmass, topmass, dr, dr_pair, jetsize;
 			pair<int, int> wmass_idxs;
 			Jet w, top, genpart, genW;
+			//do gen matching
+			vector<int> genMatchIdxs; //one per jet, follows same indexing as jets
+			GenMatchJet(_predJets,genMatchIdxs);
+			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				_procCats[p].hists1D[0][0]->Fill(njets);
@@ -289,7 +293,6 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][30]->Fill(topmass);
 				}
 				njets = _predJets.size();
-				int nsubs;
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 					dr = CalcJetSize(_predJets[j]);
@@ -334,13 +337,12 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][46]->Fill(cov.at(2,2));
 					}
 					
-					//TODO: update to exclusive gen match
-					//do gen matching
-					/*
-					GenMatchJet(_predJets[j],genpart,id);
-					cout << "found gen match to pred jet " << j << " with id " << id << " and dr " << dR(genpart.eta(), genpart.phi(), _predJets[j].eta(), _predJets[j].phi()) << " and gen/pred E ratio " << genpart.E()/_predJets[j].E() << " user idx " << genpart.GetUserIdx() << endl;
-					dr = dR(genpart.eta(), genpart.phi(), _predJets[j].eta(), _predJets[j].phi());
-					widx = _base->genpart_momIdx->at(genpart.GetUserIdx()); //this branch only filled for products of Ws
+					if(genMatchIdxs[j] != -1) cout << " jet " << j << " is exclusively matched to gen particle " << genMatchIdxs[j] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[j]), _base->genpart_phi->at(genMatchIdxs[j]), _recojets[j].eta(), _recojets[j].phi()) << endl;
+					else{ cout << " jet " << j << " could not be gen matched" << endl; continue; }
+
+					bestMatchIdx = genMatchIdxs[j];
+					dr = dR(_base->genpart_eta->at(bestMatchIdx), _base->genpart_phi->at(bestMatchIdx), _predJets[j].eta(), _predJets[j].phi());
+					widx = _base->genpart_momIdx->at(bestMatchIdx); //this branch only filled for products of Ws
 					cout << "widx " << widx << endl;
 					if(widx != -1) _procCats[p].hists2D[0][19]->Fill(dr,_base->genpart_energy->at(widx));
 					//fill gen match hists
@@ -349,22 +351,21 @@ class BHCJetSkimmer{
 					//b's
 					if(fabs(id) == 5){
 						_procCats[p].hists1D[0][58]->Fill(dr);
-						_procCats[p].hists1D[0][64]->Fill(genpart.E()/_predJets[j].E());
+						_procCats[p].hists1D[0][64]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
 					}
 					//g's, q's (not b's)
 					else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
 						_procCats[p].hists1D[0][60]->Fill(dr);
-						_procCats[p].hists1D[0][66]->Fill(genpart.E()/_predJets[j].E());
+						_procCats[p].hists1D[0][66]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
 
 					}
 					//leptons
 					else if(fabs(id) == 13 || fabs(id) == 14){
 						_procCats[p].hists1D[0][62]->Fill(dr);
-						_procCats[p].hists1D[0][68]->Fill(genpart.E()/_predJets[j].E());
+						_procCats[p].hists1D[0][68]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
 
 					}
 					else{ }
-					*/
 				}
 				cout << "fill bhc njet plots" << endl;
 				//fill njets based on top decay type
@@ -1017,13 +1018,13 @@ class BHCJetSkimmer{
 		//6 - reco m_jj ~ W mass vs jet pair jetSize
 		TH2D* recoJetInvMassW_recoJetPairjetSize = new TH2D("recoJetInvMassW_recoJetPairjetSize","recoJetInvMassW_recoJetPairjetSize;reco m_jj;jetSize_jj",50,0,500,50,0,1); 
 		//7 - pred jet mass vs pred jet pt
-		TH2D* predJetMass_predJetPt = new TH2D("BHCJetMass_predJetPt","BHCJetMass_predJetPt;predJetMass;predJetPt",50,0,250,50,0,250);
+		TH2D* predJetMass_predJetPt = new TH2D("BHCJetMass_BHCJetPt","BHCJetMass_BHCJetPt;BHCJetMass;BHCJetPt",50,0,250,50,0,250);
 		//8 - pred jet mass vs pred jet jetSize
-		TH2D* predJetMass_predJetSize = new TH2D("BHCJetMass_predJetSize","BHCJetMass_predJetSize;predJetMass;predJetSize",50,0,250,50,0,1);
+		TH2D* predJetMass_predJetSize = new TH2D("BHCJetMass_BHCJetSize","BHCJetMass_BHCJetSize;BHCJetMass;BHCJetSize",50,0,250,50,0,1);
 		//9 - pred m_jj ~ W mass vs jet pair jetSize 
-		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("BHCJetInvMassW_predJetPairjetSize","BHCJetInvMassW_predJetPairjetSize;pred m_jj;jetSize_jj",50,0,500,50,0,1.); 
+		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("BHCJetInvMassW_BHCJetPairjetSize","BHCJetInvMassW_BHCJetPairjetSize;pred m_jj;jetSize_jj",50,0,500,50,0,1.); 
 		//10 - pred jet pt vs pred jet jetSize
-		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_predJetSize","BHCJetPt_predJetSize;predJetPt;predJetSize",50,0,250,50,0,1);
+		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,1);
 		//11 - pred jet n subclusters vs jet size
 		TH2D* prednSubclusters_jetSize = new TH2D("BHCnSubclusters_jetSize","BHCnSubclusters_jetSize;nSubclusters;jetsize",10,0,10,50,0,1);
 		//12 - reco dr match to gen b's
@@ -1039,9 +1040,9 @@ class BHCJetSkimmer{
 		//17 - bhc dr match to gen l's  
 		TH2D* BHCJet_genOvRecoE_dR_lep = new TH2D("BHCJet_genOvRecoE_dR_lep","BHCJet_genOvRecoE_dR_lep;ratioE;dR",25,0,5,25,0,4);
 		//18 - reco dr jet-quark match vs W energy (b's excluded)
-		TH2D* recoJet_dRquark_Wenergy = new TH2D("recoJet_dRquark_Wenergy","recoJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,0,1000);
+		TH2D* recoJet_dRquark_Wenergy = new TH2D("recoJet_dRquark_Wenergy","recoJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 		//19 - BHC dr jet-quark match vs W energy (b's excluded)
-		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,0,1000);
+		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
