@@ -107,12 +107,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToColor["QCD"]   	=  TColor::GetColor("#9E0059");
 
 		labelToColor["!reco"] = TColor::GetColor("#f7a278");
+		labelToColor["!AK4"] = TColor::GetColor("#f7a278");
 		labelToColor["!BHC"] = TColor::GetColor("#6859f1");
 
 		labelToMark["!ttbar"] = 72;
 		labelToMark["!QCD"] =   73;
 		
 		labelToMark["reco"] = 71;
+		labelToMark["AK4"] = 71;
 		labelToMark["BHC"] =   72; 
 
 
@@ -130,9 +132,11 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//methodStack formatting
 	else if(pf == 2){
 		labelToColor["reco"] = TColor::GetColor("#f7a278");
+		labelToColor["AK4"] = TColor::GetColor("#f7a278");
 		labelToColor["BHC"] = TColor::GetColor("#6859f1");
 	
 		labelToMark["reco"] = 71;
+		labelToMark["AK4"] = 71;
 		labelToMark["BHC"] =   72; 
 
 	}
@@ -190,8 +194,6 @@ cout << "title " << xtit << " canname " << canname << endl;
 		hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
-	
-	
 
 		legentry = hist[i]->GetTitle();
 		title = legentry;	 
@@ -271,6 +273,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 		}
 		cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		
+
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -1478,6 +1481,8 @@ void HistFormatSim(string file){
 	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
+	DecayStackHists(file, "ttbar", types, oname, "BHCJet_genOvRecoE");
+	DecayStackHists(file, "ttbar", types, oname, "recoJet_genOvRecoE");
 	DecayStackHists(file, "ttbar", typesFullDecay, oname, "reco_nJet");
 	DecayStackHists(file, "ttbar", typesFullDecay, oname, "BHC_nJet");
 
@@ -1486,7 +1491,20 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", methods, oname, "qType");
 	
 	ProcStackHists(file, procs, "reco", oname, "Jet_mass");
-	ProcStackHists(file, procs, "BHC", oname, "Jet_mass");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_mass");
+	ProcStackHists(file, procs, "reco", oname, "Jet_jetSize");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_jetSize");
+	ProcStackHists(file, procs, "reco", oname, "Jet_energy");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_energy");
+	ProcStackHists(file, procs, "reco", oname, "Jet_pt");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_pt");
+	ProcStackHists(file, procs, "reco", oname, "Jet_Wmass");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_Wmass");
+	ProcStackHists(file, procs, "reco", oname, "Jet_topmass");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_topmass");
+	ProcStackHists(file, procs, "Reco", oname, "nRecoJets");
+	ProcStackHists(file, procs, "BHC", oname,  "nBHCJets");
+	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
 
 	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
 	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
