@@ -84,7 +84,8 @@ def generateSubmission(args):
     	exit()
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
-    inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
+    #inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
+    inputFile = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"+inputFile
     
     objName = args.object
     #strategyName = "GMMonly" #only option for CMS jets/photons
