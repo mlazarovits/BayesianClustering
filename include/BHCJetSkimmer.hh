@@ -846,7 +846,7 @@ class BHCJetSkimmer{
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0
-		TH1D* nClusters = new TH1D("nBHCJets","nBHCJets",10,0,10);
+		TH1D* nClusters = new TH1D("nJets_BHC","nJets_BHC",10,0,10);
 		//1
 		TH1D* nSubclusters = new TH1D("BHCJet_nSubclusters","BHCJet_nSubclusters",10,0,10);
 		//2
@@ -864,7 +864,7 @@ class BHCJetSkimmer{
 		//8
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",50,0,500);
 		//9
-		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,150);
+		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,300);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # gen jets
@@ -883,7 +883,7 @@ class BHCJetSkimmer{
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",25,-1.5,1.5);
 		//18
-		TH1D* nRecoJets = new TH1D("nRecoJets","nRecoJets",10,0,10);
+		TH1D* nRecoJets = new TH1D("nJets_reco","nJets_reco",10,0,10);
 		//19
 		TH1D* recoJet_jetSize = new TH1D("recoJet_jetSize","recoJet_jetSize",50,0,1);
 		//20
