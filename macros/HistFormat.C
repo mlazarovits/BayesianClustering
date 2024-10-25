@@ -94,7 +94,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	int offset = 1;
 	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
 	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
-	//TODO (maybe): set different signal grid points to different shades of above color	
 
 	labelToColor["notSunm"] =  TColor::GetColor("#9e0059");
 	labelToColor["GJets"] 	=  TColor::GetColor("#f6ae2d");
