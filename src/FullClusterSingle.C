@@ -248,7 +248,7 @@ int main(int argc, char *argv[]){
 	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
 	fname += "NperGeV"+gev_string+"_";
 	fname += cmslab; //long sample name
-
+	fname += "_evt"+to_string(evt);
 
 	fname = "plots/"+fname;
 
