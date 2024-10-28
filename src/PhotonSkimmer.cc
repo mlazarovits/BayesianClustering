@@ -201,6 +201,7 @@ void PhotonSkimmer::Skim(){
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);
+			cout << "label: " << label << endl;
 				obs["event"] = e;
                                 obs["object"] = phoidx;
 			//only get lead subcluster -> ncl = 0
