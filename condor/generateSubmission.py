@@ -22,7 +22,7 @@ def generateSubmission(args):
     print("------------------------------------------------------------")
     # Create output directory for condor results if it does not exist.
     SH.makeDir(odir)
-    
+
     if args.inputSample == "GJets_HT400to600":
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
     elif args.inputSample == "GJets_HT100to200":
@@ -84,9 +84,13 @@ def generateSubmission(args):
     	exit()
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
-    #inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"+inputFile
-    inputFile = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"+inputFile
-    
+    if "PhoSlim" in args.inputSample:
+        inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
+        inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v22")
+    else:
+        inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
+    inputFile = inputPath+inputFile
+
     objName = args.object
     #strategyName = "GMMonly" #only option for CMS jets/photons
     
@@ -175,7 +179,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
