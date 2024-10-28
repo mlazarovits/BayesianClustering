@@ -1723,7 +1723,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			tc = params["mean"].at(2,0);
 			pi = params["pi"].at(0,0);
 			cov = params["cov"];	
-
 			//distance from xmax to mean_k
 			///double dist = 0;
 			///for(int d = 0; d < xmax.Dim(); d++)
@@ -1755,6 +1754,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
 
 
+//cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << "ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
 			vector<Matrix> eigvecs;
 			vector<double> eigvals;
 			cov.eigenCalc(eigvals,eigvecs);
