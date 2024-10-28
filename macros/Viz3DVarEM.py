@@ -24,7 +24,8 @@ def plot_json(jsonfile, dataonly = False):
 		plotname = plotname
 	if "GJets" in plotname:
 		plotname = plotname[:plotname.find("GJets")-1] + "<br>" + plotname[plotname.find("GJets"):]
-	print("plotname",plotname)
+	if "GMSB" in plotname:
+		plotname = plotname[:plotname.find("GMSB")-1] + "<br>" + plotname[plotname.find("GMSB"):]
 	#update axis names
 	x = data['x']
 	y = data['y']
