@@ -16,7 +16,15 @@ def plot_json(jsonfile, dataonly = False):
 	nClusters = len(clusters)
 	
 	plotname = jsonfile[:jsonfile.find(".json")]
-
+	if "photon" in plotname:
+		plotname = plotname[plotname.find("photonSkim"):]
+	elif "jet" in plotname:
+		plotname = plotname[plotname.find("jetSkim"):]
+	else:
+		plotname = plotname
+	if "GJets" in plotname:
+		plotname = plotname[:plotname.find("GJets")-1] + "<br>" + plotname[plotname.find("GJets"):]
+	print("plotname",plotname)
 	#update axis names
 	x = data['x']
 	y = data['y']
@@ -151,4 +159,5 @@ for f in files:
 fig.show()
 if args.dir is not None:
 	gifcmd += args.dir+"/total.gif"
-	os.system("convert -delay 50 -loop 1 "+gifcmd)#+args.dir+"/*.pdf "+args.dir+"/total.gif");
+	#os.system("convert -delay 50 -loop 1 "+gifcmd)#+args.dir+"/*.pdf "+args.dir+"/total.gif");
+	os.system("magick -delay 50 -loop 1 "+gifcmd)#+args.dir+"/*.pdf "+args.dir+"/total.gif");

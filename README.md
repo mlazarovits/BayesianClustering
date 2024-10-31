@@ -23,7 +23,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 - [fastjet](https://fastjet.fr/) for detector simulation
 	- at least v3.4.1 for compatibility with C++17
 	- at least v3.4.2 for compatibility with C++20 
-
+- [plotly](https://plotly.com/graphing-libraries/) for producing 3D variational clustering plots and gifs
 
 ### Branches
 - `main` branch is latest stable release
