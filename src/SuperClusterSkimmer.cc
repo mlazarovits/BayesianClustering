@@ -96,7 +96,7 @@ void SuperClusterSkimmer::Skim(){
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << " SC center eta " << _base->SuperCluster_eta->at(scidx) << " SC center phi " << _base->SuperCluster_phi->at(scidx)  << endl;
+			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
 
