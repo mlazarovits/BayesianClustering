@@ -467,7 +467,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* recoGenEnergyRatio_recoGenDeltaT = new TH2D("recoGenEnergyRatio_recoGenDeltaT","recoGenEnergyRatio_recoGenDeltaT;recoGenEnergyRatio;recoGenDeltaT;a.u.",25,0,2,25,-10,10);
 		
 		//16 - 2D histogram for gamPV resolution 
-		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins[0],100,3,8);
+		TH2D* geoEavg_diffDeltaTime_gamPV = new TH2D("geoEavg_diffDeltaTime_gamPV","geoEavg_diffDeltaTime_gamPV;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t_{PV,#gamma} (ns)",6,&xbins[0],100,-4,4);
 		
 		//17 - jet time vs jet E
 		TH2D* jetTime_Energy = new TH2D("jetTime_Energy","jetTime_Energy;jetTime;Energy",50,-20,20,50,0,500);
@@ -565,6 +565,7 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> jettimes;
 			double gamtime = -999;
 			double pvtime = -999;
+			double gamtime_pv = -999;
 			double deltaT_gampv = -999;
 			double deltaT_gampv_gen = -999;
 			double ptavg, geoEavg, Epho, Erh, Ejets;
@@ -579,7 +580,7 @@ class JetSkimmer : public BaseSkimmer{
 				Erh = 0;
 				ptavg = 0;
 				geoEavg = 0;
-			cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
+			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
 				for(int j = 0; j < njets; j++){
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
@@ -649,7 +650,7 @@ class JetSkimmer : public BaseSkimmer{
 					//trCats[tr_idx].procCats[p].hists2D[0][3]->Fill(Erh, deltaT_jets);
 					//fill jet property hists
 					if(xbins[0] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[1]){
-						cout << " bin 1 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 1 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][22]->Fill(hardjets.second.GetNRecHits());
 						
@@ -672,7 +673,7 @@ class JetSkimmer : public BaseSkimmer{
 
 					}
 					else if(xbins[1] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[2]){
-						cout << " bin 2 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 2 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][23]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][23]->Fill(hardjets.second.GetNRecHits());
 						
@@ -695,7 +696,7 @@ class JetSkimmer : public BaseSkimmer{
 					
 					}
 					else if(xbins[2] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[3]){
-						cout << " bin 3 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 3 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][24]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][24]->Fill(hardjets.second.GetNRecHits());
 
@@ -717,7 +718,7 @@ class JetSkimmer : public BaseSkimmer{
 						}
 					}
 					else if(xbins[3] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[4]){
-						cout << " bin 4 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 4 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][25]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][25]->Fill(hardjets.second.GetNRecHits());
 						
@@ -740,7 +741,7 @@ class JetSkimmer : public BaseSkimmer{
 
 					}
 					else if(xbins[4] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[5]){
-						cout << " bin 5 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 5 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][26]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][26]->Fill(hardjets.second.GetNRecHits());
 						
@@ -763,7 +764,7 @@ class JetSkimmer : public BaseSkimmer{
 
 					}
 					else if(xbins[5] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[6]){
-						cout << " bin 6 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
+						//cout << " bin 6 - E " << sqrt(Erh1*Erh2) << " nrhs " << hardjets.first.GetNRecHits() << " pt " << hardjets.first.pt() << " eta " << hardjets.first.eta() << " phi " << hardjets.first.phi() << " time " << hardjets.first.time() << " n subclusters " << hardjets.first.GetNConstituents() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][27]->Fill(hardjets.first.GetNRecHits());
 						trCats[tr_idx].procCats[p].hists1D[0][27]->Fill(hardjets.second.GetNRecHits());
 						
@@ -805,6 +806,7 @@ class JetSkimmer : public BaseSkimmer{
 					//want difference in PV frame (no shift to detector)
 					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, false);
 					deltaT_gampv = gamtime - pvtime;
+					cout << "gampv time " << deltaT_gampv << endl;
 					//should only be one process in data
 					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
@@ -825,6 +827,7 @@ class JetSkimmer : public BaseSkimmer{
 						//want difference in PV frame (no shift to detector)
 						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, false);
 						deltaT_gampv = gamtime - pvtime;
+					cout << "gampv time " << deltaT_gampv << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 						//gampv resolution
@@ -858,6 +861,11 @@ class JetSkimmer : public BaseSkimmer{
 						Epho = 0;
 						for(auto r : phorhs) Epho += r.E();
 						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
+						//want the photon time at the PV so we can compare it to the jet time 
+						gamtime_pv = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, false);
+						deltaT_gampv = gamtime_pv - pvtime;
+						if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
+						cout << "gampv time " << deltaT_gampv << endl;
 						//want the photon time at the detector so we can compare it to the gen version
 						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
@@ -871,9 +879,9 @@ class JetSkimmer : public BaseSkimmer{
 						//cout << "calc gen delta t" << endl;
 						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
 					//cout << "LEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << " Epho: " << Epho << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
+							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
@@ -907,7 +915,6 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[0]), deltaT_gampv/deltaT_gampv_gen, _weight);
 							trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
 							trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[0]), deltaT_gampv - deltaT_gampv_gen, _weight);
-							if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 
 						}	
 	
@@ -929,11 +936,16 @@ class JetSkimmer : public BaseSkimmer{
 							for(auto r : phorhs) Epho += r.E();
 							//cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " Epho " << Epho << endl;
 							//cout << "SUBLEAD GAMTIME" << endl;	
-							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
+							gamtime_pv = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, false);
+							deltaT_gampv = gamtime_pv - pvtime;
+							if(_phos[1].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
+							cout << "gampv time " << deltaT_gampv << endl;
 							//cout << "SUBLEAD GAMTIME END" << endl;	
+							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
 							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 							deltaT_gampv = gamtime - pvtime;
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
+							
 							
 							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
 					//cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
@@ -969,7 +981,6 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][13]->Fill(GenEnergy(_phos[1]), deltaT_gampv/deltaT_gampv_gen, _weight);
 								trCats[tr_idx].procCats[p].hists2D[0][14]->Fill(Epho, deltaT_gampv_gen, _weight);
 								trCats[tr_idx].procCats[p].hists2D[0][15]->Fill(Epho/GenEnergy(_phos[1]), deltaT_gampv - deltaT_gampv_gen, _weight);
-								if(_phos[1].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 	
 							}
 						}
@@ -1058,7 +1069,7 @@ class JetSkimmer : public BaseSkimmer{
 
 		//should be deltaT = gam - pv
 		double CalcGenDeltaT(const Jet& pho){
-		cout << "CalcGenDeltaT - start" << endl;
+		//cout << "CalcGenDeltaT - start" << endl;
 			//calc times differently for !sig and sig photons
 			double dpho = -999;
 			int genidx, phoidx, phoid;
@@ -1067,7 +1078,7 @@ class JetSkimmer : public BaseSkimmer{
 			//if no match
 			phoidx = pho.GetUserIdx();
 			genidx = _base->Photon_genIdx->at(phoidx);
-			cout << "phoidx " << phoidx << " genidx " << genidx << endl;
+			//cout << "phoidx " << phoidx << " genidx " << genidx << endl;
 			if(genidx == -1) phoid = -1;
 			else phoid = _base->Gen_susId->at(genidx);
 			if(phoid == -1) return dpho;
@@ -1111,7 +1122,7 @@ class JetSkimmer : public BaseSkimmer{
 			double beta;
 			if(phoid == 22){
 				int momidx = _base->Photon_genSigMomId->at(phoidx);
-				cout << "signal - phoid " << phoid << " phoidx " << phoidx << " genidx " << genidx << " momidx " << momidx << endl;
+				//cout << "signal - phoid " << phoid << " phoidx " << phoidx << " genidx " << genidx << " momidx " << momidx << endl;
 				//TODO: remove when ntuples are fixed (10/9/24)
 				if(momidx < 0) return dpho;
 				//check gen pdgids
@@ -1141,9 +1152,9 @@ class JetSkimmer : public BaseSkimmer{
 
 				//beta/c = p/E = v
 				beta = sqrt(mompx*mompx + mompy*mompy + mompz*mompz)/momE;
-				cout << "beta: " << beta << " vel: " << beta*_c << endl;
+				//cout << "beta: " << beta << " vel: " << beta*_c << endl;
 				//check gen photon energy	
-				cout << "photon energy: " << _base->Photon_energy->at(phoidx) << endl;
+				//cout << "photon energy: " << _base->Photon_energy->at(phoidx) << endl;
 				//distance bw photon and production point (where LLP decays to photon)
 				dpho = sqrt( (genx_ECAL - vx)*(genx_ECAL - vx) + (geny_ECAL - vy)*(geny_ECAL - vy) + (genz_ECAL - vz)*(genz_ECAL - vz) )/_c;
 		
@@ -1155,12 +1166,12 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			//assume prompt production
 			else{
-				cout << "prompt" << endl;
+				//cout << "prompt" << endl;
 				//distance bw photon and production point (PV)
 				dpho = sqrt( (genx_ECAL - pvx)*(genx_ECAL - pvx) + (geny_ECAL - pvy)*(geny_ECAL - pvy) + (genz_ECAL - pvz)*(genz_ECAL - pvz) )/_c;
 			}
 			
-		cout << "CalcGenDeltaT - end" << endl;
+		//cout << "CalcGenDeltaT - end" << endl;
 			return dpho;
 		}
 
@@ -1256,7 +1267,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
 				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
-				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//set constituents
 				vector<double> norms;
@@ -1270,7 +1281,7 @@ class JetSkimmer : public BaseSkimmer{
 					Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
 					jet.AddConstituent(subcl);
 				}
-				cout << "jet has " << jet.GetNConstituents() << " subclusters" << endl;	
+				//cout << "jet has " << jet.GetNConstituents() << " subclusters" << endl;	
 				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
 			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
