@@ -32,8 +32,6 @@ def checkJobs(outputDir,match_string):
         if match_string is not None:
             if match_string not in folder:
                 continue
-        if "v21" not in folder:
-            continue
         Strategy = folder.split("/")[-1]
         Object = folder.split("/")[-2]
         DataSetName = folder.split("/")[-3]
