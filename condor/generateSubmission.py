@@ -23,61 +23,61 @@ def generateSubmission(args):
     # Create output directory for condor results if it does not exist.
     SH.makeDir(odir)
 
-    if args.inputSample == "GJets_HT400to600":
+    if "GJets_HT400to600" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GJets_HT100to200":
+    elif "GJets_HT100to200" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GJets_HT200to400":
+    elif "GJets_HT200to400" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GJets_HT40to100":
+    elif "GJets_HT40to100" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GJets_HT600toInf":
+    elif "GJets_HT600toInf" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v21_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-250_Ctau-10":
+    elif "GMSB_L-250_Ctau-10" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-300_Ctau-400":
+    elif "GMSB_L-300_Ctau-400" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-400cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-0p1":
+    elif "GMSB_L-350_Ctau-0p1" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-200":
+    elif "GMSB_L-350_Ctau-200" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-400_Ctau-800":
+    elif "GMSB_L-400_Ctau-800" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-300_Ctau-1000":
+    elif "GMSB_L-300_Ctau-1000" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-300_Ctau-600":
+    elif "GMSB_L-300_Ctau-600" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-10":
+    elif "GMSB_L-350_Ctau-10" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-350_Ctau-800":
+    elif "GMSB_L-350_Ctau-800" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "GMSB_L-400_Ctau-200":
+    elif "GMSB_L-400_Ctau-200" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "MET_RunE":
+    elif "MET_RunE" in args.inputSample:
     	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
-    elif args.inputSample == "JetHT_RunF":
+    elif "JetHT_RunF" in args.inputSample:
     	inputFile = "JetHT_R17_MET100_v21_JetHT_AOD_Run2017F_17Nov2017.root"
-    elif args.inputSample == "QCD_HT500to700":
+    elif "QCD_HT500to700" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT1000to1500":
+    elif "QCD_HT1000to1500" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT100to200":
+    elif "QCD_HT100to200" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT1500to2000":
+    elif "QCD_HT1500to2000" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT2000toInf":
+    elif "QCD_HT2000toInf" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT300to500":
+    elif "QCD_HT300to500" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT500to700":
+    elif "QCD_HT500to700" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT700to1000":
+    elif "QCD_HT700to1000" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT200to300":
+    elif "QCD_HT200to300" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "QCD_HT50to100":
+    elif "QCD_HT50to100" in args.inputSample:
     	inputFile = "QCD_R17_MET100_v21_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
-    elif args.inputSample == "EGamma_RunF":
+    elif "EGamma_RunF" in args.inputSample:
     	inputFile = "DEG_R17_MET100_v21_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
     else:
     	print("Sample "+args.inputSample+" not found")
