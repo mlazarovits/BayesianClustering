@@ -1685,7 +1685,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//288 - E/p vs sw+', time <= -7, dR < 0.02
 		TH2D* EovP_swCrossPrime_timeleNeg7_dRle0p02 = new TH2D("EovP_swCrossPrime_timeleNeg7_dRle0p02","EovP_swCrossPrime_timeleNeg7_dRle0p02;EovPtimeleNeg7_dRle0p02;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//289 - E/p vs sw+' zoomed out, time <= -7, dR < 0.02
-		TH2D* EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut = new TH2D("EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut","EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut;EovP_prompt;swCrossPrime",25,0.,15,25,-0.05,2.);
+		TH2D* EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut = new TH2D("EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut","EovP_swCrossPrime_timeleNeg7_dRle0p02_zoomOut;EovP;swCrossPrime",25,0.,15,25,-0.05,2.);
 		//290 - E vs E/p, time <= -7, dR < 0.02
 		TH2D* EovP_E_timeleNeg7_dRle0p02 = new TH2D("EovP_E_timeleNeg7_dRle0p02","EovP_E_timeleNeg7_dRle0p02;EovPtimeleNeg7_dRle0p02;E",25,0.,15,25,0,1000);
 		//291 - dR vs sw+', time <= -7, dR < 0.088
@@ -1721,7 +1721,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		int _clusterSize;
 		void ApplyFractions(bool a){ _applyFrac = a; if(_applyFrac) cout << "Applying RH fractions" << endl; }
 		bool _applyFrac;
-		void SetBeamHaloFilter(int bh){ _prod->SetBeamHaloFilter(bh); }
 
 
 		void WritePlotCat1D(TFile* ofile, const procCat& pc){

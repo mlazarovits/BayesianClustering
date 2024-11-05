@@ -523,6 +523,17 @@ class BaseSkimmer{
 		bool _smear, _timesmear;
 
 		void SetSpikeRejection(bool s){ _prod->RejectSpikes(s); }
-
+		enum beamHaloFilter{
+                        notApplied = 0,
+                        applied = 1,
+                        invApplied = 2
+                };
+                beamHaloFilter _BHFilter;
+                void SetBeamHaloFilter(int bh){
+                        _BHFilter = beamHaloFilter(bh);
+                        if(_BHFilter == notApplied) cout << "Not applying beam halo filter." << endl;
+                        else if(_BHFilter == applied) cout << "Applying beam halo filter." << endl;
+                        else cout << "Applying inverse beam halo filter." << endl;
+                }
 };
 #endif

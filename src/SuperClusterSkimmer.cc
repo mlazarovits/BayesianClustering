@@ -78,7 +78,16 @@ void SuperClusterSkimmer::Skim(){
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 
-
+        	if(_BHFilter != notApplied){
+        	        if(_BHFilter == applied){
+        	                //apply beam halo filter - other noise filters needed for full Run2 recommendations
+        	                if(!_base->Flag_globalSuperTightHalo2016Filter) continue;
+        	        }
+        	        else{
+        	                //inversely apply beam halo filter - other noise filters needed for full Run2 recommendations
+        	                if(_base->Flag_globalSuperTightHalo2016Filter) continue;
+        	        }
+        	}
 		_prod->GetTrueSuperClusters(scs, e, _gev);
 		//PV info
 		pvx = _base->PV_x;

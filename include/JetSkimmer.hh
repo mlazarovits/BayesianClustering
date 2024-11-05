@@ -1787,7 +1787,6 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
                 }
 
 
-
 		private:
 			vector<Jet> _phos; //photons for event
 

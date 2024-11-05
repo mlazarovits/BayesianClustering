@@ -79,7 +79,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_maxrhE != -999 && _base->ECALRecHit_energy->at(rhidx) > _maxrhE) continue;				
 				//spike rejection? - only studied for rhE > 4 GeV
 				if(_spikes && _data){
-					cout << "rejecting spikes" << endl;
 					if(1 - _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
 						continue;
 				}
@@ -288,16 +287,6 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
         supercls.clear();
         if(evt > _nEvts) return -1;
         _base->GetEntry(evt);
-	if(_bh != notApplied){
-		if(_bh == applied){
-			//apply beam halo filter - other noise filters needed for full Run2 recommendations
-			if(!_base->Flag_globalSuperTightHalo2016Filter) return -1;
-		}
-		else{
-			//inversely apply beam halo filter - other noise filters needed for full Run2 recommendations
-			if(_base->Flag_globalSuperTightHalo2016Filter) return -1;
-		}
-	}
         int nSCs = (int)_base->SuperCluster_energy->size();
         int nrhs, rhidx;
 	double timecorr, calibfactor; 

@@ -343,6 +343,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
+		skimmer.SetBeamHaloFilter(bh);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
