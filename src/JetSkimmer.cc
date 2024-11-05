@@ -33,7 +33,6 @@ void JetSkimmer::Skim(){
 	
 	map<string, Matrix> params;
 	vector<node*> trees;
-	vector<Jet> rhs;
 
 	double jetSelEff = 0;
 	double totEvt = 0;
@@ -66,11 +65,6 @@ void JetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i, phogev);
 		if(i % (_skip) == 0) cout << "evt: " << i << " of " << _nEvts;
-		_prod->GetRecHits(rhs, i);
-		for(int r = 0; r < rhs.size(); r++){
-			rhTime->Fill(rhs[r].t(),_weight);
-		}
-
 
 		FillTruePhotonHists(_phos);
 		totEvt++;	
