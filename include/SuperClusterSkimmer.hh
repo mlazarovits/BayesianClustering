@@ -584,7 +584,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(EovP_E_timeleNeg7_dRle0p02);
 			_hists2D.push_back(dRtrack_swCrossPrime_timeleNeg7_dRle0p088);
 			_hists2D.push_back(dRtrack_swCrossPrime_timeleNeg7_dRle0p088_zoomOut);
-
+                	_hists2D.push_back(timeCenter_etaCenter_timeleNeg7_dRle0p02);
+                	_hists2D.push_back(phiSig_phiCenter_timeleNeg7_dRle0p02);
+                	_hists2D.push_back(etaSig_phiCenter_timeleNeg7_dRle0p02);
+                	_hists2D.push_back(EovP_dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi);
+                	_hists2D.push_back(EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi);
+                	_hists2D.push_back(EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut);
+                	_hists2D.push_back(EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi);
+                	_hists2D.push_back(dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi);
+                	_hists2D.push_back(dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut);
 		};
 	
 
@@ -1692,6 +1700,24 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* dRtrack_swCrossPrime_timeleNeg7_dRle0p088 = new TH2D("dRtrack_swCrossPrime_timeleNeg7_dRle0p088","dRtrack_swCrossPrime_timeleNeg7_dRle0p088;dRtrack_timeleNeg7_dRle0p088;swCrossPrime",25,0.,0.1,25,-0.05,0.04);
 		//292 - dR vs sw+' zoomed out, time <= -7, dR < 0.088
 		TH2D* dRtrack_swCrossPrime_timeleNeg7_dRle0p088_zoomOut = new TH2D("dRtrack_swCrossPrime_timeleNeg7_dRle0p088_zoomOut","dRtrack_swCrossPrime_timeleNeg7_dRle0p088_zoomOut;dRtrack_timeleNeg7_dRle0p088;swCrossPrime",25,0.,0.1,25,-0.05,2.);
+		//293 - time vs eta, time <= -7, dR < 0.02
+		TH2D* timeCenter_etaCenter_timeleNeg7_dRle0p02 = new TH2D("timeCenter_etaCenter_timeleNeg7_dRle0p02","timeCenter_etaCenter;timeCenter;etaCenter_timeleNeg7_dRle0p02",25,-15,15,25,-1.6,1.6);
+		//294 - phi sig vs phi center, time <= -7, dR < 0.02
+		TH2D* phiSig_phiCenter_timeleNeg7_dRle0p02 = new TH2D("phiSig_phiCenter_timeleNeg7_dRle0p02","phiSig_phiCenter_timeleNeg7_dRle0p02;phiSig;phiCenter_timeleNeg7_dRle0p02",25,0.01,0.09,25,-0.2,6.4);
+		//295 - eta sig vs phi center, time <= -7, dR < 0.02
+		TH2D* etaSig_phiCenter_timeleNeg7_dRle0p02 = new TH2D("etaSig_phiCenter_timeleNeg7_dRle0p02","etaSig_phiCenter_timeleNeg7_dRle0p02;etaSig;phiCenter_timeleNeg7_dRle0p02",25,0.01,0.09,25,-0.2,6.4);
+		//296 - E/p vs dR, -7 < time < -2, phi left/right
+		TH2D* EovP_dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("EovP_dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi","EovP_dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;EovP_timegeNeg7leNeg2_phiCenter0pi2pi;dRtrack",25,0.,15,25,0,0.1);
+		//297 - E/p vs sw+', -7 < time < -2, phi left/right
+		TH2D* EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi","EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi;EovPtimegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,15,25,-0.05,0.4);
+		//298 - E/p vs sw+' zoomed out, -7 < time < -2, phi left/right
+		TH2D* EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut = new TH2D("EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut","EovP_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut;EovP;swCrossPrime",25,0.,15,25,-0.05,2.);
+		//299 - E vs E/p, -7 < time < -2, phi left/right
+		TH2D* EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi","EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi;EovPtimegeNeg7leNeg2_phiCenter0pi2pi;E",25,0.,15,25,0,1000);
+		//300 - dR vs sw+', -7 < time < -2, phi left/right
+		TH2D* dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi","dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi;dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,0.1,25,-0.05,0.04);
+		//301 - dR vs sw+' zoomed out, -7 < time < -2, phi left/right
+		TH2D* dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut = new TH2D("dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut","dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut;dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,0.1,25,-0.05,2.);
 
 
 		enum weightScheme{
@@ -2507,10 +2533,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(tc <= -2){
 						_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);
 					}
+					//current beam halo selection
 					if(tc > -7 && tc <= -2){
 						_procCats[id_idx].hists2D[1][284]->Fill(tc, ec);
 						_procCats[id_idx].hists2D[1][285]->Fill(p_var, pc);
 						_procCats[id_idx].hists2D[1][286]->Fill(e_var, pc);
+						_procCats[id_idx].hists2D[1][296]->Fill(bestde_dr,bestTrackDr);
+						_procCats[id_idx].hists2D[1][297]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][298]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][299]->Fill(bestde_dr,E_k);
+						_procCats[id_idx].hists2D[1][300]->Fill(bestTrackDr,swCP);
+						_procCats[id_idx].hists2D[1][301]->Fill(bestTrackDr,swCP);
 					}
 				}
 				if(bestTrackDr < 0.02){
@@ -2539,11 +2572,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(tc <= -10){
 						_procCats[id_idx].hists2D[1][283]->Fill(bestde_dr,swCP);
 					}
+					//current spike selection
 					if(tc <= -7){
-						cout << "E/p " << bestde_dr << " dr " << bestTrackDr << " sw+' " << swCP << endl;
 						_procCats[id_idx].hists2D[1][288]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][289]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][290]->Fill(bestde_dr,E_k);
+						_procCats[id_idx].hists2D[1][293]->Fill(tc,ec);
+						_procCats[id_idx].hists2D[1][294]->Fill(p_var,pc);
+						_procCats[id_idx].hists2D[1][295]->Fill(e_var,pc);
 
 					}
 				
