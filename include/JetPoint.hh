@@ -155,7 +155,7 @@ class JetPoint{
 
 		//set user idx info
 		void SetUserIdx(int i){ _idx = i; }
-		int userIdx() const{ return _idx; }
+		int GetUserIdx() const{ return _idx; }
 		
 
 		double _maxRap = 1e5;
