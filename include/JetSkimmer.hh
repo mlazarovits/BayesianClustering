@@ -139,6 +139,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(jetNSubclusters_Ebin4);
 			_timeHists1D.push_back(jetNSubclusters_Ebin5);
 			_timeHists1D.push_back(jetNSubclusters_Ebin6);
+			_timeHists1D.push_back(swCross_rhTimeNeg15toNeg9);
+			_timeHists1D.push_back(swCross_rhTimeNeg6toNeg3);
+
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -163,6 +166,15 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(rhPhi_eta);
 			_timeHists2D.push_back(rhEovP_dRtrack);
 			_timeHists2D.push_back(rhTime_Energy_zoomed);
+			_timeHists2D.push_back(swCross_rhTime);
+			_timeHists2D.push_back(kWeird_rhTime);
+			_timeHists2D.push_back(swCross_rhEnergy);	
+			_timeHists2D.push_back(kWeird_rhEnergy);
+			_timeHists2D.push_back(e4e1_kWeird_rhEge50rhTleNeg2);
+			_timeHists2D.push_back(rhEta_rhPhi_rhTimeNeg15toNeg9);
+			_timeHists2D.push_back(rhEta_rhPhi_rhTimeNeg6toNeg3);
+			_timeHists2D.push_back(rhTime_rhEta_rhTimeNeg15toNeg9);
+			_timeHists2D.push_back(rhTime_rhEta_rhTimeNeg6toNeg3);
 
 
 
@@ -326,7 +338,6 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* minpT_sigmaDeltaTime_dijets = new TH1D("minpT_sigmaDeltaTime_dijets","minpT_sigmaDeltaTime_dijets",10,0,1000);
 		//9 - resolution of difference between two jets for PV time as a function of the sum ECAL energy	
 		TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",6,&xbins[0]);
-		//TH1D* geoAvgEecal_sigmaDeltaTime_dijets = new TH1D("geoAvgEecal_sigmaDeltaTime_dijets","geoAvgEecal_sigmaDeltaTime_dijets",10,0,1500);
 		//10 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
 		TH1D* geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1 = new TH1D("geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1","geoEavg_sigmaDeltaTime_recoGen_genDeltaTpvGambin1",6,&xbins[0]);
 		//11 - resolution of difference in reco - gen genDeltaTs as a function of total E of rhs that go into PV time calculation
@@ -424,8 +435,10 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* jetNSubclusters_Ebin5 = new TH1D("jetNSubclusters_Ebin800to1000","jetNSubclusters_Ebin800to1000",50,-0,10);
 		//57 - n subclusters (E bin6)
 		TH1D* jetNSubclusters_Ebin6 = new TH1D("jetNSubclusters_Ebin1000to1200","jetNSubclusters_Ebin1000to1200",50,-0,10);
-
-
+		//58 - swissCross, -15 < t < -9
+		TH1D* swCross_rhTimeNeg15toNeg9 = new TH1D("swCross_rhTimeNeg15toNeg9","swCross_rhTimeNeg15toNeg9",50,-0.05,1);
+		//59 - swissCross, -6 < t < -3
+		TH1D* swCross_rhTimeNeg6toNeg3 = new TH1D("swCross_rhTimeNeg6toNeg3","swCross_rhTimeNeg6toNeg3",50,-0.05,1);
 
 
 		//0 - 2D histogram for reco-gen resolution
@@ -481,6 +494,26 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* rhEovP_dRtrack = new TH2D("rhEovP_dRtrack","rhEovP_dRtrack;rhEovP;dRtrack",50,0,15,50,0,0.09);
 		//22 - rh time vs rh E zoomed
 		TH2D* rhTime_Energy_zoomed = new TH2D("rhTime_Energy_zoomed","rhTime_Energy_zoomed;rhTime;Energy_zoomed",50,-15,0,50,0,200);
+		//23 - sw+ vs rh time
+		TH2D* swCross_rhTime = new TH2D("swCross_rhTime","swCross_rhTime;swCross;rhTime",50,0,1.1,50,-20,20);
+		//24 - kWeird vs rh time
+		TH2D* kWeird_rhTime = new TH2D("kWeird_rhTime","kWeird_rhTime;kWeird;rhTime",50,0.01,0.08,50,-20,20);
+		//25 - sw+ vs rh energy
+		TH2D* swCross_rhEnergy = new TH2D("swCross_rhEnergy","swCross_rhEnergy;swCP;rhEnergy",50,-0.05,1,50,0,500);	
+		//26 - kWeird vs rh energy		
+		TH2D* kWeird_rhEnergy = new TH2D("kWeird_rhEnergy","kWeird_rhEnergy;kWeird;rhEnergy",50,0.01,0.08,50,0,500);
+		//27 - e4/e1 vs 0.02*log10(e1)+0.02 (kWeird == e4/e1 < 0.02*log10(e1)+0.02) for rh E > 50 && rh time < -2 ns
+		TH2D* e4e1_kWeird_rhEge50rhTleNeg2 = new TH2D("e4e1_kWeird_rhEge50rhTleNeg2","e4e1_kWeird_rhEge50rhTleNeg2;e4e1;kWeird",50,-0.1,1.1,50,0.01,0.08);
+		//28 - eta vs phi, -15 < t < -9 
+		TH2D* rhEta_rhPhi_rhTimeNeg15toNeg9 = new TH2D("rhEta_rhPhi_rhTimeNeg15toNeg9","rhEta_rhPhi_rhTimeNeg15toNeg9;rhEta;rhPhi",50,-1.5,1.5,50,-3.4,3.4);
+		//29 - eta vs phi, -6 < t < -3 
+		TH2D* rhEta_rhPhi_rhTimeNeg6toNeg3 = new TH2D("rhEta_rhPhi_rhTimeNeg6toNeg3","rhEta_rhPhi_rhTimeNeg6toNeg3;rhEta;rhPhi",50,-1.5,1.5,50,-3.4,3.4);
+		//30 - time vs eta, -15 < t < -9 
+		TH2D* rhTime_rhEta_rhTimeNeg15toNeg9 = new TH2D("rhTime_rhEta_rhTimeNeg15toNeg9","rhTime_rhEta_rhTimeNeg15toNeg9;rhTime;rhEta",50,-20,20,50,-1.5,1.5);
+		//31 - time vs eta, -6 < t < -3 
+		TH2D* rhTime_rhEta_rhTimeNeg6toNeg3 = new TH2D("rhTime_rhEta_rhTimeNeg6toNeg3","rhTime_rhEta_rhTimeNeg6toNeg3;rhTime;rhEta",50,-20,20,50,-1.5,1.5);
+		
+		
 		
 		
 		
@@ -605,7 +638,7 @@ class JetSkimmer : public BaseSkimmer{
 					double Erh1, Erh2;
 					Erh1 = 0;
 					Erh2 = 0;	
-					double bestp, bestdr;
+					double bestp, bestdr, kweird;
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						Erh1 += rhs[r].E();
@@ -618,7 +651,23 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
 								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
 								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
+								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird);
 							}
+							if(rhs[r].t() > -15 && rhs[r].t() < -9){
+								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta());
+							}
+							if(rhs[r].t() > -6 && rhs[r].t() < -3){
+								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta());
+							}
+							kweird = 0.02*log10(rhs[r].E()) + 0.02;
+							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t());
+							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
+							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
 						}
 					}
 					rhs.clear();
