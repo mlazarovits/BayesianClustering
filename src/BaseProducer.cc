@@ -118,6 +118,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
+				rh.SetUserIdx(rhidx);
 				jet.AddRecHit(rh);
                         }
 
