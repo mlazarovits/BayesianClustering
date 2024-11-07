@@ -683,8 +683,23 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
 								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
 								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
+								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird);
 							}
-					
+							if(rhs[r].t() > -15 && rhs[r].t() < -9){
+								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta());
+							}
+							if(rhs[r].t() > -6 && rhs[r].t() < -3){
+								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta());
+							}
+							kweird = 0.02*log10(rhs[r].E()) + 0.02;
+							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t());
+							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
+							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
 						}
 					}
 	
