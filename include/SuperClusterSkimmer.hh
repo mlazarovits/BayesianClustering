@@ -1715,7 +1715,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//299 - E vs E/p, -7 < time < -2, phi left/right
 		TH2D* EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi","EovP_E_timegeNeg7leNeg2_phiCenter0pi2pi;EovPtimegeNeg7leNeg2_phiCenter0pi2pi;E",25,0.,15,25,0,1000);
 		//300 - dR vs sw+', -7 < time < -2, phi left/right
-		TH2D* dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi","dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi;dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,0.1,25,-0.05,0.04);
+		TH2D* dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi = new TH2D("dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi","dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi;dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,0.1,25,-0.05,0.4);
 		//301 - dR vs sw+' zoomed out, -7 < time < -2, phi left/right
 		TH2D* dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut = new TH2D("dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut","dRtrack_swCrossPrime_timegeNeg7leNeg2_phiCenter0pi2pi_zoomOut;dRtrack_timegeNeg7leNeg2_phiCenter0pi2pi;swCrossPrime",25,0.,0.1,25,-0.05,2.);
 
@@ -2546,7 +2546,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 						_procCats[id_idx].hists2D[1][301]->Fill(bestTrackDr,swCP);
 					}
 				}
-				if(bestTrackDr < 0.02){
+				if(bestTrackDr < 0.01){
 					if(tc >= -10 && tc < -5){
 						_procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,bestde_dr);
 						_procCats[id_idx].hists2D[1][272]->Fill(bestde_dr,swCP);
