@@ -81,7 +81,11 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				if(_spikes && _data){
 					if(1 - _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
 						continue;
+				
+					//add tighter sw+ cut
+					//if(_base->ECALRecHit_swCross->at(rhidx) > 0.86) continue;
 				}
+
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
