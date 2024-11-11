@@ -1,6 +1,7 @@
 #ifndef JETSKIMMER_HH
 #define JETSKIMMER_HH
 
+#include <utility>
 #include "JetPoint.hh"
 #include "BaseSkimmer.hh"
 #include "BasePDFMixture.hh"
@@ -141,7 +142,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(jetNSubclusters_Ebin6);
 			_timeHists1D.push_back(swCross_rhTimeNeg15toNeg9);
 			_timeHists1D.push_back(swCross_rhTimeNeg6toNeg3);
-
+			_timeHists1D.push_back(swCross_rhTimeNeg12);
+			_timeHists1D.push_back(swCross_rhTimeNeg5);
+			_timeHists1D.push_back(swCross_rhTime0);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -175,6 +178,10 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(rhEta_rhPhi_rhTimeNeg6toNeg3);
 			_timeHists2D.push_back(rhTime_rhEta_rhTimeNeg15toNeg9);
 			_timeHists2D.push_back(rhTime_rhEta_rhTimeNeg6toNeg3);
+			_timeHists2D.push_back(normNeighbors);	
+			_timeHists2D.push_back(swCross_rhEnergy_timeNeg12);
+			_timeHists2D.push_back(swCross_rhEnergy_timeNeg5);	
+			_timeHists2D.push_back(swCross_rhEnergy_time0);	
 
 
 
@@ -439,6 +446,12 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* swCross_rhTimeNeg15toNeg9 = new TH1D("swCross_rhTimeNeg15toNeg9","swCross_rhTimeNeg15toNeg9",50,-0.05,1);
 		//59 - swissCross, -6 < t < -3
 		TH1D* swCross_rhTimeNeg6toNeg3 = new TH1D("swCross_rhTimeNeg6toNeg3","swCross_rhTimeNeg6toNeg3",50,-0.05,1);
+		//60 - swissCross, time ~ -12
+		TH1D* swCross_rhTimeNeg12 = new TH1D("swCross_rhTimeNeg12","swCross_rhTimeNeg12",50,-0.05,1);
+		//61 - swissCross, time ~ -5
+		TH1D* swCross_rhTimeNeg5 = new TH1D("swCross_rhTimeNeg5","swCross_rhTimeNeg5",50,-0.05,1);
+		//62 - swissCross, time ~ 0
+		TH1D* swCross_rhTime0 = new TH1D("swCross_rhTime0","swCross_rhTime0",50,-0.05,1);
 
 
 		//0 - 2D histogram for reco-gen resolution
@@ -512,7 +525,14 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* rhTime_rhEta_rhTimeNeg15toNeg9 = new TH2D("rhTime_rhEta_rhTimeNeg15toNeg9","rhTime_rhEta_rhTimeNeg15toNeg9;rhTime;rhEta",50,-20,20,50,-1.5,1.5);
 		//31 - time vs eta, -6 < t < -3 
 		TH2D* rhTime_rhEta_rhTimeNeg6toNeg3 = new TH2D("rhTime_rhEta_rhTimeNeg6toNeg3","rhTime_rhEta_rhTimeNeg6toNeg3;rhTime;rhEta",50,-20,20,50,-1.5,1.5);
-		
+		//32 - eta vs phi grid, overlaid neighbors normalized to center energy in 3x3 grid
+		TH2D* normNeighbors = new TH2D("normNeighbors","normNeighbors;local ieta;local iphi",3,-1,2,3,-1,2);	
+		//33 - sw+ vs rh energy, time ~ -12
+		TH2D* swCross_rhEnergy_timeNeg12 = new TH2D("swCross_rhEnergy_timeNeg12","swCross_rhEnergy_timeNeg12;swCross;rhEnergy_timeNeg12",50,-0.05,1,50,0,500);	
+		//34 - sw+ vs rh energy, time ~ -5
+		TH2D* swCross_rhEnergy_timeNeg5 = new TH2D("swCross_rhEnergy_timeNeg5","swCross_rhEnergy_timeNeg5;swCross;rhEnergy_timeNeg5",50,-0.05,1,50,0,500);	
+		//35 - sw+ vs rh energy, time ~ 0
+		TH2D* swCross_rhEnergy_time0 = new TH2D("swCross_rhEnergy_time0","swCross_rhEnergy_time0;swCross;rhEnergy_time0",50,-0.05,1,50,0,500);	
 		
 		
 		
@@ -640,6 +660,8 @@ class JetSkimmer : public BaseSkimmer{
 					Erh2 = 0;	
 					double bestp, bestdr, kweird;
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
+					vector<double> neighborEs;
+					std::vector<std::pair<int, int>> icoords;
 					for(int r = 0; r < rhs.size(); r++){
 						Erh1 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
@@ -668,6 +690,24 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
+							//2D map of neighbors
+							GetNormNeighborE(rhs, r, icoords, neighborEs);
+							for(int e = 0; e < (int)neighborEs.size(); e++)
+								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+							//time slice hists
+							if(rhs[r].t() > -12-0.1 && rhs[r].t() < -12+0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
+							if(rhs[r].t() > -5-0.1 && rhs[r].t() < -5+0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
+							if(rhs[r].t() > -0.1 && rhs[r].t() < 0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
+						
 						}
 					}
 					rhs.clear();
@@ -700,6 +740,23 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
+							//2D map of neighbors
+							GetNormNeighborE(rhs, r, icoords, neighborEs);
+							for(int e = 0; e < (int)neighborEs.size(); e++)
+								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+							//time slice hists
+							if(rhs[r].t() > -12-0.1 && rhs[r].t() < -12+0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
+							if(rhs[r].t() > -5-0.1 && rhs[r].t() < -5+0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
+							if(rhs[r].t() > -0.1 && rhs[r].t() < 0.1){
+								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
+								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+							}
 						}
 					}
 	
@@ -1851,6 +1908,26 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
                 }
 
 
+		void GetNormNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es){
+			int ieta, iphi;
+			JetPoint rh = rhs[r];
+			int rh_ieta = _detIDmap[rhs[r].rhId()].i2;
+			int rh_iphi = _detIDmap[rhs[r].rhId()].i1;
+			icoords.clear(); Es.clear();
+			for(int j = 0; j < (int)rhs.size(); j++){
+				ieta = _detIDmap[rhs[j].rhId()].i2;
+				iphi = _detIDmap[rhs[j].rhId()].i1;
+
+				if(fabs(ieta - rh_ieta) <= 1 && fabs(iphi - rh_iphi) <= 1){
+					Es.push_back(rhs[j].E()/rhs[r].E());
+					icoords.push_back(make_pair(rh_ieta - ieta, rh_iphi - iphi));
+				}
+			}
+
+		}
+		
+		
+		
 		private:
 			vector<Jet> _phos; //photons for event
 
