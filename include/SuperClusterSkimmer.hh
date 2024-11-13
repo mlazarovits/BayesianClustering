@@ -3563,7 +3563,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			double bestdr, bestp;
 			TrackMatched(gmm,ncl,bestdr, bestp);
 		
-			if(trackmatch) cout << "spike match with track dr " << bestdr << " and E/p " << E/bestp << endl;
 			//early times, phi left/right for BH
 			//if subcl is spike
 			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc ))
