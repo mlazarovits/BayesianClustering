@@ -2573,7 +2573,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					}
 					//current spike selection - dr, time req + phi center veto
 					if(tc <= -8){
-						if(!(pc < 0.1) && !(acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) && !(2*acos(-1) - 0.1 < pc )){
+						if(!(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
 							_procCats[id_idx].hists2D[1][288]->Fill(bestde_dr,swCP);
 							_procCats[id_idx].hists2D[1][289]->Fill(bestde_dr,swCP);
 							_procCats[id_idx].hists2D[1][290]->Fill(bestde_dr,E_k);
@@ -3533,12 +3533,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		pc = params["mean"].at(1,0);
 		tc = params["mean"].at(2,0);
 		//for BH definition
-		bool pcFilter, tcFilterEarly, tcFilterPrompt;
+		bool pcFilter;
 		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
 		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
-		//early times
-		tcFilterEarly = tc <= -2;
-		tcFilterPrompt = (-2 < tc && tc < 2);
 		
 		int label = -1;
 		//signal
@@ -3551,7 +3548,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
 						label = 0;
 					else
-						label = 1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target), removed in data processing pre-MVA
+						label = -1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target)
 				}
 				else //no gen match
 					label = -1;
@@ -3565,19 +3562,18 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//do track matching for spikes
 			double bestdr, bestp;
 			TrackMatched(gmm,ncl,bestdr, bestp);
-			//spike selection
-			bool trackmatch = (bestdr < 0.02) && (E/bestp > 0.9 && E/bestp < 1.1);
 		
 			if(trackmatch) cout << "spike match with track dr " << bestdr << " and E/p " << E/bestp << endl;
 			//early times, phi left/right for BH
 			//if subcl is spike
-			if(trackmatch)
+			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc ))
 				label = 3;
 			//if subcl is BH
-			if(pcFilter && tcFilterEarly && !trackmatch)	
+			if((tc > -7 && tc <= -2) && pcFilter)	
 				label = 2;
-			//if subcl is not BH or spike
-			if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt && !trackmatch)
+			//if subcl is not BH or spike (ie prompt, 'physics' bkg)
+			//TODO: eventually need extra iso criteria for prompt iso, nonprompt iso bkg separation
+			if(tc > -2 && tc < 1)
 				label = 1;
 		
 		}
