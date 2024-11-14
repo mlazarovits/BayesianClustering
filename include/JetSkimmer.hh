@@ -512,7 +512,7 @@ class JetSkimmer : public BaseSkimmer{
 		//24 - kWeird vs rh time
 		TH2D* kWeird_rhTime = new TH2D("kWeird_rhTime","kWeird_rhTime;kWeird;rhTime",50,0.01,0.08,50,-20,20);
 		//25 - sw+ vs rh energy
-		TH2D* swCross_rhEnergy = new TH2D("swCross_rhEnergy","swCross_rhEnergy;swCP;rhEnergy",50,-0.05,1,50,0,500);	
+		TH2D* swCross_rhEnergy = new TH2D("swCross_rhEnergy","swCross_rhEnergy;swissCross;rhEnergy",50,-0.05,1,50,0,500);	
 		//26 - kWeird vs rh energy		
 		TH2D* kWeird_rhEnergy = new TH2D("kWeird_rhEnergy","kWeird_rhEnergy;kWeird;rhEnergy",50,0.01,0.08,50,0,500);
 		//27 - e4/e1 vs 0.02*log10(e1)+0.02 (kWeird == e4/e1 < 0.02*log10(e1)+0.02) for rh E > 50 && rh time < -2 ns
