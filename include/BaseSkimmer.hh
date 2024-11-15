@@ -361,6 +361,12 @@ class BaseSkimmer{
 				notSunm.ids = {97, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8}; 
 				_procCats.push_back(notSunm);
 			}
+			else if(sample.find("SMS-GlGl") != string::npos){
+				//data
+				procCat glgl(_hists1D, _hists2D, "GluGluN2", "GluGluN2", leadsep);
+				glgl.ids = {-999};
+				_procCats.push_back(glgl);
+			}
 			else if(sample.find("JetHT") != string::npos){
 				//data
 				procCat jetht(_hists1D, _hists2D, "JetHTPD", "JetHTPD", leadsep);
