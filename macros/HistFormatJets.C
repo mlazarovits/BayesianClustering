@@ -433,6 +433,9 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
 	string histname = hist->GetName();
+	if(histname.find("Neighbors") != string::npos && histname.find("norm") == string::npos)
+		hist->Scale(1./hist->Integral());
+
 	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
 		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
 			hist->SetMarkerSize(1.3);
@@ -1607,8 +1610,8 @@ void HistFormatJets(string file, string file2 = ""){
 		Hist2D(file, "DoubleEG", "med", oname, "rhTime_rhEta");
 		Hist2D(file, "QCD", "med", oname,   "rhTime_rhEta");
 	
-		Hist2D(file, "JetHT",    "med", oname, "normNeighbors");
-		Hist2D(file, "DoubleEG", "med", oname, "normNeighbors");
+		Hist2D(file, "JetHT",    "med", oname, "Neighbors");
+		Hist2D(file, "DoubleEG", "med", oname, "Neighbors");
 		
 		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "swCross_rhTime");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
