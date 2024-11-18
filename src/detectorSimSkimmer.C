@@ -161,8 +161,8 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
-	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
-	else cout << "Skimming all events for ";
+	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << endl;
+	else cout << "Skimming all events" << endl;
 
 	//make sure evti < evtj
 	if(evti > evtj){
@@ -175,8 +175,9 @@ int main(int argc, char *argv[]){
 		oname = file->GetName();
 		string match = "simNtuples_";
 		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()));
-		oname = "simSkim_"+oname;
-		
+		if(oname.find("/") != string::npos)
+			oname = oname.substr(oname.find("/")+1);	
+		oname = "simSkims/simSkim_"+oname;
 		std::stringstream stream;
 		string gev_string;
 		stream.str("");
@@ -192,7 +193,7 @@ int main(int argc, char *argv[]){
 		oname += ".root";
 	}
 	else{
-		if(oname.find("condor") != string::npos){ 
+		if(oname.find("condor") != string::npos){
 			oname = oname+".root";
 		}
 		else{
