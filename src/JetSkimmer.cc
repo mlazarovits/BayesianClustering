@@ -95,9 +95,23 @@ void JetSkimmer::Skim(){
 		jetSelEff++;
 
 	}
+	double err = -999;
+	for(int i = 0; i < 5; i++){
+		for(int j = 0; j < 5; j++){
+			//t ~ -12
+			err = sqrt(trCats[0].procCats[0].hists2D[0][37]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][37]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[0].hists2D[0][43]->Fill(i-2,j-2,err);
+			//t ~ -5
+			err = sqrt(trCats[0].procCats[0].hists2D[0][38]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][38]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[0].hists2D[0][44]->Fill(i-2,j-2,err);
+			//t ~ 0
+			err = sqrt(trCats[0].procCats[0].hists2D[0][39]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][39]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[0].hists2D[0][45]->Fill(i-2,j-2,err);
+		}
+	}
+
 
 	WriteHists(ofile);
-
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 }
