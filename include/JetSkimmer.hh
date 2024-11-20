@@ -145,6 +145,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(swCross_rhTimeNeg12);
 			_timeHists1D.push_back(swCross_rhTimeNeg5);
 			_timeHists1D.push_back(swCross_rhTime0);
+			_timeHists1D.push_back(dRtrack_rhTimeNeg12);
+			_timeHists1D.push_back(dRtrack_rhTimeNeg5);
+			_timeHists1D.push_back(dRtrack_rhTime0);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -185,7 +188,13 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(ENeighbors);	
 			_timeHists2D.push_back(ENeighbors_timeNeg12);	
 			_timeHists2D.push_back(ENeighbors_timeNeg5);	
-			_timeHists2D.push_back(ENeighbors_timeNeg0);	
+			_timeHists2D.push_back(ENeighbors_time0);	
+			_timeHists2D.push_back(rhEta_rhPhi_rhTimeNeg12);
+			_timeHists2D.push_back(rhEta_rhPhi_rhTimeNeg5);
+			_timeHists2D.push_back(rhEta_rhPhi_rhTime0);
+			_timeHists2D.push_back(ENeigborsBinErrors_timeNeg12);	
+			_timeHists2D.push_back(ENeigborsBinErrors_timeNeg5);	
+			_timeHists2D.push_back(ENeigborsBinErrors_time0);	
 
 
 
@@ -456,6 +465,12 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* swCross_rhTimeNeg5 = new TH1D("swCross_rhTimeNeg5","swCross_rhTimeNeg5",50,-0.05,1);
 		//62 - swissCross, time ~ 0
 		TH1D* swCross_rhTime0 = new TH1D("swCross_rhTime0","swCross_rhTime0",50,-0.05,1);
+		//63 - dr bw rh and track, time ~ -12
+		TH1D* dRtrack_rhTimeNeg12 = new TH1D("dRtrack_rhTimeNeg12","dRtrack_rhTimeNeg12",50,-0.01,0.1);
+		//64 - dr bw rh and track, time ~ 0
+		TH1D* dRtrack_rhTimeNeg5 = new TH1D("dRtrack_rhTimeNeg5","dRtrack_rhTimeNeg5",50,-0.01,0.1);
+		//65 - dr bw rh and track, time ~ 0
+		TH1D* dRtrack_rhTime0 = new TH1D("dRtrack_rhTime0","dRtrack_rhTime0",50,-0.01,0.1);
 
 
 		//0 - 2D histogram for reco-gen resolution
@@ -544,7 +559,19 @@ class JetSkimmer : public BaseSkimmer{
 		//38 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, time ~ -5
 		TH2D* ENeighbors_timeNeg5 = new TH2D("ENeighbors_timeNeg5","ENeighbors_timeNeg5;local ieta;local iphi_timeNeg5",5,-2,3,5,-2,3);	
 		//39 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, time ~ -0
-		TH2D* ENeighbors_timeNeg0 = new TH2D("ENeighbors_timeNeg0","ENeighbors_timeNeg0;local ieta;local iphi_timeNeg0",5,-2,3,5,-2,3);	
+		TH2D* ENeighbors_time0 = new TH2D("ENeighbors_time0","ENeighbors_time0;local ieta;local iphi_time0",5,-2,3,5,-2,3);	
+		//40 - eta vs phi, t ~ -12 
+		TH2D* rhEta_rhPhi_rhTimeNeg12 = new TH2D("rhEta_rhPhi_rhTimeNeg12","rhEta_rhPhi_rhTimeNeg12;rhEta;rhPhi",50,-1.5,1.5,50,-3.4,3.4);
+		//41 - eta vs phi, t ~ -5 
+		TH2D* rhEta_rhPhi_rhTimeNeg5 = new TH2D("rhEta_rhPhi_rhTimeNeg5","rhEta_rhPhi_rhTimeNeg5;rhEta;rhPhi",50,-1.5,1.5,50,-3.4,3.4);
+		//42 - eta vs phi, t ~ 0 
+		TH2D* rhEta_rhPhi_rhTime0 = new TH2D("rhEta_rhPhi_rhTime0","rhEta_rhPhi_rhTime0;rhEta;rhPhi",50,-1.5,1.5,50,-3.4,3.4);
+		//43 - eta vs phi grid, overlaid neighbors energy bin errors in 5x5 grid, time ~ -12
+		TH2D* ENeigborsBinErrors_timeNeg12 = new TH2D("ENeigborsBinErrors_timeNeg12","ENeigborsBinErrors_timeNeg12;local ieta;local iphi_timeNeg12",5,-2,3,5,-2,3);	
+		//44 - eta vs phi grid, overlaid neighbors energy bin errors in 5x5 grid, time ~ -5
+		TH2D* ENeigborsBinErrors_timeNeg5 = new TH2D("ENeigborsBinErrors_timeNeg5","ENeigborsBinErrors_timeNeg5;local ieta;local iphi_timeNeg5",5,-2,3,5,-2,3);	
+		//45 - eta vs phi grid, overlaid neighbors energy bin errors in 5x5 grid, time ~ -0
+		TH2D* ENeigborsBinErrors_time0 = new TH2D("ENeigborsBinErrors_time0","ENeigborsBinErrors_time0;local ieta;local iphi_time0",5,-2,3,5,-2,3);	
 		
 		
 		
@@ -679,8 +706,8 @@ class JetSkimmer : public BaseSkimmer{
 						if(tr_idx == 0){
 							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E());
+							TrackMatched(rhs[r], bestdr, bestp);
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
-								TrackMatched(rhs[r], bestdr, bestp);
 								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
 								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
 								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
@@ -714,6 +741,8 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
+								trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 							if(rhs[r].t() > -5-1 && rhs[r].t() < -5+1){
 								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
@@ -721,6 +750,8 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
+								trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 							if(rhs[r].t() > -1 && rhs[r].t() < 1){
 								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
@@ -728,6 +759,8 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
+								trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 						
 						}
@@ -775,6 +808,8 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 							if(rhs[r].t() > -5-0.1 && rhs[r].t() < -5+0.1){
 								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
@@ -782,6 +817,8 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 							if(rhs[r].t() > -0.1 && rhs[r].t() < 0.1){
 								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
@@ -789,6 +826,9 @@ class JetSkimmer : public BaseSkimmer{
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 								}
+
+								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi());
 							}
 						}
 					}
@@ -1953,7 +1993,10 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 
 				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
 					Es.push_back(rhs[j].E());
-					icoords.push_back(make_pair(rh_ieta - ieta, rh_iphi - iphi));
+					if(rh_ieta < 0)
+						icoords.push_back(make_pair(rh_ieta + ieta, rh_iphi - iphi));
+					else
+						icoords.push_back(make_pair(rh_ieta - ieta, rh_iphi - iphi));
 				}
 			}
 
