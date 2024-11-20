@@ -3,6 +3,7 @@
 
 #include "VarEMCluster.hh"
 #include "GaussianMixture.hh"
+#include "HierGaussianMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
 #include "NodeStack.hh"
@@ -159,12 +160,11 @@ class MergeTree : BaseTree{
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
-			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			int n = _clusters.size();
 			x->idx = n-1;
-			
 			x->nndist = 1e300;
 			x->mirror = nullptr;
+			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
 		}
 
@@ -194,7 +194,7 @@ class MergeTree : BaseTree{
 			PointCollection newpts = PointCollection(*x->points);
 			BayesPoint center = newpts.Center();//Translate(center);
 
-			x->model = new GaussianMixture(k); //p(x | theta)
+			x->model = new HierGaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
 			x->model->SetData(&newpts);
@@ -211,6 +211,10 @@ class MergeTree : BaseTree{
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " clusters";
+			if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
+			else cout << endl;
+
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
 			//make sure sum of weights for points is above threshold
 			//otherwise the algorithm will exclude all components	
@@ -218,11 +222,14 @@ class MergeTree : BaseTree{
 			//cluster
 			double oldLogL = algo->EvalLogL();
 			double LogLThresh = 1e-10;
-			double newLogL;
+			double newLogL, entropy, nll;
 			double dLogL = 999; 
 			int it = 0;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
+				entropy = x->model->EvalEntropyTerms();
+				nll = x->model->EvalNLLTerms();
+			cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
 		if(std::isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 				dLogL = newLogL - oldLogL;
 				oldLogL = newLogL;
