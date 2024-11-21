@@ -31,8 +31,9 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	//set distance constraint
-	mt->SetDistanceConstraint(0,acos(-1)/2.);
+	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
+cout << "n pts " << n << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
@@ -42,6 +43,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		} 
 		mt->AddLeaf(&_points[i].at(0));
 	}
+	cout << "------------------------------------------" << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
@@ -97,7 +99,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 				jet_j = BestRkPair.second;
 			}
 
-			if (_verb > 0) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl; // GPS debugging
+			if (_verb > 1) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl; // GPS debugging
  			//also need to erase any impossible merges from map too
 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
