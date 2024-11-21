@@ -74,6 +74,8 @@ class GaussianMixture : public BasePDFMixture{
 		void UpdateVariationalParameters();
 		void UpdatePriorParameters();
 		double EvalVariationalLogL();
+		double EvalEntropyTerms();
+		double EvalNLLTerms();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
 		map<string, Matrix> GetPriorParameters(int k) const; 
 		map<string, Matrix> GetOnlyPriorParameters(int k); 
