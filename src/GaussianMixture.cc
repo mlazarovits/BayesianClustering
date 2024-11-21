@@ -217,6 +217,8 @@ double GaussianMixture::EvalLogL(){
 
 map<string, Matrix> GaussianMixture::GetParameters(int k){ 
 	map<string, Matrix> p;
+	if(k >= m_k) return p;
+	if(k < 0) return p;
 	p["mean"] = m_model[k]->GetParameter("mean");
 	p["cov"] = m_model[k]->GetParameter("cov");
 	p["pi"] = Matrix(m_coeffs[k]);
@@ -226,6 +228,7 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 map<string, Matrix> GaussianMixture::GetPriorParameters(int k) const{ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
+	if(k < 0) return p;
 	p["mean"] = m_model[k]->GetParameter("mean");
 	p["cov"] = m_model[k]->GetParameter("cov");
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
@@ -242,6 +245,7 @@ map<string, Matrix> GaussianMixture::GetPriorParameters(int k) const{
 map<string, Matrix> GaussianMixture::GetOnlyPriorParameters(int k){ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
+	if(k < 0) return p;
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
 	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
 	p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
@@ -678,6 +682,7 @@ void GaussianMixture::UpdatePriorParameters(){
 
 
 
+
 //calculates ELBO
 //(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
 double GaussianMixture::EvalVariationalLogL(){
@@ -823,3 +828,153 @@ double GaussianMixture::EvalVariationalLogL(){
 
 }; //end ELBO
 
+
+double GaussianMixture::EvalNLLTerms(){
+	double E_p_all, E_p_Z, E_p_pi, E_p_muLam;
+	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
+	E_p_all = 0;
+	//recalculate expectation values E_lam + E_pi with updated parameters
+	CalculateExpectations();
+	for(int k = 0; k < m_k; k++){
+		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
+		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+		Matrix mean = m_model[k]->GetPrior()->GetParameter("mean");
+		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
+		Matrix mu = m_model[k]->GetParameter("mean");
+		Matrix cov = m_model[k]->GetParameter("cov");
+		////cout << "k: " << k << " scale: " << scale << " dof: " << nu << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << endl;
+	//	cout << "m" << endl;
+	//	mean.Print();
+	//	cout << "W" << endl;
+	//	scalemat.Print();
+	
+	//	cout << "mean" << endl;
+	//	m_model[k]->GetParameter("mean").Print();
+	//	cout << "cov" << endl;
+	//	cov.Print();
+		
+		//(x_n - m_k)
+		//m_xbars[k].Print();
+		Matrix xbar_min_m = Matrix(m_dim,1);
+		xbar_min_m.minus(mu, mean);
+		Matrix xbar_min_mT = Matrix(1, m_dim);
+		xbar_min_mT.transpose(xbar_min_m);
+		//(x_n - m_k)T*W_k*(x_n - m_k)
+		Matrix xbarT_x_W = Matrix(1,m_dim);
+		xbarT_x_W.mult(xbar_min_mT,scalemat);
+		Matrix full = Matrix(1,1);
+		full.mult(xbarT_x_W,xbar_min_m);
+		//tr(s_k*w_k)
+		//S_k*W_k = dxd matrix
+		Matrix tmp_S_W = Matrix(m_dim, m_dim);
+		tmp_S_W.mult(cov,scalemat);
+		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/scale - nu*tmp_S_W.trace()  - nu*full.at(0,0) - m_dim*log(2*acos(-1)));
+
+	}
+	E_p_all *= 0.5;
+//	cout << "E_p_all: " << E_p_all << endl;
+
+	//E[ln(p(Z|pi))] = sum_n sum_k r_nk*ln(m_Epi[k])
+	E_p_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++)
+			E_p_Z += m_post.at(n,k)*m_Epi[k];
+//	cout << "E_p_Z: " << E_p_Z << endl;
+	
+	//E[ln(p(pi))] = ln(C(alpha)) + (alpha_0 - 1)*sum_k m_Epi[k]
+	E_p_pi = 0;
+	for(int k = 0; k < m_k; k++)
+		E_p_pi += m_Epi[k];
+	E_p_pi *= (m_alpha0 - 1);
+	vector<double> alpha0s(m_k, m_alpha0);
+	Dirichlet* dir = new Dirichlet(alpha0s);
+	E_p_pi += dir->lnC();
+//	cout << "E_p_pi: " << E_p_pi << endl;
+
+	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
+	E_p_muLam = 0;
+	double lam_sum = 0; 
+	double half_sum = 0; 
+	double tr_sum = 0;
+	Matrix tmp, tmpT;
+	for(int k = 0; k < m_k; k++){
+		//(m_k - m_0)
+		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
+		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+		Matrix mean = m_model[k]->GetPrior()->GetParameter("mean");
+		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
+		
+		Matrix mk_min_m0 = Matrix(m_dim,1);
+		mk_min_m0.minus(mean,m_mean0);		
+		Matrix mk_min_m0T = Matrix(1, m_dim);
+		mk_min_m0T.transpose(mk_min_m0);
+		//(m_k - m_0)T*W_k*(m_k - m_0)
+		Matrix mT_x_W = Matrix(1,m_dim);
+		mT_x_W.mult(mk_min_m0T,scalemat);
+		Matrix full = Matrix(1,1);
+		full.mult(mT_x_W,mk_min_m0);
+		
+		half_sum += (m_dim*log(m_beta0/(2*acos(-1))) + m_Elam[k] - m_dim*m_beta0/scale - m_beta0*nu*full.at(0,0));
+		lam_sum += m_Elam[k];
+		
+		Matrix tr = Matrix(m_dim,m_dim);
+		tr.mult(m_W0inv,scalemat);	
+	
+		tr_sum += nu*tr.trace();
+	}
+	E_p_muLam = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
+	Wishart* wish = new Wishart(m_W0, m_nu0);
+	E_p_muLam += m_k*wish->lnB();
+//	cout << "E_p_muLam: " << E_p_muLam << endl;
+
+//	cout << "E_p_all: " << E_p_all << endl;
+//	cout << "E_p_Z: " << E_p_Z << endl;
+//	cout << "E_p_pi: " << E_p_pi << endl;
+//	cout << "E_p_muLam: " << E_p_muLam << endl;
+//	cout << "m_post" << endl;
+	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam;
+
+}; //end NLL
+
+double GaussianMixture::EvalEntropyTerms(){
+	double E_q_Z, E_q_pi, E_q_muLam;
+	//recalculate expectation values E_lam + E_pi with updated parameters
+	CalculateExpectations();
+	//E[ln(q(Z)]
+	E_q_Z = 0;
+	for(int n = 0; n < m_n; n++)
+		for(int k = 0; k < m_k; k++){
+			if(m_post.at(n,k) == 0) E_q_Z += 0;	
+			else E_q_Z += m_post.at(n,k)*log(m_post.at(n,k));	
+		}
+//	cout << "E_q_Z: " <<  E_q_Z << endl;
+	
+
+	//E[ln(q(pi))]
+	E_q_pi = 0;
+	for(int k = 0; k < m_k; k++){
+		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
+	}
+	Dirichlet* dir_k = new Dirichlet(m_alphas);
+	E_q_pi += dir_k->lnC();
+//	cout << "E_q_pi: " << E_q_pi << endl;
+	
+	//E[ln(q(mu, lam))]
+	E_q_muLam = 0;
+	double H;
+	for(int k = 0; k < m_k; k++){
+		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
+		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
+		Wishart* wish_k = new Wishart(scalemat, nu);
+		H = wish_k->H();
+		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
+
+	}
+//	cout << "E_q_Z: " <<  E_q_Z << endl;
+//	cout << "E_q_pi: " << E_q_pi << endl;
+//	cout << "E_q_muLam: " <<  E_q_muLam << endl;
+//	cout << "m_post" << endl;
+	return -E_q_Z - E_q_pi - E_q_muLam;
+
+}; //end Entropy
