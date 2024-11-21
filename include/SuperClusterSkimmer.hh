@@ -3548,7 +3548,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
 						label = 0;
 					else
-						label = -1; //not signal matched photons shouldnt be included (admixture of signals in GMSB, not really the bkg we want to target)
+						label = 1; //removal of GMSB !sig photons is done in data processing for NN	
 				}
 				else //no gen match
 					label = -1;
