@@ -243,27 +243,45 @@ double HierGaussianMixture::EvalLogL(){
 
 
 
-
+//k == -1 returns parameters for modelj
 map<string, Matrix> HierGaussianMixture::GetParameters(int k){ 
 	map<string, Matrix> p;
-	p["mean"] = m_model[k]->GetParameter("mean");
-	p["cov"] = m_model[k]->GetParameter("cov");
-	p["pi"] = Matrix(m_coeffs[k]);
+	if(k >= m_k) return p;
+	if(k < -1) return p;
+	if(k == -1){
+		p["mean"] = m_modelj->GetParameter("mean");
+		p["cov"] = m_modelj->GetParameter("cov");
+	}
+	else{
+		p["mean"] = m_model[k]->GetParameter("mean");
+		p["cov"] = m_model[k]->GetParameter("cov");
+		p["pi"] = Matrix(m_coeffs[k]);
+	}
 	return p;
 };
 
 map<string, Matrix> HierGaussianMixture::GetPriorParameters(int k) const{ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
-	p["mean"] = m_model[k]->GetParameter("mean");
-	p["cov"] = m_model[k]->GetParameter("cov");
-	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
-	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
-	p["m"] = m_model[k]->GetPrior()->GetParameter("mean");
-	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
-	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
-	p["alpha"] = Matrix(m_alphas[k]);
-	
+	if(k < -1) return p;
+	if(k == -1){
+		p["mean"] = m_modelj->GetParameter("mean");
+		p["cov"] = m_modelj->GetParameter("cov");
+		p["scalemat"] = m_modelj->GetPrior()->GetParameter("scalemat");
+		p["m"] = m_modelj->GetPrior()->GetParameter("mean");
+		p["scale"] = m_modelj->GetPrior()->GetParameter("scale");
+		p["dof"] = m_modelj->GetPrior()->GetParameter("dof");
+	}
+	else{
+		p["mean"] = m_model[k]->GetParameter("mean");
+		p["cov"] = m_model[k]->GetParameter("cov");
+		p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
+		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
+		p["m"] = m_model[k]->GetPrior()->GetParameter("mean");
+		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
+		p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
+		p["alpha"] = Matrix(m_alphas[k]);
+	}	
 	return p;
 };
 
@@ -271,13 +289,21 @@ map<string, Matrix> HierGaussianMixture::GetPriorParameters(int k) const{
 map<string, Matrix> HierGaussianMixture::GetOnlyPriorParameters(int k){ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
-	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
-	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
-	p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
-	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
-	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
-	p["alpha"] = Matrix(m_alphas[k]);
-	
+	if(k < -1) return p;
+	if(k == -1){
+		p["scalemat"] = m_modelj->GetPrior()->GetParameter("scalemat");
+		p["mean"] = m_modelj->GetPrior()->GetParameter("mean");
+		p["scale"] = m_modelj->GetPrior()->GetParameter("scale");
+		p["dof"] = m_modelj->GetPrior()->GetParameter("dof");
+	}
+	else{
+		p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
+		p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
+		p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
+		p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
+		p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
+		p["alpha"] = Matrix(m_alphas[k]);
+	}	
 	return p;
 };
 
