@@ -42,6 +42,16 @@ class HierGaussianMixture : public BasePDFMixture{
 			m_nu0 = params["dof"].at(0,0);
 			m_W0 = params["scalemat"];
 			m_mean0 = params["mean"];
+		}
+		void SetJetPriorParameters(map<string, Matrix> params){	
+			m_betaj0 = params["scale"].at(0,0);
+			m_nuj0 = params["dof"].at(0,0);
+			m_Wj0 = params["scalemat"];
+			m_meanj0 = params["mean"];
+			
+			m_Wj0inv.invert(m_Wj0);
+			m_meanBetaj0 = Matrix(m_dim, 1);
+			m_meanBetaj0.mult(m_meanj0,m_betaj0);
 		//	if(_verb > 0){
 		//		cout << "HierGaussianMixture::SetPriorParameters - setting prior parameters" << endl;
 		//		cout << "beta0 = " << m_beta0 << " nu0 = " << m_nu0 << endl;
@@ -78,6 +88,7 @@ class HierGaussianMixture : public BasePDFMixture{
 		void CalculateVariationalPosterior();
 		void CalculateExpectations();
 		void CalculateRStatistics();
+		void CalculateJStatistics();
 
 		void UpdateVariationalParameters();
 		void UpdatePriorParameters();
@@ -113,7 +124,7 @@ class HierGaussianMixture : public BasePDFMixture{
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
-
+		double m_Elamj;
 
 		
 
