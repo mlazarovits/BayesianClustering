@@ -202,6 +202,8 @@ int main(int argc, char *argv[]){
 			oname_extra = oname_extra.substr(oname_extra.find(match)+match.size(),oname_extra.find(".root")-(oname_extra.find(match)+match.size()))+".root";
 			oname = "simSkim_"+oname+"_"+oname_extra;
 		}
+		if(oname.find("/") != string::npos)
+			oname = oname.substr(oname.find("/")+1);	
 	}	
 
 	cout << "Energy transfer factor: " << gev << endl;
