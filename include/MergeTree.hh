@@ -180,9 +180,12 @@ class MergeTree : BaseTree{
 		double Evidence(node* x){
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
-			if(x->l == _z && x->r == _z) k = 1;
+			if(x->l == _z && x->r == _z) k = 2;
 			//number of clusters in node x = k_l + k_r for left and right nodes
-			else k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+			else{
+			///k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+			k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
+			cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
 		
 
 			//transform points into local coordinates
@@ -211,9 +214,6 @@ class MergeTree : BaseTree{
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " clusters";
-			if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
-			else cout << endl;
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
 			//make sure sum of weights for points is above threshold
@@ -235,6 +235,9 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters";
+			if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
+			else cout << endl;
 
 			//translate the parameters back into global coordinates
 			Matrix matshift;

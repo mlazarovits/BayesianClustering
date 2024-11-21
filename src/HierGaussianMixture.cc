@@ -333,6 +333,8 @@ void HierGaussianMixture::InitPriorParameters(unsigned long long seed){
 	
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);
+
+
 	//W <- R in dxd space - is a covariance matrix
 	m_W0 = Matrix(m_dim, m_dim);
 	//this is the inverse prior covariance
@@ -363,8 +365,10 @@ void HierGaussianMixture::InitPriorParameters(unsigned long long seed){
 	//init default jet prior parameters
 	m_betaj0 = 1e-3;
 	m_nuj0 = m_dim;
+	//mean of Wishart(X | W, nu) = nuW
 	m_Wj0 = Matrix(m_dim, m_dim);
 	m_Wj0.InitIdentity();
+	//m_Wj0.mult(m_Wj0,0.4);
 	m_Wj0.mult(m_Wj0,1./m_nuj0);
 	
 	m_Wj0inv = Matrix(m_dim, m_dim);
