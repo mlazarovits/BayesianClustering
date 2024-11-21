@@ -160,6 +160,8 @@ class BasePDFMixture : public BasePDF{
 
 		virtual double EvalLogL() = 0;
 		virtual double EvalVariationalLogL() = 0;
+		virtual double EvalEntropyTerms() = 0;
+		virtual double EvalNLLTerms() = 0;
 
 		int Dim(){ return m_dim; }
 	
