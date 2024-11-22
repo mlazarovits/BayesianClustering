@@ -1,6 +1,6 @@
 #include "JetProducer.hh"
-#include "JetSkimmer.hh"
-#include "PhotonSkimmer.hh"
+#include "PhotonProducer.hh"
+#include "JetSimProducer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
 #include "VarClusterViz3D.hh"
@@ -297,21 +297,30 @@ int main(int argc, char *argv[]){
 		phos[npho].GetJets(rhs);
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
+	//sim jets
 	else if(obj == 2){
-		BasicDetectorSim det;
-		det.SetNEvents(1);
-		det.SetVerbosity(verb);
-		det.SetEnergyThreshold(1.); //set to 1 GeV
-		//could set time resolution cte to MTD specs here
-		
-		det.SimTTbar();
-		det.TurnOnPileup();
-		det.TurnOnSpikes(0.05);
-		//default arg is all events
-		det.SimulateEvents(evt);
-		det.GetRecHits(rhs);
-		det.GetTrueJets(jets);
-		cout << rhs.size() << " rechits in event " << evt << endl;
+		JetSimProducer prod(file);
+		prod.SetTransferFactor(gev);
+		prod.SetRecoPtMin(20);
+		prod.SetMinRhE(0.5); 
+		//skimmer.SetTransferFactor(gev);
+		//skimmer.SetAlpha(alpha);
+		//skimmer.SetSubclusterAlpha(emAlpha);
+		//skimmer.SetThreshold(thresh);
+		prod.PrintPreselection();
+		//if(strat != 2){
+			cout << "Getting rec hits for jets at event " << evt << endl;
+			prod.GetRecHits(rhs,evt);	
+			cout << rhs.size() << " rechits in event " << evt << endl;
+		//}
+		//else{
+		//	cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
+		//	prod.GetTrueJets(jets, evt);
+		//	if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
+		//	if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
+		//	jets[nobj].GetJets(rhs);
+		//	cout << rhs.size() << " rechits in jet " << nobj << " in event " << evt << endl;
+		//}
 	}
 	
         if(rhs.size() < 1) return -1;
