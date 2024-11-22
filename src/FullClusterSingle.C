@@ -170,23 +170,9 @@ int main(int argc, char *argv[]){
    		return 0;
   	}
 	cout << "Free sha-va-ca-doo!" << endl;
-	string cmslab, version;	
 	/////GET DATA FROM NTUPLE//////
-	if(!in_file.empty()){
-		//get version
-		std::smatch m;
-		std::regex re("_v[0-9]+_");
-		version = "";
-		std::regex_search(in_file,m,re);
-		for(auto x : m) version += x;
-		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find(".root") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-		version.pop_back();
-		cmslab += version;
-	}
-	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
-	else{
-		in_file = "BDSIM";
-	} 
+	string cmslab = in_file.substr(0,in_file.find(".root"));
+	cmslab = cmslab.substr(cmslab.find("/")+1);
 
 	if(obj == 0 || obj == 2){
 		if(obj == 0) fname += "jets";
@@ -246,12 +232,12 @@ int main(int argc, char *argv[]){
 	
 	if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
 	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
+
 	fname += "NperGeV"+gev_string+"_";
 	fname += cmslab; //long sample name
 	fname += "_evt"+to_string(evt);
 
 	fname = "plots/"+fname;
-
 
 
 
