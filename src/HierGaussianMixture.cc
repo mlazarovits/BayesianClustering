@@ -389,7 +389,7 @@ void HierGaussianMixture::InitPriorParameters(unsigned long long seed){
 
 
 void HierGaussianMixture::CalculateExpectations(){
-	//cout << "CALC EXPECTATIONS" << endl;
+//	cout << "CALC EXPECTATIONS" << endl;
 	//calculate alpha_hat
 	double alpha_hat = 0.;
 	//alpha_hat = sum_k alpha_k
@@ -414,13 +414,16 @@ void HierGaussianMixture::CalculateExpectations(){
 	}	
 
 	//E[ln|lam_j|] for extra prior
+	//cout << "for jets" << endl;
 	scalemat = m_modelj->GetPrior()->GetParameter("scalemat");
  	dof = m_modelj->GetPrior()->GetParameter("dof").at(0,0);
 	digam = 0;
-	for(int d = 1; d < m_dim+1; d++){
+	int dim = m_modelj->GetPrior()->Dim(); 
+	for(int d = 1; d < dim+1; d++){
 		digam += digamma((dof + 1 - d)/2.);
 	}
-	m_Elamj = digam + m_dim*log(2) + log(scalemat.det());
+	m_Elamj = digam + dim*log(2) + log(scalemat.det());
+//	cout << "CALC EXPECTATIONS - end" << endl;
 }
 
 
@@ -521,6 +524,7 @@ void HierGaussianMixture::CalculateVariationalPosterior(){
 	//cout << "posterior normed" << endl;	
 	//m_post.Print();
 //cout << "\n" << endl;
+//cout << "CALCULATE POSTERIOR - E STEP - end" << endl;
 };
 
 
@@ -652,10 +656,10 @@ void HierGaussianMixture::CalculateRStatistics(){
 
 }
 
-
+//even if the prior on the jet model has dim < m_dim, the model can still be m_dim (just no prior on m_dim - dim = d)
 //calculate equivalent of "R-stats" for jet model
 void HierGaussianMixture::CalculateJStatistics(){
-	//cout << "Calculate JStats" << endl;
+//	cout << "Calculate JStats" << endl;
 	//this is for mu_j (eq. 10.52) - 1 dx1 matrix
 	Matrix mu = Matrix(m_dim, 1);
 	for(int k = 0; k < m_k; k++){
@@ -688,6 +692,7 @@ void HierGaussianMixture::CalculateJStatistics(){
 	S.mult(S,1./double(m_k));
 	m_modelj->SetParameter("cov",S);
 
+//	cout << "Calculate JStats - end" << endl;
 }
 
 //M-step
@@ -792,11 +797,27 @@ void HierGaussianMixture::UpdatePriorParameters(){
 		//m_model[k]->GetPrior()->GetParameter("scalemat").Print();	
 
 	}
+	//cout << "for jets" << endl;
 	//update prior parameters for modelj
 	//already calculated
 	Matrix mu = m_modelj->GetParameter("mean");
 	Matrix cov = m_modelj->GetParameter("cov");
-	
+
+	//if mu.dim != prior.dim
+	//assume mu.dim >= prior dim and assume dim matching in order
+	if(m_modelj->Dim() > m_modelj->GetPrior()->Dim()){
+		int dim = m_modelj->GetPrior()->Dim();
+		Matrix newmu(dim,1);
+		Matrix newcov(dim,dim);
+		for(int d = 0; d < dim; d++){
+			newmu.SetEntry(mu.at(d,0),d,0);
+			for(int dd = 0; dd < dim; dd++){
+				newcov.SetEntry(cov.at(d,dd),d,dd);
+			}
+		}
+		mu = newmu;
+		cov = newcov;
+	}
 	//betas - eq. 10.60
 	double new_scale = m_betaj0 + m_k;
 	m_modelj->GetPrior()->SetParameter("scale", Matrix(new_scale));
@@ -805,10 +826,10 @@ void HierGaussianMixture::UpdatePriorParameters(){
 	//nus - eq. 10.63
 	double new_dof = m_nuj0 + m_k;
 	m_modelj->GetPrior()->SetParameter("dof", Matrix(new_dof));
-	//cout << "k: " << k << " dof: " << m_model[k]->GetPrior()->GetParameter("dof").at(0,0) << endl;	
 	
 	//means - eq. 10.61
-	Matrix new_mean = Matrix(m_dim, 1);
+	int dim = m_modelj->GetPrior()->Dim();
+	Matrix new_mean = Matrix(dim, 1);
 	//N_k*bar{x}_k
 	new_mean.mult(mu,m_k);
 	//m_meanBeta0 + N_k*bar{x}_k
@@ -824,13 +845,13 @@ void HierGaussianMixture::UpdatePriorParameters(){
 	//Ws - eq. 10.62
 	//caluclated for W inverse
 	//beta0*N_k/(beta0 + N_k)*(bar{x}_k - m0)(bar{x}_k - m0)T
-	Matrix new_scalemat = Matrix(m_dim, m_dim);
+	Matrix new_scalemat = Matrix(dim, dim);
 	//bar{x}_k - m0
-	Matrix x_min_mean = Matrix(m_dim, 1);
+	Matrix x_min_mean = Matrix(dim, 1);
 	x_min_mean.minus(mu, m_meanj0);
 	//cout << "xbar" << endl;
 	//mu.Print();
-	Matrix x_min_meanT = Matrix(1, m_dim);
+	Matrix x_min_meanT = Matrix(1, dim);
 	x_min_meanT.transpose(x_min_mean);
 	//(bar{x}_k - m0)(bar{x}_k - m0)T
 	new_scalemat.mult(x_min_mean, x_min_meanT);
@@ -841,7 +862,7 @@ void HierGaussianMixture::UpdatePriorParameters(){
 	//cout << "(b*N)/(b + N)*xxT" << endl;
 	//new_scalemat.Print();
 	//N_k*S_k
-	Matrix scaledS = Matrix(m_dim, m_dim);
+	Matrix scaledS = Matrix(dim, dim);
 	scaledS.mult(cov,m_k);
 	//add first two terms to last term
 	new_scalemat.add(scaledS);
@@ -860,6 +881,7 @@ void HierGaussianMixture::UpdatePriorParameters(){
 	}	
 	m_modelj->GetPrior()->SetParameter("scalemat", new_scalemat);
 
+//cout << "UPDATE PARAMETERS - M STEP - end" << endl;
 };
 
 
@@ -870,6 +892,7 @@ void HierGaussianMixture::UpdatePriorParameters(){
 //calculates ELBO
 //(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
 double HierGaussianMixture::EvalVariationalLogL(){
+	//cout << "CALCULATE ELBO" << endl;
 	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam, E_p_muLamj, E_q_muLamj;
 	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
 	E_p_all = 0;
@@ -997,7 +1020,7 @@ double HierGaussianMixture::EvalVariationalLogL(){
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 
 	}
-	
+	//cout << "for jets - prior" << endl;
 	//for jet prior
 	//E[ln(p(mu,lambda))] = 1/2*sum_k(D*ln(beta0/2*pi) + m_Elam[k] - D*beta0/beta_k - beta0*nu_k(m_k - m0)T*W_kW*(m_k - m0))
 	E_p_muLamj = 0;
@@ -1009,36 +1032,41 @@ double HierGaussianMixture::EvalVariationalLogL(){
 	double nu = m_modelj->GetPrior()->GetParameter("dof").at(0,0);
 	Matrix mean = m_modelj->GetPrior()->GetParameter("mean");
 	Matrix scalemat = m_modelj->GetPrior()->GetParameter("scalemat");
-	
-	Matrix mj_min_m0 = Matrix(m_dim,1);
+	int dim = m_modelj->GetPrior()->Dim();
+
+
+	Matrix mj_min_m0 = Matrix(dim,1);
 	mj_min_m0.minus(mean,m_meanj0);		
-	Matrix mj_min_m0T = Matrix(1, m_dim);
+	Matrix mj_min_m0T = Matrix(1, dim);
 	mj_min_m0T.transpose(mj_min_m0);
 	//(m_j - m_j0)T*W_j0*(m_j - m_j0)
-	Matrix mT_x_W = Matrix(1,m_dim);
+	Matrix mT_x_W = Matrix(1,dim);
+
 	mT_x_W.mult(mj_min_m0T,scalemat);
 	Matrix full = Matrix(1,1);
 	full.mult(mT_x_W,mj_min_m0);
 	
-	half_sum += (m_dim*log(m_betaj0/(2*acos(-1))) + m_Elamj - m_dim*m_betaj0/scale - m_betaj0*nu*full.at(0,0));
+	half_sum += (dim*log(m_betaj0/(2*acos(-1))) + m_Elamj - dim*m_betaj0/scale - m_betaj0*nu*full.at(0,0));
 	lam_sum += m_Elamj;
-	
-	Matrix tr = Matrix(m_dim,m_dim);
+
+	Matrix tr = Matrix(dim,dim);
 	tr.mult(m_Wj0inv,scalemat);	
 	
 	tr_sum += nu*tr.trace();
 	
-	E_p_muLamj = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
+	E_p_muLamj = 0.5*half_sum + ((m_nu0 - dim - 1)/2.)*lam_sum - 0.5*tr_sum;
 	Wishart* wish_j0 = new Wishart(m_Wj0, m_nuj0);
-	E_p_muLam += wish_j0->lnB();
+	E_p_muLamj += wish_j0->lnB();
 
+	//cout << "for jets - posterior (entropy)" << endl;
 	//for jet posterior	
 	//E[ln(q(mu, lam))]
 	E_q_muLamj = 0;
 	Wishart* wish_j = new Wishart(scalemat, nu);
 	H = wish_j->H();
-	E_q_muLam += 0.5*m_Elamj + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
+	E_q_muLamj += 0.5*m_Elamj + dim/2.*log(scale/(2*acos(-1))) - dim/2. - H;
 
+	//cout << "CALCULATE ELBO - end" << endl;
 //	cout << "E_p_muLam: " << E_p_muLam << endl;
 //	cout << "E_p_all: " << E_p_all << endl;
 //	cout << "E_p_Z: " << E_p_Z << endl;
@@ -1164,26 +1192,27 @@ double HierGaussianMixture::EvalNLLTerms(){
 	double nu = m_modelj->GetPrior()->GetParameter("dof").at(0,0);
 	Matrix mean = m_modelj->GetPrior()->GetParameter("mean");
 	Matrix scalemat = m_modelj->GetPrior()->GetParameter("scalemat");
+	int dim = m_modelj->GetPrior()->Dim();
 	
-	Matrix mj_min_m0 = Matrix(m_dim,1);
+	Matrix mj_min_m0 = Matrix(dim,1);
 	mj_min_m0.minus(mean,m_meanj0);		
-	Matrix mj_min_m0T = Matrix(1, m_dim);
+	Matrix mj_min_m0T = Matrix(1, dim);
 	mj_min_m0T.transpose(mj_min_m0);
 	//(m_j - m_j0)T*W_j0*(m_j - m_j0)
-	Matrix mT_x_W = Matrix(1,m_dim);
+	Matrix mT_x_W = Matrix(1,dim);
 	mT_x_W.mult(mj_min_m0T,scalemat);
 	Matrix full = Matrix(1,1);
 	full.mult(mT_x_W,mj_min_m0);
 	
-	half_sum += (m_dim*log(m_betaj0/(2*acos(-1))) + m_Elamj - m_dim*m_betaj0/scale - m_betaj0*nu*full.at(0,0));
+	half_sum += (dim*log(m_betaj0/(2*acos(-1))) + m_Elamj - dim*m_betaj0/scale - m_betaj0*nu*full.at(0,0));
 	lam_sum += m_Elamj;
 	
-	Matrix tr = Matrix(m_dim,m_dim);
+	Matrix tr = Matrix(dim,dim);
 	tr.mult(m_Wj0inv,scalemat);	
 	
 	tr_sum += nu*tr.trace();
 	
-	E_p_muLamj = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
+	E_p_muLamj = 0.5*half_sum + ((m_nu0 - dim - 1)/2.)*lam_sum - 0.5*tr_sum;
 	Wishart* wish_j0 = new Wishart(m_Wj0, m_nuj0);
 	E_p_muLam += wish_j0->lnB();
 
@@ -1239,9 +1268,10 @@ double HierGaussianMixture::EvalEntropyTerms(){
 	double scale = m_modelj->GetPrior()->GetParameter("scale").at(0,0);
 	double nu = m_modelj->GetPrior()->GetParameter("dof").at(0,0);
 	Matrix scalemat = m_modelj->GetPrior()->GetParameter("scalemat");
+	int dim = m_modelj->GetPrior()->Dim();
 	Wishart* wish_j = new Wishart(scalemat, nu);
 	H = wish_j->H();
-	E_q_muLam += 0.5*m_Elamj + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
+	E_q_muLam += 0.5*m_Elamj + dim/2.*log(scale/(2*acos(-1))) - dim/2. - H;
 //	cout << "E_q_Z: " <<  E_q_Z << endl;
 //	cout << "E_q_pi: " << E_q_pi << endl;
 //	cout << "E_q_muLam: " <<  E_q_muLam << endl;

@@ -60,7 +60,7 @@ class HierGaussianMixture : public BasePDFMixture{
 		//		cout << "m0 = " << endl;
 		//		m_mean0.Print();
 		//	}
-
+			m_modelj->SetPrior(new NormalWishart(m_Wj0, m_meanj0, m_nuj0, m_betaj0));
 		}
 
 
