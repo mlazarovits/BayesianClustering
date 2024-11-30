@@ -79,8 +79,18 @@ class Matrix{
 			for(int i = 0; i < m_row; i++)
 				SetEntry(pt.at(i),i,i);
 		}
-		//update entries
-		//add entries
+		//Frobenius inner product bw this and mat
+		double FrobProd(const Matrix& mat){
+			//check dims are the same
+			if(m_row != mat.m_row || m_col != mat.m_col) return -999;
+			double ret = 0;
+			for(int i = 0 ; i < m_row; i++){
+				for(int j = 0; j < m_col; j++){
+					ret += m_entries[i][j]*mat.m_entries[i][j]; //for real-valued matrices
+				}
+			}
+			return ret;
+		}
 	private:
 		int m_row;
 		int m_col;
