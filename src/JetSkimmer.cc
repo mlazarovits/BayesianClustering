@@ -95,21 +95,119 @@ void JetSkimmer::Skim(){
 		jetSelEff++;
 
 	}
+	//get bin errors
+	//get maps for LH ratio
 	double err = -999;
+	double bin = -999;
+	Matrix E_tNeg12(5,5);
+	Matrix E_t0(5,5);
+	Matrix E_rh(5,5);
 	for(int i = 0; i < 5; i++){
 		for(int j = 0; j < 5; j++){
 			//t ~ -12
 			err = sqrt(trCats[0].procCats[0].hists2D[0][37]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][37]->GetBinContent(i+1,j+1));
 			trCats[0].procCats[0].hists2D[0][43]->Fill(i-2,j-2,err);
+			bin = trCats[0].procCats[0].hists2D[0][37]->GetBinContent(i+1,j+1);
+			E_tNeg12.SetEntry(bin,i,j);
+
 			//t ~ -5
 			err = sqrt(trCats[0].procCats[0].hists2D[0][38]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][38]->GetBinContent(i+1,j+1));
 			trCats[0].procCats[0].hists2D[0][44]->Fill(i-2,j-2,err);
+			
 			//t ~ 0
 			err = sqrt(trCats[0].procCats[0].hists2D[0][39]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][39]->GetBinContent(i+1,j+1));
 			trCats[0].procCats[0].hists2D[0][45]->Fill(i-2,j-2,err);
+			bin = trCats[0].procCats[0].hists2D[0][39]->GetBinContent(i+1,j+1);
+			E_t0.SetEntry(bin,i,j);
 		}
 	}
+//cout << "unnorm neg12" << endl; E_tNeg12.Print(); cout << "t0" << endl; E_t0.Print();
+	//normalize timed maps
+	double tneg12prod,t0prod, rh_norm;
+	double tneg12norm = 0;
+	double t0norm = 0;
+	for(int i = 0; i < 5; i++){
+		for(int j = 0; j < 5; j++){
+			tneg12norm += E_tNeg12.at(i,j);	
+			t0norm += E_t0.at(i,j);	
+		}
+	}		
+			
+	E_t0.mult(E_t0,1./t0norm);
+	E_tNeg12.mult(E_tNeg12,1./tneg12norm);
 
+//cout << "neg12" << endl; E_tNeg12.Print(); cout << "t0" << endl; E_t0.Print();
+
+	//get jets for PV calc
+	for(int i = _evti; i < _evtj; i+=_skip){
+		//do data MET selection
+		_base->GetEntry(i);
+		if(_BHFilter != notApplied){
+                        if(_BHFilter == applied){
+                                //apply beam halo filter - other noise filters needed for full Run2 recommendations
+                                if(!_base->Flag_globalSuperTightHalo2016Filter){ cout << "BH Filter flagged - skipping" << endl; continue;}
+                        }
+                        else{
+                                //inversely apply beam halo filter - other noise filters needed for full Run2 recommendations
+                                if(_base->Flag_globalSuperTightHalo2016Filter) continue;
+                        }
+                }
+		vector<Jet> jets;
+		_prod->GetTrueJets(jets, i, _gev);
+		if(jets.size() < 2) continue;
+		pair<Jet,Jet> hardjets;
+		int pair = FindJetPair(jets, hardjets);
+		std::vector<std::pair<int, int>> icoords;
+		vector<double> neighborEs;
+		if(pair == -999) continue; //jets not did pass selection	
+		vector<JetPoint> rhs1 = hardjets.first.GetJetPoints();
+		vector<JetPoint> rhs2 = hardjets.second.GetJetPoints();
+
+		for(int r = 0; r < rhs1.size(); r++){
+			GetNeighborE(rhs1, r, icoords, neighborEs);
+			for(int rr = 0; rr < neighborEs.size(); rr++){
+				//cout << "idx " << rr << " E " << neighborEs[rr] << " icoord " << icoords[rr].first << ", " << icoords[rr].second << " for entry " << icoords[rr].first+2 << " , " << icoords[rr].second+2 << endl;
+				E_rh.SetEntry(neighborEs[rr],icoords[rr].first+2,icoords[rr].second+2);
+			}
+			//E_rh.Print();
+			rh_norm = 0;
+			for(int i = 0; i < 5; i++){
+				for(int j = 0; j < 5; j++){
+					rh_norm += E_rh.at(i,j);	
+				}
+			}		
+			E_rh.mult(E_rh,1./rh_norm);
+			tneg12prod = E_tNeg12.FrobProd(E_rh);
+			t0prod = E_t0.FrobProd(E_rh);
+			//cout << "tneg12prod " << tneg12prod << " t0prod " << t0prod << endl;	
+			
+			trCats[0].procCats[0].hists1D[0][66]->Fill(tneg12prod/t0prod);
+			E_rh.reset();
+		}
+		for(int r = 0; r < rhs2.size(); r++){
+			GetNeighborE(rhs2, r, icoords, neighborEs);
+			for(int rr = 0; rr < neighborEs.size(); rr++){
+				//cout << "idx " << rr << " E " << neighborEs[rr] << " icoord " << icoords[rr].first << ", " << icoords[rr].second << " for entry " << icoords[rr].first+2 << " , " << icoords[rr].second+2 << endl;
+				E_rh.SetEntry(neighborEs[rr],icoords[rr].first+2,icoords[rr].second+2);
+			}
+			//E_rh.Print();
+			rh_norm = 0;
+			for(int i = 0; i < 5; i++){
+				for(int j = 0; j < 5; j++){
+					rh_norm += E_rh.at(i,j);	
+				}
+			}		
+			E_rh.mult(E_rh,1./rh_norm);
+			tneg12prod = E_tNeg12.FrobProd(E_rh);
+			t0prod = E_t0.FrobProd(E_rh);
+			//cout << "tneg12prod " << tneg12prod << " t0prod " << t0prod << endl;	
+			trCats[0].procCats[0].hists1D[0][66]->Fill(tneg12prod/t0prod);
+			E_rh.reset();
+
+
+		}
+		
+	}
 
 	WriteHists(ofile);
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
