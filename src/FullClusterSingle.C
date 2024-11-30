@@ -1,6 +1,6 @@
 #include "JetProducer.hh"
-#include "JetSkimmer.hh"
-#include "PhotonSkimmer.hh"
+#include "PhotonProducer.hh"
+#include "JetSimProducer.hh"
 #include "BayesCluster.hh"
 #include "FullViz3D.hh"
 #include "VarClusterViz3D.hh"
@@ -170,23 +170,9 @@ int main(int argc, char *argv[]){
    		return 0;
   	}
 	cout << "Free sha-va-ca-doo!" << endl;
-	string cmslab, version;	
 	/////GET DATA FROM NTUPLE//////
-	if(!in_file.empty()){
-		//get version
-		std::smatch m;
-		std::regex re("_v[0-9]+_");
-		version = "";
-		std::regex_search(in_file,m,re);
-		for(auto x : m) version += x;
-		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find(".root") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
-		version.pop_back();
-		cmslab += version;
-	}
-	/////MAKE DATA WITH PYTHIA + BASIC DETECTOR SIM//////
-	else{
-		in_file = "BDSIM";
-	} 
+	string cmslab = in_file.substr(0,in_file.find(".root"));
+	cmslab = cmslab.substr(cmslab.find("/")+1);
 
 	if(obj == 0 || obj == 2){
 		if(obj == 0) fname += "jets";
@@ -246,12 +232,12 @@ int main(int argc, char *argv[]){
 	
 	if(obj != 1) fname += "_bhcAlpha"+a_string+"_emAlpha"+ema_string+"_thresh"+t_string+"_";
 	else fname += "_emAlpha"+ema_string+"_thresh"+t_string+"_";
+
 	fname += "NperGeV"+gev_string+"_";
 	fname += cmslab; //long sample name
 	fname += "_evt"+to_string(evt);
 
 	fname = "plots/"+fname;
-
 
 
 
@@ -311,21 +297,30 @@ int main(int argc, char *argv[]){
 		phos[npho].GetJets(rhs);
 		cout << rhs.size() << " rechits in photon " << npho << " in event " << evt << endl;
 	}
+	//sim jets
 	else if(obj == 2){
-		BasicDetectorSim det;
-		det.SetNEvents(1);
-		det.SetVerbosity(verb);
-		det.SetEnergyThreshold(1.); //set to 1 GeV
-		//could set time resolution cte to MTD specs here
-		
-		det.SimTTbar();
-		det.TurnOnPileup();
-		det.TurnOnSpikes(0.05);
-		//default arg is all events
-		det.SimulateEvents(evt);
-		det.GetRecHits(rhs);
-		det.GetTrueJets(jets);
-		cout << rhs.size() << " rechits in event " << evt << endl;
+		JetSimProducer prod(file);
+		prod.SetTransferFactor(gev);
+		prod.SetRecoPtMin(20);
+		prod.SetMinRhE(0.5); 
+		//skimmer.SetTransferFactor(gev);
+		//skimmer.SetAlpha(alpha);
+		//skimmer.SetSubclusterAlpha(emAlpha);
+		//skimmer.SetThreshold(thresh);
+		prod.PrintPreselection();
+		//if(strat != 2){
+			cout << "Getting rec hits for jets at event " << evt << endl;
+			prod.GetRecHits(rhs,evt);	
+			cout << rhs.size() << " rechits in event " << evt << endl;
+		//}
+		//else{
+		//	cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
+		//	prod.GetTrueJets(jets, evt);
+		//	if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
+		//	if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
+		//	jets[nobj].GetJets(rhs);
+		//	cout << rhs.size() << " rechits in jet " << nobj << " in event " << evt << endl;
+		//}
 	}
 	
         if(rhs.size() < 1) return -1;

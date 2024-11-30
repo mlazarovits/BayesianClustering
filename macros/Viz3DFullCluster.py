@@ -15,7 +15,7 @@ class JsonPlotter:
 		self.jsonfile = jsonfile
 		self.dirname = jsonfile[:jsonfile.find(".json")]
 		self.cl_gifs = []
-		self.minPoints = 3
+		self.minPoints = 2
 
 	def setVerb(self, v):
 		self._v = v
@@ -124,6 +124,7 @@ class JsonPlotter:
 		
 		plotname = self.jsonfile[:self.jsonfile.find(".json")]
 		
+		plotname = plotname[plotname.rfind("/")+1:]
 		figs = []
 		if numlevels > 0:
 			nLevels = numlevels
@@ -351,7 +352,7 @@ class JsonPlotter:
 
 			#make ellipsoid color of average energy across points (responsibilities)
 			if max(w) == min(w):
-				cl_w = (subcluster["color"])# - min(w))/(max(w) - min(w))
+				cl_w = [0,1]#(subcluster["color"])# - min(w))/(max(w) - min(w))
 			else:
 				cl_w = (subcluster["color"] - min(w))/(max(w) - min(w))
 				scale = True
@@ -412,8 +413,9 @@ def main():
 		if f < 3 and args.noViz is False:	
 			fig.show()
 	#make gif of all levels
-	gifcmd = "convert -delay 50 -loop 1 -reverse "
-	for f in files:
+	gifcmd = "magick -delay 50 -loop 1 "
+	#gifcmd = "convert -delay 50 -loop 1 -reverse "
+	for f in reversed(files):
 		gifcmd += f+" "
 
 
