@@ -81,6 +81,8 @@ def generateSubmission(args):
     	inputFile = "QCD_R17_MET100_v21_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
     elif "EGamma_RunF" in args.inputSample:
     	inputFile = "DEG_R17_MET100_v21_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
+    elif "SMS-GlGl" in args.inputSample:
+        inputFile = "SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private.root"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
@@ -181,7 +183,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF_2017','JetHT_RunC_2018','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF_2017','JetHT_RunC_2018','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
