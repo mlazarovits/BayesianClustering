@@ -72,6 +72,9 @@ class BasePDFMixture : public BasePDF{
 		
 		//for variational EM algorithm
 		virtual void SetPriorParameters(map<string, Matrix> params) = 0;
+		virtual void SetJetPriorParameters(map<string, Matrix>& params) = 0;
+		virtual void SetJetParameters(map<string, Matrix>& params) = 0;
+		virtual void GetJetParameters(map<string, Matrix>& params) = 0;
 		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;

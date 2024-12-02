@@ -43,7 +43,7 @@ class HierGaussianMixture : public BasePDFMixture{
 			m_W0 = params["scalemat"];
 			m_mean0 = params["mean"];
 		}
-		void SetJetPriorParameters(map<string, Matrix> params){	
+		void SetJetPriorParameters(map<string, Matrix>& params){	
 			m_betaj0 = params["scale"].at(0,0);
 			m_nuj0 = params["dof"].at(0,0);
 			m_Wj0 = params["scalemat"];
@@ -98,7 +98,16 @@ class HierGaussianMixture : public BasePDFMixture{
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
 		map<string, Matrix> GetPriorParameters(int k) const; 
 		map<string, Matrix> GetOnlyPriorParameters(int k); 
-
+		void GetJetParameters(map<string, Matrix>& params){
+			params.clear();
+			params["mean"] = m_modelj->GetParameter("mean");
+			params["cov"] = m_modelj->GetParameter("cov");
+		}
+		void SetJetParameters(map<string, Matrix>& params){
+			m_modelj->SetParameter("mean",params["mean"]);
+			m_modelj->SetParameter("cov",params["cov"]);
+		}
+		
 
 
 	private:
