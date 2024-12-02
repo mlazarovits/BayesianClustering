@@ -182,10 +182,10 @@ class MergeTree : BaseTree{
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z) k = 2;
 			//number of clusters in node x = k_l + k_r for left and right nodes
-			else{
+			else//{
 			///k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 			k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
-			cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
+			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
 		
 
 			//transform points into local coordinates
@@ -212,6 +212,35 @@ class MergeTree : BaseTree{
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
 
+ //setting jet priors here - needs to be top-level configurable
+                        //this will be in eta-phi only (2D)
+                        double beta = 1;
+                        /*
+                        Matrix W(3,3);
+                        double nu = 3;
+                        double r = 0.4;
+                        double dt = 3;
+                        W.SetEntry(1./(r*r/nu),0,0);
+                        W.SetEntry(1./(r*r/nu),1,1);
+                        W.SetEntry(1./(dt*dt/nu),2,2);
+                        Matrix mean0(3,1);
+                        
+                        */
+                        Matrix W(2,2);
+                        double nu = 2;
+                        double r = 0.4;
+                        W.SetEntry(1./(r*r/nu),0,0);
+                        W.SetEntry(1./(r*r/nu),1,1);
+                        Matrix mean0(2,1);
+                        map<string, Matrix> jetparams;
+                        jetparams["scale"] = Matrix(beta); //beta - scale on precision of mean prior
+                        jetparams["dof"] = Matrix(nu); //nu
+                        jetparams["scalemat"] = W; //mean of wishart = nW
+                        jetparams["mean"] = mean0; //center of prior on mean
+                        x->model->SetJetPriorParameters(jetparams);
+
+
+
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
 
@@ -229,15 +258,15 @@ class MergeTree : BaseTree{
 				newLogL = algo->Cluster();
 				entropy = x->model->EvalEntropyTerms();
 				nll = x->model->EvalNLLTerms();
-			cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
+			//cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
 		if(std::isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 				dLogL = newLogL - oldLogL;
 				oldLogL = newLogL;
 				it++;
 			}
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters";
-			if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
-			else cout << endl;
+			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters";
+			//if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
+			//else cout << endl;
 
 			//translate the parameters back into global coordinates
 			Matrix matshift;
@@ -245,13 +274,21 @@ class MergeTree : BaseTree{
 			Matrix mean, priormean;
 			map<string, Matrix> params;
 			for(int k = 0; k < x->model->GetNClusters(); k++){
-				//only need to do this once for prior
+				//only need to do this once for prior + overall jet
 				if(k == 0){
 					params = x->model->GetOnlyPriorParameters(k);
 					priormean = params["mean"];
 					priormean.add(matshift);
 					params["m"] = priormean;
 					x->model->SetPriorParameters(params);
+				
+					x->model->GetJetParameters(params);
+					mean = params["mean"];
+					mean.add(matshift);
+					params["mean"] = priormean;
+					x->model->SetJetParameters(params);
+					
+
 				}
 				params = x->model->GetPriorParameters(k);
 				//only need to translate mean + mean on prior - stddev doesn't change
