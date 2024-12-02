@@ -30,24 +30,45 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
+
+	map<string,Matrix> priorparams;
+	priorparams["scale"] = Matrix(1e-3);
+	priorparams["dof"] = Matrix(3);
+	Matrix W(3,3);
+	double r = 0.4;
+	W.SetEntry(1./(r*r/3),0,0);
+	W.SetEntry(1./(r*r/3),1,1);
+	W.SetEntry(1./(0.1*0.1/3),2,2);
+	priorparams["scalemat"] = W;
+	priorparams["mean"] = Matrix(3,1);
+	mt->SetPriorParameters(priorparams);
 	//set distance constraint
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
 cout << "n pts " << n << endl;
+	//test scaling time to better match eta-phi scale
+	BayesPoint scale(3);
+	scale.SetValue(0.1,2);
+	scale.SetValue(1,0);
+	scale.SetValue(1,1);
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
 			cout << "return" << endl;
 			return _trees;
-		} 
+		}
+		//_points[i].Print();
+		_points[i].Scale(scale);
 		mt->AddLeaf(&_points[i].at(0));
 	}
+	cout << "# clusters " << mt->GetNAllClusters() << endl;
 	cout << "------------------------------------------" << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
+	cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
 	
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
@@ -65,7 +86,8 @@ cout << "n pts " << n << endl;
 	bool done = false;
 	std::pair<std::multimap<double,verts>::iterator, std::multimap<double,verts>::iterator> ret;	
 	//run the clustering
-	for(int i = 0; i < n; i++){
+	int faken = n;
+	for(int i = 0; i < faken; i++){
 		// find largest rk value in map (last entry)
 		double BestRk;
 		verts BestRkPair;
@@ -74,6 +96,9 @@ cout << "n pts " << n << endl;
 		bool Valid2;
 		double mindist = 999;
 		double dist;
+		//cout << "Prob map size " << ProbMap.size() << endl;
+		//cout << " dnn validity bool " << (!DNN->Valid(jet_i) || !Valid2) << " total bool " << ((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0) << endl;
+		if(ProbMap.size() == 0){done = true; break;}
 		do{
 			map_it = ProbMap.end();
 			map_it--;
@@ -104,7 +129,7 @@ cout << "n pts " << n << endl;
 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
 			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
-		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() >= 1); //this is what checks to see if merges are still allowed or if they include points that have already been merged
+		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
 			// find largest rk value in map (last entry)
@@ -160,28 +185,37 @@ cout << "n pts " << n << endl;
 			_add_entry_to_maps(ii, DistMap, DNN, false);	
 			_add_entry_to_maps(ii, InvDistMap, DNN);
 		}
+		if(_verb > 0) cout << mt->GetNClusters() << " current clusters at iteration " << i << endl;
 		if(_verb > 0) cout << "\n" << endl;
 	}
 
 	vector<node*> trees = mt->GetClusters();
-	if(_verb > 0) cout << mt->GetNClusters() << " final clusters " << endl;
 	double nmirror = 0;
-		
+	double nnull = 0; 	
 	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
-		if(trees[i] == nullptr) continue;
+		if(trees[i] == nullptr){ nnull++; continue; }
 		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
+			cout << "MIRROR tree " << trees[i]->idx << " has " << trees[i]->model->GetNClusters() << " subclusters and " << trees[i]->points->Sumw() << " total weight and " <<  trees[i]->points->GetNPoints() << " points" << endl;
 			continue; }
 		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
 
-		//cout << "tree " << trees[i]->idx << " has " << trees[i]->model->GetNClusters() << " subclusters and " << trees[i]->points->Sumw() << " total weight and " <<  trees[i]->points->GetNPoints() << " points" << endl;
 		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 		_trees.push_back(trees[i]);
+		cout << "real tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
+		map<string,Matrix> params;
+		trees[i]->model->GetJetParameters(params);
+		cout << "jet mean" << endl; params["mean"].Print(); cout << "cov" << endl; params["cov"].Print();
+		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
+			params = trees[i]->model->GetPriorParameters(k);
+			cout << "k " << k << " center " << endl; params["mean"].Print();
+			//cout << "cov " << endl; params["cov"].Print();
+		}
+		//cout << "points" << endl; trees[i]->model->GetData()->Print();
 	}
-	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	if(_verb > 0) cout << int(mt->GetNClusters() - nmirror) << " jets found." << endl;
+	cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	return _trees;
 	
 	
