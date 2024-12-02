@@ -670,7 +670,6 @@ void HierGaussianMixture::CalculateJStatistics(){
 	mu.mult(mu,1./double(m_k));
 	m_modelj->SetParameter("mean",mu);		
 	
-
 	Matrix S = Matrix(m_dim,m_dim);
 	//this is for S_j (eq.10.53) - 1 dxd matrix
 	for(int k = 0; k < m_k; k++){
@@ -1212,9 +1211,9 @@ double HierGaussianMixture::EvalNLLTerms(){
 	
 	tr_sum += nu*tr.trace();
 	
-	E_p_muLamj = 0.5*half_sum + ((m_nu0 - dim - 1)/2.)*lam_sum - 0.5*tr_sum;
+	E_p_muLamj = 0.5*half_sum + ((m_nuj0 - dim - 1)/2.)*lam_sum - 0.5*tr_sum;
 	Wishart* wish_j0 = new Wishart(m_Wj0, m_nuj0);
-	E_p_muLam += wish_j0->lnB();
+	E_p_muLamj += wish_j0->lnB();
 
 
 //	cout << "E_p_all: " << E_p_all << endl;
@@ -1222,7 +1221,8 @@ double HierGaussianMixture::EvalNLLTerms(){
 //	cout << "E_p_pi: " << E_p_pi << endl;
 //	cout << "E_p_muLam: " << E_p_muLam << endl;
 //	cout << "m_post" << endl;
-	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam + E_p_muLamj;
+	//return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam + E_p_muLamj;
+	return E_p_muLam + E_p_muLamj;
 
 }; //end NLL
 
@@ -1271,11 +1271,12 @@ double HierGaussianMixture::EvalEntropyTerms(){
 	int dim = m_modelj->GetPrior()->Dim();
 	Wishart* wish_j = new Wishart(scalemat, nu);
 	H = wish_j->H();
-	E_q_muLam += 0.5*m_Elamj + dim/2.*log(scale/(2*acos(-1))) - dim/2. - H;
+	E_q_muLamj += 0.5*m_Elamj + dim/2.*log(scale/(2*acos(-1))) - dim/2. - H;
 //	cout << "E_q_Z: " <<  E_q_Z << endl;
 //	cout << "E_q_pi: " << E_q_pi << endl;
 //	cout << "E_q_muLam: " <<  E_q_muLam << endl;
 //	cout << "m_post" << endl;
-	return -E_q_Z - E_q_pi - E_q_muLam - E_q_muLamj;
+	//return -E_q_Z - E_q_pi - E_q_muLam - E_q_muLamj;
+	return -E_q_muLamj;
 
 }; //end Entropy

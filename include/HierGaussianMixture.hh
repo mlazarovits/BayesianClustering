@@ -42,6 +42,13 @@ class HierGaussianMixture : public BasePDFMixture{
 			m_nu0 = params["dof"].at(0,0);
 			m_W0 = params["scalemat"];
 			m_mean0 = params["mean"];
+
+			m_meanBeta0 = Matrix(m_dim, 1);
+			m_meanBeta0.mult(m_mean0, m_beta0);
+
+			m_W0inv = Matrix(m_dim,m_dim);
+			m_W0inv.invert(m_W0);
+
 		}
 		void SetJetPriorParameters(map<string, Matrix>& params){	
 			m_betaj0 = params["scale"].at(0,0);
