@@ -226,9 +226,9 @@ class BayesCluster{
 			Jet newjet;
 			if(_verb > 0){
 				cout << "recombining jets " << jet_i << ": ";
-				_jets[jet_i].Print();
+				_jets[jet_i].Print(); cout << "eta " << _jets[jet_i].eta() << " phi " << _jets[jet_i].phi() << " time " << _jets[jet_i].time() << endl;
 				cout << "and " << jet_j << ": ";
-				_jets[jet_j].Print();
+				_jets[jet_j].Print(); cout << "eta " << _jets[jet_j].eta() << " phi " << _jets[jet_j].phi() << " time " << _jets[jet_j].time() << endl;
 			}
 
 			recombine(_jets[jet_i], _jets[jet_j], newjet);
