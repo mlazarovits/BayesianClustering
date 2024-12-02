@@ -105,19 +105,19 @@ void JetSkimmer::Skim(){
 	for(int i = 0; i < 5; i++){
 		for(int j = 0; j < 5; j++){
 			//t ~ -12
-			err = sqrt(trCats[0].procCats[0].hists2D[0][37]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][37]->GetBinContent(i+1,j+1));
-			trCats[0].procCats[0].hists2D[0][43]->Fill(i-2,j-2,err);
-			bin = trCats[0].procCats[0].hists2D[0][37]->GetBinContent(i+1,j+1);
+			err = sqrt(trCats[0].procCats[1].hists2D[0][37]->GetBinError(i+1,j+1)/trCats[0].procCats[1].hists2D[0][37]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[1].hists2D[0][43]->Fill(i-2,j-2,err);
+			bin = trCats[0].procCats[1].hists2D[0][37]->GetBinContent(i+1,j+1);
 			E_tNeg12.SetEntry(bin,i,j);
 
 			//t ~ -5
-			err = sqrt(trCats[0].procCats[0].hists2D[0][38]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][38]->GetBinContent(i+1,j+1));
-			trCats[0].procCats[0].hists2D[0][44]->Fill(i-2,j-2,err);
+			err = sqrt(trCats[0].procCats[1].hists2D[0][38]->GetBinError(i+1,j+1)/trCats[0].procCats[1].hists2D[0][38]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[1].hists2D[0][44]->Fill(i-2,j-2,err);
 			
 			//t ~ 0
-			err = sqrt(trCats[0].procCats[0].hists2D[0][39]->GetBinError(i+1,j+1)/trCats[0].procCats[0].hists2D[0][39]->GetBinContent(i+1,j+1));
-			trCats[0].procCats[0].hists2D[0][45]->Fill(i-2,j-2,err);
-			bin = trCats[0].procCats[0].hists2D[0][39]->GetBinContent(i+1,j+1);
+			err = sqrt(trCats[0].procCats[1].hists2D[0][39]->GetBinError(i+1,j+1)/trCats[0].procCats[1].hists2D[0][39]->GetBinContent(i+1,j+1));
+			trCats[0].procCats[1].hists2D[0][45]->Fill(i-2,j-2,err);
+			bin = trCats[0].procCats[1].hists2D[0][39]->GetBinContent(i+1,j+1);
 			E_t0.SetEntry(bin,i,j);
 		}
 	}
@@ -181,7 +181,7 @@ void JetSkimmer::Skim(){
 			t0prod = E_t0.FrobProd(E_rh);
 			//cout << "tneg12prod " << tneg12prod << " t0prod " << t0prod << endl;	
 			
-			trCats[0].procCats[0].hists1D[0][66]->Fill(tneg12prod/t0prod);
+			trCats[0].procCats[1].hists1D[0][66]->Fill(tneg12prod/t0prod);
 			E_rh.reset();
 		}
 		for(int r = 0; r < rhs2.size(); r++){
@@ -201,7 +201,7 @@ void JetSkimmer::Skim(){
 			tneg12prod = E_tNeg12.FrobProd(E_rh);
 			t0prod = E_t0.FrobProd(E_rh);
 			//cout << "tneg12prod " << tneg12prod << " t0prod " << t0prod << endl;	
-			trCats[0].procCats[0].hists1D[0][66]->Fill(tneg12prod/t0prod);
+			trCats[0].procCats[1].hists1D[0][66]->Fill(tneg12prod/t0prod);
 			E_rh.reset();
 
 
