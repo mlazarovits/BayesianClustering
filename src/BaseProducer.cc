@@ -83,7 +83,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 						continue;
 				
 					//add tighter sw+ cut
-					//if(_base->ECALRecHit_swCross->at(rhidx) > 0.86) continue;
+					if(_base->ECALRecHit_swCross->at(rhidx) > 0.4) continue;
 				}
 
 				
