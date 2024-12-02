@@ -244,21 +244,14 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	double x, y, z, t, eta, phi, theta, w;
 	map<string, Matrix> params;
 	//set mean
-	//pi-weighted average of subcluster means
-	for(int i = 0; i < 3; i++){
-		double entry = 0;
-		double norm = 0;
-		for(int k = 0; k < nsubcl; k++){
-			params = model->GetPriorParameters(k); 
-			entry += params["pi"].at(0,0)*params["mean"].at(i,0); 
-			norm += params["pi"].at(0,0); 
-		}
-		_mu.SetEntry(entry/norm,i,0);
-	}
-	if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
+	model->GetJetParameters(params);
+	_mu = params["mean"];
+	_cov = params["cov"];	
 	_eta = _mu.at(0,0);
 	_phi = _mu.at(1,0);
 	_t = _mu.at(2,0);
+
+	//set covariance
 
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
@@ -292,27 +285,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		//set probabilistic coefficient
 		//pi = sum_rh sum_k r_nk
 		_pi += w;	
-
-
-		//set covariance 
-		//weighted sum of rechit covariances
-		double diffi, diffj;
-		for(int i = 0; i < 3; i++){
-			for(int j = 0; j < 3; j++){
-				//phi wraparound
-				diffi = rh.at(i) - _mu.at(i,0);
-				diffj = rh.at(j) - _mu.at(j,0);
-				if(i == 1){
-					if(diffi > 4*atan(1)) diffi -= 8*atan(1);
-				}
-				if(j == 1){
-					if(diffj > 4*atan(1)) diffj -= 8*atan(1);
-				}
-				_cov.SetEntry((_cov.at(i,j) + w*(diffi*diffj)),i,j); 
-			}
-		}
 	}	
-	_cov.mult(_cov,1/_pi); //see 10/9/24 notes for math
 	//set subcluster (ie constituent) parameters + 4vectors
 	double pxt = 0;
 	double pyt = 0;
