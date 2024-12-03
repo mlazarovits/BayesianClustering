@@ -722,9 +722,10 @@ class JetSkimmer : public BaseSkimmer{
 					double bestp, bestdr, kweird;
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
 					vector<double> neighborEs, neighborEs_noCenter, neighborEs_time;
-					std::vector<std::pair<int, int>> icoords;
+					std::vector<std::pair<int, int>> icoords, icoords_noCenter, icoords_time;
 					for(int r = 0; r < rhs.size(); r++){
 						if(rhs[r].E() < _minRhE) continue;
+						//if(rhs[r].t() > -1) continue;
 						Erh1 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
@@ -753,9 +754,9 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
 							//2D map of neighbors
-							GetNeighborE(rhs, r, icoords, neighborEs);
-							GetNeighborE(rhs, r, icoords, neighborEs_noCenter,true,false);
-							GetNeighborE(rhs, r, icoords, neighborEs_time,true,true);
+							GetNeighborE(rhs, r, icoords, neighborEs,false,false);
+							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true,false);
+							GetNeighborE(rhs, r, icoords_time, neighborEs_time,false,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
 								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
 								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
@@ -766,10 +767,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][49]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][49]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][46]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][46]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
 								trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
@@ -779,10 +780,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][50]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][50]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][47]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][47]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
 								trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
@@ -792,10 +793,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][48]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][48]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
 								trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi());
@@ -807,6 +808,7 @@ class JetSkimmer : public BaseSkimmer{
 					rhs = hardjets.second.GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						if(rhs[r].E() < _minRhE) continue;
+						//if(rhs[r].t() > -1) continue;
 						Erh2 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
@@ -834,10 +836,10 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
-							//2D map of neighbors
-							GetNeighborE(rhs, r, icoords, neighborEs);
-							GetNeighborE(rhs, r, icoords, neighborEs_noCenter,true,false);
-							GetNeighborE(rhs, r, icoords, neighborEs_time,true,true);
+							//2D map of neighbors/
+							GetNeighborE(rhs, r, icoords, neighborEs,false,false);
+							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true,false);
+							GetNeighborE(rhs, r, icoords_time, neighborEs_time,false,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
 								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
 								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
@@ -848,10 +850,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][49]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][49]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][46]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][46]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
                                                                 trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
@@ -861,10 +863,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][50]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][50]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][47]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][47]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
                                                                 trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
@@ -874,10 +876,10 @@ class JetSkimmer : public BaseSkimmer{
 								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 								for(int e = 0; e < (int)neighborEs.size(); e++){
 									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-									trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(icoords[e].first, icoords[e].second, neighborEs_time[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(icoords_time[e].first, icoords_time[e].second, neighborEs_time[e]);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][48]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][48]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
 								}
 
 								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
@@ -2043,19 +2045,19 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 			for(int j = 0; j < (int)rhs.size(); j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
 				iphi = _detIDmap[rhs[j].rhId()].i1;
-
-				if(skipCenter)
-					if((ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
-
 				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
-					if(wTime)
-						Es.push_back(rhs[j].E()*(rhs[j].t() - rh.t()));
-					else
+					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
+					if(wTime){
+						//Es.push_back(rhs[j].E()*(rhs[j].t() - rh.t()));
+						Es.push_back((rhs[j].t() - rh.t()));
+					}
+					else{
 						Es.push_back(rhs[j].E());
+					}
 					if(rh_ieta < 0)
-						icoords.push_back(make_pair(-rh_ieta + ieta, rh_iphi - iphi));
+						icoords.push_back(make_pair(-(ieta - rh_ieta), rh_iphi - iphi));
 					else
-						icoords.push_back(make_pair(rh_ieta - ieta, rh_iphi - iphi));
+						icoords.push_back(make_pair(ieta - rh_ieta, rh_iphi - iphi));
 				}
 			}
 
