@@ -331,13 +331,6 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		et = E*sin(theta);
                 if(et < _minpt) continue;
 		if(fabs(eta) > _minobjeta) continue;
-		//if(_isocut){
-                //        trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
-                //        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
-                //        htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
-                //        iso = trksum && ecalrhsum && htowoverem;
-                //	if(!iso) continue;
-                //}
                 
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
