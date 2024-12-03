@@ -185,7 +185,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		}
 
 		//Photon selection
-                if(_base->Photon_pt->at(p) < 30.) continue;
+                if(_base->Photon_pt->at(p) < _minpt) continue;
 		if(fabs(_base->Photon_eta->at(p)) > _minobjeta) continue;
 		//isolation cuts
 		bool iso;
@@ -288,14 +288,13 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 }
 int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double gev){
         if(gev == -1) gev = _gev;
-	double px, py, pz, pt, phi, eta;
+	double px, py, pz, pt, phi, eta, theta, et, E;
         supercls.clear();
         if(evt > _nEvts) return -1;
         _base->GetEntry(evt);
         int nSCs = (int)_base->SuperCluster_energy->size();
         int nrhs, rhidx;
-	double timecorr, calibfactor; 
-	double drh, dpv;
+	double timecorr, calibfactor, drh, dpv;
 	int scidx;
 
 	vector<unsigned int> rhids = *_base->ECALRecHit_ID;
@@ -313,6 +312,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 	for(int sc = 0; sc < nSCs; sc++){
                 phi = _base->SuperCluster_phi->at(sc);
                 eta = _base->SuperCluster_eta->at(sc);
+		theta = 2*atan2(1,exp(eta));
 
                 nrhs = _base->SuperCluster_rhIds->at(sc).size();
 
@@ -327,8 +327,17 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		}
 
 		//SuperCluster selection
-                if(_base->SuperCluster_energy->at(sc) < 30.) continue;
+                E = _base->SuperCluster_energy->at(sc);
+		et = E*sin(theta);
+                if(et < _minpt) continue;
 		if(fabs(eta) > _minobjeta) continue;
+		//if(_isocut){
+                //        trksum = _base->Photon_trkSumPtSolidConeDR04->at(p) < 6.0;
+                //        ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(p) < 10.0;
+                //        htowoverem = _base->Photon_hadTowOverEM->at(p) < 0.02;
+                //        iso = trksum && ecalrhsum && htowoverem;
+                //	if(!iso) continue;
+                //}
                 
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
