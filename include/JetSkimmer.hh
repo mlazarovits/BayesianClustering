@@ -2063,8 +2063,8 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 
 		}
 		
-		
-		
+		void SetMinRhE_PV(double m){ _minRhE = m; }	
+
 		private:
 			vector<Jet> _phos; //photons for event
 			double _minRhE;
