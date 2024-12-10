@@ -2036,32 +2036,6 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
                 }
 
 
-		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false, bool wTime = false){
-			int ieta, iphi;
-			JetPoint rh = rhs[r];
-			int rh_ieta = _detIDmap[rhs[r].rhId()].i2;
-			int rh_iphi = _detIDmap[rhs[r].rhId()].i1;
-			icoords.clear(); Es.clear();
-			for(int j = 0; j < (int)rhs.size(); j++){
-				ieta = _detIDmap[rhs[j].rhId()].i2;
-				iphi = _detIDmap[rhs[j].rhId()].i1;
-				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
-					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
-					if(wTime){
-						//Es.push_back(rhs[j].E()*(rhs[j].t() - rh.t()));
-						Es.push_back((rhs[j].t() - rh.t()));
-					}
-					else{
-						Es.push_back(rhs[j].E());
-					}
-					if(rh_ieta < 0)
-						icoords.push_back(make_pair(-(ieta - rh_ieta), rh_iphi - iphi));
-					else
-						icoords.push_back(make_pair(ieta - rh_ieta, rh_iphi - iphi));
-				}
-			}
-
-		}
 		
 		void SetMinRhE_PV(double m){ _minRhE = m; }	
 
