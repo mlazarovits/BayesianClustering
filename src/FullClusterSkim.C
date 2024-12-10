@@ -331,7 +331,8 @@ cout << "fname " << fname << endl;
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
-		skimmer.SetMinRhE(minRhE);
+		skimmer.SetMinRhE(0.5);
+		skimmer.SetMinRhE_PV(minRhE);
 		if(maxRhE != -999) skimmer.SetMaxRhE(maxRhE);
 		skimmer.SetMinEmE(minEmE);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
@@ -357,6 +358,7 @@ cout << "fname " << fname << endl;
         	else
 			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
+		skimmer.SetMinPt(minpt);
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
