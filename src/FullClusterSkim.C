@@ -357,7 +357,11 @@ cout << "fname " << fname << endl;
         	else
 			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
-		if(iso) skimmer.SetIsoCuts();
+		if(iso){
+			cout << "Applying isolation preselection for training labels." << endl;
+			skimmer.SetIsoCuts();
+		}
+		else cout << "Not applying isolation preselection for training labels." << endl;
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
