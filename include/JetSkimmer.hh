@@ -1370,7 +1370,7 @@ class JetSkimmer : public BaseSkimmer{
 
 			double beta;
 			if(phoid == 22){
-				int momidx = _base->Photon_genSigMomId->at(phoidx);
+				int momidx = _base->Photon_genSigXMomId->at(phoidx);
 				//cout << "signal - phoid " << phoid << " phoidx " << phoidx << " genidx " << genidx << " momidx " << momidx << endl;
 				//TODO: remove when ntuples are fixed (10/9/24)
 				if(momidx < 0) return dpho;

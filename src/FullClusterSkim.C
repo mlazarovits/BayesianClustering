@@ -359,6 +359,7 @@ cout << "fname " << fname << endl;
 			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetMinPt(minpt);
+		if(iso) skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);

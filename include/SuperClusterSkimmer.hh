@@ -3523,6 +3523,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//!signal = 1 
 		//BH = 2
 		//spike = 3
+		//isolated = 4 (photon from hard process)
+		//!isolated = 5 (photon radiating from/within jet)
 	
 		double ec, pc, tc;
 		vector<double> norms;
@@ -3532,6 +3534,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		ec = params["mean"].at(0,0);
 		pc = params["mean"].at(1,0);
 		tc = params["mean"].at(2,0);
+		bool trksum, ecalrhsum, htowoverem, iso;	
 		//for BH definition
 		bool pcFilter;
 		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
@@ -3544,11 +3547,35 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
 			//matched to photon
 			if(phoidx != -1){
+                		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
+                		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
+                		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
+                		iso = trksum && ecalrhsum && htowoverem;
 				if(_base->Photon_genIdx->at(phoidx) != -1){
-					if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
-						label = 0;
-					else
-						label = 1; //removal of GMSB !sig photons is done in data processing for NN	
+                			//needs to be isolated
+					if(_isocuts){
+						if(!iso) label = -1;
+						else{
+							if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+								label = 0;
+							else
+								label = 1; //removal of GMSB !sig photons is done in data processing for NN	
+						}
+					}
+					//not applying isolation - use for iso network
+					else{
+						//photon from C2
+						if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+							label = 0;
+						//photon from hard subprocess - isolated 
+						if(_base->Gen_status->at(_base->Photon_genIdx->at(phoidx)) == 22)
+							label = 4;
+						//photons from QCD are all nonisolated - need to convert to 1 for other trainings
+						if(_oname.find("QCD") != string::npos)
+							label = 5;
+						else
+							label = 1; //removal of GMSB !sig photons is done in data processing for NN	
+					}
 				}
 				else //no gen match
 					label = -1;
@@ -3562,18 +3589,43 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//do track matching for spikes
 			double bestdr, bestp;
 			TrackMatched(gmm,ncl,bestdr, bestp);
-		
 			//early times, phi left/right for BH
 			//if subcl is spike
-			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc ))
+			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
 				label = 3;
-			//if subcl is BH
-			if((tc > -7 && tc <= -2) && pcFilter)	
-				label = 2;
-			//if subcl is not BH or spike (ie prompt, 'physics' bkg)
-			//TODO: eventually need extra iso criteria for prompt iso, nonprompt iso bkg separation
-			if(tc > -2 && tc < 1)
-				label = 1;
+			}
+			else{
+				if(_isocuts){
+					int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
+					if(phoidx == -1){
+						//not spikes, but also not matched to a photon so cant be BH or physics bkg
+						label = -1;
+					}
+					else{
+                				trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
+                				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
+                				htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
+                				iso = trksum && ecalrhsum && htowoverem;
+                				if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
+						//for physics bkg + BH match to photons + apply isolation criteria
+						//if subcl is BH - need to match to photon and apply isolation
+						if((tc > -7 && tc <= -2) && pcFilter && iso)	
+							label = 2;
+						//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
+						if(tc > -2 && tc < 1 && iso)
+							label = 1;
+					}
+				}
+				else{
+					//if subcl is BH
+					if((tc > -7 && tc <= -2) && pcFilter && iso)	
+						label = 2;
+					//if subcl is not BH or spike (ie prompt, 'physics' bkg)
+					if(tc > -2 && tc < 1 && iso)
+						label = 1;
+				}
+
+			}
 		
 		}
 
