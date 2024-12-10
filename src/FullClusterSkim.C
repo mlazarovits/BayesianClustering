@@ -331,7 +331,8 @@ cout << "fname " << fname << endl;
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
-		skimmer.SetMinRhE(minRhE);
+		skimmer.SetMinRhE(0.5);
+		skimmer.SetMinRhE_PV(minRhE);
 		if(maxRhE != -999) skimmer.SetMaxRhE(maxRhE);
 		skimmer.SetMinEmE(minEmE);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
@@ -362,6 +363,8 @@ cout << "fname " << fname << endl;
 			skimmer.SetIsoCuts();
 		}
 		else cout << "Not applying isolation preselection for training labels." << endl;
+		skimmer.SetMinPt(minpt);
+		if(iso) skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
