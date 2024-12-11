@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Aug 14 11:00:14 2024 by ROOT version 6.26/11
+// Wed Dec  4 12:24:04 2024 by ROOT version 6.30/06
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: output_999.root
+// found on file: GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root
 //////////////////////////////////////////////////////////
 
 #ifndef ReducedBase_h
@@ -14,7 +14,6 @@
 
 // Header file for the classes stored in the TTree if any.
 #include "vector"
-
 
 using namespace std;
 
@@ -109,6 +108,7 @@ public :
    vector<bool>    *SuperCluster_isScEtaEB;
    vector<bool>    *SuperCluster_isScEtaEE;
    vector<bool>    *SuperCluster_isOot;
+   vector<bool>    *SuperCluster_original;
    vector<float>   *SuperCluster_phiWidth;
    vector<float>   *SuperCluster_salp;
    vector<float>   *SuperCluster_smaj;
@@ -122,25 +122,9 @@ public :
    vector<float>   *SuperCluster_clcx;
    vector<float>   *SuperCluster_clcy;
    vector<float>   *SuperCluster_clcz;
-   vector<float>   *OSuperCluster_diffEnergy;
-   vector<float>   *OSuperCluster_XdiffEnergy;
-   vector<float>   *OSuperCluster_dR;
-   vector<float>   *OSuperCluster_XdR;
-   vector<float>   *OSuperCluster_perDiffEnergy;
-   vector<float>   *OSuperCluster_XPerDiffEnergy;
-   vector<unsigned int> *OSuperCluster_otherMatchSeedID;
-   vector<unsigned int> *OSuperCluster_XotherMatchSeedID;
-   Int_t           OSuperCluster_nOther;
-   Int_t           OSuperCluster_nOtherEx;
-   Int_t           OSuperCluster_nOtherIn;
-   vector<unsigned int> *OSuperCluster_otherSeedID;
-   vector<int>     *OSuperCluster_nXtalOverlap;
-   vector<int>     *OSuperCluster_XnXtalOverlap;
    Int_t           SuperCluster_nSuperCluster;
    vector<unsigned int> *SuperCluster_nRHXtals;
    vector<int>     *SuperCluster_ObjectPdgId;
-   vector<float>   *OSuperCluster_precentXtalOverlap;
-   vector<float>   *OSuperCluster_XprecentXtalOverlap;
    vector<float>   *SuperCluster_phi;
    vector<int>     *SuperCluster_PhotonIndx;
    vector<vector<float> > *SuperCluster_rhFracs;
@@ -161,8 +145,6 @@ public :
    vector<float>   *ECALTrack_etaError;
    vector<float>   *ECALTrack_genDeltaR;
    vector<int>     *ECALTrack_genIndex;
-   vector<bool>    *ECALTrack_isGeneral;
-   vector<bool>    *ECALTrack_isGsf;
    vector<float>   *ECALTrack_lambda;
    Int_t           ECALTrack_nGeneral;
    Int_t           ECALTrack_nGsf;
@@ -186,11 +168,13 @@ public :
    vector<float>   *ECALTrack_vx;
    vector<float>   *ECALTrack_vy;
    vector<float>   *ECALTrack_vz;
+   vector<float>   *TrackSCMatch_deltaR;
+   vector<float>   *TrackSCMatch_scEnergyToTrackPRatio;
    vector<float>   *Electron_energy;
    vector<float>   *Electron_eta;
    vector<int>     *Electron_genIdx;
-   vector<int>     *Electron_genSigMomId;
    vector<int>     *Electron_genSigWZId;
+   vector<int>     *Electron_genSigXMomId;
    vector<float>   *Electron_phi;
    vector<float>   *Electron_pt;
    vector<float>   *Electron_px;
@@ -214,6 +198,88 @@ public :
    UInt_t          Evt_luminosityBlock;
    UInt_t          Evt_run;
    UInt_t          Evt_event;
+   Bool_t          Trigger_hltEG20EtFilterLooseHoverE;
+   Bool_t          Trigger_hltEG20EtL1TripleEGFilter;
+   Bool_t          Trigger_hltEG20HEFilterLooseHoverE;
+   Bool_t          Trigger_hltEG20HEL1TripleEGFilter;
+   Bool_t          Trigger_hltEG20L1SingleEGLowETOrEtFilter;
+   Bool_t          Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter;
+   Bool_t          Trigger_hltEG30EBHE10R9Id50b80eHEFilter;
+   Bool_t          Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter;
+   Bool_t          Trigger_hltEG30EBR9Id50b80eR9IdFilter;
+   Bool_t          Trigger_hltEG30EIso15HE30EcalIsoLastFilter;
+   Bool_t          Trigger_hltEG30EtFilterLooseHoverE;
+   Bool_t          Trigger_hltEG30EtL1TripleEGFilter;
+   Bool_t          Trigger_hltEG30HE30HEFilter;
+   Bool_t          Trigger_hltEG30HEFilterLooseHoverE;
+   Bool_t          Trigger_hltEG30HEL1TripleEGFilter;
+   Bool_t          Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter;
+   Bool_t          Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter;
+   Bool_t          Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter;
+   Bool_t          Trigger_hltEG30LHE12R9Id50b80eHEFilter;
+   Bool_t          Trigger_hltEG30LR9Id50b80eR9IdFilter;
+   Bool_t          Trigger_hltEG30PVHE10R9Id50b80eHEFilter;
+   Bool_t          Trigger_hltEG30PVR9Id50b80eR9IdFilter;
+   Bool_t          Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter;
+   Bool_t          Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter;
+   Bool_t          Trigger_hltEG60EtFilter;
+   Bool_t          Trigger_hltEG60HEFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter;
+   Bool_t          Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter;
+   Bool_t          Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter;
+   Bool_t          Trigger_hltHT130Jet30;
+   Bool_t          Trigger_hltHT175Jet10;
+   Bool_t          Trigger_hltHT200Jet30;
+   Bool_t          Trigger_hltL1sSingleAndDoubleEG;
+   Bool_t          Trigger_hltL1sSingleAndDoubleEGNonIsoOr;
+   Bool_t          Trigger_hltL1sSingleAndDoubleEGor;
+   Bool_t          Trigger_hltL1sSingleEG15;
+   Bool_t          Trigger_hltL1sSingleEG18;
+   Bool_t          Trigger_hltL1sSingleEG24;
+   Bool_t          Trigger_hltL1sSingleEG26;
+   Bool_t          Trigger_hltL1sSingleEG34to45;
+   Bool_t          Trigger_hltL1sSingleEG34to50;
+   Bool_t          Trigger_hltL1sSingleEG40to50;
+   Bool_t          Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS;
+   Bool_t          Trigger_hltL1sSingleEGor;
+   Bool_t          Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG;
+   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter;
+   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt;
+   Bool_t          Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt;
+   Bool_t          Trigger_hltPFHT180Jet30;
+   Bool_t          Trigger_hltPFHT250Jet30;
+   Bool_t          Trigger_hltPFHT350Jet15;
+   Bool_t          Trigger_hltPFMET100;
+   Bool_t          Trigger_hltPFMET110;
+   Bool_t          Trigger_hltPFMET120;
+   Bool_t          Trigger_hltPFMET130;
+   Bool_t          Trigger_hltPFMET140;
+   Bool_t          Trigger_hltPFMET200;
+   Bool_t          Trigger_hltPFMET250;
+   Bool_t          Trigger_hltPFMET300;
+   Bool_t          Trigger_hltPFMET50;
+   Bool_t          Trigger_hltPFMET70;
+   Bool_t          Trigger_hltPFMET90;
+   Bool_t          Trigger_hltPFMETNoMu100;
+   Bool_t          Trigger_hltPFMETNoMu110;
+   Bool_t          Trigger_hltPFMETNoMu120;
+   Bool_t          Trigger_hltPFMETNoMu130;
+   Bool_t          Trigger_hltPFMETNoMu140;
+   Bool_t          Trigger_hltPFMETNoMu60;
+   Bool_t          Trigger_hltPFMHTNoMuTightID100;
+   Bool_t          Trigger_hltPFMHTNoMuTightID110;
+   Bool_t          Trigger_hltPFMHTNoMuTightID120;
+   Bool_t          Trigger_hltPFMHTNoMuTightID130;
+   Bool_t          Trigger_hltPFMHTNoMuTightID140;
+   Bool_t          Trigger_hltPFMHTNoMuTightID70;
+   Bool_t          Trigger_hltPFMHTNoMuTightID90;
+   Bool_t          Trigger_hltPFMHTTightID120;
+   Bool_t          Trigger_hltPFMHTTightID130;
+   Bool_t          Trigger_hltPFMHTTightID140;
    UInt_t          PV_npvs;
    Float_t         PV_x;
    Float_t         PV_y;
@@ -222,6 +288,8 @@ public :
    vector<float>   *Gen_energy;
    vector<float>   *Gen_eta;
    vector<float>   *Gen_mass;
+   vector<float>   *Gen_momDisplacment;
+   vector<int>     *Gen_motherIdx;
    UInt_t          Gen_nTotal;
    vector<unsigned int> *Gen_pdgId;
    vector<float>   *Gen_phi;
@@ -229,7 +297,7 @@ public :
    vector<float>   *Gen_px;
    vector<float>   *Gen_py;
    vector<float>   *Gen_pz;
-   vector<bool>    *Gen_status;
+   vector<int>     *Gen_status;
    vector<int>     *Gen_susEvtType;
    vector<int>     *Gen_susId;
    vector<float>   *Gen_vx;
@@ -243,16 +311,19 @@ public :
    vector<vector<unsigned int> > *Jet_drRhIds;
    vector<float>   *Jet_energy;
    vector<float>   *Jet_eta;
+   vector<float>   *Jet_genJetLlpDr;
    vector<float>   *Jet_genDptMatch;
    vector<float>   *Jet_genDrMatch;
    vector<float>   *Jet_genEnergy;
    vector<float>   *Jet_genEta;
    vector<float>   *Jet_genImpactAngle;
-   vector<float>   *Jet_genLlpDp;
-   vector<float>   *Jet_genLlpDr;
-   vector<float>   *Jet_genLlpId;
+   vector<int>     *Jet_genJetLlpId;
+   vector<float>   *Jet_genJetLlpRp;
    vector<float>   *Jet_genPhi;
    vector<float>   *Jet_genPt;
+   vector<float>   *Jet_genQrkLlpDr;
+   vector<int>     *Jet_genQrkLlpId;
+   vector<float>   *Jet_genQrkLlpRp;
    vector<float>   *Jet_genTOF;
    vector<float>   *Jet_genTime;
    vector<float>   *Jet_genTimeLLP;
@@ -281,7 +352,7 @@ public :
    vector<float>   *Photon_eta;
    vector<bool>    *Photon_excluded;
    vector<int>     *Photon_genIdx;
-   vector<int>     *Photon_genSigMomId;
+   vector<int>     *Photon_genSigXMomId;
    vector<float>   *Photon_hadOverEM;
    vector<float>   *Photon_hadTowOverEM;
    vector<float>   *Photon_hcalTowerSumEtBcConeDR04;
@@ -405,6 +476,7 @@ public :
    TBranch        *b_SuperCluster_isScEtaEB;   //!
    TBranch        *b_SuperCluster_isScEtaEE;   //!
    TBranch        *b_SuperCluster_isOot;   //!
+   TBranch        *b_SuperCluster_original;   //!
    TBranch        *b_SuperCluster_phiWidth;   //!
    TBranch        *b_SuperCluster_salp;   //!
    TBranch        *b_SuperCluster_smaj;   //!
@@ -418,25 +490,9 @@ public :
    TBranch        *b_SuperCluster_clcx;   //!
    TBranch        *b_SuperCluster_clcy;   //!
    TBranch        *b_SuperCluster_clcz;   //!
-   TBranch        *b_OSuperCluster_diffEnergy;   //!
-   TBranch        *b_OSuperCluster_XdiffEnergy;   //!
-   TBranch        *b_OSuperCluster_dR;   //!
-   TBranch        *b_OSuperCluster_XdR;   //!
-   TBranch        *b_OSuperCluster_perDiffEnergy;   //!
-   TBranch        *b_OSuperCluster_XPerDiffEnergy;   //!
-   TBranch        *b_OSuperCluster_otherMatchSeedID;   //!
-   TBranch        *b_OSuperCluster_XotherMatchSeedID;   //!
-   TBranch        *b_OSuperCluster_nOther;   //!
-   TBranch        *b_OSuperCluster_nOtherEx;   //!
-   TBranch        *b_OSuperCluster_nOtherIn;   //!
-   TBranch        *b_OSuperCluster_otherSeedID;   //!
-   TBranch        *b_OSuperCluster_nXtalOverlap;   //!
-   TBranch        *b_OSuperCluster_XnXtalOverlap;   //!
    TBranch        *b_SuperCluster_nSuperCluster;   //!
    TBranch        *b_SuperCluster_nRHXtals;   //!
    TBranch        *b_SuperCluster_ObjectPdgId;   //!
-   TBranch        *b_OSuperCluster_precentXtalOverlap;   //!
-   TBranch        *b_OSuperCluster_XprecentXtalOverlap;   //!
    TBranch        *b_SuperCluster_phi;   //!
    TBranch        *b_SuperCluster_PhotonIndx;   //!
    TBranch        *b_SuperCluster_rhFracs;   //!
@@ -457,8 +513,6 @@ public :
    TBranch        *b_ECALTrack_etaError;   //!
    TBranch        *b_ECALTrack_genDeltaR;   //!
    TBranch        *b_ECALTrack_genIndex;   //!
-   TBranch        *b_ECALTrack_isGeneral;   //!
-   TBranch        *b_ECALTrack_isGsf;   //!
    TBranch        *b_ECALTrack_lambda;   //!
    TBranch        *b_ECALTrack_nGeneral;   //!
    TBranch        *b_ECALTrack_nGsf;   //!
@@ -482,11 +536,13 @@ public :
    TBranch        *b_ECALTrack_vx;   //!
    TBranch        *b_ECALTrack_vy;   //!
    TBranch        *b_ECALTrack_vz;   //!
+   TBranch        *b_TrackSCMatch_deltaR;   //!
+   TBranch        *b_TrackSCMatch_scEnergyToTrackPRatio;   //!
    TBranch        *b_Electron_energy;   //!
    TBranch        *b_Electron_eta;   //!
    TBranch        *b_Electron_genIdx;   //!
-   TBranch        *b_Electron_genSigMomId;   //!
    TBranch        *b_Electron_genSigWZId;   //!
+   TBranch        *b_Electron_genSigXMomId;   //!
    TBranch        *b_Electron_phi;   //!
    TBranch        *b_Electron_pt;   //!
    TBranch        *b_Electron_px;   //!
@@ -510,6 +566,88 @@ public :
    TBranch        *b_Evt_luminosityBlock;   //!
    TBranch        *b_Evt_run;   //!
    TBranch        *b_Evt_event;   //!
+   TBranch        *b_Trigger_hltEG20EtFilterLooseHoverE;   //!
+   TBranch        *b_Trigger_hltEG20EtL1TripleEGFilter;   //!
+   TBranch        *b_Trigger_hltEG20HEFilterLooseHoverE;   //!
+   TBranch        *b_Trigger_hltEG20HEL1TripleEGFilter;   //!
+   TBranch        *b_Trigger_hltEG20L1SingleEGLowETOrEtFilter;   //!
+   TBranch        *b_Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter;   //!
+   TBranch        *b_Trigger_hltEG30EBHE10R9Id50b80eHEFilter;   //!
+   TBranch        *b_Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter;   //!
+   TBranch        *b_Trigger_hltEG30EBR9Id50b80eR9IdFilter;   //!
+   TBranch        *b_Trigger_hltEG30EIso15HE30EcalIsoLastFilter;   //!
+   TBranch        *b_Trigger_hltEG30EtFilterLooseHoverE;   //!
+   TBranch        *b_Trigger_hltEG30EtL1TripleEGFilter;   //!
+   TBranch        *b_Trigger_hltEG30HE30HEFilter;   //!
+   TBranch        *b_Trigger_hltEG30HEFilterLooseHoverE;   //!
+   TBranch        *b_Trigger_hltEG30HEL1TripleEGFilter;   //!
+   TBranch        *b_Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter;   //!
+   TBranch        *b_Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter;   //!
+   TBranch        *b_Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter;   //!
+   TBranch        *b_Trigger_hltEG30LHE12R9Id50b80eHEFilter;   //!
+   TBranch        *b_Trigger_hltEG30LR9Id50b80eR9IdFilter;   //!
+   TBranch        *b_Trigger_hltEG30PVHE10R9Id50b80eHEFilter;   //!
+   TBranch        *b_Trigger_hltEG30PVR9Id50b80eR9IdFilter;   //!
+   TBranch        *b_Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter;   //!
+   TBranch        *b_Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter;   //!
+   TBranch        *b_Trigger_hltEG60EtFilter;   //!
+   TBranch        *b_Trigger_hltEG60HEFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter;   //!
+   TBranch        *b_Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter;   //!
+   TBranch        *b_Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter;   //!
+   TBranch        *b_Trigger_hltHT130Jet30;   //!
+   TBranch        *b_Trigger_hltHT175Jet10;   //!
+   TBranch        *b_Trigger_hltHT200Jet30;   //!
+   TBranch        *b_Trigger_hltL1sSingleAndDoubleEG;   //!
+   TBranch        *b_Trigger_hltL1sSingleAndDoubleEGNonIsoOr;   //!
+   TBranch        *b_Trigger_hltL1sSingleAndDoubleEGor;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG15;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG18;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG24;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG26;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG34to45;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG34to50;   //!
+   TBranch        *b_Trigger_hltL1sSingleEG40to50;   //!
+   TBranch        *b_Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS;   //!
+   TBranch        *b_Trigger_hltL1sSingleEGor;   //!
+   TBranch        *b_Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG;   //!
+   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter;   //!
+   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt;   //!
+   TBranch        *b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt;   //!
+   TBranch        *b_Trigger_hltPFHT180Jet30;   //!
+   TBranch        *b_Trigger_hltPFHT250Jet30;   //!
+   TBranch        *b_Trigger_hltPFHT350Jet15;   //!
+   TBranch        *b_Trigger_hltPFMET100;   //!
+   TBranch        *b_Trigger_hltPFMET110;   //!
+   TBranch        *b_Trigger_hltPFMET120;   //!
+   TBranch        *b_Trigger_hltPFMET130;   //!
+   TBranch        *b_Trigger_hltPFMET140;   //!
+   TBranch        *b_Trigger_hltPFMET200;   //!
+   TBranch        *b_Trigger_hltPFMET250;   //!
+   TBranch        *b_Trigger_hltPFMET300;   //!
+   TBranch        *b_Trigger_hltPFMET50;   //!
+   TBranch        *b_Trigger_hltPFMET70;   //!
+   TBranch        *b_Trigger_hltPFMET90;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu100;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu110;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu120;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu130;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu140;   //!
+   TBranch        *b_Trigger_hltPFMETNoMu60;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID100;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID110;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID120;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID130;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID140;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID70;   //!
+   TBranch        *b_Trigger_hltPFMHTNoMuTightID90;   //!
+   TBranch        *b_Trigger_hltPFMHTTightID120;   //!
+   TBranch        *b_Trigger_hltPFMHTTightID130;   //!
+   TBranch        *b_Trigger_hltPFMHTTightID140;   //!
    TBranch        *b_PV_npvs;   //!
    TBranch        *b_PV_x;   //!
    TBranch        *b_PV_y;   //!
@@ -518,6 +656,8 @@ public :
    TBranch        *b_Gen_energy;   //!
    TBranch        *b_Gen_eta;   //!
    TBranch        *b_Gen_mass;   //!
+   TBranch        *b_Gen_momDisplacment;   //!
+   TBranch        *b_Gen_motherIdx;   //!
    TBranch        *b_Gen_nTotal;   //!
    TBranch        *b_Gen_pdgId;   //!
    TBranch        *b_Gen_phi;   //!
@@ -539,16 +679,19 @@ public :
    TBranch        *b_Jet_drRhIds;   //!
    TBranch        *b_Jet_energy;   //!
    TBranch        *b_Jet_eta;   //!
+   TBranch        *b_Jet_genJetLlpDr;   //!
    TBranch        *b_Jet_genDptMatch;   //!
    TBranch        *b_Jet_genDrMatch;   //!
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genEta;   //!
    TBranch        *b_Jet_genImpactAngle;   //!
-   TBranch        *b_Jet_genLlpDp;   //!
-   TBranch        *b_Jet_genLlpDr;   //!
-   TBranch        *b_Jet_genLlpId;   //!
+   TBranch        *b_Jet_genJetLlpId;   //!
+   TBranch        *b_Jet_genJetLlpRp;   //!
    TBranch        *b_Jet_genPhi;   //!
    TBranch        *b_Jet_genPt;   //!
+   TBranch        *b_Jet_genQrkLlpDr;   //!
+   TBranch        *b_Jet_genQrkLlpId;   //!
+   TBranch        *b_Jet_genQrkLlpRp;   //!
    TBranch        *b_Jet_genTOF;   //!
    TBranch        *b_Jet_genTime;   //!
    TBranch        *b_Jet_genTimeLLP;   //!
@@ -577,7 +720,7 @@ public :
    TBranch        *b_Photon_eta;   //!
    TBranch        *b_Photon_excluded;   //!
    TBranch        *b_Photon_genIdx;   //!
-   TBranch        *b_Photon_genSigMomId;   //!
+   TBranch        *b_Photon_genSigXMomId;   //!
    TBranch        *b_Photon_hadOverEM;   //!
    TBranch        *b_Photon_hadTowOverEM;   //!
    TBranch        *b_Photon_hcalTowerSumEtBcConeDR04;   //!
@@ -636,11 +779,11 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("output_999.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("output_999.root");
+         f = new TFile("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("output_999.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root:/tree");
       dir->GetObject("ReducedBase",tree);
 
    }
@@ -761,6 +904,7 @@ inline void ReducedBase::Init(TTree *tree)
    SuperCluster_isScEtaEB = 0;
    SuperCluster_isScEtaEE = 0;
    SuperCluster_isOot = 0;
+   SuperCluster_original = 0;
    SuperCluster_phiWidth = 0;
    SuperCluster_salp = 0;
    SuperCluster_smaj = 0;
@@ -774,21 +918,8 @@ inline void ReducedBase::Init(TTree *tree)
    SuperCluster_clcx = 0;
    SuperCluster_clcy = 0;
    SuperCluster_clcz = 0;
-   OSuperCluster_diffEnergy = 0;
-   OSuperCluster_XdiffEnergy = 0;
-   OSuperCluster_dR = 0;
-   OSuperCluster_XdR = 0;
-   OSuperCluster_perDiffEnergy = 0;
-   OSuperCluster_XPerDiffEnergy = 0;
-   OSuperCluster_otherMatchSeedID = 0;
-   OSuperCluster_XotherMatchSeedID = 0;
-   OSuperCluster_otherSeedID = 0;
-   OSuperCluster_nXtalOverlap = 0;
-   OSuperCluster_XnXtalOverlap = 0;
    SuperCluster_nRHXtals = 0;
    SuperCluster_ObjectPdgId = 0;
-   OSuperCluster_precentXtalOverlap = 0;
-   OSuperCluster_XprecentXtalOverlap = 0;
    SuperCluster_phi = 0;
    SuperCluster_PhotonIndx = 0;
    SuperCluster_rhFracs = 0;
@@ -809,8 +940,6 @@ inline void ReducedBase::Init(TTree *tree)
    ECALTrack_etaError = 0;
    ECALTrack_genDeltaR = 0;
    ECALTrack_genIndex = 0;
-   ECALTrack_isGeneral = 0;
-   ECALTrack_isGsf = 0;
    ECALTrack_lambda = 0;
    ECALTrack_nLostHits = 0;
    ECALTrack_nValidHits = 0;
@@ -831,11 +960,13 @@ inline void ReducedBase::Init(TTree *tree)
    ECALTrack_vx = 0;
    ECALTrack_vy = 0;
    ECALTrack_vz = 0;
+   TrackSCMatch_deltaR = 0;
+   TrackSCMatch_scEnergyToTrackPRatio = 0;
    Electron_energy = 0;
    Electron_eta = 0;
    Electron_genIdx = 0;
-   Electron_genSigMomId = 0;
    Electron_genSigWZId = 0;
+   Electron_genSigXMomId = 0;
    Electron_phi = 0;
    Electron_pt = 0;
    Electron_px = 0;
@@ -848,6 +979,8 @@ inline void ReducedBase::Init(TTree *tree)
    Gen_energy = 0;
    Gen_eta = 0;
    Gen_mass = 0;
+   Gen_momDisplacment = 0;
+   Gen_motherIdx = 0;
    Gen_pdgId = 0;
    Gen_phi = 0;
    Gen_pt = 0;
@@ -867,16 +1000,19 @@ inline void ReducedBase::Init(TTree *tree)
    Jet_drRhIds = 0;
    Jet_energy = 0;
    Jet_eta = 0;
+   Jet_genJetLlpDr = 0;
    Jet_genDptMatch = 0;
    Jet_genDrMatch = 0;
    Jet_genEnergy = 0;
    Jet_genEta = 0;
    Jet_genImpactAngle = 0;
-   Jet_genLlpDp = 0;
-   Jet_genLlpDr = 0;
-   Jet_genLlpId = 0;
+   Jet_genJetLlpId = 0;
+   Jet_genJetLlpRp = 0;
    Jet_genPhi = 0;
    Jet_genPt = 0;
+   Jet_genQrkLlpDr = 0;
+   Jet_genQrkLlpId = 0;
+   Jet_genQrkLlpRp = 0;
    Jet_genTOF = 0;
    Jet_genTime = 0;
    Jet_genTimeLLP = 0;
@@ -895,7 +1031,7 @@ inline void ReducedBase::Init(TTree *tree)
    Photon_eta = 0;
    Photon_excluded = 0;
    Photon_genIdx = 0;
-   Photon_genSigMomId = 0;
+   Photon_genSigXMomId = 0;
    Photon_hadOverEM = 0;
    Photon_hadTowOverEM = 0;
    Photon_hcalTowerSumEtBcConeDR04 = 0;
@@ -1022,6 +1158,7 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("SuperCluster_isScEtaEB", &SuperCluster_isScEtaEB, &b_SuperCluster_isScEtaEB);
    fChain->SetBranchAddress("SuperCluster_isScEtaEE", &SuperCluster_isScEtaEE, &b_SuperCluster_isScEtaEE);
    fChain->SetBranchAddress("SuperCluster_isOot", &SuperCluster_isOot, &b_SuperCluster_isOot);
+   fChain->SetBranchAddress("SuperCluster_original", &SuperCluster_original, &b_SuperCluster_original);
    fChain->SetBranchAddress("SuperCluster_phiWidth", &SuperCluster_phiWidth, &b_SuperCluster_phiWidth);
    fChain->SetBranchAddress("SuperCluster_salp", &SuperCluster_salp, &b_SuperCluster_salp);
    fChain->SetBranchAddress("SuperCluster_smaj", &SuperCluster_smaj, &b_SuperCluster_smaj);
@@ -1035,25 +1172,9 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("SuperCluster_clcx", &SuperCluster_clcx, &b_SuperCluster_clcx);
    fChain->SetBranchAddress("SuperCluster_clcy", &SuperCluster_clcy, &b_SuperCluster_clcy);
    fChain->SetBranchAddress("SuperCluster_clcz", &SuperCluster_clcz, &b_SuperCluster_clcz);
-   fChain->SetBranchAddress("OSuperCluster_diffEnergy", &OSuperCluster_diffEnergy, &b_OSuperCluster_diffEnergy);
-   fChain->SetBranchAddress("OSuperCluster_XdiffEnergy", &OSuperCluster_XdiffEnergy, &b_OSuperCluster_XdiffEnergy);
-   fChain->SetBranchAddress("OSuperCluster_dR", &OSuperCluster_dR, &b_OSuperCluster_dR);
-   fChain->SetBranchAddress("OSuperCluster_XdR", &OSuperCluster_XdR, &b_OSuperCluster_XdR);
-   fChain->SetBranchAddress("OSuperCluster_perDiffEnergy", &OSuperCluster_perDiffEnergy, &b_OSuperCluster_perDiffEnergy);
-   fChain->SetBranchAddress("OSuperCluster_XPerDiffEnergy", &OSuperCluster_XPerDiffEnergy, &b_OSuperCluster_XPerDiffEnergy);
-   fChain->SetBranchAddress("OSuperCluster_otherMatchSeedID", &OSuperCluster_otherMatchSeedID, &b_OSuperCluster_otherMatchSeedID);
-   fChain->SetBranchAddress("OSuperCluster_XotherMatchSeedID", &OSuperCluster_XotherMatchSeedID, &b_OSuperCluster_XotherMatchSeedID);
-   fChain->SetBranchAddress("OSuperCluster_nOther", &OSuperCluster_nOther, &b_OSuperCluster_nOther);
-   fChain->SetBranchAddress("OSuperCluster_nOtherEx", &OSuperCluster_nOtherEx, &b_OSuperCluster_nOtherEx);
-   fChain->SetBranchAddress("OSuperCluster_nOtherIn", &OSuperCluster_nOtherIn, &b_OSuperCluster_nOtherIn);
-   fChain->SetBranchAddress("OSuperCluster_otherSeedID", &OSuperCluster_otherSeedID, &b_OSuperCluster_otherSeedID);
-   fChain->SetBranchAddress("OSuperCluster_nXtalOverlap", &OSuperCluster_nXtalOverlap, &b_OSuperCluster_nXtalOverlap);
-   fChain->SetBranchAddress("OSuperCluster_XnXtalOverlap", &OSuperCluster_XnXtalOverlap, &b_OSuperCluster_XnXtalOverlap);
    fChain->SetBranchAddress("SuperCluster_nSuperCluster", &SuperCluster_nSuperCluster, &b_SuperCluster_nSuperCluster);
    fChain->SetBranchAddress("SuperCluster_nRHXtals", &SuperCluster_nRHXtals, &b_SuperCluster_nRHXtals);
    fChain->SetBranchAddress("SuperCluster_ObjectPdgId", &SuperCluster_ObjectPdgId, &b_SuperCluster_ObjectPdgId);
-   fChain->SetBranchAddress("OSuperCluster_precentXtalOverlap", &OSuperCluster_precentXtalOverlap, &b_OSuperCluster_precentXtalOverlap);
-   fChain->SetBranchAddress("OSuperCluster_XprecentXtalOverlap", &OSuperCluster_XprecentXtalOverlap, &b_OSuperCluster_XprecentXtalOverlap);
    fChain->SetBranchAddress("SuperCluster_phi", &SuperCluster_phi, &b_SuperCluster_phi);
    fChain->SetBranchAddress("SuperCluster_PhotonIndx", &SuperCluster_PhotonIndx, &b_SuperCluster_PhotonIndx);
    fChain->SetBranchAddress("SuperCluster_rhFracs", &SuperCluster_rhFracs, &b_SuperCluster_rhFracs);
@@ -1074,8 +1195,6 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("ECALTrack_etaError", &ECALTrack_etaError, &b_ECALTrack_etaError);
    fChain->SetBranchAddress("ECALTrack_genDeltaR", &ECALTrack_genDeltaR, &b_ECALTrack_genDeltaR);
    fChain->SetBranchAddress("ECALTrack_genIndex", &ECALTrack_genIndex, &b_ECALTrack_genIndex);
-   fChain->SetBranchAddress("ECALTrack_isGeneral", &ECALTrack_isGeneral, &b_ECALTrack_isGeneral);
-   fChain->SetBranchAddress("ECALTrack_isGsf", &ECALTrack_isGsf, &b_ECALTrack_isGsf);
    fChain->SetBranchAddress("ECALTrack_lambda", &ECALTrack_lambda, &b_ECALTrack_lambda);
    fChain->SetBranchAddress("ECALTrack_nGeneral", &ECALTrack_nGeneral, &b_ECALTrack_nGeneral);
    fChain->SetBranchAddress("ECALTrack_nGsf", &ECALTrack_nGsf, &b_ECALTrack_nGsf);
@@ -1099,11 +1218,13 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("ECALTrack_vx", &ECALTrack_vx, &b_ECALTrack_vx);
    fChain->SetBranchAddress("ECALTrack_vy", &ECALTrack_vy, &b_ECALTrack_vy);
    fChain->SetBranchAddress("ECALTrack_vz", &ECALTrack_vz, &b_ECALTrack_vz);
+   fChain->SetBranchAddress("TrackSCMatch_deltaR", &TrackSCMatch_deltaR, &b_TrackSCMatch_deltaR);
+   fChain->SetBranchAddress("TrackSCMatch_scEnergyToTrackPRatio", &TrackSCMatch_scEnergyToTrackPRatio, &b_TrackSCMatch_scEnergyToTrackPRatio);
    fChain->SetBranchAddress("Electron_energy", &Electron_energy, &b_Electron_energy);
    fChain->SetBranchAddress("Electron_eta", &Electron_eta, &b_Electron_eta);
    fChain->SetBranchAddress("Electron_genIdx", &Electron_genIdx, &b_Electron_genIdx);
-   fChain->SetBranchAddress("Electron_genSigMomId", &Electron_genSigMomId, &b_Electron_genSigMomId);
    fChain->SetBranchAddress("Electron_genSigWZId", &Electron_genSigWZId, &b_Electron_genSigWZId);
+   fChain->SetBranchAddress("Electron_genSigXMomId", &Electron_genSigXMomId, &b_Electron_genSigXMomId);
    fChain->SetBranchAddress("Electron_phi", &Electron_phi, &b_Electron_phi);
    fChain->SetBranchAddress("Electron_pt", &Electron_pt, &b_Electron_pt);
    fChain->SetBranchAddress("Electron_px", &Electron_px, &b_Electron_px);
@@ -1127,6 +1248,88 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Evt_luminosityBlock", &Evt_luminosityBlock, &b_Evt_luminosityBlock);
    fChain->SetBranchAddress("Evt_run", &Evt_run, &b_Evt_run);
    fChain->SetBranchAddress("Evt_event", &Evt_event, &b_Evt_event);
+   fChain->SetBranchAddress("Trigger_hltEG20EtFilterLooseHoverE", &Trigger_hltEG20EtFilterLooseHoverE, &b_Trigger_hltEG20EtFilterLooseHoverE);
+   fChain->SetBranchAddress("Trigger_hltEG20EtL1TripleEGFilter", &Trigger_hltEG20EtL1TripleEGFilter, &b_Trigger_hltEG20EtL1TripleEGFilter);
+   fChain->SetBranchAddress("Trigger_hltEG20HEFilterLooseHoverE", &Trigger_hltEG20HEFilterLooseHoverE, &b_Trigger_hltEG20HEFilterLooseHoverE);
+   fChain->SetBranchAddress("Trigger_hltEG20HEL1TripleEGFilter", &Trigger_hltEG20HEL1TripleEGFilter, &b_Trigger_hltEG20HEL1TripleEGFilter);
+   fChain->SetBranchAddress("Trigger_hltEG20L1SingleEGLowETOrEtFilter", &Trigger_hltEG20L1SingleEGLowETOrEtFilter, &b_Trigger_hltEG20L1SingleEGLowETOrEtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter", &Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter, &b_Trigger_hltEG20L1SingleEGLowETOrEtaREtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30EBHE10R9Id50b80eHEFilter", &Trigger_hltEG30EBHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30EBHE10R9Id50b80eHEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter", &Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter, &b_Trigger_hltEG30EBL1SingleAndDoubleEGOrEtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30EBR9Id50b80eR9IdFilter", &Trigger_hltEG30EBR9Id50b80eR9IdFilter, &b_Trigger_hltEG30EBR9Id50b80eR9IdFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30EIso15HE30EcalIsoLastFilter", &Trigger_hltEG30EIso15HE30EcalIsoLastFilter, &b_Trigger_hltEG30EIso15HE30EcalIsoLastFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30EtFilterLooseHoverE", &Trigger_hltEG30EtFilterLooseHoverE, &b_Trigger_hltEG30EtFilterLooseHoverE);
+   fChain->SetBranchAddress("Trigger_hltEG30EtL1TripleEGFilter", &Trigger_hltEG30EtL1TripleEGFilter, &b_Trigger_hltEG30EtL1TripleEGFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30HE30HEFilter", &Trigger_hltEG30HE30HEFilter, &b_Trigger_hltEG30HE30HEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30HEFilterLooseHoverE", &Trigger_hltEG30HEFilterLooseHoverE, &b_Trigger_hltEG30HEFilterLooseHoverE);
+   fChain->SetBranchAddress("Trigger_hltEG30HEL1TripleEGFilter", &Trigger_hltEG30HEL1TripleEGFilter, &b_Trigger_hltEG30HEL1TripleEGFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter", &Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter, &b_Trigger_hltEG30L1IsoEGerJetC34drMin0p3EtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter", &Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter, &b_Trigger_hltEG30L1SingleAndDoubleEGOrEtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter", &Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter, &b_Trigger_hltEG30L1SingleAndDoubleEGWithTauWithJetEtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30LHE12R9Id50b80eHEFilter", &Trigger_hltEG30LHE12R9Id50b80eHEFilter, &b_Trigger_hltEG30LHE12R9Id50b80eHEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30LR9Id50b80eR9IdFilter", &Trigger_hltEG30LR9Id50b80eR9IdFilter, &b_Trigger_hltEG30LR9Id50b80eR9IdFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30PVHE10R9Id50b80eHEFilter", &Trigger_hltEG30PVHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30PVHE10R9Id50b80eHEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30PVR9Id50b80eR9IdFilter", &Trigger_hltEG30PVR9Id50b80eR9IdFilter, &b_Trigger_hltEG30PVR9Id50b80eR9IdFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter", &Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter, &b_Trigger_hltEG30PVrealANDHE10R9Id50b80eHEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter", &Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter, &b_Trigger_hltEG30PVrealANDR9Id50b80eR9IdFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60EtFilter", &Trigger_hltEG60EtFilter, &b_Trigger_hltEG60EtFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60HEFilter", &Trigger_hltEG60HEFilter, &b_Trigger_hltEG60HEFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLClusterShapeFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLDisplacedIdFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLEcalPFClusterIsoFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLHcalPFClusterIsoFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLHollowTrackIsoFilter);
+   fChain->SetBranchAddress("Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter", &Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter, &b_Trigger_hltEG60R9Id90CaloIdLIsoLR9IdFilter);
+   fChain->SetBranchAddress("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter", &Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter, &b_Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter);
+   fChain->SetBranchAddress("Trigger_hltHT130Jet30", &Trigger_hltHT130Jet30, &b_Trigger_hltHT130Jet30);
+   fChain->SetBranchAddress("Trigger_hltHT175Jet10", &Trigger_hltHT175Jet10, &b_Trigger_hltHT175Jet10);
+   fChain->SetBranchAddress("Trigger_hltHT200Jet30", &Trigger_hltHT200Jet30, &b_Trigger_hltHT200Jet30);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEG", &Trigger_hltL1sSingleAndDoubleEG, &b_Trigger_hltL1sSingleAndDoubleEG);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEGNonIsoOr", &Trigger_hltL1sSingleAndDoubleEGNonIsoOr, &b_Trigger_hltL1sSingleAndDoubleEGNonIsoOr);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleAndDoubleEGor", &Trigger_hltL1sSingleAndDoubleEGor, &b_Trigger_hltL1sSingleAndDoubleEGor);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG15", &Trigger_hltL1sSingleEG15, &b_Trigger_hltL1sSingleEG15);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG18", &Trigger_hltL1sSingleEG18, &b_Trigger_hltL1sSingleEG18);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG24", &Trigger_hltL1sSingleEG24, &b_Trigger_hltL1sSingleEG24);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG26", &Trigger_hltL1sSingleEG26, &b_Trigger_hltL1sSingleEG26);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG34to45", &Trigger_hltL1sSingleEG34to45, &b_Trigger_hltL1sSingleEG34to45);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG34to50", &Trigger_hltL1sSingleEG34to50, &b_Trigger_hltL1sSingleEG34to50);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEG40to50", &Trigger_hltL1sSingleEG40to50, &b_Trigger_hltL1sSingleEG40to50);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS", &Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS, &b_Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS);
+   fChain->SetBranchAddress("Trigger_hltL1sSingleEGor", &Trigger_hltL1sSingleEGor, &b_Trigger_hltL1sSingleEGor);
+   fChain->SetBranchAddress("Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG", &Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG, &b_Trigger_hltL1sTripleEGOrDoubleEGOrSingleEG);
+   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilter);
+   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterLowPt);
+   fChain->SetBranchAddress("Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt", &Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt, &b_Trigger_hltL4PromptDisplacedDijetFullTracksHLTCaloJetTagFilterMidPt);
+   fChain->SetBranchAddress("Trigger_hltPFHT180Jet30", &Trigger_hltPFHT180Jet30, &b_Trigger_hltPFHT180Jet30);
+   fChain->SetBranchAddress("Trigger_hltPFHT250Jet30", &Trigger_hltPFHT250Jet30, &b_Trigger_hltPFHT250Jet30);
+   fChain->SetBranchAddress("Trigger_hltPFHT350Jet15", &Trigger_hltPFHT350Jet15, &b_Trigger_hltPFHT350Jet15);
+   fChain->SetBranchAddress("Trigger_hltPFMET100", &Trigger_hltPFMET100, &b_Trigger_hltPFMET100);
+   fChain->SetBranchAddress("Trigger_hltPFMET110", &Trigger_hltPFMET110, &b_Trigger_hltPFMET110);
+   fChain->SetBranchAddress("Trigger_hltPFMET120", &Trigger_hltPFMET120, &b_Trigger_hltPFMET120);
+   fChain->SetBranchAddress("Trigger_hltPFMET130", &Trigger_hltPFMET130, &b_Trigger_hltPFMET130);
+   fChain->SetBranchAddress("Trigger_hltPFMET140", &Trigger_hltPFMET140, &b_Trigger_hltPFMET140);
+   fChain->SetBranchAddress("Trigger_hltPFMET200", &Trigger_hltPFMET200, &b_Trigger_hltPFMET200);
+   fChain->SetBranchAddress("Trigger_hltPFMET250", &Trigger_hltPFMET250, &b_Trigger_hltPFMET250);
+   fChain->SetBranchAddress("Trigger_hltPFMET300", &Trigger_hltPFMET300, &b_Trigger_hltPFMET300);
+   fChain->SetBranchAddress("Trigger_hltPFMET50", &Trigger_hltPFMET50, &b_Trigger_hltPFMET50);
+   fChain->SetBranchAddress("Trigger_hltPFMET70", &Trigger_hltPFMET70, &b_Trigger_hltPFMET70);
+   fChain->SetBranchAddress("Trigger_hltPFMET90", &Trigger_hltPFMET90, &b_Trigger_hltPFMET90);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu100", &Trigger_hltPFMETNoMu100, &b_Trigger_hltPFMETNoMu100);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu110", &Trigger_hltPFMETNoMu110, &b_Trigger_hltPFMETNoMu110);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu120", &Trigger_hltPFMETNoMu120, &b_Trigger_hltPFMETNoMu120);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu130", &Trigger_hltPFMETNoMu130, &b_Trigger_hltPFMETNoMu130);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu140", &Trigger_hltPFMETNoMu140, &b_Trigger_hltPFMETNoMu140);
+   fChain->SetBranchAddress("Trigger_hltPFMETNoMu60", &Trigger_hltPFMETNoMu60, &b_Trigger_hltPFMETNoMu60);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID100", &Trigger_hltPFMHTNoMuTightID100, &b_Trigger_hltPFMHTNoMuTightID100);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID110", &Trigger_hltPFMHTNoMuTightID110, &b_Trigger_hltPFMHTNoMuTightID110);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID120", &Trigger_hltPFMHTNoMuTightID120, &b_Trigger_hltPFMHTNoMuTightID120);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID130", &Trigger_hltPFMHTNoMuTightID130, &b_Trigger_hltPFMHTNoMuTightID130);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID140", &Trigger_hltPFMHTNoMuTightID140, &b_Trigger_hltPFMHTNoMuTightID140);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID70", &Trigger_hltPFMHTNoMuTightID70, &b_Trigger_hltPFMHTNoMuTightID70);
+   fChain->SetBranchAddress("Trigger_hltPFMHTNoMuTightID90", &Trigger_hltPFMHTNoMuTightID90, &b_Trigger_hltPFMHTNoMuTightID90);
+   fChain->SetBranchAddress("Trigger_hltPFMHTTightID120", &Trigger_hltPFMHTTightID120, &b_Trigger_hltPFMHTTightID120);
+   fChain->SetBranchAddress("Trigger_hltPFMHTTightID130", &Trigger_hltPFMHTTightID130, &b_Trigger_hltPFMHTTightID130);
+   fChain->SetBranchAddress("Trigger_hltPFMHTTightID140", &Trigger_hltPFMHTTightID140, &b_Trigger_hltPFMHTTightID140);
    fChain->SetBranchAddress("PV_npvs", &PV_npvs, &b_PV_npvs);
    fChain->SetBranchAddress("PV_x", &PV_x, &b_PV_x);
    fChain->SetBranchAddress("PV_y", &PV_y, &b_PV_y);
@@ -1135,6 +1338,8 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Gen_energy", &Gen_energy, &b_Gen_energy);
    fChain->SetBranchAddress("Gen_eta", &Gen_eta, &b_Gen_eta);
    fChain->SetBranchAddress("Gen_mass", &Gen_mass, &b_Gen_mass);
+   fChain->SetBranchAddress("Gen_momDisplacment", &Gen_momDisplacment, &b_Gen_momDisplacment);
+   fChain->SetBranchAddress("Gen_motherIdx", &Gen_motherIdx, &b_Gen_motherIdx);
    fChain->SetBranchAddress("Gen_nTotal", &Gen_nTotal, &b_Gen_nTotal);
    fChain->SetBranchAddress("Gen_pdgId", &Gen_pdgId, &b_Gen_pdgId);
    fChain->SetBranchAddress("Gen_phi", &Gen_phi, &b_Gen_phi);
@@ -1156,16 +1361,19 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_drRhIds", &Jet_drRhIds, &b_Jet_drRhIds);
    fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
    fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
+   fChain->SetBranchAddress("Jet_genJetLlpDr", &Jet_genJetLlpDr, &b_Jet_genJetLlpDr);
    fChain->SetBranchAddress("Jet_genDptMatch", &Jet_genDptMatch, &b_Jet_genDptMatch);
    fChain->SetBranchAddress("Jet_genDrMatch", &Jet_genDrMatch, &b_Jet_genDrMatch);
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genEta", &Jet_genEta, &b_Jet_genEta);
    fChain->SetBranchAddress("Jet_genImpactAngle", &Jet_genImpactAngle, &b_Jet_genImpactAngle);
-   fChain->SetBranchAddress("Jet_genLlpDp", &Jet_genLlpDp, &b_Jet_genLlpDp);
-   fChain->SetBranchAddress("Jet_genLlpDr", &Jet_genLlpDr, &b_Jet_genLlpDr);
-   fChain->SetBranchAddress("Jet_genLlpId", &Jet_genLlpId, &b_Jet_genLlpId);
+   fChain->SetBranchAddress("Jet_genJetLlpId", &Jet_genJetLlpId, &b_Jet_genJetLlpId);
+   fChain->SetBranchAddress("Jet_genJetLlpRp", &Jet_genJetLlpRp, &b_Jet_genJetLlpRp);
    fChain->SetBranchAddress("Jet_genPhi", &Jet_genPhi, &b_Jet_genPhi);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
+   fChain->SetBranchAddress("Jet_genQrkLlpDr", &Jet_genQrkLlpDr, &b_Jet_genQrkLlpDr);
+   fChain->SetBranchAddress("Jet_genQrkLlpId", &Jet_genQrkLlpId, &b_Jet_genQrkLlpId);
+   fChain->SetBranchAddress("Jet_genQrkLlpRp", &Jet_genQrkLlpRp, &b_Jet_genQrkLlpRp);
    fChain->SetBranchAddress("Jet_genTOF", &Jet_genTOF, &b_Jet_genTOF);
    fChain->SetBranchAddress("Jet_genTime", &Jet_genTime, &b_Jet_genTime);
    fChain->SetBranchAddress("Jet_genTimeLLP", &Jet_genTimeLLP, &b_Jet_genTimeLLP);
@@ -1194,7 +1402,7 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_eta", &Photon_eta, &b_Photon_eta);
    fChain->SetBranchAddress("Photon_excluded", &Photon_excluded, &b_Photon_excluded);
    fChain->SetBranchAddress("Photon_genIdx", &Photon_genIdx, &b_Photon_genIdx);
-   fChain->SetBranchAddress("Photon_genSigMomId", &Photon_genSigMomId, &b_Photon_genSigMomId);
+   fChain->SetBranchAddress("Photon_genSigXMomId", &Photon_genSigXMomId, &b_Photon_genSigXMomId);
    fChain->SetBranchAddress("Photon_hadOverEM", &Photon_hadOverEM, &b_Photon_hadOverEM);
    fChain->SetBranchAddress("Photon_hadTowOverEM", &Photon_hadTowOverEM, &b_Photon_hadTowOverEM);
    fChain->SetBranchAddress("Photon_hcalTowerSumEtBcConeDR04", &Photon_hcalTowerSumEtBcConeDR04, &b_Photon_hcalTowerSumEtBcConeDR04);
