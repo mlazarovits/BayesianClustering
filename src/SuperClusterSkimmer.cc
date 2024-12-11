@@ -78,7 +78,9 @@ void SuperClusterSkimmer::Skim(){
 	TH1D* genstatus = new TH1D("genstatus","genstatus",35,0,35);	
 	TH1D* genstatus_mom = new TH1D("genstatus_mom","genstatus_mom",35,0,35);
 	TH1D* genpdgid = new TH1D("genpdgid","genpdgid",25,0,25);	
-	TH1D* genpdgid_mom = new TH1D("genpdgid_mom","genpdgid_mom",25,0,25);	
+	TH1D* genpdgid_mom = new TH1D("genpdgid_mom","genpdgid_mom",25,0,25);
+	vector<pair<int,int>> icoords, icoords_nocenter;
+	vector<double> Es, Es_nocenter;	
 	//genpt of photons whose mom is ~40 (ISR)
 	//genpt of photons whose mom is ~50 (meson decay)
 	for(int e = _evti; e < _evtj; e++){
@@ -258,11 +260,42 @@ void SuperClusterSkimmer::Skim(){
 				mapobs[k]["subcl"] = k;
 				int label = GetTrainingLabel(scidx, k, gmm);
 				mapobs[k]["label"] = label;
-
 				BaseSkimmer::WriteObs(mapobs[k],"superclusters");
+				//make rh maps
+				vector<JetPoint> rrhs;
+				for(int r = 0; r < rhs.size(); r++) rrhs.push_back(rhs[r].GetJetPoints()[0]);
+				cout << "label " << label << endl;
+				for(int r = 0; r < rrhs.size(); r++){
+					GetNeighborE(rrhs,r,icoords,Es);
+					GetNeighborE(rrhs,r,icoords_nocenter,Es_nocenter,true);
+					if(label == 1){ //phys bkg
+						for(int ee = 0; ee < Es.size(); ee++)
+							_procCats[1].hists2D[0][302]->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
+						for(int ee = 0; ee < Es_nocenter.size(); ee++)
+							_procCats[1].hists2D[0][305]->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+							
+					}
+					else if(label == 2){ //BH
+						for(int ee = 0; ee < Es.size(); ee++)
+							_procCats[1].hists2D[0][303]->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
+						for(int ee = 0; ee < Es_nocenter.size(); ee++)
+							_procCats[1].hists2D[0][306]->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+	
+					}
+					else if(label == 3){ //spike
+						for(int ee = 0; ee < Es.size(); ee++)
+							_procCats[1].hists2D[0][304]->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
+						for(int ee = 0; ee < Es_nocenter.size(); ee++)
+							_procCats[1].hists2D[0][307]->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+					}
+					else {}
+	
+				}
+
+
 		//cout << "iso vars" << endl;
 		cout << "trkSumPtSolidConeDR04 " << mapobs[k]["trkSumPtSolidConeDR04"] << " ecalRHSumEtConeDR04 " << mapobs[k]["ecalRHSumEtConeDR04"] << " hadTowOverEM " << mapobs[k]["hadTowOverEM"];
-			if(np != -1){
+			if(np != -1 && !_data){
 				int genidx = _base->Photon_genIdx->at(np);
 				//do mother chase to see if 23 is in chain
 				if(genidx != -1){

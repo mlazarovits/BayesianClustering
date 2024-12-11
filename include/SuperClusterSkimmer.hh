@@ -593,6 +593,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
                 	_hists2D.push_back(EovP_E_BHsel);
                 	_hists2D.push_back(dRtrack_swCrossPrime_BHsel);
                 	_hists2D.push_back(dRtrack_swCrossPrime_BHsel_zoomOut);
+			_hists2D.push_back(ENeighbors_physBkg);	
+			_hists2D.push_back(ENeighbors_BH);	
+			_hists2D.push_back(ENeighbors_spikes);	
+			_hists2D.push_back(ENeighborsSkipCenter_physBkg);	
+			_hists2D.push_back(ENeighborsSkipCenter_BH);	
+			_hists2D.push_back(ENeighborsSkipCenter_spikes);	
 		};
 	
 
@@ -1718,6 +1724,18 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* dRtrack_swCrossPrime_BHsel = new TH2D("dRtrack_swCrossPrime_BHsel","dRtrack_swCrossPrime_BHsel;dRtrack_BHsel;swCrossPrime",25,0.,0.1,25,-0.05,0.4);
 		//301 - dR vs sw+' zoomed out, -7 < time < -2, phi left/right
 		TH2D* dRtrack_swCrossPrime_BHsel_zoomOut = new TH2D("dRtrack_swCrossPrime_BHsel_zoomOut","dRtrack_swCrossPrime_BHsel_zoomOut;dRtrack_BHsel;swCrossPrime",25,0.,0.1,25,-0.05,2.);
+		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
+		TH2D* ENeighbors_physBkg = new TH2D("ENeighbors_physBkg","ENeighbors_physBkg;local ieta;local iphi_physBkg",5,-2,3,5,-2,3);	
+		//303 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, BH 
+		TH2D* ENeighbors_BH = new TH2D("ENeighbors_BH","ENeighbors_BH;local ieta;local iphi_BH",5,-2,3,5,-2,3);	
+		//304 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, spike 
+		TH2D* ENeighbors_spikes = new TH2D("ENeighbors_spikes","ENeighbors_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
+		//305 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, phys bkg 
+		TH2D* ENeighborsSkipCenter_physBkg = new TH2D("ENeighborsSkipCenter_physBkg","ENeighborsSkipCenter_physBkg;local ieta;local iphi_physBkg",5,-2,3,5,-2,3);	
+		//306 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, BH 
+		TH2D* ENeighborsSkipCenter_BH = new TH2D("ENeighborsSkipCenter_BH","ENeighborsSkipCenter_BH;local ieta;local iphi_BH",5,-2,3,5,-2,3);	
+		//307 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, spike 
+		TH2D* ENeighborsSkipCenter_spikes = new TH2D("ENeighborsSkipCenter_spikes","ENeighborsSkipCenter_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
 
 
 		enum weightScheme{
@@ -1768,7 +1786,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			string name;
 			vector<vector<TH2D*>> hists2D = pc.hists2D;
 			
-
 			//write 2D hists
 			for(int i = 0; i < (int)hists2D.size(); i++){
 				for(int j = 0; j < hists2D[i].size(); j++){
@@ -1782,6 +1799,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					pc.hists2D[i][j]->SetTitle(pc.plotName.c_str());
 					if(pc.hists2D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 					pc.hists2D[i][j]->Write();
+					cout << "Wrote " << pc.hists2D[i][j]->GetName() << endl;
 				}
 			}
 
@@ -2008,29 +2026,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
                         	if(eigvals[0] < 0) minLength = -sqrt(-eigvals[0]);
                         	else minLength = sqrt(eigvals[0]);	
 
-				//calculate slopes from eigenvectors
-				//cov.eigenCalc(eigenvals, eigenvecs);
-				//lead_eigenvec = eigenvecs[2];			
-				//v_x = lead_eigenvec.at(0,0);	
-				//v_y = lead_eigenvec.at(1,0);	
-				//v_z = lead_eigenvec.at(2,0);	
-				//r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
-				//polar angle with lead eigenvector
-				//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-				//theta = acos( v_z / r );
-				//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
-				//phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
-				//phi = atan2( v_y , v_x  );
-				//if(signbit(v_y)) phi *= -1;
-				////rotundity - 3D
-				//rot3D = 0;
-				//for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
-				//rot3D = eigenvals[2]/rot3D;
-				////velocity = z/r * rad/deg * deg/cm => ns/cm
-				//vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
-				//vel = fabs(1./vel);
-				//if(isnan(vel) || isinf(vel)) vel = -999;
-				
 				//rotundity - 2D
 				//take upper 2x2 submatrix from covariance
 				Get2DMat(cov,space_mat);
@@ -2067,10 +2062,30 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				mapobs["sw+"] = swCP;
 				mapobs["major_length"] = majLength;	
 				mapobs["minor_length"] = minLength;	
+				//write nxn grid of E, t, r_nk here - do before sort to preserve order in posterior
+				//get center of pts in ieta, iphi
+				//get _ngrid x _ngrid 
+				//Matrix r = model->GetPosterior();
+				//for(int i = 0; i < _ngrid; i++){
+					//for(int j = 0; j < _ngrid; j++){
+						///mapobs["grid_E_ij"] = 0.
+						///mapobs["grid_t_ij"] = 0.
+						///mapobs["grid_r_ij"] = 0. 
+					//}
+				//}
+				//for(int n = 0; n < points->GetNPoints(); n++){
+					//get local ieta, iphi of pt n
+					//mapobs["grid_E_"+to_string(ieta)+to_string(iphi)] = points->at(n).w()*_gev;
+					//mapobs["grid_t_"+to_string(ieta)+to_string(iphi)] = points->at(n).at(2);
+					//mapobs["grid_r_"+to_string(ieta)+to_string(iphi)] = r.at(n,k);
+				//} 
 				//get max weighted point
 				points->Sort();
 				double maxE = points->at(points->GetNPoints() - 1).w();
 				mapobs["maxOvtotE"] = maxE/E_k;	
+				
+					 
+
 				obs.push_back(mapobs);
 
 				//fill hists - lead only
