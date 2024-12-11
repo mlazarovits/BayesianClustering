@@ -534,7 +534,7 @@ class BaseSkimmer{
 						Es.push_back(rhs[j].E());
 					}
 					if(rh_ieta < 0)
-						icoords.push_back(make_pair(-(ieta - rh_ieta), iphi - rh_ iphi));
+						icoords.push_back(make_pair(-(ieta - rh_ieta), iphi - rh_iphi));
 					else
 						icoords.push_back(make_pair(ieta - rh_ieta, iphi - rh_iphi));
 				}
