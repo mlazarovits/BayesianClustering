@@ -43,6 +43,7 @@ void SuperClusterSkimmer::Skim(){
 
 	
 	vector<Jet> rhs;
+	vector<JetPoint> rh_pts;
 	vector<Jet> scs;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
@@ -198,6 +199,8 @@ void SuperClusterSkimmer::Skim(){
 			//need to find associated photon
 			//SuperCluster_photonIndx
 			int np = _base->SuperCluster_PhotonIndx->at(scidx);
+			//get jet points (rhs with IDs) for CNN grid
+			rh_pts = scs[s].GetJetPoints();
 			
 			
 			for(int k = 0; k < mapobs.size(); k++){
@@ -255,6 +258,20 @@ void SuperClusterSkimmer::Skim(){
 					mapobs[k]["ecalRHSumEtConeDR04"] = -999;
 					mapobs[k]["hadTowOverEM"] = -999;
 				}
+				//make CNN training grid
+				map<pair<int,int>, vector<double>> grid;
+				MakeCNNInputGrid(gmm, k, rh_pts, grid, _ngrid);
+				pair<int, int> icoords_grid;
+				for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
+					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+						icoords_grid = make_pair(i,j);
+						mapobs[k]["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
+						mapobs[k]["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
+						mapobs[k]["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
+						//cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
+					}
+				}
+
 				mapobs[k]["event"] = e;
 				mapobs[k]["object"] = scidx;
 				mapobs[k]["subcl"] = k;

@@ -2645,10 +2645,16 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				centerRh = rhs[r];
 			}
 		}
+
+		//make sure ngrid is odd to include center crystal
+		if(ngrid % 2 == 0)
+			ngrid++;
+
+		int ngrid_boundary = (ngrid-1)/2;
 		//set default channel values to 0
 		//{E, t, r}
-		for(int i = 0; i < ngrid; i++)
-			for(int j = 0; j < ngrid; j++)
+		for(int i = -ngrid_boundary; i < ngrid_boundary+1; i++)
+			for(int j = -ngrid_boundary; j < ngrid_boundary+1; j++)
 				cellToChannel[make_pair(i,j)] = {0., 0., 0.};
 
 
@@ -2666,9 +2672,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//needs wraparound
 			if(dphi > 180)
 				dphi = 360 - dphi;
-			cout << "r " << j << " rh E " << rhs[j].E() << " model w/_gev " << model->GetData()->at(j).w()/_gev << " deta " << deta << " dphi " << dphi << " rh_iphi " << rh_iphi << " iphi " << iphi << endl;
-			if(fabs(deta) <= ngrid && fabs(dphi) <= ngrid){
-
+			else if(dphi < -180)
+				dphi = -(360 + dphi);
+			if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
+				//cout << "r " << j << " rh E " << rhs[j].E() << " model w/_gev " << model->GetData()->at(j).w()/_gev << " deta " << deta << " dphi " << dphi << " rh_iphi " << rh_iphi << " iphi " << iphi << endl;
 				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t(), post.at(j,k)};	
 			}
 		}
