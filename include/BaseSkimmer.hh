@@ -519,7 +519,7 @@ class BaseSkimmer{
 			}
 			_csvfile << endl;
 		}
-		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false, bool wTime = false){
+		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false){
 			int ieta, iphi;
 			JetPoint rh = rhs[r];
 			int rh_ieta = _detIDmap[rhs[r].rhId()].i2;
@@ -530,17 +530,13 @@ class BaseSkimmer{
 				iphi = _detIDmap[rhs[j].rhId()].i1;
 				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
 					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
-					if(wTime){
-						//Es.push_back(rhs[j].E()*(rhs[j].t() - rh.t()));
-						Es.push_back((rhs[j].t() - rh.t()));
-					}
 					else{
 						Es.push_back(rhs[j].E());
 					}
 					if(rh_ieta < 0)
-						icoords.push_back(make_pair(-(ieta - rh_ieta), rh_iphi - iphi));
+						icoords.push_back(make_pair(-(ieta - rh_ieta), iphi - rh_ iphi));
 					else
-						icoords.push_back(make_pair(ieta - rh_ieta, rh_iphi - iphi));
+						icoords.push_back(make_pair(ieta - rh_ieta, iphi - rh_iphi));
 				}
 			}
 
