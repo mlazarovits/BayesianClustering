@@ -30,6 +30,7 @@ class BaseSkimmer{
 			_smear = true;
 			_timesmear = false;
 			_skip = 1;
+			_ngrid = 7;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -50,6 +51,7 @@ class BaseSkimmer{
 			_smear = true;
 			_timesmear = false;
 			_skip = 1;
+			_ngrid = 7;
 			
 			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
@@ -136,6 +138,7 @@ class BaseSkimmer{
 		void SetMinEmE(double p){ _prod->SetMinEmE(p); }
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 		void SetMaxRhE(double r){ _prod->SetMaxRhE(r); }
+		void SetCNNGrid(double n){ _ngrid = n; }
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
@@ -413,6 +416,7 @@ class BaseSkimmer{
 		ofstream _csvfile;
 	
 		vector<string> _inputs;
+		int _ngrid;
 		void SetObs(){
 			//sample
 			_inputs.push_back("sample");
@@ -470,6 +474,16 @@ class BaseSkimmer{
                 	_inputs.push_back("hadTowOverEM");
 			//lead photon? 1 = yes, 0 = no
 			_inputs.push_back("lead");
+			//CNN inputs
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
+					_inputs.push_back("CNNgrid_E_cell"+to_string(i)+"_"+to_string(j));
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
+					_inputs.push_back("CNNgrid_t_cell"+to_string(i)+"_"+to_string(j));
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
+					_inputs.push_back("CNNgrid_r_cell"+to_string(i)+"_"+to_string(j));
 			//label
 			_inputs.push_back("label");
 			for(auto s : _inputs){
