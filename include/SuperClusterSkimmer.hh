@@ -3552,11 +3552,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
 				if(_base->Photon_genIdx->at(phoidx) != -1){
+					int genidx = _base->Photon_genIdx->at(phoidx);
                 			//needs to be isolated
 					if(_isocuts){
 						if(!iso) label = -1;
 						else{
-							if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+							if(_base->Gen_susId->at(genidx) == 22)
 								label = 0;
 							else
 								label = 1; //removal of GMSB !sig photons is done in data processing for NN	
@@ -3565,13 +3566,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					//not applying isolation - use for iso network
 					else{
 						//photon from C2
-						if(_base->Gen_susId->at(_base->Photon_genIdx->at(phoidx)) == 22)
+						if(_base->Gen_susId->at(genidx) == 22)
 							label = 0;
 						//photon from hard subprocess - isolated 
-						if(_base->Gen_status->at(_base->Photon_genIdx->at(phoidx)) == 22)
+						else if(_base->Gen_status->at(genidx) == 23)
+							label = 4;
+						else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
 							label = 4;
 						//photons from QCD are all nonisolated - need to convert to 1 for other trainings
-						if(_oname.find("QCD") != string::npos)
+						else if(_oname.find("QCD") != string::npos)
 							label = 5;
 						else
 							label = 1; //removal of GMSB !sig photons is done in data processing for NN	

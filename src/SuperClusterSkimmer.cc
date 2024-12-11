@@ -74,7 +74,13 @@ void SuperClusterSkimmer::Skim(){
 	double BHclusterFail = 0;
 	double BHPass = 0;
 	double BHFail = 0;
-	int nscran = 0;	
+	int nscran = 0;
+	TH1D* genstatus = new TH1D("genstatus","genstatus",35,0,35);	
+	TH1D* genstatus_mom = new TH1D("genstatus_mom","genstatus_mom",35,0,35);
+	TH1D* genpdgid = new TH1D("genpdgid","genpdgid",25,0,25);	
+	TH1D* genpdgid_mom = new TH1D("genpdgid_mom","genpdgid_mom",25,0,25);	
+	//genpt of photons whose mom is ~40 (ISR)
+	//genpt of photons whose mom is ~50 (meson decay)
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 
@@ -201,6 +207,8 @@ void SuperClusterSkimmer::Skim(){
 					double eIso = _base->Photon_ecalRHSumEtConeDR04->at(np);//_base->Photon_ecalPFClusterIso->at(np);
 					double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(np);//_base->Photon_hcalPFClusterIso->at(np);
 					double tIso = _base->Photon_trkSumPtHollowConeDR03->at(np);
+					double tIso04 = _base->Photon_trkSumPtHollowConeDR04->at(np);
+					double hoe = _base->Photon_hadTowOverEM->at(np);
 					double pt = _base->Photon_pt->at(np);
 					//cout << "sc " << scidx << " pho " << np << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 					if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > 40){
@@ -226,6 +234,9 @@ void SuperClusterSkimmer::Skim(){
 						mapobs[k]["hcalPFClusterIsoOvPt"] = -999;
 						mapobs[k]["trkSumPtHollowConeDR03OvPt"] = -999;
 					}
+					mapobs[k]["trkSumPtSolidConeDR04"] = tIso04;
+					mapobs[k]["ecalRHSumEtConeDR04"] = eIso;
+					mapobs[k]["hadTowOverEM"] = hoe;
 				}
 				else{ //not matched to photon
 					mapobs[k]["R9"] = -999;
@@ -237,6 +248,10 @@ void SuperClusterSkimmer::Skim(){
 					mapobs[k]["ecalPFClusterIsoOvPt"] = -999;
 					mapobs[k]["hcalPFClusterIsoOvPt"] = -999;
 					mapobs[k]["trkSumPtHollowConeDR03OvPt"] = -999;
+					
+					mapobs[k]["trkSumPtSolidConeDR04"] = -999;
+					mapobs[k]["ecalRHSumEtConeDR04"] = -999;
+					mapobs[k]["hadTowOverEM"] = -999;
 				}
 				mapobs[k]["event"] = e;
 				mapobs[k]["object"] = scidx;
@@ -245,7 +260,29 @@ void SuperClusterSkimmer::Skim(){
 				mapobs[k]["label"] = label;
 
 				BaseSkimmer::WriteObs(mapobs[k],"superclusters");
+		//cout << "iso vars" << endl;
+		cout << "trkSumPtSolidConeDR04 " << mapobs[k]["trkSumPtSolidConeDR04"] << " ecalRHSumEtConeDR04 " << mapobs[k]["ecalRHSumEtConeDR04"] << " hadTowOverEM " << mapobs[k]["hadTowOverEM"];
+			if(np != -1){
+				int genidx = _base->Photon_genIdx->at(np);
+				//do mother chase to see if 23 is in chain
+				if(genidx != -1){
+					cout << " label " << label << " PhotonIdx " << np << " Photon_genIdx " << genidx << " gen_status " << _base->Gen_status->at(genidx) << " gen pdgid " << _base->Gen_pdgId->at(genidx);
+					int motheridx = _base->Gen_motherIdx->at(genidx);
+					genstatus->Fill(_base->Gen_status->at(genidx));
+					genpdgid->Fill(_base->Gen_pdgId->at(genidx));
+					if(motheridx != -1){
+						genstatus_mom->Fill(_base->Gen_status->at(motheridx));
+						genpdgid_mom->Fill(_base->Gen_pdgId->at(motheridx));
+						cout << " motheridx " << motheridx << " id " << _base->Gen_pdgId->at(motheridx) << " status " << _base->Gen_status->at(motheridx) << " gen pt " << _base->Gen_pt->at(motheridx) << endl;			
+					}
+					else cout << " motheridx " << motheridx << endl;
+				}
+				else cout << " genidx " << genidx << endl;
+
 			}
+			else cout << endl;
+		}
+
 		//cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
 			
 			
@@ -254,6 +291,10 @@ void SuperClusterSkimmer::Skim(){
 	}
 	cout << "\n" << endl;
 	ofile->WriteTObject(objE_clusterE);
+	ofile->WriteTObject(genstatus);
+	ofile->WriteTObject(genstatus_mom);
+	ofile->WriteTObject(genpdgid);
+	ofile->WriteTObject(genpdgid_mom);
 	WriteHists(ofile);
 	cout << "Ran over " << nscran << " superclusters" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
