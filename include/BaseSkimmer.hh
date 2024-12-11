@@ -525,9 +525,15 @@ class BaseSkimmer{
 			int rh_ieta = _detIDmap[rhs[r].rhId()].i2;
 			int rh_iphi = _detIDmap[rhs[r].rhId()].i1;
 			icoords.clear(); Es.clear();
+			int deta, dphi;
 			for(int j = 0; j < (int)rhs.size(); j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
 				iphi = _detIDmap[rhs[j].rhId()].i1;
+				deta = ieta - rh_ieta;
+				dphi = iphi - rh_iphi;
+				//do wraparound
+				if(dphi > 180)
+					dphi = 360 - dphi;
 				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
 					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
 					else{

@@ -1799,7 +1799,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					pc.hists2D[i][j]->SetTitle(pc.plotName.c_str());
 					if(pc.hists2D[i][j]->GetEntries() == 0){ continue; }//cout << "Histogram: " << name << " not filled." << endl; continue; }
 					pc.hists2D[i][j]->Write();
-					cout << "Wrote " << pc.hists2D[i][j]->GetName() << endl;
 				}
 			}
 
@@ -2062,26 +2061,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				mapobs["sw+"] = swCP;
 				mapobs["major_length"] = majLength;	
 				mapobs["minor_length"] = minLength;	
-				//write nxn grid of E, t, r_nk here - do before sort to preserve order in posterior
-				//get center of pts in ieta, iphi
-				//get _ngrid x _ngrid 
-				//Matrix r = model->GetPosterior();
-				//for(int i = 0; i < _ngrid; i++){
-					//for(int j = 0; j < _ngrid; j++){
-						///mapobs["grid_E_ij"] = 0.
-						///mapobs["grid_t_ij"] = 0.
-						///mapobs["grid_r_ij"] = 0. 
-					//}
-				//}
-				//for(int n = 0; n < points->GetNPoints(); n++){
-					//get local ieta, iphi of pt n
-					//mapobs["grid_E_"+to_string(ieta)+to_string(iphi)] = points->at(n).w()*_gev;
-					//mapobs["grid_t_"+to_string(ieta)+to_string(iphi)] = points->at(n).at(2);
-					//mapobs["grid_r_"+to_string(ieta)+to_string(iphi)] = r.at(n,k);
-				//} 
 				//get max weighted point
-				points->Sort();
-				double maxE = points->at(points->GetNPoints() - 1).w();
+				double maxE = 0;
+				for(int n = 0; n < npts; n++)
+					if(points->at(n).w()/_gev > maxE)
+						maxE = points->at(n).w()/_gev;
 				mapobs["maxOvtotE"] = maxE/E_k;	
 				
 					 
@@ -2648,6 +2632,48 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists2D[1][278]->Fill(bestde_dr,tc);
 			}
 		}
+
+
+	//write nxn grid of E, t, r_nk here
+	void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, map<pair<int,int>, vector<double>>& cellToChannel, int ngrid = 7){
+		//get center of pts in ieta, iphi -> max E point
+		JetPoint centerRh;
+		double maxE = 0;
+		for(int r = 0; r < rhs.size(); r++){
+			if(rhs[r].E() > maxE){
+				maxE = rhs[r].E();
+				centerRh = rhs[r];
+			}
+		}
+		//set default channel values to 0
+		//{E, t, r}
+		for(int i = 0; i < ngrid; i++)
+			for(int j = 0; j < ngrid; j++)
+				cellToChannel[make_pair(i,j)] = {0., 0., 0.};
+
+
+		//get ngrid x ngrid around center point 
+		int ieta, iphi;
+		int rh_ieta = _detIDmap[centerRh.rhId()].i2;
+		int rh_iphi = _detIDmap[centerRh.rhId()].i1;
+		int deta, dphi;
+		Matrix post = model->GetPosterior();
+		for(int j = 0; j < (int)rhs.size(); j++){
+			ieta = _detIDmap[rhs[j].rhId()].i2;
+			iphi = _detIDmap[rhs[j].rhId()].i1;
+			deta = ieta - rh_ieta;
+			dphi = iphi - rh_iphi; 
+			//needs wraparound
+			if(dphi > 180)
+				dphi = 360 - dphi;
+			cout << "r " << j << " rh E " << rhs[j].E() << " model w/_gev " << model->GetData()->at(j).w()/_gev << " deta " << deta << " dphi " << dphi << " rh_iphi " << rh_iphi << " iphi " << iphi << endl;
+			if(fabs(deta) <= ngrid && fabs(dphi) <= ngrid){
+
+				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t(), post.at(j,k)};	
+			}
+		}
+
+	}
 
 
 	BayesPoint GetCMSSWMean(PointCollection* pc, bool logw = false){
@@ -3239,10 +3265,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 	void SpikeObs(PointCollection* pc, vector<double>& obs){
 		obs.clear();
-		pc->Sort();
 		int npts = pc->GetNPoints();
-		double wmax = pc->at(npts-1).w();
-		BayesPoint xmax = pc->at(npts-1);
+		double wmax = 0;
+		BayesPoint xmax;
+		for(int i = 0; i < npts; i++){
+			if(pc->at(i).w() > wmax){
+				wmax = pc->at(i).w();
+				xmax = pc->at(i);
+			}
+		}
 		//find 4 closest neighbors to xmax
 		//map<double, Point> distToMax;
 		double dist, deta, dphi;
@@ -3265,23 +3296,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 		//swCP
 		obs.push_back(sumNeighbors/wmax);
-
-	}
-
-
-	//potential BH variables
-	void BeamHaloObs(PointCollection* pc, vector<double>& obs){
-		obs.clear();	
-		//find seed crystal -> largest weight
-		pc->Sort();
-		//seed crystal is last one
-		BayesPoint seed = pc->at(pc->GetNPoints()-1);
-		//ie looking at neighbor eta energy ratio + neighbor phi energy ratio
-		
-			// double ratio
-		//ratio of center crystal to 2 neighbors in eta (smaller), phi (larger)
-		//ratio of eta strips to surrounding eta strips in phi
-		
 
 	}
 
