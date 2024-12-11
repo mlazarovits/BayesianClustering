@@ -735,8 +735,8 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
 							//2D map of neighbors
-							GetNeighborE(rhs, r, icoords, neighborEs,false,false);
-							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true,false);
+							GetNeighborE(rhs, r, icoords, neighborEs,false);
+							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
 								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
 								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
@@ -814,8 +814,8 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
 							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
 							//2D map of neighbors/
-							GetNeighborE(rhs, r, icoords, neighborEs,false,false);
-							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true,false);
+							GetNeighborE(rhs, r, icoords, neighborEs,false);
+							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
 								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
 								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
