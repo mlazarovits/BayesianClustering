@@ -1064,7 +1064,7 @@ void ProcStackHists(string file, vector<string>& procs, string method, string on
 
 
 
-void MethodStackHists(string file, string proc, vector<string>& methods, string oname, string match =""){
+void MethodStackHists(string file, string proc, vector<string>& methods, string oname, string match ="",string year = ""){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -1082,22 +1082,23 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 
 	string cmslab = "";
 	if(proc == "GJets"){
-		cmslab = "GJets, HT 600 to Inf 2017";
+		cmslab = "GJets, HT 600 to Inf";
 	}
 	if(proc == "QCD"){
-		cmslab = "QCD Multijets 2017";
+		cmslab = "QCD Multijets";
 	}
 	else if(proc == "JetHT"){
-		cmslab = "JetHT, Run F 2017";
+		cmslab = "JetHT, Run F";
 	}
 	else if(proc == "DoubleEG"){
-		cmslab = "DoubleEG, Run F 2017";
+		cmslab = "DoubleEG, Run F";
 	}
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
 	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
 	//if(!extra.empty()) cmslab += " "+extra;	
 
+	cmslab += " "+year;
 	TString th1d("TH1D");
 	TString th2d("TH2D");
 	TString tdir("TDirectoryFile");
@@ -1169,7 +1170,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 
 
 
-void Hist2D(string file, string proc, string method, string oname, string match){
+void Hist2D(string file, string proc, string method, string oname, string match, string year){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -1187,18 +1188,19 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 
 	string cmslab = "";
 	if(proc == "GJets"){
-		cmslab = "GJets 2017";
+		cmslab = "GJets";
 	}
 	else if(proc == "QCD"){
-		cmslab = "QCD Multijets, 2017";
+		cmslab = "QCD Multijets,";
 	}
 	else if(proc == "JetHT"){
-		cmslab = "JetHT, Run F 2017";
+		cmslab = "JetHT, Run F";
 	}
 	else if(proc == "DoubleEG"){
-		cmslab = "DoubleEG, Run F 2017";
+		cmslab = "DoubleEG, Run F";
 	}
 	else cmslab = "process";
+	cmslab += " "+year;
 	cmslab += ", "+method;
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
@@ -1278,7 +1280,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 }
 
 
-void ResolutionStackHists(string file, string proc, string method, string oname){
+void ResolutionStackHists(string file, string proc, string method, string oname, string year){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -1296,18 +1298,19 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 
 	string cmslab = "";
 	if(proc == "GJets"){
-		cmslab = "GJets HT 600 to Inf 2017";
+		cmslab = "GJets HT 600 to Inf";
 	}
 	else if(proc == "QCD"){
-		cmslab = "QCD Multijets, HT 500 to 700 2017";
+		cmslab = "QCD Multijets, HT 500 to 700";
 	}
 	else if(proc == "JetHTPD"){
-		cmslab = "JetHT, Run F 2017";
+		cmslab = "JetHT, Run F";
 	}
 	else if(proc == "DEGPD"){
-		cmslab = "DoubleEG, Run F 2017";
+		cmslab = "DoubleEG, Run F";
 	}
 	else cmslab = "process";
+	cmslab += " "+year;
 	cmslab += ", "+method;
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
@@ -1392,16 +1395,17 @@ void ResolutionStackHists(string file, string proc, string method, string oname)
 
 
 
-void FileStackHists(vector<string>& files, vector<string>& labels, string proc, string method, string oname, string match="",string plottitle=""){
+void FileStackHists(vector<string>& files, vector<string>& labels, string proc, string method, string oname, string match="",string plottitle="", string year = ""){
 	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	string cmslab = "";
 	if(proc == "JetHTPD"){
-		cmslab = "JetHT, Run F 2017";
+		cmslab = "JetHT, Run F";
 	}
 	else if(proc == "DEGPD"){
-		cmslab = "DoubleEG, Run F 2017";
+		cmslab = "DoubleEG, Run F";
 	}
 	else cmslab = "";
+	cmslab += " "+year;
 	cmslab += " "+method;
 	vector<TH1D> hists;
 	//GetFileLabels(files,labels);
@@ -1522,22 +1526,26 @@ void HistFormatJets(string file, string file2 = ""){
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	ofile->Close();	
 
+	string year = "";
+	if(oname.find("_R17") != string::npos) year = "2017";
+	if(oname.find("_R18") != string::npos) year = "2018";
+
 	if(file2.empty()){
 		vector<string> med_eAvg = {"median","eAvg"};
 		vector<string> chiGam_QCD = {"chiGam","QCD"};
 		//PV dijets for median + eAvg for QCD
-		MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal");
+		MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal", year);
 		//PV dijets for median + eAvg for JetHT
-		MethodStackHists(file, "JetHT", med_eAvg, oname, "geoAvgEecal");
-		MethodStackHists(file, "DoubleEG", med_eAvg, oname, "geoAvgEecal");
+		MethodStackHists(file, "JetHT", med_eAvg, oname, "geoAvgEecal", year);
+		MethodStackHists(file, "DoubleEG", med_eAvg, oname, "geoAvgEecal", year);
 		//recoGen and gamPV for med + eAvg for QCD
-		MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg");
+		MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg", year);
 
 		//same method in legend, only 1 proc in plot label
 		vector<string> jetHT_QCD = {"JetHT","QCD"};
 		vector<string> jetHT_QCD_DEG = {"JetHT","QCD","DoubleEG"};
 		vector<string> DEG_QCD = {"DoubleEG","QCD"};
-		//PV dijets for data (JetHT) + MC for median
+		//PV dijets for data (JetHT, year) + MC for median
 		ProcStackHists(file, jetHT_QCD, "median", oname,"geoAvgEecal");
 		////PV dijets for data (DEG) + MC for median
 		ProcStackHists(file, DEG_QCD, "median", oname,"geoAvgEecal");
@@ -1564,56 +1572,57 @@ void HistFormatJets(string file, string file2 = ""){
 		
 		
 		//PV dijets + reocGen + gamPV for QCD eAvg
-		ResolutionStackHists(file, "QCD", "eAvg", oname);
+		ResolutionStackHists(file, "QCD", "eAvg", oname, year);
 
 		//jet properties hists - eavg vs med in data
-		Hist2D(file, "JetHT", "eAvg", oname, "jetTime_Energy");
-		Hist2D(file, "JetHT", "med", oname, "jetTime_Energy");
-		Hist2D(file, "DoubleEG", "eAvg", oname, "jetTime_Energy");
-		Hist2D(file, "DoubleEG", "med", oname, "jetTime_Energy");
-		Hist2D(file, "QCD", "eAvg", oname, "jetTime_Energy");
-		Hist2D(file, "QCD", "med", oname, "jetTime_Energy");
+		Hist2D(file, "JetHT", "eAvg", oname, "jetTime_Energy", year);
+		Hist2D(file, "JetHT", "med", oname, "jetTime_Energy", year);
+		Hist2D(file, "DoubleEG", "eAvg", oname, "jetTime_Energy", year);
+		Hist2D(file, "DoubleEG", "med", oname, "jetTime_Energy", year);
+		Hist2D(file, "QCD", "eAvg", oname, "jetTime_Energy", year);
+		Hist2D(file, "QCD", "med", oname, "jetTime_Energy", year);
 
-		Hist2D(file, "JetHT", "med", oname, "rhTime_Energy");
-		Hist2D(file, "DoubleEG", "med", oname, "rhTime_Energy");
-		Hist2D(file, "QCD", "med", oname, "rhTime_Energy");
+		Hist2D(file, "JetHT", "med", oname, "rhTime_Energy", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhTime_Energy", year);
+		Hist2D(file, "QCD", "med", oname, "rhTime_Energy", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "rhTime_eta");
-		Hist2D(file, "DoubleEG", "med", oname, "rhTime_eta");
-		Hist2D(file, "QCD", "med", oname, "rhTime_eta");
+		Hist2D(file, "JetHT", "med", oname, "rhTime_eta", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhTime_eta", year);
+		Hist2D(file, "QCD", "med", oname, "rhTime_eta", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "rhPhi_eta");
-		Hist2D(file, "DoubleEG", "med", oname, "rhPhi_eta");
-		Hist2D(file, "QCD", "med", oname, "rhPhi_eta");
+		Hist2D(file, "JetHT", "med", oname, "rhPhi_eta", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhPhi_eta", year);
+		Hist2D(file, "QCD", "med", oname, "rhPhi_eta", year);
 	
-		Hist2D(file, "JetHT", "med", oname, "swCross_rhTime");
-		Hist2D(file, "DoubleEG", "med", oname, "swCross_rhTime");
-		Hist2D(file, "QCD", "med", oname,   "swCross_rhTime");
+		Hist2D(file, "JetHT", "med", oname, "swCross_rhTime", year);
+		Hist2D(file, "DoubleEG", "med", oname, "swCross_rhTime", year);
+		Hist2D(file, "QCD", "med", oname,   "swCross_rhTime", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "swCross_rhEnergy");
-		Hist2D(file, "DoubleEG", "med", oname, "swCross_rhEnergy");
-		Hist2D(file, "QCD", "med", oname,   "swCross_rhEnergy");
+		Hist2D(file, "JetHT", "med", oname, "swCross_rhEnergy", year);
+		Hist2D(file, "DoubleEG", "med", oname, "swCross_rhEnergy", year);
+		Hist2D(file, "QCD", "med", oname,   "swCross_rhEnergy", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "kWeird");
-		Hist2D(file, "DoubleEG", "med", oname, "kWeird");
-		Hist2D(file, "QCD", "med", oname,   "kWeird");
+		Hist2D(file, "JetHT", "med", oname, "kWeird", year);
+		Hist2D(file, "DoubleEG", "med", oname, "kWeird", year);
+		Hist2D(file, "QCD", "med", oname,   "kWeird", year);
 
-		Hist2D(file, "JetHT", "med", oname, "rhEta_rhPhi");
-		Hist2D(file, "DoubleEG", "med", oname, "rhEta_rhPhi");
-		Hist2D(file, "QCD", "med", oname,   "rhEta_rhPhi");
+		Hist2D(file, "JetHT", "med", oname, "rhEta_rhPhi", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhEta_rhPhi", year);
+		Hist2D(file, "QCD", "med", oname,   "rhEta_rhPhi", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "rhEovP_dRtrack");
-		Hist2D(file, "DoubleEG", "med", oname, "rhEovP_dRtrack");
-		Hist2D(file, "QCD", "med", oname,   "rhEovP_dRtrack");
+		Hist2D(file, "JetHT", "med", oname, "rhEovP_dRtrack", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhEovP_dRtrack", year);
+		Hist2D(file, "QCD", "med", oname,   "rhEovP_dRtrack", year);
 		
-		Hist2D(file, "JetHT", "med", oname, "rhTime_rhEta");
-		Hist2D(file, "DoubleEG", "med", oname, "rhTime_rhEta");
-		Hist2D(file, "QCD", "med", oname,   "rhTime_rhEta");
+		Hist2D(file, "JetHT", "med", oname, "rhTime_rhEta", year);
+		Hist2D(file, "DoubleEG", "med", oname, "rhTime_rhEta", year);
+		Hist2D(file, "QCD", "med", oname,   "rhTime_rhEta", year);
 	
-		Hist2D(file, "JetHT",    "med", oname, "Neighbors");
-		Hist2D(file, "DoubleEG", "med", oname, "Neighbors");
+		Hist2D(file, "JetHT",    "med", oname, "Neighbors", year);
+		Hist2D(file, "DoubleEG", "med", oname, "Neighbors", year);
 		
 		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "swCross_rhTime");
+		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "LHratio");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
