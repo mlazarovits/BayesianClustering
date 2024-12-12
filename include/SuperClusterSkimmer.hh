@@ -2676,7 +2676,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				dphi = -(360 + dphi);
 			if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
 				//cout << "r " << j << " rh E " << rhs[j].E() << " model w/_gev " << model->GetData()->at(j).w()/_gev << " deta " << deta << " dphi " << dphi << " rh_iphi " << rh_iphi << " iphi " << iphi << endl;
-				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t(), post.at(j,k)};	
+				//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
+				//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
+				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t(), post.at(j,k)/model->GetData()->at(j).w()};	
 			}
 		}
 
