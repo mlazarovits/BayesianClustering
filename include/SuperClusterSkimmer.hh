@@ -2639,10 +2639,12 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//get center of pts in ieta, iphi -> max E point
 		JetPoint centerRh;
 		double maxE = 0;
+		double centerTime = 0;
 		for(int r = 0; r < rhs.size(); r++){
 			if(rhs[r].E() > maxE){
 				maxE = rhs[r].E();
 				centerRh = rhs[r];
+				centerTime = rhs[r].t();
 			}
 		}
 
@@ -2667,7 +2669,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		for(int j = 0; j < (int)rhs.size(); j++){
 			ieta = _detIDmap[rhs[j].rhId()].i2;
 			iphi = _detIDmap[rhs[j].rhId()].i1;
-			deta = ieta - rh_ieta;
+			//do eta flip
+			if(rh_ieta < 0)
+				deta = -(ieta - rh_ieta);
+			else
+				deta = ieta - rh_ieta;
 			dphi = iphi - rh_iphi; 
 			//needs wraparound
 			if(dphi > 180)
@@ -2675,10 +2681,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			else if(dphi < -180)
 				dphi = -(360 + dphi);
 			if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
-				//cout << "r " << j << " rh E " << rhs[j].E() << " model w/_gev " << model->GetData()->at(j).w()/_gev << " deta " << deta << " dphi " << dphi << " rh_iphi " << rh_iphi << " iphi " << iphi << endl;
 				//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
+		
 				//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
-				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t(), post.at(j,k)/model->GetData()->at(j).w()};	
+				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - centerTime, post.at(j,k)/model->GetData()->at(j).w()};	
 			}
 		}
 
@@ -3653,16 +3659,16 @@ class SuperClusterSkimmer : public BaseSkimmer{
 						if((tc > -7 && tc <= -2) && pcFilter && iso)	
 							label = 2;
 						//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
-						if(tc > -2 && tc < 1 && iso)
+						if(tc > -0.5 && tc < 0.5 && iso)
 							label = 1;
 					}
 				}
 				else{
 					//if subcl is BH
-					if((tc > -7 && tc <= -2) && pcFilter && iso)	
+					if((tc > -7 && tc <= -2) && pcFilter)	
 						label = 2;
 					//if subcl is not BH or spike (ie prompt, 'physics' bkg)
-					if(tc > -2 && tc < 1 && iso)
+					if(tc > -0.5 && tc < 0.5)
 						label = 1;
 				}
 
