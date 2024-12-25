@@ -17,6 +17,9 @@
 #include <string>
 #include <vector>
 #include "SampleWeight.hh"
+//frugally deep for loading NN model
+#include "fdeep/fdeep.hpp"
+
 using weights = SampleWeight::weights;
 
 using std::vector;
@@ -589,5 +592,47 @@ class BaseSkimmer{
                         else if(_BHFilter == applied) cout << "Applying beam halo filter." << endl;
                         else cout << "Applying inverse beam halo filter." << endl;
                 }
+
+
+		//pass name of json from frugally-deep-master/keras_export/convert_model.py
+		fdeep::model LoadNNModel(string finput){
+			fdeep::model nnmodel = fdeep::load_model(finput);
+			return nnmodel;
+		}
+
+		//for DNN input
+		int NNPredict(fdeep::model nnmodel, vector<float> input_sample, double& ovalue){
+			int size = input_sample.size();
+			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
+			
+			//predict_class returns predicted class number and value of max output neuron
+			pair<size_t, double> result = nnmodel.predict_class_with_confidence({input_tensor});
+			ovalue = result.second;
+			return (int)result.first;
+		}
+	
+	
+		//for CNN input - (ngrid, ngrid, nchannels)
+		int NNPredict(fdeep::model nnmodel, vector<vector<vector<float>>> input_sample, double& ovalue){
+			int tensor_rows = input_sample.size();
+			int tensor_cols = input_sample[0].size();
+			int tensor_channels = input_sample[0][0].size();
+			fdeep::tensor_shape tensor_shape(tensor_rows, tensor_cols, tensor_channels);
+			fdeep::tensor input_tensor(tensor_shape, 0.0f);
+
+			//set values of input tensor
+			for (int y = 0; y < tensor_rows; y++){
+				for (int x = 0; x < tensor_cols; x++){
+					for (int c = 0; c < tensor_channels; c++){
+						input_tensor.set(fdeep::tensor_pos(y, x, c), input_sample[y][x][c]);
+					}
+				}
+			}	
+	
+			//predict_class returns predicted class number and value of max output neuron
+			pair<size_t, double> result = nnmodel.predict_class_with_confidence({input_tensor});
+			ovalue = result.second;
+			return (int)result.first;
+		}
 };
 #endif
