@@ -47,6 +47,16 @@ local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
 lpc: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config  --cxxflags)
 lpc: GLIBS     += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config --libs)
 
+#add functional plus to include path
+local: CXXFLAGS += -I/Users/margaretlazarovits/FunctionalPlus-master/include/
+lpc:   CXXFLAGS += -I$(CMSSW_BASE)/src/FunctionalPlus-master/include/
+
+#add frugally deep include path
+local: CXXFLAGS += -I/Users/margaretlazarovits/frugally-deep-master/include/
+lpc:   CXXFLAGS += -I$(CMSSW_BASE)/src/frugally-deep-master/include/
+
+
+
 #add to make lib ig?
 lpc: CXXFLAGS += -fPIC
 #make list of libraries for shared library
