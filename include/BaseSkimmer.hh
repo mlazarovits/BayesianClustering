@@ -595,13 +595,14 @@ class BaseSkimmer{
 
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
-		fdeep::model LoadNNModel(string finput){
-			fdeep::model nnmodel = fdeep::load_model(finput);
-			return nnmodel;
-		}
-
 		//for DNN input
-		int NNPredict(fdeep::model nnmodel, vector<float> input_sample, double& ovalue){
+		int NNPredict(string fmodel, vector<string>& nn_features, map<string,double>& obs, vector<string>& features, double& ovalue){
+			fdeep::model nnmodel = fdeep::load_model(fmodel);
+			vector<float> input_sample;
+			//transform obs to input_sample
+			for(int f = 0; f < nn_features.size(); f++)
+				input_sample.push_back(obs[nn_features[f]]);		
+
 			int size = input_sample.size();
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 			
@@ -612,20 +613,20 @@ class BaseSkimmer{
 		}
 	
 	
-		//for CNN input - (ngrid, ngrid, nchannels)
-		int NNPredict(fdeep::model nnmodel, vector<vector<vector<float>>> input_sample, double& ovalue){
-			int tensor_rows = input_sample.size();
-			int tensor_cols = input_sample[0].size();
-			int tensor_channels = input_sample[0][0].size();
-			fdeep::tensor_shape tensor_shape(tensor_rows, tensor_cols, tensor_channels);
+		//for CNN input - (ngrid, ngrid, nchannels) cellToChannel
+		int NNPredict(string fmodel, map<pair<int,int>, vector<double>>& cellToChannel, double& ovalue){
+			fdeep::model nnmodel = fdeep::load_model(fmodel);
+			int nchan = cellToChannel.begin()->second.size();
+			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, nchan-1);
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
-
-			//set values of input tensor
-			for (int y = 0; y < tensor_rows; y++){
-				for (int x = 0; x < tensor_cols; x++){
-					for (int c = 0; c < tensor_channels; c++){
-						input_tensor.set(fdeep::tensor_pos(y, x, c), input_sample[y][x][c]);
+			//transform cellToChannel to input_sample
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					for(int c = 0; c < nchan; c++){
+						if(c == 1) continue; //skipping time channel for now
+						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), cellToChannel[make_pair(i,j)][c]);
 					}
+					
 				}
 			}	
 	

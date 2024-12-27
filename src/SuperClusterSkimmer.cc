@@ -278,6 +278,14 @@ void SuperClusterSkimmer::Skim(){
 				int label = GetTrainingLabel(scidx, k, gmm);
 				mapobs[k]["label"] = label;
 				BaseSkimmer::WriteObs(mapobs[k],"superclusters");
+
+				//get prediction from NN model for good SCs
+				if(label != -1){
+					double predval = 0;
+					int nclass = NNPredict("testCNN.json",grid,predval);
+					cout << "class " << nclass << " predval " << predval << " for SC " << k << " with label " << label << endl;	
+				}
+
 				//make rh maps
 				vector<JetPoint> rrhs;
 				for(int r = 0; r < rhs.size(); r++) rrhs.push_back(rhs[r].GetJetPoints()[0]);
