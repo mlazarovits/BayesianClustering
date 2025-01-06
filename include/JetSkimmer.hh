@@ -81,6 +81,11 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_twoHardestpT);	
 			_hists1D.push_back(nSubClusters_mm);
 			_hists1D.push_back(TOFgam_rh_pv); 
+			_hists1D.push_back(subclusterEfrac);
+			_hists1D.push_back(avgSubclDist_etaPhi);
+			_hists1D.push_back(avgSubclDist_time);
+			_hists1D.push_back(relativeEtaSig);
+			_hists1D.push_back(relativePhiSig);
 		
 			
 			_timeHists1D.push_back(PVtime);
@@ -326,7 +331,7 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,1000);
 		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",25,0,100);
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
-		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,50);
+		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,100);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
@@ -473,9 +478,18 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* dRtrack_rhTimeNeg5 = new TH1D("dRtrack_rhTimeNeg5","dRtrack_rhTimeNeg5",50,-0.01,0.1);
 		//65 - dr bw rh and track, time ~ 0
 		TH1D* dRtrack_rhTime0 = new TH1D("dRtrack_rhTime0","dRtrack_rhTime0",50,-0.01,0.1);
-		//66 - LH ratio of t ~ -12/t ~ 0 rh E maps
-		TH1D* LHratioRhEMap_Neg12to0 = new TH1D("LHratioRhEMap_Neg12to0","LHratioRhEMap_Neg12to0",50,0,2);
-
+		//66 -jet subcluster energy 
+		TH1D* subclusterEfrac = new TH1D("subclusterEfrac","subclusterEfrac",50,0,1);
+		//67 - avg distance bw subclusters - etaphi
+		TH1D* avgSubclDist_etaPhi = new TH1D("avgSubclDist_etaPhi","avgSubclDist_etaPhi",50,0,1);
+		//68 - avg distance bw subclusters - time
+		TH1D* avgSubclDist_time = new TH1D("avgSubclDist_time","avgSubclDist_time",50,0,1);
+		//69 - etasig/0.4
+		TH1D* relativeEtaSig = new TH1D("relEtaSig","relEtaSig",50,0,1);
+		//70 - phisig/0.4
+		TH1D* relativePhiSig = new TH1D("relPhiSig","relPhiSig",50,0,1);
+		
+		
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
@@ -1480,6 +1494,49 @@ class JetSkimmer : public BaseSkimmer{
 			return t1 - t2;
 		}
 
+		void FillModelHists(GaussianMixture* gmm, Jet& jet){
+			nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
+			int n_k = gmm->GetNClusters();
+			double Ek;
+			vector<double> norms;
+			gmm->GetNorms(norms);
+			map<string, Matrix> params;
+			double avgsubcl_dist_time = 0;
+			double avgsubcl_dist_etaphi = 0;
+			double ec1, ec2, pc1, pc2, tc1, tc2;
+			for(int k = 0; k < n_k; k++){
+				Ek = norms[k]/_gev;
+				params = gmm->GetPriorParameters(k);
+
+				subclusterEfrac->Fill(Ek/jet.E());
+				relativeEtaSig->Fill(sqrt(params["cov"].at(0,0))/0.4);
+				relativePhiSig->Fill(sqrt(params["cov"].at(1,1))/0.4);
+			
+				ec1 = params["mean"].at(0,0);
+				pc1 = params["mean"].at(1,0);
+				tc1 = params["mean"].at(2,0);
+				for(int kk = 0; kk < n_k; kk++){
+					if(kk == k) continue;
+					params = gmm->GetPriorParameters(kk);
+					ec2 = params["mean"].at(0,0);
+					pc2 = params["mean"].at(1,0);
+					tc2 = params["mean"].at(2,0);
+					
+					avgsubcl_dist_time += (tc1 - tc2);
+					cout << "tc1 " << tc1 << " tc2 " << tc2 << endl;
+					double de = ec1 - ec2;
+					double dp = pc1 - pc2;
+					dp = acos(cos(dp)); //wraparound
+					avgsubcl_dist_etaphi += sqrt(de*de + dp*dp);
+				}
+			}
+
+			avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/n_k);
+			avgSubclDist_time->Fill(avgsubcl_dist_time/n_k);
+
+
+		}
+
 		//if pho, add TOF back to time (shift to detector)	
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
@@ -1488,7 +1545,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
+				FillModelHists(gmm,jet);
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//set constituents

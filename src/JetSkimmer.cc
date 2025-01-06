@@ -73,8 +73,8 @@ void JetSkimmer::Skim(){
 		////fill true jet histograms
 		vector<Jet> jets;
 		_prod->GetTrueJets(jets, i, _gev);
-		FillTrueJetHists(jets);	
 		if(jets.size() < 1){ cout << endl; continue; }
+		FillTrueJetHists(jets);	
 		if(_data){
 			//cut on ratio of MET pt to geo average of 2 leading jets
 			geoAvgJets = jets[0].pt();
