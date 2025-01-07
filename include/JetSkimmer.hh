@@ -691,6 +691,7 @@ class JetSkimmer : public BaseSkimmer{
 				geoEavg = 0;
 			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
 				for(int j = 0; j < njets; j++){
+					cout << "jet #" << j << endl;
 					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
 					jets[j].SetJetTime(jettime);
 					//cout << " jet #" << j << " time: " << jettime << endl;
@@ -1515,25 +1516,24 @@ class JetSkimmer : public BaseSkimmer{
 				ec1 = params["mean"].at(0,0);
 				pc1 = params["mean"].at(1,0);
 				tc1 = params["mean"].at(2,0);
-				for(int kk = 0; kk < n_k; kk++){
-					if(kk == k) continue;
+				for(int kk = k+1; kk < n_k; kk++){
 					params = gmm->GetPriorParameters(kk);
 					ec2 = params["mean"].at(0,0);
 					pc2 = params["mean"].at(1,0);
 					tc2 = params["mean"].at(2,0);
 					
 					avgsubcl_dist_time += (tc1 - tc2);
-					cout << "tc1 " << tc1 << " tc2 " << tc2 << endl;
 					double de = ec1 - ec2;
 					double dp = pc1 - pc2;
 					dp = acos(cos(dp)); //wraparound
 					avgsubcl_dist_etaphi += sqrt(de*de + dp*dp);
 				}
 			}
-
-			avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/n_k);
-			avgSubclDist_time->Fill(avgsubcl_dist_time/n_k);
-
+			if(n_k > 1){
+				cout << "avg time fill " << avgsubcl_dist_time/(double)n_k << " etaphi fill " << avgsubcl_dist_etaphi/(double)n_k << endl;
+				avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/(double)n_k);
+				avgSubclDist_time->Fill(avgsubcl_dist_time/(double)n_k);
+			}
 
 		}
 
@@ -1545,7 +1545,10 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				FillModelHists(gmm,jet);
+				if(pho == false){
+					cout << "CalcJetTime method " << ts << endl;
+					FillModelHists(gmm,jet);
+				}
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//set constituents
