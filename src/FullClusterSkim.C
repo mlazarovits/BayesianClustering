@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
     	 		double nu0 = std::stod(argv[i]);
 			dof = Matrix(nu0);
    		}
-		if(strncmp(argv[i],"--W0", 5) == 0){
+		if(strncmp(argv[i],"--W0diag", 8) == 0){
 			i++;
     	 		double W_ee = std::stod(argv[i]);
 			i++;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
 			W.SetEntry(W_pp,1,1);
 			W.SetEntry(W_tt,2,2);
    		}
-		if(strncmp(argv[i],"--m0", 5) == 0){
+		if(strncmp(argv[i],"--m0", 4) == 0){
 			i++;
     	 		double m_e = std::stod(argv[i]);
 			i++;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]){
    		cout << "   --EMalpha(-EMa) [a]                  set concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
    		cout << "   --m0 [m0_eta] [m0_phi] [m0_time]     set mean parameter for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = [0,0,0])" << endl;
-   		cout << "   --W0 [W0_ee] [W0_pp] [W0_tt]         set *diagonal elements* in covariance parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = [1/3,1/3,1/3])" << endl;
+   		cout << "   --W0diag [W0_ee] [W0_pp] [W0_tt]     set *diagonal elements* in covariance parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = [1/3,1/3,1/3])" << endl;
    		cout << "   --nu0 [nu0]                          set dof parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = 3 = dim)" << endl;
    		cout << "   --verbosity(-v) [verb]               set verbosity (default = 0)" << endl;
    		cout << "   --object [obj]                       set object to cluster (0 : jets, default; 1 : superclusters, 2 : photons)" << endl;
@@ -283,8 +283,6 @@ int main(int argc, char *argv[]){
 		version.pop_back();
 		cmslab += version;
 		file = TFile::Open(in_file.c_str());
-		if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
-		else cout << "Skimming all events for ";
 	}
 
 	if(gSystem->AccessPathName(in_file.c_str())){
@@ -398,7 +396,7 @@ int main(int argc, char *argv[]){
 	}
 	fname = fname+".root";
 	
-	cout << endl;
+	cout << "Prior Parameters" << endl;
 	cout << "beta0" << endl;
 	scale.Print();
 	cout << "mean0" << endl;
@@ -407,16 +405,16 @@ int main(int argc, char *argv[]){
 	dof.Print();
 	cout << "W0" << endl;
 	W.Print(); 
-	cout << "FNAME " << fname << endl;
-	return -1;
 	
+cout << "fname " << fname << endl;
 	//make sure evti < evtj
 	if(evti > evtj){
 		int evt = evtj;
 		evtj = evti;
 		evti = evt;
 	}
-cout << "fname " << fname << endl;
+	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
+	else cout << "Skimming all events for ";
 	//choose time calibration file
 	string calibfile = "";
         if(fname.find("GJets") != string::npos)
