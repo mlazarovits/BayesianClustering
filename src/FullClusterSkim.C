@@ -24,7 +24,16 @@ int main(int argc, char *argv[]){
 	string in_file = "";//rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
+	
+	//prior parameters
 	double emAlpha = 0.5;
+	Matrix scale = Matrix(1e-3);
+	Matrix dof = Matrix(3);
+	Matrix W(3,3);
+	W.InitIdentity();
+	W.mult(W,1./3.);
+	Matrix m(3,1);
+
 	int verb = 0;
 	bool weighted = true;
 	bool smear = true;
@@ -95,6 +104,41 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--EMalpha", 7) == 0){
 			i++;
     	 		emAlpha = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--beta0", 7) == 0){
+			i++;
+    	 		double beta0 = std::stod(argv[i]);
+			scale = Matrix(beta0);
+   		}
+		if(strncmp(argv[i],"--nu0", 5) == 0){
+			i++;
+    	 		double nu0 = std::stod(argv[i]);
+			dof = Matrix(nu0);
+   		}
+		if(strncmp(argv[i],"--W0", 5) == 0){
+			i++;
+    	 		double W_ee = std::stod(argv[i]);
+			i++;
+    	 		double W_pp = std::stod(argv[i]);
+			i++;
+    	 		double W_tt = std::stod(argv[i]);
+			//no covariance bw dimensions
+			W = Matrix(3,3);
+			W.SetEntry(W_ee,0,0);
+			W.SetEntry(W_pp,1,1);
+			W.SetEntry(W_tt,2,2);
+   		}
+		if(strncmp(argv[i],"--m0", 5) == 0){
+			i++;
+    	 		double m_e = std::stod(argv[i]);
+			i++;
+    	 		double m_p = std::stod(argv[i]);
+			i++;
+    	 		double m_t = std::stod(argv[i]);
+			m = Matrix(3,1);
+			m.SetEntry(m_e,0,0);
+			m.SetEntry(m_p,1,0);
+			m.SetEntry(m_t,2,0);
    		}
 		if(strncmp(argv[i],"--noWeight", 10) == 0){
     	 		weighted = false;
@@ -177,30 +221,34 @@ int main(int argc, char *argv[]){
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
-   		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --input(-i) [file]            input root file" << endl;
-   		cout << "   --output(-o) [file]           output root file" << endl;
-   		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
-   		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
-   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --object [obj]                set object to cluster (0 : jets, default; 1 : superclusters, 2 : photons)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
-   		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
-   		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
-   		cout << "   --minemE [mineme]             set minimum ECAL energy (default = 10 GeV)" << endl;
-   		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
-   		cout << "   --maxRhE [maxRhe]             set maximum ECAL rechit energy (default = -999, off)" << endl;
-   		cout << "   --BHFilter [bh]               set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
-   		cout << "   --skip [skip]                 set skip for event loop (default = 1)" << endl;
-   		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
-   		cout << "   --noSmear                     turns off smearing data (default = true, on)" << endl;
-   		cout << "   --timeSmear                   turns on time smearing data (default = false, off)" << endl;
-   		cout << "   --noWeight                    turns off weighting data points (default = false, on)" << endl;
-   		cout << "   --noDist                      turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;
-   		cout << "   --applyFrac                   applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
-   		cout << "   --noCalibrate                 turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
-   		cout << "   --rejectSpikes                reject spikes based on swiss cross cut (default = false, off)" << endl;
-   		cout << "   --noIso                       turn off isolation in preselection (photons only, default = true, on)" << endl;
+   		cout << "   --help(-h)                           print options" << endl;
+   		cout << "   --input(-i) [file]                   input root file" << endl;
+   		cout << "   --output(-o) [file]                  output root file" << endl;
+   		cout << "   --thresh(-t) [t]                     set threshold for cluster cutoff" << endl;
+   		cout << "   --EMalpha(-EMa) [a]                  set concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
+   		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
+   		cout << "   --m0 [m0_eta] [m0_phi] [m0_time]     set mean parameter for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = [0,0,0])" << endl;
+   		cout << "   --W0 [W0_ee] [W0_pp] [W0_tt]         set *diagonal elements* in covariance parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = [1/3,1/3,1/3])" << endl;
+   		cout << "   --nu0 [nu0]                          set dof parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = 3 = dim)" << endl;
+   		cout << "   --verbosity(-v) [verb]               set verbosity (default = 0)" << endl;
+   		cout << "   --object [obj]                       set object to cluster (0 : jets, default; 1 : superclusters, 2 : photons)" << endl;
+   		cout << "   --gev [gev]                          set energy weight transfer factor in N/GeV (default = 1/30 GeV)" << endl;
+   		cout << "   --minpt [minpt]                      set minimum pt (default = 30 GeV)" << endl;
+   		cout << "   --minNrhs [minnrhs]                  set minimum # of rhs (default = 2)" << endl;
+   		cout << "   --minemE [mineme]                    set minimum ECAL energy (default = 10 GeV)" << endl;
+   		cout << "   --minRhE [minRhe]                    set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --maxRhE [maxRhe]                    set maximum ECAL rechit energy (default = -999, off)" << endl;
+   		cout << "   --BHFilter [bh]                      set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
+   		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
+   		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
+   		cout << "   --noSmear                            turns off smearing data (default = true, on)" << endl;
+   		cout << "   --timeSmear                          turns on time smearing data (default = false, off)" << endl;
+   		cout << "   --noWeight                           turns off weighting data points (default = false, on)" << endl;
+   		cout << "   --noDist                             turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;
+   		cout << "   --applyFrac                          applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
+   		cout << "   --noCalibrate                        turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
+   		cout << "   --rejectSpikes                       reject spikes based on swiss cross cut (default = false, off)" << endl;
+   		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
    		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -213,6 +261,13 @@ int main(int argc, char *argv[]){
 		if(obj == 0) gev = 1./10.;
 		else gev = 1./30.;
 	}
+
+	map<string, Matrix> prior_params;
+	prior_params["scale"] = scale;
+	prior_params["dof"] = dof;
+	prior_params["scalemat"] = W;
+	prior_params["m"] = m;
+
 
 	string cmslab, version;	
 	TFile* file = nullptr;
@@ -257,12 +312,67 @@ int main(int argc, char *argv[]){
 		if(oname != "")
 			fname = "skims/"+fname+"Skim_"+oname;
 		else fname = "skims/"+fname+"Skim";
+		if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
+		
+		std::stringstream stream;
+		int idx;
+
 		string ema_string;
 		stream.str("");
 		stream << std::fixed << std::setprecision(3) << emAlpha;
 		ema_string = stream.str();
 		idx = ema_string.find(".");
 		ema_string.replace(idx,1,"p");	
+		fname += "_emAlpha"+ema_string+"_";
+		
+		string scale_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << scale.at(0,0);
+		scale_string = stream.str();
+		idx = scale_string.find(".");
+		scale_string.replace(idx,1,"p");	
+		fname += "beta0-"+scale_string+"_";
+		
+		string mean_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3);
+		for(int i = 0; i < m.GetDims()[0]; i++){
+			stream << m.at(i,0);
+			if(i < m.GetDims()[0]-1) stream << "-";
+		}
+		mean_string = stream.str();
+		idx = 0;
+		while(idx != string::npos){
+			idx = mean_string.find(".");
+			mean_string.replace(idx,1,"p");	
+			idx = mean_string.find(".");
+		}
+		fname += "m0-"+mean_string+"_";
+		
+		string W_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3);
+		for(int i = 0; i < W.GetDims()[0]; i++){
+			stream << W.at(i,i);
+			if(i < W.GetDims()[0]-1) stream << "-";
+		}
+		W_string = stream.str();
+		idx = 0;
+		while(idx != string::npos){
+			idx = W_string.find(".");
+			W_string.replace(idx,1,"p");	
+			idx = W_string.find(".");
+		}
+		//do replacement of . to p
+		fname += "W0diag-"+W_string+"_";
+		
+		string dof_string;
+		stream.str("");
+		stream << std::fixed << std::setprecision(3) << dof.at(0,0);
+		dof_string = stream.str();
+		idx = dof_string.find(".");
+		dof_string.replace(idx,1,"p");	
+		fname += "nu0-"+dof_string+"_";
 
 		string t_string;
 		stream.str("");
@@ -270,6 +380,7 @@ int main(int argc, char *argv[]){
 		t_string = stream.str();
 		idx = t_string.find(".");
 		t_string.replace(idx,1,"p");	
+		fname += "thresh"+t_string+"_";
 		
 		string gev_string;
 		stream.str("");
@@ -277,16 +388,27 @@ int main(int argc, char *argv[]){
 		gev_string = stream.str();
 		idx = gev_string.find(".");
 		gev_string.replace(idx,1,"p");	
+		fname += "NperGeV"+gev_string+"_";
 
 		
-		if(evti != evtj) fname += "_evt"+std::to_string(evti)+"to"+std::to_string(evtj);
-		fname += "NperGeV"+gev_string+"_";
 		fname += cmslab; //long sample name
 		//fname += cmslab.substr(0,cmslab.find("_")); //short sample name
 		//fname += version; //"_v9"
 
 	}
 	fname = fname+".root";
+	
+	cout << endl;
+	cout << "beta0" << endl;
+	scale.Print();
+	cout << "mean0" << endl;
+	m.Print();
+	cout << "nu0" << endl;
+	dof.Print();
+	cout << "W0" << endl;
+	W.Print(); 
+	cout << "FNAME " << fname << endl;
+	return -1;
 	
 	//make sure evti < evtj
 	if(evti > evtj){
