@@ -84,8 +84,8 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(subclusterEfrac);
 			_hists1D.push_back(avgSubclDist_etaPhi);
 			_hists1D.push_back(avgSubclDist_time);
-			_hists1D.push_back(relativeEtaSig);
-			_hists1D.push_back(relativePhiSig);
+			_hists1D.push_back(etaSig);
+			_hists1D.push_back(phiSig);
 		
 			
 			_timeHists1D.push_back(PVtime);
