@@ -110,6 +110,12 @@ def generateSubmission(args):
     
     dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
     ofilename = args.inputSample+"_"+objName
+    #add emAlpha to output name
+    emAlphastr = str(args.EMalpha)
+    emAlphastr.replace(".","p")
+    ofilename = ofilename+"_emAlpha"+emAlphastr
+    print("ofilename",ofilename)
+    return
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
     #	ofilename += "_"+strategyName
@@ -138,7 +144,7 @@ def generateSubmission(args):
 
     # grab relevant flags
     eventnums = SH.eventsSplit(inputFile, args.split)
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)
+    flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
@@ -191,8 +197,7 @@ def main():
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-    #add algorithm parameters - alpha, emAlpha, verbosity, thresh
-    parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
+    #add algorithm parameters - emAlpha, verbosity, thresh
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=-999)
