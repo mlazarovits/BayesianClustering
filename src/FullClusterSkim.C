@@ -24,7 +24,6 @@ int main(int argc, char *argv[]){
 	string in_file = "";//rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
 	double thresh = 1.;
-	double alpha = 0.1;
 	double emAlpha = 0.5;
 	int verb = 0;
 	bool weighted = true;
@@ -96,14 +95,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--EMalpha", 7) == 0){
 			i++;
     	 		emAlpha = std::stod(argv[i]);
-   		}
-		if(strncmp(argv[i],"-a", 2) == 0){
-			i++;
-    	 		alpha = std::stod(argv[i]);
-   		}
-		if(strncmp(argv[i],"--alpha", 7) == 0){
-			i++;
-    	 		alpha = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--noWeight", 10) == 0){
     	 		weighted = false;
@@ -189,7 +180,6 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --input(-i) [file]            input root file" << endl;
    		cout << "   --output(-o) [file]           output root file" << endl;
-   		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
@@ -267,13 +257,6 @@ int main(int argc, char *argv[]){
 		if(oname != "")
 			fname = "skims/"+fname+"Skim_"+oname;
 		else fname = "skims/"+fname+"Skim";
-		string a_string;
-		std::stringstream stream;
-		stream << std::fixed << std::setprecision(3) << alpha;
-		a_string = stream.str();
-		int idx = a_string.find(".");
-		a_string.replace(idx,1,"p");	
-		
 		string ema_string;
 		stream.str("");
 		stream << std::fixed << std::setprecision(3) << emAlpha;
@@ -340,7 +323,9 @@ cout << "fname " << fname << endl;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
-		//set alpha, EMalpha
+		//set EMalpha, thresh
+		skimmer.SetThresh(thresh);
+		skimmer.SetEMAlpha(emAlpha);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
@@ -370,7 +355,9 @@ cout << "fname " << fname << endl;
 		skimmer.SetTransferFactor(gev);
         	skimmer.ApplyFractions(frac);
 		//skimmer.SetDebug(debug);
-		//set EMalpha
+		//set EMalpha, thresh
+		skimmer.SetThresh(thresh);
+		skimmer.SetEMAlpha(emAlpha);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
@@ -393,7 +380,9 @@ cout << "fname " << fname << endl;
 		skimmer.SetTransferFactor(gev);
         	skimmer.ApplyFractions(frac);
 		//skimmer.SetDebug(debug);
-		//set EMalpha
+		//set EMalpha, thresh
+		skimmer.SetThresh(thresh);
+		skimmer.SetEMAlpha(emAlpha);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
