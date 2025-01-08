@@ -256,7 +256,7 @@ map<string, Matrix> GaussianMixture::GetOnlyPriorParameters(int k){
 	return p;
 };
 
-//variational stuff 
+//initializes prior parameters to default values 
 void GaussianMixture::InitPriorParameters(unsigned long long seed){
 //cout << "INIT PRIOR PARAMS" << endl;
 	if(m_dim == 0){
