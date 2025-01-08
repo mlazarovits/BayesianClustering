@@ -40,6 +40,19 @@ class BayesCluster{
 			_thresh = -999;
 			_alpha = 0.1;
 			_subalpha = 0.5;
+			
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
+
 			_smear = Matrix();
 			_verb = 0;
 			_trees = {};
@@ -77,6 +90,7 @@ class BayesCluster{
 			_jets.clear();
 			_points.clear();
 			_history.clear();
+			_prior_params.clear();
 		};
 
 
@@ -98,6 +112,7 @@ class BayesCluster{
 		void SetDataSmear(const Matrix& cov){ _smear = cov; }		
 		void SetAlpha(double a){ _alpha = a; }
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
+		void SetPriorParameters(map<string, Matrix> params){ _prior_params = params; }
 		void SetVerbosity(int v){ _verb = v; }
 		//set time resolution smearing factors
 		void SetTimeResSmear(double c, double n){ _tresSmear_c = c; _tresSmear_n = n; }
@@ -311,17 +326,17 @@ class BayesCluster{
 		double _Qtot;
 		enum JetType {Invalid=-3, InexistentParent = -2, BeamJet = -1};
 		int _initial_n;
+		double _thresh, _alpha, _subalpha;
+		map<string, Matrix> _prior_params;
+		Matrix _smear;
+		int _verb;
+		//time res smearing factors
+		double _tresSmear_c, _tresSmear_n;
 
 		const vector<node*>& _delauney_cluster();
 		const vector<node*>& _naive_cluster();
 		GaussianMixture* _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }
-		double _thresh, _alpha, _subalpha;
-		Matrix _smear;
-		int _verb;
-
-		//time res smearing factors
-		double _tresSmear_c, _tresSmear_n;
 	 
 };
 #endif

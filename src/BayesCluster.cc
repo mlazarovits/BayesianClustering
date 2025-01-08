@@ -31,17 +31,16 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
 
-	map<string,Matrix> priorparams;
-	priorparams["scale"] = Matrix(1e-3);
-	priorparams["dof"] = Matrix(3);
+	_prior_params["scale"] = Matrix(1e-3);
+	_prior_params["dof"] = Matrix(3);
 	Matrix W(3,3);
 	double r = 0.4;
 	W.SetEntry(1./(r*r/3),0,0);
 	W.SetEntry(1./(r*r/3),1,1);
 	W.SetEntry(1./(0.1*0.1/3),2,2);
-	priorparams["scalemat"] = W;
-	priorparams["mean"] = Matrix(3,1);
-	mt->SetPriorParameters(priorparams);
+	_prior_params["scalemat"] = W;
+	_prior_params["mean"] = Matrix(3,1);
+	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
@@ -154,11 +153,28 @@ cout << "n pts " << n << endl;
 		}
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
-		if(BestRk < 0.5){ done = true; break; }	
+		if(BestRk < 0.5){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
 
 
 		int nn;
-		if(_verb > 0) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
+		//if(_verb > 0) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
+		cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
+		
+		vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
+		vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
+		cout << "jet_i pts" << endl;
+		for(int i = 0; i < (int)jps_i.size(); i++){
+			BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
+			pt.SetWeight(jps_i[i].GetWeight());
+			pt.Print();
+		}
+		cout << "jet_j pts" << endl;
+		for(int i = 0; i < (int)jps_j.size(); i++){
+			BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
+			pt.SetWeight(jps_j[i].GetWeight());
+			pt.Print();
+		}
+
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
       		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
 		// exit the loop because we do not want to look for nearest neighbours
@@ -171,11 +187,15 @@ cout << "n pts " << n << endl;
 		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
 		PointCollection newpts = PointCollection();
 		for(int i = 0; i < (int)jps.size(); i++){
+			cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
+			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
+		cout << "newpts" << endl;
+		newpts.Print(); cout << "\n\n\n" << endl;
 		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
@@ -192,25 +212,34 @@ cout << "n pts " << n << endl;
 	vector<node*> trees = mt->GetClusters();
 	double nmirror = 0;
 	double nnull = 0; 	
+	map<string,Matrix> params;
 	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
 		if(trees[i] == nullptr){ nnull++; continue; }
 		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
-			cout << "MIRROR tree " << trees[i]->idx << " has " << trees[i]->model->GetNClusters() << " subclusters and " << trees[i]->points->Sumw() << " total weight and " <<  trees[i]->points->GetNPoints() << " points" << endl;
+				cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
+			trees[i]->model->GetJetParameters(params);
+			cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
+			cout << " points" << endl; trees[i]->model->GetData()->Print();
+			for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
+				params = trees[i]->model->GetPriorParameters(k);
+				cout << " k " << k << " center " << endl; params["mean"].Print();
+				//cout << "cov " << endl; params["cov"].Print();
+			}
 			continue; }
 		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
 
 		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 		_trees.push_back(trees[i]);
-		cout << "real tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-		map<string,Matrix> params;
+		cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
 		trees[i]->model->GetJetParameters(params);
-		cout << "jet mean" << endl; params["mean"].Print(); cout << "cov" << endl; params["cov"].Print();
+		cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
+		cout << " points" << endl; trees[i]->model->GetData()->Print();
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
 			params = trees[i]->model->GetPriorParameters(k);
-			cout << "k " << k << " center " << endl; params["mean"].Print();
+			cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
 		//cout << "points" << endl; trees[i]->model->GetData()->Print();
@@ -240,8 +269,18 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 	//e = w/gev
 	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	if(_thresh != -999) mt->SetThresh(_thresh);
+	_prior_params["scale"] = Matrix(1e-3);
+	_prior_params["dof"] = Matrix(3);
+	Matrix W(3,3);
+	double r = 0.4;
+	W.SetEntry(1./(r*r/3),0,0);
+	W.SetEntry(1./(r*r/3),1,1);
+	W.SetEntry(1./(0.1*0.1/3),2,2);
+	_prior_params["scalemat"] = W;
+	_prior_params["mean"] = Matrix(3,1);
+	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
-	mt->SetDistanceConstraint(0,acos(-1)/2.);
+	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();
 	if(_verb > 0) cout << "Creating rk list for all pairings (this might take a minute...)" << endl;	
 	for (int i = 0; i < n; i++) {
@@ -420,7 +459,10 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
 	algo->SetThresh(_thresh);
-	
+
+
+	//set prior parameters
+	gmm->SetPriorParameters(_prior_params);	
 
 	map<string, vector<Matrix>> params;
 	bool viz = false;
