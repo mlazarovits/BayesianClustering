@@ -1757,10 +1757,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//set skip for outstream
 		void SetSkip(int i){ _oskip = i; }
 		int _oskip;
-		void SetThresh(double t){ _thresh = t; }
-		void SetBHCAlpha(double a){ _alpha = a; }
-		void SetEMAlpha(double a){ _emAlpha = a; }
-		double _thresh, _alpha, _emAlpha, _timeoffset, _swcross;
+		double _timeoffset, _swcross;
 		bool _BHcluster;
 		int _clusterSize;
 		void ApplyFractions(bool a){ _applyFrac = a; if(_applyFrac) cout << "Applying RH fractions" << endl; }

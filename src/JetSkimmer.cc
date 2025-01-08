@@ -16,23 +16,22 @@ void JetSkimmer::Skim(){
 	
 	MakeTimeRecoCatHists();
 	//create data smear matrix - smear in eta/phi
-	Matrix smear = Matrix(3,3);
 	double dphi = 2*acos(-1)/360.; //1 degree in radians
 	double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
 	//diagonal matrix
-	smear.SetEntry(deta*deta,0,0);
-	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(0.,2,2); 
+	_smearMat = Matrix(3,3);
+	_smearMat.SetEntry(deta*deta,0,0);
+	_smearMat.SetEntry(dphi*dphi,1,1);
+	_smearMat.SetEntry(0.,2,2); 
 	//for time smearing (energy dependent)
-	double tres_c = 0.2;
-	double tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
+	_tres_c = 0.2;
+	_tres_n = sqrt(1 - _tres_c*_tres_c)*_gev;	
 
-	double alpha = 0.1;
-	double emAlpha = 0.5;
-	double thresh = 1.;
+	//double alpha = 0.1;
+	//double emAlpha = 0.5;
+	//double thresh = 1.;
 	
 	map<string, Matrix> params;
-	vector<node*> trees;
 
 	double jetSelEff = 0;
 	double totEvt = 0;
@@ -90,7 +89,7 @@ void JetSkimmer::Skim(){
 		cout << endl;
 		for(int i = 0; i < trCats.size(); i++)	
 			//make sure time smearing doesn't happen here when it's turned off by the flag
-			FillPVTimeHists(jets, i, smear, emAlpha, alpha, tres_c, tres_n);
+			FillPVTimeHists(jets, i);
 		
 		jetSelEff++;
 

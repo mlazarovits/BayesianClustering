@@ -481,13 +481,13 @@ class JetSkimmer : public BaseSkimmer{
 		//66 -jet subcluster energy 
 		TH1D* subclusterEfrac = new TH1D("subclusterEfrac","subclusterEfrac",50,0,1);
 		//67 - avg distance bw subclusters - etaphi
-		TH1D* avgSubclDist_etaPhi = new TH1D("avgSubclDist_etaPhi","avgSubclDist_etaPhi",50,0,1);
+		TH1D* avgSubclDist_etaPhi = new TH1D("avgSubclDist_etaPhi","avgSubclDist_etaPhi",50,0,0.2);
 		//68 - avg distance bw subclusters - time
-		TH1D* avgSubclDist_time = new TH1D("avgSubclDist_time","avgSubclDist_time",50,0,1);
+		TH1D* avgSubclDist_time = new TH1D("avgSubclDist_time","avgSubclDist_time",50,-2,2);
 		//69 - etasig/0.4
-		TH1D* relativeEtaSig = new TH1D("relEtaSig","relEtaSig",50,0,1);
+		TH1D* etaSig = new TH1D("etaSig","etaSig",50,0,1);
 		//70 - phisig/0.4
-		TH1D* relativePhiSig = new TH1D("relPhiSig","relPhiSig",50,0,1);
+		TH1D* phiSig = new TH1D("phiSig","phiSig",50,0,1);
 		
 		
 		//0 - 2D histogram for reco-gen resolution
@@ -658,6 +658,9 @@ class JetSkimmer : public BaseSkimmer{
 				for(int r = 0; r < rhs.size(); r++){
 					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
+				GaussianMixture* gmm = _subcluster(jets[j]);
+				FillModelHists(gmm,jets[j]);
+
 				if(njets < 2) continue;
 				if(j == 0 || j == 1){	
 					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
@@ -665,9 +668,51 @@ class JetSkimmer : public BaseSkimmer{
 				}
 			}
 		}
+		
+		void FillModelHists(GaussianMixture* gmm, const Jet& jet){
+			nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
+			int n_k = gmm->GetNClusters();
+			double Ek;
+			vector<double> norms;
+			gmm->GetNorms(norms);
+			map<string, Matrix> params;
+			double avgsubcl_dist_time = 0;
+			double avgsubcl_dist_etaphi = 0;
+			double ec1, ec2, pc1, pc2, tc1, tc2;
+			for(int k = 0; k < n_k; k++){
+				Ek = norms[k]/_gev;
+				params = gmm->GetPriorParameters(k);
+
+				subclusterEfrac->Fill(Ek/jet.E());
+				etaSig->Fill(sqrt(params["cov"].at(0,0)));
+				phiSig->Fill(sqrt(params["cov"].at(1,1)));
+			
+				ec1 = params["mean"].at(0,0);
+				pc1 = params["mean"].at(1,0);
+				tc1 = params["mean"].at(2,0);
+				for(int kk = k+1; kk < n_k; kk++){
+					params = gmm->GetPriorParameters(kk);
+					ec2 = params["mean"].at(0,0);
+					pc2 = params["mean"].at(1,0);
+					tc2 = params["mean"].at(2,0);
+					
+					avgsubcl_dist_time += (tc1 - tc2);
+					double de = ec1 - ec2;
+					double dp = pc1 - pc2;
+					dp = acos(cos(dp)); //wraparound
+					avgsubcl_dist_etaphi += sqrt(de*de + dp*dp);
+				}
+			}
+			if(n_k > 1){
+				avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/(double)n_k);
+				avgSubclDist_time->Fill(avgsubcl_dist_time/(double)n_k);
+			}
+
+		}
+
 
 		//need to break down by procCat - see how this is done in PhotonSkimmer.cc
-		void FillPVTimeHists(vector<Jet>& jets, int tr_idx, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+		void FillPVTimeHists(vector<Jet>& jets, int tr_idx){
 			int njets = jets.size();
 			double jettime = -999;
 			vector<double> jettimes;
@@ -691,8 +736,8 @@ class JetSkimmer : public BaseSkimmer{
 				geoEavg = 0;
 			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
 				for(int j = 0; j < njets; j++){
-					cout << "jet #" << j << endl;
-					jettime = CalcJetTime(ts, jets[j], smear, emAlpha, alpha, tres_c, tres_n);
+					//cout << "jet #" << j << endl;
+					jettime = CalcJetTime(ts, jets[j]);
 					jets[j].SetJetTime(jettime);
 					//cout << " jet #" << j << " time: " << jettime << endl;
 					//fill jet time in pv frame - 0
@@ -1041,7 +1086,7 @@ class JetSkimmer : public BaseSkimmer{
 				}
 				if(_data){
 					//want difference in PV frame (no shift to detector)
-					gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, false);
+					gamtime = CalcJetTime(ts, _phos[0], false);
 					deltaT_gampv = gamtime - pvtime;
 					cout << "gampv time " << deltaT_gampv << endl;
 					//should only be one process in data
@@ -1062,7 +1107,7 @@ class JetSkimmer : public BaseSkimmer{
 					//do same for subleading photon if it exists
 					if(_phos.size() > 1){
 						//want difference in PV frame (no shift to detector)
-						gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, false);
+						gamtime = CalcJetTime(ts, _phos[1], false);
 						deltaT_gampv = gamtime - pvtime;
 					cout << "gampv time " << deltaT_gampv << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
@@ -1099,12 +1144,12 @@ class JetSkimmer : public BaseSkimmer{
 						for(auto r : phorhs) Epho += r.E();
 						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
 						//want the photon time at the PV so we can compare it to the jet time 
-						gamtime_pv = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, false);
+						gamtime_pv = CalcJetTime(ts, _phos[0], false);
 						deltaT_gampv = gamtime_pv - pvtime;
 						if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 						cout << "gampv time " << deltaT_gampv << endl;
 						//want the photon time at the detector so we can compare it to the gen version
-						gamtime = CalcJetTime(ts, _phos[0], smear, emAlpha, alpha, tres_c, tres_n, true);
+						gamtime = CalcJetTime(ts, _phos[0], true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						deltaT_gampv = gamtime - pvtime;
@@ -1173,12 +1218,12 @@ class JetSkimmer : public BaseSkimmer{
 							for(auto r : phorhs) Epho += r.E();
 							//cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " Epho " << Epho << endl;
 							//cout << "SUBLEAD GAMTIME" << endl;	
-							gamtime_pv = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, false);
+							gamtime_pv = CalcJetTime(ts, _phos[1], false);
 							deltaT_gampv = gamtime_pv - pvtime;
 							if(_phos[1].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 							cout << "gampv time " << deltaT_gampv << endl;
 							//cout << "SUBLEAD GAMTIME END" << endl;	
-							gamtime = CalcJetTime(ts, _phos[1], smear, emAlpha, alpha, tres_c, tres_n, true);
+							gamtime = CalcJetTime(ts, _phos[1], true);
 							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 							deltaT_gampv = gamtime - pvtime;
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
@@ -1495,60 +1540,14 @@ class JetSkimmer : public BaseSkimmer{
 			return t1 - t2;
 		}
 
-		void FillModelHists(GaussianMixture* gmm, Jet& jet){
-			nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
-			int n_k = gmm->GetNClusters();
-			double Ek;
-			vector<double> norms;
-			gmm->GetNorms(norms);
-			map<string, Matrix> params;
-			double avgsubcl_dist_time = 0;
-			double avgsubcl_dist_etaphi = 0;
-			double ec1, ec2, pc1, pc2, tc1, tc2;
-			for(int k = 0; k < n_k; k++){
-				Ek = norms[k]/_gev;
-				params = gmm->GetPriorParameters(k);
-
-				subclusterEfrac->Fill(Ek/jet.E());
-				relativeEtaSig->Fill(sqrt(params["cov"].at(0,0))/0.4);
-				relativePhiSig->Fill(sqrt(params["cov"].at(1,1))/0.4);
-			
-				ec1 = params["mean"].at(0,0);
-				pc1 = params["mean"].at(1,0);
-				tc1 = params["mean"].at(2,0);
-				for(int kk = k+1; kk < n_k; kk++){
-					params = gmm->GetPriorParameters(kk);
-					ec2 = params["mean"].at(0,0);
-					pc2 = params["mean"].at(1,0);
-					tc2 = params["mean"].at(2,0);
-					
-					avgsubcl_dist_time += (tc1 - tc2);
-					double de = ec1 - ec2;
-					double dp = pc1 - pc2;
-					dp = acos(cos(dp)); //wraparound
-					avgsubcl_dist_etaphi += sqrt(de*de + dp*dp);
-				}
-			}
-			if(n_k > 1){
-				cout << "avg time fill " << avgsubcl_dist_time/(double)n_k << " etaphi fill " << avgsubcl_dist_etaphi/(double)n_k << endl;
-				avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/(double)n_k);
-				avgSubclDist_time->Fill(avgsubcl_dist_time/(double)n_k);
-			}
-
-		}
-
 		//if pho, add TOF back to time (shift to detector)	
-		double CalcJetTime(const TimeStrategy& ts, Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3, bool pho = false){
+		double CalcJetTime(const TimeStrategy& ts, Jet& jet, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			double time = -999;
 			if(ts == med) time = CalcMedianTime(jet);
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
-				GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
-				if(pho == false){
-					cout << "CalcJetTime method " << ts << endl;
-					FillModelHists(gmm,jet);
-				}
+				GaussianMixture* gmm = _subcluster(jet);
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				time = CalcMMAvgTime(gmm, pho);
 				//set constituents
@@ -1575,7 +1574,7 @@ class JetSkimmer : public BaseSkimmer{
 				if(ts == med) center = CalcMedianCenter(jet);
 				else if(ts == eavg) center = CalcEAvgCenter(jet);
 				else if(ts == mmavg){
-					GaussianMixture* gmm = _subcluster(jet, smear, emAlpha, alpha, tres_c, tres_n);
+					GaussianMixture* gmm = _subcluster(jet);
 					center = CalcMMAvgCenter(gmm, pho);
 					//set constituents
 					vector<double> norms;
@@ -1779,19 +1778,19 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		GaussianMixture* _subcluster(const Jet& jet, const Matrix& smear = Matrix(), double emAlpha = 0.5, double alpha = 0.1, double tres_c = 0.2, double tres_n = 0.3){
+		GaussianMixture* _subcluster(const Jet& jet){
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
-			if(_smear && !smear.empty()) algo->SetDataSmear(smear);
+			if(_smear && !_smearMat.empty()) algo->SetDataSmear(_smearMat);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n*_gev);
-			algo->SetThresh(1.);
-			algo->SetAlpha(alpha);
-			algo->SetSubclusterAlpha(emAlpha);
+			if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
+			algo->SetThresh(_thresh);
+			algo->SetAlpha(_alpha); //isn't used should probably remove this line
+			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(0);
 			GaussianMixture* gmm = algo->SubCluster();
 			return gmm;
@@ -2075,5 +2074,7 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 		private:
 			vector<Jet> _phos; //photons for event
 			double _minRhE;
+			Matrix _smearMat;
+			double _tres_c, _tres_n;
 };
 #endif

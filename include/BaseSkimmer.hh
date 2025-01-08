@@ -34,6 +34,9 @@ class BaseSkimmer{
 			_timesmear = false;
 			_skip = 1;
 			_ngrid = 7;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -55,6 +58,9 @@ class BaseSkimmer{
 			_timesmear = false;
 			_skip = 1;
 			_ngrid = 7;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
 			
 			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
@@ -86,7 +92,7 @@ class BaseSkimmer{
 		bool _debug;
 		int _evti, _evtj;
 		string _cms_label, _oname;
-		double _gev;
+		double _gev, _thresh, _alpha, _emAlpha;
 		double _c = 29.9792458; // speed of light in cm/ns
 		struct DetIDStruct {
 		        DetIDStruct() {}
