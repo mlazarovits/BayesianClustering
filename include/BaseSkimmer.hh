@@ -37,6 +37,20 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
+
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
+			
+
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -61,6 +75,17 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
 			
 			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
@@ -93,6 +118,12 @@ class BaseSkimmer{
 		int _evti, _evtj;
 		string _cms_label, _oname;
 		double _gev, _thresh, _alpha, _emAlpha;
+		map<string, Matrix> _prior_params;
+		void SetThresh(double t){ _thresh = t; }
+		void SetBHCAlpha(double a){ _alpha = a; }
+		void SetEMAlpha(double a){ _emAlpha = a; }
+		void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
+
 		double _c = 29.9792458; // speed of light in cm/ns
 		struct DetIDStruct {
 		        DetIDStruct() {}

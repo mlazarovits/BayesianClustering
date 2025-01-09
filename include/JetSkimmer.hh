@@ -82,10 +82,15 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(nSubClusters_mm);
 			_hists1D.push_back(TOFgam_rh_pv); 
 			_hists1D.push_back(subclusterEfrac);
-			_hists1D.push_back(avgSubclDist_etaPhi);
-			_hists1D.push_back(avgSubclDist_time);
+			_hists1D.push_back(subclDist_etaPhi);
+			_hists1D.push_back(subclDist_time);
 			_hists1D.push_back(etaSig);
 			_hists1D.push_back(phiSig);
+			_hists1D.push_back(timeSig);
+			_hists1D.push_back(beta_k);
+			_hists1D.push_back(W_ee_k);	
+			_hists1D.push_back(W_pp_k);	
+			_hists1D.push_back(W_tt_k);	
 		
 			
 			_timeHists1D.push_back(PVtime);
@@ -481,14 +486,23 @@ class JetSkimmer : public BaseSkimmer{
 		//66 -jet subcluster energy 
 		TH1D* subclusterEfrac = new TH1D("subclusterEfrac","subclusterEfrac",50,0,1);
 		//67 - avg distance bw subclusters - etaphi
-		TH1D* avgSubclDist_etaPhi = new TH1D("avgSubclDist_etaPhi","avgSubclDist_etaPhi",50,0,0.2);
+		TH1D* subclDist_etaPhi = new TH1D("subclDist_etaPhi","subclDist_etaPhi",50,0,0.2);
 		//68 - avg distance bw subclusters - time
-		TH1D* avgSubclDist_time = new TH1D("avgSubclDist_time","avgSubclDist_time",50,-2,2);
-		//69 - etasig/0.4
-		TH1D* etaSig = new TH1D("etaSig","etaSig",50,0,1);
-		//70 - phisig/0.4
-		TH1D* phiSig = new TH1D("phiSig","phiSig",50,0,1);
-		
+		TH1D* subclDist_time = new TH1D("subclDist_time","subclDist_time",50,-2,2);
+		//69 - etasig
+		TH1D* etaSig = new TH1D("etaSig","etaSig",50,0,0.5);
+		//70 - phisig
+		TH1D* phiSig = new TH1D("phiSig","phiSig",50,0,0.5);
+		//71 - phisig
+		TH1D* timeSig = new TH1D("timeSig","timeSig",50,0,1);
+		//72 - posterior value of betas per subcluster
+		TH1D* beta_k = new TH1D("beta_k","beta_k",50,0,15);
+		//73 - posterior value of W_eta,eta per subcluster
+		TH1D* W_ee_k = new TH1D("W_ee_k","W_ee_k",50,0,0.5);	
+		//74 - posterior value of W_phi,phi per subcluster
+		TH1D* W_pp_k = new TH1D("W_pp_k","W_pp_k",50,0,0.5);	
+		//75 - posterior value of W_time,time per subcluster
+		TH1D* W_tt_k = new TH1D("W_tt_k","W_tt_k",50,0,0.5);	
 		
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
@@ -676,8 +690,8 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> norms;
 			gmm->GetNorms(norms);
 			map<string, Matrix> params;
-			double avgsubcl_dist_time = 0;
-			double avgsubcl_dist_etaphi = 0;
+			double subcl_dist_time = 0;
+			double subcl_dist_etaphi = 0;
 			double ec1, ec2, pc1, pc2, tc1, tc2;
 			for(int k = 0; k < n_k; k++){
 				Ek = norms[k]/_gev;
@@ -686,26 +700,34 @@ class JetSkimmer : public BaseSkimmer{
 				subclusterEfrac->Fill(Ek/jet.E());
 				etaSig->Fill(sqrt(params["cov"].at(0,0)));
 				phiSig->Fill(sqrt(params["cov"].at(1,1)));
-			
+				timeSig->Fill(sqrt(params["cov"].at(2,2)));
+	
 				ec1 = params["mean"].at(0,0);
 				pc1 = params["mean"].at(1,0);
 				tc1 = params["mean"].at(2,0);
+				
+				//posterior values of parameters from prior distributions
+				beta_k->Fill(params["scale"].at(0,0));
+				//cout << "beta_k " << params["scale"].at(0,0) << endl;
+				W_ee_k->Fill(params["scalemat"].at(0,0));
+				W_pp_k->Fill(params["scalemat"].at(1,1));
+				W_tt_k->Fill(params["scalemat"].at(2,2));
+
 				for(int kk = k+1; kk < n_k; kk++){
 					params = gmm->GetPriorParameters(kk);
 					ec2 = params["mean"].at(0,0);
 					pc2 = params["mean"].at(1,0);
 					tc2 = params["mean"].at(2,0);
 					
-					avgsubcl_dist_time += (tc1 - tc2);
+					subcl_dist_time = (tc1 - tc2);
+					subclDist_time->Fill(subcl_dist_time);
+					
 					double de = ec1 - ec2;
 					double dp = pc1 - pc2;
 					dp = acos(cos(dp)); //wraparound
-					avgsubcl_dist_etaphi += sqrt(de*de + dp*dp);
+					subcl_dist_etaphi = sqrt(de*de + dp*dp);
+					subclDist_etaPhi->Fill(subcl_dist_etaphi);
 				}
-			}
-			if(n_k > 1){
-				avgSubclDist_etaPhi->Fill(avgsubcl_dist_etaphi/(double)n_k);
-				avgSubclDist_time->Fill(avgsubcl_dist_time/(double)n_k);
 			}
 
 		}
@@ -1789,8 +1811,9 @@ class JetSkimmer : public BaseSkimmer{
 			//set time resolution smearing
 			if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
 			algo->SetThresh(_thresh);
-			algo->SetAlpha(_alpha); //isn't used should probably remove this line
+			//algo->SetAlpha(_alpha); //isn't used should probably remove this line
 			algo->SetSubclusterAlpha(_emAlpha);
+			algo->SetPriorParameters(_prior_params);
 			algo->SetVerbosity(0);
 			GaussianMixture* gmm = algo->SubCluster();
 			return gmm;
