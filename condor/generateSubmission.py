@@ -24,15 +24,15 @@ def generateSubmission(args):
     SH.makeDir(odir)
 
     if "GJets_HT400to600" in args.inputSample:
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET100_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
     elif "GJets_HT100to200" in args.inputSample:
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET100_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix.root"
     elif "GJets_HT200to400" in args.inputSample:
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET100_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix.root"
     elif "GJets_HT40to100" in args.inputSample:
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET100_v24_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix.root"
     elif "GJets_HT600toInf" in args.inputSample:
-    	inputFile = "GJets_R17_MET100_v21_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "GJets_R17_MET100_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
     elif "GMSB_L-250_Ctau-10" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
     elif "GMSB_L-300_Ctau-400" in args.inputSample:
@@ -60,25 +60,25 @@ def generateSubmission(args):
     elif "JetHT_RunC_2018" in args.inputSample:
     	inputFile = "JetHT_R18_MET100_v22_JetHT_AOD_Run2018C_15Feb2022_UL2018.root"
     elif "QCD_HT500to700" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT1000to1500" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT100to200" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT1500to2000" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT2000toInf" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT300to500" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT500to700" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT700to1000" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT200to300" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
     elif "QCD_HT50to100" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v21_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
+    	inputFile = "QCD_R17_MET100_v24_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
     elif "EGamma_RunF" in args.inputSample:
     	inputFile = "DEG_R17_MET100_v21_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
     elif "SMS-GlGl" in args.inputSample:
@@ -110,12 +110,59 @@ def generateSubmission(args):
     
     dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
     ofilename = args.inputSample+"_"+objName
+    
+    #prior parameters
+    priorname = ""
     #add emAlpha to output name
     emAlphastr = str(args.EMalpha)
-    emAlphastr.replace(".","p")
+    emAlphastr = emAlphastr.replace(".","p")
     ofilename = ofilename+"_emAlpha"+emAlphastr
-    print("ofilename",ofilename)
-    return
+
+    #beta0
+    betastr = str(args.beta0)
+    betastr = betastr.replace(".","p")
+    priorname = priorname+"_beta0-"+betastr
+
+    #m0
+    #check dims
+    if len(args.m0) != 3:
+        print("Error: m0 must be a vector of length 3")
+        exit()
+    mstr = ""
+    for i, m in enumerate(args.m0):
+        m = float(m)
+        m = round(m,3)
+        print('m',m)
+        m = str(m)
+        m = m.replace(".","p")
+        if i == len(args.m0)-1:
+            mstr += m
+        else:
+            mstr += m+"-"
+    priorname = priorname+"_m0-"+mstr
+
+    #W0
+    if len(args.W0diag) != 3:
+        print("Error: W0diag must be a vector of length 3")
+        exit()
+    Wstr = ""
+    for i, w in enumerate(args.W0diag):
+        w = float(w)
+        w = round(w,3)
+        print('w',w)
+        w = str(w)
+        w = w.replace(".","p")
+        if i == len(args.W0diag)-1:
+            Wstr += w
+        else:
+            Wstr += w+"-"
+    priorname = priorname+"_W0diag-"+Wstr
+    
+    #nu0
+    nustr = str(args.nu0)
+    nustr = nustr.replace(".","p")
+    priorname = priorname+"_nu0-"+nustr
+
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
     #	ofilename += "_"+strategyName
@@ -124,7 +171,12 @@ def generateSubmission(args):
     if args.output is not None and objName not in args.output:
     	ofilename = ofilename+"_"+args.output 
     	dirname = dirname+"_"+args.output
+    dirname += priorname
+    ofilename += priorname
     ofilename = "condor_"+ofilename
+    print("ofilename",ofilename)
+    print("dirname",dirname)
+    exit()
     
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
@@ -197,8 +249,14 @@ def main():
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-    #add algorithm parameters - emAlpha, verbosity, thresh
+    
+    #add algorithm parameters - emAlpha, priors, verbosity, thresh
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
+    parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
+    parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
+    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,0.33333333],nargs="+")
+    parser.add_argument('--nu0',help="nu0 prior",default=3)
+    
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=-999)
     parser.add_argument('--minpt',help='min object pt',default=30.)
