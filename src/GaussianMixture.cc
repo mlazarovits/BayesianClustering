@@ -225,6 +225,7 @@ map<string, Matrix> GaussianMixture::GetParameters(int k){
 	return p;
 };
 
+//returns posterior values of parameters, with Gaussian model parameters set by data statistics
 map<string, Matrix> GaussianMixture::GetPriorParameters(int k) const{ 
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
@@ -590,6 +591,7 @@ void GaussianMixture::UpdatePriorParameters(){
 	for(int k = 0; k < m_k; k++){
 		//to avoid nans, if there are no effective points in a cluster, the update equations dictate that its parameters are just the priors
 		//however in calculating the r statistics, N_k = 0 can lead to nans
+		//if N_k == 0, set the parameters of this cluster to initial values
 		if(m_norms[k] == 0){
 			m_model[k]->GetPrior()->SetParameter("scale", Matrix(m_beta0));
 			m_model[k]->GetPrior()->SetParameter("dof", Matrix(m_nu0));
