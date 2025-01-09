@@ -49,7 +49,9 @@ class BaseSkimmer{
 			_prior_params["scalemat"] = W;
 			//m
 			_prior_params["mean"] = Matrix(3,1);
+
 			
+			cout << "Default NN model: small8CNN_EMultr.json" << endl;
 
 		};
 		BaseSkimmer(TFile* file){
@@ -87,6 +89,7 @@ class BaseSkimmer{
 			//m
 			_prior_params["mean"] = Matrix(3,1);
 			
+			
 			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
 				_data = false;
@@ -99,6 +102,8 @@ class BaseSkimmer{
 			_hists1D.push_back(phi_center);
 			_hists1D.push_back(objE);
 			_hists1D.push_back(clusterE);
+
+			cout << "Default NN model: small8CNN_EMultr.json" << endl;
 
 
 		}
@@ -630,19 +635,95 @@ class BaseSkimmer{
                         else cout << "Applying inverse beam halo filter." << endl;
                 }
 
+		void GetCenterXtal(vector<JetPoint>& rhs, JetPoint& center){
+			//get center of pts in ieta, iphi -> max E point
+			double maxE = 0;
+			for(int r = 0; r < rhs.size(); r++){
+				if(rhs[r].E() > maxE){
+					maxE = rhs[r].E();
+					center = rhs[r];
+				}
+			}
+		}
+
+
+		//write nxn grid of E, t, r_nk here
+		void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
+			map<pair<int,int>, vector<double>> grid;
+			//make sure ngrid is odd to include center crystal
+			if(_ngrid % 2 == 0)
+				_ngrid++;
+
+			int ngrid_boundary = (_ngrid-1)/2;
+			//set default channel values to 0
+			//{E, t, r, Er}
+			for(int i = -ngrid_boundary; i < ngrid_boundary+1; i++)
+				for(int j = -ngrid_boundary; j < ngrid_boundary+1; j++)
+					grid[make_pair(i,j)] = {0., 0., 0.};
+
+
+			//get ngrid x ngrid around center point 
+			int ieta, iphi;
+			int rh_ieta = _detIDmap[center.rhId()].i2;
+			int rh_iphi = _detIDmap[center.rhId()].i1;
+			int deta, dphi;
+			Matrix post = model->GetPosterior();
+			for(int j = 0; j < (int)rhs.size(); j++){
+				ieta = _detIDmap[rhs[j].rhId()].i2;
+				iphi = _detIDmap[rhs[j].rhId()].i1;
+				//do eta flip
+				if(rh_ieta < 0)
+					deta = -(ieta - rh_ieta);
+				else
+					deta = ieta - rh_ieta;
+				dphi = iphi - rh_iphi; 
+				//needs wraparound
+				if(dphi > 180)
+					dphi = 360 - dphi;
+				else if(dphi < -180)
+					dphi = -(360 + dphi);
+				if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
+					//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
+					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
+					grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
+					//mapobs[k]["CNNgrid_E_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].E();
+					//mapobs[k]["CNNgrid_t_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].t() - center.t();
+					//mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] = post.at(j,k)/model->GetData()->at(j).w();
+					//mapobs[k]["CNNgrid_Er_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].E()*(post.at(j,k)/model->GetData()->at(j).w());
+					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
+
+				}
+			}
+			pair<int, int> icoords_grid;
+			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					icoords_grid = make_pair(i,j);
+					mapobs[k]["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
+					mapobs[k]["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
+					mapobs[k]["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
+					mapobs[k]["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
+					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
+				}
+			}
+		}
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel;
+		fdeep::model _nnmodel = fdeep::load_model("json/small8CNN_EMultr.json");
 		void SetNNModel(string fname){
 			_nnmodel = fdeep::load_model(fname);
 		}
-		//returns predicted class, by reference the discriminator value
-		int NNPredict(vector<string>& nn_features, map<string,double>& obs, vector<string>& features, double& ovalue){
+		//sets which features to use in NN prediction - make sure this matches with the given model (json)
+		vector<string> _nnfeatures;
+		void SetNNFeatures(vector<string>& features){
+			_nnfeatures = features;
+		}
+		//returns predicted class, by reference the discriminator value - DNN
+		int DNNPredict(map<string,double>& obs, double& ovalue){
 			vector<float> input_sample;
 			//transform obs to input_sample
-			for(int f = 0; f < nn_features.size(); f++)
-				input_sample.push_back(obs[nn_features[f]]);		
+			for(int f = 0; f < _nnfeatures.size(); f++)
+				input_sample.push_back(obs[_nnfeatures[f]]);		
 
 			int size = input_sample.size();
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
@@ -654,25 +735,34 @@ class BaseSkimmer{
 		}
 	
 	
-		//for CNN input - (ngrid, ngrid, nchannels) cellToChannel
-		int NNPredict(string fmodel, map<pair<int,int>, vector<double>>& cellToChannel, double& ovalue){
-			fdeep::model nnmodel = fdeep::load_model(fmodel);
-			int nchan = cellToChannel.begin()->second.size();
-			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, nchan-1);
+		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
+		//grid maps int pair to vector of channels
+		int CNNPredict(map<string, double>& obs, double& ovalue){
+			int nchan = _nnfeatures.size();
+			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, nchan);
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
-			//transform cellToChannel to input_sample
+			//transform grid to input_sample
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					for(int c = 0; c < nchan; c++){
-						if(c == 1) continue; //skipping time channel for now
-						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), cellToChannel[make_pair(i,j)][c]);
+					for(int c = 0; c < _nnfeatures.size(); c++){
+						double val;
+						if (_nnfeatures[c].find("Mult") != string::npos){
+							string ch1(_nnfeatures[c]);
+							ch1 = ch1[0];
+							string ch2(_nnfeatures[c]);
+							ch2 = ch2[ch2.size()-1];
+							val = obs["CNNgrid_"+ch1+"_cell"+to_string(i)+"_"+to_string(j)]*obs["CNNgrid_"+ch2+"_cell"+to_string(i)+"_"+to_string(j)];
+						}
+						else
+							val = obs["CNNgrid_"+_nnfeatures[c]+"_cell"+to_string(i)+"_"+to_string(j)];
+						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), val);
 					}
 					
 				}
 			}	
 	
 			//predict_class returns predicted class number and value of max output neuron
-			pair<size_t, double> result = nnmodel.predict_class_with_confidence({input_tensor});
+			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 			ovalue = result.second;
 			return (int)result.first;
 		}
