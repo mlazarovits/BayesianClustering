@@ -1822,6 +1822,7 @@ class JetSkimmer : public BaseSkimmer{
 		//removes/downweights subclusters that are tagged (probID) as detector bkg by MVA
 		//returns by reference k-length vector of probIDs
 		//if remove, probID = 0 for detector bkg
+		//NN json needs to have been set with SetNNModel(string jsonname)
 		void CleanSubclusters(BasePDFMixture* model, vector<double>& probIDs){
 			//nclass options (index of predicted class
 			//0 == 1 == phys bkg
