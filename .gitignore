@@ -35,8 +35,8 @@ obj/*.o
 *.swp
 *.pyc
 
-#jsons are usually too big
-*.json
+#jsons are usually too big - want to add for nn models
+#*.json
 
 plots_local/*
 rootfiles/*
