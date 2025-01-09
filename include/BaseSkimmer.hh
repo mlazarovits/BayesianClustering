@@ -633,8 +633,12 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		int NNPredict(string fmodel, vector<string>& nn_features, map<string,double>& obs, vector<string>& features, double& ovalue){
-			fdeep::model nnmodel = fdeep::load_model(fmodel);
+		fdeep::model _nnmodel;
+		void SetNNModel(string fname){
+			_nnmodel = fdeep::load_model(fname);
+		}
+		//returns predicted class, by reference the discriminator value
+		int NNPredict(vector<string>& nn_features, map<string,double>& obs, vector<string>& features, double& ovalue){
 			vector<float> input_sample;
 			//transform obs to input_sample
 			for(int f = 0; f < nn_features.size(); f++)
@@ -644,7 +648,7 @@ class BaseSkimmer{
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 			
 			//predict_class returns predicted class number and value of max output neuron
-			pair<size_t, double> result = nnmodel.predict_class_with_confidence({input_tensor});
+			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 			ovalue = result.second;
 			return (int)result.first;
 		}

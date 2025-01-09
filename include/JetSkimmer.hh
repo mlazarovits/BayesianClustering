@@ -496,7 +496,7 @@ class JetSkimmer : public BaseSkimmer{
 		//71 - phisig
 		TH1D* timeSig = new TH1D("timeSig","timeSig",50,0,1);
 		//72 - posterior value of betas per subcluster
-		TH1D* beta_k = new TH1D("beta_k","beta_k",50,0,15);
+		TH1D* beta_k = new TH1D("beta_k","beta_k",50,0,20);
 		//73 - posterior value of W_eta,eta per subcluster
 		TH1D* W_ee_k = new TH1D("W_ee_k","W_ee_k",50,0,0.5);	
 		//74 - posterior value of W_phi,phi per subcluster
@@ -708,7 +708,6 @@ class JetSkimmer : public BaseSkimmer{
 				
 				//posterior values of parameters from prior distributions
 				beta_k->Fill(params["scale"].at(0,0));
-				//cout << "beta_k " << params["scale"].at(0,0) << endl;
 				W_ee_k->Fill(params["scalemat"].at(0,0));
 				W_pp_k->Fill(params["scalemat"].at(1,1));
 				W_tt_k->Fill(params["scalemat"].at(2,2));
@@ -1820,8 +1819,28 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 
+		//removes/downweights subclusters that are tagged (probID) as detector bkg by MVA
+		//returns by reference k-length vector of probIDs
+		//if remove, probID = 0 for detector bkg
+		void CleanSubclusters(BasePDFMixture* model, vector<double>& probIDs){
+			//nclass options (index of predicted class
+			//0 == 1 == phys bkg
+			//1 == 2 == BH
+			//2 == 3 == spike
+			double ovalue; //discriminator output value, pass-by-ref
+			int kmax = model->GetNClusters();
+			for(int k = 0; k < kmax; k++){
+				//features = vector of strings of features to use
+				//obs = map<string, double> observations for each feature per subcluster
+				
+				int nclass = NNPredict(features,obs,ovalue);
+			}
 
-		double CalcMMAvgTime(BasePDFMixture* model, bool pho){
+		}
+
+
+
+		double CalcMMAvgTime(BasePDFMixture* model, bool pho, vector<double>& probIDs = {}){
 			//cout << "CalcMMAvgTime" << endl;
 			int kmax = model->GetNClusters();
 			double t = 0;
@@ -1832,10 +1851,14 @@ class JetSkimmer : public BaseSkimmer{
 			//pc->Sort(2);
 			//pc->Print();
 			//}	
-	
+			double tk;	
 			for(int k = 0; k < kmax; k++){
 				params = model->GetPriorParameters(k);
-				t += params["pi"].at(0,0)*params["mean"].at(2,0);
+				tk = params["pi"].at(0,0)*params["mean"].at(2,0);
+				//clean out det bkg
+				if(probIDs.size() == kmax)
+					tk *= probIDs[k];
+				t += tk
 				norm += params["pi"].at(0,0);
 				//cout << "k: " << k << " pi: " << params["pi"].at(0,0) << " mean " << params["mean"].at(2,0) << endl;
 				if(pho){
@@ -1848,7 +1871,7 @@ class JetSkimmer : public BaseSkimmer{
 			return t/norm; 
 		}
 		
-		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho){
+		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho, vector<double>& probIDs = {}){
 			int kmax = model->GetNClusters();
 			double norm = 0;
 			double x = 0;
@@ -1857,17 +1880,28 @@ class JetSkimmer : public BaseSkimmer{
 			double phi, eta, theta;
 			BayesPoint center(3);
 			map<string, Matrix> params;
+			double xk, yk, zk;
 			for(int k = 0; k < kmax; k++){
 				params = model->GetPriorParameters(k);
 				eta = params["mean"].at(0,0);
 				phi = params["mean"].at(1,0);
 				theta = 2*atan2(1,exp(eta));
 				//detector y (in y,z plane) or r (in x,y plane) is 1.29 m
-				x += params["pi"].at(0,0)*129*cos(phi);
-				y += params["pi"].at(0,0)*129*sin(phi);
+				xk = params["pi"].at(0,0)*129*cos(phi);
+				yk = params["pi"].at(0,0)*129*sin(phi);
 				//if(theta > acos(-1)/2.) z = params["pi"].at(0,0)*-129/tan(theta - acos(-1)/2.); 
 				//else z += params["pi"].at(0,0)*129/tan(theta);	
-				z += params["pi"].at(0,0)*129/tan(theta);	
+				zk = params["pi"].at(0,0)*129/tan(theta);
+				//clean out det bkg
+				if(probIDs.size() == kmax){
+					xk *= probIDs[k];
+					yk *= probIDs[k];
+					zk *= probIDs[k];
+				}
+				x += xk;
+				y += yk;
+				z += zk;
+			}
 			//for checking calculations
 			double rtheta = atan2(129,z);
 			//if(z < 0) rtheta = atan2(129.,z)+acos(-1)/2.;
