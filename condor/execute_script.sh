@@ -15,9 +15,9 @@ cmssw_setup sandbox-CMSSW_13_0_13.tar.bz2
 ###
 ####don't need restframes library
 ####source ./config/setup_RestFrames_connect.sh 
-#ls
-#echo "--config"
-#ls config
+ls
+echo "--config"
+ls config
 #echo "--cmssw base $CMSSW_BASE"
 #ls $CMSSW_BASE/src
 #cd $CMSSW_BASE/src
@@ -29,6 +29,7 @@ cmssw_setup sandbox-CMSSW_13_0_13.tar.bz2
 #ls
 #cd config
 mv config/info .
+mv config/json .
 ###
 ####don't need lhapdf library - but may need to do this for cgal, etc.
 ####export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
