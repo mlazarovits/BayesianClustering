@@ -234,7 +234,7 @@ int main(int argc, char *argv[]){
 	prior_params["scale"] = scale;
 	prior_params["dof"] = dof;
 	prior_params["scalemat"] = W;
-	prior_params["m"] = m;
+	prior_params["mean"] = m;
 
 	if(obj == 0 || obj == 2){
 		if(obj == 0) fname += "jets";
