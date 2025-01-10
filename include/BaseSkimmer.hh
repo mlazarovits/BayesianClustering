@@ -648,7 +648,8 @@ class BaseSkimmer{
 
 
 		//write nxn grid of E, t, r_nk here
-		void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
+		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
+		void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
 			map<pair<int,int>, vector<double>> grid;
 			//make sure ngrid is odd to include center crystal
 			if(_ngrid % 2 == 0)
@@ -698,10 +699,10 @@ class BaseSkimmer{
 			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 					icoords_grid = make_pair(i,j);
-					mapobs[k]["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
-					mapobs[k]["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
-					mapobs[k]["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
-					mapobs[k]["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
+					mapobs["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
+					mapobs["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
+					mapobs["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
+					mapobs["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
 					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
 				}
 			}
