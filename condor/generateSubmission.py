@@ -132,7 +132,6 @@ def generateSubmission(args):
     for i, m in enumerate(args.m0):
         m = float(m)
         m = round(m,3)
-        print('m',m)
         m = str(m)
         m = m.replace(".","p")
         if i == len(args.m0)-1:
@@ -149,7 +148,6 @@ def generateSubmission(args):
     for i, w in enumerate(args.W0diag):
         w = float(w)
         w = round(w,3)
-        print('w',w)
         w = str(w)
         w = w.replace(".","p")
         if i == len(args.W0diag)-1:
