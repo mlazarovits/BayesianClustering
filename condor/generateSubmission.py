@@ -176,7 +176,6 @@ def generateSubmission(args):
     ofilename = "condor_"+ofilename
     print("ofilename",ofilename)
     print("dirname",dirname)
-    exit()
     
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
