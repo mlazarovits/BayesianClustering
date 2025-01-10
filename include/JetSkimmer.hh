@@ -1592,7 +1592,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == mmavg){
 				gmm = _subcluster(jet);
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
-				CleanSubclusters(gmm, jet, probIDs);
+				//CleanSubclusters(gmm, jet, probIDs);
 				time = CalcMMAvgTime(gmm, pho);//probIDs);
 				//set constituents
 				vector<double> norms;
