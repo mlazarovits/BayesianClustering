@@ -27,6 +27,12 @@ void SuperClusterSkimmer::Skim(){
 	_csvfile.open(_csvname);
 	//write header
 	SetObs();
+
+	//set NN model + features - can move to .C for more flexibility
+	SetNNModel("json/small8CNN_EMultr.json");
+	//SetNNFeatures();
+	_nnfeatures = {"EMultr"};
+
 	
 	int nPho;
 	//create data smear matrix - smear in eta/phi
@@ -202,7 +208,8 @@ void SuperClusterSkimmer::Skim(){
 			//get jet points (rhs with IDs) for CNN grid
 			rh_pts = scs[s].GetJetPoints();
 			
-			
+			JetPoint rh_center;
+			GetCenterXtal(rh_pts, rh_center);	
 			for(int k = 0; k < mapobs.size(); k++){
 				if(np != -1){
 					//do 2017 preselection
@@ -259,18 +266,7 @@ void SuperClusterSkimmer::Skim(){
 					mapobs[k]["hadTowOverEM"] = -999;
 				}
 				//make CNN training grid
-				map<pair<int,int>, vector<double>> grid;
-				MakeCNNInputGrid(gmm, k, rh_pts, grid, _ngrid);
-				pair<int, int> icoords_grid;
-				for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
-					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-						icoords_grid = make_pair(i,j);
-						mapobs[k]["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
-						mapobs[k]["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
-						mapobs[k]["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
-						//cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
-					}
-				}
+				MakeCNNInputGrid(gmm, k, rh_pts, rh_center, mapobs[k]);
 
 				mapobs[k]["event"] = e;
 				mapobs[k]["object"] = scidx;
@@ -282,7 +278,7 @@ void SuperClusterSkimmer::Skim(){
 				//get prediction from NN model for good SCs
 				if(label != -1){
 					double predval = 0;
-					int nclass = NNPredict("testCNN.json",grid,predval);
+					int nclass = CNNPredict(mapobs[k],predval);
 					cout << "class " << nclass << " predval " << predval << " for SC " << k << " with label " << label << endl;	
 				}
 

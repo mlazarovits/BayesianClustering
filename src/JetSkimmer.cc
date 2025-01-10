@@ -43,6 +43,12 @@ void JetSkimmer::Skim(){
 
 	cout << setprecision(10) << "weight " << _weight << endl; 
 
+
+	//set NN model + features - can move to .C for more flexibility
+	SetNNModel("json/small8CNN_EMultr.json");
+	//SetNNFeatures();
+	_nnfeatures = {"EMultr"};
+
 	double metThresh = 0.4;
 	double geoAvgJets;
 	double phogev = 1./30.;

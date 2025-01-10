@@ -2631,61 +2631,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 
 
-	//write nxn grid of E, t, r_nk here
-	void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, map<pair<int,int>, vector<double>>& cellToChannel, int ngrid = 7){
-		//get center of pts in ieta, iphi -> max E point
-		JetPoint centerRh;
-		double maxE = 0;
-		double centerTime = 0;
-		for(int r = 0; r < rhs.size(); r++){
-			if(rhs[r].E() > maxE){
-				maxE = rhs[r].E();
-				centerRh = rhs[r];
-				centerTime = rhs[r].t();
-			}
-		}
-
-		//make sure ngrid is odd to include center crystal
-		if(ngrid % 2 == 0)
-			ngrid++;
-
-		int ngrid_boundary = (ngrid-1)/2;
-		//set default channel values to 0
-		//{E, t, r}
-		for(int i = -ngrid_boundary; i < ngrid_boundary+1; i++)
-			for(int j = -ngrid_boundary; j < ngrid_boundary+1; j++)
-				cellToChannel[make_pair(i,j)] = {0., 0., 0.};
-
-
-		//get ngrid x ngrid around center point 
-		int ieta, iphi;
-		int rh_ieta = _detIDmap[centerRh.rhId()].i2;
-		int rh_iphi = _detIDmap[centerRh.rhId()].i1;
-		int deta, dphi;
-		Matrix post = model->GetPosterior();
-		for(int j = 0; j < (int)rhs.size(); j++){
-			ieta = _detIDmap[rhs[j].rhId()].i2;
-			iphi = _detIDmap[rhs[j].rhId()].i1;
-			//do eta flip
-			if(rh_ieta < 0)
-				deta = -(ieta - rh_ieta);
-			else
-				deta = ieta - rh_ieta;
-			dphi = iphi - rh_iphi; 
-			//needs wraparound
-			if(dphi > 180)
-				dphi = 360 - dphi;
-			else if(dphi < -180)
-				dphi = -(360 + dphi);
-			if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
-				//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
-		
-				//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
-				cellToChannel[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - centerTime, post.at(j,k)/model->GetData()->at(j).w()};	
-			}
-		}
-
-	}
 
 
 	BayesPoint GetCMSSWMean(PointCollection* pc, bool logw = false){

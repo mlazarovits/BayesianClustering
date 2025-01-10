@@ -91,6 +91,9 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(W_ee_k);	
 			_hists1D.push_back(W_pp_k);	
 			_hists1D.push_back(W_tt_k);	
+			_hists1D.push_back(t_physBkg);
+			_hists1D.push_back(t_BH);
+			_hists1D.push_back(t_spike);
 		
 			
 			_timeHists1D.push_back(PVtime);
@@ -503,7 +506,15 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* W_pp_k = new TH1D("W_pp_k","W_pp_k",50,0,0.5);	
 		//75 - posterior value of W_time,time per subcluster
 		TH1D* W_tt_k = new TH1D("W_tt_k","W_tt_k",50,0,0.5);	
-		
+		//76 - time of predicted phys bkg subclusters
+		TH1D* t_physBkg = new TH1D("t_physBkg","t_physBkg",50,-20,20);
+		//77 - time of predicted BH
+		TH1D* t_BH = new TH1D("t_BH","t_BH",50,-20,20);
+		//78 - time of predicted spikes
+		TH1D* t_spike = new TH1D("t_spike","t_spike",50,-20,20);
+			
+
+	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",6,&xbins[0],100,-2,2);
 		//1 - 2D histogram for dijets resolution - geometric avg of jet pT
@@ -711,6 +722,14 @@ class JetSkimmer : public BaseSkimmer{
 				W_ee_k->Fill(params["scalemat"].at(0,0));
 				W_pp_k->Fill(params["scalemat"].at(1,1));
 				W_tt_k->Fill(params["scalemat"].at(2,2));
+				
+				int nclass = PredictSubcluster(gmm, k, jet);	
+				if(nclass == 0)
+					t_physBkg->Fill(tc1);
+				if(nclass == 1)
+					t_BH->Fill(tc1);
+				if(nclass == 2)
+					t_spike->Fill(tc1);
 
 				for(int kk = k+1; kk < n_k; kk++){
 					params = gmm->GetPriorParameters(kk);
@@ -757,7 +776,7 @@ class JetSkimmer : public BaseSkimmer{
 				geoEavg = 0;
 			//cout << "\nmethod: " << tr_idx << " " << ts << " "<< trCats[tr_idx].methodName << " proc " << p << " with " << njets << " jets" << endl;
 				for(int j = 0; j < njets; j++){
-					//cout << "jet #" << j << endl;
+					//if(ts == mmavg) cout << "\njet #" << j << endl;
 					jettime = CalcJetTime(ts, jets[j]);
 					jets[j].SetJetTime(jettime);
 					//cout << " jet #" << j << " time: " << jettime << endl;
@@ -1109,7 +1128,7 @@ class JetSkimmer : public BaseSkimmer{
 					//want difference in PV frame (no shift to detector)
 					gamtime = CalcJetTime(ts, _phos[0], false);
 					deltaT_gampv = gamtime - pvtime;
-					cout << "gampv time " << deltaT_gampv << endl;
+					//cout << "gampv time " << deltaT_gampv << endl;
 					//should only be one process in data
 					trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
@@ -1130,7 +1149,7 @@ class JetSkimmer : public BaseSkimmer{
 						//want difference in PV frame (no shift to detector)
 						gamtime = CalcJetTime(ts, _phos[1], false);
 						deltaT_gampv = gamtime - pvtime;
-					cout << "gampv time " << deltaT_gampv << endl;
+					//cout << "gampv time " << deltaT_gampv << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 						//gampv resolution
@@ -1565,12 +1584,16 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			double time = -999;
+			GaussianMixture* gmm = nullptr;
+			vector<double> probIDs;
+			vector<JetPoint> rhs = jet.GetJetPoints();
 			if(ts == med) time = CalcMedianTime(jet);
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
-				GaussianMixture* gmm = _subcluster(jet);
+				gmm = _subcluster(jet);
 				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
-				time = CalcMMAvgTime(gmm, pho);
+				CleanSubclusters(gmm, jet, probIDs);
+				time = CalcMMAvgTime(gmm, pho);//probIDs);
 				//set constituents
 				vector<double> norms;
 				gmm->GetNorms(norms);
@@ -1595,20 +1618,20 @@ class JetSkimmer : public BaseSkimmer{
 				if(ts == med) center = CalcMedianCenter(jet);
 				else if(ts == eavg) center = CalcEAvgCenter(jet);
 				else if(ts == mmavg){
-					GaussianMixture* gmm = _subcluster(jet);
-					center = CalcMMAvgCenter(gmm, pho);
+					//GaussianMixture* gmm = _subcluster(jet);
+					center = CalcMMAvgCenter(gmm, pho); //probIDs);
 					//set constituents
-					vector<double> norms;
-					gmm->GetNorms(norms);
-					for(int k = 0; k < gmm->GetNClusters(); k++){
-						auto params = gmm->GetPriorParameters(k);
-						double E_k = norms[k]/_gev;
-						Matrix mu = params["mean"];
-						Matrix cov = params["cov"];
-						double pi = params["pi"].at(0,0);
-						Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
-						jet.AddConstituent(subcl);
-					}	
+					//vector<double> norms;
+					//gmm->GetNorms(norms);
+					//for(int k = 0; k < gmm->GetNClusters(); k++){
+					//	auto params = gmm->GetPriorParameters(k);
+					//	double E_k = norms[k]/_gev;
+					//	Matrix mu = params["mean"];
+					//	Matrix cov = params["cov"];
+					//	double pi = params["pi"].at(0,0);
+					//	Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
+					//	jet.AddConstituent(subcl);
+					//}	
 				}
 				else if(ts == emax) center = CalcMaxCenter(jet);
 				double rtheta = atan2(129,center.at(2));
@@ -1819,29 +1842,48 @@ class JetSkimmer : public BaseSkimmer{
 		}
 
 
+		int PredictSubcluster(BasePDFMixture* model, int k, const Jet& jet){
+			//nclass options (index of predicted class)
+			//0 == 1 == phys bkg
+			//1 == 2 == BH
+			//2 == 3 == spike
+			vector<JetPoint> rhs = jet.GetJetPoints();
+			double ovalue; //discriminator output value, pass-by-ref
+			map<string, double> obs; //k maps for k subclusters
+			JetPoint center;
+			GetCenterXtal(rhs, center);
+			//features = vector of strings of features to use - set with SetNNFeatures
+			//obs = map<string, double> observations for each feature per subcluster
+			//makeDNNinputs too (if using later) 
+			MakeCNNInputGrid(model, k, rhs, center, obs);
+			return CNNPredict(obs,ovalue);
+		}	
+
+
+
 		//removes/downweights subclusters that are tagged (probID) as detector bkg by MVA
 		//returns by reference k-length vector of probIDs
 		//if remove, probID = 0 for detector bkg
 		//NN json needs to have been set with SetNNModel(string jsonname)
-		void CleanSubclusters(BasePDFMixture* model, vector<double>& probIDs){
-			//nclass options (index of predicted class
-			//0 == 1 == phys bkg
-			//1 == 2 == BH
-			//2 == 3 == spike
-			double ovalue; //discriminator output value, pass-by-ref
+		void CleanSubclusters(BasePDFMixture* model, const Jet& jet, vector<double>& probIDs){
 			int kmax = model->GetNClusters();
+			int nclass = -1;
 			for(int k = 0; k < kmax; k++){
-				//features = vector of strings of features to use
-				//obs = map<string, double> observations for each feature per subcluster
-				
-				int nclass = NNPredict(features,obs,ovalue);
+				nclass = PredictSubcluster(model, k, jet);
+				//downweight - pushback prob == physbkg value
+				//remove - if nclass != phys bkg, probID = 0
+				//remove for now bc need to custome hack frugally-deep to return output of all neurons in the last layer
+				if(nclass == 0)
+					probIDs.push_back(1.);
+				else	
+					probIDs.push_back(0.);
+				//if(nclass != 0) cout << "k " << k << " of " << kmax << " predicted class " << nclass << endl;//" with val " << ovalue << endl;
 			}
-
 		}
 
 
 
-		double CalcMMAvgTime(BasePDFMixture* model, bool pho, vector<double>& probIDs = {}){
+		double CalcMMAvgTime(BasePDFMixture* model, bool pho, vector<double> probIDs = {}){
 			//cout << "CalcMMAvgTime" << endl;
 			int kmax = model->GetNClusters();
 			double t = 0;
@@ -1859,7 +1901,7 @@ class JetSkimmer : public BaseSkimmer{
 				//clean out det bkg
 				if(probIDs.size() == kmax)
 					tk *= probIDs[k];
-				t += tk
+				t += tk;
 				norm += params["pi"].at(0,0);
 				//cout << "k: " << k << " pi: " << params["pi"].at(0,0) << " mean " << params["mean"].at(2,0) << endl;
 				if(pho){
@@ -1872,7 +1914,11 @@ class JetSkimmer : public BaseSkimmer{
 			return t/norm; 
 		}
 		
-		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho, vector<double>& probIDs = {}){
+		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho, vector<double> probIDs = {}){
+			//sort by mixing coeffs in ascending order (smallest first)
+			vector<int> idxs;
+			model->SortIdxs(idxs);
+
 			int kmax = model->GetNClusters();
 			double norm = 0;
 			double x = 0;
@@ -1883,7 +1929,7 @@ class JetSkimmer : public BaseSkimmer{
 			map<string, Matrix> params;
 			double xk, yk, zk;
 			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(k);
+				params = model->GetPriorParameters(idxs[k]);
 				eta = params["mean"].at(0,0);
 				phi = params["mean"].at(1,0);
 				theta = 2*atan2(1,exp(eta));
@@ -1902,18 +1948,17 @@ class JetSkimmer : public BaseSkimmer{
 				x += xk;
 				y += yk;
 				z += zk;
-			}
-			//for checking calculations
-			double rtheta = atan2(129,z);
-			//if(z < 0) rtheta = atan2(129.,z)+acos(-1)/2.;
-			double reta = -log(tan(rtheta/2));
-			double rphi = atan2(y,x);
+				//for checking calculations
+				double rtheta = atan2(129,z);
+				//if(z < 0) rtheta = atan2(129.,z)+acos(-1)/2.;
+				double reta = -log(tan(rtheta/2));
+				double rphi = atan2(y,x);
 				norm += params["pi"].at(0,0);
 				if(pho){
 		//cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
-					center.SetValue(x/norm,0);
-					center.SetValue(y/norm,1);
-					center.SetValue(z/norm,2);
+					center.SetValue(xk/norm,0);
+					center.SetValue(yk/norm,1);
+					center.SetValue(zk/norm,2);
 					return center;
 				}
 			}
