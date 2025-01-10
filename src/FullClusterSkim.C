@@ -445,6 +445,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetTransferFactor(gev);
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEMAlpha(emAlpha);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
@@ -478,6 +479,7 @@ cout << "fname " << fname << endl;
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
 		skimmer.SetEMAlpha(emAlpha);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
@@ -503,6 +505,7 @@ cout << "fname " << fname << endl;
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
 		skimmer.SetEMAlpha(emAlpha);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
