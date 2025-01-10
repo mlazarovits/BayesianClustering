@@ -90,7 +90,7 @@ def generateSubmission(args):
     #find any ../ and remove it and the dir before it
     if "PhoSlim" in args.inputSample:
         inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
-        inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v22")
+        inputFile = inputFile.replace("MET100","AL1IsoPho")
     else:
         inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
     inputFile = inputPath+inputFile
@@ -132,7 +132,6 @@ def generateSubmission(args):
     for i, m in enumerate(args.m0):
         m = float(m)
         m = round(m,3)
-        print('m',m)
         m = str(m)
         m = m.replace(".","p")
         if i == len(args.m0)-1:
@@ -149,7 +148,6 @@ def generateSubmission(args):
     for i, w in enumerate(args.W0diag):
         w = float(w)
         w = round(w,3)
-        print('w',w)
         w = str(w)
         w = w.replace(".","p")
         if i == len(args.W0diag)-1:
@@ -162,6 +160,7 @@ def generateSubmission(args):
     nustr = str(args.nu0)
     nustr = nustr.replace(".","p")
     priorname = priorname+"_nu0-"+nustr
+
 
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
@@ -176,7 +175,6 @@ def generateSubmission(args):
     ofilename = "condor_"+ofilename
     print("ofilename",ofilename)
     print("dirname",dirname)
-    exit()
     
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
@@ -196,7 +194,14 @@ def generateSubmission(args):
 
     # grab relevant flags
     eventnums = SH.eventsSplit(inputFile, args.split)
-    flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)
+    flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
+    for m in args.m0:
+        flags += str(m)+' '
+    flags += '--W0diag '
+    for w in args.W0diag:
+        flags += str(w)+' '
+    flags += '--nu0 '+str(args.nu0)
+
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
