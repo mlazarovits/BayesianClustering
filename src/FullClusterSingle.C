@@ -363,7 +363,7 @@ int main(int argc, char *argv[]){
 	cout << "fname " << fname << endl;
 	
 	if(viz){
-		cout << "Writing to directory: " << fname << endl;
+		cout << "Writing viz output to directory: " << fname << endl;
 		if(gSystem->AccessPathName(fname.c_str())){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
 		}
