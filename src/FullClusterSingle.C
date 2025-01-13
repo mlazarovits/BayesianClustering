@@ -389,7 +389,7 @@ int main(int argc, char *argv[]){
 		prod.SetTransferFactor(gev);
 		prod.SetMinPt(30);
 		prod.SetMinNrhs(15);
-		prod.SetMinEmE(20);
+		prod.SetMinEmE(30);
 		if(strat != 2){
 			cout << "Getting rec hits for jets at event " << evt << endl;
 			prod.GetRecHits(rhs,evt);	
