@@ -431,6 +431,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	_phi_wraparound(*points);
 
+
 	//mean = points->mean();
 	//cout << "after phi wraparound" << endl;
 	//mean.Print();
@@ -441,10 +442,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//Point center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
 	//copy points for parameter estimation
 	//so original points don't get overwritten
+	//cout << "before centering" << endl;
+	//points->mean().Print();
 	BayesPoint center = points->Center();//Translate(center);
-	//mean = points->mean();
 	//cout << "after centering" << endl;
-	//mean.Print();
+	//points->mean().Print();
+	
 
 	
 	gmm->SetData(points);
@@ -520,6 +523,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//need to put GMM parameters AND points back in detector coordinates (not local)
 	center.Scale(-1);
 	gmm->Shift(center);
+	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
 	//auto params1 = gmm->GetPriorParameters(0);
 	//params1["mean"].Print();
