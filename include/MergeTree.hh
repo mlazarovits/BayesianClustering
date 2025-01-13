@@ -195,9 +195,12 @@ class MergeTree : BaseTree{
 			//copy points for parameter estimation
 			//so original points don't get overwritten
 			PointCollection newpts = PointCollection(*x->points);
-			BayesPoint center = newpts.Center();//Translate(center);
+			//BayesPoint center = newpts.Center();//Translate(center);
+			//zero points by energy centroid
+			BayesPoint center = x->points->Centroid();
+			x->points->Translate(center);
 
-			x->model = new HierGaussianMixture(k); //p(x | theta)
+			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
 			x->model->SetData(&newpts);
@@ -241,6 +244,7 @@ class MergeTree : BaseTree{
 
 
 
+
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
 
 
@@ -264,9 +268,7 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters";
-			//if(x->mirror != nullptr) cout << " and mirror pt " << x->mirror->idx << endl;
-			//else cout << endl;
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters " << exp(newLogL) << " with points in node " << endl; 
 
 			//translate the parameters back into global coordinates
 			Matrix matshift;
@@ -299,6 +301,14 @@ class MergeTree : BaseTree{
 			}
 			//reset data to original points
 			x->model->SetData(x->points);
+			cout << "model pts" << endl;
+			x->model->GetData()->Print();
+			cout << "node pts" << endl;
+			x->points->Print();
+			cout << "jet params" << endl;
+			map<string, Matrix> jparams;
+			x->model->GetJetParameters(jparams);
+			cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
 
 			return newLogL;
 		}
