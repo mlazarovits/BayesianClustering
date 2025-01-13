@@ -599,6 +599,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(ENeighborsSkipCenter_physBkg);	
 			_hists2D.push_back(ENeighborsSkipCenter_BH);	
 			_hists2D.push_back(ENeighborsSkipCenter_spikes);	
+			_hists2D.push_back(ENeighbors);
 		};
 	
 
@@ -1736,7 +1737,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* ENeighborsSkipCenter_BH = new TH2D("ENeighborsSkipCenter_BH","ENeighborsSkipCenter_BH;local ieta;local iphi_BH",5,-2,3,5,-2,3);	
 		//307 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, spike 
 		TH2D* ENeighborsSkipCenter_spikes = new TH2D("ENeighborsSkipCenter_spikes","ENeighborsSkipCenter_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
-
+		//308 - eta vs phi grid
+		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",61,-30,31,61,-30,31);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -1953,7 +1955,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			int nclusters = model->GetNClusters();
 			_procCats[id_idx].hists1D[0][0]->Fill(nclusters);
 			_procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
-			
+		
+	
 
 			for(int k = 0; k < nclusters; k++){
 				//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)

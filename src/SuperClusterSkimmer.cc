@@ -123,6 +123,14 @@ void SuperClusterSkimmer::Skim(){
 			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
+			//fill eta phi map
+			vector<double> neighborEs; 
+			std::vector<std::pair<int, int>> icoords;
+			vector<JetPoint> rh_pts = scs[s].GetJetPoints();
+			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,61);
+			for(int e = 0; e < (int)neighborEs.size(); e++){
+				_procCats[1].hists2D[0][308]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+			}
 
 
 			BayesCluster *algo = new BayesCluster(rhs);
