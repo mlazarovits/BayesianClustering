@@ -602,6 +602,8 @@ class BaseSkimmer{
 				//do wraparound
 				if(dphi > 180)
 					dphi = 360 - dphi;
+				else if(dphi < -180)
+					dphi = -(360 + dphi);
 				if(fabs(ieta - rh_ieta) <= ngrid_thresh && fabs(iphi - rh_iphi) <= ngrid_thresh){
 					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
 					else{
@@ -612,8 +614,8 @@ class BaseSkimmer{
 					else
 						icoords.push_back(make_pair(ieta - rh_ieta, iphi - rh_iphi));
 				}
-				else
-					cout << "r " << j << " deta " << deta << " dphi " << dphi << " E " << rhs[j].E() << endl;
+				//else
+				//	cout << "r " << j << " deta " << deta << " dphi " << dphi << " E " << rhs[j].E() << " ngrid thresh " << ngrid_thresh << endl;
 			}
 
 		}
