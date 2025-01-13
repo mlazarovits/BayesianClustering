@@ -53,6 +53,10 @@ def generateSubmission(args):
         inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
     elif "GMSB_L-400_Ctau-200" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+    elif "MET_RunB" in args.inputSample:
+    	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017B_17Nov2017.root"
+    elif "MET_RunD" in args.inputSample:
+    	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017D_17Nov2017.root"
     elif "MET_RunE" in args.inputSample:
     	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
     elif "JetHT_RunF_2017" in args.inputSample:
