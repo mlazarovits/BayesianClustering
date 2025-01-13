@@ -395,7 +395,8 @@ int main(int argc, char *argv[]){
 
 	}
 	fname = fname+".root";
-	
+
+	cout << "transfer factor (gev) N/Energy " << gev << endl;	
 	cout << "Prior Parameters" << endl;
 	cout << "beta0" << endl;
 	scale.Print();
