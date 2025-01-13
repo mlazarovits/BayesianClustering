@@ -130,6 +130,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 //cout << "BaseProducer::GetTrueJets - jet #" << jets.size() << " of " << nJets << " j - " << j << " energy: " << _base->Jet_energy->at(j) << " phi: " << _base->Jet_phi->at(j) << " eta: " << _base->Jet_eta->at(j) << " has " << rhs.size() << " rhs - event #" << _base->Evt_event << " charged EMF: " << _base->Jet_chEmEF->at(j) << " neutral EMF: " << _base->Jet_neEmEF->at(j) << " charged HF: " << _base->Jet_chHEF->at(j) << " neutral HF: " << _base->Jet_neHEF->at(j) <<  endl;
 		//jet.Print();
 		if(jet.GetNRecHits() < _minnrhs) continue;
+
+		cout << "\njet #" << jets.size() << " nconstituents " << _base->Jet_nConstituents->at(j) << " total rhs " << _base->Jet_drRhIds->at(j).size() << " ana rhs " << jet.GetNPoints() << " event " << evt << endl;
 		jets.push_back(jet);
         }
 }
