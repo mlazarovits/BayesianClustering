@@ -503,7 +503,7 @@ int main(int argc, char *argv[]){
 				//to track computation time from beginning of program
 				if(obj == 0) trees = algo->N2Cluster();
 			}
-			cout << trees.size() << " true trees" << endl;
+			//cout << trees.size() << " true trees" << endl;
 			if(viz){
 				//plotting stuff here
 				FullViz3D plots = FullViz3D(trees);
