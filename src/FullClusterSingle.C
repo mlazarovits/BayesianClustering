@@ -349,6 +349,7 @@ int main(int argc, char *argv[]){
 	fname += cmslab; //long sample name
 	fname += "evt"+to_string(evt);
 
+	string root_fname = fname;
 	fname = "plots/"+fname;
 
 	cout << "Prior Parameters" << endl;
@@ -445,25 +446,24 @@ int main(int argc, char *argv[]){
 		prod.SetTransferFactor(gev);
 		prod.SetRecoPtMin(20);
 		prod.SetMinRhE(minRhE); 
-		//skimmer.SetTransferFactor(gev);
-		//skimmer.SetAlpha(alpha);
-		//skimmer.SetSubclusterAlpha(emAlpha);
-		//skimmer.SetThreshold(thresh);
 		//no need to calibrate
 		prod.PrintPreselection();
-		//if(strat != 2){
-			cout << "Getting rec hits for jets at event " << evt << endl;
-			prod.GetRecHits(rhs,evt);	
-			cout << rhs.size() << " rechits in event " << evt << endl;
-		//}
-		//else{
-		//	cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
-		//	prod.GetTrueJets(jets, evt);
-		//	if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
-		//	if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
-		//	jets[nobj].GetJets(rhs);
-		//	cout << rhs.size() << " rechits in jet " << nobj << " in event " << evt << endl;
-		//}
+		if(strat != 2){
+		      cout << "Getting all rec hits for event " << evt << endl;
+		      prod.GetRecHits(rhs,evt);	
+		      cout << rhs.size() << " rechits in event " << evt << endl;
+		}
+		else{
+			cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
+			prod.GetRecoJets(jets, evt);
+			if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
+			if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
+			jets[nobj].GetJets(rhs);
+			root_fname += ".root";
+			cout << "Writing eta phi map to " << root_fname << endl;
+			prod.EtaPhiMap(root_fname, rhs);
+			cout << rhs.size() << " rechits in jet " << nobj << " in event " << evt << endl;
+		}
 	}
 	
         if(rhs.size() < 1) return -1;
