@@ -60,7 +60,7 @@ class GaussianMixture : public BasePDFMixture{
 				Matrix mean = m_model[k]->GetParameter("mean");
 				PointCollection m = mean.MatToPoints();
 				m.Translate(pt);
-				m_model[k]->SetParameter("mean",m);
+				m_model[k]->SetParameter("mean",Matrix(m));
 			}
 			PointCollection m = m_mean0.MatToPoints();
 			m.Translate(pt);
