@@ -368,6 +368,23 @@ int main(int argc, char *argv[]){
 			gSystem->Exec(("mkdir -p "+fname).c_str());
 		}
 	}
+	
+	//choose time calibration file
+	string calibfile = "";
+        if(fname.find("GJets") != string::npos)
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
+        else if(fname.find("JetHT") != string::npos)
+                calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
+        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos || fname.find("EGamma") != string::npos)
+                calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
+        else if(fname.find("QCD") != string::npos)
+                calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
+        //else default to GJets
+        else
+                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
+
+	TFile* calibf = TFile::Open(calibfile.c_str());
+
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -390,6 +407,8 @@ int main(int argc, char *argv[]){
 		prod.SetMinPt(30);
 		prod.SetMinNrhs(15);
 		prod.SetMinEmE(30);
+		//calibrate
+		prod.SetTimeCalibrationMap(calibf);
 		if(strat != 2){
 			cout << "Getting rec hits for jets at event " << evt << endl;
 			prod.GetRecHits(rhs,evt);	
@@ -397,7 +416,7 @@ int main(int argc, char *argv[]){
 		}
 		else{
 			cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
-			prod.GetTrueJets(jets, evt);
+			prod.GetTrueJets(jets, evt, gev);
 			if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
 			if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
 			jets[nobj].GetJets(rhs);
@@ -412,6 +431,8 @@ int main(int argc, char *argv[]){
 		if(viz) cout << "Making plots for photon " << npho << " at event " << evt << endl;
         	//prod.GetRecHits(rhs,evt,npho);
         	prod.SetIsoCut();
+		//calibrate
+		prod.SetTimeCalibrationMap(calibf);
 		prod.GetTruePhotons(phos, evt);
 		if(phos.size() < 1){ cout << "No photons passing selection found for event " << evt << endl; return -1; }
 		if(nobj > phos.size() - 1){ cout << "Only " << phos.size() << " photons passing selection found for event " << evt << endl; return -1; }
@@ -428,6 +449,7 @@ int main(int argc, char *argv[]){
 		//skimmer.SetAlpha(alpha);
 		//skimmer.SetSubclusterAlpha(emAlpha);
 		//skimmer.SetThreshold(thresh);
+		//no need to calibrate
 		prod.PrintPreselection();
 		//if(strat != 2){
 			cout << "Getting rec hits for jets at event " << evt << endl;
@@ -502,7 +524,8 @@ int main(int argc, char *argv[]){
 			map<string, Matrix> params;
 			for(int k = 0; k < nk; k++){
 				params = gmm->GetPriorParameters(k);
-				cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(0,0) << endl;
+				cout << "cluster k " << k << " pi " << params["pi"].at(0,0) << " center" << endl;
+				params["mean"].Print();
 			}
 			
 
