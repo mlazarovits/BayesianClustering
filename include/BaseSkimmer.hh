@@ -612,6 +612,8 @@ class BaseSkimmer{
 					else
 						icoords.push_back(make_pair(ieta - rh_ieta, iphi - rh_iphi));
 				}
+				else
+					cout << "r " << j << " deta " << deta << " dphi " << dphi << " E " << rhs[j].E() << endl;
 			}
 
 		}
