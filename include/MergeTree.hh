@@ -197,7 +197,7 @@ class MergeTree : BaseTree{
 			PointCollection newpts = PointCollection(*x->points);
 			//BayesPoint center = newpts.Center();//Translate(center);
 			//zero points by energy centroid
-			BayesPoint center = x->points->Centroid();
+			BayesPoint center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
 			x->points->Translate(center);
 
 			x->model = new GaussianMixture(k); //p(x | theta)
