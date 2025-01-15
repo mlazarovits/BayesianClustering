@@ -131,7 +131,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		//jet.Print();
 		if(jet.GetNRecHits() < _minnrhs) continue;
 
-		cout << "\njet #" << jets.size() << " nconstituents " << _base->Jet_nConstituents->at(j) << " total rhs " << _base->Jet_drRhIds->at(j).size() << " ana rhs " << jet.GetNPoints() << " event " << evt << endl;
+//		cout << "\njet #" << jets.size() << " nconstituents " << _base->Jet_nConstituents->at(j) << " total rhs " << _base->Jet_drRhIds->at(j).size() << " ana rhs " << jet.GetNPoints() << " event " << evt << endl;
 		jets.push_back(jet);
         }
 }
