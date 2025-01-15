@@ -38,6 +38,7 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
+                	_BHFilter = beamHaloFilter(0); //default not applied
 
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
@@ -75,6 +76,7 @@ class BaseSkimmer{
 			_timesmear = false;
 			_skip = 1;
 			_ngrid = 7;
+                	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
