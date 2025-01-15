@@ -57,6 +57,12 @@ int main(int argc, char *argv[]){
 	int skip = 1;
 	int bh = 1;
 	bool iso = true;
+
+	double minpt_isobkg = 70;
+	double minht_isobkg = 50;
+	double minjetpt_isobkg = 50;
+	double maxmet_isobkg = 150;
+	bool isobkg = false; 
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -216,6 +222,26 @@ int main(int argc, char *argv[]){
 			iso = false;
 			cout << "Not applying isolation to photons" << endl;
    		}
+		if(strncmp(argv[i],"--isoBkg", 8) == 0){
+			isobkg = true;
+			cout << "Selecting photons with isolated background cuts" << endl;
+   		}
+		if(strncmp(argv[i],"--minphopt_isobkg", 17) == 0){
+			i++;
+    	 		minpt_isobkg = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--minht_isobkg", 14) == 0){
+			i++;
+    	 		minht_isobkg = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--minjetpt_isobkg", 17) == 0){
+			i++;
+    	 		minjetpt_isobkg = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--maxmet_isobkg", 15) == 0){
+			i++;
+    	 		maxmet_isobkg = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -249,14 +275,18 @@ int main(int argc, char *argv[]){
    		cout << "   --noCalibrate                        turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
    		cout << "   --rejectSpikes                       reject spikes based on swiss cross cut (default = false, off)" << endl;
    		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
-   		cout << "Example: ./jetAlgo.x -a 0.5 -t 1.6 --viz" << endl;
+   		cout << "   --isoBkg                             apply isolated background selection (photons only, default = false, off)" << endl;
+   		cout << "   --minphopt_isobkg [minpt]               set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
+   		cout << "   --minht_isobkg [minht]               set minimum jet ht for iso bkg selection (photons only, default = 50)" << endl;
+   		cout << "   --minjetpt_isobkg [minjetpt]         set minimum jet pt for iso bkg selection (photons only, default = 50)" << endl;
+   		cout << "   --maxmet_isobkg [maxmet]             set maximum met for iso bkg selection (photons only, default = 150)" << endl;
+   		cout << "Example: ./FullClusterSkim.x -a 0.5 -t 1.6 -o test" << endl;
 
    		return 0;
   	}
 
 
 	cout << "Free sha-va-ca-doo!" << endl;
-	
 	if(gev == -999){
 		if(obj == 0) gev = 1./10.;
 		else gev = 1./30.;
@@ -508,7 +538,15 @@ cout << "fname " << fname << endl;
 		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
-		skimmer.SetTimeSmear(timesmear); 
+		skimmer.SetTimeSmear(timesmear);
+		skimmer.SetBeamHaloFilter(bh);
+		
+		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+		skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
+		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetIsoBkgSel(isobkg);
+
         	skimmer.Skim();
 	}
 	if(calib) cout << "Using calibration file " << calibfile << endl;
