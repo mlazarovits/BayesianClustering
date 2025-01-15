@@ -8,7 +8,7 @@
 void PhotonSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
-	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
+	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);
@@ -48,18 +48,36 @@ void PhotonSkimmer::Skim(){
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
+	//set kin reqs for jets
+	vector<Jet> jets;
+	_jetprod->SetTransferFactor(0.1);
+	_jetprod->SetMinPt(_minJetPt_isoBkg);
+	_jetprod->SetMinNrhs(15);
+	_jetprod->SetMinEmE(10);
+	_jetprod->SetMinRhE(0.5);
+	double ht, pho_phi, jet_phi, dphi_phojet;
+	Jet jet_sys, pho_sys;
+	double pi = 4*atan(1);
+	bool l1seed, l1tohlt, hlt_phopt, hlt_jetht;
 
-	//to check histogram indices
-	//for(int i = 0; i < _hists2D.size(); i++)
-	//	cout << "i: " << i << " hist: " << _hists2D[i]->GetName() << endl;
-	//return;	
+	double nIsoBkgPass = 0;
+	double totEvt = 0;
+
 	//set iso cuts
-	_prod->SetIsoCut();
+	if(_isocuts) _prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
 
+	cout << "Photon preselection" << endl;
 	_prod->PrintPreselection();
+	if(_isoBkgSel){
+		cout << "\nSelecting photons with isolated background preselection." << endl;
+		cout << "Jet preselection" << endl;
+		_jetprod->PrintPreselection();
+		cout << "Minimum ht: " << _minHt_isoBkg << endl;
+		cout << "Maximum met: " << _maxMet_isoBkg << endl;
+	}
 	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;
@@ -71,8 +89,8 @@ void PhotonSkimmer::Skim(){
 	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
-
 		if(_BHFilter != notApplied){
+		cout << "BH filter applied - flag " << _base->Flag_globalSuperTightHalo2016Filter << " BHFilter " << _BHFilter << endl;
                         if(_BHFilter == applied){
                                 //apply beam halo filter - other noise filters needed for full Run2 recommendations
                                 if(!_base->Flag_globalSuperTightHalo2016Filter) continue;
@@ -82,12 +100,66 @@ void PhotonSkimmer::Skim(){
                                 if(_base->Flag_globalSuperTightHalo2016Filter) continue;
                         }
                 }  
+		totEvt++;
 
 		_prod->GetTruePhotons(phos, e, _gev);
 		//PV info
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
 		pvz = _base->PV_z;
+		
+		//do iso bkg evt selection to compare data/MC
+		if(_isoBkgSel){
+			//L1 seed
+			if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) continue;
+			//cout << "passed L1 seed" << endl;	
+			//L1 to HLT Regional EGM matching leg
+			if(!_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter) continue;
+			//cout << "passed L1 to HLT" << endl;	
+			//photon pt > 60
+			if(!_base->Trigger_hltEG60EtFilter) continue;
+			//cout << "passed photon pt > 60" << endl;	
+			//jet ht > 175 && jet pt > 10 && |eta jet| < 3
+			if(!_base->Trigger_hltHT175Jet10) continue;
+			//cout << "passed HT > 175" << endl;	
+			//jet ht > 350 && jet pt > 15 && |eta jet| < 3
+			if(!_base->Trigger_hltPFHT350Jet15) continue;
+			//cout << "passed HT > 135" << endl;	
+			
+			//gev = 0.1 for jets
+			_jetprod->GetTrueJets(jets, e);
+			//min photon multiplicity
+			if(phos.size() < 1) continue;
+			//cout << "passed pho mult" << endl;	
+			//min jet multiplicity
+			if(jets.size() < 1) continue;
+			//cout << "passed jet mult" << endl;	
+		
+			//ht - scalar sum
+			ht = 0;
+			for(auto j : jets) ht += j.pt();
+			//dphi bw photon and jet systems (vector sum of objects)
+			jet_sys = VectorSum(jets);
+			pho_sys = VectorSum(phos);
+			pho_phi = pho_sys.phi_02pi(); 
+			//cout << "pho system E " << pho_sys.E() << " phi " << pho_sys.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+			jet_phi = jet_sys.phi_02pi();
+			dphi_phojet = pho_phi - jet_phi;
+			dphi_phojet = acos(cos(dphi_phojet)); //wraparound - will always be < pi
+			//MET upper limit - orthogonal to signal MET selection
+			if(_base->Met_pt > _maxMet_isoBkg) continue;
+			//cout << "passed max met" << endl;	
+			//min jet ht
+			if(ht < _minHt_isoBkg) continue; 
+			//cout << "passed min ht" << endl;	
+			//az angle bw hardest presel photon + jet system
+			//cout << "dphi " << dphi_phojet << " met " << _base->Met_pt << endl;	
+			if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
+			//cout << "passed dphi " << endl;	
+			//trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
+	
+			nIsoBkgPass++;
+		}
 		
 		int nPho = phos.size();
 		//loop over selected photons
@@ -185,7 +257,7 @@ void PhotonSkimmer::Skim(){
 				ptmin = 70;
 			else
 				ptmin = 40;
-			cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+			//cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > ptmin){
                                         obs["R9"] = r9;
                                         obs["Sietaieta"] = Sieie;
@@ -213,7 +285,7 @@ void PhotonSkimmer::Skim(){
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);
-			cout << "label: " << label << endl;
+			//cout << "label: " << label << endl;
 				obs["event"] = e;
                                 obs["object"] = phoidx;
 			//only get lead subcluster -> ncl = 0
@@ -223,7 +295,7 @@ void PhotonSkimmer::Skim(){
 					obs["lead"] = 1;
                                 obs["label"] = label;
 				BaseSkimmer::WriteObs(obs,"photons");
-			objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
+				objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
 		//cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
 		//int no = 0;
 		//for(auto o : obs)
@@ -231,7 +303,6 @@ void PhotonSkimmer::Skim(){
 		//cout << endl;
 		//for(int o = 0; o < _inputs.size(); o++)
 		//	cout << o << ": " << _inputs[o] << endl;	
-		//}
 		}
 	}
 	cout << "\n" << endl;
@@ -241,6 +312,7 @@ void PhotonSkimmer::Skim(){
 	cout << "Wrote MVA inputs to " << _csvname << endl;
 	_csvfile.close();
 
+	cout << "Total number of events ran over: " << totEvt << " events that passed isolated bkg selection: " << nIsoBkgPass << " fraction: " << nIsoBkgPass/totEvt << endl;
 }
 
 

@@ -8,7 +8,7 @@
 void SuperClusterSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
-	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
+	cout << "Using clustering strategy mixture model with pre-clustered superclusters" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);
@@ -54,11 +54,7 @@ void SuperClusterSkimmer::Skim(){
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
-
-	//to check histogram indices
-	//for(int i = 0; i < _hists2D.size(); i++)
-	//	cout << "i: " << i << " hist: " << _hists2D[i]->GetName() << endl;
-	//return;	
+	
 	//set iso cuts
 	if(_isocuts) _prod->SetIsoCut();
 	//set energy weight transfer factor
@@ -108,7 +104,7 @@ void SuperClusterSkimmer::Skim(){
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
 		pvz = _base->PV_z;
-	
+
 			
 		int nSC = scs.size();
 		int npho = _base->Photon_energy->size();

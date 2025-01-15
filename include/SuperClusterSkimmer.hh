@@ -1096,8 +1096,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH1D* EovP_subclTrack_early_smalldR = new TH1D("EovP_subclTrack_early_smalldR","EovP_subclTrack_early_smalldR",25,0,15);	
 		//240 - E of spike SCs
 		TH1D* E_spikeSel = new TH1D("E_spikeSel","E_spikeSel;EovP;E",25,0,1000);
-
-		
+		//241 - E of prompt SCs - to compare bw DEG and MET PDs
+		TH1D* E_promptSel = new TH1D("E_promptSel","E_promptSel;EovP;E",25,0,1000);
+	
 
 	
 		//0 - time v subcl subcluster energy
@@ -2208,19 +2209,55 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
 				_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 				_procCats[id_idx].hists1D[1][238]->Fill(bestde_dr);
-				if(-10 <= tc && tc < -5){
+				//spike selection
+				//if(-10 <= tc && tc < -5){
+				if(tc < -8){
 					if(bestTrackDr < 0.088)
 						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
 					if(bestTrackDr < 0.02){
 						_procCats[id_idx].hists1D[1][239]->Fill(bestde_dr);
-						_procCats[id_idx].hists1D[1][240]->Fill(E_k);
 						_procCats[id_idx].hists2D[1][267]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][268]->Fill(bestde_dr,E_k);
 						_procCats[id_idx].hists2D[1][270]->Fill(tc,ec);
 						_procCats[id_idx].hists2D[1][271]->Fill(p_var,pc);
 					}
 				}
+			
+				//MVA input CR distributions
+				//current prompt selection
+				if(-0.5 <= tc && tc < 0.5){
+					_procCats[id_idx].hists1D[1][241]->Fill(E_k);
+				}
+				//current beam halo selection
+				if((pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc )){
+					if(tc > -7 && tc <= -2){
+						_procCats[id_idx].hists2D[1][284]->Fill(tc, ec);
+						_procCats[id_idx].hists2D[1][285]->Fill(p_var, pc);
+						_procCats[id_idx].hists2D[1][286]->Fill(e_var, pc);
+						_procCats[id_idx].hists2D[1][296]->Fill(bestde_dr,bestTrackDr);
+						_procCats[id_idx].hists2D[1][297]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][298]->Fill(bestde_dr,swCP);
+						_procCats[id_idx].hists2D[1][299]->Fill(bestde_dr,E_k);
+						_procCats[id_idx].hists2D[1][300]->Fill(bestTrackDr,swCP);
+						_procCats[id_idx].hists2D[1][301]->Fill(bestTrackDr,swCP);
+					}
+				}
+				//current spike selection - dr, time req + phi center veto
+				if(bestTrackDr < 0.02){
+					if(tc <= -8){
+						if(!(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
+							_procCats[id_idx].hists1D[1][240]->Fill(E_k);
+							_procCats[id_idx].hists2D[1][288]->Fill(bestde_dr,swCP);
+							_procCats[id_idx].hists2D[1][289]->Fill(bestde_dr,swCP);
+							_procCats[id_idx].hists2D[1][290]->Fill(bestde_dr,E_k);
+							_procCats[id_idx].hists2D[1][293]->Fill(tc,ec);
+							_procCats[id_idx].hists2D[1][294]->Fill(p_var,pc);
+							_procCats[id_idx].hists2D[1][295]->Fill(e_var,pc);
 
+						}
+					}
+	
+				}
 
 	
 				//2D hists
@@ -2531,18 +2568,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					if(tc <= -2){
 						_procCats[id_idx].hists2D[1][266]->Fill(bestde_dr,bestTrackDr);
 					}
-					//current beam halo selection
-					if(tc > -7 && tc <= -2){
-						_procCats[id_idx].hists2D[1][284]->Fill(tc, ec);
-						_procCats[id_idx].hists2D[1][285]->Fill(p_var, pc);
-						_procCats[id_idx].hists2D[1][286]->Fill(e_var, pc);
-						_procCats[id_idx].hists2D[1][296]->Fill(bestde_dr,bestTrackDr);
-						_procCats[id_idx].hists2D[1][297]->Fill(bestde_dr,swCP);
-						_procCats[id_idx].hists2D[1][298]->Fill(bestde_dr,swCP);
-						_procCats[id_idx].hists2D[1][299]->Fill(bestde_dr,E_k);
-						_procCats[id_idx].hists2D[1][300]->Fill(bestTrackDr,swCP);
-						_procCats[id_idx].hists2D[1][301]->Fill(bestTrackDr,swCP);
-					}
 				}
 				if(bestTrackDr < 0.02){
 					if(tc >= -10 && tc < -5){
@@ -2569,18 +2594,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					}
 					if(tc <= -10){
 						_procCats[id_idx].hists2D[1][283]->Fill(bestde_dr,swCP);
-					}
-					//current spike selection - dr, time req + phi center veto
-					if(tc <= -8){
-						if(!(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
-							_procCats[id_idx].hists2D[1][288]->Fill(bestde_dr,swCP);
-							_procCats[id_idx].hists2D[1][289]->Fill(bestde_dr,swCP);
-							_procCats[id_idx].hists2D[1][290]->Fill(bestde_dr,E_k);
-							_procCats[id_idx].hists2D[1][293]->Fill(tc,ec);
-							_procCats[id_idx].hists2D[1][294]->Fill(p_var,pc);
-							_procCats[id_idx].hists2D[1][295]->Fill(e_var,pc);
-
-						}
 					}
 				
 				}
@@ -3508,12 +3521,19 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
 		//labels
 		//unmatched = -1
+
+		//sig vs bkg - PhotonSkimmer
 		//signal = 0
-		//!signal = 1 
+		//iso bkg = 4
+
+		//iso vs !iso - PhotonSkimmer
+		//iso sig = 5
+		//!iso bkg = 6
+
+		//phys bkg vs det bkg
+		//phys bkg = 1 
 		//BH = 2
 		//spike = 3
-		//isolated = 4 (photon from hard process)
-		//!isolated = 5 (photon radiating from/within jet)
 	
 		double ec, pc, tc;
 		vector<double> norms;
@@ -3623,6 +3643,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		return label;
 	}
+
 
 };		
 #endif
