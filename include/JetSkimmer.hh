@@ -16,7 +16,6 @@
 
 using procCat = BaseSkimmer::procCat;
 
-static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){

@@ -22,6 +22,7 @@
 
 using weights = SampleWeight::weights;
 static bool Esort(JetPoint j1, JetPoint j2){ return (j1.E() > j2.E()); }
+static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
 using std::vector;
 using std::string;
 class BaseSkimmer{
@@ -780,5 +781,14 @@ class BaseSkimmer{
 			ovalue = result.second;
 			return (int)result.first;
 		}
+
+	//returns vector sum of given objects
+	Jet VectorSum(vector<Jet>& jets){
+		Jet ret;
+		for(auto j : jets){
+			ret.add(j);
+		}
+		return ret;
+	}
 };
 #endif
