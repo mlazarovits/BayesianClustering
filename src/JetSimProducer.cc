@@ -202,6 +202,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
                                 rhidx = rhit - rhids.begin();
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;
 				totE += _base->ECALRecHit_energy->at(rhidx);
+				if(fabs(_base->ECALRecHit_time->at(rhidx)) > 20) continue;
+
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));

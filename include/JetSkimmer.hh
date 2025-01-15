@@ -210,6 +210,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(ENeighborsSkipCenter_timeNeg12);	
 			_timeHists2D.push_back(ENeighborsSkipCenter_timeNeg5);	
 			_timeHists2D.push_back(ENeighborsSkipCenter_time0);	
+			_timeHists2D.push_back(ENeighborsJet);	
 
 
 
@@ -614,8 +615,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* ENeighborsSkipCenter_timeNeg5 = new TH2D("ENeighborsSkipCenter_timeNeg5","ENeighborsSkipCenter_timeNeg5;local ieta;local iphiSkipCenter_timeNeg5",5,-2,3,5,-2,3);	
 		//45 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, time ~ -0
 		TH2D* ENeighborsSkipCenter_time0 = new TH2D("ENeighborsSkipCenter_time0","ENeighborsSkipCenter_time0;local ieta;local iphiSkipCenter_time0",5,-2,3,5,-2,3);	
-		
-		
+		//46 - eta vs phi grid for whole jet in 11x11 grid
+		TH2D* ENeighborsJet = new TH2D("ENeighborsJet","ENeighborsJet;local ieta;local iphi",61,-30,31,61,-30,31);	
 		
 		
 		vector<timeRecoCat> trCats;
@@ -779,10 +780,19 @@ class JetSkimmer : public BaseSkimmer{
 					//if(ts == mmavg) cout << "\njet #" << j << endl;
 					jettime = CalcJetTime(ts, jets[j]);
 					jets[j].SetJetTime(jettime);
+					//fill jet map
+					vector<JetPoint> rhs = jets[j].GetJetPoints();
+					if(tr_idx == 0){
+						vector<double> neighborEs_jet; 
+						std::vector<std::pair<int, int>> icoords_jet;
+						GetNeighborE(rhs, -1, icoords_jet, neighborEs_jet,false,61);
+						for(int e = 0; e < (int)neighborEs_jet.size(); e++){
+							trCats[tr_idx].procCats[p].hists2D[0][46]->Fill(icoords_jet[e].first, icoords_jet[e].second, neighborEs_jet[e]);
+						}
+					}
 					//cout << " jet #" << j << " time: " << jettime << endl;
 					//fill jet time in pv frame - 0
 					trCats[tr_idx].procCats[p].hists1D[0][0]->Fill(jettime, _weight);
-					vector<JetPoint> rhs = jets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++)
 						Erh += rhs[r].E();
 					rhs.clear();
@@ -1591,7 +1601,7 @@ class JetSkimmer : public BaseSkimmer{
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
 				gmm = _subcluster(jet);
-				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
+				cout << " nSubclusters: " << gmm->GetNClusters() << endl;
 				//CleanSubclusters(gmm, jet, probIDs);
 				time = CalcMMAvgTime(gmm, pho);//probIDs);
 				//set constituents
@@ -1603,6 +1613,8 @@ class JetSkimmer : public BaseSkimmer{
 					Matrix mu = params["mean"];
 					Matrix cov = params["cov"];
 					double pi = params["pi"].at(0,0);
+					cout << "cluster k " << k << " pi " << pi << " center" << endl;
+					mu.Print();
 					Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
 					jet.AddConstituent(subcl);
 				}

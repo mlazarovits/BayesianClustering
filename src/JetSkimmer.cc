@@ -35,7 +35,7 @@ void JetSkimmer::Skim(){
 
 	double jetSelEff = 0;
 	double totEvt = 0;
-        
+	int totJet = 0;        
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
@@ -80,6 +80,7 @@ void JetSkimmer::Skim(){
 		_prod->GetTrueJets(jets, i, _gev);
 		if(jets.size() < 1){ cout << endl; continue; }
 		FillTrueJetHists(jets);	
+		totJet += (int)jets.size();
 		if(_data){
 			//cut on ratio of MET pt to geo average of 2 leading jets
 			geoAvgJets = jets[0].pt();
@@ -104,6 +105,7 @@ void JetSkimmer::Skim(){
 
 	WriteHists(ofile);
 	cout << "Total number of events ran over: " << totEvt << " events that had at least two jets that passed selection: " << jetSelEff << " fraction: " << jetSelEff/totEvt << endl;
+	cout << "Total jets ran over: " << totJet << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 }
 

@@ -47,7 +47,7 @@ def plot_json(jsonfile, dataonly = False):
 	
 	if dataonly is True:
 		fig = go.Figure(gr_arr)
-		fig.update_layout(scene=dict(aspectmode= "auto"),title=plotname, template=None,zaxis_title='time')
+		#fig.update_layout(scene=dict(aspectmode= "auto"),title=plotname, template=None,zaxis_title='time')
 		fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
 		return fig
 	

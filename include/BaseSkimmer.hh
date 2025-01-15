@@ -21,7 +21,7 @@
 #include "fdeep/fdeep.hpp"
 
 using weights = SampleWeight::weights;
-
+static bool Esort(JetPoint j1, JetPoint j2){ return (j1.E() > j2.E()); }
 using std::vector;
 using std::string;
 class BaseSkimmer{
@@ -578,11 +578,20 @@ class BaseSkimmer{
 			}
 			_csvfile << endl;
 		}
-		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false){
+		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false, int ngrid = 5){
 			int ieta, iphi;
-			JetPoint rh = rhs[r];
-			int rh_ieta = _detIDmap[rhs[r].rhId()].i2;
-			int rh_iphi = _detIDmap[rhs[r].rhId()].i1;
+			JetPoint rh;
+			int ngrid_thresh = ngrid/2;
+			if(r == -1){
+				//choose highest E rh as center
+				sort(rhs.begin(), rhs.end(), Esort);
+				rh = rhs[0];
+			}
+			else{
+				rh = rhs[r];
+			}
+			int rh_ieta = _detIDmap[rh.rhId()].i2;
+			int rh_iphi = _detIDmap[rh.rhId()].i1;
 			icoords.clear(); Es.clear();
 			int deta, dphi;
 			for(int j = 0; j < (int)rhs.size(); j++){
@@ -593,7 +602,9 @@ class BaseSkimmer{
 				//do wraparound
 				if(dphi > 180)
 					dphi = 360 - dphi;
-				if(fabs(ieta - rh_ieta) <= 2 && fabs(iphi - rh_iphi) <= 2){
+				else if(dphi < -180)
+					dphi = -(360 + dphi);
+				if(fabs(ieta - rh_ieta) <= ngrid_thresh && fabs(iphi - rh_iphi) <= ngrid_thresh){
 					if(skipCenter && (ieta - rh_ieta == 0) && (iphi - rh_iphi == 0)) continue;
 					else{
 						Es.push_back(rhs[j].E());
@@ -603,6 +614,8 @@ class BaseSkimmer{
 					else
 						icoords.push_back(make_pair(ieta - rh_ieta, iphi - rh_iphi));
 				}
+				//else
+				//	cout << "r " << j << " deta " << deta << " dphi " << dphi << " E " << rhs[j].E() << " ngrid thresh " << ngrid_thresh << endl;
 			}
 
 		}

@@ -266,7 +266,7 @@ int main(int argc, char *argv[]){
 	prior_params["scale"] = scale;
 	prior_params["dof"] = dof;
 	prior_params["scalemat"] = W;
-	prior_params["m"] = m;
+	prior_params["mean"] = m;
 
 
 	string cmslab, version;	
@@ -395,7 +395,8 @@ int main(int argc, char *argv[]){
 
 	}
 	fname = fname+".root";
-	
+
+	cout << "transfer factor (gev) N/Energy " << gev << endl;	
 	cout << "Prior Parameters" << endl;
 	cout << "beta0" << endl;
 	scale.Print();
@@ -445,6 +446,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetTransferFactor(gev);
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEMAlpha(emAlpha);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
@@ -477,6 +479,7 @@ cout << "fname " << fname << endl;
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
 		skimmer.SetEMAlpha(emAlpha);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
@@ -502,6 +505,7 @@ cout << "fname " << fname << endl;
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
 		skimmer.SetEMAlpha(emAlpha);
+		skimmer.SetPriorParameters(prior_params);
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
