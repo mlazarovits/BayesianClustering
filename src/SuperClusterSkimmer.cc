@@ -60,7 +60,7 @@ void SuperClusterSkimmer::Skim(){
 	//	cout << "i: " << i << " hist: " << _hists2D[i]->GetName() << endl;
 	//return;	
 	//set iso cuts
-	_prod->SetIsoCut();
+	if(_isocuts) _prod->SetIsoCut();
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
