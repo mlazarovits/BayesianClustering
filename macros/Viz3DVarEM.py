@@ -112,7 +112,6 @@ def plot_json(jsonfile, dataonly = False):
 			showscale = False, showlegend = True, name = name)),
 
 	fig = go.Figure(gr_arr)
-	print("plotname",plotname)
 	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
 	fig.update_layout(scene=dict(yaxis=dict(title="phi",),xaxis=dict(title="eta",),zaxis=dict(title="time (ns)",)))
 	return fig
