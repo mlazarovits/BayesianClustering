@@ -51,21 +51,54 @@ class GaussianMixture : public BasePDFMixture{
 		}
 
 
-		//shift data + learned model parameters
-		void Shift(const BayesPoint& pt){
-			m_data->Translate(pt);
-
+		//shift learned model parameters
+		void ShiftParameters(const BayesPoint& pt){
 			//only need to shift Gaussian means + prior mean
+			Matrix mean, priormean;
+			Matrix shift;
+			shift.PointToMat(pt);
 			for(int k = 0; k < m_k; k++){
-				Matrix mean = m_model[k]->GetParameter("mean");
-				PointCollection m = mean.MatToPoints();
-				m.Translate(pt);
-				m_model[k]->SetParameter("mean",Matrix(m));
+				mean = m_model[k]->GetParameter("mean");
+				mean.minus(shift);
+				m_model[k]->SetParameter("mean",mean);
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				priormean.minus(shift);
+				m_model[k]->GetPrior()->SetParameter("mean",priormean);
 			}
-			PointCollection m = m_mean0.MatToPoints();
-			m.Translate(pt);
-			m_mean0.PointsToMat(m);
+		}
+		
+		//scale learned model parameters
+		void ScaleParameters(Matrix sc){
+			//scale means + matrices
+			Matrix mean, priormean, cov, W;
+			Matrix scT;
+			scT.transpose(sc);
+			for(int k = 0; k < m_k; k++){
+				//scale posterior mean in likelihood 
+				mean = m_model[k]->GetParameter("mean");
+				mean.mult(sc,mean);	
+				m_model[k]->SetParameter("mean",mean);
+				
+				//scale posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				priormean.mult(sc,priormean);
+				m_model[k]->GetPrior()->SetParameter("mean",priormean);
 
+				//scale posterior cov in likelihood
+				//var(AX) = Avar(X)A^T 
+				cov = m_model[k]->GetParameter("cov");
+				cov.mult(sc,cov); //Avar(X)
+				cov.mult(cov,scT); //Avar(X)A^T
+				m_model[k]->SetParameter("cov",cov);
+
+				//scale posterior W in prior distribution
+				W = m_model[k]->GetPrior()->GetParameter("scalemat");
+				W.mult(sc,W); //Avar(X)
+				W.mult(W,scT); //Avar(X)A^T
+				m_model[k]->GetPrior()->SetParameter("scalemat",W);
+			}
 
 		}
 
@@ -85,6 +118,8 @@ class GaussianMixture : public BasePDFMixture{
 		map<string, Matrix> GetPriorParameters(int k) const; 
 		map<string, Matrix> GetOnlyPriorParameters(int k); 
 
+
+		
 
 
 	private:

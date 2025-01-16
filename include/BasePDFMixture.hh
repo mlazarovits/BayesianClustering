@@ -225,8 +225,27 @@ class BasePDFMixture : public BasePDF{
 
 		}
 
-		//shift data + learned parameters
-		virtual void Shift(const BayesPoint& pt) = 0;
+		//shift data 
+		void ShiftData(const BayesPoint& pt){
+			m_data->Translate(pt);
+		}
+		//scale data 
+		void ScaleData(Matrix sc){
+			Matrix x;
+			x.PointsToMat(*m_data);
+			//Matrix scaled_data(x.GetDims()[0], x.GetDims()[1]);
+			x.mult(sc,x);
+			//get weights from original data
+			vector<double> ws;
+			m_data->GetWeights(ws);
+			m_data = new PointCollection(x.MatToPoints());
+			m_data->SetWeights(ws);
+		}
+
+		//shift learned parameters
+		virtual void ShiftParameters(const BayesPoint& pt) = 0;
+		//scale learned parameters 
+		virtual void ScaleParameters(Matrix sc) = 0;
 
 		PointCollection* m_data;
 		//number of data points

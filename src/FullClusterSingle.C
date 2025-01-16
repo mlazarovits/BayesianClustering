@@ -530,7 +530,7 @@ int main(int argc, char *argv[]){
 			gmm->GetNorms(norms);
 			for(int k = 0; k < nk; k++){
 				params = gmm->GetPriorParameters(k);
-				cout << "cluster k " << k << " pi " << params["pi"].at(0,0) << " energy " << norms[k]*gev << " center" << endl;
+				cout << "cluster k " << k << " pi " << params["pi"].at(0,0) << " energy " << norms[k]/gev << " center" << endl;
 				params["mean"].Print();
 				pisum += params["pi"].at(0,0);
 			}

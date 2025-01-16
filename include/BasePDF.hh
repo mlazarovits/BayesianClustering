@@ -45,8 +45,7 @@ class BasePDF{
 	
 		int Dim(){ return m_dim; }
 		int m_dim;
-
-	
+		
 		void SetPrefactor(double p){ m_prefactor = p; }	
 
 		void SetPrior(BasePDF* p){ m_prior = p; }
@@ -64,6 +63,7 @@ class BasePDF{
 			for(int i = 1; i < m_dim+1; i++) prod *= tgamma(x + (1 - i)/2.); 
 			return pow(pi,m_dim*(m_dim - 1)/4.)*prod;
 		}	
+		
 
 
 };

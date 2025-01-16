@@ -429,28 +429,43 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 
+	cout << "old points w/o wraparound" << endl;
+	points->at(0).Print();
 	_phi_wraparound(*points);
+	gmm->SetData(points);
 
+	cout << "old points w/ wraparound" << endl;
+	points->at(0).Print();
 
-	//mean = points->mean();
-	//cout << "after phi wraparound" << endl;
-	//mean.Print();
-	//put in local coordinates
 	//transform points into local coordinates
 	//for GMM parameter estimation
 	//use weighted mean as center to be set to 0 point
-	//Point center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
-	//copy points for parameter estimation
-	//so original points don't get overwritten
-	//cout << "before centering" << endl;
-	//points->mean().Print();
-	BayesPoint center = points->Center();//Translate(center);
-	//cout << "after centering" << endl;
-	//points->mean().Print();
+	//zero points by energy centroid
+	//x' = x - a
+	BayesPoint center({points->Centroid(0), points->Centroid(1), points->Centroid(2)});
+	gmm->ShiftData(center);
+	cout << "centroid " << endl; center.Print();
 	
+	cout << "translated pts" << endl;
+	gmm->GetData()->at(0).Print();
 
+	//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
+	//x'' = x'/b = (x-a)/b
+	//sets relative importance of dimensions
+	//decreasing cell -> eta/phi distance more important
+	//increasing entry (2,2) -> time distance more important
+	//TODO: make configurable externally
+	double cell = 4*atan(1)/180;
+	Matrix Rscale(3,3);
+	Rscale.SetEntry(1/cell,0,0);
+	Rscale.SetEntry(1/cell,1,1);
+	Rscale.SetEntry(1,2,2);
+
+
+	gmm->ScaleData(Rscale);
+	cout << "scaled points" << endl;
+	gmm->GetData()->at(0).Print();
 	
-	gmm->SetData(points);
 	gmm->SetAlpha(_subalpha);
 	gmm->SetVerbosity(_verb);
 	gmm->InitParameters();
@@ -473,7 +488,14 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		viz = true;
 	}
 
+	//inverse transformations
+	Matrix RscaleInv;
+	RscaleInv.invert(Rscale);
+	center.Scale(-1);
+	
 	VarClusterViz3D cv3D(algo);
+	cv3D.SetScale(RscaleInv);
+	cv3D.SetShift(center);
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
@@ -500,6 +522,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		
 		//Plot
 		if(viz){
+			//TODO: may want to pass center, Rscale to plot in original coordinates
 			cv3D.UpdatePosterior();
 			cv3D.WriteJson(oname+"/it"+std::to_string(it+1));
 		}
@@ -520,13 +543,23 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		oldLogL = newLogL;
 	}
 
+	//need to unscale first then uncenter since x'' = (x-a)/b (see above)
+	//need to unscale data 
+	gmm->ScaleData(RscaleInv);	
+	//need to unscale mean + covariances
+	gmm->ScaleParameters(RscaleInv);	
+	
 	//need to put GMM parameters AND points back in detector coordinates (not local)
-	center.Scale(-1);
-	gmm->Shift(center);
+	gmm->ShiftData(center);
+	gmm->ShiftParameters(center);
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
 	//auto params1 = gmm->GetPriorParameters(0);
 	//params1["mean"].Print();
+
+
+
+
 
 	if(_verb > 1){
 		vector<double> norms;

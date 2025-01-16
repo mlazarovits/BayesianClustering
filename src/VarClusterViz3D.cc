@@ -35,6 +35,10 @@ VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){
 	_n = _points->GetNPoints();
 	_k = algo->GetNClusters();
 	_post = _model->GetPosterior();
+	vector<double> pt(_points->Dim());
+	_shift = BayesPoint(pt);
+	_scale = Matrix(_points->Dim(), _points->Dim());
+	_scale.InitIdentity();
 	
 }
 
@@ -50,6 +54,8 @@ VarClusterViz3D::VarClusterViz3D(const VarClusterViz3D& viz){
 	_n = viz._n;
 	_k = viz._k;
 	_post = viz._post;
+	_shift = viz._shift;
+	_scale = viz._scale;
 }
 
 
@@ -77,14 +83,23 @@ void VarClusterViz3D::WriteJson(string filename){
 	}
 	vector<Matrix> mus, covs;
 	map<string, Matrix> cluster_params;
+	
 
+	Matrix pt;
 	for(int i = 0; i < _n; i++){
+		//"un"scale locally to keep model parameters + data unaffected
+		pt.PointToMat(_points->at(i));
+		pt.mult(_scale,pt);
+		//"un"shift locally to keep model parameters + data unaffected
+		pt.minus(_shift);	
+		
+
 		//eta
-		x.push_back(_points->at(i).Value(0));
+		x.push_back(pt.at(0,0));
 		//phi
-		y.push_back(_points->at(i).Value(1));
+		y.push_back(pt.at(1,0));
 		//time
-		z.push_back(_points->at(i).Value(2));
+		z.push_back(pt.at(2,0));
 		//weight
 		w.push_back(_points->at(i).Weight()/_transf);
 	}
@@ -104,18 +119,29 @@ void VarClusterViz3D::WriteJson(string filename){
 	vector<double> cnts;
 	_model->GetNorms(cnts);
 
-
-
-	double x0, y0, z0;	
+	
+	double x0, y0, z0;
+	Matrix mean, cov, scT;
+	scT.transpose(_scale);	
 	for(int k = 0; k < _k; k++){
 		cluster_params = _model->GetPriorParameters(k);
+		//"un"scale locally to keep model parameters + data unaffected
+		mean = cluster_params["mean"];
+		mean.mult(_scale,mean);
+	
+		cov = cluster_params["cov"];
+		cov.mult(_scale,cov);	
+		cov.mult(cov,scT); //Avar(X)A^T
+			
+		//"un"shift locally to keep model parameters + data unaffected
+		mean.minus(_shift);
 
-		x0 = cluster_params["mean"].at(0,0);
-		y0 = cluster_params["mean"].at(1,0);
-		z0 = cluster_params["mean"].at(2,0);
+		x0 = mean.at(0,0);
+		y0 = mean.at(1,0);
+		z0 = mean.at(2,0);
 
 
-		cluster_params["cov"].eigenCalc(eigenVals, eigenVecs);
+		cov.eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
 			eigenVec_0.push_back(eigenVecs[0].at(i,0));
 			eigenVec_1.push_back(eigenVecs[1].at(i,0));

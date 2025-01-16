@@ -24,6 +24,8 @@ class ClusterVizBase{
 			_fname = "";	
 			_cvs = {}; 
 			_verb = 0;
+			_shift = BayesPoint();
+			_scale = Matrix();
 		};
 		ClusterVizBase(BaseCluster* algo, string fname = "test"){
 			_model = algo->GetModel();
@@ -33,6 +35,11 @@ class ClusterVizBase{
 			_k = algo->GetNClusters();
 			_post = _model->GetPosterior();
 			_verb = 0;
+			
+			//default = no shift, no scale
+			_shift = BayesPoint(_points->Dim());
+			_scale = Matrix(_points->Dim(), _points->Dim());
+			_scale.InitIdentity();
 		};
 		virtual ~ClusterVizBase(){ 
 		//	cvs.clear();
@@ -50,6 +57,16 @@ class ClusterVizBase{
 		void SetVerbosity(int v){ _verb = v; }
 		//for calculating energies s.t. E_n = w_n*k
 		void SetTransfFactor(double k){ _transf = k; }
+
+		void SetShift(BayesPoint pt){ 
+			_shift.PointToMat(pt); 
+		}
+		Matrix _shift;
+		void SetScale(Matrix sc){
+			_scale = sc;
+		}
+		Matrix _scale;
+
 	
 	//protected:
 		BasePDFMixture* _model;

@@ -18,6 +18,8 @@ class VarClusterViz3D : public ClusterVizBase{
 			_k = 0; //number of clusters
 			_fname = "";	
 			_cvs = {}; 
+			_shift = BayesPoint();
+			_scale = Matrix();
 		}
 		VarClusterViz3D(const VarClusterViz3D& viz);
 		VarClusterViz3D(VarEMCluster* algo, string fname = "test");
@@ -40,8 +42,6 @@ class VarClusterViz3D : public ClusterVizBase{
 		string GetFileName(){ return _fname; }
 
 	private:
-		BayesPoint _scale;
-		BayesPoint _shift;
 };
 
 #endif
