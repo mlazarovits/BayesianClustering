@@ -1,4 +1,3 @@
-#include "JetProducer.hh"
 #include "JetSkimmer.hh"
 #include "PhotonSkimmer.hh"
 #include "SuperClusterSkimmer.hh"
