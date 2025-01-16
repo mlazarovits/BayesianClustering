@@ -23,6 +23,7 @@ GaussianMixture::GaussianMixture(){
 GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	for(int k = 0; k < m_k; k++){
 		m_model[k] = new Gaussian();
+		m_model[k]->SetPrior(new NormalWishart());
 	}
 }
 
