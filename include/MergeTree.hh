@@ -188,6 +188,7 @@ class MergeTree : BaseTree{
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
 		
 
+			/*
 			//transform points into local coordinates
 			//for GMM parameter estimation
 			//use weighted mean as center to be set to 0 point
@@ -197,13 +198,67 @@ class MergeTree : BaseTree{
 			PointCollection newpts = PointCollection(*x->points);
 			//BayesPoint center = newpts.Center();//Translate(center);
 			//zero points by energy centroid
+			BayesPoint center({newpts.Centroid(0), newpts.Centroid(1), newpts.Centroid(2)});
+			newpts.Translate(center);
+
+
+			cout << "old points" << endl;
+			x->points->at(0).Print();
+			cout << "translated pts" << endl;
+			newpts.at(0).Print();
+
+			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
+			double cell = 4*atan(1)/180;
+			Matrix Rscale(3,3);
+			Rscale.SetEntry(1/cell,0,0);
+			Rscale.SetEntry(1/cell,1,1);
+			Rscale.SetEntry(1,2,2);
+
+			Matrix RscaleInv;
+			RscaleInv.invert(Rscale);
+			Matrix RscaleInvT;
+			RscaleInvT.transpose(RscaleInv);
+
+			Matrix scalepts;
+			scalepts.PointsToMat(newpts);
+			scalepts.mult(Rscale,scalepts);
+
+			newpts = scalepts.MatToPoints();
+		
+			cout << "scaled points" << endl;
+			newpts.at(0).Print();
+			
+			*/
+
+			//do phi wraparound? may already be taken care of in local coords + mirror pts
+			
 			BayesPoint center({x->points->Centroid(0), x->points->Centroid(1), x->points->Centroid(2)});
-			x->points->Translate(center);
+			x->model->ShiftData(center);
+			cout << "centroid " << endl; center.Print();
+			
+			cout << "translated pts" << endl;
+			x->model->GetData()->at(0).Print();
+
+			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
+			//x'' = x'/b = (x-a)/b
+			//sets relative importance of dimensions
+			//decreasing cell -> eta/phi distance more important
+			//increasing entry (2,2) -> time distance more important
+			//TODO: make configurable externally
+			double cell = 4*atan(1)/180;
+			Matrix Rscale(3,3);
+			Rscale.SetEntry(1/cell,0,0);
+			Rscale.SetEntry(1/cell,1,1);
+			Rscale.SetEntry(1,2,2);
+
+
+			x->model->ScaleData(Rscale);
+			cout << "scaled points" << endl;
+			x->model->GetData()->at(0).Print();
 
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
-			x->model->SetData(&newpts);
 			if(!_data_smear.empty()){
 				x->model->SetDataSmear(_data_smear);
 				if(_res_smear_d.size() > 0){
@@ -216,9 +271,9 @@ class MergeTree : BaseTree{
 			x->model->InitPriorParameters();
 
  //setting jet priors here - needs to be top-level configurable
+                        /*
                         //this will be in eta-phi only (2D)
                         double beta = 1;
-                        /*
                         Matrix W(3,3);
                         double nu = 3;
                         double r = 0.4;
@@ -228,7 +283,6 @@ class MergeTree : BaseTree{
                         W.SetEntry(1./(dt*dt/nu),2,2);
                         Matrix mean0(3,1);
                         
-                        */
                         Matrix W(2,2);
                         double nu = 2;
                         double r = 0.4;
@@ -241,11 +295,14 @@ class MergeTree : BaseTree{
                         jetparams["scalemat"] = W; //mean of wishart = nW
                         jetparams["mean"] = mean0; //center of prior on mean
                         x->model->SetJetPriorParameters(jetparams);
-
-
+                        */
 
 
 			if(!_params.empty()) x->model->SetPriorParameters(_params);
+			//inverse transformations
+			Matrix RscaleInv;
+			RscaleInv.invert(Rscale);
+			center.Scale(-1);
 
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
@@ -268,47 +325,81 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters " << exp(newLogL) << " with points in node " << endl; 
+			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters " << exp(newLogL) << " with points in node " << endl; 
 
-			//translate the parameters back into global coordinates
+			//transform the parameters back into global coordinates
+			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
+			//need to unscale data 
+			x->model->ScaleData(RscaleInv);	
+			//need to unscale mean + covariances
+			x->model->ScaleParameters(RscaleInv);	
+			
+			//need to put GMM parameters AND points back in detector coordinates (not local)
+			x->model->ShiftData(center);
+			x->model->ShiftParameters(center);
+
+
+			/*
 			Matrix matshift;
 			matshift.PointToMat(center);
-			Matrix mean, priormean;
+			Matrix mean, priormean, cov, W;
 			map<string, Matrix> params;
 			for(int k = 0; k < x->model->GetNClusters(); k++){
 				//only need to do this once for prior + overall jet
-				if(k == 0){
-					params = x->model->GetOnlyPriorParameters(k);
-					priormean = params["mean"];
-					priormean.add(matshift);
-					params["m"] = priormean;
-					x->model->SetPriorParameters(params);
-				
-					x->model->GetJetParameters(params);
-					mean = params["mean"];
-					mean.add(matshift);
-					params["mean"] = priormean;
-					x->model->SetJetParameters(params);
-					
+				//if(k == 0){
+				//	params = x->model->GetOnlyPriorParameters(k);
+				//	priormean = params["mean"];
+				//	priormean.add(matshift);
+				//	params["m"] = priormean;
+				//	x->model->SetPriorParameters(params);
+				//
+				//	x->model->GetJetParameters(params);
+				//	mean = params["mean"];
+				//	mean.add(matshift);
+				//	params["mean"] = priormean;
+				//	x->model->SetJetParameters(params);
+				//	
 
-				}
+				//}
 				params = x->model->GetPriorParameters(k);
 				//only need to translate mean + mean on prior - stddev doesn't change
 				mean = params["mean"];
 				mean.add(matshift);
-				params["mean"] = mean;
 				x->model->GetModel(k)->SetParameter("mean",mean);
+				
+				//translate mean in prior
+				priormean = x->model->GetModel(k)->GetPrior()->GetParameter("mean");
+				priormean.add(matshift);
+				x->model->GetModel(k)->GetPrior()->SetParameter("mean",priormean);
+
+
+				//need to scale mean too
+
+				//scale variance back to original coordinates
+				//var(RX) = Rvar(X)R^T
+				cov = params["cov"];
+				cov.mult(RscaleInv,cov);
+				cov.mult(cov,RscaleInvT);
+				x->model->GetModel(k)->SetParameter("cov",cov);
+
+				//scale W matrix back to original coordinates
+				W = params["scalemat"];
+				W.mult(RscaleInv,W);
+				W.mult(W,RscaleInvT);
+				x->model->GetModel(k)->GetPrior()->SetParameter("W",W);
+		
 			}
 			//reset data to original points
 			x->model->SetData(x->points);
-			cout << "model pts" << endl;
-			x->model->GetData()->Print();
-			cout << "node pts" << endl;
-			x->points->Print();
-			cout << "jet params" << endl;
-			map<string, Matrix> jparams;
-			x->model->GetJetParameters(jparams);
-			cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
+			*/
+			//cout << "model pts" << endl;
+			//x->model->GetData()->Print();
+			//cout << "node pts" << endl;
+			//x->points->Print();
+			//cout << "jet params" << endl;
+			//map<string, Matrix> jparams;
+			//x->model->GetJetParameters(jparams);
+			//cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
 
 			return newLogL;
 		}
