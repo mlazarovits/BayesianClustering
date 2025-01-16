@@ -16,6 +16,7 @@ def plot_json(jsonfile, dataonly = False):
 	nClusters = len(clusters)
 	
 	plotname = jsonfile[:jsonfile.find(".json")]
+	trace_name = ""
 	#remove preceding paths
 	if "Sim" not in plotname:
 		if "photon" in plotname:
@@ -26,6 +27,12 @@ def plot_json(jsonfile, dataonly = False):
 			plotname = plotname
 	else:
 		plotname = plotname[plotname.find("/")+1:]
+	if "photon" in plotname:
+		trace_name = "photon supercluster"
+	elif "jet" in plotname:
+		trace_name = "jet"
+	else:
+		trace_name = "object"
 	plotname = plotname[:plotname.find("it")] + "<br>" + plotname[plotname.find("it"):]
 	plotname = plotname[:plotname.find("emAlpha")] + "<br>" + plotname[plotname.find("emAlpha"):]
 	plotname = plotname[:plotname.find("NperGeV")] + "<br>" + plotname[plotname.find("NperGeV"):]
@@ -44,7 +51,7 @@ def plot_json(jsonfile, dataonly = False):
 
 	
 	#set trace name
-	name = "photon supercluster has "+str(len(x))+" rechits and "+str(nClusters)+" subclusters ("+str(round(sum(w),2))+" GeV)"
+	name = trace_name+" has "+str(len(x))+" rechits and "+str(nClusters)+" subclusters ("+str(round(sum(w),2))+" GeV)"
 	
 	#add data
 	gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
