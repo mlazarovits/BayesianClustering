@@ -16,12 +16,19 @@ def plot_json(jsonfile, dataonly = False):
 	nClusters = len(clusters)
 	
 	plotname = jsonfile[:jsonfile.find(".json")]
-	if "photon" in plotname:
-		plotname = plotname[plotname.find("photonSkim"):]
-	elif "jet" in plotname:
-		plotname = plotname[plotname.find("jetSkim"):]
+	#remove preceding paths
+	if "Sim" not in plotname:
+		if "photon" in plotname:
+			plotname = plotname[plotname.find("photonSkim"):]
+		elif "jet" in plotname:
+			plotname = plotname[plotname.find("jetSkim"):]
+		else:
+			plotname = plotname
 	else:
-		plotname = plotname
+		plotname = plotname[plotname.find("/")+1:]
+	plotname = plotname[:plotname.find("it")] + "<br>" + plotname[plotname.find("it"):]
+	plotname = plotname[:plotname.find("emAlpha")] + "<br>" + plotname[plotname.find("emAlpha"):]
+	plotname = plotname[:plotname.find("NperGeV")] + "<br>" + plotname[plotname.find("NperGeV"):]
 	if "GJets" in plotname:
 		plotname = plotname[:plotname.find("GJets")-1] + "<br>" + plotname[plotname.find("GJets"):]
 	if "GMSB" in plotname:
@@ -105,6 +112,7 @@ def plot_json(jsonfile, dataonly = False):
 			showscale = False, showlegend = True, name = name)),
 
 	fig = go.Figure(gr_arr)
+	print("plotname",plotname)
 	fig.update_layout(scene= dict(aspectmode= "auto"),title=plotname, template=None)
 	fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
 	return fig
