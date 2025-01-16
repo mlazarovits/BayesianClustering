@@ -391,8 +391,13 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++) sd.SetValue(sqrt(sd.at(d)/(double)_pts.size()),d);
 	}
 
+	void GetWeights(vector<double>& w){
+		w.clear();
+		for(int i = 0; i < (int)_pts.size(); i++)
+			w.push_back(_pts[i].w());
+	}
 
-	void SetWeights(vector<double> w){
+	void SetWeights(vector<double>& w){
 		for(int i = 0; i < (int)_pts.size(); i++)
 			_pts[i].SetWeight(w[i]);
 	}
