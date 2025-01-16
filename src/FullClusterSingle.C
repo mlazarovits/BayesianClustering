@@ -353,6 +353,7 @@ int main(int argc, char *argv[]){
 	fname = "plots/"+fname;
 
 	cout << "Prior Parameters" << endl;
+	cout << "EMalpha0 " << emAlpha << endl;
 	cout << "beta0" << endl;
 	scale.Print();
 	cout << "mean0" << endl;
@@ -444,7 +445,8 @@ int main(int argc, char *argv[]){
 	else if(obj == 2){
 		JetSimProducer prod(file);
 		prod.SetTransferFactor(gev);
-		prod.SetRecoPtMin(20);
+		prod.SetRecoPtMin(50);
+		prod.SetRecoEMin(100);
 		prod.SetMinRhE(minRhE); 
 		//no need to calibrate
 		prod.PrintPreselection();
@@ -521,12 +523,16 @@ int main(int argc, char *argv[]){
 			GaussianMixture* gmm = algo->SubCluster(oname);
 			int nk = gmm->GetNClusters();
 			cout << nk << " clusters in model." << endl;
+			//check pis sum to 1
+			double pisum = 0;
 			map<string, Matrix> params;
 			for(int k = 0; k < nk; k++){
 				params = gmm->GetPriorParameters(k);
 				cout << "cluster k " << k << " pi " << params["pi"].at(0,0) << " center" << endl;
 				params["mean"].Print();
+				pisum += params["pi"].at(0,0);
 			}
+			cout << "pisum " << pisum << endl;
 			
 
 		}
