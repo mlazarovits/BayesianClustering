@@ -222,6 +222,37 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_update_mom();
 }
 
+Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
+	_vtx = BayesPoint(3);
+	_mom = BayesPoint(4);
+	_E = E;
+
+	map<string, Matrix> params = pdf->GetParameters();
+	_eta = params["mean"].at(0,0);
+	_phi = params["mean"].at(1,0);
+	_t =   params["mean"].at(2,0);
+	//0 mass hypothesis default sets four vector
+	double pt = E/cosh(_eta);
+	_px = pt*cos(_phi);
+	_py = pt*sin(_phi);
+	_pz = pt*sinh(_eta);
+
+	_kt2 = _px*_px + _py*_py;
+	_mass = mass();
+//cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
+
+	_idx = 999;
+	_ensure_valid_rap_phi();
+
+	_mu = params["mean"];
+	_cov = params["cov"];
+	_pi = pi;
+
+	_vtx = vtx;
+
+	_update_mom();
+}
+
 
 Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_vtx = vtx;
@@ -251,7 +282,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_phi = _mu.at(1,0);
 	_t = _mu.at(2,0);
 
-	//set covariance
 
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
@@ -295,7 +325,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	for(int k = 0; k < nsubcl; k++){
 		params = model->GetPriorParameters(k);
 		Ek = norms[k]/gev;
-		Jet subcl(params["mean"], params["cov"], Ek, params["pi"].at(0,0), _vtx);
+		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 		//subcluster momentom 3vector is r_nk weighted average over rechits for cluster k
 		double pxk = 0;
 		double pyk = 0;
