@@ -179,6 +179,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		phi = _base->Jet_phi->at(j);
 		eta = _base->Jet_eta->at(j);
 		if(pt < _recoptmin) continue;
+		if(_base->Jet_energy->at(j) < _recoEmin) continue;
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);
@@ -196,6 +197,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		unsigned int rhid;
 		double totE = 0;
 		//add rhs
+		if(rhs.size() < 1) continue;
 		for(int r = 0; r < rhs.size(); r++){
 			rhid = _base->Jet_RhIDs->at(j).at(r);
 		        rhit = std::find(rhids.begin(), rhids.end(), rhid);
