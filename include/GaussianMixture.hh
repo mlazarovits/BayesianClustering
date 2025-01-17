@@ -27,6 +27,8 @@ class GaussianMixture : public BasePDFMixture{
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetParameters(int k); 
+		double GetPi(int k){ return (m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()); }
+		double GetCoeff(int k){ return m_coeffs[k]; }
 
 		void SetJetPriorParameters(map<string, Matrix>& params){ }
 		void SetJetParameters(map<string, Matrix>& params){ }
