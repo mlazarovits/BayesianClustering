@@ -8,11 +8,12 @@ void BHCJetSkimmer::Skim(){
 		cout << " NlnN (Delauney)" << endl;
 	else if(_strategy == N2)
 		cout << " N2 (naive)" << endl;
+	else if(_strategy == gmmOnly)
+		cout << " GMM only" << endl;
 	else
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
 	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
-
 	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
@@ -37,19 +38,64 @@ void BHCJetSkimmer::Skim(){
 	vector<Jet> rhs;
 
 
-	_prod->SetRecoPtMin(20);
 	_prod->PrintPreselection();
         
 	//for computational time
 	vector<double> x_nrhs, y_time;
+	vector<double> x_nrhs_subcl, y_time_subcl;
 	if(_evti == _evtj){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
 	int SKIP = 1;
+	BayesCluster* algo = nullptr;
+	clock_t t;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
+		_prod->GetRecoJets(_recojets, i);
+
+		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets ";
+		if(_strategy == gmmOnly) cout << endl;
+		///do GMM only option
+		for(int j = 0; j < _recojets.size(); j++){
+			 _recojets[j].GetJets(rhs);
+			//safety
+			if(rhs.size() < 1) continue;
+			x_nrhs_subcl.push_back((double)rhs.size());
+			
+			cout << "SubClustering..." << endl;	
+			algo = new BayesCluster(rhs);
+			if(_smear) algo->SetDataSmear(smear);
+			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			algo->SetThresh(_thresh);
+			algo->SetAlpha(_alpha);
+			algo->SetSubclusterAlpha(_emAlpha);
+			algo->SetVerbosity(_verb);
+			algo->SetPriorParameters(_prior_params);
+		
+			t = clock();
+			GaussianMixture* gmm = algo->SubCluster();
+			t = clock() - t;
+			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
+			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
+			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
+
+			//set constituents
+			vector<double> norms;
+			gmm->GetNorms(norms);
+			for(int k = 0; k < gmm->GetNClusters(); k++){
+				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
+				_recojets[j].AddConstituent(subcl);
+			}
+		
+			rhs.clear();
+		}
+		FillRecoJetHists();
+		//only does above
+		if(_strategy == gmmOnly){
+			continue;
+		}
 		_prod->GetRecHits(rhs, i);
 		
 		//safety
@@ -66,8 +112,6 @@ void BHCJetSkimmer::Skim(){
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
 		////fill gen jet histograms
 		_prod->GetGenJets(_genjets, i);
-		////fill reco jet histograms
-		_prod->GetRecoJets(_recojets, i);
 		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 		
 		//decayId = 0 -> had
@@ -94,17 +138,13 @@ void BHCJetSkimmer::Skim(){
 	}
 	
 
-		FillRecoJetHists();
 		FillResolutionHists();
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
 		_pvz = _base->PV_z;
-
-		//if(i % (SKIP) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
-		if(i % SKIP == 0) cout << " with " << rhs.size() << " rhs" << endl;
+		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
-		clock_t t;
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
 		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
@@ -112,6 +152,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetAlpha(_alpha);
 		algo->SetSubclusterAlpha(_emAlpha);
 		algo->SetVerbosity(_verb);
+		algo->SetPriorParameters(_prior_params);
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN){
@@ -127,18 +168,24 @@ void BHCJetSkimmer::Skim(){
 		}
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
-		cout <<  "y time entry " << y_time[y_time.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
-		comptime->Fill((double)t/CLOCKS_PER_SEC);	
+		//cout <<  "y time entry " << y_time[y_time.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
+		comptime->Fill((double)t/CLOCKS_PER_SEC);
 		//clean trees (remove mirror point or nullptrs)
 		CleanTrees(trees);
 		//transform trees (nodes) to jets
 		TreesToJets();
 		//fill model histograms with trees
-		//for subclusters
-		FillModelHists();	
+		//for subclusters TODO - move the hists filled in FillModelHists to FillPredJetsHists
+		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
 	}
+	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
+	graphs[1]->SetName("nrhs_comptime_subcl");
+	graphs[1]->SetTitle("nrhs_comptime_subcl");
+	graphs[1]->GetXaxis()->SetTitle("# rhs");
+	graphs[1]->GetYaxis()->SetTitle("computational time GMM only (sec)");
+	
 	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
 	graphs[0]->SetName("nrhs_comptime");
 	graphs[0]->SetTitle("nrhs_comptime");

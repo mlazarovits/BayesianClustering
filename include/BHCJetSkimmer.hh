@@ -22,6 +22,18 @@ class BHCJetSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
+			
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -41,9 +53,21 @@ class BHCJetSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
 				
 	
 			graphs.push_back(nrhs_comptime);
+			graphs.push_back(nrhs_comptime_subcl);
 
 			_hists1D.push_back(nClusters);
 			_hists1D.push_back(nSubclusters);	
@@ -57,9 +81,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(predJet_mass);
 			_hists1D.push_back(jetGenE_sigmaDeltaPt_predGen);
 			_hists1D.push_back(predGen_nJets);
-			_hists1D.push_back(predJet_subClusterEtaVar);
-			_hists1D.push_back(predJet_subClusterPhiVar);
-			_hists1D.push_back(predJet_subClusterTimeVar);
+			_hists1D.push_back(predJet_subClusterEtaSig);
+			_hists1D.push_back(predJet_subClusterPhiSig);
+			_hists1D.push_back(predJet_subClusterTimeSig);
 			_hists1D.push_back(predJet_subClusteretaPhiCov);
 			_hists1D.push_back(predJet_subClustertimeEtaCov);
 			_hists1D.push_back(predJet_subClustertimePhiCov);
@@ -122,6 +146,17 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHC_nJets_fullHad);
 			_hists1D.push_back(BHC_nJets_semiLep);
 			_hists1D.push_back(BHC_nJets_fullLep);
+			_hists1D.push_back(reco_nSubclusters);
+			_hists1D.push_back(recoJet_subClusterEnergy);
+			_hists1D.push_back(recoJet_subClusterTimeCenter);
+			_hists1D.push_back(recoJet_subClusterEtaCenter);
+			_hists1D.push_back(recoJet_subClusterPhiCenter);
+			_hists1D.push_back(recoJet_subClusterEtaSig);
+			_hists1D.push_back(recoJet_subClusterPhiSig);
+			_hists1D.push_back(recoJet_subClusterTimeSig);
+			_hists1D.push_back(recoJet_subClusteretaPhiCov);
+			_hists1D.push_back(recoJet_subClustertimeEtaCov);
+			_hists1D.push_back(recoJet_subClustertimePhiCov);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -147,10 +182,13 @@ class BHCJetSkimmer{
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
+		void SetRecoMinPt(double r){ _prod->SetRecoMinPt(r); }
+		void SetRecoMinE(double r){ _prod->SetRecoMinE(r); }
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;
 			else if(i == 1) _strategy = N2;
+			else if(i == 2) _strategy = gmmOnly;
 			else return; 
 		}
 	
@@ -321,12 +359,26 @@ class BHCJetSkimmer{
 					//get subcluster information
 					for(auto subcl : _predJets[j].GetConstituents()){
 						Matrix subcl_cov = subcl.GetCovariance();
-						_procCats[p].hists1D[0][12]->Fill(subcl_cov.at(0,0));
-						_procCats[p].hists1D[0][13]->Fill(subcl_cov.at(1,1));
-						_procCats[p].hists1D[0][14]->Fill(subcl_cov.at(2,2));
+						_procCats[p].hists1D[0][12]->Fill(sqrt(subcl_cov.at(0,0)));
+						_procCats[p].hists1D[0][13]->Fill(sqrt(subcl_cov.at(1,1)));
+						_procCats[p].hists1D[0][14]->Fill(sqrt(subcl_cov.at(2,2)));
 						_procCats[p].hists1D[0][15]->Fill(subcl_cov.at(0,1));
 						_procCats[p].hists1D[0][16]->Fill(subcl_cov.at(0,2));
 						_procCats[p].hists1D[0][17]->Fill(subcl_cov.at(1,2));
+					
+						//E_k = norms[k]/_gev;
+						_procCats[p].hists1D[0][2]->Fill(subcl.E());
+
+						//params = model->GetPriorParameters(k);
+						//ceta = params["mean"].at(0,0);
+						//cphi = params["mean"].at(1,0);
+						//ctime = params["mean"].at(2,0);
+						//norm += params["pi"].at(0,0);
+						
+						_procCats[p].hists1D[0][3]->Fill(subcl.eta());
+						_procCats[p].hists1D[0][4]->Fill(subcl.phi());
+						_procCats[p].hists1D[0][5]->Fill(subcl.time());
+		
 					}
 
 
@@ -389,17 +441,19 @@ class BHCJetSkimmer{
 			Jet w, top, genW;
 			//do gen matching
 			vector<int> genMatchIdxs; //one per jet, follows same indexing as jets
-			GenMatchJet(_recojets,genMatchIdxs);
-			cout << "final best matches" << endl;
-			for(int b = 0; b < genMatchIdxs.size(); b++){
-				if(genMatchIdxs[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[b]), _base->genpart_phi->at(genMatchIdxs[b]), _recojets[b].eta(), _recojets[b].phi()) << endl;
-				 else cout << " jet " << b << " could not be gen matched" << endl;
+			//skip gen matching for now
+			//GenMatchJet(_recojets,genMatchIdxs);
+			//cout << "final best matches" << endl;
+			//for(int b = 0; b < genMatchIdxs.size(); b++){
+			//	if(genMatchIdxs[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[b]), _base->genpart_phi->at(genMatchIdxs[b]), _recojets[b].eta(), _recojets[b].phi()) << endl;
+			//	 else cout << " jet " << b << " could not be gen matched" << endl;
 
-			}
+			//}
 			
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
+				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
 					jetsize = CalcJetSize(_recojets[j]);
 					if(p == 0) cout << "calc reco jet size " << j << ": " << jetsize << endl;
@@ -410,6 +464,25 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
 					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
 					if(jetsize != -999) _procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
+					//fill subcluster hists
+					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
+					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
+					for(auto subcl : _recojets[j].GetConstituents()){
+						_procCats[p].hists1D[0][78]->Fill(subcl.E());
+						_procCats[p].hists1D[0][79]->Fill(subcl.time());
+						_procCats[p].hists1D[0][80]->Fill(subcl.eta());
+						_procCats[p].hists1D[0][81]->Fill(subcl.phi());
+						
+						Matrix subcl_cov = subcl.GetCovariance();
+						_procCats[p].hists1D[0][82]->Fill(sqrt(subcl_cov.at(0,0)));
+						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
+						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
+						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
+						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
+						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
+					}
+					//skip gen matching for now
+					continue;
 			
 					//fill gen match histograms
 					//if no gen match, skip
@@ -443,12 +516,15 @@ class BHCJetSkimmer{
 
 					}
 					else{ }
+
 				}
-				_procCats[p].hists1D[0][18]->Fill(njets);
 				//fill njets based on top decay type
 				//0 -> fully had
 				//1 -> fully lep
 				//2 -> semi lep 
+				//skip gen matching for now
+				return;
+
 				if(_topDecayType == 0)
 					_procCats[p].hists1D[0][71]->Fill(njets);
 				else if(_topDecayType == 1)
@@ -534,7 +610,8 @@ class BHCJetSkimmer{
 			}
 
 		}
-		
+	
+			
 		//all hists referenced here are in hists1D
 		void FillModelHists(BasePDFMixture* model, int p){
 			map<string, Matrix> params;
@@ -558,26 +635,25 @@ class BHCJetSkimmer{
 	
 			//k clusters = k jets in event -> subclusters are mixture model components
 			for(int k = 0; k < nclusters; k++){
-				E_k = norms[k]/_gev;
-				Etot += E_k;
+				//E_k = norms[k]/_gev;
+				//Etot += E_k;
+				//_procCats[p].hists1D[0][2]->Fill(E_k);
 
-				params = model->GetPriorParameters(k);
-				ceta += params["pi"].at(0,0)*params["mean"].at(0,0);
-				cphi += params["pi"].at(0,0)*params["mean"].at(1,0);
-				//cout << "pi " << params["pi"].at(0,0) << " ctime " << params["mean"].at(0,2) << " cphi " << params["mean"].at(0,1) << " ceta " << params["mean"].at(0,0) << endl;
-				//cout << "switched indices - pi " << params["pi"].at(0,0) << " ctime " << params["mean"].at(2,0) << " cphi " << params["mean"].at(1,0) << " ceta " << params["mean"].at(0,0) << endl;
-				ctime += params["pi"].at(0,0)*params["mean"].at(2,0);
-				norm += params["pi"].at(0,0);
+				//params = model->GetPriorParameters(k);
+				//ceta = params["mean"].at(0,0);
+				//cphi = params["mean"].at(1,0);
+				//ctime = params["mean"].at(2,0);
+				//norm += params["pi"].at(0,0);
+				//
+				//_procCats[p].hists1D[0][3]->Fill(ceta);
+				//_procCats[p].hists1D[0][4]->Fill(cphi);
+				//_procCats[p].hists1D[0][5]->Fill(ctime);
 		
 				//calculate slopes from eigenvectors
-				params["cov"].eigenCalc(eigenvals, eigenvecs);
+				//params["cov"].eigenCalc(eigenvals, eigenvecs);
 				
 				//total cluster energy
 			}
-			_procCats[p].hists1D[0][2]->Fill(Etot);
-			_procCats[p].hists1D[0][3]->Fill(ceta/norm);
-			_procCats[p].hists1D[0][4]->Fill(cphi/norm);
-			_procCats[p].hists1D[0][5]->Fill(ctime/norm);
 		}
 	
 		//use subclusters
@@ -586,7 +662,7 @@ class BHCJetSkimmer{
 			int nSCs = jet.GetNConstituents();
 			double jetsize;
 			//if no subclusters (ie reco jet), take jet size to be sqrt(etavar + phivar) from discrete covariance 
-			if(nSCs < 1){
+			//if(nSCs < 1){
 				Matrix recocov = Matrix(3,3);
 				vector<JetPoint> rhs = jet.GetJetPoints();
 				int nrhs = rhs.size();
@@ -627,7 +703,6 @@ class BHCJetSkimmer{
 					}
 				}	
 				return maxsize;
-				*/
 			}
 			else{
 				Matrix cov, mu;
@@ -635,6 +710,7 @@ class BHCJetSkimmer{
 				cout << "pred eta var " << cov.at(0,0) << " phi var " << cov.at(1,1) << endl;
 				jetsize = sqrt(cov.at(0,0) + cov.at(1,1));
 			}	
+				*/
 			return jetsize;
 		}
 	
@@ -840,8 +916,12 @@ class BHCJetSkimmer{
 		
 		//comp time distribution
 		TH1D* comptime = new TH1D("comptime","comptime",100,0,300);
+		//comp time distribution
+		TH1D* comptime_subcl = new TH1D("comptime_subcl","comptime_subcl",100,0,300);
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime = new TGraph();
+		//comp time as a function of number of rechits per event
+		TGraph* nrhs_comptime_subcl = new TGraph();
 		
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
@@ -871,11 +951,11 @@ class BHCJetSkimmer{
 		TH1D* predGen_nJets = new TH1D("BHCGen_diffNJets","BHCGen_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaVar = new TH1D("BHCJet_subClusterEtaVar","BHCJet_subClusterEtaVar",25,0.,3.);
+		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",25,0.,3.);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiVar = new TH1D("BHCJet_subClusterPhiVar","BHCJet_subClusterPhiVar",25,0.,3.);
+		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",25,0.,3.);
 		//14 - time sigma
-		TH1D* predJet_subClusterTimeVar = new TH1D("BHCJet_subClusterTimeVar","BHCJet_subClusterTimeVar",25,0.,5.);
+		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subClusterTimeSig","BHCJet_subClusterTimeSig",25,0.,5.);
 		//15 - eta-phi covariance
 		TH1D* predJet_subClusteretaPhiCov = new TH1D("BHCJet_subClusteretaPhiCov","BHCJet_subClusteretaPhiCov",25,-1.5,1.5);
 		//16 - time-eta covariance
@@ -1000,6 +1080,28 @@ class BHCJetSkimmer{
 		TH1D* BHC_nJets_semiLep = new TH1D("BHC_nJets_semiLep","BHC_nJets_semiLep",10,0,10);
 		//76 - n BHC jets, tt fully lep
 		TH1D* BHC_nJets_fullLep = new TH1D("BHC_nJets_fullLep","BHC_nJets_fullLep",10,0,10);
+		//77 - n GMM clusters in reco jets
+		TH1D* reco_nSubclusters = new TH1D("RecoJet_nSubclusters","RecoJet_nSubclusters",20,0,20);
+		//78 - energy per GMM cluster from reco jets
+		TH1D* recoJet_subClusterEnergy = new TH1D("RecoJet_subClusterEnergy","RecoJet_subClusterEnergy",20,0,500);
+		//79 - time center of GMM cluster from reco jets
+		TH1D* recoJet_subClusterTimeCenter = new TH1D("RecoJet_subClusterTimeCenter","RecoJet_subClusterTimeCenter",25,0,20);
+		//80 - eta center of GMM cluster from reco jets
+		TH1D* recoJet_subClusterEtaCenter = new TH1D("RecoJet_subClusterEtaCenter","RecoJet_subClusterEtaCenter",25,-1.8,1.8);
+		//81 - phi center of GMM cluster from reco jets
+		TH1D* recoJet_subClusterPhiCenter = new TH1D("RecoJet_subClusterPhiCenter","RecoJet_subClusterPhiCenter",25,-0.1,6.3);
+		//82 - eta sigma of GMM cluster from reco jets
+		TH1D* recoJet_subClusterEtaSig = new TH1D("RecoJet_subClusterEtaSig","RecoJet_subClusterEtaSig",50,0.,0.08);
+		//83 - phi sigma of GMM cluster from reco jets
+		TH1D* recoJet_subClusterPhiSig = new TH1D("RecoJet_subClusterPhiSig","RecoJet_subClusterPhiSig",50,0.,0.08);
+		//84 - time sigma of GMM cluster from reco jets
+		TH1D* recoJet_subClusterTimeSig = new TH1D("RecoJet_subClusterTimeSig","RecoJet_subClusterTimeSig",50,0.,5.);
+		//85 - eta-phi covariance of GMM cluster from reco jets
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("RecoJet_subClusteretaPhiCov","RecoJet_subClusteretaPhiCov",50,-0.04,0.04);
+		//86 - time-eta covariance of GMM cluster from reco jets
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("RecoJet_subClustertimeEtaCov","RecoJet_subClustertimeEtaCov",50,-0.04,0.04);
+		//87 - time-phi covariance of GMM cluster from reco jets
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("RecoJet_subClustertimePhiCov","RecoJet_subClustertimePhiCov",50,-0.04,0.04);
 
 
 		//2D plots
@@ -1289,6 +1391,7 @@ class BHCJetSkimmer{
 	void SetAlpha(double a){_alpha = a;}
 	void SetSubclusterAlpha(double a){_emAlpha = a; }
 	void SetThreshold(double t){ _thresh = t; }
+	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
 
 
 	private:
@@ -1308,6 +1411,8 @@ class BHCJetSkimmer{
 			NlnN = 0,
 			//traditional strategy - N^2 time
 			N2 = 1,
+			//gmm only on reco'd jets
+			gmmOnly = 2,
 		};
 		//clustering strategy - N^2 or NlnN
 		Strategy _strategy;
@@ -1325,6 +1430,7 @@ class BHCJetSkimmer{
 		//top decay info - 0 = fully had, 1 = semi lep, 2 = fully lep
 		int _topDecayType;
 
+		map<string, Matrix> _prior_params;
 
 		double dR(double eta1, double phi1, double eta2, double phi2){
 			//phi wraparound
