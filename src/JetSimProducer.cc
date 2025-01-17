@@ -53,6 +53,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
+		if(fabs(_base->ECALRecHit_time->at(rhidx)) > 20) continue;
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
 		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
 		
@@ -92,6 +93,7 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
+		if(fabs(_base->ECALRecHit_time->at(rhidx)) > 20) continue;
 	
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
 		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
@@ -197,7 +199,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		unsigned int rhid;
 		double totE = 0;
 		//add rhs
-		if(rhs.size() < 1) continue;
 		for(int r = 0; r < rhs.size(); r++){
 			rhid = _base->Jet_RhIDs->at(j).at(r);
 		        rhit = std::find(rhids.begin(), rhids.end(), rhid);
@@ -217,6 +218,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 				jet.AddRecHit(rh);
 			}
 		}		
+		if(jet.GetNRecHits() < 1) continue;
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
 		recojets.push_back(jet);
