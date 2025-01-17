@@ -35,6 +35,7 @@ int main(int argc, char *argv[]){
 	//set clustering strategy
 	//0 = NlnN
 	//1 = N2
+	//2 = gmm only
 	int strat = 0;
 	string infile = "";
 	string oname = "";
@@ -50,6 +51,7 @@ int main(int argc, char *argv[]){
 	Matrix m(3,1);
 	
 	double minpt = 30.;
+	double minE = 30.;
 	double minnrhs = 15;
 	double minRhE = 0.5;
 	for(int i = 0; i < argc; i++){
@@ -167,6 +169,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minpt = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minE", 6) == 0){
+			i++;
+    	 		minE = std::stod(argv[i]);
+   		}
 		if(strncmp(argv[i],"--minNrhs", 9) == 0){
 			i++;
     	 		minnrhs = std::stod(argv[i]);
@@ -185,7 +191,7 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --input(-i) [file]            input root file" << endl;
    		cout << "   --output(-o) [file]           output root file" << endl;
-   		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2)" << endl;
+   		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only)" << endl;
 		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
@@ -195,7 +201,8 @@ int main(int argc, char *argv[]){
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
-   		cout << "   --minpt [minpt]               set minimum pt (default = 30 GeV)" << endl;
+   		cout << "   --minpt [minpt]               set reco minimum pt (default = 30 GeV)" << endl;
+   		cout << "   --minE [minE]                 set reco minimum E (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
@@ -241,7 +248,8 @@ int main(int argc, char *argv[]){
 		oname += "_NperGeV"+gev_string;
 
 		if(strat == 0) oname += "_NlnN";
-		else oname += "_N2";
+		else if(strat == 1) oname += "_N2";
+		else oname += "_gmmOnly";
 
 		oname += ".root";
 	}
@@ -273,6 +281,8 @@ int main(int argc, char *argv[]){
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
+	skimmer.SetRecoMinE(minE);
+	skimmer.SetRecoMinPt(minpt);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
 	skimmer.SetTransferFactor(gev);

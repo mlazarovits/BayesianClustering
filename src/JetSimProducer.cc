@@ -7,6 +7,7 @@ JetSimProducer::JetSimProducer(){
 	//_minobjeta = 1.5;
 	_recoptmin = 0;
 	_minrhE = 0.5;
+	_recoEmin = 0;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -22,6 +23,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_gev = 1;
 	_recoptmin = 0;
 	_minrhE = 0.5;
+	_recoEmin = 0;
 	//_minobjeta = 1.5;
 	
 }
@@ -164,7 +166,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 	vector<unsigned int> rhs;
 	//make weights - E/e_avg
 	vector<double> ws;
-
 	for(int j = 0; j < nJets; j++){
 		/////TOF from 0 to rh location
 		///drh = _base->ECALRecHit_0TOF->at(r);
@@ -220,6 +221,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 	}
 	//sort by pt
 	if(recojets.size() > 0) SortJets(recojets);
+	cout << recojets.size() << " reco jets" << endl;
 }
 
 void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){

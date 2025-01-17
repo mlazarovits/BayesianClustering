@@ -21,7 +21,8 @@ class JetSimProducer{
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
 
-		void SetRecoPtMin(double pt){_recoptmin = pt; }
+		void SetRecoMinPt(double pt){_recoptmin = pt; }
+		void SetRecoMinE(double e){ _recoEmin = e;}
 		void SetMinRhE(double r){ _minrhE = r; }
 
 		void SortJets(vector<Jet>& jets);
@@ -37,21 +38,47 @@ class JetSimProducer{
 			TFile* f = new TFile(fname.c_str(),"RECREATE");
 			f->cd();
 
-			//TODO: change bin size to be 1 cell in det eta, phi
-			//TH2D* etaPhiMap = new TH2D("etaPhiMap","etaPhiMap;eta;phi",40,-1.4775,1.7,40,-3.575,3.25);
-			TH2D* etaPhiMap = new TH2D("etaPhiMap","etaPhiMap;eta;phi",40,-1.4775,1.7,40,-3.575,3.25);
+			double maxEta = -1.5;
+			double minEta = 1.5;
+	
+			//double maxPhi = -4*atan(1); //pi
+			//double minPhi = 4*atan(1);
+			double maxPhi = 0; //pi
+			double minPhi = 8*atan(1);
+			double cell = 4*atan(1)/180;
 			for(int r = 0; r < rhs.size(); r++){
-				cout << "r " << r << " eta " << rhs[r].eta() << " phi_std " << rhs[r].phi_std() << " E " << rhs[r].E() << endl;
-				etaPhiMap->Fill(rhs[r].eta(), rhs[r].phi_std(), rhs[r].E());
+				if(rhs[r].eta() > maxEta)
+					maxEta = rhs[r].eta();
+				if(rhs[r].eta() < minEta)
+					minEta = rhs[r].eta();
+				
+				//if(rhs[r].phi_std() > maxPhi)
+				//	maxPhi = rhs[r].phi_std();
+				//if(rhs[r].phi_std() < minPhi)
+				//	minPhi = rhs[r].phi_std();
+				if(rhs[r].phi() > maxPhi)
+					maxPhi = rhs[r].phi();
+				if(rhs[r].phi() < minPhi)
+					minPhi = rhs[r].phi();
 			}
+			cout << "minEta " << minEta << " maxEta " << maxEta << " minPhi " << minPhi << " maxPhi " << maxPhi << endl;	
+			TH2D* etaPhiMap = new TH2D("etaPhiMap","etaPhiMap;eta;phi",(int)rhs.size(),minEta-cell,maxEta+cell,(int)rhs.size(),minPhi-cell,maxPhi+cell);
+			double totE = 0;		
+			for(int r = 0; r < rhs.size(); r++){
+				cout << "r " << r << " eta " << rhs[r].eta() << " phi " << rhs[r].phi() << " E " << rhs[r].E() << endl;
+				etaPhiMap->Fill(rhs[r].eta(), rhs[r].phi(), rhs[r].E());
+				totE += rhs[r].E();
+			}
+			cout << "total E " << totE << " scaled total E " << totE*_gev << endl;
 			etaPhiMap->Write();
 			f->Close();
 		}
+
 
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
-		double _recoptmin, _minrhE;
+		double _recoptmin, _minrhE, _recoEmin;
 };
 #endif
