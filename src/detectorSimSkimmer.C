@@ -39,8 +39,16 @@ int main(int argc, char *argv[]){
 	string infile = "";
 	string oname = "";
 	double thresh = 1.;
+	//prior parameters
 	double emAlpha = 0.5;
 	double alpha = 0.1;
+	Matrix scale = Matrix(1e-3);
+	Matrix dof = Matrix(3);
+	Matrix W(3,3);
+	W.InitIdentity();
+	W.mult(W,1./3.);
+	Matrix m(3,1);
+	
 	double minpt = 30.;
 	double minnrhs = 15;
 	double minRhE = 0.5;
@@ -112,6 +120,41 @@ int main(int argc, char *argv[]){
 			i++;
     	 		alpha = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--beta0", 7) == 0){
+			i++;
+    	 		double beta0 = std::stod(argv[i]);
+			scale = Matrix(beta0);
+   		}
+		if(strncmp(argv[i],"--nu0", 5) == 0){
+			i++;
+    	 		double nu0 = std::stod(argv[i]);
+			dof = Matrix(nu0);
+   		}
+		if(strncmp(argv[i],"--W0diag", 8) == 0){
+			i++;
+    	 		double W_ee = std::stod(argv[i]);
+			i++;
+    	 		double W_pp = std::stod(argv[i]);
+			i++;
+    	 		double W_tt = std::stod(argv[i]);
+			//no covariance bw dimensions
+			W = Matrix(3,3);
+			W.SetEntry(W_ee,0,0);
+			W.SetEntry(W_pp,1,1);
+			W.SetEntry(W_tt,2,2);
+   		}
+		if(strncmp(argv[i],"--m0", 4) == 0){
+			i++;
+    	 		double m_e = std::stod(argv[i]);
+			i++;
+    	 		double m_p = std::stod(argv[i]);
+			i++;
+    	 		double m_t = std::stod(argv[i]);
+			m = Matrix(3,1);
+			m.SetEntry(m_e,0,0);
+			m.SetEntry(m_p,1,0);
+			m.SetEntry(m_t,2,0);
+   		}
 		if(strncmp(argv[i],"--evtFirst", 6) == 0){
     	 		i++;
 			evti = std::atoi(argv[i]);
@@ -145,6 +188,10 @@ int main(int argc, char *argv[]){
    		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2)" << endl;
 		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
+   		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
+   		cout << "   --m0 [m0_eta] [m0_phi] [m0_time]     set mean parameter for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = [0,0,0])" << endl;
+   		cout << "   --W0diag [W0_ee] [W0_pp] [W0_tt]     set *diagonal elements* in covariance parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = [1/3,1/3,1/3])" << endl;
+   		cout << "   --nu0 [nu0]                          set dof parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = 3 = dim)" << endl;
    		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
    		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
    		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
@@ -164,6 +211,12 @@ int main(int argc, char *argv[]){
 	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << endl;
 	else cout << "Skimming all events" << endl;
 
+	map<string, Matrix> prior_params;
+	prior_params["scale"] = scale;
+	prior_params["dof"] = dof;
+	prior_params["scalemat"] = W;
+	prior_params["mean"] = m;
+	
 	//make sure evti < evtj
 	if(evti > evtj){
 		int evt = evtj;
@@ -206,7 +259,17 @@ int main(int argc, char *argv[]){
 			oname = oname.substr(oname.find("/")+1);	
 	}	
 
+	cout << "Prior Parameters" << endl;
+	cout << "alpha0 " << alpha << " EMalpha0 " << emAlpha << endl;
 	cout << "Energy transfer factor: " << gev << endl;
+	cout << "beta0" << endl;
+	scale.Print();
+	cout << "mean0" << endl;
+	m.Print();
+	cout << "nu0" << endl;
+	dof.Print();
+	cout << "W0" << endl;
+	W.Print(); 
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
@@ -215,6 +278,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetTransferFactor(gev);
 	skimmer.SetAlpha(alpha);
 	skimmer.SetSubclusterAlpha(emAlpha);
+	skimmer.SetPriorParameters(prior_params);
 	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
 	skimmer.Skim();
