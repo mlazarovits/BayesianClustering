@@ -223,7 +223,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 	}
 	//sort by pt
 	if(recojets.size() > 0) SortJets(recojets);
-	cout << recojets.size() << " reco jets" << endl;
 }
 
 void JetSimProducer::GetPrimaryVertex(BayesPoint& vtx, int evt){
