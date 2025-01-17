@@ -354,6 +354,7 @@ int main(int argc, char *argv[]){
 
 	cout << "Prior Parameters" << endl;
 	cout << "EMalpha0 " << emAlpha << endl;
+	cout << "Energy transfer factor: " << gev << endl;
 	cout << "beta0" << endl;
 	scale.Print();
 	cout << "mean0" << endl;
