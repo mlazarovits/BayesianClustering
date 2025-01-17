@@ -264,7 +264,7 @@ int main(int argc, char *argv[]){
 			oname = "simSkim_"+oname+"_"+oname_extra;
 		}
 		if(oname.find("/") != string::npos)
-			oname = oname.substr(oname.find("/")+1);	
+			oname = oname.substr(0,oname.find("/")) + oname.substr(oname.find("/")+1);	
 	}	
 
 	cout << "Prior Parameters" << endl;
@@ -277,7 +277,8 @@ int main(int argc, char *argv[]){
 	cout << "nu0" << endl;
 	dof.Print();
 	cout << "W0" << endl;
-	W.Print(); 
+	W.Print();
+ 
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
