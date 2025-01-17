@@ -45,11 +45,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
 cout << "n pts " << n << endl;
-	//test scaling time to better match eta-phi scale
-	BayesPoint scale(3);
-	scale.SetValue(0.1,2);
-	scale.SetValue(1,0);
-	scale.SetValue(1,1);
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
@@ -58,7 +53,6 @@ cout << "n pts " << n << endl;
 			return _trees;
 		}
 		//_points[i].Print();
-		_points[i].Scale(scale);
 		mt->AddLeaf(&_points[i].at(0));
 	}
 	cout << "# clusters " << mt->GetNAllClusters() << endl;
@@ -429,13 +423,13 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 
-	cout << "old points w/o wraparound" << endl;
-	points->at(0).Print();
+	//cout << "old points w/o wraparound" << endl;
+	//points->at(0).Print();
 	_phi_wraparound(*points);
 	gmm->SetData(points);
 
-	cout << "old points w/ wraparound" << endl;
-	points->at(0).Print();
+	//cout << "old points w/ wraparound" << endl;
+	//points->at(0).Print();
 
 	//transform points into local coordinates
 	//for GMM parameter estimation
@@ -444,10 +438,10 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//x' = x - a
 	BayesPoint center({points->Centroid(0), points->Centroid(1), points->Centroid(2)});
 	gmm->ShiftData(center);
-	cout << "centroid " << endl; center.Print();
+	//cout << "centroid " << endl; center.Print();
 	
-	cout << "translated pts" << endl;
-	gmm->GetData()->at(0).Print();
+	//cout << "translated pts" << endl;
+	//gmm->GetData()->at(0).Print();
 
 	//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 	//x'' = x'/b = (x-a)/b
@@ -463,8 +457,8 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 
 	gmm->ScaleData(Rscale);
-	cout << "scaled points" << endl;
-	gmm->GetData()->at(0).Print();
+	//cout << "scaled points" << endl;
+	//gmm->GetData()->at(0).Print();
 	
 	gmm->SetAlpha(_subalpha);
 	gmm->SetVerbosity(_verb);
@@ -522,7 +516,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		
 		//Plot
 		if(viz){
-			//TODO: may want to pass center, Rscale to plot in original coordinates
 			cv3D.UpdatePosterior();
 			cv3D.WriteJson(oname+"/it"+std::to_string(it+1));
 		}
