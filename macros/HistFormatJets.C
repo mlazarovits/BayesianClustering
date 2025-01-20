@@ -38,7 +38,8 @@ string SignalLegEntry(string label){
 	ctfancy += " cm";
 
 	//string legName = "#Chi^{0} #rightarrow #gamma, L = "+lfancy+" c#tau = "+ctfancy;
-	string legName = "GMSB, L = "+lfancy+" c#tau = "+ctfancy;
+	//string legName = "GMSB, L = "+lfancy+" c#tau = "+ctfancy;
+	string legName = "SMS #tilde{g}#tilde{g}";//, L = "+lfancy+" c#tau = "+ctfancy;
 	return legName;
 }
 
@@ -104,6 +105,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//default
 	if(pf == 0){
 		//labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+		labelToColor["SMS"] =  TColor::GetColor("#86bbd8");
 		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
 		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
 		labelToColor["c#tau = 1000"] = TColor::GetColor("#39A2AE");
@@ -123,6 +125,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//MC symbols - primary shapes
 		labelToMark["!chiGam"] =  20;
 		labelToMark["!GMSB"] =  20;
+		labelToMark["!GluGlu"] =  20;
+		labelToMark["!SMS"] =  20;
 		labelToMark["!Ctau200"] = -1;
 		labelToMark["!Ctau0p1"] = 1;
 		labelToMark["!Ctau1000"] = 2;
@@ -145,6 +149,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	//procStack formatting
 	if(pf == 1){
 		labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+		labelToColor["GluGlu"] =  TColor::GetColor("#86bbd8");
+		labelToColor["SMS"] =  TColor::GetColor("#86bbd8");
 		//labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
 		labelToColor["c#tau = 200"] = TColor::GetColor("#55DBCB");
 		labelToColor["c#tau = 0.1"] = TColor::GetColor("#86bbd8");
@@ -159,6 +165,8 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//MC symbols - primary shapes
 		//labelToMark["chiGam"] =  20;
 		//labelToMark["GMSB"] =  20;
+		labelToMark["SMS"] =  20;
+		labelToMark["GluGlu"] =  20;
 		labelToMark["Ctau200"] = 2;
 		labelToMark["Ctau0p1"] = 3;
 		labelToMark["Ctau1000"] = 4;
@@ -229,9 +237,9 @@ cout << "title " << xtit << " canname " << canname << endl;
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
-		hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
-		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
-		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
+		hist[i]->GetYaxis()->SetRangeUser(0, 1.5*maxy);
+		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 2.5*maxy);
+		else hist[i]->GetYaxis()->SetRangeUser(miny, 1.5*maxy);
 		
 
 		legentry = hist[i]->GetTitle();
@@ -240,21 +248,24 @@ cout << "title " << xtit << " canname " << canname << endl;
 		if(pf == 0){
 			legentry = hist[i]->GetTitle(); 
 			title = title.substr(title.find("_")+1);
-			if(title.find("chiGam") != string::npos){
+			//if(title.find("chiGam") != string::npos){
+			if(title.find("SMS") != string::npos){
 				title = SignalLegEntry(title);
 			}
 		}
 		else if(pf == 1){
 			legentry = legentry.substr(legentry.find("_")+1);
 			title = title.substr(0,title.find("_"));
-			if(legentry.find("chiGam") != string::npos){
+			//if(legentry.find("chiGam") != string::npos){
+			if(legentry.find("SMS") != string::npos){
 				legentry = SignalLegEntry(legentry);
 			}
 		}
 		else if(pf == 2){ 
 			legentry = legentry.substr(0,legentry.find("_"));
 			title = title.substr(title.find("_")+1);
-			if(title.find("chiGam") != string::npos){
+			//if(title.find("chiGam") != string::npos){
+			if(title.find("SMS") != string::npos){
 				title = SignalLegEntry(title);
 			}
 		}
@@ -284,7 +295,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 				break;
 			}
 			else col = 1;
-			if(match.find("chiGam") != string::npos) cout << "legentry " << legentry << " match " << match << " col " << col << endl;
+			//if(match.find("chiGam") != string::npos) cout << "legentry " << legentry << " match " << match << " col " << col << endl;
 		}
 		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
 			string match = it->first;
@@ -305,7 +316,8 @@ cout << "title " << xtit << " canname " << canname << endl;
 
 			}
 		}
-		cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
+		//cout << "hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
+		cout << "hist " << histtitle << " col " << col << " mark " << mark << endl;
 		
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
@@ -390,6 +402,13 @@ cout << "title " << xtit << " canname " << canname << endl;
 		}
 	}
 	myleg->Draw("same"); 
+	if(canname.find("meanDeltaTime") != string::npos){
+		gPad->Update();
+		myleg->SetX1NDC(0.13);
+		myleg->SetY1NDC(0.18);
+		myleg->SetX2NDC(0.33);
+		myleg->SetY2NDC(0.38);
+	} 
 	gPad->Update();
 	string lat_cms = "#bf{CMS} #it{Work in Progress} "+cms_label;
 	TLatex lat;
@@ -1533,6 +1552,7 @@ void HistFormatJets(string file, string file2 = ""){
 	if(file2.empty()){
 		vector<string> med_eAvg = {"median","eAvg"};
 		vector<string> chiGam_QCD = {"chiGam","QCD"};
+		vector<string> GluGlu_QCD = {"GluGlu","QCD"};
 		//PV dijets for median + eAvg for QCD
 		MethodStackHists(file, "QCD", med_eAvg, oname, "geoAvgEecal", year);
 		//PV dijets for median + eAvg for JetHT
@@ -1558,7 +1578,7 @@ void HistFormatJets(string file, string file2 = ""){
 		///PV dijets for data (DEG) + MC for mmAvg
 		ProcStackHists(file, DEG_QCD, "mmAvg", oname,"geoAvgEecal");
 		//recoGen and gamPV for QCD + GMSB for eAvg
-		ProcStackHists(file, chiGam_QCD, "eAvg", oname, "geoEavg");
+		ProcStackHists(file, GluGlu_QCD, "eAvg", oname, "geoEavg");
 		//gamPV for QCD + JetHT
 		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "sigmaDeltaTime_gamPV");
 		ProcStackHists(file, jetHT_QCD, "median", oname, "sigmaDeltaTime_gamPV");
