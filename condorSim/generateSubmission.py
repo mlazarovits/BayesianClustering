@@ -76,7 +76,7 @@ def generateSubmission(args):
     #beta0
     betastr = str(args.beta0)
     betastr = betastr.replace(".","p")
-    priorname = priorname+"_beta0-"+betastr
+    priorname = priorname+"beta0-"+betastr
 
     #m0
     #check dims
