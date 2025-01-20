@@ -59,7 +59,7 @@ def generateSubmission(args):
     kname = "%.3f" % args.alpha
     kname = kname.replace(".","p")
     paramsname = "_bhcAlpha"+kname
-    kname = "%.3f" % args.EMalpha
+    kname = "%.3f" % float(args.EMalpha)
     kname = kname.replace(".","p")
     paramsname += "_emAlpha"+kname
     thresh = str(args.thresh).replace(".","p")
@@ -71,8 +71,55 @@ def generateSubmission(args):
     ofilename += paramsname
     dirname += paramsname
 
-    ofilename += "_"+args.strategy
-    dirname += "_"+args.strategy
+
+    priorname = ""
+    #beta0
+    betastr = str(args.beta0)
+    betastr = betastr.replace(".","p")
+    priorname = priorname+"_beta0-"+betastr
+
+    #m0
+    #check dims
+    if len(args.m0) != 3:
+        print("Error: m0 must be a vector of length 3")
+        exit()
+    mstr = ""
+    for i, m in enumerate(args.m0):
+        m = float(m)
+        m = round(m,3)
+        m = str(m)
+        m = m.replace(".","p")
+        if i == len(args.m0)-1:
+            mstr += m
+        else:
+            mstr += m+"-"
+    priorname = priorname+"_m0-"+mstr
+
+
+    #W0
+    if len(args.W0diag) != 3:
+        print("Error: W0diag must be a vector of length 3")
+        exit()
+    Wstr = ""
+    for i, w in enumerate(args.W0diag):
+        w = float(w)
+        w = round(w,3)
+        w = str(w)
+        w = w.replace(".","p")
+        if i == len(args.W0diag)-1:
+            Wstr += w
+        else:
+            Wstr += w+"-"
+    priorname = priorname+"_W0diag-"+Wstr
+
+    #nu0
+    nustr = str(args.nu0)
+    nustr = nustr.replace(".","p")
+    priorname = priorname+"_nu0-"+nustr
+
+
+    ofilename += "_"+priorname+"_"+args.strategy
+    dirname += "_"+priorname+"_"+args.strategy
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
     if os.path.exists(dirname):
@@ -86,14 +133,29 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' -s '+args.strategy
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --beta0 '+str(args.beta0)+' --m0 '
+    for m in args.m0:
+        flags += str(m)+' '
+    flags += '--W0diag '
+    for w in args.W0diag:
+        flags += str(w)+' '
+    flags += '--nu0 '+str(args.nu0)
+    
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
     	flags += ' --timeSmear'
     if(args.applyFrac):
     	flags += ' --applyFrac'
-    
+   
+
+    strategyMap = {}
+    strategyMap["NlnN"] = 0
+    strategyMap["N2"] = 1
+    strategyMap["GMMonly"] = 2
+
+    flags += ' --strategy '+str(strategyMap[args.strategy])
+
     ##### Create condor submission script in src directory #####
     condorSubmitFile = dirname + "/src/submit.sh"
     subf = open(condorSubmitFile, "w")
@@ -109,30 +171,34 @@ def generateSubmission(args):
     print("condor_submit "+condorSubmitFile)
 
 def main():
-	# options
-	parser = argparse.ArgumentParser()
-	parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
-	#Ntuple file to run over
-	parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
-	parser.add_argument('--output','-o',help='output label')
-	parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2'])
-	parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
-	parser.add_argument('--verbosity','-v',help="verbosity",default=0)
-	#add algorithm parameters - alpha, emAlpha, verbosity, thresh
-	parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
-	parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
-	parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
-	parser.add_argument('--gev',help='energy transfer factor',default='1/10')
-	parser.add_argument('--minpt',help='min object pt',default=10.)
-	parser.add_argument('--minnrhs',help='min object nrhs',default=2)
-	parser.add_argument('--minemE',help='min object ECAL energy',default=0)
-	parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
-	parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
-	parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
-	parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
-	args = parser.parse_args()
-
-	generateSubmission(args)
+    # options
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    #Ntuple file to run over
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
+    parser.add_argument('--output','-o',help='output label')
+    parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly'])
+    parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
+    parser.add_argument('--verbosity','-v',help="verbosity",default=0)
+    #add algorithm parameters - alpha, emAlpha, verbosity, thresh
+    parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
+    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
+    parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
+    parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
+    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,0.33333333],nargs="+")
+    parser.add_argument('--nu0',help="nu0 prior",default=3)
+    parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
+    parser.add_argument('--gev',help='energy transfer factor',default='1/10')
+    parser.add_argument('--minpt',help='min object pt',default=10.)
+    parser.add_argument('--minnrhs',help='min object nrhs',default=2)
+    parser.add_argument('--minE',help='min reco jet energy',default=0)
+    parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
+    parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
+    parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
+    parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
+    args = parser.parse_args()
+    
+    generateSubmission(args)
 
 if __name__ == "__main__":
     main()
