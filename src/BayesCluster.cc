@@ -427,6 +427,8 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//points->at(0).Print();
 	_phi_wraparound(*points);
 	gmm->SetData(points);
+	//needs to be before ScaleData() bc this method also scales the smear
+	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 
 	//cout << "old points w/ wraparound" << endl;
 	//points->at(0).Print();
@@ -465,7 +467,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->InitParameters();
 	gmm->InitPriorParameters();
 
-	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 	
 	if(_tresSmear_c != -1) gmm->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	//create EM algo

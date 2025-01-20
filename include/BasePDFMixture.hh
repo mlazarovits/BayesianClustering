@@ -242,6 +242,12 @@ class BasePDFMixture : public BasePDF{
 			m_data->GetWeights(ws);
 			m_data = new PointCollection(x.MatToPoints());
 			m_data->SetWeights(ws);
+
+			//also scale smear
+			_data_cov.mult(sc,_data_cov);
+			Matrix scT;
+			scT.transpose(sc);
+			_data_cov.mult(_data_cov,scT);
 		}
 
 		//shift learned parameters

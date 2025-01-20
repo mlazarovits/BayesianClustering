@@ -1091,17 +1091,17 @@ class BHCJetSkimmer{
 		//81 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("RecoJet_subClusterPhiCenter","RecoJet_subClusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("RecoJet_subClusterEtaSig","RecoJet_subClusterEtaSig",50,0.,0.08);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("RecoJet_subClusterEtaSig","RecoJet_subClusterEtaSig",100,0.01,0.08);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("RecoJet_subClusterPhiSig","RecoJet_subClusterPhiSig",50,0.,0.08);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("RecoJet_subClusterPhiSig","RecoJet_subClusterPhiSig",100,0.01,0.08);
 		//84 - time sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeSig = new TH1D("RecoJet_subClusterTimeSig","RecoJet_subClusterTimeSig",50,0.,5.);
+		TH1D* recoJet_subClusterTimeSig = new TH1D("RecoJet_subClusterTimeSig","RecoJet_subClusterTimeSig",100,0.,4.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClusteretaPhiCov = new TH1D("RecoJet_subClusteretaPhiCov","RecoJet_subClusteretaPhiCov",50,-0.04,0.04);
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("RecoJet_subClusteretaPhiCov","RecoJet_subClusteretaPhiCov",100,-0.006,0.006);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("RecoJet_subClustertimeEtaCov","RecoJet_subClustertimeEtaCov",50,-0.04,0.04);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("RecoJet_subClustertimeEtaCov","RecoJet_subClustertimeEtaCov",100,-0.06,0.06);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("RecoJet_subClustertimePhiCov","RecoJet_subClustertimePhiCov",50,-0.04,0.04);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("RecoJet_subClustertimePhiCov","RecoJet_subClustertimePhiCov",100,-0.06,0.06);
 
 
 		//2D plots
