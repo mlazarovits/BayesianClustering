@@ -451,7 +451,7 @@ class BHCJetSkimmer{
 			//}
 			
 			for(int p = 0; p < _procCats.size(); p++){
-				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
@@ -483,7 +483,7 @@ class BHCJetSkimmer{
 					}
 					//skip gen matching for now
 					continue;
-			
+					
 					//fill gen match histograms
 					//if no gen match, skip
 					if(genMatchIdxs[j] == -1) continue;
@@ -523,7 +523,7 @@ class BHCJetSkimmer{
 				//1 -> fully lep
 				//2 -> semi lep 
 				//skip gen matching for now
-				return;
+				continue;	
 
 				if(_topDecayType == 0)
 					_procCats[p].hists1D[0][71]->Fill(njets);
@@ -534,7 +534,7 @@ class BHCJetSkimmer{
 				else{ }
 
 				//cout << "hist name " << _procCats[p].hists1D[0][18]->GetName() << " nentries " << _procCats[p].hists1D[0][18]->GetEntries() << endl;
-				if(p == 0)cout << "# reco jets - # gen jets " << njets - (int)_genjets.size() << endl;
+				//if(p == 0)cout << "# reco jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][24]->Fill(njets - (int)_genjets.size());
 
 
@@ -735,7 +735,6 @@ class BHCJetSkimmer{
 			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
 			_procCats.push_back(tot);	
-			
 			if(sample.find("GMSB") != string::npos){
 				//notSunm
 				procCat notSunm(_hists1D, _hists2D, "notSunm","notSunm", leadsep);
