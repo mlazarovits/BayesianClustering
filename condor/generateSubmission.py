@@ -55,6 +55,8 @@ def generateSubmission(args):
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
     elif "MET_RunB" in args.inputSample:
     	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017B_17Nov2017.root"
+    elif "MET_RunC" in args.inputSample:
+    	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017C_17Nov2017.root"
     elif "MET_RunD" in args.inputSample:
     	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017D_17Nov2017.root"
     elif "MET_RunE" in args.inputSample:
@@ -93,8 +95,13 @@ def generateSubmission(args):
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
     if "PhoSlim" in args.inputSample:
-        inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
-        inputFile = inputFile.replace("MET100","AL1IsoPho")
+        if "DEG" in args.inputSample or "GJets" in args.inputSample:
+            inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
+            if "DEG" in args.inputSample:
+                inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v24")
+        else:
+            inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
+            inputFile = inputFile.replace("MET100","AL1IsoPho")
     else:
         inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
     inputFile = inputPath+inputFile
@@ -250,7 +257,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','GMSB_L-350_Ctau-200','GMSB_L-250_Ctau-10','GMSB_L-300_Ctau-400','GMSB_L-350_Ctau-0p1','GMSB_L-400_Ctau-800','GMSB_L-300_Ctau-1000','GMSB_L-300_Ctau-600','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','GMSB_L-400_Ctau-200','MET_RunE','JetHT_RunF_2017','JetHT_RunC_2018','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
