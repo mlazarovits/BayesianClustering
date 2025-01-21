@@ -99,6 +99,8 @@ def generateSubmission(args):
             inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
             if "EGamma" in args.inputSample:
                 inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v24")
+            if "GJets" in args.inputSample:
+                inputFile = inputFile.replace("MET100_v24","AL1IsoPho_v24")
         else:
             inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
             inputFile = inputFile.replace("MET100","AL1IsoPho")
