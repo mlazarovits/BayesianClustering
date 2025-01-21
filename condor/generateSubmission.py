@@ -129,7 +129,7 @@ def generateSubmission(args):
     emAlphastr = emAlphastr.replace(".","p")
     ofilename = ofilename+"_emAlpha"+emAlphastr
 
-    #beta0
+    #beta0 - TODO: test writing strings if "e" in beta0 (ie beta0 = 1e-10)
     betastr = str(args.beta0)
     betastr = betastr.replace(".","p")
     priorname = priorname+"_beta0-"+betastr
