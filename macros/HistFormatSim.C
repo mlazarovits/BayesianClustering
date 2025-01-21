@@ -15,6 +15,13 @@ enum plotFormat{
 };
 
 
+void stringReplaceAll(string& input, string& oldstring, string& newstring){
+	while(input.find(oldstring) != string::npos){
+		input.replace(input.find(oldstring), oldstring.size(), newstring);
+	}
+
+}
+
 string SignalLegEntry(string label){
 	//cout << "label " << label << endl;
 	string lambda, ctau;
@@ -82,6 +89,36 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	string title, name, histtitle;
 	string canname = can->GetName();
+
+	//reco -> AK4
+	string newstr = "AK4";
+	if(xtit.find("Reco") != string::npos){
+		string oldstr = "Reco";
+		stringReplaceAll(xtit,oldstr,newstr);
+	}
+	if(xtit.find("reco") != string::npos){
+		string oldstr = "reco";
+		stringReplaceAll(xtit,oldstr,newstr);
+	}
+	if(plot_title.find("Reco") != string::npos){
+		string oldstr = "Reco";
+		stringReplaceAll(plot_title,oldstr,newstr);
+	}
+	if(plot_title.find("reco") != string::npos){
+		string oldstr = "reco";
+		stringReplaceAll(plot_title,oldstr,newstr);
+	}
+	if(canname.find("Reco") != string::npos){
+		string oldstr = "Reco";
+		stringReplaceAll(canname,oldstr,newstr);
+		can->SetName(canname.c_str());
+	}
+	if(canname.find("reco") != string::npos){
+		string oldstr = "reco";
+		stringReplaceAll(canname,oldstr,newstr);
+		can->SetName(canname.c_str());
+	}
+
 
 	string legentry;
 	//sort hists alphabetically
@@ -186,13 +223,13 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->SetStats(false);
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
-cout << "title " << xtit << " canname " << canname << endl;
+cout << "title " << xtit << " canname " << canname << " y title " << ytit << " histname " << hist[i]->GetName() << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		//else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
-		hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
-		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 3*maxy);
+		hist[i]->GetYaxis()->SetRangeUser(1e-10, 2*maxy);
+		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(1e-10, 2*maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
 
 		legentry = hist[i]->GetTitle();
@@ -369,7 +406,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
 	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
-
+	
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
 		TLatex sigFormula;
@@ -1478,7 +1515,8 @@ void HistFormatSim(string file){
 	//decay types
 	vector<string> types = {"b_","qg","lep"};
 	vector<string> typesFullDecay = {"fullHad","semiLep","fullLep"};
-	
+
+	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_genOvRecoE");
@@ -1489,6 +1527,7 @@ void HistFormatSim(string file){
 	
 	MethodStackHists(file, "ttbar", methods, oname, "dR_b");
 	MethodStackHists(file, "ttbar", methods, oname, "qType");
+*/
 	
 	ProcStackHists(file, procs, "reco", oname, "Jet_mass");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_mass");
@@ -1502,14 +1541,27 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_Wmass");
 	ProcStackHists(file, procs, "reco", oname, "Jet_topmass");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_topmass");
-	ProcStackHists(file, procs, "Reco", oname, "nRecoJets");
-	ProcStackHists(file, procs, "BHC", oname,  "nBHCJets");
+	ProcStackHists(file, procs, "reco", oname, "nJets");
+	ProcStackHists(file, procs, "BHC", oname,  "nJets");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
+	
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_nSubclusters");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEnergy");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaCenter");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiCenter");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeCenter");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaSig");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiSig");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeSig");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusteretaPhiCov");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimeEtaCov");
+	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimePhiCov");
 
 	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
 	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
 		
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+
 }
 
 
