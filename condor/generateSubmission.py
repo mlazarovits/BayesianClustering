@@ -95,9 +95,9 @@ def generateSubmission(args):
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
     if "PhoSlim" in args.inputSample:
-        if "DEG" in args.inputSample or "GJets" in args.inputSample:
+        if "EGamma" in args.inputSample or "GJets" in args.inputSample:
             inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
-            if "DEG" in args.inputSample:
+            if "EGamma" in args.inputSample:
                 inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v24")
         else:
             inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
@@ -213,6 +213,10 @@ def generateSubmission(args):
         flags += str(w)+' '
     flags += '--nu0 '+str(args.nu0)
 
+    #isobkg params triggered only with --isoBkg
+    flags += ' --maxmet_isobkg '+str(args.maxmet_isobkg)+' --minphopt_isobkg '+str(args.minphopt_isobkg)+' --minht_isobkg '+str(args.minht_isobkg)+' --minjetpt_isobkg '+str(args.minjetpt_isobkg)
+
+
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
@@ -225,6 +229,8 @@ def generateSubmission(args):
         flags += ' --rejectSpikes'
     if(args.noIso):
         flags += ' --noIso'
+    if(args.isoBkg):
+        flags += ' --isoBkg'
     if(args.maxRhE != -999):
         flags += ' --maxRhE '+str(args.maxRhE)
 
@@ -287,6 +293,11 @@ def main():
     parser.add_argument('--rejectSpikes',help="reject spikes based on swiss cross cut (default = false, off)",default=False,action='store_true')
     parser.add_argument('--beamHaloFilter',help="apply BH filter (0: off - default, 1: on, 2: inverse)",default=0)
     parser.add_argument('--noIso',help='turn off isolation for photons in preselection',default=False,action='store_true')
+    parser.add_argument('--isoBkg',help='turn on event selection for isolated background',default=False,action='store_true')
+    parser.add_argument('--maxmet_isobkg',help='max MET for isolated background event selection',default=100)
+    parser.add_argument('--minphopt_isobkg',help='min photon pt for isolated background event selection',default=50)
+    parser.add_argument('--minht_isobkg',help='min HT for isolated background event selection',default=50)
+    parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
     args = parser.parse_args()
 
     generateSubmission(args)
