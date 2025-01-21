@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
 	int bh = 1;
 	bool iso = true;
 
-	double minpt_isobkg = 70;
+	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
 	double minjetpt_isobkg = 50;
 	double maxmet_isobkg = 150;
