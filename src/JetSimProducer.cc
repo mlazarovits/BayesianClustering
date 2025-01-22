@@ -5,9 +5,9 @@
 JetSimProducer::JetSimProducer(){
 	_gev = 1;
 	//_minobjeta = 1.5;
-	_recoptmin = 0;
+	_ptmin = 0;
 	_minrhE = 0.5;
-	_recoEmin = 0;
+	_Emin = 0;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -21,9 +21,9 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_nEvts = _base->fChain->GetEntries();
 	//default to 1 GeV = 1 entry -> gev = 1
 	_gev = 1;
-	_recoptmin = 0;
+	_ptmin = 0;
 	_minrhE = 0.5;
-	_recoEmin = 0;
+	_Emin = 0;
 	//_minobjeta = 1.5;
 	
 }
@@ -133,6 +133,8 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		pt = _base->Jet_genPt->at(j);
 		phi = _base->Jet_genPhi->at(j);
 		eta = _base->Jet_genEta->at(j);
+		if(pt < _ptmin) continue;
+		if(_base->Jet_energy->at(j) < _Emin) continue;
 
 
 		px = pt*cos(phi);
@@ -180,8 +182,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		pt = _base->Jet_pt->at(j);
 		phi = _base->Jet_phi->at(j);
 		eta = _base->Jet_eta->at(j);
-		if(pt < _recoptmin) continue;
-		if(_base->Jet_energy->at(j) < _recoEmin) continue;
+		if(pt < _ptmin) continue;
+		if(_base->Jet_energy->at(j) < _Emin) continue;
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);
@@ -218,7 +220,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 				jet.AddRecHit(rh);
 			}
 		}		
-		if(jet.GetNRecHits() < 1) continue;
+		if(jet.GetNRecHits() < _minNrhs) continue;
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
 		recojets.push_back(jet);

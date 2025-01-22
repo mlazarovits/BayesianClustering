@@ -21,15 +21,16 @@ class JetSimProducer{
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
 
-		void SetRecoMinPt(double pt){_recoptmin = pt; }
-		void SetRecoMinE(double e){ _recoEmin = e;}
+		void SetMinPt(double pt){_ptmin = pt; }
+		void SetMinE(double e){ _Emin = e;}
 		void SetMinRhE(double r){ _minrhE = r; }
+		void SetMinNrhs(int r){ _minNrhs = r; }
 
 		void SortJets(vector<Jet>& jets);
 		
 		void PrintPreselection(){
 			cout << "Default energy transfer factor: " << _gev << endl;
-			cout << "Minimum reco pt: " << _recoptmin << endl;
+			cout << "Minimum reco pt: " << _ptmin << endl;
 			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
 		}
 
@@ -78,7 +79,7 @@ class JetSimProducer{
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
-		int _nEvts;
-		double _recoptmin, _minrhE, _recoEmin;
+		int _nEvts, _minNrhs;
+		double _ptmin, _minrhE, _Emin;
 };
 #endif

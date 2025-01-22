@@ -282,8 +282,9 @@ int main(int argc, char *argv[]){
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
-	skimmer.SetRecoMinE(minE);
-	skimmer.SetRecoMinPt(minpt);
+	skimmer.SetMinRhE(minRhE);
+	skimmer.SetMinE(minE);
+	skimmer.SetMinPt(minpt);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
 	skimmer.SetTransferFactor(gev);
