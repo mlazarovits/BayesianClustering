@@ -30,8 +30,10 @@ class JetSimProducer{
 		
 		void PrintPreselection(){
 			cout << "Default energy transfer factor: " << _gev << endl;
-			cout << "Minimum reco pt: " << _ptmin << endl;
-			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
+			cout << "Minimum pt: " << _ptmin << endl;
+			cout << "Minimum energy: " << _Emin << endl;
+			cout << "Minimum rh energy: " << _minrhE << endl;
+			cout << "Minimum # rh: " << _minNrhs << endl;
 		}
 
 

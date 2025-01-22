@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
 	
 	double minpt = 30.;
 	double minE = 30.;
-	double minnrhs = 15;
+	int minnrhs = 1;
 	double minRhE = 0.5;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--minNrhs", 9) == 0){
 			i++;
-    	 		minnrhs = std::stod(argv[i]);
+    	 		minnrhs = std::stoi(argv[i]);
    		}
 		if(strncmp(argv[i],"--minRhE", 8) == 0){
 			i++;
@@ -282,7 +282,7 @@ int main(int argc, char *argv[]){
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
-	skimmer.SetMinRhE(minRhE);
+	skimmer.SetMinNrhs(minnrhs);
 	skimmer.SetMinE(minE);
 	skimmer.SetMinPt(minpt);
 	skimmer.SetStrategy(strat);

@@ -8,6 +8,7 @@ JetSimProducer::JetSimProducer(){
 	_ptmin = 0;
 	_minrhE = 0.5;
 	_Emin = 0;
+	_minNrhs = 1;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -24,6 +25,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_ptmin = 0;
 	_minrhE = 0.5;
 	_Emin = 0;
+	_minNrhs = 1;
 	//_minobjeta = 1.5;
 	
 }

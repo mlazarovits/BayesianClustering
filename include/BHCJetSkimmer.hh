@@ -157,6 +157,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoJet_subClusteretaPhiCov);
 			_hists1D.push_back(recoJet_subClustertimeEtaCov);
 			_hists1D.push_back(recoJet_subClustertimePhiCov);
+			_hists1D.push_back(reco_nRhs);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -182,8 +183,9 @@ class BHCJetSkimmer{
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
-		void SetRecoMinPt(double r){ _prod->SetRecoMinPt(r); }
-		void SetRecoMinE(double r){ _prod->SetRecoMinE(r); }
+		void SetMinPt(double r){ _prod->SetMinPt(r); }
+		void SetMinE(double r){ _prod->SetMinE(r); }
+		void SetMinNrhs(int r){ _prod->SetMinNrhs(r); }
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;
@@ -451,7 +453,7 @@ class BHCJetSkimmer{
 			//}
 			
 			for(int p = 0; p < _procCats.size(); p++){
-				cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
@@ -481,6 +483,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
 						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
 					}
+					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
 					//skip gen matching for now
 					continue;
 					
@@ -570,9 +573,9 @@ class BHCJetSkimmer{
 			GenMatchJetToJet(_recojets,genMatchIdxs_reco);
 			GenMatchJetToJet(_predJets,genMatchIdxs_bhc);
 			int bestIdx;
-			cout << "n reco jets " << _recojets.size() << " n idxs " << genMatchIdxs_reco.size() << " n pred jets " << _predJets.size() << " n pred idxs " << genMatchIdxs_bhc.size() <<  endl;
+			//cout << "n reco jets " << _recojets.size() << " n idxs " << genMatchIdxs_reco.size() << " n pred jets " << _predJets.size() << " n pred idxs " << genMatchIdxs_bhc.size() <<  endl;
 			for(int p = 0; p < _procCats.size(); p++){
-				cout << "proc " << p << " # reco jets " << _recojets.size() << " # gen jets " << _genjets.size() << endl;
+				//cout << "proc " << p << " # reco jets " << _recojets.size() << " # gen jets " << _genjets.size() << endl;
 				//reco jets
 				for(int j = 0; j < _recojets.size(); j++){
 					if(genMatchIdxs_reco[j] != -1) cout << " reco jet " << j << " is exclusively matched to gen jet " << genMatchIdxs_reco[j] << " with dr " << dR(_base->Jet_genEta->at(genMatchIdxs_reco[j]), _base->Jet_genPhi->at(genMatchIdxs_reco[j]), _recojets[j].eta(), _recojets[j].phi()) << endl;
@@ -1101,6 +1104,8 @@ class BHCJetSkimmer{
 		TH1D* recoJet_subClustertimeEtaCov = new TH1D("RecoJet_subClustertimeEtaCov","RecoJet_subClustertimeEtaCov",100,-0.02,0.02);
 		//87 - time-phi covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClustertimePhiCov = new TH1D("RecoJet_subClustertimePhiCov","RecoJet_subClustertimePhiCov",100,-0.02,0.02);
+		//88 - n rhs in reco jets
+		TH1D* reco_nRhs = new TH1D("RecoJet_nRhs","RecoJet_nRhs",200,0,200);
 
 
 		//2D plots

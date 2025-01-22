@@ -17,8 +17,8 @@ void BHCJetSkimmer::Skim(){
 	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
-	//cout << "n procs: " << _procCats.size() << endl;
-	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
+	cout << "n procs: " << _procCats.size() << endl;
+	for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
