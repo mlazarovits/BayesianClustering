@@ -34,6 +34,7 @@ class BaseSkimmer{
 			_smear = true;
 			_timesmear = false;
 			_skip = 1;
+			_weight = 1;
 			_ngrid = 7;
 			_thresh = 1.;
 			_alpha = 0.1;
@@ -55,6 +56,7 @@ class BaseSkimmer{
 			
 			cout << "Default NN model: small8CNN_EMultr.json" << endl;
 
+
 		};
 		BaseSkimmer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
@@ -75,6 +77,7 @@ class BaseSkimmer{
 			_smear = true;
 			_timesmear = false;
 			_skip = 1;
+			_weight = 1;
 			_ngrid = 7;
                 	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
