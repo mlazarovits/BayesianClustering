@@ -17,8 +17,8 @@ void BHCJetSkimmer::Skim(){
 	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, false);
 
-	cout << "n procs: " << _procCats.size() << endl;
-	for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
+	//cout << "n procs: " << _procCats.size() << endl;
+	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
 
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -80,7 +80,7 @@ void BHCJetSkimmer::Skim(){
 			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
-
+			
 			//set constituents
 			vector<double> norms;
 			gmm->GetNorms(norms);
