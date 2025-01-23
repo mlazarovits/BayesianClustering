@@ -1097,27 +1097,27 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
 		//iso bkg == bkg for sig vs bkg MVA
 		//239 - energy - iso bkg selection
-		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel;EovP;E",25,0,1000);
+		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel;EovP;E",50,0,100);
 		//240 - etaSig - iso bkg selection	
-                TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",25,0.01, 0.09);
+                TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",50,0.01,0.05);
 		//241 - phiSig - iso bkg selection	
-                TH1D* phiSig_IsoBkgSel = new TH1D("phiSig_IsoBkgSel","phiSig_IsoBkgSel",25,0.01,0.09);
+                TH1D* phiSig_IsoBkgSel = new TH1D("phiSig_IsoBkgSel","phiSig_IsoBkgSel",50,0.01,0.09);
 		//242 - etaPhiCov - iso bkg selection	
-		TH1D* etaPhiCov_IsoBkgSel = new TH1D("etaPhiCov_IsoBkgSel","etaPhiCov_IsoBkgSel",25,-0.65,0.65);
+		TH1D* etaPhiCov_IsoBkgSel = new TH1D("etaPhiCov_IsoBkgSel","etaPhiCov_IsoBkgSel",50,-0.01,0.01);
 		//243 - timeEtaCov - iso bkg selection	
-		TH1D* timeEtaCov_IsoBkgSel = new TH1D("timeEtaCov_IsoBkgSel","timeEtaCov_IsoBkgSel",25,-0.65,0.65);
+		TH1D* timeEtaCov_IsoBkgSel = new TH1D("timeEtaCov_IsoBkgSel","timeEtaCov_IsoBkgSel",50,-0.2,0.2);
 		//244 - timePhiCov - iso bkg selection	
-		TH1D* timePhiCov_IsoBkgSel = new TH1D("timePhiCov_IsoBkgSel","timePhiCov_IsoBkgSel",25,-1.,1.);
+		TH1D* timePhiCov_IsoBkgSel = new TH1D("timePhiCov_IsoBkgSel","timePhiCov_IsoBkgSel",50,-0.2,0.1);
 		//245 - majLength - iso bkg selection	
-                TH1D* majLength_IsoBkgSel = new TH1D("majLength_IsoBkgSel","majLength_IsoBkgSel",25,0.01,0.09);
+                TH1D* majLength_IsoBkgSel = new TH1D("majLength_IsoBkgSel","majLength_IsoBkgSel",50,0.01,1.);
 		//246 - minLength - iso bkg selection	
-                TH1D* minLength_IsoBkgSel = new TH1D("minLength_IsoBkgSel","minLength_IsoBkgSel",25,0.01,0.09);
+                TH1D* minLength_IsoBkgSel = new TH1D("minLength_IsoBkgSel","minLength_IsoBkgSel",50,0.01,0.09);
 		//247 - phi2D - iso bkg selection	
-		TH1D* phi2D_IsoBkgSel = new TH1D("phiE2D_IsoBkgSel","phiE2D_IsoBkgSel",50,-3.1,3.1);		
+		TH1D* phi2D_IsoBkgSel = new TH1D("phiE2D_IsoBkgSel","phiE2D_IsoBkgSel",50,-2.5,1.);		
 		//248 - rot2D - iso bkg selection	
-		TH1D* rot2D_IsoBkgSel = new TH1D("rot2D_IsoBkgSel","rot2D_IsoBkgSel",20,0.4,1.1);
+		TH1D* rot2D_IsoBkgSel = new TH1D("rot2D_IsoBkgSel","rot2D_IsoBkgSel",50,0.4,1.1);
 		//249 - rot3D - iso bkg selection 
-		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",10,0.74,1.01);
+		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",50,0.95,1.01);
 
 
 
