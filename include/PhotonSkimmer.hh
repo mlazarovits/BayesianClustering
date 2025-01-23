@@ -53,7 +53,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_weight = 1;
 			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
 			else{
-			        ifstream weights("info/EventWeights.txt", std::ios::in);
+			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
 			        string filein;
 			        string filename = file->GetName();
 			        double jet_weight, pho_weight;
