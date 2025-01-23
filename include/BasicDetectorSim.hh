@@ -199,6 +199,8 @@ struct RecoParticle;
 		vector<unsigned int> _rhids;
 		//gen jets 
 		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		//# particles in gen jets
+		vector<int> _jgnparts;
 		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
 		vector<int> _topDecayId;

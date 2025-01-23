@@ -1075,6 +1075,7 @@ void BasicDetectorSim::FillGenParticles(){
 void BasicDetectorSim::FillGenJets(){
 	//vector<fastjet::PseudoJet> consts;
 	_njets = _jets.size();
+	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
 		//consts = jet.constituents();
 		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
@@ -1085,6 +1086,8 @@ void BasicDetectorSim::FillGenJets(){
 		_jgenergy.push_back(jet.e());
 		_jgpt.push_back(jet.pt());
 		_jgmass.push_back(jet.m());
+		consts = jet.constituents();
+		_jgnparts.push_back((int)consts.size());
 	}
 }
 
@@ -1186,11 +1189,12 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
 
 	//gen jets - gen particles clustered with FJ AK4
-	_tree->Branch("Jet_genEta", &_jgeta)->SetTitle("Jet gen eta - FastJet AK4");
-	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Jet gen phi - FastJet AK4");
-	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Jet gen energy - FastJet AK4");
-	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Jet gen pt - FastJet AK4");
-	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Jet gen mass - FastJet AK4");
+	_tree->Branch("Jet_genEta", &_jgeta)->SetTitle("Gen jet eta - FastJet AK4");
+	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Gen jet phi - FastJet AK4");
+	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Gen jet energy - FastJet AK4");
+	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Gen jet pt - FastJet AK4");
+	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Gen jet mass - FastJet AK4");
+	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	_tree->Branch("Jet_genNJet",&_njets)->SetTitle("Number of gen jets - FastJet AK4");
 	
 	//gen top info
