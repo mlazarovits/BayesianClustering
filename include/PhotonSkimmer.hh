@@ -32,6 +32,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 150;
 
+			_weight = 1;
 		};
 		virtual ~PhotonSkimmer(){ };
 
@@ -47,6 +48,25 @@ class PhotonSkimmer : public BaseSkimmer{
 			TFile* f2 = TFile::Open(fname.c_str());
 			_jetprod = new JetProducer(f2);
 			
+
+			//set histogram weights for HT slices, etc
+			_weight = 1;
+			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			else{
+			        ifstream weights("info/EventWeights.txt", std::ios::in);
+			        string filein;
+			        string filename = file->GetName();
+			        double jet_weight, pho_weight;
+			        while( weights >> filein >> jet_weight >> pho_weight){
+			                if(filename.find(filein) == string::npos) continue;
+			                else{
+			                        _weight = pho_weight;
+			                        break;
+			                }
+			        }
+			}		
+
+
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -912,31 +932,6 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* logErot2D_phiE2Deq0PiOv2 = new TH1D("logErot2D_phiE2Deq0PiOv2","logErot2D_phiE2Deq0PiOv2",25,0.1,1.1);
                 //173 - rot2D cov, phiE2D !~ 0 && phiE2D !~ pi/2
                 TH1D* logErot2D_phiE2Dneq0PiOv2 = new TH1D("logErot2D_phiE2Dneq0PiOv2","logErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
-		//iso bkg == bkg for sig vs bkg MVA
-		//174 - energy - iso bkg selection
-		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel;EovP;E",25,0,1000);
-		//175 - etaSig - iso bkg selection	
-                TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",25,0.01, 0.09);
-		//176 - phiSig - iso bkg selection	
-                TH1D* phiSig_IsoBkgSel = new TH1D("phiSig_IsoBkgSel","phiSig_IsoBkgSel",25,0.01,0.09);
-		//177 - etaPhiCov - iso bkg selection	
-		TH1D* etaPhiCov_IsoBkgSel = new TH1D("etaPhiCov_IsoBkgSel","etaPhiCov_IsoBkgSel",25,-0.65,0.65);
-		//178 - timeEtaCov - iso bkg selection	
-		TH1D* timeEtaCov_IsoBkgSel = new TH1D("timeEtaCov_IsoBkgSel","timeEtaCov_IsoBkgSel",25,-0.65,0.65);
-		//179 - timePhiCov - iso bkg selection	
-		TH1D* timePhiCov_IsoBkgSel = new TH1D("timePhiCov_IsoBkgSel","timePhiCov_IsoBkgSel",25,-1.,1.);
-		//180 - majLength - iso bkg selection	
-                TH1D* majLength_IsoBkgSel = new TH1D("majLength_IsoBkgSel","majLength_IsoBkgSel",25,0.01,0.09);
-		//181 - minLength - iso bkg selection	
-                TH1D* minLength_IsoBkgSel = new TH1D("minLength_IsoBkgSel","minLength_IsoBkgSel",25,0.01,0.09);
-		//182 - phi2D - iso bkg selection	
-		TH1D* phi2D_IsoBkgSel = new TH1D("phiE2D_IsoBkgSel","phiE2D_IsoBkgSel",50,-3.1,3.1);		
-		//183 - rot2D - iso bkg selection	
-		TH1D* rot2D_IsoBkgSel = new TH1D("rot2D_IsoBkgSel","rot2D_IsoBkgSel",20,0.4,1.1);
-		//184 - rot3D - iso bkg selection 
-		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",10,0.74,1.01);
-
-
 		//////////noE weighted//////////
 		//174 - spatial rotundity, E low
 		TH1D* noErotundity_2D_Elo = new TH1D("noErot2D_Elo","noErot2D_Elo",20,0.4,1.1);
@@ -1074,6 +1069,31 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dR_trackSubcl = new TH1D("dR_trackSubcl","dR_trackSubcl",50,0,5);	
 		//238 - normalized dE bw subcluster and closest matching track	
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
+		//iso bkg == bkg for sig vs bkg MVA
+		//239 - energy - iso bkg selection
+		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel;EovP;E",25,0,1000);
+		//240 - etaSig - iso bkg selection	
+                TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",25,0.01, 0.09);
+		//241 - phiSig - iso bkg selection	
+                TH1D* phiSig_IsoBkgSel = new TH1D("phiSig_IsoBkgSel","phiSig_IsoBkgSel",25,0.01,0.09);
+		//242 - etaPhiCov - iso bkg selection	
+		TH1D* etaPhiCov_IsoBkgSel = new TH1D("etaPhiCov_IsoBkgSel","etaPhiCov_IsoBkgSel",25,-0.65,0.65);
+		//243 - timeEtaCov - iso bkg selection	
+		TH1D* timeEtaCov_IsoBkgSel = new TH1D("timeEtaCov_IsoBkgSel","timeEtaCov_IsoBkgSel",25,-0.65,0.65);
+		//244 - timePhiCov - iso bkg selection	
+		TH1D* timePhiCov_IsoBkgSel = new TH1D("timePhiCov_IsoBkgSel","timePhiCov_IsoBkgSel",25,-1.,1.);
+		//245 - majLength - iso bkg selection	
+                TH1D* majLength_IsoBkgSel = new TH1D("majLength_IsoBkgSel","majLength_IsoBkgSel",25,0.01,0.09);
+		//246 - minLength - iso bkg selection	
+                TH1D* minLength_IsoBkgSel = new TH1D("minLength_IsoBkgSel","minLength_IsoBkgSel",25,0.01,0.09);
+		//247 - phi2D - iso bkg selection	
+		TH1D* phi2D_IsoBkgSel = new TH1D("phiE2D_IsoBkgSel","phiE2D_IsoBkgSel",50,-3.1,3.1);		
+		//248 - rot2D - iso bkg selection	
+		TH1D* rot2D_IsoBkgSel = new TH1D("rot2D_IsoBkgSel","rot2D_IsoBkgSel",20,0.4,1.1);
+		//249 - rot3D - iso bkg selection 
+		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",10,0.74,1.01);
+
+
 
 
 		
@@ -2050,6 +2070,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(e_var > 0.03 && p_var < 0.03) _procCats[id_idx].hists1D[1][236]->Fill(dPhiMetpc);
 			_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 			_procCats[id_idx].hists1D[1][238]->Fill(de);
+
 
 
 
@@ -3187,6 +3208,26 @@ class PhotonSkimmer : public BaseSkimmer{
 		ec = params["mean"].at(0,0);
 		pc = params["mean"].at(1,0);
 		tc = params["mean"].at(2,0);
+
+		vector<double> norms;
+		gmm->GetNorms(norms);
+		double Ek = norms[ncl]*_gev;
+
+		Matrix cov = params["cov"];
+		vector<Matrix> eigvecs;
+		vector<double> eigvals;
+		cov.eigenCalc(eigvals,eigvecs);
+		double majLength = sqrt(eigvals[2]);
+		if(eigvals[1] < 0) cout << "negative eigenvalue " << eigvals[1] << endl;
+		double minLength; 
+		if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
+		else minLength = sqrt(eigvals[1]);	
+		
+		double rot3D = Rotundity(cov);
+		Matrix space_mat(2,2);
+		Get2DMat(cov,space_mat);
+		double phi2D = PhiEll(space_mat);			
+		double rot2D = Rotundity(space_mat);
 		
 		bool trksum, ecalrhsum, htowoverem, iso;	
 		int label = -1;
@@ -3218,7 +3259,9 @@ class PhotonSkimmer : public BaseSkimmer{
 								if(_isoBkgSel){
 									if(_base->Photon_pt->at(nobj) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
 									//pt asymmetry bw photon + jet - put in if modelling bw data/MC is not good enough
-									else label = 4; //selection for iso bkg is on (event sel)
+									else{
+										label = 4; //selection for iso bkg is on (event sel)
+									}
 								}
 								else label = -1; //removal of GMSB !sig photons is done in data processing for NN
 							}	
@@ -3279,6 +3322,24 @@ class PhotonSkimmer : public BaseSkimmer{
 				//no iso cuts -> photons for iso network -> can only be evaluated in MC gen-matching above (n/a data)
 			}
 		
+		}
+		//iso bkg CR distributions
+		if(label == 4){
+			for(int i = 0; i < (int)_procCats.size(); i++){
+				_procCats[i].hists1D[0][239]->Fill(Ek, _weight);
+				_procCats[i].hists1D[0][240]->Fill(sqrt(cov.at(0,0)), _weight);
+				_procCats[i].hists1D[0][241]->Fill(sqrt(cov.at(1,1)), _weight);
+				_procCats[i].hists1D[0][242]->Fill(cov.at(0,1), _weight);
+				_procCats[i].hists1D[0][243]->Fill(cov.at(0,2), _weight);
+				_procCats[i].hists1D[0][244]->Fill(cov.at(1,2), _weight);
+				_procCats[i].hists1D[0][245]->Fill(majLength, _weight);
+				_procCats[i].hists1D[0][246]->Fill(minLength, _weight);
+				_procCats[i].hists1D[0][247]->Fill(phi2D, _weight);
+				_procCats[i].hists1D[0][248]->Fill(rot2D, _weight);
+				_procCats[i].hists1D[0][249]->Fill(rot3D, _weight);
+
+
+			}
 		}
 		return label;
 	}
