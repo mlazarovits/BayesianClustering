@@ -64,7 +64,10 @@ void PhotonSkimmer::Skim(){
 	double totEvt = 0;
 
 	//set iso cuts
-	if(_isocuts) _prod->SetIsoCut();
+	if(_isocuts){
+		_prod->SetIsoCut();
+		cout << "Applying isolation preselection for photons." << endl;
+	}
 	//set energy weight transfer factor
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
@@ -285,6 +288,7 @@ void PhotonSkimmer::Skim(){
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);
+
 			//cout << "label: " << label << endl;
 				obs["event"] = e;
                                 obs["object"] = phoidx;

@@ -290,6 +290,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists1D.push_back(EovP_trackSubcl);	
 			_hists1D.push_back(EovP_subclTrack_early_smalldR);	
 			_hists1D.push_back(E_spikeSel);
+			_hists1D.push_back(E_promptSel);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1097,7 +1098,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//240 - E of spike SCs
 		TH1D* E_spikeSel = new TH1D("E_spikeSel","E_spikeSel;EovP;E",25,0,1000);
 		//241 - E of prompt SCs - to compare bw DEG and MET PDs
-		TH1D* E_promptSel = new TH1D("E_promptSel","E_promptSel;EovP;E",25,0,1000);
+		TH1D* E_promptSel = new TH1D("E_promptSel","E_promptSel",50,0,500);
 	
 
 	
