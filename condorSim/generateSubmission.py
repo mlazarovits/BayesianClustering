@@ -56,7 +56,7 @@ def generateSubmission(args):
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
     #put algo config in file name
-    kname = "%.3f" % args.alpha
+    kname = "%.3f" % float(args.alpha)
     kname = kname.replace(".","p")
     paramsname = "_bhcAlpha"+kname
     kname = "%.3f" % float(args.EMalpha)
