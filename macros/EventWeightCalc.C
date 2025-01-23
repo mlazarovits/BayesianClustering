@@ -3,19 +3,31 @@
 #include "../include/BaseProducer.hh"
 #include "../include/Jet.hh"
 #include "../include/JetProducer.hh"
+#include "../include/PhotonProducer.hh"
 #include "../include/SampleWeight.hh"
 
 using std::cout;
 using std::endl;
 
-//configurable parameters
-//gev
+//returns vector sum of given objects
+Jet VectorSum(vector<Jet>& jets){
+        Jet ret;
+        for(auto j : jets){
+                ret.add(j);
+        }
+        return ret;
+}
 
 int EventWeightCalc(string selection = ""){
 	double gev_jet = 0.1;
 	double gev_pho = 1./30.;
 	if(selection != "")
 		selection = "_"+selection;
+
+	bool isoBkgSel = true;
+	double minht = 50;
+	double maxmet = 50;
+	double pi = 4*atan(1);
 
 	//just for MCs - data weight = 1
 	vector<string> files;
@@ -47,9 +59,25 @@ int EventWeightCalc(string selection = ""){
 		cout << "File " << files[f];
 		//loop over all files in a list
 		TFile* file = TFile::Open(("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"+files[f]).c_str());
-		BaseProducer* prod = new JetProducer(file);
-		ReducedBase* base = prod->GetBase();
+		JetProducer* jet_prod = new JetProducer(file);
+		TFile* file2 = TFile::Open(("root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"+files[f]).c_str());
+		PhotonProducer* pho_prod = new PhotonProducer(file2);
+		ReducedBase* base = jet_prod->GetBase();
 		int nEvts = base->fChain->GetEntries();
+
+		pho_prod->SetMinPt(50.); //50 for iso bkg (same for jets + photons), 30 for nominal
+		pho_prod->SetMinNrhs(15);
+                pho_prod->SetMinEmE(30); 
+                pho_prod->SetMinRhE(0.5);
+	       	pho_prod->SetTransferFactor(1/30.);
+		pho_prod->SetIsoCut();	
+
+		jet_prod->SetMinPt(50.); //50 for iso bkg (same for jets + photons), 30 for nominal
+		jet_prod->SetMinNrhs(15);
+                jet_prod->SetMinEmE(10); 
+                jet_prod->SetMinRhE(0.5); 
+	       	jet_prod->SetTransferFactor(1/10.);	
+		
 
 		SampleWeight swts;
 		swts.Init();
@@ -64,10 +92,63 @@ int EventWeightCalc(string selection = ""){
 		for(int i = 0; i < nEvts; i++){
 		        base->GetEntry(i);
 		        cout << "\33[2K\r"<< "evt: " << i << " of " << nEvts << flush;
-		        prod->GetTrueJets(jets, i, gev_jet);
-			prod->GetTruePhotons(phos, i, gev_pho);
+			jet_prod->GetTrueJets(jets, i);
 		        if(jets.size() >= 1){ nSelEvts_jet++; }
-		        if(phos.size() >= 1){ nSelEvts_pho++; }
+		
+			pho_prod->GetTruePhotons(phos, i);
+			//add in event level selection (ie min ht, etc.)
+			//do iso bkg evt selection in photons to compare data/MC
+                	if(isoBkgSel){
+                        	//L1 seed
+                        	if(!base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) continue;
+                        	//cout << "passed L1 seed" << endl;     
+                        	//L1 to HLT Regional EGM matching leg
+                        	if(!base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter) continue;
+                        	//cout << "passed L1 to HLT" << endl;   
+                        	//photon pt > 60
+                        	if(!base->Trigger_hltEG60EtFilter) continue;
+                        	//cout << "passed photon pt > 60" << endl;      
+                        	//jet ht > 175 && jet pt > 10 && |eta jet| < 3
+                        	if(!base->Trigger_hltHT175Jet10) continue;
+                        	//cout << "passed HT > 175" << endl;    
+                        	//jet ht > 350 && jet pt > 15 && |eta jet| < 3
+                        	if(!base->Trigger_hltPFHT350Jet15) continue;
+                        	//cout << "passed HT > 135" << endl;    
+
+                        	//min photon multiplicity
+                        	if(phos.size() < 1) continue;
+                        	//cout << "passed pho mult" << endl;    
+                        	//min jet multiplicity
+                        	if(jets.size() < 1) continue;
+                        	//cout << "passed jet mult" << endl;
+				//ht - scalar sum
+                        	double ht = 0;
+                        	for(auto j : jets) ht += j.pt();
+                        	//dphi bw photon and jet systems (vector sum of objects)
+                        	Jet jet_sys = VectorSum(jets);
+                        	Jet pho_sys = VectorSum(phos);
+                        	double pho_phi = pho_sys.phi_02pi();
+                        	//cout << "pho system E " << pho_sys.E() << " phi " << pho_sys.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+                        	double jet_phi = jet_sys.phi_02pi();
+                        	double dphi_phojet = pho_phi - jet_phi;
+                        	dphi_phojet = acos(cos(dphi_phojet)); //wraparound - will always be < pi
+                        	//MET upper limit - orthogonal to signal MET selection
+                        	if(base->Met_pt > maxmet) continue;
+                        	//cout << "passed max met" << endl;
+                        	//min jet ht
+                        	if(ht < minht) continue;
+                        	//cout << "passed min ht" << endl;
+                        	//az angle bw hardest presel photon + jet system
+                        	//cout << "dphi " << dphi_phojet << " met " << base->Met_pt << endl;
+                        	if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
+                        	//cout << "passed dphi " << endl;
+                        //trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
+				nSelEvts_pho++;
+			}
+			else{
+		        	if(jets.size() >= 1){ nSelEvts_jet++; }
+		        	if(phos.size() >= 1){ nSelEvts_pho++; }
+			}
 			jets.clear();
 			phos.clear();
 		}
