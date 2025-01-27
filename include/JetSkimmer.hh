@@ -350,6 +350,8 @@ class JetSkimmer : public BaseSkimmer{
 		
 		//bins for variable binning for resolution/mean plots
 		vector<double> xbins = {0, 200, 400, 600, 800, 1000, 1200}; 
+		//vector<double> xbins = {0, 200, 400, 600, 800, 1000, 1200}; 
+		vector<double> xbins = {0, 200, 400, 600, 800, 1200}; 
 		///////////////////// timeHists /////////////
 		//0 - pv time
 		TH1D* PVtime = new TH1D("jetTime_PV", "jetTime_PV",50,-10,10);	
