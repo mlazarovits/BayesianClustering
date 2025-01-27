@@ -399,6 +399,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 			
 			string teststr = ss.str();
 			cout << "params " << i << " Y: " << 0.3+(hist.size()+1)*0.05-i*0.05 << endl;
+			cout << "fitted params " << teststr << endl;
 			//fitparams.DrawLatex(0.2,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		}
 	}
