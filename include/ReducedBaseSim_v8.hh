@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jan 27 10:58:38 2025 by ROOT version 6.30/06
+// Mon Oct 21 15:32:10 2024 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_ttbar_defaultv9.root
+// found on file: simNtuples_ttbar.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -45,7 +45,6 @@ public :
    vector<double>  *Jet_genEnergy;
    vector<double>  *Jet_genPt;
    vector<double>  *Jet_genMass;
-   vector<int>     *Jet_genNConstituents;
    Int_t           Jet_genNJet;
    vector<double>  *Top_genPt_hadronic;
    vector<double>  *Top_genPt_semiLep;
@@ -94,7 +93,6 @@ public :
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genPt;   //!
    TBranch        *b_Jet_genMass;   //!
-   TBranch        *b_Jet_genNConstituents;   //!
    TBranch        *b_Jet_genNJet;   //!
    TBranch        *b_Top_genPt_hadronic;   //!
    TBranch        *b_Top_genPt_semiLep;   //!
@@ -140,11 +138,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_ttbar_defaultv9.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_ttbar.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_ttbar_defaultv9.root");
+         f = new TFile("simNtuples_ttbar.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_ttbar_defaultv9.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_ttbar.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -202,7 +200,6 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_genEnergy = 0;
    Jet_genPt = 0;
    Jet_genMass = 0;
-   Jet_genNConstituents = 0;
    Top_genPt_hadronic = 0;
    Top_genPt_semiLep = 0;
    Top_genPt_leptonic = 0;
@@ -252,7 +249,6 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
    fChain->SetBranchAddress("Jet_genMass", &Jet_genMass, &b_Jet_genMass);
-   fChain->SetBranchAddress("Jet_genNConstituents", &Jet_genNConstituents, &b_Jet_genNConstituents);
    fChain->SetBranchAddress("Jet_genNJet", &Jet_genNJet, &b_Jet_genNJet);
    fChain->SetBranchAddress("Top_genPt_hadronic", &Top_genPt_hadronic, &b_Top_genPt_hadronic);
    fChain->SetBranchAddress("Top_genPt_semiLep", &Top_genPt_semiLep, &b_Top_genPt_semiLep);

@@ -235,7 +235,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 cout << "title " << xtit << " canname " << canname << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
-		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
+		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t [ns]");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
 		hist[i]->GetYaxis()->SetRangeUser(0, 1.5*maxy);
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 2.5*maxy);
@@ -351,6 +351,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 			fit->Draw("same");
 			//myleg->AddEntry(fit,(legentry+" fit").c_str(),"l");
 			//gPad->Update();
+
 			//draw fit parameters on plot
 			TLatex fitparams;
 			fitparams.SetNDC();
@@ -398,7 +399,8 @@ cout << "title " << xtit << " canname " << canname << endl;
 			
 			string teststr = ss.str();
 			cout << "params " << i << " Y: " << 0.3+(hist.size()+1)*0.05-i*0.05 << endl;
-			fitparams.DrawLatex(0.2,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
+			cout << "fitted params " << teststr << endl;
+			//fitparams.DrawLatex(0.2,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		}
 	}
 	myleg->Draw("same"); 
@@ -423,7 +425,9 @@ cout << "title " << xtit << " canname " << canname << endl;
 	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
 
 	//draw sigma formula
-	if(canname.find("sigma") != string::npos){
+	bool drawfunc = false;
+	//if(canname.find("sigma") != string::npos){
+	if(drawfunc){
 		TLatex sigFormula;
 		sigFormula.SetNDC();
 		sigFormula.SetTextSize(0.03);
