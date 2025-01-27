@@ -235,7 +235,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 cout << "title " << xtit << " canname " << canname << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
-		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
+		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t [ns]");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
 		hist[i]->GetYaxis()->SetRangeUser(0, 1.5*maxy);
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 2.5*maxy);
