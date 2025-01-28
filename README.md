@@ -138,15 +138,15 @@ There are muliple visualization classes:
 ### Including classes as dictionaries in ROOT
 Sometimes, you may need to add more classes to the ROOT compiler. For example, ROOT cannot fill TBranches with `vector<vector<type>>`. In this case, you will have to add the required class as a dictionary. First, you need to create a `LinkDef.h` file defining the classes. An example of this for the `vector<vector<int>>` class is in the base directory of this repository. Then, you will have to create the dictionary by running the following command
 ```
- rootcling -v4 -f myDict.cxx  -rmf libmyDict.rootmap -rml libmyDict.so LinkDef.h
+ rootcling -v4 -f vecDict.cxx  -rmf libvecDict.rootmap -rml libvecDict.so LinkDef.h
 ```
 Once the dictionary is made, you then need to compile it as a shared library to include in the compilation of the framework. This is done with
 ```
-g++ -shared -o libmyDict.so myDict.cxx `root-config --cflags --libs`
+g++ -shared -o libvecDict.so vecDict.cxx `root-config --cflags --libs`
 ```
-After this step, I usually move the `libmyDict.so` and `libmydict_rdict.pcm` files to the `lib` directory to keep things clean. Then, you will want to add the following commands to all the constructors of the classes that require the new dictionary-based classes
+After this step, I usually move the `libvecDict.so` and `libmydict_rdict.pcm` files to the `lib` directory to keep things clean. Then, you will want to add the following commands to all the constructors of the classes that require the new dictionary-based classes
 ```
-gSystem->Load("lib/libmyDict.so");
+gSystem->Load("lib/libvecDict.so");
 ```
 I also include this line in the `rootlogon.C` script so it can be read by the interpreter.
 
