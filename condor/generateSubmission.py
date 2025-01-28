@@ -215,10 +215,6 @@ def generateSubmission(args):
         flags += str(w)+' '
     flags += '--nu0 '+str(args.nu0)
 
-    #isobkg params triggered only with --isoBkg
-    flags += ' --maxmet_isobkg '+str(args.maxmet_isobkg)+' --minphopt_isobkg '+str(args.minphopt_isobkg)+' --minht_isobkg '+str(args.minht_isobkg)+' --minjetpt_isobkg '+str(args.minjetpt_isobkg)
-
-
     if(args.noSmear):
     	flags += ' --noSmear'
     if(args.timeSmear):
@@ -233,6 +229,7 @@ def generateSubmission(args):
         flags += ' --noIso'
     if(args.isoBkg):
         flags += ' --isoBkg'
+        flags += ' --maxmet_isobkg '+str(args.maxmet_isobkg)+' --minphopt_isobkg '+str(args.minphopt_isobkg)+' --minht_isobkg '+str(args.minht_isobkg)+' --minjetpt_isobkg '+str(args.minjetpt_isobkg)
     if(args.maxRhE != -999):
         flags += ' --maxRhE '+str(args.maxRhE)
 
