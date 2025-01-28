@@ -32,6 +32,7 @@ int main(int argc, char *argv[]){
 	bool skim = false;
 	bool ntuple = false;	
 	double gev = 1./10.;
+
 	//set clustering strategy
 	//0 = NlnN
 	//1 = N2
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]){
 	double minE = 30.;
 	int minnrhs = 1;
 	double minRhE = 0.5;
+	double mingenpartpt = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -181,6 +183,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--mingenpartpt", 14) == 0){
+			i++;
+    	 		mingenpartpt = std::stod(argv[i]);
+   		}
 
 
 
@@ -205,6 +211,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minE [minE]                 set reco minimum E (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --mingenpartpt [mingenpartpt] set minimum gen particle pt (default = 0 GeV)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "Example: ./detectorSimSkimmer.x -i rootfiles/simNtuples_ttbar.root -a 0.5 -t 1.6" << endl;
 		return 0;	
@@ -278,6 +285,7 @@ int main(int argc, char *argv[]){
 	dof.Print();
 	cout << "W0" << endl;
 	W.Print();
+cout << "mingenpartpt " << mingenpartpt << endl;
  
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
@@ -293,6 +301,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetPriorParameters(prior_params);
 	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
+	skimmer.SetMinGenPartPt(mingenpartpt);
 	skimmer.Skim();
 
 }
