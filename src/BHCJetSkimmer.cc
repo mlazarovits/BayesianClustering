@@ -54,6 +54,9 @@ void BHCJetSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetRecoJets(_recojets, i);
+		////fill gen jet histograms
+		_prod->GetGenJets(_genjets, i);
+		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets ";
 		if(_strategy == gmmOnly) cout << endl;
@@ -110,9 +113,6 @@ void BHCJetSkimmer::Skim(){
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
-		////fill gen jet histograms
-		_prod->GetGenJets(_genjets, i);
-		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 		
 		//decayId = 0 -> had
 		//decayId = 1 -> lep

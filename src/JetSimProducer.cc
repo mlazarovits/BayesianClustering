@@ -113,11 +113,10 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 	double eta, phi, px, py, pz, pt;
 	genjets.clear();
-
 	if(evt > _nEvts) return;
 
 	_base->GetEntry(evt);
-	int nJets = (int)_base->Jet_genEnergy->size();
+	int nJets = _base->Jet_genNJet;
 	
 	BayesPoint vtx = BayesPoint(3);
 	vtx.SetValue(_base->PV_x,0);
@@ -143,13 +142,13 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		py = pt*sin(phi);
 		pz = pt*sinh(eta);
 
-		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		Jet jet(px, py,
 		        pz, _base->Jet_genEnergy->at(j));
 		
 		jet.SetVertex(vtx);
+		jet.SetUserIdx(j);
 		genjets.push_back(jet);
-	}	
+	}
 }
 
 void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){

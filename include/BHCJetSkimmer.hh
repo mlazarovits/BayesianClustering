@@ -492,7 +492,21 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][89]->Fill(rhs[r].E());
 					}
 					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
-					//_procCats[p].hists2D[0][20]->Fill(_genjets[genMatchIdxs[j]],_recojets[j].GetNConstituents());
+					_procCats[p].hists2D[0][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
+					if(genMatchIdxs[j] != -1){
+						cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
+						int ngenparts = 0;
+						double genpart_minpt = 10;
+						int genjetidx = _genjets[genMatchIdxs[j]].GetUserIdx();
+						for(int jj = 0; jj < _base->Jet_genNConstituents->at(genjetidx); jj++){
+							int genidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(jj); //user idx from gen jets collection
+							genidx = _base->genpart_idx->at(genidx); //user idx from gen particles collection
+							if(_base->genpart_pt->at(genidx) < genpart_minpt) continue;
+							ngenparts++;
+						}
+						if(ngenparts > 0)	
+							_procCats[p].hists2D[0][21]->Fill(ngenparts,_recojets[j].GetNConstituents());
+					}
 					//skip gen matching for now
 					continue;
 					
@@ -1163,7 +1177,7 @@ class BHCJetSkimmer{
 		//20 - # rhs vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",50,0,50,50,0,50);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",50,0,50,50,0,50);
+		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",35,0,35,20,0,20);
 	
 
 		void SetSmear(bool t){ _smear = t; }
