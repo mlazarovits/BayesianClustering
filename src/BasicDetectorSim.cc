@@ -321,7 +321,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 			//add gen particle to be clustered for gen jet
 			//don't include electrons in gen jet clustering (or save to reco particles), muons are skipped above bc they are not showered
-			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fastjet::PseudoJet( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() ));
+			fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
+			fjinput.set_user_index(_genparts.size());
+			_genparts.push_back(fjinput);
+			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fjinput);
 
 			//fill ecal cell with reco particle
 			FillCal(rp);
@@ -398,9 +401,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//save gen info of W at detector
 				RecoParticle genpart(sumEvent[Widx]);
 				CalcTrajectory(genpart);
-				_genparts.push_back(fastjet::PseudoJet( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() ));
+				fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
+				fj_genpart.set_user_index(_genparts.size());
+				_genparts.push_back(fj_genpart);
 				_genpartids.push_back(genpart.Particle.id());
-				cout << "W idx in ntuple " << _genpartids.size() << endl;
+				cout << "W idx in ntuple " << _genpartids.size() << " gen idx " << fj_genpart.user_index() << " " << _genparts[_genparts.size()-1].user_index() << endl;
 				WevtIdx_treeIdx[Widx] = (int)_genpartids.size()-1;
 				
 				_genpartMomIdx.push_back(-1); //not saving W mother (ie top) info
@@ -427,7 +432,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				cout << "got b with id " << sumEvent[bidx].id() << " at " << bidx << " with parents " << sumEvent[sumEvent[bidx].mother1()].id() << " at " << sumEvent[bidx].mother1() << " and mother 2 is " << sumEvent[bidx].mother2() << " if valid id is " << sumEvent[sumEvent[bidx].mother2()].id() << endl;
 				RecoParticle genpart(sumEvent[bidx]);
 				CalcTrajectory(genpart);
-				_genparts.push_back(fastjet::PseudoJet( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() ));
+				fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
+				fj_genpart.set_user_index(_genparts.size());
+				_genparts.push_back(fj_genpart);
 				_genpartids.push_back(genpart.Particle.id());
 				_genpartMomIdx.push_back(-1); //not saving b mother (ie top) info
 					
@@ -463,13 +470,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//want to save gen particle info at detector - also save the pdgid of their direct mother
 				RecoParticle genpart1(sumEvent[wkids_idx[0]]);
 				CalcTrajectory(genpart1);
-				_genparts.push_back(fastjet::PseudoJet( genpart1.Momentum.px(), genpart1.Momentum.py(), genpart1.Momentum.pz(), genpart1.Momentum.e() ));
+				fastjet::PseudoJet fj_genpart1( genpart1.Momentum.px(), genpart1.Momentum.py(), genpart1.Momentum.pz(), genpart1.Momentum.e() );
+				fj_genpart1.set_user_index(_genparts.size());
+				_genparts.push_back(fj_genpart1);
 				_genpartids.push_back(genpart1.Particle.id());
 				_genpartMomIdx.push_back(WevtIdx_treeIdx[*w]);
 				
 				RecoParticle genpart2(sumEvent[wkids_idx[1]]);
 				CalcTrajectory(genpart2);
-				_genparts.push_back(fastjet::PseudoJet( genpart2.Momentum.px(), genpart2.Momentum.py(), genpart2.Momentum.pz(), genpart2.Momentum.e() ));
+				fastjet::PseudoJet fj_genpart2( genpart2.Momentum.px(), genpart2.Momentum.py(), genpart2.Momentum.pz(), genpart2.Momentum.e() );
+				fj_genpart2.set_user_index(_genparts.size());
+				_genparts.push_back(fj_genpart2);
 				_genpartids.push_back(genpart2.Particle.id());
 				_genpartMomIdx.push_back(WevtIdx_treeIdx[*w]);
 				
@@ -1062,13 +1073,14 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 void BasicDetectorSim::FillGenParticles(){
 	_ngenparts = (int)_genparts.size();
-	cout << _ngenparts << " # gen particles " << _genpartids.size() << endl;
+	cout << _ngenparts << " # gen particles " << _genpartids.size() << " idxs " << _genpartIdx.size() << endl;
 	for(int g = 0; g < _genparts.size(); g++){
 		_genparteta.push_back(_genparts[g].eta());
 		_genpartphi.push_back(_genparts[g].phi());
 		_genpartenergy.push_back(_genparts[g].e());
 		_genpartpt.push_back(_genparts[g].pt());
 		_genpartmass.push_back(_genparts[g].m());
+		_genpartIdx.push_back(_genparts[g].user_index());
 	}
 }
 
@@ -1088,6 +1100,10 @@ void BasicDetectorSim::FillGenJets(){
 		_jgmass.push_back(jet.m());
 		consts = jet.constituents();
 		_jgnparts.push_back((int)consts.size());
+		
+		_jgpartIdxs.push_back({});
+		for(auto c : consts)
+			_jgpartIdxs[_jgpartIdxs.size()-1].push_back(c.user_index());
 	}
 }
 
@@ -1194,8 +1210,9 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Gen jet energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Gen jet pt - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Gen jet mass - FastJet AK4");
-	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	_tree->Branch("Jet_genNJet",&_njets)->SetTitle("Number of gen jets - FastJet AK4");
+	_tree->Branch("Jet_genConstituentIdxs", &_jgpartIdxs)->SetTitle("Gen jet constituent indices - FastJet AK4");
+	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	
 	//gen top info
 	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
@@ -1227,6 +1244,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("genpart_mass",&_genpartmass)->SetTitle("genpart mass");
 	_tree->Branch("genpart_id",&_genpartids)->SetTitle("genpart pdg id");
 	_tree->Branch("genpart_momIdx",&_genpartMomIdx)->SetTitle("genpart momIdx");
+	_tree->Branch("genpart_idx",&_genpartIdx)->SetTitle("indices of genparts");
 	_tree->Branch("genpart_ngenpart",&_ngenparts)->SetTitle("number of genparts");
 }
 
@@ -1258,6 +1276,11 @@ void BasicDetectorSim::_reset(){
 	_jgenergy.clear();
 	_jgpt.clear();
 	_jgmass.clear();
+	_jgnparts.clear();
+	for(auto j : _jgpartIdxs)
+		j.clear();
+	_jgpartIdxs.clear();
+
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
@@ -1277,6 +1300,7 @@ void BasicDetectorSim::_reset(){
 	_genpartenergy.clear();
 	_genpartpt.clear();
 	_genpartmass.clear();
+	_genpartIdx.clear();
 	
 
 	for(auto j : _jrhids)
