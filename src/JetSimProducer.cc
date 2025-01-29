@@ -135,8 +135,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		phi = _base->Jet_genPhi->at(j);
 		eta = _base->Jet_genEta->at(j);
 		if(pt < _ptmin) continue;
-		if(_base->Jet_energy->at(j) < _Emin) continue;
-
+		if(_base->Jet_genEnergy->at(j) < _Emin) continue;
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);

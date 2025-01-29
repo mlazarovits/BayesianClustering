@@ -464,7 +464,6 @@ class BHCJetSkimmer{
 				njets = _recojets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
-					cout << "top of recojet loop - jet " << j << " of " << _recojets.size()-1 << endl;
 					jetsize = CalcJetSize(_recojets[j]);
 					if(p == 0) cout << "calc reco jet size " << j << ": " << jetsize << endl;
 					if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
@@ -512,10 +511,8 @@ class BHCJetSkimmer{
 					}
 					if(ngenparts > 0)	
 						_procCats[p].hists2D[0][21]->Fill(ngenparts,_recojets[j].GetNConstituents());
-					cout << "done filling subcluster gen match hists" << endl;
 					//skip gen matching for now
 					continue;
-				cout << "shouldn't get here" << endl;	
 					//fill gen match histograms
 					if(p == 0) cout << "found gen match to reco jet " << j << " with id " << _base->genpart_id->at(genidx) << " and dr " << dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << _base->genpart_energy->at(genidx)/_recojets[j].E() << " user idx " << genidx << endl;
 					//get matched gen particle here
