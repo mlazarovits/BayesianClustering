@@ -325,6 +325,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			fjinput.set_user_index(_genparts.size());
 			_genparts.push_back(fjinput);
 			_genpartMomIdx.push_back(-1); //not saving this mother info
+			_genpartids.push_back(rp.Particle.id());
 			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fjinput);
 
 			//fill ecal cell with reco particle
