@@ -9,6 +9,7 @@ void PhotonSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;
+	cout << setprecision(10) << "weight " << _weight << endl; 
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);

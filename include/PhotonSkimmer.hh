@@ -51,8 +51,10 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			//set histogram weights for HT slices, etc
 			_weight = 1;
-			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			if(_data || fname.find("GJets") == string::npos){ _weight = 1.; }
 			else{
+				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
 			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
 			        string filein;
 			        string filename = file->GetName();
