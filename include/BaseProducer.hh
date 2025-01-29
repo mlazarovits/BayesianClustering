@@ -39,6 +39,42 @@ class BaseProducer{
 			//SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
 		};
+		/*
+		BaseProducer(TChain* ch){
+			_base = new ReducedBase(ch);
+			_nEvts = _base->fChain->GetEntries();
+			//default to 1 GeV = 1 entry -> gev = 1
+			_gev = 1;
+			_isocut = false;
+			_minpt = 30;
+			_mineme = 30;
+			_minnrhs = 15;
+			_minrhE = 0.5;
+			_maxrhE = -999;
+			_minobjeta = 1.5;
+			_applyFrac = false;
+			_spikes = false;
+			_timesmear = false;
+			
+			//set year
+			string name = file->GetName();
+			if(name.find("2017") != string::npos) _year = 2017;
+			else if(name.find("2018") != string::npos) _year = 2018;
+			else if(name.find("2022") != string::npos) _year = 2022;
+			
+			//set if data
+			if(name.find("SIM") == string::npos) _data = true;
+			else _data = false;
+			_calibmap = nullptr;
+			//SetTimeCalibrationMap(calibfile);
+			SetupDetIDsEB();
+			
+			if(name.find("_v20_")) useFilters = true;
+
+
+		}
+		*/
+
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c

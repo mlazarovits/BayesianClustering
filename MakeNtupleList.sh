@@ -1,10 +1,24 @@
-PD=GJETS
-SEL=AL1IsoPho
-NAME=GJets_HT-$1_TuneCP5_13TeV-madgraphMLM-pythia8
+if [ -z "$1" ]
+then
+        echo "Please pass [process] [HTbin] [selection] to make corresponding file list"
+        return
+fi
+PD=$1
+SEL=$3
+NAME=""
+if [ $PD = "GJETS" ]
+then
+	NAME=GJets_HT-$2_TuneCP5_13TeV-madgraphMLM-pythia8
+else
+	NAME=${PD}_HT-$2_TuneCP5_13TeV-madgraphMLM-pythia8
+fi
 outfile=filelists/${NAME}_list.txt
-#PD=$1 for first cmd line arg
-rm $outfile #start with a clean slate
-
+if [ -f ${outfile} ]; then
+	echo "Recreating file" $outfile
+	rm $outfile #start with a clean slate
+else
+	echo "Creating file" $outfile
+fi
 PREFIX=root://cmseos.fnal.gov/
 
 FILE1=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_R17_${SEL}_v24/${NAME}/)
