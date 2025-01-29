@@ -133,7 +133,9 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --beta0 '+str(args.beta0)+' --m0 '
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --mingenpartpt '+str(args.mingenpartpt)
+
+    flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
         flags += str(m)+' '
     flags += '--W0diag '
@@ -190,6 +192,7 @@ def main():
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor',default='1/10')
     parser.add_argument('--minpt',help='min object pt',default=10.)
+    parser.add_argument('--mingenpartpt',help='min gen particle pt',default=0.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minE',help='min reco jet energy',default=0)
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
