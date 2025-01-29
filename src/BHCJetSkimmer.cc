@@ -62,9 +62,11 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == gmmOnly) cout << endl;
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
+			cout < "do get jets" << endl;
 			 _recojets[j].GetJets(rhs);
 			//safety
 			if(rhs.size() < 1) continue;
+			cout << "pushback to x_nrhs_subcl" << endl;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
 			cout << "SubClustering..." << endl;	
@@ -95,6 +97,7 @@ void BHCJetSkimmer::Skim(){
 			rhs.clear();
 		}
 		FillRecoJetHists();
+		cout << "done with reco jet hists" << endl;
 		//only does above
 		if(_strategy == gmmOnly){
 			continue;
