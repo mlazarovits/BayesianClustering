@@ -62,7 +62,7 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == gmmOnly) cout << endl;
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
-			cout < "do get jets" << endl;
+			cout << "do get jets" << endl;
 			 _recojets[j].GetJets(rhs);
 			//safety
 			if(rhs.size() < 1) continue;
