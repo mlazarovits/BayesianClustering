@@ -162,6 +162,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(dRtrack_rhTimeNeg12);
 			_timeHists1D.push_back(dRtrack_rhTimeNeg5);
 			_timeHists1D.push_back(dRtrack_rhTime0);
+			_timeHists1D.push_back(rhTime); 
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -335,7 +336,6 @@ class JetSkimmer : public BaseSkimmer{
 
 		//true jet hists
 		TH1D* nTrueJets = new TH1D("nTrueJets","nTrueJets",20,0,20);
-		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-30,30); 
 		TH1D* TrueJet_pT = new TH1D("TrueJet_pT","TrueJet_pT",100,0,1000);
 		TH1D* TrueJet_nRhs = new TH1D("TrueJet_nRhs","TrueJet_nRhs",25,0,100);
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
@@ -487,31 +487,34 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* dRtrack_rhTimeNeg5 = new TH1D("dRtrack_rhTimeNeg5","dRtrack_rhTimeNeg5",50,-0.01,0.1);
 		//65 - dr bw rh and track, time ~ 0
 		TH1D* dRtrack_rhTime0 = new TH1D("dRtrack_rhTime0","dRtrack_rhTime0",50,-0.01,0.1);
-		//66 -jet subcluster energy 
+		//66 - rh time of jets in PV time
+		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-20,20); 
+		//--pushback ends here
+		//67 -jet subcluster energy 
 		TH1D* subclusterEfrac = new TH1D("subclusterEfrac","subclusterEfrac",50,0,1);
-		//67 - avg distance bw subclusters - etaphi
+		//68 - avg distance bw subclusters - etaphi
 		TH1D* subclDist_etaPhi = new TH1D("subclDist_etaPhi","subclDist_etaPhi",50,0,0.2);
-		//68 - avg distance bw subclusters - time
+		//69 - avg distance bw subclusters - time
 		TH1D* subclDist_time = new TH1D("subclDist_time","subclDist_time",50,-2,2);
-		//69 - etasig
+		//70 - etasig
 		TH1D* etaSig = new TH1D("etaSig","etaSig",50,0,0.5);
-		//70 - phisig
-		TH1D* phiSig = new TH1D("phiSig","phiSig",50,0,0.5);
 		//71 - phisig
+		TH1D* phiSig = new TH1D("phiSig","phiSig",50,0,0.5);
+		//72 - phisig
 		TH1D* timeSig = new TH1D("timeSig","timeSig",50,0,1);
-		//72 - posterior value of betas per subcluster
+		//73 - posterior value of betas per subcluster
 		TH1D* beta_k = new TH1D("beta_k","beta_k",50,0,20);
-		//73 - posterior value of W_eta,eta per subcluster
+		//74 - posterior value of W_eta,eta per subcluster
 		TH1D* W_ee_k = new TH1D("W_ee_k","W_ee_k",50,0,0.5);	
-		//74 - posterior value of W_phi,phi per subcluster
+		//75 - posterior value of W_phi,phi per subcluster
 		TH1D* W_pp_k = new TH1D("W_pp_k","W_pp_k",50,0,0.5);	
-		//75 - posterior value of W_time,time per subcluster
+		//76 - posterior value of W_time,time per subcluster
 		TH1D* W_tt_k = new TH1D("W_tt_k","W_tt_k",50,0,0.5);	
-		//76 - time of predicted phys bkg subclusters
+		//77 - time of predicted phys bkg subclusters
 		TH1D* t_physBkg = new TH1D("t_physBkg","t_physBkg",50,-20,20);
-		//77 - time of predicted BH
+		//78 - time of predicted BH
 		TH1D* t_BH = new TH1D("t_BH","t_BH",50,-20,20);
-		//78 - time of predicted spikes
+		//79 - time of predicted spikes
 		TH1D* t_spike = new TH1D("t_spike","t_spike",50,-20,20);
 			
 
@@ -1128,14 +1131,18 @@ class JetSkimmer : public BaseSkimmer{
 				//this assumes that the time for the jet was set previously with the respective method
 				pvtime = CalcPVTime(ts, jets);
 				//cout << "pv time " << pvtime << endl;
-				//only fill for two leading photons + weighted avg of jet time
-				if(_phos.size() < 1) continue;
-				vector<JetPoint> phorhs; 
 				Ejets = 0;
 				for(auto j : jets){
 					vector<JetPoint> jrhs = j.GetJetPoints();
-					for(auto r : jrhs) Ejets += r.E(); 
+					for(auto r : jrhs){
+						Ejets += r.E();
+						trCats[tr_idx].procCats[p].hists1D[0][66]->Fill(r.t());
+					}
+
 				}
+				//only fill for two leading photons + weighted avg of jet time
+				if(_phos.size() < 1) continue;
+				vector<JetPoint> phorhs; 
 				if(_data){
 					//want difference in PV frame (no shift to detector)
 					gamtime = CalcJetTime(ts, _phos[0], false);
