@@ -66,6 +66,8 @@ def checkJobs(outputDir,match_string):
         os.system(bash)
         bash = "grep -e \"segmentation violation\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
         os.system(bash)
+        bash = "grep -e \"core dumped\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
+        os.system(bash)
         with open(folder+"/errcount.txt","r") as f:
         	print(len(f.readlines()),"jobs with errors: see "+folder+"/errcount.txt for more")	
         #output4 = subprocess.check_output(['bash','-c',bash]).decode()
