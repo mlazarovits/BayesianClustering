@@ -54,6 +54,40 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			objE_clusterE->SetName("phoE_clusterE");
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			InitHists();
+		}
+		/*
+		SuperClusterSkimmer(string filelist) : BaseSkimmer(filelist){
+			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
+			TChain* ch = MakeTChain(filelist);
+			_prod = new PhotonProducer(ch);
+			_base = _prod->GetBase();
+			_nEvts = _base->fChain->GetEntries();
+			_evti = 0;
+			_evtj = _nEvts;
+			_oname = "plots/photon_skims_"+_cms_label+".root";
+			
+			_isocuts = false;
+			_oskip = 10;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			_gev = 1/30.;
+			_applyFrac = false;
+
+			
+			objE->SetTitle("totphoE");
+			objE->SetName("totphoE");
+			
+			objE_clusterE->SetTitle("phoE_clusterE");
+			objE_clusterE->SetName("phoE_clusterE");
+
+			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			InitHists();
+		}
+		*/
+
+		void InitHists(){
 			//add photon specific histograms
                         _hists1D.push_back(slope_space);
                         _hists1D.push_back(slope_etaT);
@@ -1103,7 +1137,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 	
 		//0 - time v subcl subcluster energy
-		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-30,30,10,0,1000);
+		TH2D* time_E = new TH2D("time_subclE","time_subclE;time_center;E;a.u.", 50,-20,20,50,0,500);
 		//1 - azimuthal angle v subcl energy
 		TH2D* az_E = new TH2D("az_subclE","az_subclE;azimuthal_angle;E;a.u.",50,-3.5,3.5,10,0,1000);
 		//2 - rotundity (2D) v subcl energy

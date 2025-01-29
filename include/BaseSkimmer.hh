@@ -59,19 +59,6 @@ class BaseSkimmer{
 
 		};
 		BaseSkimmer(TFile* file){
-			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-			//tof = (d_rh-d_pv)/c
-			//in ntuplizer, stored as rh time
-
-			//grab rec hit values
-			//x, y, z, time (adjusted), energy, phi, eta
-			//getting the stuff below from producer in derived class
-			//TTree* tree = (TTree*)file->Get("tree/llpgtree");
-			//_base = new ReducedBase(tree);
-			//_nEvts = _base->fChain->GetEntries();
-			//_base->GetEntry(0);
-			//cout << "base skim init - " << _base->Photon_energy->size() << endl;
-		
 			_gev = 1;
 			_debug = false;
 			_smear = true;
@@ -113,6 +100,48 @@ class BaseSkimmer{
 
 
 		}
+		
+		BaseSkimmer(string flist){
+			_gev = 1;
+			_debug = false;
+			_smear = true;
+			_timesmear = false;
+			_skip = 1;
+			_weight = 1;
+			_ngrid = 7;
+                	_BHFilter = beamHaloFilter(0); //default not applied
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			//beta
+			_prior_params["scale"] = Matrix(1e-3);
+			//nu
+			_prior_params["dof"] = Matrix(3);
+			//W
+			Matrix W(3,3);
+			W.InitIdentity();
+			W.mult(W,1./3);
+			_prior_params["scalemat"] = W;
+			//m
+			_prior_params["mean"] = Matrix(3,1);
+			
+			
+			if(flist.find("SIM") != string::npos)
+				_data = false;
+			else
+				_data = true;
+			
+			_hists1D.push_back(nSubClusters);
+			_hists1D.push_back(time_center);
+			_hists1D.push_back(eta_center);
+			_hists1D.push_back(phi_center);
+			_hists1D.push_back(objE);
+			_hists1D.push_back(clusterE);
+
+			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+
+
+		}
 		virtual ~BaseSkimmer(){ 
 			delete _base;
 			_hists1D.clear();
@@ -120,6 +149,28 @@ class BaseSkimmer{
 		}
 
 		virtual void Skim() = 0;
+
+		//make tchain from filelist
+		//debug after jet res for 1st exo talk are done
+		/*
+		TChain* MakeTChain(string flist){
+			if(gSystem->AccessPathName(flist.c_str()){ 
+				cout << "Error: file " << flist << " doesn't exist." << endl; 
+				return; 
+			}	
+			std::ifstream infile(flist);
+			TChain* ch = new TChain("tree/llpgtree");
+			string file;
+			while(std::getline(infile,file)){
+				if( file[0] == '#' ) continue;
+				//auto tfilename = eosdir + indir + file;
+				if(debug) std::cout << "--  adding file: " << file << std::endl;
+				ch->Add(file.c_str());
+			}
+			Init(ch);
+			return ch;
+		}
+		*/
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;
