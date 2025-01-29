@@ -513,6 +513,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
 		skimmer.SetBeamHaloFilter(bh);
+		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
         	skimmer.Skim();
 	}
 	else if(obj == 2){
