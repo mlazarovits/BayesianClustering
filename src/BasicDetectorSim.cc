@@ -324,6 +324,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
 			fjinput.set_user_index(_genparts.size());
 			_genparts.push_back(fjinput);
+			_genpartMomIdx.push_back(-1); //not saving this mother info
 			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fjinput);
 
 			//fill ecal cell with reco particle
