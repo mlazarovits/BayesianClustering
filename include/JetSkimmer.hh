@@ -1136,7 +1136,7 @@ class JetSkimmer : public BaseSkimmer{
 					vector<JetPoint> jrhs = j.GetJetPoints();
 					for(auto r : jrhs){
 						Ejets += r.E();
-						cout << "rh time " << rh.t() << endl;
+						cout << "rh time " << r.t() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][66]->Fill(r.t());
 					}
 
