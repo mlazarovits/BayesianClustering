@@ -488,7 +488,7 @@ class JetSkimmer : public BaseSkimmer{
 		//65 - dr bw rh and track, time ~ 0
 		TH1D* dRtrack_rhTime0 = new TH1D("dRtrack_rhTime0","dRtrack_rhTime0",50,-0.01,0.1);
 		//66 - rh time of jets in PV time
-		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-20,20); 
+		TH1D* rhTime = new TH1D("rhTime","rhTime",100,-10,10); 
 		//--pushback ends here
 		//67 -jet subcluster energy 
 		TH1D* subclusterEfrac = new TH1D("subclusterEfrac","subclusterEfrac",50,0,1);
