@@ -91,7 +91,10 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
-				timecorr = drh - dpv;
+				if(_spatial_corr)
+					timecorr = drh - dpv;
+				else
+					timecorr = 0;
 				//redo dr matching tighter - dr = 0.5
 				dr = sqrt(deltaR2(_base->Jet_eta->at(j), _base->Jet_phi->at(j), _base->ECALRecHit_eta->at(rhidx), _base->ECALRecHit_phi->at(rhidx)));
 				if(dr > 0.5) continue;				
@@ -357,6 +360,12 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;				
 
 
+				//spike rejection? - only studied for rhE > 4 GeV
+				if(_spikes){
+					if(1 - _base->ECALRecHit_swCross->at(rhidx) < 0.02*log10(_base->ECALRecHit_energy->at(rhidx))+0.02)
+						continue;
+				
+				}
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location - use this to improve time covariance

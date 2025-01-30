@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
 	int skip = 1;
 	int bh = 1;
 	bool iso = true;
+	bool spatcorr = true;
 
 	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
@@ -217,6 +218,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		skip = std::stoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--noSpatCorr", 12) == 0){
+			spatcorr = false;
+			cout << "Selecting photons with isolated background cuts" << endl;
+   		}
 		if(strncmp(argv[i],"--noIso", 7) == 0){
 			iso = false;
 			cout << "Not applying isolation to photons" << endl;
@@ -273,6 +278,7 @@ int main(int argc, char *argv[]){
    		cout << "   --applyFrac                          applying fractions for rec hits PHOTONS ONLY (default = false, off)" << endl;
    		cout << "   --noCalibrate                        turn off channel-by-channel calibration for rh time (default = false, on)" << endl;
    		cout << "   --rejectSpikes                       reject spikes based on swiss cross cut (default = false, off)" << endl;
+   		cout << "   --noSpatCorr                         turn off spatial corrections for rechit times to put in PV frame (jets only, default = true, on)" << endl;
    		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
    		cout << "   --isoBkg                             apply isolated background selection (photons only, default = false, off)" << endl;
    		cout << "   --minphopt_isobkg [minpt]               set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
@@ -481,6 +487,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
 		skimmer.SetBeamHaloFilter(bh);
+		skimmer.SetSpatialCorr(spatcorr);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}

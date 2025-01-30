@@ -240,6 +240,7 @@ class BaseSkimmer{
 		void SetMinEmE(double p){ _prod->SetMinEmE(p); }
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 		void SetMaxRhE(double r){ _prod->SetMaxRhE(r); }
+		void SetSpatialCorr(bool r){ _prod->SetSpatialCorr(r); }
 		void SetCNNGrid(double n){ _ngrid = n; }
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);

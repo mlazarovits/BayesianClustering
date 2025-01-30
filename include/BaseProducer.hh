@@ -31,6 +31,7 @@ class BaseProducer{
 			_applyFrac = false;
 			_spikes = false;
 			_timesmear = false;
+			_spatial_corr = true;
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
 			//	return;
@@ -55,6 +56,7 @@ class BaseProducer{
 			_applyFrac = false;
 			_spikes = false;
 			_timesmear = false;
+			_spatial_corr = true;
 			
 			//set year
 			string name = file->GetName();
@@ -98,6 +100,7 @@ class BaseProducer{
 			_applyFrac = false;
 			_spikes = false;
 			_timesmear = false;
+			_spatial_corr = true;
 			
 			//set year
 			string name = file->GetName();
@@ -155,6 +158,9 @@ class BaseProducer{
 		bool _isocut;
 		void SetIsoCut(){ _isocut = true; }		
 
+		bool _spatial_corr;
+		void SetSpatialCorr(bool b){ _spatial_corr = b; }
+
 		ReducedBase* GetBase(){ return _base; }
 
 		void PrintPreselection(){
@@ -166,6 +172,7 @@ class BaseProducer{
 			if(_maxrhE != -999) cout << "Maximum rh (barrel only) energy: " << _maxrhE << endl;
         		cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
 			cout << "Rechit time smear? " << _timesmear << endl;
+			cout << "Spatially correcting times to PV location? " << _spatial_corr << endl;
 		}
 
 
