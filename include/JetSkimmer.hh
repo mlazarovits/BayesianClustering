@@ -53,20 +53,20 @@ class JetSkimmer : public BaseSkimmer{
 			string fname = file->GetName();
 			cout << "fname " << fname << endl;
 			//if(_data){ _weight = 1.; }
-			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			else{
-				ifstream weights("info/EventWeights.txt", std::ios::in);
-				string filein;
-				string filename = file->GetName();
-				double jet_weight, pho_weight;
-				while( weights >> filein >> jet_weight >> pho_weight){
-					if(filename.find(filein) == string::npos) continue;
-					else{
-						_weight = jet_weight;
-						break;
-					}
-				}
-			} 
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			//else{
+			//	ifstream weights("info/EventWeights.txt", std::ios::in);
+			//	string filein;
+			//	string filename = file->GetName();
+			//	double jet_weight, pho_weight;
+			//	while( weights >> filein >> jet_weight >> pho_weight){
+			//		if(filename.find(filein) == string::npos) continue;
+			//		else{
+			//			_weight = jet_weight;
+			//			break;
+			//		}
+			//	}
+			//} 
 
 
 			objE_clusterE->SetTitle("jetE_clusterE");
@@ -357,13 +357,13 @@ class JetSkimmer : public BaseSkimmer{
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",50,-8,8);
+		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",50,-5,5);
 		//3 - difference in deltaT_pvGam between gen and reco
 		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-5,5);
 		//4 - gen deltaT bw photon and pv
 		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,0,12);	
 		//5 - photon time (in pv frame for data, not for MC)
-		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",50,-8,8);	
+		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",50,-5,5);	
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
@@ -1136,7 +1136,6 @@ class JetSkimmer : public BaseSkimmer{
 					vector<JetPoint> jrhs = j.GetJetPoints();
 					for(auto r : jrhs){
 						Ejets += r.E();
-						cout << "rh time " << r.t() << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][66]->Fill(r.t());
 					}
 
@@ -1212,7 +1211,7 @@ class JetSkimmer : public BaseSkimmer{
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 						cout << "gampv time " << deltaT_gampv << endl;
 						//want the photon time at the detector so we can compare it to the gen version
-						gamtime = CalcJetTime(ts, _phos[0], true);
+						gamtime = CalcJetTime(ts, _phos[0], false);
 						//cout << "LEAD CALC GAMTIME END" << endl;
 						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 						deltaT_gampv = gamtime - pvtime;
@@ -1285,8 +1284,8 @@ class JetSkimmer : public BaseSkimmer{
 							if(_phos[1].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 							cout << "gampv time " << deltaT_gampv << endl;
-							//cout << "SUBLEAD GAMTIME END" << endl;	
-							gamtime = CalcJetTime(ts, _phos[1], true);
+							//cout << "SUBLEAD GAMTIME END" << endl	
+							gamtime = CalcJetTime(ts, _phos[1], false);
 							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
 							deltaT_gampv = gamtime - pvtime;
 							
