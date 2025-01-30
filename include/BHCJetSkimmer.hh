@@ -1175,9 +1175,9 @@ class BHCJetSkimmer{
 		//19 - BHC dr jet-quark match vs W energy (b's excluded)
 		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 		//20 - # rhs vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",50,0,50,50,0,50);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",25,0,25,100,0,100);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",35,0,35,20,0,20);
+		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,25,0,25);
 	
 
 		void SetSmear(bool t){ _smear = t; }
