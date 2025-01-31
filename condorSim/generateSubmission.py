@@ -184,10 +184,10 @@ def main():
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     #add algorithm parameters - alpha, emAlpha, verbosity, thresh
     parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
-    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
+    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1.)
     parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
     parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
-    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,0.33333333],nargs="+")
+    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,33.333333e-5],nargs="+")
     parser.add_argument('--nu0',help="nu0 prior",default=3)
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor',default='1/10')
