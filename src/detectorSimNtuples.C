@@ -178,16 +178,17 @@ int main(int argc, char *argv[]){
 		oname += "_PU";
 	}
 	cout << "mingenpartpt " << mingenpartpt << endl;
-	
-	std::stringstream stream;
-	stream.str("");
-	string mingenpartpt_str;
-	stream << std::fixed << std::setprecision(3) << mingenpartpt;
-	mingenpartpt_str = stream.str();
-	int idx = mingenpartpt_str.find(".");
-	mingenpartpt_str.replace(idx,1,"p");	
-	
-	oname += "_mingenpartpt"+mingenpartpt_str;
+	if(oname.find("condor") == string::npos){	
+		std::stringstream stream;
+		stream.str("");
+		string mingenpartpt_str;
+		stream << std::fixed << std::setprecision(3) << mingenpartpt;
+		mingenpartpt_str = stream.str();
+		int idx = mingenpartpt_str.find(".");
+		mingenpartpt_str.replace(idx,1,"p");	
+		
+		oname += "_mingenpartpt"+mingenpartpt_str;
+	}
        //make sure evti < evtj
        if(evti > evtj){
        	int evt = evtj;

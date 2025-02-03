@@ -39,19 +39,24 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
+    
+    mingenpartpt_str = args.mingenpartpt
+    mingenpartpt_str = mingenpartpt_str.replace(".","p")
+    ofilename += "_mingenpartpt"+mingenpartpt_str
+    dirname += "_mingenpartpt"+mingenpartpt_str
     #put algo config in file name
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
     if os.path.exists(dirname):
     	print("Removing existing directory: {0}".format(dirname))
     	shutil.rmtree(dirname)
-    
+    print("ofilename",ofilename) 
     # Create directories for work area.
     SH.createWorkArea(dirname)
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)++' --mingenpartpt '+str(args.mingenpartpt)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)+' --mingenpartpt '+str(args.mingenpartpt)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
