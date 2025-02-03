@@ -357,13 +357,13 @@ class JetSkimmer : public BaseSkimmer{
 		//1 - delta t between jets (pv time frame)
 		TH1D* deltaT_jet = new TH1D("deltaT_jet", "deltaT_jet",50,-4,4);	
 		//2 - reco delta t between pv and photon 
-		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",50,-5,5);
+		TH1D* deltaT_pvGam = new TH1D("deltaT_gamPV_reco","deltaT_gamPV_reco",100,-1,1);
 		//3 - difference in deltaT_pvGam between gen and reco
-		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",50,-5,5);
+		TH1D* diffDeltaT_recoGen = new TH1D("diffDeltaT_recoGen","diffDeltaT_recoGen",100,-1,1);
 		//4 - gen deltaT bw photon and pv
 		TH1D* deltaT_pvGam_gen = new TH1D("deltaT_gamPV_gen","deltaT_gamPV_gen",25,0,12);	
 		//5 - photon time (in pv frame for data, not for MC)
-		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",50,-5,5);	
+		TH1D* gamTime = new TH1D("gamTime_reco", "gamTime_reco",100,-1,1);	
 
 		//these stay empty to be filled later (after hadding)	
 		//6 - resolution of difference in reco - gen deltaTs as a function of total E of rhs that go into PV time calculation
@@ -803,6 +803,7 @@ class JetSkimmer : public BaseSkimmer{
 					jettimes.push_back(jettime);
 				}
 				//calculate jet time difference
+				double Erh1, Erh2;
 				if(njets > 1){
 					pair<Jet,Jet> hardjets;
 					int pair = FindJetPair(jets, hardjets);
@@ -810,7 +811,6 @@ class JetSkimmer : public BaseSkimmer{
 					double deltaT_jets = GetDeltaTime(hardjets);
 
 					ptavg = pow((hardjets.first.pt()*hardjets.second.pt()),0.5);
-					double Erh1, Erh2;
 					Erh1 = 0;
 					Erh2 = 0;	
 					double bestp, bestdr, kweird;
@@ -1132,7 +1132,9 @@ class JetSkimmer : public BaseSkimmer{
 				pvtime = CalcPVTime(ts, jets);
 				//cout << "pv time " << pvtime << endl;
 				Ejets = 0;
+				vector<Jet> jets_highpt;
 				for(auto j : jets){
+					if(j.pt() > 50) jets_highpt.push_back(j);
 					vector<JetPoint> jrhs = j.GetJetPoints();
 					for(auto r : jrhs){
 						Ejets += r.E();
@@ -1140,6 +1142,7 @@ class JetSkimmer : public BaseSkimmer{
 					}
 
 				}
+				double pvtime_highpt = CalcPVTime(ts, jets_highpt);
 				//only fill for two leading photons + weighted avg of jet time
 				if(_phos.size() < 1) continue;
 				vector<JetPoint> phorhs; 
@@ -1211,13 +1214,11 @@ class JetSkimmer : public BaseSkimmer{
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 						cout << "gampv time " << deltaT_gampv << endl;
 						//want the photon time at the detector so we can compare it to the gen version
-						gamtime = CalcJetTime(ts, _phos[0], false);
+						gamtime = CalcJetTime(ts, _phos[0], true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
-						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+						trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime_pv, _weight);
 						deltaT_gampv = gamtime - pvtime;
 					
-	
-	
 						//fill difference in deltaT_pvGam of reco and gen - 3
 						//cout << "calc gen delta t" << endl;
 						deltaT_gampv_gen = CalcGenDeltaT(_phos[0]);
@@ -1225,7 +1226,12 @@ class JetSkimmer : public BaseSkimmer{
 						//only for gen matches
 						if(deltaT_gampv_gen != -999){
 							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
-							trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+							//will be centered on zero - for resolution comparison with/without pv time need minimum cut on jet pt for pv time
+							//if(pvtime_highpt != -999 && _phos[0].pt() > 70){
+							if(xbins[4] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[5]){
+								deltaT_gampv = gamtime - pvtime;	
+								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+							}
 							//fill res (sigma from gaussian fit) for deltaT_recoGen as a function of ptAvg of jets that go into pv time calc - 4
 							//sigma deltaT_recoGen as a function of geoEavg
 							trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
@@ -1285,17 +1291,20 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
 							cout << "gampv time " << deltaT_gampv << endl;
 							//cout << "SUBLEAD GAMTIME END" << endl	
-							gamtime = CalcJetTime(ts, _phos[1], false);
-							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime, _weight);
+							gamtime = CalcJetTime(ts, _phos[1], true);
+							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime_pv, _weight);
 							deltaT_gampv = gamtime - pvtime;
-							
 							
 							deltaT_gampv_gen = CalcGenDeltaT(_phos[1]);
 					//cout << "SUBLEAD tr idx: " << tr_idx << " pho id " << phoid << " gen deltaT: " << deltaT_gampv_gen << " reco deltaT: " << deltaT_gampv << " gamtime: " << gamtime << " pvtime: " << pvtime << endl;
 							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 							//only for gen matches
 							if(deltaT_gampv_gen != -999){
-								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+								//if(pvtime_highpt != -999 && _phos[1].pt() > 70){
+								if(xbins[4] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[5]){
+									deltaT_gampv = gamtime - pvtime;	
+									trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
+								}
 								trCats[tr_idx].procCats[p].hists2D[0][0]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
 								if(deltaT_gampv_gen >= 3.5 && deltaT_gampv_gen < 4.5)
 									trCats[tr_idx].procCats[p].hists2D[0][4]->Fill(sqrt(Epho*Erh), deltaT_gampv - deltaT_gampv_gen, _weight);
@@ -1681,6 +1690,7 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcPVTime(const TimeStrategy& ts, vector<Jet>& jets){
 			int njets = jets.size();
 			double time = -999;
+			if(njets < 1) return time;
 			if(ts == med){
 				vector<double> times;
 				for(int i = 0; i < njets; i++)
