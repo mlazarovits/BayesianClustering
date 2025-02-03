@@ -320,12 +320,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				continue;
 			//if track curls up/exceeds zmax
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
-			
+		
+			//if gen particle doesn't exceed min pt, skip
+			if(rp.Momentum.pt() < _genpart_minpt) continue;
 			//add gen particle to be clustered for gen jet
 			//don't include electrons in gen jet clustering (or save to reco particles), muons are skipped above bc they are not showered
 			fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
 			fjinput.set_user_index(_genparts.size());
-			if(rp.Particle.idAbs() != 11 && rp.Momentum.pt() >= _genpart_minpt){
+			if(rp.Particle.idAbs() != 11){
 				_genparts.push_back(fjinput);
 				_genpartMomIdx.push_back(-1); //not saving this mother info
 				_genpartids.push_back(rp.Particle.id());
