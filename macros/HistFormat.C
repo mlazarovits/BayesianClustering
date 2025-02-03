@@ -543,7 +543,7 @@ void HistFormat(string file){
 			//get TGraphs
 			string keyname = key->GetName();
 			TGraph* gr = (TGraph*)key->ReadObj();
-			if(gr){
+			if(gr && gr->GetN() > 0){
 				name = gr->GetName();
 				xtitle = gr->GetXaxis()->GetTitle();
 				ytitle = gr->GetYaxis()->GetTitle();
