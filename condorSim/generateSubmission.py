@@ -43,7 +43,9 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-        
+    if float(args.mingenpartpt) != 0:
+        inputFile += "_mingenpartpt"+str(args.mingenpartpt)
+
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
     
@@ -57,8 +59,6 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-    ofilename += "_mingenpartpt"+args.mingenpartpt
-    dirname += "_mingenpartpt"+args.mingenpartpt
 
     #put algo config in file name
     kname = "%.3f" % float(args.alpha)
