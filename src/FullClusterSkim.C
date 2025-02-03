@@ -303,10 +303,10 @@ int main(int argc, char *argv[]){
 	prior_params["scalemat"] = W;
 	prior_params["mean"] = m;
 
-
+	cout << "infile list " << in_file << endl;
 	string cmslab, version;	
-	TFile* file = nullptr;
-	/////GET DATA FROM NTUPLE//////
+	//TFile* file = nullptr;
+	/////GET DATA FROM NTUPLE LIST//////
 	if(!in_file.empty()){
 		//get version
 		std::smatch m;
@@ -317,13 +317,9 @@ int main(int argc, char *argv[]){
 		cmslab = in_file.substr(in_file.find(version)+version.size(),in_file.find(".root") - in_file.find(version)-version.size());//"GMSB_L-350TeV_Ctau-200cm_2017_v9";
 		version.pop_back();
 		cmslab += version;
-		file = TFile::Open(in_file.c_str());
+		//file = TFile::Open(in_file.c_str());
 	}
 
-	if(gSystem->AccessPathName(in_file.c_str())){
-		cout << "Error: file " << in_file << " not found." << endl;
-		return -1;
-	}	
 
 	string fname;
 	if(obj == 0)
@@ -466,7 +462,7 @@ cout << "fname " << fname << endl;
                 calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
 	if(obj == 0){
 		cout << "jets" << endl;
-		JetSkimmer skimmer(file);
+		JetSkimmer skimmer(in_file);
 		skimmer.SetCMSLabel(cmslab);
 		skimmer.SetMinPt(minpt);
 		skimmer.SetMinNrhs(minnrhs);
@@ -493,13 +489,8 @@ cout << "fname " << fname << endl;
 	}
 	else if(obj == 1){
 		cout << "superclusters" << endl;
-		SuperClusterSkimmer skimmer(file);
+		SuperClusterSkimmer skimmer(in_file);
 		skimmer.SetCMSLabel(cmslab);
-		bool data;
-		if(in_file.find("SIM") != string::npos)
-			data = false;
-        	else
-			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		if(iso){
 			cout << "Applying isolation preselection for training labels and object selection." << endl;
@@ -525,13 +516,8 @@ cout << "fname " << fname << endl;
 	}
 	else if(obj == 2){
 		cout << "photons" << endl;
-		PhotonSkimmer skimmer(file);
+		PhotonSkimmer skimmer(in_file);
 		skimmer.SetCMSLabel(cmslab);
-		bool data;
-		if(in_file.find("SIM") != string::npos)
-			data = false;
-        	else
-			data = true;
 		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
 		if(iso) skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);

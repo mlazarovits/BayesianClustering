@@ -71,6 +71,55 @@ class JetSkimmer : public BaseSkimmer{
 
 			objE_clusterE->SetTitle("jetE_clusterE");
 			objE_clusterE->SetName("jetE_clusterE");
+			
+			InitHists();
+		}
+		JetSkimmer(string filelist) : BaseSkimmer(filelist){
+			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
+			//tof = (d_rh-d_pv)/c
+			//in ntuplizer, stored as rh time		
+			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+		
+			TChain* ch = MakeTChain(filelist);
+                        if(ch == nullptr) return;	
+			_prod = new JetProducer(ch);
+			_prod->SetIsoCut();
+	
+
+			_base = _prod->GetBase();
+			_nEvts = _base->fChain->GetEntries();
+			_evti = 0;
+			_evtj = _nEvts;
+			_oname = "plots/jet_skims_"+_cms_label+".root";
+			_gev = 1./10.;
+			_swts.Init();
+			_weight = 1;
+			_minRhE = 5;
+			//set histogram weights
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			//if(_data){ _weight = 1.; }
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			//else{
+			//	ifstream weights("info/EventWeights.txt", std::ios::in);
+			//	string filein;
+			//	string filename = file->GetName();
+			//	double jet_weight, pho_weight;
+			//	while( weights >> filein >> jet_weight >> pho_weight){
+			//		if(filelist.find(filein) == string::npos) continue;
+			//		else{
+			//			_weight = jet_weight;
+			//			break;
+			//		}
+			//	}
+			//} 
+
+
+			objE_clusterE->SetTitle("jetE_clusterE");
+			objE_clusterE->SetName("jetE_clusterE");
+			
+			InitHists();
+		}
+		void InitHists(){
 			//true jet hists
 			_hists1D.push_back(nTrueJets);
 			_hists1D.push_back(TrueJet_pT); 

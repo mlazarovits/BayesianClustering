@@ -11,6 +11,7 @@ class PhotonProducer : public BaseProducer{
 
 		//get rechits from file to cluster
 		PhotonProducer(TFile* file);
+		PhotonProducer(TChain* ch) : BaseProducer(ch){ };
 		//ctor from rec hit collection - integrating into ntuplizer
 		
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)

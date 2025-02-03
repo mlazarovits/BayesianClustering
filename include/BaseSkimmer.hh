@@ -152,25 +152,28 @@ class BaseSkimmer{
 
 		//make tchain from filelist
 		//debug after jet res for 1st exo talk are done
-		/*
 		TChain* MakeTChain(string flist){
-			if(gSystem->AccessPathName(flist.c_str()){ 
+			if(gSystem->AccessPathName(flist.c_str())){ 
 				cout << "Error: file " << flist << " doesn't exist." << endl; 
-				return; 
+				return nullptr; 
 			}	
 			std::ifstream infile(flist);
 			TChain* ch = new TChain("tree/llpgtree");
+			ch->SetTitle(flist.c_str());
 			string file;
+			cout << "TChaining files in " << flist << "..." << endl;
 			while(std::getline(infile,file)){
 				if( file[0] == '#' ) continue;
-				//auto tfilename = eosdir + indir + file;
-				if(debug) std::cout << "--  adding file: " << file << std::endl;
+				if(gSystem->AccessPathName(file.c_str())){
+					cout << "Skipping file " << file << " - not found." << endl;
+					continue;
+				}
+				//std::cout << "--  adding file: " << file << std::endl;
 				ch->Add(file.c_str());
 			}
-			Init(ch);
+			cout << "Done TChaining" << endl;
 			return ch;
 		}
-		*/
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;

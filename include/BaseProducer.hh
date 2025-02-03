@@ -40,7 +40,6 @@ class BaseProducer{
 			//SetTimeCalibrationMap(calibfile);
 			SetupDetIDsEB();
 		};
-		/*
 		BaseProducer(TChain* ch){
 			_base = new ReducedBase(ch);
 			_nEvts = _base->fChain->GetEntries();
@@ -59,7 +58,7 @@ class BaseProducer{
 			_spatial_corr = true;
 			
 			//set year
-			string name = file->GetName();
+			string name = ch->GetName();
 			if(name.find("2017") != string::npos) _year = 2017;
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;
@@ -75,7 +74,6 @@ class BaseProducer{
 
 
 		}
-		*/
 
 		BaseProducer(TFile* file){
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c

@@ -56,16 +56,16 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			InitHists();
 		}
-		/*
 		SuperClusterSkimmer(string filelist) : BaseSkimmer(filelist){
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
 			TChain* ch = MakeTChain(filelist);
+			if(ch == nullptr) return;
 			_prod = new PhotonProducer(ch);
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
 			_evtj = _nEvts;
-			_oname = "plots/photon_skims_"+_cms_label+".root";
+			_oname = "plots/sc_skims_"+_cms_label+".root";
 			
 			_isocuts = false;
 			_oskip = 10;
@@ -76,19 +76,17 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_applyFrac = false;
 
 			
-			objE->SetTitle("totphoE");
-			objE->SetName("totphoE");
+			objE->SetTitle("totSCE");
+			objE->SetName("totSCE");
 			
-			objE_clusterE->SetTitle("phoE_clusterE");
-			objE_clusterE->SetName("phoE_clusterE");
+			objE_clusterE->SetTitle("SCE_clusterE");
+			objE_clusterE->SetName("SCE_clusterE");
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			InitHists();
 		}
-		*/
 
 		void InitHists(){
-			//add photon specific histograms
                         _hists1D.push_back(slope_space);
                         _hists1D.push_back(slope_etaT);
                         _hists1D.push_back(slope_phiT);

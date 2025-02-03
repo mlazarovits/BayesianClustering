@@ -97,6 +97,74 @@ class PhotonSkimmer : public BaseSkimmer{
 			objE_clusterE->SetName("phoE_clusterE");
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			InitHists();
+		}
+		
+		//get rechits from file to cluster
+		PhotonSkimmer(string filelist) : BaseSkimmer(filelist){
+			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
+			//tof = (d_rh-d_pv)/c
+			//in ntuplizer, stored as rh time
+			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
+                        TChain* ch = MakeTChain(filelist);
+                        if(ch == nullptr) return;
+			_prod = new PhotonProducer(ch);
+
+			//set producer to get jets with different kin reqs - can't use same file pointer ig?
+                        TChain* ch2 = MakeTChain(filelist);
+			_jetprod = new JetProducer(ch2);
+			
+
+			//set histogram weights for HT slices, etc
+			_weight = 1;
+			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			if(_data || filelist.find("GJets") == string::npos){ _weight = 1.; }
+			else{
+				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
+			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
+			        string filein;
+			        double jet_weight, pho_weight;
+			        while( weights >> filein >> jet_weight >> pho_weight){
+			                if(filelist.find(filein) == string::npos) continue;
+			                else{
+			                        _weight = pho_weight;
+			                        break;
+			                }
+			        }
+			}		
+
+
+			_base = _prod->GetBase();
+			_nEvts = _base->fChain->GetEntries();
+			_evti = 0;
+			_evtj = _nEvts;
+			_oname = "plots/photon_skims_"+_cms_label+".root";
+			
+			_isocuts = false;
+			_oskip = 10;
+			_thresh = 1.;
+			_alpha = 0.1;
+			_emAlpha = 0.5;
+			_gev = 1/30.;
+			_applyFrac = false;
+			
+			//reqs on iso bkg sample
+			_isoBkgSel = false;
+			_minPhoPt_isoBkg = 70;
+			_minHt_isoBkg = 50;
+			_minJetPt_isoBkg = 50;
+			_maxMet_isoBkg = 150;
+			
+			objE->SetTitle("totphoE");
+			objE->SetName("totphoE");
+			
+			objE_clusterE->SetTitle("phoE_clusterE");
+			objE_clusterE->SetName("phoE_clusterE");
+
+			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			InitHists();
+		}
+		void InitHists(){
 			//add photon specific histograms
                         _hists1D.push_back(slope_space);
                         _hists1D.push_back(slope_etaT);
