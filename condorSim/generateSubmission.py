@@ -25,9 +25,9 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-            inputFile = "condorSimNtuples_ttbar_defaultv9p1.root"
+            inputFile = "condorSimNtuples_ttbar_defaultv9p1"
     elif args.inputSample == "QCD":
-            inputFile = "condorSimNtuples_QCD_defaultv9p1.root"
+            inputFile = "condorSimNtuples_QCD_defaultv9p1"
     #elif args.inputSample == "QCD_noSpatialSmear":
     #        inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear.root"
     #elif args.inputSample == "QCD_noSpatialSmear_highEnergySmear":
@@ -43,6 +43,10 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
+    if args.mingenpartpt != 0:
+            inputFile += "_mingenpartpt"+args.mingenpartpt
+        
+    inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
     
     #organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
@@ -55,6 +59,9 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
+    ofilename += "_mingenpartpt"+args.mingenpartpt
+    dirname += "_mingenpartpt"+args.mingenpartpt
+
     #put algo config in file name
     kname = "%.3f" % float(args.alpha)
     kname = kname.replace(".","p")
