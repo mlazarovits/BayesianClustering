@@ -27,7 +27,7 @@ def getDataSetName(pathToList):
         return tmp[0]
 
 # Write the header of the condor submit file
-def writeSubmissionBase(subf, dirname, ofilename, infile):
+def writeSubmissionBase(subf, dirname, ofilename):
         subf.write("universe = vanilla\n")
         subf.write("executable = execute_script.sh\n")
         subf.write("output = ./"+dirname+"/log/job.$(Process).out\n")
@@ -68,15 +68,23 @@ def writeSubmissionBase(subf, dirname, ofilename, infile):
         subf.write("transfer_output_remaps = \""+remap+"\"\n")	
 
 #splits by event number
-def eventsSplit(infile, nChunk):
+def eventsSplit(infile, nChunk, filelist):
+    if filelist:
+        #should split by event number in file
+        tree = ROOT.TChain("tree/llpgtree")
+        for file in filelist:
+            rfile = ROOT.TFile.Open(file)
+            tree.AddFile(rfile)
+    else:
+        #should split by event number in file
+        rfile = ROOT.TFile.Open(infile)
+        tree = rfile.Get("tree/llpgtree")
+    nevts = tree.GetEntries()
+    evts = range(nevts+1)
+    
     if nChunk == 0:
         nChunk += 1
     print("Splitting each file into "+str(nChunk)+" jobs ")
-    #should split by event number in file
-    rfile = ROOT.TFile.Open(infile)
-    tree = rfile.Get("tree/llpgtree")
-    nevts = tree.GetEntries()
-    evts = range(nevts+1)
     #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
     #make sure to count first event in every chunk after first
     arr = [[min(i)-1, max(i)] for i in np.array_split(evts,nChunk)]

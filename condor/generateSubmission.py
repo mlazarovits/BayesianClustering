@@ -25,14 +25,19 @@ def generateSubmission(args):
 
     if "GJets_HT400to600" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix.root"
+    	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT100to200" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix.root"
+    	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT200to400" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix.root"
+    	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT40to100" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix.root"
+    	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT600toInf" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
+    	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GMSB_L-250_Ctau-10" in args.inputSample:
         inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
     elif "GMSB_L-300_Ctau-400" in args.inputSample:
@@ -107,6 +112,7 @@ def generateSubmission(args):
     else:
         inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
     inputFile = inputPath+inputFile
+    inputFileList = "filelists/"+inputFileList
 
     objName = args.object
     #strategyName = "GMMonly" #only option for CMS jets/photons
@@ -206,7 +212,10 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFile, args.split)
+    eventnums = SH.eventsSplit(inputFile, args.split, False)
+    #eventnums = SH.eventsSplit(inputFileList, args.split, True)
+    if eventnums == 0 or eventnums is None:
+    	return
     flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
         flags += str(m)+' '
@@ -247,11 +256,9 @@ def generateSubmission(args):
     condorSubmitFile = dirname + "/src/submit.sh"
     subf = open(condorSubmitFile, "w")
     print("outputfile name "+ofilename)
-    SH.writeSubmissionBase(subf, dirname, ofilename, inputFile)
+    SH.writeSubmissionBase(subf, dirname, ofilename)
     SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
     #subf.close()
-    if eventnums == 0 or eventnums is None:
-    	return
     
     print("------------------------------------------------------------")
     print("Submission ready, to run use:")
