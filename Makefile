@@ -137,6 +137,7 @@ SpikeCheck.x: $(SRCDIR)SpikeCheck.C $(OBJ_FILES) $(HH_FILES)
 
 configtar:
 	cp FullCluster*.x config/
+	cp -r filelists/ config/
 	tar -czf condor/config.tgz config/
 
 simconfigtar:
