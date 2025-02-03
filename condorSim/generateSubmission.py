@@ -43,8 +43,6 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-    if args.mingenpartpt != 0:
-            inputFile += "_mingenpartpt"+args.mingenpartpt
         
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
@@ -205,6 +203,7 @@ def main():
     parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
+    parser.add_argument('--mingenpartpt',help='min gen particle pt',default=0.)
     args = parser.parse_args()
     
     generateSubmission(args)
