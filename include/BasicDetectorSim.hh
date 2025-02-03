@@ -75,6 +75,11 @@ struct RecoParticle;
 		void SetTimeResCts(double cte, double rate){ _calTresCte = cte; _calTresRate = rate; }
 		//set energy threshold for zero suppression
 		void SetEnergyThreshold(double e){ _ethresh = e; }
+		//set min gen particle pt to be included in gen AK4 jet
+		double _genpart_minpt;
+		void SetMinGenPartPt(double p){_genpart_minpt = p; cout << "Minimum gen particle pt for subcluster analysis " << _genpart_minpt << " GeV" << endl; }
+
+
 
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 

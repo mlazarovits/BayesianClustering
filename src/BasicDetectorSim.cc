@@ -53,6 +53,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
+	_genpart_minpt = 0;
 
 	//default PV is detector center
 	_PV = BayesPoint({0.,0.,0.});
@@ -109,6 +110,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
+	_genpart_minpt = 0;
 
 	//default PV is detector center
 	_PV = BayesPoint({0.,0.,0.});
@@ -323,10 +325,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//don't include electrons in gen jet clustering (or save to reco particles), muons are skipped above bc they are not showered
 			fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
 			fjinput.set_user_index(_genparts.size());
-			_genparts.push_back(fjinput);
-			_genpartMomIdx.push_back(-1); //not saving this mother info
-			_genpartids.push_back(rp.Particle.id());
-			if(rp.Particle.idAbs() != 11) fjinputs.push_back(fjinput);
+			if(rp.Particle.idAbs() != 11 && rp.Momentum.pt() >= _genpart_minpt){
+				_genparts.push_back(fjinput);
+				_genpartMomIdx.push_back(-1); //not saving this mother info
+				_genpartids.push_back(rp.Particle.id());
+				fjinputs.push_back(fjinput);
+			}
 
 			//fill ecal cell with reco particle
 			FillCal(rp);
