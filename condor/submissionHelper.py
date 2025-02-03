@@ -72,6 +72,7 @@ def eventsSplit(infile, nChunk, filelist):
     if filelist:
         #should split by event number in file
         tree = ROOT.TChain("tree/llpgtree")
+        #TODO:need to open file and go through each line
         for file in filelist:
             rfile = ROOT.TFile.Open(file)
             tree.AddFile(rfile)
