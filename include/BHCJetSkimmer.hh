@@ -35,7 +35,6 @@ class BHCJetSkimmer{
 			//m
 			_prior_params["mean"] = Matrix(3,1);
 						
-			_genpart_minpt = 0;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -66,7 +65,6 @@ class BHCJetSkimmer{
 			_prior_params["scalemat"] = W;
 			//m
 			_prior_params["mean"] = Matrix(3,1);
-			_genpart_minpt = 0;
 				
 	
 			graphs.push_back(nrhs_comptime);
@@ -501,16 +499,8 @@ class BHCJetSkimmer{
 					genidx = genMatchIdxs[j];	
 					
 					cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
-					int ngenparts = 0;
 					int genjetidx = _genjets[genMatchIdxs[j]].GetUserIdx();
-					for(int jj = 0; jj < _base->Jet_genNConstituents->at(genjetidx); jj++){
-						int genidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(jj); //user idx from gen jets collection
-						genidx = _base->genpart_idx->at(genidx); //user idx from gen particles collection
-						if(_base->genpart_pt->at(genidx) < _genpart_minpt) continue;
-						ngenparts++;
-					}
-					if(ngenparts > 0)	
-						_procCats[p].hists2D[0][21]->Fill(ngenparts,_recojets[j].GetNConstituents());
+					_procCats[p].hists2D[0][21]->Fill(_base->Jet_genNConstituents->at(genjetidx),_recojets[j].GetNConstituents());
 					//skip gen matching for now
 					continue;
 					//fill gen match histograms
@@ -1427,7 +1417,6 @@ class BHCJetSkimmer{
 	void SetSubclusterAlpha(double a){_emAlpha = a; }
 	void SetThreshold(double t){ _thresh = t; }
 	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
-	void SetMinGenPartPt(double p){_genpart_minpt = p; cout << "Minimum gen particle pt for subcluster analysis " << _genpart_minpt << " GeV" << endl; }
 
 
 	private:
@@ -1467,7 +1456,6 @@ class BHCJetSkimmer{
 		int _topDecayType;
 
 		
-		double _genpart_minpt;
 
 		map<string, Matrix> _prior_params;
 
