@@ -1087,6 +1087,7 @@ void BasicDetectorSim::FillGenParticles(){
 		_genpartphi.push_back(_genparts[g].phi());
 		_genpartenergy.push_back(_genparts[g].e());
 		_genpartpt.push_back(_genparts[g].pt());
+		_genpartpz.push_back(_genparts[g].pz());
 		_genpartmass.push_back(_genparts[g].m());
 		_genpartIdx.push_back(_genparts[g].user_index());
 	}
@@ -1105,6 +1106,7 @@ void BasicDetectorSim::FillGenJets(){
 		_jgphi.push_back(jet.phi());
 		_jgenergy.push_back(jet.e());
 		_jgpt.push_back(jet.pt());
+		_jgpz.push_back(jet.pz());
 		_jgmass.push_back(jet.m());
 		consts = jet.constituents();
 		_jgnparts.push_back((int)consts.size());
@@ -1217,6 +1219,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Gen jet phi - FastJet AK4");
 	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Gen jet energy - FastJet AK4");
 	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Gen jet pt - FastJet AK4");
+	_tree->Branch("Jet_genPz",&_jgpz)->SetTitle("Gen jet pz - FastJet AK4");
 	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Gen jet mass - FastJet AK4");
 	_tree->Branch("Jet_genNJet",&_njets)->SetTitle("Number of gen jets - FastJet AK4");
 	_tree->Branch("Jet_genConstituentIdxs", &_jgpartIdxs)->SetTitle("Gen jet constituent indices - FastJet AK4");
@@ -1249,6 +1252,7 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("genpart_phi", &_genpartphi)->SetTitle("genpart phi");
 	_tree->Branch("genpart_energy",&_genpartenergy)->SetTitle("genpart energy");
 	_tree->Branch("genpart_pt",&_genpartpt)->SetTitle("genpart pt");
+	_tree->Branch("genpart_pz",&_genpartpz)->SetTitle("genpart pz");
 	_tree->Branch("genpart_mass",&_genpartmass)->SetTitle("genpart mass");
 	_tree->Branch("genpart_id",&_genpartids)->SetTitle("genpart pdg id");
 	_tree->Branch("genpart_momIdx",&_genpartMomIdx)->SetTitle("genpart momIdx");
@@ -1283,6 +1287,7 @@ void BasicDetectorSim::_reset(){
 	_jgphi.clear();
 	_jgenergy.clear();
 	_jgpt.clear();
+	_jgpz.clear();
 	_jgmass.clear();
 	_jgnparts.clear();
 	for(auto j : _jgpartIdxs)
@@ -1307,6 +1312,7 @@ void BasicDetectorSim::_reset(){
 	_genpartphi.clear();
 	_genpartenergy.clear();
 	_genpartpt.clear();
+	_genpartpz.clear();
 	_genpartmass.clear();
 	_genpartIdx.clear();
 	

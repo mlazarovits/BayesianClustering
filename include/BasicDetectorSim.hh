@@ -203,7 +203,7 @@ struct RecoParticle;
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
 		vector<unsigned int> _rhids;
 		//gen jets 
-		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass;
+		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass, _jgpz;
 		//# particles in gen jets
 		vector<int> _jgnparts;
 		//indices of gen particles in gen jets
@@ -212,7 +212,7 @@ struct RecoParticle;
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
 		vector<int> _topDecayId;
 		//gen particle info (even intermediate particles)
-		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass;
+		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass, _genpartpz;
 		vector<double> _genpartMomIdx;
 		vector<int> _genpartIdx;
 		//reco jets
