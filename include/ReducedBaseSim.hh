@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Jan 28 14:18:00 2025 by ROOT version 6.30/06
+// Tue Feb  4 16:15:52 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_defaultv10_ttbar.root
+// found on file: simNtuples_test_ttbar_mingenpartpt0p000.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -44,6 +44,7 @@ public :
    vector<double>  *Jet_genPhi;
    vector<double>  *Jet_genEnergy;
    vector<double>  *Jet_genPt;
+   vector<double>  *Jet_genPz;
    vector<double>  *Jet_genMass;
    Int_t           Jet_genNJet;
    vector<vector<int> > *Jet_genConstituentIdxs;
@@ -68,6 +69,7 @@ public :
    vector<double>  *genpart_phi;
    vector<double>  *genpart_energy;
    vector<double>  *genpart_pt;
+   vector<double>  *genpart_pz;
    vector<double>  *genpart_mass;
    vector<int>     *genpart_id;
    vector<double>  *genpart_momIdx;
@@ -95,6 +97,7 @@ public :
    TBranch        *b_Jet_genPhi;   //!
    TBranch        *b_Jet_genEnergy;   //!
    TBranch        *b_Jet_genPt;   //!
+   TBranch        *b_Jet_genPz;   //!
    TBranch        *b_Jet_genMass;   //!
    TBranch        *b_Jet_genNJet;   //!
    TBranch        *b_Jet_genConstituentIdxs;   //!
@@ -119,6 +122,7 @@ public :
    TBranch        *b_genpart_phi;   //!
    TBranch        *b_genpart_energy;   //!
    TBranch        *b_genpart_pt;   //!
+   TBranch        *b_genpart_pz;   //!
    TBranch        *b_genpart_mass;   //!
    TBranch        *b_genpart_id;   //!
    TBranch        *b_genpart_momIdx;   //!
@@ -144,11 +148,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_defaultv10_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_test_ttbar_mingenpartpt0p000.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_defaultv10_ttbar.root");
+         f = new TFile("simNtuples_test_ttbar_mingenpartpt0p000.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_defaultv10_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_test_ttbar_mingenpartpt0p000.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -205,6 +209,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_genPhi = 0;
    Jet_genEnergy = 0;
    Jet_genPt = 0;
+   Jet_genPz = 0;
    Jet_genMass = 0;
    Jet_genConstituentIdxs = 0;
    Jet_genNConstituents = 0;
@@ -227,6 +232,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    genpart_phi = 0;
    genpart_energy = 0;
    genpart_pt = 0;
+   genpart_pz = 0;
    genpart_mass = 0;
    genpart_id = 0;
    genpart_momIdx = 0;
@@ -257,6 +263,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genPhi", &Jet_genPhi, &b_Jet_genPhi);
    fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
    fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
+   fChain->SetBranchAddress("Jet_genPz", &Jet_genPz, &b_Jet_genPz);
    fChain->SetBranchAddress("Jet_genMass", &Jet_genMass, &b_Jet_genMass);
    fChain->SetBranchAddress("Jet_genNJet", &Jet_genNJet, &b_Jet_genNJet);
    fChain->SetBranchAddress("Jet_genConstituentIdxs", &Jet_genConstituentIdxs, &b_Jet_genConstituentIdxs);
@@ -281,6 +288,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("genpart_phi", &genpart_phi, &b_genpart_phi);
    fChain->SetBranchAddress("genpart_energy", &genpart_energy, &b_genpart_energy);
    fChain->SetBranchAddress("genpart_pt", &genpart_pt, &b_genpart_pt);
+   fChain->SetBranchAddress("genpart_pz", &genpart_pz, &b_genpart_pz);
    fChain->SetBranchAddress("genpart_mass", &genpart_mass, &b_genpart_mass);
    fChain->SetBranchAddress("genpart_id", &genpart_id, &b_genpart_id);
    fChain->SetBranchAddress("genpart_momIdx", &genpart_momIdx, &b_genpart_momIdx);
