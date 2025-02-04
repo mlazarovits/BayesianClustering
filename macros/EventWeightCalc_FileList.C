@@ -56,16 +56,11 @@ int EventWeightCalc_FileList(string selection = ""){
 
 	//just for MCs - data weight = 1
 	vector<string> filelists;
+	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list");
+	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list");
+	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list");
 	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list");
-	//files.push_back("GJets_R17"+selection+"_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GJets_R17"+selection+"_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GJets_R17"+selection+"_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GJets_R17"+selection+"_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GMSB_R17"+selection+"_v24_GMSB_L-150TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GMSB_R17"+selection+"_v24_GMSB_L-150TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GMSB_R17"+selection+"_v24_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GMSB_R17"+selection+"_v24_GMSB_L-350TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("GMSB_R17"+selection+"_v24_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix");
+	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list");
 	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix");
 	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix");
 	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix");
