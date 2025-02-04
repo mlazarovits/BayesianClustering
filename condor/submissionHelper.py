@@ -73,9 +73,11 @@ def eventsSplit(infile, nChunk, filelist):
         #should split by event number in file
         tree = ROOT.TChain("tree/llpgtree")
         #TODO:need to open file and go through each line
-        for file in filelist:
-            rfile = ROOT.TFile.Open(file)
-            tree.AddFile(rfile)
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            for line in lines:
+                rfile = ROOT.TFile.Open(line[:-1]) #remove new line character
+                tree.AddFile(rfile.GetName())
     else:
         #should split by event number in file
         rfile = ROOT.TFile.Open(infile)
@@ -104,6 +106,9 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
     outFileArg = ofilename+".$(Process)"
     
     #infile should only be file name (no path)
+    match_str = "BayesianClustering/"
+    if match_str in inFile:
+        inFile = inFile[inFile.find(match_str)+len(match_str):]
     #inFile = inFile[inFile.rfind("/")+1:]
     #inFile = "root://cmsxrootd.fnal.gov/"+inFile
     
