@@ -151,7 +151,6 @@ class BaseSkimmer{
 		virtual void Skim() = 0;
 
 		//make tchain from filelist
-		//debug after jet res for 1st exo talk are done
 		TChain* MakeTChain(string flist){
 			if(gSystem->AccessPathName(flist.c_str())){ 
 				cout << "Error: file " << flist << " doesn't exist." << endl; 
