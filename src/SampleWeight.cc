@@ -46,6 +46,12 @@ void SampleWeight::Init(){
 	_sampleToWeights["GMSB_L-400TeV"].SetLumiScale(1.);  
 	_sampleToWeights["GMSB_L-500TeV"].SetLumiScale(1.);  
 	_sampleToWeights["GMSB_L-600TeV"].SetLumiScale(1.);  
+	
+	_sampleToWeights["GJets_HT40to100"].SetLumiScale(1.);
+	_sampleToWeights["GJets_HT100to200"].SetLumiScale(1.);
+	_sampleToWeights["GJets_HT200to400"].SetLumiScale(1.);
+	_sampleToWeights["GJets_HT400to600"].SetLumiScale(1.);
+	_sampleToWeights["GJets_HT600toInf"].SetLumiScale(1.);
 
 	//xsec
 	_sampleToWeights["QCD_HT50to100"].SetXsec(187700000.0);
@@ -68,7 +74,11 @@ void SampleWeight::Init(){
 	_sampleToWeights["GMSB_L-500TeV"].SetXsec(0.000165);  
 	_sampleToWeights["GMSB_L-600TeV"].SetXsec(0.0);  
 
-
+	_sampleToWeights["GJets_HT40to100"].SetXsec(18620.0);
+	_sampleToWeights["GJets_HT100to200"].SetXsec(8625.0);
+	_sampleToWeights["GJets_HT200to400"].SetXsec(2196.0);
+	_sampleToWeights["GJets_HT400to600"].SetXsec(258.0);
+	_sampleToWeights["GJets_HT600toInf"].SetXsec(85.18);
 
 
 }
