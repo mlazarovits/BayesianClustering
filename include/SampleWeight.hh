@@ -48,6 +48,20 @@ class SampleWeight{
 			return 1.;
 		}
 		
+		void GetWeights(string name, double& scale, double& xsec){
+			string key;
+			for(auto it = _sampleToWeights.begin(); it != _sampleToWeights.end(); it++){
+				key = it->first;
+				if(name.find(key) != string::npos){
+					scale = it->second.scale;
+					xsec = it->second.xsec;
+					return;
+				} 
+			}
+			scale = 1.;
+			xsec = 1.;
+		}
+
 		void GetWeights(TFile* f, double& scale, double& xsec){
 			string name = f->GetName();
 			string key;
