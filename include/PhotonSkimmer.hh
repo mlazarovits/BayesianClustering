@@ -51,8 +51,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			//set histogram weights for HT slices, etc
 			_weight = 1;
-			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			if(_data || fname.find("GJets") == string::npos){ _weight = 1.; }
+			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
 			else{
 				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
 			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
@@ -117,8 +116,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			//set histogram weights for HT slices, etc
 			_weight = 1;
-			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			if(_data || filelist.find("GJets") == string::npos){ _weight = 1.; }
+			if(_data || filelist.find("QCD") != string::npos){ _weight = 1.; }
 			else{
 				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
 			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
@@ -1142,7 +1140,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
 		//iso bkg == bkg for sig vs bkg MVA
 		//239 - energy - iso bkg selection
-		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel;EovP;E",50,0,100);
+		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel",50,0,100);
 		//240 - etaSig - iso bkg selection	
                 TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",50,0.01,0.05);
 		//241 - phiSig - iso bkg selection	
