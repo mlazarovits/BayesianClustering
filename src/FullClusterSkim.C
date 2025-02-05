@@ -303,7 +303,13 @@ int main(int argc, char *argv[]){
 	prior_params["scalemat"] = W;
 	prior_params["mean"] = m;
 
+	//make sure input file is *list* (ie txt file) not a root file
+	if(in_file.find(".txt") == string::npos){
+		cout << "Please input list of ROOT files in .txt format. File given: " << in_file << endl;
+		return -1;
+	}
 	cout << "infile list " << in_file << endl;
+
 	string cmslab, version;	
 	//TFile* file = nullptr;
 	/////GET DATA FROM NTUPLE LIST//////
