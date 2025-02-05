@@ -52,8 +52,8 @@ do
 	for index in ${FILE3[@]}; do
 		#eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_R17_${SEL}_v24/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
 		xrdfs ${PREFIX} ls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
-		sed -i 's/^/root:\/\/cmseos.fnal.gov\//' ${outfile}
 	done
+	sed -i 's/^/root:\/\/cmseos.fnal.gov\//' ${outfile}
 	echo Wrote file list to $outfile
 done
 
