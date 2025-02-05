@@ -124,7 +124,6 @@ def generateSubmission(args):
     sampleName = inputFileList[ inputFileList.find(sel)+len(sel) : inputFileList.find("_list") ]
     sampleNameShort = sampleName[ : sampleName.find("_")  ]
     sampleName = sampleNameShort + "_R"+str(args.year)[-2:] + "_" + sel + sampleName
-    print("sampleName",sampleName,"sampleNameShort",sampleNameShort)
 
     dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
     ofilename = args.inputSample+"_"+objName
