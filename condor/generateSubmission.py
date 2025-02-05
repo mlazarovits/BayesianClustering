@@ -38,58 +38,58 @@ def generateSubmission(args):
     elif "GJets_HT600toInf" in args.inputSample:
     	inputFile = "GJets_R17_MET100_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix.root"
     	inputFileList = "kucmsntuple_GJETS_R17_MET100_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "GMSB_L-250_Ctau-10" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-300_Ctau-400" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-400cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-350_Ctau-0p1" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-350_Ctau-200" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-400_Ctau-800" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-300_Ctau-1000" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-300_Ctau-600" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-350_Ctau-10" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-350_Ctau-800" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "GMSB_L-400_Ctau-200" in args.inputSample:
-        inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-250_Ctau-10" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-300_Ctau-400" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-400cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-350_Ctau-0p1" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-350_Ctau-200" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-400_Ctau-800" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-300_Ctau-1000" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-300_Ctau-600" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-350_Ctau-10" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-350_Ctau-800" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
+    #elif "GMSB_L-400_Ctau-200" in args.inputSample:
+    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
     elif "MET_RunB" in args.inputSample:
     	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017B_17Nov2017.root"
     elif "MET_RunC" in args.inputSample:
     	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017C_17Nov2017.root"
     elif "MET_RunD" in args.inputSample:
     	inputFile = "MET_R17_MET100_v24_MET_AOD_Run2017D_17Nov2017.root"
-    elif "MET_RunE" in args.inputSample:
-    	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
-    elif "JetHT_RunF_2017" in args.inputSample:
-    	inputFile = "JetHT_R17_MET100_v21_JetHT_AOD_Run2017F_17Nov2017.root"
-    elif "JetHT_RunC_2018" in args.inputSample:
-    	inputFile = "JetHT_R18_MET100_v22_JetHT_AOD_Run2018C_15Feb2022_UL2018.root"
-    elif "QCD_HT500to700" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT1000to1500" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT100to200" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT1500to2000" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT2000toInf" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT300to500" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT500to700" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT700to1000" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT200to300" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
-    elif "QCD_HT50to100" in args.inputSample:
-    	inputFile = "QCD_R17_MET100_v24_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
+    #elif "MET_RunE" in args.inputSample:
+    #	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
+    #elif "JetHT_RunF_2017" in args.inputSample:
+    #	inputFile = "JetHT_R17_MET100_v21_JetHT_AOD_Run2017F_17Nov2017.root"
+    #elif "JetHT_RunC_2018" in args.inputSample:
+    #	inputFile = "JetHT_R18_MET100_v22_JetHT_AOD_Run2018C_15Feb2022_UL2018.root"
+    #elif "QCD_HT500to700" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT1000to1500" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT100to200" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT1500to2000" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT2000toInf" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT300to500" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT300to500_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT500to700" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT700to1000" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT200to300" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT200to300_AODSIM_RunIIFall17DRPremix.root"
+    #elif "QCD_HT50to100" in args.inputSample:
+    #	inputFile = "QCD_R17_MET100_v24_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
     elif "EGamma_RunF" in args.inputSample:
     	inputFile = "DEG_R17_MET100_v21_DoubleEG_AOD_Run2017F_09Aug2019_UL2017.root"
     elif "SMS-GlGl" in args.inputSample:
@@ -106,13 +106,15 @@ def generateSubmission(args):
                 inputFile = inputFile.replace("MET100_v21","AL1IsoPho_v24")
             if "GJets" in args.inputSample:
                 inputFile = inputFile.replace("MET100_v24","AL1IsoPho_v24")
+                inputFileList = inputFileList.replace("MET100_v24","AL1IsoPho_v24")
         else:
             inputPath = "root://cmseos.fnal.gov//store/user/mlazarov/KUCMSNtuples/"
             inputFile = inputFile.replace("MET100","AL1IsoPho")
     else:
         inputPath = "root://cmseos.fnal.gov//store/user/lpcsusylep/malazaro/KUCMSNtuples/"
     inputFile = inputPath+inputFile
-    inputFileList = "filelists/"+inputFileList
+    inputPathList = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/BayesianClustering/filelists/"
+    inputFileList = inputPathList+inputFileList
 
     objName = args.object
     #strategyName = "GMMonly" #only option for CMS jets/photons
@@ -212,8 +214,8 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFile, args.split, False)
-    #eventnums = SH.eventsSplit(inputFileList, args.split, True)
+    #eventnums = SH.eventsSplit(inputFile, args.split, False)
+    eventnums = SH.eventsSplit(inputFileList, args.split, True)
     if eventnums == 0 or eventnums is None:
     	return
     flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
@@ -257,8 +259,8 @@ def generateSubmission(args):
     subf = open(condorSubmitFile, "w")
     print("outputfile name "+ofilename)
     SH.writeSubmissionBase(subf, dirname, ofilename)
-    SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
-    #subf.close()
+    SH.writeQueueList(subf, inputFileList, ofilename, eventnums, flags)
+    #SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
     
     print("------------------------------------------------------------")
     print("Submission ready, to run use:")
@@ -269,7 +271,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
+    #parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017)
     #which object to analyze (jets or photons currently supported)
