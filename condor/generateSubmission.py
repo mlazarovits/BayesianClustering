@@ -87,7 +87,7 @@ def generateSubmission(args):
     #elif "QCD_HT50to100" in args.inputSample:
     #	inputFile = "QCD_R17_MET100_v24_QCD_HT50to100_AODSIM_RunIIFall17DRPremix.root"
     elif "EGamma_RunF" in args.inputSample:
-    	inputFileList = "kucmsntuple_DEG_R"+str(args.year)[-2:]+"_MET100_"+ver+"_DoubleEG_AOD_Run2017F_09Aug2029_UL2017_list.txt"
+    	inputFileList = "kucmsntuple_DEG_R"+str(args.year)[-2:]+"_MET100_"+ver+"_DoubleEG_AOD_Run201F_09Aug2019_UL2017_list.txt"
     elif "SMS-GlGl" in args.inputSample:
     	inputFileList = "kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private_list.txt"
     else:
