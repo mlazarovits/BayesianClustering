@@ -3280,7 +3280,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		vector<double> norms;
 		gmm->GetNorms(norms);
-		double Ek = norms[ncl]*_gev;
+		double Ek = norms[ncl]/_gev;
 
 		Matrix cov = params["cov"];
 		vector<Matrix> eigvecs;
@@ -3394,6 +3394,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 		//iso bkg CR distributions
 		if(label == 4){
+			cout << "prompt Ek " << Ek << " norm " << norms[ncl] << " for subcl " << ncl << " of " << norms.size() << endl;
 			for(int i = 0; i < (int)_procCats.size(); i++){
 				_procCats[i].hists1D[0][239]->Fill(Ek, _weight);
 				_procCats[i].hists1D[0][240]->Fill(sqrt(cov.at(0,0)), _weight);
