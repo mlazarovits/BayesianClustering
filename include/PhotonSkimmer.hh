@@ -1140,7 +1140,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* dE_trackSubcl = new TH1D("dE_trackSubcl","dE_trackSubcl",25,-2,2);	
 		//iso bkg == bkg for sig vs bkg MVA
 		//239 - energy - iso bkg selection
-		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel",50,0,100);
+		TH1D* E_IsoBkgSel = new TH1D("E_IsoBkgSel","E_IsoBkgSel",50,0,500);
 		//240 - etaSig - iso bkg selection	
                 TH1D* etaSig_IsoBkgSel = new TH1D("etaSig_IsoBkgSel","etaSig_IsoBkgSel",50,0.01,0.05);
 		//241 - phiSig - iso bkg selection	
