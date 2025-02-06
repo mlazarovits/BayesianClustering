@@ -39,11 +39,11 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-    
-    mingenpartpt_str = args.mingenpartpt
-    mingenpartpt_str = mingenpartpt_str.replace(".","p")
-    ofilename += "_mingenpartpt"+mingenpartpt_str
-    dirname += "_mingenpartpt"+mingenpartpt_str
+    if(args.mingenpartpt != 0):
+        mingenpartpt_str = str(args.mingenpartpt)
+        mingenpartpt_str = mingenpartpt_str.replace(".","p")
+        ofilename += "_mingenpartpt"+mingenpartpt_str
+        dirname += "_mingenpartpt"+mingenpartpt_str
     #put algo config in file name
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
