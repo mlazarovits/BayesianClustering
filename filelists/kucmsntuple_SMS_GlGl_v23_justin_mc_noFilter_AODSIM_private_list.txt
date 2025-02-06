@@ -1,0 +1,10 @@
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_1.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_10.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_2.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_3.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_4.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_5.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_6.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_7.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_8.root
+root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_SMS_GlGl_v23/CRAB_UserFiles/kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private/241114_214109/0000/output_9.root
