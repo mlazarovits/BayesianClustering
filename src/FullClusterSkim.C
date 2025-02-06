@@ -31,6 +31,7 @@ int main(int argc, char *argv[]){
 	Matrix W(3,3);
 	W.InitIdentity();
 	W.mult(W,1./3.);
+	W.SetEntry(W.at(2,2)*1e-4,2,2);
 	Matrix m(3,1);
 
 	int verb = 0;
