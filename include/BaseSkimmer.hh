@@ -170,7 +170,6 @@ class BaseSkimmer{
 				//std::cout << "--  adding file: " << file << std::endl;
 				ch->Add(file.c_str());
 			}
-			cout << "Done TChaining" << endl;
 			return ch;
 		}
 
