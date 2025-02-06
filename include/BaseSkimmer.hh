@@ -849,5 +849,12 @@ class BaseSkimmer{
 		}
 		return ret;
 	}
+	
+	double dR(double eta1, double phi1, double eta2, double phi2){
+		//phi wraparound
+		double dphi = (phi1-phi2);
+		dphi = acos(cos(dphi));
+		return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
+	}
 };
 #endif
