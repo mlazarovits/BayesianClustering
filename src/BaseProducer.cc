@@ -235,10 +235,10 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location - use this to improve time covariance
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
-				timecorr = drh - dpv;
-
-				
-
+				if(_spatial_corr)
+					timecorr = drh - dpv;
+				else
+					timecorr = 0;
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
@@ -256,6 +256,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                 _base->ECALRecHit_rhz->at(rhidx), time);
                                
+				cout << "raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
@@ -370,7 +371,10 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location - use this to improve time covariance
 				dpv = _base->ECALRecHit_pvTOF->at(rhidx); 
-				timecorr = drh - dpv;
+				if(_spatial_corr)
+					timecorr = drh - dpv;
+				else
+					timecorr = 0;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;

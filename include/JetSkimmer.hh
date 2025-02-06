@@ -1243,7 +1243,7 @@ class JetSkimmer : public BaseSkimmer{
 					phoidx = _phos[0].GetUserIdx();
 					//cout << "leading phoidx " << phoidx << endl;
 					genidx = _base->Photon_genIdx->at(phoidx);
-					if(genidx == -1) phoid = -1;
+					if(genidx == -1) phoid = -1; //gen match for MC
 					else phoid = _base->Gen_susId->at(genidx);
 					
 					//cout << "leading phoid " << phoid << endl;
@@ -1690,8 +1690,7 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << "jet has " << jet.GetNConstituents() << " subclusters" << endl;	
 				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
 			}
-			else if(ts == emax && !pho) time = CalcEAvgTime(jet); 
-			else if(ts == emax && pho) time = CalcMaxTime(jet);
+			else if(ts == emax) time = CalcMaxTime(jet);
 			else cout << "Error: invalid time reconstruction method specified for calculating jet time" << endl;
 			//if photon, shift time to detector by centroid as defined above
 			if(pho){
