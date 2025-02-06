@@ -33,7 +33,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			//_timecalibTool = KUCMSTimeCalibration();
+			_timecalibTool = KUCMSTimeCalibration();
 			_timecalibTag = "";
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
@@ -60,7 +60,7 @@ class BaseProducer{
 			_timesmear = false;
 			_spatial_corr = true;
 			_timecalibTag = "";
-			//_timecalibTool = KUCMSTimeCalibration();
+			_timecalibTool = KUCMSTimeCalibration();
 			
 			//set year
 			string name = ch->GetName();
@@ -107,7 +107,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			//_timecalibTool = KUCMSTimeCalibration();
+			_timecalibTool = KUCMSTimeCalibration();
 			
 			//set year
 			string name = file->GetName();
