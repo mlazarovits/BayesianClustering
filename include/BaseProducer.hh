@@ -12,6 +12,7 @@
 #include "TPad.h"
 #include "TLatex.h"
 #include "TCanvas.h"
+#include "KUCMSTimeCalibration.hh"
 #include <fstream>
 
 class BaseProducer{
@@ -32,6 +33,8 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
+			//_timecalibTool = KUCMSTimeCalibration();
+			_timecalibTag = "";
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
 			//	return;
@@ -56,6 +59,8 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
+			_timecalibTag = "";
+			//_timecalibTool = KUCMSTimeCalibration();
 			
 			//set year
 			string name = ch->GetName();
@@ -67,7 +72,10 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calibmap = nullptr;
-			//SetTimeCalibrationMap(calibfile);
+			if(_data)
+				_timecalibTag = "EG_EOY_MINI";
+			else
+				_timecalibTag = "RunIIFall17DRPremix";
 			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
@@ -99,6 +107,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
+			//_timecalibTool = KUCMSTimeCalibration();
 			
 			//set year
 			string name = file->GetName();
@@ -110,7 +119,10 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calibmap = nullptr;
-			//SetTimeCalibrationMap(calibfile);
+			if(_data)
+				_timecalibTag = "EG_EOY_MINI";
+			else
+				_timecalibTag = "RunIIFall17DRPremix";
 			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
@@ -160,6 +172,9 @@ class BaseProducer{
 		void SetSpatialCorr(bool b){ _spatial_corr = b; }
 
 		ReducedBase* GetBase(){ return _base; }
+
+		KUCMSTimeCalibration _timecalibTool;
+		string _timecalibTag;
 
 		void PrintPreselection(){
 			cout << "Default energy transfer factor: " << _gev << endl;

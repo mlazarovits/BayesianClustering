@@ -104,6 +104,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
+                          		//calibfactor = _timeCalibTool.getCalibration(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run, _timecalibTag);
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
 					time = time + timecorr - calibfactor;
 				}
@@ -256,7 +257,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                 _base->ECALRecHit_rhz->at(rhidx), time);
                                
-				cout << "raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
+				//cout << "raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
