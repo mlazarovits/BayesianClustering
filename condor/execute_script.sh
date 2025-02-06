@@ -31,6 +31,7 @@ ls config
 mv config/info .
 mv config/json .
 mv config/filelists .
+mv config/ecal_config .
 ###
 ####don't need lhapdf library - but may need to do this for cgal, etc.
 ####export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/lhapdf/6.2.1-pafccj3/lib/
