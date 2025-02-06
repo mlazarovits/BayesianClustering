@@ -1226,7 +1226,7 @@ class BHCJetSkimmer{
 		//24 - gen particle p vs gen particle p/gen jet p for AK4 jets
 		TH2D* AK4Jet_genP_genPartJetPRatio = new TH2D("AK4Jet_genP_genPartJetPRatio","AK4Jet_genP_genPartJetPRatio;genP;genPartJetPRatio;a.u.",50,0,200,50,0,1);
 		//25 - gen jet p vs gen particle p/gen jet p for AK4 jets
-		TH2D* AK4Jet_genJetP_genPartJetPRatio = new TH2D("AK4Jet_genJetP_genPartJetPRatio","AK4Jet_genJetP_genPartJetPRatio;genJetP;genPartJetPRatio;a.u.",50,0,1,50,0,500);
+		TH2D* AK4Jet_genJetP_genPartJetPRatio = new TH2D("AK4Jet_genJetP_genPartJetPRatio","AK4Jet_genJetP_genPartJetPRatio;genJetP;genPartJetPRatio;a.u.",50,0,500,50,0,1);
 		//26 - gen particle pt vs gen particle pt/gen jet pt for AK4 jets
 		TH2D* AK4Jet_genPt_genPartJetPtRatio = new TH2D("AK4Jet_genPt_genPartJetPtRatio","AK4Jet_genPt_genPartJetPtRatio;genPt;genPartJetPtRatio;a.u.",50,0,200,50,0,1);
 		//27 - gen jet pt vs gen particle pt/gen jet pt for AK4 jets
