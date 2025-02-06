@@ -235,6 +235,9 @@ def generateSubmission(args):
         flags += ' --maxmet_isobkg '+str(args.maxmet_isobkg)+' --minphopt_isobkg '+str(args.minphopt_isobkg)+' --minht_isobkg '+str(args.minht_isobkg)+' --minjetpt_isobkg '+str(args.minjetpt_isobkg)
     if(args.maxRhE != -999):
         flags += ' --maxRhE '+str(args.maxRhE)
+    if(args.noSpatCorr):
+        flags += ' --noSpatCorr'
+
 
     if(objName == "jets"):
     	flags += " --object 0"
@@ -298,6 +301,7 @@ def main():
     parser.add_argument('--minphopt_isobkg',help='min photon pt for isolated background event selection',default=50)
     parser.add_argument('--minht_isobkg',help='min HT for isolated background event selection',default=50)
     parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
+    parser.add_argument('--noSpatCorr',help='turn off spatial corrections for rechit times to put in PV frame (jets only)',default=False,action='store_true')
     args = parser.parse_args()
 
     generateSubmission(args)
