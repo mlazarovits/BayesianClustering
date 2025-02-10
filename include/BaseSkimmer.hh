@@ -168,7 +168,7 @@ class BaseSkimmer{
 					continue;
 				}
 				//std::cout << "--  adding file: " << file << std::endl;
-				ch->Add(file.c_str());
+				ch->Add(file.c_str(),-1); //skip non-recoverable files
 			}
 			cout << "Done TChaining" << endl;
 			return ch;
