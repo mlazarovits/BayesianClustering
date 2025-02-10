@@ -24,6 +24,9 @@ then
 elif [ $PD = "MET" ]
 then
 	NAME=$PD
+elif [ $PD = "JetHT" ]
+then
+	NAME=$PD
 elif [ $PD = "DEG" ]
 then
 	NAME=DoubleEG
