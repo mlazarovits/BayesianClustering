@@ -51,7 +51,7 @@ void JetSkimmer::Skim(){
 
 	double metThresh = 0.4;
 	double geoAvgJets;
-	double phogev = 1./30.;
+	double phogev = _gev;//1./30.;
 	_prod->SetTimeSmear(_timesmear);
 	_prod->PrintPreselection();
 	for(int i = _evti; i < _evtj; i+=_skip){
@@ -69,10 +69,11 @@ void JetSkimmer::Skim(){
                 }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		_prod->GetTruePhotons(_phos, i, phogev);
+		_scprod->GetTrueSuperClusters(_SCs, i, phogev);
 		if(i % (_skip) == 0) cout << "evt: " << i << " of " << _nEvts;
 		//calc max time for photons
-		cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;
-		if(_phos.size() > 1) cout << "sublead photon pt " << _phos[1].pt() << " max time " << CalcMaxTime(_phos[1]) << endl;
+		//cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;
+		//if(_phos.size() > 1) cout << "sublead photon pt " << _phos[1].pt() << " max time " << CalcMaxTime(_phos[1]) << endl;
 
 
 		FillTruePhotonHists(_phos);

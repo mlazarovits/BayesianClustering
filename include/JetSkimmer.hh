@@ -38,6 +38,13 @@ class JetSkimmer : public BaseSkimmer{
 			_prod = new JetProducer(file);
 			_prod->SetIsoCut();
 	
+			//set producer to get jets with different kin reqs - can't use same file pointer ig?
+			string fname = file->GetName();
+			cout << "fname " << fname << endl;
+			TFile* f2 = TFile::Open(fname.c_str());
+			_scprod = new PhotonProducer(f2);	
+			_scprod->SetMinPt(5);
+			_scprod->SetMinRhE(0.5);
 
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -50,8 +57,6 @@ class JetSkimmer : public BaseSkimmer{
 			_minRhE = 5;
 			//set histogram weights
 			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			string fname = file->GetName();
-			cout << "fname " << fname << endl;
 			//if(_data){ _weight = 1.; }
 			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
 			//else{
@@ -85,6 +90,11 @@ class JetSkimmer : public BaseSkimmer{
 			_prod = new JetProducer(ch);
 			_prod->SetIsoCut();
 	
+			//set producer to get jets with different kin reqs - can't use same file pointer ig?
+                        TChain* ch2 = MakeTChain(filelist);
+			_scprod = new PhotonProducer(ch2);	
+			_scprod->SetMinPt(5);
+			_scprod->SetMinRhE(0.5);
 
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -118,6 +128,7 @@ class JetSkimmer : public BaseSkimmer{
 			objE_clusterE->SetName("jetE_clusterE");
 			
 			InitHists();
+cout << "done with jetskim ctor" << endl;
 		}
 		void InitHists(){
 			//true jet hists
@@ -142,6 +153,11 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(t_physBkg);
 			_hists1D.push_back(t_BH);
 			_hists1D.push_back(t_spike);
+			_hists1D.push_back(gamTime_maxErh); 
+
+			_hists2D.push_back(AK4Jet_nRhs_nSubclusters);
+			_hists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
+			_hists2D.push_back(Photon_nRhs_nSubclusters);
 		
 			
 			_timeHists1D.push_back(PVtime);
@@ -392,9 +408,13 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
+		TH1D* gamTime_maxErh = new TH1D("gamTime_maxErh","gamTime_maxErh",100,-1,1); 
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;AK4Jet_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
+		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",20,0,20,20,0,20);
+		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
 		
 		
 		//bins for variable binning for resolution/mean plots
@@ -688,31 +708,45 @@ class JetSkimmer : public BaseSkimmer{
 
 
 	
-		void FillTruePhotonHists(const vector<Jet>& phos){
+		void FillTruePhotonHists(vector<Jet>& phos){
 			int nphos = phos.size();	
 		
 			vector<JetPoint> rhs;
 			int rhidx;
 			double pvx, pvy, pvz, tof;
-			double rhx, rhy, rhz;
+			double rhx, rhy, rhz, maxE;
+			JetPoint maxE_rh;
 			for(int p = 0; p < nphos; p++){
 				rhs.clear();
 				rhs = phos[p].GetJetPoints();
 				pvx = phos[p].GetVertex().at(0);
 				pvy = phos[p].GetVertex().at(1);
 				pvz = phos[p].GetVertex().at(2);
+				maxE = 0;	
 				for(int r = 0; r < rhs.size(); r++){
 					rhx = rhs[r].x();	
 					rhy = rhs[r].y();	
 					rhz = rhs[r].z();	
 					tof = sqrt((rhx - pvx)*(rhx - pvx) + (rhy - pvy)*(rhy - pvy) + (rhz - pvz)*(rhz - pvz))/_c; 
 					TOFgam_rh_pv->Fill(tof,_weight);
+					
+					if(rhs[r].E() > maxE){
+						maxE = rhs[r].E();
+						maxE_rh = rhs[r];
+					}
 				}		
+				gamTime_maxErh->Fill(maxE_rh.t());
+ 
+				GaussianMixture* gmm = _subcluster(phos[p]);
+				double nrhs = (double)phos[p].GetNRecHits();
+				int n_k = phos[p].GetNConstituents();
+				Photon_nRhs_nSubclusters->Fill(nrhs,n_k);			
 			}
 		}
 
 
-		void FillTrueJetHists(const vector<Jet>& jets){
+		//also subclusters jets
+		void FillTrueJetHists(vector<Jet>& jets){
 			int njets = jets.size();	
 			nTrueJets->Fill((double)njets,_weight);
 		
@@ -737,6 +771,14 @@ class JetSkimmer : public BaseSkimmer{
 					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
 				GaussianMixture* gmm = _subcluster(jets[j]);
+				//CleanSubclusters(gmm, jet, probIDs);
+				double nrhs = (double)jets[j].GetNRecHits();
+				int n_k = jets[j].GetNConstituents();
+				AK4Jet_nRhs_nSubclusters->Fill(nrhs,n_k);			
+				int nscs = nSC_dRMatch(jets[j]);	
+				AK4Jet_nSuperclusters_nSubclusters->Fill(nscs,n_k);
+				
+
 				FillModelHists(gmm,jets[j]);
 
 				if(njets < 2) continue;
@@ -745,6 +787,19 @@ class JetSkimmer : public BaseSkimmer{
 					TrueJet_twoHardestpT->Fill(jets[j].pt(), _weight);
 				}
 			}
+		}
+
+		int nSC_dRMatch(const Jet& jet){ //put in E ratio req?
+			double maxDr = 0.5;
+			int nsc_tot = _SCs.size();
+			int nsc = 0;
+			double dr;
+			for(int s = 0; s < nsc_tot; s++){
+				dr = dR(jet.eta(), jet.phi(), _SCs[s].eta(), _SCs[s].phi());
+				if(dr < maxDr)
+					nsc++;
+			} 
+			return nsc;
 		}
 		
 		void FillModelHists(GaussianMixture* gmm, const Jet& jet){
@@ -757,6 +812,7 @@ class JetSkimmer : public BaseSkimmer{
 			double subcl_dist_time = 0;
 			double subcl_dist_etaphi = 0;
 			double ec1, ec2, pc1, pc2, tc1, tc2;
+
 			for(int k = 0; k < n_k; k++){
 				Ek = norms[k]/_gev;
 				params = gmm->GetPriorParameters(k);
@@ -1261,7 +1317,7 @@ class JetSkimmer : public BaseSkimmer{
 						if(_phos[0].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 						//deltaT of pho time - pv time (with both times in pv frame)
 						trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
-						cout << "gampv time " << deltaT_gampv << endl;
+						//cout << "ts " << ts << " gampv time " << deltaT_gampv << endl;
 						//want the photon time at the detector so we can compare it to the gen version
 						gamtime = CalcJetTime(ts, _phos[0], true);
 						//cout << "LEAD CALC GAMTIME END" << endl;
@@ -1277,7 +1333,7 @@ class JetSkimmer : public BaseSkimmer{
 							trCats[tr_idx].procCats[p].hists1D[0][4]->Fill(deltaT_gampv_gen, _weight);
 							//will be centered on zero - for resolution comparison with/without pv time need minimum cut on jet pt for pv time
 							//if(pvtime_highpt != -999 && _phos[0].pt() > 70){
-							if(xbins[4] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[5]){
+							if(!(xbins[0] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[1])){
 								deltaT_gampv = gamtime - pvtime;	
 								trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
 							}
@@ -1338,7 +1394,7 @@ class JetSkimmer : public BaseSkimmer{
 							deltaT_gampv = gamtime_pv - pvtime;
 							if(_phos[1].pt() > 70) trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
 							trCats[tr_idx].procCats[p].hists1D[0][2]->Fill(deltaT_gampv, _weight);
-							cout << "gampv time " << deltaT_gampv << endl;
+							//cout << "gampv time " << deltaT_gampv << endl;
 							//cout << "SUBLEAD GAMTIME END" << endl	
 							gamtime = CalcJetTime(ts, _phos[1], true);
 							trCats[tr_idx].procCats[p].hists1D[0][5]->Fill(gamtime_pv, _weight);
@@ -1350,7 +1406,7 @@ class JetSkimmer : public BaseSkimmer{
 							//only for gen matches
 							if(deltaT_gampv_gen != -999){
 								//if(pvtime_highpt != -999 && _phos[1].pt() > 70){
-								if(xbins[4] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[5]){
+								if(!(xbins[0] <= sqrt(Erh1*Erh2) && sqrt(Erh1*Erh2) < xbins[1])){
 									deltaT_gampv = gamtime - pvtime;	
 									trCats[tr_idx].procCats[p].hists1D[0][3]->Fill(deltaT_gampv - deltaT_gampv_gen, _weight);
 								}
@@ -1669,26 +1725,8 @@ class JetSkimmer : public BaseSkimmer{
 			if(ts == med) time = CalcMedianTime(jet);
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
-				gmm = _subcluster(jet);
-				//cout << " nSubclusters: " << gmm->GetNClusters() << endl;
-				//CleanSubclusters(gmm, jet, probIDs);
-				time = CalcMMAvgTime(gmm, pho);//probIDs);
-				//set constituents
-				vector<double> norms;
-				gmm->GetNorms(norms);
-				for(int k = 0; k < gmm->GetNClusters(); k++){
-					auto params = gmm->GetPriorParameters(k);
-					double E_k = norms[k]/_gev;
-					Matrix mu = params["mean"];
-					Matrix cov = params["cov"];
-					double pi = params["pi"].at(0,0);
-					//cout << "cluster k " << k << " pi " << pi << " center" << endl;
-					//mu.Print();
-					Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
-					jet.AddConstituent(subcl);
-				}
-				//cout << "jet has " << jet.GetNConstituents() << " subclusters" << endl;	
-				//if(!pho) cout << "mm pv time " << time << " ts " << ts << " energy " << jet.E() << endl;
+				time = CalcMMAvgTime(jet, pho);//probIDs);
+				//cout << "mmavg time " << time << " with " << jet.GetNConstituents() << " subcls" << endl;
 			}
 			else if(ts == emax) time = CalcMaxTime(jet);
 			else cout << "Error: invalid time reconstruction method specified for calculating jet time" << endl;
@@ -1698,20 +1736,7 @@ class JetSkimmer : public BaseSkimmer{
 				if(ts == med) center = CalcMedianCenter(jet);
 				else if(ts == eavg) center = CalcEAvgCenter(jet);
 				else if(ts == mmavg){
-					//GaussianMixture* gmm = _subcluster(jet);
-					center = CalcMMAvgCenter(gmm, pho); //probIDs);
-					//set constituents
-					//vector<double> norms;
-					//gmm->GetNorms(norms);
-					//for(int k = 0; k < gmm->GetNClusters(); k++){
-					//	auto params = gmm->GetPriorParameters(k);
-					//	double E_k = norms[k]/_gev;
-					//	Matrix mu = params["mean"];
-					//	Matrix cov = params["cov"];
-					//	double pi = params["pi"].at(0,0);
-					//	Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
-					//	jet.AddConstituent(subcl);
-					//}	
+					center = CalcMMAvgCenter(jet, pho); //probIDs);
 				}
 				else if(ts == emax) center = CalcMaxCenter(jet);
 				double rtheta = atan2(129,center.at(2));
@@ -1903,7 +1928,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		GaussianMixture* _subcluster(const Jet& jet){
+		GaussianMixture* _subcluster(Jet& jet){
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
@@ -1919,6 +1944,20 @@ class JetSkimmer : public BaseSkimmer{
 			algo->SetPriorParameters(_prior_params);
 			algo->SetVerbosity(0);
 			GaussianMixture* gmm = algo->SubCluster();
+			//set constituents
+			vector<double> norms;
+			gmm->GetNorms(norms);
+			for(int k = 0; k < gmm->GetNClusters(); k++){
+				auto params = gmm->GetPriorParameters(k);
+				double E_k = norms[k]/_gev;
+				Matrix mu = params["mean"];
+				Matrix cov = params["cov"];
+				double pi = params["pi"].at(0,0);
+				//cout << "cluster k " << k << " pi " << pi << " center" << endl;
+				//mu.Print();
+				Jet subcl(mu,cov,E_k,pi,jet.GetVertex());
+				jet.AddConstituent(subcl);
+			}
 			return gmm;
 		}
 
@@ -1964,26 +2003,24 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		double CalcMMAvgTime(BasePDFMixture* model, bool pho, vector<double> probIDs = {}){
-			//cout << "CalcMMAvgTime" << endl;
-			int kmax = model->GetNClusters();
+		double CalcMMAvgTime(const Jet& jet, bool pho, vector<double> probIDs = {}){
+			int kmax = jet.GetNConstituents();
+			//cout << "CalcMMAvgTime - jet has " << kmax << " subcls" << endl;
 			double t = 0;
 			double norm = 0;
-			map<string, Matrix> params;
-			//if(pho){
-			//PointCollection* pc = new PointCollection(*model->GetData());
-			//pc->Sort(2);
-			//pc->Print();
-			//}	
-			double tk;	
+			double pik, tk;
+			Matrix muk, covk;
+			Jet subcl;	
 			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(k);
-				tk = params["pi"].at(0,0)*params["mean"].at(2,0);
+				subcl = jet.GetConstituent(k);
+				pik = subcl.GetCoefficient();
+				subcl.GetClusterParams(muk,covk);
+				tk = pik*muk.at(2,0);
 				//clean out det bkg
 				if(probIDs.size() == kmax)
 					tk *= probIDs[k];
 				t += tk;
-				norm += params["pi"].at(0,0);
+				norm += pik;
 				//cout << "k: " << k << " pi: " << params["pi"].at(0,0) << " mean " << params["mean"].at(2,0) << endl;
 				if(pho){
 					//cout << "pho mm time: " << t/norm << endl;
@@ -1995,12 +2032,9 @@ class JetSkimmer : public BaseSkimmer{
 			return t/norm; 
 		}
 		
-		BayesPoint CalcMMAvgCenter(BasePDFMixture* model, bool pho, vector<double> probIDs = {}){
-			//sort by mixing coeffs in ascending order (smallest first)
-			vector<int> idxs;
-			model->SortIdxs(idxs);
-
-			int kmax = model->GetNClusters();
+		//TODO: make sure returning leading subcluster center for photons
+		BayesPoint CalcMMAvgCenter(const Jet& jet, bool pho, vector<double> probIDs = {}){
+			int kmax = jet.GetNConstituents();
 			double norm = 0;
 			double x = 0;
 			double y = 0;
@@ -2008,18 +2042,22 @@ class JetSkimmer : public BaseSkimmer{
 			double phi, eta, theta;
 			BayesPoint center(3);
 			map<string, Matrix> params;
-			double xk, yk, zk;
+			double xk, yk, zk, pik;
+			Matrix muk, covk;
+			Jet subcl;	
 			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(idxs[k]);
-				eta = params["mean"].at(0,0);
-				phi = params["mean"].at(1,0);
+				subcl = jet.GetConstituent(k);
+				pik = subcl.GetCoefficient();
+				subcl.GetClusterParams(muk,covk);
+				eta = muk.at(0,0);
+				phi = muk.at(1,0);
 				theta = 2*atan2(1,exp(eta));
 				//detector y (in y,z plane) or r (in x,y plane) is 1.29 m
-				xk = params["pi"].at(0,0)*129*cos(phi);
-				yk = params["pi"].at(0,0)*129*sin(phi);
+				xk = pik*129*cos(phi);
+				yk = pik*129*sin(phi);
 				//if(theta > acos(-1)/2.) z = params["pi"].at(0,0)*-129/tan(theta - acos(-1)/2.); 
 				//else z += params["pi"].at(0,0)*129/tan(theta);	
-				zk = params["pi"].at(0,0)*129/tan(theta);
+				zk = pik*129/tan(theta);
 				//clean out det bkg
 				if(probIDs.size() == kmax){
 					xk *= probIDs[k];
@@ -2034,7 +2072,7 @@ class JetSkimmer : public BaseSkimmer{
 				//if(z < 0) rtheta = atan2(129.,z)+acos(-1)/2.;
 				double reta = -log(tan(rtheta/2));
 				double rphi = atan2(y,x);
-				norm += params["pi"].at(0,0);
+				norm += pik;
 				if(pho){
 		//cout << "MMCenter - pi: " << params["pi"].at(0,0) << " phi: " << phi << " eta: " << eta << " x: " << x/norm << " y: " << y/norm << " z: " << z/norm << " reta: " << reta << " rphi: " << rphi << " theta: " << theta << " rtheta: " << rtheta << endl;	
 					center.SetValue(xk/norm,0);
@@ -2257,8 +2295,11 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 
 		private:
 			vector<Jet> _phos; //photons for event
+			vector<Jet> _SCs; //superclusters for event - for # subcluster matching
 			double _minRhE;
 			Matrix _smearMat;
 			double _tres_c, _tres_n;
+			PhotonProducer* _scprod;
+
 };
 #endif
