@@ -13,7 +13,18 @@ fi
 if [ $PD = "GJETS" ]
 then
 	NAME=GJets_HT-$3_TuneCP5_13TeV-madgraphMLM-pythia8
+elif [ $PD = "QCD" ]
+then
+	if [ $3 = "50to100" ]
+	then
+		NAME=${PD}_HT$3_TuneCP5_13TeV-madgraphMLM-pythia8
+	else
+		NAME=${PD}_HT$3_TuneCP5_13TeV-madgraph-pythia8
+	fi
 elif [ $PD = "MET" ]
+then
+	NAME=$PD
+elif [ $PD = "JetHT" ]
 then
 	NAME=$PD
 elif [ $PD = "DEG" ]
@@ -24,7 +35,7 @@ then
 	NAME=CRAB_UserFiles
 	SEL=v23
 else
-	NAME=${PD}_HT-$3_TuneCP5_13TeV-madgraphMLM-pythia8
+	NAME=${PD}_HT-$3_TuneCP5_13TeV-madgraph-pythia8
 fi
 PREFIX=root://cmseos.fnal.gov/
 
