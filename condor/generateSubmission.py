@@ -68,8 +68,8 @@ def generateSubmission(args):
     #	inputFile = "JetHT_R18_MET100_v22_JetHT_AOD_Run2018C_15Feb2022_UL2018.root"
     #elif "QCD_HT500to700" in args.inputSample:
     #	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
-    #elif "QCD_HT1000to1500" in args.inputSample:
-    #	inputFile = "QCD_R17_MET100_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix.root"
+    elif "QCD_HT1000to1500" in args.inputSample:
+    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix_list.txt"
     #elif "QCD_HT100to200" in args.inputSample:
     #	inputFile = "QCD_R17_MET100_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix.root"
     #elif "QCD_HT1500to2000" in args.inputSample:
@@ -265,7 +265,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','QCD_HT1000to1500','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
     #parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017,choices=[2017,2018])
@@ -279,7 +279,7 @@ def main():
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
     parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
     parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
-    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,0.33333333],nargs="+")
+    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,33.333333e-5],nargs="+")
     parser.add_argument('--nu0',help="nu0 prior",default=3)
     
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
