@@ -371,7 +371,6 @@ int main(int argc, char *argv[]){
 	cout << "W0" << endl;
 	W.Print(); 
 	cout << "fname " << fname << endl;
-return -1;	
 	if(viz){
 		cout << "Writing viz output to directory: " << fname << endl;
 		if(gSystem->AccessPathName(fname.c_str())){
