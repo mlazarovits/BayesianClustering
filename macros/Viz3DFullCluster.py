@@ -247,14 +247,14 @@ class JsonPlotter:
 			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+" GeV)"
 			name += " in "+str(nSubClusters)+" subclusters" 
 		
-		if(min(w) != max(w)):
-			cols = [i.replace("1.",'{:8f}'.format(self.ops[w[idx]])) for idx, i in enumerate(cols)]
+		#if(min(w) != max(w)):
+		#	cols = [i.replace("1.",'{:8f}'.format(self.ops[w[idx]])) for idx, i in enumerate(cols)]
 
 
 		if alldata is True:
 			return go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-				size = 4, color = cols, line=dict(
-					color = colors[cl], width = 30)), showlegend=True, name = name)
+				size = 5, color = cols, line=dict(
+					color = colors[cl], width = 30), symbol="circle"), showlegend=True, name = name)
 		
 		#add subcluster energies to color scale
 		for k in range(nSubClusters):
