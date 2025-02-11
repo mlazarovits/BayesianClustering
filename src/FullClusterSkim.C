@@ -355,23 +355,25 @@ int main(int argc, char *argv[]){
 
 		string ema_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3) << emAlpha;
+		stream << emAlpha;
 		ema_string = stream.str();
 		idx = ema_string.find(".");
-		ema_string.replace(idx,1,"p");	
-		fname += "_emAlpha"+ema_string+"_";
-		
+		if(idx != -1)
+			ema_string.replace(idx,1,"p");	
+		fname += "_emAlpha-"+ema_string+"_";
+
+			
 		string scale_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3) << scale.at(0,0);
+		stream << scale.at(0,0);
 		scale_string = stream.str();
 		idx = scale_string.find(".");
-		scale_string.replace(idx,1,"p");	
+		if(idx != -1)
+			scale_string.replace(idx,1,"p");	
 		fname += "beta0-"+scale_string+"_";
 		
 		string mean_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3);
 		for(int i = 0; i < m.GetDims()[0]; i++){
 			stream << m.at(i,0);
 			if(i < m.GetDims()[0]-1) stream << "-";
@@ -380,6 +382,7 @@ int main(int argc, char *argv[]){
 		idx = 0;
 		while(idx != string::npos){
 			idx = mean_string.find(".");
+			if(idx == -1) break;
 			mean_string.replace(idx,1,"p");	
 			idx = mean_string.find(".");
 		}
@@ -387,7 +390,6 @@ int main(int argc, char *argv[]){
 		
 		string W_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3);
 		for(int i = 0; i < W.GetDims()[0]; i++){
 			stream << W.at(i,i);
 			if(i < W.GetDims()[0]-1) stream << "-";
@@ -396,6 +398,7 @@ int main(int argc, char *argv[]){
 		idx = 0;
 		while(idx != string::npos){
 			idx = W_string.find(".");
+			if(idx == -1) break;
 			W_string.replace(idx,1,"p");	
 			idx = W_string.find(".");
 		}
@@ -404,26 +407,31 @@ int main(int argc, char *argv[]){
 		
 		string dof_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3) << dof.at(0,0);
+		stream << dof.at(0,0);
 		dof_string = stream.str();
 		idx = dof_string.find(".");
-		dof_string.replace(idx,1,"p");	
+		if(idx != -1)
+			dof_string.replace(idx,1,"p");	
 		fname += "nu0-"+dof_string+"_";
+
 
 		string t_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3) << thresh;
+		stream << thresh;
 		t_string = stream.str();
 		idx = t_string.find(".");
-		t_string.replace(idx,1,"p");	
+		if(idx != -1)
+			t_string.replace(idx,1,"p");
 		fname += "thresh"+t_string+"_";
+
 		
 		string gev_string;
 		stream.str("");
-		stream << std::fixed << std::setprecision(3) << gev;
+		stream << gev;
 		gev_string = stream.str();
 		idx = gev_string.find(".");
-		gev_string.replace(idx,1,"p");	
+		if(idx != -1)
+			gev_string.replace(idx,1,"p");	
 		fname += "NperGeV"+gev_string+"_";
 
 		
