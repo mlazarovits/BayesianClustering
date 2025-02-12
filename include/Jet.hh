@@ -334,7 +334,7 @@ class Jet{
 			return _constituents;
 		}
 	
-		const Jet& GetConstituent(int c) const{
+		Jet& GetConstituent(int c){
 			if(c > _constituents.size()){
 				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
 				return *this;
