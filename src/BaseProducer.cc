@@ -117,6 +117,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				}
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                 _base->ECALRecHit_rhz->at(rhidx), time);
+				//cout << "_spatial_corr " << _spatial_corr << " jet raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 	//cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << rh.t() << " calib " << calibfactor << endl;			
@@ -257,7 +258,6 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                 _base->ECALRecHit_rhz->at(rhidx), time);
                                
-				//cout << "raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
@@ -278,10 +278,12 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;
 				nrhs++; 
                                 pho.AddRecHit(rh);
+				//cout << "_spatial_corr " << _spatial_corr << " timecorr " << timecorr << " photon raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
                 		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
 		        }
 
                 }
+		
 		if(pho.GetNRecHits() < 2) continue;
 		selPhoCount++;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
