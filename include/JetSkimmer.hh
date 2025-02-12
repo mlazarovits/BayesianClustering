@@ -154,6 +154,7 @@ cout << "done with jetskim ctor" << endl;
 			_hists1D.push_back(t_BH);
 			_hists1D.push_back(t_spike);
 			_hists1D.push_back(gamTime_maxErh); 
+			_hists1D.push_back(seedXtalTime); 
 
 			_hists2D.push_back(AK4Jet_nRhs_nSubclusters);
 			_hists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
@@ -276,6 +277,7 @@ cout << "done with jetskim ctor" << endl;
 			_timeHists2D.push_back(ENeighborsSkipCenter_timeNeg5);	
 			_timeHists2D.push_back(ENeighborsSkipCenter_time0);	
 			_timeHists2D.push_back(ENeighborsJet);	
+			_timeHists2D.push_back(seedXtalEnergy_time); 
 
 
 
@@ -409,6 +411,7 @@ cout << "done with jetskim ctor" << endl;
 		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
 		TH1D* gamTime_maxErh = new TH1D("gamTime_maxErh","gamTime_maxErh",100,-1,1); 
+		TH1D* seedXtalTime = new TH1D("seedXtalTime","seedXtalTime",50,-2,2);	
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
@@ -585,7 +588,6 @@ cout << "done with jetskim ctor" << endl;
 		TH1D* t_BH = new TH1D("t_BH","t_BH",50,-20,20);
 		//79 - time of predicted spikes
 		TH1D* t_spike = new TH1D("t_spike","t_spike",50,-20,20);
-			
 
 	
 		//0 - 2D histogram for reco-gen resolution
@@ -689,8 +691,11 @@ cout << "done with jetskim ctor" << endl;
 		TH2D* ENeighborsSkipCenter_time0 = new TH2D("ENeighborsSkipCenter_time0","ENeighborsSkipCenter_time0;local ieta;local iphiSkipCenter_time0",5,-2,3,5,-2,3);	
 		//46 - eta vs phi grid for whole jet in 11x11 grid
 		TH2D* ENeighborsJet = new TH2D("ENeighborsJet","ENeighborsJet;local ieta;local iphi",61,-30,31,61,-30,31);	
+		//47 - seed crystal energy vs time for profile
+		TH2D* seedXtalEnergy_time = new TH2D("seedXtalEnergy_time","seedXtalEnergy_time;energy;time",10,0,100,50,-2,2);		
 		
-		
+
+
 		vector<timeRecoCat> trCats;
 		virtual void MakeTimeRecoCatHists(){
 			//don't want to separate lead/not lead histograms
@@ -722,7 +727,10 @@ cout << "done with jetskim ctor" << endl;
 				pvx = phos[p].GetVertex().at(0);
 				pvy = phos[p].GetVertex().at(1);
 				pvz = phos[p].GetVertex().at(2);
-				maxE = 0;	
+				maxE = 0;
+
+				int scidx = _base->Photon_scIndex->at(phos[p].GetUserIdx());
+				int seedxtal_id = _base->SuperCluster_XtalSeedID->at(scidx);
 				for(int r = 0; r < rhs.size(); r++){
 					rhx = rhs[r].x();	
 					rhy = rhs[r].y();	
@@ -734,6 +742,9 @@ cout << "done with jetskim ctor" << endl;
 						maxE = rhs[r].E();
 						maxE_rh = rhs[r];
 					}
+					if(rhs[r].rhId() == seedxtal_id)
+						seedXtalTime->Fill(rhs[r].t());
+						trCats[0].procCats[0].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t());		
 				}		
 				gamTime_maxErh->Fill(maxE_rh.t());
  
