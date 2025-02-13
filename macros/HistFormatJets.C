@@ -1599,7 +1599,6 @@ void HistFormatJets(string file, string file2 = ""){
 		ProcStackHists(file, DEG_QCD, "eAvg", oname, "diffDeltaTime_gamPV");
 		ProcStackHists(file, DEG_QCD, "median", oname, "diffDeltaTime_gamPV");
 		
-		
 		//PV dijets + reocGen + gamPV for QCD eAvg
 		ResolutionStackHists(file, "QCD", "eAvg", oname, year);
 
@@ -1651,8 +1650,7 @@ void HistFormatJets(string file, string file2 = ""){
 		Hist2D(file, "DoubleEG", "med", oname, "Neighbors", year);
 		
 		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "swCross_rhTime");
-		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "LHratio");
-		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPt");
+		ProcStackHists(file, jetHT_QCD, "median", oname, "nSubclusters");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
