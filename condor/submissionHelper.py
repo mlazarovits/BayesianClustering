@@ -72,7 +72,6 @@ def eventsSplit(infile, nChunk, filelist):
     if filelist:
         #should split by event number in file
         tree = ROOT.TChain("tree/llpgtree")
-        #TODO:need to open file and go through each line
         with open(infile,"r") as f:
             lines = f.readlines()
             for line in lines:
