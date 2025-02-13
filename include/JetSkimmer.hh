@@ -25,6 +25,10 @@ class JetSkimmer : public BaseSkimmer{
 			_swts.Init();
 			_weight = 1.;
 			_minRhE = 5;
+			
+			_cleansubcls = false;
+			_smearMat = Matrix();
+		
 		};
 		virtual ~JetSkimmer(){ };
 
@@ -55,6 +59,8 @@ class JetSkimmer : public BaseSkimmer{
 			_swts.Init();
 			_weight = 1;
 			_minRhE = 5;
+			_cleansubcls = false;
+			_smearMat = Matrix();
 			//set histogram weights
 			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
 			//if(_data){ _weight = 1.; }
@@ -128,7 +134,6 @@ class JetSkimmer : public BaseSkimmer{
 			objE_clusterE->SetName("jetE_clusterE");
 			
 			InitHists();
-cout << "done with jetskim ctor" << endl;
 		}
 		void InitHists(){
 			//true jet hists
@@ -229,6 +234,7 @@ cout << "done with jetskim ctor" << endl;
 			_timeHists1D.push_back(dRtrack_rhTimeNeg5);
 			_timeHists1D.push_back(dRtrack_rhTime0);
 			_timeHists1D.push_back(rhTime); 
+			_timeHists1D.push_back(seedXtalEnergy_sigmaDeltaTime);		
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -277,7 +283,7 @@ cout << "done with jetskim ctor" << endl;
 			_timeHists2D.push_back(ENeighborsSkipCenter_timeNeg5);	
 			_timeHists2D.push_back(ENeighborsSkipCenter_time0);	
 			_timeHists2D.push_back(ENeighborsJet);	
-			_timeHists2D.push_back(seedXtalEnergy_time); 
+			_timeHists2D.push_back(seedXtalEnergy_diffDeltaTime); 
 
 
 
@@ -588,7 +594,8 @@ cout << "done with jetskim ctor" << endl;
 		TH1D* t_BH = new TH1D("t_BH","t_BH",50,-20,20);
 		//79 - time of predicted spikes
 		TH1D* t_spike = new TH1D("t_spike","t_spike",50,-20,20);
-
+		//80 - profiled seed crystal energy vs time
+		TH1D* seedXtalEnergy_sigmaDeltaTime = new TH1D("seedXtalEnergy_sigmaDeltaTime","seedXtalEnergy_sigmaDeltaTime",10,0,100);
 	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",xbins.size()-1,&xbins[0],100,-2,2);
@@ -692,8 +699,7 @@ cout << "done with jetskim ctor" << endl;
 		//46 - eta vs phi grid for whole jet in 11x11 grid
 		TH2D* ENeighborsJet = new TH2D("ENeighborsJet","ENeighborsJet;local ieta;local iphi",61,-30,31,61,-30,31);	
 		//47 - seed crystal energy vs time for profile
-		TH2D* seedXtalEnergy_time = new TH2D("seedXtalEnergy_time","seedXtalEnergy_time;energy;time",10,0,100,50,-2,2);		
-		
+		TH2D* seedXtalEnergy_diffDeltaTime = new TH2D("seedXtalEnergy_diffDeltaTime","seedXtalEnergy_time;energy;time",10,0,100,50,-2,2);	
 
 
 		vector<timeRecoCat> trCats;
@@ -744,6 +750,7 @@ cout << "done with jetskim ctor" << endl;
 					}
 					if(rhs[r].rhId() == seedxtal_id)
 						seedXtalTime->Fill(rhs[r].t());
+						trCats[0].procCats[1].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t());		
 						trCats[0].procCats[0].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t());		
 				}		
 				gamTime_maxErh->Fill(maxE_rh.t());
@@ -782,7 +789,7 @@ cout << "done with jetskim ctor" << endl;
 					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
 				GaussianMixture* gmm = _subcluster(jets[j]);
-				//CleanSubclusters(gmm, jet, probIDs);
+				if(_cleansubcls) CleanSubclusters(gmm, jets[j]);
 				double nrhs = (double)jets[j].GetNRecHits();
 				int n_k = jets[j].GetNConstituents();
 				AK4Jet_nRhs_nSubclusters->Fill(nrhs,n_k);			
@@ -1730,13 +1737,12 @@ cout << "done with jetskim ctor" << endl;
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			double time = -999;
-			GaussianMixture* gmm = nullptr;
 			vector<double> probIDs;
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			if(ts == med) time = CalcMedianTime(jet);
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
-				time = CalcMMAvgTime(jet, pho);//probIDs);
+				time = CalcMMAvgTime(jet, pho, probIDs);
 				//cout << "mmavg time " << time << " with " << jet.GetNConstituents() << " subcls" << endl;
 			}
 			else if(ts == emax) time = CalcMaxTime(jet);
@@ -1747,7 +1753,7 @@ cout << "done with jetskim ctor" << endl;
 				if(ts == med) center = CalcMedianCenter(jet);
 				else if(ts == eavg) center = CalcEAvgCenter(jet);
 				else if(ts == mmavg){
-					center = CalcMMAvgCenter(jet, pho); //probIDs);
+					center = CalcMMAvgCenter(jet, pho, probIDs);
 				}
 				else if(ts == emax) center = CalcMaxCenter(jet);
 				double rtheta = atan2(129,center.at(2));
@@ -1993,28 +1999,30 @@ cout << "done with jetskim ctor" << endl;
 
 
 		//removes/downweights subclusters that are tagged (probID) as detector bkg by MVA
-		//returns by reference k-length vector of probIDs
+		//saves new prob-weight in jet
 		//if remove, probID = 0 for detector bkg
 		//NN json needs to have been set with SetNNModel(string jsonname)
-		void CleanSubclusters(BasePDFMixture* model, const Jet& jet, vector<double>& probIDs){
+		void CleanSubclusters(BasePDFMixture* model, Jet& jet){
 			int kmax = model->GetNClusters();
 			int nclass = -1;
+			//cout << kmax << " # subclusters " << endl; 
 			for(int k = 0; k < kmax; k++){
+				cout << "k " << k << " of " << kmax;
 				nclass = PredictSubcluster(model, k, jet);
 				//downweight - pushback prob == physbkg value
 				//remove - if nclass != phys bkg, probID = 0
-				//remove for now bc need to custome hack frugally-deep to return output of all neurons in the last layer
-				if(nclass == 0)
-					probIDs.push_back(1.);
-				else	
-					probIDs.push_back(0.);
-				//if(nclass != 0) cout << "k " << k << " of " << kmax << " predicted class " << nclass << endl;//" with val " << ovalue << endl;
+				//remove for now bc need to custom hack frugally-deep to return output of all neurons in the last layer
+				if(nclass != 0){
+					jet.GetConstituent(k).SetCoefficient(0.); //pi*physbkg_val
+					//Jet subcl = jet.GetConstituent(k);
+					//subcl.SetCoefficient(0.); //pi*physbkg_val
+				}	
 			}
 		}
 
 
 
-		double CalcMMAvgTime(const Jet& jet, bool pho, vector<double> probIDs = {}){
+		double CalcMMAvgTime(Jet& jet, bool pho, vector<double> probIDs = {}){
 			int kmax = jet.GetNConstituents();
 			//cout << "CalcMMAvgTime - jet has " << kmax << " subcls" << endl;
 			double t = 0;
@@ -2024,7 +2032,7 @@ cout << "done with jetskim ctor" << endl;
 			Jet subcl;	
 			for(int k = 0; k < kmax; k++){
 				subcl = jet.GetConstituent(k);
-				pik = subcl.GetCoefficient();
+				pik = subcl.GetCoefficient(); //if CleanSubclusters called, should already be downweighted
 				subcl.GetClusterParams(muk,covk);
 				tk = pik*muk.at(2,0);
 				//clean out det bkg
@@ -2044,7 +2052,7 @@ cout << "done with jetskim ctor" << endl;
 		}
 		
 		//TODO: make sure returning leading subcluster center for photons
-		BayesPoint CalcMMAvgCenter(const Jet& jet, bool pho, vector<double> probIDs = {}){
+		BayesPoint CalcMMAvgCenter(Jet& jet, bool pho, vector<double> probIDs = {}){
 			int kmax = jet.GetNConstituents();
 			double norm = 0;
 			double x = 0;
@@ -2303,7 +2311,7 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 
 		
 		void SetMinRhE_PV(double m){ _minRhE = m; }	
-
+		void SetCleanSubclusters(bool s){ _cleansubcls = s; }	
 		private:
 			vector<Jet> _phos; //photons for event
 			vector<Jet> _SCs; //superclusters for event - for # subcluster matching
@@ -2311,6 +2319,6 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 			Matrix _smearMat;
 			double _tres_c, _tres_n;
 			PhotonProducer* _scprod;
-
+			bool _cleansubcls;
 };
 #endif

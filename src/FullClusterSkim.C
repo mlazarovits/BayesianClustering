@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
 	int bh = 1;
 	bool iso = true;
 	bool spatcorr = true;
+	bool cleansubcls = false;
 
 	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
@@ -219,6 +220,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		skip = std::stoi(argv[i]);
    		}
+		if(strncmp(argv[i],"--cleanSubclusters", 18) == 0){
+			cleansubcls = true;
+			cout << "Cleaning subclusters from jets" << endl;
+   		}
 		if(strncmp(argv[i],"--noSpatCorr", 12) == 0){
 			spatcorr = false;
 			cout << "Selecting photons with isolated background cuts" << endl;
@@ -270,8 +275,9 @@ int main(int argc, char *argv[]){
    		cout << "   --minRhE [minRhe]                    set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --maxRhE [maxRhe]                    set maximum ECAL rechit energy (default = -999, off)" << endl;
    		cout << "   --BHFilter [bh]                      set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
-   		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
+   		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
+   		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
    		cout << "   --noSmear                            turns off smearing data (default = true, on)" << endl;
    		cout << "   --timeSmear                          turns on time smearing data (default = false, off)" << endl;
    		cout << "   --noWeight                           turns off weighting data points (default = false, on)" << endl;
@@ -499,6 +505,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetTimeSmear(timesmear); 
 		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpatialCorr(spatcorr);
+		skimmer.SetCleanSubclusters(cleansubcls);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
