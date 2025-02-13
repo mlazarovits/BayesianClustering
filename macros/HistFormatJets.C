@@ -1182,9 +1182,9 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 			cout << "writing canvas (1D) " << cv->GetName() << endl;
 				
 		}
-		cout << "end for loop - name " << name << endl;
+		//cout << "end for loop - name " << name << endl;
 	}
-	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 	ofile->Write();
 	ofile->Close();
 	f->Close();
@@ -1554,6 +1554,11 @@ void HistFormatJets(string file, string file2 = ""){
 	if(oname.find("_R18") != string::npos) year = "2018";
 
 	if(file2.empty()){
+
+		//seed xtal time resolution
+		vector<string> deg_gjets = {"DoubleEG","GJets"};
+		ProcStackHists(file, deg_gjets, "median", oname, "seedXtal");
+
 		vector<string> med_eAvg = {"median","eAvg"};
 		vector<string> chiGam_QCD = {"chiGam","QCD"};
 		vector<string> GluGlu_QCD = {"GluGlu","QCD"};
