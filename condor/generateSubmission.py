@@ -62,12 +62,8 @@ def generateSubmission(args):
     	inputFileList = "kucmsntuple_MET_R"+str(args.year)[-2:]+"_MET100_"+ver+"_MET_AOD_Run2017D_17Nov2017_list.txt"
     #elif "MET_RunE" in args.inputSample:
     #	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
-    #elif "JetHT_RunF_2017" in args.inputSample:
-    #	inputFile = "JetHT_R17_MET100_v21_JetHT_AOD_Run2017F_17Nov2017.root"
-    #elif "JetHT_RunC_2018" in args.inputSample:
-    #	inputFile = "JetHT_R18_MET100_v22_JetHT_AOD_Run2018C_15Feb2022_UL2018.root"
-    #elif "QCD_HT500to700" in args.inputSample:
-    #	inputFile = "QCD_R17_MET100_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix.root"
+    elif "JetHT_RunF" in args.inputSample:
+    	inputFileList = "kucmsntuple_JetHT_R"+str(args.year)[-2:]+"_MET100_"+ver+"_JetHT_AOD_Run2017F_17Nov2017_list.txt"
     elif "QCD_HT1000to1500" in args.inputSample:
     	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT100to200" in args.inputSample:
@@ -220,8 +216,10 @@ def generateSubmission(args):
 
     if(args.noSmear):
     	flags += ' --noSmear'
-    if(args.timeSmear):
+    if(args.timeSmear and "AODSIM" in inputFileList):
     	flags += ' --timeSmear'
+    if(args.timeSmear and "AOD" in inputFileList):
+        print("---timeSmear only for MC")
     if(args.applyFrac):
 	    flags += ' --applyFrac'
     if(args.noCalibrate):
@@ -237,6 +235,11 @@ def generateSubmission(args):
         flags += ' --maxRhE '+str(args.maxRhE)
     if(args.noSpatCorr):
         flags += ' --noSpatCorr'
+    if(args.cleanSubclusters and "AODSIM" not in inputFileList):
+        flags += ' --cleanSubclusters'
+    if(args.cleanSubclusters and "AODSIM" in inputFileList):
+        print("--cleanSubclusters only for data") 
+    
 
 
     if(objName == "jets"):
@@ -265,7 +268,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT_RunF','EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
     #parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default=2017,choices=[2017,2018])
@@ -302,6 +305,7 @@ def main():
     parser.add_argument('--minht_isobkg',help='min HT for isolated background event selection',default=50)
     parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
     parser.add_argument('--noSpatCorr',help='turn off spatial corrections for rechit times to put in PV frame (jets only)',default=False,action='store_true')
+    parser.add_argument('--cleanSubclusters',help='clean subclusters from jet time (data, jets only)',default=False,action='store_true')
     args = parser.parse_args()
 
     generateSubmission(args)
