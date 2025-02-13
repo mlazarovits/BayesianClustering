@@ -143,7 +143,6 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(TrueJet_EmE); 
 			_hists1D.push_back(TrueJet_nConstituents);
 			_hists1D.push_back(TrueJet_twoHardestpT);	
-			_hists1D.push_back(nSubClusters_mm);
 			_hists1D.push_back(TOFgam_rh_pv); 
 			_hists1D.push_back(subclusterEfrac);
 			_hists1D.push_back(subclDist_etaPhi);
@@ -158,12 +157,7 @@ class JetSkimmer : public BaseSkimmer{
 			_hists1D.push_back(t_physBkg);
 			_hists1D.push_back(t_BH);
 			_hists1D.push_back(t_spike);
-			_hists1D.push_back(gamTime_maxErh); 
-			_hists1D.push_back(seedXtalTime); 
 
-			_hists2D.push_back(AK4Jet_nRhs_nSubclusters);
-			_hists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
-			_hists2D.push_back(Photon_nRhs_nSubclusters);
 		
 			
 			_timeHists1D.push_back(PVtime);
@@ -235,6 +229,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(dRtrack_rhTime0);
 			_timeHists1D.push_back(rhTime); 
 			_timeHists1D.push_back(seedXtalEnergy_sigmaDeltaTime);		
+			_timeHists1D.push_back(gamTime_maxErh); 
+			_timeHists1D.push_back(seedXtalTime); 
+			_timeHists1D.push_back(nSubClusters_mm);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -284,6 +281,9 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(ENeighborsSkipCenter_time0);	
 			_timeHists2D.push_back(ENeighborsJet);	
 			_timeHists2D.push_back(seedXtalEnergy_diffDeltaTime); 
+			_timeHists2D.push_back(AK4Jet_nRhs_nSubclusters);
+			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
+			_timeHists2D.push_back(Photon_nRhs_nSubclusters);
 
 
 
@@ -414,16 +414,10 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* TrueJet_EmE = new TH1D("TrueJet_EmE","TrueJet_EmE",50,0,600);
 		TH1D* TrueJet_nConstituents = new TH1D("TrueJet_nConstituents","TrueJet_nConstituents",20,0,100);
 		TH1D* TrueJet_twoHardestpT =  new TH1D("TrueJet_twoHardestpT","TrueJet_twoHardestpT",100,0,1000);	
-		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 		TH1D* TOFgam_rh_pv = new TH1D("TOFgam_rh_pv","TOFgam_rh_pv",20,0,10); 
-		TH1D* gamTime_maxErh = new TH1D("gamTime_maxErh","gamTime_maxErh",100,-1,1); 
-		TH1D* seedXtalTime = new TH1D("seedXtalTime","seedXtalTime",50,-2,2);	
 
 		TH2D* e_nRhs = new TH2D("e_nRhs","e_nRhs",100,0,500,100,0,100);
 		TH2D* erhs_trhs = new TH2D("erhs_trhs","erhs_trhs",100,0,4,100,-100,100);
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;AK4Jet_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
-		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",20,0,20,20,0,20);
-		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
 		
 		
 		//bins for variable binning for resolution/mean plots
@@ -596,6 +590,12 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* t_spike = new TH1D("t_spike","t_spike",50,-20,20);
 		//80 - profiled seed crystal energy vs time
 		TH1D* seedXtalEnergy_sigmaDeltaTime = new TH1D("seedXtalEnergy_sigmaDeltaTime","seedXtalEnergy_sigmaDeltaTime",10,0,100);
+		//81 - max e rh photon time
+		TH1D* gamTime_maxErh = new TH1D("gamTime_maxErh","gamTime_maxErh",100,-1,1); 
+		//82 - seed rh photon time
+		TH1D* seedXtalTime = new TH1D("seedXtalTime","seedXtalTime",50,-2,2);	
+		//83 - # subclusters from mm
+		TH1D* nSubClusters_mm = new TH1D("nSubClusters_mm","nSubClusters_mm",10,0,10);
 	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",xbins.size()-1,&xbins[0],100,-2,2);
@@ -700,6 +700,12 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* ENeighborsJet = new TH2D("ENeighborsJet","ENeighborsJet;local ieta;local iphi",61,-30,31,61,-30,31);	
 		//47 - seed crystal energy vs time for profile
 		TH2D* seedXtalEnergy_diffDeltaTime = new TH2D("seedXtalEnergy_diffDeltaTime","seedXtalEnergy_time;energy;time",10,0,100,50,-2,2);	
+		//48 - # rhs vs # subclusters for jets
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;AK4Jet_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
+		//49 - # dr-matched superclusters vs # subclusters for jets
+		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",20,0,20,20,0,20);
+		//50 - # rhs vs # subclusters for photons
+		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
 
 
 		vector<timeRecoCat> trCats;
@@ -749,16 +755,20 @@ class JetSkimmer : public BaseSkimmer{
 						maxE_rh = rhs[r];
 					}
 					if(rhs[r].rhId() == seedxtal_id)
-						seedXtalTime->Fill(rhs[r].t());
-						trCats[0].procCats[1].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t());		
-						trCats[0].procCats[0].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t());		
+						trCats[0].procCats[0].hists1D[0][82]->Fill(rhs[r].t(), _weight);
+						trCats[0].procCats[1].hists1D[0][82]->Fill(rhs[r].t(), _weight);
+					
+						trCats[0].procCats[1].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t(), _weight);		
+						trCats[0].procCats[0].hists2D[0][47]->Fill(rhs[r].E(), rhs[r].t(), _weight);		
 				}		
-				gamTime_maxErh->Fill(maxE_rh.t());
+				trCats[0].procCats[0].hists1D[0][81]->Fill(maxE_rh.t(), _weight);
+				trCats[0].procCats[1].hists1D[0][81]->Fill(maxE_rh.t(), _weight);
  
 				GaussianMixture* gmm = _subcluster(phos[p]);
 				double nrhs = (double)phos[p].GetNRecHits();
 				int n_k = phos[p].GetNConstituents();
-				Photon_nRhs_nSubclusters->Fill(nrhs,n_k);			
+				trCats[0].procCats[0].hists2D[0][50]->Fill(nrhs, n_k, _weight);
+				trCats[0].procCats[1].hists2D[0][50]->Fill(nrhs, n_k, _weight);
 			}
 		}
 
@@ -792,9 +802,11 @@ class JetSkimmer : public BaseSkimmer{
 				if(_cleansubcls) CleanSubclusters(gmm, jets[j]);
 				double nrhs = (double)jets[j].GetNRecHits();
 				int n_k = jets[j].GetNConstituents();
-				AK4Jet_nRhs_nSubclusters->Fill(nrhs,n_k);			
+				trCats[0].procCats[0].hists2D[0][48]->Fill(nrhs, n_k, _weight);
+				trCats[0].procCats[1].hists2D[0][48]->Fill(nrhs, n_k, _weight);
 				int nscs = nSC_dRMatch(jets[j]);	
-				AK4Jet_nSuperclusters_nSubclusters->Fill(nscs,n_k);
+				trCats[0].procCats[0].hists2D[0][49]->Fill(nscs, n_k, _weight);
+				trCats[0].procCats[1].hists2D[0][49]->Fill(nscs, n_k, _weight);
 				
 
 				FillModelHists(gmm,jets[j]);
@@ -821,7 +833,9 @@ class JetSkimmer : public BaseSkimmer{
 		}
 		
 		void FillModelHists(GaussianMixture* gmm, const Jet& jet){
-			nSubClusters_mm->Fill(gmm->GetNClusters(), _weight);
+			trCats[0].procCats[0].hists1D[0][83]->Fill(gmm->GetNClusters(), _weight);
+			trCats[0].procCats[1].hists1D[0][83]->Fill(gmm->GetNClusters(), _weight);
+			
 			int n_k = gmm->GetNClusters();
 			double Ek;
 			vector<double> norms;
