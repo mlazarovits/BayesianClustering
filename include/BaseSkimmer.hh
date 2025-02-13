@@ -837,6 +837,7 @@ class BaseSkimmer{
 			//predict_class returns predicted class number and value of max output neuron
 			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 			ovalue = result.second;
+			cout << " pred class " << result.first << " with value " << result.second << endl;
 			return (int)result.first;
 		}
 
