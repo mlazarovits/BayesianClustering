@@ -687,11 +687,11 @@ class JetSkimmer : public BaseSkimmer{
 		//47 - seed crystal energy vs time for profile
 		TH2D* seedXtalEnergy_diffDeltaTime = new TH2D("seedXtalEnergy_diffDeltaTime","seedXtalEnergy_time;energy;time",10,0,100,50,-2,2);	
 		//48 - # rhs vs # subclusters for jets
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;AK4Jet_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;AK4Jet_nRhs;nSubclusters;a.u.",100,15,115,15,0,15);
 		//49 - # dr-matched superclusters vs # subclusters for jets
-		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",20,0,20,20,0,20);
+		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",15,0,15,15,0,15);
 		//50 - # rhs vs # subclusters for photons
-		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
+		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",80,0,80,5,0,5);
 
 
 		vector<timeRecoCat> trCats;
