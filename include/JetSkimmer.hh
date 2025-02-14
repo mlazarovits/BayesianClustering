@@ -581,7 +581,7 @@ class JetSkimmer : public BaseSkimmer{
 		//69 - seed rh photon time
 		TH1D* seedXtalTime = new TH1D("seedXtalTime","seedXtalTime",50,-2,2);	
 		//70 - # subclusters from mm
-		TH1D* nSubclusters = new TH1D("nSubclusters","nSubclusters",20,0,20);
+		TH1D* nSubclusters = new TH1D("nSubclusters","nSubclusters",10,0,10);
 	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",xbins.size()-1,&xbins[0],100,-2,2);
