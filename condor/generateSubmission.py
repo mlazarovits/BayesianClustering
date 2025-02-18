@@ -24,6 +24,7 @@ def generateSubmission(args):
     SH.makeDir(odir)
 
     ver = "v24"
+    sel = "MET100"
     if "GJets_HT400to600" in args.inputSample:
     	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT100to200" in args.inputSample:
@@ -85,13 +86,14 @@ def generateSubmission(args):
     elif "EGamma_RunF" in args.inputSample:
     	inputFileList = "kucmsntuple_DEG_R"+str(args.year)[-2:]+"_MET100_"+ver+"_DoubleEG_AOD_Run2017F_09Aug2019_UL2017_list.txt"
     elif "SMS-GlGl" in args.inputSample:
-    	inputFileList = "kucmsntuple_SMS_GlGl_v23_justin_mc_noFilter_AODSIM_private_list.txt"
+        ver = "v23"
+        sel = ""
+        inputFileList = "kucmsntuple_SMS_GlGl_"+ver+"_justin_mc_noFilter_AODSIM_private_list.txt"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
-    sel = "MET100"
     if "PhoSlim" in args.inputSample:
         sel = "AL1IsoPho"
         if "EGamma" in args.inputSample or "GJets" in args.inputSample:
@@ -116,14 +118,13 @@ def generateSubmission(args):
     
     #organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
     #find .root and then find the / before that (if it exists) - everything in between is the file name
-    sel = sel+"_"+ver+"_"
-    sampleName = inputFileList[ inputFileList.find(sel)+len(sel) : inputFileList.find("_list") ]
+    match = "kucmsntuple_"
+    sampleName = inputFileList[ inputFileList.find(match)+len(match) : inputFileList.find("_list") ]
     sampleNameShort = sampleName[ : sampleName.find("_")  ]
-    sampleName = sampleNameShort + "_R"+str(args.year)[-2:] + "_" + sel + sampleName
 
     dirname = odir+sampleNameShort+"/"+sampleName+"/"+objName
     ofilename = args.inputSample+"_"+objName
-    
+   
     #prior parameters
     priorname = ""
     #add emAlpha to output name
@@ -174,6 +175,11 @@ def generateSubmission(args):
     priorname = priorname+"_nu0-"+nustr
 
 
+    #add emAlpha to output name
+    gevstr = str(args.gev)
+    gevstr = gevstr.replace(".","p")
+    priorname += "_NperGeV-"+gevstr
+
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
     #	ofilename += "_"+strategyName
@@ -191,7 +197,6 @@ def generateSubmission(args):
     if os.path.exists(dirname):
     	print("Removing existing directory: {0}".format(dirname))
     	shutil.rmtree(dirname)
-    
     # Create directories for work area.
     SH.createWorkArea(dirname)
     
@@ -286,7 +291,7 @@ def main():
     parser.add_argument('--nu0',help="nu0 prior",default=3)
     
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
-    parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=-999)
+    parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=1/10)
     parser.add_argument('--minpt',help='min object pt',default=30.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=15)
     parser.add_argument('--minemE',help='min object ECAL energy',default=30)
