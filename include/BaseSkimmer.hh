@@ -741,7 +741,7 @@ class BaseSkimmer{
 			int rh_iphi = _detIDmap[center.rhId()].i1;
 			int deta, dphi;
 			Matrix post = model->GetPosterior();
-			for(int j = 0; j < (int)rhs.size(); j++){
+			for(int j = 0; j < post.GetDims()[0]; j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
 				iphi = _detIDmap[rhs[j].rhId()].i1;
 				//do eta flip
@@ -837,7 +837,7 @@ class BaseSkimmer{
 			//predict_class returns predicted class number and value of max output neuron
 			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 			ovalue = result.second;
-			cout << " pred class " << result.first << " with value " << result.second << endl;
+			//cout << " pred class " << result.first << " with value " << result.second << endl;
 			return (int)result.first;
 		}
 

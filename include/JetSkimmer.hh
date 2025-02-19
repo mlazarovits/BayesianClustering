@@ -811,8 +811,6 @@ class JetSkimmer : public BaseSkimmer{
 				eECAL *= jets[j].E();
 				TrueJet_EmE->Fill(eECAL, _weight);
 				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet), _weight);
-		
-				continue;	
 				
 				rhs.clear();
 				rhs = jets[j].GetJetPoints();
@@ -909,7 +907,6 @@ class JetSkimmer : public BaseSkimmer{
 					subclDist_etaPhi->Fill(subcl_dist_etaphi);
 				}
 			}
-
 		}
 
 
