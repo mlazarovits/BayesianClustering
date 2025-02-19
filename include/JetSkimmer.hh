@@ -232,6 +232,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(gamTime_maxErh); 
 			_timeHists1D.push_back(seedXtalTime); 
 			_timeHists1D.push_back(nSubclusters);
+			_timeHists1D.push_back(nSubclusters_dijetSel);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -284,7 +285,6 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(AK4Jet_nRhs_nSubclusters);
 			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
 			_timeHists2D.push_back(Photon_nRhs_nSubclusters);
-			_timeHists2D.push_back(jetTime_Energy);
 			_timeHists2D.push_back(subclTime_Energy);
 			_timeHists2D.push_back(subclTime_Energy_spikes);
 			_timeHists2D.push_back(subclTime_Energy_BH);
@@ -296,8 +296,6 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(subclNNDiscr_time_BH);
 			_timeHists2D.push_back(subclNNDiscr_time_physBkg);
 			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters_dijetSel);
-
-
 
 
 		};
@@ -1997,8 +1995,16 @@ class JetSkimmer : public BaseSkimmer{
 			double norm = 0;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
-			
+			double rhElo = 10;
+			double rhEhi = 200;
+			double rhThi = 2;
+			double rhTlo = -2;
 			for(int i = 0; i < nrhs; i++){
+				//cut out early time moderate energy stuff
+				if(rhs[i].t() < rhTlo && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
+				//cut out late time moderate energy stuff
+				if(rhs[i].t() > rhThi && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
+
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			//cout << "time " << rhs[i].t() << " energy " << rhs[i].E() << endl;
@@ -2012,7 +2018,15 @@ class JetSkimmer : public BaseSkimmer{
 		GaussianMixture* _subcluster(Jet& jet){
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
+			double rhElo = 10;
+			double rhEhi = 200;
+			double rhThi = 2;
+			double rhTlo = -2;
 			for(int r = 0; r < rhs.size(); r++){
+				//cut out early time moderate energy stuff
+				if(rhs[r].t() < rhTlo && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
+				//cut out late time moderate energy stuff
+				if(rhs[r].t() > rhThi && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
