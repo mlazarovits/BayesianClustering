@@ -232,6 +232,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists1D.push_back(gamTime_maxErh); 
 			_timeHists1D.push_back(seedXtalTime); 
 			_timeHists1D.push_back(nSubclusters);
+			_timeHists1D.push_back(nSubclusters_dijetSel);
 
 			_timeHists2D.push_back(geoEavg_diffDeltaTime_recoGen);
 			_timeHists2D.push_back(geopTavg_diffDeltaTime_dijets);	
@@ -284,8 +285,17 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(AK4Jet_nRhs_nSubclusters);
 			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters);
 			_timeHists2D.push_back(Photon_nRhs_nSubclusters);
-
-
+			_timeHists2D.push_back(subclTime_Energy);
+			_timeHists2D.push_back(subclTime_Energy_spikes);
+			_timeHists2D.push_back(subclTime_Energy_BH);
+			_timeHists2D.push_back(subclTime_Energy_physBkg);
+			_timeHists2D.push_back(subclNNDiscr_Energy_spikes);
+			_timeHists2D.push_back(subclNNDiscr_Energy_BH);
+			_timeHists2D.push_back(subclNNDiscr_Energy_physBkg);
+			_timeHists2D.push_back(subclNNDiscr_time_spikes);
+			_timeHists2D.push_back(subclNNDiscr_time_BH);
+			_timeHists2D.push_back(subclNNDiscr_time_physBkg);
+			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters_dijetSel);
 
 
 		};
@@ -582,6 +592,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH1D* seedXtalTime = new TH1D("seedXtalTime","seedXtalTime",50,-2,2);	
 		//70 - # subclusters from mm
 		TH1D* nSubclusters = new TH1D("nSubclusters","nSubclusters",10,0,10);
+		//71 - # subclusters from mm - dijet res jets
+		TH1D* nSubclusters_dijetSel = new TH1D("nSubclusters_dijetSel","nSubclusters_dijetSel",10,0,10);
 	
 		//0 - 2D histogram for reco-gen resolution
 		TH2D* geoEavg_diffDeltaTime_recoGen = new TH2D("geoEavg_diffDeltaTime_recoGen","geoEavg_diffDeltaTime_recoGen;#sqrt{E^{pho}_{rh} #times E^{jets}_{rh}} (GeV);#Delta t^{PV,#gamma}_{reco, gen} (ns)",xbins.size()-1,&xbins[0],100,-2,2);
@@ -692,6 +704,28 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* AK4Jet_nSuperclusters_nSubclusters = new TH2D("AK4Jet_nSuperclusters_nSubclusters","AK4Jet_nSuperclusters_nSubclusters;AK4Jet_nSuperclusters;nSubclusters;a.u.",15,0,15,15,0,15);
 		//50 - # rhs vs # subclusters for photons
 		TH2D* Photon_nRhs_nSubclusters = new TH2D("Photon_nRhs_nSubclusters","Photon_nRhs_nSubclusters;Photon_nRhs;nSubclusters;a.u.",80,0,80,5,0,5);
+		//51 - subcl time vs subcl E
+		TH2D* subclTime_Energy = new TH2D("subclTime_Energy","subclTime_Energy;subclTime;Energy",50,-20,20,50,0,500);
+		//52 - subcl time vs subcl E - spikes
+		TH2D* subclTime_Energy_spikes = new TH2D("subclTime_Energy_spikes","subclTime_Energy_spikes;subclTime;Energy_spikes",50,-20,20,50,0,500);
+		//53 - subcl time vs subcl E - BH
+		TH2D* subclTime_Energy_BH = new TH2D("subclTime_Energy_BH","subclTime_Energy_BH;subclTime;Energy_BH",50,-20,20,50,0,500);
+		//54 - subcl time vs subcl E - physBkg
+		TH2D* subclTime_Energy_physBkg = new TH2D("subclTime_Energy_physBkg","subclTime_Energy_physBkg;subclTime;Energy_physBkg",50,-20,20,50,0,500);
+		//55 - subcl discriminator vs subcl E - spikes
+		TH2D* subclNNDiscr_Energy_spikes = new TH2D("subclNNDiscr_Energy_spikes","subclNNDiscr_Energy_spikes;subclNNDiscr;Energy_spikes",50,-20,20,50,0,500);
+		//56 - subcl discriminator vs subcl E - BH
+		TH2D* subclNNDiscr_Energy_BH = new TH2D("subclNNDiscr_Energy_BH","subclNNDiscr_Energy_BH;subclNNDiscr;Energy_BH",50,-20,20,50,0,500);
+		//57 - subcl discriminator vs subcl E - physBkg
+		TH2D* subclNNDiscr_Energy_physBkg = new TH2D("subclNNDiscr_Energy_physBkg","subclNNDiscr_Energy_physBkg;subclNNDiscr;Energy_physBkg",50,-20,20,50,0,500);
+		//58 - subcl discriminator vs subcl time - spikes
+		TH2D* subclNNDiscr_time_spikes = new TH2D("subclNNDiscr_time_spikes","subclNNDiscr_time_spikes;subclNNDiscr;time_spikes",50,-20,20,50,0,500);
+		//59 - subcl discriminator vs subcl time - BH
+		TH2D* subclNNDiscr_time_BH = new TH2D("subclNNDiscr_time_BH","subclNNDiscr_time_BH;subclNNDiscr;time_BH",50,-20,20,50,0,500);
+		//60 - subcl discriminator vs subcl time - physBkg
+		TH2D* subclNNDiscr_time_physBkg = new TH2D("subclNNDiscr_time_physBkg","subclNNDiscr_time_physBkg;subclNNDiscr;time_physBkg",50,-20,20,50,0,500);
+		//61 - # dr-matched superclusters vs # subclusters for dijet res jets
+		TH2D* AK4Jet_nSuperclusters_nSubclusters_dijetSel = new TH2D("AK4Jet_nSuperclusters_nSubclusters_dijetSel","AK4Jet_nSuperclusters_nSubclusters_dijetSel;AK4Jet_nSuperclusters;nSubclusters_dijetSel;a.u.",15,0,15,15,0,15);
 
 
 		vector<timeRecoCat> trCats;
@@ -821,7 +855,6 @@ class JetSkimmer : public BaseSkimmer{
 		}
 		
 		void FillModelHists(GaussianMixture* gmm, const Jet& jet){
-			
 			int n_k = gmm->GetNClusters();
 			double Ek;
 			vector<double> norms;
@@ -850,7 +883,8 @@ class JetSkimmer : public BaseSkimmer{
 				W_pp_k->Fill(params["scalemat"].at(1,1));
 				W_tt_k->Fill(params["scalemat"].at(2,2));
 				
-				int nclass = PredictSubcluster(gmm, k, jet);	
+				pair<int, double> class_discr = PredictSubcluster(gmm, k, jet);	
+				int nclass = class_discr.first;
 				if(nclass == 0)
 					t_physBkg->Fill(tc1);
 				if(nclass == 1)
@@ -940,79 +974,99 @@ class JetSkimmer : public BaseSkimmer{
 					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
 					vector<double> neighborEs, neighborEs_noCenter, neighborEs_time;
 					std::vector<std::pair<int, int>> icoords, icoords_noCenter, icoords_time;
+				
+
+					//fill subcl hists for dijet resolution
+					int nk = hardjets.first.GetNConstituents();
+					int nscs = nSC_dRMatch(hardjets.first);	
+					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
+					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
+					for(int k = 0; k < nk; k++){
+						Jet constit = hardjets.first.GetConstituent(k);
+						trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(constit.t(), constit.E(), _weight);
+					}
+					nk = hardjets.second.GetNConstituents();
+					nscs = nSC_dRMatch(hardjets.second);	
+					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
+					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
+					for(int k = 0; k < nk; k++){
+						Jet constit = hardjets.second.GetConstituent(k);
+						trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(constit.t(), constit.E(), _weight);
+					}
+
 					for(int r = 0; r < rhs.size(); r++){
 						if(rhs[r].E() < _minRhE) continue;
 						//if(rhs[r].t() > -1) continue;
 						Erh1 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
-							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
-							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E(), _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E(), _weight);
 							TrackMatched(rhs[r], bestdr, bestp);
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
-								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
-								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
-								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
-								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird);
+								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta(), _weight);
+								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta(), _weight);
+								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr,_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird,_weight);
 							}
 							if(rhs[r].t() > -15 && rhs[r].t() < -9){
-								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi());
-								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi(),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta(),_weight);
 							}
 							if(rhs[r].t() > -6 && rhs[r].t() < -3){
-								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi());
-								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi(),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta(),_weight);
 							}
 							kweird = 0.02*log10(rhs[r].E()) + 0.02;
-							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t());
-							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
-							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
-							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E(),_weight);
 							//2D map of neighbors
 							GetNeighborE(rhs, r, icoords, neighborEs,false);
 							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
-								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
-								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E()*_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 							}
 							//time slice hists
 							if(rhs[r].t() > -12-dtime && rhs[r].t() < -12+dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][43]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][43]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
-								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
-								trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr,_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 							if(rhs[r].t() > -5-dtime && rhs[r].t() < -5+dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][44]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][44]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
-								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
-								trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr,_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 							if(rhs[r].t() > -dtime && rhs[r].t() < dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][45]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][45]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
-								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
-								trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr,_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 						
 						}
@@ -1678,6 +1732,12 @@ class JetSkimmer : public BaseSkimmer{
 			//calculate dphi here
 			double pi = acos(-1);
 			double ptasym = 0.4;
+			//have higher min pt for dijet selection
+			double minpt = 100;
+			if(jet1.pt() < minpt || jet2.pt() < minpt) return -999;
+
+
+				
 			//not needed for GMSB
 			if(_data){
 				//dphi within [pi-0.1,pi+0.1]
@@ -1697,29 +1757,31 @@ class JetSkimmer : public BaseSkimmer{
 					return -999;
 				}
 			}
-			else{
-				//make MC selection as similar to data as possible
-				//dphi within [pi-0.1,pi+0.1]
-				double phi1 = jet1.phi_02pi();
-				double phi2 = jet2.phi_02pi();
-				double dphi = fabs(phi1 - phi2);
-				if(dphi > pi) dphi = 2*pi - dphi;
-				//cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
-				//cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
-				if(dphi < pi-0.35 || dphi > pi+0.35){
-					//cout << "failed dphi cut" << endl;
-					return -999;
-				}
-				//use only ECAL energy for asymmetry cut
-				double e1 = 0;
-				double e2 = 0;
-				for(auto r : jet1.GetJetPoints()) e1 += r.e();
-				for(auto r : jet2.GetJetPoints()) e2 += r.e();
-				if(e2 < e1){
-					if(e2 / e1 < 1 - ptasym) return -999; 
-				}
-				else{
-					if(e1 / e2 < 1 - ptasym) return -999; 
+			else{ //only do for bkg MC
+				if(_oname.find("SMS") == string::npos){
+					//make MC selection as similar to data as possible
+					//dphi within [pi-0.1,pi+0.1]
+					double phi1 = jet1.phi_02pi();
+					double phi2 = jet2.phi_02pi();
+					double dphi = fabs(phi1 - phi2);
+					if(dphi > pi) dphi = 2*pi - dphi;
+					//cout << "phi1 = " << phi1 << " phi2 = " << phi2 << " dphi = " << dphi << endl;
+					//cout << "pt2 = " << jet2.pt() << " pt1 = " << jet1.pt() << " pt2/pt1 = " << jet2.pt()/jet1.pt() << endl;
+					if(dphi < pi-0.35 || dphi > pi+0.35){
+						//cout << "failed dphi cut" << endl;
+						return -999;
+					}
+					//use only ECAL energy for asymmetry cut
+					double e1 = 0;
+					double e2 = 0;
+					for(auto r : jet1.GetJetPoints()) e1 += r.e();
+					for(auto r : jet2.GetJetPoints()) e2 += r.e();
+					if(e2 < e1){
+						if(e2 / e1 < 1 - ptasym) return -999; 
+					}
+					else{
+						if(e1 / e2 < 1 - ptasym) return -999; 
+					}
 				}
 			}
 
@@ -1933,8 +1995,16 @@ class JetSkimmer : public BaseSkimmer{
 			double norm = 0;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
-			
+			double rhElo = 10;
+			double rhEhi = 200;
+			double rhThi = 2;
+			double rhTlo = -2;
 			for(int i = 0; i < nrhs; i++){
+				//cut out early time moderate energy stuff
+				if(rhs[i].t() < rhTlo && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
+				//cut out late time moderate energy stuff
+				if(rhs[i].t() > rhThi && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
+
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			//cout << "time " << rhs[i].t() << " energy " << rhs[i].E() << endl;
@@ -1948,7 +2018,15 @@ class JetSkimmer : public BaseSkimmer{
 		GaussianMixture* _subcluster(Jet& jet){
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
+			double rhElo = 10;
+			double rhEhi = 200;
+			double rhThi = 2;
+			double rhTlo = -2;
 			for(int r = 0; r < rhs.size(); r++){
+				//cut out early time moderate energy stuff
+				if(rhs[r].t() < rhTlo && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
+				//cut out late time moderate energy stuff
+				if(rhs[r].t() > rhThi && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
@@ -1978,8 +2056,8 @@ class JetSkimmer : public BaseSkimmer{
 			return gmm;
 		}
 
-
-		int PredictSubcluster(BasePDFMixture* model, int k, const Jet& jet){
+		//returns {class, max discr val}
+		pair<int,double> PredictSubcluster(BasePDFMixture* model, int k, const Jet& jet){
 			//nclass options (index of predicted class)
 			//0 == 1 == phys bkg
 			//1 == 2 == BH
@@ -1993,7 +2071,8 @@ class JetSkimmer : public BaseSkimmer{
 			//obs = map<string, double> observations for each feature per subcluster
 			//makeDNNinputs too (if using later) 
 			MakeCNNInputGrid(model, k, rhs, center, obs);
-			return CNNPredict(obs,ovalue);
+			int nclass = CNNPredict(obs,ovalue);
+			return make_pair(nclass, ovalue);
 		}	
 
 
@@ -2004,18 +2083,34 @@ class JetSkimmer : public BaseSkimmer{
 		//NN json needs to have been set with SetNNModel(string jsonname)
 		void CleanSubclusters(BasePDFMixture* model, Jet& jet){
 			int kmax = model->GetNClusters();
-			int nclass = -1;
+			pair<int, double> class_discr;
 			//cout << kmax << " # subclusters " << endl; 
 			for(int k = 0; k < kmax; k++){
 				cout << "k " << k << " of " << kmax;
-				nclass = PredictSubcluster(model, k, jet);
+				class_discr = PredictSubcluster(model, k, jet);
 				//downweight - pushback prob == physbkg value
 				//remove - if nclass != phys bkg, probID = 0
 				//remove for now bc need to custom hack frugally-deep to return output of all neurons in the last layer
-				if(nclass != 0){
+				if(class_discr.first != 0){
 					jet.GetConstituent(k).SetCoefficient(0.); //pi*physbkg_val
 					//Jet subcl = jet.GetConstituent(k);
 					//subcl.SetCoefficient(0.); //pi*physbkg_val
+				}
+				//fill dijet subcl hists
+				if(class_discr.first == 0){ //phys bkg
+					trCats[0].procCats[0].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+				}	
+				else if(class_discr.first == 1){ //bh
+					trCats[0].procCats[0].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+				}	
+				else if(class_discr.first == 2){ //spikes
+					trCats[0].procCats[0].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[0].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
 			}
 		}
