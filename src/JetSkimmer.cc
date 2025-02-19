@@ -75,7 +75,6 @@ void JetSkimmer::Skim(){
 		//cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;
 		//if(_phos.size() > 1) cout << "sublead photon pt " << _phos[1].pt() << " max time " << CalcMaxTime(_phos[1]) << endl;
 
-
 		FillTruePhotonHists(_phos);
 		totEvt++;	
 	
@@ -86,6 +85,7 @@ void JetSkimmer::Skim(){
 		if(jets.size() < 1){ cout << endl; continue; }
 		FillTrueJetHists(jets);	
 		totJet += (int)jets.size();
+		continue;
 		if(_data){
 			//cut on ratio of MET pt to geo average of 2 leading jets
 			geoAvgJets = jets[0].pt();

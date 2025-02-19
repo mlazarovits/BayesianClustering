@@ -811,7 +811,8 @@ class JetSkimmer : public BaseSkimmer{
 				eECAL *= jets[j].E();
 				TrueJet_EmE->Fill(eECAL, _weight);
 				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet), _weight);
-			
+		
+				continue;	
 				
 				rhs.clear();
 				rhs = jets[j].GetJetPoints();
@@ -2084,30 +2085,34 @@ class JetSkimmer : public BaseSkimmer{
 		void CleanSubclusters(BasePDFMixture* model, Jet& jet){
 			int kmax = model->GetNClusters();
 			pair<int, double> class_discr;
+			int nclass; double score;
 			//cout << kmax << " # subclusters " << endl; 
 			for(int k = 0; k < kmax; k++){
 				cout << "k " << k << " of " << kmax;
 				class_discr = PredictSubcluster(model, k, jet);
+				nclass = class_discr.first;
+				score = class_discr.second;
 				//downweight - pushback prob == physbkg value
 				//remove - if nclass != phys bkg, probID = 0
 				//remove for now bc need to custom hack frugally-deep to return output of all neurons in the last layer
-				if(class_discr.first != 0){
+				//if(nclass == 0 && score < 0.8){ //need a minimial phys bkg score to stay in jet
+				if(nclass != 0 && score > 0.99){ //need a maximal bh/spike score to get cleaned
 					jet.GetConstituent(k).SetCoefficient(0.); //pi*physbkg_val
 					//Jet subcl = jet.GetConstituent(k);
 					//subcl.SetCoefficient(0.); //pi*physbkg_val
 				}
 				//fill dijet subcl hists
-				if(class_discr.first == 0){ //phys bkg
+				if(nclass == 0){ //phys bkg
 					trCats[0].procCats[0].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
-				else if(class_discr.first == 1){ //bh
+				else if(nclass == 1){ //bh
 					trCats[0].procCats[0].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
-				else if(class_discr.first == 2){ //spikes
+				else if(nclass == 2){ //spikes
 					trCats[0].procCats[0].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
