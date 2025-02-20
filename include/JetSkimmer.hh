@@ -2392,6 +2392,7 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 		
 		void SetMinRhE_PV(double m){ _minRhE = m; }	
 		void SetCleanSubclusters(bool s){ _cleansubcls = s; }	
+		void SetMistClean(bool m){ _prod->SetMistClean(m); }
 		private:
 			vector<Jet> _phos; //photons for event
 			vector<Jet> _SCs; //superclusters for event - for # subcluster matching

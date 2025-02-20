@@ -85,7 +85,6 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 					//add tighter sw+ cut
 					if(_base->ECALRecHit_swCross->at(rhidx) > 0.4) continue;
 				}
-
 				
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
@@ -128,6 +127,11 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
 				rh.SetUserIdx(rhidx);
+				//cut out mist if specified
+				if(_mistcuts){
+					if(rh.t() < -2 && rh.E() < 200 && rh.E() > 10) continue;
+					if(rh.t() > 2 && rh.E() < 200 && rh.E() > 10) continue;
+				}
 				jet.AddRecHit(rh);
                         }
 

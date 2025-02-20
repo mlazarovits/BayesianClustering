@@ -35,6 +35,7 @@ class BaseProducer{
 			_spatial_corr = true;
 			_timecalibTool = new KUCMSTimeCalibration();
 			_timecalibTag = "";
+			_mistcuts = false;
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
 			//	return;
@@ -61,6 +62,7 @@ class BaseProducer{
 			_spatial_corr = true;
 			_timecalibTag = "";
 			_timecalibTool = new KUCMSTimeCalibration();
+			_mistcuts = false;
 			
 			//set year
 			string name = ch->GetName();
@@ -108,7 +110,7 @@ class BaseProducer{
 			_timesmear = false;
 			_spatial_corr = true;
 			_timecalibTool = new KUCMSTimeCalibration();
-			
+			_mistcuts = false;
 			//set year
 			string name = file->GetName();
 			if(name.find("2017") != string::npos) _year = 2017;
@@ -162,6 +164,8 @@ class BaseProducer{
 		}
 		void SetTimeSmear(bool t){_timesmear = t;}
 		bool _timesmear;
+		void SetMistClean(bool m){ _mistcuts = m; }
+		bool _mistcuts; //true = cut out mist, false = dont cut out mist
 		void GetTrueJets(vector<Jet>& jets, int evt, double gev = -1);
 		void GetTruePhotons(vector<Jet>& phos, int evt, double gev = -1);
 		int GetTrueSuperClusters(vector<Jet>& phos, int evt, double gev = -1);

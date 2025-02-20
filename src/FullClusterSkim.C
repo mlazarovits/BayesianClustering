@@ -59,6 +59,7 @@ int main(int argc, char *argv[]){
 	bool iso = true;
 	bool spatcorr = true;
 	bool cleansubcls = false;
+	bool cleanmist = false;
 
 	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
@@ -224,6 +225,10 @@ int main(int argc, char *argv[]){
 			cleansubcls = true;
 			cout << "Cleaning subclusters from jets" << endl;
    		}
+		if(strncmp(argv[i],"--cleanMist", 10) == 0){
+			cleanmist = true;
+			cout << "Removing 'mist' rhs from jets" << endl;
+   		}
 		if(strncmp(argv[i],"--noSpatCorr", 12) == 0){
 			spatcorr = false;
 			cout << "Selecting photons with isolated background cuts" << endl;
@@ -278,6 +283,7 @@ int main(int argc, char *argv[]){
    		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
    		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
+   		cout << "   --cleanMist                          clean mist rhs from jets (default = false, off - jets only)" << endl;
    		cout << "   --noSmear                            turns off smearing data (default = true, on)" << endl;
    		cout << "   --timeSmear                          turns on time smearing data (default = false, off)" << endl;
    		cout << "   --noWeight                           turns off weighting data points (default = false, on)" << endl;
@@ -506,6 +512,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpatialCorr(spatcorr);
 		skimmer.SetCleanSubclusters(cleansubcls);
+		skimmer.SetMistClean(cleanmist);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
