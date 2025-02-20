@@ -15,9 +15,9 @@ cmssw_setup sandbox-CMSSW_13_0_13.tar.bz2
 ###
 ####don't need restframes library
 ####source ./config/setup_RestFrames_connect.sh 
-ls
-echo "--config"
-ls config
+#ls
+#echo "--config"
+#ls config
 #echo "--cmssw base $CMSSW_BASE"
 #ls $CMSSW_BASE/src
 #cd $CMSSW_BASE/src
