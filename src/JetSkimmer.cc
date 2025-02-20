@@ -75,7 +75,7 @@ void JetSkimmer::Skim(){
 		//cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;
 		//if(_phos.size() > 1) cout << "sublead photon pt " << _phos[1].pt() << " max time " << CalcMaxTime(_phos[1]) << endl;
 
-		FillTruePhotonHists(_phos);
+		if(_phos.size() > 1) FillTruePhotonHists(_phos);
 		totEvt++;	
 	
 

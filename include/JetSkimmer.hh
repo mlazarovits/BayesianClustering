@@ -1993,16 +1993,7 @@ class JetSkimmer : public BaseSkimmer{
 			double norm = 0;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
-			double rhElo = 10;
-			double rhEhi = 200;
-			double rhThi = 2;
-			double rhTlo = -2;
 			for(int i = 0; i < nrhs; i++){
-				//cut out early time moderate energy stuff
-				if(rhs[i].t() < rhTlo && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
-				//cut out late time moderate energy stuff
-				if(rhs[i].t() > rhThi && rhs[i].E() < rhEhi && rhs[i].E() > rhElo) continue;
-
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			//cout << "time " << rhs[i].t() << " energy " << rhs[i].E() << endl;
@@ -2016,15 +2007,7 @@ class JetSkimmer : public BaseSkimmer{
 		GaussianMixture* _subcluster(Jet& jet){
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<Jet> rhs_jet;
-			double rhElo = 10;
-			double rhEhi = 200;
-			double rhThi = 2;
-			double rhTlo = -2;
 			for(int r = 0; r < rhs.size(); r++){
-				//cut out early time moderate energy stuff
-				if(rhs[r].t() < rhTlo && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
-				//cut out late time moderate energy stuff
-				if(rhs[r].t() > rhThi && rhs[r].E() < rhEhi && rhs[r].E() > rhElo) continue;
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
 			BayesCluster* algo = new BayesCluster(rhs_jet);
