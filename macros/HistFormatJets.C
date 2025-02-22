@@ -238,7 +238,7 @@ cout << "title " << xtit << " canname " << canname << endl;
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t [ns]");
 		cout << "miny " << miny << " max " << 3*maxy << endl;
 		hist[i]->GetYaxis()->SetRangeUser(0, 1.5*maxy);
-		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, 2.5*maxy);
+		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(miny, 1.5*maxy);
 		
 
@@ -971,8 +971,8 @@ void AllHists(string file){
 		
 		}
 	}
-
-	//ofile->Close();
+	ofile->Write();
+	ofile->Close();
 	f->Close();
 
 };
@@ -1588,6 +1588,7 @@ void HistFormatJets(string file, string file2 = ""){
 		ProcStackHists(file, DEG_QCD, "mmAvg", oname,"geoAvgEecal");
 		//recoGen and gamPV for QCD + GMSB for eAvg
 		ProcStackHists(file, GluGlu_QCD, "eAvg", oname, "geoEavg");
+		ProcStackHists(file, GluGlu_QCD, "mmAvg", oname, "geoEavg");
 		//gamPV for QCD + JetHT
 		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "sigmaDeltaTime_gamPV");
 		ProcStackHists(file, jetHT_QCD, "median", oname, "sigmaDeltaTime_gamPV");
@@ -1650,7 +1651,9 @@ void HistFormatJets(string file, string file2 = ""){
 		Hist2D(file, "DoubleEG", "med", oname, "Neighbors", year);
 		
 		ProcStackHists(file, jetHT_QCD_DEG, "median", oname, "swCross_rhTime");
-		ProcStackHists(file, jetHT_QCD, "median", oname, "nSubclusters");
+		ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "nSubclusters");
+		Hist2D(file, "JetHT", "median", oname, "nSubclusters",year);
+		Hist2D(file, "QCD", "median", oname, "nSubclusters",year);
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
 		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
