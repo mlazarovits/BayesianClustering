@@ -296,6 +296,7 @@ class JetSkimmer : public BaseSkimmer{
 			_timeHists2D.push_back(subclNNDiscr_time_BH);
 			_timeHists2D.push_back(subclNNDiscr_time_physBkg);
 			_timeHists2D.push_back(AK4Jet_nSuperclusters_nSubclusters_dijetSel);
+			_timeHists2D.push_back(rhTime_Energy_highE);
 
 
 		};
@@ -726,6 +727,8 @@ class JetSkimmer : public BaseSkimmer{
 		TH2D* subclNNDiscr_time_physBkg = new TH2D("subclNNDiscr_time_physBkg","subclNNDiscr_time_physBkg;subclNNDiscr;time_physBkg",50,-20,20,50,0,500);
 		//61 - # dr-matched superclusters vs # subclusters for dijet res jets
 		TH2D* AK4Jet_nSuperclusters_nSubclusters_dijetSel = new TH2D("AK4Jet_nSuperclusters_nSubclusters_dijetSel","AK4Jet_nSuperclusters_nSubclusters_dijetSel;AK4Jet_nSuperclusters;nSubclusters_dijetSel;a.u.",15,0,15,15,0,15);
+		//62 - rh time vs rh E - high E
+		TH2D* rhTime_Energy_highE = new TH2D("rhTime_Energy_highE","rhTime_Energy_highE;rhTime;Energy_highE",50,-20,20,100,0,1000);
 
 
 		vector<timeRecoCat> trCats;
@@ -999,6 +1002,7 @@ class JetSkimmer : public BaseSkimmer{
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
 							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E(), _weight);
+							trCats[tr_idx].procCats[p].hists2D[0][62]->Fill(rhs[r].t(), rhs[r].E(), _weight);
 							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E(), _weight);
 							TrackMatched(rhs[r], bestdr, bestp);
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
@@ -1077,74 +1081,75 @@ class JetSkimmer : public BaseSkimmer{
 						Erh2 += rhs[r].E();
 						//only need for one time reco method (doesnt depend on this)
 						if(tr_idx == 0){
-							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E());
-							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][18]->Fill(rhs[r].t(), rhs[r].E(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][62]->Fill(rhs[r].t(), rhs[r].E(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][22]->Fill(rhs[r].t(), rhs[r].E(),_weight);
 							if(rhs[r].E() > 50 && rhs[r].t() < -2){
 								TrackMatched(rhs[r], bestdr, bestp);
-								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta());
-								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta());
-								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr);
-								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird);
+								trCats[tr_idx].procCats[p].hists2D[0][19]->Fill(rhs[r].t(), rhs[r].eta(),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][20]->Fill(rhs[r].phi(), rhs[r].eta(),_weight);
+								if(bestdr != 999) trCats[tr_idx].procCats[p].hists2D[0][21]->Fill(rhs[r].E()/bestp, bestdr,_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][27]->Fill(1 - _base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), kweird,_weight);
 							}
 							if(rhs[r].t() > -15 && rhs[r].t() < -9){
-								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi());
-								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists1D[0][58]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][28]->Fill(rhs[r].eta(), rhs[r].phi(),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][30]->Fill(rhs[r].time(), rhs[r].eta(),_weight);
 							}
 							if(rhs[r].t() > -6 && rhs[r].t() < -3){
-								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi());
-								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta());
+								trCats[tr_idx].procCats[p].hists1D[0][59]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][29]->Fill(rhs[r].eta(), rhs[r].phi(),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][31]->Fill(rhs[r].time(), rhs[r].eta(),_weight);
 							}
 							kweird = 0.02*log10(rhs[r].E()) + 0.02;
-							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t());
-							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t());
-							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
-							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E());
+							trCats[tr_idx].procCats[p].hists2D[0][23]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].t(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][24]->Fill(kweird, rhs[r].t(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][25]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
+							trCats[tr_idx].procCats[p].hists2D[0][26]->Fill(kweird, rhs[r].E(),_weight);
 							//2D map of neighbors/
 							GetNeighborE(rhs, r, icoords, neighborEs,false);
 							GetNeighborE(rhs, r, icoords_noCenter, neighborEs_noCenter,true);
 							for(int e = 0; e < (int)neighborEs.size(); e++){
-								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E());
-								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+								trCats[tr_idx].procCats[p].hists2D[0][32]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]/rhs[r].E()*_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][36]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 							}
 							//time slice hists
 							if(rhs[r].t() > -12-dtime && rhs[r].t() < -12+dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][60]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][33]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][37]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][43]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][43]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
-								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr);
-                                                                trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][63]->Fill(bestdr,_weight);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][40]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 							if(rhs[r].t() > -5-dtime && rhs[r].t() < -5+dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][61]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][34]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][38]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][44]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][44]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
-								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr);
-                                                                trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][64]->Fill(bestdr,_weight);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][41]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 							if(rhs[r].t() > -dtime && rhs[r].t() < dtime){
-								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()));
-								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E());
+								trCats[tr_idx].procCats[p].hists1D[0][62]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()),_weight);
+								trCats[tr_idx].procCats[p].hists2D[0][35]->Fill(_base->ECALRecHit_swCross->at(rhs[r].GetUserIdx()), rhs[r].E(),_weight);
 								for(int e = 0; e < (int)neighborEs.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][39]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
 								}
 								for(int e = 0; e < (int)neighborEs_noCenter.size(); e++){
-									trCats[tr_idx].procCats[p].hists2D[0][45]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]);
+									trCats[tr_idx].procCats[p].hists2D[0][45]->Fill(icoords_noCenter[e].first, icoords_noCenter[e].second, neighborEs_noCenter[e]*_weight);
 								}
 
-								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr);
-                                                                trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi());
+								trCats[tr_idx].procCats[p].hists1D[0][65]->Fill(bestdr,_weight);
+                                                                trCats[tr_idx].procCats[p].hists2D[0][42]->Fill(rhs[r].eta(),rhs[r].phi(),_weight);
 							}
 						}
 					}
