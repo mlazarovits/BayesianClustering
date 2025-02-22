@@ -72,10 +72,22 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		//TOF from PV to rh location
 		dpv = _base->ECALRecHit_pvTOF->at(r); 
 		timecorr = drh - dpv;
-		calibfactor = GetTimeCalibrationFactor(rhId);	
+		double calibfactor = 0;
+		double time = _base->ECALRecHit_time->at(r);
+		if(_calibmap){
+                        calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(r), (int)_base->Evt_run);
+                        time = time + timecorr - calibfactor;
+                }
+                else{
+                        calibfactor = 0;
+                        time =  time + timecorr;
+                }
+                if(_timesmear){
+                        time = SmearRecHitTime(_base->ECALRecHit_ampres->at(r), time);
+                }
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
-		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r) + timecorr - calibfactor);
+		        _base->ECALRecHit_rhz->at(r), time);
 		
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));

@@ -150,17 +150,18 @@ class BaseProducer{
 
 		//amp = ampeff = amp/sigma
 		double SmearRecHitTime(double amp, double time){
-			double n = 14;
-			double s = 0;
-			double c = 0.1083;
+			//double n = 14;
+			//double s = 0;
+			//double c = 0.1083;
 
-			//sigma^2
-			double sigma = (n/amp)*(n/amp) + (s*s)/(amp) + 2*c*c;
-			sigma = sqrt(sigma/2); //calculated for 2 rhs, need for 1
-			RandomSample rs;
-			rs.SetRange(time-5*sigma,time+5*sigma);
-			double newtime = rs.SampleGaussian(time,sigma,1).at(0);
-			return newtime;
+			////sigma^2
+			//double sigma = (n/amp)*(n/amp) + (s*s)/(amp) + 2*c*c;
+			//sigma = sqrt(sigma/2); //calculated for 2 rhs, need for 1
+			//RandomSample rs;
+			//rs.SetRange(time-5*sigma,time+5*sigma);
+			//double newtime = rs.SampleGaussian(time,sigma,1).at(0);
+			_timecalibTool->setSmearTag("EG300202_DYF17");
+			return _timecalibTool->getSmearedTime(time, amp);
 		}
 		void SetTimeSmear(bool t){_timesmear = t;}
 		bool _timesmear;
@@ -251,11 +252,13 @@ class BaseProducer{
 		};
 
 
-		double GetTimeCalibrationFactor(unsigned int rhid){
+		double GetTimeCalibrationFactor(unsigned int rhid, int run){
 			//transform from (rh) -> (ieta, iphi)
-			unsigned int ieta = _detIDMap[rhid].i2;
-			unsigned int iphi = _detIDMap[rhid].i1;
-			return GetTimeCalibrationFactor(ieta, iphi);
+			//unsigned int ieta = _detIDMap[rhid].i2;
+			//unsigned int iphi = _detIDMap[rhid].i1;
+			//return GetTimeCalibrationFactor(ieta, iphi);
+			_timecalibTool->setSmearTag("EG_EOY_MINI");
+			return _timecalibTool->getCalibration(rhid, run);
 		}
 		struct DetIDStruct {
                         DetIDStruct() {}

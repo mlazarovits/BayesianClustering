@@ -103,8 +103,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
-                          		//calibfactor = _timeCalibTool.getCalibration(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run, _timecalibTag);
-                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
 					time = time + timecorr - calibfactor;
 				}
 				else{
@@ -129,8 +128,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				rh.SetUserIdx(rhidx);
 				//cut out mist if specified
 				if(_mistcuts){
-					if(rh.t() < -2 && rh.E() < 200 && rh.E() > 10) continue;
-					if(rh.t() > 2 && rh.E() < 200 && rh.E() > 10) continue;
+					if(rh.t() < -0.5 && rh.E() < 500 && rh.E() > 10) continue;
+					if(rh.t() > 0.5 && rh.E() < 500 && rh.E() > 10) continue;
 				}
 				jet.AddRecHit(rh);
                         }
@@ -249,7 +248,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
-                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
 					time = time + timecorr - calibfactor;
 				}
 				else{
@@ -387,7 +386,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calibmap){
-                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx));
+                          		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
 					time = time + timecorr - calibfactor;
 				}
 				else{

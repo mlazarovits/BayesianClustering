@@ -77,11 +77,22 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					drh = _base->ECALRecHit_0TOF->at(j);
 					//TOF from PV to rh location
 					timecorr = drh;
-					calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
-
+					double calibfactor;
+					double time = _base->ECALRecHit_time->at(j);
+					if(_calibmap){
+                                	        calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j), (int)_base->Evt_run);
+                                	        time = time + timecorr - calibfactor;
+                                	}
+                                	else{
+                                	        calibfactor = 0;
+                                	        time =  time + timecorr;
+                                	}
+                                	if(_timesmear){
+                                	        time = SmearRecHitTime(_base->ECALRecHit_ampres->at(j), time);
+                                	}
 					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                        _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
+                                        _base->ECALRecHit_rhz->at(j), time);
 					
 					rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 					rh.SetEta(_base->ECALRecHit_eta->at(j));
@@ -144,12 +155,22 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				drh = _base->ECALRecHit_0TOF->at(j);
 				//TOF from PV to rh location
 				timecorr = drh;
-				calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j));
-
-
-				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
-                                _base->ECALRecHit_rhz->at(j), _base->ECALRecHit_time->at(j) + timecorr - calibfactor);
+					double calibfactor;
+					double time = _base->ECALRecHit_time->at(j);
+					if(_calibmap){
+                                	        calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j), (int)_base->Evt_run);
+                                	        time = time + timecorr - calibfactor;
+                                	}
+                                	else{
+                                	        calibfactor = 0;
+                                	        time =  time + timecorr;
+                                	}
+                                	if(_timesmear){
+                                	        time = SmearRecHitTime(_base->ECALRecHit_ampres->at(j), time);
+                                	}
+					//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
+					JetPoint rh(_base->ECALRecHit_rhx->at(j), _base->ECALRecHit_rhy->at(j),
+                                        _base->ECALRecHit_rhz->at(j), time);
 				
 				rh.SetEnergy(_base->ECALRecHit_energy->at(j));
 				rh.SetEta(_base->ECALRecHit_eta->at(j));
