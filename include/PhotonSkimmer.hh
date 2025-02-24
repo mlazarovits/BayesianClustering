@@ -3221,7 +3221,7 @@ class PhotonSkimmer : public BaseSkimmer{
 	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
 	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
 	
-	    const std::string detIDConfigEB("info/fullinfo_detids_EB.txt");
+	    const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
 	    std::ifstream infile( detIDConfigEB, std::ios::in);
 	
 	    UInt_t cmsswId, dbID;

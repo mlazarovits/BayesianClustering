@@ -571,8 +571,8 @@ cout << "fname " << fname << endl;
 
         	skimmer.Skim();
 	}
-	if(calib) cout << "Using calibration file " << calibfile << endl;
-	else cout << "No timing calibration applied" << endl;
+	//if(calib) cout << "Using calibration file " << calibfile << endl;
+	//else cout << "No timing calibration applied" << endl;
         return 0;
 
 }
