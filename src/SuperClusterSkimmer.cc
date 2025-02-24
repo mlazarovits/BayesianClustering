@@ -61,7 +61,6 @@ void SuperClusterSkimmer::Skim(){
 	_prod->SetTransferFactor(_gev);
 	_prod->ApplyFractions(_applyFrac);
 	
-	_prod->SetTimeSmear(_timesmear);
 	_prod->PrintPreselection();
 	//loop over events
 	if(_evti == _evtj){
@@ -132,7 +131,7 @@ void SuperClusterSkimmer::Skim(){
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);

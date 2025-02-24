@@ -32,7 +32,6 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -62,7 +61,6 @@ class BaseSkimmer{
 			_gev = 1;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -105,7 +103,6 @@ class BaseSkimmer{
 			_gev = 1;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -682,16 +679,11 @@ class BaseSkimmer{
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 
 		void SetSmear(bool t){ _smear = t; }
-		void SetTimeSmear(bool t){ _timesmear = t; }
-		void SetTimeCalibrationMap(string f){
-                        if(gSystem->AccessPathName(f.c_str())){
-                                cout << "Error: file " << f << " does not exist. Time calibration file could not be set." << endl;
-                                return;
-                        }
-                        TFile* file = TFile::Open(f.c_str());
-                        _prod->SetTimeCalibrationMap(file);
+		void SetTimeSmear(bool t){ _prod->SetTimeSmear(t); }
+		void SetTimeCalibration(bool c){
+                        _prod->SetTimeCalibration(c);
                 }
-		bool _smear, _timesmear;
+		bool _smear;
 
 		void SetSpikeRejection(bool s){ _prod->RejectSpikes(s); }
 		enum beamHaloFilter{

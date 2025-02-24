@@ -474,19 +474,6 @@ cout << "fname " << fname << endl;
 	}
 	if(evti != evtj) cout << "Skimming events " << evti << " to " << evtj << " for ";
 	else cout << "Skimming all events for ";
-	//choose time calibration file
-	string calibfile = "";
-        if(fname.find("GJets") != string::npos)
-                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
-        else if(fname.find("JetHT") != string::npos)
-                calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
-        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos || fname.find("EGamma") != string::npos)
-                calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
-        else if(fname.find("QCD") != string::npos)
-                calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
-        //else default to GJets
-        else
-                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
 	if(obj == 0){
 		cout << "jets" << endl;
 		JetSkimmer skimmer(in_file);
@@ -499,7 +486,7 @@ cout << "fname " << fname << endl;
 		skimmer.SetMinEmE(minEmE);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetSkip(skip);
-		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
+		skimmer.SetTimeCalibration(calib);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
 		//set EMalpha, thresh
@@ -520,7 +507,7 @@ cout << "fname " << fname << endl;
 		cout << "superclusters" << endl;
 		SuperClusterSkimmer skimmer(in_file);
 		skimmer.SetCMSLabel(cmslab);
-		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
+		skimmer.SetTimeCalibration(calib);
 		if(iso){
 			cout << "Applying isolation preselection for training labels and object selection." << endl;
 			skimmer.SetIsoCuts();
@@ -547,7 +534,7 @@ cout << "fname " << fname << endl;
 		cout << "photons" << endl;
 		PhotonSkimmer skimmer(in_file);
 		skimmer.SetCMSLabel(cmslab);
-		if(calib) skimmer.SetTimeCalibrationMap(calibfile);
+		skimmer.SetTimeCalibration(calib);
 		if(iso) skimmer.SetIsoCuts();
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
@@ -571,8 +558,6 @@ cout << "fname " << fname << endl;
 
         	skimmer.Skim();
 	}
-	//if(calib) cout << "Using calibration file " << calibfile << endl;
-	//else cout << "No timing calibration applied" << endl;
         return 0;
 
 }

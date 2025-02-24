@@ -52,7 +52,6 @@ void JetSkimmer::Skim(){
 	double metThresh = 0.4;
 	double geoAvgJets;
 	double phogev = _gev;//1./30.;
-	_prod->SetTimeSmear(_timesmear);
 	_prod->PrintPreselection();
 	for(int i = _evti; i < _evtj; i+=_skip){
 		//do data MET selection

@@ -79,14 +79,13 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 					timecorr = drh;
 					double calibfactor;
 					double time = _base->ECALRecHit_time->at(j);
-					if(_calibmap){
+					if(_calib){
                                 	        calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j), (int)_base->Evt_run);
-                                	        time = time + timecorr - calibfactor;
                                 	}
                                 	else{
                                 	        calibfactor = 0;
-                                	        time =  time + timecorr;
                                 	}
+                                	time = time + timecorr - calibfactor;
                                 	if(_timesmear){
                                 	        time = SmearRecHitTime(_base->ECALRecHit_ampres->at(j), time);
                                 	}
@@ -157,14 +156,13 @@ void PhotonProducer::GetRecHits(vector<JetPoint>& rhs, int evt, int pho){
 				timecorr = drh;
 					double calibfactor;
 					double time = _base->ECALRecHit_time->at(j);
-					if(_calibmap){
+					if(_calib){
                                 	        calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(j), (int)_base->Evt_run);
-                                	        time = time + timecorr - calibfactor;
                                 	}
                                 	else{
                                 	        calibfactor = 0;
-                                	        time =  time + timecorr;
                                 	}
+                                	time = time + timecorr - calibfactor;
                                 	if(_timesmear){
                                 	        time = SmearRecHitTime(_base->ECALRecHit_ampres->at(j), time);
                                 	}
