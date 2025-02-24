@@ -223,7 +223,7 @@ def generateSubmission(args):
     	flags += ' --noSmear'
     if(args.timeSmear and "AODSIM" in inputFileList):
     	flags += ' --timeSmear'
-    if(args.timeSmear and "AOD" in inputFileList):
+    if(args.timeSmear and "AODSIM" not in inputFileList):
         print("---timeSmear only for MC")
     if(args.applyFrac):
 	    flags += ' --applyFrac'
