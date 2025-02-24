@@ -1257,7 +1257,7 @@ inline float KUCMSTimeCalibration::getCalibration( uInt rhid, int run, std::stri
     bool isEB( DetIDMap[rhid].ecal == ECAL::EB );
 	float xtaltime = 0.f;	
 	//if( not validCurrentTag ){ std::cout << "No current tag set." << std::endl; return 0.f; }
-	if( not isEB ){ std::cout << "Calibration for EE is not supported." << std::endl; return 0.f; }
+	if( not isEB ){ std::cout << "Calibration for EE is not supported for rh with eta " << DetIDMap[rhid].eta << " iphi/ix " << DetIDMap[rhid].i1 << " ieta/iy " << DetIDMap[rhid].i2 << std::endl; return 0.f; }
     for( auto& calirunmap : CaliRunMapSet[tag] ){	
 		if( run >= calirunmap.second.startRun && run <= calirunmap.second.endRun ){
             xtaltime = calirunmap.second.meanMap[rhid];
@@ -1272,7 +1272,7 @@ inline float KUCMSTimeCalibration::getTTCali( uInt rhid, int run, std::string ta
     bool isEB( DetIDMap[rhid].ecal == ECAL::EB );
 	uInt ttid = getTTId( rhid );
     float xtaltime = 0.f;
-    if( not isEB ){ std::cout << "Calibration for EE is not supported." << std::endl; return 0.f; }
+	if( not isEB ){ std::cout << "Calibration for EE is not supported for rh with eta " << DetIDMap[rhid].eta << " iphi/ix " << DetIDMap[rhid].i1 << " ieta/iy " << DetIDMap[rhid].i2 << std::endl; return 0.f; }
     for( auto& calirunmap : TTCaliRunMapSet[tag] ){
         if( run >= calirunmap.second.startRun && run <= calirunmap.second.endRun ){
             xtaltime = calirunmap.second.meanMap[ttid];
