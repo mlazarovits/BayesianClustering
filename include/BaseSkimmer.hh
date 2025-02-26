@@ -25,6 +25,7 @@ static bool Esort(JetPoint j1, JetPoint j2){ return (j1.E() > j2.E()); }
 static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
 using std::vector;
 using std::string;
+
 class BaseSkimmer{
 	public:
 		BaseSkimmer(){ 
@@ -209,7 +210,7 @@ class BaseSkimmer{
 		        UInt_t cmsswId, dbID;
 		        pair<int, int> ietaiphi;
 		        int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-		        double deteta, detphi;
+		        float deteta, detphi;
 		        std::string pos;
 		
 		        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
