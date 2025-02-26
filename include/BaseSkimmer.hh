@@ -25,6 +25,7 @@ static bool Esort(JetPoint j1, JetPoint j2){ return (j1.E() > j2.E()); }
 static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
 using std::vector;
 using std::string;
+
 class BaseSkimmer{
 	public:
 		BaseSkimmer(){ 
@@ -32,7 +33,6 @@ class BaseSkimmer{
 			_data = false;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -62,7 +62,6 @@ class BaseSkimmer{
 			_gev = 1;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -105,7 +104,6 @@ class BaseSkimmer{
 			_gev = 1;
 			_debug = false;
 			_smear = true;
-			_timesmear = false;
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
@@ -212,7 +210,7 @@ class BaseSkimmer{
 		        UInt_t cmsswId, dbID;
 		        pair<int, int> ietaiphi;
 		        int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-		        double deteta, detphi;
+		        float deteta, detphi;
 		        std::string pos;
 		
 		        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
@@ -682,16 +680,11 @@ class BaseSkimmer{
 		void SetCMSLabel(string lab){ _cms_label = lab; }
 
 		void SetSmear(bool t){ _smear = t; }
-		void SetTimeSmear(bool t){ _timesmear = t; }
-		void SetTimeCalibrationMap(string f){
-                        if(gSystem->AccessPathName(f.c_str())){
-                                cout << "Error: file " << f << " does not exist. Time calibration file could not be set." << endl;
-                                return;
-                        }
-                        TFile* file = TFile::Open(f.c_str());
-                        _prod->SetTimeCalibrationMap(file);
+		void SetTimeSmear(bool t){ _prod->SetTimeSmear(t); }
+		void SetTimeCalibration(bool c){
+                        _prod->SetTimeCalibration(c);
                 }
-		bool _smear, _timesmear;
+		bool _smear;
 
 		void SetSpikeRejection(bool s){ _prod->RejectSpikes(s); }
 		enum beamHaloFilter{

@@ -102,14 +102,13 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
-				if(_calibmap){
+				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
-					time = time + timecorr - calibfactor;
 				}
 				else{
 					calibfactor = 0;	
-                                        time =  time + timecorr;
 				}
+				time = time + timecorr - calibfactor;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
@@ -247,14 +246,15 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
-				if(_calibmap){
+				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
-					time = time + timecorr - calibfactor;
 				}
 				else{
 					calibfactor = 0;	
-                                        time =  time + timecorr;
 				}
+				cout << "og time " << time;
+				time = time + timecorr - calibfactor;
+				cout << " calibrated time " << time - timecorr << endl;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
@@ -385,14 +385,13 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				double time = _base->ECALRecHit_time->at(rhidx);
-				if(_calibmap){
+				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
-					time = time + timecorr - calibfactor;
 				}
 				else{
 					calibfactor = 0;	
-                                        time =  time + timecorr;
 				}
+				time = time + timecorr - calibfactor;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}

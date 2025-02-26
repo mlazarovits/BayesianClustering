@@ -28,7 +28,7 @@ class BaseProducer{
 			_minobjeta = 1.5;
 			_year = 2018;
 			_data = false;
-			_calibmap = nullptr;
+			_calib = true;
 			_applyFrac = false;
 			_spikes = false;
 			_timesmear = false;
@@ -73,7 +73,7 @@ class BaseProducer{
 			//set if data
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
-			_calibmap = nullptr;
+			_calib = true;
 			if(_data)
 				_timecalibTag = "EG_EOY_MINI";
 			else
@@ -120,7 +120,7 @@ class BaseProducer{
 			//set if data
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
-			_calibmap = nullptr;
+			_calib = true;
 			if(_data)
 				_timecalibTag = "EG_EOY_MINI";
 			else
@@ -133,7 +133,6 @@ class BaseProducer{
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
-			delete _calibmap;	
 			delete _timecalibTool;
 		};
 
@@ -238,20 +237,11 @@ class BaseProducer{
 		bool _data;
 		int _year;
 
-		TH2D* _calibmap;
-		void SetTimeCalibrationMap(TFile* f){
-			if(!f){ cout << "File for calibration map not set." << endl; return; }
-			_calibmap = (TH2D*)f->Get("AveXtalRatioRecTimeEBMap");
+		bool _calib;
+		void SetTimeCalibration(bool c){
+			_calib = c;
 		};
 		
-		double GetTimeCalibrationFactor(int ieta, int iphi){
-			if(!_calibmap){ cout << "Calibration map not set." << endl; return -999; }
-			if(iphi < 1 || iphi > 360){cout << "Invalid iphi: " << iphi << endl; return -999; }
-			if(ieta < -85 || ieta > 85){cout << "Invalid ieta: " << ieta << endl; return -999; }
-			return _calibmap->GetBinContent(ieta+86, iphi);
-		};
-
-
 		double GetTimeCalibrationFactor(unsigned int rhid, int run){
 			//transform from (rh) -> (ieta, iphi)
 			//unsigned int ieta = _detIDMap[rhid].i2;

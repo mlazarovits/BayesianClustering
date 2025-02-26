@@ -74,14 +74,13 @@ void JetProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		timecorr = drh - dpv;
 		double calibfactor = 0;
 		double time = _base->ECALRecHit_time->at(r);
-		if(_calibmap){
+		if(_calib){
                         calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(r), (int)_base->Evt_run);
-                        time = time + timecorr - calibfactor;
                 }
                 else{
                         calibfactor = 0;
-                        time =  time + timecorr;
                 }
+                time = time + timecorr - calibfactor;
                 if(_timesmear){
                         time = SmearRecHitTime(_base->ECALRecHit_ampres->at(r), time);
                 }

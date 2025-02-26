@@ -176,11 +176,10 @@ void PhotonSkimmer::Skim(){
 			if(rhs.size() < 1){ continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
+			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -188,12 +187,12 @@ void PhotonSkimmer::Skim(){
 			
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
-	
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
-			map<string,double> obs;
-			for(int d = 0; d < _inputs.size(); d++)
-				obs[_inputs[d]] = -99;
+			map<string,double> obs; //init obs map
+			for(int d = 0; d < _inputs.size(); d++){
+				obs[_inputs[d]] = -999;
+			}
 
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
@@ -285,7 +284,6 @@ void PhotonSkimmer::Skim(){
                                         obs["hcalPFClusterIsoOvPt"] = -999;
                                         obs["trkSumPtHollowConeDR03OvPt"] = -999;	
 			}
-			
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);

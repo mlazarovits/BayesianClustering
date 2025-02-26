@@ -378,22 +378,6 @@ int main(int argc, char *argv[]){
 		}
 	}
 	
-	//choose time calibration file
-	string calibfile = "";
-        if(fname.find("GJets") != string::npos)
-                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
-        else if(fname.find("JetHT") != string::npos)
-                calibfile = "info/KUCMS_JetHT_R17_v18_rhE5_Cali.root";
-        else if(fname.find("DEG") != string::npos || fname.find("DoubleEG") != string::npos || fname.find("EGamma") != string::npos)
-                calibfile = "info/KUCMS_DoubleEG_R17_v18_rhE5_Cali.root";
-        else if(fname.find("QCD") != string::npos)
-                calibfile = "info/KUCMS_QCD_R17_v16_rhE5_mo_Cali.root";
-        //else default to GJets
-        else
-                calibfile = "info/KUCMS_GJets_R17_v16_rhE5_mo_Cali.root";
-
-	TFile* calibf = TFile::Open(calibfile.c_str());
-
 	TFile* file = TFile::Open(in_file.c_str());
 	//create data smear matrix - smear in eta/phi
 	Matrix smear = Matrix(3,3);
@@ -417,7 +401,7 @@ int main(int argc, char *argv[]){
 		prod.SetMinNrhs(15);
 		prod.SetMinEmE(30);
 		//calibrate
-		prod.SetTimeCalibrationMap(calibf);
+		prod.SetTimeCalibration(true);
 		if(strat != 2){
 			cout << "Getting rec hits for jets at event " << evt << endl;
 			prod.GetRecHits(rhs,evt);	
@@ -441,7 +425,7 @@ int main(int argc, char *argv[]){
         	//prod.GetRecHits(rhs,evt,npho);
         	prod.SetIsoCut();
 		//calibrate
-		prod.SetTimeCalibrationMap(calibf);
+		prod.SetTimeCalibration(true);
 		prod.GetTruePhotons(phos, evt);
 		if(phos.size() < 1){ cout << "No photons passing selection found for event " << evt << endl; return -1; }
 		if(nobj > phos.size() - 1){ cout << "Only " << phos.size() << " photons passing selection found for event " << evt << endl; return -1; }

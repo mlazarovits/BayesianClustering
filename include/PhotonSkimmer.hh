@@ -1667,18 +1667,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			logEweight = 2
 		};
 		
-		struct DetIDStruct {
-			DetIDStruct() {}
-			DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal) : i1(ni1), i2(ni2), TT(nTT), ecal(necal){}
-			//Int_t i1; // EB: iphi, EE: ix
-			int i1;
-		//	Int_t i2; // EB: ieta, EE: iy
-			int i2;
-			Int_t TT; // trigger tower
-			Int_t ecal; // EB, EM, EP
-		};//<<>>struct DetIDStruct
-
-	
 
 	 	std::map<UInt_t,DetIDStruct> _detIDmap;
 		std::map<pair<int, int>, UInt_t> _ietaiphiID;
@@ -2002,7 +1990,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
 			obs["maxOvtotE"] = maxE/E_k;	
-			
+	
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
@@ -3159,7 +3147,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		int e1id = sc.at(sc.GetNPoints()-1).at(0);
 		int e1_iphi = _detIDmap[e1id].i1;
 		int e1_ieta = _detIDmap[e1id].i2;
-		
 		//find up, left, right, down crystals (e4)
 		//eta on x-axis - shift in eta = left/right
 		//phi on y-axis - shift in phi = up/down
@@ -3215,30 +3202,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		int min_iphi = 1;
 		return i != 0 && (std::abs(i) <= max_ieta) && (j >= min_iphi) && (j <= max_iphi);
 	}
-
-
-	//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
-	//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
-	void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
-	
-	    const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
-	    std::ifstream infile( detIDConfigEB, std::ios::in);
-	
-	    UInt_t cmsswId, dbID;
-            pair<int, int> ietaiphi;
-	    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-	    std::string pos;
-	
-	    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
-	        //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-	        DetIDMap[cmsswId] = {iphi,ieta,TT25,0};
-		ietaiphi = make_pair(ieta, iphi);
-		iEtaiPhiToDetID[ietaiphi] = cmsswId;
-	        //auto idinfo = DetIDMap[cmsswId];
-	        //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-	    }//while (infile >>
-	
-	}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
 

@@ -2022,7 +2022,7 @@ class JetSkimmer : public BaseSkimmer{
 			BayesCluster* algo = new BayesCluster(rhs_jet);
 			if(_smear && !_smearMat.empty()) algo->SetDataSmear(_smearMat);
 			//set time resolution smearing
-			if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
+			//if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
 			algo->SetThresh(_thresh);
 			//algo->SetAlpha(_alpha); //isn't used should probably remove this line
 			algo->SetSubclusterAlpha(_emAlpha);
