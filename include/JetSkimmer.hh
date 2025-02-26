@@ -1980,7 +1980,9 @@ class JetSkimmer : public BaseSkimmer{
 			BayesPoint center(3);
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
+			double minpt = 10;
 			for(int i = 0; i < nrhs; i++){
+				if(rhs[i].E() < minpt) continue;
 				norm += rhs[i].E();
 				x += rhs[i].E()*rhs[i].x();
 				y += rhs[i].E()*rhs[i].y();
@@ -1998,7 +2000,9 @@ class JetSkimmer : public BaseSkimmer{
 			double norm = 0;
 			vector<JetPoint> rhs = j.GetJetPoints();
 			int nrhs = rhs.size();
+			double minpt = 10;
 			for(int i = 0; i < nrhs; i++){
+				if(rhs[i].E() < minpt) continue;
 				norm += rhs[i].E();
 				t += rhs[i].E()*rhs[i].t();
 			//cout << "time " << rhs[i].t() << " energy " << rhs[i].E() << endl;
@@ -2073,7 +2077,7 @@ class JetSkimmer : public BaseSkimmer{
 			int nclass; double score;
 			//cout << kmax << " # subclusters " << endl; 
 			for(int k = 0; k < kmax; k++){
-				cout << "k " << k << " of " << kmax;
+				//cout << "k " << k << " of " << kmax;
 				class_discr = PredictSubcluster(model, k, jet);
 				nclass = class_discr.first;
 				score = class_discr.second;
@@ -2091,16 +2095,28 @@ class JetSkimmer : public BaseSkimmer{
 					trCats[0].procCats[0].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					
+					trCats[0].procCats[1].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
-				else if(nclass == 1){ //bh
+				else if(nclass == 1 && score > 0.99){ //bh
 					trCats[0].procCats[0].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					
+					trCats[0].procCats[1].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
-				else if(nclass == 2){ //spikes
+				else if(nclass == 2 && score > 0.99){ //spikes
 					trCats[0].procCats[0].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
 					trCats[0].procCats[0].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					
+					trCats[0].procCats[1].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
+					trCats[0].procCats[1].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
 				}	
 			}
 		}
