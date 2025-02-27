@@ -166,6 +166,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(AK4JetConstituent_GenPt);
 			_hists1D.push_back(AK4JetConstJetRatio_GenP);
 			_hists1D.push_back(AK4JetConstJetRatio_GenPt);
+			_hists1D.push_back(AK4Jet_rhTimes);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -196,6 +197,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(AK4Jet_genJetP_genPartJetPRatio);
 			_hists2D.push_back(AK4Jet_genPt_genPartJetPtRatio);
 			_hists2D.push_back(AK4Jet_genJetPt_genPartJetPtRatio);
+			_hists2D.push_back(AK4Jet_genJetPt_nSubclusters);
+			_hists2D.push_back(AK4Jet_nGenPartsptge5_nSubclusters);
 	
 
 		}
@@ -504,6 +507,7 @@ class BHCJetSkimmer{
 					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						_procCats[p].hists1D[0][89]->Fill(rhs[r].E());
+						_procCats[p].hists1D[0][96]->Fill(rhs[r].t());
 					}
 					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
 					_procCats[p].hists2D[0][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
@@ -520,7 +524,10 @@ class BHCJetSkimmer{
 
 					_procCats[p].hists1D[0][90]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
 					_procCats[p].hists1D[0][91]->Fill(jetpt);	
+					_procCats[p].hists2D[0][28]->Fill(jetpt, _recojets[j].GetNConstituents());
+					
 					int genpartidx = -1;
+					int ngenparts_ptge5 = 0;
 					for(int g = 0; g < _base->Jet_genNConstituents->at(genjetidx); g++){
 						genpartidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(g);
 						pt = _base->genpart_pt->at(genpartidx);
@@ -537,8 +544,11 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[0][24]->Fill(sqrt(pt*pt + pz*pz), ratio_p);	
 						_procCats[p].hists2D[0][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
 						_procCats[p].hists2D[0][26]->Fill(pt, pt/jetpt);	
-						_procCats[p].hists2D[0][27]->Fill(jetpt, pt/jetpt);	
+						_procCats[p].hists2D[0][27]->Fill(jetpt, pt/jetpt);
+	
+						if(pt >= 5) ngenparts_ptge5++;	
 					}
+					_procCats[p].hists2D[0][29]->Fill(ngenparts_ptge5,_recojets[j].GetNConstituents());
 
 					//skip gen matching for now
 					continue;
@@ -1172,6 +1182,9 @@ class BHCJetSkimmer{
 		TH1D* AK4JetConstJetRatio_GenP = new TH1D("AK4JetConstJetRatio_GenP","AK4JetConstJetRatio_GenP",50,0,1);
 		//95 - Gen particle Pt/Gen jet Pt 
 		TH1D* AK4JetConstJetRatio_GenPt = new TH1D("AK4JetConstJetRatio_GenPt","AK4JetConstJetRatio_GenPt",50,0,1);
+		//96 - ak4 jet rh times
+		TH1D* AK4Jet_rhTimes = new TH1D("AK4Jet_rhTimes","AK4Jet_rhTimes",200,-25,25);
+
 
 
 		//2D plots
@@ -1231,7 +1244,10 @@ class BHCJetSkimmer{
 		TH2D* AK4Jet_genPt_genPartJetPtRatio = new TH2D("AK4Jet_genPt_genPartJetPtRatio","AK4Jet_genPt_genPartJetPtRatio;genPt;genPartJetPtRatio;a.u.",50,0,200,50,0,1);
 		//27 - gen jet pt vs gen particle pt/gen jet pt for AK4 jets
 		TH2D* AK4Jet_genJetPt_genPartJetPtRatio = new TH2D("AK4Jet_genJetPt_genPartJetPtRatio","AK4Jet_genJetPt_genPartJetPtRatio;genJetPt;genPartJetPtRatio;a.u.",50,0,500,50,0,1);
-	
+		//28 - gen jet pt vs # subclusters
+		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("AK4Jet_genJetPt_nSubclusters","AK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,10,0,10);	
+		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
+		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,25,0,25);
 
 		void SetSmear(bool t){ _smear = t; }
 		void SetTimeSmear(bool t){ _timesmear = t; }
