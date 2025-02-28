@@ -175,10 +175,15 @@ def generateSubmission(args):
     priorname = priorname+"_nu0-"+nustr
 
 
-    #add emAlpha to output name
+    #add npergev to output name
     gevstr = str(args.gev)
     gevstr = gevstr.replace(".","p")
     priorname += "_NperGeV-"+gevstr
+    
+    #add emalpha to output name
+    emalphastr = str(args.EMalpha)
+    emalphastr = emalphastr.replace(".","p")
+    priorname += "_emAlpha-"+emalphastr
 
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
@@ -244,6 +249,10 @@ def generateSubmission(args):
         flags += ' --cleanSubclusters'
     if(args.cleanSubclusters and "AODSIM" in inputFileList):
         print("--cleanSubclusters only for data") 
+    if(args.cleanMist and "AODSIM" not in inputFileList):
+        flags += ' --cleanMist'
+    if(args.cleanMist and "AODSIM" in inputFileList):
+        print("--cleanMist only for data") 
     
 
 
@@ -284,8 +293,8 @@ def main():
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     
     #add algorithm parameters - emAlpha, priors, verbosity, thresh
-    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
-    parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
+    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1e-5)
+    parser.add_argument('--beta0',help="beta0 prior",default=1e-5)
     parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
     parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,33.333333e-5],nargs="+")
     parser.add_argument('--nu0',help="nu0 prior",default=3)
@@ -311,6 +320,7 @@ def main():
     parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
     parser.add_argument('--noSpatCorr',help='turn off spatial corrections for rechit times to put in PV frame (jets only)',default=False,action='store_true')
     parser.add_argument('--cleanSubclusters',help='clean subclusters from jet time (data, jets only)',default=False,action='store_true')
+    parser.add_argument('--cleanMist',help='extreme \'mist\' cleaning in rh time + energy (data, jets only)',default=False,action='store_true')
     args = parser.parse_args()
 
     generateSubmission(args)
