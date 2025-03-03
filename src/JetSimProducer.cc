@@ -31,9 +31,9 @@ JetSimProducer::JetSimProducer(TFile* file){
 }
 
 void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
-	double t, E, eta, phi;
+	double t, E, eta, phi, x, y, z;
 	rhs.clear();
-	double timecorr, drh, dpv, calibfactor;	
+	double time, timecorr, drh;	
 
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
@@ -46,18 +46,26 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 	//make weights - E/e_avg
 	vector<double> ws;
 	for(int r = 0; r < nRHs; r++){
-		//not sure if below is needed as long as there is a clear and consistent time frame definition
+		//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
 		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
+		time = _base->ECALRecHit_time->at(r);
+		x = _base->ECALRecHit_rhx->at(r);
+		y = _base->ECALRecHit_rhy->at(r);
+		z = _base->ECALRecHit_rhz->at(r);
+		drh = sqrt(x*x + y*y + z*z)/_c;
 		/////TOF from PV to rh location
 		///dpv = _base->ECALRecHit_pvTOF->at(r); 
 		///timecorr = drh - dpv;
 		
+		timecorr = drh;
+		time = time - timecorr;
+
+		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
-		if(fabs(_base->ECALRecHit_time->at(r)) > 20) continue;
+		if(fabs(time) > 20) continue;
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
-		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
+		        _base->ECALRecHit_rhz->at(r), time);
 		
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
@@ -70,9 +78,9 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 }
 
 void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
-	double t, E, eta, phi;
+	double t, E, eta, phi, x, y, z;
 	rhs.clear();
-	double timecorr, drh, dpv, calibfactor;	
+	double time, timecorr, drh;	
 
 	if(evt > _nEvts) return;
 
@@ -87,18 +95,26 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	//make weights - E/e_avg
 	vector<double> ws;
 	for(int r = 0; r < nRHs; r++){
+		//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
 		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
+		time = _base->ECALRecHit_time->at(r);
+		x = _base->ECALRecHit_rhx->at(r);
+		y = _base->ECALRecHit_rhy->at(r);
+		z = _base->ECALRecHit_rhz->at(r);
+		drh = sqrt(x*x + y*y + z*z)/_c;
 		/////TOF from PV to rh location
 		///dpv = _base->ECALRecHit_pvTOF->at(r); 
 		///timecorr = drh - dpv;
 		
+		timecorr = drh;
+		time = time - timecorr;
+		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
-		if(fabs(_base->ECALRecHit_time->at(r)) > 20) continue;
+		if(fabs(time) > 20) continue;
 	
 		JetPoint rh(_base->ECALRecHit_rhx->at(r), _base->ECALRecHit_rhy->at(r),
-		        _base->ECALRecHit_rhz->at(r), _base->ECALRecHit_time->at(r));
+		        _base->ECALRecHit_rhz->at(r), time);
 		
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
@@ -151,8 +167,8 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 }
 
 void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
-	double eta, phi, px, py, pz, pt;
 	recojets.clear();
+	double t, E, eta, phi, x, y, z, time, timecorr, drh, pt, px, py, pz;	
 
 	if(evt > _nEvts) return;
 
@@ -208,10 +224,24 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
                                 rhidx = rhit - rhids.begin();
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;
 				totE += _base->ECALRecHit_energy->at(rhidx);
-				if(fabs(_base->ECALRecHit_time->at(rhidx)) > 20) continue;
+				
+				//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
+				/////TOF from 0 to rh location
+				time = _base->ECALRecHit_time->at(r);
+				x = _base->ECALRecHit_rhx->at(r);
+				y = _base->ECALRecHit_rhy->at(r);
+				z = _base->ECALRecHit_rhz->at(r);
+				drh = sqrt(x*x + y*y + z*z)/_c;
+				/////TOF from PV to rh location
+				///dpv = _base->ECALRecHit_pvTOF->at(r); 
+				///timecorr = drh - dpv;
+				
+				timecorr = drh;
+				time = time - timecorr;
+				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
-				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx), _base->ECALRecHit_time->at(rhidx));
+				JetPoint rh(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx), _base->ECALRecHit_rhz->at(rhidx), time);
 				rh.SetEnergy(_base->ECALRecHit_energy->at(rhidx));
                                 rh.SetEta(_base->ECALRecHit_eta->at(rhidx));
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
