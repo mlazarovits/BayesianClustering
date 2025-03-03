@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
 	double spikeProb = 0.;
 	double energy_c = 0.26;
 	double mingenpartpt = 0;
+	double tres_stoch = 0.34641 * 1e-9;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -110,6 +111,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		mingenpartpt = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--tResStoch", 11) == 0){
+			i++;
+    	 		tres_stoch = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -126,6 +131,7 @@ int main(int argc, char *argv[]){
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
+   		cout << "   --tresStoch [t]               set time smearing stochastic parameter (default = 0.34641 * 1e-9 gives 400 ps resolution at 1 GeV)" << endl;
    		cout << "   --mingenpartpt [mingenpartpt] set minimum gen particle pt to be included in gen AK4 jet (default = 0 GeV)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
@@ -205,6 +211,7 @@ int main(int argc, char *argv[]){
 	det.SetEventRange(evti,evtj);
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
+	det.SetTimeResCts(0.2 * 1e-9, tres_stoch);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	//if(sig_delayed)
