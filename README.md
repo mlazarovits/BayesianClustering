@@ -47,6 +47,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 - the algorithm will remove subclusters from a mixture model if the number of effective points ($\alpha + N_k$) falls below a specified threshhold `algo->SetThreshold(t)`
 	- the mininum number of subclusters in a mixture model though is 1
 	- if the algorithm removes all subclusters, it will set the number of subclusters to 1
+- it is assumed that the prior parameters are given in the final scaled + shifted data frame of reference
 
 ### Formatting
 There are muliple visualization classes:
