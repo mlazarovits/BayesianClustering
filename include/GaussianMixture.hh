@@ -26,28 +26,20 @@ class GaussianMixture : public BasePDFMixture{
 
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
-		map<string, Matrix> GetParameters(int k); 
+		map<string, Matrix> GetLikelihoodParameters(int k); 
 
-		void SetJetPriorParameters(map<string, Matrix>& params){ }
-		void SetJetParameters(map<string, Matrix>& params){ }
-		void GetJetParameters(map<string, Matrix>& params){ }
+		//void SetJetPriorParameters(map<string, Matrix>& params){ }
+		//void SetJetParameters(map<string, Matrix>& params){ }
+		//void GetJetParameters(map<string, Matrix>& params){ }
  
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
 			m_nu0 = params["dof"].at(0,0);
 			m_W0 = params["scalemat"];
+			m_W0inv.invert(m_W0);
 			m_mean0 = params["mean"];
-		//	if(_verb > 0){
-		//		cout << "GaussianMixture::SetPriorParameters - setting prior parameters" << endl;
-		//		cout << "beta0 = " << m_beta0 << " nu0 = " << m_nu0 << endl;
-		//		cout << "W0 = " << endl;
-		//		m_W0.Print();
-		//		cout << "m0 = " << endl;
-		//		m_mean0.Print();
-		//	}
 			m_meanBeta0 = Matrix(m_dim, 1);
 			m_meanBeta0.mult(m_mean0, m_beta0);
-
 		}
 
 
@@ -66,6 +58,10 @@ class GaussianMixture : public BasePDFMixture{
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
 				priormean.minus(shift);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
+
+
+				//shift data statistics
+				_xbar[k].minus(shift);
 			}
 		}
 		
@@ -73,8 +69,10 @@ class GaussianMixture : public BasePDFMixture{
 		void ScaleParameters(Matrix sc){
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
-			Matrix scT;
+			Matrix scT, scInv, scTinv;
 			scT.transpose(sc);
+			scInv.invert(sc);
+			scTinv.transpose(scInv);
 			for(int k = 0; k < m_k; k++){
 				//scale posterior mean in likelihood 
 				mean = m_model[k]->GetParameter("mean");
@@ -95,9 +93,14 @@ class GaussianMixture : public BasePDFMixture{
 
 				//scale posterior W in prior distribution
 				W = m_model[k]->GetPrior()->GetParameter("scalemat");
-				W.mult(sc,W); //Avar(X)
-				W.mult(W,scT); //Avar(X)A^T
+				W.mult(scInv,W); //Avar(X)
+				W.mult(W,scTinv); //Avar(X)A^T
 				m_model[k]->GetPrior()->SetParameter("scalemat",W);
+		
+				//scale data parameters - Sbar
+				_Sbar[k].mult(sc,_Sbar[k]); //Avar(X)
+				_Sbar[k].mult(_Sbar[k],scT); //Avar(X)A^T
+
 			}
 
 		}
@@ -110,20 +113,21 @@ class GaussianMixture : public BasePDFMixture{
 		void CalculateRStatistics();
 
 		void UpdateVariationalParameters();
-		void UpdatePriorParameters();
+		void UpdatePosteriorParameters();
 		double EvalVariationalLogL();
 		double EvalEntropyTerms();
 		double EvalNLLTerms();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		map<string, Matrix> GetPriorParameters(int k) const; 
-		map<string, Matrix> GetOnlyPriorParameters(int k); 
+		map<string, Matrix> GetLHPosteriorParameters(int k) const; 
+		map<string, Matrix> GetOnlyPosteriorParameters(int k);
+		map<string, Matrix> GetDataStatistics(int k) const; 
 
 
 		
 
 
 	private:
-		//initial parameters
+		//initial parameters - prior is normal-wishart over mean and precision parameters of likelihood
 		double m_beta0;
 		double m_nu0;
 		Matrix m_W0;
@@ -131,6 +135,10 @@ class GaussianMixture : public BasePDFMixture{
 		Matrix m_mean0;
 		Matrix m_meanBeta0;
 
+		//data statistics
+		vector<Matrix> _xbar;
+		vector<Matrix> _Sbar;
+		
 		//expectation values - used in ELBO + calculated in an earlier step
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
 		//E_pi = E[ln(pi_k)] (eq. 10.66)

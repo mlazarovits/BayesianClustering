@@ -58,8 +58,7 @@ void BHCJetSkimmer::Skim(){
 		_prod->GetGenJets(_genjets, i);
 		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
 
-		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets ";
-		if(_strategy == gmmOnly) cout << endl;
+		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
@@ -67,10 +66,9 @@ void BHCJetSkimmer::Skim(){
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering..." << endl;	
+			cout << "SubClustering reco jet #" << j << "..." << endl;	
 			algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
-			if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -97,6 +95,7 @@ void BHCJetSkimmer::Skim(){
 		FillRecoJetHists();
 		//only does above
 		if(_strategy == gmmOnly){
+			cout << endl;
 			continue;
 		}
 		_prod->GetRecHits(rhs, i);
@@ -128,14 +127,14 @@ void BHCJetSkimmer::Skim(){
 		else _topDecayType = -1;
 	cout << "\ntopDecayType " << _topDecayType << endl;
 	//gen particles in event
-	for(int g = 0; g < _base->genpart_ngenpart; g++){
-		cout << "gen particle # " << g << " id " << _base->genpart_id->at(g) << " momidx " << _base->genpart_momIdx->at(g) << " E " << _base->genpart_energy->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;
-	}
-	//gen jets
-	cout << "n gen jets " << _base->Jet_genNJet << " " << _genjets.size() << endl;
-	for(int g = 0; g < _base->Jet_genNJet; g++){
-		cout << "gen jet # " << g << " E " << _base->Jet_genEnergy->at(g) << " eta " << _base->Jet_genEta->at(g) << " phi " << _base->Jet_genPhi->at(g) << endl;
-	}
+	//for(int g = 0; g < _base->genpart_ngenpart; g++){
+	//	cout << "gen particle # " << g << " id " << _base->genpart_id->at(g) << " momidx " << _base->genpart_momIdx->at(g) << " E " << _base->genpart_energy->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;
+	//}
+	////gen jets
+	//cout << "n gen jets " << _base->Jet_genNJet << " " << _genjets.size() << endl;
+	//for(int g = 0; g < _base->Jet_genNJet; g++){
+	//	cout << "gen jet # " << g << " E " << _base->Jet_genEnergy->at(g) << " eta " << _base->Jet_genEta->at(g) << " phi " << _base->Jet_genPhi->at(g) << endl;
+	//}
 	
 
 		FillResolutionHists();
@@ -147,7 +146,6 @@ void BHCJetSkimmer::Skim(){
 		cout << "Clustering..." << endl;	
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
-		if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
 		algo->SetSubclusterAlpha(_emAlpha);
@@ -179,6 +177,7 @@ void BHCJetSkimmer::Skim(){
 		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
+		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
 	graphs[1]->SetName("nrhs_comptime_subcl");

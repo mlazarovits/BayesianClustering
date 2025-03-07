@@ -475,7 +475,6 @@ int main(int argc, char *argv[]){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	if(timesmeared) algo->SetTimeResSmear(tres_c, tres_n*gev);
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
@@ -520,7 +519,7 @@ int main(int argc, char *argv[]){
 			vector<double> norms;
 			gmm->GetNorms(norms);
 			for(int k = 0; k < nk; k++){
-				params = gmm->GetPriorParameters(k);
+				params = gmm->GetLHPosteriorParameters(k);
 				cout << "cluster k " << k << " pi " << params["pi"].at(0,0) << " energy " << norms[k]/gev << " center" << endl;
 				params["mean"].Print();
 				pisum += params["pi"].at(0,0);
@@ -540,7 +539,7 @@ int main(int argc, char *argv[]){
 		cout << nk << " clusters in model." << endl;
 		map<string, Matrix> params;
 		for(int k = 0; k < nk; k++){
-			params = gmm->GetPriorParameters(k);
+			params = gmm->GetLHPosteriorParameters(k);
 			cout << "cluster " << k << " has time center " << params["mean"].at(2,0) << " with mixing coeff " << params["pi"].at(0,0) << endl;
 		}
 	}	

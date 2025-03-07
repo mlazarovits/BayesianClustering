@@ -18,7 +18,6 @@ class BHCJetSkimmer{
 			_oname = "";
 			_radius = 0;
 			_smear = true;
-			_timesmear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -50,7 +49,6 @@ class BHCJetSkimmer{
 			_gev = 1./10.;
 			_radius = 0;
 			_smear = true;
-			_timesmear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -167,6 +165,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(AK4JetConstJetRatio_GenP);
 			_hists1D.push_back(AK4JetConstJetRatio_GenPt);
 			_hists1D.push_back(AK4Jet_rhTimes);
+			_hists1D.push_back(geoEavg_sigmaTime_adjRhs);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -199,6 +198,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(AK4Jet_genJetPt_genPartJetPtRatio);
 			_hists2D.push_back(AK4Jet_genJetPt_nSubclusters);
 			_hists2D.push_back(AK4Jet_nGenPartsptge5_nSubclusters);
+			_hists2D.push_back(geoEavg_diffTime_adjRhs);
 	
 
 		}
@@ -490,6 +490,7 @@ class BHCJetSkimmer{
 					//fill subcluster hists
 					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
 					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
+					int k = 0;
 					for(auto subcl : _recojets[j].GetConstituents()){
 						_procCats[p].hists1D[0][78]->Fill(subcl.E());
 						_procCats[p].hists1D[0][79]->Fill(subcl.time());
@@ -498,16 +499,28 @@ class BHCJetSkimmer{
 						
 						Matrix subcl_cov = subcl.GetCovariance();
 						_procCats[p].hists1D[0][82]->Fill(sqrt(subcl_cov.at(0,0)));
+						if(p == 0){ 
+							cout << "cov for jet #" << j << " subcl #" << k << endl;
+							subcl_cov.Print();
+						}
+					//cout << "eta sig for jet # " << j << " subcl # " << k << ": " <<  sqrt(subcl_cov.at(0,0)) << endl;
 						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
 						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
 						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
 						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
 						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
+						k++;
 					}
 					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						_procCats[p].hists1D[0][89]->Fill(rhs[r].E());
 						_procCats[p].hists1D[0][96]->Fill(rhs[r].t());
+						
+					}
+					vector<pair<double,double>> geoEavg_diffT;
+					CalcRhTimeDiff(rhs,geoEavg_diffT);
+					for(int r = 0; r < geoEavg_diffT.size(); r++){
+					      _procCats[p].hists2D[0][30]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
 					}
 					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
 					_procCats[p].hists2D[0][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
@@ -515,7 +528,7 @@ class BHCJetSkimmer{
 					if(genMatchIdxs[j] == -1) continue;
 					genidx = genMatchIdxs[j];	
 					
-					cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
+					//cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
 					int genjetidx = _genjets[genMatchIdxs[j]].GetUserIdx();
 					_procCats[p].hists2D[0][21]->Fill(_base->Jet_genNConstituents->at(genjetidx),_recojets[j].GetNConstituents());
 					double pt, pz, jetpt, jetpz, ratio_p;
@@ -787,7 +800,7 @@ class BHCJetSkimmer{
 			double pi, ws;
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(k);
+				params = model->GetLHPosteriorParameters(k);
 				phi += params["pi"].at(0,0)*params["mean"].at(1,0);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				ws += params["pi"].at(0,0);
@@ -987,6 +1000,7 @@ class BHCJetSkimmer{
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime_subcl = new TGraph();
 		
+		vector<double> xbins = {0, 5, 10, 15, 20, 30, 50, 100}; //for time resolution
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0
@@ -1155,7 +1169,7 @@ class BHCJetSkimmer{
 		//81 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("AK4Jet_subClusterPhiCenter","AK4Jet_subClusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("AK4Jet_subClusterEtaSig","AK4Jet_subClusterEtaSig",100,0.01,0.04);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("AK4Jet_subClusterEtaSig","AK4Jet_subClusterEtaSig",50,0.,0.1);
 		//83 - phi sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiSig = new TH1D("AK4Jet_subClusterPhiSig","AK4Jet_subClusterPhiSig",100,0.01,0.04);
 		//84 - time sigma of GMM cluster from reco jets
@@ -1184,7 +1198,9 @@ class BHCJetSkimmer{
 		TH1D* AK4JetConstJetRatio_GenPt = new TH1D("AK4JetConstJetRatio_GenPt","AK4JetConstJetRatio_GenPt",50,0,1);
 		//96 - ak4 jet rh times
 		TH1D* AK4Jet_rhTimes = new TH1D("AK4Jet_rhTimes","AK4Jet_rhTimes",200,-25,25);
-
+		//97 - time resolution for adjacent xtals
+		TH1D* geoEavg_sigmaTime_adjRhs = new TH1D("geoEavg_sigmaTime_adjRhs","geoEavg_sigmaTime_adjRhs;geoEavg;sigmaTime;a.u.",xbins.size()-1,&xbins[0]);
+		
 
 
 		//2D plots
@@ -1248,9 +1264,10 @@ class BHCJetSkimmer{
 		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("AK4Jet_genJetPt_nSubclusters","AK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,10,0,10);	
 		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,25,0,25);
+		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
+		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],50,-15,15);
 
 		void SetSmear(bool t){ _smear = t; }
-		void SetTimeSmear(bool t){ _timesmear = t; }
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){
 			_gev = gev;
@@ -1315,7 +1332,7 @@ class BHCJetSkimmer{
 		//dr match to jet
 		double bestDr, dr;
 		int nGen = _genjets.size();
-		cout << "nGen jets " << nGen << endl;
+		//cout << "nGen jets " << nGen << endl;
 		int otherJet, thisgenidx, thisJet;
 		bestGenMatchIdxs.clear();
 		bestGenMatchIdxs = {};
@@ -1346,10 +1363,10 @@ class BHCJetSkimmer{
 		vector<int> best_idxs; //one per jet
 		//go back through jets can check to see if there are overlapping matches
 		for(int j = 0; j < jets.size(); j++){
-			for(int g = 0; g < nGen; g++){
-				cout << "jet " << j << " and gen jet " << g << " have dr " << drs[j][g] << endl;
-			}
-			cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at gen jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+			//for(int g = 0; g < nGen; g++){
+			//	cout << "jet " << j << " and gen jet " << g << " have dr " << drs[j][g] << endl;
+			//}
+			//cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at gen jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
 			double mindr = *min_element(drs[j].begin(), drs[j].end());
 			int genidx = find(drs[j].begin(), drs[j].end(), mindr) - drs[j].begin();
 			if(mindr == 999) genidx = -1; //no match found (ie no available gen jet for best match)
@@ -1364,8 +1381,8 @@ class BHCJetSkimmer{
 				if(otherJet == thisJet){
 					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), genidx) - best_idxs.begin();
 				}
-				for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
-				cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+				//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
+				//cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
 				//if other dr is less than current mindr
 				if(drs[otherJet][genidx] < mindr){
 					//set this dr to 999 (is invalid), find new min for this jet, reset genidx to this index
@@ -1374,7 +1391,7 @@ class BHCJetSkimmer{
 					if(mindr == 999) genidx = -1;
 					else genidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
 					best_idxs[thisJet] = genidx;
-					cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+					//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
 		
 				}
 				//if this dr is less than (or equal to) current mindr
@@ -1387,12 +1404,12 @@ class BHCJetSkimmer{
 					else genidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
 					thisJet = otherJet;
 					best_idxs[thisJet] = genidx;
-					cout << " reset gen match of other jet " << otherJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+					//cout << " reset gen match of other jet " << otherJet << " to gen jet " << genidx << " with dr " << mindr << endl;
 				}	
-				cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
+				//cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
 
 			}
-			cout << "jet " << j << " has best exclusive gen match with " << best_idxs[j] << "\n" << endl;
+			//cout << "jet " << j << " has best exclusive gen match with " << best_idxs[j] << "\n" << endl;
 		}
 		bestGenMatchIdxs = best_idxs;
 
@@ -1497,6 +1514,36 @@ class BHCJetSkimmer{
 	void SetThreshold(double t){ _thresh = t; }
 	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
 
+	void CalcRhTimeDiff(vector<JetPoint>& rhs, vector<pair<double, double>>& geoEavg_diffT){
+		geoEavg_diffT.clear();
+		double cell = acos(-1)/180;
+		double deta, dphi; //deta, dphi < cell ==> adjacent
+		double maxEper = 0.3; //energies have to be within maxEper*100 % of max E rh
+		double maxE, diffE;
+		double geoEavg, diffT;
+		double minE = 3;
+		for(int r = 0; r < rhs.size(); r++){
+			if(rhs[r].E() < minE) continue;	
+			for(int rr = r+1; rr < rhs.size(); rr++){
+				if(rhs[rr].E() < minE) continue;	
+				deta = fabs(rhs[r].eta() - rhs[rr].eta());
+				dphi = fabs(rhs[r].phi() - rhs[rr].phi());
+				maxE = rhs[r].E() > rhs[rr].E() ? rhs[r].E() : rhs[rr].E();
+				diffE = fabs(rhs[r].E() - rhs[rr].E());	
+
+				geoEavg = sqrt(rhs[r].E() * rhs[rr].E());
+				diffT = rhs[r].E() > rhs[rr].E() ? rhs[r].t() - rhs[rr].t() : rhs[rr].t() - rhs[r].t();
+				
+				if(deta <= cell && dphi <= cell && diffE/maxE < maxEper){
+					//cout << "deta " << deta << " dphi " << dphi << " diffE/maxE " << diffE/maxE << " rhs[r].eta " << rhs[r].eta() << " rhs[rr].eta " << rhs[rr].eta() << " rhs[r].phi " << rhs[r].phi() << " rhs[rr].phi " << rhs[rr].phi() << " rhs[r].E " << rhs[r].E() << " rhs[rr].E " << rhs[rr].E() << " geoEavg " << geoEavg << " diffT " << diffT << endl;
+					geoEavg_diffT.push_back(make_pair(geoEavg,diffT));
+				}
+
+			}
+
+		}
+
+	}
 
 	private:
 		string _oname;
@@ -1509,7 +1556,7 @@ class BHCJetSkimmer{
 		vector<Jet> _predJets;
 		vector<Jet> _genjets;
 		vector<Jet> _recojets;
-		bool _smear, _timesmear;
+		bool _smear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder
 			NlnN = 0,

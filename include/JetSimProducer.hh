@@ -83,5 +83,6 @@ class JetSimProducer{
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts, _minNrhs;
 		double _ptmin, _minrhE, _Emin;
+		double _c = 29.9792458; // speed of light in cm/ns
 };
 #endif

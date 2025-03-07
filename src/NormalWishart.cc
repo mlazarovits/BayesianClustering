@@ -9,7 +9,7 @@ NormalWishart::NormalWishart(){
 }
 
 NormalWishart::NormalWishart(int d) : BasePDF(d){
-	m_params["mean"] = Matrix(d,d); m_params["scalemat"] = Matrix(d,1);
+	m_params["mean"] = Matrix(d,1); m_params["scalemat"] = Matrix(d,d);
 	m_dim = d; m_params["scale"] = Matrix(1,1); m_params["dof"] = Matrix(1,1); 
 	m_prior = nullptr;
 

@@ -274,8 +274,9 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_pi = 0;
 	double x, y, z, t, eta, phi, theta, w;
 	map<string, Matrix> params;
-	//set mean
-	model->GetJetParameters(params);
+	//set params from model - need to define how to do this from data pts/subcluster posterior values
+	//use first subcluster for now
+	model->GetLikelihoodParameters(0);
 	_mu = params["mean"];
 	_cov = params["cov"];	
 	_eta = _mu.at(0,0);
@@ -323,7 +324,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	double Et = 0;
 	double mt = 0;	
 	for(int k = 0; k < nsubcl; k++){
-		params = model->GetPriorParameters(k);
+		params = model->GetLikelihoodParameters(k);
 		Ek = norms[k]/gev;
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 		//subcluster momentom 3vector is r_nk weighted average over rechits for cluster k

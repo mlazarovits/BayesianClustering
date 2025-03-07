@@ -1916,7 +1916,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			double dphi = -999;
 			//double bestde_dr;
 			int trackidx;
-			auto params = model->GetPriorParameters(subcl);
+			auto params = model->GetLHPosteriorParameters(subcl);
 			double ec = params["mean"].at(0,0);
 			double pc = params["mean"].at(1,0);
 			//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
@@ -1997,7 +1997,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				E_k = norms[k]/_gev; 
 				
 				
-				params = model->GetPriorParameters(k);
+				params = model->GetLHPosteriorParameters(k);
 				ec = params["mean"].at(0,0);
 				pc = params["mean"].at(1,0);
 				if(isnan(pc)) cout << "pc is nan" << endl;
@@ -3572,7 +3572,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		vector<double> norms;
 		gmm->GetNorms(norms);
 		double E = norms[ncl]/_gev; 
-		auto params = gmm->GetPriorParameters(ncl);
+		auto params = gmm->GetLHPosteriorParameters(ncl);
 		ec = params["mean"].at(0,0);
 		pc = params["mean"].at(1,0);
 		tc = params["mean"].at(2,0);

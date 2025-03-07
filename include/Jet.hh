@@ -249,9 +249,12 @@ class Jet{
 			cout << "px: " << _px << " py: " << _py << " pz: " << _pz << " E: " << _E << " mass: " << _mass << endl;
 			//for(int i = 0; i < _nRHs; i++) _rhs[i].Print();
 		}
-		//constituents can be subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
+		
+		//constituents are subclusters (from GMM) defined by eta, phi, time center, MM coefficient, and covariance matrix
 		//also makes sure constituent and overall jet have same vertex
 		//if jet is made of subclusters, set the jet's four vector to be weighted avg of subcluster four-vectors
+		//this does not affect the rhs within a jet, when a jet is created, the list of rhs or GMM sets the rhs
+		//these points set the jet's four-vector + overall _mu + _cov
 		void AddConstituent(Jet& jt){
 			//check to make sure jet isn't in constituents list
 			auto it = find(_constituents.begin(), _constituents.end(), jt);
