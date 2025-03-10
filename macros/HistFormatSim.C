@@ -1545,17 +1545,17 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "BHC", oname,  "nJets");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
 	
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_nSubclusters");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEnergy");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusteretaPhiCov");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimeEtaCov");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimePhiCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_nSubclusters");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEnergy");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusteretaPhiCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimeEtaCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimePhiCov");
 
 	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
 	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
