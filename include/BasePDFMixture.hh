@@ -15,6 +15,9 @@ class BasePDFMixture : public BasePDF{
 	public:
 		BasePDFMixture(){
 			m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; m_post.SetDims(m_n, m_k);
+			_cell = 0;
+			_tresCte = 0;
+			_tresStoch = 0;
 		}
 		BasePDFMixture(int k){ 
 			m_k = k; 
@@ -30,6 +33,10 @@ class BasePDFMixture : public BasePDF{
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
 			m_alpha0 = 0.1; _verb = 0; _smear = false;
 			m_post.SetDims(m_n, m_k);
+			_cell = acos(-1)/180; //default is CMS ECAL cell size
+			_tresCte = 0.2 * 1e-9;
+			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			//above tres params are for gev = 1
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -42,6 +49,13 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x);
 
+		double _cell, _tresCte, _tresStoch;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch){
+			_cell = spatial;
+			_tresCte = tresCte;
+			_tresStoch = tresStoch;
+		}
+		
 		void SetData(PointCollection* data){
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
@@ -53,22 +67,14 @@ class BasePDFMixture : public BasePDF{
 				m_k = data->GetNPoints();
 			}
 			//set up lambda_n
-			//TODO: set tres params externally
-			double cell = acos(-1)/180; //spatial resolution
-			double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
-			double tresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
-			tresRate = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
-			tresRate = tresRate * 0.2; //add gev^2 to cancel out from weight
 			double tresSq;
 			for(int n = 0; n < m_n; n++){
 				Matrix lamStar(m_dim, m_dim);
-				lamStar.SetEntry(1/(cell*cell),0,0);
-				lamStar.SetEntry(1/(cell*cell),1,1);
 				//need to make sure tResRate = tResRate_true*gev for units to match
-				tresSq = tresCte*tresCte + tresRate*tresRate/(m_data->at(n).w()*m_data->at(n).w());
-				if(_verb > 3) cout << "point " << n << " has weight " << m_data->at(n).w() << " = " << m_data->at(n).w()/0.2 << " GeV and sigma_t " << sqrt(tresSq) * 1e9 << " ns " << endl; m_data->at(n).Print();
-				lamStar.SetEntry(1/(cell*cell),0,0);
-				lamStar.SetEntry(1/(cell*cell),1,1);
+				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()*m_data->at(n).w());
+				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " = " << m_data->at(n).w()/0.2 << " GeV and sigma_t " << sqrt(tresSq) * 1e9 << " ns " << endl; m_data->at(n).Print();}
+				lamStar.SetEntry(1/(_cell*_cell),0,0);
+				lamStar.SetEntry(1/(_cell*_cell),1,1);
 				lamStar.SetEntry(1/(tresSq),2,2);
 				_lamStar.push_back(lamStar); //r = 1 for all k on init
 				

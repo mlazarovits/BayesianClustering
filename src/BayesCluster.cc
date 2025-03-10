@@ -18,6 +18,9 @@
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
 const vector<node*>& BayesCluster::_delauney_cluster(){
+	vector<double> ws;
+	_jets[0].GetWeights(ws);
+	double gev = ws[0]/_jets[0].E();
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
@@ -37,6 +40,11 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	_prior_params["dof"].Print();
 	cout << "W0" << endl;
 	_prior_params["scalemat"].Print();
+
+	double cell = acos(-1)/180; //default is CMS ECAL cell size
+	double tresCte = 0.2 * 1e-9;
+	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	mt->SetMeasErrParams(cell, tresCte, tresStoch*gev); 
  
 	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
@@ -397,6 +405,9 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 
 
 GaussianMixture* BayesCluster::_subcluster(string oname){
+	vector<double> ws;
+	_jets[0].GetWeights(ws);
+	double gev = ws[0]/_jets[0].E();
 	//create GMM model
 	PointCollection* points = new PointCollection();
 	for(auto point : _points){
@@ -410,6 +421,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
+	double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
+	tresStoch *= gev;
+	//needs to be before SetData bc thats when the measurement errors are set
+	gmm->SetMeasErrParams(acos(-1)/180, tresCte, tresStoch); 
 
 	//cout << "old points w/o wraparound" << endl;
 	//points->at(0).Print();
@@ -478,9 +495,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	VarClusterViz3D cv3D(algo);
 	cv3D.SetScale(RscaleInv);
 	cv3D.SetShift(center);
-	vector<double> ws;
-	_jets[0].GetWeights(ws);
-	double gev = ws[0]/_jets[0].E();
 	if(isnan(gev) || isinf(gev)){ cout << "Energy-weighting scale factor " << gev << " is not valid." << endl; return gmm; }
 	if(viz){
 		cv3D.SetVerbosity(_verb);

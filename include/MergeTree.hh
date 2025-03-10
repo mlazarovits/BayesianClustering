@@ -9,9 +9,13 @@
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
-		_alpha = 0; _thresh = 0.; _verb = 0;
-		_constraint_a = 0; _constraint_b = acos(-1)/2.; 
-		_constraint = false;
+			_alpha = 0; _thresh = 0.; _verb = 0;
+			_constraint_a = 0; _constraint_b = acos(-1)/2.; 
+			_constraint = false;
+			_cell = acos(-1)/180; //default is CMS ECAL cell size
+			_tresCte = 0.2 * 1e-9;
+			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			//above tres params are for gev = 1
 		}
 
 		MergeTree(double alpha){
@@ -19,6 +23,10 @@ class MergeTree : BaseTree{
 			_thresh = 1.; _verb = 0;
 			_constraint_a = 0; _constraint_b = acos(-1)/2.;
 			_constraint = false;
+			_cell = acos(-1)/180; //default is CMS ECAL cell size
+			_tresCte = 0.2 * 1e-9;
+			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			//above tres params are for gev = 1
 		}
 
 		//copy constructor
@@ -32,6 +40,10 @@ class MergeTree : BaseTree{
 			_verb = tree._verb;
 			_constraint_a = tree._constraint_a; _constraint_b = tree._constraint_b;
 			_constraint = tree._constraint;
+			_cell = tree._cell; //default is CMS ECAL cell size
+			_tresCte = tree._tresCte;
+			_tresStoch = tree._tresStoch; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			//above tres params are for gev = 1
 		}
 
 		virtual ~MergeTree(){ 
@@ -167,6 +179,13 @@ class MergeTree : BaseTree{
 		//by Dnn2piCylinder
 		void CreateMirrorNode(node* x);
 
+		double _cell, _tresCte, _tresStoch;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch){
+			_cell = spatial;
+			_tresCte = tresCte;
+			_tresStoch = tresStoch;
+		}
+
 	protected:
 
 		//runs varEM to get Evidence (ELBO) for given GMM
@@ -206,6 +225,8 @@ class MergeTree : BaseTree{
 			if(!_data_smear.empty()){
 				x->model->SetDataSmear(_data_smear);
 			}
+
+			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch); 
 			
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 			x->model->ShiftData(center);
