@@ -1171,15 +1171,15 @@ class BHCJetSkimmer{
 		//82 - eta sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaSig = new TH1D("AK4Jet_subClusterEtaSig","AK4Jet_subClusterEtaSig",50,0.,0.1);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("AK4Jet_subClusterPhiSig","AK4Jet_subClusterPhiSig",100,0.01,0.04);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("AK4Jet_subClusterPhiSig","AK4Jet_subClusterPhiSig",50,0.,0.1);
 		//84 - time sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeSig = new TH1D("AK4Jet_subClusterTimeSig","AK4Jet_subClusterTimeSig",100,0.,2.);
+		TH1D* recoJet_subClusterTimeSig = new TH1D("AK4Jet_subClusterTimeSig","AK4Jet_subClusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",100,-0.002,0.002);
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",50,-0.002,0.002);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",100,-0.02,0.02);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",50,-0.02,0.02);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",100,-0.02,0.02);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",50,-0.02,0.02);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("AK4Jet_nRhs","AK4Jet_nRhs",200,0,200);
 		//89 - n rhs in reco jets
@@ -1247,7 +1247,7 @@ class BHCJetSkimmer{
 		//20 - # rhs vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",25,0,25,100,0,100);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,25,0,25);
+		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,15,0,15);
 		//22 - gen particle p vs gen jet p for AK4 jets
 		TH2D* AK4Jet_genP_genJetP = new TH2D("AK4Jet_genP_genJetP","AK4Jet_genP_genJetP;genP;genJetP;a.u.",50,0,200,50,0,500);
 		//23 - gen particle pt vs gen jet pt for AK4 jets
@@ -1263,7 +1263,7 @@ class BHCJetSkimmer{
 		//28 - gen jet pt vs # subclusters
 		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("AK4Jet_genJetPt_nSubclusters","AK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,10,0,10);	
 		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,25,0,25);
+		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,15,0,15);
 		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
 		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],50,-15,15);
 
