@@ -88,6 +88,17 @@ void BHCJetSkimmer::Skim(){
 			for(int k = 0; k < gmm->GetNClusters(); k++){
 				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
 				_recojets[j].AddConstituent(subcl);
+				auto params = gmm->GetDataStatistics(k);
+				Matrix mean = params["mean"];
+				Matrix cov = params["cov"];
+				for(int p = 0; p < _procCats.size(); p++){
+					_procCats[p].hists1D[0][98]->Fill(mean.at(0,0));
+					_procCats[p].hists1D[0][99]->Fill(mean.at(1,0));
+					_procCats[p].hists1D[0][100]->Fill(mean.at(2,0));
+					_procCats[p].hists1D[0][101]->Fill(sqrt(cov.at(0,0)));
+					_procCats[p].hists1D[0][102]->Fill(sqrt(cov.at(1,1)));
+					_procCats[p].hists1D[0][103]->Fill(sqrt(cov.at(2,2)));
+				}
 			}
 		
 			rhs.clear();

@@ -166,6 +166,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(AK4JetConstJetRatio_GenPt);
 			_hists1D.push_back(AK4Jet_rhTimes);
 			_hists1D.push_back(geoEavg_sigmaTime_adjRhs);
+			_hists1D.push_back(AK4Jet_subClusterEtaCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterPhiCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterTimeCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterEtaSig_rStat);
+			_hists1D.push_back(AK4Jet_subClusterPhiSig_rStat);
+			_hists1D.push_back(AK4Jet_subClusterTimeSig_rStat);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -503,7 +509,7 @@ class BHCJetSkimmer{
 							cout << "cov for jet #" << j << " subcl #" << k << endl;
 							subcl_cov.Print();
 						}
-					//cout << "eta sig for jet # " << j << " subcl # " << k << ": " <<  sqrt(subcl_cov.at(0,0)) << endl;
+					cout << "time sig for jet # " << j << " subcl # " << k << ": " <<  sqrt(subcl_cov.at(2,2)) << endl;
 						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
 						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
 						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
@@ -1010,7 +1016,7 @@ class BHCJetSkimmer{
 		//2
 		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",20,0,500);
 		//3
-		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,0,15);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-20,20);
 		//4
 		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subClusterEtaCenter","BHCJet_subClusterEtaCenter",25,-1.8,1.8);
 		//5
@@ -1163,7 +1169,7 @@ class BHCJetSkimmer{
 		//78 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("AK4Jet_subClusterEnergy","AK4Jet_subClusterEnergy",50,0,250);
 		//79 - time center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeCenter = new TH1D("AK4Jet_subClusterTimeCenter","AK4Jet_subClusterTimeCenter",25,0,20);
+		TH1D* recoJet_subClusterTimeCenter = new TH1D("AK4Jet_subClusterTimeCenter","AK4Jet_subClusterTimeCenter",25,-20,20);
 		//80 - eta center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaCenter = new TH1D("AK4Jet_subClusterEtaCenter","AK4Jet_subClusterEtaCenter",25,-1.8,1.8);
 		//81 - phi center of GMM cluster from reco jets
@@ -1200,6 +1206,18 @@ class BHCJetSkimmer{
 		TH1D* AK4Jet_rhTimes = new TH1D("AK4Jet_rhTimes","AK4Jet_rhTimes",200,-25,25);
 		//97 - time resolution for adjacent xtals
 		TH1D* geoEavg_sigmaTime_adjRhs = new TH1D("geoEavg_sigmaTime_adjRhs","geoEavg_sigmaTime_adjRhs;geoEavg;sigmaTime;a.u.",xbins.size()-1,&xbins[0]);
+		//98 - eta center for jet - data statistic
+		TH1D* AK4Jet_subClusterEtaCenter_rStat = new TH1D("AK4Jet_subClusterEtaCenter_rStat","AK4Jet_subClusterEtaCenter_rStat",25,-1.8,1.8);
+		//99 - phi center for jet - data statistic
+		TH1D* AK4Jet_subClusterPhiCenter_rStat = new TH1D("AK4Jet_subClusterPhiCenter_rStat","AK4Jet_subClusterPhiCenter_rStat",25,-0.1, 6.3);
+		//100 - time center for jet - data statistic
+		TH1D* AK4Jet_subClusterTimeCenter_rStat = new TH1D("AK4Jet_subClusterTimeCenter_rStat","AK4Jet_subClusterTimeCenter_rStat",25,-20.,20.);
+		//101 - eta sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterEtaSig_rStat = new TH1D("AK4Jet_subClusterEtaSig_rStat","AK4Jet_subClusterEtaSig_rStat",25,0.,0.1);
+		//102 - phi sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterPhiSig_rStat = new TH1D("AK4Jet_subClusterPhiSig_rStat","AK4Jet_subClusterPhiSig_rStat",25,0., 0.1);
+		//103 - time sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterTimeSig_rStat = new TH1D("AK4Jet_subClusterTimeSig_rStat","AK4Jet_subClusterTimeSig_rStat",25,0.,5.);
 		
 
 
