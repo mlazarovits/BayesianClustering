@@ -33,7 +33,8 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 
 		sig_outhist->GetXaxis()->SetTitle(inhist->GetXaxis()->GetTitle());
 		string ytitle = inhist->GetYaxis()->GetTitle();
-		ytitle = "#frac{#sigma "+ytitle+"}{"+inhist->GetXaxis()->GetTitle()+"}";
+		//ytitle = "#frac{#sigma "+ytitle+"}{"+inhist->GetXaxis()->GetTitle()+"}";
+		ytitle = "#sigma "+ytitle;
 		sig_outhist->GetYaxis()->SetTitle(ytitle.c_str());
 	
 		if(mean_outhist){	
@@ -62,8 +63,8 @@ void Profile2DHist(TH2D* inhist, TH1D* sig_outhist, TH1D* mean_outhist, vector<T
 			double fit_mean = fit->GetParameter(1);
 			double fit_mean_err = fit->GetParError(1);
 			//set new contents
-			//sig_outhist->SetBinContent(i, fit_stddev);
-			sig_outhist->SetBinContent(i, fit_stddev / (inhist->GetXaxis()->GetBinLowEdge(i)+inhist->GetXaxis()->GetBinWidth(i)));
+			sig_outhist->SetBinContent(i, fit_stddev);
+			//sig_outhist->SetBinContent(i, fit_stddev / (inhist->GetXaxis()->GetBinLowEdge(i)+inhist->GetXaxis()->GetBinWidth(i)));
 			sig_outhist->SetBinError(i, fit_stddev_err);
 			//cout << "bin #" << i << " sig " << fit_stddev << " nentries in profile " << phist->GetEntries() << endl;
 			if(mean_outhist){
@@ -146,7 +147,7 @@ void Profile2DHists(TFile* f){
 			TH2D* hist = dynamic_cast<TH2D*>(key->ReadObj());
 			if(!hist) continue;
 			histname = hist->GetName();
-			if(histname.find("diffDelta") == string::npos)
+			if(histname.find("diffDelta") == string::npos && histname.find("diffTime") == string::npos)
 				continue;
 			vector<TH1D*> profs;
 			//write only total 1D profile from total 2D (doesn't end in process) to newname
