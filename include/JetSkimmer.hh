@@ -868,7 +868,7 @@ class JetSkimmer : public BaseSkimmer{
 
 			for(int k = 0; k < n_k; k++){
 				Ek = norms[k]/_gev;
-				params = gmm->GetPriorParameters(k);
+				params = gmm->GetLHPosteriorParameters(k);
 
 				subclusterEfrac->Fill(Ek/jet.E());
 				etaSig->Fill(sqrt(params["cov"].at(0,0)));
@@ -895,7 +895,7 @@ class JetSkimmer : public BaseSkimmer{
 					t_spike->Fill(tc1);
 
 				for(int kk = k+1; kk < n_k; kk++){
-					params = gmm->GetPriorParameters(kk);
+					params = gmm->GetLHPosteriorParameters(kk);
 					ec2 = params["mean"].at(0,0);
 					pc2 = params["mean"].at(1,0);
 					tc2 = params["mean"].at(2,0);
@@ -2033,7 +2033,7 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> norms;
 			gmm->GetNorms(norms);
 			for(int k = 0; k < gmm->GetNClusters(); k++){
-				auto params = gmm->GetPriorParameters(k);
+				auto params = gmm->GetLHPosteriorParameters(k);
 				double E_k = norms[k]/_gev;
 				Matrix mu = params["mean"];
 				Matrix cov = params["cov"];
