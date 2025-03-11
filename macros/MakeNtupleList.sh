@@ -1,25 +1,33 @@
 if [ -z "$1" ]
 then
-        echo "Please pass [process] [selection] [HTbin] to make corresponding file list"
+        echo "Please pass [process] [selection] [year] [HTbin] to make corresponding file list"
         return
 fi
 PD=$1
 SEL=""
 NAME=""
+YR=""
+if [ -z "$3" ]
+then
+	echo "default year" 
+	YR=R17
+else
+	YR=$3
+fi
 if [ ! -z "$2" ]
 then
-	SEL=R17_$2_v24
+	SEL=${YR}_$2_v24
 fi
 if [ $PD = "GJETS" ]
 then
-	NAME=GJets_HT-$3_TuneCP5_13TeV-madgraphMLM-pythia8
+	NAME=GJets_HT-$4_TuneCP5_13TeV-madgraphMLM-pythia8
 elif [ $PD = "QCD" ]
 then
-	if [ $3 = "50to100" ]
+	if [ $4 = "50to100" ]
 	then
-		NAME=${PD}_HT$3_TuneCP5_13TeV-madgraphMLM-pythia8
+		NAME=${PD}_HT$4_TuneCP5_13TeV-madgraphMLM-pythia8
 	else
-		NAME=${PD}_HT$3_TuneCP5_13TeV-madgraph-pythia8
+		NAME=${PD}_HT$4_TuneCP5_13TeV-madgraph-pythia8
 	fi
 elif [ $PD = "MET" ]
 then
@@ -35,7 +43,7 @@ then
 	NAME=CRAB_UserFiles
 	SEL=v23
 else
-	NAME=${PD}_HT-$3_TuneCP5_13TeV-madgraph-pythia8
+	NAME=${PD}_HT-$4_TuneCP5_13TeV-madgraph-pythia8
 fi
 PREFIX=root://cmseos.fnal.gov/
 
