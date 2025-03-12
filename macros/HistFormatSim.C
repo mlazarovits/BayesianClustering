@@ -1026,7 +1026,7 @@ void ProcStackHists(string file, vector<string>& procs, string method, string on
 
 	double ymin, ymax;
 	string ylab, xlab;
-	cout << "method " << method << endl;
+	//cout << "method " << method << endl;
 	while((key = (TKey*)iter())){
 		name = key->GetName();
 		if(key->GetClassName() == tdir){
@@ -1043,7 +1043,7 @@ void ProcStackHists(string file, vector<string>& procs, string method, string on
 			TKey* kkey;
 			string name = dir->GetName();
 			vector<TH1D*> hists;
-			cout << "\ndir name: " << name << endl;
+			//cout << "\ndir name: " << name << endl;
 			if(name.find(method) == string::npos) continue;
 			//we're in the directory with hists of one method split by procs
 			GetHistsProcs(dir, procs, hists);
@@ -1220,7 +1220,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 
 	vector<TH1D*> histstot;
 	for(int m = 0; m < methods.size(); m++){
-		cout << "method " << methods[m] << endl;	
+		//cout << "method " << methods[m] << endl;	
 		TList* list = f->GetListOfKeys();
 		TIter iter(list);
 		TKey* key;
@@ -1345,11 +1345,11 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 
 			//method in this subdir needs to match what's given
 			if(name.find(method) == string::npos) continue;
-			cout << "method " << method << endl;
+			//cout << "method " << method << endl;
 			//we're in the directory with hists of one method split by procs
 			GetHists(dir, proc, hists);
 			if(hists.size() > 0){
-				cout << "hists got" << endl;
+				//cout << "hists got" << endl;
 				for(auto h : hists) cout << h->GetName() << endl;
 				hist = hists[0];
 				name = hist->GetName();
@@ -1545,18 +1545,19 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "BHC", oname,  "nJets");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
 	
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_nSubclusters");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEnergy");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeCenter");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterEtaSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterPhiSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusterTimeSig");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClusteretaPhiCov");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimeEtaCov");
-	ProcStackHists(file, procs, "Reco", oname,  "Jet_subClustertimePhiCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_nSubclusters");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEnergy");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeCenter");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeSig");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusteretaPhiCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimeEtaCov");
+	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimePhiCov");
 
+	Hist2D(file, "ttbar", "AK4", oname, "nGenPartsptge5_nSubclusters");
 	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
 	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
 		

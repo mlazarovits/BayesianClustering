@@ -13,7 +13,12 @@ using std::string;
 
 class BasePDFMixture : public BasePDF{
 	public:
-		BasePDFMixture(){ m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; m_post.SetDims(m_n, m_k);}
+		BasePDFMixture(){
+			m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; m_post.SetDims(m_n, m_k);
+			_cell = 0;
+			_tresCte = 0;
+			_tresStoch = 0;
+		}
 		BasePDFMixture(int k){ 
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
@@ -21,12 +26,17 @@ class BasePDFMixture : public BasePDF{
 				m_norms.push_back(1.);
 				m_alphas.push_back(0.);
 				m_model.push_back(nullptr);
+			
 			}
 			m_n = 0;
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
 			m_alpha0 = 0.1; _verb = 0; _smear = false;
 			m_post.SetDims(m_n, m_k);
+			_cell = acos(-1)/180; //default is CMS ECAL cell size
+			_tresCte = 0.2 * 1e-9;
+			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			//above tres params are for gev = 1
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -39,6 +49,13 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x);
 
+		double _cell, _tresCte, _tresStoch;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch){
+			_cell = spatial;
+			_tresCte = tresCte;
+			_tresStoch = tresStoch;
+		}
+		
 		void SetData(PointCollection* data){
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
@@ -49,38 +66,42 @@ class BasePDFMixture : public BasePDF{
 				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
 				m_k = data->GetNPoints();
 			}
+			//set up lambda_n
+			double tresSq;
+			for(int n = 0; n < m_n; n++){
+				Matrix lamStar(m_dim, m_dim);
+				//need to make sure tResRate = tResRate_true*gev for units to match
+				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()*m_data->at(n).w());
+				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " = " << m_data->at(n).w()/0.2 << " GeV and sigma_t " << sqrt(tresSq) * 1e9 << " ns " << endl; m_data->at(n).Print();}
+				lamStar.SetEntry(1/(_cell*_cell),0,0);
+				lamStar.SetEntry(1/(_cell*_cell),1,1);
+				lamStar.SetEntry(1/(tresSq),2,2);
+				_lamStar.push_back(lamStar); //r = 1 for all k on init
+				
+			}
 		}
 		PointCollection* GetData(){ return m_data; }
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
 		void SetDataSmear(const Matrix& cov){ _data_cov = cov; _smear = true; }
-		//set a weight-dependent resolution smearing for dimension d
-		//ie energy dependent time resolution smearing
-		//res = c^2 + n^2/w^2
-		void SetWeightBasedResSmear(double c, double n, int d){
-			if(d > m_dim) return;
-			_data_cov = Matrix(m_data->Dim(), m_data->Dim());
-			_smear = true;
-			_res_smear_c.push_back(c); _res_smear_n.push_back(n); _res_smear_d.push_back(d);
-		} 
 	
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
 		virtual void UpdateParameters() = 0;
 		//returns mu, cov, and mixing coeffs for cluster k
-		virtual map<string, Matrix> GetParameters(int k) = 0; 
+		virtual map<string, Matrix> GetLikelihoodParameters(int k) = 0; 
 		
 		//for variational EM algorithm
 		virtual void SetPriorParameters(map<string, Matrix> params) = 0;
-		virtual void SetJetPriorParameters(map<string, Matrix>& params) = 0;
-		virtual void SetJetParameters(map<string, Matrix>& params) = 0;
-		virtual void GetJetParameters(map<string, Matrix>& params) = 0;
+		//virtual void SetJetPriorParameters(map<string, Matrix>& params) = 0;
+		//virtual void SetJetParameters(map<string, Matrix>& params) = 0;
+		//virtual void GetJetParameters(map<string, Matrix>& params) = 0;
 		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		virtual map<string, Matrix> GetPriorParameters(int k) const = 0; 
-		virtual map<string, Matrix> GetOnlyPriorParameters(int k) = 0; 
+		virtual map<string, Matrix> GetLHPosteriorParameters(int k) const = 0; 
+		virtual map<string, Matrix> GetDataStatistics(int k) const = 0; 
 		double GetPi(int k){ return (m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()); }
 		double GetCoeff(int k){ return m_coeffs[k]; }
 
@@ -135,7 +156,8 @@ class BasePDFMixture : public BasePDF{
 	//	cout << "weights" << endl; for(int n = 0; n < m_n; n++) cout << m_data->at(n).w() << endl;
 			for(int k = 0; k < m_k; k++){
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
-				if(m_norms[k] + m_alpha0 < thresh){
+				//if(m_norms[k] + m_alpha0 < thresh){
+				if(m_norms[k] < thresh){
 					if(_verb > 1) 
 						cout << "Removing cluster " << k << " with alpha " << m_alphas[k] << " and norm " << m_norms[k] << endl;
 					//remove model + update number of clusters
@@ -243,11 +265,22 @@ class BasePDFMixture : public BasePDF{
 			m_data = new PointCollection(x.MatToPoints());
 			m_data->SetWeights(ws);
 
-			//also scale smear
-			_data_cov.mult(sc,_data_cov);
-			Matrix scT;
-			scT.transpose(sc);
-			_data_cov.mult(_data_cov,scT);
+			//also scale smear - if datacov is set
+			if(_smear){
+				_data_cov.mult(sc,_data_cov);
+				Matrix scT;
+				scT.transpose(sc);
+				_data_cov.mult(_data_cov,scT);
+			}
+			else{ //else scale meas err lamba*_n
+				for(int n = 0; n < m_n; n++){
+					_lamStar[n].mult(sc,_lamStar[n]);
+					Matrix scT;
+					scT.transpose(sc);
+					_lamStar[n].mult(_lamStar[n],scT);
+				}
+
+			}
 		}
 
 		//shift learned parameters
@@ -271,6 +304,7 @@ class BasePDFMixture : public BasePDF{
 		//normalization on posterior
 		vector<double> m_norms;
 		Matrix m_post;
+
 	
 		int m_dim;
 
@@ -278,11 +312,7 @@ class BasePDFMixture : public BasePDF{
 		//data smear
 		Matrix _data_cov;
 		bool _smear;
-
-		//resolution smearing - one entry per dim to smear
-		vector<double> _res_smear_c, _res_smear_n;
-		//which dimension(s) to smear
-		vector<int> _res_smear_d;
+		vector<Matrix> _lamStar; //lamStar_n - measurement error
 
 };
 #endif

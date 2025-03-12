@@ -54,7 +54,7 @@ void VarClusterViz2D::AddPlot(string plotName){
 	TCanvas* cv = new TCanvas((cvName).c_str(),cvName.c_str());
 	double pi_norm = 0;
 	vector<map<string, Matrix>> clusters;
-	for(int i = 0; i < m_k; i++) clusters.push_back(m_model->GetParameters(i));
+	for(int i = 0; i < m_k; i++) clusters.push_back(m_model->GetLikelihoodParameters(i));
 
 	vector<double> x, y;	
 	for(int i = 0; i < m_n; i++){

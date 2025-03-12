@@ -18,7 +18,6 @@ class BHCJetSkimmer{
 			_oname = "";
 			_radius = 0;
 			_smear = true;
-			_timesmear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -50,7 +49,6 @@ class BHCJetSkimmer{
 			_gev = 1./10.;
 			_radius = 0;
 			_smear = true;
-			_timesmear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -166,6 +164,14 @@ class BHCJetSkimmer{
 			_hists1D.push_back(AK4JetConstituent_GenPt);
 			_hists1D.push_back(AK4JetConstJetRatio_GenP);
 			_hists1D.push_back(AK4JetConstJetRatio_GenPt);
+			_hists1D.push_back(AK4Jet_rhTimes);
+			_hists1D.push_back(geoEavg_sigmaTime_adjRhs);
+			_hists1D.push_back(AK4Jet_subClusterEtaCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterPhiCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterTimeCenter_rStat);
+			_hists1D.push_back(AK4Jet_subClusterEtaSig_rStat);
+			_hists1D.push_back(AK4Jet_subClusterPhiSig_rStat);
+			_hists1D.push_back(AK4Jet_subClusterTimeSig_rStat);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -196,6 +202,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(AK4Jet_genJetP_genPartJetPRatio);
 			_hists2D.push_back(AK4Jet_genPt_genPartJetPtRatio);
 			_hists2D.push_back(AK4Jet_genJetPt_genPartJetPtRatio);
+			_hists2D.push_back(AK4Jet_genJetPt_nSubclusters);
+			_hists2D.push_back(AK4Jet_nGenPartsptge5_nSubclusters);
+			_hists2D.push_back(geoEavg_diffTime_adjRhs);
 	
 
 		}
@@ -487,6 +496,7 @@ class BHCJetSkimmer{
 					//fill subcluster hists
 					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
 					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
+					int k = 0;
 					for(auto subcl : _recojets[j].GetConstituents()){
 						_procCats[p].hists1D[0][78]->Fill(subcl.E());
 						_procCats[p].hists1D[0][79]->Fill(subcl.time());
@@ -495,15 +505,28 @@ class BHCJetSkimmer{
 						
 						Matrix subcl_cov = subcl.GetCovariance();
 						_procCats[p].hists1D[0][82]->Fill(sqrt(subcl_cov.at(0,0)));
+						if(p == 0){ 
+							cout << "cov for jet #" << j << " subcl #" << k << endl;
+							subcl_cov.Print();
+						}
+					cout << "time sig for jet # " << j << " subcl # " << k << ": " <<  sqrt(subcl_cov.at(2,2)) << endl;
 						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
 						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
 						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
 						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
 						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
+						k++;
 					}
 					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
 						_procCats[p].hists1D[0][89]->Fill(rhs[r].E());
+						_procCats[p].hists1D[0][96]->Fill(rhs[r].t());
+						
+					}
+					vector<pair<double,double>> geoEavg_diffT;
+					CalcRhTimeDiff(rhs,geoEavg_diffT);
+					for(int r = 0; r < geoEavg_diffT.size(); r++){
+					      _procCats[p].hists2D[0][30]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
 					}
 					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
 					_procCats[p].hists2D[0][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
@@ -511,7 +534,7 @@ class BHCJetSkimmer{
 					if(genMatchIdxs[j] == -1) continue;
 					genidx = genMatchIdxs[j];	
 					
-					cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
+					//cout << "gen jet match idx " << genMatchIdxs[j] << " gen jet user idx  " << _genjets[genMatchIdxs[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs[j]].GetUserIdx()) << endl;
 					int genjetidx = _genjets[genMatchIdxs[j]].GetUserIdx();
 					_procCats[p].hists2D[0][21]->Fill(_base->Jet_genNConstituents->at(genjetidx),_recojets[j].GetNConstituents());
 					double pt, pz, jetpt, jetpz, ratio_p;
@@ -520,7 +543,10 @@ class BHCJetSkimmer{
 
 					_procCats[p].hists1D[0][90]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
 					_procCats[p].hists1D[0][91]->Fill(jetpt);	
+					_procCats[p].hists2D[0][28]->Fill(jetpt, _recojets[j].GetNConstituents());
+					
 					int genpartidx = -1;
+					int ngenparts_ptge5 = 0;
 					for(int g = 0; g < _base->Jet_genNConstituents->at(genjetidx); g++){
 						genpartidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(g);
 						pt = _base->genpart_pt->at(genpartidx);
@@ -537,8 +563,11 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[0][24]->Fill(sqrt(pt*pt + pz*pz), ratio_p);	
 						_procCats[p].hists2D[0][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
 						_procCats[p].hists2D[0][26]->Fill(pt, pt/jetpt);	
-						_procCats[p].hists2D[0][27]->Fill(jetpt, pt/jetpt);	
+						_procCats[p].hists2D[0][27]->Fill(jetpt, pt/jetpt);
+	
+						if(pt >= 5) ngenparts_ptge5++;	
 					}
+					_procCats[p].hists2D[0][29]->Fill(ngenparts_ptge5,_recojets[j].GetNConstituents());
 
 					//skip gen matching for now
 					continue;
@@ -777,7 +806,7 @@ class BHCJetSkimmer{
 			double pi, ws;
 			map<string, Matrix> params;
 			for(int k = 0; k < kmax; k++){
-				params = model->GetPriorParameters(k);
+				params = model->GetLHPosteriorParameters(k);
 				phi += params["pi"].at(0,0)*params["mean"].at(1,0);
 				t += params["pi"].at(0,0)*params["mean"].at(2,0);
 				ws += params["pi"].at(0,0);
@@ -977,6 +1006,7 @@ class BHCJetSkimmer{
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime_subcl = new TGraph();
 		
+		vector<double> xbins = {0, 5, 10, 15, 20, 30, 50, 100}; //for time resolution
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0
@@ -986,7 +1016,7 @@ class BHCJetSkimmer{
 		//2
 		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",20,0,500);
 		//3
-		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,0,15);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-20,20);
 		//4
 		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subClusterEtaCenter","BHCJet_subClusterEtaCenter",25,-1.8,1.8);
 		//5
@@ -1139,23 +1169,23 @@ class BHCJetSkimmer{
 		//78 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("AK4Jet_subClusterEnergy","AK4Jet_subClusterEnergy",50,0,250);
 		//79 - time center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeCenter = new TH1D("AK4Jet_subClusterTimeCenter","AK4Jet_subClusterTimeCenter",25,0,20);
+		TH1D* recoJet_subClusterTimeCenter = new TH1D("AK4Jet_subClusterTimeCenter","AK4Jet_subClusterTimeCenter",25,-20,20);
 		//80 - eta center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaCenter = new TH1D("AK4Jet_subClusterEtaCenter","AK4Jet_subClusterEtaCenter",25,-1.8,1.8);
 		//81 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("AK4Jet_subClusterPhiCenter","AK4Jet_subClusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("AK4Jet_subClusterEtaSig","AK4Jet_subClusterEtaSig",100,0.01,0.04);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("AK4Jet_subClusterEtaSig","AK4Jet_subClusterEtaSig",50,0.,0.1);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("AK4Jet_subClusterPhiSig","AK4Jet_subClusterPhiSig",100,0.01,0.04);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("AK4Jet_subClusterPhiSig","AK4Jet_subClusterPhiSig",50,0.,0.1);
 		//84 - time sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeSig = new TH1D("AK4Jet_subClusterTimeSig","AK4Jet_subClusterTimeSig",100,0.,2.);
+		TH1D* recoJet_subClusterTimeSig = new TH1D("AK4Jet_subClusterTimeSig","AK4Jet_subClusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",100,-0.002,0.002);
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",50,-0.002,0.002);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",100,-0.02,0.02);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",50,-0.02,0.02);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",100,-0.02,0.02);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",50,-0.02,0.02);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("AK4Jet_nRhs","AK4Jet_nRhs",200,0,200);
 		//89 - n rhs in reco jets
@@ -1172,6 +1202,23 @@ class BHCJetSkimmer{
 		TH1D* AK4JetConstJetRatio_GenP = new TH1D("AK4JetConstJetRatio_GenP","AK4JetConstJetRatio_GenP",50,0,1);
 		//95 - Gen particle Pt/Gen jet Pt 
 		TH1D* AK4JetConstJetRatio_GenPt = new TH1D("AK4JetConstJetRatio_GenPt","AK4JetConstJetRatio_GenPt",50,0,1);
+		//96 - ak4 jet rh times
+		TH1D* AK4Jet_rhTimes = new TH1D("AK4Jet_rhTimes","AK4Jet_rhTimes",200,-25,25);
+		//97 - time resolution for adjacent xtals
+		TH1D* geoEavg_sigmaTime_adjRhs = new TH1D("geoEavg_sigmaTime_adjRhs","geoEavg_sigmaTime_adjRhs;geoEavg;sigmaTime;a.u.",xbins.size()-1,&xbins[0]);
+		//98 - eta center for jet - data statistic
+		TH1D* AK4Jet_subClusterEtaCenter_rStat = new TH1D("AK4Jet_subClusterEtaCenter_rStat","AK4Jet_subClusterEtaCenter_rStat",25,-1.8,1.8);
+		//99 - phi center for jet - data statistic
+		TH1D* AK4Jet_subClusterPhiCenter_rStat = new TH1D("AK4Jet_subClusterPhiCenter_rStat","AK4Jet_subClusterPhiCenter_rStat",25,-0.1, 6.3);
+		//100 - time center for jet - data statistic
+		TH1D* AK4Jet_subClusterTimeCenter_rStat = new TH1D("AK4Jet_subClusterTimeCenter_rStat","AK4Jet_subClusterTimeCenter_rStat",25,-20.,20.);
+		//101 - eta sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterEtaSig_rStat = new TH1D("AK4Jet_subClusterEtaSig_rStat","AK4Jet_subClusterEtaSig_rStat",25,0.,0.1);
+		//102 - phi sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterPhiSig_rStat = new TH1D("AK4Jet_subClusterPhiSig_rStat","AK4Jet_subClusterPhiSig_rStat",25,0., 0.1);
+		//103 - time sigma for jet - data statistic
+		TH1D* AK4Jet_subClusterTimeSig_rStat = new TH1D("AK4Jet_subClusterTimeSig_rStat","AK4Jet_subClusterTimeSig_rStat",25,0.,5.);
+		
 
 
 		//2D plots
@@ -1218,7 +1265,7 @@ class BHCJetSkimmer{
 		//20 - # rhs vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("AK4Jet_nRhs_nSubclusters","AK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",25,0,25,100,0,100);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,25,0,25);
+		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("AK4Jet_nGenParts_nSubclusters","AK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,15,0,15);
 		//22 - gen particle p vs gen jet p for AK4 jets
 		TH2D* AK4Jet_genP_genJetP = new TH2D("AK4Jet_genP_genJetP","AK4Jet_genP_genJetP;genP;genJetP;a.u.",50,0,200,50,0,500);
 		//23 - gen particle pt vs gen jet pt for AK4 jets
@@ -1231,10 +1278,14 @@ class BHCJetSkimmer{
 		TH2D* AK4Jet_genPt_genPartJetPtRatio = new TH2D("AK4Jet_genPt_genPartJetPtRatio","AK4Jet_genPt_genPartJetPtRatio;genPt;genPartJetPtRatio;a.u.",50,0,200,50,0,1);
 		//27 - gen jet pt vs gen particle pt/gen jet pt for AK4 jets
 		TH2D* AK4Jet_genJetPt_genPartJetPtRatio = new TH2D("AK4Jet_genJetPt_genPartJetPtRatio","AK4Jet_genJetPt_genPartJetPtRatio;genJetPt;genPartJetPtRatio;a.u.",50,0,500,50,0,1);
-	
+		//28 - gen jet pt vs # subclusters
+		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("AK4Jet_genJetPt_nSubclusters","AK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,10,0,10);	
+		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
+		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,15,0,15);
+		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
+		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],50,-15,15);
 
 		void SetSmear(bool t){ _smear = t; }
-		void SetTimeSmear(bool t){ _timesmear = t; }
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){
 			_gev = gev;
@@ -1299,7 +1350,7 @@ class BHCJetSkimmer{
 		//dr match to jet
 		double bestDr, dr;
 		int nGen = _genjets.size();
-		cout << "nGen jets " << nGen << endl;
+		//cout << "nGen jets " << nGen << endl;
 		int otherJet, thisgenidx, thisJet;
 		bestGenMatchIdxs.clear();
 		bestGenMatchIdxs = {};
@@ -1330,10 +1381,10 @@ class BHCJetSkimmer{
 		vector<int> best_idxs; //one per jet
 		//go back through jets can check to see if there are overlapping matches
 		for(int j = 0; j < jets.size(); j++){
-			for(int g = 0; g < nGen; g++){
-				cout << "jet " << j << " and gen jet " << g << " have dr " << drs[j][g] << endl;
-			}
-			cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at gen jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+			//for(int g = 0; g < nGen; g++){
+			//	cout << "jet " << j << " and gen jet " << g << " have dr " << drs[j][g] << endl;
+			//}
+			//cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at gen jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
 			double mindr = *min_element(drs[j].begin(), drs[j].end());
 			int genidx = find(drs[j].begin(), drs[j].end(), mindr) - drs[j].begin();
 			if(mindr == 999) genidx = -1; //no match found (ie no available gen jet for best match)
@@ -1348,8 +1399,8 @@ class BHCJetSkimmer{
 				if(otherJet == thisJet){
 					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), genidx) - best_idxs.begin();
 				}
-				for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
-				cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+				//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
+				//cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
 				//if other dr is less than current mindr
 				if(drs[otherJet][genidx] < mindr){
 					//set this dr to 999 (is invalid), find new min for this jet, reset genidx to this index
@@ -1358,7 +1409,7 @@ class BHCJetSkimmer{
 					if(mindr == 999) genidx = -1;
 					else genidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
 					best_idxs[thisJet] = genidx;
-					cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+					//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
 		
 				}
 				//if this dr is less than (or equal to) current mindr
@@ -1371,12 +1422,12 @@ class BHCJetSkimmer{
 					else genidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
 					thisJet = otherJet;
 					best_idxs[thisJet] = genidx;
-					cout << " reset gen match of other jet " << otherJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+					//cout << " reset gen match of other jet " << otherJet << " to gen jet " << genidx << " with dr " << mindr << endl;
 				}	
-				cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
+				//cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
 
 			}
-			cout << "jet " << j << " has best exclusive gen match with " << best_idxs[j] << "\n" << endl;
+			//cout << "jet " << j << " has best exclusive gen match with " << best_idxs[j] << "\n" << endl;
 		}
 		bestGenMatchIdxs = best_idxs;
 
@@ -1481,6 +1532,36 @@ class BHCJetSkimmer{
 	void SetThreshold(double t){ _thresh = t; }
 	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
 
+	void CalcRhTimeDiff(vector<JetPoint>& rhs, vector<pair<double, double>>& geoEavg_diffT){
+		geoEavg_diffT.clear();
+		double cell = acos(-1)/180;
+		double deta, dphi; //deta, dphi < cell ==> adjacent
+		double maxEper = 0.3; //energies have to be within maxEper*100 % of max E rh
+		double maxE, diffE;
+		double geoEavg, diffT;
+		double minE = 3;
+		for(int r = 0; r < rhs.size(); r++){
+			if(rhs[r].E() < minE) continue;	
+			for(int rr = r+1; rr < rhs.size(); rr++){
+				if(rhs[rr].E() < minE) continue;	
+				deta = fabs(rhs[r].eta() - rhs[rr].eta());
+				dphi = fabs(rhs[r].phi() - rhs[rr].phi());
+				maxE = rhs[r].E() > rhs[rr].E() ? rhs[r].E() : rhs[rr].E();
+				diffE = fabs(rhs[r].E() - rhs[rr].E());	
+
+				geoEavg = sqrt(rhs[r].E() * rhs[rr].E());
+				diffT = rhs[r].E() > rhs[rr].E() ? rhs[r].t() - rhs[rr].t() : rhs[rr].t() - rhs[r].t();
+				
+				if(deta <= cell && dphi <= cell && diffE/maxE < maxEper){
+					//cout << "deta " << deta << " dphi " << dphi << " diffE/maxE " << diffE/maxE << " rhs[r].eta " << rhs[r].eta() << " rhs[rr].eta " << rhs[rr].eta() << " rhs[r].phi " << rhs[r].phi() << " rhs[rr].phi " << rhs[rr].phi() << " rhs[r].E " << rhs[r].E() << " rhs[rr].E " << rhs[rr].E() << " geoEavg " << geoEavg << " diffT " << diffT << endl;
+					geoEavg_diffT.push_back(make_pair(geoEavg,diffT));
+				}
+
+			}
+
+		}
+
+	}
 
 	private:
 		string _oname;
@@ -1493,7 +1574,7 @@ class BHCJetSkimmer{
 		vector<Jet> _predJets;
 		vector<Jet> _genjets;
 		vector<Jet> _recojets;
-		bool _smear, _timesmear;
+		bool _smear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder
 			NlnN = 0,

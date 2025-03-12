@@ -18,6 +18,9 @@
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
 const vector<node*>& BayesCluster::_delauney_cluster(){
+	vector<double> ws;
+	_jets[0].GetWeights(ws);
+	double gev = ws[0]/_jets[0].E();
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
@@ -27,19 +30,22 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
-	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
 	if(_thresh != -999) mt->SetThresh(_thresh);
+	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
+	cout << "beta0" << endl;
+	_prior_params["scale"].Print();
+	cout << "mean0" << endl;
+	_prior_params["mean"].Print();
+	cout << "nu0" << endl;
+	_prior_params["dof"].Print();
+	cout << "W0" << endl;
+	_prior_params["scalemat"].Print();
 
-	_prior_params["scale"] = Matrix(1e-3);
-	_prior_params["dof"] = Matrix(3);
-	Matrix W(3,3);
-	double r = 0.4;
-	W.SetEntry(1./(r*r/3),0,0);
-	W.SetEntry(1./(r*r/3),1,1);
-	W.SetEntry(1./(0.1*0.1/3),2,2);
-	_prior_params["scalemat"] = W;
-	_prior_params["mean"] = Matrix(3,1);
+	double cell = acos(-1)/180; //default is CMS ECAL cell size
+	double tresCte = 0.2 * 1e-9;
+	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	mt->SetMeasErrParams(cell, tresCte, tresStoch*gev); 
+ 
 	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
@@ -52,7 +58,7 @@ cout << "n pts " << n << endl;
 			cout << "return" << endl;
 			return _trees;
 		}
-		//_points[i].Print();
+		_points[i].Print();
 		mt->AddLeaf(&_points[i].at(0));
 	}
 	cout << "# clusters " << mt->GetNAllClusters() << endl;
@@ -213,14 +219,7 @@ cout << "n pts " << n << endl;
 		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
 				cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-			trees[i]->model->GetJetParameters(params);
-			cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
 			cout << " points" << endl; trees[i]->model->GetData()->Print();
-			for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
-				params = trees[i]->model->GetPriorParameters(k);
-				cout << " k " << k << " center " << endl; params["mean"].Print();
-				//cout << "cov " << endl; params["cov"].Print();
-			}
 			continue; }
 		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
 
@@ -228,11 +227,9 @@ cout << "n pts " << n << endl;
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 		_trees.push_back(trees[i]);
 		cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-		trees[i]->model->GetJetParameters(params);
-		cout << " jet mean" << endl; params["mean"].Print(); cout << " cov" << endl; params["cov"].Print();
 		cout << " points" << endl; trees[i]->model->GetData()->Print();
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
-			params = trees[i]->model->GetPriorParameters(k);
+			params = trees[i]->model->GetLHPosteriorParameters(k);
 			cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
@@ -261,7 +258,6 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
-	if(_tresSmear_c != -1) mt->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	if(_thresh != -999) mt->SetThresh(_thresh);
 	_prior_params["scale"] = Matrix(1e-3);
 	_prior_params["dof"] = Matrix(3);
@@ -409,6 +405,9 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 
 
 GaussianMixture* BayesCluster::_subcluster(string oname){
+	vector<double> ws;
+	_jets[0].GetWeights(ws);
+	double gev = ws[0]/_jets[0].E();
 	//create GMM model
 	PointCollection* points = new PointCollection();
 	for(auto point : _points){
@@ -422,6 +421,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
+	double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
+	tresStoch *= gev;
+	//needs to be before SetData bc thats when the measurement errors are set
+	gmm->SetMeasErrParams(acos(-1)/180, tresCte, tresStoch); 
 
 	//cout << "old points w/o wraparound" << endl;
 	//points->at(0).Print();
@@ -429,9 +434,16 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->SetData(points);
 	//needs to be before ScaleData() bc this method also scales the smear
 	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
+	gmm->SetAlpha(_subalpha);
+	gmm->SetVerbosity(_verb);
+	gmm->InitParameters();
+	gmm->InitPriorParameters();
+	//set prior parameters
+	gmm->SetPriorParameters(_prior_params);	
+
 
 	//cout << "old points w/ wraparound" << endl;
-	//points->at(0).Print();
+	//points->Print();
 
 	//transform points into local coordinates
 	//for GMM parameter estimation
@@ -457,25 +469,17 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	Rscale.SetEntry(1/cell,1,1);
 	Rscale.SetEntry(1,2,2);
 
-
+	//assuming prior parameters are given in shifted + scaled frame
 	gmm->ScaleData(Rscale);
 	//cout << "scaled points" << endl;
 	//gmm->GetData()->at(0).Print();
 	
-	gmm->SetAlpha(_subalpha);
-	gmm->SetVerbosity(_verb);
-	gmm->InitParameters();
-	gmm->InitPriorParameters();
-
 	
-	if(_tresSmear_c != -1) gmm->SetWeightBasedResSmear(_tresSmear_c, _tresSmear_n, 2);
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
 	algo->SetThresh(_thresh);
 
 
-	//set prior parameters
-	gmm->SetPriorParameters(_prior_params);	
 
 	map<string, vector<Matrix>> params;
 	bool viz = false;
@@ -491,9 +495,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	VarClusterViz3D cv3D(algo);
 	cv3D.SetScale(RscaleInv);
 	cv3D.SetShift(center);
-	vector<double> ws;
-	_jets[0].GetWeights(ws);
-	double gev = ws[0]/_jets[0].E();
 	if(isnan(gev) || isinf(gev)){ cout << "Energy-weighting scale factor " << gev << " is not valid." << endl; return gmm; }
 	if(viz){
 		cv3D.SetVerbosity(_verb);
@@ -548,8 +549,21 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->ShiftParameters(center);
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
-	//auto params1 = gmm->GetPriorParameters(0);
-	//params1["mean"].Print();
+	if(_verb > 3){
+		cout << std::setprecision(10) << endl;
+		for(int k = 0; k < gmm->GetNClusters(); k++){
+			auto params1 = gmm->GetLHPosteriorParameters(k);
+			auto params2 = gmm->GetDataStatistics(k);
+			cout << "subcl #" << k << endl;	
+			cout << "mean " << endl;
+			params1["mean"].Print();
+			cout << "r stat mean" << endl; params2["mean"].Print();
+			cout << "cov " << endl;
+			params1["cov"].Print();
+			cout << "r stat cov" << endl; params2["cov"].Print();
+			cout << endl;
+		}
+	}
 
 
 
@@ -561,7 +575,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		cout << "Estimated parameters" << endl;
 		map<string, Matrix> params;
 		for(int i = 0; i < gmm->GetNClusters(); i++){
-			params = gmm->GetPriorParameters(i);	
+			params = gmm->GetLHPosteriorParameters(i);	
 			cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << " eff evts: " << norms[i] << endl;
 			cout << "mean " << i << endl;
 			params["mean"].Print();

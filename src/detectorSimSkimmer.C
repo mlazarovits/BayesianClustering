@@ -30,8 +30,8 @@ int main(int argc, char *argv[]){
 	bool hprint = false;
 	bool pu = false;
 	bool skim = false;
-	bool ntuple = false;	
 	double gev = 1./10.;
+	bool smear = false;
 
 	//set clustering strategy
 	//0 = NlnN
@@ -182,6 +182,9 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--smear", 7) == 0){
+    	 		smear = true;
+   		}
 
 
 
@@ -206,6 +209,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minE [minE]                 set reco minimum E (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --smear                       smear cov (turns off meas error)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "Example: ./detectorSimSkimmer.x -i rootfiles/simNtuples_ttbar.root -a 0.5 -t 1.6" << endl;
 		return 0;	
@@ -373,6 +377,8 @@ int main(int argc, char *argv[]){
 	skimmer.SetPriorParameters(prior_params);
 	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
+	skimmer.SetSmear(smear);
+
 	skimmer.Skim();
 
 }
