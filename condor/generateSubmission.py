@@ -24,17 +24,22 @@ def generateSubmission(args):
     SH.makeDir(odir)
 
     ver = "v24"
-    sel = "MET100"
+    sel = args.selection#"MET100"
+    yr = str(args.year)[-2:]
+    reco_date = {}
+    reco_date["2017"] = "_17Nov2017"
+    reco_date["2017_DEG"] = "_09Aug2019_UL2017"
+    reco_date["2018"] = ""
     if "GJets_HT400to600" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_MET100_"+ver+"_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT100to200" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_MET100_"+ver+"_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT200to400" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_MET100_"+ver+"_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT40to100" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_MET100_"+ver+"_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "GJets_HT600toInf" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+str(args.year)[-2:]+"_MET100_"+ver+"_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_MET100_"+ver+"_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list.txt"
     #elif "GMSB_L-250_Ctau-10" in args.inputSample:
     #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
     #elif "GMSB_L-300_Ctau-400" in args.inputSample:
@@ -56,35 +61,35 @@ def generateSubmission(args):
     #elif "GMSB_L-400_Ctau-200" in args.inputSample:
     #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
     elif "MET_RunB" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+str(args.year)[-2:]+"_MET100_"+ver+"_MET_AOD_Run2017B_17Nov2017_list.txt"
+    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"B"+reco_date[args.year]+"_list.txt"
     elif "MET_RunC" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+str(args.year)[-2:]+"_MET100_"+ver+"_MET_AOD_Run2017C_17Nov2017_list.txt"
+    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"C"+reco_date[args.year]+"_list.txt"
     elif "MET_RunD" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+str(args.year)[-2:]+"_MET100_"+ver+"_MET_AOD_Run2017D_17Nov2017_list.txt"
+    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"D"+reco_date[args.year]+"_list.txt"
     #elif "MET_RunE" in args.inputSample:
-    #	inputFile = "MET_R17_MET100_v21_MET_AOD_Run2017E_17Nov2017.root"
+    #	inputFile = "MET_R17_MET100_v21_MET_AOD_Run20"+yr+"E_17Nov2017.root"
     elif "JetHT_RunF" in args.inputSample:
-    	inputFileList = "kucmsntuple_JetHT_R"+str(args.year)[-2:]+"_MET100_"+ver+"_JetHT_AOD_Run2017F_17Nov2017_list.txt"
+    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_MET100_"+ver+"_JetHT_AOD_Run20"+yr+"F"+reco_date[args.year]+"_list.txt"
     elif "QCD_HT1000to1500" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT100to200" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT100to200_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT100to200_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT1500to2000" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT2000toInf" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT300to500" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT300to500_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT300to500_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT500to700" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT500to700_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT500to700_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT700to1000" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT200to300" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT200to300_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT200to300_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "QCD_HT50to100" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+str(args.year)[-2:]+"_MET100_"+ver+"_QCD_HT50to100_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT50to100_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "EGamma_RunF" in args.inputSample:
-    	inputFileList = "kucmsntuple_DEG_R"+str(args.year)[-2:]+"_MET100_"+ver+"_DoubleEG_AOD_Run2017F_09Aug2019_UL2017_list.txt"
+    	inputFileList = "kucmsntuple_DEG_R"+yr+"_MET100_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "SMS-GlGl" in args.inputSample:
         ver = "v23"
         sel = ""
@@ -175,10 +180,15 @@ def generateSubmission(args):
     priorname = priorname+"_nu0-"+nustr
 
 
-    #add emAlpha to output name
+    #add npergev to output name
     gevstr = str(args.gev)
     gevstr = gevstr.replace(".","p")
     priorname += "_NperGeV-"+gevstr
+    
+    #add emalpha to output name
+    emalphastr = str(args.EMalpha)
+    emalphastr = emalphastr.replace(".","p")
+    priorname += "_emAlpha-"+emalphastr
 
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
@@ -244,6 +254,10 @@ def generateSubmission(args):
         flags += ' --cleanSubclusters'
     if(args.cleanSubclusters and "AODSIM" in inputFileList):
         print("--cleanSubclusters only for data") 
+    if(args.cleanMist and "AODSIM" not in inputFileList):
+        flags += ' --cleanMist'
+    if(args.cleanMist and "AODSIM" in inputFileList):
+        print("--cleanMist only for data") 
     
 
 
@@ -273,10 +287,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT_RunF','EGamma_RunF','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','EGamma_RunF_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT_RunF','EGamma_RunF','GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB','MET_RunC','MET_RunD','EGamma_RunF','SMS-GlGl'])
     #parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
+    parser.add_argument('--selection',help='ntuple preselection',choices=['MET100','AL1IsoPho','AL1IsoPhoMET100'],required=True)
     parser.add_argument('--output','-o',help='output label')
-    parser.add_argument('--year',help='year of sample',default=2017,choices=[2017,2018])
+    parser.add_argument('--year',help='year of sample',default='2017',choices=['2017','2018'])
     #which object to analyze (jets or photons currently supported)
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
@@ -284,8 +299,8 @@ def main():
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     
     #add algorithm parameters - emAlpha, priors, verbosity, thresh
-    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=0.5)
-    parser.add_argument('--beta0',help="beta0 prior",default=1e-3)
+    parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1e-5)
+    parser.add_argument('--beta0',help="beta0 prior",default=1e-5)
     parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
     parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,33.333333e-5],nargs="+")
     parser.add_argument('--nu0',help="nu0 prior",default=3)
@@ -311,6 +326,7 @@ def main():
     parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
     parser.add_argument('--noSpatCorr',help='turn off spatial corrections for rechit times to put in PV frame (jets only)',default=False,action='store_true')
     parser.add_argument('--cleanSubclusters',help='clean subclusters from jet time (data, jets only)',default=False,action='store_true')
+    parser.add_argument('--cleanMist',help='extreme \'mist\' cleaning in rh time + energy (data, jets only)',default=False,action='store_true')
     args = parser.parse_args()
 
     generateSubmission(args)
