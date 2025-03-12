@@ -33,7 +33,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
-	_ethresh = 0;//0.7; //(GeV)
+	_ethresh = 0.1;//0.7; //(GeV)
 	_ncell = 2;
 	_pu = false; //pileup switch
 	_spikes = false; //spikes switch
@@ -62,7 +62,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	//z spread = 0.05/2. = 0.025 cm = 0.25 mm
 	_pythia.settings.readString("Beams:allowVertexSpread = on");
 	_pythia.settings.readString("Beams:sigmaVertexZ = 0.25");
-	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(0.25/_sol));
+	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(0.25/(_sol*1e3))); //0.25 mm - sol is in m/s
 	_pythia.settings.readString("Beams:maxDevVertex = 1");
 	_pythia.settings.readString("Beams:maxDevTime = 1");	
 }
@@ -161,7 +161,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
-
+	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte << " and tres_stoch = " << _calTresRate << std::setprecision(5) << endl;
 	//set random number seed - 
 	//The seed to be used, if setSeed is on.
 	//A negative value gives the default seed,
@@ -279,6 +279,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//if(fabs(rp.Position.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
 			//reset phi for reco particle to include zshift
 		
+			//zero suppression threshold
+			if(particle.e() < _ethresh) continue;
+
 			
 			//debug jet pt reco - skip charged particles s.t. pos vec == mom vec
 			//if(particle.charge() != 0) continue;
@@ -309,8 +312,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//dont reconstruct muons - they would only mildly interact with an EM cal anyway
 			if(particle.idAbs() == 13)
 				continue;
-		
-	
+			//double test_t = particle.tProd()/(_sol*1e3)*1e9;	
+			//if(test_t > 1e2) cout << "particle energy " << particle.e() << " time (ns) " << test_t << endl;
 			//create new particle for reco one
 			RecoParticle rp(particle); 
 			//calculate new pt (does full pvec but same pz)
@@ -379,18 +382,18 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 		//get top decay gen info
 		map<int, int> WevtIdx_treeIdx;
-		cout << "top_idxs size " << top_idxs.size() << endl;
+		//cout << "top_idxs size " << top_idxs.size() << endl;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
 			vector<int> kids_id;
 			vector<int> kids_idx = sumEvent[*t].daughterList();
-			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
-			for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
-			cout << endl;
-			cout << "this top - mother1 " << sumEvent[*t].mother1() << " mother2 " << sumEvent[*t].mother2() << endl;
+			//cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
+			//for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
+			//cout << endl;
+			//cout << "this top - mother1 " << sumEvent[*t].mother1() << " mother2 " << sumEvent[*t].mother2() << endl;
 			vector<int> moms_idx = sumEvent[*t].motherList();
-			cout << "top idx " << *t << " has " << moms_idx.size() << " mothers";
-			for(auto k : moms_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; }
-			cout << endl;
+			//cout << "top idx " << *t << " has " << moms_idx.size() << " mothers";
+			//for(auto k : moms_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; }
+			//cout << endl;
 			
 			//look for W in mother chain
 			vector<int>::iterator momit_w = find(kids_id.begin(),kids_id.end(),24);
@@ -400,9 +403,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//get W index
 				Widx = kids_idx[momit_w - kids_id.begin()];
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "kid idx " << Widx << " id " << kids_id[momit_w - kids_id.begin()] << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
+				//cout << "kid idx " << Widx << " id " << kids_id[momit_w - kids_id.begin()] << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
 				while(sumEvent[Widx].daughter1() == sumEvent[Widx].daughter2() || fabs(sumEvent[sumEvent[Widx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[Widx].daughter2()].id()) == 24){
-					cout << "getting daughters of copy for idx " << Widx << endl;
+					//cout << "getting daughters of copy for idx " << Widx << endl;
 					//get daughters of W copy decay
 					Widx = sumEvent[Widx].daughter1();
 				}
@@ -413,7 +416,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				fj_genpart.set_user_index(_genparts.size());
 				_genparts.push_back(fj_genpart);
 				_genpartids.push_back(genpart.Particle.id());
-				cout << "W idx in ntuple " << _genpartids.size() << " gen idx " << fj_genpart.user_index() << " " << _genparts[_genparts.size()-1].user_index() << endl;
+				//cout << "W idx in ntuple " << _genpartids.size() << " gen idx " << fj_genpart.user_index() << " " << _genparts[_genparts.size()-1].user_index() << endl;
 				WevtIdx_treeIdx[Widx] = (int)_genpartids.size()-1;
 				
 				_genpartMomIdx.push_back(-1); //not saving W mother (ie top) info
@@ -428,16 +431,16 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//get b index
 				bidx = kids_idx[momit_b - kids_id.begin()];
 				//make sure b doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "kid idx " << bidx << " id " << kids_id[momit_b - kids_id.begin()] << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
+				//cout << "kid idx " << bidx << " id " << kids_id[momit_b - kids_id.begin()] << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
 				//b's can fragment and that daughter could have copy daughters so make sure that any copies are still b's
 				while(sumEvent[bidx].daughter1() == sumEvent[bidx].daughter2() && (fabs(sumEvent[sumEvent[bidx].daughter1()].id()) == 5 || fabs(sumEvent[sumEvent[bidx].daughter2()].id()) == 5)){
-					cout << "getting daughters of copy for idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
+					//cout << "getting daughters of copy for idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
 					//get daughters of b copy decay
 					bidx = sumEvent[bidx].daughter1();
-					cout << "NEW idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
+					//cout << "NEW idx " << bidx << " id " << sumEvent[bidx].id() << " with daughters " << sumEvent[sumEvent[bidx].daughter1()].id() << " at " << sumEvent[bidx].daughter1() << " and " << sumEvent[sumEvent[bidx].daughter2()].id() << " at " << sumEvent[bidx].daughter2() << endl;
 				}
 				//save gen info of b at detector
-				cout << "got b with id " << sumEvent[bidx].id() << " at " << bidx << " with parents " << sumEvent[sumEvent[bidx].mother1()].id() << " at " << sumEvent[bidx].mother1() << " and mother 2 is " << sumEvent[bidx].mother2() << " if valid id is " << sumEvent[sumEvent[bidx].mother2()].id() << endl;
+				//cout << "got b with id " << sumEvent[bidx].id() << " at " << bidx << " with parents " << sumEvent[sumEvent[bidx].mother1()].id() << " at " << sumEvent[bidx].mother1() << " and mother 2 is " << sumEvent[bidx].mother2() << " if valid id is " << sumEvent[sumEvent[bidx].mother2()].id() << endl;
 				RecoParticle genpart(sumEvent[bidx]);
 				CalcTrajectory(genpart);
 				fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
@@ -448,8 +451,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					
 
 			}
-			for(int kk = 0; kk < wkids_idx.size(); kk++)
-				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
+		//	for(int kk = 0; kk < wkids_idx.size(); kk++)
+		//		cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
 			if(Widx != -999) w_idxs.insert(Widx);
 
 		}
@@ -463,17 +466,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		int _genTopId;
 		vector<int> had = {1, 2, 3, 4};
 		vector<int> lep = {11, 12, 13, 14};
-		cout << "w_idxs size " << w_idxs.size() << endl;
+		//cout << "w_idxs size " << w_idxs.size() << endl;
 		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
-			cout << "w idx " << *w << endl;
+			//cout << "w idx " << *w << endl;
 			vector<int> wkids_idx = sumEvent[*w].daughterList();
 			//W daughters
 			//check for 2 daughters
 			if(wkids_idx.size() == 2){
-				cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
+				//cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
 				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
 				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
-				cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
+				//cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
 			
 				//want to save gen particle info at detector - also save the pdgid of their direct mother
 				RecoParticle genpart1(sumEvent[wkids_idx[0]]);
@@ -496,7 +499,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//if both W decay products are had -> w1 = 0
 				//if both W decay products are lep -> w1 = 1
 				//else (1 W decay product had, the other lep) -> w1 = -1 (shouldnt happen)
-				cout << "wnct " << wcnt << endl;
+				//cout << "wnct " << wcnt << endl;
 				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()) 
 					wid[wcnt] = 0;
 				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
@@ -506,16 +509,16 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				_topDecayId.push_back(wid[wcnt]);	
 				wcnt++; 
 			}
-			cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
+			//cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
 		}
-		cout << "Finished categorizing W decays" << endl;
+		//cout << "Finished categorizing W decays" << endl;
 		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
 		if(top_idxs.size() > 1){
-			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
+			//cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
 			int top_idx1, top_idx2;
 			top_idx1 = *top_idxs.begin();
 			top_idx2 = *next(top_idxs.begin());
-			cout << "top idx1 " << top_idx1 << " top idx2 " << top_idx2 << endl;
+			//cout << "top idx1 " << top_idx1 << " top idx2 " << top_idx2 << endl;
 			//if both had -> fully had
 			//if 1 had -> semi lep
 			//if both lep -> fully lep
@@ -523,8 +526,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
 			else _genTopId = 1;
 		
-			cout << "status of top idx1 " << sumEvent[top_idx1].statusHepMC() << " status top idx2 " << sumEvent[top_idx2].statusHepMC() << endl;
-			cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;
+		//	cout << "status of top idx1 " << sumEvent[top_idx1].statusHepMC() << " status top idx2 " << sumEvent[top_idx2].statusHepMC() << endl;
+		//	cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;
 			if(_genTopId == 0){
 				_topPt_had.push_back(sumEvent[top_idx1].pT());
 				_topPt_had.push_back(sumEvent[top_idx2].pT());
@@ -542,7 +545,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			else continue;
 		}
 		else _genTopId = -1;
-		cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
+		//cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
 		//fill gen particles
 		FillGenParticles();
 		
@@ -557,7 +560,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		fjinputs.resize(0);
 		fjoutputs.clear();
 		fjoutputs.resize(0);
-		cout << endl;
+		//cout << endl;
 	}
 cout << "nhad " << nhad << " nlep " << nlep << endl;
 }
@@ -573,17 +576,18 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double halfLength = _rmax/tan(theta); //[m]
 
 	//pythia units are in mm (or mm/c for time, natural units)
-	//convert to m (or m/c where c is in m/s)
+	//already converted to m in RecoParticle ctor (or m/c where c is in m/s)
 	//initialized to production coordinates
-	double x = Position.x()*1e-3;
-	double y = Position.y()*1e-3;
-	double z = Position.z()*1e-3;
+	double x = Position.x();
+	double y = Position.y();
+	double z = Position.z();
                            
 	double q = rp.Particle.charge();
 
 	//eta check is done in SimulateEvents but double check with halflength
 	if(fabs(z) > halfLength) return;
 
+	//all momenta and energy are in GeV
 	double px = Momentum.px();
 	double py = Momentum.py();
 	double pz = Momentum.pz();
@@ -596,6 +600,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double x_c, y_c, r_c, vz;
 	double phi0, phid, phit, pio, etad;
 	double xd, yd, zd, td, dpv;
+	if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << "LARGE TIME - CalcTrajectory - original time " << rp.Position.T()*1e9 << " " << Position.T()*1e9 << " " << rp.Particle.tProd()/(_sol*1e3)*1e9 << endl;
 	//cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
 	//cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
 	//uncharged trajectory or no mag field
@@ -689,6 +694,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		if(r_t > 0.0)
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
 	}
+	if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
 	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
 	//cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << endl; 
 
@@ -864,7 +870,6 @@ void BasicDetectorSim::MakeRecHits(){
 			//update range to be centered on t, up to 5 sigma (calTres)
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
-			
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
 			etot += e_cell;
@@ -1081,7 +1086,6 @@ void BasicDetectorSim::ReconstructEnergy(){
 
 void BasicDetectorSim::FillGenParticles(){
 	_ngenparts = (int)_genparts.size();
-	cout << _ngenparts << " # gen particles " << _genpartids.size() << " idxs " << _genpartIdx.size() << endl;
 	for(int g = 0; g < _genparts.size(); g++){
 		_genparteta.push_back(_genparts[g].eta());
 		_genpartphi.push_back(_genparts[g].phi());

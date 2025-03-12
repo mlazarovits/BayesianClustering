@@ -248,7 +248,7 @@ struct RecoParticle;
 				//init to production coordinates
 				//originally in mm
 				//convert to m and s
-				Position.SetCoordinates(p.xProd()*1e-3, p.yProd()*1e-3, p.zProd()*1e-3, p.tProd() / (_sol*1e-3) );
+				Position.SetCoordinates(p.xProd()*1e-3, p.yProd()*1e-3, p.zProd()*1e-3, p.tProd() / (_sol*1e3) );
 			}
 			void AddEmission(JetPoint& j){ ems.push_back(j); }				
 		
