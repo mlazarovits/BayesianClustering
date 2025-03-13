@@ -77,6 +77,10 @@ class BayesCluster{
 				pc.AddPoint(pt);
 				_points.push_back(pc);
 			}
+			_cell = acos(-1)/180;
+			_tresCte = 0.133913 * 1e-9;
+			_tresStoch = 1.60666 * 1e-9; 
+			_tresNoise = 0.00691415 * 1e-9;
 
 		};
 
@@ -112,7 +116,9 @@ class BayesCluster{
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
 		void SetPriorParameters(map<string, Matrix> params){ _prior_params = params; }
 		void SetVerbosity(int v){ _verb = v; }
-		//set time resolution smearing factors
+
+		double _cell, _tresCte, _tresStoch, _tresNoise;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; }
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs

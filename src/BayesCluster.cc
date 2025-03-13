@@ -41,10 +41,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	cout << "W0" << endl;
 	_prior_params["scalemat"].Print();
 
-	double cell = acos(-1)/180; //default is CMS ECAL cell size
-	double tresCte = 0.2 * 1e-9;
-	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
-	mt->SetMeasErrParams(cell, tresCte, tresStoch*gev); 
+	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch*gev, _tresNoise*gev); 
  
 	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
@@ -421,12 +418,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
-	double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
-	double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	//double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	//double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
-	tresStoch *= gev;
+	//tresStoch *= gev;
 	//needs to be before SetData bc thats when the measurement errors are set
-	gmm->SetMeasErrParams(acos(-1)/180, tresCte, tresStoch); 
+	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch*gev, _tresNoise*gev); 
 
 	//cout << "old points w/o wraparound" << endl;
 	//points->at(0).Print();

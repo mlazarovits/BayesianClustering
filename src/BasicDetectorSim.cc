@@ -23,8 +23,9 @@ BasicDetectorSim::BasicDetectorSim(){
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
-	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	_calTresCte = 0.2*1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresNoise = 0.34641*1e-9; 
+	_calTresStoch = 1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_nevts = 1000;
@@ -59,12 +60,12 @@ BasicDetectorSim::BasicDetectorSim(){
 	_PV = BayesPoint({0.,0.,0.});
 
 	//set beam spot spread in z (mm) and time (mm/c)
-	//z spread = 0.05/2. = 0.025 cm = 0.25 mm
-	_pythia.settings.readString("Beams:allowVertexSpread = on");
-	_pythia.settings.readString("Beams:sigmaVertexZ = 0.25");
-	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(0.25/(_sol*1e3))); //0.25 mm - sol is in m/s
-	_pythia.settings.readString("Beams:maxDevVertex = 1");
-	_pythia.settings.readString("Beams:maxDevTime = 1");	
+	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
+	//_pythia.settings.readString("Beams:allowVertexSpread = on");
+	//_pythia.settings.readString("Beams:sigmaVertexZ = 30");
+	//_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(30/(_sol*1e3))); //sol is in m/s
+	//_pythia.settings.readString("Beams:maxDevVertex = 1");
+	//_pythia.settings.readString("Beams:maxDevTime = 1");	
 }
 
 //ctor with input pythia cmnd file
@@ -79,8 +80,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
-	_calTresRate = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+	_calTresCte = 0.2*1e-9; //time resolution for CMS ECAL (s) (200 ps)
+	_calTresNoise = 0.34641*1e-9; 
+	_calTresStoch = 1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_etamax = 1.479;
@@ -161,7 +163,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
-	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte << " and tres_stoch = " << _calTresRate << std::setprecision(5) << endl;
+	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresNoise*1e9 << " ns " << std::setprecision(5) << endl;
 	//set random number seed - 
 	//The seed to be used, if setSeed is on.
 	//A negative value gives the default seed,
@@ -862,14 +864,14 @@ void BasicDetectorSim::MakeRecHits(){
 			t = _cal[i][j].at(1)/((double)_cal[i][j].at(2));
 			
 			//do amplitude dependent time smearing
-			//with constant c = 200 ps
-			t_sig = _calTresCte*_calTresCte + _calTresRate*_calTresRate/(e_cell*e_cell);
+			t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
 			t_sig = sqrt(t_sig);
 			//smear time in cell
 			//t can be negative (early times)
 			//update range to be centered on t, up to 5 sigma (calTres)
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			//if(e_cell > 1) cout << "t " << t*1e9 << " e " << e_cell << " tsig " << t_sig*1e9 << " t_cell " << t_cell*1e9 << endl;
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
 			etot += e_cell;
@@ -898,10 +900,10 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			//save rec hits to tree
 			_rhE.push_back(_cal[i][j].at(0));			
-			_rhx.push_back(x*1e2);
-			_rhy.push_back(y*1e2);
-			_rhz.push_back(z*1e2);
-			_rht.push_back(t*1e9);
+			_rhx.push_back(x*1e2); //in cm
+			_rhy.push_back(y*1e2); //in cm
+			_rhz.push_back(z*1e2); //in cm
+			_rht.push_back(t*1e9); //in ns
 			_rheta.push_back(eta);
 			_rhphi.push_back(phi);
 			_rhids.push_back(i*1000 + j);

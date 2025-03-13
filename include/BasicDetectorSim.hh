@@ -71,8 +71,8 @@ struct RecoParticle;
 		void TurnOnSpikes(double sprob = 0.01){ _spikes = true; _spikeprob = sprob; }
 
 
-		//set resolution constants
-		void SetTimeResCts(double cte, double rate){ _calTresCte = cte; _calTresRate = rate; }
+		//set resolution constants - 
+		void SetTimeResCts(double cte, double stoch, double noise){ _calTresCte = cte; _calTresStoch = stoch; _calTresNoise = noise; }
 		//set energy threshold for zero suppression
 		void SetEnergyThreshold(double e){ _ethresh = e; }
 		//set min gen particle pt to be included in gen AK4 jet
@@ -134,7 +134,8 @@ struct RecoParticle;
 		double _phimin; //sets [-pi, pi] or [0, 2pi] for phi indexing
 		double _calEres; //calorimeter energy resolution
 		double _calTresCte; //calorimeter time resolution - constant term
-		double _calTresRate; //calorimeter time resolution - energy dependent term
+		double _calTresNoise; //calorimeter time resolution - energy squared dependent term
+		double _calTresStoch; //calorimeter time resolution - energy dependent term
 		double _sagres; //sagitta resolution
 		double _crack_frac; //calorimeter cell edge crack fraction
 		

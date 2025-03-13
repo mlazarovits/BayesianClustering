@@ -18,6 +18,7 @@ class BasePDFMixture : public BasePDF{
 			_cell = 0;
 			_tresCte = 0;
 			_tresStoch = 0;
+			_tresNoise = 0;
 		}
 		BasePDFMixture(int k){ 
 			m_k = k; 
@@ -34,9 +35,10 @@ class BasePDFMixture : public BasePDF{
 			m_alpha0 = 0.1; _verb = 0; _smear = false;
 			m_post.SetDims(m_n, m_k);
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.2 * 1e-9;
-			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
-			//above tres params are for gev = 1
+			//default is EGamma res - https://github.com/jking79/GammaResTool/blob/main/macros/ecal_config/caliSmearConfig.txt
+			_tresCte = 0.133913 * 1e-9;
+			_tresStoch = 1.60666 * 1e-9; 
+			_tresNoise = 0.00691415 * 1e-9;
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;
@@ -49,11 +51,12 @@ class BasePDFMixture : public BasePDF{
 		double Prob(const BayesPoint& x);
 		double Prob(const PointCollection& x);
 
-		double _cell, _tresCte, _tresStoch;
-		void SetMeasErrParams(double spatial, double tresCte, double tresStoch){
+		double _cell, _tresCte, _tresStoch, _tresNoise;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){
 			_cell = spatial;
 			_tresCte = tresCte;
 			_tresStoch = tresStoch;
+			_tresNoise = tresNoise;
 		}
 		
 		void SetData(PointCollection* data){
@@ -71,7 +74,7 @@ class BasePDFMixture : public BasePDF{
 			for(int n = 0; n < m_n; n++){
 				Matrix lamStar(m_dim, m_dim);
 				//need to make sure tResRate = tResRate_true*gev for units to match
-				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()*m_data->at(n).w());
+				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()) + _tresNoise*_tresNoise/(m_data->at(n).w()*m_data->at(n).w());
 				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " = " << m_data->at(n).w()/0.2 << " GeV and sigma_t " << sqrt(tresSq) * 1e9 << " ns " << endl; m_data->at(n).Print();}
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);

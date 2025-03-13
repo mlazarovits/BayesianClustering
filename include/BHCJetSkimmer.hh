@@ -34,6 +34,10 @@ class BHCJetSkimmer{
 			//m
 			_prior_params["mean"] = Matrix(3,1);
 						
+			_cell = 0;
+			_tresCte = 0;
+			_tresNoise = 0;
+			_tresStoch = 0;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
@@ -63,6 +67,11 @@ class BHCJetSkimmer{
 			_prior_params["scalemat"] = W;
 			//m
 			_prior_params["mean"] = Matrix(3,1);
+			
+			_cell = acos(-1)/180;
+			_tresCte = 0.133913 * 1e-9;
+			_tresStoch = 1.60666 * 1e-9; 
+			_tresNoise = 0.00691415 * 1e-9;
 				
 	
 			graphs.push_back(nrhs_comptime);
@@ -1006,7 +1015,7 @@ class BHCJetSkimmer{
 		//comp time as a function of number of rechits per event
 		TGraph* nrhs_comptime_subcl = new TGraph();
 		
-		vector<double> xbins = {0, 5, 10, 15, 20, 30, 50, 100}; //for time resolution
+		vector<double> xbins = {0, 1, 2, 3, 4, 5, 10, 15, 20, 30,}; //for time resolution
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0
@@ -1283,9 +1292,11 @@ class BHCJetSkimmer{
 		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,15,0,15);
 		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
-		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],50,-15,15);
+		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],25,-15,15);
 
 		void SetSmear(bool t){ _smear = t; }
+		double _cell, _tresCte, _tresNoise, _tresStoch;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise;}
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){
 			_gev = gev;
@@ -1536,23 +1547,23 @@ class BHCJetSkimmer{
 		geoEavg_diffT.clear();
 		double cell = acos(-1)/180;
 		double deta, dphi; //deta, dphi < cell ==> adjacent
-		double maxEper = 0.3; //energies have to be within maxEper*100 % of max E rh
-		double maxE, diffE;
+		int maxE, lessE;
 		double geoEavg, diffT;
-		double minE = 3;
+		double minE = 1;
 		for(int r = 0; r < rhs.size(); r++){
 			if(rhs[r].E() < minE) continue;	
 			for(int rr = r+1; rr < rhs.size(); rr++){
 				if(rhs[rr].E() < minE) continue;	
 				deta = fabs(rhs[r].eta() - rhs[rr].eta());
 				dphi = fabs(rhs[r].phi() - rhs[rr].phi());
-				maxE = rhs[r].E() > rhs[rr].E() ? rhs[r].E() : rhs[rr].E();
-				diffE = fabs(rhs[r].E() - rhs[rr].E());	
+				dphi = acos(cos(dphi)); //wraparound
+				maxE = rhs[r].E() > rhs[rr].E() ? r : rr;
+				lessE = maxE == r ? rr : r;
 
 				geoEavg = sqrt(rhs[r].E() * rhs[rr].E());
-				diffT = rhs[r].E() > rhs[rr].E() ? rhs[r].t() - rhs[rr].t() : rhs[rr].t() - rhs[r].t();
+				diffT = rhs[maxE].t() - rhs[lessE].t();
 				
-				if(deta <= cell && dphi <= cell && diffE/maxE < maxEper){
+				if(deta <= cell && dphi <= cell && 0.9*maxE <= lessE){
 					//cout << "deta " << deta << " dphi " << dphi << " diffE/maxE " << diffE/maxE << " rhs[r].eta " << rhs[r].eta() << " rhs[rr].eta " << rhs[rr].eta() << " rhs[r].phi " << rhs[r].phi() << " rhs[rr].phi " << rhs[rr].phi() << " rhs[r].E " << rhs[r].E() << " rhs[rr].E " << rhs[rr].E() << " geoEavg " << geoEavg << " diffT " << diffT << endl;
 					geoEavg_diffT.push_back(make_pair(geoEavg,diffT));
 				}

@@ -13,9 +13,9 @@ class MergeTree : BaseTree{
 			_constraint_a = 0; _constraint_b = acos(-1)/2.; 
 			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.2 * 1e-9;
-			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
-			//above tres params are for gev = 1
+			_tresCte = 0.133913 * 1e-9;
+			_tresStoch = 1.60666 * 1e-9; 
+			_tresNoise = 0.00691415 * 1e-9;
 		}
 
 		MergeTree(double alpha){
@@ -24,9 +24,9 @@ class MergeTree : BaseTree{
 			_constraint_a = 0; _constraint_b = acos(-1)/2.;
 			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.2 * 1e-9;
-			_tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
-			//above tres params are for gev = 1
+			_tresCte = 0.133913 * 1e-9;
+			_tresStoch = 1.60666 * 1e-9; 
+			_tresNoise = 0.00691415 * 1e-9;
 		}
 
 		//copy constructor
@@ -42,7 +42,8 @@ class MergeTree : BaseTree{
 			_constraint = tree._constraint;
 			_cell = tree._cell; //default is CMS ECAL cell size
 			_tresCte = tree._tresCte;
-			_tresStoch = tree._tresStoch; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
+			_tresStoch = tree._tresStoch; 
+			_tresNoise = tree._tresNoise; 
 			//above tres params are for gev = 1
 		}
 
@@ -179,11 +180,12 @@ class MergeTree : BaseTree{
 		//by Dnn2piCylinder
 		void CreateMirrorNode(node* x);
 
-		double _cell, _tresCte, _tresStoch;
-		void SetMeasErrParams(double spatial, double tresCte, double tresStoch){
+		double _cell, _tresCte, _tresStoch, _tresNoise;
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){
 			_cell = spatial;
 			_tresCte = tresCte;
 			_tresStoch = tresStoch;
+			_tresNoise = tresNoise;
 		}
 
 	protected:
@@ -226,7 +228,7 @@ class MergeTree : BaseTree{
 				x->model->SetDataSmear(_data_smear);
 			}
 
-			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch); 
+			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 			
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 			x->model->ShiftData(center);
