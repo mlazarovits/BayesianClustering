@@ -163,7 +163,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
-	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresStoch*1e9 << " ns and tres_noise " << _calTresNoise*1e9 << std::setprecision(5) << endl;
+	cout << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresStoch*1e9 << " ns and tres_noise " << _calTresNoise*1e9 << " ns" << endl;
 	//set random number seed - 
 	//The seed to be used, if setSeed is on.
 	//A negative value gives the default seed,
@@ -870,7 +870,7 @@ void BasicDetectorSim::MakeRecHits(){
 			//t can be negative (early times)
 			//update range to be centered on t, up to 5 sigma (calTres)
 			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
-			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			t_cell = t;//_rs.SampleGaussian(t, t_sig, 1).at(0);
 			//if(e_cell > 1) cout << "t " << t*1e9 << " e " << e_cell << " tsig " << t_sig*1e9 << " t_cell " << t_cell*1e9 << endl;
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
@@ -894,7 +894,7 @@ void BasicDetectorSim::MakeRecHits(){
 			//running fastjet on reco cells
 			//TURN ON HERE TO RUN FASTJET ON RECHITS
 			fastjet::PseudoJet input(jet.px(), jet.py(), jet.pz(), jet.e());
-			input.set_user_index(i*1000 + j); //i = idx / 1000, j = idx % 1000`
+			input.set_user_index(i*1000 + j); //i = idx / 1000, j = idx % 1000
 			nrhs++;			
 			fjinputs.push_back(input); 
 			
