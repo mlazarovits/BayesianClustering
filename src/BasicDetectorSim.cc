@@ -163,7 +163,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		pileup.init();			
 		if(_verb > 1) cout << "Simulating pileup" << endl;
 	}
-	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresNoise*1e9 << " ns " << std::setprecision(5) << endl;
+	cout << std::setprecision(13) << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresStoch*1e9 << " ns and tres_noise " << _calTresNoise*1e9 << std::setprecision(5) << endl;
 	//set random number seed - 
 	//The seed to be used, if setSeed is on.
 	//A negative value gives the default seed,
