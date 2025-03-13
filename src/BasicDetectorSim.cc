@@ -61,11 +61,11 @@ BasicDetectorSim::BasicDetectorSim(){
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
-	//_pythia.settings.readString("Beams:allowVertexSpread = on");
-	//_pythia.settings.readString("Beams:sigmaVertexZ = 30");
-	//_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(30/(_sol*1e3))); //sol is in m/s
-	//_pythia.settings.readString("Beams:maxDevVertex = 1");
-	//_pythia.settings.readString("Beams:maxDevTime = 1");	
+	_pythia.settings.readString("Beams:allowVertexSpread = on");
+	_pythia.settings.readString("Beams:sigmaVertexZ = 30");
+	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(30/(_sol*1e3))); //sol is in m/s
+	_pythia.settings.readString("Beams:maxDevVertex = 1");
+	_pythia.settings.readString("Beams:maxDevTime = 1");	
 }
 
 //ctor with input pythia cmnd file
