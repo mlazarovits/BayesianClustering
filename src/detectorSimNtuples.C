@@ -115,15 +115,15 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
-    	 		tres_cte = std::stod(argv[i])*1e-9;
+    	 		tres_cte = std::stod(argv[i])*1e-9; //need to convert to s
    		}
 		if(strncmp(argv[i],"--tResNoise", 11) == 0){
 			i++;
-    	 		tres_noise = std::stod(argv[i])*1e-9;
+    	 		tres_noise = std::stod(argv[i])*1e-9; //need to convert to s
    		}
 		if(strncmp(argv[i],"--tResStoch", 11) == 0){
 			i++;
-    	 		tres_stoch = std::stod(argv[i])*1e-9;
+    	 		tres_stoch = std::stod(argv[i])*1e-9; //need to convert to s
    		}
 
 	}
