@@ -174,13 +174,16 @@ class BHCJetSkimmer{
 			_hists1D.push_back(AK4JetConstJetRatio_GenP);
 			_hists1D.push_back(AK4JetConstJetRatio_GenPt);
 			_hists1D.push_back(AK4Jet_rhTimes);
-			_hists1D.push_back(geoEavg_sigmaTime_adjRhs);
+			_hists1D.push_back(geoEavg_sigmaDeltaTime_adjRhs);
 			_hists1D.push_back(AK4Jet_subClusterEtaCenter_rStat);
 			_hists1D.push_back(AK4Jet_subClusterPhiCenter_rStat);
 			_hists1D.push_back(AK4Jet_subClusterTimeCenter_rStat);
 			_hists1D.push_back(AK4Jet_subClusterEtaSig_rStat);
 			_hists1D.push_back(AK4Jet_subClusterPhiSig_rStat);
 			_hists1D.push_back(AK4Jet_subClusterTimeSig_rStat);
+			_hists1D.push_back(recoJet_subClusteretaPhiCovNorm);
+			_hists1D.push_back(recoJet_subClustertimeEtaCovNorm);
+			_hists1D.push_back(recoJet_subClustertimePhiCovNorm);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -213,7 +216,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(AK4Jet_genJetPt_genPartJetPtRatio);
 			_hists2D.push_back(AK4Jet_genJetPt_nSubclusters);
 			_hists2D.push_back(AK4Jet_nGenPartsptge5_nSubclusters);
-			_hists2D.push_back(geoEavg_diffTime_adjRhs);
+			_hists2D.push_back(geoEavg_diffDeltaTime_adjRhs);
+			_hists2D.push_back(recoJet_subClusteretaPhiCov_timeEtaCov);
+			_hists2D.push_back(recoJet_subClusteretaPhiCovNorm_timeEtaCovNorm);
 	
 
 		}
@@ -524,6 +529,11 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
 						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
 						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
+						_procCats[p].hists1D[0][104]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)));
+						_procCats[p].hists1D[0][105]->Fill(subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
+						_procCats[p].hists1D[0][106]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
+						_procCats[p].hists2D[0][31]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
+						_procCats[p].hists2D[0][32]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
 						k++;
 					}
 					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
@@ -984,18 +994,19 @@ class BHCJetSkimmer{
 					histname = _procCats[p].hists2D[0][i]->GetName();
 					//make sure taking info from 2D diff histogram
 					if(histname.find("diffDelta") == string::npos) continue;
+					//cout << "hist " << histname << endl;
 					//make sure profiles get written
 					nprofs = _procCats[p].hists2D[0][i]->GetNbinsX();
 					for(int k = 1; k < nprofs+1; k++){
 						histname = _procCats[p].hists2D[0][i]->GetName();
 						profname = "profile_"+histname;
 						//profname.insert(profname.size(),"_bin"+std::to_string(k));
-			//cout << "p " << p << " profname " << profname << " plotname " << _procCats[p].plotName << endl;
 						if(!_procCats[p].plotName.empty()) profname.insert(profname.find("_"+_procCats[p].plotName),"_bin"+std::to_string(k));
 						else profname = profname += "_bin"+std::to_string(k);
 						nbins = _procCats[p].hists2D[0][i]->GetNbinsY();
 						TH1D* prof = new TH1D(profname.c_str(), profname.c_str(), nbins, _procCats[0].hists2D[0][i]->GetYaxis()->GetBinLowEdge(1), _procCats[0].hists2D[0][i]->GetYaxis()->GetBinUpEdge(nbins));
 						prof->SetTitle(_procCats[p].plotName.c_str());
+			//cout << "p " << p << " profname " << profname << " plotname " << _procCats[p].plotName << " title " << prof->GetTitle() << endl;
 						prof->GetXaxis()->SetTitle(_procCats[p].hists2D[0][i]->GetYaxis()->GetTitle());	
 						//cout << "adding hist " << prof->GetName() <<  " " << prof->GetTitle() << endl;
 						_procCats[p].AddHist(prof);	
@@ -1190,11 +1201,11 @@ class BHCJetSkimmer{
 		//84 - time sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeSig = new TH1D("AK4Jet_subClusterTimeSig","AK4Jet_subClusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",50,-0.002,0.002);
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("AK4Jet_subClusteretaPhiCov","AK4Jet_subClusteretaPhiCov",50,-0.0005,0.0005);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",50,-0.02,0.02);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("AK4Jet_subClustertimeEtaCov","AK4Jet_subClustertimeEtaCov",50,-0.005,0.005);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",50,-0.02,0.02);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("AK4Jet_subClustertimePhiCov","AK4Jet_subClustertimePhiCov",50,-0.005,0.005);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("AK4Jet_nRhs","AK4Jet_nRhs",200,0,200);
 		//89 - n rhs in reco jets
@@ -1214,7 +1225,7 @@ class BHCJetSkimmer{
 		//96 - ak4 jet rh times
 		TH1D* AK4Jet_rhTimes = new TH1D("AK4Jet_rhTimes","AK4Jet_rhTimes",200,-25,25);
 		//97 - time resolution for adjacent xtals
-		TH1D* geoEavg_sigmaTime_adjRhs = new TH1D("geoEavg_sigmaTime_adjRhs","geoEavg_sigmaTime_adjRhs;geoEavg;sigmaTime;a.u.",xbins.size()-1,&xbins[0]);
+		TH1D* geoEavg_sigmaDeltaTime_adjRhs = new TH1D("geoEavg_sigmaDeltaTime_adjRhs","geoEavg_sigmaDeltaTime_adjRhs;geoEavg;sigmaDeltaTime;a.u.",xbins.size()-1,&xbins[0]);
 		//98 - eta center for jet - data statistic
 		TH1D* AK4Jet_subClusterEtaCenter_rStat = new TH1D("AK4Jet_subClusterEtaCenter_rStat","AK4Jet_subClusterEtaCenter_rStat",25,-1.8,1.8);
 		//99 - phi center for jet - data statistic
@@ -1227,6 +1238,12 @@ class BHCJetSkimmer{
 		TH1D* AK4Jet_subClusterPhiSig_rStat = new TH1D("AK4Jet_subClusterPhiSig_rStat","AK4Jet_subClusterPhiSig_rStat",25,0., 0.1);
 		//103 - time sigma for jet - data statistic
 		TH1D* AK4Jet_subClusterTimeSig_rStat = new TH1D("AK4Jet_subClusterTimeSig_rStat","AK4Jet_subClusterTimeSig_rStat",25,0.,5.);
+		//104 - eta-phi covariance of GMM cluster from reco jets normalized
+		TH1D* recoJet_subClusteretaPhiCovNorm = new TH1D("AK4Jet_subClusteretaPhiCovNorm","AK4Jet_subClusteretaPhiCovNorm",50,-0.002,0.002);
+		//105 - time-eta covariance of GMM cluster from reco jets normalized
+		TH1D* recoJet_subClustertimeEtaCovNorm = new TH1D("AK4Jet_subClustertimeEtaCovNorm","AK4Jet_subClustertimeEtaCovNorm",50,-0.005,0.005);
+		//106 - time-phi covariance of GMM cluster from reco jets normalized
+		TH1D* recoJet_subClustertimePhiCovNorm = new TH1D("AK4Jet_subClustertimePhiCovNorm","AK4Jet_subClustertimePhiCovNorm",50,-0.005,0.005);
 		
 
 
@@ -1292,11 +1309,17 @@ class BHCJetSkimmer{
 		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("AK4Jet_nGenPartsptge5_nSubclusters","AK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",40,0,40,15,0,15);
 		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
-		TH2D* geoEavg_diffTime_adjRhs = new TH2D("geoEavg_diffTime_adjRhs","geoEavg_diffTime_adjRhs;geoEavg;diffTime;a.u.",xbins.size()-1,&xbins[0],25,-15,15);
+		TH2D* geoEavg_diffDeltaTime_adjRhs = new TH2D("geoEavg_diffDeltaTime_adjRhs","geoEavg_diffDeltaTime_adjRhs;geoEavg;diffDeltaTime;a.u.",xbins.size()-1,&xbins[0],25,-5,5);
+		//31 - eta-phi cov vs time-eta cov 
+		TH2D* recoJet_subClusteretaPhiCov_timeEtaCov = new TH2D("AK4Jet_subClusteretaPhiCov_timeEtaCov","AK4Jet_subClusteretaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",50,-0.005,0.005,50,-0.02,0.02);
+		//32 - eta-phi cov norm vs time-eta cov norm 
+		TH2D* recoJet_subClusteretaPhiCovNorm_timeEtaCovNorm = new TH2D("AK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm","AK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm;etaPhiCovNorm;timeEtaCovNorm",50,-0.005,0.005, 50, -0.005, 0.005);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
-		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise;}
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
+	cout << "Using tres_cte = " << _tresCte << " ns and tres_stoch = " << _tresNoise << " ns " << endl;
+ }
 		void SetOutfile(string fname){ _oname = fname; }
 		void SetTransferFactor(double gev){
 			_gev = gev;
@@ -1545,21 +1568,24 @@ class BHCJetSkimmer{
 
 	void CalcRhTimeDiff(vector<JetPoint>& rhs, vector<pair<double, double>>& geoEavg_diffT){
 		geoEavg_diffT.clear();
-		double cell = acos(-1)/180;
+		double cell = 1;//acos(-1)/180;
 		double deta, dphi; //deta, dphi < cell ==> adjacent
 		int maxE, lessE;
 		double geoEavg, diffT;
 		double minE = 1;
+		int r_ieta, r_iphi, rr_ieta, rr_iphi;
 		for(int r = 0; r < rhs.size(); r++){
 			if(rhs[r].E() < minE) continue;	
 			for(int rr = r+1; rr < rhs.size(); rr++){
-				if(rhs[rr].E() < minE) continue;	
-				deta = fabs(rhs[r].eta() - rhs[rr].eta());
-				dphi = fabs(rhs[r].phi() - rhs[rr].phi());
-				dphi = acos(cos(dphi)); //wraparound
+				if(rhs[rr].E() < minE) continue;
+				r_ieta = rhs[r].rhId() / 1000;	
+				rr_ieta = rhs[rr].rhId() / 1000;	
+				r_iphi = rhs[r].rhId() % 1000;	
+				rr_iphi = rhs[rr].rhId() % 1000;	
+				deta = fabs(r_ieta - rr_ieta);
+				dphi = fabs(r_iphi - rr_iphi);
 				maxE = rhs[r].E() > rhs[rr].E() ? r : rr;
 				lessE = maxE == r ? rr : r;
-
 				geoEavg = sqrt(rhs[r].E() * rhs[rr].E());
 				diffT = rhs[maxE].t() - rhs[lessE].t();
 				
