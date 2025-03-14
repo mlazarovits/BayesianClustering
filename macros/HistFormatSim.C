@@ -1558,6 +1558,7 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimePhiCov");
 
 	Hist2D(file, "ttbar", "AK4", oname, "nGenPartsptge5_nSubclusters");
+	Hist2D(file, "ttbar", "AK4", oname, "subCluster");
 	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
 	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
 		
