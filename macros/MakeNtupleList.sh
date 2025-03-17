@@ -38,10 +38,10 @@ then
 elif [ $PD = "DEG" ]
 then
 	NAME=DoubleEG
-elif [ $PD = "SMS_GlGl" ]
+elif [ $PD = "SMS-GlGl" ]
 then
 	NAME=CRAB_UserFiles
-	SEL=v23
+	SEL=$2
 else
 	NAME=${PD}_HT-$4_TuneCP5_13TeV-madgraph-pythia8
 fi
