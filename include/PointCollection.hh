@@ -277,6 +277,7 @@ class PointCollection{
 
 	}
 
+
 	//shifts min to zero
 	BayesPoint MinCenter(){
 		//vector<double> min;
@@ -312,6 +313,20 @@ class PointCollection{
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - t,d);
 			}
+		}
+
+	}
+	
+	void Translate(double t, int d){
+		for(int i = 0; i < (int)_pts.size(); i++){
+			_pts[i].SetValue(_pts[i].at(d) - t,d);
+		}
+
+	}
+	
+	void CircularTranslate(double t, int d){
+		for(int i = 0; i < (int)_pts.size(); i++){
+			_pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
 		}
 
 	}
@@ -402,6 +417,20 @@ class PointCollection{
 			_pts[i].SetWeight(w[i]);
 	}
 
+	//weighted circular mean	
+	double CircularCentroid(int d) const{
+		double avg_s = 0;
+		double avg_c = 0;
+		double sum = 0;
+		for(int i = 0; i < (int)_pts.size(); i++){
+			avg_s += sin(_pts[i].at(d))*_pts[i].w();
+			avg_c += cos(_pts[i].at(d))*_pts[i].w();
+			sum += _pts[i].w();
+		}
+		avg_s /= sum;
+		avg_c /= sum;
+		return atan2(avg_s,avg_c);
+	};
 
 	//weighted mean	
 	double Centroid(int d) const{
