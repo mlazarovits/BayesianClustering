@@ -263,6 +263,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	vector<double> norms;
 	model->GetNorms(norms);
 	int nsubcl = model->GetNClusters();
+	cout << "jet nsubcl " << nsubcl << endl;
 	_nRHs = model->GetData()->GetNPoints();
 	double pt = 0;
 	_E = 0;
@@ -273,10 +274,9 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_mu = Matrix(3,1);
 	_pi = 0;
 	double x, y, z, t, eta, phi, theta, w;
-	map<string, Matrix> params;
 	//set params from model - need to define how to do this from data pts/subcluster posterior values
 	//use first subcluster for now
-	model->GetLikelihoodParameters(0);
+	map<string,Matrix> params = model->GetLikelihoodParameters(0);
 	_mu = params["mean"];
 	_cov = params["cov"];	
 	_eta = _mu.at(0,0);
