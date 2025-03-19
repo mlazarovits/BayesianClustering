@@ -55,16 +55,16 @@ cout << "n pts " << n << endl;
 			cout << "return" << endl;
 			return _trees;
 		}
-		_points[i].Print();
+		//_points[i].Print();
 		mt->AddLeaf(&_points[i].at(0));
 	}
-	cout << "# clusters " << mt->GetNAllClusters() << endl;
-	cout << "------------------------------------------" << endl;
+	//cout << "# clusters " << mt->GetNAllClusters() << endl;
+	//cout << "------------------------------------------" << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
-	cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
+	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
 	
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
@@ -150,26 +150,25 @@ cout << "n pts " << n << endl;
 		}
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
-		if(BestRk < 0.5){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
+		if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
 
 
 		int nn;
-		//if(_verb > 0) cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debug
-		cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
+		if(_verb > 1)cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 		
 		vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 		vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
-		cout << "jet_i pts" << endl;
+		//cout << "jet_i pts" << endl;
 		for(int i = 0; i < (int)jps_i.size(); i++){
 			BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 			pt.SetWeight(jps_i[i].GetWeight());
-			pt.Print();
+			//pt.Print();
 		}
-		cout << "jet_j pts" << endl;
+		//cout << "jet_j pts" << endl;
 		for(int i = 0; i < (int)jps_j.size(); i++){
 			BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 			pt.SetWeight(jps_j[i].GetWeight());
-			pt.Print();
+			//pt.Print();
 		}
 
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
@@ -184,15 +183,16 @@ cout << "n pts " << n << endl;
 		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
 		PointCollection newpts = PointCollection();
 		for(int i = 0; i < (int)jps.size(); i++){
-			cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
+			//cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-		cout << "newpts" << endl;
-		newpts.Print(); cout << "\n\n\n" << endl;
+		//cout << "newpts" << endl;
+		//newpts.Print(); 
+		if(_verb > 0)cout << "\n\n\n" << endl;
 		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
@@ -215,19 +215,19 @@ cout << "n pts " << n << endl;
 		if(trees[i] == nullptr){ nnull++; continue; }
 		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 			nmirror++;
-				cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-			cout << " points" << endl; trees[i]->model->GetData()->Print();
+				//cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
+			//cout << " points" << endl; trees[i]->model->GetData()->Print();
 			continue; }
 		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
 
 		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
 		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 		_trees.push_back(trees[i]);
-		cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-		cout << " points" << endl; trees[i]->model->GetData()->Print();
+		//cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
+		//cout << " points" << endl; trees[i]->model->GetData()->Print();
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
 			params = trees[i]->model->GetLHPosteriorParameters(k);
-			cout << " k " << k << " center " << endl; params["mean"].Print();
+			//cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
 		//cout << "points" << endl; trees[i]->model->GetData()->Print();
