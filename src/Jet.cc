@@ -263,7 +263,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	vector<double> norms;
 	model->GetNorms(norms);
 	int nsubcl = model->GetNClusters();
-	cout << "jet nsubcl " << nsubcl << endl;
 	_nRHs = model->GetData()->GetNPoints();
 	double pt = 0;
 	_E = 0;
