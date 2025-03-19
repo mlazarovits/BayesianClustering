@@ -302,7 +302,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_px += pt*cos(_rhs[i].phi());
 		_py += pt*sin(_rhs[i].phi());
 		_pz += pt*sinh(_rhs[i].eta());
-		//cout << "total pts r " << i << " pt " << pt << " E " << _rhs[i].E() << " px " << pt*cos(_rhs[i].phi()) << " py " << pt*sin(_rhs[i].phi()) << " pz " << pt*sinh(_rhs[i].eta()) << " eta " << _rhs[i].eta() << " phi " << _rhs[i].phi() << endl;
 		
 		_E += _rhs[i].E();
 
@@ -321,30 +320,19 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	double pyt = 0;
 	double pzt = 0;
 	double Et = 0;
-	double mt = 0;	
+	double mt = 0;
 	for(int k = 0; k < nsubcl; k++){
 		params = model->GetLikelihoodParameters(k);
 		Ek = norms[k]/gev;
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
-		//subcluster momentom 3vector is r_nk weighted average over rechits for cluster k
-		double pxk = 0;
-		double pyk = 0;
-		double pzk = 0;
-		for(int r = 0; r < _nRHs; r++){
-			Jet rh(_rhs[r], _vtx);
-			pxk += r_nk.at(r,k)*rh.px();	
-			pyk += r_nk.at(r,k)*rh.py();	
-			pzk += r_nk.at(r,k)*rh.pz();	
-			//cout << "subcl pts k " << k << " r " << r << " pt " << rh.pt() << " E " << rh.E() << " px " << rh.px() << " py " << rh.py() << " pz " << rh.pz() << " eta " << rh.eta() << " phi " << rh.phi() << endl;
-		}
-
-		subcl.SetP(pxk, pyk, pzk);
-	//cout << "subcluster k " << k << " px " << subcl.px() << " py " << subcl.py() << " pz " << subcl.pz() << " E " << subcl.E() << " m2 " << subcl.m2() << " mass " << subcl.mass() << endl;
-		pxt += pxk;
-		pyt += pyk;
-		pzt += pzk;
-		Et += Ek;
 		_constituents.push_back(subcl);
+		
+		pxt += subcl.px();
+		pyt += subcl.py();
+		pzt += subcl.pz();
+		Et += subcl.E();
+
+		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
 	}
 	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
 	//set momentum from subclusters
@@ -361,7 +349,13 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 
 	_update_mom();
-//cout << "jet from GMM px " << _px << " py " << _py << " pz " << _pz << " m2 " << m2() << " mass " << mass() << " E " << _E << endl;
+	_mass = mass();
+
+	//double kt2 = pxt*pxt + pyt*pyt;
+	//double m2t = (Et+pzt)*(Et-pzt)-kt2; 
+	//mt = m2t < 0.0 ? -sqrt(-m2t) : sqrt(m2t); 
+	//cout << "jet from rh px " << _px << " py " << _py << " pz " << _pz << " E " << _E << " m2 " << m2() << " mass " << _mass << endl;
+	//cout << "jet from GMM px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << m2t << " mass " << mt << "\n" << endl;
 
 }
 
