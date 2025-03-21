@@ -18,8 +18,8 @@ Jet::Jet(){
 	
 	_nRHs = 0;
 	
-	_cov = Matrix();
-	_mu = Matrix();
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
 	_pi = 0;
 	_update_mom();
 }
@@ -43,8 +43,8 @@ Jet::Jet(double px, double py, double pz, double E){
 	_t = 0;
 	
 	_nRHs = 0;
-	_cov = Matrix();
-	_mu = Matrix();
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
 	_pi = 0;
 	
 	_update_mom();
@@ -81,8 +81,8 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_set_time();
 	_ensure_valid_rap_phi();
 	
-	_cov = Matrix();
-	_mu = Matrix();
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
 	_pi = 0;
 	_update_mom();
 }
@@ -148,8 +148,8 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	_ensure_valid_rap_phi();
 	_set_time();
 	
-	_cov = Matrix();
-	_mu = Matrix();
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
 	_pi = 0;
 	_update_mom();
 
@@ -185,8 +185,8 @@ Jet::Jet(const vector<Jet>& jets){
 	_ensure_valid_rap_phi();
 	_set_time();
 	
-	_cov = Matrix();
-	_mu = Matrix();
+	_cov = Matrix(3,3);
+	_mu = Matrix(3,1);
 	_pi = 0;
 	_update_mom();
 }
@@ -273,16 +273,48 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_mu = Matrix(3,1);
 	_pi = 0;
 	double x, y, z, t, eta, phi, theta, w;
-	//set params from model - need to define how to do this from data pts/subcluster posterior values
-	//use first subcluster for now
-	map<string,Matrix> params = model->GetLikelihoodParameters(0);
-	_mu = params["mean"];
-	_cov = params["cov"];	
-	_eta = _mu.at(0,0);
-	_phi = _mu.at(1,0);
-	_t = _mu.at(2,0);
 
 
+	//set subcluster (ie constituent) parameters + 4vectors
+	double pxt = 0;
+	double pyt = 0;
+	double pzt = 0;
+	double Et = 0;
+	double mt = 0;
+	_mu = Matrix(3,1);
+	_cov = Matrix(3,3);	
+	_eta = 0;
+	_phi = 0;
+	_t = 0;
+
+	for(int k = 0; k < nsubcl; k++){
+		auto params = model->GetLikelihoodParameters(k);
+		Ek = norms[k]/gev;
+		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
+		_constituents.push_back(subcl);
+		
+	//set momentum from subclusters
+		_px += subcl.px();
+		_py += subcl.py();
+		_pz += subcl.pz();
+	//	_E += subcl.E(); //set from rhs
+	
+		_mu.add(params["mean"]);
+
+		_eta += subcl.eta();
+		_phi += subcl.phi();
+		_t += subcl.time();
+
+		cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
+	}
+	_eta /= double(nsubcl);
+	_phi /= double(nsubcl);
+	_t /= double(nsubcl);
+
+	_mu.mult(_mu,1/double(nsubcl));
+	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
+
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
@@ -298,10 +330,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
 	
-		pt = _rhs[i].E()/cosh(_rhs[i].eta()); //consistent with mass = 0
-		_px += pt*cos(_rhs[i].phi());
-		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*sinh(_rhs[i].eta());
+	//	pt = _rhs[i].E()/cosh(_rhs[i].eta()); //consistent with mass = 0
+	//	_px += pt*cos(_rhs[i].phi());
+	//	_py += pt*sin(_rhs[i].phi());
+	//	_pz += pt*sinh(_rhs[i].eta());
 		
 		_E += _rhs[i].E();
 
@@ -313,32 +345,30 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 			w += r_nk.at(i,k);	 
 		//set probabilistic coefficient
 		//pi = sum_rh sum_k r_nk
-		_pi += w;	
-	}	
-	//set subcluster (ie constituent) parameters + 4vectors
-	double pxt = 0;
-	double pyt = 0;
-	double pzt = 0;
-	double Et = 0;
-	double mt = 0;
-	for(int k = 0; k < nsubcl; k++){
-		params = model->GetLikelihoodParameters(k);
-		Ek = norms[k]/gev;
-		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
-		_constituents.push_back(subcl);
-		
-		pxt += subcl.px();
-		pyt += subcl.py();
-		pzt += subcl.pz();
-		Et += subcl.E();
+		_pi += w;
 
-		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
+		//do point-wise covariance with mean set by subclusters
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].time() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(deta*deta,0,0);
+		cov_entry.SetEntry(deta*dphi,1,0);
+		cov_entry.SetEntry(deta*dtime,2,0);
+		cov_entry.SetEntry(dphi*deta,0,1);
+		cov_entry.SetEntry(dphi*dphi,1,1);
+		cov_entry.SetEntry(dtime*dphi,2,1);
+		cov_entry.SetEntry(deta*dtime,0,2);
+		cov_entry.SetEntry(dphi*dtime,1,2);
+		cov_entry.SetEntry(dtime*dtime,2,2);
+		cov_entry.SetEntry(dtime*dtime,2,2);
+		
+
+		_cov.add(cov_entry);	
 	}
-	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
-	//set momentum from subclusters
-	_px = pxt;
-	_py = pyt;
-	_pz = pzt;
+	_cov.mult(_cov,1/double(_nRHs));	
 
 
 	_kt2 = _px*_px + _py*_py;
