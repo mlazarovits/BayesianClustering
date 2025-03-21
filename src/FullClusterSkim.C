@@ -136,9 +136,7 @@ int main(int argc, char *argv[]){
 			W.SetEntry(W_ee,0,0);
 			W.SetEntry(W_pp,1,1);
 			W.SetEntry(W_tt,2,2);
-			cout << "prior sigma" << endl; W.Print();
 			//entries are in cov - need to invert for W
-			W.invert(W);
 			cout << "prior W" << endl; W.Print();
    		}
 		if(strncmp(argv[i],"--m0", 4) == 0){
