@@ -130,14 +130,14 @@ void BHCJetSkimmer::Skim(){
 		//0 && 0 = 0 -> fully had
 		//1 && 1 = 1 -> fully lep
 		//0 && 1 = 2 -> semi lep 
-		if(_base->Top_decayId->size() > 1){
-			if(_base->Top_decayId->at(0) == _base->Top_decayId->at(1))
-				_topDecayType = _base->Top_decayId->at(0);
-			else
-				_topDecayType = 2;
-		}
-		else _topDecayType = -1;
-	cout << "\ntopDecayType " << _topDecayType << endl;
+		//if(_base->Top_decayId->size() > 1){
+		//	if(_base->Top_decayId->at(0) == _base->Top_decayId->at(1))
+		//		_topDecayType = _base->Top_decayId->at(0);
+		//	else
+		//		_topDecayType = 2;
+		//}
+		//else _topDecayType = -1;
+	//cout << "\ntopDecayType " << _topDecayType << endl;
 	//gen particles in event
 	//for(int g = 0; g < _base->genpart_ngenpart; g++){
 	//	cout << "gen particle # " << g << " id " << _base->genpart_id->at(g) << " momidx " << _base->genpart_momIdx->at(g) << " E " << _base->genpart_energy->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;

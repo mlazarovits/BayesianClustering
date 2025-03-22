@@ -196,6 +196,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double evt_Etot = 0;
 	int nhad = 0;
 	int nlep = 0;
+	int nsemilep = 0;
 	for(int i = _evti; i < _evtj; i++){
 		if(evt != -1){
 			if(i != evt) continue;
@@ -388,9 +389,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){		
 			vector<int> kids_id;
 			vector<int> kids_idx = sumEvent[*t].daughterList();
-			//cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
-			//for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
-			//cout << endl;
+			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters";
+			for(auto k : kids_idx){ cout << " idx " << k << " id " << sumEvent[k].id() << " "; kids_id.push_back(fabs(sumEvent[k].id()));}
+			cout << endl;
 			//cout << "this top - mother1 " << sumEvent[*t].mother1() << " mother2 " << sumEvent[*t].mother2() << endl;
 			vector<int> moms_idx = sumEvent[*t].motherList();
 			//cout << "top idx " << *t << " has " << moms_idx.size() << " mothers";
@@ -453,8 +454,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					
 
 			}
-		//	for(int kk = 0; kk < wkids_idx.size(); kk++)
-		//		cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
+			for(int kk = 0; kk < wkids_idx.size(); kk++)
+				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
 			if(Widx != -999) w_idxs.insert(Widx);
 
 		}
@@ -468,7 +469,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		int _genTopId;
 		vector<int> had = {1, 2, 3, 4};
 		vector<int> lep = {11, 12, 13, 14};
-		//cout << "w_idxs size " << w_idxs.size() << endl;
+		cout << "w_idxs size " << w_idxs.size() << endl;
 		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
 			//cout << "w idx " << *w << endl;
 			vector<int> wkids_idx = sumEvent[*w].daughterList();
@@ -478,7 +479,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
 				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
 				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
-				//cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
+				cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
 			
 				//want to save gen particle info at detector - also save the pdgid of their direct mother
 				RecoParticle genpart1(sumEvent[wkids_idx[0]]);
@@ -501,22 +502,23 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//if both W decay products are had -> w1 = 0
 				//if both W decay products are lep -> w1 = 1
 				//else (1 W decay product had, the other lep) -> w1 = -1 (shouldnt happen)
-				//cout << "wnct " << wcnt << endl;
-				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()) 
+				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()){ 
 					wid[wcnt] = 0;
-				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()) 
+				}
+				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()){ 
 					wid[wcnt] = 1;
+				}
 				else wid[wcnt] = -1;
+				//cout << "wnct " << wcnt << " wid " << wid[wcnt] << endl;
 		
 				_topDecayId.push_back(wid[wcnt]);	
 				wcnt++; 
 			}
-			//cout << "did w decay classification for w " << *w << " wcnt " << wcnt << " wid " << wid[wcnt] << endl;
 		}
 		//cout << "Finished categorizing W decays" << endl;
 		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
 		if(top_idxs.size() > 1){
-			//cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
+			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
 			int top_idx1, top_idx2;
 			top_idx1 = *top_idxs.begin();
 			top_idx2 = *next(top_idxs.begin());
@@ -543,6 +545,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			else if(_genTopId == 2){
 				_topPt_lep.push_back(sumEvent[top_idx1].pT());
 				_topPt_lep.push_back(sumEvent[top_idx2].pT());
+				nsemilep++;
 			}
 			else continue;
 		}
@@ -564,7 +567,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		fjoutputs.resize(0);
 		//cout << endl;
 	}
-cout << "nhad " << nhad << " nlep " << nlep << endl;
+cout << "nhad " << nhad << " nlep " << nlep << " nsemilep " << nsemilep << endl;
 }
 
 //updates pvec of p

@@ -571,7 +571,7 @@ void GaussianMixture::CalculateRStatistics(){
 		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
 		//N_k = 0 clusters do not get a smear because there are no points to smear
 //		S.Print();
-		m_model[k]->SetParameter("cov",S);
+		//m_model[k]->SetParameter("cov",S);
 		_Sbar[k] = S;
 		//if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
 	}

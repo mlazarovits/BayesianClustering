@@ -71,6 +71,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
+		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 
 		Jet j(rh, vtx);
 		rhs.push_back(j);
@@ -120,6 +121,7 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
+		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 
 		rhs.push_back(rh);
 	}
