@@ -326,11 +326,27 @@ class PointCollection{
 	
 	void CircularTranslate(double t, int d){
 		for(int i = 0; i < (int)_pts.size(); i++){
-			_pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
+			//if(d == 1) t = acos(cos(t));
+			if(d == 1) cout << "i " << i << " pt " << _pts[i].at(d) << " shift " << t << endl;
+			
+			if(_pts[i].at(d) > acos(-1) || _pts[i].at(d) < 0)
+				_pts[i].SetValue(-acos(cos(_pts[i].at(d))) - t,d);
+			else
+				_pts[i].SetValue(acos(cos(_pts[i].at(d))) - t,d);
+			if(d == 1){ cout << "post shift" << endl; _pts[i].Print(); }
 		}
 
 	}
 
+
+	void Put02pi(int d){
+		double pi = acos(-1);
+		for(int i = 0; i < (int)_pts.size(); i++){
+			if(_pts[i].at(d) < 0) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
+			else if(_pts[i].at(d) > 2*pi) _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
+			else continue;
+		}
+	}
 
 	//normalize all dimensions indepedently
 	//vector<double> Normalize(){
@@ -429,6 +445,7 @@ class PointCollection{
 		}
 		avg_s /= sum;
 		avg_c /= sum;
+		//return acos(cos(atan2(avg_s,avg_c)));
 		return atan2(avg_s,avg_c);
 	};
 
