@@ -428,7 +428,7 @@ class BaseSkimmer{
 			procCat tot(_hists1D, _hists2D);
 			tot.ids = {-999};
 			_procCats.push_back(tot);	
-			//cout << "sample " << sample << endl;	
+			cout << "sample " << sample << endl;	
 			if(sample.find("GMSB") != string::npos){
 				//signal
 				//do string matching to find specific grid point
@@ -468,7 +468,13 @@ class BaseSkimmer{
 			}
 			else if(sample.find("SMS-GlGl") != string::npos){
 				//data
-				procCat glgl(_hists1D, _hists2D, "GluGluN2", "GluGluN2", leadsep);
+				procCat glgl(_hists1D, _hists2D, "SMS-GlGl", "SMS-GlGl", leadsep);
+				glgl.ids = {-999};
+				_procCats.push_back(glgl);
+			}
+			else if(sample.find("gogoG") != string::npos){
+				//data
+				procCat glgl(_hists1D, _hists2D, "SMS-GlGl", "SMS-GlGl", leadsep);
 				glgl.ids = {-999};
 				_procCats.push_back(glgl);
 			}
