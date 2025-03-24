@@ -255,8 +255,14 @@ class BasePDFMixture : public BasePDF{
 		//shift data 
 		void ShiftData(const BayesPoint& pt){
 			m_data->Translate(pt.at(0),0);
+			//m_data->Translate(pt.at(1),1);
 			m_data->CircularTranslate(pt.at(1),1);
 			m_data->Translate(pt.at(2),2);
+			
+		}
+
+		void PutPhi02pi(){
+			m_data->Put02pi(1);
 		}
 		//scale data 
 		void ScaleData(Matrix sc){
