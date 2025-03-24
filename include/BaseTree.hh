@@ -39,6 +39,8 @@ class BaseTree{
 			double nndist = 1e300;
 			//mirror node
 			struct node* mirror = nullptr;
+			//is mirror
+			bool ismirror = false;
 			int idx = -999; //index of node in merge tree
 			
 			//node* operator =(const node* n){
