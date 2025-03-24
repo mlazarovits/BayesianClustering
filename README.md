@@ -27,10 +27,32 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Branches
 - `main` branch is latest stable release
-- always work on `dev_vXX` branch of latest version
+- always work on `dev` branch (current ntuple version is v24) 
 - `dev_v15` is compatible with v15, v16 of KUCMS ntuples
 - `dev_v14` is compatible with v14 of KUCMS ntuples
-- `dev` branch is inactive
+
+### Calling the algorithm
+First, instantiate a BayesCluster class instance with a vector of Jets passed as the data to the constructor. Various hyperparameters can now be set with the respective methods of the BayesCluster class. Calling `algo->SubCluster()` will return a GaussianMixture pointer, which is the model that contains all the information on the subclusters, their means, and covariances. These observables can be accessed by `GetLHPosteriorParameters(k)` within the GaussianMixture class, where `k` is the index of the subcluster for which you want these parameters. To sum up,
+```
+BayesCluster* algo = new BayesCluster(data);
+GaussianMixture* gmm = algo->SubCluster();
+int nsubclusters = gmm->GetNClusters();
+for(int k = 0; k < nsubclusters; k++){
+	map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
+	//these would be the parameters of the Gaussian component
+	Matrix mean = params["mean"];
+	Matrix cov = params["cov"];
+	//these would be the parameters of the prior on this Gaussian component (a normal-inverse-Wishart prior)
+	Matrix m = params["m"];
+	Matrix beta = params["scale"];
+	Matrix nu = params["dof"];
+	Matrix W = params["scalemat"];
+	//these would be the parameter of the associated Dirichlet distribution and the probabilistic coeff
+	Matrix alpha = params["alpha"];
+	Matrix pi = params["pi"];
+}
+	
+```
 
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
