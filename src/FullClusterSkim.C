@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 
 	int verb = 0;
 	bool weighted = true;
-	bool smear = true;
+	bool smear = false;
 	bool timesmear = false;
 	//by default in BayesCluster
 	bool distconst = true;
@@ -155,9 +155,9 @@ int main(int argc, char *argv[]){
     	 		weighted = false;
 			cout << "Turning off energy weighting." << endl;
    		}
-		if(strncmp(argv[i],"--noSmear", 9) == 0){
-    	 		smear = false;
-			cout << "Turning off smearing." << endl;
+		if(strncmp(argv[i],"--smear", 7) == 0){
+    	 		smear = true;
+			cout << "Turning on smearing (no measurement error)." << endl;
    		}
 		if(strncmp(argv[i],"--timeSmear", 11) == 0){
     	 		timesmear = true;
@@ -286,7 +286,7 @@ int main(int argc, char *argv[]){
    		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
    		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
    		cout << "   --cleanMist                          clean mist rhs from jets (default = false, off - jets only)" << endl;
-   		cout << "   --noSmear                            turns off smearing data (default = true, on)" << endl;
+   		cout << "   --smear                            turns on smearing data (default = false, off - measurement error on)" << endl;
    		cout << "   --timeSmear                          turns on time smearing data (default = false, off)" << endl;
    		cout << "   --noWeight                           turns off weighting data points (default = false, on)" << endl;
    		cout << "   --noDist                             turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;

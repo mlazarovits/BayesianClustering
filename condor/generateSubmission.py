@@ -89,10 +89,13 @@ def generateSubmission(args):
     elif "QCD_HT50to100" in args.inputSample:
     	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT50to100_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "EGamma_RunF" in args.inputSample:
-    	inputFileList = "kucmsntuple_DEG_R"+yr+"_MET100_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+reco_date[args.year+"_DEG"]+"_list.txt"
+        if "AL1SelEle" in sel:
+    	    inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+"_list.txt"
+        else:
+            inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "SMS-GlGl" in args.inputSample:
-        ver = "v23"
-        inputFileList = "kucmsntuple_SMS-GlGl_"+sel+"_justin_mc_noFilter_AODSIM_private_list.txt"
+        ver = "v24"
+        inputFileList = "kucmsntuple_SMS-GlGl_"+sel+"_"+ver+"_justin_mc_noFilter_AODSIM_private_list.txt"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
@@ -217,8 +220,8 @@ def generateSubmission(args):
         flags += str(w)+' '
     flags += '--nu0 '+str(args.nu0)
 
-    if(args.noSmear):
-    	flags += ' --noSmear'
+    if(args.smear):
+    	flags += ' --smear'
     if(args.timeSmear and "AODSIM" in inputFileList):
     	flags += ' --timeSmear'
     if(args.timeSmear and "AODSIM" not in inputFileList):
@@ -300,7 +303,7 @@ def main():
     parser.add_argument('--minemE',help='min object ECAL energy',default=30)
     parser.add_argument('--minRhE',help='min rechit ECAL energy',default=0.5)
     parser.add_argument('--maxRhE',help='max rechit ECAL energy (-999 = off)',default=-999)
-    parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
+    parser.add_argument('--smear',help="turn on spatial smearing (turns off measurement error)",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--noCalibrate',help="turn off channel-by-channel time calibration",default=False,action='store_true')
