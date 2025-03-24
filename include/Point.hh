@@ -3,7 +3,8 @@
 
 #include "Tools.hh"
 #include <iostream>
-
+#include <iomanip>
+#include <sstream>
 using std::cout;
 using std::endl;
 
@@ -156,14 +157,18 @@ class BayesPoint{
 
 		void Print() const{
 			std::string out = "(";
+			std::stringstream stream;
+			stream.str("");
+			stream << std::setprecision(5) << "(";
 			for(int d = 0; d < _nDim; d++){ 
-				if( d < _nDim-1)
-					out += std::to_string(_value[d])+",";
-
+					stream << _value[d];
+				if( d < _nDim-1){
+					stream << ",";
+				}
 				else
-					out += std::to_string(_value[d])+")";
+					stream << ")";
 			}	
-			cout << out << " w = " << _weight << endl;
+			cout << std::setprecision(5) << stream.str() << " w = " << _weight << endl;
 
 		}
 
