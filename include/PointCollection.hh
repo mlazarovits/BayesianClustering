@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
+#include <iomanip>
 using std::vector;
 using std::cout;
 using std::endl;
@@ -326,14 +327,15 @@ class PointCollection{
 	
 	void CircularTranslate(double t, int d){
 		for(int i = 0; i < (int)_pts.size(); i++){
-			//if(d == 1) t = acos(cos(t));
-			if(d == 1) cout << "i " << i << " pt " << _pts[i].at(d) << " shift " << t << endl;
+			//if(d == 1) cout << std::setprecision(12) << "i " << i << " pt " << _pts[i].at(d) << " shift " << t << endl;
 			
-			if(_pts[i].at(d) > acos(-1) || _pts[i].at(d) < 0)
+			if((_pts[i].at(d) > acos(-1) && _pts[i].at(d) < 2*acos(-1)) || _pts[i].at(d) < 0)
 				_pts[i].SetValue(-acos(cos(_pts[i].at(d))) - t,d);
+			else if(_pts[i].at(d) > 2*acos(-1))
+				_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
 			else
 				_pts[i].SetValue(acos(cos(_pts[i].at(d))) - t,d);
-			if(d == 1){ cout << "post shift" << endl; _pts[i].Print(); }
+			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
 		}
 
 	}
@@ -342,8 +344,10 @@ class PointCollection{
 	void Put02pi(int d){
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			if(_pts[i].at(d) < 0) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
-			else if(_pts[i].at(d) > 2*pi) _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
+			//if pt is negative
+			if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
+			//if pt is geq 2*pi
+			else if(_pts[i].at(d) >= 2*pi) _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
 			else continue;
 		}
 	}
@@ -432,6 +436,20 @@ class PointCollection{
 		for(int i = 0; i < (int)_pts.size(); i++)
 			_pts[i].SetWeight(w[i]);
 	}
+
+	//unweighted circular mean	
+	double CircularMean(int d) const{
+		double avg_s = 0;
+		double avg_c = 0;
+		for(int i = 0; i < (int)_pts.size(); i++){
+			avg_s += sin(_pts[i].at(d));
+			avg_c += cos(_pts[i].at(d));
+		}
+		avg_s /= (double)_pts.size();
+		avg_c /= (double)_pts.size();
+		//return acos(cos(atan2(avg_s,avg_c)));
+		return atan2(avg_s,avg_c);
+	};
 
 	//weighted circular mean	
 	double CircularCentroid(int d) const{
