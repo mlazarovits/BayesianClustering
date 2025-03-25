@@ -260,9 +260,11 @@ class BasePDFMixture : public BasePDF{
 			m_data->Translate(pt.at(2),2);
 			
 		}
+		virtual void PutPhi02pi_params(){ };
 
 		void PutPhi02pi(){
 			m_data->Put02pi(1);
+			PutPhi02pi_params();
 		}
 		//scale data 
 		void ScaleData(Matrix sc){

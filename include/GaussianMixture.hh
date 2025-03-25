@@ -65,6 +65,29 @@ class GaussianMixture : public BasePDFMixture{
 			}
 		}
 		
+		void PutPhi02pi_params(){
+			//put means on [0,2pi]
+			Matrix mean, priormean;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				PointCollection mean_pt = mean.MatToPoints();
+				mean_pt.Put02pi(1);	
+				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				PointCollection priormean_pt = priormean.MatToPoints();
+				priormean_pt.Put02pi(1);	
+				m_model[k]->SetParameter("priormean",Matrix(priormean_pt));
+
+
+				//shift data statistics
+				PointCollection xbar_pt = _xbar[k].MatToPoints();
+				xbar_pt.Put02pi(1);
+				_xbar[k] = Matrix(xbar_pt);	
+			}
+		}
+		
 		//scale learned model parameters
 		void ScaleParameters(Matrix sc){
 			//scale means + matrices

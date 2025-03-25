@@ -417,10 +417,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		points->AddPoints(point);
 	}
 	int maxK = points->GetNPoints();
-	//checking eta center
-	//Point mean = points->mean();
-	//cout << "original mean" << endl;
-	//mean.Print();
 	
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
@@ -431,9 +427,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//needs to be before SetData bc thats when the measurement errors are set
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch*gev, _tresNoise*gev); 
 
-	//cout << "old points w/o wraparound" << endl;
-	//points->at(0).Print();
-	_phi_wraparound(*points);
 	gmm->SetData(points);
 	//needs to be before ScaleData() bc this method also scales the smear
 	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
@@ -453,7 +446,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//use weighted mean as center to be set to 0 point
 	//zero points by energy centroid
 	//x' = x - a
-	BayesPoint center({points->Centroid(0), points->Centroid(1), points->Centroid(2)});
+	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
 	gmm->ShiftData(center);
 	//cout << "centroid " << endl; center.Print();
 	
@@ -549,6 +542,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 	//need to put GMM parameters AND points back in detector coordinates (not local)
 	gmm->ShiftData(center);
+	gmm->PutPhi02pi(); //does for data and parameters
 	gmm->ShiftParameters(center);
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
