@@ -228,17 +228,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//set PV for event - look at first particle in record
 		Pythia8::Particle evtRec = sumEvent[1];//sumEvent.back();
 		_PV = BayesPoint({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
-		//vector<int> daughters;
-		//for(int p = 0; p < sumEvent.size(); p++){
-		//	//reset reco particle four momentum
-		//	Pythia8::Particle particle = sumEvent[p];
-		//	if(abs(particle.id()) == 6){
-		//		if(particle.daughter1() > 0 && particle.daughter1() < particle.daughter2()){
-		//			cout << "top quark produced id = " << particle.id() <<  " with " << particle.daughterList().size() << " daughters and " << particle.daughterListRecursive().size() << " recursive daughters - daughters1 " << particle.daughter1() << " daughters2 " << particle.daughter2() << endl;
-		//			for(auto i : particle.daughterListRecursive()) daughters.push_back(i);
-		//		}
-		//	}
-		//}
 		
 		//set production vertex for this event from z-smearing
 		//simulate z-shift from Gaussian
@@ -249,7 +238,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
 			int topidx = p;
-			//if(abs(particle.status()) == 22) cout << std::setprecision(10) << "particle #" << p << " status " << particle.status() << " prod vertex x " << particle.xProd()*1e-1 << " cm, y " << particle.yProd()*1e-1 << " cm, z " << particle.zProd()*1e-1 << " cm id " << particle.id() << " hepMC status " << particle.statusHepMC() << endl;	
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
 			// No neutrinos
@@ -258,7 +246,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 
 			//extreme gen momentum eta cut - for CMS tracker (not necessary here)	
-			//if(fabs(particle.eta()) > 2.4) continue;	
+			if(fabs(particle.eta()) > 3.) continue;	
 
 			//puT in pT cut hehe (charged particles only)
 			//muon would need ~3.5 GeV to get to muon chambers so this should be the ceiling for the cut
@@ -270,12 +258,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//original pythia coords are in m, convert to mm
 			//particle.vProd(particle.xProd(), particle.yProd(), particle.zProd()+(zshift*1e3), tnew);
 			
-			//set PV as momentum weighted sum of particles produced
-			//_pvx += particle.xProd()*particle.pT();		
-			//_pvy += particle.yProd()*particle.pT();		
-			//_pvz += particle.zProd()*particle.pT();		
-			//norm += particle.pT();
-	
 			//make sure particle is in detector acceptance
 			//since this is a CMS ECAL sim, use CMS ECAL geometry
 			//this is for gen particles
@@ -287,10 +269,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 			//zero suppression threshold
 			if(particle.e() < _ethresh) continue;
-
-			
-			//debug jet pt reco - skip charged particles s.t. pos vec == mom vec
-			//if(particle.charge() != 0) continue;
 
 			//get top from this particle's history (if it exists)
 			if(particle.mother1() > 0 && particle.mother2() == 0){
