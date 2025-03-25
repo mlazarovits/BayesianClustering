@@ -132,7 +132,7 @@ struct RecoParticle;
 			if(fabs(particle.id()) != 6)
 				_genmoms.insert(momidx_pythia);
 		}
-		void SaveGenInfo(Pythia8::Particle particle){
+		void SaveGenInfo(Pythia8::Particle particle, int genmom){
 			RecordMomInfo(particle);
 
 			RecoParticle genpart(particle);
@@ -140,15 +140,14 @@ struct RecoParticle;
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
 			fj_genpart.set_user_index(_genparts.size());
 			_genparts.push_back(fj_genpart);
-			_genpartids.push_back(genpart.Particle.id());
-			//find mother in _genmoms (assuming mother is filled first)
-			int momidx_pythia = particle.mother1();
-			auto it = find(_genmoms.begin(), _genmoms.end(), momidx_pythia);
-			int index = -1;
-			if(it != _genmoms.end())
-				index = std::distance(_genmoms.begin(), it);
-			_genpartMomIdx.push_back(index);
-			cout << "genidx " << fj_genpart.user_index() << " gen id " << genpart.Particle.id() << " momidx " << index << endl;
+			_genpartIdx.push_back(_genparts.size()-1);
+			_genpartids.push_back((int)genpart.Particle.id());
+			//save top specific info
+			if(fabs(genpart.Particle.id()) == 6){
+				_topPt.push_back(genpart.Momentum.pt());
+			}
+			//cout << "saving gen mom " << genmom << endl;
+			_genpartMomIdx.push_back(genmom);
 		}
 
 	private:
@@ -239,13 +238,13 @@ struct RecoParticle;
 		//indices of gen particles in gen jets
 		vector<vector<int>> _jgpartIdxs;
 		//gen top info
-		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep;
+		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep, _topPt;
 		vector<int> _topDecayId;
 		//gen particle info (even intermediate particles)
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass, _genpartpz;
-		vector<double> _genpartMomIdx;
+		vector<int> _genpartMomIdx;
 		set<double> _genmoms;
-		vector<int> _genpartIdx;
+		vector<int> _genpartIdx,_genpartEvtIdx;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
 		vector<vector<unsigned int>> _jrhids;
