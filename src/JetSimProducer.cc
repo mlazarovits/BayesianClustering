@@ -9,6 +9,7 @@ JetSimProducer::JetSimProducer(){
 	_minrhE = 0.5;
 	_Emin = 0;
 	_minNrhs = 1;
+	_nConstsmin = 0;
 }
 
 JetSimProducer::~JetSimProducer(){
@@ -26,8 +27,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_minrhE = 0.5;
 	_Emin = 0;
 	_minNrhs = 1;
-	//_minobjeta = 1.5;
-	
+	_nConstsmin = 0;
 }
 
 void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
@@ -154,6 +154,26 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		eta = _base->Jet_genEta->at(j);
 		if(pt < _ptmin) continue;
 		if(_base->Jet_genEnergy->at(j) < _Emin) continue;
+		//multiplicity requirement
+		//if(_base->Jet_genConstituentIdxs->at(j) < _nConstmin) continue;		
+		//parton-matching requirement - also serves as lepton disambiguation
+		double mindr = 999;
+		double dr = 0;
+		int bestidx = -1;
+		for(int g = 0; g < _base->genpart_ngenpart; g++){
+			dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), eta, phi);
+			if(dr < mindr){
+				mindr = dr;
+				bestidx = g;
+			}
+		}
+		//set some min dR
+		if(mindr > 0.1) continue;
+		//set some E ratio window
+		double Eratio = _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx);
+		if(Eratio > 1.5 || Eratio < 0.5) continue;
+		cout << "\ngen jet #" << j << " has best gen match (id) " << _base->genpart_id->at(bestidx) << " with dr " << mindr << " and jet/particle energy " << _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx) << " with pt " << _base->Jet_genPt->at(j) << " and # constituents " << _base->Jet_genNConstituents->at(j) << endl;
+
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);

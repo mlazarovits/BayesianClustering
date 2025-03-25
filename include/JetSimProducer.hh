@@ -25,7 +25,7 @@ class JetSimProducer{
 		void SetMinE(double e){ _Emin = e;}
 		void SetMinRhE(double r){ _minrhE = r; }
 		void SetMinNrhs(int r){ _minNrhs = r; }
-
+		void SetMinNGenConsts(int c){ _nConstsmin = c; }
 		void SortJets(vector<Jet>& jets);
 		
 		void PrintPreselection(){
@@ -77,12 +77,19 @@ class JetSimProducer{
 			f->Close();
 		}
 
+		double dR(double eta1, double phi1, double eta2, double phi2){
+			//phi wraparound
+			double dphi = (phi1-phi2);
+			dphi = acos(cos(dphi));
+			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
+		}
 
 	private:
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts, _minNrhs;
 		double _ptmin, _minrhE, _Emin;
+		int _nConstsmin;
 		double _c = 29.9792458; // speed of light in cm/ns
 };
 #endif
