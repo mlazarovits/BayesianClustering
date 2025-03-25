@@ -38,7 +38,6 @@ int main(int argc, char *argv[]){
 	bool sig_boosted = false;
 	double spikeProb = 0.;
 	double energy_c = 0.26;
-	double mingenpartpt = 0;
 	double tres_cte = 0.133913 * 1e-9;
 	double tres_stoch = 1.60666 * 1e-9; 
 	double tres_noise = 0.00691415 * 1e-9;
@@ -109,10 +108,6 @@ int main(int argc, char *argv[]){
                         i++;
                         evtj = std::atoi(argv[i]);
                 }
-		if(strncmp(argv[i],"--mingenpartpt", 14) == 0){
-			i++;
-    	 		mingenpartpt = std::stod(argv[i]);
-   		}
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
     	 		tres_cte = std::stod(argv[i])*1e-9; //need to convert to s
@@ -144,7 +139,6 @@ int main(int argc, char *argv[]){
    		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
    		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
    		cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
-   		cout << "   --mingenpartpt [mingenpartpt] set minimum gen particle pt to be included in gen AK4 jet (default = 0 GeV)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 
@@ -195,18 +189,6 @@ int main(int argc, char *argv[]){
 		cout << "and pileup " << endl;
 		oname += "_PU";
 	}
-	cout << "mingenpartpt " << mingenpartpt << endl;
-	if(oname.find("condor") == string::npos){	
-		std::stringstream stream;
-		stream.str("");
-		string mingenpartpt_str;
-		stream << std::fixed << std::setprecision(3) << mingenpartpt;
-		mingenpartpt_str = stream.str();
-		int idx = mingenpartpt_str.find(".");
-		mingenpartpt_str.replace(idx,1,"p");	
-		
-		oname += "_mingenpartpt"+mingenpartpt_str;
-	}
        //make sure evti < evtj
        if(evti > evtj){
        	int evt = evtj;
@@ -229,7 +211,6 @@ int main(int argc, char *argv[]){
 	//if(sig_boosted)
 	if(pu) det.TurnOnPileup();
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
-	det.SetMinGenPartPt(mingenpartpt);
 	
 	///////make ntuple///////
 	det.InitTree(oname+".root");
