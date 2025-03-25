@@ -93,7 +93,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	map<string, int> labelToMark;
 	int offset = 1;
 	labelToColor["chiGam"] =  TColor::GetColor("#86bbd8");
+	labelToColor["SMS_GlGl"] =  TColor::GetColor("#86bbd8");
 	labelToColor["GMSB"] =  TColor::GetColor("#86bbd8");
+	labelToColor["GluGluN2"] =  TColor::GetColor("#86bbd8");
 
 	labelToColor["notSunm"] =  TColor::GetColor("#9e0059");
 	labelToColor["GJets"] 	=  TColor::GetColor("#f6ae2d");
@@ -113,7 +115,9 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	//MC symbols - primary shapes
 	labelToMark["!chiGam"] =  20;
+	labelToMark["!SMS_GlGl"] =  20;
 	labelToMark["!GMSB"] =  20;
+	labelToMark["!GluGluN2"] =  20;
 	labelToMark["!notSunm"] = 72;
 	labelToMark["!GJets"] =   73;
 	labelToMark["ttbar"] = 24;
