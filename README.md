@@ -50,6 +50,11 @@ for(int k = 0; k < nsubclusters; k++){
 	//these would be the parameter of the associated Dirichlet distribution and the probabilistic coeff
 	Matrix alpha = params["alpha"];
 	Matrix pi = params["pi"];
+
+	//to get effective energy of subcluster: N_k/gev where gev = transfer factor (1/GeV), N_k is the sum of responsibilities for subcluster k
+	vector<double> norms;
+	gmm->GetNorms(norms);
+	double E_k = norms[k]/gev;
 }
 	
 ```

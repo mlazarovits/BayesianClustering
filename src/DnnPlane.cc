@@ -122,7 +122,7 @@ DnnPlane::DnnPlane(const std::vector<PointCollection>& pc, MergeTree* mt,
   double eta, phi;
   for (int i = 0; i < n; i++) {
     eta = pc[i].mean().at(0);
-    phi = pc[i].mean().at(1);
+    phi = pc[i].CircularMean(1);
     sv.vertex = 
        _TR.insert(CPoint(eta, phi));
     // check if we are dealing with coincident vertices
@@ -621,7 +621,7 @@ cout << points_to_add.size() << " points to add" << endl;
     int index = _supervertex.size()-1;
     indices_added.push_back(index);
     eta_center = points_to_add[ia].mean().at(0);
-    phi_center = points_to_add[ia].mean().at(1);
+    phi_center = points_to_add[ia].CircularMean(1);
 
     if (_verbose) cout << "  adding " << index << " at "
                        << eta_center << " " << phi_center << endl;

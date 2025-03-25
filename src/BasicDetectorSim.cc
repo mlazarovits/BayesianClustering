@@ -257,12 +257,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
       			    sumEvent[p].idAbs() == 16)     continue;
 		
 
-			//extreme gen momentum eta cut	
-			if(fabs(particle.eta()) > 2.4) continue;	
+			//extreme gen momentum eta cut - for CMS tracker (not necessary here)	
+			//if(fabs(particle.eta()) > 2.4) continue;	
 
 			//puT in pT cut hehe (charged particles only)
 			//muon would need ~3.5 GeV to get to muon chambers so this should be the ceiling for the cut
-			if(particle.pT() < 3. && particle.charge() != 0) continue;
+			//shower as many gen particles as possible
+			//if(particle.pT() < 3. && particle.charge() != 0) continue;
 		
 			//set time from linear model with slope = { z > 0 ? 1/sol : -1/sol }
 			//tnew = (particle.zProd()*1e-3 +zshift) >= 0 ? (particle.zProd()*1e-3+zshift)*1./(_sol) : -1./(_sol)*(particle.zProd()*1e-3+zshift);
@@ -390,170 +391,132 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		FillRecoJets();
 
 
+		//save info on top decays!
+		vector<int> had = {1, 2, 3, 4};
+		vector<int> lep = {11, 12, 13, 14};
+		//if had == true && lep == false : hadronic
+		//if had == false && lep == true : leptonic
+		//if had == true && lep == true : semi-lep
+		bool Whad[2]; //false = lep, true = had
 		//get top decay gen info
-		map<int, int> WevtIdx_treeIdx;
 		cout << "top_idxs size " << top_idxs.size() << endl;
+		int nW = 0;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){	
 			//save gen info for top
-			SaveGenInfo(sumEvent[*t]);
+			SaveGenInfo(sumEvent[*t],-1);
 			//find children - going down decay chain
 			vector<int> kids_id;
 			vector<int> kids_idx = sumEvent[*t].daughterListRecursive();
-			cout << "top idx " << *t << " has " << kids_idx.size() << " daughters" << endl;
-			cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
-			cout << endl;
+			//cout << "top idx " << *t << " has " << kids_idx.size() << " daughters" << endl;
+			//cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
 			for(auto k : kids_idx){ kids_id.push_back(fabs(sumEvent[k].id()));}
-
 			vector<int>::iterator w_it = find(kids_id.begin(), kids_id.end(), 24);
-			
-			
+			vector<int>::iterator b_it = find(kids_id.begin(), kids_id.end(), 5);
+		
+			_genpartEvtIdx.push_back((int)*t);	
 			//save gen W info - W, idx to its mom, and daughter info
 			int Widx = -999;
-			vector<int> wkids_idx;
-			cout << endl;
+			int bidx = -999;
 			if(w_it != kids_id.end()){
-				//get W index
 				Widx = std::distance(kids_id.begin(), w_it);
 				Widx = kids_idx[Widx];
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "W idx " << Widx << " id " << sumEvent[Widx].id() << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
 				while(sumEvent[Widx].daughter1() == sumEvent[Widx].daughter2() || fabs(sumEvent[sumEvent[Widx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[Widx].daughter2()].id()) == 24){
-					//cout << "getting daughters of copy for idx " << Widx << endl;
 					//get daughters of W copy decay
 					Widx = sumEvent[Widx].daughter1();
 				}
-				cout << "daughter of W " << Widx << ": " << sumEvent[sumEvent[Widx].daughter1()].id() << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+				//get W index
+				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
+				//cout << "W idx " << Widx << " id " << sumEvent[Widx].id() << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
 				//save gen info of W at detector
-				SaveGenInfo(sumEvent[Widx]);	
+				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
+				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
+				SaveGenInfo(sumEvent[Widx],genmomidx);
+				_genpartEvtIdx.push_back(Widx);	
+				//cout << "W mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				
-		
-				//and save gen info of W daughters at detector
-				SaveGenInfo(sumEvent[sumEvent[Widx].daughter1()]);	
-				SaveGenInfo(sumEvent[sumEvent[Widx].daughter2()]);	
-	
-				WevtIdx_treeIdx[Widx] = (int)_genpartids.size()-1;
-				
-				//_genpartMomIdx.push_back(-1); //not saving W mother (ie top) info
-				
-				wkids_idx = sumEvent[Widx].daughterList();
-
 			}
-			cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
-			for(int g = 0; g < _genpartMomIdx.size(); g++) cout << "genpartmomidx #" << g << ": " << _genpartMomIdx[g] << endl;
-
-
-			cout << endl;
-			//save gen b info - b quark and idx to its mom
-			vector<int>::iterator b_it = find(kids_id.begin(), kids_id.end(), 5);
-			int bidx = -999;
-			vector<int> bkids_idx;
+			//save gen b info
 			if(b_it != kids_id.end()){
 				//get b index
 				bidx = std::distance(kids_id.begin(), b_it);
 				bidx = kids_idx[bidx];
 				//make sure b doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "b quark idx " << bidx << " id " << sumEvent[bidx].id() << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
 				while(sumEvent[bidx].daughter1() == sumEvent[bidx].daughter2() || fabs(sumEvent[sumEvent[bidx].daughter1()].id()) == 5 || fabs(sumEvent[sumEvent[bidx].daughter2()].id()) == 5){
-					cout << "getting daughters of copy for idx " << bidx << endl;
-					//get daughters of W copy decay
+					//get daughters of b copy decay
 					bidx = sumEvent[bidx].daughter1();
 				}
-				cout << "final b is " << bidx << " with id " << sumEvent[bidx].id() << " daughter of b " << bidx << ": " << sumEvent[sumEvent[bidx].daughter1()].id() << " " << sumEvent[sumEvent[bidx].daughter2()].id() << endl;
+				//cout << "b quark idx " << bidx << " id " << sumEvent[bidx].id() << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
 				//save gen info of b at detector
-				SaveGenInfo(sumEvent[bidx]);	
+				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
+				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
+				SaveGenInfo(sumEvent[bidx],genmomidx);
+				_genpartEvtIdx.push_back(bidx);	
+				//cout << "b mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+			}
+			
+			//save gen W daughters info
+			if(Widx != -999){
+				//cout << " daughters of W " << Widx << ": " << sumEvent[sumEvent[Widx].daughter1()].id() << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+
+				vector<int>::iterator Wmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),Widx);
+				//and save gen info of W daughters at detector
+				//daughter 1
+				SaveGenInfo(sumEvent[sumEvent[Widx].daughter1()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				_genpartEvtIdx.push_back(sumEvent[Widx].daughter1());	
+				//cout << " W daughter 1 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				vector<int>::iterator d1_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));	
+				vector<int>::iterator d1_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
+				//cout << "d1 id " << fabs(_genpartids[_genpartids.size()-1]) << " d1 had " << (d1_it_had != had.end()) << " d1 lep " << (d1_it_lep != lep.end()) << endl;
+	
+				//daughter 2
+				SaveGenInfo(sumEvent[sumEvent[Widx].daughter2()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				_genpartEvtIdx.push_back(sumEvent[Widx].daughter2());	
+				//cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+				vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
+				vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
+				//cout << "d2 id " << fabs(_genpartids[_genpartids.size()-1]) << " d2 had " << (d2_it_had != had.end()) << " d2 lep " << (d2_it_lep != lep.end()) << endl;
+				if(d2_it_had != had.end() && d1_it_had != had.end()) Whad[nW] = true;
+				else if(d2_it_lep != lep.end() && d1_it_lep != lep.end()) Whad[nW] = false;	
+				else{ }
+				nW++;
+
+			}
+			//save gen b daughter info 
+			vector<int> bkids_idx;
+			if(bidx != -999){
+				//cout << " daughters of b " << bidx << ": " << sumEvent[sumEvent[bidx].daughter1()].id() << " " << sumEvent[sumEvent[bidx].daughter2()].id() << endl;
 		
+				//and save gen info of b daughters at detector
+				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
+				//and save gen info of W daughters at detector
+				SaveGenInfo(sumEvent[sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
+				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				SaveGenInfo(sumEvent[sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
+				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+	
+	
 				
 
 			}
-			cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
-			for(int g = 0; g < _genpartMomIdx.size(); g++) cout << "genpartmomidx #" << g << ": " << _genpartMomIdx[g] << endl;
-			
-			for(int kk = 0; kk < wkids_idx.size(); kk++)
-				cout << "daughter " << kk << " idx " << wkids_idx[kk] << " id " << sumEvent[wkids_idx[kk]].id() << endl;
-			if(Widx != -999) w_idxs.insert(Widx);
+			//cout << "# gen particles " << _genparts.size() << endl;
+			//for(int g = 0; g < _genparts.size(); g++) cout << "gen part evt idx " << _genpartEvtIdx[g] << " gen part idx " << _genpartIdx[g] << " gen part id " << _genpartids[g] << " genpartmomidx #" << g << ": " << _genpartMomIdx[g] << endl;
 
-			break;
+			//cout << endl;
 		}
-		/*
 		//save info on gen top decays
 		//-1 : not top
 		//0  : fully hadronic (to light quarks)
 		//1  : semi-leptonic
 		//2  : fully leptonic (no taus, including neutrinos)
-		int wid[2] = {-999, -999};
-		int wcnt = 0;
-		int _genTopId;
-		vector<int> had = {1, 2, 3, 4};
-		vector<int> lep = {11, 12, 13, 14};
-		cout << "w_idxs size " << w_idxs.size() << endl;
-		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){	
-			//cout << "w idx " << *w << endl;
-			vector<int> wkids_idx = sumEvent[*w].daughterList();
-			//W daughters
-			//check for 2 daughters
-			if(wkids_idx.size() == 2){
-				//cout << "w kid idx1 " << wkids_idx[0] << " w kid idx2 " << wkids_idx[1] << endl;
-				int kid1 = fabs(sumEvent[wkids_idx[0]].id());
-				int kid2 = fabs(sumEvent[wkids_idx[1]].id());
-				cout << "W - kid1 id " << kid1 << " kid2 id " << kid2 << endl;
-			
-				//want to save gen particle info at detector - also save the pdgid of their direct mother
-				//SaveGenInfo(sumEvent[wkids_idx[0]]);
-				//SaveGenInfo(sumEvent[wkids_idx[1]]);
-				
-				//if both W decay products are had -> w1 = 0
-				//if both W decay products are lep -> w1 = 1
-				//else (1 W decay product had, the other lep) -> w1 = -1 (shouldnt happen)
-				if(find(had.begin(), had.end(), kid1) != had.end() && find(had.begin(), had.end(), kid2) != had.end()){ 
-					wid[wcnt] = 0;
-				}
-				else if(find(lep.begin(), lep.end(), kid1) != lep.end() && find(lep.begin(), lep.end(), kid2) != lep.end()){ 
-					wid[wcnt] = 1;
-				}
-				else wid[wcnt] = -1;
-				//cout << "wnct " << wcnt << " wid " << wid[wcnt] << endl;
-		
-				_topDecayId.push_back(wid[wcnt]);	
-				wcnt++; 
-			}
-		}
-		//cout << "Finished categorizing W decays" << endl;
-		//if exactly two tops (ttbar) were produced (could be more due to copies, radiation)
-		if(top_idxs.size() > 1){
-			cout << "W decay1 " << wid[0] << " w decay2 " << wid[1] << endl;
-			int top_idx1, top_idx2;
-			top_idx1 = *top_idxs.begin();
-			top_idx2 = *next(top_idxs.begin());
-			//cout << "top idx1 " << top_idx1 << " top idx2 " << top_idx2 << endl;
-			//if both had -> fully had
-			//if 1 had -> semi lep
-			//if both lep -> fully lep
-			if(wid[0] == 0 && wid[1] == 0) _genTopId = 0;
-			else if (wid[0] == 1 && wid[1] == 1) _genTopId = 2;
-			else _genTopId = 1;
-		
-		//	cout << "status of top idx1 " << sumEvent[top_idx1].statusHepMC() << " status top idx2 " << sumEvent[top_idx2].statusHepMC() << endl;
-		//	cout << "wid0 " << wid[0] << " wid1 " << wid[1] << " genid " << _genTopId << endl;
-			if(_genTopId == 0){
-				_topPt_had.push_back(sumEvent[top_idx1].pT());
-				_topPt_had.push_back(sumEvent[top_idx2].pT());
-				nhad++;
-			}
-			else if(_genTopId == 1){
-				_topPt_hadlep.push_back(sumEvent[top_idx1].pT());
-				_topPt_hadlep.push_back(sumEvent[top_idx2].pT());
-				nlep++;
-			}
-			else if(_genTopId == 2){
-				_topPt_lep.push_back(sumEvent[top_idx1].pT());
-				_topPt_lep.push_back(sumEvent[top_idx2].pT());
-				nsemilep++;
-			}
-			else continue;
-		}
-		else _genTopId = -1;
-		//cout << "gentopid " << _genTopId << " # gen jets " << _jets.size() << endl;
-		*/
+		if(Whad[0] && Whad[1]) _topDecayId.push_back(0);
+		else if(!Whad[0] && !Whad[1]) _topDecayId.push_back(2);
+		else _topDecayId.push_back(1);
+		//if no top - change this id to -1
+		if(top_idxs.size() < 1) _topDecayId[_topDecayId.size()-1] = -1;
+		cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
 		//fill gen particles
 		FillGenParticles();
 		
@@ -1101,7 +1064,6 @@ void BasicDetectorSim::FillGenParticles(){
 		_genpartpt.push_back(_genparts[g].pt());
 		_genpartpz.push_back(_genparts[g].pz());
 		_genpartmass.push_back(_genparts[g].m());
-		_genpartIdx.push_back(_genparts[g].user_index());
 	}
 }
 
@@ -1238,9 +1200,10 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	
 	//gen top info
-	_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
-	_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
-	_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
+	//_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
+	//_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
+	//_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
+	//_tree->Branch("Top_genPt",&_topPt)->SetTitle("gen top pt");
 	_tree->Branch("Top_decayId",&_topDecayId)->SetTitle("gen top decay type (0 = had, 1 = lep, -1 = neither)");
 
 
@@ -1309,6 +1272,7 @@ void BasicDetectorSim::_reset(){
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
+	_topPt.clear();
 	_topDecayId.clear();
 
 	_jeta.clear();
@@ -1320,6 +1284,7 @@ void BasicDetectorSim::_reset(){
 	_genparts.clear();
 	_genpartids.clear();
 	_genpartMomIdx.clear();
+	_genpartEvtIdx.clear();
 	_genparteta.clear();
 	_genpartphi.clear();
 	_genpartenergy.clear();
