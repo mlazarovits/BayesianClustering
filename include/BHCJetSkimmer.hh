@@ -226,6 +226,7 @@ class BHCJetSkimmer{
 		void SetMinPt(double r){ _prod->SetMinPt(r); }
 		void SetMinE(double r){ _prod->SetMinE(r); }
 		void SetMinNrhs(int r){ _prod->SetMinNrhs(r); }
+		void SetMinNGenConsts(int r){ _prod->SetMinNGenConsts(r); }
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;

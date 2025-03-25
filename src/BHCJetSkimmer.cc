@@ -52,13 +52,57 @@ void BHCJetSkimmer::Skim(){
 	clock_t t;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
-		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
-		_prod->GetRecoJets(_recojets, i);
-		////fill gen jet histograms
-		_prod->GetGenJets(_genjets, i);
-		if(_genjets.size() < 1 && _recojets.size() < 1){ cout << endl; continue; }
+		//event level selection
+		//at least 1 gen jet
+		_base->GetEntry(i);
+		if(_base->Jet_genNJet < 1) continue;
+		//at least 1 top jet
+		int ngenpart = _base->genpart_ngenpart;
+		int ntop = count(_base->genpart_id->begin(), _base->genpart_id->end(), 6);
+		ntop += count(_base->genpart_id->begin(), _base->genpart_id->end(), -6);
+		if(ntop < 1) continue;
+		
+		//at least 1 W	
+		int nW = count(_base->genpart_id->begin(), _base->genpart_id->end(), 24);
+		nW += count(_base->genpart_id->begin(), _base->genpart_id->end(), -24);
+		if(nW < 1) continue;
+		
+		//at least 1 b	
+		int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
+		nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
+		if(nb < 1) continue;
+	
+		//reject fully leptonic W decays - later may want to turn off to look at just displaced b decays
+		vector<int> Widxs(nW);
+		for(int w = 0; w < nW; w++){
+			for(int g = 0; g < ngenpart; g++){
+				//don't include leptonic decays
+				if(fabs(_base->genpart_id->at(g)) == 11) continue;
+				if(fabs(_base->genpart_id->at(g)) == 12) continue;
+				if(fabs(_base->genpart_id->at(g)) == 13) continue;
+				if(fabs(_base->genpart_id->at(g)) == 14) continue;
+				if(fabs(_base->genpart_id->at(g)) == 15) continue;
+				if(fabs(_base->genpart_id->at(g)) == 16) continue;
+				//skip tops + bs 
+				if(fabs(_base->genpart_id->at(g)) == 6) continue;
+				if(fabs(_base->genpart_id->at(g)) == 5) continue;
+				int genmomidx = _base->genpart_momIdx->at(g);
+				//skip particles that didn't come from a W
+				if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
+				//skip if already counted
+				if(count(Widxs.begin(), Widxs.end(),g) > 0) continue;
+				Widxs.push_back(g);
+			}
+		}
+		if(Widxs.size() < 1) continue;	
 
-		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
+		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
+		_prod->GetGenJets(_genjets, i);
+		if(_genjets.size() < 1){ cout << endl; continue; }
+		_prod->GetRecoJets(_recojets, i);
+		if(_recojets.size() < 1){ cout << endl; continue; }
+
+		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets";
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
@@ -111,6 +155,7 @@ void BHCJetSkimmer::Skim(){
 			continue;
 		}
 		_prod->GetRecHits(rhs, i);
+		if(i % SKIP == 0) cout << " and " << rhs.size() << " rhs" << endl;
 		
 		//safety
 		if(rhs.size() < 1) continue;
