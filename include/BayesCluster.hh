@@ -70,7 +70,7 @@ class BayesCluster{
 				pt.SetValue(_jets[i].time(), 2);
 				_jets[i].GetWeights(weight);
 				pt.SetWeight(weight[0]); 
-			//	//make sure phi is in the right range
+			//	//make sure phi is in the right range - [0,2pi]
 				_sanitize(pt);
 				if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
 				assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));

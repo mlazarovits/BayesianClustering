@@ -416,6 +416,7 @@ inline int DnnPlane::NearestNeighbourProbIndex(const int ii) const{
   return _supervertex[ii].MaxRkindex;}
 
 inline double DnnPlane::NearestNeighbourProb(const int ii) const{
+//cout << "node " << ii << " has max rk " << _supervertex[ii].MaxRk << " and points " << endl; _supervertex[ii].n->model->GetData()->Print();
   return _supervertex[ii].MaxRk;}
 
 inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{

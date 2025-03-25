@@ -741,6 +741,10 @@ void DnnPlane::_SetNearest (const int j) {
   // when looking for neighbours of last point)
   if (vc != NULL) do { 
     if ( vc->info().val() != INFINITE_VERTEX) {
+      // find index corresponding to vc for easy manipulation
+      int vcindx = vc->info().val();
+	//don't calculate if this combo is vertex + its mirror
+	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
       // find distance between j and its Voronoi neighbour (vc)
       if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
 
@@ -753,8 +757,6 @@ void DnnPlane::_SetNearest (const int j) {
       } 
       if (_verbose) cout << vc->point() << "; "<< dist << endl;
     
-      // find index corresponding to vc for easy manipulation
-      int vcindx = vc->info().val();
 	//do the same as above but with probability instead of geometric distance
 	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
@@ -830,14 +832,16 @@ void DnnPlane::_SetAndUpdateNearest(
   if (vc != NULL) do { 
     if (vc->info().val() != INFINITE_VERTEX) {
       if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
+      // find index corresponding to vc for easy manipulation
+      int vcindx = vc->info().val();
+	//don't calculate if this combo is vertex + its mirror
+	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
       // update the mindist if we are closer than anything found so far
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
 	nearest = vc; 
       	if (_verbose) cout << "nearer ";
       } 
-      // find index corresponding to vc for easy manipulation
-      int vcindx = vc->info().val();
      //do the same as above but with probability instead of geometric distance
      if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;

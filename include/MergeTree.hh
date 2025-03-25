@@ -200,11 +200,11 @@ class MergeTree : BaseTree{
 			k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
-
+ //cout << "og points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
 			//cout << "pts " << endl; newpts->Print();
-			BayesPoint center({newpts->Centroid(0), newpts->Centroid(1), newpts->Centroid(2)});
+			BayesPoint center({newpts->Centroid(0), newpts->CircularCentroid(1), newpts->Centroid(2)});
 			//cout << "center" << endl; center.Print();
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
@@ -217,7 +217,8 @@ class MergeTree : BaseTree{
 			Matrix Rscale(3,3);
 			Rscale.SetEntry(1/cell,0,0);
 			Rscale.SetEntry(1/cell,1,1);
-			Rscale.SetEntry(1,2,2);
+			Rscale.SetEntry(1e-1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
+			//for right now, 1e-1 is good, nominal time is in ns, ns*1e-3 = us, ns*1e3 = ps
 
 
 
@@ -230,6 +231,7 @@ class MergeTree : BaseTree{
 
 			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 			
+			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 			x->model->ShiftData(center);
 			//cout << "centroid " << endl; 
@@ -278,12 +280,20 @@ class MergeTree : BaseTree{
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 			//need to unscale data 
-			x->model->ScaleData(RscaleInv);	
+			//x->model->ScaleData(RscaleInv);	
+			//cout << "unscaled points" << endl;
+			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
 			x->model->ScaleParameters(RscaleInv);	
 			
 			//need to put GMM parameters AND points back in detector coordinates (not local)
-			x->model->ShiftData(center);
+			//cout << "ismirror " << x->ismirror << " left " << x->l->ismirror << " right " << x->r->ismirror << endl;
+			//x->model->ShiftData(center);
+			//cout << "untransformed points" << endl;
+			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
+			x->model->SetData(x->points);
+			//x->model->GetData()->Print();
+			//cout << "end evidence" << endl;
 			x->model->ShiftParameters(center);
 
 			return newLogL;

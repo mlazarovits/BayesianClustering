@@ -47,7 +47,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//set distance constraint
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
-cout << "n pts " << n << endl;
+cout << "n starting pts " << n << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
@@ -62,7 +62,7 @@ cout << "n pts " << n << endl;
 	//cout << "------------------------------------------" << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
-	if(_verb > 0) cout << "BayesCluster - # clusters: " << mt->GetNClusters() << endl;
+	if(_verb > 0) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
 	
@@ -102,6 +102,7 @@ cout << "n pts " << n << endl;
 			BestRkPair = map_it->second;
 			//check for equal rks (more than three - may be two for i,j and j,i), break tie with 3d distance
 			//right now - only equal rks are for equivalent merges
+			//cout << "number of pairs with same bestRk = " << BestRk << ": " << ProbMap.count(BestRk) << endl;
 			if(ProbMap.count(BestRk) > 2){
 				ret = ProbMap.equal_range(BestRk);
 				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; ++it){
@@ -120,7 +121,9 @@ cout << "n pts " << n << endl;
 				jet_j = BestRkPair.second;
 			}
 
-			if (_verb > 1) cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl; // GPS debugging
+			if (_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;
+				
+			} // GPS debugging
  			//also need to erase any impossible merges from map too
 			ProbMap.erase(map_it);
 			Valid2 = DNN->Valid(jet_j);
@@ -213,7 +216,8 @@ cout << "n pts " << n << endl;
 	for(int i = 0; i < trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
 		if(trees[i] == nullptr){ nnull++; continue; }
-		if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
+		//if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
+		if(trees[i]->ismirror){
 			nmirror++;
 				//cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
 			//cout << " points" << endl; trees[i]->model->GetData()->Print();
@@ -230,8 +234,10 @@ cout << "n pts " << n << endl;
 			//cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
-		//cout << "points" << endl; trees[i]->model->GetData()->Print();
+		cout << "points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
 	}
+	//cout << " all points" << endl;
+	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
 	cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	return _trees;
 	
@@ -647,12 +653,12 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 			comp = DNN->NearestNeighbourProb(i);
 			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
 			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
-			if(_verb > 1) cout << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << endl;
+			if(_verb > 1) cout << std::setprecision(12) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << endl;
 		}
 		else{
 			comp = DNN->NearestNeighbourDistance(i);
 			j = DNN->NearestNeighbourIndex(i);
-	if(verbose) cout << "adding entry " << i << " with best distance " << comp << " pair " << j << endl;
+	if(_verb > 1) cout << "adding entry " << i << " with best distance " << comp << " pair " << j << endl;
 		}
 		inmap.insert(CompEntry(comp,verts(i,j)));
 }

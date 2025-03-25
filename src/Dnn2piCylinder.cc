@@ -165,7 +165,8 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
   for (size_t i = 0; i < plane_indices.size(); i++) {
     int ip = plane_indices[i]; // plane index
     PointCollection pts = _DNN->points(ip);
-    double phi = pts.mean().at(1);
+   // double phi = pts.mean().at(1);
+    double phi = pts.CircularMean(1);
 
 
     // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
@@ -181,8 +182,10 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     double nndist = _DNN->NearestNeighbourDistance(ip);
 	double offset = 0.1; 
     //if ((phi-offset)*(phi-offset) >= nndist && ((twopi+offset)-(phi))*((twopi+offset)-(phi)) >= nndist) {continue;}
-    if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
-    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << endl;
+	//do not create mirror points if the nearest neighbor is closer than the 0 point or 2pi point
+	//only create mirror point if nearest neighbor is further than 0 and 2pi point
+    if (phi*phi >= nndist || (twopi-phi)*(twopi-phi) >= nndist) {continue;}
+    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
@@ -190,11 +193,13 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
+//cout << "original points" << endl; pts.Print();
 //    cout << "mirrored points" << endl;
 //	newpts->Print();
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
     x->points = newpts;
+    x->ismirror = true;
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _merge_tree->Get(ip);
     _merge_tree->Get(ip)->mirror = x;
@@ -212,7 +217,6 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
 			   updated_plane_points);
 
 if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - end" << endl;
-
 }
 
 

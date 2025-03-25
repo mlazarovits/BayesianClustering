@@ -122,6 +122,35 @@ struct RecoParticle;
 
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
+
+
+	protected:
+		void RecordMomInfo(Pythia8::Particle particle){
+			//mother idx in gen particle list - assuming normal mother case where mother1 > 0 && mother2 == 0
+			//'top level' gen particles are tops - if top do not save mother info
+			int momidx_pythia = particle.mother1();
+			if(fabs(particle.id()) != 6)
+				_genmoms.insert(momidx_pythia);
+		}
+		void SaveGenInfo(Pythia8::Particle particle){
+			RecordMomInfo(particle);
+
+			RecoParticle genpart(particle);
+			CalcTrajectory(genpart);
+			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
+			fj_genpart.set_user_index(_genparts.size());
+			_genparts.push_back(fj_genpart);
+			_genpartids.push_back(genpart.Particle.id());
+			//find mother in _genmoms (assuming mother is filled first)
+			int momidx_pythia = particle.mother1();
+			auto it = find(_genmoms.begin(), _genmoms.end(), momidx_pythia);
+			int index = -1;
+			if(it != _genmoms.end())
+				index = std::distance(_genmoms.begin(), it);
+			_genpartMomIdx.push_back(index);
+			cout << "genidx " << fj_genpart.user_index() << " gen id " << genpart.Particle.id() << " momidx " << index << endl;
+		}
+
 	private:
 		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)
@@ -215,6 +244,7 @@ struct RecoParticle;
 		//gen particle info (even intermediate particles)
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass, _genpartpz;
 		vector<double> _genpartMomIdx;
+		set<double> _genmoms;
 		vector<int> _genpartIdx;
 		//reco jets
 		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;

@@ -251,12 +251,14 @@ class BHCJetSkimmer{
 			vector<JetPoint> rhs;
 			double x, y, z, eta, phi, t, theta, px, py, pz;
 			BayesPoint vertex({_pvx, _pvy, _pvz});
+			int njets_tot = 0;
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
 				PointCollection* pc = _trees[i]->points;
 				//at least 2 points (rhs)
 				if(pc->GetNPoints() < 2) continue;
 				rhs.clear();
+				njets_tot++;
 				//loop over points
 				//cout << "TREE " << i << endl;
 				//create new Jet
@@ -266,7 +268,8 @@ class BHCJetSkimmer{
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
 			}
-			cout << _predJets.size() << " pred jets" << endl;
+			cout << njets_tot << " pred jets total" << endl;
+			cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
 		}
 
