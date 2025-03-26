@@ -330,9 +330,9 @@ private:
       // nearest point is not the infinite vertex and thus
       // nearest->point() is not ill-defined
       if (_verbose) std::cout << "using CGAL's distance ordering" << std::endl;
-      K::Point_3 pref_pt = K::Point_3(pref.n->points->mean().at(0), pref.n->points->mean().at(1), pref.n->points->mean().at(2));
-      K::Point_3 candidate_pt = K::Point_3(candidate.n->points->mean().at(0), candidate.n->points->mean().at(1), candidate.n->points->mean().at(2));
-      K::Point_3 near_pt = K::Point_3(near.n->points->mean().at(0), near.n->points->mean().at(1), near.n->points->mean().at(2));
+      K::Point_3 pref_pt = K::Point_3(pref.n->points->mean().at(0), pref.n->points->CircularMean(1), pref.n->points->mean().at(2));
+      K::Point_3 candidate_pt = K::Point_3(candidate.n->points->mean().at(0), candidate.n->points->CircularMean(1), candidate.n->points->mean().at(2));
+      K::Point_3 near_pt = K::Point_3(near.n->points->mean().at(0), near.n->points->CircularMean(1), near.n->points->mean().at(2));
       if (CGAL::compare_distance_to_point(pref_pt, candidate_pt, near_pt)!=CGAL::LARGER){
 	mindist = dist;
 	return true;
@@ -382,7 +382,7 @@ private:
   /// and the distance between the two points is also smaller than this
   /// then use CGAL to compare the distances. 
   static const double DISTANCE_FOR_CGAL_CHECKS;  
-
+  static const int max_ndigits; //maximum number of digits for rounding distances
 
   /// small routine to check if if a vertex handle is not null.
   ///
