@@ -1186,25 +1186,25 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//255 - rot2D for BHsel
 		TH1D* rotundity_2D_BHsel = new TH1D("rotundity_2D_BHsel","rotundity_2D_BHsel",20,0.4,1.1);
 		//256 - eta angle (angle bw maj axis + eta axis in 3D) for phys bkg
-		TH1D* etaAngle3D_physBkg = new TH1D("etaAngle3D_physBkg","etaAngle3D_physBkg",25,-3.2,3.2);
+		TH1D* etaAngle3D_physBkg = new TH1D("etaAngle3D_physBkg","etaAngle3D_physBkg",25,-0.4,3.4);
 		//257 - eta angle (angle bw maj axis + eta axis in 3D) for BHsel
-		TH1D* etaAngle3D_BHsel = new TH1D("etaAngle3D_BHsel","etaAngle3D_BHsel",25,-3.2,3.2);
+		TH1D* etaAngle3D_BHsel = new TH1D("etaAngle3D_BHsel","etaAngle3D_BHsel",25,-0.4,3.4);
 		//258 - phi angle (angle bw maj axis + phi axis in 3D) for phys bkg
-		TH1D* phiAngle3D_physBkg = new TH1D("phiAngle3D_physBkg","phiAngle3D_physBkg",25,-3.2,3.2);
+		TH1D* phiAngle3D_physBkg = new TH1D("phiAngle3D_physBkg","phiAngle3D_physBkg",25,-0.4,3.4);
 		//259 - phi angle (angle bw maj axis + phi axis in 3D) for BHsel
-		TH1D* phiAngle3D_BHsel = new TH1D("phiAngle3D_BHsel","phiAngle3D_BHsel",25,-3.2,3.2);
+		TH1D* phiAngle3D_BHsel = new TH1D("phiAngle3D_BHsel","phiAngle3D_BHsel",25,-0.4,3.4);
 		//260 - eta angle (angle bw maj axis + eta axis in 2D) for phys bkg
-		TH1D* etaAngle2D_physBkg = new TH1D("etaAngle2D_physBkg","etaAngle2D_physBkg",25,-3.2,3.2);
+		TH1D* etaAngle2D_physBkg = new TH1D("etaAngle2D_physBkg","etaAngle2D_physBkg",25,-0.4,3.4);
 		//261 - eta angle (angle bw maj axis + eta axis in 2D) for BHsel
-		TH1D* etaAngle2D_BHsel = new TH1D("etaAngle2D_BHsel","etaAngle2D_BHsel",25,-3.2,3.2);
+		TH1D* etaAngle2D_BHsel = new TH1D("etaAngle2D_BHsel","etaAngle2D_BHsel",25,-0.4,3.4);
 		//262 - phi angle (angle bw maj axis + phi axis in 2D) for phys bkg
-		TH1D* phiAngle2D_physBkg = new TH1D("phiAngle2D_physBkg","phiAngle2D_physBkg",25,-3.2,3.2);
+		TH1D* phiAngle2D_physBkg = new TH1D("phiAngle2D_physBkg","phiAngle2D_physBkg",25,-0.4,3.4);
 		//263 - phi angle (angle bw maj axis + phi axis in 2D) for BHsel
-		TH1D* phiAngle2D_BHsel = new TH1D("phiAngle2D_BHsel","phiAngle2D_BHsel",25,-3.2,3.2);
+		TH1D* phiAngle2D_BHsel = new TH1D("phiAngle2D_BHsel","phiAngle2D_BHsel",25,-0.4,3.4);
 		//264 - major axis length for phys bkg (in 3D)
-		TH1D* majLength3D_physBkg = new TH1D("majLength3D_physBkg","majLength3D_physBkg",25,0,0.1);
+		TH1D* majLength3D_physBkg = new TH1D("majLength3D_physBkg","majLength3D_physBkg",25,0,3.);
 		//265 - major axis length for BHsel (in 3D)
-		TH1D* majLength3D_BHsel = new TH1D("majLength3D_BHsel","majLength3D_BHsel",25,0,0.1);
+		TH1D* majLength3D_BHsel = new TH1D("majLength3D_BHsel","majLength3D_BHsel",25,0,3.);
 		//266 - major axis length for phys bkg (in 2D)
 		TH1D* majLength2D_physBkg = new TH1D("majLength2D_physBkg","majLength2D_physBkg",25,0,0.1);
 		//267 - major axis length for BHsel (in 2D)
@@ -2151,6 +2151,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				double eta_angle_2d = acos(eigenvecs_space[1].at(0,0));
 				double phi_angle_2d = acos(eigenvecs_space[1].at(1,0));
 				double majLength_2d = sqrt(eigenvals_space[1]);				
+
 
 				//rotate points into maj/min axes
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);

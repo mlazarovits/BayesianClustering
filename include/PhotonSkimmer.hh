@@ -1170,17 +1170,17 @@ class PhotonSkimmer : public BaseSkimmer{
 		//250 - # rhs above r_nk = 0.8
 		TH1D* nRhs_rnkThresh = new TH1D("nRhs_rnkThresh","nRhs_rnkThresh",30,0,30);
 		//251 - eta angle (angle bw maj axis + eta axis in 3D)
-		TH1D* etaAngle3D = new TH1D("etaAngle3D_physBkg","etaAngle3D_physBkg",25,-3.2,3.2);
+		TH1D* etaAngle3D = new TH1D("etaAngle3D","etaAngle3D",25,-0.4,3.4);
 		//252 - phi angle (angle bw maj axis + phi axis in 3D)
-		TH1D* phiAngle3D = new TH1D("phiAngle3D_physBkg","phiAngle3D_physBkg",25,-3.2,3.2);
+		TH1D* phiAngle3D = new TH1D("phiAngle3D","phiAngle3D",25,-0.4,3.4);
 		//253 - eta angle (angle bw maj axis + eta axis in 2D)
-		TH1D* etaAngle2D = new TH1D("etaAngle2D_physBkg","etaAngle2D_physBkg",25,-3.2,3.2);
+		TH1D* etaAngle2D = new TH1D("etaAngle2D","etaAngle2D",25,-0.4,3.4);
 		//254 - phi angle (angle bw maj axis + phi axis in 2D)
-		TH1D* phiAngle2D = new TH1D("phiAngle2D_physBkg","phiAngle2D_physBkg",25,-3.2,3.2);
+		TH1D* phiAngle2D = new TH1D("phiAngle2D","phiAngle2D",25,-0.4,3.4);
 		//255 - major axis length (in 3D)
-		TH1D* majLength3D = new TH1D("majLength3D_physBkg","majLength3D_physBkg",25,0,0.1);
+		TH1D* majLength3D = new TH1D("majLength3D","majLength3D",25,0,3.);
 		//256 - major axis length (in 2D)
-		TH1D* majLength2D = new TH1D("majLength2D_physBkg","majLength2D_physBkg",25,0,0.1);
+		TH1D* majLength2D = new TH1D("majLength2D","majLength2D",25,0,0.1);
 
 
 
