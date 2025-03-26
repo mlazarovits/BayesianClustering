@@ -32,9 +32,9 @@ int main(int argc, char *argv[]){
 	bool skim = false;
 	double gev = 1./10.;
 	bool smear = false;
-	double tres_cte = 0.133913;//0.1727;
-	double tres_stoch = 1.60666;//0.5109;
-	double tres_noise = 0.00691415;//2.106;
+	double tres_cte = 0.1727;//0.133913;
+	double tres_stoch = 0.5109;//1.60666;
+	double tres_noise = 2.106;//0.00691415;
 
 	//set clustering strategy
 	//0 = NlnN
