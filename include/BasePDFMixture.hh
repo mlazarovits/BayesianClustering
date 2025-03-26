@@ -75,10 +75,11 @@ class BasePDFMixture : public BasePDF{
 				Matrix lamStar(m_dim, m_dim);
 				//need to make sure tResRate = tResRate_true*gev for units to match
 				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()) + _tresNoise*_tresNoise/(m_data->at(n).w()*m_data->at(n).w());
-				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " = " << m_data->at(n).w()/0.2 << " GeV and sigma_t " << sqrt(tresSq) * 1e9 << " ns " << endl; m_data->at(n).Print();}
+				tresSq /= 2;
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);
 				lamStar.SetEntry(1/(tresSq),2,2);
+				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();}
 				_lamStar.push_back(lamStar); //r = 1 for all k on init
 				
 			}
@@ -285,12 +286,21 @@ class BasePDFMixture : public BasePDF{
 				scT.transpose(sc);
 				_data_cov.mult(_data_cov,scT);
 			}
+			//measurement err ~ lambda is a precision matrix
+			//therefore, it needs to be inverted to be in correct units (ie cell^2 instead of cell^-2 or ns^2 instead of ns^-2)
 			else{ //else scale meas err lamba*_n
 				for(int n = 0; n < m_n; n++){
-					_lamStar[n].mult(sc,_lamStar[n]);
+					//if(n == 0){ cout << "scale mat " << endl; sc.Print(); cout << "data pt #" << n << " w " << m_data->at(n).w() << "pre scale" << endl; _lamStar[n].Print();}
+
+					Matrix sigStar(m_dim, m_dim);
+					sigStar.invert(_lamStar[n]);
+					
+					sigStar.mult(sc,sigStar);
 					Matrix scT;
 					scT.transpose(sc);
-					_lamStar[n].mult(_lamStar[n],scT);
+					sigStar.mult(sigStar,scT);
+					_lamStar[n].invert(sigStar);
+					//if(n == 0){ cout << "post scale" << endl; _lamStar[n].Print();}
 				}
 
 			}

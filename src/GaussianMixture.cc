@@ -639,7 +639,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 				rLamStar.add(lamStar);	
 
 				if(_verb > 3){
-					cout << "cluster #" << k << " data pt #" << n << " r " << m_post.at(n,k) << " lamStar " << endl;
+					cout << "cluster #" << k << " data pt #" << n << " w " << m_data->at(n).w() << " r " << m_post.at(n,k) << " lamStar " << endl;
 					_lamStar[n].Print();
 				}
 

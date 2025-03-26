@@ -201,6 +201,7 @@ class MergeTree : BaseTree{
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
  //cout << "og points" << endl; x->points->Print();
+			//cout << "original points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
 			//cout << "pts " << endl; newpts->Print();
@@ -238,10 +239,10 @@ class MergeTree : BaseTree{
 			
 			//cout << "translated pts" << endl;
 			//x->model->GetData()->Print();
-			
+			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
 			
-			//cout << "scaled points" << endl;
+			//cout << "transformed points" << endl;
 			//x->model->GetData()->Print();
 			//cout << endl;
 	
@@ -279,8 +280,9 @@ class MergeTree : BaseTree{
 
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
-			//need to unscale data 
-			//x->model->ScaleData(RscaleInv);	
+			//need to unscale data - also unscales lamStar measurement errors 
+			//cout << "inverse scale data + lam*s" << endl;	
+			x->model->ScaleData(RscaleInv);	
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
@@ -290,8 +292,9 @@ class MergeTree : BaseTree{
 			//cout << "ismirror " << x->ismirror << " left " << x->l->ismirror << " right " << x->r->ismirror << endl;
 			//x->model->ShiftData(center);
 			//cout << "untransformed points" << endl;
-			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
+			//resets data to original points
 			x->model->SetData(x->points);
+			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			x->model->ShiftParameters(center);
