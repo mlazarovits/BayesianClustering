@@ -154,8 +154,8 @@ cout << "n starting pts " << n << endl;
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
-
-
+		//if either sides of best recombination candidate found is not valid - break
+		if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;} 
 		int nn;
 		if(_verb > 1)cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 		
@@ -178,7 +178,8 @@ cout << "n starting pts " << n << endl;
       		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
 		// exit the loop because we do not want to look for nearest neighbours
 		// etc. of zero partons
-		if (i == n-1) {break;}//get eta phi (and time!) of new point - centroid of points in combined vertices
+		cout << "BayesCluster - i " << i << " n " << n << endl;
+		if (i == n-1) {cout << "i " << i << " n " << n << " i == n-1 - breaking" << endl;break;}//get eta phi (and time!) of new point - centroid of points in combined vertices
 		int pt3;
 		vector<int> updated_neighbors;
 		//update DNN with RemoveCombinedAddCombination
@@ -647,12 +648,12 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 			comp = DNN->NearestNeighbourProb(i);
 			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
 			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
-			if(_verb > 1) cout << std::setprecision(12) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << endl;
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << endl;
 		}
 		else{
 			comp = DNN->NearestNeighbourDistance(i);
 			j = DNN->NearestNeighbourIndex(i);
-	if(_verb > 1) cout << "adding entry " << i << " with best distance " << comp << " pair " << j << endl;
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best distance " << comp << " pair " << j << std::setprecision(5) << endl;
 		}
 		inmap.insert(CompEntry(comp,verts(i,j)));
 }
