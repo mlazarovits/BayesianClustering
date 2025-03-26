@@ -305,13 +305,39 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		_phi += subcl.phi();
 		_t += subcl.time();
 
-		cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
+		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
 	}
 	_eta /= double(nsubcl);
 	_phi /= double(nsubcl);
 	_t /= double(nsubcl);
 
 	_mu.mult(_mu,1/double(nsubcl));
+	for(int k = 0; k < nsubcl; k++){
+		auto params = model->GetLikelihoodParameters(k);
+		//do point-wise covariance with mean set by subclusters
+		deta = params["mean"].at(0,0) - _mu.at(0,0);	
+		dphi = params["mean"].at(1,0) - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = params["mean"].at(2,0) - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(deta*deta,0,0);
+		cov_entry.SetEntry(deta*dphi,1,0);
+		cov_entry.SetEntry(deta*dtime,2,0);
+		cov_entry.SetEntry(dphi*deta,0,1);
+		cov_entry.SetEntry(dphi*dphi,1,1);
+		cov_entry.SetEntry(dtime*dphi,2,1);
+		cov_entry.SetEntry(deta*dtime,0,2);
+		cov_entry.SetEntry(dphi*dtime,1,2);
+		cov_entry.SetEntry(dtime*dtime,2,2);
+		cov_entry.SetEntry(dtime*dtime,2,2);
+		
+
+		_cov.add(cov_entry);	
+
+		}
+	}
+	_cov.mult(_cov,1/double(nsubcl));	
 	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
 
 	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
@@ -347,28 +373,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		//pi = sum_rh sum_k r_nk
 		_pi += w;
 
-		//do point-wise covariance with mean set by subclusters
-		deta = _rhs[i].eta() - _mu.at(0,0);	
-		dphi = _rhs[i].phi() - _mu.at(1,0);	
-		dphi = acos(cos(dphi));
-		dtime = _rhs[i].time() - _mu.at(2,0);
-	
-		Matrix cov_entry = Matrix(3,3);
-		cov_entry.SetEntry(deta*deta,0,0);
-		cov_entry.SetEntry(deta*dphi,1,0);
-		cov_entry.SetEntry(deta*dtime,2,0);
-		cov_entry.SetEntry(dphi*deta,0,1);
-		cov_entry.SetEntry(dphi*dphi,1,1);
-		cov_entry.SetEntry(dtime*dphi,2,1);
-		cov_entry.SetEntry(deta*dtime,0,2);
-		cov_entry.SetEntry(dphi*dtime,1,2);
-		cov_entry.SetEntry(dtime*dtime,2,2);
-		cov_entry.SetEntry(dtime*dtime,2,2);
-		
-
-		_cov.add(cov_entry);	
 	}
-	_cov.mult(_cov,1/double(_nRHs));	
 
 
 	_kt2 = _px*_px + _py*_py;
