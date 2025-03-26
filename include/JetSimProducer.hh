@@ -34,6 +34,7 @@ class JetSimProducer{
 			cout << "Minimum energy: " << _Emin << endl;
 			cout << "Minimum rh energy: " << _minrhE << endl;
 			cout << "Minimum # rh: " << _minNrhs << endl;
+			cout << "Minimum # constituents (gen jets only): " << _nConstsmin << endl;
 		}
 
 
