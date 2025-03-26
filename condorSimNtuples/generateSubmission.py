@@ -39,11 +39,6 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-    if(args.mingenpartpt != 0):
-        mingenpartpt_str = str(args.mingenpartpt)
-        mingenpartpt_str = mingenpartpt_str.replace(".","p")
-        ofilename += "_mingenpartpt"+mingenpartpt_str
-        dirname += "_mingenpartpt"+mingenpartpt_str
     #put algo config in file name
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
@@ -56,7 +51,7 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)+' --mingenpartpt '+str(args.mingenpartpt)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
@@ -100,7 +95,6 @@ def main():
     parser.add_argument('--pileup','-pu',help="run pileup process",action='store_true')
     parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = '0.26')
-    parser.add_argument('--mingenpartpt',help='min gen particle pt',default=0.)
     args = parser.parse_args()
     
     generateSubmission(args)
