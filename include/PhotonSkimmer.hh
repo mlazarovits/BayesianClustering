@@ -409,6 +409,12 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(rot2D_IsoBkgSel);
 			_hists1D.push_back(rot3D_IsoBkgSel);
 			_hists1D.push_back(nRhs_rnkThresh);
+			_hists1D.push_back(etaAngle3D);
+			_hists1D.push_back(phiAngle3D);
+			_hists1D.push_back(etaAngle2D);
+			_hists1D.push_back(phiAngle2D);
+			_hists1D.push_back(majLength3D);
+			_hists1D.push_back(majLength2D);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1108,7 +1114,6 @@ class PhotonSkimmer : public BaseSkimmer{
                 TH1D* noErot2D_phiE2Dneq0PiOv2 = new TH1D("noErot2D_phiE2Dneq0PiOv2","noErot2D_phiE2Dneq0PiOv2",25,0.4,1.1);
 		//223 - swissCross
 		TH1D* swCross = new TH1D("swCross","swCross",25,0.9,1.1); 
-
 		//224 - true smaj
 		TH1D* trueSmaj = new TH1D("trueSmaj","trueSmaj",25,0,5);
 		//225 - true smaj
@@ -1164,6 +1169,18 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",50,0.95,1.01);
 		//250 - # rhs above r_nk = 0.8
 		TH1D* nRhs_rnkThresh = new TH1D("nRhs_rnkThresh","nRhs_rnkThresh",30,0,30);
+		//251 - eta angle (angle bw maj axis + eta axis in 3D)
+		TH1D* etaAngle3D = new TH1D("etaAngle3D_physBkg","etaAngle3D_physBkg",25,-3.2,3.2);
+		//252 - phi angle (angle bw maj axis + phi axis in 3D)
+		TH1D* phiAngle3D = new TH1D("phiAngle3D_physBkg","phiAngle3D_physBkg",25,-3.2,3.2);
+		//253 - eta angle (angle bw maj axis + eta axis in 2D)
+		TH1D* etaAngle2D = new TH1D("etaAngle2D_physBkg","etaAngle2D_physBkg",25,-3.2,3.2);
+		//254 - phi angle (angle bw maj axis + phi axis in 2D)
+		TH1D* phiAngle2D = new TH1D("phiAngle2D_physBkg","phiAngle2D_physBkg",25,-3.2,3.2);
+		//255 - major axis length (in 3D)
+		TH1D* majLength3D = new TH1D("majLength3D_physBkg","majLength3D_physBkg",25,0,0.1);
+		//256 - major axis length (in 2D)
+		TH1D* majLength2D = new TH1D("majLength2D_physBkg","majLength2D_physBkg",25,0,0.1);
 
 
 
@@ -1908,28 +1925,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
 			else minLength = sqrt(eigvals[1]);	
 
-			//calculate slopes from eigenvectors
-			//cov.eigenCalc(eigenvals, eigenvecs);
-			//lead_eigenvec = eigenvecs[2];			
-			//v_x = lead_eigenvec.at(0,0);	
-			//v_y = lead_eigenvec.at(1,0);	
-			//v_z = lead_eigenvec.at(2,0);	
-			//r = sqrt(v_x*v_x + v_y*v_y + v_z*v_z);
-			//polar angle with lead eigenvector
-			//theta = arccos(z/r), r = sqrt(x2 + y2 + z2)
-			//theta = acos( v_z / r );
-			//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
-			//phi = acos( v_x / sqrt(v_x*v_x + v_y*v_y) );
-			//phi = atan2( v_y , v_x  );
-			//if(signbit(v_y)) phi *= -1;
-			////rotundity - 3D
-			//rot3D = 0;
-			//for(int i = 0; i < (int)eigenvecs.size(); i++) rot3D += eigenvals[i];
-			//rot3D = eigenvals[2]/rot3D;
-			////velocity = z/r * rad/deg * deg/cm => ns/cm
-			//vel = (lead_eigenvec.at(2,0)/sqrt(v_x*v_x + v_y*v_y)) * (acos(-1)/180.) * (1./2.2);
-			//vel = fabs(1./vel);
-			//if(isnan(vel) || isinf(vel)) vel = -999;
+
+			//angle bw major axis and eta (3D) - eigenvectors normalized
+			double eta_angle_3d = acos(eigvecs[1].at(0,0));
+			double phi_angle_3d = acos(eigvecs[1].at(1,0));
 			
 			//rotundity - 2D
 			//take upper 2x2 submatrix from covariance
@@ -1938,6 +1937,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			phi2D = PhiEll(space_mat);			
 			rot2D = Rotundity(space_mat);
 	
+			//angle bw major axis and eta (2D)
+			double eta_angle_2d = acos(eigenvecs_space[1].at(0,0));
+			double phi_angle_2d = acos(eigenvecs_space[1].at(1,0));
+			double majLength_2d = sqrt(eigenvals_space[1]);				
+			
 			//rotate points into maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 			RotatePoints(model->GetData(), rotmat2D, majminpts);
@@ -2007,25 +2011,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			//4 - phoE filled in .cc
 			//cluster E
 			_procCats[id_idx].hists1D[1][5]->Fill(E_tot);
-			//slope space - phi/eta
-			//_procCats[id_idx].hists1D[1][6]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(0,0));
-        		////slope - eta/time
-			//_procCats[id_idx].hists1D[1][7]->Fill(lead_eigenvec.at(0,0)/lead_eigenvec.at(2,0));
-			////slope - phi/time
-			//_procCats[id_idx].hists1D[1][8]->Fill(lead_eigenvec.at(1,0)/lead_eigenvec.at(2,0));
-			//polar angle in 3D space
-			//_procCats[id_idx].hists1D[1][9]->Fill(theta);
-			//azimuthal angle in 2D space
-			//_procCats[id_idx].hists1D[1][10]->Fill(phi);
 			//subcluster energy
 			_procCats[id_idx].hists1D[1][11]->Fill(E_k);
 			//rotundity measures
 			//_procCats[id_idx].hists1D[1][12]->Fill(rot3D);
 			_procCats[id_idx].hists1D[1][13]->Fill(rot2D);
-			//velocity	
-			//_procCats[id_idx].hists1D[1][14]->Fill(vel);
-			//2D eigenval ratio
-			//_procCats[id_idx].hists1D[1][15]->Fill(eigenvals_space[0]/eigenvals_space[1]);		
 			//get variances
 			_procCats[id_idx].hists1D[1][16]->Fill(e_var);
 			_procCats[id_idx].hists1D[1][17]->Fill(p_var);
@@ -2136,6 +2126,12 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists1D[1][237]->Fill(bestTrackDr);
 			_procCats[id_idx].hists1D[1][238]->Fill(de);
 
+			_procCats[id_idx].hists1D[1][251]->Fill(eta_angle_3d);
+			_procCats[id_idx].hists1D[1][252]->Fill(phi_angle_3d);
+			_procCats[id_idx].hists1D[1][253]->Fill(eta_angle_2d);
+			_procCats[id_idx].hists1D[1][254]->Fill(phi_angle_2d);
+			_procCats[id_idx].hists1D[1][255]->Fill(majLength);
+			_procCats[id_idx].hists1D[1][256]->Fill(majLength_2d);
 
 
 
