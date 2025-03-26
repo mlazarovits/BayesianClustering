@@ -468,13 +468,13 @@ class BaseSkimmer{
 			}
 			else if(sample.find("SMS-GlGl") != string::npos){
 				//data
-				procCat glgl(_hists1D, _hists2D, "SMS-GlGl", "SMS-GlGl", leadsep);
+				procCat glgl(_hists1D, _hists2D, "SMS_GlGl", "SMS_GlGl", leadsep);
 				glgl.ids = {-999};
 				_procCats.push_back(glgl);
 			}
 			else if(sample.find("gogoG") != string::npos){
 				//data
-				procCat glgl(_hists1D, _hists2D, "SMS-GlGl", "SMS-GlGl", leadsep);
+				procCat glgl(_hists1D, _hists2D, "SMS_GlGl", "SMS_GlGl", leadsep);
 				glgl.ids = {-999};
 				_procCats.push_back(glgl);
 			}
