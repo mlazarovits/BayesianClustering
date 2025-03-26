@@ -92,5 +92,6 @@ class JetSimProducer{
 		double _ptmin, _minrhE, _Emin;
 		int _nConstsmin;
 		double _c = 29.9792458; // speed of light in cm/ns
+		vector<int> lepIds = {11, 12, 13, 14, 15, 16};
 };
 #endif
