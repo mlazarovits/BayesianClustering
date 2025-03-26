@@ -654,7 +654,7 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 		else{
 			comp = DNN->NearestNeighbourDistance(i);
 			j = DNN->NearestNeighbourIndex(i);
-	if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best distance " << comp << " pair " << j << std::setprecision(5) << endl;
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best distance " << comp << " pair " << j << std::setprecision(5) << endl;
 		}
 		inmap.insert(CompEntry(comp,verts(i,j)));
 }
