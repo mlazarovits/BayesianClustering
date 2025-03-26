@@ -408,6 +408,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(phi2D_IsoBkgSel);		
 			_hists1D.push_back(rot2D_IsoBkgSel);
 			_hists1D.push_back(rot3D_IsoBkgSel);
+			_hists1D.push_back(nRhs_rnkThresh);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -672,9 +673,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//16 - eta sigma	
-                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.09);
+                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0., 0.05);
 		//17 - phi sigma	
-                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.01,0.09);
+                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.,0.05);
 		//18 - time sigma	
                 TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,4.);
 		//19 - fraction of energy in cluster
@@ -690,7 +691,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//24 - normalized covariance - time/eta
 		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,-0.65,0.65);
 		//25 - normalized covariance - time/phi
-		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-1.,1.);
+		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-0.65,0.65);
 		//26 - normalized covariance - time/major axis
 		TH1D* timemaj_cov = new TH1D("timemaj_cov","timemaj_cov",25,-5.,5.);
 		//27 - normalized covariance - time/minor axis
@@ -1161,7 +1162,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* rot2D_IsoBkgSel = new TH1D("rot2D_IsoBkgSel","rot2D_IsoBkgSel",50,0.4,1.1);
 		//249 - rot3D - iso bkg selection 
 		TH1D* rot3D_IsoBkgSel = new TH1D("rot3D_IsoBkgSel","rot3D_IsoBkgSel",50,0.95,1.01);
-
+		//250 - # rhs above r_nk = 0.8
+		TH1D* nRhs_rnkThresh = new TH1D("nRhs_rnkThresh","nRhs_rnkThresh",30,0,30);
 
 
 
@@ -1193,11 +1195,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//11 - nsubclusters vs mm coeff
 		TH2D* nsubcl_mmcoeff = new TH2D("nsubcl_mmcoeff","nsubcl_mmcoeff;nsubclusters;mmcoeff",10,0,10,20,0.,1.1);
                 //12 - eta sigma v phi sigma
-		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig",25,0.01,0.09,25,0.01,0.09);
+		TH2D* etaSig_phiSig = new TH2D("etaSig_phiSig","etaSig_phiSig;etaSig;phiSig",25,0.,0.05,25,0.,0.05);
                 //13 - time sigma v phi sigma
-                TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig",25,0,5.,25,0.01,0.09);
+                TH2D* timeSig_etaSig = new TH2D("timeSig_etaSig","timeSig_etaSig;timeSig;etaSig",25,0,5.,25,0.,0.05);
                 //14 - time sigma v phi sigma
-                TH2D* timeSig_phiSig = new TH2D("timeSig_phiSig","timeSig_phiSig;timeSig;phiSig",25,0,5.,25,0.01,0.09);
+                TH2D* timeSig_phiSig = new TH2D("timeSig_phiSig","timeSig_phiSig;timeSig;phiSig",25,0,5.,25,0.,0.05);
 		//15 - fraction of energy in subcluster vs mm coeff of subcluster
 		TH2D* fracE_mmcoeff = new TH2D("fracE_mmcoeff","fracE_mmcoeff;fracE;mmcoeff",20,0.,1.,20,0,1.1);
 		//16 - number of subclusters vs fraction of energy in particular subcluster (really only applicable to lead subcluster)
@@ -1659,8 +1661,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		//234 - dR trackSubcl vs dE trackSubck, -2 < time subclust < 2	
 		TH2D* dRtrack_dEtrack_prompt = new TH2D("dRtrack_dEtrack_prompt","dRtrack_dEtrack_timeSubclNeg2to2;dRtrack;dEtrack",25,0,5,25,-2,2);
 		//235 - dR trackSubcl vs dE trackSubck, 2 < time subclust < 10	
-		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);	
-
+		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);
+		
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
@@ -1827,24 +1829,30 @@ class PhotonSkimmer : public BaseSkimmer{
 			double etaCentroid = points->Centroid(0);
 
 	
-			double E_tot = 0.;
-			for(int i = 0; i < npts; i++){
-				E_tot += model->GetData()->at(i).w()/_gev;
-			}
-			Matrix cov, lead_eigenvec, lead_eigenvec_space;
-			
 			int nclusters = model->GetNClusters();
-			_procCats[id_idx].hists1D[0][0]->Fill(nclusters);
-			_procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
-			
-
-			//fill for lead subcluster only
 			//get leading cluster index
 			vector<int> idxs;
 			//sort by mixing coeffs in ascending order (smallest first)
 			model->SortIdxs(idxs);
 			int leadidx = idxs[nclusters-1];
 			int k = leadidx;
+			
+			double E_tot = 0.;
+			int nrhs_thresh = 0;
+			int rnk_thresh = 0.8;
+			Matrix post = model->GetPosterior();
+			for(int i = 0; i < npts; i++){
+				E_tot += model->GetData()->at(i).w()/_gev;
+				if(post.at(i,k) > rnk_thresh) nrhs_thresh++;
+			}
+			_procCats[id_idx].hists1D[0][250]->Fill(nrhs_thresh);
+			Matrix cov, lead_eigenvec, lead_eigenvec_space;
+			
+			_procCats[id_idx].hists1D[0][0]->Fill(nclusters);
+			_procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
+			
+
+			//fill for lead subcluster only
 			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
 			model->GetNorms(norms);
 			E_k = norms[k]/_gev; 
