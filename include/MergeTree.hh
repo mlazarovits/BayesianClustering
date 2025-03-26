@@ -276,9 +276,7 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters " << exp(newLogL) << " with points in node " << endl; 
-///x->model->GetData()->Print(); cout << "og points" << endl; 
-x->points->Print();  
+			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
 
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
