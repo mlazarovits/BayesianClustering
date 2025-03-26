@@ -544,8 +544,8 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 	//need to put GMM parameters AND points back in detector coordinates (not local)
 	gmm->ShiftData(center);
-	gmm->PutPhi02pi(); //does for data and parameters
 	gmm->ShiftParameters(center);
+	gmm->PutPhi02pi(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
 	if(_verb > 3){

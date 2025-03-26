@@ -262,7 +262,7 @@ class BasePDFMixture : public BasePDF{
 			m_data->Translate(pt.at(2),2);
 			
 		}
-		virtual void PutPhi02pi_params(){ };
+		virtual void PutPhi02pi_params() = 0;
 
 		void PutPhi02pi(){
 			m_data->Put02pi(1);
