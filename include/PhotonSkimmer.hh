@@ -1839,7 +1839,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			double E_tot = 0.;
 			int nrhs_thresh = 0;
-			int rnk_thresh = 0.8;
+			double rnk_thresh = 0.8;
 			Matrix post = model->GetPosterior();
 			for(int i = 0; i < npts; i++){
 				E_tot += model->GetData()->at(i).w()/_gev;
