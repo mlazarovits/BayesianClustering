@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
 	double minE = 30.;
 	int minnrhs = 1;
 	double minRhE = 0.5;
+	double minNconsts = 5;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -185,6 +186,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minNconsts", 12) == 0){
+			i++;
+    	 		minNconsts = std::stoi(argv[i]);
+   		}
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smear = true;
    		}
@@ -223,7 +228,8 @@ int main(int argc, char *argv[]){
    		cout << "   --minpt [minpt]               set reco minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minE [minE]                 set reco minimum E (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
-   		cout << "   --minRhE [minRhe]             set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --minRhE [minRhE]             set minimum rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --minNconsts [minNconsts]     set minimum number of constituents for gen jets (default = 5)" << endl;
    		cout << "   --smear                       smear cov (spatial only, turns off meas error)" << endl;
    		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
    		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
@@ -387,7 +393,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetMinNrhs(minnrhs);
 	skimmer.SetMinE(minE);
 	skimmer.SetMinPt(minpt);
-	skimmer.SetMinNGenConsts(0);
+	skimmer.SetMinNGenConsts(minNconsts);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
 	skimmer.SetTransferFactor(gev);

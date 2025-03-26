@@ -25,7 +25,7 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-            inputFile = "condorSimNtuples_ttbar_defaultv9p2"
+            inputFile = "condorSimNtuples_ttbar_defaultv9p4"
     elif args.inputSample == "QCD":
             inputFile = "condorSimNtuples_QCD_defaultv9p1"
     #elif args.inputSample == "QCD_noSpatialSmear":
@@ -43,8 +43,6 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-    if float(args.mingenpartpt) != 0:
-        inputFile += "_mingenpartpt"+str(args.mingenpartpt)
 
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
@@ -59,7 +57,6 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
-
     #put algo config in file name
     kname = "%.3f" % float(args.alpha)
     kname = kname.replace(".","p")
@@ -122,7 +119,6 @@ def generateSubmission(args):
     nustr = nustr.replace(".","p")
     priorname = priorname+"_nu0-"+nustr
 
-
     ofilename += "_"+priorname+"_"+args.strategy
     dirname += "_"+priorname+"_"+args.strategy
     print("Preparing sample directory: {0}".format(dirname))
@@ -138,7 +134,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
@@ -148,8 +144,8 @@ def generateSubmission(args):
         flags += str(w)+' '
     flags += '--nu0 '+str(args.nu0)
     
-    if(args.noSmear):
-    	flags += ' --noSmear'
+    if(args.smear):
+    	flags += ' --smear'
     if(args.timeSmear):
     	flags += ' --timeSmear'
     if(args.applyFrac):
@@ -200,10 +196,10 @@ def main():
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minE',help='min reco jet energy',default=0)
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
-    parser.add_argument('--noSmear',help="turn off spatial smearing",default=False,action='store_true')
+    parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
-    parser.add_argument('--mingenpartpt',help='min gen particle pt',default=0.)
+    parser.add_argument('--minNconsts',help='set minimum number of constituents for gen jets',default=5)
     args = parser.parse_args()
     
     generateSubmission(args)
