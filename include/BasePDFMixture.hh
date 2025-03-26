@@ -36,9 +36,10 @@ class BasePDFMixture : public BasePDF{
 			m_post.SetDims(m_n, m_k);
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
 			//default is EGamma res - https://github.com/jking79/GammaResTool/blob/main/macros/ecal_config/caliSmearConfig.txt
-			_tresCte = 0.133913 * 1e-9;
-			_tresStoch = 1.60666 * 1e-9; 
-			_tresNoise = 0.00691415 * 1e-9;
+			//times should already be given in ns
+			_tresCte = 0.133913;
+			_tresStoch = 1.60666; 
+			_tresNoise = 0.00691415;
 		}
 
 		//virtual void InitParameters(unsigned long long seed = 123) = 0;

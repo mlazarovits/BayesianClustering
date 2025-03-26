@@ -196,6 +196,7 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
     	 		tres_cte = std::stod(argv[i]);
+			cout << "cte " << tres_cte << endl;
    		}
 		if(strncmp(argv[i],"--tResStoch", 11) == 0){
 			i++;
@@ -203,7 +204,7 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--tResNoise", 11) == 0){
 			i++;
-    	 		tres_stoch = std::stod(argv[i]);
+    	 		tres_noise = std::stod(argv[i]);
    		}
 
 
@@ -386,6 +387,7 @@ int main(int argc, char *argv[]){
 	dof.Print();
 	cout << "W0" << endl;
 	W.Print();
+	cout << "Using tres_cte = " << tres_cte << " ns, tres_stoch = " << tres_stoch << " ns and tres_noise = " << tres_noise << " ns" << endl;
  
 	BHCJetSkimmer skimmer(file);
 	skimmer.SetOutfile(oname);
