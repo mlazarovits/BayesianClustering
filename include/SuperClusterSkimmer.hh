@@ -323,6 +323,32 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists1D.push_back(EovP_subclTrack_early_smalldR);	
 			_hists1D.push_back(E_spikeSel);
 			_hists1D.push_back(E_promptSel);
+                	_hists1D.push_back(etaCenter_physBkg);
+                	_hists1D.push_back(etaCenter_BHsel);
+                	_hists1D.push_back(phiCenter_physBkg);
+                	_hists1D.push_back(phiCenter_BHsel);
+                	_hists1D.push_back(timeCenter_physBkg);
+                	_hists1D.push_back(timeCenter_BHsel);
+                	_hists1D.push_back(etaSig_physBkg);
+                	_hists1D.push_back(etaSig_BHsel);
+                	_hists1D.push_back(phiSig_physBkg);
+                	_hists1D.push_back(phiSig_BHsel);
+			_hists1D.push_back(timeeta_cov_physBkg);
+			_hists1D.push_back(timeeta_cov_BHsel);
+			_hists1D.push_back(rotundity_2D_physBkg);
+			_hists1D.push_back(rotundity_2D_BHsel);
+			_hists1D.push_back(etaAngle3D_physBkg);
+			_hists1D.push_back(etaAngle3D_BHsel);
+			_hists1D.push_back(phiAngle3D_physBkg);
+			_hists1D.push_back(phiAngle3D_BHsel);
+			_hists1D.push_back(etaAngle2D_physBkg);
+			_hists1D.push_back(etaAngle2D_BHsel);
+			_hists1D.push_back(phiAngle2D_physBkg);
+			_hists1D.push_back(phiAngle2D_BHsel);
+			_hists1D.push_back(majLength3D_physBkg);
+			_hists1D.push_back(majLength3D_BHsel);
+			_hists1D.push_back(majLength2D_physBkg);
+			_hists1D.push_back(majLength2D_BHsel);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -657,9 +683,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//16 - eta sigma	
-                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0.01, 0.09);
+                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0., 0.09);
 		//17 - phi sigma	
-                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.01,0.09);
+                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.,0.09);
 		//18 - time sigma	
                 TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,4.);
 		//19 - fraction of energy in cluster
@@ -675,7 +701,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//24 - normalized covariance - time/eta
 		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,-0.65,0.65);
 		//25 - normalized covariance - time/phi
-		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-1.,1.);
+		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-0.65,0.65);
 		//26 - normalized covariance - time/major axis
 		TH1D* timemaj_cov = new TH1D("timemaj_cov","timemaj_cov",25,-5.,5.);
 		//27 - normalized covariance - time/minor axis
@@ -1126,12 +1152,63 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//238 - E/p bw subcluster and closest matching track	
 		TH1D* EovP_trackSubcl = new TH1D("EovP_subclTrack","EovP_subclTrack",25,0,15);	
 		//239 - E/p bw subcluster and closest matching track for early times + small dRs	
-		TH1D* EovP_subclTrack_early_smalldR = new TH1D("EovP_subclTrack_early_smalldR","EovP_subclTrack_early_smalldR",25,0,15);	
+		TH1D* EovP_subclTrack_early_smalldR = new TH1D("EovP_subclTrack_early_smalldR","EovP_subclTrack_early_smalldR",25,0,15);
 		//240 - E of spike SCs
 		TH1D* E_spikeSel = new TH1D("E_spikeSel","E_spikeSel;EovP;E",25,0,1000);
 		//241 - E of prompt SCs - to compare bw DEG and MET PDs
 		TH1D* E_promptSel = new TH1D("E_promptSel","E_promptSel",50,0,500);
-	
+		//242 - eta center of physics bkg
+                TH1D* etaCenter_physBkg = new TH1D("etaCenter_physBkg","etaCenter_physBkg",50,-1.6,1.6);
+		//243 - eta sig of BH 
+                TH1D* etaCenter_BHsel = new TH1D("etaCenter_BHsel","etaCenter_BHsel",50,-1.6,1.6);
+		//244 - phi center of physics bkg
+                TH1D* phiCenter_physBkg = new TH1D("phiCenter_physBkg","phiCenter_physBkg",50,-0.2,6.4);
+		//245 - phi sig of BH 
+                TH1D* phiCenter_BHsel = new TH1D("phiCenter_BHsel","phiCenter_BHsel",50,-0.2,6.4);
+		//246 - time center of physics bkg
+                TH1D* timeCenter_physBkg = new TH1D("timeCenter_physBkg","timeCenter_physBkg",50,-10,10);
+		//247 - time sig of BH 
+                TH1D* timeCenter_BHsel = new TH1D("timeCenter_BHsel","timeCenter_BHsel",50,-10,10);
+		//248 - eta sig of physics bkg
+                TH1D* etaSig_physBkg = new TH1D("etaSig_physBkg","etaSig_physBkg",25,0., 0.09);
+		//249 - eta sig of BH 
+                TH1D* etaSig_BHsel = new TH1D("etaSig_BHsel","etaSig_BHsel",25,0., 0.09);
+		//250 - phi sig of physics bkg
+                TH1D* phiSig_physBkg = new TH1D("phiSig_physBkg","phiSig_physBkg",25,0., 0.09);
+		//251 - phi sig of BH 
+                TH1D* phiSig_BHsel = new TH1D("phiSig_BHsel","phiSig_BHsel",25,0., 0.09);
+		//252 - time-eta cov of physics bkg
+		TH1D* timeeta_cov_physBkg = new TH1D("timeeta_cov_physBkg","timeeta_cov_physBkg",25,-0.65,0.65);
+		//253 - time-eta cov of BH 
+		TH1D* timeeta_cov_BHsel = new TH1D("timeeta_cov_BHsel","timeeta_cov_BHsel",25,-0.65,0.65);
+		//254 - rot2D for phys bkg
+		TH1D* rotundity_2D_physBkg = new TH1D("rotundity_2D_physBkg","rotundity_2D_physBkg",20,0.4,1.1);
+		//255 - rot2D for BHsel
+		TH1D* rotundity_2D_BHsel = new TH1D("rotundity_2D_BHsel","rotundity_2D_BHsel",20,0.4,1.1);
+		//256 - eta angle (angle bw maj axis + eta axis in 3D) for phys bkg
+		TH1D* etaAngle3D_physBkg = new TH1D("etaAngle3D_physBkg","etaAngle3D_physBkg",25,-3.2,3.2);
+		//257 - eta angle (angle bw maj axis + eta axis in 3D) for BHsel
+		TH1D* etaAngle3D_BHsel = new TH1D("etaAngle3D_BHsel","etaAngle3D_BHsel",25,-3.2,3.2);
+		//258 - phi angle (angle bw maj axis + phi axis in 3D) for phys bkg
+		TH1D* phiAngle3D_physBkg = new TH1D("phiAngle3D_physBkg","phiAngle3D_physBkg",25,-3.2,3.2);
+		//259 - phi angle (angle bw maj axis + phi axis in 3D) for BHsel
+		TH1D* phiAngle3D_BHsel = new TH1D("phiAngle3D_BHsel","phiAngle3D_BHsel",25,-3.2,3.2);
+		//260 - eta angle (angle bw maj axis + eta axis in 2D) for phys bkg
+		TH1D* etaAngle2D_physBkg = new TH1D("etaAngle2D_physBkg","etaAngle2D_physBkg",25,-3.2,3.2);
+		//261 - eta angle (angle bw maj axis + eta axis in 2D) for BHsel
+		TH1D* etaAngle2D_BHsel = new TH1D("etaAngle2D_BHsel","etaAngle2D_BHsel",25,-3.2,3.2);
+		//262 - phi angle (angle bw maj axis + phi axis in 2D) for phys bkg
+		TH1D* phiAngle2D_physBkg = new TH1D("phiAngle2D_physBkg","phiAngle2D_physBkg",25,-3.2,3.2);
+		//263 - phi angle (angle bw maj axis + phi axis in 2D) for BHsel
+		TH1D* phiAngle2D_BHsel = new TH1D("phiAngle2D_BHsel","phiAngle2D_BHsel",25,-3.2,3.2);
+		//264 - major axis length for phys bkg (in 3D)
+		TH1D* majLength3D_physBkg = new TH1D("majLength3D_physBkg","majLength3D_physBkg",25,0,0.1);
+		//265 - major axis length for BHsel (in 3D)
+		TH1D* majLength3D_BHsel = new TH1D("majLength3D_BHsel","majLength3D_BHsel",25,0,0.1);
+		//266 - major axis length for phys bkg (in 2D)
+		TH1D* majLength2D_physBkg = new TH1D("majLength2D_physBkg","majLength2D_physBkg",25,0,0.1);
+		//267 - major axis length for BHsel (in 2D)
+		TH1D* majLength2D_BHsel = new TH1D("majLength2D_BHsel","majLength2D_BHsel",25,0,0.1);
 
 	
 		//0 - time v subcl subcluster energy
@@ -2053,11 +2130,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				vector<Matrix> eigvecs;
 				vector<double> eigvals;
 				cov.eigenCalc(eigvals,eigvecs);
-				double majLength = sqrt(eigvals[1]);	
+				double majLength = sqrt(eigvals[2]);	
 				if(eigvals[0] < 0) cout << "negative eigenvalue " << eigvals[0] << endl;
                         	double minLength; 
                         	if(eigvals[0] < 0) minLength = -sqrt(-eigvals[0]);
                         	else minLength = sqrt(eigvals[0]);	
+
+				//angle bw major axis and eta (3D) - eigenvectors normalized
+				double eta_angle_3d = acos(eigvecs[2].at(0,0));
+				double phi_angle_3d = acos(eigvecs[2].at(1,0));
 
 				//rotundity - 2D
 				//take upper 2x2 submatrix from covariance
@@ -2066,6 +2147,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				phi2D = PhiEll(space_mat);			
 				rot2D = Rotundity(space_mat);
 	
+				//angle bw major axis and eta (2D)
+				double eta_angle_2d = acos(eigenvecs_space[1].at(0,0));
+				double phi_angle_2d = acos(eigenvecs_space[1].at(1,0));
+				double majLength_2d = sqrt(eigenvals_space[1]);				
+
 				//rotate points into maj/min axes
 				Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 				RotatePoints(model->GetData(), rotmat2D, majminpts);
@@ -2260,6 +2346,21 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//current prompt selection
 				if(-0.5 <= tc && tc < 0.5){
 					_procCats[id_idx].hists1D[1][241]->Fill(E_k);
+				
+					_procCats[id_idx].hists1D[1][242]->Fill(ec);
+					_procCats[id_idx].hists1D[1][244]->Fill(pc);
+					_procCats[id_idx].hists1D[1][246]->Fill(tc);
+					_procCats[id_idx].hists1D[1][248]->Fill(e_var);
+					_procCats[id_idx].hists1D[1][250]->Fill(p_var);
+					_procCats[id_idx].hists1D[1][252]->Fill(te_cov);
+					_procCats[id_idx].hists1D[1][254]->Fill(rot2D);
+					_procCats[id_idx].hists1D[1][256]->Fill(eta_angle_3d);
+					_procCats[id_idx].hists1D[1][258]->Fill(phi_angle_3d);
+					_procCats[id_idx].hists1D[1][260]->Fill(eta_angle_2d);
+					_procCats[id_idx].hists1D[1][262]->Fill(phi_angle_2d);
+					_procCats[id_idx].hists1D[1][264]->Fill(majLength);
+					_procCats[id_idx].hists1D[1][266]->Fill(majLength_2d);
+
 				}
 				//current beam halo selection
 				if((pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc )){
@@ -2273,6 +2374,20 @@ class SuperClusterSkimmer : public BaseSkimmer{
 						_procCats[id_idx].hists2D[1][299]->Fill(bestde_dr,E_k);
 						_procCats[id_idx].hists2D[1][300]->Fill(bestTrackDr,swCP);
 						_procCats[id_idx].hists2D[1][301]->Fill(bestTrackDr,swCP);
+
+						_procCats[id_idx].hists1D[1][243]->Fill(ec);
+						_procCats[id_idx].hists1D[1][245]->Fill(pc);
+						_procCats[id_idx].hists1D[1][247]->Fill(tc);
+						_procCats[id_idx].hists1D[1][249]->Fill(e_var);
+						_procCats[id_idx].hists1D[1][251]->Fill(p_var);
+						_procCats[id_idx].hists1D[1][253]->Fill(te_cov);
+						_procCats[id_idx].hists1D[1][255]->Fill(rot2D);
+						_procCats[id_idx].hists1D[1][257]->Fill(eta_angle_3d);
+						_procCats[id_idx].hists1D[1][259]->Fill(phi_angle_3d);
+						_procCats[id_idx].hists1D[1][261]->Fill(eta_angle_2d);
+						_procCats[id_idx].hists1D[1][263]->Fill(phi_angle_2d);
+						_procCats[id_idx].hists1D[1][265]->Fill(majLength);
+						_procCats[id_idx].hists1D[1][267]->Fill(majLength_2d);
 					}
 				}
 				//current spike selection - dr, time req + phi center veto

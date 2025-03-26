@@ -252,9 +252,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				else{
 					calibfactor = 0;	
 				}
-				cout << "og time " << time;
+				//cout << "og time " << time;
 				time = time + timecorr - calibfactor;
-				cout << " calibrated time " << time - timecorr << endl;
+				//cout << " calibrated time " << time - timecorr << endl;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
