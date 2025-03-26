@@ -34,6 +34,7 @@
 
 #include<set>
 #include<list>
+#include<limits>
 #include "DnnPlane.hh"
 
 using namespace std;
@@ -41,7 +42,7 @@ using namespace std;
 //FASTJET_BEGIN_NAMESPACE      // defined in fastjet/internal/base.hh
 
 const double DnnPlane::DISTANCE_FOR_CGAL_CHECKS=1.0e-12;  
-
+const int DnnPlane::max_ndigits = std::numeric_limits<double>::max_digits10;
 
 /// Initialiser from a set of points on an Eta-Phi plane, where both
 /// eta and phi can have arbitrary ranges
@@ -772,7 +773,7 @@ void DnnPlane::_SetNearest (const int j) {
   
   // set j's supervertex info about nearest neighbour
   _supervertex[j].NNindex = nearest->info().val();
-  _supervertex[j].NNdistance = mindist;
+  _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
   _supervertex[j].MaxRk = maxrk;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
 
@@ -892,7 +893,7 @@ void DnnPlane::_SetAndUpdateNearest(
   // set j's supervertex info about nearest neighbour
   //cout << "  set to point " << nearest->info().val() << endl;
   _supervertex[j].NNindex = nearest->info().val();
-  _supervertex[j].NNdistance = mindist;
+  _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
   _supervertex[j].MaxRk = maxrk;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
 
