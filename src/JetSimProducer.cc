@@ -173,7 +173,8 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		double Eratio = _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx);
 		if(Eratio > 1.5 || Eratio < 0.5) continue;
 		cout << "\ngen jet #" << j << " has best gen match (id) " << _base->genpart_id->at(bestidx) << " with dr " << mindr << " and jet/particle energy " << _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx) << " with pt " << _base->Jet_genPt->at(j) << " and # constituents " << _base->Jet_genNConstituents->at(j) << endl;
-
+		int genid = fabs(_base->genpart_id->at(bestidx));
+		if(find(lepIds.begin(), lepIds.end(), genid) != lepIds.end()) continue; //can't match to gen lepton
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);
