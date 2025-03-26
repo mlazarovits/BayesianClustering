@@ -312,6 +312,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_t /= double(nsubcl);
 
 	_mu.mult(_mu,1/double(nsubcl));
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	for(int k = 0; k < nsubcl; k++){
 		auto params = model->GetLikelihoodParameters(k);
 		//do point-wise covariance with mean set by subclusters
@@ -335,12 +336,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 		_cov.add(cov_entry);	
 
-		}
 	}
 	_cov.mult(_cov,1/double(nsubcl));	
 	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
 
-	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
