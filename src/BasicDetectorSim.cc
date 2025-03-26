@@ -23,9 +23,9 @@ BasicDetectorSim::BasicDetectorSim(){
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTresCte = 0.2*1e-9; //time resolution for CMS ECAL (s) (200 ps)
-	_calTresNoise = 0.34641*1e-9; 
-	_calTresStoch = 1.60666*1e-9;
+	_calTresCte = 0.1727 * 1e-9;//0.2*1e-9; 
+	_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
+	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_nevts = 1000;
@@ -80,9 +80,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
 	_calEres = 0.00445; //energy resolution approximated as radiation length/2. (rad length = 0.89 cm) 
-	_calTresCte = 0.2*1e-9; //time resolution for CMS ECAL (s) (200 ps)
-	_calTresNoise = 0.34641*1e-9; 
-	_calTresStoch = 1.60666*1e-9;
+	_calTresCte = 0.1727 * 1e-9;//0.2*1e-9; 
+	_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
+	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
 	_etamax = 1.479;
@@ -812,7 +812,7 @@ void BasicDetectorSim::MakeRecHits(){
 			
 			//do amplitude dependent time smearing
 			t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
-			t_sig = sqrt(t_sig);
+			t_sig = sqrt(t_sig/2.); //divide by 2 bc params were taken from measurements of 2 rechits
 			//smear time in cell
 			//t can be negative (early times)
 			//update range to be centered on t, up to 5 sigma (calTres)
