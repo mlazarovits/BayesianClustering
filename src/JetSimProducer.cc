@@ -182,10 +182,63 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 
 		Jet jet(px, py,
 		        pz, _base->Jet_genEnergy->at(j));
-		
+		//check that mass is the same
+		cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
+		//set fake "subclusters" as constituents for gen jets
+		for(int c = 0; c < _base->Jet_genNConstituents->at(j); c++){
+			Jet fake_subcl;
+			jet.AddConstituent(fake_subcl);
+		}	
+		//check that # constituents is the same
+		cout << "jet # constituents " << jet.GetNConstituents() << " gen jet # constitutents " << _base->Jet_genNConstituents->at(j) << endl;
 		jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
+		//set # constituents
 		genjets.push_back(jet);
+	}
+}
+
+//get gen particles - only those that couldve originated a jet
+//tops, bs, quarks (prompt and from Ws) 
+void JetSimProducer::GetGenParticles(vector<Jet>& genparts, int evt){
+	double eta, phi, px, py, pz, pt;
+	genparts.clear();
+	if(evt > _nEvts) return;
+
+	_base->GetEntry(evt);
+	int nParts = _base->genpart_ngenpart;
+	
+	BayesPoint vtx = BayesPoint(3);
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
+	//make weights - E/e_avg
+	vector<double> ws;
+	for(int p = 0; p < nParts; p++){
+		/////TOF from 0 to rh location
+		///drh = _base->ECALRecHit_0TOF->at(r);
+		/////TOF from PV to rh location
+		///dpv = _base->ECALRecHit_pvTOF->at(r); 
+		///timecorr = drh - dpv;
+
+		pt = _base->genpart_pt->at(p);
+		phi = _base->genpart_phi->at(p);
+		eta = _base->genpart_eta->at(p);
+		//if(pt < _ptmin) continue;
+		//if(_base->Jet_genEnergy->at(j) < _Emin) continue;
+		//multiplicity requirement
+		//if(_base->Jet_genConstituentIdxs->at(j) < _nConstmin) continue;		
+
+		px = pt*cos(phi);
+		py = pt*sin(phi);
+		pz = pt*sinh(eta);
+
+		Jet part(px, py,
+		        pz, _base->genpart_energy->at(p));
+		part.SetVertex(vtx);
+		part.SetUserIdx(p); //use this to get the id from the ntuple
+		//set # constituents
+		genparts.push_back(part);
 	}
 }
 
