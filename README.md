@@ -31,6 +31,39 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 - `dev_v15` is compatible with v15, v16 of KUCMS ntuples
 - `dev_v14` is compatible with v14 of KUCMS ntuples
 
+### Use as an external package
+- make sure `lib/libBayesianClustering.so` exists
+	- if not, it can be made with `make lib`
+- be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
+	```
+	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesianClustering/lib
+	```
+- In Makefile:
+	- Add the following flags to `CXXFLAGS` (or equivalent)
+	```
+	CXXFLAGS += -I/path/to/BayesianClustering/include -frounding-math
+	```
+	- Add the following flags to `GLIBS` (or equivalent)
+	```
+	GLIBS += -L/path/to/BayesianClustering/lib -lBayesianClustering
+	```
+- If there are errors related to CGAL (ie undefined references)
+	- Add the following flags to `GLIBS` (or equivalent)
+	```
+	GLIBS += -L/path/to/CGALvX.X-install/X.X/lib -lCGAL
+	```
+- If there are errors related to boost (ie undefined references)
+	- Add the following flags to `CXXFLAGS` (or equivalent)
+	```
+	CXXFLAGS += -I/path/to/boost_vX.X.X-install/X.X.X/include
+	```
+- If there are errors related to how CGAL needs boost (ie `warning: libboost_thread.so.1.63.0, needed by /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib//libCGAL.so, not found`)
+	- Add the following flags to `GLIBS` (or equivalent) *before* the libraries for CGAL
+	```
+	GLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
+	```
+- Then, in your executable be sure to include the header `#include BayesianClustering/BayesianClustering.hh`
+
 ### Calling the algorithm
 First, instantiate a BayesCluster class instance with a vector of Jets passed as the data to the constructor. Various hyperparameters can now be set with the respective methods of the BayesCluster class. Calling `algo->SubCluster()` will return a GaussianMixture pointer, which is the model that contains all the information on the subclusters, their means, and covariances. These observables can be accessed by `GetLHPosteriorParameters(k)` within the GaussianMixture class, where `k` is the index of the subcluster for which you want these parameters. To sum up,
 ```
@@ -129,38 +162,6 @@ There are muliple visualization classes:
 - run the python scripts and submit scripts from the condor folder
 - to combine CSV files for MVA inputs, run `source combineCSVs.h` from the `condor/` folder, passing the directory to the `out/*.csv` path as a positional argument
 
-### Use as an external package
-- make sure `lib/libBayesianClustering.so` exists
-	- if not, it can be made with `make lib`
-- be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
-	```
-	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesianClustering/lib
-	```
-- In Makefile:
-	- Add the following flags to `CXXFLAGS` (or equivalent)
-	```
-	CXXFLAGS += -I/path/to/BayesianClustering/include -frounding-math
-	```
-	- Add the following flags to `GLIBS` (or equivalent)
-	```
-	GLIBS += -L/path/to/BayesianClustering/lib -lBayesianClustering
-	```
-- If there are errors related to CGAL (ie undefined references)
-	- Add the following flags to `GLIBS` (or equivalent)
-	```
-	GLIBS += -L/path/to/CGALvX.X-install/X.X/lib -lCGAL
-	```
-- If there are errors related to boost (ie undefined references)
-	- Add the following flags to `CXXFLAGS` (or equivalent)
-	```
-	CXXFLAGS += -I/path/to/boost_vX.X.X-install/X.X.X/include
-	```
-- If there are errors related to how CGAL needs boost (ie `warning: libboost_thread.so.1.63.0, needed by /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib//libCGAL.so, not found`)
-	- Add the following flags to `GLIBS` (or equivalent) *before* the libraries for CGAL
-	```
-	GLIBS   += -Wl,-rpath-link,/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/boost/1.63.0/lib/ -lboost_thread
-	```
-- Then, in your executable be sure to include the header `#include BayesianClustering/BayesianClustering.hh`
 
 
 ### Including classes as dictionaries in ROOT
