@@ -40,10 +40,14 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
 	double p_dk_h1 = exp(Evidence(x));
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
-	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;	
-	double rk = pi*p_dk_h1/p_dk_tk;
+	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;
+		
+	double rk = -1;
+	if(p_dk_h1 == 0 && p_dk_tk == 0) rk = 0; //the ELBO can get so negative s.t. sometimes exp(Evidence(x)) = 0 which results in rk = nan
+	else rk = pi*p_dk_h1/p_dk_tk;
 	if(std::isnan(rk)){
 		cout << "rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;
+		cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
 	}
 //		cout << " rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;//" points " << endl; x->model->GetData()->Print(); cout << endl;
 		
