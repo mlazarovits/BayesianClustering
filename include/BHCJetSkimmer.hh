@@ -184,6 +184,27 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoJet_subClusteretaPhiCovNorm);
 			_hists1D.push_back(recoJet_subClustertimeEtaCovNorm);
 			_hists1D.push_back(recoJet_subClustertimePhiCovNorm);
+			_hists1D.push_back(nGenParticles);
+			_hists1D.push_back(genParticle_eta);
+			_hists1D.push_back(genParticle_phi);
+			_hists1D.push_back(genParticle_time);
+			_hists1D.push_back(genParticle_pt);
+			_hists1D.push_back(genParticle_mass);
+			_hists1D.push_back(genParticle_energy);
+			_hists1D.push_back(genAK4Jet_eta);
+			_hists1D.push_back(genAK4Jet_phi);
+			_hists1D.push_back(genAK4Jet_time);
+			_hists1D.push_back(genAK4Jet_pt);
+			_hists1D.push_back(genAK4Jet_mass);
+			_hists1D.push_back(genAK4Jet_energy);
+			_hists1D.push_back(nJet_genAK4Jet);
+			_hists1D.push_back(genAK4Jet_nConstituents);
+			_hists1D.push_back(genAK4JetParticle_nDiff);
+			_hists1D.push_back(genAK4JetParticle_dR);
+			_hists1D.push_back(genAK4JetParticle_Eratio);
+			_hists1D.push_back(BHCJetParticle_nDiff);
+			_hists1D.push_back(BHCJetParticle_dR);
+			_hists1D.push_back(BHCJetParticle_Eratio);
 
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
@@ -444,7 +465,62 @@ class BHCJetSkimmer{
 				//else{ }
 			}
 		}
-	
+
+
+		//fill hists for gen jets and gen particles
+		//ONLY GEN PARTICLES CONSIDERED - tops, b's from tops, quarks from W's, direct daughters of b's
+		void FillGenHists(){
+			for(int p = 0; p < _procCats.size(); p++){
+				//fill gen particle hists - needs GetGenParticles() method in JetSimProducer
+				int nGenParts = _genparts.size();
+				_procCats[p].hists1D[0][107]->Fill((double)nGenParts);
+				for(int g = 0; g < _genparts.size(); g++){
+					_procCats[p].hists1D[0][108]->Fill(_genparts[g].eta());
+					_procCats[p].hists1D[0][109]->Fill(_genparts[g].phi());
+					_procCats[p].hists1D[0][110]->Fill(_genparts[g].time());
+					_procCats[p].hists1D[0][111]->Fill(_genparts[g].pt());
+					_procCats[p].hists1D[0][112]->Fill(_genparts[g].mass());
+					_procCats[p].hists1D[0][113]->Fill(_genparts[g].E());
+					
+				}
+				_procCats[p].hists1D[0][120]->Fill((double)_genjets.size());
+				_procCats[p].hists1D[0][122]->Fill((double)(_genjets.size() - nGenParts));
+				_procCats[p].hists1D[0][125]->Fill((double)(_predJets.size() - nGenParts));
+				//gen match jets to particles
+				vector<int> genMatchIdxs;
+				GenMatchJet(_genjets,genMatchIdxs);
+				for(int j = 0; j < _genjets.size(); j++){
+					_procCats[p].hists1D[0][114]->Fill(_genjets[j].eta());
+					_procCats[p].hists1D[0][115]->Fill(_genjets[j].phi());
+					_procCats[p].hists1D[0][116]->Fill(_genjets[j].time());
+					_procCats[p].hists1D[0][117]->Fill(_genjets[j].pt());
+					_procCats[p].hists1D[0][118]->Fill(_genjets[j].mass());
+					_procCats[p].hists1D[0][119]->Fill(_genjets[j].E());
+					_procCats[p].hists1D[0][121]->Fill(_genjets[j].GetNConstituents()); //warning: these are fake! they are empty jets bc meaningful constituents are set from subclusters (plus we don't save this info in the ntuples anyway) - the only thing meaningful about them is how many there are
+					//dr bw gen jet and best exclusive gen particle match	
+					int genmatch = genMatchIdxs[j];
+					if(genmatch != -1){
+						double gendR = dR(_genjets[j].eta(), _genjets[j].phi(), _genparts[genmatch].eta(), _genparts[genmatch].phi());
+						_procCats[p].hists1D[0][123]->Fill(gendR);
+						_procCats[p].hists1D[0][124]->Fill(_genjets[j].E()/_genparts[genmatch].E());
+					}	
+
+				}	
+				GenMatchJet(_predJets,genMatchIdxs);
+				for(int j = 0; j < _predJets.size(); j++){
+					int genmatch = genMatchIdxs[j];
+					if(genmatch != -1){
+						double gendR = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genmatch].eta(), _genparts[genmatch].phi());
+						_procCats[p].hists1D[0][126]->Fill(gendR);
+						_procCats[p].hists1D[0][127]->Fill(_predJets[j].E()/_genparts[genmatch].E());
+					}	
+
+				}	
+
+			}
+
+
+		}	
 		void FillRecoJetHists(){
 			int njets, tmass_idx, widx, genidx, id;
 			double wmass, topmass, dr, dr_pair, jetsize;
@@ -620,7 +696,7 @@ class BHCJetSkimmer{
 					w.add(_recojets[wmass_idxs.second]);
 					wmass = w.mass();
 					dr_pair = dR(_recojets[wmass_idxs.first].eta(), _recojets[wmass_idxs.first].phi(), _recojets[wmass_idxs.second].eta(), _recojets[wmass_idxs.second].phi());
-					_procCats[p].hists1D[0][27]->Fill(wmass);
+					//_procCats[p].hists1D[0][27]->Fill(wmass);
 					_procCats[p].hists1D[0][54]->Fill(dr_pair);
 					_procCats[p].hists1D[0][56]->Fill(w.pt());
 
@@ -898,7 +974,10 @@ class BHCJetSkimmer{
 			//variables
 			int nhists = _procCats[0].hists1D[0].size();
 			for(int i = 0; i < nhists; i++){
+				if(_procCats[0].hists1D[0][i] == nullptr) continue;
 				name = _procCats[0].hists1D[0][i]->GetName();
+				if(_procCats[0].hists1D[0][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
+				
 				_procCats[0].hists1D[0][i]->Write();
 				//make process breakdown directory - not making these profiles rn
 				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
@@ -1215,7 +1294,49 @@ class BHCJetSkimmer{
 		TH1D* recoJet_subClustertimeEtaCovNorm = new TH1D("AK4Jet_subClustertimeEtaCovNorm","AK4Jet_subClustertimeEtaCovNorm",50,-1.,1.);
 		//106 - time-phi covariance of GMM cluster from reco jets normalized
 		TH1D* recoJet_subClustertimePhiCovNorm = new TH1D("AK4Jet_subClustertimePhiCovNorm","AK4Jet_subClustertimePhiCovNorm",50,-1.,1.);
-		
+		//107 - # gen partons (t, b, q from W)
+		TH1D* nGenParticles = new TH1D("nGenParticles","nGenParticles",10,0,10);
+		//108 - gen particle eta at detector
+		TH1D* genParticle_eta = new TH1D("genParticle_eta","genParticle_eta",25,-3.2,3.2);
+		//109 - gen particle phi at detector
+		TH1D* genParticle_phi = new TH1D("genParticle_phi","genParticle_phi",25,-0.2,6.4);
+		//110 - gen particle time at detector
+		TH1D* genParticle_time = new TH1D("genParticle_time","genParticle_time",25,-10,10);
+		//111 - gen particle pt		
+		TH1D* genParticle_pt = new TH1D("genParticle_pt","genParticle_pt",25,0,100);
+		//112 - gen particle mass
+		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,200);
+		//113 - gen particle energy
+		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",25,0,200);
+		//114 - gen AK4 jet eta at detector
+		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_eta","genAK4Jet_eta",25,-1.6,1.6);
+		//115 - gen AK4 jet phi at detector
+		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_phi","genAK4Jet_phi",25,-0.2,6.4);
+		//116 - gen AK4 jet time at detector
+		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_time","genAK4Jet_time",25,-10,10);
+		//117 - gen AK4 jet pt		
+		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,100);
+		//118 - gen AK4 jet mass
+		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",25,0,200);
+		//119 - gen AK4 jet energy
+		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,200);
+		//120 - # gen AK4 jets
+		TH1D* nJet_genAK4Jet = new TH1D("nJet_genAK4Jet","nJet_genAK4Jet",15,0,15);
+		//121 - # constituents per gen AK4 jet
+		TH1D* genAK4Jet_nConstituents = new TH1D("genAK4Jet_nConstituents","genAK4Jet_nConstituents",30,0,30);
+		//122 - # gen jets - # gen particles
+		TH1D* genAK4JetParticle_nDiff = new TH1D("genAK4JetParticle_nDiff","genAK4JetParticle_nDiff",10,-5,5);
+		//123 - dR bw gen jet and gen particle its exclusively matched to
+		TH1D* genAK4JetParticle_dR = new TH1D("genAK4JetParticle_dR","genAK4JetParticle_dR",25,0,1);
+		//124 - E ratio bw gen jet and gen particle its exclusively matched to - gen jet energy/gen particle energy
+		TH1D* genAK4JetParticle_Eratio = new TH1D("genAK4JetParticle_Eratio","genAK4JetParticle_Eratio",25,0,1);
+		//125 - # bhc jets - # gen particles
+		TH1D* BHCJetParticle_nDiff = new TH1D("BHCJetParticle_nDiff","BHCJetParticle_nDiff",10,-5,5);
+		//126 - dR bw bhc jet and gen particle its exclusively matched to
+		TH1D* BHCJetParticle_dR = new TH1D("BHCJetParticle_dR","BHCJetParticle_dR",25,0,1);
+		//127 - E ratio bw bhc jet and gen particle its exclusively matched to - bhc jet energy/gen particle energy
+		TH1D* BHCJetParticle_Eratio = new TH1D("BHCJetParticle_Eratio","BHCJetParticle_Eratio",25,0,1);
+
 
 
 		//2D plots
@@ -1444,8 +1565,8 @@ class BHCJetSkimmer{
 		//loop through gen particles
 		//dr match to jet
 		double bestDr, dr;
-		int nGen = _base->genpart_ngenpart;
-		cout << "nGen " << nGen << endl;
+		int nGen = _genparts.size();//_base->genpart_ngenpart;
+		//cout << "nGen " << nGen << endl;
 		int otherJet, thisgenidx, thisJet;
 		bestGenMatchIdxs.clear();
 		bestGenMatchIdxs = {};
@@ -1461,18 +1582,19 @@ class BHCJetSkimmer{
 		//drs[i][j] = dr for jet i and gen particle j
 		vector<vector<double>> drs;
 		vector<int> genIdxs;
+		vector<int> qids = {1,2,3,4,5,6};
 		for(int j = 0; j < jets.size(); j++){
 			drs.push_back({});
 			for(int g = 0; g < nGen; g++){
-				//skip W's
 				drs[j].push_back(999);
-				if(fabs(_base->genpart_id->at(g)) == 24) continue;
-				//skip neutrinos
-				if(fabs(_base->genpart_id->at(g)) == 14 || fabs(_base->genpart_id->at(g)) == 12 || fabs(_base->genpart_id->at(g)) == 16) continue;
-				//rough acceptance cut - if gen particles are out of acceptance any associated jets wouldn't be reconstructed
-				if(fabs(_base->genpart_eta->at(g)) > 1.5) continue;
-			
-				dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), jets[j].eta(), jets[j].phi());
+				////skip W's
+				//if(fabs(_base->genpart_id->at(g)) == 24) continue;
+				////skip neutrinos
+				int truegenidx = _genparts[g].GetUserIdx();
+				if(fabs(_base->genpart_id->at(truegenidx)) == 14 || fabs(_base->genpart_id->at(truegenidx)) == 12 || fabs(_base->genpart_id->at(truegenidx)) == 16) continue;
+				//only match to quarks
+				///if(find(qids.begin(),qids.end(),fabs(_base->genpart_id->at(g))) == qids.end()) continue;
+				dr = dR(_base->genpart_eta->at(truegenidx), _base->genpart_phi->at(truegenidx), jets[j].eta(), jets[j].phi());
 				drs[j][g] = dr;
 			}
 		}
@@ -1506,7 +1628,7 @@ class BHCJetSkimmer{
 					mindr = *min_element(drs[thisJet].begin(), drs[thisJet].end());
 					if(mindr == 999) genidx = -1;
 					else genidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
-					best_idxs[thisJet] = genidx;
+					best_idxs[thisJet] = genidx; 
 					//cout << " reset gen match of this jet " << thisJet << " to particle " << genidx << " with dr " << mindr << endl;
 		
 				}
@@ -1519,7 +1641,7 @@ class BHCJetSkimmer{
 					if(mindr == 999) genidx = -1;
 					else genidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
 					thisJet = otherJet;
-					best_idxs[thisJet] = genidx;
+					best_idxs[thisJet] = genidx; 
 					//cout << " reset gen match of other jet " << otherJet << " to particle " << genidx << " with dr " << mindr << endl;
 				}	
 				//cout << "genidx is now " << genidx << " with count " << count(best_idxs.begin(), best_idxs.end(), genidx) << " for jet " << thisJet << endl;
@@ -1579,9 +1701,7 @@ class BHCJetSkimmer{
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
 		vector<node*> _trees;
-		vector<Jet> _predJets;
-		vector<Jet> _genjets;
-		vector<Jet> _recojets;
+		vector<Jet> _predJets, _genjets, _recojets, _genparts;
 		bool _smear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder

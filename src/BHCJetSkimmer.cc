@@ -101,6 +101,7 @@ void BHCJetSkimmer::Skim(){
 		if(_genjets.size() < 1){ cout << endl; continue; }
 		_prod->GetRecoJets(_recojets, i);
 		if(_recojets.size() < 1){ cout << endl; continue; }
+		_prod->GetGenParticles(_genparts, i);
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets";
 		///do GMM only option
@@ -170,31 +171,7 @@ void BHCJetSkimmer::Skim(){
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
 		
-		//decayId = 0 -> had
-		//decayId = 1 -> lep
-		//0 && 0 = 0 -> fully had
-		//1 && 1 = 1 -> fully lep
-		//0 && 1 = 2 -> semi lep 
-		//if(_base->Top_decayId->size() > 1){
-		//	if(_base->Top_decayId->at(0) == _base->Top_decayId->at(1))
-		//		_topDecayType = _base->Top_decayId->at(0);
-		//	else
-		//		_topDecayType = 2;
-		//}
-		//else _topDecayType = -1;
-	//cout << "\ntopDecayType " << _topDecayType << endl;
-	//gen particles in event
-	//for(int g = 0; g < _base->genpart_ngenpart; g++){
-	//	cout << "gen particle # " << g << " id " << _base->genpart_id->at(g) << " momidx " << _base->genpart_momIdx->at(g) << " E " << _base->genpart_energy->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;
-	//}
-	////gen jets
-	//cout << "n gen jets " << _base->Jet_genNJet << " " << _genjets.size() << endl;
-	//for(int g = 0; g < _base->Jet_genNJet; g++){
-	//	cout << "gen jet # " << g << " E " << _base->Jet_genEnergy->at(g) << " eta " << _base->Jet_genEta->at(g) << " phi " << _base->Jet_genPhi->at(g) << endl;
-	//}
-	
-
-		FillResolutionHists();
+		//FillResolutionHists(); - does gen matching...again?
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
@@ -235,6 +212,7 @@ void BHCJetSkimmer::Skim(){
 		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
+		FillGenHists(); //relies on BHC jets
 		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
