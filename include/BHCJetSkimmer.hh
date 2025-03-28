@@ -1098,7 +1098,7 @@ class BHCJetSkimmer{
 		//predicted jet plots
 		vector<double> xbins_recoGenPt = {0, 20, 30, 50, 100};
 		//0 - n bhc jets
-		TH1D* nClusters = new TH1D("nJets_BHC","nJets_BHC",15,0,15);
+		TH1D* nClusters = new TH1D("BHCJet_nJets","BHCJet_nJets",15,0,15);
 		//1 - n subclusters per bhc jets
 		TH1D* nSubclusters = new TH1D("BHCJet_nSubclusters","BHCJet_nSubclusters",10,0,10);
 		//2 - bhc subcluster energy
@@ -1135,7 +1135,7 @@ class BHCJetSkimmer{
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",50,-0.05,0.05);
 		//18
-		TH1D* nRecoJets = new TH1D("nJets_recoAK4","nJets_recoAK4",10,0,10);
+		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",10,0,10);
 		//19
 		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,1);
 		//20
@@ -1339,7 +1339,7 @@ class BHCJetSkimmer{
 		//119 - gen AK4 jet energy
 		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,500);
 		//120 - # gen AK4 jets
-		TH1D* nJet_genAK4Jet = new TH1D("nJets_genAK4Jet","nJets_genAK4Jet",15,0,15);
+		TH1D* nJet_genAK4Jet = new TH1D("genAK4_nJets","genAK4_nJets",15,0,15);
 		//121 - # constituents per gen AK4 jet
 		TH1D* genAK4Jet_nConstituents = new TH1D("genAK4Jet_nConstituents","genAK4Jet_nConstituents",30,0,30);
 		//122 - # gen jets - # gen particles
