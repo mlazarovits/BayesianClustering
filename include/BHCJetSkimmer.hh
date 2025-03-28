@@ -1108,7 +1108,7 @@ class BHCJetSkimmer{
 		//4 - bhc subcluster phi center
 		TH1D* predJet_subClusterPhiCenter = new TH1D("BHCJet_subClusterPhiCenter","BHCJet_subClusterPhiCenter",25,-0.1,6.3);
 		//5 - bhc jet subcluster time center
-		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-5,5);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-1,1);
 		//6 - bhc jet size
 		TH1D* predJet_jetSize = new TH1D("BHCJet_jetSize","BHCJet_jetSize",50,0,1);
 		//7 - bhc jet energy
@@ -1257,7 +1257,7 @@ class BHCJetSkimmer{
 		//78 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,250);
 		//79 - time center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subClusterTimeCenter","recoAK4Jet_subClusterTimeCenter",25,-5,5);
+		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subClusterTimeCenter","recoAK4Jet_subClusterTimeCenter",25,-1,1);
 		//80 - eta center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaCenter = new TH1D("recoAK4Jet_subClusterEtaCenter","recoAK4Jet_subClusterEtaCenter",25,-1.8,1.8);
 		//81 - phi center of GMM cluster from reco jets
@@ -1331,7 +1331,7 @@ class BHCJetSkimmer{
 		//115 - gen AK4 jet phi at detector
 		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_PhiCenter","genAK4Jet_PhiCenter",25,-0.2,6.4);
 		//116 - gen AK4 jet time at detector
-		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_TimeCenter","genAK4Jet_TimeCenter",25,-5,5);
+		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_TimeCenter","genAK4Jet_TimeCenter",25,-1,1);
 		//117 - gen AK4 jet pt		
 		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,500);
 		//118 - gen AK4 jet mass
