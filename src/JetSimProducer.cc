@@ -72,7 +72,6 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
-
 		Jet j(rh, vtx);
 		rhs.push_back(j);
 	}	
@@ -329,6 +328,9 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		if(jet.GetNRecHits() < _minNrhs) continue;
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
+		vector<JetPoint> jet_rhs = jet.GetJetPoints();
+		//cout << "jet #" << recojets.size() << " has";
+		//for(auto rh : jet_rhs) cout << " rh time " << rh.time() << " energy " << rh.E() << endl;
 		recojets.push_back(jet);
 	}
 	//sort by pt

@@ -168,15 +168,18 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	}
 	//methodStack formatting
 	else if(pf == 2){
-		labelToColor["reco"] = TColor::GetColor("#f7a278");
-		labelToColor["AK4"] = TColor::GetColor("#f7a278");
+		//labelToColor["reco"] = TColor::GetColor("#f7a278");
+		labelToColor["genAK4"] = TColor::GetColor("#f7a278");
+		//labelToColor["AK4"] = TColor::GetColor("#f7a278");
 		labelToColor["BHC"] = TColor::GetColor("#6859f1");
 	
 		labelToMark["reco"] = 71;
-		labelToMark["AK4"] = 71;
+		//labelToMark["AK4"] = 71;
+		labelToMark["genAK4"] = 71;
 		labelToMark["BHC"] =   72; 
 
 	}
+	//decay stack formatting
 	else if(pf == 3){
 		labelToColor["_b"] = TColor::GetColor("#F5B700");
 		labelToColor["qg"] = TColor::GetColor("#306B34");
@@ -195,21 +198,6 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["fullLep"] = 116;
 
 	}
-	/*
-	//diFileStack formatting
-	else if(pf == 4){
-		labelToColor["preCalib"] = TColor::GetColor("#F5B700");
-		labelToColor["postCalib"] = TColor::GetColor("#306B34");
-		labelToColor["wSpikes"] = TColor::GetColor("#F5B700");
-		labelToColor["woSpikes"] = TColor::GetColor("#306B34");
-		
-		labelToMark["preCalib"] = 114;
-		labelToMark["postCalib"] = 115;
-		labelToMark["wSpikes"] = 114;
-		labelToMark["woSpikes"] = 115;
-
-	}
-	*/
 	else{
 		cout << "plotFormat option " << pf << " not available." << endl;
 		return;
@@ -1510,11 +1498,33 @@ void HistFormatSim(string file){
 	TFile* ofile = new TFile(oname.c_str(),"RECREATE");
 	ofile->Close();	
 
-	vector<string> methods = {"reco","BHC"};
 	vector<string> procs = {"ttbar","QCD"};
 	//decay types
 	vector<string> types = {"b_","qg","lep"};
 	vector<string> typesFullDecay = {"fullHad","semiLep","fullLep"};
+	vector<string> jettypes = {"genAK4","BHC"};
+
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); //need to match titles
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); //need to match titles
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_TimeCenter"); //need to match titles
+	MethodStackHists(file, "ttbar", jettypes, oname, "energy"); //hist bounds off
+	MethodStackHists(file, "ttbar", jettypes, oname, "pt"); //hist bounds off
+	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_nDiff"); //not filled?
+	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_dR");
+	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_Eratio");
+	ProcStackHists(file, procs, "genAK4", oname, "nJet"); //change to method after name fix
+	ProcStackHists(file, procs, "BHC", oname, "nJets"); //change to method after name fix
+	ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
+	ProcStackHists(file, procs, "BHC", oname, "nSubclusters");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterEtaCenter");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterPhiCenter");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterTimeCenter");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterEtaSig");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterPhiSig");
+	ProcStackHists(file, procs, "BHC", oname, "subClusterTimeSig");
+	ProcStackHists(file, procs, "BHC", oname, "subClusteretaPhiCov");
+	ProcStackHists(file, procs, "BHC", oname, "subClustertimeEtaCov");
+	ProcStackHists(file, procs, "BHC", oname, "subClustertimePhiCov");
 
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
@@ -1528,7 +1538,8 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", methods, oname, "dR_b");
 	MethodStackHists(file, "ttbar", methods, oname, "qType");
 */
-	
+
+	/*	
 	ProcStackHists(file, procs, "reco", oname, "Jet_mass");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_mass");
 	ProcStackHists(file, procs, "reco", oname, "Jet_jetSize");
@@ -1544,7 +1555,9 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "reco", oname, "nJets");
 	ProcStackHists(file, procs, "BHC", oname,  "nJets");
 	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
-	
+	*/
+
+	/*
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_nSubclusters");
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEnergy");
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaCenter");
@@ -1556,11 +1569,10 @@ void HistFormatSim(string file){
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusteretaPhiCov");
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimeEtaCov");
 	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimePhiCov");
-
-	Hist2D(file, "ttbar", "AK4", oname, "nGenPartsptge5_nSubclusters");
-	Hist2D(file, "ttbar", "AK4", oname, "subCluster");
-	Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
-	Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
+*/
+	//Hist2D(file, "ttbar", "AK4", oname, "subCluster");
+	//Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
+	//Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
 		
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 

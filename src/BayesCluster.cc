@@ -430,6 +430,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch*gev, _tresNoise*gev); 
 
 	gmm->SetData(points);
+	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();
 	//needs to be before ScaleData() bc this method also scales the smear
 	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 	gmm->SetAlpha(_subalpha);
@@ -453,6 +454,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//cout << "centroid " << endl; center.Print();
 	
 	//cout << "translated pts" << endl;
+	//cout << "shifted - gmm data is" << endl; gmm->GetData()->Print();
 	//gmm->GetData()->at(0).Print();
 
 	//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
@@ -469,6 +471,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	//assuming prior parameters are given in shifted + scaled frame
 	gmm->ScaleData(Rscale);
+	//cout << "scaled - gmm data is" << endl; gmm->GetData()->Print();
 	//cout << "scaled points" << endl;
 	//gmm->GetData()->at(0).Print();
 	
@@ -539,13 +542,16 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 	//need to unscale data 
 	gmm->ScaleData(RscaleInv);	
+	//cout << "unscaled - gmm data is" << endl; gmm->GetData()->Print();
 	//need to unscale mean + covariances
 	gmm->ScaleParameters(RscaleInv);	
 	
 	//need to put GMM parameters AND points back in detector coordinates (not local)
 	gmm->ShiftData(center);
+	//cout << "unshifted - gmm data is" << endl; gmm->GetData()->Print();
 	gmm->ShiftParameters(center);
 	gmm->PutPhi02pi(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
+	//cout << "phi02pi - gmm data is" << endl; gmm->GetData()->Print();
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
 	if(_verb > 3){
