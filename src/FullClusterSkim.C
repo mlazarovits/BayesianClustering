@@ -66,6 +66,9 @@ int main(int argc, char *argv[]){
 	double minjetpt_isobkg = 50;
 	double maxmet_isobkg = 150;
 	bool isobkg = false; 
+	double tres_cte = 0.1727;//0.133913;
+	double tres_stoch = 0.5109;//1.60666;
+	double tres_noise = 2.106;//0.00691415;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -259,6 +262,18 @@ int main(int argc, char *argv[]){
 			i++;
     	 		maxmet_isobkg = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--tResCte", 9) == 0){
+			i++;
+    	 		tres_cte = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--tResStoch", 11) == 0){
+			i++;
+    	 		tres_stoch = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--tResNoise", 11) == 0){
+			i++;
+    	 		tres_noise = std::stod(argv[i]);
+   		}
 
 	}
 	if(hprint){
@@ -284,9 +299,12 @@ int main(int argc, char *argv[]){
    		cout << "   --BHFilter [bh]                      set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
+   		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
+   		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
+   		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
    		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
    		cout << "   --cleanMist                          clean mist rhs from jets (default = false, off - jets only)" << endl;
-   		cout << "   --smear                            turns on smearing data (default = false, off - measurement error on)" << endl;
+   		cout << "   --smear                              turns on smearing data (default = false, off - measurement error on)" << endl;
    		cout << "   --timeSmear                          turns on time smearing data (default = false, off)" << endl;
    		cout << "   --noWeight                           turns off weighting data points (default = false, on)" << endl;
    		cout << "   --noDist                             turns off distance constraint: clusters must be within pi/2 in phi (default = false, on)" << endl;
@@ -296,7 +314,7 @@ int main(int argc, char *argv[]){
    		cout << "   --noSpatCorr                         turn off spatial corrections for rechit times to put in PV frame (jets only, default = true, on)" << endl;
    		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
    		cout << "   --isoBkg                             apply isolated background selection (photons only, default = false, off)" << endl;
-   		cout << "   --minphopt_isobkg [minpt]               set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
+   		cout << "   --minphopt_isobkg [minpt]            set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
    		cout << "   --minht_isobkg [minht]               set minimum jet ht for iso bkg selection (photons only, default = 50)" << endl;
    		cout << "   --minjetpt_isobkg [minjetpt]         set minimum jet pt for iso bkg selection (photons only, default = 50)" << endl;
    		cout << "   --maxmet_isobkg [maxmet]             set maximum met for iso bkg selection (photons only, default = 150)" << endl;
@@ -466,8 +484,8 @@ int main(int argc, char *argv[]){
 	dof.Print();
 	cout << "W0" << endl;
 	W.Print(); 
+	cout << "Using tres_cte = " << tres_cte << " ns, tres_stoch = " << tres_stoch << " ns and tres_noise = " << tres_noise << " ns" << endl;
 	
-cout << "fname " << fname << endl;
 	//make sure evti < evtj
 	if(evti > evtj){
 		int evt = evtj;
