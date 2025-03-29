@@ -287,6 +287,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_phi = 0;
 	_t = 0;
 
+	PointCollection means;
 	for(int k = 0; k < nsubcl; k++){
 		auto params = model->GetLikelihoodParameters(k);
 		Ek = norms[k]/gev;
@@ -300,18 +301,39 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	//	_E += subcl.E(); //set from rhs
 	
 		_mu.add(params["mean"]);
-
-		_eta += subcl.eta();
-		_phi += subcl.phi();
-		_t += subcl.time();
+	
+		BayesPoint pt(3);
+		pt.SetValue(params["mean"].at(0,0),0);	
+		pt.SetValue(params["mean"].at(1,0),1);	
+		pt.SetValue(params["mean"].at(2,0),2);	
+		means += pt;
+		//_eta += subcl.eta();
+		//_phi += subcl.phi();
+		//_t += subcl.time();
 
 		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
 	}
-	_eta /= double(nsubcl);
-	_phi /= double(nsubcl);
-	_t /= double(nsubcl);
+	//_eta /= double(nsubcl);
+	//_phi /= double(nsubcl);
+	//_t /= double(nsubcl);
 
-	_mu.mult(_mu,1/double(nsubcl));
+	//_mu.mult(_mu,1/double(nsubcl));
+	BayesPoint mean = means.mean();
+	mean.SetValue(means.CircularMean(1),1);
+	_mu = Matrix(mean);
+	_eta = mean.at(0);
+	_phi = mean.at(1);
+	//put phi on 02pi
+	//if pt is negative
+	double pi = acos(-1);
+	if(_phi < 0){
+		_phi = _phi + 2*pi;
+	}
+	//if pt is geq 2*pi
+	else if(_phi >= 2*pi) _phi = _phi - 2*pi;
+	_mu.SetEntry(_phi,1,0);
+	_t = mean.at(2);
+
 	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	for(int k = 0; k < nsubcl; k++){
 		auto params = model->GetLikelihoodParameters(k);
@@ -359,7 +381,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	//	_px += pt*cos(_rhs[i].phi());
 	//	_py += pt*sin(_rhs[i].phi());
 	//	_pz += pt*sinh(_rhs[i].eta());
-		
+	//cout << "rh #" << i << " time " << t << " phi " << phi << " weight " << rh.w() << endl;	
 		_E += _rhs[i].E();
 
 		//weights are sum of weights over all subclusters
