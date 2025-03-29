@@ -1507,13 +1507,14 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); //need to match titles
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); //need to match titles
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_TimeCenter"); //need to match titles
-	MethodStackHists(file, "ttbar", jettypes, oname, "energy"); //hist bounds off
-	MethodStackHists(file, "ttbar", jettypes, oname, "pt"); //hist bounds off
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_energy"); //hist bounds off
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_pt"); //hist bounds off
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_nDiff"); //not filled?
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_dR");
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_Eratio");
-	ProcStackHists(file, procs, "genAK4", oname, "nJet"); //change to method after name fix
-	ProcStackHists(file, procs, "BHC", oname, "nJets"); //change to method after name fix
+	//MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); //change to method after name fix
+	ProcStackHists(file, procs, "genAK4", oname, "nJets");
+	ProcStackHists(file, procs, "BHC", oname, "nJets");
 	ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
 	ProcStackHists(file, procs, "BHC", oname, "nSubclusters");
 	ProcStackHists(file, procs, "BHC", oname, "subClusterEtaCenter");
