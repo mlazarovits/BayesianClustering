@@ -53,6 +53,10 @@ class BaseSkimmer{
 			//m
 			_prior_params["mean"] = Matrix(3,1);
 
+			_cell = 0;
+			_tresCte = 0;
+			_tresNoise = 0;
+			_tresStoch = 0;
 			
 			cout << "Default NN model: small8CNN_EMultr.json" << endl;
 
@@ -94,6 +98,11 @@ class BaseSkimmer{
 			_hists1D.push_back(phi_center);
 			_hists1D.push_back(objE);
 			_hists1D.push_back(clusterE);
+			
+			_cell = acos(-1)/180;
+			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
+			_tresStoch = 0.5109;//1.60666 * 1e-9; 
+			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
 			cout << "Default NN model: small8CNN_EMultr.json" << endl;
 
@@ -855,5 +864,9 @@ class BaseSkimmer{
 		dphi = acos(cos(dphi));
 		return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
 	}
+	double _cell, _tresCte, _tresNoise, _tresStoch;
+	void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
+	cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
+ }
 };
 #endif

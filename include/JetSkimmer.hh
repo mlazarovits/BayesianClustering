@@ -2023,6 +2023,7 @@ class JetSkimmer : public BaseSkimmer{
 			if(_smear && !_smearMat.empty()) algo->SetDataSmear(_smearMat);
 			//set time resolution smearing
 			//if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
+			algo->SetMeasErrParams(_cell, _tresCte, _tresNoise*_gev, _tresStoch*_gev); 
 			algo->SetThresh(_thresh);
 			//algo->SetAlpha(_alpha); //isn't used should probably remove this line
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -2419,7 +2420,6 @@ dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
 			vector<Jet> _SCs; //superclusters for event - for # subcluster matching
 			double _minRhE;
 			Matrix _smearMat;
-			double _tres_c, _tres_n;
 			PhotonProducer* _scprod;
 			bool _cleansubcls;
 };

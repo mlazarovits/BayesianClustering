@@ -178,6 +178,7 @@ void PhotonSkimmer::Skim(){
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
+			algo->SetMeasErrParams(_cell, _tresCte, _tresNoise*_gev, _tresStoch*_gev); 
 			//set time resolution smearing
 			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 			algo->SetThresh(_thresh);

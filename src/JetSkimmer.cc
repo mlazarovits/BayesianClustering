@@ -23,9 +23,6 @@ void JetSkimmer::Skim(){
 	_smearMat.SetEntry(deta*deta,0,0);
 	_smearMat.SetEntry(dphi*dphi,1,1);
 	_smearMat.SetEntry(0.,2,2); 
-	//for time smearing (energy dependent)
-	_tres_c = 0.2;
-	_tres_n = sqrt(1 - _tres_c*_tres_c)*_gev;	
 
 	//double alpha = 0.1;
 	//double emAlpha = 0.5;

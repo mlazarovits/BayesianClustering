@@ -157,7 +157,10 @@ void BHCJetSkimmer::Skim(){
 		}
 		_prod->GetRecHits(rhs, i);
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " rhs" << endl;
-		
+		for(auto rh : rhs){
+			_procCats[1].hists1D[0][131]->Fill(rh.t());
+			cout << "rh phi " << rh.phi() << endl;
+		}
 		//safety
 		if(rhs.size() < 1) continue;
 
@@ -212,7 +215,7 @@ void BHCJetSkimmer::Skim(){
 		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
-		FillGenHists(); //relies on BHC jets - fill after jets have been made
+		//FillGenHists(); //relies on BHC jets - fill after jets have been made
 		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
