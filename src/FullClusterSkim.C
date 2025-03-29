@@ -299,9 +299,9 @@ int main(int argc, char *argv[]){
    		cout << "   --BHFilter [bh]                      set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
-   		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
-   		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
-   		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
+   		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
+   		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
+   		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
    		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
    		cout << "   --cleanMist                          clean mist rhs from jets (default = false, off - jets only)" << endl;
    		cout << "   --smear                              turns on smearing data (default = false, off - measurement error on)" << endl;

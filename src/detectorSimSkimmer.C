@@ -196,7 +196,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
     	 		tres_cte = std::stod(argv[i]);
-			cout << "cte " << tres_cte << endl;
    		}
 		if(strncmp(argv[i],"--tResStoch", 11) == 0){
 			i++;
@@ -232,9 +231,9 @@ int main(int argc, char *argv[]){
    		cout << "   --minRhE [minRhE]             set minimum rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --minNconsts [minNconsts]     set minimum number of constituents for gen jets (default = 5)" << endl;
    		cout << "   --smear                       smear cov (spatial only, turns off meas error)" << endl;
-   		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
-   		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
-   		cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
+   		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
+   		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
+   		cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "Example: ./detectorSimSkimmer.x -i rootfiles/simNtuples_ttbar.root -a 0.5 -t 1.6" << endl;
 		return 0;	
