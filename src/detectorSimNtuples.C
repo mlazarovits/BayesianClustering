@@ -38,9 +38,9 @@ int main(int argc, char *argv[]){
 	bool sig_boosted = false;
 	double spikeProb = 0.;
 	double energy_c = 0.26;
-	double tres_cte = 0.1727 * 1e-9;//0.133913 * 1e-9;
-	double tres_stoch = 0.5109 * 1e-9;//1.60666 * 1e-9; 
-	double tres_noise = 2.106 * 1e-9;//0.00691415 * 1e-9;
+	double tres_cte = 0.133913 * 1e-9;//0.1727 * 1e-9;
+	double tres_stoch = 1.60666 * 1e-9;//0.5109 * 1e-9;
+	double tres_noise = 0.00691415 * 1e-9;//2.106 * 1e-9;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;

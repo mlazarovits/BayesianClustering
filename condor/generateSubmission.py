@@ -96,6 +96,9 @@ def generateSubmission(args):
     elif "SMS-GlGl" in args.inputSample:
         ver = "v24"
         inputFileList = "kucmsntuple_SMS-GlGl_"+sel+"_"+ver+"_justin_mc_noFilter_AODSIM_private_list.txt"
+    elif "gogoG" in args.inputSample:
+        ver = "v24"
+        inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
@@ -278,8 +281,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT_RunF','EGamma_RunF','GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB','MET_RunC','MET_RunD','EGamma_RunF','SMS-GlGl'])
-    #parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['GMSB_L-350_Ctau-200','GMSB_L-350_Ctau-0p1','GMSB_L-350_Ctau-10','GMSB_L-350_Ctau-800','MET_RunE','JetHT_RunF_2017','EGamma_RunF','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','GJets_HT400to600_PhoSlim','GJets_HT100to200_PhoSlim','GJets_HT200to400_PhoSlim','GJets_HT40to100_PhoSlim','GJets_HT600toInf_PhoSlim','MET_RunB_PhoSlim','MET_RunC_PhoSlim','MET_RunD_PhoSlim','MET_RunE_PhoSlim','JetHT_RunF_PhoSlim','EGamma_RunF_PhoSlim','QCD_HT200to1500_PhoSlim','QCD_HT100to200_PhoSlim','QCD_HT1500to2000_PhoSlim','QCD_HT2000toInf_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT700to1000_PhoSlim','QCD_HT300to500_PhoSlim','QCD_HT500to700_PhoSlim','QCD_HT200to300_PhoSlim','QCD_HT50to100_PhoSlim','QCD_HT1000to1500_PhoSlim','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT_RunF','EGamma_RunF','GJets_HT400to600','GJets_HT100to200','GJets_HT200to400','GJets_HT40to100','GJets_HT600toInf','QCD_HT200to1500','QCD_HT100to200','QCD_HT1500to2000','QCD_HT2000toInf','QCD_HT200to300','QCD_HT50to100','QCD_HT700to1000','QCD_HT300to500','QCD_HT500to700','QCD_HT200to300','QCD_HT50to100','QCD_HT1000to1500','MET_RunB','MET_RunC','MET_RunD','EGamma_RunF','SMS-GlGl','gogoG'])
+    parser.add_argument('--mGl',help='gluino mass for signal',default='2000')
+    parser.add_argument('--mN2',help='neutralino2 mass for signal',default='1950')
+    parser.add_argument('--mN1',help='neutralino1 mass for signal',default='1')
     parser.add_argument('--selection',help='ntuple preselection or gluino mass',required=True)#choices=['MET100','AL1IsoPho','AL1IsoPhoMET100','MRL_MET100','MRL_None'],required=True)
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--year',help='year of sample',default='2017',choices=['2017','2018'])
