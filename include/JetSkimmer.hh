@@ -2023,7 +2023,7 @@ class JetSkimmer : public BaseSkimmer{
 			if(_smear && !_smearMat.empty()) algo->SetDataSmear(_smearMat);
 			//set time resolution smearing
 			//if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
-			algo->SetMeasErrParams(_cell, _tresCte, _tresNoise*_gev, _tresStoch*_gev); 
+			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			algo->SetThresh(_thresh);
 			//algo->SetAlpha(_alpha); //isn't used should probably remove this line
 			algo->SetSubclusterAlpha(_emAlpha);

@@ -427,7 +427,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
 	//tresStoch *= gev;
 	//needs to be before SetData bc thats when the measurement errors are set
-	//cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+	cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 	gmm->SetData(points);
 	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();
