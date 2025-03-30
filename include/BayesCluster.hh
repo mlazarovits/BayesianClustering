@@ -78,9 +78,9 @@ class BayesCluster{
 				_points.push_back(pc);
 			}
 			_cell = acos(-1)/180;
-			_tresCte = 0.133913 * 1e-9;
-			_tresStoch = 1.60666 * 1e-9; 
-			_tresNoise = 0.00691415 * 1e-9;
+			_tresCte = 0.133913;
+			_tresStoch = 1.60666; 
+			_tresNoise = 0.00691415;
 
 		};
 
@@ -118,7 +118,9 @@ class BayesCluster{
 		void SetVerbosity(int v){ _verb = v; }
 
 		double _cell, _tresCte, _tresStoch, _tresNoise;
-		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; }
+		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
+		//cout << "BayesCluster set - Using _tresCte = " << _tresCte << " ns, _tresStoch = " << _tresStoch << " ns and _tresNoise = " << _tresNoise << " ns" << endl;
+		}
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs

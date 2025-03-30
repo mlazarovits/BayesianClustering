@@ -730,6 +730,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		if(isnan(new_scalemat.at(0,0))){
 			cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
 			cout << "xbar" << endl; mu.Print(); cout << "S" << endl; cov.Print();
+			cout << "data" << endl; m_data->Print();
 		}	
 		m_model[k]->GetPrior()->SetParameter("scalemat", new_scalemat);
 		//cout << "k: " << k << " cov: " << endl;

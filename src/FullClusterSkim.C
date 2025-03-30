@@ -140,7 +140,6 @@ int main(int argc, char *argv[]){
 			W.SetEntry(W_pp,1,1);
 			W.SetEntry(W_tt,2,2);
 			//entries are in cov - need to invert for W
-			cout << "prior W" << endl; W.Print();
    		}
 		if(strncmp(argv[i],"--m0", 4) == 0){
 			i++;
@@ -484,7 +483,7 @@ int main(int argc, char *argv[]){
 	dof.Print();
 	cout << "W0" << endl;
 	W.Print(); 
-	cout << "Using tres_cte = " << tres_cte << " ns, tres_stoch = " << tres_stoch << " ns and tres_noise = " << tres_noise << " ns" << endl;
+	cout << "FullClusterSkim - Using tres_cte = " << tres_cte << " ns, tres_stoch = " << tres_stoch << " ns and tres_noise = " << tres_noise << " ns" << endl;
 	
 	//make sure evti < evtj
 	if(evti > evtj){
@@ -520,6 +519,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetSpatialCorr(spatcorr);
 		skimmer.SetCleanSubclusters(cleansubcls);
 		skimmer.SetMistClean(cleanmist);
+		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
@@ -548,6 +548,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetTimeSmear(timesmear); 
 		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
+		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
         	skimmer.Skim();
 	}
 	else if(obj == 2){
@@ -574,6 +575,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinHt_IsoBkg(minht_isobkg);
 		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
 		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetIsoBkgSel(isobkg);
 
         	skimmer.Skim();

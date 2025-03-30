@@ -137,6 +137,7 @@ void SuperClusterSkimmer::Skim(){
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(0);
+			algo->SetPriorParameters(_prior_params);
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 	

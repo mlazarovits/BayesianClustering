@@ -33,6 +33,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			_maxMet_isoBkg = 150;
 
 			_weight = 1;
+			_cell = 0;
+			_tresCte = 0;
+			_tresNoise = 0;
+			_tresStoch = 0;
+
 		};
 		virtual ~PhotonSkimmer(){ };
 

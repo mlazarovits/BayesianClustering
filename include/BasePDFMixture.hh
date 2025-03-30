@@ -61,6 +61,7 @@ class BasePDFMixture : public BasePDF{
 		}
 		
 		void SetData(PointCollection* data){
+			cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
@@ -83,6 +84,10 @@ class BasePDFMixture : public BasePDF{
 				if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();}
 				_lamStar.push_back(lamStar); //r = 1 for all k on init
 				
+			}
+			for(int k = 0; k < m_k; k++){
+				m_model[k]->SetDim(m_dim);
+				m_model[k]->GetPrior()->SetDim(m_dim);
 			}
 		}
 		PointCollection* GetData(){ return m_data; }
