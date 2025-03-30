@@ -113,7 +113,7 @@ void BHCJetSkimmer::Skim(){
 			
 			cout << "SubClustering reco jet #" << j << "..." << endl;	
 			algo = new BayesCluster(rhs);
-			algo->SetMeasErrParams(_cell, _tresCte, _tresNoise*_gev, _tresStoch*_gev); 
+			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
@@ -183,7 +183,7 @@ void BHCJetSkimmer::Skim(){
 		cout << "Clustering..." << endl;	
 		BayesCluster* algo = new BayesCluster(rhs);
 		if(_smear) algo->SetDataSmear(smear);
-		algo->SetMeasErrParams(_cell, _tresCte, _tresNoise*_gev, _tresStoch*_gev); 
+		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
 		algo->SetSubclusterAlpha(_emAlpha);

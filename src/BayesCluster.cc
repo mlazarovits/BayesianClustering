@@ -41,7 +41,8 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	cout << "W0" << endl;
 	_prior_params["scalemat"].Print();
 
-	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch*gev, _tresNoise*gev); 
+	cout << "BayesCluster delauney cluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
  
 	mt->SetPriorParameters(_prior_params);
 	//set distance constraint
