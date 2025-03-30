@@ -150,7 +150,9 @@ def generateSubmission(args):
     	flags += ' --timeSmear'
     if(args.applyFrac):
     	flags += ' --applyFrac'
-   
+    flags += ' --tResCte '+str(args.tResCte)
+    flags += ' --tResStoch '+str(args.tResStoch)
+    flags += ' --tResNoise '+str(args.tResNoise) 
 
     strategyMap = {}
     strategyMap["NlnN"] = 0
@@ -192,6 +194,9 @@ def main():
     parser.add_argument('--nu0',help="nu0 prior",default=3)
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor',default='1/10')
+    parser.add_argument('--tResCte',help='set time smearing constant parameter in ns',default=0.1727)
+    parser.add_argument('--tResStoch',help='set time smearing stochastic parameter in ns',default=0.5109)
+    parser.add_argument('--tResNoise',help='set time smearing noise parameter in ns',default=2.106)
     parser.add_argument('--minpt',help='min object pt',default=10.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minE',help='min reco jet energy',default=0)
