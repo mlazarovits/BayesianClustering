@@ -192,6 +192,7 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--smear", 7) == 0){
     	 		smear = true;
+			cout << "Turning on smearing (no measurement error)." << endl;
    		}
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
