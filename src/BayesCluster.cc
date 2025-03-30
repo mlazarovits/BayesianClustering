@@ -91,31 +91,38 @@ cout << "n starting pts " << n << endl;
 		std::multimap<double,verts>::iterator map_it;
 		int jet_i, jet_j;
 		bool Valid2;
-		double mindist = 999;
 		double dist;
 		//cout << "Prob map size " << ProbMap.size() << endl;
 		//cout << " dnn validity bool " << (!DNN->Valid(jet_i) || !Valid2) << " total bool " << ((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0) << endl;
 		if(ProbMap.size() == 0){done = true; break;}
 		do{
+			cout << "probmap size " << ProbMap.size() << endl;
 			map_it = ProbMap.end();
 			map_it--;
+			cout << "updated to prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			BestRk = map_it->first;
 			BestRkPair = map_it->second;
 			//check for equal rks (more than three - may be two for i,j and j,i), break tie with 3d distance
 			//right now - only equal rks are for equivalent merges
 			//cout << "number of pairs with same bestRk = " << BestRk << ": " << ProbMap.count(BestRk) << endl;
+			double mindist = 999;
 			if(ProbMap.count(BestRk) > 2){
 				ret = ProbMap.equal_range(BestRk);
 				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; ++it){
-					jet_i = it->second.first;
-					jet_j = it->second.second;
-					if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jet_i << ", " << jet_j << endl;
-					dist = InvDistMap[jet_i].second;
-					if(dist < mindist) mindist = dist;
-
+					int jjet_i = it->second.first;
+					int jjet_j = it->second.second;
+					if(InvDistMap.find(jjet_i) == InvDistMap.end()) continue; //skip points already combined
+					dist = InvDistMap[jjet_i].second;
+					if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jjet_i << ", " << jjet_j << " and dist " << dist << endl;
+					if(dist < mindist){
+						mindist = dist;
+						map_it = it;
+						jet_i = jjet_i;
+						jet_j = jjet_j;
+					}
 				}
-			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << DistMap.find(mindist)->second.first << " jet_j: " << DistMap.find(mindist)->second.second  << endl;
-			jet_i = DistMap.find(mindist)->second.first; jet_j = DistMap.find(mindist)->second.second;
+			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << jet_i << " jet_j: " << jet_j  << endl;
+			//jet_i = DistMap.find(mindist)->second.first; jet_j = DistMap.find(mindist)->second.second;
 		
 			}else{
 				jet_i = BestRkPair.first;
@@ -123,14 +130,17 @@ cout << "n starting pts " << n << endl;
 			}
 
 			if (_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;
-				
 			} // GPS debugging
  			//also need to erase any impossible merges from map too
-			ProbMap.erase(map_it);
+			cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
+			ProbMap.erase(map_it); //erase from InvDistMap too
+			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
+			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
 			Valid2 = DNN->Valid(jet_j);
 			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
-		//if point matches to itself (mirror point), find best geo match
+		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
+		/*
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
 			// find largest rk value in map (last entry)
 			double BestDist;
@@ -152,6 +162,7 @@ cout << "n starting pts " << n << endl;
 				else continue;
 			} 
 		}
+		*/
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
@@ -160,20 +171,19 @@ cout << "n starting pts " << n << endl;
 
 		int nn;
 		if(_verb > 1)cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
-		
 		vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 		vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
-		//cout << "jet_i pts" << endl;
+		cout << "jet_i pts" << endl;
 		for(int i = 0; i < (int)jps_i.size(); i++){
 			BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 			pt.SetWeight(jps_i[i].GetWeight());
-			//pt.Print();
+			pt.Print();
 		}
-		//cout << "jet_j pts" << endl;
+		cout << "jet_j pts" << endl;
 		for(int i = 0; i < (int)jps_j.size(); i++){
 			BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 			pt.SetWeight(jps_j[i].GetWeight());
-			//pt.Print();
+			pt.Print();
 		}
 
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
@@ -194,8 +204,10 @@ cout << "n starting pts " << n << endl;
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
+		cout <<"remove combined add combination start" << endl;
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
+		cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
 		if(_verb > 0)cout << "\n\n\n" << endl;
@@ -643,7 +655,7 @@ void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const D
 		int j;
 		dist = DNN->NearestNeighbourDistance(i);
 		j = DNN->NearestNeighbourIndex(i);
-//cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
+cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
 		inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
 }
 

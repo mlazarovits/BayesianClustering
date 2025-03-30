@@ -295,7 +295,7 @@ class BHCJetSkimmer{
 				_predJets.push_back(predJet);	
 			}
 			cout << njets_tot << " pred jets total" << endl;
-			cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
+			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
 		}
 

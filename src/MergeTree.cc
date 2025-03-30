@@ -7,20 +7,8 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->GetNPoints() + r->points->GetNPoints();		
-	double d, pi, phidist;
-	if(_constraint){
-		//calculate constraint probability rho
-		//rho = 1 -> merge likely, rho = 0 -> no merge likely
-		double rho = DistanceConstraint(l, r)/2.; //normalize by dividing by 2 for double counting (-pi/2 to 0 put into 0 to pi/2)
-		
-		//don't want to change the probability of a non-merge -> no factor on d_l*d_r term
-		d = rho*_alpha*tgamma(n) + l->d*r->d;
-		pi = rho*_alpha*tgamma(n)/d;
-	}
-	else{
-		d = _alpha*tgamma(n) + l->d*r->d;
-		pi = _alpha*tgamma(n)/d;
-	}
+	double d = _alpha*tgamma(n) + l->d*r->d;
+	double pi = _alpha*tgamma(n)/d;
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
@@ -49,7 +37,8 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 		cout << "rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;
 		cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
 	}
-//		cout << " rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;//" points " << endl; x->model->GetData()->Print(); cout << endl;
+	//if(rk == 1) cout << " rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " ((l->d*r->d)/d)*p(D_l | T_l)*p(D_r | T_r) " << ((l->d*r->d)/d)*l->prob_tk*r->prob_tk << " pi*p_dk_h1 " << pi*p_dk_h1 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " (l->d*r->d)/d " << (l->d*r->d)/d << endl;
+		//" points " << endl; x->model->GetData()->Print(); cout << endl;
 		
 	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level

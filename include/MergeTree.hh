@@ -13,9 +13,9 @@ class MergeTree : BaseTree{
 			_constraint_a = 0; _constraint_b = acos(-1)/2.; 
 			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.133913 * 1e-9;
-			_tresStoch = 1.60666 * 1e-9; 
-			_tresNoise = 0.00691415 * 1e-9;
+			_tresCte = 0.133913;
+			_tresStoch = 1.60666; 
+			_tresNoise = 0.00691415;
 		}
 
 		MergeTree(double alpha){
@@ -24,9 +24,9 @@ class MergeTree : BaseTree{
 			_constraint_a = 0; _constraint_b = acos(-1)/2.;
 			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.133913 * 1e-9;
-			_tresStoch = 1.60666 * 1e-9; 
-			_tresNoise = 0.00691415 * 1e-9;
+			_tresCte = 0.133913;
+			_tresStoch = 1.60666; 
+			_tresNoise = 0.00691415;
 		}
 
 		//copy constructor

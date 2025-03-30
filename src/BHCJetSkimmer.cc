@@ -105,6 +105,7 @@ void BHCJetSkimmer::Skim(){
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets";
 		///do GMM only option
+		/*
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
 			//safety
@@ -149,6 +150,7 @@ void BHCJetSkimmer::Skim(){
 		
 			rhs.clear();
 		}
+		*/
 		FillRecoJetHists();
 		//only does above
 		if(_strategy == gmmOnly){
@@ -159,7 +161,6 @@ void BHCJetSkimmer::Skim(){
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " rhs" << endl;
 		for(auto rh : rhs){
 			_procCats[1].hists1D[0][131]->Fill(rh.t());
-			cout << "rh phi " << rh.phi() << endl;
 		}
 		//safety
 		if(rhs.size() < 1) continue;

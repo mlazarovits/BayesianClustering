@@ -61,7 +61,7 @@ class BasePDFMixture : public BasePDF{
 		}
 		
 		void SetData(PointCollection* data){
-			cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
+			if(_verb > 1) cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
