@@ -469,10 +469,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
 				//and save gen info of W daughters at detector
 				SaveGenInfo(sumEvent[sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				//_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
+				_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
 				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				SaveGenInfo(sumEvent[sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				//_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
+				_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
 				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 	
 	
