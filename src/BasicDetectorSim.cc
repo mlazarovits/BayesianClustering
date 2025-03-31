@@ -423,7 +423,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					//get daughters of b copy decay
 					bidx = sumEvent[bidx].daughter1();
 				}
-				//cout << "b quark idx " << bidx << " id " << sumEvent[bidx].id() << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
+				cout << "b quark idx " << bidx << " id " << sumEvent[bidx].id() << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
 				//save gen info of b at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
@@ -459,10 +459,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				nW++;
 
 			}
+			else{ cout << "W not found" << endl; }
 			//save gen b daughter info 
 			vector<int> bkids_idx;
 			if(bidx != -999){
-				//cout << " daughters of b " << bidx << ": " << sumEvent[sumEvent[bidx].daughter1()].id() << " " << sumEvent[sumEvent[bidx].daughter2()].id() << endl;
+				cout << " daughters of b " << bidx << ": " << sumEvent[sumEvent[bidx].daughter1()].id() << " " << sumEvent[sumEvent[bidx].daughter2()].id() << endl;
 		
 				//and save gen info of b daughters at detector
 				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
@@ -478,6 +479,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				
 
 			}
+			else{ cout << "b not found" << endl; }
 			//cout << "# gen particles " << _genparts.size() << endl;
 			//for(int g = 0; g < _genparts.size(); g++) cout << "gen part evt idx " << _genpartEvtIdx[g] << " gen part idx " << _genpartIdx[g] << " gen part id " << _genpartids[g] << " genpartmomidx #" << g << ": " << _genpartMomIdx[g] << endl;
 
