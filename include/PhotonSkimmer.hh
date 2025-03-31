@@ -3026,7 +3026,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		double rot = 0;
 		for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 		rot = eigenvals[maxd]/rot;
-		if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
+		//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 		return rot;
 	}
 
