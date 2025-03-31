@@ -135,6 +135,7 @@ struct RecoParticle;
 		void SaveGenInfo(Pythia8::Particle particle, int genmom){
 			RecordMomInfo(particle);
 
+			//assume that gen particle has not been propagated to detector face
 			RecoParticle genpart(particle);
 			CalcTrajectory(genpart);
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );

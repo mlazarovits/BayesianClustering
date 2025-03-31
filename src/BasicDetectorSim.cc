@@ -123,7 +123,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 void BasicDetectorSim::_simQCD(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
-	_pythia.settings.readString("HardQCD:all = on");
+	//_pythia.settings.readString("HardQCD:all = on");
+	_pythia.settings.readString("HardQCD:gg2qqbar = on");
 	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating QCD" << endl;
@@ -133,11 +134,11 @@ void BasicDetectorSim::_simQCD(){
 void BasicDetectorSim::_simTTbar(){
 	// Create Pythia instance and set it up to generate hard QCD processes
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
-	_pythia.settings.readString("Top:all = on");
 	//ttbar specific (not tqbar production)
-	//_pythia.settings.readString("Top:gg2ttbar = on");
-	//_pythia.settings.readString("Top:qqbar2ttbar = on");
-	//_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
+	_pythia.settings.readString("Top:gg2ttbar = on");
+	_pythia.settings.readString("Top:qqbar2ttbar = on");
+	_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
+	_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
 	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
@@ -237,16 +238,15 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int p = 0; p < sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = sumEvent[p];
-			int topidx = p;
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
 			// No neutrinos
-      			if (sumEvent[p].idAbs() == 12 || sumEvent[p].idAbs() == 14 ||
-      			    sumEvent[p].idAbs() == 16)     continue;
+      			//if (sumEvent[p].idAbs() == 12 || sumEvent[p].idAbs() == 14 ||
+      			//    sumEvent[p].idAbs() == 16)     continue;
 		
 
 			//extreme gen momentum eta cut - for CMS tracker (not necessary here)	
-			if(fabs(particle.eta()) > 3.) continue;	
+			//if(fabs(particle.eta()) > 3.) continue;	
 
 			//puT in pT cut hehe (charged particles only)
 			//muon would need ~3.5 GeV to get to muon chambers so this should be the ceiling for the cut
@@ -263,12 +263,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//this is for gen particles
 			//include z offset
 			//z and eta are one to one
-			if(fabs(particle.eta() + particle.zProd()*(_etamax/(zmax))) > _etamax) continue;
+			//if(fabs(particle.eta() + particle.zProd()*(_etamax/(zmax))) > _etamax) continue;
 			//if(fabs(rp.Position.eta() + znew*(_etamax/(zmax))) > _etamax) continue;
-			//reset phi for reco particle to include zshift
 		
 			//zero suppression threshold
-			if(particle.e() < _ethresh) continue;
+			//if(particle.e() < _ethresh) continue;
 
 			//get top from this particle's history (if it exists)
 			if(particle.mother1() > 0 && particle.mother2() == 0){
@@ -284,6 +283,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
+				
 				//need to catch W's from tops - check if top is in mother chain - starting point (need to go all the way up mother chain to get original particle that hasn't recoiled, etc)
 				vector<int>::iterator momit_top = find(mothers_id.begin(), mothers_id.end(), 6);
 				if(momit_top != mothers_id.end()){
@@ -318,11 +318,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
 		
 			//if gen particle doesn't exceed min pt, skip
-			if(rp.Momentum.pt() < _genpart_minpt) continue;
+			//if(rp.Momentum.pt() < _genpart_minpt) continue;
 			//add gen particle to be clustered for gen jet
-			//don't include electrons in gen jet clustering (or save to reco particles), muons are skipped above bc they are not showered
+			//don't include electrons in gen jet clustering (or save to gen particles collection), muons are skipped above bc they are not showered
+			//add particle to fastjet
 			if(rp.Particle.idAbs() != 11){
-				//SaveGenInfo(particle);
 				fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
 				fjinput.set_user_index(_genparts.size());
 				fjinputs.push_back(fjinput);
@@ -335,7 +335,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//don't save if particle doesn't make it to detector face (with if statement above)
 			FillTracks(rp);
 
-			//add particle to fastjet
 			//running fastjet on gen particles, no shower, etc.
 			int tieta, tiphi;
 			evt_Etot += rp.Momentum.e();
@@ -371,11 +370,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 		//save info on top decays!
 		vector<int> had = {1, 2, 3, 4};
-		vector<int> lep = {11, 12, 13, 14};
+		vector<int> lep = {11, 12, 13, 14, 15, 16};
 		//if had == true && lep == false : hadronic
 		//if had == false && lep == true : leptonic
 		//if had == true && lep == true : semi-lep
-		bool Whad[2]; //false = lep, true = had
+		int Whad[2] = {-1, -1}; //false = lep, true = had
 		//get top decay gen info
 		cout << "top_idxs size " << top_idxs.size() << endl;
 		int nW = 0;
@@ -405,7 +404,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				}
 				//get W index
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				//cout << "W idx " << Widx << " id " << sumEvent[Widx].id() << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
+				cout << "W idx " << Widx << " id " << sumEvent[Widx].id() << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
 				//save gen info of W at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
@@ -435,7 +434,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			
 			//save gen W daughters info
 			if(Widx != -999){
-				//cout << " daughters of W " << Widx << ": " << sumEvent[sumEvent[Widx].daughter1()].id() << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+				cout << " daughters of W " << Widx << ": " << sumEvent[sumEvent[Widx].daughter1()].id() << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
 
 				vector<int>::iterator Wmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),Widx);
 				//and save gen info of W daughters at detector
@@ -454,8 +453,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
 				vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d2 id " << fabs(_genpartids[_genpartids.size()-1]) << " d2 had " << (d2_it_had != had.end()) << " d2 lep " << (d2_it_lep != lep.end()) << endl;
-				if(d2_it_had != had.end() && d1_it_had != had.end()) Whad[nW] = true;
-				else if(d2_it_lep != lep.end() && d1_it_lep != lep.end()) Whad[nW] = false;	
+				if(d2_it_had != had.end() && d1_it_had != had.end()){ cout << "had W for idx " << nW << endl;Whad[nW] = true;}
+				else if(d2_it_lep != lep.end() && d1_it_lep != lep.end()) {cout << "lep W for idx " << nW << endl;Whad[nW] = false;}	
 				else{ }
 				nW++;
 
@@ -469,10 +468,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
 				//and save gen info of W daughters at detector
 				SaveGenInfo(sumEvent[sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
+				//_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
 				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				SaveGenInfo(sumEvent[sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
+				//_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
 				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 	
 	
@@ -489,11 +488,16 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//0  : fully hadronic (to light quarks)
 		//1  : semi-leptonic
 		//2  : fully leptonic (no taus, including neutrinos)
-		if(Whad[0] && Whad[1]) _topDecayId.push_back(0);
-		else if(!Whad[0] && !Whad[1]) _topDecayId.push_back(2);
-		else _topDecayId.push_back(1);
-		//if no top - change this id to -1
-		if(top_idxs.size() < 1) _topDecayId[_topDecayId.size()-1] = -1;
+		if(Whad[0] == 1){
+			 if(Whad[1] == 1 || Whad[1] == -1) _topDecayId.push_back(0);
+			 else _topDecayId.push_back(1); //Whad[1] == 0
+		}
+		else if(Whad[0] == 0){
+			 if(Whad[1] == 0 || Whad[1] == -1) _topDecayId.push_back(2);
+			 else _topDecayId.push_back(1); //Whad[1] == 1
+
+		}
+		else _topDecayId.push_back(-1);
 		cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
 		//fill gen particles
 		FillGenParticles();
