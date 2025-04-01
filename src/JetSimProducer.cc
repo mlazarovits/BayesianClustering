@@ -154,26 +154,26 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		if(pt < _ptmin) continue;
 		if(_base->Jet_genEnergy->at(j) < _Emin) continue;
 		//multiplicity requirement
-		//if(_base->Jet_genConstituentIdxs->at(j) < _nConstmin) continue;		
+		if(_base->Jet_genConstituentIdxs->at(j) < _nConstmin) continue;		
 		//parton-matching requirement - also serves as lepton disambiguation
-		double mindr = 999;
-		double dr = 0;
-		int bestidx = -1;
-		for(int g = 0; g < _base->genpart_ngenpart; g++){
-			dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), eta, phi);
-			if(dr < mindr){
-				mindr = dr;
-				bestidx = g;
-			}
-		}
-		//set some min dR
-		if(mindr > 0.1) continue;
-		//set some E ratio window
-		double Eratio = _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx);
-		if(Eratio > 1.5 || Eratio < 0.5) continue;
-		cout << "\ngen jet #" << j << " has best gen match (id) " << _base->genpart_id->at(bestidx) << " with dr " << mindr << " and jet/particle energy " << _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx) << " with pt " << _base->Jet_genPt->at(j) << " and # constituents " << _base->Jet_genNConstituents->at(j) << endl;
-		int genid = fabs(_base->genpart_id->at(bestidx));
-		if(find(lepIds.begin(), lepIds.end(), genid) != lepIds.end()) continue; //can't match to gen lepton
+		//double mindr = 999;
+		//double dr = 0;
+		//int bestidx = -1;
+		//for(int g = 0; g < _base->genpart_ngenpart; g++){
+		//	dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), eta, phi);
+		//	if(dr < mindr){
+		//		mindr = dr;
+		//		bestidx = g;
+		//	}
+		//}
+		////set some min dR
+		//if(mindr > 0.1) continue;
+		////set some E ratio window
+		//double Eratio = _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx);
+		//if(Eratio > 1.5 || Eratio < 0.5) continue;
+		//cout << "\ngen jet #" << j << " has best gen match (id) " << _base->genpart_id->at(bestidx) << " with dr " << mindr << " and jet/particle energy " << _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx) << " with pt " << _base->Jet_genPt->at(j) << " and # constituents " << _base->Jet_genNConstituents->at(j) << endl;
+		//int genid = fabs(_base->genpart_id->at(bestidx));
+		//if(find(lepIds.begin(), lepIds.end(), genid) != lepIds.end()) continue; //can't match to gen lepton
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);
@@ -182,14 +182,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		Jet jet(px, py,
 		        pz, _base->Jet_genEnergy->at(j));
 		//check that mass is the same
-		cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
-		//set fake "subclusters" as constituents for gen jets
-		for(int c = 0; c < _base->Jet_genNConstituents->at(j); c++){
-			Jet fake_subcl;
-			jet.AddConstituent(fake_subcl);
-		}	
-		//check that # constituents is the same
-		cout << "jet # constituents " << jet.GetNConstituents() << " gen jet # constitutents " << _base->Jet_genNConstituents->at(j) << endl;
+		//cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
 		jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
 		//set # constituents
