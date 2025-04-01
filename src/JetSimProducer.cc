@@ -154,7 +154,7 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		if(pt < _ptmin) continue;
 		if(_base->Jet_genEnergy->at(j) < _Emin) continue;
 		//multiplicity requirement
-		if(_base->Jet_genConstituentIdxs->at(j) < _nConstmin) continue;		
+		if(_base->Jet_genNConstituents->at(j) < _nConstsmin) continue;		
 		//parton-matching requirement - also serves as lepton disambiguation
 		//double mindr = 999;
 		//double dr = 0;
