@@ -688,11 +688,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//16 - eta sigma	
-                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0., 0.05);
+                TH1D* etaSig = new TH1D("etaSig","etaSig",50,0., 0.1);
 		//17 - phi sigma	
-                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.,0.05);
+                TH1D* phiSig = new TH1D("phiSig","phiSig",50,0.,0.1);
 		//18 - time sigma	
-                TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,4.);
+                TH1D* timeSig = new TH1D("timeSig","timeSig",50,0,5.);
 		//19 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//20 - azimuth angle in 2D
