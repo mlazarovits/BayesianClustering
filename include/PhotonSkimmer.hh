@@ -661,6 +661,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(dRtrack_dEtrack_prompt);
 			_hists2D.push_back(dRtrack_dEtrack_late);	
 			_hists2D.push_back(rhEnergy_timesSigSqMeasErr);
+			_hists2D.push_back(ENeighbors);	
 			
 
 
@@ -1695,7 +1696,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);
 		//236 - sigma^2_t from meas err
 		TH2D* rhEnergy_timesSigSqMeasErr = new TH2D("rhEnergy_timesSigSqMeasErr","rhEnergy_timesSigSqMeasErr;rhEnergy;#sigma^2_t",50,0,10,50,0,5);
-		
+		//237 - eta-phi view of overlaid subcl (energy = z axis) in 9x9 grid (oversized)
+		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",9,-4,5,9,-4,5);	
+
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
@@ -1773,6 +1776,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//write 1D hists
 			//variables
 			for(int j = 0; j < (int)_hists1D.size(); j++){
+				if(pcs[0].hists1D[0][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
 				//lead, not lead, etc.
 				name = _hists1D[j]->GetName();
 				TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
