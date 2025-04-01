@@ -73,28 +73,18 @@ void BHCJetSkimmer::Skim(){
 		if(nb < 1) continue;
 	
 		//reject fully leptonic W decays - later may want to turn off to look at just displaced b decays
-		vector<int> Widxs(nW);
-		for(int w = 0; w < nW; w++){
-			for(int g = 0; g < ngenpart; g++){
-				//don't include leptonic decays
-				if(fabs(_base->genpart_id->at(g)) == 11) continue;
-				if(fabs(_base->genpart_id->at(g)) == 12) continue;
-				if(fabs(_base->genpart_id->at(g)) == 13) continue;
-				if(fabs(_base->genpart_id->at(g)) == 14) continue;
-				if(fabs(_base->genpart_id->at(g)) == 15) continue;
-				if(fabs(_base->genpart_id->at(g)) == 16) continue;
-				//skip tops + bs 
-				if(fabs(_base->genpart_id->at(g)) == 6) continue;
-				if(fabs(_base->genpart_id->at(g)) == 5) continue;
-				int genmomidx = _base->genpart_momIdx->at(g);
-				//skip particles that didn't come from a W
-				if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
-				//skip if already counted
-				if(count(Widxs.begin(), Widxs.end(),g) > 0) continue;
-				Widxs.push_back(g);
-			}
+		int nW_lep = 0;	
+		for(int g = 0; g < ngenpart; g++){
+			int genmomidx = _base->genpart_momIdx->at(g);
+			if(genmomidx == -1) continue;
+			//skip particles that didn't come from a W
+			if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
+			int genid = fabs(_base->genpart_id->at(g));
+			//only check for !neutrinos
+			if(genid == 11 || genid == 13 || genid == 15) nW_lep++; 
 		}
-		if(Widxs.size() < 1) continue;	
+		//if all Ws in event decay leptonically, don't count
+		if(nW - nW_lep == 0) continue;
 
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetGenJets(_genjets, i);
