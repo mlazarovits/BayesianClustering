@@ -186,9 +186,17 @@ void PhotonSkimmer::Skim(){
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
-			algo->SetVerbosity(0);
+			algo->SetVerbosity(_verb);
 			GaussianMixture* gmm = algo->SubCluster();
-			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			vector<Matrix> lamstars;
+			gmm->GetMeasErrs(lamstars);
+			for(int r = 0; r < rhs.size(); r++){
+				sumE += rhs[r].E();
+				_procCats[1].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
+				_procCats[1].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
+				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
+			}
+			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
@@ -209,7 +217,7 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
 						FillModelHists(gmm, i, obs);
-						FillCMSHists(rhs,i);
+						//FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
 						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
@@ -232,7 +240,7 @@ void PhotonSkimmer::Skim(){
 			else{
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i, obs);
-					FillCMSHists(rhs,i);
+					//FillCMSHists(rhs,i);
 					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
 					_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
