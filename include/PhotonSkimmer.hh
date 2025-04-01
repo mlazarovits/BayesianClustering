@@ -662,6 +662,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(dRtrack_dEtrack_late);	
 			_hists2D.push_back(rhEnergy_timesSigSqMeasErr);
 			_hists2D.push_back(ENeighbors);	
+			_hists2D.push_back(etaPhi_overlaidsubcl);
 			
 
 
@@ -1698,6 +1699,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* rhEnergy_timesSigSqMeasErr = new TH2D("rhEnergy_timesSigSqMeasErr","rhEnergy_timesSigSqMeasErr;rhEnergy;#sigma^2_t",50,0,10,50,0,5);
 		//237 - eta-phi view of overlaid subcl (energy = z axis) in 9x9 grid (oversized)
 		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",9,-4,5,9,-4,5);	
+		//238 - eta-phi view of overlaid subcl (energy = z axis) in 30x30 grid (oversized)
+		//deta = dphi = pi/180 -> etamax = deta * nbins / 2 = -etamin
+		TH2D* etaPhi_overlaidsubcl = new TH2D("etaPhi_overlaidsubcl","etaPhi_overlaidsubcl;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -1706,9 +1710,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		};
 		
 
-	 	std::map<UInt_t,DetIDStruct> _detIDmap;
-		std::map<pair<int, int>, UInt_t> _ietaiphiID;
-			
 		void Skim();
 
 		void AddSample(TFile* file);

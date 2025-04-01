@@ -45,6 +45,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<Jet> rhs;
 	vector<Jet> phos;
+	vector<JetPoint> rh_pts;
 	int phoid, genidx;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
@@ -190,13 +191,34 @@ void PhotonSkimmer::Skim(){
 			GaussianMixture* gmm = algo->SubCluster();
 			vector<Matrix> lamstars;
 			gmm->GetMeasErrs(lamstars);
+			
+			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
+			
+			vector<pair<int,int>> icoords;
+			vector<double> neighborEs;
+			rh_pts = phos[p].GetJetPoints();
+			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,9);
+			for(int e = 0; e < (int)neighborEs.size(); e++){
+				_procCats[1].hists2D[0][237]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
+			}
+			double maxE = 0;
+			Jet maxE_rh;
 			for(int r = 0; r < rhs.size(); r++){
 				sumE += rhs[r].E();
+				if(rhs[r].E() > maxE){
+					maxE = rhs[r].E();
+					maxE_rh = rhs[r];
+				}
 				_procCats[1].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
 				_procCats[1].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
 				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
 			}
-			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
+			for(int r = 0; r < rhs.size(); r++){
+				_procCats[1].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
+
+			}
+
+
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
