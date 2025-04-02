@@ -18,7 +18,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- on LPC: make sure the path to the CGAL lib is added to `$LD_LIBRARY_PATH`
 		- this can be done within the user's `~/.bash_profile` by adding the following line
 		```
-		export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib
+		export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/cgal/installation
 		```
 - [fastjet](https://fastjet.fr/) for detector simulation
 	- at least v3.4.1 for compatibility with C++17
