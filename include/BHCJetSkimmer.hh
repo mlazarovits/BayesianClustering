@@ -524,6 +524,7 @@ class BHCJetSkimmer{
 					}	
 
 				}	
+				/*
 				cout << "gen matching pred jets to particles - start" << endl;
 				GenMatchJet(_predJets,genMatchIdxs);
 				cout << "gen matching pred jets to particles - end" << endl;
@@ -536,10 +537,10 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][127]->Fill(_predJets[j].E()/_genparts[genmatch].E());
 					}	
 
-				}	
+				}
+				*/	
 
 			}
-
 
 		}	
 		void FillRecoJetHists(){
@@ -1119,7 +1120,7 @@ class BHCJetSkimmer{
 		//8 - bhc jet pt
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,500);
 		//9 - bhc jet mass
-		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",25,0,200);
+		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,50);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # gen jets
@@ -1146,7 +1147,7 @@ class BHCJetSkimmer{
 		//21
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
 		//22
-		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",25,0,200);
+		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,50);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoAK4Gen","jetGenE_sigmaDeltaPtOvJetGenE_recoAK4Gen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
@@ -1338,7 +1339,7 @@ class BHCJetSkimmer{
 		//117 - gen AK4 jet pt		
 		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,500);
 		//118 - gen AK4 jet mass
-		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",25,0,200);
+		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",50,0,50);
 		//119 - gen AK4 jet energy
 		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,500);
 		//120 - # gen AK4 jets

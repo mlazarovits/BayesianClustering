@@ -218,7 +218,7 @@ void BHCJetSkimmer::Skim(){
 		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
-		//FillGenHists(); //relies on BHC jets - fill after jets have been made
+		FillGenHists(); //relies on BHC jets - fill after jets have been made
 		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
