@@ -96,10 +96,10 @@ cout << "n starting pts " << n << endl;
 		//cout << " dnn validity bool " << (!DNN->Valid(jet_i) || !Valid2) << " total bool " << ((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0) << endl;
 		if(ProbMap.size() == 0){done = true; break;}
 		do{
-			cout << "probmap size " << ProbMap.size() << endl;
+			if(_verb > 1) cout << "probmap size " << ProbMap.size() << endl;
 			map_it = ProbMap.end();
 			map_it--;
-			cout << "updated to prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
+			if(_verb > 1)cout << "updated to prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			BestRk = map_it->first;
 			BestRkPair = map_it->second;
 			//check for equal rks (more than three - may be two for i,j and j,i), break tie with 3d distance
@@ -132,7 +132,7 @@ cout << "n starting pts " << n << endl;
 			if (_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;
 			} // GPS debugging
  			//also need to erase any impossible merges from map too
-			cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
+			if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			ProbMap.erase(map_it); //erase from InvDistMap too
 			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
 			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
@@ -140,8 +140,10 @@ cout << "n starting pts " << n << endl;
 			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
-		/*
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
+			cout << "Uh oh best probability merger is jet to its mirror point. Returning for debugging..." << endl;
+			return _trees;
+		/*
 			// find largest rk value in map (last entry)
 			double BestDist;
 			verts BestDistPair;
@@ -161,8 +163,8 @@ cout << "n starting pts " << n << endl;
 				DistMap.erase(map_it_dist);}
 				else continue;
 			} 
-		}
 		*/
+		}
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
@@ -170,20 +172,22 @@ cout << "n starting pts " << n << endl;
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
 		int nn;
-		if(_verb > 1)cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
-		vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
-		vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
-		cout << "jet_i pts" << endl;
-		for(int i = 0; i < (int)jps_i.size(); i++){
-			BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
-			pt.SetWeight(jps_i[i].GetWeight());
-			pt.Print();
-		}
-		cout << "jet_j pts" << endl;
-		for(int i = 0; i < (int)jps_j.size(); i++){
-			BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
-			pt.SetWeight(jps_j[i].GetWeight());
-			pt.Print();
+		if(_verb > 1){
+			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
+			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
+			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
+			cout << "jet_i pts" << endl;
+			for(int i = 0; i < (int)jps_i.size(); i++){
+				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
+				pt.SetWeight(jps_i[i].GetWeight());
+				pt.Print();
+			}
+			cout << "jet_j pts" << endl;
+			for(int i = 0; i < (int)jps_j.size(); i++){
+				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
+				pt.SetWeight(jps_j[i].GetWeight());
+				pt.Print();
+			}
 		}
 
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
@@ -204,13 +208,13 @@ cout << "n starting pts " << n << endl;
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
-		cout <<"remove combined add combination start" << endl;
+		if(_verb > 1)cout <<"remove combined add combination start" << endl;
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
-		cout <<"remove combined add combination done\n" << endl;
+		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
-		if(_verb > 0)cout << "\n\n\n" << endl;
+		if(_verb > 1)cout << "\n\n\n" << endl;
 		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
@@ -440,7 +444,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
 	//tresStoch *= gev;
 	//needs to be before SetData bc thats when the measurement errors are set
-	cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+	if(_verb > 0) cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 	gmm->SetData(points);
 	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();
@@ -475,7 +479,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//sets relative importance of dimensions
 	//decreasing cell -> eta/phi distance more important
 	//increasing entry (2,2) -> time distance more important
-	//TODO: make configurable externally
 	double cell = 4*atan(1)/180;
 	Matrix Rscale(3,3);
 	Rscale.SetEntry(1/cell,0,0);
@@ -542,9 +545,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 			return gmm;
 		}
 		dLogL = oldLogL - newLogL;
-		if(_verb > 0) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(_verb > 3) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		if(fabs(dLogL) < LogLthresh){// || dLogL > 0){
-			if(_verb > 0){
+			if(_verb > 2){
 				cout << "Reached convergence at iteration " << it+1 << endl;
 			}
 			break;
@@ -567,11 +570,15 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//cout << "phi02pi - gmm data is" << endl; gmm->GetData()->Print();
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
-	if(_verb > 3){
+	if(_verb > 2){
 		cout << std::setprecision(10) << endl;
+		cout << "Estimated parameters" << endl;
+		vector<double> norms;
+		gmm->GetNorms(norms);
 		for(int k = 0; k < gmm->GetNClusters(); k++){
 			auto params1 = gmm->GetLHPosteriorParameters(k);
 			auto params2 = gmm->GetDataStatistics(k);
+			cout << "weight " << k << ": " << params1["pi"].at(0,0) << " alpha: " << params1["alpha"].at(0,0) << " eff evts: " << norms[k] << endl;
 			cout << "subcl #" << k << endl;	
 			cout << "mean " << endl;
 			params1["mean"].Print();
@@ -585,24 +592,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 
 
-
-
-	if(_verb > 1){
-		vector<double> norms;
-		gmm->GetNorms(norms);
-		cout << "Estimated parameters" << endl;
-		map<string, Matrix> params;
-		for(int i = 0; i < gmm->GetNClusters(); i++){
-			params = gmm->GetLHPosteriorParameters(i);	
-			cout << "weight " << i << ": " << params["pi"].at(0,0) << " alpha: " << params["alpha"].at(0,0) << " eff evts: " << norms[i] << endl;
-			cout << "mean " << i << endl;
-			params["mean"].Print();
-			cout << "cov " << i << endl;
-			params["cov"].Print();
-			params.clear();
-		}
-
-	}
 
 	return gmm;
 
@@ -655,7 +644,7 @@ void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const D
 		int j;
 		dist = DNN->NearestNeighbourDistance(i);
 		j = DNN->NearestNeighbourIndex(i);
-cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
+if(_verb > 1)cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
 		inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
 }
 
