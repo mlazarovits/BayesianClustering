@@ -256,6 +256,7 @@ class BHCJetSkimmer{
 			if(i == 0) _strategy = NlnN;
 			else if(i == 1) _strategy = N2;
 			else if(i == 2) _strategy = gmmOnly;
+			else if(i == 3) _strategy = NlnNonAK4;
 			else return; 
 		}
 	
@@ -1408,7 +1409,7 @@ class BHCJetSkimmer{
 		//19 - BHC dr jet-quark match vs W energy (b's excluded)
 		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 		//20 - # rhs vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",25,0,25,100,0,100);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("recoAK4Jet_nGenParts_nSubclusters","recoAK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,15,0,15);
 		//22 - gen particle p vs gen jet p for AK4 jets
@@ -1737,6 +1738,8 @@ class BHCJetSkimmer{
 			N2 = 1,
 			//gmm only on reco'd jets
 			gmmOnly = 2,
+			//NlnN using rhs from reco AK4 jets
+			NlnNonAK4 = 3,
 		};
 		//clustering strategy - N^2 or NlnN
 		Strategy _strategy;

@@ -10,6 +10,8 @@ void BHCJetSkimmer::Skim(){
 		cout << " N2 (naive)" << endl;
 	else if(_strategy == gmmOnly)
 		cout << " GMM only" << endl;
+	else if(_strategy == NlnNonAK4)
+		cout << " NlnN (Delauney) with reco AK4 rechits" << endl;
 	else
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
 	
@@ -93,7 +95,7 @@ void BHCJetSkimmer::Skim(){
 		if(_recojets.size() < 1){ cout << endl; continue; }
 		_prod->GetGenParticles(_genparts, i);
 
-		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets";
+		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
@@ -101,7 +103,7 @@ void BHCJetSkimmer::Skim(){
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering reco jet #" << j << "..." << endl;	
+			cout << "SubClustering reco jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
@@ -142,12 +144,23 @@ void BHCJetSkimmer::Skim(){
 		FillRecoJetHists();
 		//only does above
 		if(_strategy == gmmOnly){
-			cout << endl;
 			continue;
 		}
-		//can also only use rhs associated with AK4 jets (could do all jets at once or one at a time)
-		_prod->GetRecHits(rhs, i);
-		if(i % SKIP == 0) cout << " and " << rhs.size() << " rhs" << endl;
+		if(_strategy == NlnNonAK4){
+			//use rhs from reco ak4 jets
+			rhs.clear();
+			for(int j = 0; j < _recojets.size(); j++){
+				vector<Jet> jet_rhs; 
+				_recojets[j].GetJets(jet_rhs);
+				for(auto rh : jet_rhs) rhs.push_back(rh);
+			}
+			
+
+		}
+		else{
+			//get all rhs in event
+			_prod->GetRecHits(rhs, i);
+		}
 		for(auto rh : rhs){
 			_procCats[1].hists1D[0][131]->Fill(rh.t());
 		}
@@ -181,7 +194,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetPriorParameters(_prior_params);
 		//run clustering
 		//delauney NlnN version
-		if(_strategy == NlnN){
+		if(_strategy == NlnN || _strategy == NlnNonAK4){
 			//start clock
 			t = clock();
 			trees = algo->NlnNCluster();

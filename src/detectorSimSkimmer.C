@@ -216,7 +216,7 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --input(-i) [file]            input root file" << endl;
    		cout << "   --output(-o) [file]           output root file" << endl;
-   		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only)" << endl;
+   		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only, 3 = NlnN with reco AK4 rhs)" << endl;
 		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
@@ -278,7 +278,8 @@ int main(int argc, char *argv[]){
 			oname = "simSkim_"+oname+"_"+oname_extra;
 			if(strat == 0) oname += "_NlnN";
 			else if(strat == 1) oname += "_N2";
-			else oname += "_gmmOnly";
+			else if(strat == 2) oname += "_gmmOnly";
+			else oname += "_NlnNonAK4";
 			string a_string;
 			std::stringstream stream;
 			stream << alpha;
