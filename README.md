@@ -24,6 +24,8 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- at least v3.4.1 for compatibility with C++17
 	- at least v3.4.2 for compatibility with C++20 
 - [plotly](https://plotly.com/graphing-libraries/) for producing 3D variational clustering plots and gifs
+- [frgually-deep](https://github.com/Dobiasd/frugally-deep/blob/master/INSTALL.md) for importing neural networks trained in Tensorflow to C++
+- [Functional-Plus](https://github.com/Dobiasd/FunctionalPlus) required for frugally-deep 
 
 ### Branches
 - `main` branch is latest stable release
