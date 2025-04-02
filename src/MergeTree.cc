@@ -26,20 +26,35 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
-	double p_dk_h1 = exp(Evidence(x));
+	double elbo = Evidence(x);
+	double p_dk_h1 = exp(elbo);
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
 	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;
-		
-	double rk = -1;
-	if(p_dk_h1 == 0 && p_dk_tk == 0) rk = 0; //the ELBO can get so negative s.t. sometimes exp(Evidence(x)) = 0 which results in rk = nan
-	else rk = pi*p_dk_h1/p_dk_tk;
+	
+	//deal with numerical instability - rk = exp(A)/(exp(A) + exp(B))
+	//exp(A) = pi*p_dk_h1 = pi*exp(ELBO(x)) = exp(log(pi))exp(ELBO(x)) = exp(log(pi) + ELBO(x))
+	//exp(B) = (1-pi)*p_dk_tk = (dr*dl/d)*p_dk_tk = (dr*dl/d)*p_dr_tr*p_dl_tl = exp(log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl))
+	//A = log(pi) + ELBO(x)
+	double a = log(pi) + elbo;
+	//B = log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl)
+	double b = log(((l->d*r->d)/d)) + log(l->prob_tk) + log(r->prob_tk);
+	//find m = max(A,B)
+	double m = fmax(a,b);
+	//rewrite rk as rk = exp(A)/(exp(A) + exp(B)) = exp(A - m)/(exp(A - m) + exp(B - m))
+	double rk_stable = exp(a - m)/(exp(a - m) + exp(b - m));
+	
+	//double rk = -1;
+	//if(p_dk_h1 == 0 && p_dk_tk == 0) rk = 0; //the ELBO can get so negative s.t. sometimes exp(Evidence(x)) = 0 which results in rk = nan
+	//else rk = pi*p_dk_h1/p_dk_tk;
+	double rk = rk_stable;
 	if(std::isnan(rk)){
 		cout << "rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;
 		cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
 	}
-	//if(rk == 1) cout << " rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " ((l->d*r->d)/d)*p(D_l | T_l)*p(D_r | T_r) " << ((l->d*r->d)/d)*l->prob_tk*r->prob_tk << " pi*p_dk_h1 " << pi*p_dk_h1 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " (l->d*r->d)/d " << (l->d*r->d)/d << endl;
-		//" points " << endl; x->model->GetData()->Print(); cout << endl;
-		
+	if(_verb > 1){	
+	cout << " rk " << pi*p_dk_h1/p_dk_tk << " rk stable " << rk_stable << " a " << a << " b " << b << " m " << m << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " ((l->d*r->d)/d)*p(D_l | T_l)*p(D_r | T_r) " << ((l->d*r->d)/d)*l->prob_tk*r->prob_tk << " pi*p_dk_h1 " << pi*p_dk_h1 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " (l->d*r->d)/d " << (l->d*r->d)/d << endl;
+		cout << " points " << endl; x->model->GetData()->Print(); cout << endl;
+	}	
 	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
@@ -48,6 +63,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	
+
 	return x;
 }
 
