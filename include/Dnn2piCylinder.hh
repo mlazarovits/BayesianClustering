@@ -209,7 +209,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
     double phi = points.mean().at(1);
     double shift;
     if (phi < pi) { shift = twopi ;} else {shift = -twopi;}
-cout << "phi mean for shift " << phi << " circular mean " << points.CircularMean(1) << " shift " << shift << endl;
+//cout << "phi mean for shift " << phi << " circular mean " << points.CircularMean(1) << " shift " << shift << endl;
     BayesPoint transl = BayesPoint({0., -shift, 0.});
     PointCollection pc = PointCollection(points);
     pc.Translate(transl); 
