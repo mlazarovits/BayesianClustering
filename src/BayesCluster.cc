@@ -142,6 +142,20 @@ cout << "n starting pts " << n << endl;
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
 			cout << "Uh oh best probability merger is jet to its mirror point. Returning for debugging..." << endl;
+			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
+			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
+			cout << "jet_i pts" << endl;
+			for(int i = 0; i < (int)jps_i.size(); i++){
+				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
+				pt.SetWeight(jps_i[i].GetWeight());
+				pt.Print();
+			}
+			cout << "jet_j pts" << endl;
+			for(int i = 0; i < (int)jps_j.size(); i++){
+				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
+				pt.SetWeight(jps_j[i].GetWeight());
+				pt.Print();
+			}
 			return _trees;
 		/*
 			// find largest rk value in map (last entry)
@@ -253,7 +267,7 @@ cout << "n starting pts " << n << endl;
 			//cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
-		cout << "points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
+		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
 	}
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }

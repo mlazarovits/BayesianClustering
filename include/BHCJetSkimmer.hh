@@ -500,7 +500,6 @@ class BHCJetSkimmer{
 				}
 				_procCats[p].hists1D[0][120]->Fill((double)_genjets.size());
 				_procCats[p].hists1D[0][122]->Fill((double)_genjets.size() - (double)nGenParts);
-			cout << "bhc ndiff " << (double)(_predJets.size() - nGenParts) << " _predJets " << _predJets.size() << " " << (double)_predJets.size() << " nGenParts " << nGenParts <<" " <<  (double)nGenParts << " " << (double)_predJets.size() - (double)nGenParts << " " << _predJets.size() - nGenParts << endl;
 				_procCats[p].hists1D[0][125]->Fill((double)_predJets.size() - (double)nGenParts);
 				//gen match jets to particles
 				vector<int> genMatchIdxs;

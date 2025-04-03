@@ -294,14 +294,14 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 		_constituents.push_back(subcl);
 		
-	//set momentum from subclusters
+		//set momentum from subclusters
 		_px += subcl.px();
 		_py += subcl.py();
 		_pz += subcl.pz();
 	//	_E += subcl.E(); //set from rhs
 	
-		_mu.add(params["mean"]);
-	
+		//_mu.add(params["mean"]);
+cout << "subcl #" << k << " eta " << subcl.eta() << " phi " << subcl.phi() << " params eta " << params["mean"].at(0,0) << " phi " << params["mean"].at(1,0) << endl;	
 		BayesPoint pt(3);
 		pt.SetValue(params["mean"].at(0,0),0);	
 		pt.SetValue(params["mean"].at(1,0),1);	

@@ -238,15 +238,29 @@ class MergeTree : BaseTree{
 			}
 			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
 
+	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
+	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
+	//cout << "node x means pre scale" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 			//need to unscale data - also unscales lamStar measurement errors 
 			//cout << "inverse scale data + lam*s" << endl;	
-			x->model->ScaleData(RscaleInv);	
+			x->model->ScaleData(RscaleInv);	 
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
 			x->model->ScaleParameters(RscaleInv);	
+	//cout << "node x means post scale" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 			
 			//need to put GMM parameters AND points back in detector coordinates (not local)
 			//cout << "ismirror " << x->ismirror << " left " << x->l->ismirror << " right " << x->r->ismirror << endl;
@@ -258,6 +272,12 @@ class MergeTree : BaseTree{
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			x->model->ShiftParameters(center);
+	//cout << "node x means post shift" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 
 			return newLogL;
 		}

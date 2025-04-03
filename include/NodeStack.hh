@@ -4,6 +4,8 @@
 #include "RandomSample.hh"
 #include "PointCollection.hh"
 #include "BaseTree.hh"
+#include <boost/multiprecision/cpp_bin_float.hpp>
+using namespace boost::multiprecision;
 
 using node = BaseTree::node;
 using listnode = BaseTree::listnode;
