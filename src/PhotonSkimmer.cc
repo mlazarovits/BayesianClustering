@@ -186,7 +186,7 @@ void PhotonSkimmer::Skim(){
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
-			algo->SetVerbosity(0);
+			algo->SetVerbosity(2);
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 			_swcross = swissCross(rhs);
