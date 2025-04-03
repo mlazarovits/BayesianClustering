@@ -256,6 +256,7 @@ class BHCJetSkimmer{
 			if(i == 0) _strategy = NlnN;
 			else if(i == 1) _strategy = N2;
 			else if(i == 2) _strategy = gmmOnly;
+			else if(i == 3) _strategy = NlnNonAK4;
 			else return; 
 		}
 	
@@ -499,7 +500,6 @@ class BHCJetSkimmer{
 				}
 				_procCats[p].hists1D[0][120]->Fill((double)_genjets.size());
 				_procCats[p].hists1D[0][122]->Fill((double)_genjets.size() - (double)nGenParts);
-			cout << "bhc ndiff " << (double)(_predJets.size() - nGenParts) << " _predJets " << _predJets.size() << " " << (double)_predJets.size() << " nGenParts " << nGenParts <<" " <<  (double)nGenParts << " " << (double)_predJets.size() - (double)nGenParts << " " << _predJets.size() - nGenParts << endl;
 				_procCats[p].hists1D[0][125]->Fill((double)_predJets.size() - (double)nGenParts);
 				//gen match jets to particles
 				vector<int> genMatchIdxs;
@@ -523,6 +523,7 @@ class BHCJetSkimmer{
 					}	
 
 				}	
+				/*
 				cout << "gen matching pred jets to particles - start" << endl;
 				GenMatchJet(_predJets,genMatchIdxs);
 				cout << "gen matching pred jets to particles - end" << endl;
@@ -535,10 +536,10 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][127]->Fill(_predJets[j].E()/_genparts[genmatch].E());
 					}	
 
-				}	
+				}
+				*/	
 
 			}
-
 
 		}	
 		void FillRecoJetHists(){
@@ -1118,7 +1119,7 @@ class BHCJetSkimmer{
 		//8 - bhc jet pt
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,500);
 		//9 - bhc jet mass
-		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",25,0,200);
+		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,50);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # gen jets
@@ -1145,7 +1146,7 @@ class BHCJetSkimmer{
 		//21
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
 		//22
-		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",25,0,200);
+		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,50);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoAK4Gen","jetGenE_sigmaDeltaPtOvJetGenE_recoAK4Gen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
@@ -1337,7 +1338,7 @@ class BHCJetSkimmer{
 		//117 - gen AK4 jet pt		
 		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,500);
 		//118 - gen AK4 jet mass
-		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",25,0,200);
+		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",50,0,50);
 		//119 - gen AK4 jet energy
 		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,500);
 		//120 - # gen AK4 jets
@@ -1408,7 +1409,7 @@ class BHCJetSkimmer{
 		//19 - BHC dr jet-quark match vs W energy (b's excluded)
 		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 		//20 - # rhs vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",25,0,25,100,0,100);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("recoAK4Jet_nGenParts_nSubclusters","recoAK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,15,0,15);
 		//22 - gen particle p vs gen jet p for AK4 jets
@@ -1737,6 +1738,8 @@ class BHCJetSkimmer{
 			N2 = 1,
 			//gmm only on reco'd jets
 			gmmOnly = 2,
+			//NlnN using rhs from reco AK4 jets
+			NlnNonAK4 = 3,
 		};
 		//clustering strategy - N^2 or NlnN
 		Strategy _strategy;

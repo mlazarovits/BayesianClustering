@@ -1,20 +1,34 @@
 #include "MergeTree.hh"
 #include "VarEMCluster.hh"
-
 //BHC with varEM
 //assuming Dirichlet Process Model (sets priors)
 node* MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
-	double n = l->points->GetNPoints() + r->points->GetNPoints();		
-	double d = _alpha*tgamma(n) + l->d*r->d;
-	double pi = _alpha*tgamma(n)/d;
+	//double n = l->points->GetNPoints() + r->points->GetNPoints();	
+	double n = l->points->Sumw() + r->points->Sumw();	
+	double d =  _alpha*tgamma(n) + (double)l->d*(double)r->d;
+	double pi = _alpha*tgamma(n)/(double)d;
+
+	double pi_a = log(_alpha) + lgamma(n);
+	double pi_b = (double)log(l->d) + (double)log(r->d);
+	double pi_max = fmax(pi_a,pi_b);
+	double pi_stable = exp(pi_a - pi_max)/(exp(pi_a - pi_max) + exp(pi_b - pi_max));
+
+	//d = a*gam(n) + dl*dr = a*gam(n)/dl*dr + 1
+	//d - 1 = a*gam(n)/dl*dr
+	//double dmin1 = log(_alpha) + lgamma(n) - log(l->d) - log(r->d);
+	cpp_bin_float_100 dmin1 = log(_alpha) + lgamma(cpp_bin_float_100(n)) - log(l->d) - log(r->d);
+	cpp_bin_float_100 d_stable = exp(dmin1) + 1; 
+	cpp_bin_float_100 d_100 = cpp_bin_float_100(_alpha)*tgamma(cpp_bin_float_100(n)) + cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d);
+	cpp_bin_float_100 pi_100 = cpp_bin_float_100(_alpha)*tgamma(cpp_bin_float_100(n))/d_100;
+	
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
 	struct node* x = (struct node*)malloc(sizeof *x);
 	x->points = points;
-	x->d = d;
+	x->d = d_100;
 	x->l = l;
 	x->r = r;
 	x->mirror = nullptr;
@@ -26,20 +40,49 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
-	double p_dk_h1 = exp(Evidence(x));
+	double elbo = Evidence(x);
+	double p_dk_h1 = exp(elbo);
 	//marginal prob of t_k = null + alterantive hypo (separate trees)
-	double p_dk_tk = pi*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;
-		
-	double rk = -1;
-	if(p_dk_h1 == 0 && p_dk_tk == 0) rk = 0; //the ELBO can get so negative s.t. sometimes exp(Evidence(x)) = 0 which results in rk = nan
-	else rk = pi*p_dk_h1/p_dk_tk;
+	double p_dk_tk = pi_stable*p_dk_h1 + (double)((l->d*r->d)/d)*(double)l->prob_tk*(double)r->prob_tk;
+	//p_dk_tk = pi*p_dk_h1 + (dl*dr/d)*p_dr_tr*p_dl_tl 
+	//double p_dk_tkmin1 = log(pi_stable) + elbo - log(l->d) - log(r->d) + log(d) - log(l->prob_tk) - log(r->prob_tk);
+	double p_dk_tkmin1 = log(_alpha) + lgamma(n) + elbo - (double)log(l->d) - (double)log(r->d) - (double)log(l->prob_tk) - (double)log(r->prob_tk);
+	double p_dk_tk_stable = exp(p_dk_tkmin1) + 1; 
+	
+	//deal with numerical instability - rk = exp(A)/(exp(A) + exp(B))
+	//exp(A) = pi*p_dk_h1 = pi*exp(ELBO(x)) = exp(log(pi))exp(ELBO(x)) = exp(log(pi) + ELBO(x))
+	//exp(B) = (1-pi)*p_dk_tk = (dr*dl/d)*p_dk_tk = (dr*dl/d)*p_dr_tr*p_dl_tl = exp(log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl))
+	//A = log(pi) + ELBO(x)
+	cpp_bin_float_100 a = log(pi_stable) + elbo;
+	//B = log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl)
+	cpp_bin_float_100 b = log(((l->d*r->d)/d_stable)) + log(l->prob_tk) + log(r->prob_tk);
+	//find m = max(A,B)
+	cpp_bin_float_100 m = fmax(a,b);
+	//rewrite rk as rk = exp(A)/(exp(A) + exp(B)) = exp(A - m)/(exp(A - m) + exp(B - m))
+	cpp_bin_float_100 rk_stable = exp(a - m)/(exp(a - m) + exp(b - m));
+
+	cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
+	cpp_bin_float_100 p_dk_h1_100 = exp(elbo_100);
+	cpp_bin_float_100 p_dl = cpp_bin_float_100(l->prob_tk);
+
+	
+	cpp_bin_float_100 p_dk_tk_100 = pi_100*p_dk_h1_100 + ((cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d))/d_100)*cpp_bin_float_100(l->prob_tk)*cpp_bin_float_100(r->prob_tk);
+	cpp_bin_float_100 rk_100 = pi_100*p_dk_h1_100/p_dk_tk_100;
+	double rk_d100 = (double)rk_100;
+	
+	double rk = (double)rk_stable;//pi*p_dk_h1/p_dk_tk;
+	//if(p_dk_h1 == 0 && p_dk_tk == 0) rk = 0; //the ELBO can get so negative s.t. sometimes exp(Evidence(x)) = 0 which results in rk = nan
+	//else rk = pi*p_dk_h1/p_dk_tk;
 	if(std::isnan(rk)){
-		cout << "rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " d_l " << l->d << " d_r " << r->d << " d " << d << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << endl;
-		cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
+	cout << " rk " << rk << " rk stable " << rk_stable <<  " " << (double)rk_stable << " " << (double)rk_100 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
+cout << "d_100 " << d_100 << " doublecast d_100 " << (double)d_100 << " pi_100 " << pi_100 << " p_dk_h1_100 " << p_dk_h1_100 << " p_dk_tk_100 " << p_dk_tk_100 << " rk_100 " << rk_100 << " rk_d100 " << rk_d100 << " p_dl_100 " << p_dl << " log(p_dl_100) " << log(p_dl) << endl;
+		//cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
+	//cout << "rk " << rk << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi " << pi <<  " logpi " << log(pi) << " pi_stable " << pi_stable << " d " << d << " logd " << log(d) << " dr " << r->d << " logdr " << log(r->d) << " dl " << l->d << " logdl " << (l->d) << " n " << n << " dmin1 " << dmin1 << " d_stable " << d_stable << " p_dk_tkmin1 " << p_dk_tkmin1 << " p_dk_tk_stable " << p_dk_tk_stable << endl;
 	}
-	//if(rk == 1) cout << " rk " << rk << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " ((l->d*r->d)/d)*p(D_l | T_l)*p(D_r | T_r) " << ((l->d*r->d)/d)*l->prob_tk*r->prob_tk << " pi*p_dk_h1 " << pi*p_dk_h1 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " (l->d*r->d)/d " << (l->d*r->d)/d << endl;
-		//" points " << endl; x->model->GetData()->Print(); cout << endl;
-		
+	//if(_verb > 1){	
+	//cout << " rk " << pi*p_dk_h1/p_dk_tk << " rk stable " << rk_stable << " a " << a << " b " << b << " m " << m << " pi " << pi << " p_dk_h1 " << p_dk_h1 << " p_dk_tk " << p_dk_tk << " ((l->d*r->d)/d)*p(D_l | T_l)*p(D_r | T_r) " << ((l->d*r->d)/d)*l->prob_tk*r->prob_tk << " pi*p_dk_h1 " << pi*p_dk_h1 << " p(D_l | T_l) " << l->prob_tk << " p(D_r | T_r) }" << r->prob_tk << " (l->d*r->d)/d " << (l->d*r->d)/d << endl;
+	//	cout << " points " << endl; x->model->GetData()->Print(); cout << endl;
+	//}	
 	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
@@ -48,6 +91,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->val = rk;
 	x->prob_tk = p_dk_tk;
 	
+
 	return x;
 }
 

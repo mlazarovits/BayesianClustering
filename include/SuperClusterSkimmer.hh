@@ -3638,7 +3638,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		int ieta;
 		for(auto rh : rhs){
 			ieta = _detIDmap[rh.rhId()].i2;
-			fsep = -0.5 * (sqrt( 130*130 + 9*ieta*ieta) - 3*ieta)/30;
+			fsep = -0.5 * (sqrt( 130*130 + 9*(double)ieta*(double)ieta) - 3*(double)ieta)/30;
 			td += (rh.t() - fsep)*log10(rh.E());
 		}
 		return td;

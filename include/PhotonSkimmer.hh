@@ -420,6 +420,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(phiAngle2D);
 			_hists1D.push_back(majLength3D);
 			_hists1D.push_back(majLength2D);
+			_hists1D.push_back(timesSigSq_measErr);
+			_hists1D.push_back(rhTime);
+			_hists1D.push_back(photonPt);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -657,6 +660,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(dRtrack_dEtrack_early);	
 			_hists2D.push_back(dRtrack_dEtrack_prompt);
 			_hists2D.push_back(dRtrack_dEtrack_late);	
+			_hists2D.push_back(rhEnergy_timesSigSqMeasErr);
+			_hists2D.push_back(ENeighbors);	
+			_hists2D.push_back(etaPhi_overlaidsubcl);
 			
 
 
@@ -684,11 +690,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//15 - ratio of 2D eigenvals
 		TH1D* eigen2D_ratio = new TH1D("eigen2D_ratio","eigen2D_ratio",50,0.,1.);
 		//16 - eta sigma	
-                TH1D* etaSig = new TH1D("etaSig","etaSig",25,0., 0.05);
+                TH1D* etaSig = new TH1D("etaSig","etaSig",50,0., 0.1);
 		//17 - phi sigma	
-                TH1D* phiSig = new TH1D("phiSig","phiSig",25,0.,0.05);
+                TH1D* phiSig = new TH1D("phiSig","phiSig",50,0.,0.1);
 		//18 - time sigma	
-                TH1D* timeSig = new TH1D("timeSig","timeSig",25,0,4.);
+                TH1D* timeSig = new TH1D("timeSig","timeSig",50,0,5.);
 		//19 - fraction of energy in cluster
 		TH1D* fracE = new TH1D("fracE","fracE",50,0.,1.1);
 		//20 - azimuth angle in 2D
@@ -698,15 +704,15 @@ class PhotonSkimmer : public BaseSkimmer{
 		//22 - eta sigma for negative eta clusters
                 TH1D* etaSig_neg = new TH1D("etaSig_neg","etaSig_neg",25,0.01, 0.09);
 		//23 - normalized covariance - eta/phi
-		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",25,-0.65,0.65);
+		TH1D* etaphi_cov = new TH1D("etaphi_cov","etaphi_cov",25,-0.1,0.1);
 		//24 - normalized covariance - time/eta
-		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,-0.65,0.65);
+		TH1D* timeeta_cov = new TH1D("timeeta_cov","timeeta_cov",25,-0.1,0.1);
 		//25 - normalized covariance - time/phi
-		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-0.65,0.65);
+		TH1D* timephi_cov = new TH1D("timephi_cov","timephi_cov",25,-0.1,0.1);
 		//26 - normalized covariance - time/major axis
-		TH1D* timemaj_cov = new TH1D("timemaj_cov","timemaj_cov",25,-5.,5.);
+		TH1D* timemaj_cov = new TH1D("timemaj_cov","timemaj_cov",25,-0.3,0.3);
 		//27 - normalized covariance - time/minor axis
-		TH1D* timemin_cov = new TH1D("timemin_cov","timemin_cov",25,-5.,5.);
+		TH1D* timemin_cov = new TH1D("timemin_cov","timemin_cov",25,-0.3,0.3);
 		//28 - time sigma - low photon pt	
                 TH1D* timeSig_gamPtLow = new TH1D("timeSig_Elow","timeSig_Elow",25,0,3.);
 		//29 - time sigma - med photon pt
@@ -1186,7 +1192,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* majLength3D = new TH1D("majLength3D","majLength3D",25,0,3.);
 		//256 - major axis length (in 2D)
 		TH1D* majLength2D = new TH1D("majLength2D","majLength2D",25,0,0.1);
-
+		//257 - sigma^2_t from meas err
+		TH1D* timesSigSq_measErr = new TH1D("timesSigSq_measErr","timesSigSq_measErr",25,0,5);
+		//258 - input rh times
+		TH1D* rhTime = new TH1D("rhTime","rhTime",50,-2,2);
+		//259 - photon ps
+		TH1D* photonPt = new TH1D("photonPt","photonPt",25,30,1000);
 
 
 		
@@ -1684,7 +1695,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* dRtrack_dEtrack_prompt = new TH2D("dRtrack_dEtrack_prompt","dRtrack_dEtrack_timeSubclNeg2to2;dRtrack;dEtrack",25,0,5,25,-2,2);
 		//235 - dR trackSubcl vs dE trackSubck, 2 < time subclust < 10	
 		TH2D* dRtrack_dEtrack_late = new TH2D("dRtrack_dEtrack_late","dRtrack_dEtrack_timeSubcl2to10;dRtrack;dEtrack",25,0,5,25,-2,2);
-		
+		//236 - sigma^2_t from meas err
+		TH2D* rhEnergy_timesSigSqMeasErr = new TH2D("rhEnergy_timesSigSqMeasErr","rhEnergy_timesSigSqMeasErr;rhEnergy;#sigma^2_t",50,0,10,50,0,5);
+		//237 - eta-phi view of overlaid subcl (energy = z axis) in 9x9 grid (oversized)
+		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",9,-4,5,9,-4,5);	
+		//238 - eta-phi view of overlaid subcl (energy = z axis) in 30x30 grid (oversized)
+		//deta = dphi = pi/180 -> etamax = deta * nbins / 2 = -etamin
+		TH2D* etaPhi_overlaidsubcl = new TH2D("etaPhi_overlaidsubcl","etaPhi_overlaidsubcl;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
+
 		enum weightScheme{
 			noWeight = 0,
 			Eweight = 1,
@@ -1692,9 +1710,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		};
 		
 
-	 	std::map<UInt_t,DetIDStruct> _detIDmap;
-		std::map<pair<int, int>, UInt_t> _ietaiphiID;
-			
 		void Skim();
 
 		void AddSample(TFile* file);
@@ -1762,6 +1777,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//write 1D hists
 			//variables
 			for(int j = 0; j < (int)_hists1D.size(); j++){
+				if(pcs[0].hists1D[0][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
 				//lead, not lead, etc.
 				name = _hists1D[j]->GetName();
 				TDirectory* dir = ofile->mkdir((name+"_stack").c_str());
@@ -1841,7 +1857,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			double ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
 			double ep_cov_unnorm, te_cov_unnorm, tp_cov_unnorm;
 			double majtime_cov, mintime_cov, majtime_cov_unnorm, mintime_cov_unnorm;
-			
+			double timespace_cov;		
+	
 			//for swiss cross prime - wmax/N_k	
 			PointCollection* points = model->GetData();
 			vector<double> spikeObs;
@@ -1959,7 +1976,25 @@ class PhotonSkimmer : public BaseSkimmer{
 			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
+			//calculate time-space covariance
+			//make space-time rotation matrix from space only eigenvalues + 1 for time
+			Matrix spacetimeR(3,3);
+			spacetimeR.SetEntry(rotmat2D.at(0,0),0,0);
+			spacetimeR.SetEntry(rotmat2D.at(0,1),0,1);
+			spacetimeR.SetEntry(rotmat2D.at(1,0),1,0);
+			spacetimeR.SetEntry(rotmat2D.at(1,1),1,1);
+			spacetimeR.SetEntry(1,2,2);
+			//cout << "original covariance" << endl; cov.Print();
+			//cout << "maj/min cov" << endl; majminCovMat.Print();
+			//cout << "spacetime rotation matrix" << endl; spacetimeR.Print();
+			Matrix spacetimeRT;
+			spacetimeRT.transpose(spacetimeR);
+			Matrix cov_spacetimeR(3,3);
+			cov_spacetimeR.mult(spacetimeRT,cov);
+			//cout << "spacetime rotated covariance" << endl; cov_spacetimeR.Print();
+			cov_spacetimeR.mult(cov_spacetimeR,spacetimeR);
 
+			
 
 			//do track matching
 			int nTracks = _base->ECALTrack_nTracks;
@@ -3026,7 +3061,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		double rot = 0;
 		for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 		rot = eigenvals[maxd]/rot;
-		if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
+		//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 		return rot;
 	}
 

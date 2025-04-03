@@ -520,6 +520,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetCleanSubclusters(cleansubcls);
 		skimmer.SetMistClean(cleanmist);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
+		skimmer.SetVerbosity(verb);
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
@@ -549,6 +550,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
+		skimmer.SetVerbosity(verb);
         	skimmer.Skim();
 	}
 	else if(obj == 2){
@@ -577,7 +579,7 @@ int main(int argc, char *argv[]){
 		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetIsoBkgSel(isobkg);
-
+		skimmer.SetVerbosity(verb);
         	skimmer.Skim();
 	}
         return 0;

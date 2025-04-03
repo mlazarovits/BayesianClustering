@@ -551,9 +551,9 @@ void GaussianMixture::CalculateRStatistics(){
 			//S_k.Print();
 			//if resolution based smearing is set for any dimension of the covariance,
 			//alter smearing matrix accordingly
-			if(_smear){
-				S_n.add(_data_cov);
-			}
+			//if(_smear){
+			//	S_n.add(_data_cov);
+			//}
 			//weighting by posterior r_nk
 			S_n.mult(S_n,m_post.at(n,k));
 		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
@@ -662,6 +662,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			//cout << "2 - lamStar dims " << lamStar.GetDims()[0] << " " << lamStar.GetDims()[1] << endl;
 			//cout << "rLamStar dims " << rLamStar.GetDims()[0] << " " <<  rLamStar.GetDims()[1] << endl;
 			lamStar.add(rLamStar);
+			lamStar.mult(lamStar,-0.5);
 			Matrix lamStarInv(m_dim, m_dim);
 			lamStarInv.invert(lamStar);
 			if(_verb > 3){
@@ -680,12 +681,6 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			new_mean.mult(lamStarInv, lam_mean);	
 		}	
 		m_model[k]->GetPrior()->SetParameter("mean", new_mean);
-		//cout << "k: " << k << " mean: " << endl; 
-		//m_model[k]->GetPrior()->GetParameter("mean").Print();	
-		//cout << "k: " << k << " xbar: " << endl;
-		//mu.Print();
-
-
 
 		//cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;	
 		//nus - eq. 10.63
@@ -745,6 +740,13 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		new_cov.mult(new_cov, new_dof);
 		new_cov.invert(new_cov); //new_cov^-1 = cov (sigma)
 		m_model[k]->SetParameter("cov",new_cov);
+		if(_verb > 3){
+			cout << "k: " << k << " mean: " << endl; 
+			m_model[k]->GetParameter("mean").Print();	
+			cout << "cov " << endl; m_model[k]->GetParameter("cov").Print();
+		}
+
+
 	}
 };
 

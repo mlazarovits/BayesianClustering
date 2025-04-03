@@ -45,6 +45,7 @@ void PhotonSkimmer::Skim(){
 	
 	vector<Jet> rhs;
 	vector<Jet> phos;
+	vector<JetPoint> rh_pts;
 	int phoid, genidx;
 	if(_debug){ _oskip = 1000; }
 	double sumE;
@@ -186,9 +187,38 @@ void PhotonSkimmer::Skim(){
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
-			algo->SetVerbosity(2);
+			algo->SetVerbosity(_verb);
 			GaussianMixture* gmm = algo->SubCluster();
-			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			vector<Matrix> lamstars;
+			gmm->GetMeasErrs(lamstars);
+			
+			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
+			
+			vector<pair<int,int>> icoords;
+			vector<double> neighborEs;
+			rh_pts = phos[p].GetJetPoints();
+			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,9);
+			for(int e = 0; e < (int)neighborEs.size(); e++){
+				_procCats[1].hists2D[0][237]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
+			}
+			double maxE = 0;
+			Jet maxE_rh;
+			for(int r = 0; r < rhs.size(); r++){
+				sumE += rhs[r].E();
+				if(rhs[r].E() > maxE){
+					maxE = rhs[r].E();
+					maxE_rh = rhs[r];
+				}
+				_procCats[1].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
+				_procCats[1].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
+				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
+			}
+			for(int r = 0; r < rhs.size(); r++){
+				_procCats[1].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
+
+			}
+
+
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
@@ -209,7 +239,7 @@ void PhotonSkimmer::Skim(){
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
 						FillModelHists(gmm, i, obs);
-						FillCMSHists(rhs,i);
+						//FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
 						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
@@ -232,7 +262,7 @@ void PhotonSkimmer::Skim(){
 			else{
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					FillModelHists(gmm, i, obs);
-					FillCMSHists(rhs,i);
+					//FillCMSHists(rhs,i);
 					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
 					_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));

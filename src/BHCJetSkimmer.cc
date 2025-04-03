@@ -10,6 +10,8 @@ void BHCJetSkimmer::Skim(){
 		cout << " N2 (naive)" << endl;
 	else if(_strategy == gmmOnly)
 		cout << " GMM only" << endl;
+	else if(_strategy == NlnNonAK4)
+		cout << " NlnN (Delauney) with reco AK4 rechits" << endl;
 	else
 		cout << " undefined. Please use SetStrategy(i) with i == 0 (NlnN), 1 (N2)" << endl;
 	
@@ -73,28 +75,18 @@ void BHCJetSkimmer::Skim(){
 		if(nb < 1) continue;
 	
 		//reject fully leptonic W decays - later may want to turn off to look at just displaced b decays
-		vector<int> Widxs(nW);
-		for(int w = 0; w < nW; w++){
-			for(int g = 0; g < ngenpart; g++){
-				//don't include leptonic decays
-				if(fabs(_base->genpart_id->at(g)) == 11) continue;
-				if(fabs(_base->genpart_id->at(g)) == 12) continue;
-				if(fabs(_base->genpart_id->at(g)) == 13) continue;
-				if(fabs(_base->genpart_id->at(g)) == 14) continue;
-				if(fabs(_base->genpart_id->at(g)) == 15) continue;
-				if(fabs(_base->genpart_id->at(g)) == 16) continue;
-				//skip tops + bs 
-				if(fabs(_base->genpart_id->at(g)) == 6) continue;
-				if(fabs(_base->genpart_id->at(g)) == 5) continue;
-				int genmomidx = _base->genpart_momIdx->at(g);
-				//skip particles that didn't come from a W
-				if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
-				//skip if already counted
-				if(count(Widxs.begin(), Widxs.end(),g) > 0) continue;
-				Widxs.push_back(g);
-			}
+		int nW_lep = 0;	
+		for(int g = 0; g < ngenpart; g++){
+			int genmomidx = _base->genpart_momIdx->at(g);
+			if(genmomidx == -1) continue;
+			//skip particles that didn't come from a W
+			if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
+			int genid = fabs(_base->genpart_id->at(g));
+			//only check for !neutrinos
+			if(genid == 11 || genid == 13 || genid == 15) nW_lep++; 
 		}
-		if(Widxs.size() < 1) continue;	
+		//if all Ws in event decay leptonically, don't count
+		if(nW - nW_lep == 0) continue;
 
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetGenJets(_genjets, i);
@@ -103,16 +95,15 @@ void BHCJetSkimmer::Skim(){
 		if(_recojets.size() < 1){ cout << endl; continue; }
 		_prod->GetGenParticles(_genparts, i);
 
-		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets";
+		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
 		///do GMM only option
-		/*
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
 			//safety
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering reco jet #" << j << "..." << endl;	
+			cout << "SubClustering reco jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
@@ -150,15 +141,26 @@ void BHCJetSkimmer::Skim(){
 		
 			rhs.clear();
 		}
-		*/
 		FillRecoJetHists();
 		//only does above
 		if(_strategy == gmmOnly){
-			cout << endl;
 			continue;
 		}
-		_prod->GetRecHits(rhs, i);
-		if(i % SKIP == 0) cout << " and " << rhs.size() << " rhs" << endl;
+		if(_strategy == NlnNonAK4){
+			//use rhs from reco ak4 jets
+			rhs.clear();
+			for(int j = 0; j < _recojets.size(); j++){
+				vector<Jet> jet_rhs; 
+				_recojets[j].GetJets(jet_rhs);
+				for(auto rh : jet_rhs) rhs.push_back(rh);
+			}
+			
+
+		}
+		else{
+			//get all rhs in event
+			_prod->GetRecHits(rhs, i);
+		}
 		for(auto rh : rhs){
 			_procCats[1].hists1D[0][131]->Fill(rh.t());
 		}
@@ -192,7 +194,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetPriorParameters(_prior_params);
 		//run clustering
 		//delauney NlnN version
-		if(_strategy == NlnN){
+		if(_strategy == NlnN || _strategy == NlnNonAK4){
 			//start clock
 			t = clock();
 			trees = algo->NlnNCluster();
@@ -216,7 +218,7 @@ void BHCJetSkimmer::Skim(){
 		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
-		//FillGenHists(); //relies on BHC jets - fill after jets have been made
+		FillGenHists(); //relies on BHC jets - fill after jets have been made
 		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);

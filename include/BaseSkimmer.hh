@@ -40,6 +40,7 @@ class BaseSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
                 	_BHFilter = beamHaloFilter(0); //default not applied
+			_verb = 0;
 
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
@@ -73,6 +74,7 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
+			_verb = 0;
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
 			//nu
@@ -120,6 +122,7 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
+			_verb = 0;
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
 			//nu
@@ -229,7 +232,7 @@ class BaseSkimmer{
 		
 		        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
 		            //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-		            DetIDMap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi};
+		            DetIDMap[cmsswId] = DetIDStruct(iphi,ieta,TT25,0,deteta,detphi);
 		            ietaiphi = make_pair(ieta, iphi);
 		            iEtaiPhiToDetID[ietaiphi] = cmsswId;
 		            //auto idinfo = DetIDMap[cmsswId];
@@ -262,7 +265,7 @@ class BaseSkimmer{
 		//0 - # of subclusters
 		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
 		//1 - mean time - center in t
-		TH1D* time_center = new TH1D("timeCenter","timeCenter",50,-20,20);
+		TH1D* time_center = new TH1D("timeCenter","timeCenter",50,-5,5);
 		//2 - mean eta - center in eta
 		TH1D* eta_center = new TH1D("etaCenter","etaCenter",50,-1.6,1.6);
 		//3 - mean phi - center in phi
@@ -873,5 +876,7 @@ class BaseSkimmer{
 	void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
 		cout << "BaseSkimmer - Using _tresCte = " << _tresCte << " ns, _tresStoch = " << _tresStoch << " ns and _tresNoise = " << _tresNoise << " ns" << endl;
  }
+	int _verb;
+	void SetVerbosity(int v){_verb = v;}
 };
 #endif

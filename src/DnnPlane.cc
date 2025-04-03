@@ -166,10 +166,10 @@ DnnPlane::DnnPlane(const std::vector<PointCollection>& pc, MergeTree* mt,
 
   // label infinite vertex info with negative index 
   _TR.infinite_vertex()->info() = INFINITE_VERTEX;
-cout << "DNNPLANE CTOR - setnearest start" << endl;
+if(_verbose)cout << "DNNPLANE CTOR - setnearest start" << endl;
   // set up the structure that holds nearest distances and neighbours
   for (int j = 0; j < n; j++) {_SetNearest(j);}
-cout << "DNNPLANE CTOR - setnearest end" << endl;
+if(_verbose)cout << "DNNPLANE CTOR - setnearest end" << endl;
 
 }
 
@@ -463,7 +463,7 @@ void DnnPlane::RemoveAndAddPoints(
 			  vector<int> & indices_added,
 			  vector<int> & indices_of_updated_neighbours) {
 
-  if (true){ cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
+  if(_verbose){ cout << "Starting  DnnPlane::RemoveAndAddPoints" << endl;
 cout << indices_to_remove.size() << " points to be removed" << endl;
 cout << points_to_add.size() << " points to add" << endl;
   for (size_t ir = 0; ir < indices_to_remove.size(); ir++) {
@@ -704,7 +704,7 @@ cout << points_to_add.size() << " points to add" << endl;
     }
   }
 
-  if (true) cout << "Leaving  DnnPlane::RemoveAndAddPoints" << endl;
+  if (_verbose) cout << "Leaving  DnnPlane::RemoveAndAddPoints" << endl;
 }
 
 
@@ -714,7 +714,7 @@ cout << points_to_add.size() << " points to add" << endl;
 /// Determines the index and distance of the nearest neighbour to 
 /// point j and puts the information into the _supervertex entry for j.
 void DnnPlane::_SetNearest (const int j) {
-cout << "SetNearest - start" << endl; 
+if(_verbose) cout << "SetNearest - start" << endl; 
  // first deal with the cases where we have a coincidence
   if (_supervertex[j].coincidence != j){
     _supervertex[j].NNindex = _supervertex[j].coincidence;
@@ -747,9 +747,9 @@ cout << "SetNearest - start" << endl;
       int vcindx = vc->info().val();
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
-	cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
+	if(_verbose){ cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
 cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
-cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       // find distance between j and its Voronoi neighbour (vc)
       if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
 
@@ -766,7 +766,7 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
 	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
          best_vtx = vc;
      } 
-     if(true){ 
+     if(_verbose){ 
        cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
        cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
        cout << "this rk: " << rk << " best rk so far: " << maxrk << endl;
@@ -780,7 +780,7 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
   _supervertex[j].MaxRk = maxrk;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
-cout << "SetNearest - done for vertex " << j << " with best rk " << maxrk << " with node " << best_vtx->info().val() << "  - end\n" << endl;
+if(_verbose) cout << "SetNearest - done for vertex " << j << " with best rk " << maxrk << " with node " << best_vtx->info().val() << "  - end\n" << endl;
 //cout << "SetNearest - # clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 }
 
@@ -807,7 +807,6 @@ void DnnPlane::_SetAndUpdateNearest(
 			  vector<int> & indices_of_updated_neighbours) {
   vector<int> indices_of_updated_merges;
   if(_verbose) cout << "SetAndUpdateNearest for point " << j << endl;
-  cout << "SetAndUpdateNearest for point " << j << endl;
   // first deal with coincidences
   if (_supervertex[j].coincidence != j){
     _supervertex[j].NNindex = _supervertex[j].coincidence;
@@ -842,9 +841,9 @@ void DnnPlane::_SetAndUpdateNearest(
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
-	cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
+	if(_verbose){cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
 cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
-cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       // update the mindist if we are closer than anything found so far
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
 	nearest = vc; 
@@ -855,7 +854,7 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
          best_vtx = vc;
     if(_verbose) cout << "more probable "; 
     }
-      if (true){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
+      if(_verbose){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
         cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
         cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
         cout << "this rk: " << rk << " best rk so far: " << maxrk << endl;
@@ -907,9 +906,6 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
   if(_verbose) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
   if(_verbose) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
   if(_verbose) cout << "_SetAndUpdateNearest - end" << endl; 
-  cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
-  cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now with prob " << maxrk << "." << endl;
-  cout << "_SetAndUpdateNearest - end" << endl; 
 }
 
 //FASTJET_END_NAMESPACE

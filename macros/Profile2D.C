@@ -134,7 +134,7 @@ void Profile2DHists(TFile* f){
 	bool print = (filename.find("GMSB") != string::npos);
 
 	//only do for jets
-	if(filename.find("photons") != string::npos) return;
+	if(filename.find("photons") != string::npos && filename.find("SimNtuples") != string::npos) return;
 	f->cd();
 	//loop over all dirs - top level is variable	
 	while((key = (TKey*)iter())){
@@ -480,7 +480,7 @@ void Profile2D(string file){
 	//profile relevant 2D histograms first
 	Profile2DHists(f);
 //cout << "profiled hists" << endl;
-	Make2DHist(f,"geoEavg_genDeltaTime_meanRecoGenDeltaT");
+	//Make2DHist(f,"geoEavg_genDeltaTime_meanRecoGenDeltaT");
 //cout << "made 2d hist" << endl;
 	f->Close();
 

@@ -322,7 +322,6 @@ class BayesCluster{
 		void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
 		void _phi_wraparound(PointCollection& pc);
 
-
 	private:
 		vector<Jet> _jets;
 		vector<PointCollection> _points; //to pass to merge tree in cluster function
@@ -340,6 +339,8 @@ class BayesCluster{
 		const vector<node*>& _naive_cluster();
 		GaussianMixture* _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }
+
+
 	 
 };
 #endif

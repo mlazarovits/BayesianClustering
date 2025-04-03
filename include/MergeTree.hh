@@ -10,8 +10,6 @@ class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
 			_alpha = 0; _thresh = 0.; _verb = 0;
-			_constraint_a = 0; _constraint_b = acos(-1)/2.; 
-			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
 			_tresCte = 0.133913;
 			_tresStoch = 1.60666; 
@@ -21,8 +19,6 @@ class MergeTree : BaseTree{
 		MergeTree(double alpha){
 			_alpha = alpha;
 			_thresh = 1.; _verb = 0;
-			_constraint_a = 0; _constraint_b = acos(-1)/2.;
-			_constraint = false;
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
 			_tresCte = 0.133913;
 			_tresStoch = 1.60666; 
@@ -38,8 +34,6 @@ class MergeTree : BaseTree{
 			_clusters = tree._clusters;
 			_thresh = tree._thresh;
 			_verb = tree._verb;
-			_constraint_a = tree._constraint_a; _constraint_b = tree._constraint_b;
-			_constraint = tree._constraint;
 			_cell = tree._cell; //default is CMS ECAL cell size
 			_tresCte = tree._tresCte;
 			_tresStoch = tree._tresStoch; 
@@ -118,42 +112,6 @@ class MergeTree : BaseTree{
 
 		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
 
-		void SetDistanceConstraint(double a, double b){ _constraint = true; _constraint_a = a; _constraint_b = b; }
-		//uses a triangular distribution to constraint certain clusterings
-		double DistanceConstraint(node* i, node* j){
-			_constraint = true;
-			double c = (_constraint_a + _constraint_b)/2.;
-			double pi = acos(-1);
-			//phi
-			double cent1 = i->points->Centroid(1);
-			double cent2 = j->points->Centroid(1);
-			
-			//transform deltaPhi to be on [0,pi], wrapped s.t. 0 is close to 2pi (-3 close to 3)
-			double d = fabs(cent1 - cent2);
-			//update 3D nearest neighbors for mirror point calculation
-			double dist2d = _euclidean_2d(i, j);
-			if(dist2d < i->nndist) i->nndist = dist2d;
-			if(dist2d < j->nndist) j->nndist = dist2d;	
-
-	
-			double phi = 0;
-			double theta = 0;
-			if(d >= _constraint_a && d <= _constraint_b) phi = cos(d);
-		
-	
-			//eta	
-			cent1 = i->points->Centroid(0); 
-			cent2 = j->points->Centroid(0); 
-		
-			//eta to theta
-			cent1 = 2*atan(exp(-cent1));
-			cent2 = 2*atan(exp(-cent2));
-			//don't need to wrap eta -> only goes from 0 to pi in theta
-			d = fabs(cent1 - cent2);	
-			if(d >= _constraint_a && d <= _constraint_b) theta = cos(d);
-			return theta*phi;		
-		}
-
 		void AddLeaf(const BayesPoint* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			_clusters.push_back(nullptr);
@@ -170,7 +128,8 @@ class MergeTree : BaseTree{
 			x->idx = n-1;
 			x->nndist = 1e300;
 			x->mirror = nullptr;
-			x->prob_tk = exp(Evidence(x)); //Evidence = ELBO \approx log(LH)
+			x->prob_tk = exp(Evidence(x));//p_dk_tk = p_dk_h1 since cannot be divided further
+			//Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
 		}
 
@@ -218,7 +177,8 @@ class MergeTree : BaseTree{
 			Matrix Rscale(3,3);
 			Rscale.SetEntry(1/cell,0,0);
 			Rscale.SetEntry(1/cell,1,1);
-			Rscale.SetEntry(1e-1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
+			Rscale.SetEntry(1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
+			//Rscale.SetEntry(1e-1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
 			//for right now, 1e-1 is good, nominal time is in ns, ns*1e-3 = us, ns*1e3 = ps
 
 
@@ -278,15 +238,29 @@ class MergeTree : BaseTree{
 			}
 			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
 
+	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
+	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
+	//cout << "node x means pre scale" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 			//need to unscale data - also unscales lamStar measurement errors 
 			//cout << "inverse scale data + lam*s" << endl;	
-			x->model->ScaleData(RscaleInv);	
+			x->model->ScaleData(RscaleInv);	 
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
 			x->model->ScaleParameters(RscaleInv);	
+	//cout << "node x means post scale" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 			
 			//need to put GMM parameters AND points back in detector coordinates (not local)
 			//cout << "ismirror " << x->ismirror << " left " << x->l->ismirror << " right " << x->r->ismirror << endl;
@@ -298,6 +272,12 @@ class MergeTree : BaseTree{
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			x->model->ShiftParameters(center);
+	//cout << "node x means post shift" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	params["mean"].Print();
+	//}
 
 			return newLogL;
 		}
@@ -327,13 +307,10 @@ class MergeTree : BaseTree{
 		double _alpha, _emAlpha;
 		//threshold on variational EM
 		double _thresh;
-		//endpoints for distance constraining
-		double _constraint_a, _constraint_b;
 
 		Matrix _data_smear;
 		int _verb;
 		map<string, Matrix> _params;
-		bool _constraint;
 		void _remap_phi(PointCollection& points);
 };
 #endif

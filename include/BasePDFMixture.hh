@@ -91,6 +91,11 @@ class BasePDFMixture : public BasePDF{
 			}
 		}
 		PointCollection* GetData(){ return m_data; }
+		
+		void GetMeasErrs(vector<Matrix>& lamstars){
+			lamstars.clear();
+			for(int n = 0; n < m_n; n++) lamstars.push_back(_lamStar[n]);
+		}
 
 		//estimates data points as Gaussians with mean = pt and covariance = set here
 		void SetDataSmear(const Matrix& cov){ _data_cov = cov; _smear = true; }
@@ -168,7 +173,7 @@ class BasePDFMixture : public BasePDF{
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				//if(m_norms[k] + m_alpha0 < thresh){
 				if(m_norms[k] < thresh){
-					if(_verb > 1) 
+					if(_verb > 3) 
 						cout << "Removing cluster " << k << " with alpha " << m_alphas[k] << " and norm " << m_norms[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
