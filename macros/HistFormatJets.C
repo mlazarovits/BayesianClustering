@@ -236,10 +236,10 @@ cout << "title " << xtit << " canname " << canname << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		if(pf != 3) hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t [ns]");
-		cout << "miny " << miny << " max " << 3*maxy << endl;
-		hist[i]->GetYaxis()->SetRangeUser(0, 1.5*maxy);
+		cout << "miny " << miny << " max " << maxy << endl;
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(0, maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(miny, 1.5*maxy);
+		if(canname.find("geoAvgEecal_sigmaDeltaTime_dijets") != string::npos) hist[i]->GetYaxis()->SetRangeUser(0,1.2);
 		
 
 		legentry = hist[i]->GetTitle();
@@ -1567,10 +1567,10 @@ void HistFormatJets(string file, string file2 = ""){
 		//PV dijets for median + eAvg for JetHT
 		MethodStackHists(file, "JetHT", med_eAvg, oname, "geoAvgEecal", year);
 		MethodStackHists(file, "DoubleEG", med_eAvg, oname, "geoAvgEecal", year);
-		//recoGen and gamPV for med + eAvg for QCD
+		////recoGen and gamPV for med + eAvg for QCD
 		MethodStackHists(file, "QCD", med_eAvg, oname, "geoEavg", year);
 
-		//same method in legend, only 1 proc in plot label
+		////same method in legend, only 1 proc in plot label
 		vector<string> jetHT_QCD = {"JetHT","QCD"};
 		vector<string> jetHT_QCD_DEG = {"JetHT","QCD","DoubleEG"};
 		vector<string> DEG_QCD = {"DoubleEG","QCD"};
@@ -1654,12 +1654,12 @@ void HistFormatJets(string file, string file2 = ""){
 		ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "nSubclusters");
 		Hist2D(file, "JetHT", "median", oname, "nSubclusters",year);
 		Hist2D(file, "QCD", "median", oname, "nSubclusters",year);
-		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
-		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
-		//ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
-		//ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "jetNSubclusters");
-		//ProcStackHists(file, jetHT_QCD, "eAvg", oname, "jetTime");
-		//ProcStackHists(file, jetHT_QCD, "med", oname, "jetTime");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetEta");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetPhi");
+		ProcStackHists(file, jetHT_QCD, "eMax", oname, "jetNrhs");
+		ProcStackHists(file, jetHT_QCD, "mmAvg", oname, "jetNSubclusters");
+		ProcStackHists(file, jetHT_QCD, "eAvg", oname, "jetTime");
+		ProcStackHists(file, jetHT_QCD, "med", oname, "jetTime");
 
 
 	}
