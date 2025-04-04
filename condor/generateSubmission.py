@@ -93,7 +93,7 @@ def generateSubmission(args):
     	    inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+"_list.txt"
         else:
             inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+reco_date[args.year+"_DEG"]+"_list.txt"
-    elif "SMS-GlGl" in args.inputSample:
+    elif "gogoG" in args.inputSample:
         ver = "v24"
         inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
     else:
@@ -278,7 +278,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','GJets','QCD','MET','SMS-GlGl'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','GJets','QCD','MET','gogoG'])
     parser.add_argument('--mGl',help='gluino mass for signal',default='2000')
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='1950')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='1')
