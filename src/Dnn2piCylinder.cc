@@ -199,11 +199,11 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
     x->points = newpts;
-    x->ismirror = true;
+    x->ismirror = !(_merge_tree->Get(ip)->ismirror);
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _merge_tree->Get(ip);
     _merge_tree->Get(ip)->mirror = x;
-
+cout << "this node is mirror? " << x->ismirror << " mirrored node is mirror? " << x->mirror->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
     _cylinder_index_of_plane_vertex.push_back(ic);
