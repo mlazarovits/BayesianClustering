@@ -63,6 +63,7 @@ class MergeTree : BaseTree{
 		}
 		
 		void Insert(node* x){
+		cout << "inserting node with ismirror " << x->ismirror << endl;
 			_clusters.push_back(nullptr);
 			x->idx = (int)_clusters.size() - 1;
 			_clusters[(int)_clusters.size() - 1] = x;
@@ -128,9 +129,11 @@ class MergeTree : BaseTree{
 			x->idx = n-1;
 			x->nndist = 1e300;
 			x->mirror = nullptr;
+			x->ismirror = false;
 			x->prob_tk = exp(Evidence(x));//p_dk_tk = p_dk_h1 since cannot be divided further
 			//Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
+			cout << "adding leaf with ismirror " << x->ismirror << endl;
 		}
 
 

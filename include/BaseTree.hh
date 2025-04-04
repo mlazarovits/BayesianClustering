@@ -57,6 +57,7 @@ class BaseTree{
 				model = n.model;
 				prob_tk = n.prob_tk;
 				nndist = n.nndist;
+				ismirror = n.ismirror;
 				mirror = n.mirror;
 				idx = n.idx;
 			}

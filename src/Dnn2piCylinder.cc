@@ -189,7 +189,7 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
-
+cout << "this node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
