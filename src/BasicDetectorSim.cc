@@ -18,7 +18,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
 	_b = 3.8; //field of CMS solenoid (T)
-	_netacal = 170; //number of cells in eta in ECAL barrel (2*85)
+	_netacal = 344; //number of cells in eta in ECAL barrel (2*72)
 	_nphical = 360; //number of cells in phi in ECAL barrel (neta*nphi = 61200 total cells in barrel)
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
@@ -75,7 +75,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	//see CMS TDR (ISBN 978-92-9083-268-3)
 	_rmax = 1.29; //inner radius of ECAL barrel (m)
 	_b = 3.8; //field of CMS solenoid (T)
-	_netacal = 170; //number of cells in eta in ECAL barrel (2*85)
+	_netacal = 344; //number of cells in eta in ECAL barrel (2*172)
 	_nphical = 360; //number of cells in phi in ECAL barrel (neta*nphi = 61200 total cells in barrel)
 	_deta = 2*acos(-1)/360.; //0.0174; //eta component of cell cross-section (2.2 cm - Moliere radius)
 	_dphi = 2*acos(-1)/360.; //0.0174; //phi component of cell cross-section (2.2 cm - Moliere radius)
@@ -85,7 +85,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_etamax = 3.;
+	_etamax = 3.;//1.479;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
@@ -335,10 +335,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//don't save if particle doesn't make it to detector face (with if statement above)
 			FillTracks(rp);
 
-			//running fastjet on gen particles, no shower, etc.
-			int tieta, tiphi;
-			evt_Etot += rp.Momentum.e();
-			_get_etaphi_idx(rp.Position.eta(), rp.Position.phi(), tieta, tiphi);
+			//int tieta, tiphi;
+			//evt_Etot += rp.Momentum.e();
+			//_get_etaphi_idx(rp.Position.eta(), rp.Position.phi(), tieta, tiphi);
 			//cout << "gen input px " << rp.Momentum.px() <<  " py " << rp.Momentum.py() << " pz " << rp.Momentum.pz() << " energy " << rp.Momentum.e() << " eta " << rp.Position.eta() << " tieta " << tieta << " phi " << rp.Position.phi() << " tiphi " << tiphi << " q " << rp.Particle.charge() << " pt " << rp.Momentum.pt() << endl; 
       			
 			//save reco particle four vector (with corresponding gen info)
@@ -347,7 +346,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//cout << "event total energy " << evt_Etot << endl;
 		evt_Etot = 0;
 		
-		//run fastjet
+		//running fastjet on gen particles, no shower, etc.
 		_gencs = fastjet::ClusterSequence(fjinputs, _jetdef);
 		//get jets - min 5 pt
 		fjoutputs = _gencs.inclusive_jets(5.);
@@ -726,7 +725,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	double teta, tphi;
 	//check transformation
 	_get_etaphi(ieta, iphi, teta, tphi);
-	//cout << "FillCal - eta " << eta << " ieta " << ieta << " phi " << phi << " iphi " << iphi << " teta " << teta << " tphi " << tphi << " energy " << _cal[ieta][iphi].at(0) << " emissions " << _cal[ieta][iphi].at(2) << endl;
+	//cout << "FillCal check transformation - eta " << eta << " ieta " << ieta << " phi " << phi << " iphi " << iphi << " teta " << teta << " tphi " << tphi << " energy " << _cal[ieta][iphi].at(0) << " emissions " << _cal[ieta][iphi].at(2) << endl;
 	
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
@@ -1333,8 +1332,8 @@ void BasicDetectorSim::_get_etaphi_idx(double eta, double phi, int& ieta, int& i
 		ieta = floor(((eta - _etamin)/_deta)); 
 		if(ieta > _netacal) ieta = 0;
 		else if(ieta < 0) ieta = 0;
-      
 	}
+//cout << " eta " << eta << " etamax " << _etamax << " etamin " << _etamin << " ieta " << ieta << endl;
 }
 
 //get eta-phi center given ieta, iphi cell indices
