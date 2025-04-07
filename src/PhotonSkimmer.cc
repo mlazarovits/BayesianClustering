@@ -209,11 +209,15 @@ void PhotonSkimmer::Skim(){
 					maxE = rhs[r].E();
 					maxE_rh = rhs[r];
 				}
+				_procCats[0].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
 				_procCats[1].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
+				_procCats[0].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
 				_procCats[1].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
+				_procCats[0].hists1D[0][258]->Fill(rhs[r].t());
 				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
 			}
 			for(int r = 0; r < rhs.size(); r++){
+				_procCats[0].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
 				_procCats[1].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
 
 			}
