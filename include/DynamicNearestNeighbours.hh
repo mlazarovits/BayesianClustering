@@ -197,7 +197,7 @@ public:
 		//newnode->model->GetData()->Print();
 		//cout << "newnode pts" << endl;
 		//newnode->points->Print();
-		cout << "newnode ismirror " << newnode->ismirror << endl;
+		//cout << "newnode ismirror " << newnode->ismirror << endl;
     _merge_tree->Insert(newnode);
     _merge_tree->Remove(n1);
     _merge_tree->Remove(n2);

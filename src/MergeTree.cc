@@ -33,7 +33,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	x->r = r;
 	x->mirror = nullptr;
 	x->ismirror = false;//l->ismirror || r->ismirror;
-	cout << "calcmerge ismirror " << x->ismirror << " l ismirror " << l->ismirror << " r ismirror " << r->ismirror << endl;
+	//cout << "calcmerge ismirror " << x->ismirror << " l ismirror " << l->ismirror << " r ismirror " << r->ismirror << endl;
 	double nndist = 1e300;
 	//find nndist for x (should be O(n) operation)
 	for(int i = 0; i < (int)_clusters.size(); i++){
