@@ -687,7 +687,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//12 - ellipsoid rotundity
 		TH1D* rotundity_3D = new TH1D("rotundity_3D","rotundity_3D",10,0.74,1.01);
 		//13 - spatial rotundity
-		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",20,0.4,1.1);
+		TH1D* rotundity_2D = new TH1D("rotundity_2D","rotundity_2D",50,0.45,1.1);
 		//14 - velocity = z/r*k for k transfer factor to velocity units
 		TH1D* velocity = new TH1D("velocity","velocity",31,-1.,30.);
 		//15 - ratio of 2D eigenvals
@@ -1192,9 +1192,9 @@ class PhotonSkimmer : public BaseSkimmer{
 		//254 - phi angle (angle bw maj axis + phi axis in 2D)
 		TH1D* phiAngle2D = new TH1D("phiAngle2D","phiAngle2D",25,-0.4,3.4);
 		//255 - major axis length (in 3D)
-		TH1D* majLength3D = new TH1D("majLength3D","majLength3D",25,0,3.);
+		TH1D* majLength3D = new TH1D("majLength3D","majLength3D",50,0,5.);
 		//256 - major axis length (in 2D)
-		TH1D* majLength2D = new TH1D("majLength2D","majLength2D",25,0,0.1);
+		TH1D* majLength2D = new TH1D("majLength2D","majLength2D",50,0,0.2);
 		//257 - sigma^2_t from meas err
 		TH1D* timesSigSq_measErr = new TH1D("timesSigSq_measErr","timesSigSq_measErr",25,0,5);
 		//258 - input rh times
@@ -1786,7 +1786,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//write 1D hists
 			//variables
 			for(int j = 0; j < (int)_hists1D.size(); j++){
-				if(pcs[0].hists1D[0][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
+				if(pcs[0].hists1D[1][j]->GetEntries() == 0){ continue; }//cout << "Histogram for proc " << pcs[k].plotName << " not filled." << endl; continue; }
 				//lead, not lead, etc.
 				name = _hists1D[j]->GetName();
 				TDirectory* dir = ofile->mkdir((name+"_stack").c_str());

@@ -159,7 +159,7 @@ class BaseProducer{
 			//RandomSample rs;
 			//rs.SetRange(time-5*sigma,time+5*sigma);
 			//double newtime = rs.SampleGaussian(time,sigma,1).at(0);
-			_timecalibTool->setSmearTag("EG300202_DYF17");
+			_timecalibTool->setSmearTag(_timecalibTag);
 			return _timecalibTool->getSmearedTime(time, amp);
 		}
 		void SetTimeSmear(bool t){_timesmear = t;}
@@ -247,7 +247,7 @@ class BaseProducer{
 			//unsigned int ieta = _detIDMap[rhid].i2;
 			//unsigned int iphi = _detIDMap[rhid].i1;
 			//return GetTimeCalibrationFactor(ieta, iphi);
-			_timecalibTool->setSmearTag("EG_EOY_MINI");
+			_timecalibTool->setSmearTag(_timecalibTag);
 			return _timecalibTool->getCalibration(rhid, run);
 		}
 		struct DetIDStruct {
