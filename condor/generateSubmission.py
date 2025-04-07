@@ -30,69 +30,19 @@ def generateSubmission(args):
     reco_date["2017"] = "_17Nov2017"
     reco_date["2017_DEG"] = "_09Aug2019_UL2017"
     reco_date["2018"] = ""
-    if "GJets_HT400to600" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "GJets_HT100to200" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "GJets_HT200to400" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "GJets_HT40to100" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "GJets_HT600toInf" in args.inputSample:
-    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list.txt"
-    #elif "GMSB_L-250_Ctau-10" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-250TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-300_Ctau-400" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-400cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-350_Ctau-0p1" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-0_1cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-350_Ctau-200" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-400_Ctau-800" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-300_Ctau-1000" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-1000cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-300_Ctau-600" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-300TeV_Ctau-600cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-350_Ctau-10" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-350TeV_Ctau-10cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-350_Ctau-800" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v22_GMSB_L-350TeV_Ctau-800cm_AODSIM_RunIIFall17DRPremix.root"
-    #elif "GMSB_L-400_Ctau-200" in args.inputSample:
-    #    inputFile = "GMSB_R17_MET100_v21_GMSB_L-400TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix.root"
-    elif "MET_RunB" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"B"+reco_date[args.year]+"_list.txt"
-    elif "MET_RunC" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"C"+reco_date[args.year]+"_list.txt"
-    elif "MET_RunD" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+"D"+reco_date[args.year]+"_list.txt"
-    #elif "MET_RunE" in args.inputSample:
-    #	inputFile = "MET_R17_MET100_v21_MET_AOD_Run20"+yr+"E_17Nov2017.root"
-    elif "JetHT_RunF" in args.inputSample:
-    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_MET100_"+ver+"_JetHT_AOD_Run20"+yr+"F"+reco_date[args.year]+"_list.txt"
-    elif "QCD_HT1000to1500" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT100to200" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT100to200_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT1500to2000" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT2000toInf" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT300to500" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT300to500_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT500to700" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT500to700_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT700to1000" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT200to300" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT200to300_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "QCD_HT50to100" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_MET100_"+ver+"_QCD_HT50to100_AODSIM_RunIIFall17DRPremix_list.txt"
-    elif "EGamma_RunF" in args.inputSample:
+    if "GJets" in args.inputSample:
+    	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
+    elif "MET" in args.inputSample:
+    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
+    elif "JetHT" in args.inputSample:
+    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+args.sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
+    elif "QCD" in args.inputSample:
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_"+args.sel+"_"+ver+"_QCD_"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
+    elif "EGamma" in args.inputSample:
         if "AL1SelEle" in sel:
-    	    inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+"_list.txt"
+    	    inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+"_list.txt"
         else:
-            inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+"F"+reco_date[args.year+"_DEG"]+"_list.txt"
+            inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "gogoG" in args.inputSample:
         ver = "v24"
         inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
