@@ -65,7 +65,7 @@ class BaseProducer{
 			_mistcuts = false;
 			
 			//set year
-			string name = ch->GetName();
+			string name = ch->GetTitle();
 			if(name.find("2017") != string::npos) _year = 2017;
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;
@@ -78,6 +78,7 @@ class BaseProducer{
 				_timecalibTag = "EG_EOY_MINI";
 			else
 				_timecalibTag = "RunIIFall17DRPremix";
+			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
@@ -125,6 +126,7 @@ class BaseProducer{
 				_timecalibTag = "EG_EOY_MINI";
 			else
 				_timecalibTag = "RunIIFall17DRPremix";
+			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
@@ -247,8 +249,8 @@ class BaseProducer{
 			//unsigned int ieta = _detIDMap[rhid].i2;
 			//unsigned int iphi = _detIDMap[rhid].i1;
 			//return GetTimeCalibrationFactor(ieta, iphi);
-			_timecalibTool->setSmearTag(_timecalibTag);
-			return _timecalibTool->getCalibration(rhid, run);
+			//_timecalibTool->setTag(_timecalibTag);
+			return _timecalibTool->getCalibration(rhid, run, _timecalibTag);
 		}
 		struct DetIDStruct {
                         DetIDStruct() {}
