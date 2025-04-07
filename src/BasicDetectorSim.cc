@@ -30,7 +30,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_rs = RandomSample(); //random sampler
 	_nevts = 1000;
 	//initialize cal - save e, t, n emissions
-	_etamax = 1.479 + _deta/2.; //puts outermost corner at true etamax
+	_etamax = 3.;//1.479 + _deta/2.; //puts outermost corner at true etamax
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
@@ -85,7 +85,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
 	_rs = RandomSample(); //random sampler
-	_etamax = 1.479;
+	_etamax = 3.;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
 	//energy threshold for reconstruction
