@@ -25,7 +25,7 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-            inputFile = "condorSimNtuples_ttbar_defaultv9p5"
+            inputFile = "condorSimNtuples_ttbar_defaultv9p6"
     elif args.inputSample == "QCD":
             inputFile = "condorSimNtuples_QCD_defaultv9p1"
     #elif args.inputSample == "QCD_noSpatialSmear":
@@ -158,6 +158,7 @@ def generateSubmission(args):
     strategyMap["NlnN"] = 0
     strategyMap["N2"] = 1
     strategyMap["GMMonly"] = 2
+    strategyMap["NlnNonAK4"] = 3
 
     flags += ' --strategy '+str(strategyMap[args.strategy])
 
@@ -182,7 +183,7 @@ def main():
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
     parser.add_argument('--output','-o',help='output label')
-    parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly'])
+    parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     #add algorithm parameters - alpha, emAlpha, verbosity, thresh
