@@ -209,6 +209,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_PhiCenter);
 			_hists1D.push_back(BHCJet_TimeCenter);
 			_hists1D.push_back(rhTime);
+			_hists1D.push_back(BHCJet_rhEtaSig);
+			_hists1D.push_back(BHCJet_rhPhiSig);
+			_hists1D.push_back(BHCJet_rhTimeSig);
+			_hists1D.push_back(recoAK4Jet_rhEtaSig);
+			_hists1D.push_back(recoAK4Jet_rhPhiSig);
+			_hists1D.push_back(recoAK4Jet_rhTimeSig);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -368,8 +374,9 @@ class BHCJetSkimmer{
 				njets = _predJets.size();
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
-					dr = CalcJetSize(_predJets[j]);
-					//cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
+					Matrix jetcov = CalcJetCovMat(_predJets[j]);
+					dr = sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+					cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
 					nsubs = _predJets[j].GetNConstituents();
 					_procCats[p].hists1D[0][1]->Fill(nsubs);
 					_procCats[p].hists2D[0][11]->Fill(nsubs,dr);
@@ -380,7 +387,11 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
 				//cout << "pred jet #" << j << " mass " << _predJets[j].mass() << endl;
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
-					if(dr != -999) _procCats[p].hists1D[0][6]->Fill(dr);	
+					_procCats[p].hists1D[0][6]->Fill(dr);
+					_procCats[p].hists1D[0][132]->Fill(sqrt(jetcov.at(0,0)));
+					_procCats[p].hists1D[0][133]->Fill(sqrt(jetcov.at(1,1)));
+					_procCats[p].hists1D[0][134]->Fill(sqrt(jetcov.at(2,2)));
+						
 					_procCats[p].hists1D[0][47]->Fill(sqrt(cov.at(0,0)));	
 					_procCats[p].hists1D[0][48]->Fill(sqrt(cov.at(1,1)));	
 					_procCats[p].hists1D[0][49]->Fill(sqrt(cov.at(2,2)));	
@@ -565,10 +576,13 @@ class BHCJetSkimmer{
 				njets = _recojets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
-					jetsize = CalcJetSize(_recojets[j]);
-					if(p == 0) cout << "calc reco jet size " << j << ": " << jetsize << endl;
+					Matrix jetcov = CalcJetCovMat(_recojets[j]);
+					jetsize = sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
 					if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
 					_procCats[p].hists1D[0][19]->Fill(jetsize);
+					_procCats[p].hists1D[0][135]->Fill(sqrt(jetcov.at(0,0)));
+					_procCats[p].hists1D[0][136]->Fill(sqrt(jetcov.at(1,1)));
+					_procCats[p].hists1D[0][137]->Fill(sqrt(jetcov.at(2,2)));
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
@@ -827,63 +841,34 @@ class BHCJetSkimmer{
 			}
 		}
 	
-		//use subclusters
-		//can change to rhs later
-		double CalcJetSize(const Jet& jet){
-			int nSCs = jet.GetNConstituents();
-			double jetsize;
-			//if no subclusters (ie reco jet), take jet size to be sqrt(etavar + phivar) from discrete covariance 
-			//if(nSCs < 1){
-				Matrix recocov = Matrix(3,3);
-				vector<JetPoint> rhs = jet.GetJetPoints();
-				int nrhs = rhs.size();
-				
-				vector<double> rhv, jetv;
-				jetv = {jet.eta(), jet.phi_std(), jet.time()};
-				double diffi, diffj;
-				for(int r = 0; r < nrhs; r++){
-					rhv = {rhs[r].eta(), rhs[r].phi(), rhs[r].time()};
-					for(int i = 0; i < 3; i++){
-						for(int j = 0; j < 3; j++){
-							//phi wraparound
-							diffi = rhv[i] - jetv[i];
-							diffj = rhv[j] - jetv[j];
-							if(i == 1){
-								if(diffi > 4*atan(1)) diffi -= 8*atan(1);
-							}
-							if(j == 1){
-								if(diffj > 4*atan(1)) diffj -= 8*atan(1);
-							}
-						
-							recocov.SetEntry( recocov.at(i,j) + diffi*diffj, i, j );
-						}
-					}
-				}
-				recocov.mult(recocov,1./nrhs);
-				jetsize = sqrt(recocov.at(0,0) + recocov.at(1,1));
-				/* //old reco jet size definition
-				double maxsize = -999;
-				double size;
-				vector<JetPoint> rhs = jet.GetJetPoints();
-				if(rhs.size() < 2) return maxsize;
-				for(int i = 0; i < rhs.size(); i++){
-					for(int j = i+1; j < rhs.size(); j++){
-						size = dR(rhs[i].eta(), rhs[i].phi(), rhs[j].eta(), rhs[j].phi());
-						//cout << "i " << i << " j " << j << " dr " << dr << " eta " << rhs[i].eta() << " " << rhs[j].eta() << " phi "<< rhs[i].phi() << " " << rhs[j].phi() << endl;
-						if(size > maxsize) maxsize = size;
-					}
-				}	
-				return maxsize;
+		//use rhs - space only 
+		Matrix CalcJetCovMat(const Jet& jet){
+			Matrix recocov = Matrix(3,3);
+			vector<JetPoint> rhs = jet.GetJetPoints();
+			int nrhs = rhs.size();
+			
+			double diffeta, diffphi, difftime;
+			for(int r = 0; r < nrhs; r++){
+				diffeta = rhs[r].eta() - jet.eta();
+				diffphi = rhs[r].phi() - jet.phi();
+				diffphi = acos(cos(diffphi));
+				difftime = rhs[r].t() - jet.t();					
+
+				recocov.SetEntry( recocov.at(0,0) + diffeta*diffeta, 0, 0 );
+				recocov.SetEntry( recocov.at(1,0) + diffphi*diffeta, 1, 0 );
+				recocov.SetEntry( recocov.at(0,1) + diffeta*diffphi, 0, 1 );
+				recocov.SetEntry( recocov.at(2,0) + difftime*diffeta, 2, 0 );
+				recocov.SetEntry( recocov.at(0,2) + diffeta*difftime, 0, 2 );
+				recocov.SetEntry( recocov.at(1,1) + diffphi*diffphi, 1, 1 );
+				recocov.SetEntry( recocov.at(1,2) + diffphi*difftime, 1, 2 );
+				recocov.SetEntry( recocov.at(2,1) + difftime*diffphi, 2, 1 );
+				recocov.SetEntry( recocov.at(2,2) + difftime*difftime, 2, 2 );
 			}
-			else{
-				Matrix cov, mu;
-				jet.GetClusterParams(mu, cov);
-				cout << "pred eta var " << cov.at(0,0) << " phi var " << cov.at(1,1) << endl;
-				jetsize = sqrt(cov.at(0,0) + cov.at(1,1));
-			}	
-				*/
-			return jetsize;
+			recocov.mult(recocov,1./(double)nrhs);
+			cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
+			return recocov;
 		}
+	
 	
 
 		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
@@ -1137,15 +1122,15 @@ class BHCJetSkimmer{
 		TH1D* predJet_subClustertimeEtaCov = new TH1D("BHCJet_subClustertimeEtaCov","BHCJet_subClustertimeEtaCov",50,-0.05,0.05);
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",50,-0.05,0.05);
-		//18
+		//18 - n reco AK4 jets
 		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",10,0,10);
-		//19
+		//19 - reco AK4 jet size
 		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,1);
-		//20
+		//20 - reco AK4 jet energy
 		TH1D* recoJet_energy = new TH1D("recoAK4Jet_energy","recoAK4Jet_energy",25,0,500);
-		//21
+		//21 - reco AK4 jet pt
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
-		//22
+		//22 - reco AK4 jet mass
 		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,50);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoAK4Gen","jetGenE_sigmaDeltaPtOvJetGenE_recoAK4Gen",4,&xbins_recoGenPt[0]);
@@ -1365,6 +1350,18 @@ class BHCJetSkimmer{
 		TH1D* BHCJet_TimeCenter = new TH1D("BHCJet_TimeCenter","BHCJet_TimeCenter",25,-1,1);
 		//131 - rh time
 		TH1D* rhTime = new TH1D("rhTime","rhTime",25,-10,10);
+		//132 - BHC jet rh eta sig
+		TH1D* BHCJet_rhEtaSig = new TH1D("BHCJet_rhEtaSig","BHC_rhEtaSig",50,0,1);
+		//133 - BHC jet rh phi sig
+		TH1D* BHCJet_rhPhiSig = new TH1D("BHCJet_rhPhiSig","BHC_rhPhiSig",50,0,1);
+		//134 - BHC jet rh time sig
+		TH1D* BHCJet_rhTimeSig = new TH1D("BHCJet_rhTimeSig","BHC_rhTimeSig",50,0,50);
+		//135 - recoAK4 jet rh eta sig
+		TH1D* recoAK4Jet_rhEtaSig = new TH1D("recoAK4Jet_rhEtaSig","recoAK4_rhEtaSig",50,0,1);
+		//136 - recoAK4 jet rh phi sig
+		TH1D* recoAK4Jet_rhPhiSig = new TH1D("recoAK4Jet_rhPhiSig","recoAK4_rhPhiSig",50,0,1);
+		//137 - BHC jet rh time sig
+		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_rhTimeSig","recoAK4_rhTimeSig",50,0,50);
 	
 
 		//2D plots
