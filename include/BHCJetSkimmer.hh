@@ -848,23 +848,26 @@ class BHCJetSkimmer{
 			int nrhs = rhs.size();
 			
 			double diffeta, diffphi, difftime;
+			double wtot = 0;
 			for(int r = 0; r < nrhs; r++){
 				diffeta = rhs[r].eta() - jet.eta();
 				diffphi = rhs[r].phi() - jet.phi();
 				diffphi = acos(cos(diffphi));
 				difftime = rhs[r].t() - jet.t();					
 
-				recocov.SetEntry( recocov.at(0,0) + diffeta*diffeta, 0, 0 );
-				recocov.SetEntry( recocov.at(1,0) + diffphi*diffeta, 1, 0 );
-				recocov.SetEntry( recocov.at(0,1) + diffeta*diffphi, 0, 1 );
-				recocov.SetEntry( recocov.at(2,0) + difftime*diffeta, 2, 0 );
-				recocov.SetEntry( recocov.at(0,2) + diffeta*difftime, 0, 2 );
-				recocov.SetEntry( recocov.at(1,1) + diffphi*diffphi, 1, 1 );
-				recocov.SetEntry( recocov.at(1,2) + diffphi*difftime, 1, 2 );
+				wtot += rhs[r].E();
+
+				recocov.SetEntry( recocov.at(0,0) + rhs[r].E()*diffeta*diffeta, 0, 0 );
+				recocov.SetEntry( recocov.at(1,0) + rhs[r].E()*diffphi*diffeta, 1, 0 );
+				recocov.SetEntry( recocov.at(0,1) + rhs[r].E()*diffeta*diffphi, 0, 1 );
+				recocov.SetEntry( recocov.at(2,0) + rhs[r].E()*difftime*diffeta, 2, 0 );
+				recocov.SetEntry( recocov.at(0,2) + rhs[r].E()*diffeta*difftime, 0, 2 );
+				recocov.SetEntry( recocov.at(1,1) + rhs[r].E()*diffphi*diffphi, 1, 1 );
+				recocov.SetEntry( recocov.at(1,2) + rhs[r].E()*diffphi*difftime, 1, 2 );
 				recocov.SetEntry( recocov.at(2,1) + difftime*diffphi, 2, 1 );
 				recocov.SetEntry( recocov.at(2,2) + difftime*difftime, 2, 2 );
 			}
-			recocov.mult(recocov,1./(double)nrhs);
+			recocov.mult(recocov,1./(double)wtot);
 			cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
 			return recocov;
 		}
