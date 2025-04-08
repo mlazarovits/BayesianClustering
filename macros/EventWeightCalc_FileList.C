@@ -115,12 +115,12 @@ int EventWeightCalc_FileList(string selection = ""){
 		        base->GetEntry(i);
 		        cout << "\33[2K\r"<< "evt: " << i << " of " << nEvts << flush;
 			jet_prod->GetTrueJets(jets, i);
-		        if(jets.size() >= 1){ nSelEvts_jet++; }
 		
 			pho_prod->GetTruePhotons(phos, i);
 			//add in event level selection (ie min ht, etc.)
 			//do iso bkg evt selection in photons to compare data/MC
                 	if(isoBkgSel){
+		        	if(jets.size() >= 1){ nSelEvts_jet++; }
                         	//L1 seed
                         	if(!base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) continue;
                         	//cout << "passed L1 seed" << endl;     
