@@ -91,33 +91,33 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	string canname = can->GetName();
 
 	//reco -> AK4
-	string newstr = "AK4";
-	if(xtit.find("Reco") != string::npos){
-		string oldstr = "Reco";
-		stringReplaceAll(xtit,oldstr,newstr);
-	}
-	if(xtit.find("reco") != string::npos){
-		string oldstr = "reco";
-		stringReplaceAll(xtit,oldstr,newstr);
-	}
-	if(plot_title.find("Reco") != string::npos){
-		string oldstr = "Reco";
-		stringReplaceAll(plot_title,oldstr,newstr);
-	}
-	if(plot_title.find("reco") != string::npos){
-		string oldstr = "reco";
-		stringReplaceAll(plot_title,oldstr,newstr);
-	}
-	if(canname.find("Reco") != string::npos){
-		string oldstr = "Reco";
-		stringReplaceAll(canname,oldstr,newstr);
-		can->SetName(canname.c_str());
-	}
-	if(canname.find("reco") != string::npos){
-		string oldstr = "reco";
-		stringReplaceAll(canname,oldstr,newstr);
-		can->SetName(canname.c_str());
-	}
+	//string newstr = "AK4";
+	//if(xtit.find("Reco") != string::npos){
+	//	string oldstr = "Reco";
+	//	stringReplaceAll(xtit,oldstr,newstr);
+	//}
+	//if(xtit.find("reco") != string::npos){
+	//	string oldstr = "reco";
+	//	stringReplaceAll(xtit,oldstr,newstr);
+	//}
+	//if(plot_title.find("Reco") != string::npos){
+	//	string oldstr = "Reco";
+	//	stringReplaceAll(plot_title,oldstr,newstr);
+	//}
+	//if(plot_title.find("reco") != string::npos){
+	//	string oldstr = "reco";
+	//	stringReplaceAll(plot_title,oldstr,newstr);
+	//}
+	//if(canname.find("Reco") != string::npos){
+	//	string oldstr = "Reco";
+	//	stringReplaceAll(canname,oldstr,newstr);
+	//	can->SetName(canname.c_str());
+	//}
+	//if(canname.find("reco") != string::npos){
+	//	string oldstr = "reco";
+	//	stringReplaceAll(canname,oldstr,newstr);
+	//	can->SetName(canname.c_str());
+	//}
 
 
 	string legentry;
@@ -1238,6 +1238,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 					cout << "got hist " << h->GetName() << endl;
 					string title = h->GetTitle();
 					string histname = h->GetName();
+					if(histname.find("rStat") != string::npos) continue;	
 					if(title.find(methods[m]) == string::npos) h->SetTitle((name).c_str());
 					histstot.push_back(h);
 				}
@@ -1502,30 +1503,34 @@ void HistFormatSim(string file){
 	//decay types
 	vector<string> types = {"b_","qg","lep"};
 	vector<string> typesFullDecay = {"fullHad","semiLep","fullLep"};
-	vector<string> jettypes = {"genAK4","BHC"};
+	vector<string> jettypes = {"genAK4","recoAK4","BHC"};
+	vector<string> jettypes_recoBHC = {"recoAK4","BHC"};
+	vector<string> jettypes_genBHC = {"genAK4","BHC"};
 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); //need to match titles
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); //need to match titles
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_TimeCenter"); //need to match titles
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_TimeCenter"); 
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_energy"); //hist bounds off
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_pt"); //hist bounds off
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_nDiff"); //not filled?
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_dR");
 	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_Eratio");
-	//MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); //change to method after name fix
-	ProcStackHists(file, procs, "genAK4", oname, "nJets");
-	ProcStackHists(file, procs, "BHC", oname, "nJets");
+	MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "jetSize"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "rhEtaSig"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "rhPhiSig"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "rhTimeSig"); 
 	ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
-	ProcStackHists(file, procs, "BHC", oname, "nSubclusters");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterEtaCenter");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterPhiCenter");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterTimeCenter");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterEtaSig");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterPhiSig");
-	ProcStackHists(file, procs, "BHC", oname, "subClusterTimeSig");
-	ProcStackHists(file, procs, "BHC", oname, "subClusteretaPhiCov");
-	ProcStackHists(file, procs, "BHC", oname, "subClustertimeEtaCov");
-	ProcStackHists(file, procs, "BHC", oname, "subClustertimePhiCov");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclusters");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterPhiCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaSig");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterPhiSig");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeSig");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusteretaPhiCov");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClustertimeEtaCov");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClustertimePhiCov");
 
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
