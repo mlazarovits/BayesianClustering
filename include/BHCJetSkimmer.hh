@@ -1091,7 +1091,7 @@ class BHCJetSkimmer{
 		//0 - n bhc jets
 		TH1D* nClusters = new TH1D("BHCJet_nJets","BHCJet_nJets",15,0,15);
 		//1 - n subclusters per bhc jets
-		TH1D* nSubclusters = new TH1D("BHCJet_nSubclusters","BHCJet_nSubclusters",10,0,10);
+		TH1D* nSubclusters = new TH1D("BHCJet_nSubclusters","BHCJet_nSubclusters",30,0,30);
 		//2 - bhc subcluster energy
 		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,250);
 		//3 - bhc subcluster eta center
@@ -1244,7 +1244,7 @@ class BHCJetSkimmer{
 		//76 - n BHC jets, tt fully lep
 		TH1D* BHC_nJets_fullLep = new TH1D("BHC_nJets_fullLep","BHC_nJets_fullLep",10,0,10);
 		//77 - n GMM clusters in reco jets
-		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclusters","recoAK4Jet_nSubclusters",20,0,20);
+		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclusters","recoAK4Jet_nSubclusters",30,0,30);
 		//78 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,250);
 		//79 - time center of GMM cluster from reco jets
@@ -1391,7 +1391,7 @@ class BHCJetSkimmer{
 		//10 - pred jet pt vs pred jet jetSize
 		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,1);
 		//11 - pred jet n subclusters vs jet size
-		TH2D* prednSubclusters_jetSize = new TH2D("BHCnSubclusters_jetSize","BHCnSubclusters_jetSize;nSubclusters;jetsize",10,0,10,50,0,1);
+		TH2D* prednSubclusters_jetSize = new TH2D("BHCnSubclusters_jetSize","BHCnSubclusters_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
 		//12 - reco dr match to gen b's
 		TH2D* recoJet_genOvRecoE_dR_b = new TH2D("recoAK4Jet_genOvRecoE_dR_b","recoAK4Jet_genOvRecoE_dR_b;ratioE;dR",25,0,5,25,0,4);
 		//13 - bhc dr match to gen b's
@@ -1409,9 +1409,9 @@ class BHCJetSkimmer{
 		//19 - BHC dr jet-quark match vs W energy (b's excluded)
 		TH2D* BHCJet_dRquark_Wenergy = new TH2D("BHCJet_dRquark_Wenergy","BHCJet_dRquark_Wenergy;dRquark;Wenergy",25,0,4,25,0,1000);
 		//20 - # rhs vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",100,0,100,25,0,25);
+		TH2D* AK4Jet_nRhs_nSubclusters = new TH2D("recoAK4Jet_nRhs_nSubclusters","recoAK4Jet_nRhs_nSubclusters;nRhs;nSubclusters;a.u.",100,0,100,30,0,30);
 		//21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("recoAK4Jet_nGenParts_nSubclusters","recoAK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,15,0,15);
+		TH2D* AK4Jet_nGenParts_nSubclusters = new TH2D("recoAK4Jet_nGenParts_nSubclusters","recoAK4Jet_nGenParts_nSubclusters;nGenParts;nSubclusters;a.u.",40,0,40,30,0,30);
 		//22 - gen particle p vs gen jet p for AK4 jets
 		TH2D* AK4Jet_genP_genJetP = new TH2D("recoAK4Jet_genP_genJetP","recoAK4Jet_genP_genJetP;genP;genJetP;a.u.",50,0,200,50,0,500);
 		//23 - gen particle pt vs gen jet pt for AK4 jets
@@ -1425,9 +1425,9 @@ class BHCJetSkimmer{
 		//27 - gen jet pt vs gen particle pt/gen jet pt for AK4 jets
 		TH2D* AK4Jet_genJetPt_genPartJetPtRatio = new TH2D("recoAK4Jet_genJetPt_genPartJetPtRatio","recoAK4Jet_genJetPt_genPartJetPtRatio;genJetPt;genPartJetPtRatio;a.u.",50,0,500,50,0,1);
 		//28 - gen jet pt vs # subclusters
-		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("recoAK4Jet_genJetPt_nSubclusters","recoAK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,10,0,10);	
+		TH2D* AK4Jet_genJetPt_nSubclusters = new TH2D("recoAK4Jet_genJetPt_nSubclusters","recoAK4Jet_genJetPt_nSubclusters;genJetPt;nSubclusters",50,0,500,30,0,30);	
 		//29 - # gen particles w/ pt > 5 gev from gen-matched jet vs # subclusters for AK4 jets
-		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("recoAK4Jet_nGenPartsptge5_nSubclusters","recoAK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",20,0,20,20,0,20);
+		TH2D* AK4Jet_nGenPartsptge5_nSubclusters = new TH2D("recoAK4Jet_nGenPartsptge5_nSubclusters","recoAK4Jet_nGenPartsptge5_nSubclusters;nGenPartsptge5;nSubclusters;a.u.",20,0,20,30,0,30);
 		//30 - geo energy avg vs difference in time for adjacent crystals in same obj w/in 10% energy 
 		TH2D* geoEavg_diffDeltaTime_adjRhs = new TH2D("geoEavg_diffDeltaTime_adjRhs","geoEavg_diffDeltaTime_adjRhs;geoEavg;diffDeltaTime;a.u.",xbins.size()-1,&xbins[0],25,-5,5);
 		//31 - eta-phi cov vs time-eta cov 
