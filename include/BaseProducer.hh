@@ -77,7 +77,8 @@ class BaseProducer{
 			if(_data)
 				_timecalibTag = "EG_EOY_MINI";
 			else
-				_timecalibTag = "RunIIFall17DRPremix";
+				_timecalibTag = "DYJetsToLLRunIIFall17AOD";
+				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
 			
@@ -125,7 +126,8 @@ class BaseProducer{
 			if(_data)
 				_timecalibTag = "EG_EOY_MINI";
 			else
-				_timecalibTag = "RunIIFall17DRPremix";
+				_timecalibTag = "DYJetsToLLRunIIFall17AOD";
+				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
 			
@@ -245,11 +247,6 @@ class BaseProducer{
 		};
 		
 		double GetTimeCalibrationFactor(unsigned int rhid, int run){
-			//transform from (rh) -> (ieta, iphi)
-			//unsigned int ieta = _detIDMap[rhid].i2;
-			//unsigned int iphi = _detIDMap[rhid].i1;
-			//return GetTimeCalibrationFactor(ieta, iphi);
-			//_timecalibTool->setTag(_timecalibTag);
 			return _timecalibTool->getCalibration(rhid, run, _timecalibTag);
 		}
 		struct DetIDStruct {
