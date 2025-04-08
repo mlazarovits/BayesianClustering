@@ -215,6 +215,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jet_rhEtaSig);
 			_hists1D.push_back(recoAK4Jet_rhPhiSig);
 			_hists1D.push_back(recoAK4Jet_rhTimeSig);
+			_hists1D.push_back(recoAK4Jet_TimeCenter);
+			_hists1D.push_back(recoAK4Jet_EtaCenter);
+			_hists1D.push_back(recoAK4Jet_PhiCenter);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -586,8 +589,12 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
 					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
 					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
+					_procCats[p].hists1D[0][138]->Fill(_recojets[j].time());
+					_procCats[p].hists1D[0][139]->Fill(_recojets[j].eta());
+					_procCats[p].hists1D[0][140]->Fill(_recojets[j].phi());
 					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
-					if(jetsize != -999) _procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
+					_procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
+					
 					//fill subcluster hists
 					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
 					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
@@ -1318,7 +1325,7 @@ class BHCJetSkimmer{
 		//113 - gen particle energy
 		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",25,0,500);
 		//114 - gen AK4 jet eta at detector
-		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-1.6,1.6);
+		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-3.2,3.2);
 		//115 - gen AK4 jet phi at detector
 		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_PhiCenter","genAK4Jet_PhiCenter",25,-0.2,6.4);
 		//116 - gen AK4 jet time at detector
@@ -1365,6 +1372,12 @@ class BHCJetSkimmer{
 		TH1D* recoAK4Jet_rhPhiSig = new TH1D("recoAK4Jet_rhPhiSig","recoAK4_rhPhiSig",50,0,1);
 		//137 - BHC jet rh time sig
 		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_rhTimeSig","recoAK4_rhTimeSig",50,0,5);
+		//138 - reco AK4 jet center
+		TH1D* recoAK4Jet_TimeCenter = new TH1D("recoAK4Jet_TimeCenter","recoAK4Jet_TimeCenter",25,-1,1);
+		//139 - reco AK4 jet eta at detector
+		TH1D* recoAK4Jet_EtaCenter = new TH1D("recoAK4Jet_EtaCenter","recoAK4Jet_EtaCenter",25,-3.2,3.2);
+		//140 - reco AK4 jet phi at detector
+		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,-0.2,6.4);
 	
 
 		//2D plots
