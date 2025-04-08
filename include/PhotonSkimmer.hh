@@ -1285,11 +1285,11 @@ class PhotonSkimmer : public BaseSkimmer{
                 //38 - time sigma vs. timeEtaCov
                 TH2D* timeSig_timeEtaCov = new TH2D("timeSig_timeEtaCov","timeSig_timeEtaCov;timeSig;timeEtaCov",25,0,1.,25,-1,1);
 		//39 - etaphi cov vs time center
-		TH2D* timeCenter_etaPhiCov = new TH2D("timeCenter_etaPhiCov","timeCenter_etaPhiCov;timeCenter;timephi cov",25,-10,10,25,-0.1,0.1);
+		TH2D* timeCenter_etaPhiCov = new TH2D("timeCenter_etaPhiCov","timeCenter_etaPhiCov;timeCenter;timephi cov",25,-2,2,25,-0.1,0.1);
 		//40 - timeeta cov vs time center
-		TH2D* timeCenter_timeEtaCov = new TH2D("timeCenter_timeEtaCov","timeCenter_timeEtaCov;timeCenter;timeeta cov",25,-10,10,25,-0.1,0.1);
+		TH2D* timeCenter_timeEtaCov = new TH2D("timeCenter_timeEtaCov","timeCenter_timeEtaCov;timeCenter;timeeta cov",25,-2,2,25,-0.1,0.1);
 		//41 - timeeta cov vs time center
-		TH2D* timeCenter_timePhiCov = new TH2D("timeCenter_timePhiCov","timeCenter_timePhiCov;timeCenter;time center",25,-10,10,25,-0.1,0.1);
+		TH2D* timeCenter_timePhiCov = new TH2D("timeCenter_timePhiCov","timeCenter_timePhiCov;timeCenter;time center",25,-2,2,25,-0.1,0.1);
 		//42 - CMS smaj vs cms sigma_t
 		TH2D* cmsSmaj_cmsTimeSig = new TH2D("noESmaj_noETimeSig","noESmaj_noETimeSig;noE_Smaj;noE_timeSig",25,0.,0.01,25,0,10);
 		//43 - CMS smin vs cms sigma_t

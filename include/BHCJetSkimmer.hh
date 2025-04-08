@@ -1358,13 +1358,13 @@ class BHCJetSkimmer{
 		//133 - BHC jet rh phi sig
 		TH1D* BHCJet_rhPhiSig = new TH1D("BHCJet_rhPhiSig","BHC_rhPhiSig",50,0,1);
 		//134 - BHC jet rh time sig
-		TH1D* BHCJet_rhTimeSig = new TH1D("BHCJet_rhTimeSig","BHC_rhTimeSig",50,0,50);
+		TH1D* BHCJet_rhTimeSig = new TH1D("BHCJet_rhTimeSig","BHC_rhTimeSig",50,0,5);
 		//135 - recoAK4 jet rh eta sig
 		TH1D* recoAK4Jet_rhEtaSig = new TH1D("recoAK4Jet_rhEtaSig","recoAK4_rhEtaSig",50,0,1);
 		//136 - recoAK4 jet rh phi sig
 		TH1D* recoAK4Jet_rhPhiSig = new TH1D("recoAK4Jet_rhPhiSig","recoAK4_rhPhiSig",50,0,1);
 		//137 - BHC jet rh time sig
-		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_rhTimeSig","recoAK4_rhTimeSig",50,0,50);
+		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_rhTimeSig","recoAK4_rhTimeSig",50,0,5);
 	
 
 		//2D plots
