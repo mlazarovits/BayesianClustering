@@ -218,6 +218,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jet_TimeCenter);
 			_hists1D.push_back(recoAK4Jet_EtaCenter);
 			_hists1D.push_back(recoAK4Jet_PhiCenter);
+			_hists1D.push_back(recoAK4Jet_nSubclustersEvt);
+			_hists1D.push_back(BHCJet_nSubclustersEvt);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -252,6 +254,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(geoEavg_diffDeltaTime_adjRhs);
 			_hists2D.push_back(recoJet_subClusteretaPhiCov_timeEtaCov);
 			_hists2D.push_back(recoJet_subClusteretaPhiCovNorm_timeEtaCovNorm);
+			_hists2D.push_back(recoAK4Jet_nJets_jetSize);
+			_hists2D.push_back(BHCJet_nJets_jetSize);
 	
 
 		}
@@ -391,6 +395,7 @@ class BHCJetSkimmer{
 				//cout << "pred jet #" << j << " mass " << _predJets[j].mass() << endl;
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
 					_procCats[p].hists1D[0][6]->Fill(dr);
+					_procCats[p].hists2D[0][34]->Fill((double)_predJets.size(), jetsize);
 					_procCats[p].hists1D[0][132]->Fill(sqrt(jetcov.at(0,0)));
 					_procCats[p].hists1D[0][133]->Fill(sqrt(jetcov.at(1,1)));
 					_procCats[p].hists1D[0][134]->Fill(sqrt(jetcov.at(2,2)));
@@ -594,6 +599,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][140]->Fill(_recojets[j].phi());
 					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
 					_procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
+					_procCats[p].hists2D[0][33]->Fill((double)_recojets.size(), jetsize);
 					
 					//fill subcluster hists
 					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
@@ -1353,7 +1359,7 @@ class BHCJetSkimmer{
 		//127 - E ratio bw bhc jet and gen particle its exclusively matched to - bhc jet energy/gen particle energy
 		TH1D* BHCJetParticle_Eratio = new TH1D("BHCJet_genParticle_Eratio","BHCJet_genParticle_Eratio",25,0,2);
 		//128 - bhc jet eta center
-		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-1.8,1.8);
+		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-3.2,3.2);
 		//129 - bhc jet phi center
 		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,-0.1,6.3);
 		//130 - bhc jet center
@@ -1378,6 +1384,10 @@ class BHCJetSkimmer{
 		TH1D* recoAK4Jet_EtaCenter = new TH1D("recoAK4Jet_EtaCenter","recoAK4Jet_EtaCenter",25,-3.2,3.2);
 		//140 - reco AK4 jet phi at detector
 		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,-0.2,6.4);
+		//141 - reco AK4 jet # subclusters in event
+		TH1D* recoAK4Jet_nSubclustersEvt = new TH1D("recoAK4Jet_nSubclustersEvt","recoAK4Jet_nSubclustersEvt",30,0,30);
+		//142 - bhc jet # subclusters in event
+		TH1D* BHCJet_nSubclustersEvt = new TH1D("BHCJet_nSubclustersEvt","BHCJet_nSubclustersEvt",30,0,30);
 	
 
 		//2D plots
@@ -1447,6 +1457,10 @@ class BHCJetSkimmer{
 		TH2D* recoJet_subClusteretaPhiCov_timeEtaCov = new TH2D("recoAK4Jet_subClusteretaPhiCov_timeEtaCov","recoAK4Jet_subClusteretaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",20,-0.0005,0.0005,20,-0.2,0.2);
 		//32 - eta-phi cov norm vs time-eta cov norm 
 		TH2D* recoJet_subClusteretaPhiCovNorm_timeEtaCovNorm = new TH2D("recoAK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm","recoAK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm;etaPhiCovNorm;timeEtaCovNorm",20,-1.,1.,20, -1, 1.);
+		//33 - reco AK4 jet multiplicity vs jet size
+		TH2D* recoAK4Jet_nJets_jetSize = new TH2D("recoAK4Jet_nJets_jetSize","recoAK4Jet_nJets_jetSize;nJets;jetSize",10,0,10,50,0,1);
+		//34 - BHC jet multiplicity vs jet size
+		TH2D* BHCJet_nJets_jetSize = new TH2D("BHCJet_nJets_jetSize","BHCJet_nJets_jetSize;nJets;jetSize",15,0,15,50,0,1);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
