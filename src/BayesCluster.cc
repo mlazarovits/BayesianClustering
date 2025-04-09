@@ -49,6 +49,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
 cout << "n starting pts " << n << endl;
+if(_verb > 3)cout <<  "original pts " << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
@@ -56,14 +57,12 @@ cout << "n starting pts " << n << endl;
 			cout << "return" << endl;
 			return _trees;
 		}
-		//_points[i].Print();
+		if(_verb > 3){cout << i <<" "; _points[i].Print();}
 		mt->AddLeaf(&_points[i].at(0));
 	}
-	//cout << "# clusters " << mt->GetNAllClusters() << endl;
-	//cout << "------------------------------------------" << endl;
+	if(_verb > 0) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
-	if(_verb > 0) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
 	
@@ -74,7 +73,7 @@ cout << "n starting pts " << n << endl;
 	//structure is typdef'ed in header
 	CompareMap ProbMap, DistMap;
 	InvCompareMap InvDistMap;
-	//fill map with initial potential clusterings
+	//fill map with initial potential clusterings - including mirror pts added to MergeTree
 	for(int i = 0; i < n; i++){
 		_add_entry_to_maps(i, ProbMap, DNN);
 		_add_entry_to_maps(i, DistMap, DNN, false);	
@@ -262,12 +261,20 @@ cout << "n starting pts " << n << endl;
 		_trees.push_back(trees[i]);
 		//cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
 		//cout << " points" << endl; trees[i]->model->GetData()->Print();
+		cout << " tree has subclusters " << endl;
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
 			params = trees[i]->model->GetLHPosteriorParameters(k);
-			//cout << " k " << k << " center " << endl; params["mean"].Print();
+			cout << " k " << k << " center " << endl; params["mean"].Print();
 			//cout << "cov " << endl; params["cov"].Print();
 		}
 		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
+		if(trees[i]->mirror != nullptr){
+			cout << " tree has mirror node with subclusters " << endl;
+			for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
+				params = trees[i]->mirror->model->GetLHPosteriorParameters(k);
+				cout << " k " << k << " center " << endl; params["mean"].Print();
+			}
+		}
 	}
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
@@ -458,7 +465,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
 	//tresStoch *= gev;
 	//needs to be before SetData bc thats when the measurement errors are set
-	if(_verb > 0) cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+	if(_verb > 6) cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 	gmm->SetData(points);
 	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();

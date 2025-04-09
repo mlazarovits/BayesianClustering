@@ -244,7 +244,17 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
 	_idx = 999;
 	_ensure_valid_rap_phi();
 
+	_phi = params["mean"].at(1,0);
 	_mu = params["mean"];
+	//put phi on 02pi
+	//if pt is negative
+	double math_pi = acos(-1);
+	if(_phi < 0){
+		_phi = _phi + 2*math_pi;
+	}
+	//if pt is geq 2*pi
+	else if(_phi >= 2*math_pi) _phi = _phi - 2*math_pi;
+	_mu.SetEntry(_phi,1,0);
 	_cov = params["cov"];
 	_pi = pi;
 
@@ -301,11 +311,11 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	//	_E += subcl.E(); //set from rhs
 	
 		//_mu.add(params["mean"]);
-cout << "subcl #" << k << " eta " << subcl.eta() << " phi " << subcl.phi() << " params eta " << params["mean"].at(0,0) << " phi " << params["mean"].at(1,0) << endl;	
 		BayesPoint pt(3);
-		pt.SetValue(params["mean"].at(0,0),0);	
-		pt.SetValue(params["mean"].at(1,0),1);	
-		pt.SetValue(params["mean"].at(2,0),2);	
+		pt.SetValue(subcl.eta(),0);	
+		pt.SetValue(subcl.phi(),1);	
+		pt.SetValue(subcl.time(),2);	
+cout << "subcl #" << k << " center" << endl; pt.Print();
 		means += pt;
 		//_eta += subcl.eta();
 		//_phi += subcl.phi();
@@ -313,11 +323,6 @@ cout << "subcl #" << k << " eta " << subcl.eta() << " phi " << subcl.phi() << " 
 
 		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
 	}
-	//_eta /= double(nsubcl);
-	//_phi /= double(nsubcl);
-	//_t /= double(nsubcl);
-
-	//_mu.mult(_mu,1/double(nsubcl));
 	BayesPoint mean = means.mean();
 	mean.SetValue(means.CircularMean(1),1);
 	_mu = Matrix(mean);

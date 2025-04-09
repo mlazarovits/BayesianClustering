@@ -124,6 +124,7 @@ DnnPlane::DnnPlane(const std::vector<PointCollection>& pc, MergeTree* mt,
   for (int i = 0; i < n; i++) {
     eta = pc[i].mean().at(0);
     phi = pc[i].CircularMean(1);
+    //cout << "inserting point - eta " << eta << " phi " << phi << endl;
     sv.vertex = 
        _TR.insert(CPoint(eta, phi));
     // check if we are dealing with coincident vertices
@@ -748,19 +749,18 @@ if(_verbose) cout << "SetNearest - start" << endl;
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 	if(_verbose){ cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
-cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
+cout << "this vertex pts" << endl; _supervertex[j].n->points->Print(); 
 cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       // find distance between j and its Voronoi neighbour (vc)
-      if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
+      if(_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
 
- //cout << "# clusters for " << vc->info().val() << ": "<< _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
       // check if j is closer to vc than vc's currently registered
       // nearest neighbour (and update things if it is)
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
 	nearest = vc; 
-      	if (_verbose) cout << "nearer ";
+      	if(_verbose) cout << "nearer ";
       } 
-      if (_verbose) cout << vc->point() << "; "<< dist << endl;
+      if(_verbose) cout << vc->point() << "; "<< dist << endl;
     
 	//do the same as above but with probability instead of geometric distance
 	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
@@ -770,6 +770,7 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
        cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
        cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
        cout << "this rk: " << rk << " best rk so far: " << maxrk << endl;
+       cout << "this dist: " << dist << " best dist so far: " << mindist << "\n" << endl;
      }
  //cout << "# clusters: " << _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
     }
@@ -780,7 +781,7 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
   _supervertex[j].MaxRk = maxrk;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
-if(_verbose) cout << "SetNearest - done for vertex " << j << " with best rk " << maxrk << " with node " << best_vtx->info().val() << "  - end\n" << endl;
+if(_verbose) cout << "SetNearest - done for vertex " << j << " with best rk " << maxrk  << " for node " << best_vtx->info().val() << " and best dist " << _supervertex[j].NNdistance << " " << mindist << " for node " << _supervertex[j].NNindex << "  - end\n\n" << endl;
 //cout << "SetNearest - # clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 }
 

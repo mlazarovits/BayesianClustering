@@ -40,7 +40,7 @@ class GaussianMixture : public BasePDFMixture{
 			m_mean0 = params["mean"];
 			m_meanBeta0 = Matrix(m_dim, 1);
 			m_meanBeta0.mult(m_mean0, m_beta0);
-			if(_verb > 1){
+			if(_verb > 6){
 				cout << "Prior Parameters" << endl;
 				cout << "beta0" << endl;
 				params["scale"].Print();

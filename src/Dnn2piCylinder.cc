@@ -206,6 +206,7 @@ cout << "this node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
 cout << "this node is mirror? " << x->ismirror << " mirrored node is mirror? " << x->mirror->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
+cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
     _cylinder_index_of_plane_vertex.push_back(ic);
     //add new mirror node to be clustered
     _merge_tree->Insert(x);
@@ -316,8 +317,8 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
 if(_verbose)
 cout << "adding points" << endl;
   for (unsigned int i=0; i < points_to_add.size(); i++) {
-  if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt #" << i << endl;
 	indices_added.push_back(_mirror_info.size());
+  if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt to add #" << i << " main idx " << indices_added[i] << endl;
     _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
   }
 

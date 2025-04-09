@@ -395,7 +395,7 @@ class BHCJetSkimmer{
 				//cout << "pred jet #" << j << " mass " << _predJets[j].mass() << endl;
 					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
 					_procCats[p].hists1D[0][6]->Fill(dr);
-					_procCats[p].hists2D[0][34]->Fill((double)_predJets.size(), jetsize);
+					_procCats[p].hists2D[0][34]->Fill((double)_predJets.size(), dr);
 					_procCats[p].hists1D[0][132]->Fill(sqrt(jetcov.at(0,0)));
 					_procCats[p].hists1D[0][133]->Fill(sqrt(jetcov.at(1,1)));
 					_procCats[p].hists1D[0][134]->Fill(sqrt(jetcov.at(2,2)));
@@ -417,7 +417,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][129]->Fill(jet_mu.at(1,0));
 					_procCats[p].hists1D[0][130]->Fill(jet_mu.at(2,0));
 
-				cout << "pred jet #" << j << " phi 1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
+				//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
 					//get subcluster information
 					for(auto subcl : _predJets[j].GetConstituents()){
 						Matrix subcl_cov = subcl.GetCovariance();
@@ -437,7 +437,7 @@ class BHCJetSkimmer{
 						//cphi = params["mean"].at(1,0);
 						//ctime = params["mean"].at(2,0);
 						//norm += params["pi"].at(0,0);
-						
+					cout << "pred jet subcluster phi " << subcl.phi() << " phi std " << subcl.phi_std() << " phi 02pi " << subcl.phi_02pi() << endl;	
 						_procCats[p].hists1D[0][3]->Fill(subcl.eta());
 						_procCats[p].hists1D[0][4]->Fill(subcl.phi());
 						_procCats[p].hists1D[0][5]->Fill(subcl.time());
