@@ -96,6 +96,7 @@ void BHCJetSkimmer::Skim(){
 		_prod->GetGenParticles(_genparts, i);
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
+		int nsubcls_tot = 0;
 		///do GMM only option
 		for(int j = 0; j < _recojets.size(); j++){
 			 _recojets[j].GetJets(rhs);
@@ -123,6 +124,7 @@ void BHCJetSkimmer::Skim(){
 			//set constituents
 			vector<double> norms;
 			gmm->GetNorms(norms);
+			nsubcls_tot += gmm->GetNClusters();
 			for(int k = 0; k < gmm->GetNClusters(); k++){
 				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
 				_recojets[j].AddConstituent(subcl);
@@ -140,6 +142,9 @@ void BHCJetSkimmer::Skim(){
 			}
 		
 			rhs.clear();
+		}
+		for(int p = 0; p < _procCats.size(); p++){
+			_procCats[p].hists1D[0][141]->Fill(nsubcls_tot);
 		}
 		FillRecoJetHists();
 		//only does above
@@ -213,11 +218,16 @@ void BHCJetSkimmer::Skim(){
 		CleanTrees(trees);
 		//transform trees (nodes) to jets
 		TreesToJets();
-		//fill model histograms with trees
-		//for subclusters TODO - move the hists filled in FillModelHists to FillPredJetsHists
-		//FillModelHists();	
 		//fill pred jet hists with jets
 		FillPredJetHists();
+		nsubcls_tot = 0;
+		for(int p = 0; p < _procCats.size(); p++){
+			for(int j = 0; j < _predJets.size(); j++){
+				nsubcls_tot += _predJets[j].GetNConstituents();
+			}
+			_procCats[p].hists1D[0][142]->Fill(nsubcls_tot);
+		}
+		
 		FillGenHists(); //relies on BHC jets - fill after jets have been made
 		cout << endl;
 	}
