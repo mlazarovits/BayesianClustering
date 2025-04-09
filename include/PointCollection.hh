@@ -447,8 +447,11 @@ class PointCollection{
 		}
 		avg_s /= (double)_pts.size();
 		avg_c /= (double)_pts.size();
-		//return acos(cos(atan2(avg_s,avg_c)));
-		return atan2(avg_s,avg_c);
+		double mean = atan2(avg_s,avg_c);
+		//atan2 returns on range [-pi, pi] - needs to match original range
+		if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		else return mean;
 	};
 
 	//weighted circular mean	
@@ -463,8 +466,10 @@ class PointCollection{
 		}
 		avg_s /= sum;
 		avg_c /= sum;
-		//return acos(cos(atan2(avg_s,avg_c)));
-		return atan2(avg_s,avg_c);
+		double mean = atan2(avg_s,avg_c);
+		if(Centroid(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		else if(Centroid(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		else return mean;
 	};
 
 	//weighted mean	
