@@ -1532,6 +1532,8 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClustertimeEtaCov");
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClustertimePhiCov");
 
+	Hist2D(file, "ttbar", "recoAK4", oname, "nJets_jetSize");
+	Hist2D(file, "ttbar", "BHC", oname, "nJets_jetSize");
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
@@ -1545,40 +1547,6 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", methods, oname, "qType");
 */
 
-	/*	
-	ProcStackHists(file, procs, "reco", oname, "Jet_mass");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_mass");
-	ProcStackHists(file, procs, "reco", oname, "Jet_jetSize");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_jetSize");
-	ProcStackHists(file, procs, "reco", oname, "Jet_energy");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_energy");
-	ProcStackHists(file, procs, "reco", oname, "Jet_pt");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_pt");
-	ProcStackHists(file, procs, "reco", oname, "Jet_Wmass");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_Wmass");
-	ProcStackHists(file, procs, "reco", oname, "Jet_topmass");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_topmass");
-	ProcStackHists(file, procs, "reco", oname, "nJets");
-	ProcStackHists(file, procs, "BHC", oname,  "nJets");
-	ProcStackHists(file, procs, "BHC", oname,  "Jet_nSubclusters");
-	*/
-
-	/*
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_nSubclusters");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEnergy");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaCenter");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiCenter");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeCenter");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterEtaSig");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterPhiSig");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusterTimeSig");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClusteretaPhiCov");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimeEtaCov");
-	ProcStackHists(file, procs, "AK4", oname,  "Jet_subClustertimePhiCov");
-*/
-	//Hist2D(file, "ttbar", "AK4", oname, "subCluster");
-	//Hist2D(file, "ttbar", "reco", oname, "dRquark_Wenergy");
-	//Hist2D(file, "ttbar", "BHC", oname, "dRquark_Wenergy");
 		
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
