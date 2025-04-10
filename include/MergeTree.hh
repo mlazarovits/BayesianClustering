@@ -63,7 +63,7 @@ class MergeTree : BaseTree{
 		}
 		
 		void Insert(node* x){
-		cout << "inserting node with ismirror " << x->ismirror << " and pts " << endl; x->points->Print();
+		//cout << "inserting node with ismirror " << x->ismirror << " and pts " << endl; x->points->Print();
 			_clusters.push_back(nullptr);
 			x->idx = (int)_clusters.size() - 1;
 			_clusters[(int)_clusters.size() - 1] = x;
@@ -290,14 +290,16 @@ class MergeTree : BaseTree{
 
 		double _euclidean_2d(node* i, node* j){
 			double deta = i->points->mean().at(0) - j->points->mean().at(0);
-			double dphi = i->points->mean().at(1) - j->points->mean().at(1);
+			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
+			dphi = acos(cos(phi));
 
 			return sqrt(deta*deta + dphi*dphi);
 
 		}
 		double _euclidean_3d(node* i, node* j){
 			double deta = i->points->mean().at(0) - j->points->mean().at(0);
-			double dphi = i->points->mean().at(1) - j->points->mean().at(1);
+			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
+			dphi = acos(cos(phi));
 			double dtime = i->points->mean().at(2) - j->points->mean().at(2);
 
 			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
