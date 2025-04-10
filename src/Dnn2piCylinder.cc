@@ -189,7 +189,7 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
-cout << "this node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
+if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
@@ -203,10 +203,10 @@ cout << "this node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _merge_tree->Get(ip);
     _merge_tree->Get(ip)->mirror = x;
-cout << "this node is mirror? " << x->ismirror << " mirrored node is mirror? " << x->mirror->ismirror << endl;
+if(_verbose) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << x->mirror->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
-cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
+if(_verbose) cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
     _cylinder_index_of_plane_vertex.push_back(ic);
     //add new mirror node to be clustered
     _merge_tree->Insert(x);

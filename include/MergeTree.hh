@@ -131,7 +131,7 @@ class MergeTree : BaseTree{
 			x->mirror = nullptr;
 			x->ismirror = false;
 			x->prob_tk = exp(Evidence(x));//p_dk_tk = p_dk_h1 since cannot be divided further
-			cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
+			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
 			//Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
 			//cout << "adding leaf with ismirror " << x->ismirror << endl;
@@ -199,16 +199,13 @@ class MergeTree : BaseTree{
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 			x->model->ShiftData(center);
-			//cout << "centroid " << endl; 
+			cout << "centroid " << endl; center.Print(); 
 			
-			//cout << "translated pts" << endl;
-			//x->model->GetData()->Print();
+			//cout << "translated pts" << endl; x->model->GetData()->Print();
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
 			
-			//cout << "transformed points" << endl;
-			//x->model->GetData()->Print();
-			//cout << endl;
+			//cout << "transformed points" << endl; x->model->GetData()->Print();
 	
 			x->model->InitParameters();
 			x->model->InitPriorParameters();
@@ -240,8 +237,10 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
-
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+//cout << " with points in node " << endl; x->model->GetData()->Print();  
+//cout << "original points" << endl; x->points->Print();
+//cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
 	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
 	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
 	//cout << "node x means pre scale" << endl;

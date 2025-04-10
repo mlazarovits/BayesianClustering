@@ -274,15 +274,6 @@ class BHCJetSkimmer{
 		}
 	
 
-		void CleanTrees(const vector<node*>& trees){
-			_trees.clear();
-			for(int i = 0; i < trees.size(); i++){
-				if(trees[i] == nullptr) continue;
-				//check for mirrored point - would be double counted
-				if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0) continue;	
-				_trees.push_back(trees[i]);
-			}
-		}
 
 
 		void TreesToJets(){

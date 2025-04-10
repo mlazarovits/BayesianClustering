@@ -638,7 +638,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 				lamStar.mult(_lamStar[n],m_post.at(n,k));
 				rLamStar.add(lamStar);	
 
-				if(_verb > 3){
+				if(_verb > 6){
 					cout << "cluster #" << k << " data pt #" << n << " w " << m_data->at(n).w() << " r " << m_post.at(n,k) << " lamStar " << endl;
 					_lamStar[n].Print();
 				}
@@ -665,7 +665,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			lamStar.mult(lamStar,-0.5);
 			Matrix lamStarInv(m_dim, m_dim);
 			lamStarInv.invert(lamStar);
-			if(_verb > 3){
+			if(_verb > 6){
 				cout << "lamStarInv" << endl; lamStarInv.Print();
 				cout << "rlamStar_x" << endl; rLamStar_x.Print();
 			}
@@ -740,7 +740,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		new_cov.mult(new_cov, new_dof);
 		new_cov.invert(new_cov); //new_cov^-1 = cov (sigma)
 		m_model[k]->SetParameter("cov",new_cov);
-		if(_verb > 3){
+		if(_verb > 6){
 			cout << "k: " << k << " mean: " << endl; 
 			m_model[k]->GetParameter("mean").Print();	
 			cout << "cov " << endl; m_model[k]->GetParameter("cov").Print();

@@ -87,10 +87,10 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		// find largest rk value in map (last entry)
 		double BestRk;
 		verts BestRkPair;
-		std::multimap<double,verts>::iterator map_it;
+		std::multimap<double,verts>::iterator map_it, map_it_i, map_it_j;
 		int jet_i, jet_j;
 		bool Valid2;
-		double dist;
+		double dist_i, dist_j;
 		//cout << "Prob map size " << ProbMap.size() << endl;
 		//cout << " dnn validity bool " << (!DNN->Valid(jet_i) || !Valid2) << " total bool " << ((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0) << endl;
 		if(ProbMap.size() == 0){done = true; break;}
@@ -105,23 +105,61 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			//right now - only equal rks are for equivalent merges
 			//cout << "number of pairs with same bestRk = " << BestRk << ": " << ProbMap.count(BestRk) << endl;
 			double mindist = 999;
+			map_it_i = ProbMap.end();
+			map_it_j = ProbMap.end();
 			if(ProbMap.count(BestRk) > 2){
 				ret = ProbMap.equal_range(BestRk);
+				if(_verb > 1) cout << ProbMap.count(BestRk) << " number of pairs with the same BestRk = " << BestRk << endl;
 				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; ++it){
 					int jjet_i = it->second.first;
 					int jjet_j = it->second.second;
+					//if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jjet_i << " and " << jjet_j << endl;
 					if(InvDistMap.find(jjet_i) == InvDistMap.end()) continue; //skip points already combined
-					dist = InvDistMap[jjet_i].second;
-					if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jjet_i << ", " << jjet_j << " and dist " << dist << endl;
-					if(dist < mindist){
-						mindist = dist;
-						map_it = it;
-						jet_i = jjet_i;
-						jet_j = jjet_j;
+					if(InvDistMap.find(jjet_j) == InvDistMap.end()) continue; //skip points already combined
+					dist_i = InvDistMap[jjet_i].second;
+					dist_j = InvDistMap[jjet_j].second;
+					//take mindist pair
+					if(dist_i < dist_j){
+						if(dist_i < mindist){
+							mindist = dist_i;
+							map_it_i = ProbMap.end();
+							map_it = it;//ProbMap.end();
+							map_it_j = ProbMap.end(); 
+							jet_i = jjet_i;
+							jet_j = InvDistMap[jjet_i].first;
+							//find associated pair in prob map
+							for(auto iit = ProbMap.begin(); iit != ProbMap.end(); iit++){
+								if(iit->second.first == jet_j && iit != map_it){ //don't want to double erase
+									map_it_i = iit;
+								cout << "found it to jet_j " << jet_j << " " << map_it_i->second.first << endl;
+									break;
+								}
+							}
+					if(_verb > 1) cout << " jet_i " << jet_i << " has best min dist " << dist_i << " with " << jet_j << endl;
+						}
+					}
+					else{
+						if(dist_j < mindist){
+							mindist = dist_j;
+							map_it_i = ProbMap.end();
+							map_it = it;//ProbMap.end();
+							map_it_j = ProbMap.end(); 
+							jet_i = InvDistMap[jjet_j].first;
+							jet_j = jjet_j;
+							//find associated pair in prob map
+							for(auto iit = ProbMap.begin(); iit != ProbMap.end(); iit++){
+								if(iit->second.first == jet_i && iit != map_it){ //don't want to double erase
+									map_it_j = iit;
+								cout << "found it to jet_i " << jet_i << " " << map_it_j->second.first << endl;
+									break;
+								}
+							}
+					if(_verb > 1) cout << " jet_j " << jet_j << " has best min dist " << dist_j << " " << mindist << " with " << jet_i << endl;
+						}
+
 					}
 				}
 			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << jet_i << " jet_j: " << jet_j  << endl;
-			//jet_i = DistMap.find(mindist)->second.first; jet_j = DistMap.find(mindist)->second.second;
 		
 			}else{
 				jet_i = BestRkPair.first;
@@ -131,8 +169,15 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			if (_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;
 			} // GPS debugging
  			//also need to erase any impossible merges from map too
-			if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
-			ProbMap.erase(map_it); //erase from InvDistMap too
+			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
+			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
+		cout << "prob map size before " << ProbMap.size() << endl;	
+			if(map_it != ProbMap.end()){ cout << "erasing it for jets " << map_it->second.first << " " << map_it->second.second << endl; ProbMap.erase(map_it);}
+			//not guaranteed that pair that is merged is corresponding pair in prob map
+			if(map_it_i != ProbMap.end()){cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
+			if(map_it_j != ProbMap.end()){cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
+		cout << "prob map size after " << ProbMap.size() << endl;	
+			//erase from InvDistMap too
 			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
 			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
 			Valid2 = DNN->Valid(jet_j);
@@ -143,18 +188,26 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			cout << "Uh oh best probability merger is jet to its mirror point. Returning for debugging..." << endl;
 			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
-			cout << "jet_i pts" << endl;
+			PointCollection jeti_pts, jetj_pts;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
-				pt.Print();
+				jeti_pts += pt;
 			}
-			cout << "jet_j pts" << endl;
+			cout << "jet_i pts" << endl;
+			jeti_pts.Print();
+			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
+			cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
-				pt.Print();
+				jetj_pts += pt;
 			}
+			cout << "jet_j pts" << endl;
+			jetj_pts.Print();
+			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
+			cout << "with mean " << endl; jetj_mean.Print();
+	
 			return _trees;
 		/*
 			// find largest rk value in map (last entry)
@@ -189,18 +242,25 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
-			cout << "jet_i pts" << endl;
+			PointCollection jeti_pts, jetj_pts;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
-				pt.Print();
+				jeti_pts += pt;
 			}
-			cout << "jet_j pts" << endl;
+			cout << "jet_i pts" << endl;
+			jeti_pts.Print();
+			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
+			cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
-				pt.Print();
+				jetj_pts += pt;
 			}
+			cout << "jet_j pts" << endl;
+			jetj_pts.Print();
+			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
+			cout << "with mean " << endl; jetj_mean.Print();
 		}
 
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
@@ -666,7 +726,12 @@ void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const D
 		dist = DNN->NearestNeighbourDistance(i);
 		j = DNN->NearestNeighbourIndex(i);
 if(_verb > 1)cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
-		inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
+		auto ret = inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
+		//ret = pair<iterator to new element or equivalent if exists, bool true if inserted false if already exists>
+		//if i already exists, update with new distance pair
+		if(ret.second == false){
+			inmap[i] = std::make_pair(j,dist);
+		}
 }
 
 //need to add idx corresponding to plane index because those are the nodes stored in merge tree
