@@ -324,17 +324,18 @@ class PointCollection{
 		}
 
 	}
-	
+
+	//commented out lines don't always hold - regular translate is being called in BasePDFMixture for shifting data	
 	void CircularTranslate(double t, int d){
 		for(int i = 0; i < (int)_pts.size(); i++){
 			//if(d == 1) cout << std::setprecision(12) << "i " << i << " pt " << _pts[i].at(d) << " shift " << t << endl;
 			
-			if((_pts[i].at(d) > acos(-1) && _pts[i].at(d) < 2*acos(-1)) || _pts[i].at(d) < 0)
-				_pts[i].SetValue(-acos(cos(_pts[i].at(d))) - t,d);
-			else if(_pts[i].at(d) > 2*acos(-1))
-				_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
-			else
-				_pts[i].SetValue(acos(cos(_pts[i].at(d))) - t,d);
+			//if((_pts[i].at(d) > acos(-1) && _pts[i].at(d) < 2*acos(-1)) || _pts[i].at(d) < 0)
+			//	_pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
+			//else if(_pts[i].at(d) > 2*acos(-1))
+			//	_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
+			//else
+				_pts[i].SetValue(_pts[i].at(d) - t,d);
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
 		}
 
