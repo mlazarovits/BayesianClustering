@@ -36,7 +36,6 @@ void BHCJetSkimmer::Skim(){
 
 	
 	map<string, Matrix> params;
-	vector<node*> trees;
 	vector<Jet> rhs;
 
 
@@ -202,20 +201,19 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == NlnN || _strategy == NlnNonAK4){
 			//start clock
 			t = clock();
-			trees = algo->NlnNCluster();
+			_trees = algo->NlnNCluster();
 		}
 		//N^2 version
 		else if(_strategy == N2){
 			//start clock
 			t = clock();
-			trees = algo->N2Cluster();
+			_trees = algo->N2Cluster();
 		}
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		//cout <<  "y time entry " << y_time[y_time.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 		comptime->Fill((double)t/CLOCKS_PER_SEC);
-		//clean trees (remove mirror point or nullptrs)
-		CleanTrees(trees);
+		cout << _trees.size() << " trees" << endl;
 		//transform trees (nodes) to jets
 		TreesToJets();
 		//fill pred jet hists with jets
