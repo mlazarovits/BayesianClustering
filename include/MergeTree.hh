@@ -232,15 +232,15 @@ class MergeTree : BaseTree{
 			int it = 0;
 			while(dLogL > LogLThresh){
 				newLogL = algo->Cluster();
-				entropy = x->model->EvalEntropyTerms();
-				nll = x->model->EvalNLLTerms();
+				//entropy = x->model->EvalEntropyTerms();
+				//nll = x->model->EvalNLLTerms();
 			//cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
 		if(std::isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
 				dLogL = newLogL - oldLogL;
 				oldLogL = newLogL;
 				it++;
 			}
-			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << " with points in node " << endl; x->points->Print();  
 
 	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
 	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
@@ -291,7 +291,7 @@ class MergeTree : BaseTree{
 		double _euclidean_2d(node* i, node* j){
 			double deta = i->points->mean().at(0) - j->points->mean().at(0);
 			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
-			dphi = acos(cos(phi));
+			dphi = acos(cos(dphi));
 
 			return sqrt(deta*deta + dphi*dphi);
 
@@ -299,7 +299,7 @@ class MergeTree : BaseTree{
 		double _euclidean_3d(node* i, node* j){
 			double deta = i->points->mean().at(0) - j->points->mean().at(0);
 			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
-			dphi = acos(cos(phi));
+			dphi = acos(cos(dphi));
 			double dtime = i->points->mean().at(2) - j->points->mean().at(2);
 
 			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
