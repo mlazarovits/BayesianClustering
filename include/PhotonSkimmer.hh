@@ -423,6 +423,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timesSigSq_measErr);
 			_hists1D.push_back(rhTime);
 			_hists1D.push_back(photonPt);
+			_hists1D.push_back(etaAngle2D_absTimeMajCovge0p1);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -666,6 +667,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(phoE_timeSig);
 			_hists2D.push_back(timeCenter_etaSig);
 			_hists2D.push_back(timeCenter_phiSig);
+			_hists2D.push_back(subclE_subclEmultEtaSig);
+			_hists2D.push_back(subclE_subclEmultPhiSig);
+			_hists2D.push_back(subclE_subclEmultTimeSig);
+			_hists2D.push_back(subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov);
+			_hists2D.push_back(timeEtaCov_timePhiCov_absTimeMajCovge0p1);
 			
 
 
@@ -1201,6 +1207,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* rhTime = new TH1D("rhTime","rhTime",50,-3,3);
 		//259 - photon ps
 		TH1D* photonPt = new TH1D("photonPt","photonPt",25,30,1000);
+		//260 - eta angle (angle bw maj axis + eta axis in 2D) with |time maj cov| > 0.1
+		TH1D* etaAngle2D_absTimeMajCovge0p1 = new TH1D("etaAngle2D_absTimeMajCovge0p1","etaAngle2D_absTimeMajCovge0p1",25,-0.4,3.4);
 
 
 		
@@ -1711,6 +1719,16 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* timeCenter_etaSig = new TH2D("timeCenter_etaSig","timeCenter_etaSig;timeCenter;etaSig",25,-3,3,25,0.,0.1);
 		//241 - time center vs phi sig
 		TH2D* timeCenter_phiSig = new TH2D("timeCenter_phiSig","timeCenter_phiSig;timeCenter;phiSig",25,-3,3,25,0.,0.1);
+		//242 - subcl E vs subcl E*eta sig
+		TH2D* subclE_subclEmultEtaSig = new TH2D("subclE_subclEmultEtaSig","subclE_subclEmultEtaSig;subclE;subclEmultEtaSig",25,0,1000,25,0,20);
+		//243 - subcl E vs subcl E*phi sig
+		TH2D* subclE_subclEmultPhiSig = new TH2D("subclE_subclEmultPhiSig","subclE_subclEmultPhiSig;subclE;subclEmultPhiSig",25,0,1000,25,0,20);
+		//244 - subcl E vs subcl E*time sig
+		TH2D* subclE_subclEmultTimeSig = new TH2D("subclE_subclEmultTimeSig","subclE_subclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,0,1000);
+		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
+		TH2D* subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov = new TH2D("subclEsqmultTimeMajCov_subclEmultTimeSig","subclEsqmultTimeMajCov_subclEmultTimeSig;subclEsqmultTimeMajCov;subclEmultTimeSig",25,0,1000,25,0,1000);
+		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
+		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-1,1,25,-1,1);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2182,6 +2200,10 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists1D[1][255]->Fill(majLength);
 			_procCats[id_idx].hists1D[1][256]->Fill(majLength_2d);
 
+			if(fabs(majtime_cov) > 0.1){
+				_procCats[id_idx].hists1D[1][260]->Fill(eta_angle_2d);
+				_procCats[id_idx].hists2D[1][246]->Fill(te_cov,tp_cov);
+			}
 
 
 	
@@ -2255,6 +2277,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][239]->Fill(E_k,t_var);
 			_procCats[id_idx].hists2D[1][240]->Fill(tc,e_var);
 			_procCats[id_idx].hists2D[1][241]->Fill(tc,p_var);
+			_procCats[id_idx].hists2D[1][242]->Fill(E_k,E_k*e_var);
+			_procCats[id_idx].hists2D[1][243]->Fill(E_k,E_k*p_var);
+			_procCats[id_idx].hists2D[1][244]->Fill(E_k,E_k*t_var);
+			_procCats[id_idx].hists2D[1][245]->Fill(E_k*E_k*majtime_cov,E_k*E_k*te_cov);
+
+	
+
 			if((phi2D < 0.2 && phi2D > -0.2) || (fabs(phi2D) < 0.2+acos(-1)/2. && fabs(phi2D) > -0.2+acos(-1)/2.)){
 				_procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 				_procCats[id_idx].hists2D[1][74]->Fill(rot2D,te_cov);
