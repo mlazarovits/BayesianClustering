@@ -1309,7 +1309,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//46 - etaphi cov vs timeeta cov
 		TH2D* etaPhiCov_timeEtaCov = new TH2D("etaPhiCov_timeEtaCov","etaPhiCov_timeEtaCov;etaPhiCov;timeEtaCov",25,-1,1,25,-1,1);
 		//47 - timeeta cov vs timephi cov
-		TH2D* timeEtaCov_timePhiCov = new TH2D("timeEtaCov_timePhiCov","timeEtaCov_timePhiCov;timeEtaCov;timePhiCov",25,-1,1,25,-1,1);
+		TH2D* timeEtaCov_timePhiCov = new TH2D("timeEtaCov_timePhiCov","timeEtaCov_timePhiCov;timeEtaCov;timePhiCov",25,-0.1,0.1,25,-0.1,0.1);
 		//48 - etaphi cov vs timephi cov
 		TH2D* etaPhiCov_timePhiCov = new TH2D("etaPhiCov_timePhiCov","etaPhiCov_timePhiCov;etaPhiCov;timePhiCov",25,-1,1,25,-1,1);
                 //49 - etaphi cov vs. TimeMajCov
@@ -1728,7 +1728,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
 		TH2D* subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov = new TH2D("subclEsqmultTimeMajCov_subclEmultTimeSig","subclEsqmultTimeMajCov_subclEmultTimeSig;subclEsqmultTimeMajCov;subclEmultTimeSig",25,0,1000,25,0,1000);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
-		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-1,1,25,-1,1);
+		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
 
 		enum weightScheme{
 			noWeight = 0,
