@@ -1726,7 +1726,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//244 - subcl E vs subcl E*time sig
 		TH2D* subclE_subclEmultTimeSig = new TH2D("subclE_subclEmultTimeSig","subclE_subclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,0,1000);
 		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
-		TH2D* subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov = new TH2D("subclEsqmultTimeMajCov_subclEmultTimeSig","subclEsqmultTimeMajCov_subclEmultTimeSig;subclEsqmultTimeMajCov;subclEmultTimeSig",25,0,1000,25,0,1000);
+		TH2D* subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov = new TH2D("subclEsqmultTimeMajCov_subclEmultTimeEtaCov","subclEsqmultTimeMajCov_subclEmultTimeEtaCov;subclEsqmultTimeMajCov;subclEmultTimeEtaCov",25,0,1000,25,0,1000);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
 		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
 
