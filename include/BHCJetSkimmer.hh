@@ -1095,7 +1095,7 @@ class BHCJetSkimmer{
 		//0 - n bhc jets
 		TH1D* nClusters = new TH1D("BHCJet_nJets","BHCJet_nJets",15,0,15);
 		//1 - n subclusters per bhc jets
-		TH1D* nSubclusters = new TH1D("BHCJet_nSubclusters","BHCJet_nSubclusters",30,0,30);
+		TH1D* nSubclusters = new TH1D("BHCJet_nSubclustersJet","BHCJet_nSubclustersJet",30,0,30);
 		//2 - bhc subcluster energy
 		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,250);
 		//3 - bhc subcluster eta center
