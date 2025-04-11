@@ -1321,7 +1321,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 //52 - timephi cov vs. TimeMinCov
                 TH2D* timePhiCov_timeMinCov = new TH2D("timePhiCov_timeMinCov","timePhiCov_timeMinCov;timePhiCov;timeMinCov",25,-0.1,0.1,25,-0.3,0.3);
                 //53 - timeeta cov vs. TimeMajCov
-                TH2D* timeEtaCov_timeMajCov = new TH2D("timeEtaCov_timeMajCov","timeEtaCov_timeMajCov;timeEtaCov;timeMajCov",25,-0.1,0.1,25,-0.3,0.3);
+                TH2D* timeEtaCov_timeMajCov = new TH2D("timeEtaCov_timeMajCov","timeEtaCov_timeMajCov;timeEtaCov;timeMajCov",25,-0.02,0.02,25,-0.3,0.3);
                 //54 - timeeta cov vs. TimeMinCov
                 TH2D* timeEtaCov_timeMinCov = new TH2D("timeEtaCov_timeMinCov","timeEtaCov_timeMinCov;timeEtaCov;timeMinCov",25,-0.1,0.1,25,-0.3,0.3);
 		//55 - etaphi cov unnorm vs timeeta cov unnorm
