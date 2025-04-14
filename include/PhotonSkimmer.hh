@@ -1735,7 +1735,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//244 - sqrt(subcl E) vs subcl E*time sig
 		TH2D* subclE_sqrtSubclEmultTimeSig = new TH2D("subclE_sqrtSubclEmultTimeSig","subclE_sqrtSubclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,0,50);
 		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
-		TH2D* subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov = new TH2D("subclEsqmultTimeMajCov_subclEmultTimeEtaCov","subclEsqmultTimeMajCov_subclEmultTimeEtaCov;subclEsqmultTimeMajCov;subclEmultTimeEtaCov",50,-5000,5000,50,-5000,5000);
+		TH2D* subclEmultTimeMajCov_subclEmultTimeEtaCov = new TH2D("subclEmultTimeMajCov_subclEmultTimeEtaCov","subclEmultTimeMajCov_subclEmultTimeEtaCov;subclEmultTimeMajCov;subclEmultTimeEtaCov",50,-5000,5000,50,-5000,5000);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
 		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
 
@@ -2305,7 +2305,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][242]->Fill(E_k,sqrt(E_k)*e_var);
 			_procCats[id_idx].hists2D[1][243]->Fill(E_k,sqrt(E_k)*p_var);
 			_procCats[id_idx].hists2D[1][244]->Fill(E_k,sqrt(E_k)*t_var);
-			_procCats[id_idx].hists2D[1][245]->Fill(E_k*E_k*majtime_cov_2d,E_k*E_k*te_cov);
+			_procCats[id_idx].hists2D[1][245]->Fill(E_k*majtime_cov_2d,E_k*te_cov);
 
 	
 
