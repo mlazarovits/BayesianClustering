@@ -1220,7 +1220,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		//263 - timeEta cov over timeMaj3D cov
 		TH1D* timeEtaCovOvtimeMaj2DCov = new TH1D("timeEtaCovOvtimeMaj2DCov","timeEtaCovOvtimeMaj2DCov",25,-2,2);
 		//264 - time maj 2d / time maj 3d
-		TH1D* timeMaj2DCovOvtimeMaj3DCov = new TH1D("timeMaj2DCovOvtimeMaj3DCov","timeMaj2DCovOvtimeMaj3DCov",25,-2,2);	
+		TH1D* timeMaj2DCovOvtimeMaj3DCov = new TH1D("timeMaj2DCovOvtimeMaj3DCov","timeMaj2DCovOvtimeMaj3DCov",25,-3,3);	
 
 	
 		//0 - time v subcl subcluster energy
