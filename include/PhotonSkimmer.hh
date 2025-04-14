@@ -1986,8 +1986,8 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 			//angle bw major axis and eta (3D) - eigenvectors normalized
-			double eta_angle_3d = acos(eigvecs[1].at(0,0));
-			double phi_angle_3d = acos(eigvecs[1].at(1,0));
+			double eta_angle_3d = acos(eigvecs[2].at(0,0));
+			double phi_angle_3d = acos(eigvecs[2].at(1,0));
 			
 			//rotate into 3D eigenvector space
 			Matrix rotmat3D(3,3);
