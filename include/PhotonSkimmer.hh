@@ -674,7 +674,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(subclE_sqrtSubclEmultEtaSig);
 			_hists2D.push_back(subclE_sqrtSubclEmultPhiSig);
 			_hists2D.push_back(subclE_sqrtSubclEmultTimeSig);
-			_hists2D.push_back(subclEsqmultTimeMajCov_subclEsqmultTimeEtaCov);
+			_hists2D.push_back(subclEmultTimeMajCov_subclEmultTimeEtaCov);
 			_hists2D.push_back(timeEtaCov_timePhiCov_absTimeMajCovge0p1);
 			
 
