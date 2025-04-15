@@ -1729,11 +1729,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//241 - time center vs phi sig
 		TH2D* timeCenter_phiSig = new TH2D("timeCenter_phiSig","timeCenter_phiSig;timeCenter;phiSig",25,-3,3,25,0.,0.1);
 		//242 - sqrt(subcl E) vs subcl E*eta sig
-		TH2D* subclE_sqrtSubclEmultEtaSig = new TH2D("subclE_sqrtSubclEmultEtaSig","subclE_sqrtSubclEmultEtaSig;subclE;subclEmultEtaSig",25,0,1000,25,0,2);
+		TH2D* subclE_sqrtSubclEmultEtaSig = new TH2D("subclE_sqrtSubclEmultEtaSig","subclE_sqrtSubclEmultEtaSig;subclE;subclEmultEtaSig",25,0,1000,25,0.2,0.6);
 		//243 - sqrt(subcl E) vs subcl E*phi sig
-		TH2D* subclE_sqrtSubclEmultPhiSig = new TH2D("subclE_sqrtSubclEmultPhiSig","subclE_sqrtSubclEmultPhiSig;subclE;subclEmultPhiSig",25,0,1000,25,0,2);
+		TH2D* subclE_sqrtSubclEmultPhiSig = new TH2D("subclE_sqrtSubclEmultPhiSig","subclE_sqrtSubclEmultPhiSig;subclE;subclEmultPhiSig",25,0,1000,25,0.2,0.8);
 		//244 - sqrt(subcl E) vs subcl E*time sig
-		TH2D* subclE_sqrtSubclEmultTimeSig = new TH2D("subclE_sqrtSubclEmultTimeSig","subclE_sqrtSubclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,0,50);
+		TH2D* subclE_sqrtSubclEmultTimeSig = new TH2D("subclE_sqrtSubclEmultTimeSig","subclE_sqrtSubclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,15,35);
 		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
 		TH2D* subclEmultTimeMajCov_subclEmultTimeEtaCov = new TH2D("subclEmultTimeMajCov_subclEmultTimeEtaCov","subclEmultTimeMajCov_subclEmultTimeEtaCov;subclEmultTimeMajCov;subclEmultTimeEtaCov",50,-5000,5000,50,-5000,5000);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
@@ -1960,7 +1960,13 @@ class PhotonSkimmer : public BaseSkimmer{
 				cov.SetEntry(-cov.at(2,0),2,0);	
 			}
 			//else time sign matches eta sign - no change
-
+			//phi sign convention - etaphi-cov should always be positive
+			if(CalcCov(cov,1,0) < 0){
+				cov.SetEntry(-cov.at(0,1),0,1);
+				cov.SetEntry(-cov.at(1,0),1,0);
+				cov.SetEntry(-cov.at(1,2),1,2);
+				cov.SetEntry(-cov.at(2,1),2,1);
+			}
 			
 			e_var = sqrt(cov.at(0,0));
 			p_var = sqrt(cov.at(1,1));
@@ -1988,7 +1994,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			//angle bw major axis and eta (3D) - eigenvectors normalized
 			double eta_angle_3d = acos(eigvecs[2].at(0,0));
 			double phi_angle_3d = acos(eigvecs[2].at(1,0));
-			
 			//rotate into 3D eigenvector space
 			Matrix rotmat3D(3,3);
 			Get3DRotationMatrix(eigvecs,rotmat3D);
@@ -2008,8 +2013,16 @@ class PhotonSkimmer : public BaseSkimmer{
 			double phi_angle_2d = acos(eigenvecs_space[1].at(1,0));
 			double majLength_2d = sqrt(eigenvals_space[1]);				
 		
-			//difference in angle from eta axis bw 2D and 3D major axes
-			_procCats[id_idx].hists1D[1][261]->Fill(cos(eta_angle_2d - eta_angle_3d));
+			//difference in angle from eta axis bw 2D and 3D proj 2D major axes
+			//Matrix lead_eigenvec_3dproj2d(2,1);
+			//lead_eigenvec_3dproj2d.SetEntry(eigvecs[2].at(0,0),0,0);
+			//lead_eigenvec_3dproj2d.SetEntry(eigvecs[2].at(1,0),1,0);
+			//double norm_3dproj2d = sqrt(lead_eigenvec_3dproj2d.at(0,0)*lead_eigenvec_3dproj2d.at(0,0) + lead_eigenvec_3dproj2d.at(1,0)*lead_eigenvec_3dproj2d.at(1,0));
+			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(0,0)/norm_3dproj2d,0,0);
+			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(1,0)/norm_3dproj2d,1,0);
+		//cout << "eta_angle_3d " << eta_angle_3d << " atan " << atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0)) << " proj2d " << acos(lead_eigenvec_3dproj2d.at(0,0)) << " eta_angle_2d " << eta_angle_2d << endl;
+			double eta_angle_3dproj2d = atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0));
+			_procCats[id_idx].hists1D[1][261]->Fill(cos(eta_angle_2d - eta_angle_3dproj2d));
 	
 			//rotate points into 2D (spatial only) maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
