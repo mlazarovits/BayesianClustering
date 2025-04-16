@@ -335,16 +335,16 @@ class PointCollection{
 			//else if(_pts[i].at(d) > 2*acos(-1))
 			//	_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
 			//else
-				if(d == 1){
-					cout << "pts at d " << _pts[i].at(d) << " t " << t << " diff " << _pts[i].at(d) - t << " acos(cos(diff)) " << acos(cos(_pts[i].at(d) - t)) << endl;
+				//if(d == 1){
+				//	cout << "pts at d " << _pts[i].at(d) << " t " << t << " diff " << _pts[i].at(d) - t << " acos(cos(diff)) " << acos(cos(_pts[i].at(d) - t)) << endl;
 		
-				}
+				//}
 				if(fabs(_pts[i].at(d) - t) > acos(-1))
 					_pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
 				
 				else
 					_pts[i].SetValue(_pts[i].at(d) - t,d);
-if(d == 1) cout << "new value of pt " << _pts[i].at(d) << endl;
+//if(d == 1) cout << "new value of pt " << _pts[i].at(d) << endl;
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
 		}
 
