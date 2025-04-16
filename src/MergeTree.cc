@@ -23,6 +23,13 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	points->AddPoints(*r->points);
 	struct node* x = (struct node*)malloc(sizeof *x);
 	x->points = points;
+if(l->points->GetNPoints() + r->points->GetNPoints() != x->points->GetNPoints()){
+	cout << "mismatched pts" << endl;
+	cout << "x pts " << x->points->GetNPoints() << " l pts " << l->points->GetNPoints() << " r pts " << r->points->GetNPoints() << endl;
+	cout << "l pts" << endl; l->points->Print();
+	cout << "r pts" << endl; r->points->Print();
+	cout << "x pts" << endl; x->points->Print();
+}
 	x->d = d_100;
 	x->l = l;
 	x->r = r;
@@ -71,18 +78,25 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
-	if(x->points->Sumw() < _thresh) rk = 0;
+	//if(x->points->Sumw() < _thresh) rk = 0;
 	if(std::isnan(rk)){
         cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
                 //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
         }
-        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
-//cout << "LEFT"  << std::setprecision(10) << " elbo " << Evidence(x->l) << " gamma(n) " << tgamma(l->points->Sumw()) << " lgamma(n) " << lgamma(l->points->Sumw()) << " dl " << l->l->d << " dr " << l->r->d << " log(dl*dr) " << log(l->l->d*l->r->d) << " p(Dl|Tl) " << l->l->prob_tk << " p(Dr|Tr) " << l->r->prob_tk << " with # subclusters " << l->model->GetNClusters() <<  " np " << l->points->Sumw() << endl;
+        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
+	double loga = elbo + log(_alpha) + lgamma(n);
+	double logb = (double)log(l->prob_tk) + (double)log(r->prob_tk) + (double)log(l->d) + (double)log(r->d);
+        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " lgam " << lgamma(n) << " log(alpha) " << log(_alpha) << endl;
+	cout << "log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " log(d_l) " << log(l->d) << " log(d_r) "  << log(r->d) << endl;
+	cout << "log(a) " << loga << " log(b) " << logb << endl;
+	cout << "log(a) - log(b) " << loga - logb << endl;
+cout << " 3d distance from centroid " << endl;
+_euclidean_3d_fromCentroid(x);  
 
-
-//cout << "RIGHT"  << std::setprecision(10) << " elbo " << Evidence(x->l) << " gamma(n) " << tgamma(r->points->Sumw()) << " lgamma(n) " << lgamma(r->points->Sumw()) << " dl " << r->l->d << " dr " << r->r->d << " log(dl*dr) " << log(r->l->d*r->r->d) << " p(Dl|Tl) " << r->l->prob_tk << " p(Dr|Tr) " << r->r->prob_tk << " with # subclusters " << r->model->GetNClusters() <<  " npts " << r->points->Sumw() << endl;
 
 	x->val = rk;
+	x->log_h1_prior = loga;
+	x->log_didj = logb;
 	x->prob_tk = p_dk_tk_100;
 	
 

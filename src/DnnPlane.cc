@@ -638,6 +638,7 @@ cout << points_to_add.size() << " points to add" << endl;
 				  phi_center));
     }
    _supervertex[index].n = _merge_tree->Get(index);
+cout << "setting node for index " << index << " with points " << endl;_supervertex[index].n->points->Print();
     // check if this leads to a coincidence
     int coinciding_index = _CheckIfVertexPresent(_supervertex[index].vertex, index);
     if (coinciding_index == index){
@@ -722,6 +723,7 @@ if(_verbose) cout << "SetNearest - start" << endl;
     _supervertex[j].NNdistance = 0.0;
     _supervertex[j].MaxRkindex = _supervertex[j].coincidence;
     _supervertex[j].MaxRk = -1.0;
+    _supervertex[j].bestmerge = nullptr;
     return;
   }
 
@@ -736,6 +738,8 @@ if(_verbose) cout << "SetNearest - start" << endl;
   //probability quantities
   double rk;
   double maxrk = 0;
+   node* bestmerge = nullptr;//( node*)malloc(sizeof *bestmerge);
+   //bestmerge->val = -999;
   Vertex_handle best_vtx = _TR.infinite_vertex();
   // when there is only one finite point left in the triangulation, 
   // there are no triangles. Presumably this is why voronoi returns
@@ -764,13 +768,29 @@ if(_verbose) cout << "SetNearest - start" << endl;
       if(_verbose) cout << vc->point() << "; "<< dist << endl;
     
 	//do the same as above but with probability instead of geometric distance
-	if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
-         best_vtx = vc;
-     } 
+	//if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
+	//compare merge j+vcindx and j+best_vtx
+	//if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx)){
+	node* r0 = _merge_tree->CalculateMerge(_supervertex[j].n, _supervertex[vcindx].n);
+	if(bestmerge == nullptr){ //hasnt been set yet
+		best_vtx = vc;
+		bestmerge = r0;
+      cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " set to begin for node " << j << " with node " << best_vtx->info().val() << endl; 
+
+	}
+	else{
+      cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " current best merge val for node " << j <<  " " << bestmerge->log_h1_prior - bestmerge->log_didj << " with node " << best_vtx->info().val() << endl; 
+     		if (r0->log_h1_prior + bestmerge->log_didj > r0->log_didj + bestmerge->log_h1_prior){
+     		   best_vtx = vc;
+     		   bestmerge = r0;
+      cout << "updated best merge to " << best_vtx->info().val() << " with merge val " << bestmerge->log_h1_prior - bestmerge->log_didj << endl; 
+     		}
+	}
      if(true){ 
        cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
        cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
-       cout << "this rk: " << rk << " best rk so far: " << maxrk << endl;
+       //cout << "this rk: " << _supervertex[j].n->val << " best rk so far: " << bestmerge->val << endl;
+       cout << "best merge pair so far " << best_vtx->info().val() << " with pts" << endl; _supervertex[best_vtx->info().val()].n->points->Print();
        cout << "this dist: " << dist << " best dist so far: " << mindist << "\n" << endl;
      }
  //cout << "# clusters: " << _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
@@ -780,10 +800,17 @@ if(_verbose) cout << "SetNearest - start" << endl;
   // set j's supervertex info about nearest neighbour
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
-  _supervertex[j].MaxRk = maxrk;
+  _supervertex[j].MaxRk = bestmerge->log_h1_prior - bestmerge->log_didj;
+  //_supervertex[j].bestmerge = bestmerge;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
-if(true) cout << "SetNearest - done for vertex " << j << " with best rk " << maxrk  << " for node " << best_vtx->info().val() << " and best dist " << _supervertex[j].NNdistance << " " << mindist << " for node " << _supervertex[j].NNindex << "  - end\n\n" << endl;
+if(true){
+ cout << std::setprecision(10) << "SetNearest - done for vertex " << j << " with best rk " << _supervertex[j].MaxRk  << " for node " << best_vtx->info().val() << " best merge has pts " << endl;
+_supervertex[j].n->points->Print();
+_supervertex[best_vtx->info().val()].n->points->Print();
+cout << " and best dist " << _supervertex[j].NNdistance << " " << mindist << " for node " << _supervertex[j].NNindex << "  - end\n\n" << endl;
+}
 //cout << "SetNearest - # clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
+cout << "SetNearest - end\n" << endl;
 }
 
 //----------------------------------------------------------------------
@@ -808,13 +835,13 @@ void DnnPlane::_SetAndUpdateNearest(
 			  const int j, 
 			  vector<int> & indices_of_updated_neighbours) {
   vector<int> indices_of_updated_merges;
-  if(_verbose) cout << "SetAndUpdateNearest for point " << j << endl;
+  if(true) cout << "\nSetAndUpdateNearest for point " << j << endl;
   // first deal with coincidences
   if (_supervertex[j].coincidence != j){
     _supervertex[j].NNindex = _supervertex[j].coincidence;
     _supervertex[j].NNdistance = 0.0;
     _supervertex[j].MaxRkindex = _supervertex[j].coincidence;
-    _supervertex[j].MaxRk= -1.0;
+    _supervertex[j].MaxRk= -999;
     //cout << "  set to coinciding point " << _supervertex[j].coincidence << endl;
     return;
   }
@@ -824,10 +851,11 @@ void DnnPlane::_SetAndUpdateNearest(
   double dist;
   double mindist = HUGE_DOUBLE; // change this to "HUGE" or max_double?
   Vertex_handle nearest = _TR.infinite_vertex();
-
   //probability quantities
   double rk;
   double maxrk = -1; //probability could be zero, needs to be set to zero if that's the case
+  node* bestmerge = nullptr;//(node*)malloc(sizeof *bestmerge);
+   //bestmerge->val = -999;
   Vertex_handle best_vtx = _TR.infinite_vertex();
   
   // when there is only one finite point left in the triangulation, 
@@ -835,15 +863,17 @@ void DnnPlane::_SetAndUpdateNearest(
   // NULL for the incident vertex circulator. Check if this is
   // happening before circulating over it... (Otherwise it crashes
   // when looking for neighbours of last point)
-  if (vc != NULL) do { 
+  if (vc != NULL) do {
     if (vc->info().val() != INFINITE_VERTEX) {
+cout << endl;
       if (_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
       // find index corresponding to vc for easy manipulation
-      int vcindx = vc->info().val();
+      int vcindx = vc->info().val(); 
+cout << "vcindx " << vcindx << endl;
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
-	if(_verbose){cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
+	if(true){cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
 cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
 cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       // update the mindist if we are closer than anything found so far
@@ -852,14 +882,27 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       	if (_verbose) cout << "nearer ";
       } 
      //do the same as above but with probability instead of geometric distance
-     if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
-         best_vtx = vc;
-    if(_verbose) cout << "more probable "; 
-    }
-      if(_verbose){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
+     //if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
+	node* r0 = _merge_tree->CalculateMerge(_supervertex[j].n, _supervertex[vcindx].n);
+	if(bestmerge == nullptr){
+        	best_vtx = vc;
+		bestmerge = r0;
+
+      cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " set to begin for node " << j << " with node " << best_vtx->info().val() << endl; 
+	}
+      else {
+      cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " current best merge val for node " << j <<  " " << bestmerge->log_h1_prior - bestmerge->log_didj << " with node " << best_vtx->info().val() << endl; 
+	if (r0->log_h1_prior + bestmerge->log_didj > r0->log_didj + bestmerge->log_h1_prior){
+        	best_vtx = vc;
+		bestmerge = r0;
+    		if(_verbose) cout << "more probable "; 
+      cout << "updated best merge to " << best_vtx->info().val() << " with merge val " << bestmerge->log_h1_prior - bestmerge->log_didj << endl; 
+	}
+      }
+      if(true){ cout << vc->point() << "; "<< dist << " prob: " << rk << endl;
         cout << "checking nodes " << j << ": "; _supervertex[j].n->points->Print();
         cout << "and " << vcindx << ": "; _supervertex[vcindx].n->points->Print();
-        cout << "this rk: " << rk << " best rk so far: " << maxrk << endl;
+        //cout << "this rk: " << _supervertex[j].MaxRk << " best rk so far: " << bestmerge->val << " best merge idx so far " << best_vtx->info().val() << endl;
       }
 
       if (_is_closer_to_with_hint(vc->point(), current->point(), 
@@ -871,10 +914,21 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       }
 //cout << _supervertex[j].n->points->GetNPoints() << " npts in current vtx" << endl;
 
-      if (_best_merge_prob_with_hint(_supervertex[vcindx], _supervertex[j], 
-				  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
-				  rk, _supervertex[vcindx].MaxRk)){
-	if (_verbose) cout << vcindx << "'s best merge becomes " << current->info().val() << endl;
+//      if (_best_merge_prob_with_hint(_supervertex[vcindx], _supervertex[j], 
+//				  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
+//				  rk, _supervertex[vcindx].MaxRk)){
+cout << "do neighbor update for vertex " << vcindx << " with candidate vertex " << j << " and current best for vcindx " << _supervertex[vcindx].MaxRkindex <<  endl;
+	//compare merge j+vcindx=r0 to vcindx+its current best merge=r1
+	//a0/b0 > a1/b1?
+      //if (_best_merge_prob_with_hint(_supervertex[vcindx], _supervertex[j], 
+		//		  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
+		//		  *_supervertex[j].n, *_supervertex[vcindx].bestmerge)){
+	
+      cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " current best merge val for node " << vcindx <<  " " << _supervertex[vcindx].MaxRk << " with node " << _supervertex[vcindx].MaxRkindex << endl; 
+      if (r0->log_h1_prior - r0->log_didj > _supervertex[vcindx].MaxRk){
+         best_vtx = vc;
+	bestmerge = r0;
+	if (true) cout << vcindx << "'s best merge becomes " << current->info().val() << endl;
 	_supervertex[vcindx].MaxRkindex = j;
 	indices_of_updated_merges.push_back(vcindx);
       }
@@ -902,12 +956,13 @@ cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
   //cout << "  set to point " << nearest->info().val() << endl;
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
-  _supervertex[j].MaxRk = maxrk;
+  //_supervertex[j].bestmerge = _supervertex[];
+  _supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
 
-  if(_verbose) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
-  if(_verbose) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
-  if(_verbose) cout << "_SetAndUpdateNearest - end" << endl; 
+  if(true) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
+  if(true) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
+  if(true) cout << "_SetAndUpdateNearest - end\n" << endl; 
 }
 
 //FASTJET_END_NAMESPACE

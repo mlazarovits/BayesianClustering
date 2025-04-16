@@ -133,7 +133,8 @@ private:
     // later on for cylinder put a second vertex?
     double MaxRk = -1; //highest probability of merging, defaults to -1 (useful for mirror points)
     int MaxRkindex = -3; //index of vertex to merge with, defaults to inexistent vertex (defined as -3 in Dnn2piCylinder)
-    node* n; //node containing point collection, rk value (should match MaxRk), parents, etc. 
+    node* n; //node containing point collection, rk value (should match MaxRk), parents, etc.
+    node* bestmerge; //node containing bestmerge pair
   };
 
   //map vertex (via vertex_handle) to 3D points at vertex
@@ -158,13 +159,6 @@ private:
     return distx*distx+disty*disty;
   }
  
-  inline double _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
-	node* n1 = v1.n;
-	node* n2 = v2.n;
-	node* x = _merge_tree->CalculateMerge(n1, n2);
-	double rk = x->val; 
-	return rk;
-  }
 
   //---------------------------------------------------------------------- 
   /// Determines the index and distance of the nearest neighbour to 
@@ -266,26 +260,64 @@ private:
   }
 
 
+  inline node* _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
+	node* n1 = v1.n;
+	node* n2 = v2.n;
+	node* x = _merge_tree->CalculateMerge(n1, n2);
+	//double rk = x->val; 
+cout << "n1 has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
+cout << "n2 has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
+cout << "x has " << x->points->GetNPoints() << " pts" << endl; x->points->Print();
+	return x;
+  }
   /// calculates merge probabilities for neighbor (candidate) of point (pref)
   /// compares to best current merge (pref and best)
   inline bool _best_merge_prob(const SuperVertex& pref,
 			       const SuperVertex& candidate,
-			       const Vertex_handle &best,
-			       double& rk,
-			       double& maxrk){
-    rk = _merge_prob(pref, candidate);
-    return _best_merge_prob_with_hint(pref, candidate, best, rk, maxrk);
+			       const Vertex_handle &best){
+			       //node& bestmerge){
+			       //double& rk,
+			       //double& maxrk){
+//compare x + bestmerge
+    node* x = _merge_prob(pref, candidate);
+    node* bestnode = _supervertex[best->info().val()].n;
+    if (x->log_h1_prior+bestnode->log_didj > x->log_didj+bestnode->log_h1_prior){
+	return true;
+    }
+    else return false;
 
+//    bool ret = _best_merge_prob_with_hint(pref, candidate, best, *x, bestmerge);
+//	return ret;
   }
   
   inline bool _best_merge_prob_with_hint(const SuperVertex &pref,
 			       const SuperVertex& candidate,
 			       const Vertex_handle &best,
-			       const double& rk,
-      			       double& maxrk){
+			       node& x,
+      			       node& bestmerge){
+			       //const double& rk,
+      			       //double& maxrk){
+      //if bestmerge hasn't been set yet, return true
+      if(bestmerge.val == -999){
+	cout << "bestmerge hasnt been set" << endl;
+	bestmerge = node(x);
+       cout << "set bestmerge to node with pts " << endl; bestmerge.points->Print();
+      cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
+	 return true;
+      }
       //strictly greater than
-      if (rk > maxrk){
-	maxrk = rk;
+      //if (rk > maxrk){
+      if (x.log_h1_prior+bestmerge.log_didj > x.log_didj+bestmerge.log_h1_prior){
+      cout << "do comparison for bestmerge" << endl;
+	cout << "x log_h1_prior " << x.log_h1_prior<< " log_didj " <<  x.log_didj << endl;
+      cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
+      cout << "comparing " << x.log_h1_prior+bestmerge.log_didj << " to " <<  x.log_didj+bestmerge.log_h1_prior << endl;
+      cout << "(rearr) comparing " << x.log_h1_prior - x.log_didj << " to " <<  -bestmerge.log_didj+bestmerge.log_h1_prior << endl;
+	cout << "current bestmerge pts" << endl; bestmerge.points->Print();
+	//maxrk = rk;
+	bestmerge = node(x);
+cout << "best merge for node updated " << endl;
+	cout << "new bestmerge pts" << endl; bestmerge.points->Print();
 	return true;
       }
     //don't update maxrk
@@ -334,6 +366,7 @@ inline double DnnPlane::NearestNeighbourProb(const int ii) const{
   return _supervertex[ii].MaxRk;}
 
 inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
+cout << "nearest neighbourprobnode for index " << ii << " is " << endl; _supervertex[ii].n->points->Print();
 	return _supervertex[ii].n;}
 
 inline bool DnnPlane::Valid(const int index) const {

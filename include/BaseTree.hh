@@ -31,6 +31,10 @@ class BaseTree{
 			struct node *r = nullptr;
 			//posterior value - info or key
 			double val = -999;
+			//log(p_dk_h1*pi)
+			double log_h1_prior = -1e100;
+			//log(p_di_ti*p_dj_tj*di*dj)
+			double log_didj = -1e100;
 			//factor in prior
 			//double d;
 			cpp_bin_float_100 d = -999;
@@ -53,6 +57,8 @@ class BaseTree{
 				l = n.l;
 				r = n.r;
 				val = n.val;
+				log_h1_prior = n.log_h1_prior;
+				log_didj = n.log_didj;
 				d = n.d;
 				model = n.model;
 				prob_tk = n.prob_tk;
@@ -64,18 +70,18 @@ class BaseTree{
 
 			//destructor for node
 			~node(){
-				cout << "~node start" << endl;
+				//cout << "~node start" << endl;
 				points = nullptr;
-				cout << "a" << endl;
+				//cout << "a" << endl;
 				delete points;
-				cout << "b" << endl;
+				//cout << "b" << endl;
 				model = nullptr;
-				cout << "c" << endl;
+				//cout << "c" << endl;
 				delete model;
-				cout << "d" << endl;
+				//cout << "d" << endl;
 				//don't free l + r because those could be freed themselves as nodes
 				if(mirror != NULL) free(mirror);
-				cout << "~node done" << endl;
+				//cout << "~node done" << endl;
 			}
 
 		};

@@ -65,7 +65,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
-	
+	cout << "# clusters in merge tree: " << mt->GetNClusters() << endl;
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
 	//all three dimensions will go into calculating the probabilityu
@@ -104,16 +104,27 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			//check for equal rks (more than three - may be two for i,j and j,i), break tie with 3d distance
 			//right now - only equal rks are for equivalent merges
 			//cout << "number of pairs with same bestRk = " << BestRk << ": " << ProbMap.count(BestRk) << endl;
-			double mindist = 999;
 			map_it_i = ProbMap.end();
 			map_it_j = ProbMap.end();
 			if(ProbMap.count(BestRk) > 2){
 				ret = ProbMap.equal_range(BestRk);
 				if(_verb > 1) cout << ProbMap.count(BestRk) << " number of pairs with the same BestRk = " << BestRk << endl;
+				double mindist = 999;
 				for(std::multimap<double,verts>::iterator it = ret.first; it != ret.second; ++it){
 					int jjet_i = it->second.first;
 					int jjet_j = it->second.second;
-					//if(_verb > 1) cout << "rk: " << BestRk << " with points: " << jjet_i << " and " << jjet_j << endl;
+					if(_verb > 1) cout << std::setprecision(5) << "rk: " << BestRk << " with points: " << jjet_i << " and " << jjet_j << endl;
+					double deta = _jets[jjet_i].eta() - _jets[jjet_j].eta();
+					double dphi = _jets[jjet_i].phi() - _jets[jjet_j].phi();
+					dphi = acos(cos(dphi));
+					double dist = sqrt(deta*deta + dphi*dphi);
+					if(dist < mindist){
+						mindist = dist;
+						jet_i = jjet_i;
+						jet_j = jjet_j;
+						map_it = it;	
+					}
+					/*
 					if(InvDistMap.find(jjet_i) == InvDistMap.end()) continue; //skip points already combined
 					if(InvDistMap.find(jjet_j) == InvDistMap.end()) continue; //skip points already combined
 					dist_i = InvDistMap[jjet_i].second;
@@ -158,6 +169,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 						}
 
 					}
+					*/
 				}
 			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << jet_i << " jet_j: " << jet_j  << endl;
 		
@@ -209,31 +221,11 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			cout << "with mean " << endl; jetj_mean.Print();
 	
 			return _trees;
-		/*
-			// find largest rk value in map (last entry)
-			double BestDist;
-			verts BestDistPair;
-			std::multimap<double,verts>::iterator map_it_dist;
-			for(map_it_dist = DistMap.begin(); map_it_dist != DistMap.end(); ++map_it_dist){
-				BestDist = map_it_dist->first;
-				BestDistPair = map_it_dist->second;
-				jet_i = BestDistPair.first;
-				jet_j = BestDistPair.second;
-				if (_verb > 0) cout << "BayesCluster found distance recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << endl; // GPS debugging
-			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " validity constraint " << (!DNN->Valid(jet_i) || !DNN->Valid(jet_j)) << " " << (DNN->Valid(jet_i) && DNN->Valid(jet_j)) << endl;
-				//check validity (to see if it has been clustered before)
-				//if best match is between mirrored points AND there are no points that haven't been geometrically clustered yet,
-				//we're done
-				//also need to erase any impossible merges from map too
-				if(DNN->Valid(jet_i) && DNN->Valid(jet_j)){ done = true; break; 
-				DistMap.erase(map_it_dist);}
-				else continue;
-			} 
-		*/
 		}
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
-		if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
+		//if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
+		if(BestRk <= 0.){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
 		//if either sides of best recombination candidate found is not valid - break
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
@@ -325,9 +317,12 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
 			params = trees[i]->model->GetLHPosteriorParameters(k);
 			cout << " k " << k << " center " << endl; params["mean"].Print();
-			//cout << "cov " << endl; params["cov"].Print();
+			cout << "cov " << endl; params["cov"].Print();
 		}
 		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
+	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
+cout << "with centroid" << endl; center.Print();
+
 		if(trees[i]->mirror != nullptr){
 			cout << " tree has mirror node with subclusters " << endl;
 			for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
@@ -335,6 +330,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				cout << " k " << k << " center " << endl; params["mean"].Print();
 			}
 		}
+	cout << endl;
 	}
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }

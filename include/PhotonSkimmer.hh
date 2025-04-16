@@ -2020,7 +2020,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//double norm_3dproj2d = sqrt(lead_eigenvec_3dproj2d.at(0,0)*lead_eigenvec_3dproj2d.at(0,0) + lead_eigenvec_3dproj2d.at(1,0)*lead_eigenvec_3dproj2d.at(1,0));
 			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(0,0)/norm_3dproj2d,0,0);
 			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(1,0)/norm_3dproj2d,1,0);
-		//cout << "eta_angle_3d " << eta_angle_3d << " atan " << atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0)) << " proj2d " << acos(lead_eigenvec_3dproj2d.at(0,0)) << " eta_angle_2d " << eta_angle_2d << endl;
+			//cout << "eta_angle_3d " << eta_angle_3d << " atan " << atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0)) << " proj2d " << acos(lead_eigenvec_3dproj2d.at(0,0)) << " eta_angle_2d " << eta_angle_2d << endl;
 			double eta_angle_3dproj2d = atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0));
 			_procCats[id_idx].hists1D[1][261]->Fill(cos(eta_angle_2d - eta_angle_3dproj2d));
 	

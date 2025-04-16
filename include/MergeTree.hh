@@ -157,10 +157,20 @@ class MergeTree : BaseTree{
 		double Evidence(node* x){
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
-			if(x->l == _z && x->r == _z) k = 1; 
+			if(x->l == _z && x->r == _z){ 
+				cout << "leaf nodes - setting max # clusters == 1" << endl;
+		 		k = 1;
+			}
+			//if the sum of all weights is not enough for 1 subcluster to be "above threshold" they should not be able to be broken into multiple subclusters
+			else if(x->points->Sumw() < _thresh){
+				cout << "sumw < thresh - setting max # clusters == 1" << endl;
+				k = 1;
+			}
 			//number of clusters in node x = k_l + k_r for left and right nodes
-			else//{
-			k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+			else{
+				cout << "not leaf nodes - setting according to max # clusters" << endl;
+				k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
  //cout << "og points" << endl; x->points->Print();
@@ -201,7 +211,7 @@ class MergeTree : BaseTree{
 			x->model->ShiftData(center);
 			cout << "centroid " << endl; center.Print(); 
 			
-			//cout << "translated pts" << endl; x->model->GetData()->Print();
+			cout << "translated pts" << endl; x->model->GetData()->Print();
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
 			
@@ -220,10 +230,12 @@ class MergeTree : BaseTree{
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
 			//make sure sum of weights for points is above threshold
 			//otherwise the algorithm will exclude all components	
-			if(x->points->Sumw() >= _thresh) algo->SetThresh(_thresh);
+			if(x->points->Sumw() >= _thresh){
+				algo->SetThresh(_thresh);
+			}
 			//cluster
 			double oldLogL = algo->EvalLogL();
-			double LogLThresh = 1e-10;
+			double LogLThresh = 1e-20;
 			double newLogL, entropy, nll;
 			double dLogL = 999; 
 			int it = 0;
@@ -238,7 +250,7 @@ class MergeTree : BaseTree{
 				it++;
 			}
 			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
-//cout << " with points in node " << endl; x->model->GetData()->Print();  
+cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
 	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
@@ -300,8 +312,25 @@ class MergeTree : BaseTree{
 			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
 			dphi = acos(cos(dphi));
 			double dtime = i->points->mean().at(2) - j->points->mean().at(2);
-
+			cout << "deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
 			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
+
+		}
+		
+		double _euclidean_3d_fromCentroid(node* x){
+			if(x->l == _z && x->r == _z) return 0;
+			BayesPoint center({x->points->Centroid(0), x->points->CircularCentroid(1), x->points->Centroid(2)});
+			double deta = x->l->points->mean().at(0) - center.at(0);
+			double dphi = x->l->points->CircularMean(1) - center.at(1);
+			dphi = acos(cos(dphi));
+			double dtime = x->l->points->mean().at(2) - center.at(2);
+			cout << "l: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
+			deta = x->r->points->mean().at(0) - center.at(0);
+			dphi = x->r->points->CircularMean(1) - center.at(1);
+			dphi = acos(cos(dphi));
+			dtime = x->r->points->mean().at(2) - center.at(2);
+			cout << "r: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
+			return 0;//sqrt(deta*deta + dphi*dphi + dtime*dtime);
 
 		}
 

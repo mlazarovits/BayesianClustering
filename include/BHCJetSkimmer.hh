@@ -428,7 +428,7 @@ class BHCJetSkimmer{
 						//cphi = params["mean"].at(1,0);
 						//ctime = params["mean"].at(2,0);
 						//norm += params["pi"].at(0,0);
-					cout << "pred jet subcluster phi " << subcl.phi() << " phi std " << subcl.phi_std() << " phi 02pi " << subcl.phi_02pi() << endl;	
+					//cout << "pred jet subcluster phi " << subcl.phi() << " phi std " << subcl.phi_std() << " phi 02pi " << subcl.phi_02pi() << endl;	
 						_procCats[p].hists1D[0][3]->Fill(subcl.eta());
 						_procCats[p].hists1D[0][4]->Fill(subcl.phi());
 						_procCats[p].hists1D[0][5]->Fill(subcl.time());
@@ -872,7 +872,7 @@ class BHCJetSkimmer{
 				recocov.SetEntry( recocov.at(2,2) + difftime*difftime, 2, 2 );
 			}
 			recocov.mult(recocov,1./(double)wtot);
-			cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
+			//cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
 			return recocov;
 		}
 	
