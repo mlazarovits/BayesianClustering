@@ -372,8 +372,8 @@ if(true)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror
   if (mirror_index == INEXISTENT_VERTEX ) {
     //plane_index = _DNN->NearestNeighbourProbIndex(main_index);
     x = _DNN->NearestNeighbourProbNode(main_index);
-cout << "nearestneighbourprobnode for index " << main_index << " has points " << endl; x->points->Print();
-cout << "node " << main_index << " has nearestneighbourprobenode index " << _DNN->NearestNeighbourProbIndex(main_index) << endl; 
+//cout << "nearestneighbourprobnode for index " << main_index << " has points " << endl; x->points->Print();
+//cout << "node " << main_index << " has nearestneighbourprobenode index " << _DNN->NearestNeighbourProbIndex(main_index) << endl; 
   } else {
     //plane_index = (
     //    _DNN->NearestNeighbourProb(main_index) > 
@@ -386,7 +386,7 @@ cout << "node " << main_index << " has nearestneighbourprobenode index " << _DNN
         _DNN->NearestNeighbourProbNode(main_index) :
         _DNN->NearestNeighbourProbNode(mirror_index);
   }
-	if(true) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl;
+	//if(true) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl;
  //if mirrored points, may need to translate back or set points to points of main idx
  if(x == nullptr) cout << "x null" << endl;
 if(_verbose) cout << "phi of selected merge node: " << x->points->mean().at(1) << endl;

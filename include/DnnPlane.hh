@@ -265,9 +265,9 @@ private:
 	node* n2 = v2.n;
 	node* x = _merge_tree->CalculateMerge(n1, n2);
 	//double rk = x->val; 
-cout << "n1 has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
-cout << "n2 has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
-cout << "x has " << x->points->GetNPoints() << " pts" << endl; x->points->Print();
+//cout << "n1 has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
+//cout << "n2 has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
+//cout << "x has " << x->points->GetNPoints() << " pts" << endl; x->points->Print();
 	return x;
   }
   /// calculates merge probabilities for neighbor (candidate) of point (pref)
@@ -299,25 +299,25 @@ cout << "x has " << x->points->GetNPoints() << " pts" << endl; x->points->Print(
       			       //double& maxrk){
       //if bestmerge hasn't been set yet, return true
       if(bestmerge.val == -999){
-	cout << "bestmerge hasnt been set" << endl;
+//	cout << "bestmerge hasnt been set" << endl;
 	bestmerge = node(x);
-       cout << "set bestmerge to node with pts " << endl; bestmerge.points->Print();
-      cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
+     //  cout << "set bestmerge to node with pts " << endl; bestmerge.points->Print();
+     // cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
 	 return true;
       }
       //strictly greater than
       //if (rk > maxrk){
       if (x.log_h1_prior+bestmerge.log_didj > x.log_didj+bestmerge.log_h1_prior){
-      cout << "do comparison for bestmerge" << endl;
-	cout << "x log_h1_prior " << x.log_h1_prior<< " log_didj " <<  x.log_didj << endl;
-      cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
-      cout << "comparing " << x.log_h1_prior+bestmerge.log_didj << " to " <<  x.log_didj+bestmerge.log_h1_prior << endl;
-      cout << "(rearr) comparing " << x.log_h1_prior - x.log_didj << " to " <<  -bestmerge.log_didj+bestmerge.log_h1_prior << endl;
-	cout << "current bestmerge pts" << endl; bestmerge.points->Print();
+//      cout << "do comparison for bestmerge" << endl;
+//	cout << "x log_h1_prior " << x.log_h1_prior<< " log_didj " <<  x.log_didj << endl;
+//      cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
+//      cout << "comparing " << x.log_h1_prior+bestmerge.log_didj << " to " <<  x.log_didj+bestmerge.log_h1_prior << endl;
+//      cout << "(rearr) comparing " << x.log_h1_prior - x.log_didj << " to " <<  -bestmerge.log_didj+bestmerge.log_h1_prior << endl;
+//	cout << "current bestmerge pts" << endl; bestmerge.points->Print();
 	//maxrk = rk;
 	bestmerge = node(x);
-cout << "best merge for node updated " << endl;
-	cout << "new bestmerge pts" << endl; bestmerge.points->Print();
+//cout << "best merge for node updated " << endl;
+//	cout << "new bestmerge pts" << endl; bestmerge.points->Print();
 	return true;
       }
     //don't update maxrk

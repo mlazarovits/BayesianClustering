@@ -182,7 +182,7 @@ public:
 			int & index3,
 			std::vector<int> & indices_of_updated_neighbours) {
 	bool _verbose = false;
-    if(true) cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - start" << endl;
+    if(_verbose) cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - start" << endl;
     std::vector<int> indices_added(1);
     std::vector<PointCollection> points_to_add(1);
     std::vector<int> indices_to_remove(2);
@@ -198,9 +198,9 @@ public:
 		//cout << "newnode pts" << endl;
 		//newnode->points->Print();
 		//cout << "newnode ismirror " << newnode->ismirror << endl;
-cout << "n1 for " << index1 << " has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
-cout << "n2 for " << index2 << " has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
-cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newnode->points->Print();
+//cout << "n1 for " << index1 << " has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
+//cout << "n2 for " << index2 << " has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
+//cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newnode->points->Print();
     _merge_tree->Insert(newnode);
     _merge_tree->Remove(n1);
     _merge_tree->Remove(n2);
@@ -209,9 +209,9 @@ cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newno
 		       indices_of_updated_neighbours);
     index3 = indices_added[0];
    if(_verbose){cout << "updated neighbours: "; 
-std::vector<int>::iterator it;
-for(it = indices_of_updated_neighbours.begin(); it != indices_of_updated_neighbours.end(); ++it)
-cout << *it << endl; 
+//std::vector<int>::iterator it;
+//for(it = indices_of_updated_neighbours.begin(); it != indices_of_updated_neighbours.end(); ++it)
+//cout << *it << endl; 
    }
 	if(_verbose)cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - end" << endl;
    };

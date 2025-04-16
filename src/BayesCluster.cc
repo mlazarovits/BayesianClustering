@@ -207,7 +207,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jeti_pts += pt;
 			}
 			cout << "jet_i pts" << endl;
-			jeti_pts.Print();
+			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
 			cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
@@ -216,7 +216,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jetj_pts += pt;
 			}
 			cout << "jet_j pts" << endl;
-			jetj_pts.Print();
+			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
 			cout << "with mean " << endl; jetj_mean.Print();
 	
@@ -241,7 +241,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jeti_pts += pt;
 			}
 			cout << "jet_i pts" << endl;
-			jeti_pts.Print();
+			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
 			cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
@@ -250,7 +250,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jetj_pts += pt;
 			}
 			cout << "jet_j pts" << endl;
-			jetj_pts.Print();
+			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
 			cout << "with mean " << endl; jetj_mean.Print();
 		}
