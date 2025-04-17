@@ -424,7 +424,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(rhTime);
 			_hists1D.push_back(photonPt);
 			_hists1D.push_back(etaAngle2D_absTimeMajCovge0p1);
-			_hists1D.push_back(cosDiffEtaAngle2D_3D);
+			_hists1D.push_back(sinDiffEtaAngle2D_3D);
 			_hists1D.push_back(timePhiCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeEtaCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeMaj2DCovOvtimeMaj3DCov);	
@@ -676,6 +676,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(subclE_sqrtSubclEmultTimeSig);
 			_hists2D.push_back(subclEmultTimeMajCov_subclEmultTimeEtaCov);
 			_hists2D.push_back(timeEtaCov_timePhiCov_absTimeMajCovge0p1);
+			_hists2D.push_back(timeMajCov_timeMinCov);
 			
 
 
@@ -1213,8 +1214,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* photonPt = new TH1D("photonPt","photonPt",25,30,1000);
 		//260 - eta angle (angle bw maj axis + eta axis in 2D) with |time maj cov| > 0.1
 		TH1D* etaAngle2D_absTimeMajCovge0p1 = new TH1D("etaAngle2D_absTimeMajCovge0p1","etaAngle2D_absTimeMajCovge0p1",25,-0.4,3.4);
-		//261 - cos(etaAngle_2D - etaAngle_3D)
-		TH1D* cosDiffEtaAngle2D_3D = new TH1D("cosDiffEtaAngle2D_3D","cosDiffEtaAngle2D_3D",25,-1.2,1.2);
+		//261 - sin(etaAngle_2D - etaAngle_3D)
+		TH1D* sinDiffEtaAngle2D_3D = new TH1D("sinDiffEtaAngle2D_3D","sinDiffEtaAngle2D_3D",25,-1.2,1.2);
 		//262 - timePhi cov over timeMaj3D cov
 		TH1D* timePhiCovOvtimeMaj2DCov = new TH1D("timePhiCovOvtimeMaj2DCov","timePhiCovOvtimeMaj2DCov",25,-2,2);
 		//263 - timeEta cov over timeMaj3D cov
@@ -1738,6 +1739,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* subclEmultTimeMajCov_subclEmultTimeEtaCov = new TH2D("subclEmultTimeMajCov_subclEmultTimeEtaCov","subclEmultTimeMajCov_subclEmultTimeEtaCov;subclEmultTimeMajCov;subclEmultTimeEtaCov",50,-5000,5000,50,-5000,5000);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
 		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
+		//247 - time maj cov vs time min cov
+		TH2D* timeMajCov_timeMinCov = new TH2D("timeMajCov_timeMinCov","timeMajCov_timeMinCov;timeMajCov;timeMinCov",25,-0.1,0.1,25,-0.1,0.1);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -1957,11 +1960,14 @@ class PhotonSkimmer : public BaseSkimmer{
 				//time sign does NOT match eta sign
 				//flip sign of eta-time entry
 				cov.SetEntry(-cov.at(0,2),0,2);	
-				cov.SetEntry(-cov.at(2,0),2,0);	
+				cov.SetEntry(-cov.at(2,0),2,0);
+				//flip sign of etaphi cov
+				cov.SetEntry(-cov.at(0,1),0,1);	
+				cov.SetEntry(-cov.at(1,0),1,0);
 			}
 			//else time sign matches eta sign - no change
 			//phi sign convention - etaphi-cov should always be positive
-			if(CalcCov(cov,1,0) < 0){
+			if(cov.at(1,0) < 0){
 				cov.SetEntry(-cov.at(0,1),0,1);
 				cov.SetEntry(-cov.at(1,0),1,0);
 				cov.SetEntry(-cov.at(1,2),1,2);
@@ -1990,7 +1996,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
 			else minLength = sqrt(eigvals[1]);	
 
-
 			//angle bw major axis and eta (3D) - eigenvectors normalized
 			double eta_angle_3d = acos(eigvecs[2].at(0,0));
 			double phi_angle_3d = acos(eigvecs[2].at(1,0));
@@ -2007,6 +2012,26 @@ class PhotonSkimmer : public BaseSkimmer{
 			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
 			phi2D = PhiEll(space_mat);			
 			rot2D = Rotundity(space_mat);
+			
+			//rotate points into 2D (spatial only) maj/min axes
+			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
+			RotatePoints(model->GetData(), rotmat2D, majminpts);
+			MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
+
+			
+			//set time covariance from GMM
+			majminCovMat.SetEntry(cov.at(2,2),2,2);
+			majtime_cov_2d = CalcCov(majminCovMat,2,0);
+			mintime_cov_2d = CalcCov(majminCovMat,2,1);
+			//switch sign of maj axis based on sign of time-maj cov for 2d + 3d major axes
+			if(majtime_cov_2d < 0){
+				eigvecs[2].SetEntry(-eigvecs[2].at(0,0),0,0);
+				eigvecs[2].SetEntry(-eigvecs[2].at(1,0),1,0);
+				eigenvecs_space[1].SetEntry(-eigenvecs_space[1].at(0,0),0,0);
+				eigenvecs_space[1].SetEntry(-eigenvecs_space[1].at(1,0),1,0);
+			}
+			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
+			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 	
 			//angle bw major axis and eta (2D)
 			double eta_angle_2d = acos(eigenvecs_space[1].at(0,0));
@@ -2022,20 +2047,18 @@ class PhotonSkimmer : public BaseSkimmer{
 			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(1,0)/norm_3dproj2d,1,0);
 			//cout << "eta_angle_3d " << eta_angle_3d << " atan " << atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0)) << " proj2d " << acos(lead_eigenvec_3dproj2d.at(0,0)) << " eta_angle_2d " << eta_angle_2d << endl;
 			double eta_angle_3dproj2d = atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0));
-			_procCats[id_idx].hists1D[1][261]->Fill(cos(eta_angle_2d - eta_angle_3dproj2d));
-	
-			//rotate points into 2D (spatial only) maj/min axes
-			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-			RotatePoints(model->GetData(), rotmat2D, majminpts);
-			MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
 
-			
-			//set time covariance from GMM
-			majminCovMat.SetEntry(cov.at(2,2),2,2);
-			majtime_cov_2d = CalcCov(majminCovMat,2,0);
-			mintime_cov_2d = CalcCov(majminCovMat,2,1);
-			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
-			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
+			double lead3d_cross_lead2D_z = eigvecs[2].at(0,0)*eigenvecs_space[1].at(1,0) - eigenvecs_space[1].at(0,0)*eigvecs[2].at(1,0);
+			double lead3d_dot_lead2D = eigvecs[2].at(0,0)*eigenvecs_space[1].at(0,0) + eigvecs[2].at(1,0)*eigenvecs_space[1].at(1,0);
+			double lead3d_dot_lead2D_mag = sqrt(lead3d_dot_lead2D*lead3d_dot_lead2D);		
+	 
+			double lead3d_mag = sqrt(eigvecs[2].at(0,0)*eigvecs[2].at(0,0) + eigvecs[2].at(1,0)*eigvecs[2].at(1,0));
+			double lead2d_mag = sqrt(eigenvecs_space[1].at(0,0)*eigenvecs_space[1].at(0,0) + eigenvecs_space[1].at(1,0)*eigenvecs_space[1].at(1,0));
+			double sinAngleDiff = lead3d_cross_lead2D_z/(lead3d_mag*lead2d_mag);
+			double cosAngleDiff = lead3d_dot_lead2D_mag/(lead3d_mag*lead2d_mag);	
+		cout << "sinanglediff " << sinAngleDiff << " cosAngleDiff " << cosAngleDiff << endl;
+			_procCats[id_idx].hists1D[1][261]->Fill(sinAngleDiff);
+	
 			
 			_procCats[id_idx].hists1D[1][262]->Fill(tp_cov/majtime_cov_2d);
 			_procCats[id_idx].hists1D[1][263]->Fill(te_cov/majtime_cov_2d);
@@ -2319,6 +2342,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][243]->Fill(E_k,sqrt(E_k)*p_var);
 			_procCats[id_idx].hists2D[1][244]->Fill(E_k,sqrt(E_k)*t_var);
 			_procCats[id_idx].hists2D[1][245]->Fill(E_k*majtime_cov_2d,E_k*te_cov);
+			_procCats[id_idx].hists2D[1][247]->Fill(majtime_cov_2d,mintime_cov_2d);
 
 	
 
