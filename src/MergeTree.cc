@@ -23,13 +23,13 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	points->AddPoints(*r->points);
 	struct node* x = (struct node*)malloc(sizeof *x);
 	x->points = points;
-if(l->points->GetNPoints() + r->points->GetNPoints() != x->points->GetNPoints()){
-	cout << "mismatched pts" << endl;
-	cout << "x pts " << x->points->GetNPoints() << " l pts " << l->points->GetNPoints() << " r pts " << r->points->GetNPoints() << endl;
-	cout << "l pts" << endl; l->points->Print();
-	cout << "r pts" << endl; r->points->Print();
-	cout << "x pts" << endl; x->points->Print();
-}
+//if(l->points->GetNPoints() + r->points->GetNPoints() != x->points->GetNPoints()){
+//	cout << "mismatched pts" << endl;
+//	cout << "x pts " << x->points->GetNPoints() << " l pts " << l->points->GetNPoints() << " r pts " << r->points->GetNPoints() << endl;
+//	cout << "l pts" << endl; l->points->Print();
+//	cout << "r pts" << endl; r->points->Print();
+//	cout << "x pts" << endl; x->points->Print();
+//}
 	x->d = d_100;
 	x->l = l;
 	x->r = r;
@@ -86,11 +86,11 @@ if(l->points->GetNPoints() + r->points->GetNPoints() != x->points->GetNPoints())
         //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
 	double loga = elbo + log(_alpha) + lgamma(n);
 	double logb = (double)log(l->prob_tk) + (double)log(r->prob_tk) + (double)log(l->d) + (double)log(r->d);
-        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " lgam " << lgamma(n) << " log(alpha) " << log(_alpha) << endl;
-	cout << "log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " log(d_l) " << log(l->d) << " log(d_r) "  << log(r->d) << endl;
-	cout << "log(a) " << loga << " log(b) " << logb << endl;
-	cout << "log(a) - log(b) " << loga - logb << endl;
-cout << " 3d distance from centroid " << endl;
+        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " lgam " << lgamma(n) << " log(alpha) " << log(_alpha) << endl;
+	//cout << "log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " log(d_l) " << log(l->d) << " log(d_r) "  << log(r->d) << endl;
+	//cout << "log(a) " << loga << " log(b) " << logb << endl;
+	//cout << "log(a) - log(b) " << loga - logb << endl;
+	//cout << " 3d distance from centroid " << endl;
 _euclidean_3d_fromCentroid(x);  
 
 

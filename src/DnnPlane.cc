@@ -857,7 +857,6 @@ void DnnPlane::_SetAndUpdateNearest(
   node* bestmerge = nullptr;//(node*)malloc(sizeof *bestmerge);
    //bestmerge->val = -999;
   Vertex_handle best_vtx = _TR.infinite_vertex();
-  
   // when there is only one finite point left in the triangulation, 
   // there are no triangles. Presumably this is why voronoi returns
   // NULL for the incident vertex circulator. Check if this is
@@ -873,9 +872,9 @@ void DnnPlane::_SetAndUpdateNearest(
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
-///	if(true){cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
-//cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
-//cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
+//	if(true){cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
+//	cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
+//	cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();}
       // update the mindist if we are closer than anything found so far
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
 	nearest = vc; 
@@ -924,7 +923,7 @@ void DnnPlane::_SetAndUpdateNearest(
 		//		  _supervertex[_supervertex[vcindx].MaxRkindex].vertex,
 		//		  *_supervertex[j].n, *_supervertex[vcindx].bestmerge)){
 	
- //     cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " current best merge val for node " << vcindx <<  " " << _supervertex[vcindx].MaxRk << " with node " << _supervertex[vcindx].MaxRkindex << endl; 
+     // cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " current best merge val for node " << vcindx <<  " " << _supervertex[vcindx].MaxRk << " with node " << _supervertex[vcindx].MaxRkindex << endl; 
       if (r0->log_h1_prior - r0->log_didj > _supervertex[vcindx].MaxRk){
          best_vtx = vc;
 	bestmerge = r0;
@@ -954,15 +953,20 @@ void DnnPlane::_SetAndUpdateNearest(
   } while (++vc != done); // move on to next Voronoi neighbour
   // set j's supervertex info about nearest neighbour
   //cout << "  set to point " << nearest->info().val() << endl;
+  //cout << "done updating nearest for node " << j << endl;
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
   //_supervertex[j].bestmerge = _supervertex[];
-  _supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
-  _supervertex[j].MaxRkindex = best_vtx->info().val();
+  //safety for null bestmerge (no available neighbors)
+  if(bestmerge == nullptr)
+  	_supervertex[j].MaxRk = -HUGE_DOUBLE;
+  else
+  	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
+  _supervertex[j].MaxRkindex = best_vtx->info().val(); //defaults to infinite vertex if no neighbors
 
- // if(true) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
- // if(true) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
- // if(true) cout << "_SetAndUpdateNearest - end\n" << endl; 
+  //if(true) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now." << endl;
+  //if(true) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
+  //if(true) cout << "_SetAndUpdateNearest - end\n" << endl; 
 }
 
 //FASTJET_END_NAMESPACE

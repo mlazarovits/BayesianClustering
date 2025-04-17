@@ -209,9 +209,9 @@ class MergeTree : BaseTree{
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 			x->model->ShiftData(center);
-			cout << "centroid " << endl; center.Print(); 
-			
-			cout << "translated pts" << endl; x->model->GetData()->Print();
+			//cout << "centroid " << endl; center.Print(); 
+			//
+			//cout << "translated pts" << endl; x->model->GetData()->Print();
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
 			
@@ -249,8 +249,8 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 				it++;
 			}
-			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
-cout << " with points in node model " << endl; x->model->GetData()->Print();  
+			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+//cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
 	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
@@ -312,7 +312,7 @@ cout << " with points in node model " << endl; x->model->GetData()->Print();
 			double dphi = i->points->CircularMean(1) - j->points->CircularMean(1);
 			dphi = acos(cos(dphi));
 			double dtime = i->points->mean().at(2) - j->points->mean().at(2);
-			cout << "deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
+			//cout << "deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
 			return sqrt(deta*deta + dphi*dphi + dtime*dtime);
 
 		}
@@ -324,12 +324,12 @@ cout << " with points in node model " << endl; x->model->GetData()->Print();
 			double dphi = x->l->points->CircularMean(1) - center.at(1);
 			dphi = acos(cos(dphi));
 			double dtime = x->l->points->mean().at(2) - center.at(2);
-			cout << "l: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
+			//cout << "l: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
 			deta = x->r->points->mean().at(0) - center.at(0);
 			dphi = x->r->points->CircularMean(1) - center.at(1);
 			dphi = acos(cos(dphi));
 			dtime = x->r->points->mean().at(2) - center.at(2);
-			cout << "r: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
+			//cout << "r: deta " << deta << " dphi " << dphi << " dtime " << dtime << endl;
 			return 0;//sqrt(deta*deta + dphi*dphi + dtime*dtime);
 
 		}
