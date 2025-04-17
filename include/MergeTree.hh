@@ -158,17 +158,17 @@ class MergeTree : BaseTree{
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z){ 
-				cout << "leaf nodes - setting max # clusters == 1" << endl;
+				//cout << "leaf nodes - setting max # clusters == 1" << endl;
 		 		k = 1;
 			}
 			//if the sum of all weights is not enough for 1 subcluster to be "above threshold" they should not be able to be broken into multiple subclusters
 			else if(x->points->Sumw() < _thresh){
-				cout << "sumw < thresh - setting max # clusters == 1" << endl;
+				//cout << "sumw < thresh - setting max # clusters == 1" << endl;
 				k = 1;
 			}
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
-				cout << "not leaf nodes - setting according to max # clusters" << endl;
+				//cout << "not leaf nodes - setting according to max # clusters" << endl;
 				k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
