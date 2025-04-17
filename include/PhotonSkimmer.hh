@@ -1937,7 +1937,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			E_k = norms[k]/_gev; 
 			
 			
-			params = model->GetLHPosteriorParameters(k);
+			//params = model->GetLHPosteriorParameters(k);
+			params = model->GetDataStatistics(k);
 			ec = params["mean"].at(0,0);
 			pc = params["mean"].at(1,0);
 			if(isnan(pc)) cout << "pc is nan" << endl;
