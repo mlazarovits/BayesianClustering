@@ -2058,9 +2058,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			double y2d_eta = 1*eigenvecs_space[0].at(0,0) + 0.*eigenvecs_space[0].at(1,0);
 		
 			double angleDiff_eta = atan2(y2d_eta,x2d_eta);
-			if(id_idx == 0) cout << "x2d " << x2d << " y2d " << y2d << " angle to maj of 3d lead " << angleDiff << " sin(angle) " << sin(angleDiff) << " angleDiff_eta " << angleDiff_eta << " eta_angle_2d " << eta_angle_2d << " eta_angle_3d " << eta_angle_3d << " time_angle_3d " << time_angle_3d << endl;
-			if(id_idx == 0) cout << " eigenvals 3d " << eigvals[0] << " " << eigvals[1] << " " << eigvals[2] << endl;
-			if(id_idx == 0) cout << " eigenvals 2d " << eigenvals_space[0] << " " << eigenvals_space[1] << endl;	
+			//if(id_idx == 0) cout << "x2d " << x2d << " y2d " << y2d << " angle to maj of 3d lead " << angleDiff << " sin(angle) " << sin(angleDiff) << " angleDiff_eta " << angleDiff_eta << " eta_angle_2d " << eta_angle_2d << " eta_angle_3d " << eta_angle_3d << " time_angle_3d " << time_angle_3d << endl;
+			//if(id_idx == 0) cout << " eigenvals 3d " << eigvals[0] << " " << eigvals[1] << " " << eigvals[2] << endl;
+			//if(id_idx == 0) cout << " eigenvals 2d " << eigenvals_space[0] << " " << eigenvals_space[1] << endl;	
 			_procCats[id_idx].hists1D[1][261]->Fill(sin(angleDiff));
 	
 			
