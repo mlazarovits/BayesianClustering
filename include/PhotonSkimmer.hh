@@ -1886,7 +1886,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			vector<Matrix> eigenvecs, eigenvecs_space; 
 			Matrix space_mat = Matrix(2,2);
 			Matrix rotmat2D = Matrix(3,3);		
-			Matrix majminCovMat = Matrix(3,3);
+			Matrix majmin3DCovMat = Matrix(3,3);
+			Matrix majmin2DCovMat = Matrix(3,3);
 			PointCollection majminpts;
 
 			double npts = (double)model->GetData()->GetNPoints();
@@ -1997,16 +1998,22 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
 			else minLength = sqrt(eigvals[1]);	
 
-			//angle bw major axis and eta (3D) - eigenvectors normalized
-			double eta_angle_3d = acos(eigvecs[2].at(0,0));
-			double phi_angle_3d = acos(eigvecs[2].at(1,0));
 			//rotate into 3D eigenvector space
 			Matrix rotmat3D(3,3);
 			Get3DRotationMatrix(eigvecs,rotmat3D);
 			RotatePoints(model->GetData(), rotmat3D, majminpts);
-			MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
-			majtime_cov_3d = CalcCov(majminCovMat,2,0);
-			
+			MakeCovMat(&majminpts, majmin3DCovMat, weightScheme(1));
+			majtime_cov_3d = CalcCov(majmin3DCovMat,2,0);
+			if(majtime_cov_3d < 0){
+				eigvecs[2].SetEntry(-eigvecs[2].at(0,0),0,0);
+				eigvecs[2].SetEntry(-eigvecs[2].at(1,0),1,0);
+				majmin3DCovMat.SetEntry(-majtime_cov_3d,2,0);
+				majmin3DCovMat.SetEntry(-majtime_cov_3d,0,2);
+			}	
+			//angle bw major axis and eta (3D) - eigenvectors normalized
+			double eta_angle_3d = acos(eigvecs[2].at(0,0));
+			double phi_angle_3d = acos(eigvecs[2].at(1,0));
+			double time_angle_3d = acos(eigvecs[2].at(2,0));
 			//rotundity - 2D
 			//take upper 2x2 submatrix from covariance
 			Get2DMat(cov,space_mat);
@@ -2017,48 +2024,44 @@ class PhotonSkimmer : public BaseSkimmer{
 			//rotate points into 2D (spatial only) maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
 			RotatePoints(model->GetData(), rotmat2D, majminpts);
-			MakeCovMat(&majminpts, majminCovMat, weightScheme(1));
+			MakeCovMat(&majminpts, majmin2DCovMat, weightScheme(1));
 
 			
-			//set time covariance from GMM
-			majminCovMat.SetEntry(cov.at(2,2),2,2);
-			majtime_cov_2d = CalcCov(majminCovMat,2,0);
-			mintime_cov_2d = CalcCov(majminCovMat,2,1);
+			//set time covariance from GMM for major/minor 2D covariance
+			majmin2DCovMat.SetEntry(cov.at(2,2),2,2);
+			majtime_cov_2d = CalcCov(majmin2DCovMat,2,0);
+			mintime_cov_2d = CalcCov(majmin2DCovMat,2,1);
 			//switch sign of maj axis based on sign of time-maj cov for 2d + 3d major axes
 			if(majtime_cov_2d < 0){
-				eigvecs[2].SetEntry(-eigvecs[2].at(0,0),0,0);
-				eigvecs[2].SetEntry(-eigvecs[2].at(1,0),1,0);
 				eigenvecs_space[1].SetEntry(-eigenvecs_space[1].at(0,0),0,0);
 				eigenvecs_space[1].SetEntry(-eigenvecs_space[1].at(1,0),1,0);
+				majmin2DCovMat.SetEntry(-majtime_cov_2d,2,0);
+				majmin2DCovMat.SetEntry(-majtime_cov_2d,0,2);
 			}
-			majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
-			mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
+			majtime_cov_unnorm = CalcCov(majmin2DCovMat,2,0,false);
+			mintime_cov_unnorm = CalcCov(majmin2DCovMat,2,1,false);
 	
 			//angle bw major axis and eta (2D)
 			double eta_angle_2d = acos(eigenvecs_space[1].at(0,0));
 			double phi_angle_2d = acos(eigenvecs_space[1].at(1,0));
 			double majLength_2d = sqrt(eigenvals_space[1]);				
-		
-			//difference in angle from eta axis bw 2D and 3D proj 2D major axes
-			//Matrix lead_eigenvec_3dproj2d(2,1);
-			//lead_eigenvec_3dproj2d.SetEntry(eigvecs[2].at(0,0),0,0);
-			//lead_eigenvec_3dproj2d.SetEntry(eigvecs[2].at(1,0),1,0);
-			//double norm_3dproj2d = sqrt(lead_eigenvec_3dproj2d.at(0,0)*lead_eigenvec_3dproj2d.at(0,0) + lead_eigenvec_3dproj2d.at(1,0)*lead_eigenvec_3dproj2d.at(1,0));
-			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(0,0)/norm_3dproj2d,0,0);
-			//lead_eigenvec_3dproj2d.SetEntry(lead_eigenvec_3dproj2d.at(1,0)/norm_3dproj2d,1,0);
-			//cout << "eta_angle_3d " << eta_angle_3d << " atan " << atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0)) << " proj2d " << acos(lead_eigenvec_3dproj2d.at(0,0)) << " eta_angle_2d " << eta_angle_2d << endl;
-			double eta_angle_3dproj2d = atan2(eigvecs[2].at(1,0), eigvecs[2].at(0,0));
 
-			double lead3d_cross_lead2D_z = eigvecs[2].at(0,0)*eigenvecs_space[1].at(1,0) - eigenvecs_space[1].at(0,0)*eigvecs[2].at(1,0);
-			double lead3d_dot_lead2D = eigvecs[2].at(0,0)*eigenvecs_space[1].at(0,0) + eigvecs[2].at(1,0)*eigenvecs_space[1].at(1,0);
-			double lead3d_dot_lead2D_mag = sqrt(lead3d_dot_lead2D*lead3d_dot_lead2D);		
-	 
-			double lead3d_mag = sqrt(eigvecs[2].at(0,0)*eigvecs[2].at(0,0) + eigvecs[2].at(1,0)*eigvecs[2].at(1,0));
-			double lead2d_mag = sqrt(eigenvecs_space[1].at(0,0)*eigenvecs_space[1].at(0,0) + eigenvecs_space[1].at(1,0)*eigenvecs_space[1].at(1,0));
-			double sinAngleDiff = lead3d_cross_lead2D_z/(lead3d_mag*lead2d_mag);
-			double cosAngleDiff = lead3d_dot_lead2D_mag/(lead3d_mag*lead2d_mag);	
-		cout << "sinanglediff " << sinAngleDiff << " cosAngleDiff " << cosAngleDiff << endl;
-			_procCats[id_idx].hists1D[1][261]->Fill(sinAngleDiff);
+		
+			//project 2D eta-phi components of 3D lead eigenvector into 2D spatial maj-min space
+			//x2d = v_3D_maj \dot v_2D_maj
+			//y2d = v_3D_maj \dot v_2D_min
+			double x2d = eigvecs[2].at(0,0)*eigenvecs_space[1].at(0,0) + eigvecs[2].at(1,0)*eigenvecs_space[1].at(1,0);
+			double y2d = eigvecs[2].at(0,0)*eigenvecs_space[0].at(0,0) + eigvecs[2].at(1,0)*eigenvecs_space[0].at(1,0);
+	
+			double angleDiff = atan2(y2d,x2d);
+			double x2d_eta = 1*eigenvecs_space[1].at(0,0) + 0.*eigenvecs_space[1].at(1,0);
+			double y2d_eta = 1*eigenvecs_space[0].at(0,0) + 0.*eigenvecs_space[0].at(1,0);
+		
+			double angleDiff_eta = atan2(y2d_eta,x2d_eta);
+			if(id_idx == 0) cout << "x2d " << x2d << " y2d " << y2d << " angle to maj of 3d lead " << angleDiff << " sin(angle) " << sin(angleDiff) << " angleDiff_eta " << angleDiff_eta << " eta_angle_2d " << eta_angle_2d << " eta_angle_3d " << eta_angle_3d << " time_angle_3d " << time_angle_3d << endl;
+			if(id_idx == 0) cout << " eigenvals 3d " << eigvals[0] << " " << eigvals[1] << " " << eigvals[2] << endl;
+			if(id_idx == 0) cout << " eigenvals 2d " << eigenvals_space[0] << " " << eigenvals_space[1] << endl;	
+			_procCats[id_idx].hists1D[1][261]->Fill(sin(angleDiff));
 	
 			
 			_procCats[id_idx].hists1D[1][262]->Fill(tp_cov/majtime_cov_2d);
