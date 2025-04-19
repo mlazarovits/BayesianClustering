@@ -366,7 +366,7 @@ inline double DnnPlane::NearestNeighbourProb(const int ii) const{
   return _supervertex[ii].MaxRk;}
 
 inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
-cout << "nearest neighbourprobnode for index " << ii << " is " << endl; _supervertex[ii].n->points->Print();
+//cout << "nearest neighbourprobnode for index " << ii << " is " << endl; _supervertex[ii].n->points->Print();
 	return _supervertex[ii].n;}
 
 inline bool DnnPlane::Valid(const int index) const {

@@ -365,8 +365,8 @@ inline double Dnn2piCylinder::NearestNeighbourProb(const int current) const{
 inline node* Dnn2piCylinder::NearestNeighbourProbNode(const int current) const {
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
-if(true) cout << "current: " << current << " main idx: " << main_index << " cyl index: " << _cylinder_index_of_plane_vertex[main_index] <<  " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
-if(true)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror index: " << _DNN->Valid(mirror_index) << " cyl index: " << Valid(_cylinder_index_of_plane_vertex[main_index]) << endl;
+if(_verbose) cout << "current: " << current << " main idx: " << main_index << " cyl index: " << _cylinder_index_of_plane_vertex[main_index] <<  " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
+if(_verbose)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror index: " << _DNN->Valid(mirror_index) << " cyl index: " << Valid(_cylinder_index_of_plane_vertex[main_index]) << endl;
   int plane_index;
   node* x;
   if (mirror_index == INEXISTENT_VERTEX ) {
@@ -386,7 +386,7 @@ if(true)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror
         _DNN->NearestNeighbourProbNode(main_index) :
         _DNN->NearestNeighbourProbNode(mirror_index);
   }
-	//if(true) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl;
+	//if(_verbose) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl;
  //if mirrored points, may need to translate back or set points to points of main idx
  if(x == nullptr) cout << "x null" << endl;
 if(_verbose) cout << "phi of selected merge node: " << x->points->mean().at(1) << endl;

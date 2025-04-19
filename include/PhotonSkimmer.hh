@@ -2690,12 +2690,12 @@ class PhotonSkimmer : public BaseSkimmer{
 			}
 		}
 		//eta time sign convention
-		if(mean.at(0) < 0){
-			//time sign does NOT match eta sign
-			//flip sign of eta-time entry
-			outcov.SetEntry(-outcov.at(0,2),0,2);	
-			outcov.SetEntry(-outcov.at(2,0),2,0);	
-		}
+		//if(mean.at(0) < 0){
+		//	//time sign does NOT match eta sign
+		//	//flip sign of eta-time entry
+		//	outcov.SetEntry(-outcov.at(0,2),0,2);	
+		//	outcov.SetEntry(-outcov.at(2,0),2,0);	
+		//}
 
 
 

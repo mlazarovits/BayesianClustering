@@ -7,16 +7,19 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//get number of points in merged tree
 	//double n = l->points->GetNPoints() + r->points->GetNPoints();	
 	double n = l->points->Sumw() + r->points->Sumw();	
-	double d =  _alpha*tgamma(n) + (double)l->d*(double)r->d;
-	double pi = _alpha*tgamma(n)/(double)d;
 
 	double pi_a = log(_alpha) + lgamma(n);
 	double pi_b = (double)log(l->d) + (double)log(r->d);
 	double pi_max = fmax(pi_a,pi_b);
 	double pi_stable = exp(pi_a - pi_max)/(exp(pi_a - pi_max) + exp(pi_b - pi_max));
 
-	//d = a*gam(n) + dl*dr 
-	cpp_bin_float_100 d_100 = cpp_bin_float_100(_alpha)*tgamma(cpp_bin_float_100(n)) + cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d);
+	//d = alpha*gam(n) + dl*dr 
+	//  = dr*dl*(alpha*gam(n)/(dl*dr) + 1)
+	//  = dr*dl*(exp( log(alpha*gam(n)/(dl*dr)) ) + 1)
+	//  = dr*dl*(exp( log(alpha) + lgam(n) - log(dl) - log(dr) ) + 1)
+	//  = exp( log(dr) + log(dl) )*(exp( log(alpha) + lgam(n) - log(dl) - log(dr) ) + 1)
+	//cpp_bin_float_100 d_100 = cpp_bin_float_100(_alpha)*tgamma(cpp_bin_float_100(n)) + cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d);
+	cpp_bin_float_100 d_100 = (exp( log(_alpha) + lgamma(n) - log(l->d) - log(r->d) ) + 1)*exp( log(l->d) + log(r->d)); 
 	
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
@@ -47,8 +50,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double elbo = Evidence(x);
 	cpp_bin_float_100 p_dk_h1 = exp(elbo);
 	//marginal prob of t_k = null + alterantive hypo (separate trees) - need to save for future recursions
-	double p_dk_tk = pi_stable*(double)p_dk_h1 + (double)((l->d*r->d)/d)*(double)l->prob_tk*(double)r->prob_tk;
-	cpp_bin_float_100 p_dk_tk_100 = pi_stable*p_dk_h1 + ((l->d*r->d)/d)*l->prob_tk*r->prob_tk;
+	cpp_bin_float_100 p_dk_tk_100 = pi_stable*p_dk_h1 + ((l->d*r->d)/d_100)*l->prob_tk*r->prob_tk;
 
 
 	//deal with numerical instability - rk = pi*p(Dk|H1)/p(Dk|Tk) = exp(A)/(exp(A) + exp(B))
@@ -91,12 +93,14 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//cout << "log(a) " << loga << " log(b) " << logb << endl;
 	//cout << "log(a) - log(b) " << loga - logb << endl;
 	//cout << " 3d distance from centroid " << endl;
-_euclidean_3d_fromCentroid(x);  
 
 
+	//cout << "p_dk_tk_100 " << p_dk_tk_100 << " pi_stable " << pi_stable << " p_dk_h1 " << p_dk_h1 << " dl " << l->d << " dr " << r->d << " d " << d_100 << " p(dl) " << l->prob_tk << " p(dr) " << r->prob_tk << " n " << n << endl;
 	x->val = rk;
 	x->log_h1_prior = loga;
+//cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_alpha) << " + lgam(n) " << lgamma(n) << endl;
 	x->log_didj = logb;
+//cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
 	x->prob_tk = p_dk_tk_100;
 	
 

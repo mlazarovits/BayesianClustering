@@ -60,7 +60,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
 		mt->AddLeaf(&_points[i].at(0));
 	}
-	if(_verb > 0) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
+	if(_verb > 1) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
@@ -178,22 +178,21 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jet_j = BestRkPair.second;
 			}
 
-			if (_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;
-			} // GPS debugging
+			if(_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
 			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
-		cout << "prob map size before " << ProbMap.size() << endl;	
-			if(map_it != ProbMap.end()){ cout << "erasing it for jets " << map_it->second.first << " " << map_it->second.second << endl; ProbMap.erase(map_it);}
+		//cout << "prob map size before " << ProbMap.size() << endl;	
+			if(map_it != ProbMap.end()){ if(_verb > 1) cout << "erasing it for jets " << map_it->second.first << " " << map_it->second.second << endl; ProbMap.erase(map_it);}
 			//not guaranteed that pair that is merged is corresponding pair in prob map
 			if(map_it_i != ProbMap.end()){cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
 			if(map_it_j != ProbMap.end()){cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
-		cout << "prob map size after " << ProbMap.size() << endl;	
+		//cout << "prob map size after " << ProbMap.size() << endl;	
 			//erase from InvDistMap too
 			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
 			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
 			Valid2 = DNN->Valid(jet_j);
-			if (_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
+			if(_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
@@ -225,7 +224,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		//if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
-		if(BestRk <= 0.){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
+		if(BestRk <= 0.){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
 		//if either sides of best recombination candidate found is not valid - break
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 

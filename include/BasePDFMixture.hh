@@ -320,6 +320,8 @@ class BasePDFMixture : public BasePDF{
 		virtual void ShiftParameters(const BayesPoint& pt) = 0;
 		//scale learned parameters 
 		virtual void ScaleParameters(Matrix sc) = 0;
+		//scale prior parameters 
+		virtual void ScalePriorParameters(Matrix sc) = 0;
 
 		PointCollection* m_data;
 		//number of data points
