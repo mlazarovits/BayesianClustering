@@ -1248,7 +1248,7 @@ class BHCJetSkimmer{
 		//76 - n BHC jets, tt fully lep
 		TH1D* BHC_nJets_fullLep = new TH1D("BHC_nJets_fullLep","BHC_nJets_fullLep",10,0,10);
 		//77 - n GMM clusters in reco jets
-		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclusters","recoAK4Jet_nSubclusters",30,0,30);
+		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclustersJet","recoAK4Jet_nSubclustersJet",30,0,30);
 		//78 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,250);
 		//79 - time center of GMM cluster from reco jets
