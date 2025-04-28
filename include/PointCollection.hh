@@ -335,17 +335,32 @@ class PointCollection{
 			//else if(_pts[i].at(d) > 2*acos(-1))
 			//	_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
 			//else
-				//if(d == 1){
+				//if(d == 1 && _pts[i].w() > 45){
 				//	cout << "pts at d " << _pts[i].at(d) << " t " << t << " diff " << _pts[i].at(d) - t << " acos(cos(diff)) " << acos(cos(_pts[i].at(d) - t)) << endl;
 		
 				//}
-				if(fabs(_pts[i].at(d) - t) > acos(-1))
-					_pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
-				
-				else
+		//turned off acos(cos()) from subcluster shifts	
+		//	if(fabs(_pts[i].at(d) - t) > acos(-1)){
+			//		if(cos(_pts[i].at(d) - t) > 0) _pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
+			//		else _pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
+			//	}
+			//	else{
 					_pts[i].SetValue(_pts[i].at(d) - t,d);
-//if(d == 1) cout << "new value of pt " << _pts[i].at(d) << endl;
+			//	}
+//if(d == 1 && _pts[i].w() > 45) cout << "new value of pt " << _pts[i].at(d) << endl;
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
+		}
+
+	}
+
+
+	void AngleToPlaneProject(int d){
+		//for small theta, theta ~ sin(theta) ~ tan(theta), cos(theta) ~ 1
+		//tan(theta/2) = sin(theta)/(1 + cos(theta))
+		//for small theta => theta/2
+		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
+		for(int i = 0; i < (int)_pts.size(); i++){
+			_pts[i].SetValue(2*tan(_pts[i].at(d)/2.),d);
 		}
 
 	}
@@ -354,11 +369,12 @@ class PointCollection{
 	void Put02pi(int d){
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			//if pt is negative
-			if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
-			//if pt is geq 2*pi
-			else if(_pts[i].at(d) >= 2*pi) _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
-			else continue;
+			while(_pts[i].at(d) < 0 || _pts[i].at(d) > 2*pi){
+				//if pt is negative
+				if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
+				//if pt is geq 2*pi
+				else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
+			}
 		}
 	}
 
