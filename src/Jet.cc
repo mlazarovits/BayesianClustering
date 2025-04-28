@@ -299,7 +299,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 	PointCollection means;
 	for(int k = 0; k < nsubcl; k++){
-		auto params = model->GetLikelihoodParameters(k);
+		auto params = model->GetLHPosteriorParameters(k);
 		Ek = norms[k]/gev;
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 		_constituents.push_back(subcl);
