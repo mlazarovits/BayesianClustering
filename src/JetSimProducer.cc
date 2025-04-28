@@ -273,10 +273,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		py = pt*sin(phi);
 		pz = pt*sinh(eta);
 
-		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		Jet jet(px, py,
 		        pz, _base->Jet_energy->at(j));
-		
 		jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
 
