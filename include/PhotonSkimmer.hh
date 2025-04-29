@@ -1896,6 +1896,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//double theta, r, rot3D, vel, v_x, v_y, v_z;
 			double ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
 			double ep_cov_unnorm, te_cov_unnorm, tp_cov_unnorm;
+			double ep_cov_norm, te_cov_norm, tp_cov_norm;
 			double majtime_cov_3d, mintime_cov_3d, majtime_cov_unnorm, mintime_cov_unnorm;
 			double majtime_cov_2d, mintime_cov_2d;
 			double timespace_cov;		
@@ -1938,8 +1939,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			E_k = norms[k]/_gev; 
 			
 			
-			//params = model->GetLHPosteriorParameters(k);
-			params = model->GetDataStatistics(k);
+			params = model->GetLHPosteriorParameters(k);
+			//params = model->GetDataStatistics(k);
 			ec = params["mean"].at(0,0);
 			pc = params["mean"].at(1,0);
 			if(isnan(pc)) cout << "pc is nan" << endl;
@@ -1948,6 +1949,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			tc = params["mean"].at(2,0);
 			pi = params["pi"].at(0,0);
 			cov = params["cov"];	
+			Matrix eCov(3,3);
+			MakeCovMat(model->GetData(), eCov, weightScheme(1));
+			eCov.invert(eCov);
+			//cov.mult(cov,1/model->GetData()->Sumw());
+			//cov.mult(cov,eCov);
 			//distance from xmax to mean_k
 			///double dist = 0;
 			///for(int d = 0; d < xmax.Dim(); d++)
@@ -1980,15 +1986,20 @@ class PhotonSkimmer : public BaseSkimmer{
 			p_var = sqrt(cov.at(1,1));
 			t_var = sqrt(cov.at(2,2));
 
-			ep_cov = CalcCov(cov, 1, 0);
-			te_cov = CalcCov(cov, 2, 0);
-			tp_cov = CalcCov(cov, 2, 1);
-			ep_cov_unnorm = CalcCov(cov, 1, 0, false);
-			te_cov_unnorm = CalcCov(cov, 2, 0, false);
-			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
+			ep_cov_norm = CalcCov(cov, 1, 0);
+			te_cov_norm = CalcCov(cov, 2, 0);
+			tp_cov_norm = CalcCov(cov, 2, 1);
+			ep_cov = CalcCov(cov, 1, 0, false);
+			te_cov = CalcCov(cov, 2, 0, false);
+			tp_cov = CalcCov(cov, 2, 1, false);
+			ep_cov_unnorm = ep_cov;
+			te_cov_unnorm = te_cov;
+			tp_cov_unnorm = tp_cov;
 
 
-//cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << "ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
+//cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << " ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
+//			cout << "exp post cov/e cov" << endl; cov.Print();
+			
 			vector<Matrix> eigvecs;
 			vector<double> eigvals;
 			cov.eigenCalc(eigvals,eigvecs);
@@ -2003,7 +2014,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			Get3DRotationMatrix(eigvecs,rotmat3D);
 			RotatePoints(model->GetData(), rotmat3D, majminpts);
 			MakeCovMat(&majminpts, majmin3DCovMat, weightScheme(1));
-			majtime_cov_3d = CalcCov(majmin3DCovMat,2,0);
+			majtime_cov_3d = CalcCov(majmin3DCovMat,2,0, false);
 			if(majtime_cov_3d < 0){
 				eigvecs[2].SetEntry(-eigvecs[2].at(0,0),0,0);
 				eigvecs[2].SetEntry(-eigvecs[2].at(1,0),1,0);
@@ -2029,8 +2040,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			//set time covariance from GMM for major/minor 2D covariance
 			majmin2DCovMat.SetEntry(cov.at(2,2),2,2);
-			majtime_cov_2d = CalcCov(majmin2DCovMat,2,0);
-			mintime_cov_2d = CalcCov(majmin2DCovMat,2,1);
+			majtime_cov_2d = CalcCov(majmin2DCovMat,2,0, false);
+			mintime_cov_2d = CalcCov(majmin2DCovMat,2,1, false);
 			//switch sign of maj axis based on sign of time-maj cov for 2d + 3d major axes
 			if(majtime_cov_2d < 0){
 				eigenvecs_space[1].SetEntry(-eigenvecs_space[1].at(0,0),0,0);
