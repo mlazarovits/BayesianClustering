@@ -1954,7 +1954,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix eCov(3,3);
 			MakeCovMat(model->GetData(), eCov, weightScheme(1));
 			eCov.invert(eCov);
-			//cov.mult(cov,1/model->GetData()->Sumw());
+			cov.mult(cov,1/model->GetData()->Sumw());
 			//cov.mult(cov,eCov);
 			//distance from xmax to mean_k
 			///double dist = 0;
@@ -1988,15 +1988,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			p_var = sqrt(cov.at(1,1));
 			t_var = sqrt(cov.at(2,2));
 
-			ep_cov_norm = CalcCov(cov, 1, 0);
-			te_cov_norm = CalcCov(cov, 2, 0);
-			tp_cov_norm = CalcCov(cov, 2, 1);
-			ep_cov = CalcCov(cov, 1, 0, false);
-			te_cov = CalcCov(cov, 2, 0, false);
-			tp_cov = CalcCov(cov, 2, 1, false);
-			ep_cov_unnorm = ep_cov;
-			te_cov_unnorm = te_cov;
-			tp_cov_unnorm = tp_cov;
+			//normalized covs
+			ep_cov = CalcCov(cov, 1, 0);
+			te_cov = CalcCov(cov, 2, 0);
+			tp_cov = CalcCov(cov, 2, 1);
+			ep_cov_unnorm = CalcCov(cov, 1, 0, false);
+			te_cov_unnorm = CalcCov(cov, 2, 0, false);
+			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
 
 
 //cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << " ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
@@ -3395,6 +3393,14 @@ class PhotonSkimmer : public BaseSkimmer{
 		return make_pair(etanew, phinew);
 	}
 
+
+	//assume centered at zero, t0 = center of plane section
+	void EtaPhiPlaneSection(double erad, double prad, double trad, double t0, double& etaplanerad, double& phiplanerad){
+		Matrix plane(3,1);
+		plane.SetEntry(1,2,0);
+
+
+	} 
 
 
 
