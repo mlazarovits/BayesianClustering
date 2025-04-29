@@ -677,6 +677,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(subclEmultTimeMajCov_subclEmultTimeEtaCov);
 			_hists2D.push_back(timeEtaCov_timePhiCov_absTimeMajCovge0p1);
 			_hists2D.push_back(timeMajCov_timeMinCov);
+			_hists2D.push_back(tPlaneDist_planeEtaSig);
+			_hists2D.push_back(tPlaneDist_planePhiSig);
 			
 
 
@@ -1743,6 +1745,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
 		//247 - time maj cov vs time min cov
 		TH2D* timeMajCov_timeMinCov = new TH2D("timeMajCov_timeMinCov","timeMajCov_timeMinCov;timeMajCov;timeMinCov",25,-0.1,0.1,25,-0.1,0.1);
+		//248 - distance to plane in time vs plane eta rad
+		TH2D* tPlaneDist_planeEtaSig = new TH2D("tPlaneDist_planeEtaSig","tPlaneDist_planeEtaSig;tPlaneDist;planeEtaSig",50,0,1.5,50,0,0.1);
+		//249 - distance to plane in time vs plane phi rad
+		TH2D* tPlaneDist_planePhiSig = new TH2D("tPlaneDist_planePhiSig","tPlaneDist_planePhiSig;tPlaneDist;planePhiSig",50,0,1.5,50,0,0.1);
+
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2358,6 +2365,18 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][244]->Fill(E_k,sqrt(E_k)*t_var);
 			_procCats[id_idx].hists2D[1][245]->Fill(E_k*majtime_cov_2d,E_k*te_cov);
 			_procCats[id_idx].hists2D[1][247]->Fill(majtime_cov_2d,mintime_cov_2d);
+	
+			//planar sections - on average (over many subclusters)
+			int nstep_tplane = 50;
+			double eplane_sig, pplane_sig, t0;
+			for(int t = 0; t < nstep_tplane; t++){
+				t0 = (double)t/t_var;
+				EtaPhiPlaneSection(e_var, p_var, t_var, t0, eplane_sig, pplane_sig);
+				_procCats[id_idx].hists2D[1][248]->Fill(t0,eplane_sig);
+				_procCats[id_idx].hists2D[1][249]->Fill(t0,pplane_sig);
+			}
+			
+
 
 	
 
@@ -3396,10 +3415,12 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	//assume centered at zero, t0 = center of plane section
 	void EtaPhiPlaneSection(double erad, double prad, double trad, double t0, double& etaplanerad, double& phiplanerad){
-		Matrix plane(3,1);
-		plane.SetEntry(1,2,0);
-
-
+		//for a horizontal planar section where z = d = t0, the eta and phi radii are orthogonal to the plane along their respective directions
+		//the eta/phi plane radii depends on the distance to the plane (t0 = d), the radius in time (trad), scaled by the respective overall radius (erad, prad)
+		//see https://en.wikipedia.org/wiki/Ellipsoid#Determining_the_ellipse_of_a_plane_section
+		double rho = sqrt(1 - (t0/trad)*(t0/trad));
+		etaplanerad = erad*rho;
+		phiplanerad = prad*rho;
 	} 
 
 
