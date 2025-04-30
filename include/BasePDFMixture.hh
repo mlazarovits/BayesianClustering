@@ -169,6 +169,7 @@ class BasePDFMixture : public BasePDF{
 		//if(m_k > 1){ for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl; m_post.Print(); if(m_n < 3) m_data->Print(); }
 	//	cout << "points" << endl; m_data->Print();
 	//	cout << "weights" << endl; for(int n = 0; n < m_n; n++) cout << m_data->at(n).w() << endl;
+		//cout << m_k << " clusters to start" << endl;
 			for(int k = 0; k < m_k; k++){
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				//if(m_norms[k] + m_alpha0 < thresh){
@@ -193,6 +194,7 @@ class BasePDFMixture : public BasePDF{
 					}
 				}
 			}
+		//cout << m_k << " clusters after update" << endl;
 			//update effective counts + corresponding parameters - the corresponding 
 			//entry r_nk is the point weight
 			UpdateVariationalParameters();
@@ -271,11 +273,19 @@ class BasePDFMixture : public BasePDF{
 			m_data->Translate(pt.at(2),2);
 			
 		}
+	
+		void ProjectPhi(){
+			m_data->AngleToPlaneProject(1);
+		}
+		void UnprojectPhi(){
+			m_data->PlaneToAngleProject(1);
+		}
+		virtual void UnprojectPhi_params() = 0;
+
 		virtual void PutPhi02pi_params() = 0;
 
 		void PutPhi02pi(){
 			m_data->Put02pi(1);
-			PutPhi02pi_params();
 		}
 		//scale data 
 		void ScaleData(Matrix sc){
