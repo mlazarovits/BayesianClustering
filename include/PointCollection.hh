@@ -364,12 +364,23 @@ class PointCollection{
 		}
 
 	}
+	
+	void PlaneToAngleProject(int d){
+		//for small theta, theta ~ sin(theta) ~ tan(theta), cos(theta) ~ 1
+		//tan(theta/2) = sin(theta)/(1 + cos(theta))
+		//for small theta => theta/2
+		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
+		for(int i = 0; i < (int)_pts.size(); i++){
+			_pts[i].SetValue(-2*atan2(_pts[i].at(d),2.),d);
+		}
+
+	}
 
 
 	void Put02pi(int d){
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			while(_pts[i].at(d) < 0 || _pts[i].at(d) > 2*pi){
+			while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
 				//if pt is negative
 				if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
 				//if pt is geq 2*pi
