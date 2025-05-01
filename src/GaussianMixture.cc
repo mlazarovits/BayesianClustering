@@ -28,25 +28,19 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 }
 
 void GaussianMixture::InitParameters(unsigned long long seed){
+	m_post.SetDims(m_n, m_k);
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
-	double norm_norm = 0;
 	for(int k = 0; k < m_k; k++){
-		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
-		m_norms[k] = double(m_n)/double(m_k);
-		double w = 0;
-		for(int n = 0; n < m_n; n++){ w += m_data->at(n).w(); }
-		m_norms[k] *= w/double(m_n); 
-
 		m_model[k]->SetDim(m_dim);
-
+		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
+		//m_norms[k] = m_data->Sumw()/double(m_k);
 
 		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
-		norm_norm += m_norms[k];
 		//init data stat matrices here bc m_dim has been set from data
 		_xbar.push_back(Matrix(m_dim, 1));
 		_Sbar.push_back(Matrix(m_dim, m_dim));
@@ -54,7 +48,6 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	//make sure sum_k m_coeffs[k] = 1
 	for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
 	
-	//for(int k = 0; k < m_k; k++){ m_norms[k] *= double(m_n)/norm_norm;}
 	//for(int k = 0; k < m_k; k++) cout << "k: " << k << " Nk: " << m_norms[k] << endl;
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
@@ -73,17 +66,34 @@ void GaussianMixture::InitParameters(unsigned long long seed){
 	kmc.GetMeans(_xbar);
 	
 
-	//seed covariance matrix from identity 
+//cout << "initial kmeans params" << endl;
+	vector<int> assigns;
+	kmc.GetAssignments(assigns);
+	double ptnorm = 0;
 	for(int k = 0; k < m_k; k++){
 		m_model[k]->SetParameter("mean",_xbar[k]);
-		_Sbar[k].InitIdentity();
+		double wtot = 0;
+		m_norms[k] = 0;
+		for(int n = 0; n < m_n; n++){
+			if(assigns[n] == k){ 
+				for(int i = 0; i < m_dim; i++){
+					for(int j = 0; j < m_dim; j++){
+						double disti = m_data->at(n).at(i) - _xbar[k].at(i,0);
+						double distj = m_data->at(n).at(j) - _xbar[k].at(j,0);
+						_Sbar[k].SetEntry(_Sbar[k].at(i,j) + m_data->at(n).w()*disti*distj,i,j);	
+					}
+				}
+				wtot += m_data->at(n).w();
+				m_post.SetEntry(m_data->at(n).w(),n,k);
+			}
+			m_norms[k] += m_post.at(n,k);	
+		}
+		_Sbar[k].mult(_Sbar[k],1/wtot);
+		if(m_k == m_n) _Sbar[k].InitIdentity();
 		m_model[k]->SetParameter("cov",_Sbar[k]);
-	}
+		//cout << "cluster #" << k << endl; cout << " mean" << endl; _xbar[k].Print(); cout << " cov" << endl; _Sbar[k].Print();
 
-	m_post.SetDims(m_n, m_k);
-	for(int n = 0; n < m_n; n++)
-		for(int k = 0; k < m_k; k++)
-			m_post.SetEntry(1./double(m_k),n,k);
+	}
 
 //	cout << "InitParameters - end" << endl;
 }
@@ -302,8 +312,6 @@ void GaussianMixture::InitPriorParameters(unsigned long long seed){
 	m_W0inv = Matrix(m_dim,m_dim);
 	m_W0inv.invert(m_W0);
 
-	m_post.SetDims(m_n, m_k);
-	
 	m_Elam.clear();
 	m_Epi.clear();
 	for(int k = 0; k < m_k; k++){
@@ -429,10 +437,11 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
-	//	 cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
+//cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();  
 			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
+			//cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " unweighted post " << exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n] << " point  " << endl; m_data->at(n).Print();
 			
 	
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
@@ -628,7 +637,9 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		//normalize by 1/beta
 		//m_k = N_k*bar{x}_k + beta0*m0
 		new_mean.mult(new_mean,1./new_scale);
-	
+		
+
+		/*
 		if(!_smear){
 			//add measurement error covariance - \sum_n r_nk lambda*_n
 			Matrix rLamStar(m_dim, m_dim);
@@ -662,12 +673,20 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			//cout << "2 - lamStar dims " << lamStar.GetDims()[0] << " " << lamStar.GetDims()[1] << endl;
 			//cout << "rLamStar dims " << rLamStar.GetDims()[0] << " " <<  rLamStar.GetDims()[1] << endl;
 			lamStar.add(rLamStar);
+			if(_verb > 6){
+				cout << "scalemat " << endl; m_model[k]->GetPrior()->GetParameter("scalemat").Print();
+				cout << "newscale " << new_scale << endl;
+				cout << "lamExp" << endl; lamExp.Print();
+				cout << "rLamStar" << endl; rLamStar.Print();
+				cout << "lamStar" << endl; lamStar.Print();
+				cout << "rlamStar_x" << endl; rLamStar_x.Print();
+			}
 			lamStar.mult(lamStar,-0.5);
 			Matrix lamStarInv(m_dim, m_dim);
 			lamStarInv.invert(lamStar);
 			if(_verb > 6){
+				cout << "lamStar - 2" << endl; lamStar.Print();
 				cout << "lamStarInv" << endl; lamStarInv.Print();
-				cout << "rlamStar_x" << endl; rLamStar_x.Print();
 			}
 
 			//lam_k*m_k
@@ -679,7 +698,8 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			//redefine m_k (aka new_mean)
 			new_mean = Matrix(m_dim, 1);
 			new_mean.mult(lamStarInv, lam_mean);	
-		}	
+		}
+		*/
 		m_model[k]->GetPrior()->SetParameter("mean", new_mean);
 
 		//cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;	
@@ -740,11 +760,11 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		new_cov.mult(new_cov, new_dof);
 		new_cov.invert(new_cov); //new_cov^-1 = cov (sigma)
 		m_model[k]->SetParameter("cov",new_cov);
-		if(_verb > 6){
-			cout << "k: " << k << " mean: " << endl; 
-			m_model[k]->GetParameter("mean").Print();	
-			cout << "cov " << endl; m_model[k]->GetParameter("cov").Print();
-		}
+		//if(_verb > 6){
+		//	cout << "k: " << k << " mean: " << endl; 
+		//	m_model[k]->GetParameter("mean").Print();	
+		//	cout << "cov " << endl; m_model[k]->GetParameter("cov").Print();
+		//}
 
 
 	}
@@ -768,8 +788,8 @@ double GaussianMixture::EvalVariationalLogL(){
 		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
 		Matrix mean = m_model[k]->GetPrior()->GetParameter("mean");
 		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
-		Matrix mu = m_model[k]->GetParameter("mean");
-		Matrix cov = m_model[k]->GetParameter("cov");
+		Matrix mu = _xbar[k];//m_model[k]->GetParameter("mean");
+		Matrix cov = _Sbar[k]; //m_model[k]->GetParameter("cov");
 		////cout << "k: " << k << " scale: " << scale << " dof: " << nu << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << endl;
 	//	cout << "m" << endl;
 	//	mean.Print();
@@ -783,6 +803,8 @@ double GaussianMixture::EvalVariationalLogL(){
 		
 		//(x_n - m_k)
 		//m_xbars[k].Print();
+		//cout << "Sbar for cluster " << k << endl; _Sbar[k].Print();
+		//cout << "cov" << endl; cov.Print();
 		Matrix xbar_min_m = Matrix(m_dim,1);
 		xbar_min_m.minus(mu, mean);
 		Matrix xbar_min_mT = Matrix(1, m_dim);
