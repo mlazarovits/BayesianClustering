@@ -359,11 +359,15 @@ double Matrix::at(int i, int j) const{
 
 //multiply mat by factor and store in this
 void Matrix::mult(const Matrix& mat, double factor){
-	SetDims(mat.GetDims()[0], mat.GetDims()[1]);
-	InitEmpty();
+	//SetDims(mat.GetDims()[0], mat.GetDims()[1]);
+	//InitEmpty();
+	//in case mat = this (ie m = c*m)
+	Matrix tmp(mat.GetDims()[0],mat.GetDims()[1]);
 	for(int i = 0; i < m_row; i++)
 		for(int j = 0; j < m_col; j++)
-			m_entries[i][j] = factor*mat.at(i,j);
+			tmp.SetEntry(factor*mat.at(i,j),i,j);
+			//m_entries[i][j] = factor*mat.at(i,j);
+	*this = tmp;
 }
 
 //multiply two matrices and store result in this matrix
@@ -382,20 +386,24 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 			return;
 		}
 	}
-	else{
-		SetDims(dims1[0],dims2[1]);
-		InitEmpty();
-	}
-	
+	//else{
+	//	//SetDims(dims1[0],dims2[1]);
+	//	//InitEmpty();
+	//}
+	//need to create temp matrix in case one of the passed matrices is this (ie m = A*m)
+	Matrix tmp(dims1[0],dims2[1]);
+		
 	for(int i = 0; i < dims1[0]; i++){
 		for(int j = 0; j < dims2[1]; j++){
 			val = 0;
 			for(int k = 0; k < dims2[0]; k++){
 				val += mat1.at(i,k) * mat2.at(k,j);
 			}
-			m_entries[i][j] = val;
+			//m_entries[i][j] = val;
+			tmp.SetEntry(val,i,j);
 		}
 	}
+	*this = tmp;
 }
 
 
