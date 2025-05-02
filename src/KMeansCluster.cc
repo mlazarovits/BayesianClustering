@@ -19,7 +19,7 @@ void KMeansCluster::Initialize(unsigned long long seed){
 		m_counts.push_back(0);
 	}
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 void KMeansCluster::Initialize(const PointCollection& pc){
 	if(m_k == 0){
@@ -34,7 +34,7 @@ void KMeansCluster::Initialize(const PointCollection& pc){
 		m_counts.push_back(0);
 	}
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 
 
@@ -82,7 +82,7 @@ void KMeansCluster::Initialize_pp(unsigned long long seed){
 //cout << "total norm: " << N << endl;
 	
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 
 //E-step: estimate assignments
@@ -93,14 +93,14 @@ void KMeansCluster::Estimate(){
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 1e90;
+		dmin = 1e300;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance squared as optimization metric
 			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
-		//	dist = sqrt(dist);
-			dist *= m_data->at(n).w();
+			dist = sqrt(dist);
+			//dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
 			//considering saving all dists and sorting to get min
 			if(dist < dmin){ dmin = dist; kmin = k; }
