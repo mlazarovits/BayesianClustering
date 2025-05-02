@@ -59,6 +59,7 @@ class BayesPoint{
 		
 		bool operator != (const BayesPoint& pt2) const{
 			if(_nDim != pt2.Dim()) return true;
+			if(_weight != pt2.w()) return true;
 			for(int i = 0; i < _nDim; i++){
 				if(_value[i] != pt2.Value(i)) return true;
 			}
