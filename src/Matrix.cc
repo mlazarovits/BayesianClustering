@@ -332,15 +332,20 @@ void Matrix::invert(const Matrix& mat){
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
 	}
-	
-	// Find adjoint
-	Matrix adj = Matrix(dims[0], dims[1]);
-	adj.adjoint(mat);
-	// Find Inverse using formula "inverse(A) =
-	// adj(A)/det(A)"
+	Eigen::MatrixXd m(m_row, m_col);
+
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			m(i,j) = mat.at(i,j); 
+		}
+	}
+	Eigen::MatrixXd minv = m.inverse();
+
 	for (int i = 0; i < dims[0]; i++)
 	    for (int j = 0; j < dims[1]; j++)
-	        m_entries[i][j] = adj.at(i,j)/det;
+	        m_entries[i][j] = minv(i,j);
+	
+
 }
 
 
