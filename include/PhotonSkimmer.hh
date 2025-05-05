@@ -3507,8 +3507,8 @@ cout << endl;
 			//plane-point distance = ^n \dot ^plane + d 
 			//https://mathworld.wolfram.com/Point-PlaneDistance.html
 			planedist = fabs(normplane.at(0,0)*pc->at(i).at(0) + normplane.at(1,0)*pc->at(i).at(1) + normplane.at(2,0)*pc->at(i).at(2) - d);
-			cout << " planedist " << planedist << " for pt " << endl; pc->at(i).Print(); 
-			w = 1/planedist; 
+			//cout << " planedist " << planedist << " for pt " << endl; pc->at(i).Print(); 
+			w = pc->at(i).w();//1/planedist; 
 			norm += w;
 
 			etadist = pc->at(i).at(0) - planemean.at(0,0);
@@ -3520,6 +3520,7 @@ cout << endl;
 
 		}
 		planecov.mult(planecov,1/norm);
+	cout << "d " << d << " plane" << endl; plane.Print(); cout << "cov at plane" << endl; planecov.Print();
 	} 
 
 
