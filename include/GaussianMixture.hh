@@ -88,9 +88,9 @@ class GaussianMixture : public BasePDFMixture{
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection mean_pt = mean.MatToPoints();
-				cout << "mean" << endl; mean_pt.Print();
+				//cout << "mean" << endl; mean_pt.Print();
 				mean_pt.PlaneToAngleProject(1);	
-				cout << "unproj mean" << endl; mean_pt.Print();
+				//cout << "unproj mean" << endl; mean_pt.Print();
 				m_model[k]->SetParameter("mean",Matrix(mean_pt));
 				
 				//translate posterior mean in prior distribution
@@ -114,9 +114,9 @@ class GaussianMixture : public BasePDFMixture{
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection mean_pt = mean.MatToPoints();
-				cout << "mean" << endl; mean_pt.Print();
+				//cout << "mean" << endl; mean_pt.Print();
 				mean_pt.Put02pi(1);	
-				cout << "02pi mean" << endl; mean_pt.Print();
+				//cout << "02pi mean" << endl; mean_pt.Print();
 				m_model[k]->SetParameter("mean",Matrix(mean_pt));
 				
 				//translate posterior mean in prior distribution
