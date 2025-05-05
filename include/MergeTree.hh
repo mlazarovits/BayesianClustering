@@ -157,19 +157,16 @@ class MergeTree : BaseTree{
 		double Evidence(node* x){
 			int k;
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
-			if(x->l == _z && x->r == _z){ 
+			if(x->l == _z && x->r == _z || x->points->Sumw() < _thresh){ 
 				//cout << "leaf nodes - setting max # clusters == 1" << endl;
 		 		k = 1;
 			}
 			//if the sum of all weights is not enough for 1 subcluster to be "above threshold" they should not be able to be broken into multiple subclusters
-			else if(x->points->Sumw() < _thresh){
-				//cout << "sumw < thresh - setting max # clusters == 1" << endl;
-				k = 1;
-			}
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
 				//cout << "not leaf nodes - setting according to max # clusters" << endl;
 				k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+				//k = x->points->GetNPoints();
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
@@ -178,6 +175,8 @@ class MergeTree : BaseTree{
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
 			//cout << "pts " << endl; newpts->Print();
+			//BayesPoint center = newpts->mean();
+			//center.SetValue(newpts->CircularMean(1),1);
 			BayesPoint center({newpts->Centroid(0), newpts->CircularCentroid(1), newpts->Centroid(2)});
 			//cout << "center" << endl; center.Print();
 
@@ -208,24 +207,34 @@ class MergeTree : BaseTree{
 			
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
+			
+			//make sure all data in model is on [0,2pi] to begin with
+			//some mirror nodes will have pts < 0 or > 2 pi
+			//but the shifting + plane project depends on all pts initially being on unit circle
+			x->model->PutPhi02pi();		
+
 			x->model->ShiftData(center);
-			//cout << "centroid " << endl; center.Print(); 
-			//
+			cout << "centroid " << endl; center.Print(); 
+			
 			//cout << "translated pts" << endl; x->model->GetData()->Print();
+			
+			//project phi onto plane
+			x->model->ProjectPhi();
+			//cout << "projected pts" << endl; x->model->GetData()->Print();
+
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
+		
+			//cout << "scaled points" << endl; x->model->GetData()->Print();
+			//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
+			//which in turn calls UpdateVariationalPosterior
+			//which depends on the priors 
+			x->model->InitParameters(_params);
 			
-			//cout << "transformed points" << endl; x->model->GetData()->Print();
-	
-			x->model->InitParameters();
-			x->model->InitPriorParameters();
-
-			if(!_params.empty()) x->model->SetPriorParameters(_params);
 			//inverse transformations
 			Matrix RscaleInv;
 			RscaleInv.invert(Rscale);
 			center.Scale(-1);
-
 
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
 			//make sure sum of weights for points is above threshold
@@ -233,23 +242,32 @@ class MergeTree : BaseTree{
 			if(x->points->Sumw() >= _thresh){
 				algo->SetThresh(_thresh);
 			}
+			else
+				algo->SetThresh(x->points->Sumw());
 			//cluster
 			double oldLogL = algo->EvalLogL();
-			double LogLThresh = 1e-20;
-			double newLogL, entropy, nll;
-			double dLogL = 999; 
-			int it = 0;
-			while(dLogL > LogLThresh){
+			double LogLThresh = 1e-3;
+			double newLogL = 0;
+			double entropy = 0;
+			double nll = 0;
+			double dLogL = 1e308; 
+			int it = -1;
+			cout << "oldLogL (initial) " << oldLogL << endl;
+			while(dLogL > LogLThresh*fabs(oldLogL) || it == 0){
+				it++;
 				newLogL = algo->Cluster();
 				//entropy = x->model->EvalEntropyTerms();
 				//nll = x->model->EvalNLLTerms();
 			//cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
 		if(std::isnan(newLogL)) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << " old ELBO: " << oldLogL << " new ELBO: " << newLogL << endl;
+			
+				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
+		cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 				oldLogL = newLogL;
-				it++;
 			}
-			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+//cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
 //cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
@@ -265,7 +283,9 @@ class MergeTree : BaseTree{
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 			//need to unscale data - also unscales lamStar measurement errors 
 			//cout << "inverse scale data + lam*s" << endl;	
+			
 			x->model->ScaleData(RscaleInv);	 
+			
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
@@ -276,23 +296,38 @@ class MergeTree : BaseTree{
 	//	auto params = x->model->GetLHPosteriorParameters(k);
 	//	params["mean"].Print();
 	//}
-			
+		
+	
 			//need to put GMM parameters AND points back in detector coordinates (not local)
 			//cout << "ismirror " << x->ismirror << " left " << x->l->ismirror << " right " << x->r->ismirror << endl;
 			//x->model->ShiftData(center);
 			//cout << "untransformed points" << endl;
+
+			//only does for mean rn - not sure how to do for cov...
+			
+			x->model->UnprojectPhi_params();
+			cout << "unprojected means" << endl;
+			x->model->ShiftParameters(center);
+cout << "shifted params" << endl;
+			x->model->PutPhi02pi_params(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
+cout << "put params and data on 02pi" << endl;
 			//resets data to original points
 			x->model->SetData(x->points);
-			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
-			x->model->ShiftParameters(center);
+			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
+		cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
 	//cout << "node x means post shift" << endl;
-	//for(int k = 0; k < x->model->GetNClusters(); k++){
-	//	cout << "cluster #" << k << endl;
-	//	auto params = x->model->GetLHPosteriorParameters(k);
-	//	params["mean"].Print();
-	//}
+	vector<double> norms;
+	x->model->GetNorms(norms);
+	for(int k = 0; k < x->model->GetNClusters(); k++){
+		cout << std::setprecision(10) << "cluster #" << k << " with weight " << norms[k] << endl;
+		auto params = x->model->GetLHPosteriorParameters(k);
+		cout << "mean" << endl;
+		params["mean"].Print();
+		cout << "cov" << endl;
+		params["cov"].Print();
+	}cout << std::setprecision(5) << endl;
 
 			return newLogL;
 		}
