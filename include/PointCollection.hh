@@ -340,13 +340,14 @@ class PointCollection{
 		
 				//}
 		//turned off acos(cos()) from subcluster shifts	
-		//	if(fabs(_pts[i].at(d) - t) > acos(-1)){
-			//		if(cos(_pts[i].at(d) - t) > 0) _pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
-			//		else _pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
-			//	}
-			//	else{
-					_pts[i].SetValue(_pts[i].at(d) - t,d);
-			//	}
+			if(fabs(_pts[i].at(d) - t) > acos(-1)){
+					//if(cos(_pts[i].at(d) - t) > 0) _pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
+					//else _pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
+					_pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)), d);
+				}
+				else{
+			      	_pts[i].SetValue(_pts[i].at(d) - t,d);
+				}
 //if(d == 1 && _pts[i].w() > 45) cout << "new value of pt " << _pts[i].at(d) << endl;
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
 		}
@@ -360,7 +361,30 @@ class PointCollection{
 		//for small theta => theta/2
 		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
 		for(int i = 0; i < (int)_pts.size(); i++){
-			_pts[i].SetValue(2*tan(_pts[i].at(d)/2.),d);
+			//_pts[i].SetValue(tan(_pts[i].at(d)),d);
+			//if within range [-pi/2, pi/2], map to plane
+			if(fabs(_pts[i].at(d)) < acos(-1)/2.){
+				_pts[i].SetValue(tan(_pts[i].at(d)),d);
+			}
+			else{ //map to infinity - add original value to preserve unique coordinate
+				if(_pts[i].at(d) > 0)
+					_pts[i].SetValue(1e150,d);
+				else	
+					_pts[i].SetValue(-1e150,d);
+			}
+		}
+
+	}
+	
+
+	//domain only defined for [-pi/2,pi/2] (max deviation allowed)
+	void PlaneToAngleProject(int d){
+		//for small theta, theta ~ sin(theta) ~ tan(theta), cos(theta) ~ 1
+		//tan(theta/2) = sin(theta)/(1 + cos(theta))
+		//for small theta => theta/2
+		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
+		for(int i = 0; i < (int)_pts.size(); i++){
+			_pts[i].SetValue(atan2(_pts[i].at(d),1),d);
 		}
 
 	}
@@ -369,7 +393,7 @@ class PointCollection{
 	void Put02pi(int d){
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			while(_pts[i].at(d) < 0 || _pts[i].at(d) > 2*pi){
+			while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
 				//if pt is negative
 				if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
 				//if pt is geq 2*pi

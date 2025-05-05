@@ -2,7 +2,7 @@
 #define BaseTree_HH
 
 #include "PointCollection.hh"
-#include "BasePDFMixture.hh" 
+#include "GaussianMixture.hh" 
 #include <boost/multiprecision/cpp_bin_float.hpp>
 using namespace boost::multiprecision;
 
@@ -39,7 +39,7 @@ class BaseTree{
 			//double d;
 			cpp_bin_float_100 d = -999;
 			//model of cluster
-			BasePDFMixture* model = nullptr;
+			GaussianMixture* model = nullptr;
 			//probability of being in tree T_k p(D_k | T_k)
 			//double prob_tk = -999;
 			cpp_bin_float_100 prob_tk = -999;

@@ -178,7 +178,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jet_j = BestRkPair.second;
 			}
 
-			if(_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
+			if(true){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
 			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
@@ -229,7 +229,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
 		int nn;
-		if(_verb > 1){
+		if(true){
 			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
@@ -278,8 +278,8 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
-		if(_verb > 1)cout << "\n\n\n" << endl;
-		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
+		if(true)cout << "\n\n\n" << endl;
+		if(true) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
@@ -318,7 +318,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 			cout << " k " << k << " center " << endl; params["mean"].Print();
 			cout << "cov " << endl; params["cov"].Print();
 		}
-		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print();
+		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->points->Print();
 	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
 cout << "with centroid" << endl; center.Print();
 
@@ -512,7 +512,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		points->AddPoints(point);
 	}
 	int maxK = points->GetNPoints();
-	
 
 	GaussianMixture* gmm = new GaussianMixture(maxK);
 	//double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
@@ -523,16 +522,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	if(_verb > 6) cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 	gmm->SetData(points);
-	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();
-	//needs to be before ScaleData() bc this method also scales the smear
-	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
-	gmm->SetAlpha(_subalpha);
-	gmm->SetVerbosity(_verb);
-	gmm->InitParameters();
-	gmm->InitPriorParameters();
-	//set prior parameters
-	gmm->SetPriorParameters(_prior_params);	
-
+//cout << "original points" << endl; points->Print();
 
 	//cout << "old points w/ wraparound" << endl;
 	//points->Print();
@@ -544,7 +534,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//x' = x - a
 	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
 	gmm->ShiftData(center);
-	//cout << "centroid " << endl; center.Print();
+	cout << "centroid " << endl; center.Print();
 	
 	//cout << "translated pts" << endl;
 	//cout << "shifted - gmm data is" << endl; gmm->GetData()->Print();
@@ -563,10 +553,23 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	//assuming prior parameters are given in shifted + scaled frame
 	gmm->ScaleData(Rscale);
-	//cout << "scaled - gmm data is" << endl; gmm->GetData()->Print();
+	//cout << "scaled and shifted - gmm data is" << endl; gmm->GetData()->Print();
 	//cout << "scaled points" << endl;
+	//gmm->GetData()->Print();
 	//gmm->GetData()->at(0).Print();
 	
+	//cout << "1 - set gmm data as" << endl; gmm->GetData()->Print();
+	//needs to be before ScaleData() bc this method also scales the smear
+	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
+	gmm->SetAlpha(_subalpha);
+	gmm->SetVerbosity(_verb);
+	//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
+	//which in turn calls UpdateVariationalPosterior
+	//which depends on the priors 
+	//gmm->InitPriorParameters(_prior_params);	
+
+	gmm->InitParameters(_prior_params);
+
 	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
@@ -596,14 +599,16 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		cv3D.WriteJson(oname+"/it0");
 	}
 	//loop
-	double dLogL, newLogL;
-	double LogLthresh = 1e-10;
+	double dLogL = 999;
+	double newLogL = 0;
+	double LogLthresh = 1e-3; //use relative error to old logLH
+	//cout << "initial # clusters " << gmm->GetNClusters() << endl;
 	double oldLogL = algo->EvalLogL();
+	//cout << "after first logLH eval " << gmm->GetNClusters() << endl;
+	algo->SetClusterStart();
 	////////run EM algo////////
-	//maximum of 50 iterations
-	for(int it = 0; it < 50; it++){
-	
-		algo->SetClusterStart();
+	int it = 0;
+	while(dLogL > fabs(oldLogL)*LogLthresh || it > 0){
 		//E step
 		algo->Estimate();
 		//M step
@@ -620,16 +625,20 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 			cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << endl;
 			return gmm;
 		}
-		dLogL = oldLogL - newLogL;
+		//newLogL > oldLogL
+		dLogL = newLogL - oldLogL;
+		cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << gmm->GetNClusters() << endl;
 		if(_verb > 3) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(fabs(dLogL) < LogLthresh){// || dLogL > 0){
+		if(dLogL < fabs(oldLogL)*LogLthresh && it > 0){// || dLogL > 0){
 			if(_verb > 2){
 				cout << "Reached convergence at iteration " << it+1 << endl;
 			}
 			break;
 		}
 		oldLogL = newLogL;
+		it++;
 	}
+//cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
 
 	//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 	//need to unscale data 

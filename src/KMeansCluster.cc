@@ -19,7 +19,7 @@ void KMeansCluster::Initialize(unsigned long long seed){
 		m_counts.push_back(0);
 	}
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 void KMeansCluster::Initialize(const PointCollection& pc){
 	if(m_k == 0){
@@ -34,7 +34,7 @@ void KMeansCluster::Initialize(const PointCollection& pc){
 		m_counts.push_back(0);
 	}
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 
 
@@ -82,7 +82,7 @@ void KMeansCluster::Initialize_pp(unsigned long long seed){
 //cout << "total norm: " << N << endl;
 	
 	for(int n = 0; n < m_n; n++) 
-		m_assigns.push_back(0);
+		m_assigns.push_back(-1);
 }
 
 //E-step: estimate assignments
@@ -93,17 +93,21 @@ void KMeansCluster::Estimate(){
 	m_nchg = 0;
 	for(int k = 0; k < m_k; k++) m_counts[k] = 0;
 	for(int n = 0; n < m_n; n++){
-		dmin = 1e90;
+		dmin = 1e300;
 		for(int k = 0; k < m_k; k++){
 			dist = 0.;
 			//calculate euclidean distance squared as optimization metric
 			//for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),0.5);
 			for(int d = 0; d < m_dim; d++) dist += pow(m_data->at(n).Value(d) - m_means[k].at(d,0),2);
-		//	dist = sqrt(dist);
-			dist *= m_data->at(n).w();
+			dist = sqrt(dist);
+			//dist *= m_data->at(n).w();
 			//track mean and minimum distance to mean per point
 			//considering saving all dists and sorting to get min
 			if(dist < dmin){ dmin = dist; kmin = k; }
+			if(dist > 1e300){
+				cout << "DIST TOO BIG " << dist << " point " << endl; m_data->at(n).Print(); 
+				cout << " for cluster #" << k << " with mean " << endl; m_means[k].Print();
+			}
 			//cout << "k: " << k << " current kmin: " << kmin << " dist: " << dist << " current dmin: " << dmin << endl;
 		}
 		//if no cluster assigned - assign to first cluster
@@ -145,6 +149,7 @@ void KMeansCluster::Update(){
 				m_means[k].SetEntry(val/m_counts[k],d,0);
 			}
 		}
+	//cout << "kmeans cluster #" << k << " with counts " << m_counts[k] << " updated to mean" << endl; m_means[k].Print();
 	}
 }
 

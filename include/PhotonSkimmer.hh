@@ -679,6 +679,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists2D.push_back(timeMajCov_timeMinCov);
 			_hists2D.push_back(tPlaneDist_planeEtaSig);
 			_hists2D.push_back(tPlaneDist_planePhiSig);
+			_hists2D.push_back(tPlaneDist_planeEtaPhiCov);
 			
 
 
@@ -1746,9 +1747,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//247 - time maj cov vs time min cov
 		TH2D* timeMajCov_timeMinCov = new TH2D("timeMajCov_timeMinCov","timeMajCov_timeMinCov;timeMajCov;timeMinCov",25,-0.1,0.1,25,-0.1,0.1);
 		//248 - distance to plane in time vs plane eta rad
-		TH2D* tPlaneDist_planeEtaSig = new TH2D("tPlaneDist_planeEtaSig","tPlaneDist_planeEtaSig;tPlaneDist;planeEtaSig",50,0,1.5,50,0,0.1);
+		TH2D* tPlaneDist_planeEtaSig = new TH2D("tPlaneDist_planeMin1Sig","tPlaneDist_planeMin1Sig;tPlaneDist;planeMin1Sig",50,-3.,3.,50,0.5,3.5);
 		//249 - distance to plane in time vs plane phi rad
-		TH2D* tPlaneDist_planePhiSig = new TH2D("tPlaneDist_planePhiSig","tPlaneDist_planePhiSig;tPlaneDist;planePhiSig",50,0,1.5,50,0,0.1);
+		TH2D* tPlaneDist_planePhiSig = new TH2D("tPlaneDist_planeMin2Sig","tPlaneDist_planeMin2Sig;tPlaneDist;planeMin2Sig",50,-3.,3.,50,0.1,0.2);
+		//250 - distance to plane in time vs plane etaphi cov
+		TH2D* tPlaneDist_planeEtaPhiCov = new TH2D("tPlaneDist_planeEtaPhiCov","tPlaneDist_planeEtaPhiCov;tPlaneDist;planeEtaPhiCov",50,-3.,3.,50,0.05,0.2);
 
 
 		enum weightScheme{
@@ -1897,7 +1900,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix rotmat2D = Matrix(3,3);		
 			Matrix majmin3DCovMat = Matrix(3,3);
 			Matrix majmin2DCovMat = Matrix(3,3);
-			PointCollection majminpts;
+			PointCollection majminpts3D, majminpts2D;
 
 			double npts = (double)model->GetData()->GetNPoints();
 		//	cout << "FillHists - starting subcluster loop" << endl;	
@@ -1958,11 +1961,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			tc = params["mean"].at(2,0);
 			pi = params["pi"].at(0,0);
 			cov = params["cov"];	
-			//Matrix eCov(3,3);
-			//MakeCovMat(model->GetData(), eCov, weightScheme(1));
-			//eCov.invert(eCov);
-			cov.mult(cov,1/model->GetData()->Sumw());
-			//cov.mult(cov,eCov);
 			//distance from xmax to mean_k
 			///double dist = 0;
 			///for(int d = 0; d < xmax.Dim(); d++)
@@ -2019,8 +2017,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			//rotate into 3D eigenvector space
 			Matrix rotmat3D(3,3);
 			Get3DRotationMatrix(eigvecs,rotmat3D);
-			RotatePoints(model->GetData(), rotmat3D, majminpts);
-			MakeCovMat(&majminpts, majmin3DCovMat, weightScheme(1));
+			RotatePoints(model->GetData(), rotmat3D, majminpts3D);
+			MakeCovMat(&majminpts3D, majmin3DCovMat, weightScheme(1));
 			majtime_cov_3d = CalcCov(majmin3DCovMat,2,0, false);
 			if(majtime_cov_3d < 0){
 				eigvecs[2].SetEntry(-eigvecs[2].at(0,0),0,0);
@@ -2041,8 +2039,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			//rotate points into 2D (spatial only) maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-			RotatePoints(model->GetData(), rotmat2D, majminpts);
-			MakeCovMat(&majminpts, majmin2DCovMat, weightScheme(1));
+			RotatePoints(model->GetData(), rotmat2D, majminpts2D);
+			MakeCovMat(&majminpts2D, majmin2DCovMat, weightScheme(1));
 
 			
 			//set time covariance from GMM for major/minor 2D covariance
@@ -2105,6 +2103,49 @@ class PhotonSkimmer : public BaseSkimmer{
 			cov_spacetimeR.mult(cov_spacetimeR,spacetimeR);
 
 			
+			//planar sections - on average (over many subclusters)
+			int nstep_tplane = 2;
+			double eplane_sig, pplane_sig, t0;
+			//testing
+			cout << "major axis length " << majLength << " other lengths " << sqrt(eigvals[1]) << " " << sqrt(eigvals[0]) << endl;
+			cout << "major axis" << endl; eigvecs[2].Print();
+			cout << "rotated major axis" << endl;
+			Matrix test(3,1);
+			test.mult(rotmat3D,eigvecs[2]);
+			test.Print();
+
+			//setting distance to plane along time axis based on time component of major axis
+			if(id_idx == 0){
+			for(int i = 0; i < 2*majLength*eigvecs[2].at(2,0)*nstep_tplane; i++){
+				//create plane at t0 in eta-phi according to major axis (scaled appropriately)
+				t0 = majLength*eigvecs[2].at(2,0) - (double)i/nstep_tplane;
+				Matrix plane(3,1);
+				Matrix planecov(2,2);
+				plane.SetEntry(1,2,0); //0*^eta + 0*^phi + ^time = t0
+				cout << "distance to plane is " << t0 << endl;	
+				//rotate plane s.t. ellipsoid is aligned in coord system (ie is along maj-min axes) bc thats how the plane sections are defined
+				RotateNormPlane(rotmat3D, plane, t0);
+				cout << "rotated, norm distance," << t0 << " plane " << endl; plane.Print();
+				//trad is time-proj of major
+				//get eta-phi cov matrix in planar section at (rotated) distance of t0
+				//use data rotated into maj-min axes
+				EtaPhiPlaneCov(&majminpts3D, majLength*eigvecs[2].at(2,0), plane, t0, planecov);
+				
+				//EtaPhiPlaneSection(e_var, p_var, t_var, t0, eplane_sig, pplane_sig);
+				//cout << "trad " << t_var << " t0 " << t0 << " eplanerad " << eplane_sig << " pplanerad " << pplane_sig << endl;
+				if(!planecov.empty()){
+				cout << "etaphi cov valid for this d = " << t0 << ", eta sig " << sqrt(planecov.at(0,0)) << " phi sig " << sqrt(planecov.at(1,1)) << " etaphi cov " << planecov.at(0,1) << endl;
+					_procCats[id_idx].hists2D[1][248]->Fill(t0,sqrt(planecov.at(0,0)));
+					_procCats[id_idx].hists2D[1][249]->Fill(t0,sqrt(planecov.at(1,1)));
+					_procCats[id_idx].hists2D[1][250]->Fill(t0,planecov.at(0,1));
+				}	
+			cout << endl;	
+			cout << endl;	
+		}
+cout << endl;
+cout << endl;
+cout << endl;
+}	
 
 			//do track matching
 			int nTracks = _base->ECALTrack_nTracks;
@@ -2366,15 +2407,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][245]->Fill(E_k*majtime_cov_2d,E_k*te_cov);
 			_procCats[id_idx].hists2D[1][247]->Fill(majtime_cov_2d,mintime_cov_2d);
 	
-			//planar sections - on average (over many subclusters)
-			int nstep_tplane = 50;
-			double eplane_sig, pplane_sig, t0;
-			for(int t = 0; t < nstep_tplane; t++){
-				t0 = (double)t/t_var;
-				EtaPhiPlaneSection(e_var, p_var, t_var, t0, eplane_sig, pplane_sig);
-				_procCats[id_idx].hists2D[1][248]->Fill(t0,eplane_sig);
-				_procCats[id_idx].hists2D[1][249]->Fill(t0,pplane_sig);
-			}
 			
 
 
@@ -3418,9 +3450,71 @@ class PhotonSkimmer : public BaseSkimmer{
 		//for a horizontal planar section where z = d = t0, the eta and phi radii are orthogonal to the plane along their respective directions
 		//the eta/phi plane radii depends on the distance to the plane (t0 = d), the radius in time (trad), scaled by the respective overall radius (erad, prad)
 		//see https://en.wikipedia.org/wiki/Ellipsoid#Determining_the_ellipse_of_a_plane_section
+		if(fabs(t0) > trad){
+			etaplanerad = -1;
+			phiplanerad = -1;
+			return;
+		}
 		double rho = sqrt(1 - (t0/trad)*(t0/trad));
 		etaplanerad = erad*rho;
 		phiplanerad = prad*rho;
+	}
+
+	//rotations preserve length so plane = d -> plane' = d
+	//but d gets scaled into Hessian normal form
+	void RotateNormPlane(Matrix& rotcov, Matrix& plane, double& d){
+		cout << "original plane" << endl; plane.Print();
+		plane.mult(rotcov, plane);
+		cout << "rotated plane" << endl; plane.Print();
+		//put into Hessian normal form 
+		//https://mathworld.wolfram.com/HessianNormalForm.html
+		double dist = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
+		cout << "dist " << dist << endl;
+		plane.mult(plane,1/dist);
+		cout << "normal plane" << endl; plane.Print();
+		d = d/dist;
+	}
+
+
+	//plane is plane_x*x + plane_y*y + plane_z*z = d
+	//trad should be time-component of major axis
+	void EtaPhiPlaneCov(PointCollection* pc, double trad, Matrix& plane, double d, Matrix& planecov){
+		planecov.clear();
+		//plane cannot be above/below time-component of major axis
+		if(fabs(d) > trad){
+			return;
+		}
+		planecov = Matrix(2,2);
+		//smoothly weight pts according to distance to time slice
+		double w = -1;
+		double norm = 0;
+		Matrix planemean = Matrix(pc->mean());
+		planemean.SetEntry(pc->CircularMean(1),1,0);
+		double etadist, phidist, planedist;	
+		double plnorm = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
+		Matrix normplane = plane;
+		normplane.mult(normplane,1/plnorm);
+		for(int i = 0; i < pc->GetNPoints(); i++){
+			//weight by inverse of distance to t0 plane
+			//min distance of point to plane - distance vector bw point and plane is perpendicular to plane
+			//use dot product to find projection of point onto plane
+			//planedist = a*pt_x + b*pt_y + c*pt_z - d in Hesse normal
+			//plane-point distance = ^n \dot ^plane + d 
+			//https://mathworld.wolfram.com/Point-PlaneDistance.html
+			planedist = fabs(normplane.at(0,0)*pc->at(i).at(0) + normplane.at(1,0)*pc->at(i).at(1) + normplane.at(2,0)*pc->at(i).at(2) - d);
+			cout << " planedist " << planedist << " for pt " << endl; pc->at(i).Print(); 
+			w = 1/planedist; 
+			norm += w;
+
+			etadist = pc->at(i).at(0) - planemean.at(0,0);
+			phidist = pc->at(i).at(1) - planemean.at(1,0);
+			planecov.SetEntry(w*etadist*etadist + planecov.at(0,0), 0, 0);
+			planecov.SetEntry(w*etadist*phidist + planecov.at(0,1), 0, 1);
+			planecov.SetEntry(w*phidist*etadist + planecov.at(1,0), 1, 0);
+			planecov.SetEntry(w*phidist*phidist + planecov.at(1,1), 1, 1);
+
+		}
+		planecov.mult(planecov,1/norm);
 	} 
 
 

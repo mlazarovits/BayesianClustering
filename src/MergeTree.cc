@@ -48,8 +48,13 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
 	double elbo = Evidence(x);
-	cpp_bin_float_100 p_dk_h1 = exp(elbo);
+	cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
+	//cpp_bin_float_100 p_dk_h1_100 = exp(elbo_100);
+	cpp_bin_float_100 p_dk_h1 = exp(elbo_100);
 	//marginal prob of t_k = null + alterantive hypo (separate trees) - need to save for future recursions
+	//p_dk_tk = pi*p_dk_h1 + dr*dl*p_dl*p_dr/d
+	// = pi*p_dk_h1(1 + dr*dl*p_dl*p_dr/(d*pi*p_dk_h1))
+	// = exp(log(alpha) + 
 	cpp_bin_float_100 p_dk_tk_100 = pi_stable*p_dk_h1 + ((l->d*r->d)/d_100)*l->prob_tk*r->prob_tk;
 
 
@@ -60,7 +65,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
         //can rewrite exp(A) = exp(log(alpha) + log(gamma(n) + ELBO(x))
         //and rewrite exp(B) = exp(log(p(Dr|Tr)) + log(p(Dl|Tl)) + log(dl*dr))
         //where A = log(alpha) + log(gamma(n) + ELBO(x)
-        cpp_bin_float_100 a = log(_alpha) + lgamma(n) + elbo;
+        cpp_bin_float_100 a = log(_alpha) + lgamma(n) + elbo_100;
         // and B = log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl)
         cpp_bin_float_100 b = log(l->d*r->d) + log(l->prob_tk) + log(r->prob_tk);
         //find m = max(A,B)
@@ -68,8 +73,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
         //rewrite rk as rk = exp(A)/(exp(A) + exp(B)) = exp(A - m)/(exp(A - m) + exp(B - m))
         cpp_bin_float_100 rk_stable = exp(a - m)/(exp(a - m) + exp(b - m));	
 
-	cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
-	cpp_bin_float_100 p_dk_h1_100 = exp(elbo_100);
 
 	
 	//cpp_bin_float_100 p_dk_tk_100 = pi_100*p_dk_h1_100 + ((cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d))/d_100)*cpp_bin_float_100(l->prob_tk)*cpp_bin_float_100(r->prob_tk);

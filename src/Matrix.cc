@@ -332,15 +332,20 @@ void Matrix::invert(const Matrix& mat){
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
 	}
-	
-	// Find adjoint
-	Matrix adj = Matrix(dims[0], dims[1]);
-	adj.adjoint(mat);
-	// Find Inverse using formula "inverse(A) =
-	// adj(A)/det(A)"
+	Eigen::MatrixXd m(m_row, m_col);
+
+	for(int i = 0; i < m_row; i++){
+		for(int j = 0; j < m_col; j++){
+			m(i,j) = mat.at(i,j); 
+		}
+	}
+	Eigen::MatrixXd minv = m.inverse();
+
 	for (int i = 0; i < dims[0]; i++)
 	    for (int j = 0; j < dims[1]; j++)
-	        m_entries[i][j] = adj.at(i,j)/det;
+	        m_entries[i][j] = minv(i,j);
+	
+
 }
 
 
@@ -359,11 +364,15 @@ double Matrix::at(int i, int j) const{
 
 //multiply mat by factor and store in this
 void Matrix::mult(const Matrix& mat, double factor){
-	SetDims(mat.GetDims()[0], mat.GetDims()[1]);
-	InitEmpty();
+	//SetDims(mat.GetDims()[0], mat.GetDims()[1]);
+	//InitEmpty();
+	//in case mat = this (ie m = c*m)
+	Matrix tmp(mat.GetDims()[0],mat.GetDims()[1]);
 	for(int i = 0; i < m_row; i++)
 		for(int j = 0; j < m_col; j++)
-			m_entries[i][j] = factor*mat.at(i,j);
+			tmp.SetEntry(factor*mat.at(i,j),i,j);
+			//m_entries[i][j] = factor*mat.at(i,j);
+	*this = tmp;
 }
 
 //multiply two matrices and store result in this matrix
@@ -382,20 +391,24 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 			return;
 		}
 	}
-	else{
-		SetDims(dims1[0],dims2[1]);
-		InitEmpty();
-	}
-	
+	//else{
+	//	//SetDims(dims1[0],dims2[1]);
+	//	//InitEmpty();
+	//}
+	//need to create temp matrix in case one of the passed matrices is this (ie m = A*m)
+	Matrix tmp(dims1[0],dims2[1]);
+		
 	for(int i = 0; i < dims1[0]; i++){
 		for(int j = 0; j < dims2[1]; j++){
 			val = 0;
 			for(int k = 0; k < dims2[0]; k++){
 				val += mat1.at(i,k) * mat2.at(k,j);
 			}
-			m_entries[i][j] = val;
+			//m_entries[i][j] = val;
+			tmp.SetEntry(val,i,j);
 		}
 	}
+	*this = tmp;
 }
 
 
@@ -503,7 +516,7 @@ void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 }
 
 
-PointCollection Matrix::MatToPoints(){
+PointCollection Matrix::MatToPoints(vector<double> weights){
 	PointCollection pc;
 	for(int j = 0; j < m_col; j++){
 		vector<double> val;
@@ -511,6 +524,8 @@ PointCollection Matrix::MatToPoints(){
 			val.push_back(m_entries[i][j]);
 		}
 		BayesPoint pt = BayesPoint(val);
+		if(weights.size() == m_col)
+			pt.SetWeight(weights[j]);
 		pc += pt;
 	}
 	return pc;

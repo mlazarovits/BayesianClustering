@@ -16,7 +16,7 @@ class GaussianMixture : public BasePDFMixture{
 			m_Epi.clear();
 		};
 	
-		void InitParameters(unsigned long long seed = 111);
+		void InitParameters(map<string, Matrix> priors = {}, unsigned long long seed = 111);
 		//E-step
 		void CalculatePosterior();
 		//M-step
@@ -28,10 +28,7 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetLikelihoodParameters(int k); 
 
-		//void SetJetPriorParameters(map<string, Matrix>& params){ }
-		//void SetJetParameters(map<string, Matrix>& params){ }
-		//void GetJetParameters(map<string, Matrix>& params){ }
- 
+		/* 
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
 			m_nu0 = params["dof"].at(0,0);
@@ -52,7 +49,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_W0.Print();
 			} 
 		}
-
+		*/
 
 		//shift learned model parameters
 		void ShiftParameters(const BayesPoint& pt){
@@ -62,27 +59,64 @@ class GaussianMixture : public BasePDFMixture{
 			shift.PointToMat(pt);
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				mean.minus(shift);
-				m_model[k]->SetParameter("mean",mean);
+				PointCollection meanpts = mean.MatToPoints();
+				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(1),1);
+				meanpts.Translate(pt.at(2),2);
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				priormean.minus(shift);
-				m_model[k]->GetPrior()->SetParameter("mean",priormean);
+				meanpts = priormean.MatToPoints();
+				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(1),1);
+				meanpts.Translate(pt.at(2),2);
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 
 				//shift data statistics
-				_xbar[k].minus(shift);
+				meanpts = _xbar[k].MatToPoints();
+				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(1),1);
+				meanpts.Translate(pt.at(2),2);
+				_xbar[k] = Matrix(meanpts);
 			}
 		}
-		
+	
+		void UnprojectPhi_params(){
+			Matrix mean, priormean;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				PointCollection mean_pt = mean.MatToPoints();
+				//cout << "mean" << endl; mean_pt.Print();
+				mean_pt.PlaneToAngleProject(1);	
+				//cout << "unproj mean" << endl; mean_pt.Print();
+				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				PointCollection priormean_pt = priormean.MatToPoints();
+				priormean_pt.PlaneToAngleProject(1);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+
+
+				//shift data statistics
+				PointCollection xbar_pt = _xbar[k].MatToPoints();
+				xbar_pt.PlaneToAngleProject(1);	
+				_xbar[k] = Matrix(xbar_pt);	
+			}
+		}
+
+	
 		void PutPhi02pi_params(){
 			//put means on [0,2pi]
 			Matrix mean, priormean;
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection mean_pt = mean.MatToPoints();
+				//cout << "mean" << endl; mean_pt.Print();
 				mean_pt.Put02pi(1);	
+				//cout << "02pi mean" << endl; mean_pt.Print();
 				m_model[k]->SetParameter("mean",Matrix(mean_pt));
 				
 				//translate posterior mean in prior distribution
@@ -144,6 +178,10 @@ class GaussianMixture : public BasePDFMixture{
 				priormean.mult(sc,priormean);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
 
+				//scale r stat mean
+				_xbar[k].mult(sc,_xbar[k]);
+	
+
 				//scale posterior cov in likelihood
 				//var(AX) = Avar(X)A^T 
 				cov = m_model[k]->GetParameter("cov");
@@ -166,8 +204,6 @@ class GaussianMixture : public BasePDFMixture{
 		}
 
 			
-		//for variational EM algorithm
-		void InitPriorParameters(unsigned long long seed = 111);
 		void CalculateVariationalPosterior();
 		void CalculateExpectations();
 		void CalculateRStatistics();
@@ -184,6 +220,21 @@ class GaussianMixture : public BasePDFMixture{
 
 
 		
+		void RemoveModel(int j){
+			_xbar.erase(_xbar.begin()+j);
+			_Sbar.erase(_Sbar.begin()+j);
+			m_Elam.erase(m_Elam.begin()+j);
+			m_Epi.erase(m_Epi.begin()+j);
+			BaseRemoveModel(j);
+		}
+
+
+	protected:	
+		//for variational EM algorithm
+		//this needs to be called BEFORE init parameters because InitParameters can remove subclusters if the k-means algo
+		//finds nothing assigned to the subcluster BUT it relies on the priors still
+		//bc the UpdateMixture method also updates the posterior parameters (ie the dims of m_post, etc)
+		void InitPriorParameters(map<string, Matrix> params = {});
 
 
 	private:
@@ -203,7 +254,8 @@ class GaussianMixture : public BasePDFMixture{
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
-
+		
+		void InitParameters(unsigned long long seed){ };
 
 		
 
