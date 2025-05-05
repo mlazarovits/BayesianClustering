@@ -16,7 +16,7 @@
 //  development. They are described in the original FastJet paper,
 //  hep-ph/0512210 and in the manual, arXiv:1111.6097. If you use
 //  FastJet as part of work towards a scientific publication, please
-//  quote the version you use and include a citation to the manual and
+//  quote the version you use and include a citation to the manual an
 //  optionally also to hep-ph/0512210.
 //
 //  FastJet is distributed in the hope that it will be useful,
@@ -184,8 +184,9 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //if ((phi-offset)*(phi-offset) >= nndist && ((twopi+offset)-(phi))*((twopi+offset)-(phi)) >= nndist) {continue;}
 	//do not create mirror points if the nearest neighbor is closer than the 0 point or 2pi point
 	//only create mirror point if nearest neighbor is further than 0 and 2pi point
-    if (phi*phi >= nndist || (twopi-phi)*(twopi-phi) >= nndist) {continue;}
-    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
+    //cout << "looking at creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
+    if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
+    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
@@ -199,11 +200,11 @@ if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << 
     // now proceed to prepare the point for addition
     new_plane_points.push_back(*newpts);
     x->points = newpts;
-    x->ismirror = !(_merge_tree->Get(ip)->ismirror);
+    x->ismirror = true;//!(_merge_tree->Get(ip)->ismirror);
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _merge_tree->Get(ip);
     _merge_tree->Get(ip)->mirror = x;
-if(_verbose) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << x->mirror->ismirror << endl;
+if(_verbose) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
 if(_verbose) cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
