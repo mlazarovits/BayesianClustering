@@ -107,11 +107,9 @@ class BasePDFMixture : public BasePDF{
 		virtual map<string, Matrix> GetLikelihoodParameters(int k) = 0; 
 		
 		//for variational EM algorithm
-		virtual void SetPriorParameters(map<string, Matrix> params) = 0;
-		//virtual void SetJetPriorParameters(map<string, Matrix>& params) = 0;
-		//virtual void SetJetParameters(map<string, Matrix>& params) = 0;
-		//virtual void GetJetParameters(map<string, Matrix>& params) = 0;
-		virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
+		virtual void InitPriorParameters(map<string, Matrix> params = {}) = 0;
+		//virtual void SetPriorParameters(map<string, Matrix> params) = 0;
+		//virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
@@ -126,7 +124,8 @@ class BasePDFMixture : public BasePDF{
 		void SetAlpha(double alpha){  m_alpha0 = alpha; }
 
 		BasePDF* GetModel(int k){ return m_model[k]; }
-		void RemoveModel(int j){
+		virtual void RemoveModel(int j) = 0; //needs to call BaseRemoveModel but also removes associated data stats
+		void BaseRemoveModel(int j){
 			//if this is removing the last cluster
 			//break and do resetting of posterior in UpdateModel()
 			if(m_k - 1 == 0) return;
@@ -165,23 +164,26 @@ class BasePDFMixture : public BasePDF{
 
 		//removes components that do not contribute to overall likelihood
 		void UpdateMixture(double thresh){
+		//cout << "UpdateMixture - start" << endl;
 		//if Dirichlet parameter (m_alpha) is below some threshold, remove cluster
 		//if(m_k > 1){ for(int k = 0; k < m_k; k++) cout << "cluster " << k << " has " << m_norms[k] + m_alpha0 << " points - norm " << m_norms[k] << endl; m_post.Print(); if(m_n < 3) m_data->Print(); }
 	//	cout << "points" << endl; m_data->Print();
 	//	cout << "weights" << endl; for(int n = 0; n < m_n; n++) cout << m_data->at(n).w() << endl;
 		//cout << m_k << " clusters to start" << endl;
+		bool updated = false;
 			for(int k = 0; k < m_k; k++){
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				//if(m_norms[k] + m_alpha0 < thresh){
 				if(m_norms[k] < thresh){
 					if(_verb > 3) 
-						cout << "Removing cluster " << k << " with alpha " << m_alphas[k] << " and norm " << m_norms[k] << endl;
+						cout << "Removing cluster " << k << " with norm " << m_norms[k] << endl;
 					//remove model + update number of clusters
 					RemoveModel(k);
 					//if the above call removes all clusters
 					//break and continue to set single gaussian
 					if(m_k == 1) break;
 					k--; //make sure to check following model
+					updated = true;
 				}
 			}
 			//if all clusters removed -> set model to single gaussian
@@ -195,9 +197,11 @@ class BasePDFMixture : public BasePDF{
 				}
 			}
 		//cout << m_k << " clusters after update" << endl;
-			//update effective counts + corresponding parameters - the corresponding 
+			//update effective counts + corresponding parameters (if the model changed, ie clusters were removed) - the corresponding 
 			//entry r_nk is the point weight
-			UpdateVariationalParameters();
+			if(updated)
+				UpdateVariationalParameters();
+		//cout << "UpdateMixture - start" << endl;
 
 		}
 
@@ -296,8 +300,7 @@ class BasePDFMixture : public BasePDF{
 			//get weights from original data
 			vector<double> ws;
 			m_data->GetWeights(ws);
-			m_data = new PointCollection(x.MatToPoints());
-			m_data->SetWeights(ws);
+			m_data = new PointCollection(x.MatToPoints(ws));
 
 			//also scale smear - if datacov is set
 			if(_smear){
