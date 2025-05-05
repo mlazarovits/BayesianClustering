@@ -7,7 +7,7 @@ def main():
 	parser.add_argument("--force",help='force remake of outfile',action='store_true')
 	args = parser.parse_args()
 
-	cmd = "hadd -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
+	cmd = "hadd -k -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
 	for d in os.scandir(args.dir):
 		if "/out" not in d.path:
 			continue
