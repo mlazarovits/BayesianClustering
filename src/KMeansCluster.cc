@@ -104,6 +104,10 @@ void KMeansCluster::Estimate(){
 			//track mean and minimum distance to mean per point
 			//considering saving all dists and sorting to get min
 			if(dist < dmin){ dmin = dist; kmin = k; }
+			if(dist > 1e300){
+				cout << "DIST TOO BIG " << dist << " point " << endl; m_data->at(n).Print(); 
+				cout << " for cluster #" << k << " with mean " << endl; m_means[k].Print();
+			}
 			//cout << "k: " << k << " current kmin: " << kmin << " dist: " << dist << " current dmin: " << dmin << endl;
 		}
 		//if no cluster assigned - assign to first cluster
@@ -145,6 +149,7 @@ void KMeansCluster::Update(){
 				m_means[k].SetEntry(val/m_counts[k],d,0);
 			}
 		}
+	//cout << "kmeans cluster #" << k << " with counts " << m_counts[k] << " updated to mean" << endl; m_means[k].Print();
 	}
 }
 
