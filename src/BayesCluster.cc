@@ -602,7 +602,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	double dLogL = 999;
 	double newLogL = 0;
 	double LogLthresh = 1e-3; //use relative error to old logLH
-	//cout << "initial # clusters " << gmm->GetNClusters() << endl;
+	cout << "initial # clusters " << gmm->GetNClusters() << endl;
 	double oldLogL = algo->EvalLogL();
 	//cout << "after first logLH eval " << gmm->GetNClusters() << endl;
 	algo->SetClusterStart();

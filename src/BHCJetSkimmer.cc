@@ -112,7 +112,6 @@ void BHCJetSkimmer::Skim(){
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(_verb);
 			algo->SetPriorParameters(_prior_params);
-		
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;

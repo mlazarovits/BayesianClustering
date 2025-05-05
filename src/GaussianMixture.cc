@@ -18,6 +18,7 @@ using std::isnan;
 GaussianMixture::GaussianMixture(){ 
 	m_k = 0;
 	m_n = 0;
+	m_dim = 0;
 	//beta > 0
 	m_beta0 = 1e-3;
 	//cout << "beta0: " << m_beta0 << endl;
@@ -49,15 +50,12 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	}
 	//beta > 0
 	m_beta0 = 1e-3;
-	//cout << "beta0: " << m_beta0 << endl;
 	//m > 0
 	m_mean0 = Matrix(m_dim,1);
 	//choose m_0 = 0 by symmetry (see Bishop eq. 10.40)
 	m_mean0.InitEmpty();
-	
 	//nu > d - 1 (degrees of freedom)
 	m_nu0 = m_dim;// - 1) + 1e-3;
-	//cout << "nu0: " << m_nu0 << endl;
 	
 	m_meanBeta0 = Matrix(m_dim, 1);
 	m_meanBeta0.mult(m_mean0, m_beta0);

@@ -19,8 +19,11 @@ class BasePDFMixture : public BasePDF{
 			_tresCte = 0;
 			_tresStoch = 0;
 			_tresNoise = 0;
+			m_dim = 0;
+
 		}
 		BasePDFMixture(int k){ 
+			m_dim = 0;
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
