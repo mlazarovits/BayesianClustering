@@ -306,18 +306,19 @@ class MergeTree : BaseTree{
 			//only does for mean rn - not sure how to do for cov...
 			
 			x->model->UnprojectPhi_params();
-			cout << "unprojected means" << endl;
+			//cout << "unprojected means" << endl;
 			x->model->ShiftParameters(center);
-cout << "shifted params" << endl;
+//cout << "shifted params" << endl;
 			x->model->PutPhi02pi_params(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
-cout << "put params and data on 02pi" << endl;
+//cout << "put params and data on 02pi" << endl;
 			//resets data to original points
 			x->model->SetData(x->points);
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
-		cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
+		//cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
 	//cout << "node x means post shift" << endl;
+	/*
 	vector<double> norms;
 	x->model->GetNorms(norms);
 	for(int k = 0; k < x->model->GetNClusters(); k++){
@@ -328,7 +329,7 @@ cout << "put params and data on 02pi" << endl;
 		cout << "cov" << endl;
 		params["cov"].Print();
 	}cout << std::setprecision(5) << endl;
-
+*/
 			return newLogL;
 		}
 
