@@ -1734,13 +1734,13 @@ class PhotonSkimmer : public BaseSkimmer{
 		//241 - time center vs phi sig
 		TH2D* timeCenter_phiSig = new TH2D("timeCenter_phiSig","timeCenter_phiSig;timeCenter;phiSig",25,-3,3,25,0.,0.1);
 		//242 - sqrt(subcl E) vs subcl E*eta sig
-		TH2D* subclE_sqrtSubclEmultEtaSig = new TH2D("subclE_sqrtSubclEmultEtaSig","subclE_sqrtSubclEmultEtaSig;subclE;subclEmultEtaSig",25,0,1000,25,0.2,0.6);
+		TH2D* subclE_sqrtSubclEmultEtaSig = new TH2D("subclE_sqrtSubclEmultEtaSig","subclE_sqrtSubclEmultEtaSig;subclE;subclEmultEtaSig",25,0,1000,25,0,0.02);
 		//243 - sqrt(subcl E) vs subcl E*phi sig
 		TH2D* subclE_sqrtSubclEmultPhiSig = new TH2D("subclE_sqrtSubclEmultPhiSig","subclE_sqrtSubclEmultPhiSig;subclE;subclEmultPhiSig",25,0,1000,25,0.2,0.8);
 		//244 - sqrt(subcl E) vs subcl E*time sig
 		TH2D* subclE_sqrtSubclEmultTimeSig = new TH2D("subclE_sqrtSubclEmultTimeSig","subclE_sqrtSubclEmultTimeSig;subclE;subclEmultTimeSig",25,0,1000,25,15,35);
 		//245 - timeMajCov*subclE^2 vs timeEtaCov*subclE^2
-		TH2D* subclEmultTimeMajCov_subclEmultTimeEtaCov = new TH2D("subclEmultTimeMajCov_subclEmultTimeEtaCov","subclEmultTimeMajCov_subclEmultTimeEtaCov;subclEmultTimeMajCov;subclEmultTimeEtaCov",50,-5000,5000,50,-5000,5000);
+		TH2D* subclEmultTimeMajCov_subclEmultTimeEtaCov = new TH2D("subclEmultTimeMajCov_subclEmultTimeEtaCov","subclEmultTimeMajCov_subclEmultTimeEtaCov;subclEmultTimeMajCov;subclEmultTimeEtaCov",50,-500,500,50,-500,500);
 		//246 - timeeta cov vs timephi cov with |timemaj cov| > 0.1
 		TH2D* timeEtaCov_timePhiCov_absTimeMajCovge0p1 = new TH2D("timeEtaCov_timePhiCov_absTimeMajCovge0p1","timeEtaCov_timePhiCov_absTimeMajCovge0p1;timeEtaCov;timePhiCov_absTimeMajCovge0p1",25,-0.1,0.1,25,-0.1,0.1);
 		//247 - time maj cov vs time min cov
@@ -1958,9 +1958,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			tc = params["mean"].at(2,0);
 			pi = params["pi"].at(0,0);
 			cov = params["cov"];	
-			Matrix eCov(3,3);
-			MakeCovMat(model->GetData(), eCov, weightScheme(1));
-			eCov.invert(eCov);
+			//Matrix eCov(3,3);
+			//MakeCovMat(model->GetData(), eCov, weightScheme(1));
+			//eCov.invert(eCov);
 			cov.mult(cov,1/model->GetData()->Sumw());
 			//cov.mult(cov,eCov);
 			//distance from xmax to mean_k
@@ -2360,7 +2360,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_procCats[id_idx].hists2D[1][239]->Fill(E_k,t_var);
 			_procCats[id_idx].hists2D[1][240]->Fill(tc,e_var);
 			_procCats[id_idx].hists2D[1][241]->Fill(tc,p_var);
-			_procCats[id_idx].hists2D[1][242]->Fill(E_k,sqrt(E_k)*e_var);
+			_procCats[id_idx].hists2D[1][242]->Fill(E_k,e_var);
 			_procCats[id_idx].hists2D[1][243]->Fill(E_k,sqrt(E_k)*p_var);
 			_procCats[id_idx].hists2D[1][244]->Fill(E_k,sqrt(E_k)*t_var);
 			_procCats[id_idx].hists2D[1][245]->Fill(E_k*majtime_cov_2d,E_k*te_cov);
