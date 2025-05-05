@@ -16,7 +16,7 @@ class GaussianMixture : public BasePDFMixture{
 			m_Epi.clear();
 		};
 	
-		void InitParameters(unsigned long long seed = 111);
+		void InitParameters(map<string, Matrix> priors = {}, unsigned long long seed = 111);
 		//E-step
 		void CalculatePosterior();
 		//M-step
@@ -28,10 +28,7 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetLikelihoodParameters(int k); 
 
-		//void SetJetPriorParameters(map<string, Matrix>& params){ }
-		//void SetJetParameters(map<string, Matrix>& params){ }
-		//void GetJetParameters(map<string, Matrix>& params){ }
- 
+		/* 
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
 			m_nu0 = params["dof"].at(0,0);
@@ -51,10 +48,8 @@ class GaussianMixture : public BasePDFMixture{
 				cout << "W0" << endl;
 				m_W0.Print();
 			} 
-		
-			UpdatePosteriorParameters();
 		}
-
+		*/
 
 		//shift learned model parameters
 		void ShiftParameters(const BayesPoint& pt){
@@ -93,7 +88,9 @@ class GaussianMixture : public BasePDFMixture{
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection mean_pt = mean.MatToPoints();
+				cout << "mean" << endl; mean_pt.Print();
 				mean_pt.PlaneToAngleProject(1);	
+				cout << "unproj mean" << endl; mean_pt.Print();
 				m_model[k]->SetParameter("mean",Matrix(mean_pt));
 				
 				//translate posterior mean in prior distribution
@@ -117,21 +114,20 @@ class GaussianMixture : public BasePDFMixture{
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection mean_pt = mean.MatToPoints();
-				cout << "mean pt " << endl; mean_pt.Print();
+				cout << "mean" << endl; mean_pt.Print();
 				mean_pt.Put02pi(1);	
+				cout << "02pi mean" << endl; mean_pt.Print();
 				m_model[k]->SetParameter("mean",Matrix(mean_pt));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
 				PointCollection priormean_pt = priormean.MatToPoints();
-				cout << "priormean pt " << endl; priormean_pt.Print();
 				priormean_pt.Put02pi(1);	
 				m_model[k]->SetParameter("mean",Matrix(priormean_pt));
 
 
 				//shift data statistics
 				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				cout << "xbar pt " << endl; xbar_pt.Print();
 				xbar_pt.Put02pi(1);
 				_xbar[k] = Matrix(xbar_pt);	
 			}
@@ -208,8 +204,6 @@ class GaussianMixture : public BasePDFMixture{
 		}
 
 			
-		//for variational EM algorithm
-		void InitPriorParameters(unsigned long long seed = 111);
 		void CalculateVariationalPosterior();
 		void CalculateExpectations();
 		void CalculateRStatistics();
@@ -226,6 +220,21 @@ class GaussianMixture : public BasePDFMixture{
 
 
 		
+		void RemoveModel(int j){
+			_xbar.erase(_xbar.begin()+j);
+			_Sbar.erase(_Sbar.begin()+j);
+			m_Elam.erase(m_Elam.begin()+j);
+			m_Epi.erase(m_Epi.begin()+j);
+			BaseRemoveModel(j);
+		}
+
+
+	protected:	
+		//for variational EM algorithm
+		//this needs to be called BEFORE init parameters because InitParameters can remove subclusters if the k-means algo
+		//finds nothing assigned to the subcluster BUT it relies on the priors still
+		//bc the UpdateMixture method also updates the posterior parameters (ie the dims of m_post, etc)
+		void InitPriorParameters(map<string, Matrix> params = {});
 
 
 	private:
@@ -245,7 +254,8 @@ class GaussianMixture : public BasePDFMixture{
 		//E_lam = E[ln|lambda_k|] (eq. 10.65)
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
-
+		
+		void InitParameters(unsigned long long seed){ };
 
 		
 
