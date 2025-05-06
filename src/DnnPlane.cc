@@ -746,6 +746,7 @@ if(_verbose) cout << "SetNearest - start" << endl;
   // NULL for the incident vertex circulator. Check if this is
   // happening before circulating over it... (Otherwise it crashes
   // when looking for neighbours of last point)
+cout << "start neighbor check" << endl;
   if (vc != NULL) do { 
     if ( vc->info().val() != INFINITE_VERTEX) {
       // find index corresponding to vc for easy manipulation
@@ -796,11 +797,16 @@ if(_verbose) cout << "SetNearest - start" << endl;
     }
   } while (++vc != done); // move on to next Voronoi neighbour
   
+cout << "end neighbor check" << endl;
   // set j's supervertex info about nearest neighbour
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision
-  _supervertex[j].MaxRk = bestmerge->log_h1_prior - bestmerge->log_didj;
+  if(bestmerge == nullptr)
+  	_supervertex[j].MaxRk = -HUGE_DOUBLE;
+  else
+  	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
   //_supervertex[j].bestmerge = bestmerge;
+  _supervertex[j].MaxRk = bestmerge->log_h1_prior - bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
 	if(_verbose){
 		//cout << std::setprecision(10) << "SetNearest - done for vertex " << j << " with best rk " << _supervertex[j].MaxRk  << " for node " << best_vtx->info().val() << " best merge has pts " << endl;

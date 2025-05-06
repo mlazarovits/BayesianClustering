@@ -69,7 +69,7 @@ Dnn2piCylinder::Dnn2piCylinder(
 	const bool & ignore_nearest_is_mirror, MergeTree* mt,
 	const bool & verbose) {
  SetMergeTree(mt); 
-  _verbose = verbose;
+  _verbose = false;
   _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
   vector<PointCollection> plane_points;
   vector<int>    plane_point_indices(input_points.size());
@@ -121,9 +121,9 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
   assert(phi >= 0.0 && phi < 2*pi);
 
  //cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
-if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
-	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
- }
+//if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
+//	cout << "plane index: " << i << " cyl index: " << _cylinder_index_of_plane_vertex[i] << endl;
+// }
   // do main point
   MirrorVertexInfo mvi;
   mvi.main_index = _cylinder_index_of_plane_vertex.size();
@@ -305,9 +305,9 @@ if(_verbose) cout << "Dnn2pi to remove: " << indices_to_remove[i] << " main idx:
     }
   }
 
-if(_verbose){
-for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane index: " << plane_indices_to_remove[i] << endl;
-}
+//if(_verbose){
+//for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane index: " << plane_indices_to_remove[i] << endl;
+//}
 
   // given "cylinder" points to add get hold of the list of
   // plane-points to add.
@@ -315,13 +315,13 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
   vector<PointCollection> plane_points_to_add;
   indices_added.clear();
   
-if(_verbose)
-cout << "adding points" << endl;
-  for (unsigned int i=0; i < points_to_add.size(); i++) {
-	indices_added.push_back(_mirror_info.size());
-  if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt to add #" << i << " main idx " << indices_added[i] << endl;
-    _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
-  }
+//if(_verbose)
+//cout << "adding points" << endl;
+//  for (unsigned int i=0; i < points_to_add.size(); i++) {
+//	indices_added.push_back(_mirror_info.size());
+//  if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt to add #" << i << " main idx " << indices_added[i] << endl;
+//    _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
+//  }
 
   // now get the hard work done (note that we need to supply the
   // plane_indices_added vector but that we will not actually check
