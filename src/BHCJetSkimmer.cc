@@ -223,10 +223,10 @@ void BHCJetSkimmer::Skim(){
 		//fill pred jet hists with jets
 		FillPredJetHists();
 		nsubcls_tot = 0;
+		for(int j = 0; j < _predJets.size(); j++){
+			nsubcls_tot += _predJets[j].GetNConstituents();
+		}
 		for(int p = 0; p < _procCats.size(); p++){
-			for(int j = 0; j < _predJets.size(); j++){
-				nsubcls_tot += _predJets[j].GetNConstituents();
-			}
 			_procCats[p].hists1D[0][142]->Fill(nsubcls_tot);
 		}
 		
