@@ -598,7 +598,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->ShiftData(center);
 	//cout << "unshifted - gmm data is" << endl; gmm->GetData()->Print();
 	gmm->ShiftParameters(center);
-	gmm->PutPhi02pi(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
+	gmm->PutPhi02pi(); //does for data and parameters (not parameters you stupid slut) 
+	gmm->PutPhi02pi_params(); //does for data and parameters (not parameters you stupid slut) 
+	//- do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
 	//cout << "phi02pi - gmm data is" << endl; gmm->GetData()->Print();
 	//cout << "center " << endl; center.Print();
 	//cout << "predicted center - lead only - nclusters " << gmm->GetNClusters() << endl;
