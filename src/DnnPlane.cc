@@ -754,8 +754,8 @@ cout << "start neighbor check" << endl;
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 	if(_verbose){ cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
-		//cout << "this vertex pts" << endl; _supervertex[j].n->points->Print(); 
-		//cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+		cout << "this vertex pts" << endl; _supervertex[j].n->points->Print(); 
+		cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
 		}
       // find distance between j and its Voronoi neighbour (vc)
       //if(_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
@@ -878,8 +878,8 @@ void DnnPlane::_SetAndUpdateNearest(
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
 	if(_verbose){cout << "looking at vertex " << j << " and neighbor " << vc->info().val() << endl;
-	//cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
-	//cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+	cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
+	cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
 	}
       // update the mindist if we are closer than anything found so far
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
