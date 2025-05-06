@@ -214,7 +214,7 @@ class MergeTree : BaseTree{
 			x->model->PutPhi02pi();		
 
 			x->model->ShiftData(center);
-			cout << "centroid " << endl; center.Print(); 
+			//cout << "centroid " << endl; center.Print(); 
 			
 			//cout << "translated pts" << endl; x->model->GetData()->Print();
 			
