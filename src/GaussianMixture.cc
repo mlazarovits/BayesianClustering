@@ -388,7 +388,7 @@ void GaussianMixture::InitPriorParameters(map<string, Matrix> params){
 
 
 void GaussianMixture::CalculateExpectations(){
-	//cout << "CALC EXPECTATIONS - start" << endl;
+	cout << "CALC EXPECTATIONS - start" << endl;
 	//cout << "m_k " << m_k << endl;
 	//calculate alpha_hat
 	double alpha_hat = 0.;
@@ -406,15 +406,15 @@ void GaussianMixture::CalculateExpectations(){
 		for(int d = 1; d < m_dim+1; d++){
 			digam += digamma((dof + 1 - d)/2.);
 		}
-	//	cout << "k: " << k << " digam: " << digam << " d*ln2: " << m_dim*log(2) << " lndet: " << log(scalemat.det()) << " det: " << scalemat.det() << endl; scalemat.Print();
+		cout << "k: " << k << " digam: " << digam << " d*ln2: " << m_dim*log(2) << " lndet: " << log(scalemat.det()) << " det: " << scalemat.det() << endl; scalemat.Print();
 		m_Elam[k] = digam + m_dim*log(2) + log(scalemat.det());
 		m_Epi[k] = digamma(m_alphas[k]) - digamma(alpha_hat);
-		//cout << "calc expectations - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+		cout << "calc expectations - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		//scalemat.Print();
 		if(isnan(m_Elam[k])){ cout << "NAN!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
 	}	
-	//cout << "CALC EXPECTATIONS - end" << endl;
+	cout << "CALC EXPECTATIONS - end" << endl;
 }
 
 
@@ -864,12 +864,13 @@ void GaussianMixture::UpdatePosteriorParameters(){
 //calculates ELBO
 //(10.70) ELBO = E[ln(p(X|Z,mu,lam))] + E[ln(p(Z|pi)] + E[ln(p(pi))] + E[ln(p(mu,lam))] - E[ln(q(Z))] - E[ln(q(pi))] - E[ln(q(mu,lam))]
 double GaussianMixture::EvalVariationalLogL(){
-//cout << "GaussianMixture::EvalVarLogL - start # clusters " << m_k << endl;
+cout << "GaussianMixture::EvalVarLogL - start # clusters " << m_k << endl;
 	double E_p_all, E_p_Z, E_p_pi, E_p_muLam, E_q_Z, E_q_pi, E_q_muLam, E_lam;
 	//E[ln p(X|Z,mu,lam)] = 0.5*sum_k( N_k*(ln~lam_k - m_dim/beta_k - nu_k*Tr(S_k*W_k) - nu_k*(mus_k - m_k)T*W_k*(mu_k - m_k) - D*log(2*pi) ))
 	E_p_all = 0;
 	//recalculate expectation values E_lam + E_pi with updated parameters
 	CalculateExpectations();
+	cout << "E_p_all" << endl;
 	for(int k = 0; k < m_k; k++){
 		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
 		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
@@ -914,7 +915,7 @@ double GaussianMixture::EvalVariationalLogL(){
 	//cout << "Sk*Wk" << endl;
 	//tmp_S_W.Print();
 	//cout << "trace " << tmp_S_W.trace() << endl;
-		//cout << "k " << k << " Nk " << m_norms[k] << " Elam " << m_Elam[k] << " dim " << m_dim << " scale " << scale << " nu " << nu << " trace " << tmp_S_W.trace() << " full " << full.at(0,0) << " cov " << endl; cov.Print(); cout << "scalemat " << endl; scalemat.Print();
+		cout << "k " << k << " Nk " << m_norms[k] << " Elam " << m_Elam[k] << " dim " << m_dim << " scale " << scale << " nu " << nu << " trace " << tmp_S_W.trace() << " full " << full.at(0,0) << " cov " << endl; cov.Print(); cout << "scalemat " << endl; scalemat.Print();
 		E_p_all += m_norms[k]*(m_Elam[k] - m_dim/scale - nu*tmp_S_W.trace()  - nu*full.at(0,0) - m_dim*log(2*acos(-1)));
 
 	}
@@ -944,16 +945,17 @@ double GaussianMixture::EvalVariationalLogL(){
 	double half_sum = 0; 
 	double tr_sum = 0;
 	Matrix tmp, tmpT;
+	cout << "E[ln(p(mu,lambda))]" << endl;
 	for(int k = 0; k < m_k; k++){
 		//(m_k - m_0)
 		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
 		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
 		Matrix mean = m_model[k]->GetPrior()->GetParameter("mean");
 		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
-	//cout << "k " << k << endl;
-	//cout << "m0" << endl; m_mean0.Print();
-	//cout << "mk" << endl; mean.Print();
-	//cout << "W" << endl; scalemat.Print();
+	cout << "k " << k << " beta_k " << scale << " nu_k " << nu << endl;
+	cout << "m0" << endl; m_mean0.Print();
+	cout << "mk" << endl; mean.Print();
+	cout << "W" << endl; scalemat.Print();
 	
 		Matrix mk_min_m0 = Matrix(m_dim,1);
 		mk_min_m0.minus(mean,m_mean0);		
@@ -1009,29 +1011,31 @@ double GaussianMixture::EvalVariationalLogL(){
 	//E[ln(q(mu, lam))]
 	E_q_muLam = 0;
 	double H;
+	cout << "E[ln(q(mu, lam))]" << endl;
 	for(int k = 0; k < m_k; k++){
 		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
 		double nu = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
 		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
 		Wishart* wish_k = new Wishart(scalemat, nu);
 		H = wish_k->H();
+		cout << "k " << k << " Elam " << m_Elam[k] << " betak " << scale << " H " << H << endl;
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 
 	}
-	//cout << "E_p_all: " << E_p_all << endl;
-	//cout << "E_p_Z: " << E_p_Z << endl;
-	//cout << "E_p_pi: " << E_p_pi << endl;
-	//cout << "E_p_muLam: " << E_p_muLam << endl;
-	//cout << "E_q_Z: " <<  E_q_Z << endl;
-	//cout << "E_q_pi: " << E_q_pi << endl;
-	//cout << "E_q_muLam: " <<  E_q_muLam << endl;
-	//for(int k = 0; k < m_k; k++){
-	//	Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
- 	//	double dof = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
-	//	cout << " evalVarLogL - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
-	//	scalemat.Print();
-	//}
-	//cout << "GaussianMixture::EvalVarLogL - end" << endl;
+	cout << "E_p_all: " << E_p_all << endl;
+	cout << "E_p_Z: " << E_p_Z << endl;
+	cout << "E_p_pi: " << E_p_pi << endl;
+	cout << "E_p_muLam: " << E_p_muLam << endl;
+	cout << "E_q_Z: " <<  E_q_Z << endl;
+	cout << "E_q_pi: " << E_q_pi << endl;
+	cout << "E_q_muLam: " <<  E_q_muLam << endl;
+	for(int k = 0; k < m_k; k++){
+		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
+ 		double dof = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+		cout << " evalVarLogL - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+		scalemat.Print();
+	}
+	cout << "GaussianMixture::EvalVarLogL - end" << endl;
 	return E_p_all+ E_p_Z + E_p_pi+ E_p_muLam - E_q_Z - E_q_pi - E_q_muLam;
 	
 
