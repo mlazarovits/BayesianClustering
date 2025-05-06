@@ -49,7 +49,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
 cout << "n starting pts " << n << endl;
-if(_verb > 3)cout <<  "original pts " << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
@@ -178,7 +177,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
 				jet_j = BestRkPair.second;
 			}
 
-			if(true){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
+			if(_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
 			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
@@ -229,7 +228,7 @@ if(_verb > 3)cout <<  "original pts " << endl;
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
 		int nn;
-		if(true){
+		if(_verb > 1){
 			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
@@ -278,8 +277,8 @@ if(_verb > 3)cout <<  "original pts " << endl;
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
-		if(true)cout << "\n\n\n" << endl;
-		if(true) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
+		if(_verb > 1)cout << "\n\n\n" << endl;
+		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
