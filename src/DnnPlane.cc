@@ -805,8 +805,6 @@ cout << "end neighbor check" << endl;
   	_supervertex[j].MaxRk = -HUGE_DOUBLE;
   else
   	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
-  //_supervertex[j].bestmerge = bestmerge;
-  _supervertex[j].MaxRk = bestmerge->log_h1_prior - bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
 	if(_verbose){
 		//cout << std::setprecision(10) << "SetNearest - done for vertex " << j << " with best rk " << _supervertex[j].MaxRk  << " for node " << best_vtx->info().val() << " best merge has pts " << endl;
