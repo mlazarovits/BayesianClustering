@@ -252,7 +252,7 @@ class MergeTree : BaseTree{
 			double nll = 0;
 			double dLogL = 1e308; 
 			int it = -1;
-			//cout << "oldLogL (initial) " << oldLogL << endl;
+			cout << "oldLogL (initial) " << oldLogL << endl;
 			while(dLogL > LogLThresh*fabs(oldLogL) || it == 0){
 				it++;
 				newLogL = algo->Cluster();
@@ -263,11 +263,11 @@ class MergeTree : BaseTree{
 			
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
-		//cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
+		cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 				oldLogL = newLogL;
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
-			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+			cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
 //cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
