@@ -746,7 +746,6 @@ if(_verbose) cout << "SetNearest - start" << endl;
   // NULL for the incident vertex circulator. Check if this is
   // happening before circulating over it... (Otherwise it crashes
   // when looking for neighbours of last point)
-cout << "start neighbor check" << endl;
   if (vc != NULL) do { 
     if ( vc->info().val() != INFINITE_VERTEX) {
       // find index corresponding to vc for easy manipulation
@@ -797,7 +796,6 @@ cout << "start neighbor check" << endl;
     }
   } while (++vc != done); // move on to next Voronoi neighbour
   
-cout << "end neighbor check" << endl;
   // set j's supervertex info about nearest neighbour
   _supervertex[j].NNindex = nearest->info().val();
   _supervertex[j].NNdistance = trunc(mindist * pow(10, max_ndigits)) / pow(10, max_ndigits); //truncate for machine precision

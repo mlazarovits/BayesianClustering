@@ -178,7 +178,7 @@ class MergeTree : BaseTree{
 			//BayesPoint center = newpts->mean();
 			//center.SetValue(newpts->CircularMean(1),1);
 			BayesPoint center({newpts->Centroid(0), newpts->CircularCentroid(1), newpts->Centroid(2)});
-			//cout << "center" << endl; center.Print();
+			if(_verb > 1){ cout << "center" << endl; center.Print();}
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
@@ -214,13 +214,12 @@ class MergeTree : BaseTree{
 			x->model->PutPhi02pi();		
 
 			x->model->ShiftData(center);
-			//cout << "centroid " << endl; center.Print(); 
 			
-			//cout << "translated pts" << endl; x->model->GetData()->Print();
+			if(_verb > 1){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
 			
 			//project phi onto plane
 			x->model->ProjectPhi();
-			//cout << "projected pts" << endl; x->model->GetData()->Print();
+			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);

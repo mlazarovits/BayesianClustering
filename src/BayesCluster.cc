@@ -45,8 +45,6 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
  
 	mt->SetPriorParameters(_prior_params);
-	//set distance constraint
-	//mt->SetDistanceConstraint(0,acos(-1)/2.);
 	int n = _points.size();	
 cout << "n starting pts " << n << endl;
 	for (int i = 0; i < n; i++) {
@@ -60,7 +58,7 @@ cout << "n starting pts " << n << endl;
 		mt->AddLeaf(&_points[i].at(0));
 	}
 	if(_verb > 1) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
-	const bool verbose = true;
+	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
@@ -123,52 +121,6 @@ cout << "n starting pts " << n << endl;
 						jet_j = jjet_j;
 						map_it = it;	
 					}
-					/*
-					if(InvDistMap.find(jjet_i) == InvDistMap.end()) continue; //skip points already combined
-					if(InvDistMap.find(jjet_j) == InvDistMap.end()) continue; //skip points already combined
-					dist_i = InvDistMap[jjet_i].second;
-					dist_j = InvDistMap[jjet_j].second;
-					//take mindist pair
-					if(dist_i < dist_j){
-						if(dist_i < mindist){
-							mindist = dist_i;
-							map_it_i = ProbMap.end();
-							map_it = it;//ProbMap.end();
-							map_it_j = ProbMap.end(); 
-							jet_i = jjet_i;
-							jet_j = InvDistMap[jjet_i].first;
-							//find associated pair in prob map
-							for(auto iit = ProbMap.begin(); iit != ProbMap.end(); iit++){
-								if(iit->second.first == jet_j && iit != map_it){ //don't want to double erase
-									map_it_i = iit;
-								cout << "found it to jet_j " << jet_j << " " << map_it_i->second.first << endl;
-									break;
-								}
-							}
-					if(_verb > 1) cout << " jet_i " << jet_i << " has best min dist " << dist_i << " with " << jet_j << endl;
-						}
-					}
-					else{
-						if(dist_j < mindist){
-							mindist = dist_j;
-							map_it_i = ProbMap.end();
-							map_it = it;//ProbMap.end();
-							map_it_j = ProbMap.end(); 
-							jet_i = InvDistMap[jjet_j].first;
-							jet_j = jjet_j;
-							//find associated pair in prob map
-							for(auto iit = ProbMap.begin(); iit != ProbMap.end(); iit++){
-								if(iit->second.first == jet_i && iit != map_it){ //don't want to double erase
-									map_it_j = iit;
-								cout << "found it to jet_i " << jet_i << " " << map_it_j->second.first << endl;
-									break;
-								}
-							}
-					if(_verb > 1) cout << " jet_j " << jet_j << " has best min dist " << dist_j << " " << mindist << " with " << jet_i << endl;
-						}
-
-					}
-					*/
 				}
 			if(_verb > 1) cout << "mindist: " << mindist << " jet_i: " << jet_i << " jet_j: " << jet_j  << endl;
 		
@@ -177,7 +129,7 @@ cout << "n starting pts " << n << endl;
 				jet_j = BestRkPair.second;
 			}
 
-			if(true){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
+			if(verbose){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
 			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
@@ -191,7 +143,7 @@ cout << "n starting pts " << n << endl;
 			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
 			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
 			Valid2 = DNN->Valid(jet_j);
-			if(true) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
+			if(verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
@@ -204,7 +156,7 @@ cout << "n starting pts " << n << endl;
 				pt.SetWeight(jps_i[i].GetWeight());
 				jeti_pts += pt;
 			}
-			cout << "jet_i pts" << endl;
+			cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
 			cout << "with mean " << endl; jeti_mean.Print();
@@ -213,7 +165,7 @@ cout << "n starting pts " << n << endl;
 				pt.SetWeight(jps_j[i].GetWeight());
 				jetj_pts += pt;
 			}
-			cout << "jet_j pts" << endl;
+			cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
 			cout << "with mean " << endl; jetj_mean.Print();
@@ -228,7 +180,7 @@ cout << "n starting pts " << n << endl;
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
 		int nn;
-		if(true){
+		if(verbose){
 			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
 			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
 			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
@@ -562,10 +514,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	if(!_smear.empty()){ gmm->SetDataSmear(_smear); }
 	gmm->SetAlpha(_subalpha);
 	gmm->SetVerbosity(_verb);
-	//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
-	//which in turn calls UpdateVariationalPosterior
-	//which depends on the priors 
-	//gmm->InitPriorParameters(_prior_params);	
 
 	gmm->InitParameters(_prior_params);
 
