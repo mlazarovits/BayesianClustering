@@ -413,7 +413,7 @@ void GaussianMixture::CalculateExpectations(){
 		//scalemat.Print();
 		if(isnan(m_Elam[k])){ cout << "NAN!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
-		if(isinf(m_Elam[k])){ cout << "INF!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+		if(std::isinf(m_Elam[k])){ cout << "INF!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
 	}	
 	//cout << "CALC EXPECTATIONS - end" << endl;
