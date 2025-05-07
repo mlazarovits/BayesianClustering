@@ -386,9 +386,9 @@ class PointCollection{
 			}
 			else{ //map to infinity - add original value to preserve unique coordinate
 				if(_pts[i].at(d) > 0)
-					_pts[i].SetValue(1e100,d);
+					_pts[i].SetValue(1e70,d);
 				else	
-					_pts[i].SetValue(-1e100,d);
+					_pts[i].SetValue(-1e70,d);
 			}
 		}
 
