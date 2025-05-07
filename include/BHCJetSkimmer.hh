@@ -319,8 +319,8 @@ class BHCJetSkimmer{
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				_procCats[p].hists1D[0][0]->Fill(njets);
-				cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
-				_procCats[p].hists1D[0][11]->Fill(njets - (int)_genjets.size());
+				cout << "# pred jets - # reco jets " << njets - (int)_recojets.size() << endl;
+				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recojets.size());
 				//FindResonances(_predJets,wmass_idxs,tmass_idx);
 				//W mass
 				//cout << "wmass idxs " << wmass_idxs.first << " " << wmass_idxs.second << endl;
@@ -1114,8 +1114,8 @@ class BHCJetSkimmer{
 		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,50);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
-		//11 - # pred jets - # gen jets
-		TH1D* predGen_nJets = new TH1D("BHCGen_diffNJets","BHCGen_diffNJets",20,-10,10);
+		//11 - # pred jets - # reco jets
+		TH1D* predGen_nJets = new TH1D("BHCRecoAK4_diffNJets","BHCRecoAK4_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
 		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.1);
