@@ -83,11 +83,16 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
     outFileArg = ofilename+".$(Process)"
     
     jobCtr=0
+    subf.write("\n\n\n")
+    subf.write("queue Arguments from (\n")
     for e in evts:
             inFileArg = " -i "+inFile
-            Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
-            subf.write("\n\n\n")
+            #Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+            Args = inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+            #subf.write("\n\n\n")
             subf.write("###### job"+str(jobCtr)+ "######\n")
             subf.write(Args)
-            subf.write("Queue\n")
+            #subf.write("Queue\n")
             jobCtr=jobCtr+1
+
+    subf.write(")")
