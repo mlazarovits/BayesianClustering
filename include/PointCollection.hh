@@ -355,6 +355,24 @@ class PointCollection{
 	}
 
 
+	void EtaToTheta(int d){
+		for(int i = 0; i < (int)_pts.size(); i++){
+			double eta = _pts[i].at(d);
+			_pts[i].SetValue(2*atan(exp(-eta)),d);
+		}
+
+	}
+	
+	void ThetaToEta(int d){
+		for(int i = 0; i < (int)_pts.size(); i++){
+			double theta = _pts[i].at(d);
+			_pts[i].SetValue(-log(tan(theta/2)),d);
+		}
+
+
+	}
+
+
 	void AngleToPlaneProject(int d){
 		//for small theta, theta ~ sin(theta) ~ tan(theta), cos(theta) ~ 1
 		//tan(theta/2) = sin(theta)/(1 + cos(theta))

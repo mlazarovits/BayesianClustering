@@ -281,11 +281,21 @@ class BasePDFMixture : public BasePDF{
 			
 		}
 
-		//add eta projection
-		void ProjectEta(){
+		void EtaToTheta(){
+			m_data->EtaToTheta(0);
+		}
+
+		void ThetaToEta(){
+			m_data->ThetaToEta(0);
+		}
+		
+		virtual void ThetaToEta_params() = 0;
+
+		//add theta projection
+		void ProjectTheta(){
 			m_data->AngleToPlaneProject(0);
 		}
-		void UnprojectEta(){
+		void UnprojectTheta(){
 			m_data->PlaneToAngleProject(0);
 		}
 	
@@ -296,6 +306,7 @@ class BasePDFMixture : public BasePDF{
 			m_data->PlaneToAngleProject(1);
 		}
 		virtual void UnprojectPhi_params() = 0;
+		virtual void UnprojectTheta_params() = 0;
 
 		virtual void PutPhi02pi_params() = 0;
 

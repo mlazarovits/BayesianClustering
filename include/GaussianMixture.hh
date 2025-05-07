@@ -82,6 +82,52 @@ class GaussianMixture : public BasePDFMixture{
 				_xbar[k] = Matrix(meanpts);
 			}
 		}
+		
+		void ThetaToEta_params(){
+			Matrix mean, priormean;
+			double theta;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				theta = mean.at(0,0);
+				mean.SetEntry(-log(tan(theta/2)),0,0);
+				m_model[k]->SetParameter("mean",mean);
+				
+				//posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				theta = priormean.at(0,0);	
+				priormean.SetEntry(-log(tan(theta/2)),0,0);
+				m_model[k]->GetPrior()->SetParameter("mean",priormean);
+
+
+				//data statistics
+				theta = _xbar[k].at(0,0);	
+				_xbar[k].SetEntry(-log(tan(theta/2)),0,0);
+			}
+		}
+		
+		void UnprojectTheta_params(){
+			Matrix mean, priormean;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				PointCollection mean_pt = mean.MatToPoints();
+				//cout << "mean" << endl; mean_pt.Print();
+				mean_pt.PlaneToAngleProject(0);	
+				//cout << "unproj mean" << endl; mean_pt.Print();
+				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				PointCollection priormean_pt = priormean.MatToPoints();
+				priormean_pt.PlaneToAngleProject(0);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+
+
+				//shift data statistics
+				PointCollection xbar_pt = _xbar[k].MatToPoints();
+				xbar_pt.PlaneToAngleProject(0);	
+				_xbar[k] = Matrix(xbar_pt);	
+			}
+		}
 	
 		void UnprojectPhi_params(){
 			Matrix mean, priormean;
