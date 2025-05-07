@@ -57,8 +57,8 @@ cout << "n starting pts " << n << endl;
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
 		mt->AddLeaf(&_points[i].at(0));
 	}
-	if(_verb > 1) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
-	const bool verbose = true;
+	const bool verbose = false;
+	if(verbose) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
@@ -190,7 +190,7 @@ cout << "n starting pts " << n << endl;
 				pt.SetWeight(jps_i[i].GetWeight());
 				jeti_pts += pt;
 			}
-			cout << "jet_i pts" << endl;
+			cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
 			cout << "with mean " << endl; jeti_mean.Print();
@@ -199,7 +199,7 @@ cout << "n starting pts " << n << endl;
 				pt.SetWeight(jps_j[i].GetWeight());
 				jetj_pts += pt;
 			}
-			cout << "jet_j pts" << endl;
+			cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
 			cout << "with mean " << endl; jetj_mean.Print();
@@ -229,8 +229,8 @@ cout << "n starting pts " << n << endl;
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
-		if(_verb > 1)cout << "\n\n\n" << endl;
-		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
+		if(verbose)cout << "\n\n\n" << endl;
+		if(verbose) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){

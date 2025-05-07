@@ -413,6 +413,8 @@ void GaussianMixture::CalculateExpectations(){
 		//scalemat.Print();
 		if(isnan(m_Elam[k])){ cout << "NAN!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
+		if(isinf(m_Elam[k])){ cout << "INF!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
 	}	
 	//cout << "CALC EXPECTATIONS - end" << endl;
 	
@@ -826,7 +828,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 //cout << "W-1 + N*S + (b*N)/(b + N)*xxT" << endl;new_scalemat.Print();
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
-//cout << "inverted new_scalemat" << endl; new_scalemat.Print();
+//cout << "k " << k << " inverted new_scalemat" << endl; new_scalemat.Print();
 		if(isnan(new_scalemat.at(0,0))){
 			cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
 			cout << "new scalemat " << endl; new_scalemat.Print();
@@ -983,6 +985,7 @@ double GaussianMixture::EvalVariationalLogL(){
 	//cout << "trace " << tr.trace() << endl;	
 		tr_sum += nu*tr.trace();
 	}
+//cout << "half sum " << half_sum << " lam sum "  << lam_sum << " trace sum " << tr_sum << endl;
 	E_p_muLam = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
 	Wishart* wish = new Wishart(m_W0, m_nu0);
 	E_p_muLam += m_k*wish->lnB();
@@ -1019,7 +1022,7 @@ double GaussianMixture::EvalVariationalLogL(){
 		double scale = m_model[k]->GetPrior()->GetParameter("scale").at(0,0);
 		Wishart* wish_k = new Wishart(scalemat, nu);
 		H = wish_k->H();
-		//cout << "k " << k << " Elam " << m_Elam[k] << " betak " << scale << " H " << H << endl;
+		//cout << "k " << k << " Elam " << m_Elam[k] << " betak " << scale << " H " << H << " nu " << nu << " scalemat " << endl; scalemat.Print();
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 
 	}

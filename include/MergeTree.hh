@@ -175,10 +175,6 @@ class MergeTree : BaseTree{
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
 			//cout << "pts " << endl; newpts->Print();
-			//BayesPoint center = newpts->mean();
-			//center.SetValue(newpts->CircularMean(1),1);
-			BayesPoint center({newpts->Centroid(0), newpts->CircularCentroid(1), newpts->Centroid(2)});
-			if(_verb > 1){ cout << "center" << endl; center.Print();}
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
@@ -207,10 +203,21 @@ class MergeTree : BaseTree{
 			
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
+	
+	
+			//change eta to theta BEFORE calculating centroid
+			x->model->EtaToTheta();
+			if(_verb > 1){cout << "eta to theta" << endl; x->model->GetData()->Print();}
+			//since the first dimension is now an angle, its centroid needs to be circularly calculated
+			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
+			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
+			if(_verb > 1){ cout << "center" << endl; center.Print();}
 			
 			//make sure all data in model is on [0,2pi] to begin with
 			//some mirror nodes will have pts < 0 or > 2 pi
 			//but the shifting + plane project depends on all pts initially being on unit circle
+			//it doesn't matter if this is done before or after centroid calculation
+			//bc of the way the centroid is calculated for phi (ie CircularCentroid)
 			x->model->PutPhi02pi();		
 
 			x->model->ShiftData(center);
@@ -219,6 +226,7 @@ class MergeTree : BaseTree{
 			
 			//project phi onto plane
 			x->model->ProjectPhi();
+			x->model->ProjectTheta();
 			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 
 			//cout << "scale data + lam*s" << endl;	
@@ -305,10 +313,12 @@ class MergeTree : BaseTree{
 			//only does for mean rn - not sure how to do for cov...
 			
 			x->model->UnprojectPhi_params();
+			x->model->UnprojectTheta_params();
 			//cout << "unprojected means" << endl;
 			x->model->ShiftParameters(center);
 //cout << "shifted params" << endl;
 			x->model->PutPhi02pi_params(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
+			x->model->ThetaToEta_params();
 //cout << "put params and data on 02pi" << endl;
 			//resets data to original points
 			x->model->SetData(x->points);
