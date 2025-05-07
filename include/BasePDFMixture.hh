@@ -280,6 +280,14 @@ class BasePDFMixture : public BasePDF{
 			m_data->Translate(pt.at(2),2);
 			
 		}
+
+		//add eta projection
+		void ProjectEta(){
+			m_data->AngleToPlaneProject(0);
+		}
+		void UnprojectEta(){
+			m_data->PlaneToAngleProject(0);
+		}
 	
 		void ProjectPhi(){
 			m_data->AngleToPlaneProject(1);

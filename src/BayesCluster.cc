@@ -58,7 +58,7 @@ cout << "n starting pts " << n << endl;
 		mt->AddLeaf(&_points[i].at(0));
 	}
 	if(_verb > 1) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
-	const bool verbose = false;
+	const bool verbose = true;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;

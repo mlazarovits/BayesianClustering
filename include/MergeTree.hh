@@ -266,7 +266,7 @@ class MergeTree : BaseTree{
 				oldLogL = newLogL;
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
-			//cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+			if(_verb > 1) cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
 //cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;

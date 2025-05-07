@@ -99,12 +99,12 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//cout << " 3d distance from centroid " << endl;
 
 
-//cout << "p_dk_tk_100 " << p_dk_tk_100 << " pi_stable " << pi_stable << " p_dk_h1 " << p_dk_h1 << " dl " << l->d << " dr " << r->d << " d " << d_100 << " p(dl) " << l->prob_tk << " p(dr) " << r->prob_tk << " n " << n << endl;
-	x->val = rk;
-	x->log_h1_prior = loga;
-//cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_alpha) << " + lgam(n) " << lgamma(n) << endl;
-	x->log_didj = logb;
-//cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
+if(_verb > 1)cout << "p_dk_tk_100 " << p_dk_tk_100 << " pi_stable " << pi_stable << " p_dk_h1 " << p_dk_h1 << " dl " << l->d << " dr " << r->d << " d " << d_100 << " p(dl) " << l->prob_tk << " p(dr) " << r->prob_tk << " n " << n << endl;
+      x->val = rk;
+      x->log_h1_prior = loga;
+if(_verb > 1)cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_alpha) << " + lgam(n) " << lgamma(n) << endl;
+      x->log_didj = logb;
+if(_verb > 1)cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
 	x->prob_tk = p_dk_tk_100;
 	
 
