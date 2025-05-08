@@ -378,6 +378,13 @@ class PointCollection{
 		//tan(theta/2) = sin(theta)/(1 + cos(theta))
 		//for small theta => theta/2
 		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
+		double infval;
+		if(d == 0)
+			infval = 1e70;
+		else if(d == 1)
+			infval = 1.1e70;
+		else
+			infval = 1.2e70;
 		for(int i = 0; i < (int)_pts.size(); i++){
 			//_pts[i].SetValue(tan(_pts[i].at(d)),d);
 			//if within range [-pi/2, pi/2], map to plane
@@ -386,9 +393,9 @@ class PointCollection{
 			}
 			else{ //map to infinity - add original value to preserve unique coordinate
 				if(_pts[i].at(d) > 0)
-					_pts[i].SetValue(1e70,d);
+					_pts[i].SetValue(infval,d);
 				else	
-					_pts[i].SetValue(-1e70,d);
+					_pts[i].SetValue(-infval,d);
 			}
 		}
 
