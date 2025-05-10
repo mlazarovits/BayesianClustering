@@ -413,7 +413,9 @@ void GaussianMixture::CalculateExpectations(){
 		//cout << "calc expectations - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		//scalemat.Print();
 		if(isnan(m_Elam[k])){ cout << "NAN!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
-		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
+		scalemat.Print(); 
+			cout << "points" << endl; m_data->Print();
+		}
 		if(std::isinf(m_Elam[k])){ cout << "INF!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
 	}	
@@ -826,6 +828,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		new_scalemat.add(m_W0inv);
 //cout << "W0^-1" << endl; m_W0inv.Print();
 //cout << "W-1 + N*S + (b*N)/(b + N)*xxT" << endl;new_scalemat.Print();
+//cout << "det " << new_scalemat.det() << endl;
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
 //cout << "k " << k << " inverted new_scalemat" << endl; new_scalemat.Print();
