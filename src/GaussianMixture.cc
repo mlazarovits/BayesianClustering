@@ -121,6 +121,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, unsigned long l
 	kmc.GetAssignments(assigns);
 	double ptnorm = 0;
 	for(int k = 0; k < m_k; k++){
+		//cout << "k " << k << " xbar " << endl; _xbar[k].Print();
 		m_model[k]->SetParameter("mean",_xbar[k]);
 		double wtot = 0;
 		m_norms[k] = 0;
@@ -541,7 +542,8 @@ void GaussianMixture::CalculateVariationalPosterior(){
 
 
 void GaussianMixture::CalculateRStatistics(){
-	//cout << "Calculate RStats - start" << endl;
+//cout << "Calculate RStats - start" << endl;
+//cout << "points" << endl; m_data->Print();
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
@@ -590,7 +592,7 @@ void GaussianMixture::CalculateRStatistics(){
 		//normalized by sum of posteriors for cluster k
 		mu.mult(mu,1./m_norms[k]);
 		//cout << "k: " << k << " m_norm: " << m_norms[k] << endl;
-		//cout << "1/N[k]*(sum_n post*x)" << endl;
+		//cout << "1/N[k]*(sum_n post*x)" << endl; _xbar[k].Print();
 		_xbar[k] = mu;
 		//m_model[k]->SetParameter("mean",mu);		
 	}
@@ -797,23 +799,21 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		//bar{x}_k - m0
 		Matrix x_min_mean = Matrix(m_dim, 1);
 		x_min_mean.minus(mu, m_mean0);
-		//cout << "xbar" << endl; mu.Print(); cout << "m_mean0" << endl; m_mean0.Print();
-		//cout << "xbar - m0" << endl; x_min_mean.Print();
-		//cout << "xbar" << endl;
-		//mu.Print();
+//cout << "xbar" << endl; mu.Print(); cout << "m_mean0" << endl; m_mean0.Print();
+//cout << "xbar - m0" << endl; x_min_mean.Print();
+//cout << "xbar" << endl;
+//mu.Print();
 		Matrix x_min_meanT = Matrix(1, m_dim);
 		x_min_meanT.transpose(x_min_mean);
 //cout << "(xbar - m0)T" << endl; x_min_meanT.Print();
 		//(bar{x}_k - m0)(bar{x}_k - m0)T
 		new_scalemat.mult(x_min_mean, x_min_meanT);
 //cout << "(bar{x}_k - m0)(bar{x}_k - m0)T" << endl; new_scalemat.Print();
-		//cout << "xxT" << endl;
-		//new_scalemat.Print();
 		double prefactor = m_beta0*m_norms[k]/(m_beta0 + m_norms[k]);
 //cout << "prefactor " << prefactor << " m_beta0 " << m_beta0 << " m_norms[k] " << m_norms[k] << endl;
 		new_scalemat.mult(new_scalemat, prefactor);
 //cout << "(b*N)/(b + N)*xxT" << endl;
-		//new_scalemat.Print();
+//new_scalemat.Print();
 		//N_k*S_k
 		Matrix scaledS = Matrix(m_dim, m_dim);
 		scaledS.mult(cov,m_norms[k]);
@@ -829,8 +829,8 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		//invert (calculated for W_k inverse)
 		new_scalemat.invert(new_scalemat);
 //cout << "k " << k << " inverted new_scalemat" << endl; new_scalemat.Print();
-		if(isnan(new_scalemat.at(0,0))){
-			cout << "W IS NAN!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
+		if(isnan(new_scalemat.at(0,0)) || std::isinf(new_scalemat.at(0,0))){
+			cout << "W IS NAN/INF!!!!! for cluster " << k << " m_norms: " << m_norms[k] << endl;
 			cout << "new scalemat " << endl; new_scalemat.Print();
 			cout << "xbar" << endl; mu.Print(); cout << "S" << endl; cov.Print();
 			cout << "data" << endl; m_data->Print();

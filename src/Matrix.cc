@@ -4,7 +4,6 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-
 using std::cout;
 using std::endl;
 
@@ -318,6 +317,8 @@ void Matrix::adjoint(const Matrix& mat){
 	}
 }
 
+
+
 //invert mat and store in this
 void Matrix::invert(const Matrix& mat){
 	if(!mat.square()){
@@ -336,17 +337,22 @@ void Matrix::invert(const Matrix& mat){
 
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
-			m(i,j) = mat.at(i,j); 
+			m(i,j) = mat.at(i,j);
 		}
 	}
+
 	Eigen::MatrixXd minv = m.inverse();
 
 	for (int i = 0; i < dims[0]; i++)
 	    for (int j = 0; j < dims[1]; j++)
 	        m_entries[i][j] = minv(i,j);
-	
 
 }
+
+
+
+
+
 
 
 
