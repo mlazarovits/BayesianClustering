@@ -380,11 +380,11 @@ class PointCollection{
 		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
 		double infval;
 		if(d == 0)
-			infval = 1e6;
+			infval = 1e5;
 		else if(d == 1)
-			infval = 1.1e6;
+			infval = 1.1e5;
 		else
-			infval = 1.2e6;
+			infval = 1.2e5;
 		for(int i = 0; i < (int)_pts.size(); i++){
 			//_pts[i].SetValue(tan(_pts[i].at(d)),d);
 			//if within range [-pi/2, pi/2], map to plane
