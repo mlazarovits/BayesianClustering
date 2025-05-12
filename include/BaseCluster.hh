@@ -28,10 +28,10 @@ class BaseCluster{
 			Update();
 			
 			//Check for convergence
+			clustering_start = true;
 			double newLogL = EvalLogL();
 			
 			m_pdfmix = GetModel();
-			clustering_start = true;
 			return newLogL;
 		};
 
