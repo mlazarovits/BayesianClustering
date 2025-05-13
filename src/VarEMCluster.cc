@@ -29,9 +29,9 @@ void VarEMCluster::Update(){
 double VarEMCluster::EvalLogL(){
 //cout << "VarEMCluster - EvalVarLogL start" << endl;
 	double l = m_pdfmix->EvalVariationalLogL();
-//cout << "VarEMCluster - EvalVarLogL end" << endl;
 	//cout << "CHECK for unnecessary clusters" << endl;
 	//only do this in algorithm, not initial logL eval
+//cout << "thresh " << _thresh << " clustering_start " << clustering_start << endl;
 	if(_thresh > 0 && clustering_start){
 		m_pdfmix->UpdateMixture(_thresh);
 		m_k = m_pdfmix->GetNClusters();

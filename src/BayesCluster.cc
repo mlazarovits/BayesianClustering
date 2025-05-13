@@ -62,7 +62,7 @@ cout << "n starting pts " << n << endl;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
 	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
-	cout << "# clusters in merge tree: " << mt->GetNClusters() << endl;
+	if(_verb > 1) cout << "# clusters in merge tree: " << mt->GetNClusters() << endl;
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
 	//all three dimensions will go into calculating the probabilityu

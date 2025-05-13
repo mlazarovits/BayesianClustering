@@ -106,7 +106,7 @@ if(_verb > 1)cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_
       x->log_didj = logb;
 if(_verb > 1)cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
 	x->prob_tk = p_dk_tk_100;
-	
+if(_verb > 1) cout << "merge val = " << loga - logb << endl;	
 
 	return x;
 }

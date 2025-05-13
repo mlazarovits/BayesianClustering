@@ -25,6 +25,13 @@ double Wishart::Prob(const Matrix& x){
 
 	double det_x = x.det();
 	double det_w = m_W.det();
+	//due to numerical precision with very small or large entries,
+	//the sign of the det may not be accurate
+	//W is positive definite, so the determinant must always be positive
+	if(fabs(det_w) < 1e-10 && det_w < 0){
+		//cout << "flipping sign for det " << det_w << " from mat" << endl; m_W.Print();
+		det_w = -det_w;
+	}
 	double pi = acos(-1);
 
 	double gam_p = multidim_gam(m_nu/2.);
@@ -42,6 +49,13 @@ double Wishart::Prob(const Matrix& x){
 
 double Wishart::lnB(){
 	double det = m_W.det();
+	//due to numerical precision with very small or large entries,
+	//the sign of the det may not be accurate
+	//W is positive definite, so the determinant must always be positive
+	if(fabs(det) < 1e-10 && det < 0){
+		//cout << "flipping sign for det " << det_w << " from mat" << endl; m_W.Print();
+		det = -det;
+	}
 	double pi = acos(-1);
 	double lgam = 0;
 	for(int i = 0; i < m_dim; i++)
@@ -54,6 +68,13 @@ double Wishart::lnB(){
 double Wishart::H(){
 	double E_lam = 0;
 	double det = m_W.det();
+	//due to numerical precision with very small or large entries,
+	//the sign of the det may not be accurate
+	//W is positive definite, so the determinant must always be positive
+	if(fabs(det) < 1e-10 && det < 0){
+		//cout << "flipping sign for det " << det_w << " from mat" << endl; m_W.Print();
+		det = -det;
+	}
 	for(int i = 1; i < m_dim+1; i++)
 		E_lam += digamma( (m_nu + 1 - i)/2. );
 	E_lam += m_dim*log(2);

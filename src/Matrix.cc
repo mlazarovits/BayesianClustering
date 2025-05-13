@@ -327,18 +327,59 @@ void Matrix::invert(const Matrix& mat){
 	}
 	vector<int> dims = mat.GetDims();
 	SetDims(dims[0],dims[1]);	
-	InitEmpty();
 	double det = mat.det(dims[0]);
+	bool sym = mat.symmetric();
 	if (det == 0) {
 	    cout << "Singular matrix, can't find its inverse" << endl;
 	    return;
 	}
 	Eigen::MatrixXd m(m_row, m_col);
-
+	//copy mat into m in case mat = this
 	for(int i = 0; i < m_row; i++){
 		for(int j = 0; j < m_col; j++){
 			m(i,j) = mat.at(i,j);
 		}
+	}
+//cout << "1 - matrix to invert " << m << endl;
+//cout << "1 - mat symmetric? " << sym << endl;
+      //use analytical form of 3x3 matrix if this is the dimensions
+      if(m_row == 3 && m_col == 3){
+//cout << "doing analytical inverse for 3x3" << endl;
+      	m_entries[0][0] = m(1,1)*m(2,2) - m(1,2)*m(2,1);
+//cout << "2 - matrix to invert " << m << endl;
+//cout << "2 - mat symmetric? " << sym << endl;
+      	m_entries[1][1] = m(0,0)*m(2,2) - m(0,2)*m(2,0);
+//cout << "3 - matrix to invert " << m << endl;
+//cout << "3 - mat symmetric? " << sym << endl;
+      	m_entries[2][2] = m(0,0)*m(1,1) - m(0,1)*m(1,0);
+//cout << "4 - matrix to invert " << m << endl;
+//cout << "4 - mat symmetric? " << sym << endl;
+      
+      	m_entries[1][0] = -(m(1,0)*m(2,2) - m(1,2)*m(2,0));
+//cout << "5 - matrix to invert " << m << endl;
+//cout << "5 - mat symmetric? " << sym << endl;
+      	m_entries[2][0] = m(1,0)*m(2,1) - m(1,1)*m(2,0);
+//cout << "6 - matrix to invert " << m << endl;
+//cout << "6 - mat symmetric? " << sym << endl;
+      	m_entries[1][2] = -(m(0,0)*m(2,1) - m(0,1)*m(2,0));
+//cout << "7 - matrix to invert " << m << endl;
+//cout << "7 - mat symmetric? " << sym << endl;
+
+		//use shortcut if is symmetric -> inverse will be symmetric too
+	//cout << "matrix is symmetric? " << sym << endl;
+		if(sym){
+			m_entries[0][1] = m_entries[1][0];
+			m_entries[0][2] = m_entries[2][0];
+			m_entries[2][1] = m_entries[1][2];
+		}
+		else{
+			m_entries[0][1] = -(m(0,1)*m(2,2) - m(0,2)*m(2,1));
+			m_entries[0][2] = m(0,1)*m(1,2) - m(0,2)*m(1,1);
+			m_entries[2][1] = -(m(0,0)*m(2,1) - m(0,1)*m(2,0));
+		}
+//cout << "det " << det << endl;
+		this->mult(*this,1./det);
+		return;
 	}
 
 	Eigen::MatrixXd minv = m.inverse();
@@ -446,6 +487,8 @@ bool Matrix::symmetric() const{
 		for(int j = 0; j < m_col; j++){
 			if(i < j) break; //only need to look at one half of the matrix
 			if(m_entries[i][j] != m_entries[j][i]){
+	//cout << std::setprecision(25) << "Not symmetric - entry at " << i << " " << j << " " << m_entries[i][j] <<endl;
+	//cout << "Not symmetric - entry at " << j << " " << i << " " << m_entries[j][i] << endl;
 				return false;
 			}
 		}
