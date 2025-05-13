@@ -301,6 +301,9 @@ class BasePDFMixture : public BasePDF{
 	
 		void ProjectPhi(){
 			m_data->AngleToPlaneProject(1);
+			//project the lamStar measurement error too?
+
+
 		}
 		void UnprojectPhi(){
 			m_data->PlaneToAngleProject(1);
@@ -339,12 +342,14 @@ class BasePDFMixture : public BasePDF{
 
 					Matrix sigStar(m_dim, m_dim);
 					sigStar.invert(_lamStar[n]);
-					
+					//sigStar.SetEntry(1./_lamStar[n].at(2,2),2,2);				
+	
 					sigStar.mult(sc,sigStar);
 					Matrix scT;
 					scT.transpose(sc);
 					sigStar.mult(sigStar,scT);
 					_lamStar[n].invert(sigStar);
+					//_lamStar[n].SetEntry(1./sigStar.at(2,2),2,2);
 					//if(n == 0){ cout << "post scale" << endl; _lamStar[n].Print();}
 				}
 

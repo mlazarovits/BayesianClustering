@@ -18,6 +18,8 @@ class PointCollection{
 		PointCollection(BayesPoint pt){
 			_pts.push_back(pt);
 			_nDim = pt.Dim();
+			for(int d = 0; d < _nDim; d++)
+				_infs.push_back((1+(d)/10.)*1e70);
 		}
 		PointCollection(const vector<BayesPoint>& pts){
 			_nDim = pts[0].Dim();
@@ -27,12 +29,16 @@ class PointCollection{
 					break;
 				}	
 				_pts.push_back(p);
+			for(int d = 0; d < _nDim; d++)
+				_infs.push_back((1+(d)/10.)*1e70);
 			}
 		}
 
 		//copy constructor
 		PointCollection(const PointCollection& pts){
 			_nDim = pts.Dim();
+			for(int d = 0; d < _nDim; d++)
+				_infs.push_back((1+(d)/10.)*1e70);
 			_pts.clear();
 			_pts = pts._pts;
 			//for(int i = 0; i < (int)pts.GetNPoints(); i++) _pts.push_back(pts.at(i));
@@ -40,6 +46,7 @@ class PointCollection{
 		
 		virtual ~PointCollection(){
 			_pts.clear();
+			_infs.clear();
 		}
 
 
@@ -378,13 +385,6 @@ class PointCollection{
 		//tan(theta/2) = sin(theta)/(1 + cos(theta))
 		//for small theta => theta/2
 		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
-		double infval;
-		if(d == 0)
-			infval = 1e5;
-		else if(d == 1)
-			infval = 1.1e5;
-		else
-			infval = 1.2e5;
 		for(int i = 0; i < (int)_pts.size(); i++){
 			//_pts[i].SetValue(tan(_pts[i].at(d)),d);
 			//if within range [-pi/2, pi/2], map to plane
@@ -393,12 +393,24 @@ class PointCollection{
 			}
 			else{ //map to infinity - add original value to preserve unique coordinate
 				if(_pts[i].at(d) > 0)
-					_pts[i].SetValue(infval,d);
+					_pts[i].SetValue(_infs[d],d);
 				else	
-					_pts[i].SetValue(-infval,d);
+					_pts[i].SetValue(-_infs[d],d);
 			}
 		}
 
+	}
+
+	int GetInfVal(int d){
+		return _infs[d];
+	}
+
+
+	bool HasInf(int d){
+		for(int i = 0; i < (int)_pts.size(); i++){
+			if(fabs(_pts[i].at(d)) == _infs[d]) return true;
+		}
+		return false;
 	}
 	
 
@@ -568,7 +580,7 @@ class PointCollection{
 	private:
 		int _nDim = 0;
 		vector<BayesPoint> _pts;
-
+		vector<double> _infs;
 
 
 };
