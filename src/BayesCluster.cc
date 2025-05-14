@@ -555,7 +555,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	algo->SetClusterStart();
 	////////run EM algo////////
 	int it = 0;
-	while(dLogL > fabs(oldLogL)*LogLthresh || it > 0){
+	while(dLogL > fabs(oldLogL)*LogLthresh || it == 0){
 		//E step
 		algo->Estimate();
 		//M step
