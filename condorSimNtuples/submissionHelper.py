@@ -48,22 +48,18 @@ def writeSubmissionBase(subf, dirname, ofilename):
         #print("abs path is "+ absCWD)
         remap= absCWD+"/"+dirname+"/out/"+outname
         #print("remap is "+ remap)
-	#print("outname is "+outname)
+	    #print("outname is "+outname)
         subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")	
 
 #splits by event number
-def eventsSplit(infile, nChunk):
+def eventsSplit(nevts, nChunk):
     if nChunk == 0:
-        nChunk += 1
-    #should split by event number in file
-    rfile = ROOT.TFile.Open(infile)
-    tree = rfile.Get("tree/llpgtree")
-    nevts = tree.GetEntries()
-    if nChunk > nevts:
-            print("Please pass split of at least",nevts)
-            return
+       nChunk += 1
     print("Splitting each file into "+str(nChunk)+" jobs ")
-    print("nevts",nevts)
+    #should split by event number in file
+    #rfile = ROOT.TFile.Open(infile)
+    #tree = rfile.Get("tree/llpgtree")
+    #nevts = tree.GetEntries()
     evts = range(nevts+1)
     #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
     #make sure to count first event in every chunk after first
@@ -73,9 +69,8 @@ def eventsSplit(infile, nChunk):
     return arr
 
 
-
 # Write each job to the condor submit file.
-def writeQueueList( subf, inFile, ofilename, evts, flags ):
+def writeQueueList( subf, ofilename, evts, flags ):
     if evts == 0 or evts is None:
         print("No events found")
         return
@@ -86,9 +81,8 @@ def writeQueueList( subf, inFile, ofilename, evts, flags ):
     subf.write("\n\n\n")
     subf.write("queue Arguments from (\n")
     for e in evts:
-            inFileArg = " -i "+inFile
             #Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
-            Args = inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+            Args = flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
             #subf.write("\n\n\n")
             subf.write("###### job"+str(jobCtr)+ "######\n")
             subf.write(Args)
