@@ -81,6 +81,8 @@ class BasePDFMixture : public BasePDF{
 				//need to make sure tResRate = tResRate_true*gev for units to match
 				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()) + _tresNoise*_tresNoise/(m_data->at(n).w()*m_data->at(n).w());
 				tresSq /= 2;
+
+
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);
 				lamStar.SetEntry(1/(tresSq),2,2);
@@ -292,21 +294,37 @@ class BasePDFMixture : public BasePDF{
 		virtual void ThetaToEta_params() = 0;
 
 		//add theta projection
-		void ProjectTheta(){
+		bool ProjectTheta(){
 			m_data->AngleToPlaneProject(0);
+			//project the lamStar measurement error too
+			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
+			double pi = acos(-1);
+			for(int n = 0; n < m_n; n++){
+				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) return true;
+				double etaSig = (tan(m_data->at(n).at(0) + _cell) - tan(m_data->at(n).at(0) - _cell))/2.;
+				_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
+			}
+			return false;
 		}
 		void UnprojectTheta(){
 			m_data->PlaneToAngleProject(0);
 		}
 	
-		void ProjectPhi(){
+		bool ProjectPhi(){
 			m_data->AngleToPlaneProject(1);
-			//project the lamStar measurement error too?
-
-
+			//project the lamStar measurement error too
+			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
+			double pi = acos(-1);
+			for(int n = 0; n < m_n; n++){
+				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) return true;
+				double phiSig = (tan(m_data->at(n).at(1) + _cell) - tan(m_data->at(n).at(1) - _cell))/2.;
+				_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
+			}
+			return false;
 		}
 		void UnprojectPhi(){
 			m_data->PlaneToAngleProject(1);
+			//could unproject measurement errors here (if we cared about them...)
 		}
 		virtual void UnprojectPhi_params() = 0;
 		virtual void UnprojectTheta_params() = 0;
