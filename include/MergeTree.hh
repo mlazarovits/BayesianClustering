@@ -224,8 +224,15 @@ class MergeTree : BaseTree{
 			if(_verb > 1){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
 			
 			//project phi onto plane
-			x->model->ProjectPhi();
-			x->model->ProjectTheta();
+			bool phiInf = x->model->ProjectPhi();
+			bool thetaInf = x->model->ProjectTheta();
+			//check for infinities in eta + phi from measurement error
+			if(phiInf || thetaInf){
+			//cout << "found inf, returning elbo as " << -1e308 << endl;
+				//reset model data for further merges
+				x->model->SetData(x->points);
+				return -1e308;
+			}
 			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 
 
