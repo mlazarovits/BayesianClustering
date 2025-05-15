@@ -220,6 +220,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jet_PhiCenter);
 			_hists1D.push_back(recoAK4Jet_nSubclustersEvt);
 			_hists1D.push_back(BHCJet_nSubclustersEvt);
+			_hists1D.push_back(BHCJet_drSubclusters);
+			_hists1D.push_back(recoAK4Jet_drSubclusters);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -260,10 +262,10 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4Jet_nSubclustersJet_nGenConstituents);
 			_hists2D.push_back(recoAK4Jet_nSubclustersJet_mass);
 			_hists2D.push_back(recoAK4Jet_nSubclustersJet_energy);
-			_hists2D.push_back(recoAK4_nSubclustersEvt_nSubclustersJet);
+			_hists2D.push_back(recoAK4Jet_nSubclustersEvt_nJet);
 			_hists2D.push_back(BHCJet_nSubclustersJet_mass);
 			_hists2D.push_back(BHCJet_nSubclustersJet_energy);
-			_hists2D.push_back(BHCJet_nSubclustersEvt_nSubclustersJet);
+			_hists2D.push_back(BHCJet_nSubclustersEvt_nJet);
 			_hists2D.push_back(recoAK4JetnSubclustersJet_BHCJetnSubclustersJet);	
 
 		}
@@ -323,6 +325,8 @@ class BHCJetSkimmer{
 			//do gen matching
 			vector<int> genMatchIdxs; //one per jet, follows same indexing as jets
 			//GenMatchJet(_predJets,genMatchIdxs);
+			vector<int> recoMatchIdxs;
+			GenericMatchJet(_predJets,_recojets, recoMatchIdxs); //match BHC jets to reco jets
 			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
@@ -424,7 +428,10 @@ class BHCJetSkimmer{
 
 				//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
 					//get subcluster information
-					for(auto subcl : _predJets[j].GetConstituents()){
+					vector<Jet> consts = _predJets[j].GetConstituents();
+					//for(auto subcl : _predJets[j].GetConstituents()){
+					for(int c = 0; c < (int)consts.size(); c++){
+						Jet subcl = consts[c];
 						Matrix subcl_cov = subcl.GetCovariance();
 						_procCats[p].hists1D[0][12]->Fill(sqrt(subcl_cov.at(0,0)));
 						_procCats[p].hists1D[0][13]->Fill(sqrt(subcl_cov.at(1,1)));
@@ -446,9 +453,21 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][3]->Fill(subcl.eta());
 						_procCats[p].hists1D[0][4]->Fill(subcl.phi());
 						_procCats[p].hists1D[0][5]->Fill(subcl.time());
+						
+						//do dr calcs bw all subclusters
+						for(int cc = c+1; cc < consts.size(); cc++){
+cout << "bhc jet " << j << " dr for subcls #" << c << " and #" << cc << " of " << consts.size() << endl;
+							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
+							_procCats[p].hists1D[0][143]->Fill(dr);
+						}
 		
 					}
 
+
+					//if BHC and reco AK4 jets can be matched 1:1, compare # of subclusters
+					if(njets - (int)_recojets.size() == 0){
+						_procCats[p].hists2D[0][43]->Fill(_recojets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
+					}
 
 					/*
 					if(j != wmass_idxs.first && j != wmass_idxs.second){
@@ -612,8 +631,10 @@ class BHCJetSkimmer{
 					_procCats[p].hists2D[0][37]->Fill(_recojets[j].GetNConstituents(), _recojets[j].m());
 					_procCats[p].hists2D[0][38]->Fill(_recojets[j].GetNConstituents(), _recojets[j].e());
 					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
-					int k = 0;
-					for(auto subcl : _recojets[j].GetConstituents()){
+					//for(auto subcl : _recojets[j].GetConstituents()){
+					vector<Jet> consts = _recojets[j].GetConstituents();
+					for(int c = 0; c < (int)consts.size(); c++){
+						Jet subcl = consts[c];
 						_procCats[p].hists1D[0][78]->Fill(subcl.E());
 						_procCats[p].hists1D[0][79]->Fill(subcl.time());
 						_procCats[p].hists1D[0][80]->Fill(subcl.eta());
@@ -621,13 +642,6 @@ class BHCJetSkimmer{
 						
 						Matrix subcl_cov = subcl.GetCovariance();
 						_procCats[p].hists1D[0][82]->Fill(sqrt(subcl_cov.at(0,0)));
-						//if(p == 0){ 
-						//	cout << "cov for jet #" << j << " subcl #" << k << endl;
-						//	subcl_cov.Print();
-						//}
-					//cout << "etaphi cov for jet # " << j << " subcl # " << k << ": " << subcl_cov.at(0,1)  << " norm " << subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1))<< endl;
-					//cout << "etatime cov for jet # " << j << " subcl # " << k << ": " << subcl_cov.at(0,2) << " norm " << subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2))<< endl;
-					//cout << "phitime cov for jet # " << j << " subcl # " << k << ": " << subcl_cov.at(0,1) << " norm " << subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2))<< endl;
 						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
 						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
 						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
@@ -638,7 +652,15 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[0][106]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
 						_procCats[p].hists2D[0][31]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
 						_procCats[p].hists2D[0][32]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
-						k++;
+					
+						//do dr calcs bw all subclusters
+						for(int cc = c+1; cc < consts.size(); cc++){
+cout << "reco jet " << j << " dr for subcls #" << c << " and #" << cc << " of " << consts.size() << endl;
+							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
+							_procCats[p].hists1D[0][144]->Fill(dr);
+						}
+				
+
 					}
 					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
 					for(int r = 0; r < rhs.size(); r++){
@@ -1396,7 +1418,11 @@ class BHCJetSkimmer{
 		TH1D* recoAK4Jet_nSubclustersEvt = new TH1D("recoAK4Jet_nSubclustersEvt","recoAK4Jet_nSubclustersEvt",30,0,30);
 		//142 - bhc jet # subclusters in event
 		TH1D* BHCJet_nSubclustersEvt = new TH1D("BHCJet_nSubclustersEvt","BHCJet_nSubclustersEvt",30,0,30);
-	
+		//143 - dr bw subclusters in BHC jet
+		TH1D* BHCJet_drSubclusters = new TH1D("BHCJet_drSubclusters","BHCJet_drSubclusters",50,0,0.1);
+		//144 - dr bw subclusters in reco AK4 jet
+		TH1D* recoAK4Jet_drSubclusters = new TH1D("recoAK4Jet_drSubclusters","recoAK4Jet_drSubclusters",50,0,0.1);
+			
 
 		//2D plots
 		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
@@ -1478,13 +1504,13 @@ class BHCJetSkimmer{
 		//38 - # subclusters vs jet energy for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
 		//39 - # subclusters/evt vs # subclusters/jet for reco AK4 jets
-		TH2D* recoAK4_nSubclustersEvt_nSubclustersJet = new TH2D("recoAK4_nSubclustersEvt_nSubclustersJet","recoAK4_nSubclustersEvt_nSubclustersJet;nSubclustersJet;nSubclustersEvt",30,0,30,30,0,30);
+		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nJet;nSubclustersEvt",30,0,30,10,0,10);
 		//40 - # subclusters vs jet mass for BHC jets
 		TH2D* BHCJet_nSubclustersJet_mass = new TH2D("BHCJet_nSubclustersJet_mass","BHCJet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
 		//41 - # subclusters vs jet energy for BHC jets
 		TH2D* BHCJet_nSubclustersJet_energy = new TH2D("BHCJet_nSubclustersJet_energy","BHCJet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
 		//42 - # subclusters/evt vs # subclusters/jet for BHC jets
-		TH2D* BHCJet_nSubclustersEvt_nSubclustersJet = new TH2D("BHCJet_nSubclustersEvt_nSubclustersJet","BHCJet_nSubclustersEvt_nSubclustersJet;nSubclustersJet;nSubclustersEvt",30,0,30,30,0,30);
+		TH2D* BHCJet_nSubclustersEvt_nJet = new TH2D("BHCJet_nSubclustersEvt_nJet","BHCJet_nSubclustersEvt_nJet;nJet;nSubclustersEvt",30,0,30,10,0,10);
 		//43 - # subclusters in reco AK4 jet and # subclusters in dR matched BHC jet (if matching can be 1:1 ie # BHC jets = # reco AK4 jets)
 		TH2D* recoAK4JetnSubclustersJet_BHCJetnSubclustersJet = new TH2D("recoAK4JetnSubclustersJet_BHCJetnSubclustersJet","recoAK4JetnSubclustersJet_BHCJetnSubclustersJet;recoAK4JetnSubclustersJet;BHCJetnSubclustersJet",30,0,30,30,0,30);
 
@@ -1549,6 +1575,97 @@ class BHCJetSkimmer{
 			}
 
 		}
+
+	//find gen jet that most closely is dr matched to jet
+	//void GenericMatchJet(vector<Jet>& jets, vector<int>& bestGenMatchIdxs){
+	void GenericMatchJet(vector<Jet>& injets, vector<Jet>& matchjets, vector<int>& bestMatchIdxs){
+		//loop through gen particles
+		//dr match to jet
+		double bestDr, dr;
+		//int nGen = _genjets.size();
+		int nMatch = matchjets.size();
+		bestMatchIdxs.clear();
+		bestMatchIdxs = {};
+	
+		//no gen particles to match, set all jets to unmatched	
+		if(nMatch < 1){
+			for(auto j : injets) bestMatchIdxs.push_back(-1);
+			return;
+		}
+		if(injets.size() < 1) return;
+
+		//vector<double> drs;
+		//drs[i][j] = dr for jet i and gen particle j
+		vector<vector<double>> drs;
+		vector<int> idxs;
+		for(int j = 0; j < injets.size(); j++){
+			drs.push_back({});
+			for(int g = 0; g < nMatch; g++){
+				drs[j].push_back(999);
+				//rough acceptance cut - if gen jets are out of acceptance any associated jets wouldn't be reconstructed
+				//if(fabs(_base->Jet_genEta->at(g)) > 1.5) continue;
+				if(fabs(matchjets[g].eta()) > 1.5) continue;
+			
+				dr = dR(matchjets[g].eta(), matchjets[g].phi(), injets[j].eta(), injets[j].phi());
+				drs[j][g] = dr;
+			}
+		}
+		vector<int> best_idxs; //one per jet
+		int otherJet, thismatchidx, thisJet;
+		//go back through jets can check to see if there are overlapping matches
+		for(int j = 0; j < injets.size(); j++){
+			//for(int g = 0; g < nMatch; g++){
+			//	cout << "jet " << j << " and match jet " << g << " have dr " << drs[j][g] << endl;
+			//}
+			//cout << "jet " << j << " has best dr " << *min_element(drs[j].begin(), drs[j].end()) << " at match jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+			double mindr = *min_element(drs[j].begin(), drs[j].end());
+			int matchidx = find(drs[j].begin(), drs[j].end(), mindr) - drs[j].begin();
+			if(mindr == 999) matchidx = -1; //no match found (ie no available match jet for best match)
+			best_idxs.push_back(matchidx);
+			thismatchidx = matchidx;
+			thisJet = j;
+			//if other jets have the same genidx matched, go through and disambiguate until there is only 1 instance of genidx
+			while(count(best_idxs.begin(), best_idxs.end(), matchidx) > 1 && matchidx != -1){
+				otherJet = find(best_idxs.begin(), best_idxs.end(), matchidx) - best_idxs.begin();
+				//this happens if the "otherJet" to be analyzed comes before thisjet (ie it gets found first)
+				//skip otherJet (ie thisJet) in this case and look at all other jets
+				if(otherJet == thisJet){
+					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), matchidx) - best_idxs.begin();
+				}
+				//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
+				//cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+				//if other dr is less than current mindr
+				if(drs[otherJet][matchidx] < mindr){
+					//set this dr to 999 (is invalid), find new min for this jet, reset genidx to this index
+					drs[thisJet][matchidx] = 999;
+					mindr = *min_element(drs[thisJet].begin(), drs[thisJet].end());
+					if(mindr == 999) matchidx = -1;
+					else matchidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
+					best_idxs[thisJet] = matchidx;
+					//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+		
+				}
+				//if this dr is less than (or equal to) current mindr
+				else{
+					//set other dr to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
+					drs[otherJet][matchidx] = 999;
+					thismatchidx = matchidx;
+					mindr = *min_element(drs[otherJet].begin(), drs[otherJet].end());
+					if(mindr == 999) matchidx = -1;
+					else matchidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
+					thisJet = otherJet;
+					best_idxs[thisJet] = matchidx;
+					//cout << " reset match of other jet " << otherJet << " to  jet " << idx << " with dr " << mindr << endl;
+				}	
+				//cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for jet " << thisJet << endl;
+
+			}
+			//cout << "jet " << j << " has best exclusive match with " << best_idxs[j] << "\n" << endl;
+		}
+		bestMatchIdxs = best_idxs;
+
+	}
+
 
 
 	//find gen jet that most closely is dr matched to jet
