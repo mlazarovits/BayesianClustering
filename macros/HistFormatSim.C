@@ -1507,24 +1507,26 @@ void HistFormatSim(string file){
 	vector<string> jettypes_recoBHC = {"recoAK4","BHC"};
 	vector<string> jettypes_genBHC = {"genAK4","BHC"};
 
+	MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); 
+	MethodStackHists(file, "ttbar", jettypes, oname, "jetSize"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); 
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); 
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_TimeCenter"); 
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_energy"); //hist bounds off
 	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_pt"); //hist bounds off
-	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_nDiff"); //not filled?
-	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_dR");
-	MethodStackHists(file, "ttbar", jettypes, oname, "Particle_Eratio");
-	MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "jetSize"); 
+	//MethodStackHists(file, "ttbar", jettypes, oname, "Particle_nDiff"); //not filled?
+	//MethodStackHists(file, "ttbar", jettypes, oname, "Particle_dR");
+	//MethodStackHists(file, "ttbar", jettypes, oname, "Particle_Eratio");
 	MethodStackHists(file, "ttbar", jettypes, oname, "rhEtaSig"); 
 	MethodStackHists(file, "ttbar", jettypes, oname, "rhPhiSig"); 
 	MethodStackHists(file, "ttbar", jettypes, oname, "rhTimeSig"); 
-	
-	ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
+	MethodStackHists(file, "ttbar", jettypes, oname, "drSubclusters"); 
 
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet");
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclusters_Evt");
+	
+	//ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
+
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter");
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterPhiCenter");
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter");
@@ -1537,6 +1539,15 @@ void HistFormatSim(string file){
 
 	Hist2D(file, "ttbar", "recoAK4", oname, "nJets_jetSize");
 	Hist2D(file, "ttbar", "BHC", oname, "nJets_jetSize");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nRhs_nSubclustersJet");
+	Hist2D(file, "ttbar", "BHC", oname, "nRhs_nSubclustersJet");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersJet_mass");
+	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersJet_mass");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersJet_energy");
+	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersJet_energy");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersEvt_nJet");
+	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersEvt_nJet");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersEvt_nJet");
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
