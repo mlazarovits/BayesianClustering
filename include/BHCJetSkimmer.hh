@@ -456,7 +456,6 @@ class BHCJetSkimmer{
 						
 						//do dr calcs bw all subclusters
 						for(int cc = c+1; cc < consts.size(); cc++){
-cout << "bhc jet " << j << " dr for subcls #" << c << " and #" << cc << " of " << consts.size() << endl;
 							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
 							_procCats[p].hists1D[0][143]->Fill(dr);
 						}
@@ -655,7 +654,6 @@ cout << "bhc jet " << j << " dr for subcls #" << c << " and #" << cc << " of " <
 					
 						//do dr calcs bw all subclusters
 						for(int cc = c+1; cc < consts.size(); cc++){
-cout << "reco jet " << j << " dr for subcls #" << c << " and #" << cc << " of " << consts.size() << endl;
 							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
 							_procCats[p].hists1D[0][144]->Fill(dr);
 						}
@@ -1504,13 +1502,13 @@ cout << "reco jet " << j << " dr for subcls #" << c << " and #" << cc << " of " 
 		//38 - # subclusters vs jet energy for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
 		//39 - # subclusters/evt vs # subclusters/jet for reco AK4 jets
-		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nJet;nSubclustersEvt",30,0,30,10,0,10);
+		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//40 - # subclusters vs jet mass for BHC jets
 		TH2D* BHCJet_nSubclustersJet_mass = new TH2D("BHCJet_nSubclustersJet_mass","BHCJet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
 		//41 - # subclusters vs jet energy for BHC jets
 		TH2D* BHCJet_nSubclustersJet_energy = new TH2D("BHCJet_nSubclustersJet_energy","BHCJet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
 		//42 - # subclusters/evt vs # subclusters/jet for BHC jets
-		TH2D* BHCJet_nSubclustersEvt_nJet = new TH2D("BHCJet_nSubclustersEvt_nJet","BHCJet_nSubclustersEvt_nJet;nJet;nSubclustersEvt",30,0,30,10,0,10);
+		TH2D* BHCJet_nSubclustersEvt_nJet = new TH2D("BHCJet_nSubclustersEvt_nJet","BHCJet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//43 - # subclusters in reco AK4 jet and # subclusters in dR matched BHC jet (if matching can be 1:1 ie # BHC jets = # reco AK4 jets)
 		TH2D* recoAK4JetnSubclustersJet_BHCJetnSubclustersJet = new TH2D("recoAK4JetnSubclustersJet_BHCJetnSubclustersJet","recoAK4JetnSubclustersJet_BHCJetnSubclustersJet;recoAK4JetnSubclustersJet;BHCJetnSubclustersJet",30,0,30,30,0,30);
 
