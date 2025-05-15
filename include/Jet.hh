@@ -138,6 +138,7 @@ class Jet{
 		//invariant mass - https://fastjet.fr/repo/doxygen-3.4.0/PseudoJet_8hh_source.html L1059
 		//https://gitlab.cern.ch/CLHEP/CLHEP/-/blob/develop/Vector/Vector/LorentzVector.icc#L150
 		double mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
+		double m() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
 
 	
 		//squared transverse momentum
