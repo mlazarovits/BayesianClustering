@@ -576,15 +576,12 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		//newLogL > oldLogL
 		dLogL = newLogL - oldLogL;
 		cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << gmm->GetNClusters() << endl;
-		if(_verb > 3) cout << "iteration #" << it+1 << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
-		if(dLogL < fabs(oldLogL)*LogLthresh && it > 0){// || dLogL > 0){
-			if(_verb > 2){
-				cout << "Reached convergence at iteration " << it+1 << endl;
-			}
-			break;
-		}
+		if(_verb > 3) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
 		oldLogL = newLogL;
 	}
+		if(_verb > 2){
+			cout << "Reached convergence at iteration " << it << endl;
+		}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
 
 	//need to unscale first then uncenter since x'' = (x-a)/b (see above)
