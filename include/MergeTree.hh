@@ -174,7 +174,7 @@ class MergeTree : BaseTree{
 			//cout << "original points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
-			//cout << "pts " << endl; newpts->Print();
+			if(_verb > 1) cout << "original pts " << endl; newpts->Print();
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
@@ -206,7 +206,7 @@ class MergeTree : BaseTree{
 	
 			//change eta to theta BEFORE calculating centroid
 			x->model->EtaToTheta();
-			//if(_verb > 1){cout << "eta to theta" << endl; x->model->GetData()->Print();}
+			if(_verb > 1){cout << "eta to theta" << endl; x->model->GetData()->Print();}
 			//since the first dimension is now an angle, its centroid needs to be circularly calculated
 			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
 			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
@@ -226,14 +226,14 @@ class MergeTree : BaseTree{
 			//project phi onto plane
 			bool phiInf = x->model->ProjectPhi();
 			bool thetaInf = x->model->ProjectTheta();
+			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 			//check for infinities in eta + phi from measurement error
 			if(phiInf || thetaInf){
-			//cout << "found inf, returning elbo as " << -1e308 << endl;
+				if(_verb > 1) cout << "found inf, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
 				x->model->SetData(x->points);
 				return -1e308;
 			}
-			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 
 
 

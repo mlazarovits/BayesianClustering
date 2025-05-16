@@ -554,8 +554,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//cout << "after first logLH eval " << gmm->GetNClusters() << endl;
 	algo->SetClusterStart();
 	////////run EM algo////////
-	int it = 0;
+	int it = -1;
 	while(dLogL > fabs(oldLogL)*LogLthresh || it == 0){
+		it++;
 		//E step
 		algo->Estimate();
 		//M step
@@ -583,7 +584,6 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 			break;
 		}
 		oldLogL = newLogL;
-		it++;
 	}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
 
