@@ -222,6 +222,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_nSubclustersEvt);
 			_hists1D.push_back(BHCJet_drSubclusters);
 			_hists1D.push_back(recoAK4Jet_drSubclusters);
+			_hists1D.push_back(BHCJet_rhE);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -332,6 +333,7 @@ class BHCJetSkimmer{
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				_procCats[p].hists1D[0][0]->Fill(njets);
 				cout << "# pred jets - # reco jets " << njets - (int)_recojets.size() << endl;
+				cout << "# pred jets - # gen jets " << njets - (int)_genjets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recojets.size());
 				//FindResonances(_predJets,wmass_idxs,tmass_idx);
 				//W mass
@@ -425,6 +427,12 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][128]->Fill(jet_mu.at(0,0));
 					_procCats[p].hists1D[0][129]->Fill(jet_mu.at(1,0));
 					_procCats[p].hists1D[0][130]->Fill(jet_mu.at(2,0));
+					
+					vector<JetPoint> rhs = _predJets[j].GetJetPoints();
+					for(int r = 0; r < rhs.size(); r++){
+						_procCats[p].hists1D[0][145]->Fill(rhs[r].E());
+						
+					}
 
 				//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
 					//get subcluster information
@@ -465,7 +473,10 @@ class BHCJetSkimmer{
 
 					//if BHC and reco AK4 jets can be matched 1:1, compare # of subclusters
 					if(njets - (int)_recojets.size() == 0){
-						_procCats[p].hists2D[0][43]->Fill(_recojets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
+						if(recoMatchIdxs[j] != -1){
+							if(_recojets[recoMatchIdxs[j]].GetNConstituents() == 0) cout << "reco jet #" << recoMatchIdxs[j] << " matched to bhc jet #" << j << " has " << _recojets[recoMatchIdxs[j]].GetNConstituents() << " # subclusters" << endl;
+							_procCats[p].hists2D[0][43]->Fill(_recojets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
+						}
 					}
 
 					/*
@@ -549,6 +560,7 @@ class BHCJetSkimmer{
 				GenMatchJet(_genjets,genMatchIdxs);
 				//cout << "gen matching gen jets to particles - end" << endl;
 				for(int j = 0; j < _genjets.size(); j++){
+					if(p == 0) cout << "gen jet #" << j << " phi " << _genjets[j].phi() << " eta " << _genjets[j].eta() << " energy " << _genjets[j].E() <<  " mass " << _genjets[j].mass() << " pt " << _genjets[j].pt() << endl;;
 					_procCats[p].hists1D[0][114]->Fill(_genjets[j].eta());
 					_procCats[p].hists1D[0][115]->Fill(_genjets[j].phi());
 					_procCats[p].hists1D[0][116]->Fill(_genjets[j].time());
@@ -1308,7 +1320,7 @@ class BHCJetSkimmer{
 		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.2,0.2);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("recoAK4Jet_nRhs","recoAK4Jet_nRhs",300,0,300);
-		//89 - n rhs in reco jets
+		//89 - rh energy in reco jets
 		TH1D* recoJet_rhE = new TH1D("recoAK4Jet_rhE","recoAK4Jet_rhE",50,0,300);
 		//90 - AK4 Jet P 
 		TH1D* AK4Jet_GenP = new TH1D("recoAK4Jet_GenP","recoAK4Jet_GenP",50,0,500);
@@ -1420,6 +1432,8 @@ class BHCJetSkimmer{
 		TH1D* BHCJet_drSubclusters = new TH1D("BHCJet_drSubclusters","BHCJet_drSubclusters",50,0,0.1);
 		//144 - dr bw subclusters in reco AK4 jet
 		TH1D* recoAK4Jet_drSubclusters = new TH1D("recoAK4Jet_drSubclusters","recoAK4Jet_drSubclusters",50,0,0.1);
+		//145 - rh energy in reco jets
+		TH1D* BHCJet_rhE = new TH1D("BHCJet_rhE","BHCJet_rhE",50,0,300);
 			
 
 		//2D plots
