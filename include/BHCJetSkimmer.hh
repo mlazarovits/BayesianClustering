@@ -271,8 +271,10 @@ class BHCJetSkimmer{
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
-		void SetMinPt(double r){ _prod->SetMinPt(r); }
-		void SetMinE(double r){ _prod->SetMinE(r); }
+		void SetRecoMinPt(double r){ _prod->SetRecoMinPt(r); }
+		void SetRecoMinE(double r){ _prod->SetRecoMinE(r); }
+		void SetGenMinPt(double r){ _prod->SetGenMinPt(r); }
+		void SetGenMinE(double r){ _prod->SetGenMinE(r); }
 		void SetMinNrhs(int r){ _prod->SetMinNrhs(r); }
 		void SetMinNGenConsts(int r){ _prod->SetMinNGenConsts(r); }
 		void Skim();

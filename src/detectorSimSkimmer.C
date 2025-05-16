@@ -394,8 +394,10 @@ int main(int argc, char *argv[]){
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
 	skimmer.SetMinNrhs(minnrhs);
-	skimmer.SetMinE(minE);
-	skimmer.SetMinPt(minpt);
+	skimmer.SetGenMinE(minE);
+	skimmer.SetGenMinPt(minpt);
+	skimmer.SetRecoMinPt(0);
+	skimmer.SetRecoMinE(0);
 	skimmer.SetMinNGenConsts(minNconsts);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);

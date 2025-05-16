@@ -5,9 +5,11 @@
 JetSimProducer::JetSimProducer(){
 	_gev = 1;
 	//_minobjeta = 1.5;
-	_ptmin = 0;
 	_minrhE = 0.5;
-	_Emin = 0;
+	_Emin_reco = 0;
+	_ptmin_reco = 0;
+	_Emin_gen = 0;
+	_ptmin_gen = 0;
 	_minNrhs = 1;
 	_nConstsmin = 0;
 }
@@ -23,9 +25,11 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_nEvts = _base->fChain->GetEntries();
 	//default to 1 GeV = 1 entry -> gev = 1
 	_gev = 1;
-	_ptmin = 0;
 	_minrhE = 0.5;
-	_Emin = 0;
+	_Emin_reco = 0;
+	_ptmin_reco = 0;
+	_Emin_gen = 0;
+	_ptmin_gen = 0;
 	_minNrhs = 1;
 	_nConstsmin = 0;
 }
@@ -151,8 +155,8 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		pt = _base->Jet_genPt->at(j);
 		phi = _base->Jet_genPhi->at(j);
 		eta = _base->Jet_genEta->at(j);
-		if(pt < _ptmin) continue;
-		if(_base->Jet_genEnergy->at(j) < _Emin) continue;
+		if(pt < _ptmin_gen) continue;
+		if(_base->Jet_genEnergy->at(j) < _Emin_gen) continue;
 		//multiplicity requirement
 		if(_base->Jet_genNConstituents->at(j) < _nConstsmin) continue;		
 		//parton-matching requirement - also serves as lepton disambiguation
@@ -266,8 +270,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 		pt = _base->Jet_pt->at(j);
 		phi = _base->Jet_phi->at(j);
 		eta = _base->Jet_eta->at(j);
-		if(pt < _ptmin) continue;
-		if(_base->Jet_energy->at(j) < _Emin) continue;
+		if(pt < _ptmin_reco) continue;
+		if(_base->Jet_energy->at(j) < _Emin_reco) continue;
 
 		px = pt*cos(phi);
 		py = pt*sin(phi);

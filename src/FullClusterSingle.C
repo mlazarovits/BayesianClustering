@@ -436,8 +436,8 @@ int main(int argc, char *argv[]){
 	else if(obj == 2){
 		JetSimProducer prod(file);
 		prod.SetTransferFactor(gev);
-		prod.SetMinPt(50);
-		prod.SetMinE(100);
+		prod.SetRecoMinPt(50);
+		prod.SetRecoMinE(100);
 		prod.SetMinRhE(minRhE); 
 		//no need to calibrate
 		prod.PrintPreselection();

@@ -22,8 +22,10 @@ class JetSimProducer{
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
 
-		void SetMinPt(double pt){_ptmin = pt; }
-		void SetMinE(double e){ _Emin = e;}
+		void SetRecoMinPt(double pt){_ptmin_reco = pt; }
+		void SetRecoMinE(double e){ _Emin_reco = e;}
+		void SetGenMinPt(double pt){_ptmin_gen = pt; }
+		void SetGenMinE(double e){ _Emin_gen = e;}
 		void SetMinRhE(double r){ _minrhE = r; }
 		void SetMinNrhs(int r){ _minNrhs = r; }
 		void SetMinNGenConsts(int c){ _nConstsmin = c; }
@@ -31,8 +33,10 @@ class JetSimProducer{
 		
 		void PrintPreselection(){
 			cout << "Default energy transfer factor: " << _gev << endl;
-			cout << "Minimum pt: " << _ptmin << endl;
-			cout << "Minimum energy: " << _Emin << endl;
+			cout << "Minimum reco pt: " << _ptmin_reco << endl;
+			cout << "Minimum reco energy: " << _Emin_reco << endl;
+			cout << "Minimum gen pt: " << _ptmin_gen << endl;
+			cout << "Minimum gen energy: " << _Emin_gen << endl;
 			cout << "Minimum rh energy: " << _minrhE << endl;
 			cout << "Minimum # rh: " << _minNrhs << endl;
 			cout << "Minimum # constituents (gen jets only): " << _nConstsmin << endl;
@@ -90,7 +94,7 @@ class JetSimProducer{
 		double _gev;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts, _minNrhs;
-		double _ptmin, _minrhE, _Emin;
+		double _ptmin_reco, _ptmin_gen, _minrhE, _Emin_reco, _Emin_gen;
 		int _nConstsmin;
 		double _c = 29.9792458; // speed of light in cm/ns
 		vector<int> lepIds = {11, 12, 13, 14, 15, 16};
