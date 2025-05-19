@@ -139,6 +139,60 @@ class Jet{
 		//https://gitlab.cern.ch/CLHEP/CLHEP/-/blob/develop/Vector/Vector/LorentzVector.icc#L150
 		double mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
 		double m() const{return mass(); }
+		
+		//different mass calculation types for comparison
+		double mass_rhs(){
+			double px, py, pz, E;
+			E = 0;
+			px = 0;
+			py = 0;
+			pz = 0;
+			for(int i = 0; i < _nRHs; i++){		
+				//theta is calculated between beamline (z-dir) and vector in x-y plane	
+				//centered at (0,0,0)
+				double x = _rhs[i].x();// - vtx.at(0);
+				double y = _rhs[i].y();// - vtx.at(1);
+				double z = _rhs[i].z();// - vtx.at(2);
+				double theta = atan2( sqrt(x*x + y*y), z );
+				double phi = atan2(y, x);
+				double eta = -log(tan(theta/2.)); 
+				//see https://cmssdt.cern.ch/lxr/source/DataFormats/CaloTowers/src/CaloTower.cc L145
+				//pt = E*sin(theta); //mass = 0, equivalent to below
+				double pt = _rhs[i].E()/cosh(eta);
+				px += pt*cos(phi);
+				py += pt*sin(phi);
+				pz += pt*sinh(eta);
+			//cout << "i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*cosh(eta) << " " << pt*sinh(eta) << endl;
+				
+				E += _rhs[i].E();
+
+			}
+			double kt2 = px*px + py*py;
+			return (E+pz)*(E-pz)-kt2;
+
+		}
+		double mass_subcls(){
+			double px, py, pz, E;
+			E = 0;
+			px = 0;
+			py = 0;
+			pz = 0;
+			for(int k = 0; k < GetNConstituents(); k++){
+				Jet subcl = _constituents[k];
+	
+				//set momentum from subclusters
+				px += subcl.px();
+				py += subcl.py();
+				pz += subcl.pz();
+				E += subcl.E(); //set from rhs
+			
+			}
+			double kt2 = px*px + py*py;
+			return (E+pz)*(E-pz)-kt2;
+
+		}
+
+
 
 	
 		//squared transverse momentum
