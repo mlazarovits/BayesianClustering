@@ -141,7 +141,7 @@ class Jet{
 		double m() const{return mass(); }
 		
 		//different mass calculation types for comparison
-		double mass_rhs(){
+		double mass_rhs() const{
 			double px, py, pz, E;
 			E = 0;
 			px = 0;
@@ -168,10 +168,11 @@ class Jet{
 
 			}
 			double kt2 = px*px + py*py;
-			return (E+pz)*(E-pz)-kt2;
+			double m2 = (E+pz)*(E-pz)-kt2;
+			return m2 < 0.0 ? -sqrt(-m2) : sqrt(m2); 
 
 		}
-		double mass_subcls(){
+		double mass_subcls() const{
 			double px, py, pz, E;
 			E = 0;
 			px = 0;
@@ -188,7 +189,8 @@ class Jet{
 			
 			}
 			double kt2 = px*px + py*py;
-			return (E+pz)*(E-pz)-kt2;
+			double m2 = (E+pz)*(E-pz)-kt2;
+			return m2 < 0.0 ? -sqrt(-m2) : sqrt(m2); 
 
 		}
 
