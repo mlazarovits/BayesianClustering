@@ -440,6 +440,7 @@ class BaseSkimmer{
 
 		};
 		vector<procCat> _procCats;
+		//void MakeProcCats(string sample, bool leadsep = true){
 		void MakeProcCats(string sample, bool leadsep = true){
 			//total
 			procCat tot(_hists1D, _hists2D);

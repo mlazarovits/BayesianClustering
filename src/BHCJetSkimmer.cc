@@ -17,7 +17,7 @@ void BHCJetSkimmer::Skim(){
 	
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//cout << "oname " << _oname << endl;	
-	MakeProcCats(_oname, false);
+	MakeProcCats(_oname, true);
 
 	//cout << "n procs: " << _procCats.size() << endl;
 	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;

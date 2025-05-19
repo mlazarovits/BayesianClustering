@@ -17,7 +17,7 @@ class BHCJetSkimmer{
 			_gev = 1./10.;
 			_oname = "";
 			_radius = 0;
-			_smear = true;
+			_smear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -52,7 +52,7 @@ class BHCJetSkimmer{
 			_evtj = _nEvts;
 			_gev = 1./10.;
 			_radius = 0;
-			_smear = true;
+			_smear = false;
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
@@ -223,6 +223,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_drSubclusters);
 			_hists1D.push_back(recoAK4Jet_drSubclusters);
 			_hists1D.push_back(BHCJet_rhE);
+			_hists1D.push_back(recoAK4Jet_rotundity);
+			_hists1D.push_back(BHCJet_rotundity);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -268,6 +270,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJet_nSubclustersJet_energy);
 			_hists2D.push_back(BHCJet_nSubclustersEvt_nJet);
 			_hists2D.push_back(recoAK4JetnSubclustersJet_BHCJetnSubclustersJet);	
+			_hists2D.push_back(recoAK4Jet_jetEnergy_jetMass);
+			_hists2D.push_back(BHCJet_jetEnergy_jetMass);
+			_hists2D.push_back(recoAK4Jet_nSubclusters_jetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -307,14 +312,14 @@ class BHCJetSkimmer{
 				//cout << "tree points " << endl; pc->Print();
 				//create new Jet
 				Jet predJet(_trees[i]->model, BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
-				//put pt cut in for predjets of 20 GeV
-				//if(predJet.pt() < 20) continue; 
+				//put pt cut in for predjets of 5 GeV to match reco AK4 definition
+				if(predJet.pt() < 5) continue; 
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
 			}
 			cout << njets_tot << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
-			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
+			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass_rhs() << " eta " << j.eta() << " phi " << j.phi() << endl;
 		}
 
 		void FillPredJetHists(){
@@ -385,150 +390,171 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][30]->Fill(topmass);
 				}
 				*/
+				//loop over pt bins
 				njets = _predJets.size();
-				for(int j = 0; j < _predJets.size(); j++){
-					//if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
-					Matrix jetcov = CalcJetCovMat(_predJets[j]);
-					dr = sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
-					cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
-					nsubs = _predJets[j].GetNConstituents();
-					_procCats[p].hists1D[0][1]->Fill(nsubs);
-					_procCats[p].hists2D[0][11]->Fill(nsubs,dr);
-					//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
-					Matrix cov = _predJets[j].GetCovariance();
-				
-					_procCats[p].hists1D[0][7]->Fill(_predJets[j].e());
-					_procCats[p].hists1D[0][8]->Fill(_predJets[j].pt());
-				//cout << "pred jet #" << j << " mass " << _predJets[j].mass() << endl;
-					_procCats[p].hists1D[0][9]->Fill(_predJets[j].mass());
-					_procCats[p].hists1D[0][6]->Fill(dr);
+				double pt_thresh = 50;
+				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
+					for(int j = 0; j < _predJets.size(); j++){
+						if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_rhs() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+						//define pt bins
+						//pt == 1 -> [50,inf)
+						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
+						//pt == 2 -> [0,50)
+						if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
 
-					_procCats[p].hists1D[0][132]->Fill(sqrt(jetcov.at(0,0)));
-					_procCats[p].hists1D[0][133]->Fill(sqrt(jetcov.at(1,1)));
-					_procCats[p].hists1D[0][134]->Fill(sqrt(jetcov.at(2,2)));
+
+						Matrix jetcov = CalcJetCovMat(_predJets[j]);
+						//get 2D matrix for jet size
+						Matrix jetcov2D(2,2);
+						Get2DMat(jetcov,jetcov2D);	
+						vector<double> eigvals;
+						vector<Matrix> eigvecs;
+						jetcov2D.eigenCalc(eigvals, eigvecs);
+						//define jet size as length of major axis
+						//also include rotundity
+						dr = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						double rot = Rotundity(jetcov2D);
+						_procCats[p].hists1D[pt][147]->Fill(rot);
+						cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
+						nsubs = _predJets[j].GetNConstituents();
+						_procCats[p].hists1D[pt][1]->Fill(nsubs);
+						_procCats[p].hists2D[pt][11]->Fill(nsubs,dr);
+						//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
+						Matrix cov = _predJets[j].GetCovariance();
+					
+						_procCats[p].hists1D[pt][7]->Fill(_predJets[j].e());
+						_procCats[p].hists1D[pt][8]->Fill(_predJets[j].pt());
+						_procCats[p].hists1D[pt][9]->Fill(_predJets[j].mass_rhs());
+						_procCats[p].hists1D[pt][6]->Fill(dr);
+
+						_procCats[p].hists1D[pt][132]->Fill(sqrt(jetcov.at(0,0)));
+						_procCats[p].hists1D[pt][133]->Fill(sqrt(jetcov.at(1,1)));
+						_procCats[p].hists1D[pt][134]->Fill(sqrt(jetcov.at(2,2)));
+							
+						_procCats[p].hists1D[pt][47]->Fill(sqrt(cov.at(0,0)));	
+						_procCats[p].hists1D[pt][48]->Fill(sqrt(cov.at(1,1)));	
+						_procCats[p].hists1D[pt][49]->Fill(sqrt(cov.at(2,2)));	
+						_procCats[p].hists1D[pt][50]->Fill(cov.at(0,1));	
+						_procCats[p].hists1D[pt][51]->Fill(cov.at(0,2));	
+						_procCats[p].hists1D[pt][52]->Fill(cov.at(2,1));	
 						
-					_procCats[p].hists1D[0][47]->Fill(sqrt(cov.at(0,0)));	
-					_procCats[p].hists1D[0][48]->Fill(sqrt(cov.at(1,1)));	
-					_procCats[p].hists1D[0][49]->Fill(sqrt(cov.at(2,2)));	
-					_procCats[p].hists1D[0][50]->Fill(cov.at(0,1));	
-					_procCats[p].hists1D[0][51]->Fill(cov.at(0,2));	
-					_procCats[p].hists1D[0][52]->Fill(cov.at(2,1));	
-					
-					_procCats[p].hists2D[0][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
-					_procCats[p].hists2D[0][8]->Fill(_predJets[j].mass(), dr);
-					_procCats[p].hists2D[0][10]->Fill(_predJets[j].pt(), dr);
-					
-					_procCats[p].hists2D[0][34]->Fill((double)_predJets.size(), dr);
-					_procCats[p].hists2D[0][35]->Fill(_predJets[j].GetNRecHits(),_predJets[j].GetNConstituents());
-					_procCats[p].hists2D[0][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].m());
-					_procCats[p].hists2D[0][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
-
-
-					Matrix jet_mu, jet_cov;
-					_predJets[j].GetClusterParams(jet_mu,jet_cov);	
-					_procCats[p].hists1D[0][128]->Fill(jet_mu.at(0,0));
-					_procCats[p].hists1D[0][129]->Fill(jet_mu.at(1,0));
-					_procCats[p].hists1D[0][130]->Fill(jet_mu.at(2,0));
-					
-					vector<JetPoint> rhs = _predJets[j].GetJetPoints();
-					for(int r = 0; r < rhs.size(); r++){
-						_procCats[p].hists1D[0][145]->Fill(rhs[r].E());
+						_procCats[p].hists2D[pt][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
+						_procCats[p].hists2D[pt][8]->Fill(_predJets[j].mass(), dr);
+						_procCats[p].hists2D[pt][10]->Fill(_predJets[j].pt(), dr);
 						
-					}
+						_procCats[p].hists2D[pt][34]->Fill((double)_predJets.size(), dr);
+						_procCats[p].hists2D[pt][35]->Fill(_predJets[j].GetNRecHits(),_predJets[j].GetNConstituents());
+						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
 
-				//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
-					//get subcluster information
-					vector<Jet> consts = _predJets[j].GetConstituents();
-					//for(auto subcl : _predJets[j].GetConstituents()){
-					for(int c = 0; c < (int)consts.size(); c++){
-						Jet subcl = consts[c];
-						Matrix subcl_cov = subcl.GetCovariance();
-						_procCats[p].hists1D[0][12]->Fill(sqrt(subcl_cov.at(0,0)));
-						_procCats[p].hists1D[0][13]->Fill(sqrt(subcl_cov.at(1,1)));
-						_procCats[p].hists1D[0][14]->Fill(sqrt(subcl_cov.at(2,2)));
-						_procCats[p].hists1D[0][15]->Fill(subcl_cov.at(0,1));
-						_procCats[p].hists1D[0][16]->Fill(subcl_cov.at(0,2));
-						_procCats[p].hists1D[0][17]->Fill(subcl_cov.at(1,2));
-						//do for normalized values too
+
+						Matrix jet_mu, jet_cov;
+						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
+						_procCats[p].hists1D[pt][128]->Fill(jet_mu.at(0,0));
+						_procCats[p].hists1D[pt][129]->Fill(jet_mu.at(1,0));
+						_procCats[p].hists1D[pt][130]->Fill(jet_mu.at(2,0));
+						
+						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
+						for(int r = 0; r < rhs.size(); r++){
+							_procCats[p].hists1D[pt][145]->Fill(rhs[r].E());
+							
+						}
+
+					//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
+						//get subcluster information
+						vector<Jet> consts = _predJets[j].GetConstituents();
+						//for(auto subcl : _predJets[j].GetConstituents()){
+						for(int c = 0; c < (int)consts.size(); c++){
+							Jet subcl = consts[c];
+							Matrix subcl_cov = subcl.GetCovariance();
+							_procCats[p].hists1D[pt][12]->Fill(sqrt(subcl_cov.at(0,0)));
+							_procCats[p].hists1D[pt][13]->Fill(sqrt(subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][14]->Fill(sqrt(subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][15]->Fill(subcl_cov.at(0,1));
+							_procCats[p].hists1D[pt][16]->Fill(subcl_cov.at(0,2));
+							_procCats[p].hists1D[pt][17]->Fill(subcl_cov.at(1,2));
+							//do for normalized values too
 	
-						//E_k = norms[k]/_gev;
-						_procCats[p].hists1D[0][2]->Fill(subcl.E());
+							//E_k = norms[k]/_gev;
+							_procCats[p].hists1D[pt][2]->Fill(subcl.E());
 
-						//params = model->GetPriorParameters(k);
-						//ceta = params["mean"].at(0,0);
-						//cphi = params["mean"].at(1,0);
-						//ctime = params["mean"].at(2,0);
-						//norm += params["pi"].at(0,0);
-					//cout << "pred jet subcluster phi " << subcl.phi() << " phi std " << subcl.phi_std() << " phi 02pi " << subcl.phi_02pi() << endl;	
-						_procCats[p].hists1D[0][3]->Fill(subcl.eta());
-						_procCats[p].hists1D[0][4]->Fill(subcl.phi());
-						_procCats[p].hists1D[0][5]->Fill(subcl.time());
-						
-						//do dr calcs bw all subclusters
-						for(int cc = c+1; cc < consts.size(); cc++){
-							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
-							_procCats[p].hists1D[0][143]->Fill(dr);
-						}
+							//params = model->GetPriorParameters(k);
+							//ceta = params["mean"].at(0,0);
+							//cphi = params["mean"].at(1,0);
+							//ctime = params["mean"].at(2,0);
+							//norm += params["pi"].at(0,0);
+						//cout << "pred jet subcluster phi " << subcl.phi() << " phi std " << subcl.phi_std() << " phi 02pi " << subcl.phi_02pi() << endl;	
+							_procCats[p].hists1D[pt][3]->Fill(subcl.eta());
+							_procCats[p].hists1D[pt][4]->Fill(subcl.phi());
+							_procCats[p].hists1D[pt][5]->Fill(subcl.time());
+							
+							//do dr calcs bw all subclusters
+							for(int cc = c+1; cc < consts.size(); cc++){
+								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
+								_procCats[p].hists1D[pt][143]->Fill(dr);
+							}
 		
-					}
-
-
-					//if BHC and reco AK4 jets can be matched 1:1, compare # of subclusters
-					if(njets - (int)_recojets.size() == 0){
-						if(recoMatchIdxs[j] != -1){
-							if(_recojets[recoMatchIdxs[j]].GetNConstituents() == 0) cout << "reco jet #" << recoMatchIdxs[j] << " matched to bhc jet #" << j << " has " << _recojets[recoMatchIdxs[j]].GetNConstituents() << " # subclusters" << endl;
-							_procCats[p].hists2D[0][43]->Fill(_recojets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
 						}
-					}
 
-					/*
-					if(j != wmass_idxs.first && j != wmass_idxs.second){
-						_procCats[p].hists1D[0][38]->Fill(cov.at(0,0));
-						_procCats[p].hists1D[0][42]->Fill(cov.at(1,1));
-						_procCats[p].hists1D[0][46]->Fill(cov.at(2,2));
-					}
-					
-					if(genMatchIdxs[j] != -1) cout << " jet " << j << " is exclusively matched to gen particle " << genMatchIdxs[j] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[j]), _base->genpart_phi->at(genMatchIdxs[j]), _recojets[j].eta(), _recojets[j].phi()) << endl;
-					else{ cout << " jet " << j << " could not be gen matched" << endl; continue; }
 
-					bestMatchIdx = genMatchIdxs[j];
-					dr = dR(_base->genpart_eta->at(bestMatchIdx), _base->genpart_phi->at(bestMatchIdx), _predJets[j].eta(), _predJets[j].phi());
-					widx = _base->genpart_momIdx->at(bestMatchIdx); //this branch only filled for products of Ws
-					//cout << "widx " << widx << endl;
-					if(widx != -1) _procCats[p].hists2D[0][19]->Fill(dr,_base->genpart_energy->at(widx));
-					//fill gen match hists
-					_procCats[p].hists1D[0][70]->Fill(id);
-					//b's
-					if(fabs(id) == 5){
-						_procCats[p].hists1D[0][58]->Fill(dr);
-						_procCats[p].hists1D[0][64]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
-					}
-					//g's, q's (not b's)
-					else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
-						_procCats[p].hists1D[0][60]->Fill(dr);
-						_procCats[p].hists1D[0][66]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
+						//if BHC and reco AK4 jets can be matched 1:1, compare # of subclusters
+						if(njets - (int)_recojets.size() == 0){
+							if(recoMatchIdxs[j] != -1){
+								if(_recojets[recoMatchIdxs[j]].GetNConstituents() == 0) cout << "reco jet #" << recoMatchIdxs[j] << " matched to bhc jet #" << j << " has " << _recojets[recoMatchIdxs[j]].GetNConstituents() << " # subclusters" << endl;
+								_procCats[p].hists2D[pt][43]->Fill(_recojets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
+							}
+						}
 
-					}
-					//leptons
-					else if(fabs(id) == 13 || fabs(id) == 14){
-						_procCats[p].hists1D[0][62]->Fill(dr);
-						_procCats[p].hists1D[0][68]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
+						/*
+						if(j != wmass_idxs.first && j != wmass_idxs.second){
+							_procCats[p].hists1D[0][38]->Fill(cov.at(0,0));
+							_procCats[p].hists1D[0][42]->Fill(cov.at(1,1));
+							_procCats[p].hists1D[0][46]->Fill(cov.at(2,2));
+						}
+						
+						if(genMatchIdxs[j] != -1) cout << " jet " << j << " is exclusively matched to gen particle " << genMatchIdxs[j] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs[j]), _base->genpart_phi->at(genMatchIdxs[j]), _recojets[j].eta(), _recojets[j].phi()) << endl;
+						else{ cout << " jet " << j << " could not be gen matched" << endl; continue; }
 
+						bestMatchIdx = genMatchIdxs[j];
+						dr = dR(_base->genpart_eta->at(bestMatchIdx), _base->genpart_phi->at(bestMatchIdx), _predJets[j].eta(), _predJets[j].phi());
+						widx = _base->genpart_momIdx->at(bestMatchIdx); //this branch only filled for products of Ws
+						//cout << "widx " << widx << endl;
+						if(widx != -1) _procCats[p].hists2D[0][19]->Fill(dr,_base->genpart_energy->at(widx));
+						//fill gen match hists
+						_procCats[p].hists1D[0][70]->Fill(id);
+						//b's
+						if(fabs(id) == 5){
+							_procCats[p].hists1D[0][58]->Fill(dr);
+							_procCats[p].hists1D[0][64]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
+						}
+						//g's, q's (not b's)
+						else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
+							_procCats[p].hists1D[0][60]->Fill(dr);
+							_procCats[p].hists1D[0][66]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
+
+						}
+						//leptons
+						else if(fabs(id) == 13 || fabs(id) == 14){
+							_procCats[p].hists1D[0][62]->Fill(dr);
+							_procCats[p].hists1D[0][68]->Fill(_base->genpart_energy->at(bestMatchIdx)/_predJets[j].E());
+
+						}
+						else{ }
+						*/
 					}
-					else{ }
-					*/
+					//fill njets based on top decay type
+					//0 -> fully had
+					//1 -> fully lep
+					//2 -> semi lep 
+					//if(_topDecayType == 0)
+					//	_procCats[p].hists1D[0][74]->Fill(njets);
+					//else if(_topDecayType == 1)
+					//	_procCats[p].hists1D[0][76]->Fill(njets);
+					//else if(_topDecayType == 2)
+					//	_procCats[p].hists1D[0][75]->Fill(njets);
+					//else{ }
 				}
-				//fill njets based on top decay type
-				//0 -> fully had
-				//1 -> fully lep
-				//2 -> semi lep 
-				//if(_topDecayType == 0)
-				//	_procCats[p].hists1D[0][74]->Fill(njets);
-				//else if(_topDecayType == 1)
-				//	_procCats[p].hists1D[0][76]->Fill(njets);
-				//else if(_topDecayType == 2)
-				//	_procCats[p].hists1D[0][75]->Fill(njets);
-				//else{ }
 			}
 		}
 
@@ -615,149 +641,170 @@ class BHCJetSkimmer{
 			//	 else cout << " jet " << b << " could not be gen matched" << endl;
 
 			//}
-			
+			double pt_thresh = 50;	
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recojets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				for(int j = 0; j < _recojets.size(); j++){
-					Matrix jetcov = CalcJetCovMat(_recojets[j]);
-					jetsize = sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
-					if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
-					_procCats[p].hists1D[0][19]->Fill(jetsize);
-					_procCats[p].hists1D[0][135]->Fill(sqrt(jetcov.at(0,0)));
-					_procCats[p].hists1D[0][136]->Fill(sqrt(jetcov.at(1,1)));
-					_procCats[p].hists1D[0][137]->Fill(sqrt(jetcov.at(2,2)));
-					_procCats[p].hists1D[0][20]->Fill(_recojets[j].e());
-					_procCats[p].hists1D[0][21]->Fill(_recojets[j].pt());
-					_procCats[p].hists1D[0][22]->Fill(_recojets[j].mass());
-					_procCats[p].hists1D[0][138]->Fill(_recojets[j].time());
-					_procCats[p].hists1D[0][139]->Fill(_recojets[j].eta());
-					_procCats[p].hists1D[0][140]->Fill(_recojets[j].phi());
-					_procCats[p].hists2D[0][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
-					_procCats[p].hists2D[0][5]->Fill(_recojets[j].mass(), jetsize);
-					_procCats[p].hists2D[0][33]->Fill((double)_recojets.size(), jetsize);
-					
-					//fill subcluster hists
-					_procCats[p].hists1D[0][77]->Fill(_recojets[j].GetNConstituents());
-					_procCats[p].hists2D[0][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
-					_procCats[p].hists2D[0][37]->Fill(_recojets[j].GetNConstituents(), _recojets[j].m());
-					_procCats[p].hists2D[0][38]->Fill(_recojets[j].GetNConstituents(), _recojets[j].e());
-					if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
-					//for(auto subcl : _recojets[j].GetConstituents()){
-					vector<Jet> consts = _recojets[j].GetConstituents();
-					for(int c = 0; c < (int)consts.size(); c++){
-						Jet subcl = consts[c];
-						_procCats[p].hists1D[0][78]->Fill(subcl.E());
-						_procCats[p].hists1D[0][79]->Fill(subcl.time());
-						_procCats[p].hists1D[0][80]->Fill(subcl.eta());
-						_procCats[p].hists1D[0][81]->Fill(subcl.phi());
+					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
+						//define pt bins
+						//pt == 1 -> [50,inf)
+						if(pt == 1 && _recojets[j].pt() < pt_thresh) continue;
+						//pt == 2 -> [0,50)
+						if(pt == 2 && _recojets[j].pt() >= pt_thresh) continue;
+	
+			cout << "pt " << pt << " reco jet pt " << _recojets[j].pt() << endl;
+						Matrix jetcov = CalcJetCovMat(_recojets[j]);
+						//get 2D matrix for jet size
+						Matrix jetcov2D(2,2);
+						Get2DMat(jetcov,jetcov2D);	
+						vector<double> eigvals;
+						vector<Matrix> eigvecs;
+						jetcov2D.eigenCalc(eigvals, eigvecs);
+						//define jet size as length of major axis
+						//also include rotundity
+						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						double rot = Rotundity(jetcov2D);
+						_procCats[p].hists1D[pt][146]->Fill(rot);
+						if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
+						_procCats[p].hists1D[pt][19]->Fill(jetsize);
+						_procCats[p].hists1D[pt][135]->Fill(sqrt(jetcov.at(0,0)));
+						_procCats[p].hists1D[pt][136]->Fill(sqrt(jetcov.at(1,1)));
+						_procCats[p].hists1D[pt][137]->Fill(sqrt(jetcov.at(2,2)));
+						_procCats[p].hists1D[pt][20]->Fill(_recojets[j].e());
+						_procCats[p].hists1D[pt][21]->Fill(_recojets[j].pt());
+						_procCats[p].hists1D[pt][22]->Fill(_recojets[j].mass_rhs());
+cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->GetEntries() << " entries - filled with " << _recojets[j].mass_rhs() << endl;
+						_procCats[p].hists1D[pt][138]->Fill(_recojets[j].time());
+						_procCats[p].hists1D[pt][139]->Fill(_recojets[j].eta());
+						_procCats[p].hists1D[pt][140]->Fill(_recojets[j].phi());
+						_procCats[p].hists2D[pt][4]->Fill(_recojets[j].mass(), _recojets[j].pt());
+						_procCats[p].hists2D[pt][5]->Fill(_recojets[j].mass(), jetsize);
+						_procCats[p].hists2D[pt][33]->Fill((double)_recojets.size(), jetsize);
 						
-						Matrix subcl_cov = subcl.GetCovariance();
-						_procCats[p].hists1D[0][82]->Fill(sqrt(subcl_cov.at(0,0)));
-						_procCats[p].hists1D[0][83]->Fill(sqrt(subcl_cov.at(1,1)));
-						_procCats[p].hists1D[0][84]->Fill(sqrt(subcl_cov.at(2,2)));
-						_procCats[p].hists1D[0][85]->Fill(subcl_cov.at(0,1));
-						_procCats[p].hists1D[0][86]->Fill(subcl_cov.at(0,2));
-						_procCats[p].hists1D[0][87]->Fill(subcl_cov.at(1,2));
-						_procCats[p].hists1D[0][104]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)));
-						_procCats[p].hists1D[0][105]->Fill(subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
-						_procCats[p].hists1D[0][106]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
-						_procCats[p].hists2D[0][31]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
-						_procCats[p].hists2D[0][32]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
-					
-						//do dr calcs bw all subclusters
-						for(int cc = c+1; cc < consts.size(); cc++){
-							double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
-							_procCats[p].hists1D[0][144]->Fill(dr);
-						}
+						//fill subcluster hists
+						_procCats[p].hists1D[pt][77]->Fill(_recojets[j].GetNConstituents());
+						_procCats[p].hists2D[pt][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
+						_procCats[p].hists2D[pt][37]->Fill(_recojets[j].GetNConstituents(), _recojets[j].mass_rhs());
+						_procCats[p].hists2D[pt][38]->Fill(_recojets[j].GetNConstituents(), _recojets[j].e());
+						_procCats[p].hists2D[pt][44]->Fill(_recojets[j].e(), _recojets[j].mass_rhs());
+						_procCats[p].hists2D[pt][46]->Fill(_recojets[j].GetNConstituents(), jetsize);
+						if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
+						vector<Jet> consts = _recojets[j].GetConstituents();
+						for(int c = 0; c < (int)consts.size(); c++){
+							Jet subcl = consts[c];
+							_procCats[p].hists1D[pt][78]->Fill(subcl.E());
+							_procCats[p].hists1D[pt][79]->Fill(subcl.time());
+							_procCats[p].hists1D[pt][80]->Fill(subcl.eta());
+							_procCats[p].hists1D[pt][81]->Fill(subcl.phi());
+							
+							Matrix subcl_cov = subcl.GetCovariance();
+							_procCats[p].hists1D[pt][82]->Fill(sqrt(subcl_cov.at(0,0)));
+							_procCats[p].hists1D[pt][83]->Fill(sqrt(subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][84]->Fill(sqrt(subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][85]->Fill(subcl_cov.at(0,1));
+							_procCats[p].hists1D[pt][86]->Fill(subcl_cov.at(0,2));
+							_procCats[p].hists1D[pt][87]->Fill(subcl_cov.at(1,2));
+							_procCats[p].hists1D[pt][104]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][105]->Fill(subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][106]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
+							_procCats[p].hists2D[pt][31]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
+							_procCats[p].hists2D[pt][32]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
+						
+							//do dr calcs bw all subclusters
+							for(int cc = c+1; cc < consts.size(); cc++){
+								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
+								_procCats[p].hists1D[pt][144]->Fill(dr);
+							}
 				
 
-					}
-					vector<JetPoint> rhs = _recojets[j].GetJetPoints();
-					for(int r = 0; r < rhs.size(); r++){
-						_procCats[p].hists1D[0][89]->Fill(rhs[r].E());
-						_procCats[p].hists1D[0][96]->Fill(rhs[r].t());
+						}
+						vector<JetPoint> rhs = _recojets[j].GetJetPoints();
+						for(int r = 0; r < rhs.size(); r++){
+							_procCats[p].hists1D[pt][89]->Fill(rhs[r].E());
+							_procCats[p].hists1D[pt][96]->Fill(rhs[r].t());
+							
+						}
+						vector<pair<double,double>> geoEavg_diffT;
+						CalcRhTimeDiff(rhs,geoEavg_diffT);
+						for(int r = 0; r < geoEavg_diffT.size(); r++){
+						      _procCats[p].hists2D[pt][30]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
+						}
+						_procCats[p].hists1D[pt][88]->Fill(_recojets[j].GetNRecHits());
+						//if no gen match, skip
+						if(genMatchIdxs_jet[j] == -1) continue;
+						genidx = genMatchIdxs_jet[j];	
 						
-					}
-					vector<pair<double,double>> geoEavg_diffT;
-					CalcRhTimeDiff(rhs,geoEavg_diffT);
-					for(int r = 0; r < geoEavg_diffT.size(); r++){
-					      _procCats[p].hists2D[0][30]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
-					}
-					_procCats[p].hists1D[0][88]->Fill(_recojets[j].GetNRecHits());
-					//if no gen match, skip
-					if(genMatchIdxs_jet[j] == -1) continue;
-					genidx = genMatchIdxs_jet[j];	
-					
-					//cout << "gen jet match idx " << genMatchIdxs_jet[j] << " gen jet user idx  " << _genjets[genMatchIdxs_jet[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs_jet[j]].GetUserIdx()) << endl;
-					int genjetidx = _genjets[genMatchIdxs_jet[j]].GetUserIdx();
-					_procCats[p].hists2D[0][21]->Fill(_base->Jet_genNConstituents->at(genjetidx),_recojets[j].GetNConstituents());
-					double pt, pz, jetpt, jetpz, ratio_p;
-					jetpt = _base->Jet_genPt->at(genjetidx);
-					jetpz = _base->Jet_genPz->at(genjetidx);
+						//cout << "gen jet match idx " << genMatchIdxs_jet[j] << " gen jet user idx  " << _genjets[genMatchIdxs_jet[j]].GetUserIdx() << " gen n const " << _base->Jet_genNConstituents->at(_genjets[genMatchIdxs_jet[j]].GetUserIdx()) << endl;
+						int genjetidx = _genjets[genMatchIdxs_jet[j]].GetUserIdx();
+						_procCats[p].hists2D[pt][21]->Fill(_base->Jet_genNConstituents->at(genjetidx),_recojets[j].GetNConstituents());
+						double genpt, pz, jetpt, jetpz, ratio_p;
+						jetpt = _base->Jet_genPt->at(genjetidx);
+						jetpz = _base->Jet_genPz->at(genjetidx);
 
-					_procCats[p].hists1D[0][90]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
-					_procCats[p].hists1D[0][91]->Fill(jetpt);	
-					_procCats[p].hists2D[0][28]->Fill(jetpt, _recojets[j].GetNConstituents());
-					_procCats[p].hists2D[0][36]->Fill(_recojets[j].GetNConstituents(), _base->Jet_genNConstituents->at(genjetidx));
-					
-					int genpartidx = -1;
-					int ngenparts_ptge5 = 0;
-					for(int g = 0; g < _base->Jet_genNConstituents->at(genjetidx); g++){
-						genpartidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(g);
-						pt = _base->genpart_pt->at(genpartidx);
-						pz = _base->genpart_pz->at(genpartidx);
-						ratio_p = (sqrt(pt*pt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
-						_procCats[p].hists1D[0][92]->Fill(pt);	
-						_procCats[p].hists1D[0][93]->Fill(sqrt(pt*pt + pz*pz));
+						_procCats[p].hists1D[pt][90]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
+						_procCats[p].hists1D[pt][91]->Fill(jetpt);	
+						_procCats[p].hists2D[pt][28]->Fill(jetpt, _recojets[j].GetNConstituents());
+						_procCats[p].hists2D[pt][36]->Fill(_recojets[j].GetNConstituents(), _base->Jet_genNConstituents->at(genjetidx));
+						
+						int genpartidx = -1;
+						int ngenparts_ptge5 = 0;
+						for(int g = 0; g < _base->Jet_genNConstituents->at(genjetidx); g++){
+							genpartidx = _base->Jet_genConstituentIdxs->at(genjetidx).at(g);
+							genpt = _base->genpart_pt->at(genpartidx);
+							pz = _base->genpart_pz->at(genpartidx);
+							ratio_p = (sqrt(genpt*genpt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
+							_procCats[p].hists1D[pt][92]->Fill(genpt);	
+							_procCats[p].hists1D[pt][93]->Fill(sqrt(genpt*genpt + pz*pz));
 
-						_procCats[p].hists1D[0][94]->Fill( ratio_p );	
-						_procCats[p].hists1D[0][95]->Fill( pt/jetpt );
+							_procCats[p].hists1D[pt][94]->Fill( ratio_p );	
+							_procCats[p].hists1D[pt][95]->Fill( genpt/jetpt );
 
-						_procCats[p].hists2D[0][22]->Fill(sqrt(pt*pt + pz*pz), sqrt(jetpt*jetpt + jetpz*jetpz));	
-						_procCats[p].hists2D[0][23]->Fill(pt, jetpt);	
-						_procCats[p].hists2D[0][24]->Fill(sqrt(pt*pt + pz*pz), ratio_p);	
-						_procCats[p].hists2D[0][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
-						_procCats[p].hists2D[0][26]->Fill(pt, pt/jetpt);	
-						_procCats[p].hists2D[0][27]->Fill(jetpt, pt/jetpt);
+							_procCats[p].hists2D[pt][22]->Fill(sqrt(genpt*genpt + pz*pz), sqrt(jetpt*jetpt + jetpz*jetpz));	
+							_procCats[p].hists2D[pt][23]->Fill(genpt, jetpt);	
+							_procCats[p].hists2D[pt][24]->Fill(sqrt(genpt*genpt + pz*pz), ratio_p);	
+							_procCats[p].hists2D[pt][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
+							_procCats[p].hists2D[pt][26]->Fill(genpt, genpt/jetpt);	
+							_procCats[p].hists2D[pt][27]->Fill(jetpt, genpt/jetpt);
 	
-						if(pt >= 5) ngenparts_ptge5++;	
-					}
-					_procCats[p].hists2D[0][29]->Fill(ngenparts_ptge5,_recojets[j].GetNConstituents());
+							if(pt >= 5) ngenparts_ptge5++;	
+						}
+						_procCats[p].hists2D[pt][29]->Fill(ngenparts_ptge5,_recojets[j].GetNConstituents());
 
-					//skip gen matching for now
-					continue;
-					//fill gen match histograms
-					if(p == 0) cout << "found gen match to reco jet " << j << " with id " << _base->genpart_id->at(genidx) << " and dr " << dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << _base->genpart_energy->at(genidx)/_recojets[j].E() << " user idx " << genidx << endl;
-					//get matched gen particle here
-					dr = dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi());
-					id = _base->genpart_id->at(genidx);
-					widx = _base->genpart_momIdx->at(genidx); //this branch only filled for products of Ws
-					if(p == 0)cout << "widx " << widx << endl;
-					if(widx != -1) _procCats[p].hists2D[0][18]->Fill(dr,_base->genpart_energy->at(widx));
-					//fill gen match hists
-					if(fabs(id) != 13 && fabs(id) != 11 && fabs(id) != 15) _procCats[p].hists1D[0][69]->Fill(fabs(id));
-					else _procCats[p].hists1D[0][69]->Fill(0);
-					//b's
-					if(fabs(id) == 5){
-						_procCats[p].hists1D[0][57]->Fill(dr);
-						_procCats[p].hists1D[0][63]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
-					}
-					//g's, q's (not b's)
-					else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
-						_procCats[p].hists1D[0][59]->Fill(dr);
-						_procCats[p].hists1D[0][65]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
+						//skip gen matching for now
+						continue;
+						//fill gen match histograms
+						if(p == 0) cout << "found gen match to reco jet " << j << " with id " << _base->genpart_id->at(genidx) << " and dr " << dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << _base->genpart_energy->at(genidx)/_recojets[j].E() << " user idx " << genidx << endl;
+						//get matched gen particle here
+						dr = dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi());
+						id = _base->genpart_id->at(genidx);
+						widx = _base->genpart_momIdx->at(genidx); //this branch only filled for products of Ws
+						if(p == 0)cout << "widx " << widx << endl;
+						if(widx != -1) _procCats[p].hists2D[pt][18]->Fill(dr,_base->genpart_energy->at(widx));
+						//fill gen match hists
+						if(fabs(id) != 13 && fabs(id) != 11 && fabs(id) != 15) _procCats[p].hists1D[pt][69]->Fill(fabs(id));
+						else _procCats[p].hists1D[pt][69]->Fill(0);
+						//b's
+						if(fabs(id) == 5){
+							_procCats[p].hists1D[pt][57]->Fill(dr);
+							_procCats[p].hists1D[pt][63]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
+						}
+						//g's, q's (not b's)
+						else if(fabs(id) == 1 || fabs(id) == 2 || fabs(id) == 3 || fabs(id) == 4){
+							_procCats[p].hists1D[pt][59]->Fill(dr);
+							_procCats[p].hists1D[pt][65]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
+
+						}
+						//leptons
+						else if(fabs(id) == 13 || fabs(id) == 14){
+							_procCats[p].hists1D[pt][61]->Fill(dr);
+							_procCats[p].hists1D[pt][67]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
+
+						}
+						else{ }
 
 					}
-					//leptons
-					else if(fabs(id) == 13 || fabs(id) == 14){
-						_procCats[p].hists1D[0][61]->Fill(dr);
-						_procCats[p].hists1D[0][67]->Fill(_base->genpart_energy->at(genidx)/_recojets[j].E());
-
-					}
-					else{ }
-
 				}
 				//fill njets based on top decay type
 				//0 -> fully had
@@ -1036,64 +1083,68 @@ class BHCJetSkimmer{
 			string name, dirname, histname;
 			//write 1D hists
 			//variables
-			int nhists = _procCats[0].hists1D[0].size();
-			for(int i = 0; i < nhists; i++){
-				if(_procCats[0].hists1D[0][i] == nullptr) continue;
-				name = _procCats[0].hists1D[0][i]->GetName();
-				if(_procCats[0].hists1D[0][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
-				
-				_procCats[0].hists1D[0][i]->Write();
-				//make process breakdown directory - not making these profiles rn
-				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
-				//cout << "  making dir " << dir2->GetName() << " name " << name << endl;
-				dir2->cd();
-				for(int p = 1; p < _procCats.size(); p++){
-				//loop over processes
-					//if(name.find("profile") != string::npos) continue;
-					if(_procCats[p].hists1D[0][i] == nullptr) continue;
-					histname = _procCats[p].hists1D[0][i]->GetName();
-					//cout << "    proc " << _procCats[p].plotName << " hist " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " entries " << _procCats[p].hists1D[0][i]->GetEntries() << endl;			
-					if(_procCats[p].hists1D[0][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
-					if(histname.find("profile") != string::npos){
-						histname = histname.substr(0,histname.rfind("_"));
-						_procCats[p].hists1D[0][i]->SetName(histname.c_str());
-						_procCats[p].hists1D[0][i]->SetTitle(_procCats[p].plotName.c_str());
-					}
-					//cout << "  n hists " << _procCats[0].hists1D[0].size() << endl;
-					//cout << "i " << i << " p " << p << " writing " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
-					_procCats[p].hists1D[0][i]->Write();
-
-				}
-				ofile->cd(); 
-			}
-			//cout << "2D hists" << endl;
-			//write 2D hists
-			nhists = _procCats[0].hists2D[0].size();
-			for(int i = 0; i < nhists; i++){
-				name = _procCats[0].hists2D[0][i]->GetName();
-				histname = _procCats[0].hists2D[0][i]->GetName();
-				//cout << "writing for " << name << " i " << i << " entries " << _procCats[0].hists2D[0][i]->GetEntries() << endl;
-				//write total method histogram outside process directory
-				if(_procCats[0].hists2D[0][i] == nullptr) continue;
-				//cout << "passed null" << endl;
-				if(_procCats[0].hists2D[0][i]->GetEntries() == 0 && histname.find("sigma") == string::npos){ continue; }
-				//cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
-				_procCats[0].hists2D[0][i]->Write();
-				//write method as directory within directory
-				TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
-				//cout << "  making dir " << dir2->GetName() << endl;
-				dir2->cd();
-				for(int p = 1; p < _procCats.size(); p++){
+			for(int pt = 0; pt < _procCats[0].hists1D.size(); pt++){
+				int nhists = _procCats[0].hists1D[pt].size();
+				string pt_title = "";
+				//if(/
+				for(int i = 0; i < nhists; i++){
+					if(_procCats[0].hists1D[pt][i] == nullptr) continue;
+					name = _procCats[0].hists1D[pt][i]->GetName();
+					if(_procCats[0].hists1D[pt][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
+					
+					_procCats[0].hists1D[pt][i]->Write();
+					//make process breakdown directory - not making these profiles rn
+					TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
+					//cout << "  making dir " << dir2->GetName() << " name " << name << endl;
+					dir2->cd();
+					for(int p = 1; p < _procCats.size(); p++){
 					//loop over processes
-					if(_procCats[p].hists2D[0][i] == nullptr) continue;
-					if(_procCats[p].hists2D[0][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue;}// cout << "Histogram for proc " << _procCats[p].hists2D[0][i]->GetName() << " not filled." << endl; continue; }
-					//check if data can be run
-					//cout << "writing " << _procCats[p].hists2D[0][i]->GetName() <<  " " <<  _procCats[p].hists2D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;
-					histname = _procCats[p].hists2D[0][i]->GetName();
-					_procCats[p].hists2D[0][i]->SetTitle(_procCats[p].plotName.c_str());
-					_procCats[p].hists2D[0][i]->Write();
-				} 
-				ofile->cd(); 
+						//if(name.find("profile") != string::npos) continue;
+						if(_procCats[p].hists1D[pt][i] == nullptr) continue;
+						histname = _procCats[p].hists1D[pt][i]->GetName();
+						//cout << "    proc " << _procCats[p].plotName << " hist " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " entries " << _procCats[p].hists1D[0][i]->GetEntries() << endl;			
+						if(_procCats[p].hists1D[pt][i]->GetEntries() == 0 && ((histname.find("sigma") == string::npos && histname.find("mean") == string::npos) && histname.find("profile") == string::npos)){ continue; }
+						if(histname.find("profile") != string::npos){
+							histname = histname.substr(0,histname.rfind("_"));
+							_procCats[p].hists1D[pt][i]->SetName(histname.c_str());
+							_procCats[p].hists1D[pt][i]->SetTitle(_procCats[p].plotName.c_str());
+						}
+						//cout << "  n hists " << _procCats[0].hists1D[0].size() << endl;
+						//cout << "i " << i << " p " << p << " writing " << _procCats[p].hists1D[0][i]->GetName() << " " << _procCats[p].hists1D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;;
+						_procCats[p].hists1D[pt][i]->Write();
+
+					}
+					ofile->cd(); 
+				}
+				//cout << "2D hists" << endl;
+				//write 2D hists
+				nhists = _procCats[0].hists2D[pt].size();
+				for(int i = 0; i < nhists; i++){
+					name = _procCats[0].hists2D[pt][i]->GetName();
+					histname = _procCats[0].hists2D[pt][i]->GetName();
+					//cout << "writing for " << name << " i " << i << " entries " << _procCats[0].hists2D[0][i]->GetEntries() << endl;
+					//write total method histogram outside process directory
+					if(_procCats[0].hists2D[pt][i] == nullptr) continue;
+					//cout << "passed null" << endl;
+					if(_procCats[0].hists2D[pt][i]->GetEntries() == 0 && histname.find("sigma") == string::npos){ continue; }
+					//cout << "writing hist " << _procCats[0].hists2D[0][i]->GetName() << endl;
+					_procCats[0].hists2D[pt][i]->Write();
+					//write method as directory within directory
+					TDirectory *dir2 = ofile->mkdir((name+"_procStack").c_str());
+					//cout << "  making dir " << dir2->GetName() << endl;
+					dir2->cd();
+					for(int p = 1; p < _procCats.size(); p++){
+						//loop over processes
+						if(_procCats[p].hists2D[pt][i] == nullptr) continue;
+						if(_procCats[p].hists2D[pt][i]->GetEntries() == 0 && dirname.find("meanRecoGenDeltaT") == string::npos){ continue;}// cout << "Histogram for proc " << _procCats[p].hists2D[pt][i]->GetName() << " not filled." << endl; continue; }
+						//check if data can be run
+						//cout << "writing " << _procCats[p].hists2D[0][i]->GetName() <<  " " <<  _procCats[p].hists2D[0][i]->GetTitle() << " to " << dir2->GetName() << endl;
+						histname = _procCats[p].hists2D[pt][i]->GetName();
+						_procCats[p].hists2D[pt][i]->SetTitle(_procCats[p].plotName.c_str());
+						_procCats[p].hists2D[pt][i]->Write();
+					} 
+					ofile->cd(); 
+				}
 			}
 		}
 
@@ -1162,7 +1213,7 @@ class BHCJetSkimmer{
 		//8 - bhc jet pt
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,500);
 		//9 - bhc jet mass
-		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,50);
+		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,180);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # reco jets
@@ -1189,7 +1240,7 @@ class BHCJetSkimmer{
 		//21 - reco AK4 jet pt
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
 		//22 - reco AK4 jet mass
-		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,50);
+		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,180);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoAK4Gen","jetGenE_sigmaDeltaPtOvJetGenE_recoAK4Gen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
@@ -1436,7 +1487,11 @@ class BHCJetSkimmer{
 		TH1D* recoAK4Jet_drSubclusters = new TH1D("recoAK4Jet_drSubclusters","recoAK4Jet_drSubclusters",50,0,0.1);
 		//145 - rh energy in reco jets
 		TH1D* BHCJet_rhE = new TH1D("BHCJet_rhE","BHCJet_rhE",50,0,300);
-			
+		//146 - reco AK4 rotundity
+		TH1D* recoAK4Jet_rotundity = new TH1D("recoAK4Jet_rotundity","recoAK4Jet_rotundity",50,0.4,1.1);
+		//147 - BHC rotundity	
+		TH1D* BHCJet_rotundity = new TH1D("BHCJet_rotundity","BHCJet_rotundity",50,0.4,1.1);
+
 
 		//2D plots
 		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
@@ -1462,7 +1517,7 @@ class BHCJetSkimmer{
 		//10 - pred jet pt vs pred jet jetSize
 		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,1);
 		//11 - pred jet n subclusters vs jet size
-		TH2D* prednSubclusters_jetSize = new TH2D("BHCnSubclusters_jetSize","BHCnSubclusters_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
+		TH2D* prednSubclusters_jetSize = new TH2D("BHCJet_nSubclustersJet_jetSize","BHCJet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
 		//12 - reco dr match to gen b's
 		TH2D* recoJet_genOvRecoE_dR_b = new TH2D("recoAK4Jet_genOvRecoE_dR_b","recoAK4Jet_genOvRecoE_dR_b;ratioE;dR",25,0,5,25,0,4);
 		//13 - bhc dr match to gen b's
@@ -1527,6 +1582,13 @@ class BHCJetSkimmer{
 		TH2D* BHCJet_nSubclustersEvt_nJet = new TH2D("BHCJet_nSubclustersEvt_nJet","BHCJet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//43 - # subclusters in reco AK4 jet and # subclusters in dR matched BHC jet (if matching can be 1:1 ie # BHC jets = # reco AK4 jets)
 		TH2D* recoAK4JetnSubclustersJet_BHCJetnSubclustersJet = new TH2D("recoAK4JetnSubclustersJet_BHCJetnSubclustersJet","recoAK4JetnSubclustersJet_BHCJetnSubclustersJet;recoAK4JetnSubclustersJet;BHCJetnSubclustersJet",30,0,30,30,0,30);
+		//44 - reco AK4 jet energy vs jet mass
+		TH2D* recoAK4Jet_jetEnergy_jetMass = new TH2D("recoAK4Jet_jetEnergy_jetMass","recoAK4Jet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,180);
+		//45 - BHC jet energy vs mass
+		TH2D* BHCJet_jetEnergy_jetMass = new TH2D("BHCJet_jetEnergy_jetMass","BHCJet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,180);
+		//46 - reco AK4 jets # subclusters vs jet size
+		TH2D* recoAK4Jet_nSubclusters_jetSize = new TH2D("recoAK4Jet_nSubclustersJet_jetSize","recoAK4Jet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
+
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
@@ -1950,6 +2012,28 @@ class BHCJetSkimmer{
 			double dphi = (phi1-phi2);
 			dphi = acos(cos(dphi));
 			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
+		}
+
+
+		void Get2DMat(const Matrix& inmat, Matrix& outmat){
+			if(!outmat.square()) return;
+			if(outmat.GetDims()[0] != 2) return;
+			outmat.reset();
+			outmat.SetEntry(inmat.at(0,0),0,0);	
+			outmat.SetEntry(inmat.at(0,1),0,1);	
+			outmat.SetEntry(inmat.at(1,0),1,0);	
+			outmat.SetEntry(inmat.at(1,1),1,1);
+		}
+		double Rotundity(Matrix& inmat){
+			vector<Matrix> eigenvecs;
+			vector<double> eigenvals;
+			inmat.eigenCalc(eigenvals, eigenvecs);
+			int maxd = inmat.GetDims()[0] - 1;
+			double rot = 0;
+			for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
+			rot = eigenvals[maxd]/rot;
+			//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
+			return rot;
 		}
 		
 };
