@@ -966,8 +966,8 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 				recocov.SetEntry( recocov.at(0,2) + rhs[r].E()*diffeta*difftime, 0, 2 );
 				recocov.SetEntry( recocov.at(1,1) + rhs[r].E()*diffphi*diffphi, 1, 1 );
 				recocov.SetEntry( recocov.at(1,2) + rhs[r].E()*diffphi*difftime, 1, 2 );
-				recocov.SetEntry( recocov.at(2,1) + difftime*diffphi, 2, 1 );
-				recocov.SetEntry( recocov.at(2,2) + difftime*difftime, 2, 2 );
+				recocov.SetEntry( recocov.at(2,1) + rhs[r].E()*difftime*diffphi, 2, 1 );
+				recocov.SetEntry( recocov.at(2,2) + rhs[r].E()*difftime*difftime, 2, 2 );
 			}
 			recocov.mult(recocov,1./(double)wtot);
 			//cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
