@@ -165,7 +165,9 @@ class MergeTree : BaseTree{
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
 				//cout << "not leaf nodes - setting according to max # clusters" << endl;
-				k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters() + 2;
+				int npts = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
+				k = npts < mincls ? npts : mincls;
 				//k = x->points->GetNPoints();
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
@@ -174,7 +176,7 @@ class MergeTree : BaseTree{
 			//cout << "original points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
-			if(_verb > 1) cout << "original pts " << endl; newpts->Print();
+			if(_verb > 1){ cout << "original pts " << endl; newpts->Print();}
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
