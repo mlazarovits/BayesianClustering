@@ -1236,7 +1236,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",50,-0.05,0.05);
 		//18 - n reco AK4 jets
-		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",10,0,10);
+		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",15,0,15);
 		//19 - reco AK4 jet size
 		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,2.);
 		//20 - reco AK4 jet energy
