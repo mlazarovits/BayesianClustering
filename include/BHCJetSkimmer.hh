@@ -1220,9 +1220,9 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		TH1D* predGen_nJets = new TH1D("BHCRecoAK4_diffNJets","BHCRecoAK4_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.1);
+		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.5);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",50,0.,0.1);
+		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",50,0.,0.5);
 		//14 - time sigma
 		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subClusterTimeSig","BHCJet_subClusterTimeSig",50,0.,5.);
 		//15 - etaphi cov
@@ -1360,17 +1360,17 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//81 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subClusterPhiCenter","recoAK4Jet_subClusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subClusterEtaSig","recoAK4Jet_subClusterEtaSig",50,0.,0.1);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subClusterEtaSig","recoAK4Jet_subClusterEtaSig",50,0.,0.5);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subClusterPhiSig","recoAK4Jet_subClusterPhiSig",50,0.,0.1);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subClusterPhiSig","recoAK4Jet_subClusterPhiSig",50,0.,0.5);
 		//84 - time sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeSig = new TH1D("recoAK4Jet_subClusterTimeSig","recoAK4Jet_subClusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClusteretaPhiCov = new TH1D("recoAK4Jet_subClusteretaPhiCov","recoAK4Jet_subClusteretaPhiCov",50,-0.0005,0.0005);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subClustertimeEtaCov","recoAK4Jet_subClustertimeEtaCov",50,-0.2,0.2);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subClustertimeEtaCov","recoAK4Jet_subClustertimeEtaCov",50,-0.05,0.05);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.2,0.2);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.05,0.05);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("recoAK4Jet_nRhs","recoAK4Jet_nRhs",300,0,300);
 		//89 - rh energy in reco jets
