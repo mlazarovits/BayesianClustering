@@ -273,6 +273,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4Jet_jetEnergy_jetMass);
 			_hists2D.push_back(BHCJet_jetEnergy_jetMass);
 			_hists2D.push_back(recoAK4Jet_nSubclusters_jetSize);
+			_hists2D.push_back(recoAK4Jet_jetEnergy_jetSize);
+			_hists2D.push_back(BHCJet_jetEnergy_jetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -444,8 +446,9 @@ class BHCJetSkimmer{
 						
 						_procCats[p].hists2D[pt][34]->Fill((double)_predJets.size(), dr);
 						_procCats[p].hists2D[pt][35]->Fill(_predJets[j].GetNRecHits(),_predJets[j].GetNConstituents());
-						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_subcls());
-						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_subcls());
+						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][48]->Fill(_predJets[j].e(), dr);
 						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
 
 
@@ -690,6 +693,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 						_procCats[p].hists2D[pt][38]->Fill(_recojets[j].GetNConstituents(), _recojets[j].e());
 						_procCats[p].hists2D[pt][44]->Fill(_recojets[j].e(), _recojets[j].mass_subcls());
 						_procCats[p].hists2D[pt][46]->Fill(_recojets[j].GetNConstituents(), jetsize);
+						_procCats[p].hists2D[pt][47]->Fill(_recojets[j].e(), jetsize);
 						if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
 						vector<Jet> consts = _recojets[j].GetConstituents();
 						for(int c = 0; c < (int)consts.size(); c++){
@@ -966,8 +970,8 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 				recocov.SetEntry( recocov.at(0,2) + rhs[r].E()*diffeta*difftime, 0, 2 );
 				recocov.SetEntry( recocov.at(1,1) + rhs[r].E()*diffphi*diffphi, 1, 1 );
 				recocov.SetEntry( recocov.at(1,2) + rhs[r].E()*diffphi*difftime, 1, 2 );
-				recocov.SetEntry( recocov.at(2,1) + difftime*diffphi, 2, 1 );
-				recocov.SetEntry( recocov.at(2,2) + difftime*difftime, 2, 2 );
+				recocov.SetEntry( recocov.at(2,1) + rhs[r].E()*difftime*diffphi, 2, 1 );
+				recocov.SetEntry( recocov.at(2,2) + rhs[r].E()*difftime*difftime, 2, 2 );
 			}
 			recocov.mult(recocov,1./(double)wtot);
 			//cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
@@ -1199,7 +1203,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//1 - n subclusters per bhc jets
 		TH1D* nSubclusters = new TH1D("BHCJet_nSubclustersJet","BHCJet_nSubclustersJet",30,0,30);
 		//2 - bhc subcluster energy
-		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,250);
+		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,500);
 		//3 - bhc subcluster eta center
 		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subClusterEtaCenter","BHCJet_subClusterEtaCenter",25,-3.2,3.2);
 		//4 - bhc subcluster phi center
@@ -1207,7 +1211,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//5 - bhc jet subcluster time center
 		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-1,1);
 		//6 - bhc jet size
-		TH1D* predJet_jetSize = new TH1D("BHCJet_jetSize","BHCJet_jetSize",50,0,1);
+		TH1D* predJet_jetSize = new TH1D("BHCJet_jetSize","BHCJet_jetSize",50,0,2.);
 		//7 - bhc jet energy
 		TH1D* predJet_energy = new TH1D("BHCJet_energy","BHCJet_energy",25,0,500);
 		//8 - bhc jet pt
@@ -1220,9 +1224,9 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		TH1D* predGen_nJets = new TH1D("BHCRecoAK4_diffNJets","BHCRecoAK4_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.1);
+		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.5);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",50,0.,0.1);
+		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",50,0.,0.5);
 		//14 - time sigma
 		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subClusterTimeSig","BHCJet_subClusterTimeSig",50,0.,5.);
 		//15 - etaphi cov
@@ -1232,9 +1236,9 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//17 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",50,-0.05,0.05);
 		//18 - n reco AK4 jets
-		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",10,0,10);
+		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",15,0,15);
 		//19 - reco AK4 jet size
-		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,1);
+		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,2.);
 		//20 - reco AK4 jet energy
 		TH1D* recoJet_energy = new TH1D("recoAK4Jet_energy","recoAK4Jet_energy",25,0,500);
 		//21 - reco AK4 jet pt
@@ -1352,7 +1356,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//77 - n GMM clusters in reco jets
 		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclustersJet","recoAK4Jet_nSubclustersJet",30,0,30);
 		//78 - energy per GMM cluster from reco jets
-		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,250);
+		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,500);
 		//79 - time center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subClusterTimeCenter","recoAK4Jet_subClusterTimeCenter",25,-1,1);
 		//80 - eta center of GMM cluster from reco jets
@@ -1360,17 +1364,17 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//81 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subClusterPhiCenter","recoAK4Jet_subClusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subClusterEtaSig","recoAK4Jet_subClusterEtaSig",50,0.,0.1);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subClusterEtaSig","recoAK4Jet_subClusterEtaSig",50,0.,0.5);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subClusterPhiSig","recoAK4Jet_subClusterPhiSig",50,0.,0.1);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subClusterPhiSig","recoAK4Jet_subClusterPhiSig",50,0.,0.5);
 		//84 - time sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeSig = new TH1D("recoAK4Jet_subClusterTimeSig","recoAK4Jet_subClusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClusteretaPhiCov = new TH1D("recoAK4Jet_subClusteretaPhiCov","recoAK4Jet_subClusteretaPhiCov",50,-0.0005,0.0005);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subClustertimeEtaCov","recoAK4Jet_subClustertimeEtaCov",50,-0.2,0.2);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subClustertimeEtaCov","recoAK4Jet_subClustertimeEtaCov",50,-0.05,0.05);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.2,0.2);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.05,0.05);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("recoAK4Jet_nRhs","recoAK4Jet_nRhs",300,0,300);
 		//89 - rh energy in reco jets
@@ -1422,7 +1426,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//112 - gen particle mass
 		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,200);
 		//113 - gen particle energy
-		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",25,0,500);
+		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",50,0,500);
 		//114 - gen AK4 jet eta at detector
 		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-3.2,3.2);
 		//115 - gen AK4 jet phi at detector
@@ -1505,19 +1509,19 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//4 - reco jet mass vs reco jet pt
 		TH2D* recoJetMass_recoJetPt = new TH2D("recoAK4JetMass_recoAK4JetPt","recoAK4JetMass_recoAK4JetPt;recoAK4JetMass;recoAK4JetPt",50,0,250,50,0,250);
 		//5 - reco jet mass vs reco jet jetSize
-		TH2D* recoJetMass_recoJetSize = new TH2D("recoAK4JetMass_recoAK4JetSize","recoAK4JetMass_recoAK4JetSize;recoAK4JetMass;recoAK4JetSize",50,0,250,50,0,1);
+		TH2D* recoJetMass_recoJetSize = new TH2D("recoAK4JetMass_recoAK4JetSize","recoAK4JetMass_recoAK4JetSize;recoAK4JetMass;recoAK4JetSize",50,0,250,50,0,2.);
 		//6 - reco m_jj ~ W mass vs jet pair jetSize
-		TH2D* recoJetInvMassW_recoJetPairjetSize = new TH2D("recoAK4JetInvMassW_recoAK4JetPairjetSize","recoAK4JetInvMassW_recoAK4JetPairjetSize;recoAK4 m_jj;jetSize_jj",50,0,500,50,0,1); 
+		TH2D* recoJetInvMassW_recoJetPairjetSize = new TH2D("recoAK4JetInvMassW_recoAK4JetPairjetSize","recoAK4JetInvMassW_recoAK4JetPairjetSize;recoAK4 m_jj;jetSize_jj",50,0,500,50,0,2); 
 		//7 - pred jet mass vs pred jet pt
 		TH2D* predJetMass_predJetPt = new TH2D("BHCJetMass_BHCJetPt","BHCJetMass_BHCJetPt;BHCJetMass;BHCJetPt",50,0,250,50,0,250);
 		//8 - pred jet mass vs pred jet jetSize
-		TH2D* predJetMass_predJetSize = new TH2D("BHCJetMass_BHCJetSize","BHCJetMass_BHCJetSize;BHCJetMass;BHCJetSize",50,0,250,50,0,1);
+		TH2D* predJetMass_predJetSize = new TH2D("BHCJetMass_BHCJetSize","BHCJetMass_BHCJetSize;BHCJetMass;BHCJetSize",50,0,250,50,0,2);
 		//9 - pred m_jj ~ W mass vs jet pair jetSize 
-		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("BHCJetInvMassW_BHCJetPairjetSize","BHCJetInvMassW_BHCJetPairjetSize;pred m_jj;jetSize_jj",50,0,500,50,0,1.); 
+		TH2D* predJetInvMassW_predJetPairjetSize = new TH2D("BHCJetInvMassW_BHCJetPairjetSize","BHCJetInvMassW_BHCJetPairjetSize;pred m_jj;jetSize_jj",50,0,500,50,0,2.); 
 		//10 - pred jet pt vs pred jet jetSize
-		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,1);
+		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,2);
 		//11 - pred jet n subclusters vs jet size
-		TH2D* prednSubclusters_jetSize = new TH2D("BHCJet_nSubclustersJet_jetSize","BHCJet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
+		TH2D* prednSubclusters_jetSize = new TH2D("BHCJet_nSubclustersJet_jetSize","BHCJet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,2);
 		//12 - reco dr match to gen b's
 		TH2D* recoJet_genOvRecoE_dR_b = new TH2D("recoAK4Jet_genOvRecoE_dR_b","recoAK4Jet_genOvRecoE_dR_b;ratioE;dR",25,0,5,25,0,4);
 		//13 - bhc dr match to gen b's
@@ -1561,9 +1565,9 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//32 - eta-phi cov norm vs time-eta cov norm 
 		TH2D* recoJet_subClusteretaPhiCovNorm_timeEtaCovNorm = new TH2D("recoAK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm","recoAK4Jet_subClusteretaPhiCovNorm_timeEtaCovNorm;etaPhiCovNorm;timeEtaCovNorm",20,-1.,1.,20, -1, 1.);
 		//33 - reco AK4 jet multiplicity vs jet size
-		TH2D* recoAK4Jet_nJets_jetSize = new TH2D("recoAK4Jet_nJets_jetSize","recoAK4Jet_nJets_jetSize;nJets;jetSize",10,0,10,50,0,1);
+		TH2D* recoAK4Jet_nJets_jetSize = new TH2D("recoAK4Jet_nJets_jetSize","recoAK4Jet_nJets_jetSize;nJets;jetSize",15,0,15,50,0,2);
 		//34 - BHC jet multiplicity vs jet size
-		TH2D* BHCJet_nJets_jetSize = new TH2D("BHCJet_nJets_jetSize","BHCJet_nJets_jetSize;nJets;jetSize",15,0,15,50,0,1);
+		TH2D* BHCJet_nJets_jetSize = new TH2D("BHCJet_nJets_jetSize","BHCJet_nJets_jetSize;nJets;jetSize",15,0,15,50,0,2);
 		//35 - # rhs vs # subclusters for BHC jets
 		TH2D* BHCJet_nRhs_nSubclustersJet = new TH2D("BHCJet_nRhs_nSubclustersJet","BHCJet_nRhs_nSubclustersJet;nRhs;nSubclustersJet;a.u.",300,0,300,30,0,30);
 		//36 - # subclusters vs # constituents in gen jets for gen-matched AK4 jets
@@ -1571,7 +1575,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//37 - # subclusters vs jet mass for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
 		//38 - # subclusters vs jet energy for reco AK4 jets
-		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
+		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclustersJet;energy",30,0,30,50,0,2000);
 		//39 - # subclusters/evt vs # subclusters/jet for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//40 - # subclusters vs jet mass for BHC jets
@@ -1587,7 +1591,11 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//45 - BHC jet energy vs mass
 		TH2D* BHCJet_jetEnergy_jetMass = new TH2D("BHCJet_jetEnergy_jetMass","BHCJet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,180);
 		//46 - reco AK4 jets # subclusters vs jet size
-		TH2D* recoAK4Jet_nSubclusters_jetSize = new TH2D("recoAK4Jet_nSubclustersJet_jetSize","recoAK4Jet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,1);
+		TH2D* recoAK4Jet_nSubclusters_jetSize = new TH2D("recoAK4Jet_nSubclustersJet_jetSize","recoAK4Jet_nSubclustersJet_jetSize;nSubclustersJet;jetsize",30,0,30,50,0,2);
+		//47 - reco AK4 jet energy vs jet size
+		TH2D* recoAK4Jet_jetEnergy_jetSize = new TH2D("recoAK4Jet_jetEnergy_jetSize","recoAK4Jet_jetEnergy_jetSize;jetEnergy;jetSize",50,0,500,50,0,2);
+		//48 - BHC jet energy vs jet size
+		TH2D* BHCJet_jetEnergy_jetSize = new TH2D("BHCJet_jetEnergy_jetSize","BHCJet_jetEnergy_jetSize;jetEnergy;jetSize",50,0,500,50,0,2);
 
 
 		void SetSmear(bool t){ _smear = t; }
