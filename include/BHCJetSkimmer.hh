@@ -1199,7 +1199,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//1 - n subclusters per bhc jets
 		TH1D* nSubclusters = new TH1D("BHCJet_nSubclustersJet","BHCJet_nSubclustersJet",30,0,30);
 		//2 - bhc subcluster energy
-		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,250);
+		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,500);
 		//3 - bhc subcluster eta center
 		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subClusterEtaCenter","BHCJet_subClusterEtaCenter",25,-3.2,3.2);
 		//4 - bhc subcluster phi center
@@ -1352,7 +1352,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//77 - n GMM clusters in reco jets
 		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclustersJet","recoAK4Jet_nSubclustersJet",30,0,30);
 		//78 - energy per GMM cluster from reco jets
-		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,250);
+		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,500);
 		//79 - time center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subClusterTimeCenter","recoAK4Jet_subClusterTimeCenter",25,-1,1);
 		//80 - eta center of GMM cluster from reco jets
@@ -1422,7 +1422,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//112 - gen particle mass
 		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,200);
 		//113 - gen particle energy
-		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",25,0,500);
+		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",50,0,500);
 		//114 - gen AK4 jet eta at detector
 		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-3.2,3.2);
 		//115 - gen AK4 jet phi at detector
