@@ -1571,7 +1571,7 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		//37 - # subclusters vs jet mass for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
 		//38 - # subclusters vs jet energy for reco AK4 jets
-		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
+		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclustersJet;energy",30,0,30,50,0,2000);
 		//39 - # subclusters/evt vs # subclusters/jet for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//40 - # subclusters vs jet mass for BHC jets
