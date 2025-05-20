@@ -319,7 +319,7 @@ class BHCJetSkimmer{
 			}
 			cout << njets_tot << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
-			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass_rhs() << " eta " << j.eta() << " phi " << j.phi() << endl;
+			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass_subcls() << " eta " << j.eta() << " phi " << j.phi() << endl;
 		}
 
 		void FillPredJetHists(){
@@ -395,7 +395,7 @@ class BHCJetSkimmer{
 				double pt_thresh = 50;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
-						if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_rhs() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
+						if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_subcls() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 						//define pt bins
 						//pt == 1 -> [50,inf)
 						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
@@ -424,7 +424,7 @@ class BHCJetSkimmer{
 					
 						_procCats[p].hists1D[pt][7]->Fill(_predJets[j].e());
 						_procCats[p].hists1D[pt][8]->Fill(_predJets[j].pt());
-						_procCats[p].hists1D[pt][9]->Fill(_predJets[j].mass_rhs());
+						_procCats[p].hists1D[pt][9]->Fill(_predJets[j].mass_subcls());
 						_procCats[p].hists1D[pt][6]->Fill(dr);
 
 						_procCats[p].hists1D[pt][132]->Fill(sqrt(jetcov.at(0,0)));
@@ -444,8 +444,8 @@ class BHCJetSkimmer{
 						
 						_procCats[p].hists2D[pt][34]->Fill((double)_predJets.size(), dr);
 						_procCats[p].hists2D[pt][35]->Fill(_predJets[j].GetNRecHits(),_predJets[j].GetNConstituents());
-						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_rhs());
-						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_subcls());
+						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_subcls());
 						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
 
 
@@ -674,8 +674,8 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][137]->Fill(sqrt(jetcov.at(2,2)));
 						_procCats[p].hists1D[pt][20]->Fill(_recojets[j].e());
 						_procCats[p].hists1D[pt][21]->Fill(_recojets[j].pt());
-						_procCats[p].hists1D[pt][22]->Fill(_recojets[j].mass_rhs());
-cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->GetEntries() << " entries - filled with " << _recojets[j].mass_rhs() << endl;
+						_procCats[p].hists1D[pt][22]->Fill(_recojets[j].mass_subcls());
+cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->GetEntries() << " entries - filled with " << _recojets[j].mass_subcls() << endl;
 						_procCats[p].hists1D[pt][138]->Fill(_recojets[j].time());
 						_procCats[p].hists1D[pt][139]->Fill(_recojets[j].eta());
 						_procCats[p].hists1D[pt][140]->Fill(_recojets[j].phi());
@@ -686,9 +686,9 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 						//fill subcluster hists
 						_procCats[p].hists1D[pt][77]->Fill(_recojets[j].GetNConstituents());
 						_procCats[p].hists2D[pt][20]->Fill(_recojets[j].GetNRecHits(),_recojets[j].GetNConstituents());
-						_procCats[p].hists2D[pt][37]->Fill(_recojets[j].GetNConstituents(), _recojets[j].mass_rhs());
+						_procCats[p].hists2D[pt][37]->Fill(_recojets[j].GetNConstituents(), _recojets[j].mass_subcls());
 						_procCats[p].hists2D[pt][38]->Fill(_recojets[j].GetNConstituents(), _recojets[j].e());
-						_procCats[p].hists2D[pt][44]->Fill(_recojets[j].e(), _recojets[j].mass_rhs());
+						_procCats[p].hists2D[pt][44]->Fill(_recojets[j].e(), _recojets[j].mass_subcls());
 						_procCats[p].hists2D[pt][46]->Fill(_recojets[j].GetNConstituents(), jetsize);
 						if(_recojets[j].GetNConstituents() == 0) cout << _recojets[j].GetNConstituents() << " n subcl " << _recojets[j].GetNRecHits() << " n rhs" << endl;
 						vector<Jet> consts = _recojets[j].GetConstituents();
