@@ -28,9 +28,9 @@ class Jet{
 		Jet(JetPoint rh, BayesPoint vtx);
 		Jet(const vector<JetPoint>& rhs, BayesPoint vtx);
 		Jet(const vector<Jet>& jets);
-		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.})); //constructor from subcluster information
-		Jet(BasePDF* pdf, double E, double pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.})); //constructor from subcluster information
-		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR); //need detector radius to convert eta, phi to x, y, z
+		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information
+		Jet(BasePDF* pdf, double E, double pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information
+		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
