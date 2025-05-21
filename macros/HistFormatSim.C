@@ -274,7 +274,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		if(name.find("_lead") != string::npos){
 			type = "highpt";
 			col -= 2;
-			mark -= 2;
+			mark -= 4;
 				
 		}
 		if(name.find("_notlead") != string::npos){
@@ -1607,6 +1607,8 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersEvt_nJet");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersJet_jetSize");
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersJet_jetSize");
+	Hist2D(file, "ttbar", "recoAK4", oname, "jetEnergy_jetMass");
+	Hist2D(file, "ttbar", "BHC", oname, "jetEnergy_jetMass");
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
