@@ -44,6 +44,13 @@ def generateSubmission(args):
                 print("Sample "+args.inputSample+" not found")
                 exit()
 
+    zeroSupStr = str(args.zeroSup)
+    zeroSupStr = zeroSupStr.replace(".","p")
+    inputFile += "_eThresh-"+zeroSupStr
+
+    if(args.fatJets):
+        inputFile += "_AK15"
+
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
     
@@ -182,6 +189,8 @@ def main():
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
+    parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default=0.1)
+    parser.add_argument('--fatJets',help='run over ntuples with AK15 reco and gen jets',default=False,action='store_true')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
