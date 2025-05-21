@@ -398,7 +398,6 @@ class BHCJetSkimmer{
 				double pt_thresh = 50;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
-						if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_subcls() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << endl;
 						//define pt bins
 						//pt == 1 -> [50,inf)
 						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
@@ -416,10 +415,10 @@ class BHCJetSkimmer{
 						//define jet size as length of major axis
 						//also include rotundity
 						dr = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						if(p != 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_subcls() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << dr << endl;
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][148]->Fill(rot);
 					
-						cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
 						nsubs = _predJets[j].GetNConstituents();
 						_procCats[p].hists1D[pt][1]->Fill(nsubs);
 						_procCats[p].hists2D[pt][11]->Fill(nsubs,dr);
