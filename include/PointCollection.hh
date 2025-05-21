@@ -408,7 +408,7 @@ class PointCollection{
 
 	bool HasInf(int d){
 		for(int i = 0; i < (int)_pts.size(); i++){
-			if(fabs(_pts[i].at(d)) == _infs[d]) return true;
+			if(fabs(_pts[i].at(d)) == _infs[d]){ return true; }
 		}
 		return false;
 	}
