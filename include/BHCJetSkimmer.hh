@@ -225,6 +225,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_rhE);
 			_hists1D.push_back(recoAK4Jet_rotundity);
 			_hists1D.push_back(BHCJet_rotundity);
+			_hists1D.push_back(BHCJet_nRhs);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
