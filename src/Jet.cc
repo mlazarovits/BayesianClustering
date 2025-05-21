@@ -57,22 +57,28 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 	
-	_vtx = vtx;
+	_vtx = vtx; //vtx = (x,y,z)
 
 	_E = rh.E();
 	_eta = rh.eta();
 	_phi = rh.phi();
 	_t = rh.t();
 
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = rh.x() - _vtx.at(0);
+	double dy = rh.y() - _vtx.at(1);
+	double dz = rh.z() - _vtx.at(2);
 	//theta is calculated between beamline (z-dir) and x-y vector	
-	//centered at (0,0,0)
-	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
+	double theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(theta/2));
+	double p_phi = atan2(dy, dx);
 	//double pt = _E*sin(theta); //mass = 0
-	double pt = _E/cosh(_eta);
+	double pt = _E/cosh(p_eta);
 
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 	_kt2 = _px*_px + _py*_py; 		
 	_mass = mass();
 
@@ -83,6 +89,9 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu.SetEntry(rh.eta(),0,0);
+	_mu.SetEntry(rh.phi(),1,0);
+	_mu.SetEntry(rh.t(),2,0);
 	_pi = 0;
 	_update_mom();
 }
@@ -110,11 +119,11 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	double phi, eta;
 	double norm = 0;
 	for(int i = 0; i < _nRHs; i++){		
+		//for momentum vector centered at PV
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
-		//centered at (0,0,0)
-		x = rhs[i].x();// - _vtx.at(0);
-		y = rhs[i].y();// - _vtx.at(1);
-		z = rhs[i].z();// - _vtx.at(2);
+		x = rhs[i].x() - _vtx.at(0);
+		y = rhs[i].y() - _vtx.at(1);
+		z = rhs[i].z() - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
 		phi = atan2(y, x);
 		eta = -log(tan(theta/2.)); 
@@ -128,6 +137,7 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		
 		_E += rhs[i].E();
 
+		//eta, phi centered at (0,0,0)
 		_eta += rhs[i].eta()*rhs[i].E();
 		//if(rhs[i].phi() < 0) 
 		//	_phi += rhs[i].phi()+2*acos(-1);
@@ -152,8 +162,41 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta,0,0);
+	_mu.SetEntry(_phi,1,0);
+	_mu.SetEntry(_t,2,0);
 	_pi = 0;
 	_update_mom();
+	
+	_cov = Matrix(3,3);
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+	//energy-weighted rh cov
+	for(int i = 0; i < _nRHs; i++){
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].t() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+
+
+		norm += _rhs[i].E();		
+
+		_cov.add(cov_entry);	
+
+	}
+	_cov.mult(_cov,1/norm);	
 
 }
 
@@ -171,13 +214,13 @@ Jet::Jet(const vector<Jet>& jets){
 	_px = 0;
 	_py = 0;
 	_pz = 0;
-	for(int i = 0; i < _nRHs; i++){
-		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
-		_px += pt*cos(_rhs[i].phi());
-		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*sinh(_rhs[i].eta());
+	for(int i = 0; i < jets.size(); i++){
+		//pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
+		_px += jets[i].px();//pt*cos(_rhs[i].phi());
+		_py += jets[i].py();//pt*sin(_rhs[i].phi());
+		_pz += jets[i].pz();//pt*sinh(_rhs[i].eta());
 		
-		_E += _rhs[i].E();
+		_E +=  jets[i].E();
 
 
 	}
@@ -187,26 +230,74 @@ Jet::Jet(const vector<Jet>& jets){
 	_ensure_valid_rap_phi();
 	_set_time();
 	
-	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta,0,0);
+	_mu.SetEntry(_phi,1,0);
+	_mu.SetEntry(_t,2,0);
 	_pi = 0;
 	_update_mom();
+	
+	_cov = Matrix(3,3);
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+	double norm = 0;
+	//energy-weighted rh cov
+	for(int i = 0; i < _nRHs; i++){
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].t() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+
+
+		norm += _rhs[i].E();		
+
+		_cov.add(cov_entry);	
+
+	}
+	_cov.mult(_cov,1/norm);	
 }
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
 //no weighting yet because if this is the only component, weight (ie pi) should be 1
-Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx){
+Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
 	_eta =  mu.at(0,0);
 	_phi =  mu.at(1,0);
 	_t = mu.at(2,0);
-	//0 mass hypothesis default sets four vector
-	double pt = E/cosh(_eta);
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	
+	//get x, y, z from eta, phi
+	double x = detR*cos(_phi);
+	double y = detR*sin(_phi);
+	double theta = 2*atan2(1,exp(_eta));
+	double z = detR/tan(theta);
+
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = x - _vtx.at(0);
+	double dy = y - _vtx.at(1);
+	double dz = z - _vtx.at(2);
+	//theta is calculated between beamline (z-dir) and x-y vector	
+	double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(p_theta/2));
+	double p_phi = atan2(dy, dx);
+	//double pt = _E*sin(theta); //mass = 0
+	double pt = _E/cosh(p_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
@@ -224,7 +315,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_update_mom();
 }
 
-Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
+Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
@@ -233,11 +324,26 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
 	_eta = params["mean"].at(0,0);
 	_phi = params["mean"].at(1,0);
 	_t =   params["mean"].at(2,0);
-	//0 mass hypothesis default sets four vector
-	double pt = E/cosh(_eta);
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	//get x, y, z from eta, phi
+	double x = detR*cos(_phi);
+	double y = detR*sin(_phi);
+	double theta = 2*atan2(1,exp(_eta));
+	double z = detR/tan(theta);
+
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = x - _vtx.at(0);
+	double dy = y - _vtx.at(1);
+	double dz = z - _vtx.at(2);
+	//theta is calculated between beamline (z-dir) and x-y vector	
+	double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(p_theta/2));
+	double p_phi = atan2(dy, dx);
+	//double pt = _E*sin(theta); //mass = 0
+	double pt = _E/cosh(p_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
@@ -266,7 +372,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
 }
 
 
-Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
+Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
 	
@@ -319,10 +425,21 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 		norm += _rhs[i].E();
 
 	
-		pt = _rhs[i].E()/cosh(_rhs[i].eta()); //consistent with mass = 0
-		_px += pt*cos(_rhs[i].phi());
-		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*sinh(_rhs[i].eta());
+		//calculate momentum vector from PV
+		//centered at PV
+		double dx = x - _vtx.at(0);
+		double dy = y - _vtx.at(1);
+		double dz = z - _vtx.at(2);
+		//theta is calculated between beamline (z-dir) and x-y vector	
+		double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+		double p_eta = -log(atan(p_theta/2));
+		double p_phi = atan2(dy, dx);
+		//double pt = _E*sin(theta); //mass = 0
+		pt = _E/cosh(p_eta);
+		_px = pt*cos(p_phi);
+		_py = pt*sin(p_phi);
+		_pz = pt*sinh(p_eta);
+		
 	//cout << "rh #" << i << " time " << t << " phi " << phi << " weight " << rh.w() << endl;	
 		_E += _rhs[i].E();
 
@@ -359,8 +476,8 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 
 	_update_mom();
 	_mass = mass();
-
 	_mu.SetEntry(_t,2,0);
+	
 	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	//energy-weighted rh cov
 	for(int i = 0; i < _nRHs; i++){
