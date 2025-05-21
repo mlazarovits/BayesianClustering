@@ -56,7 +56,7 @@ void BHCJetSkimmer::Skim(){
 		//event level selection
 		//at least 1 gen jet
 		_base->GetEntry(i);
-		if(_base->Jet_genNJet < 1) continue;
+		//if(_base->Jet_genNJet < 1) continue;
 		//at least 1 top jet
 		int ngenpart = _base->genpart_ngenpart;
 		int ntop = count(_base->genpart_id->begin(), _base->genpart_id->end(), 6);
@@ -68,10 +68,10 @@ void BHCJetSkimmer::Skim(){
 		nW += count(_base->genpart_id->begin(), _base->genpart_id->end(), -24);
 		if(nW < 1) continue;
 		
-		//at least 1 b	
-		int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
-		nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
-		if(nb < 1) continue;
+		////at least 1 b	
+		//int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
+		//nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
+		//if(nb < 1) continue;
 	
 		//reject fully leptonic W decays - later may want to turn off to look at just displaced b decays
 		int nW_lep = 0;	
