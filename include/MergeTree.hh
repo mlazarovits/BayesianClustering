@@ -176,7 +176,7 @@ class MergeTree : BaseTree{
 			//cout << "original points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
-			if(_verb > 1){ cout << "original pts " << endl; newpts->Print();}
+			if(_verb > 1){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 
 			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
