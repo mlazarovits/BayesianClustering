@@ -296,15 +296,18 @@ class BasePDFMixture : public BasePDF{
 		//add theta projection
 		bool ProjectTheta(){
 			m_data->AngleToPlaneProject(0);
+			bool dataInf = m_data->HasInf(0);
+			bool measErrInf = false;
 			//project the lamStar measurement error too
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
 			for(int n = 0; n < m_n; n++){
-				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) return true;
+				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) measErrInf = true;
 				double etaSig = (tan(m_data->at(n).at(0) + _cell) - tan(m_data->at(n).at(0) - _cell))/2.;
 				_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
 			}
-			return false;
+			measErrInf = false;
+			return dataInf || measErrInf;
 		}
 		void UnprojectTheta(){
 			m_data->PlaneToAngleProject(0);
@@ -312,15 +315,18 @@ class BasePDFMixture : public BasePDF{
 	
 		bool ProjectPhi(){
 			m_data->AngleToPlaneProject(1);
+			bool dataInf = m_data->HasInf(1);
+			bool measErrInf = false;
 			//project the lamStar measurement error too
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
 			for(int n = 0; n < m_n; n++){
-				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) return true;
+				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) measErrInf = true;
 				double phiSig = (tan(m_data->at(n).at(1) + _cell) - tan(m_data->at(n).at(1) - _cell))/2.;
 				_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
 			}
-			return false;
+			measErrInf = false;
+			return dataInf || measErrInf;
 		}
 		void UnprojectPhi(){
 			m_data->PlaneToAngleProject(1);
