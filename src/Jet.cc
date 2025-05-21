@@ -57,22 +57,28 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 	
-	_vtx = vtx;
+	_vtx = vtx; //vtx = (x,y,z)
 
 	_E = rh.E();
 	_eta = rh.eta();
 	_phi = rh.phi();
 	_t = rh.t();
 
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = rh.x() - _vtx.at(0);
+	double dy = rh.y() - _vtx.at(1);
+	double dz = rh.z() - _vtx.at(2);
 	//theta is calculated between beamline (z-dir) and x-y vector	
-	//centered at (0,0,0)
-	double theta = atan2( sqrt(rh.x()*rh.x() + rh.y()*rh.y()), rh.z() );
+	double theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(theta/2));
+	double p_phi = atan2(dy, dx);
 	//double pt = _E*sin(theta); //mass = 0
-	double pt = _E/cosh(_eta);
+	double pt = _E/cosh(p_eta);
 
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 	_kt2 = _px*_px + _py*_py; 		
 	_mass = mass();
 
@@ -83,6 +89,9 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu.SetEntry(rh.eta(),0,0);
+	_mu.SetEntry(rh.phi(),1,0);
+	_mu.SetEntry(rh.t(),2,0);
 	_pi = 0;
 	_update_mom();
 }
@@ -104,16 +113,17 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 
 	_eta = 0;
 	_phi = 0;
+	_t = 0;
 
 	_vtx = vtx;
 	double phi, eta;
 	double norm = 0;
 	for(int i = 0; i < _nRHs; i++){		
+		//for momentum vector centered at PV
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
-		//centered at (0,0,0)
-		x = rhs[i].x();// - _vtx.at(0);
-		y = rhs[i].y();// - _vtx.at(1);
-		z = rhs[i].z();// - _vtx.at(2);
+		x = rhs[i].x() - _vtx.at(0);
+		y = rhs[i].y() - _vtx.at(1);
+		z = rhs[i].z() - _vtx.at(2);
 		theta = atan2( sqrt(x*x + y*y), z );
 		phi = atan2(y, x);
 		eta = -log(tan(theta/2.)); 
@@ -127,12 +137,14 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		
 		_E += rhs[i].E();
 
-		_eta += rhs[i].eta();
+		//eta, phi centered at (0,0,0)
+		_eta += rhs[i].eta()*rhs[i].E();
 		//if(rhs[i].phi() < 0) 
 		//	_phi += rhs[i].phi()+2*acos(-1);
 		//else
-		_phi += rhs[i].phi();
-		norm += 1.;//rhs[i].GetWeight();
+		_phi += rhs[i].phi()*rhs[i].E();
+		
+		norm += rhs[i].E();
 	}
 	
 	_eta /= norm;
@@ -150,8 +162,41 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta,0,0);
+	_mu.SetEntry(_phi,1,0);
+	_mu.SetEntry(_t,2,0);
 	_pi = 0;
 	_update_mom();
+	
+	_cov = Matrix(3,3);
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+	//energy-weighted rh cov
+	for(int i = 0; i < _nRHs; i++){
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].t() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+
+
+		norm += _rhs[i].E();		
+
+		_cov.add(cov_entry);	
+
+	}
+	_cov.mult(_cov,1/norm);	
 
 }
 
@@ -169,13 +214,13 @@ Jet::Jet(const vector<Jet>& jets){
 	_px = 0;
 	_py = 0;
 	_pz = 0;
-	for(int i = 0; i < _nRHs; i++){
-		pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
-		_px += pt*cos(_rhs[i].phi());
-		_py += pt*sin(_rhs[i].phi());
-		_pz += pt*sinh(_rhs[i].eta());
+	for(int i = 0; i < jets.size(); i++){
+		//pt = _rhs[i].E()*cosh(_rhs[i].eta()); //consistent with mass = 0
+		_px += jets[i].px();//pt*cos(_rhs[i].phi());
+		_py += jets[i].py();//pt*sin(_rhs[i].phi());
+		_pz += jets[i].pz();//pt*sinh(_rhs[i].eta());
 		
-		_E += _rhs[i].E();
+		_E +=  jets[i].E();
 
 
 	}
@@ -185,26 +230,74 @@ Jet::Jet(const vector<Jet>& jets){
 	_ensure_valid_rap_phi();
 	_set_time();
 	
-	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta,0,0);
+	_mu.SetEntry(_phi,1,0);
+	_mu.SetEntry(_t,2,0);
 	_pi = 0;
 	_update_mom();
+	
+	_cov = Matrix(3,3);
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+	double norm = 0;
+	//energy-weighted rh cov
+	for(int i = 0; i < _nRHs; i++){
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].t() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+
+
+		norm += _rhs[i].E();		
+
+		_cov.add(cov_entry);	
+
+	}
+	_cov.mult(_cov,1/norm);	
 }
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
 //no weighting yet because if this is the only component, weight (ie pi) should be 1
-Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx){
+Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
 	_eta =  mu.at(0,0);
 	_phi =  mu.at(1,0);
 	_t = mu.at(2,0);
-	//0 mass hypothesis default sets four vector
-	double pt = E/cosh(_eta);
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	
+	//get x, y, z from eta, phi
+	double x = detR*cos(_phi);
+	double y = detR*sin(_phi);
+	double theta = 2*atan2(1,exp(_eta));
+	double z = detR/tan(theta);
+
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = x - _vtx.at(0);
+	double dy = y - _vtx.at(1);
+	double dz = z - _vtx.at(2);
+	//theta is calculated between beamline (z-dir) and x-y vector	
+	double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(p_theta/2));
+	double p_phi = atan2(dy, dx);
+	//double pt = _E*sin(theta); //mass = 0
+	double pt = _E/cosh(p_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
@@ -222,7 +315,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_update_mom();
 }
 
-Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
+Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
@@ -231,11 +324,26 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
 	_eta = params["mean"].at(0,0);
 	_phi = params["mean"].at(1,0);
 	_t =   params["mean"].at(2,0);
-	//0 mass hypothesis default sets four vector
-	double pt = E/cosh(_eta);
-	_px = pt*cos(_phi);
-	_py = pt*sin(_phi);
-	_pz = pt*sinh(_eta);
+	//get x, y, z from eta, phi
+	double x = detR*cos(_phi);
+	double y = detR*sin(_phi);
+	double theta = 2*atan2(1,exp(_eta));
+	double z = detR/tan(theta);
+
+	//calculate momentum vector from PV
+	//centered at PV
+	double dx = x - _vtx.at(0);
+	double dy = y - _vtx.at(1);
+	double dz = z - _vtx.at(2);
+	//theta is calculated between beamline (z-dir) and x-y vector	
+	double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+	double p_eta = -log(atan(p_theta/2));
+	double p_phi = atan2(dy, dx);
+	//double pt = _E*sin(theta); //mass = 0
+	double pt = _E/cosh(p_eta);
+	_px = pt*cos(p_phi);
+	_py = pt*sin(p_phi);
+	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
 	_mass = mass();
@@ -264,7 +372,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx){
 }
 
 
-Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
+Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
 	
@@ -296,81 +404,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129){
 	_eta = 0;
 	_phi = 0;
 	_t = 0;
-
-	PointCollection means;
-	for(int k = 0; k < nsubcl; k++){
-		auto params = model->GetLHPosteriorParameters(k);
-		Ek = norms[k]/gev;
-		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
-		_constituents.push_back(subcl);
-		
-		//set momentum from subclusters
-		_px += subcl.px();
-		_py += subcl.py();
-		_pz += subcl.pz();
-	//	_E += subcl.E(); //set from rhs
-	
-		//_mu.add(params["mean"]);
-		BayesPoint pt(3);
-		pt.SetValue(subcl.eta(),0);	
-		pt.SetValue(subcl.phi(),1);	
-		pt.SetValue(subcl.time(),2);	
-cout << "subcl #" << k << " center" << endl; pt.Print();
-		means += pt;
-		//_eta += subcl.eta();
-		//_phi += subcl.phi();
-		//_t += subcl.time();
-
-		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
-	}
-	BayesPoint mean = means.mean();
-	mean.SetValue(means.CircularMean(1),1);
-	_mu = Matrix(mean);
-	_eta = mean.at(0);
-	_phi = mean.at(1);
-	//put phi on 02pi
-	//if pt is negative
-	double pi = acos(-1);
-	if(_phi < 0){
-		_phi = _phi + 2*pi;
-	}
-	//if pt is geq 2*pi
-	else if(_phi >= 2*pi) _phi = _phi - 2*pi;
-	_mu.SetEntry(_phi,1,0);
-	_t = mean.at(2);
-
-	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
-	for(int k = 0; k < nsubcl; k++){
-		auto params = model->GetLikelihoodParameters(k);
-		//do point-wise covariance with mean set by subclusters
-		deta = params["mean"].at(0,0) - _mu.at(0,0);	
-		dphi = params["mean"].at(1,0) - _mu.at(1,0);	
-		dphi = acos(cos(dphi));
-		dtime = params["mean"].at(2,0) - _mu.at(2,0);
-	
-		Matrix cov_entry = Matrix(3,3);
-		cov_entry.SetEntry(deta*deta,0,0);
-		cov_entry.SetEntry(deta*dphi,1,0);
-		cov_entry.SetEntry(deta*dtime,2,0);
-		cov_entry.SetEntry(dphi*deta,0,1);
-		cov_entry.SetEntry(dphi*dphi,1,1);
-		cov_entry.SetEntry(dtime*dphi,2,1);
-		cov_entry.SetEntry(deta*dtime,0,2);
-		cov_entry.SetEntry(dphi*dtime,1,2);
-		cov_entry.SetEntry(dtime*dtime,2,2);
-		cov_entry.SetEntry(dtime*dtime,2,2);
-		
-
-		_cov.add(cov_entry);	
-
-	}
-	_cov.mult(_cov,1/double(nsubcl));	
-	//cout << "jet from subcls px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << (Et+pzt)*(Et-pzt)-(pxt*pxt + pyt*pyt) << endl;
-
+	double norm = 0;
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
-		//transform eta, phi to x, y, z
 		eta = rh.at(0);
 		phi = rh.at(1);
 		t = rh.at(2);
@@ -381,11 +418,28 @@ cout << "subcl #" << k << " center" << endl; pt.Print();
 		//push back as jet point to _rhs	
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
+		
+		//transform eta, phi to x, y, z
+		_eta += _rhs[i].E()*_rhs[i].eta();
+		_phi += _rhs[i].E()*_rhs[i].phi();
+		norm += _rhs[i].E();
+
 	
-	//	pt = _rhs[i].E()/cosh(_rhs[i].eta()); //consistent with mass = 0
-	//	_px += pt*cos(_rhs[i].phi());
-	//	_py += pt*sin(_rhs[i].phi());
-	//	_pz += pt*sinh(_rhs[i].eta());
+		//calculate momentum vector from PV
+		//centered at PV
+		double dx = x - _vtx.at(0);
+		double dy = y - _vtx.at(1);
+		double dz = z - _vtx.at(2);
+		//theta is calculated between beamline (z-dir) and x-y vector	
+		double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+		double p_eta = -log(atan(p_theta/2));
+		double p_phi = atan2(dy, dx);
+		//double pt = _E*sin(theta); //mass = 0
+		pt = _E/cosh(p_eta);
+		_px = pt*cos(p_phi);
+		_py = pt*sin(p_phi);
+		_pz = pt*sinh(p_eta);
+		
 	//cout << "rh #" << i << " time " << t << " phi " << phi << " weight " << rh.w() << endl;	
 		_E += _rhs[i].E();
 
@@ -400,23 +454,82 @@ cout << "subcl #" << k << " center" << endl; pt.Print();
 		_pi += w;
 
 	}
-
-
+	_eta /= norm;
+	_phi /= norm;
+	//put phi on 02pi
+	//if pt is negative
+	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta,0,0);
+	double pi = acos(-1);
+	if(_phi < 0){
+		_phi = _phi + 2*pi;
+	}
+	//if pt is geq 2*pi
+	else if(_phi >= 2*pi) _phi = _phi - 2*pi;
+	_mu.SetEntry(_phi,1,0);
+	
 	_kt2 = _px*_px + _py*_py;
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
 
-
 	_update_mom();
 	_mass = mass();
+	_mu.SetEntry(_t,2,0);
+	
+	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+	//energy-weighted rh cov
+	for(int i = 0; i < _nRHs; i++){
+		deta = _rhs[i].eta() - _mu.at(0,0);	
+		dphi = _rhs[i].phi() - _mu.at(1,0);	
+		dphi = acos(cos(dphi));
+		dtime = _rhs[i].t() - _mu.at(2,0);
+	
+		Matrix cov_entry = Matrix(3,3);
+		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+		
 
-	//double kt2 = pxt*pxt + pyt*pyt;
-	//double m2t = (Et+pzt)*(Et-pzt)-kt2; 
-	//mt = m2t < 0.0 ? -sqrt(-m2t) : sqrt(m2t); 
-	//cout << "jet from rh px " << _px << " py " << _py << " pz " << _pz << " E " << _E << " m2 " << m2() << " mass " << _mass << endl;
-	//cout << "jet from GMM px " << pxt << " py " << pyt << " pz " << pzt << " E " << Et << " m2 " << m2t << " mass " << mt << "\n" << endl;
+		_cov.add(cov_entry);	
+
+	}
+	_cov.mult(_cov,1/norm);	
+	
+	//set constituents (subclusters)
+	for(int k = 0; k < nsubcl; k++){
+		auto params = model->GetLHPosteriorParameters(k);
+		Ek = norms[k]/gev;
+		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
+		_constituents.push_back(subcl);
+		
+		//set momentum from subclusters
+		//_px += subcl.px();
+		//_py += subcl.py();
+		//_pz += subcl.pz();
+	//	_E += subcl.E(); //set from rhs
+	
+		//_mu.add(params["mean"]);
+		//BayesPoint pt(3);
+		//pt.SetValue(subcl.eta(),0);	
+		//pt.SetValue(subcl.phi(),1);	
+		//pt.SetValue(subcl.time(),2);	
+		
+		//means += pt;
+		//_eta += subcl.eta();
+		//_phi += subcl.phi();
+		//_t += subcl.time();
+
+		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
+	}
 
 }
 

@@ -123,6 +123,8 @@ struct RecoParticle;
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
 
+		void SetRParam(double r){ cout << "Setting R = " << r << " for gen and reco jets" << endl; _Rparam = r; _jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); }
+
 
 	protected:
 		void RecordMomInfo(Pythia8::Particle particle){

@@ -416,7 +416,8 @@ class BHCJetSkimmer{
 						//also include rotundity
 						dr = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
 						double rot = Rotundity(jetcov2D);
-						_procCats[p].hists1D[pt][147]->Fill(rot);
+						_procCats[p].hists1D[pt][148]->Fill(rot);
+					
 						cout << "calc jet size for BHC jet " << j << ": " << dr << endl;
 						nsubs = _predJets[j].GetNConstituents();
 						_procCats[p].hists1D[pt][1]->Fill(nsubs);
@@ -440,6 +441,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][51]->Fill(cov.at(0,2));	
 						_procCats[p].hists1D[pt][52]->Fill(cov.at(2,1));	
 						
+
 						_procCats[p].hists2D[pt][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
 						_procCats[p].hists2D[pt][8]->Fill(_predJets[j].mass(), dr);
 						_procCats[p].hists2D[pt][10]->Fill(_predJets[j].pt(), dr);
@@ -668,6 +670,7 @@ class BHCJetSkimmer{
 						//define jet size as length of major axis
 						//also include rotundity
 						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						cout << "calc jet size for reco AK4 jet " << j << ": " << jetsize << endl;
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
 						if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
@@ -678,7 +681,6 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][20]->Fill(_recojets[j].e());
 						_procCats[p].hists1D[pt][21]->Fill(_recojets[j].pt());
 						_procCats[p].hists1D[pt][22]->Fill(_recojets[j].mass_subcls());
-cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->GetEntries() << " entries - filled with " << _recojets[j].mass_subcls() << endl;
 						_procCats[p].hists1D[pt][138]->Fill(_recojets[j].time());
 						_procCats[p].hists1D[pt][139]->Fill(_recojets[j].eta());
 						_procCats[p].hists1D[pt][140]->Fill(_recojets[j].phi());
@@ -1495,6 +1497,8 @@ cout << "mass hist for pt " << pt << " has " << _procCats[p].hists1D[pt][22]->Ge
 		TH1D* recoAK4Jet_rotundity = new TH1D("recoAK4Jet_rotundity","recoAK4Jet_rotundity",50,0.4,1.1);
 		//147 - BHC rotundity	
 		TH1D* BHCJet_rotundity = new TH1D("BHCJet_rotundity","BHCJet_rotundity",50,0.4,1.1);
+		//148 - BHC jet n rhs
+		TH1D* BHCJet_nRhs = new TH1D("BHCJet_nRhs","BHCJet_nRhs",300,0,300);
 
 
 		//2D plots
