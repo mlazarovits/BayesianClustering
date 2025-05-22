@@ -1219,7 +1219,7 @@ class BHCJetSkimmer{
 		//8 - bhc jet pt
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,500);
 		//9 - bhc jet mass
-		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,180);
+		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,250);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
 		//11 - # pred jets - # reco jets
@@ -1246,7 +1246,7 @@ class BHCJetSkimmer{
 		//21 - reco AK4 jet pt
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
 		//22 - reco AK4 jet mass
-		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,180);
+		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,250);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
 		TH1D* jetGenE_sigmaDeltaPt_recoGen = new TH1D("jetGenE_sigmaDeltaPt_recoAK4Gen","jetGenE_sigmaDeltaPtOvJetGenE_recoAK4Gen",4,&xbins_recoGenPt[0]);
 		//24 - # reco jets - # gen jets
@@ -1426,7 +1426,7 @@ class BHCJetSkimmer{
 		//111 - gen particle pt		
 		TH1D* genParticle_pt = new TH1D("genParticle_pt","genParticle_pt",25,0,500);
 		//112 - gen particle mass
-		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,200);
+		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,250);
 		//113 - gen particle energy
 		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",50,0,500);
 		//114 - gen AK4 jet eta at detector
@@ -1577,13 +1577,13 @@ class BHCJetSkimmer{
 		//36 - # subclusters vs # constituents in gen jets for gen-matched AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_nGenConstituents = new TH2D("recoAK4Jet_nSubclustersJet_nGenConstituents","recoAK4Jet_nSubclustersJet_nGenConstituents;nSubclustersJet;nGenConstituents",30,0,30,100,0,100);
 		//37 - # subclusters vs jet mass for reco AK4 jets
-		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
+		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
 		//38 - # subclusters vs jet energy for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_energy = new TH2D("recoAK4Jet_nSubclustersJet_energy","recoAK4Jet_nSubclustersJet_energy;nSubclustersJet;energy",30,0,30,50,0,2000);
 		//39 - # subclusters/evt vs # subclusters/jet for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersEvt_nJet = new TH2D("recoAK4Jet_nSubclustersEvt_nJet","recoAK4Jet_nSubclustersEvt_nJet;nSubclustersEvt;nJet",30,0,30,10,0,10);
 		//40 - # subclusters vs jet mass for BHC jets
-		TH2D* BHCJet_nSubclustersJet_mass = new TH2D("BHCJet_nSubclustersJet_mass","BHCJet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,180);
+		TH2D* BHCJet_nSubclustersJet_mass = new TH2D("BHCJet_nSubclustersJet_mass","BHCJet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
 		//41 - # subclusters vs jet energy for BHC jets
 		TH2D* BHCJet_nSubclustersJet_energy = new TH2D("BHCJet_nSubclustersJet_energy","BHCJet_nSubclustersJet_energy;nSubclusters;energy",30,0,30,50,0,2000);
 		//42 - # subclusters/evt vs # subclusters/jet for BHC jets
@@ -1591,9 +1591,9 @@ class BHCJetSkimmer{
 		//43 - # subclusters in reco AK4 jet and # subclusters in dR matched BHC jet (if matching can be 1:1 ie # BHC jets = # reco AK4 jets)
 		TH2D* recoAK4JetnSubclustersJet_BHCJetnSubclustersJet = new TH2D("recoAK4JetnSubclustersJet_BHCJetnSubclustersJet","recoAK4JetnSubclustersJet_BHCJetnSubclustersJet;recoAK4JetnSubclustersJet;BHCJetnSubclustersJet",30,0,30,30,0,30);
 		//44 - reco AK4 jet energy vs jet mass
-		TH2D* recoAK4Jet_jetEnergy_jetMass = new TH2D("recoAK4Jet_jetEnergy_jetMass","recoAK4Jet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,180);
+		TH2D* recoAK4Jet_jetEnergy_jetMass = new TH2D("recoAK4Jet_jetEnergy_jetMass","recoAK4Jet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,250);
 		//45 - BHC jet energy vs mass
-		TH2D* BHCJet_jetEnergy_jetMass = new TH2D("BHCJet_jetEnergy_jetMass","BHCJet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,180);
+		TH2D* BHCJet_jetEnergy_jetMass = new TH2D("BHCJet_jetEnergy_jetMass","BHCJet_jetEnergy_jetMass;jetEnergy;jetMass",50,0,2000,50,0,250);
 		//46 - reco AK4 jets # subclusters vs jet size
 		TH2D* recoAK4Jet_nSubclusters_jetSize = new TH2D("recoAK4Jet_nSubclustersJet_jetSize","recoAK4Jet_nSubclustersJet_jetSize;nSubclustersJet;jetsize",30,0,30,50,0,2);
 		//47 - reco AK4 jet energy vs jet size
