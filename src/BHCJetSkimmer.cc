@@ -127,8 +127,7 @@ void BHCJetSkimmer::Skim(){
 			for(int k = 0; k < gmm->GetNClusters(); k++){
 				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
 				_recojets[j].AddConstituent(subcl);
-				//auto params = gmm->GetDataStatistics(k);
-				auto params = gmm->GetLHPosteriorParameters(k);
+				auto params = gmm->GetDataStatistics(k);
 				Matrix mean = params["mean"];
 				Matrix cov = params["cov"];
 				cout << "cluster #" << k << endl;
