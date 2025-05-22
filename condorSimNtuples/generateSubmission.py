@@ -95,7 +95,7 @@ def main():
     parser.add_argument('--pileup','-pu',help="run pileup process",action='store_true')
     parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = 0.26)
-    parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.1)',default = 0.1)
+    parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.5)',default = 0.5)
     parser.add_argument('--rParam',help='set R parameter for AK reco and gen jets (default = 0.4)',default = 0.4)
     args = parser.parse_args()
     
