@@ -279,6 +279,8 @@ class PointCollection{
 			//avg.SetValue(Centroid(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - avg.at(d),d);
+				//round to 0
+				if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
 			}
 		}
 		return avg;
@@ -304,6 +306,8 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - t.at(d),d);
+				//round to 0
+				if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
 			}
 		}
 
@@ -312,6 +316,8 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - t[d],d);
+				//round to 0
+				if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
 			}
 		}
 
@@ -320,14 +326,18 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - t,d);
-			}
-		}
+				//round to 0
+				if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
+			}	
+		}        	
 
 	}
 	
 	void Translate(double t, int d){
 		for(int i = 0; i < (int)_pts.size(); i++){
 			_pts[i].SetValue(_pts[i].at(d) - t,d);
+			//round to 0
+			if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
 		}
 
 	}
@@ -357,8 +367,10 @@ class PointCollection{
 				}
 //if(d == 1 && _pts[i].w() > 45) cout << "new value of pt " << _pts[i].at(d) << endl;
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
-		}
-
+			//round to 0
+			if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
+                	if(fabs(_pts[i].at(d)) - 2*acos(-1) < 1e-10) _pts[i].SetValue(0,d);	
+		}	
 	}
 
 
