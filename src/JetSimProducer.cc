@@ -130,7 +130,6 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 	}
 }	
 
-
 void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 	double eta, phi, px, py, pz, pt;
 	genjets.clear();
@@ -159,6 +158,69 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		if(_base->Jet_genEnergy->at(j) < _Emin_gen) continue;
 		//multiplicity requirement
 		if(_base->Jet_genNConstituents->at(j) < _nConstsmin) continue;		
+		//parton-matching requirement - also serves as lepton disambiguation
+		//double mindr = 999;
+		//double dr = 0;
+		//int bestidx = -1;
+		//for(int g = 0; g < _base->genpart_ngenpart; g++){
+		//	dr = dR(_base->genpart_eta->at(g), _base->genpart_phi->at(g), eta, phi);
+		//	if(dr < mindr){
+		//		mindr = dr;
+		//		bestidx = g;
+		//	}
+		//}
+		////set some min dR
+		//if(mindr > 0.1) continue;
+		////set some E ratio window
+		//double Eratio = _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx);
+		//if(Eratio > 1.5 || Eratio < 0.5) continue;
+		//cout << "\ngen jet #" << j << " has best gen match (id) " << _base->genpart_id->at(bestidx) << " with dr " << mindr << " and jet/particle energy " << _base->Jet_genEnergy->at(j)/_base->genpart_energy->at(bestidx) << " with pt " << _base->Jet_genPt->at(j) << " and # constituents " << _base->Jet_genNConstituents->at(j) << endl;
+		//int genid = fabs(_base->genpart_id->at(bestidx));
+		//if(find(lepIds.begin(), lepIds.end(), genid) != lepIds.end()) continue; //can't match to gen lepton
+
+		px = pt*cos(phi);
+		py = pt*sin(phi);
+		pz = pt*sinh(eta);
+
+		Jet jet(px, py,
+		        pz, _base->Jet_genEnergy->at(j));
+		//check that mass is the same
+		//cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
+		jet.SetVertex(vtx);
+		jet.SetUserIdx(j);
+		//set # constituents
+		genjets.push_back(jet);
+	}
+}
+
+void JetSimProducer::GetGenFatJets(vector<Jet>& genjets, int evt){
+	double eta, phi, px, py, pz, pt;
+	genjets.clear();
+	if(evt > _nEvts) return;
+
+	_base->GetEntry(evt);
+	int nJets = _base->FatJet_genNFatJet;
+	
+	BayesPoint vtx = BayesPoint(3);
+	vtx.SetValue(_base->PV_x,0);
+	vtx.SetValue(_base->PV_y,1);
+	vtx.SetValue(_base->PV_z,2);
+	//make weights - E/e_avg
+	vector<double> ws;
+	for(int j = 0; j < nJets; j++){
+		/////TOF from 0 to rh location
+		///drh = _base->ECALRecHit_0TOF->at(r);
+		/////TOF from PV to rh location
+		///dpv = _base->ECALRecHit_pvTOF->at(r); 
+		///timecorr = drh - dpv;
+
+		pt = _base->FatJet_genPt->at(j);
+		phi = _base->FatJet_genPhi->at(j);
+		eta = _base->FatJet_genEta->at(j);
+		if(pt < _ptmin_gen) continue;
+		if(_base->FatJet_genEnergy->at(j) < _Emin_gen) continue;
+		//multiplicity requirement
+		if(_base->FatJet_genNConstituents->at(j) < _nConstsmin) continue;		
 		//parton-matching requirement - also serves as lepton disambiguation
 		//double mindr = 999;
 		//double dr = 0;
