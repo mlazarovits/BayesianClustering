@@ -194,12 +194,14 @@ struct RecoParticle;
 		//vector<JetPoint> _cal_rhs; //ecal rec hits
 		vector<Jet> _cal_rhs; //ecal rec hits
 		vector<fastjet::PseudoJet>  _jets; //gen outputs from fastjet
+		vector<fastjet::PseudoJet>  _fatjets; //gen outputs from fastjet for fat jets
 		vector<fastjet::PseudoJet>  _jetsReco; //reco outputs from fastjet
 		vector<fastjet::PseudoJet>  _genparts; //gen particles
 		vector<int> _genpartids; //genpart ids
-		int _njets, _njetsReco, _ngenparts; //# of objects
+		int _njets, _nfatjets, _njetsReco, _ngenparts; //# of objects
 		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
-		double _Rparam;
+		fastjet::JetDefinition _fatjetdef; //fastjet clustering definition for fat jets 
+		double _Rparam; //default Rparam for default jets (not fat jets)
 		fastjet::Strategy _strategy; //fastjet clustering strategy
 		fastjet::RecombinationScheme _recomb; //fastjet recombination strategy
 
@@ -225,6 +227,7 @@ struct RecoParticle;
 
 		//cluster sequences for gen and reco jets
 		fastjet::ClusterSequence _gencs;
+		fastjet::ClusterSequence _fatgencs;
 		fastjet::ClusterSequence _recocs;
 		
 
@@ -240,6 +243,13 @@ struct RecoParticle;
 		vector<int> _jgnparts;
 		//indices of gen particles in gen jets
 		vector<vector<int>> _jgpartIdxs;
+		//gen fat jets 
+		vector<double> _jgfateta, _jgfatphi, _jgfatenergy, _jgfatpt, _jgfatmass, _jgfatpz;
+		//# particles in gen fat jets
+		vector<int> _jgfatnparts;
+		//indices of gen particles in gen fat jets
+		vector<vector<int>> _jgfatpartIdxs;
+		
 		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep, _topPt;
 		vector<int> _topDecayId;

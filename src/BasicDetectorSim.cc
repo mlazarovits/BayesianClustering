@@ -54,6 +54,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
+	_fatjetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
 	_genpart_minpt = 0;
 
 	//default PV is detector center
@@ -112,6 +113,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
 	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
+	_fatjetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
 	_genpart_minpt = 0;
 
 	//default PV is detector center
@@ -188,7 +190,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	Pythia8::Event sumEvent; //one object where individual events are collected
 	
 	//declare fjinput/output containers
-	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
+	vector<fastjet::PseudoJet> fjinputs, fjoutputs, fjoutputs_fat;
 	
 	if(_evti == _evtj){
 		_evti = 0;
@@ -353,6 +355,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
 		//sort jets by pt
 		_jets = sorted_by_pt(_jets);
+		
+		//running fastjet on gen particles, no shower, etc.
+		_fatgencs = fastjet::ClusterSequence(fjinputs, _fatjetdef);
+		//get jets - min 5 pt
+		fjoutputs_fat = _fatgencs.inclusive_jets(5.);
+		for(int j = 0; j < fjoutputs_fat.size(); j++) _fatjets.push_back(fjoutputs_fat[j]);
+		//sort jets by pt
+		_fatjets = sorted_by_pt(_fatjets);
 
 		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
 		//Fill gen jet information
@@ -513,7 +523,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	
 		fjinputs.resize(0);
 		fjoutputs.clear();
+		fjoutputs_fat.clear();
 		fjoutputs.resize(0);
+		fjoutputs_fat.resize(0);
 		//cout << endl;
 	}
 //cout << "nhad " << nhad << " nlep " << nlep << " nsemilep " << nsemilep << endl;
@@ -1055,10 +1067,6 @@ void BasicDetectorSim::FillGenJets(){
 	_njets = _jets.size();
 	vector<fastjet::PseudoJet> consts;
 	for(auto jet : _jets){
-		//consts = jet.constituents();
-		//cout << "gen jet #" << njets << " eta " << jet.eta() << " phi " << jet.phi() << " E " << jet.e() << " mass " << jet.m() << " n constituents " << consts.size() << endl;
-		//for(auto c : consts)
-			//cout << "constituent eta " << c.eta() << " phi " << c.phi() << " E " << c.e() << " mass " << c.m() << endl;
 		_jgeta.push_back(jet.eta());
 		_jgphi.push_back(jet.phi());
 		_jgenergy.push_back(jet.e());
@@ -1071,6 +1079,21 @@ void BasicDetectorSim::FillGenJets(){
 		_jgpartIdxs.push_back({});
 		for(auto c : consts)
 			_jgpartIdxs[_jgpartIdxs.size()-1].push_back(c.user_index());
+	}
+	_nfatjets = _fatjets.size();
+	for(auto jet : _fatjets){
+		_jgfateta.push_back(jet.eta());
+		_jgfatphi.push_back(jet.phi());
+		_jgfatenergy.push_back(jet.e());
+		_jgfatpt.push_back(jet.pt());
+		_jgfatpz.push_back(jet.pz());
+		_jgfatmass.push_back(jet.m());
+		consts = jet.constituents();
+		_jgfatnparts.push_back((int)consts.size());
+		
+		_jgfatpartIdxs.push_back({});
+		for(auto c : consts)
+			_jgfatpartIdxs[_jgfatpartIdxs.size()-1].push_back(c.user_index());
 	}
 }
 
@@ -1182,6 +1205,17 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("Jet_genConstituentIdxs", &_jgpartIdxs)->SetTitle("Gen jet constituent indices - FastJet AK4");
 	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	
+	//gen fat jets - gen particles clustered with FJ AK4
+	_tree->Branch("FatJet_genEta", &_jgfateta)->SetTitle("Gen fat jet eta - FastFatJet AK15");
+	_tree->Branch("FatJet_genPhi", &_jgfatphi)->SetTitle("Gen fat jet phi - FastFatJet AK15");
+	_tree->Branch("FatJet_genEnergy",&_jgfatenergy)->SetTitle("Gen fat jet energy - FastFatJet AK15");
+	_tree->Branch("FatJet_genPt",&_jgfatpt)->SetTitle("Gen fat jet pt - FastFatJet AK15");
+	_tree->Branch("FatJet_genPz",&_jgfatpz)->SetTitle("Gen fat jet pz - FastFatJet AK15");
+	_tree->Branch("FatJet_genMass",&_jgfatmass)->SetTitle("Gen fat jet mass - FastFatJet AK15");
+	_tree->Branch("FatJet_genNFatJet",&_nfatjets)->SetTitle("Number of gen fat jets - FastFatJet AK15");
+	_tree->Branch("FatJet_genConstituentIdxs", &_jgfatpartIdxs)->SetTitle("Gen fat jet constituent indices - FastFatJet AK15");
+	_tree->Branch("FatJet_genNConstituents", &_jgfatnparts)->SetTitle("Gen fat jet n constituents - FastFatJet AK15");
+	
 	//gen top info
 	//_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
 	//_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
@@ -1239,6 +1273,7 @@ void BasicDetectorSim::_reset(){
 	_cal_rhs.clear();
 	_recops.clear();
 	_jets.clear();
+	_fatjets.clear();
 	_jetsReco.clear();
 
 	_jgeta.clear();
@@ -1252,6 +1287,17 @@ void BasicDetectorSim::_reset(){
 		j.clear();
 	_jgpartIdxs.clear();
 
+	_jgfateta.clear();
+	_jgfatphi.clear();
+	_jgfatenergy.clear();
+	_jgfatpt.clear();
+	_jgfatpz.clear();
+	_jgfatmass.clear();
+	_jgfatnparts.clear();
+	for(auto j : _jgfatpartIdxs)
+		j.clear();
+	_jgfatpartIdxs.clear();
+	
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
