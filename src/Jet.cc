@@ -405,6 +405,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_phi = 0;
 	_t = 0;
 	double norm = 0;
+	PointCollection thetapts; //for circular centroid of eta
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
@@ -419,12 +420,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
 		
-		//transform eta, phi to x, y, z
-		_eta += _rhs[i].E()*_rhs[i].eta();
-		_phi += _rhs[i].E()*_rhs[i].phi();
-		norm += _rhs[i].E();
-
-	
 		//calculate momentum vector from PV
 		//centered at PV
 		double dx = x - _vtx.at(0);
@@ -454,18 +449,12 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		_pi += w;
 
 	}
-	_eta /= norm;
-	_phi /= norm;
+	_eta = model->GetData()->Centroid(0);
+	_phi = model->GetData()->CircularCentroid(1);
 	//put phi on 02pi
 	//if pt is negative
 	_mu = Matrix(3,1);
 	_mu.SetEntry(_eta,0,0);
-	double pi = acos(-1);
-	if(_phi < 0){
-		_phi = _phi + 2*pi;
-	}
-	//if pt is geq 2*pi
-	else if(_phi >= 2*pi) _phi = _phi - 2*pi;
 	_mu.SetEntry(_phi,1,0);
 	
 	_kt2 = _px*_px + _py*_py;
@@ -473,10 +462,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
+	_mu.SetEntry(_t,2,0);
 
 	_update_mom();
 	_mass = mass();
-	_mu.SetEntry(_t,2,0);
 	
 	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
 	//energy-weighted rh cov
@@ -486,6 +475,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		dphi = acos(cos(dphi));
 		dtime = _rhs[i].t() - _mu.at(2,0);
 	
+		norm += _rhs[i].E();
 		Matrix cov_entry = Matrix(3,3);
 		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
 		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
@@ -503,6 +493,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 
 	}
 	_cov.mult(_cov,1/norm);	
+
 	
 	//set constituents (subclusters)
 	for(int k = 0; k < nsubcl; k++){

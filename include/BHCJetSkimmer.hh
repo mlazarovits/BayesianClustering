@@ -416,7 +416,8 @@ class BHCJetSkimmer{
 						if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
 
 
-						Matrix jetcov = CalcJetCovMat(_predJets[j]);
+						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
+						Matrix jetcov = _predJets[j].GetCovariance();
 						//get 2D matrix for jet size
 						Matrix jetcov2D(2,2);
 						Get2DMat(jetcov,jetcov2D);	
@@ -426,7 +427,15 @@ class BHCJetSkimmer{
 						//define jet size as length of major axis
 						//also include rotundity
 						dr = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
-						if(p != 0 && pt == 0) cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_subcls() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << dr << endl;
+						if(p != 0 && pt == 0){ 
+							cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass_subcls() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << dr << " eta var " << jetcov.at(0,0) << " phi var " << jetcov.at(1,1) << endl;
+							if(dr > 2){
+							cout << "jetcov " << endl; jetcov.Print();
+							cout << "2D jetcov" << endl; jetcov2D.Print();
+							cout << "2D eigenvals " << eigvals[1] << " " << eigvals[0] << endl;
+							}
+						}
+			
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][148]->Fill(rot);
 					
@@ -471,7 +480,6 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][129]->Fill(jet_mu.at(1,0));
 						_procCats[p].hists1D[pt][130]->Fill(jet_mu.at(2,0));
 						
-						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][145]->Fill(rhs[r].E());
 							
@@ -713,8 +721,7 @@ class BHCJetSkimmer{
 						//pt == 2 -> [0,50)
 						if(pt == 2 && _recojets[j].pt() >= pt_thresh) continue;
 	
-			cout << "pt " << pt << " reco jet pt " << _recojets[j].pt() << endl;
-						Matrix jetcov = CalcJetCovMat(_recojets[j]);
+						Matrix jetcov = _recojets[j].GetCovariance();
 						//get 2D matrix for jet size
 						Matrix jetcov2D(2,2);
 						Get2DMat(jetcov,jetcov2D);	
@@ -724,10 +731,9 @@ class BHCJetSkimmer{
 						//define jet size as length of major axis
 						//also include rotundity
 						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
-						cout << "calc jet size for reco AK4 jet " << j << ": " << jetsize << endl;
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
-						if(p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
+						if(pt == 0 && p == 0) cout << "reco jet #" << j << " phi " << _recojets[j].phi() << " eta " << _recojets[j].eta() << " energy " << _recojets[j].E() <<  " mass " << _recojets[j].mass() << " nConstituents " << _recojets[j].GetNConstituents() << " nRhs " << _recojets[j].GetNRecHits() << " pt " << _recojets[j].pt() << " jetsize " << jetsize << endl;
 						_procCats[p].hists1D[pt][19]->Fill(jetsize);
 						_procCats[p].hists1D[pt][135]->Fill(sqrt(jetcov.at(0,0)));
 						_procCats[p].hists1D[pt][136]->Fill(sqrt(jetcov.at(1,1)));
@@ -1002,38 +1008,6 @@ class BHCJetSkimmer{
 				//total cluster energy
 			}
 		}
-	
-		//use rhs - space only 
-		Matrix CalcJetCovMat(const Jet& jet){
-			Matrix recocov = Matrix(3,3);
-			vector<JetPoint> rhs = jet.GetJetPoints();
-			int nrhs = rhs.size();
-			
-			double diffeta, diffphi, difftime;
-			double wtot = 0;
-			for(int r = 0; r < nrhs; r++){
-				diffeta = rhs[r].eta() - jet.eta();
-				diffphi = rhs[r].phi() - jet.phi();
-				diffphi = acos(cos(diffphi));
-				difftime = rhs[r].t() - jet.t();					
-
-				wtot += rhs[r].E();
-
-				recocov.SetEntry( recocov.at(0,0) + rhs[r].E()*diffeta*diffeta, 0, 0 );
-				recocov.SetEntry( recocov.at(1,0) + rhs[r].E()*diffphi*diffeta, 1, 0 );
-				recocov.SetEntry( recocov.at(0,1) + rhs[r].E()*diffeta*diffphi, 0, 1 );
-				recocov.SetEntry( recocov.at(2,0) + rhs[r].E()*difftime*diffeta, 2, 0 );
-				recocov.SetEntry( recocov.at(0,2) + rhs[r].E()*diffeta*difftime, 0, 2 );
-				recocov.SetEntry( recocov.at(1,1) + rhs[r].E()*diffphi*diffphi, 1, 1 );
-				recocov.SetEntry( recocov.at(1,2) + rhs[r].E()*diffphi*difftime, 1, 2 );
-				recocov.SetEntry( recocov.at(2,1) + rhs[r].E()*difftime*diffphi, 2, 1 );
-				recocov.SetEntry( recocov.at(2,2) + rhs[r].E()*difftime*difftime, 2, 2 );
-			}
-			recocov.mult(recocov,1./(double)wtot);
-			//cout << "recocov for jetsize from " << nrhs << " pts" << endl; recocov.Print();
-			return recocov;
-		}
-	
 	
 
 		void CalcMMAvgPhiTime(BasePDFMixture* model, double& phi, double& t){
