@@ -114,7 +114,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, unsigned long l
 		nit++;
 	}
 	kmc.GetMeans(_xbar);
-	
 
 
 //cout << "initial kmeans params" << endl;
@@ -143,7 +142,9 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, unsigned long l
 		if(wtot != 0) _Sbar[k].mult(_Sbar[k],1/wtot);
 		if(m_k == m_n) _Sbar[k].InitIdentity();
 		m_model[k]->SetParameter("cov",_Sbar[k]);
-		//cout << "cluster #" << k << " norm " << m_norms[k] << endl; //wtot " << wtot << " mean" << endl; _xbar[k].Print(); cout << " cov" << endl; _Sbar[k].Print();
+		//cout << "cluster #" << k << " norm " << m_norms[k] << endl; 
+		//wtot " << wtot << " mean" << endl; 
+		//cout << "k " << k << " mean" << endl; _xbar[k].Print(); cout << " cov" << endl; _Sbar[k].Print(); 
 
 	}
 	UpdatePosteriorParameters(); 
@@ -587,24 +588,23 @@ void GaussianMixture::CalculateRStatistics(){
 			//cout << "n: " << n << " k: " << k << endl;
 			//cout << "post: " << m_post.at(n,k) << endl;
 			//}
-			//cout << "x" << endl;
-			//x.Print();
+			//cout << "x" << endl; x.Print();
 			//weighted by posterior value gamma(z_nk),
 			//if(k == 1) cout << "n: " << n << " k: " << k << " post: " << m_post.at(n,k) << " data weight: " << m_data->at(n).w() << endl;
 			x.mult(x,m_post.at(n,k));
-			//cout << "post*x" << endl;
-			//x.Print();
+			//cout << "post*x" << endl; x.Print();
 			//cout << "mu" << endl; mu.Print();
 			//add to new mu for cluster k
 			mu.add(x);
 		}
-		//cout << "k: " << k << " sum_n post*x" << endl;
-		//mu.Print();
+		//cout << "k: " << k << " sum_n post*x" << endl; mu.Print();
 		//normalized by sum of posteriors for cluster k
 		mu.mult(mu,1./m_norms[k]);
 		//cout << "k: " << k << " m_norm: " << m_norms[k] << endl;
+//cout << "# xbars " << _xbar.size() << endl;
 		//cout << "1/N[k]*(sum_n post*x)" << endl; _xbar[k].Print();
 		_xbar[k] = mu;
+//cout << "set new xbar" << endl;
 		//m_model[k]->SetParameter("mean",mu);		
 	}
 	
@@ -623,13 +623,12 @@ void GaussianMixture::CalculateRStatistics(){
 			continue;	
 		}
 
-//		cout << "k: " << k << " mu" << endl;
-//		mu.Print();
+		//cout << "k: " << k << " mu" << endl; mu.Print();
 		double t_sig2;
 		for(int n = 0; n < m_n; n++){
 			//construct x - mu
 			Matrix x_mat = Matrix(m_data->at(n));
-			//cout << "n: " << n << " k: " << k << endl;
+		//	cout << "n: " << n << " k: " << k << endl;
 			//cout << "mu:" << endl;
 			//mu.Print();
 			//cout << "x:" << endl;
@@ -646,7 +645,7 @@ void GaussianMixture::CalculateRStatistics(){
 			//(x_n - mu_k)*(x_n - mu_k)T
 			S_n.mult(x_min_mu,x_min_muT);
 			//cout << "(x - mu)*(x - mu)T" << endl;	
-			//S_k.Print();
+			//S_n.Print();
 			//if resolution based smearing is set for any dimension of the covariance,
 			//alter smearing matrix accordingly
 			if(_smear){
@@ -656,28 +655,25 @@ void GaussianMixture::CalculateRStatistics(){
 //if(m_data->at(n).at(0) > 1e70 && m_data->at(n).at(1) > 1e70) cout << "k " << k << " r_nk " << m_post.at(n,k) << endl;
 			S_n.mult(S_n,m_post.at(n,k));
 		//	if(n == 3) cout << "cov calc - post: " << m_post.at(n,k) << endl;
-			//cout << "post*(x - mu)*(x - mu)T" << endl;	
-			//S_k.Print();
+			//cout << "post*(x - mu)*(x - mu)T" << endl; S_n.Print();
 			//sum over n
 			//cout << "S" << endl; S.Print(); cout << "S_n" << endl; S_n.Print();
 			S.add(S_n);
 		}	
-		//cout << "sum_n post*(x - mu)*(x - mu)T" << endl;	
-		//S.Print();
+		//cout << "sum_n post*(x - mu)*(x - mu)T" << endl; S.Print();
 		//normalize by N_k
 		S.mult(S,1./m_norms[k]);
 		//cout << "m_norm: " << m_norms[k] << endl;
-		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl;	
+		//cout << "k: " << k << " norm: " << m_norms[k] << " alpha: " << m_alphas[k] << " (1/N[k])*sum_n post*(x - mu)*(x - mu)T" << endl; S.Print();
 		//if data smear is specified - provides lower bound on covariance -> regularization and provides nonzero covariance in single point case
 		//N_k = 0 clusters do not get a smear because there are no points to smear
-//		S.Print();
 		//m_model[k]->SetParameter("cov",S);
 		_Sbar[k] = S;
 //cout << "k " << k << " norm "<< m_norms[k] << " xbar" << endl; _xbar[k].Print(); cout << " Sk " << endl; _Sbar[k].Print();
 		//if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
 	}
 
-	//cout << "Calculate RStats - end" << endl;
+//cout << "Calculate RStats - end" << endl;
 }
 
 
@@ -874,7 +870,6 @@ void GaussianMixture::UpdatePosteriorParameters(){
 
 	
 		//set individual model parameters as expectation values (replacing data stat values)
-//cout << "setting gaussian mean to " << endl; new_mean.Print();
 		m_model[k]->SetParameter("mean",new_mean);
 		Matrix new_cov = new_scalemat;
 		new_cov.mult(new_cov, new_dof);

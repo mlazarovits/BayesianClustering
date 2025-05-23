@@ -159,6 +159,7 @@ class PointCollection{
 
 	//Randomly selects points 
 	PointCollection SelectPoints(int nOut, unsigned long long seed = 123){
+		if(_pts.size() == 163) cout << "seed " << seed << " nOut " << nOut << endl;
 		RandomSample rs(seed);
 		int nIn = (int)_pts.size(); 
 		if(nOut > nIn) return *this;
@@ -166,6 +167,7 @@ class PointCollection{
 		PointCollection out;
 		while(out.GetNPoints() < nOut){
 			int idx = rs.SampleFlat();
+		if(nIn == 163){ cout << "sampled idx " << idx << " and pt at idx " << endl; _pts[idx].Print(); }
 			out += _pts[idx];
 		}
 		return out;
@@ -175,7 +177,7 @@ class PointCollection{
 
 	void Sort(int d, unsigned long long seed = 123){
 		if(d >= _nDim){
-			cout << "Error: dimension " << d << " not valid for PointCollection with max dimension " << _nDim << endl;
+			cout << "Error: dimension " << d << " not valid for PointCollection with max dimension " << _nDim << " " << this->Dim() << endl;
 			return;
 		}
 		int N = _pts.size();
@@ -185,7 +187,6 @@ class PointCollection{
 		PointCollection low;
 		PointCollection same;
 		PointCollection high;
-	
 		rs.SetRange(0,N);
 		int idx = rs.SampleFlat();		
 		BayesPoint pivot = _pts[idx];
@@ -205,8 +206,8 @@ class PointCollection{
 			else
 				high += _pts[i];
 		}
-		low.Sort(d);
-		high.Sort(d);
+		if(low.GetNPoints() > 1) low.Sort(d, seed);
+		if(high.GetNPoints() > 1) high.Sort(d, seed);
 	
 		_pts.clear();
 		for(int i = 0; i < low.GetNPoints(); i++) _pts.push_back(low.at(i));
@@ -244,8 +245,8 @@ class PointCollection{
 			else
 				high += _pts[i];
 		}
-		low.Sort();
-		high.Sort();
+		low.Sort(seed);
+		high.Sort(seed);
 	
 		_pts.clear();
 		for(int i = 0; i < low.GetNPoints(); i++) _pts.push_back(low.at(i));
@@ -368,8 +369,8 @@ class PointCollection{
 //if(d == 1 && _pts[i].w() > 45) cout << "new value of pt " << _pts[i].at(d) << endl;
 			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
 			//round to 0
-			if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
-                	if(fabs(_pts[i].at(d)) - 2*acos(-1) < 1e-10) _pts[i].SetValue(0,d);	
+			if(fabs(_pts[i].at(d)) < 1e-16){ _pts[i].SetValue(0,d);}
+			if(fabs(fabs(_pts[i].at(d)) - 2*acos(-1)) < 1e-10){ _pts[i].SetValue(0,d);}
 		}	
 	}
 
@@ -591,8 +592,8 @@ class PointCollection{
 
 	private:
 		int _nDim = 0;
-		vector<BayesPoint> _pts;
-		vector<double> _infs;
+		vector<BayesPoint> _pts = {};
+		vector<double> _infs = {};
 
 
 };

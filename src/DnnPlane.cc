@@ -753,8 +753,9 @@ if(_verbose) cout << "SetNearest - start" << endl;
 	//don't calculate if this combo is vertex + its mirror
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 	if(_verbose){ cout << "looking at vertex " << current->info().val() << " and neighbor " << vc->info().val() << endl;
-		cout << "this vertex pts" << endl; _supervertex[j].n->points->Print(); 
-		cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+		cout << "this vertex has " << _supervertex[j].n->points->GetNPoints() << " pts" << endl; //_supervertex[j].n->points->Print(); 
+		cout << "neighbor vertex has " << _supervertex[vcindx].n->points->GetNPoints() << " pts" << endl; //_supervertex[vcindx].n->points->Print();
+	cout << "potential merge has " << _supervertex[j].n->points->GetNPoints() + _supervertex[vcindx].n->points->GetNPoints() << " total pts" << endl;
 		}
       // find distance between j and its Voronoi neighbour (vc)
       //if(_verbose) cout << current->info().val() << " " << vc->info().val() << endl;
@@ -874,8 +875,9 @@ void DnnPlane::_SetAndUpdateNearest(
 	if(_supervertex[j].n == _supervertex[vcindx].n->mirror) continue;
 
 	if(_verbose){cout << "looking at vertex " << j << " and neighbor " << vc->info().val() << endl;
-	cout << "this vertex pts" << endl; _supervertex[j].n->points->Print();
-	cout << "neighbor vertex pts" << endl; _supervertex[vcindx].n->points->Print();
+	cout << "this vertex has " <<  _supervertex[j].n->points->GetNPoints() << " pts" << endl; //_supervertex[j].n->points->Print();
+	cout << "neighbor vertex has " << _supervertex[vcindx].n->points->GetNPoints() << " pts" << endl; //_supervertex[vcindx].n->points->Print();
+	cout << "potential merge has " << _supervertex[j].n->points->GetNPoints() + _supervertex[vcindx].n->points->GetNPoints() << " total pts" << endl;
 	}
       // update the mindist if we are closer than anything found so far
       if (_is_closer_to(current->point(), vc->point(), nearest, dist, mindist)){
@@ -928,7 +930,7 @@ if(_verbose) cout << "do neighbor update for vertex " << vcindx << " with candid
       if (r0->log_h1_prior - r0->log_didj > _supervertex[vcindx].MaxRk){
          //best_vtx = vc;
 	//bestmerge = r0;
-	if(_verbose) cout << vcindx << "'s best merge becomes " << current->info().val() << endl;
+	if(_verbose) cout << vcindx << "'s best merge becomes " << current->info().val() << " with " << _supervertex[vcindx].n->points->GetNPoints() + _supervertex[j].n->points->GetNPoints() << " total pts" << endl;
   	_supervertex[j].MaxRk = r0->log_h1_prior-r0->log_didj;
 	_supervertex[vcindx].MaxRkindex = j;
 	indices_of_updated_merges.push_back(vcindx);

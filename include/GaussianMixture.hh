@@ -194,6 +194,7 @@ class GaussianMixture : public BasePDFMixture{
 			
 			m_mean0.mult(sc,m_mean0);	
 			m_meanBeta0.mult(m_mean0, m_beta0);
+				/*
 				cout << "Scaled prior Parameters" << endl;
 				cout << "beta0" << endl;
 				cout << m_beta0 << endl;
@@ -203,6 +204,7 @@ class GaussianMixture : public BasePDFMixture{
 				cout << m_nu0 << endl;
 				cout << "W0" << endl;
 				m_W0.Print();
+			*/
 		}
 	
 		//scale learned model parameters

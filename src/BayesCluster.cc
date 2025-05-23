@@ -229,8 +229,8 @@ cout << "n starting pts " << n << endl;
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
-		if(verbose)cout << "\n\n\n" << endl;
-		if(verbose) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
+		if(_verb > 1)cout << "\n\n\n" << endl;
+		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << " with " << newpts.GetNPoints() << " newpts" << " centroid " << newpts.CircularCentroid(0) << " " << newpts.CircularCentroid(1) << " " << newpts.Centroid(2) << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){

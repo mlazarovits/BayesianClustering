@@ -179,7 +179,8 @@ class BasePDFMixture : public BasePDF{
 			for(int k = 0; k < m_k; k++){
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				//if(m_norms[k] + m_alpha0 < thresh){
-				if(m_norms[k] < thresh){
+//cout << std::setprecision(20) << " k " << k << " norm " << m_norms[k] << " thresh " << thresh << endl;
+				if(thresh - m_norms[k] > 1e-15){ //precision
 					if(_verb > 3) 
 						cout << "Removing cluster " << k << " with norm " << m_norms[k] << endl;
 					//remove model + update number of clusters
@@ -202,7 +203,7 @@ class BasePDFMixture : public BasePDF{
 				}
 			}
 		//cout << m_k << " clusters after update" << endl;
-			//update effective counts + corresponding parameters (if the model changed, ie clusters were removed) - the corresponding 
+			//update effectie counts + corresponding parameters (if the model changed, ie clusters were removed) - the corresponding 
 			//entry r_nk is the point weight
 			if(updated)
 				UpdateVariationalParameters();
