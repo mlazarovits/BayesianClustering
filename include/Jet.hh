@@ -62,12 +62,37 @@ class Jet{
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
 
-		void SetVertex(BayesPoint vtx){
+		void SetVertex(BayesPoint vtx, double detR = 129){
 			if(vtx.Dim() != 3){
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 				return;
 			}
 			_vtx = vtx;
+			//recalculate momentum from PV
+			
+			//get x, y, z from eta, phi
+			double x = detR*cos(_phi);
+			double y = detR*sin(_phi);
+			double theta = 2*atan2(1,exp(_eta));
+			double z = detR/tan(theta);
+
+			//calculate momentum vector from PV
+			//centered at PV
+			double dx = x - _vtx.at(0);
+			double dy = y - _vtx.at(1);
+			double dz = z - _vtx.at(2);
+			//theta is calculated between beamline (z-dir) and x-y vector	
+			double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+			double p_eta = -log(atan(p_theta/2));
+			double p_phi = atan2(dy, dx);
+			//double pt = _E*sin(theta); //mass = 0
+			double pt = _E/cosh(p_eta);
+			_px = pt*cos(p_phi);
+			_py = pt*sin(p_phi);
+			_pz = pt*sinh(p_eta);
+
+			_kt2 = _px*_px + _py*_py;
+			_mass = mass();
 		}
 
 		//setting the momentum of eg subclusters with track information

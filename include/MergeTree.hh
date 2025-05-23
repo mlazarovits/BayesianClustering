@@ -176,14 +176,14 @@ class MergeTree : BaseTree{
 			//cout << "original points" << endl; x->points->Print();
 			//do phi wraparound? may already be taken care of in local coords + mirror pts
 			PointCollection* newpts = new PointCollection(*x->points);
-			if(_verb > 1){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
+			newpts->Sort(0);
+			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
+			//sort points so random initialization is consistent based on seed
 
-			//scale points s.t. 1 cell ~ 0.0174 = 1 unit in eta-phi
 			//x'' = x'/b = (x-a)/b
 			//sets relative importance of dimensions
 			//decreasing cell -> eta/phi distance more important
 			//increasing entry (2,2) -> time distance more important
-			//TODO: make configurable externally - or not?? kind of integral to algorithm
 			double cell = 4*atan(1)/180;
 			Matrix Rscale(3,3);
 			Rscale.SetEntry(1/cell,0,0);
@@ -208,30 +208,32 @@ class MergeTree : BaseTree{
 	
 			//change eta to theta BEFORE calculating centroid
 			x->model->EtaToTheta();
-			if(_verb > 1){cout << "eta to theta" << endl; x->model->GetData()->Print();}
-			//since the first dimension is now an angle, its centroid needs to be circularly calculated
-			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
-			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
-			if(_verb > 1){ cout << "center" << endl; center.Print();}
-		//cout << "theta circular centroid " << x->model->GetData()->CircularCentroid(0) << " regular centroid " << x->model->GetData()->Centroid(0) << endl;	
+			if(_verb > 5){cout << "eta to theta" << endl; x->model->GetData()->Print();}
 			//make sure all data in model is on [0,2pi] to begin with
 			//some mirror nodes will have pts < 0 or > 2 pi
 			//but the shifting + plane project depends on all pts initially being on unit circle
 			//it doesn't matter if this is done before or after centroid calculation
 			//bc of the way the centroid is calculated for phi (ie CircularCentroid)
+		
+			//maybe move this before centroid calculation...
 			x->model->PutPhi02pi();		
+			
+			//since the first dimension is now an angle, its centroid needs to be circularly calculated
+			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
+			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
+			if(_verb > 5){ cout << "center" << endl; center.Print();}
+		//cout << "theta circular centroid " << x->model->GetData()->CircularCentroid(0) << " regular centroid " << x->model->GetData()->Centroid(0) << endl;	
 //cout << "original data (phi on 02pi)" << endl; x->model->GetData()->Print();
 			x->model->ShiftData(center);
 			
-			if(_verb > 1){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
-			
+			if(_verb > 5){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
 			//project phi onto plane
 			bool phiInf = x->model->ProjectPhi();
 			bool thetaInf = x->model->ProjectTheta();
-			if(_verb > 1){ cout << "projected pts" << endl; x->model->GetData()->Print();}
+			if(_verb > 5){ cout << "projected pts" << endl; x->model->GetData()->Print();}
 			//check for infinities in eta + phi from measurement error
 			if(phiInf || thetaInf){
-				if(_verb > 1) cout << "found inf, returning elbo as " << -1e308 << endl;
+				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
 				x->model->SetData(x->points);
 				return -1e308;
@@ -257,7 +259,7 @@ class MergeTree : BaseTree{
 
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
-			if(_verb > 1){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
+			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
 		
 			//cout << "scaled points" << endl; x->model->GetData()->Print();
 			//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
@@ -297,11 +299,11 @@ class MergeTree : BaseTree{
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
 		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
-		 //cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
+		 //if(newpts->GetNPoints() == 163) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 				oldLogL = newLogL;
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
-			if(_verb > 1) cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
+			if(_verb > 5) cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
 //cout << " with points in node model " << endl; x->model->GetData()->Print();  
 //cout << "original points" << endl; x->points->Print();
 //cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
@@ -319,6 +321,15 @@ cout << "from model" << endl;
 	}
 x->model->GetData()->Print();
 	}
+//for(int k = 0; k < x->model->GetNClusters(); k++){
+//		cout << "cluster #" << k << " mean " << endl;
+//		auto params = x->model->GetLHPosteriorParameters(k);
+//		params["mean"].Print();
+//		if(params["mean"].at(0,0) > x->model->GetData()->max(0) || params["mean"].at(0,0) < x->model->GetData()->min(0)){
+//			cout << "original data" << endl; x->points->Print();
+//			cout << "model data" << endl; x->model->GetData()->Print();
+//		}
+//}
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
 			//need to unscale data - also unscales lamStar measurement errors 
@@ -330,19 +341,13 @@ x->model->GetData()->Print();
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
 			x->model->ScaleParameters(RscaleInv);	
-//cout << "unscaled" << endl;
-//for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << " mean " << endl;
+// x->model->GetData()->Print();
+//	cout << "node x means post scale" << endl;
+//	for(int k = 0; k < x->model->GetNClusters(); k++){
+//		cout << "cluster #" << k << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
 //		params["mean"].Print();
-//		}
-// x->model->GetData()->Print();
-	//cout << "node x means post scale" << endl;
-	//for(int k = 0; k < x->model->GetNClusters(); k++){
-	//	cout << "cluster #" << k << endl;
-	//	auto params = x->model->GetLHPosteriorParameters(k);
-	//	params["mean"].Print();
-	//}
+//	}
 		
 	
 			//need to put GMM parameters AND points back in detector coordinates (not local)
@@ -358,12 +363,13 @@ x->model->GetData()->Print();
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
+//		//auto params = x->model->GetDataStatistics(k);
 //		cout << "mean" << endl;
 //		params["mean"].Print();
 //		//cout << "cov" << endl;
 //		//params["cov"].Print();
 //	}
-			x->model->ShiftParameters(center);
+      		x->model->ShiftParameters(center);
 //cout << "unshifted" << endl;
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << endl;
@@ -382,12 +388,6 @@ x->model->GetData()->Print();
 //		auto params = x->model->GetLHPosteriorParameters(k);
 //		cout << "mean" << endl;
 //		params["mean"].Print();
-//		if(isnan(params["mean"].at(0,0))){
-//			cout << "model data" << endl;
-//			x->model->GetData()->Print();
-//			cout << "original data" << endl;
-//			x->points->Print();
-//		}
 //		//cout << "cov" << endl;
 //		//params["cov"].Print();
 //	}
@@ -397,17 +397,18 @@ x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
 		//cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
-	//cout << "node x means post transformation" << endl;
-	//vector<double> norms;
-	//x->model->GetNorms(norms);
-	//for(int k = 0; k < x->model->GetNClusters(); k++){
-	//	cout << "cluster #" << k << " with weight " << norms[k] << endl;
-	//	auto params = x->model->GetLHPosteriorParameters(k);
-	//	cout << "mean" << endl;
-	//	params["mean"].Print();
-	//	//cout << "cov" << endl;
-	//	//params["cov"].Print();
-	//}
+	vector<double> norms;
+	x->model->GetNorms(norms);
+//	cout << "node x means post transformation" << endl;
+//	for(int k = 0; k < x->model->GetNClusters(); k++){
+//		cout << "cluster #" << k << " with weight " << norms[k] << endl;
+//		auto params = x->model->GetLHPosteriorParameters(k);
+//		//auto params = x->model->GetDataStatistics(k);
+//		cout << "mean" << endl;
+//		params["mean"].Print();
+//		//cout << "cov" << endl;
+//		//params["cov"].Print();
+//	}
 	//cout << std::setprecision(5) << endl;
 			return newLogL;
 		}

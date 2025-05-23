@@ -89,9 +89,10 @@ void BHCJetSkimmer::Skim(){
 
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
 		_prod->GetGenJets(_genjets, i);
-		if(_genjets.size() < 1){ cout << endl; continue; }
+		_prod->GetGenFatJets(_genfatjets, i);
+		//if(_genjets.size() < 1){ cout << endl; continue; }
 		_prod->GetRecoJets(_recojets, i);
-		if(_recojets.size() < 1){ cout << endl; continue; }
+		//if(_recojets.size() < 1){ cout << endl; continue; }
 		_prod->GetGenParticles(_genparts, i);
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;

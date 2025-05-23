@@ -304,7 +304,7 @@ inline double Dnn2piCylinder::NearestNeighbourDistance(const int current) const 
 inline int Dnn2piCylinder::NearestNeighbourProbIndex(const int current, int& merge_index) const {
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
-// cout << "getting nearest neighbor prob index for current: " << current << " main idx: " << main_index << " mirror_index: " << mirror_index << endl;
+ //cout << "getting nearest neighbor prob index for current: " << current << " main idx: " << main_index << " mirror_index: " << mirror_index << endl;
   int plane_index;
   if (mirror_index == INEXISTENT_VERTEX ) {
     plane_index = _DNN->NearestNeighbourProbIndex(main_index);
@@ -340,8 +340,8 @@ if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge
   // that mirror copy is the closest point.
   assert(_ignore_nearest_is_mirror || this_cylinder_index != current);
   if (this_cylinder_index == current) {
-    if(_verbose > 0){ cerr << "WARNING point "<<current<<
-      " has its mirror copy as its own nearest neighbour"<<endl;}
+     cerr << "WARNING point "<<current<<
+      " has its mirror copy as its own nearest neighbour"<<endl;
   }
   return this_cylinder_index;
 }
