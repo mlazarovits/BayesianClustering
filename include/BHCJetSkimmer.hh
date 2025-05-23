@@ -680,7 +680,7 @@ class BHCJetSkimmer{
 		void FillGenHists(){
 			FillGenParticleHists();
 			FillGenJetHists();
-			//FillGenFatJetHists();
+			FillGenFatJetHists();
 		}
 
 		void FillRecoJetHists(){
