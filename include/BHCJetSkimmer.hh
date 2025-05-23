@@ -226,6 +226,17 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jet_rotundity);
 			_hists1D.push_back(BHCJet_rotundity);
 			_hists1D.push_back(BHCJet_nRhs);
+			_hists1D.push_back(genAK15Jet_eta);
+			_hists1D.push_back(genAK15Jet_phi);
+			_hists1D.push_back(genAK15Jet_time);
+			_hists1D.push_back(genAK15Jet_pt);
+			_hists1D.push_back(genAK15Jet_mass);
+			_hists1D.push_back(genAK15Jet_energy);
+			_hists1D.push_back(nJet_genAK15Jet);
+			_hists1D.push_back(genAK15Jet_nConstituents);
+			_hists1D.push_back(genAK15JetParticle_nDiff);
+			_hists1D.push_back(genAK15JetParticle_dR);
+			_hists1D.push_back(genAK15JetParticle_Eratio);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -566,13 +577,17 @@ class BHCJetSkimmer{
 
 		//fill hists for gen jets and gen particles
 		//ONLY GEN PARTICLES CONSIDERED - tops, b's from tops, quarks from W's, direct daughters of b's
-		void FillGenHists(){
+		void FillGenParticleHists(){
 			for(int p = 0; p < _procCats.size(); p++){
 				//fill gen particle hists - needs GetGenParticles() method in JetSimProducer
 				int nGenParts = 0; //only count hadron-izable gen particles (ie quarks)
 				vector<int> qids = {1,2,3,4,5,6};
 				int id;
 				_procCats[p].hists1D[0][107]->Fill((double)nGenParts);
+				_procCats[p].hists1D[0][122]->Fill((double)_genjets.size() - (double)nGenParts);
+				_procCats[p].hists1D[0][157]->Fill((double)_genfatjets.size() - (double)nGenParts);
+				_procCats[p].hists1D[0][125]->Fill((double)_predJets.size() - (double)nGenParts);
+				//_procCats[p].hists1D[0][122]->Fill((double)_genfatjets.size() - (double)nGenParts);
 				for(int g = 0; g < _genparts.size(); g++){
 					_procCats[p].hists1D[0][108]->Fill(_genparts[g].eta());
 					_procCats[p].hists1D[0][109]->Fill(_genparts[g].phi());
@@ -584,9 +599,12 @@ class BHCJetSkimmer{
 					if(find(qids.begin(), qids.end(), id) != qids.end()) nGenParts++;
 					
 				}
+			}
+		}
+		
+		void FillGenJetHists(){
+			for(int p = 0; p < _procCats.size(); p++){
 				_procCats[p].hists1D[0][120]->Fill((double)_genjets.size());
-				_procCats[p].hists1D[0][122]->Fill((double)_genjets.size() - (double)nGenParts);
-				_procCats[p].hists1D[0][125]->Fill((double)_predJets.size() - (double)nGenParts);
 				//gen match jets to particles
 				vector<int> genMatchIdxs;
 				//cout << "gen matching gen jets to particles - start" << endl;
@@ -627,8 +645,44 @@ class BHCJetSkimmer{
 				*/	
 
 			}
+		}
 
+
+		void FillGenFatJetHists(){
+			for(int p = 0; p < _procCats.size(); p++){
+				_procCats[p].hists1D[0][155]->Fill((double)_genfatjets.size());
+				//gen match jets to particles
+				vector<int> genMatchIdxs;
+				//cout << "gen matching gen jets to particles - start" << endl;
+				GenMatchJet(_genfatjets,genMatchIdxs);
+				//cout << "gen matching gen jets to particles - end" << endl;
+				for(int j = 0; j < _genfatjets.size(); j++){
+					if(p == 0) cout << "gen jet #" << j << " phi " << _genfatjets[j].phi() << " eta " << _genfatjets[j].eta() << " energy " << _genfatjets[j].E() <<  " mass " << _genfatjets[j].mass() << " pt " << _genfatjets[j].pt() << endl;;
+					_procCats[p].hists1D[0][149]->Fill(_genfatjets[j].eta());
+					_procCats[p].hists1D[0][150]->Fill(_genfatjets[j].phi());
+					_procCats[p].hists1D[0][151]->Fill(_genfatjets[j].time());
+					_procCats[p].hists1D[0][152]->Fill(_genfatjets[j].pt());
+					_procCats[p].hists1D[0][153]->Fill(_genfatjets[j].mass());
+					_procCats[p].hists1D[0][154]->Fill(_genfatjets[j].E());
+					_procCats[p].hists1D[0][156]->Fill(_base->Jet_genNConstituents->at(_genfatjets[j].GetUserIdx()));
+					//dr bw gen jet and best exclusive gen particle match
+					int genmatch = genMatchIdxs[j];
+					if(genmatch != -1){
+						double gendR = dR(_genfatjets[j].eta(), _genfatjets[j].phi(), _genparts[genmatch].eta(), _genparts[genmatch].phi());
+						_procCats[p].hists1D[0][158]->Fill(gendR);
+						_procCats[p].hists1D[0][159]->Fill(_genfatjets[j].E()/_genparts[genmatch].E());
+					}	
+
+				}	
+
+			}
 		}	
+		void FillGenHists(){
+			FillGenParticleHists();
+			FillGenJetHists();
+			//FillGenFatJetHists();
+		}
+
 		void FillRecoJetHists(){
 			int njets, tmass_idx, widx, genidx, id;
 			double wmass, topmass, dr, dr_pair, jetsize;
@@ -1499,6 +1553,28 @@ class BHCJetSkimmer{
 		TH1D* BHCJet_rotundity = new TH1D("BHCJet_rotundity","BHCJet_rotundity",50,0.4,1.1);
 		//148 - BHC jet n rhs
 		TH1D* BHCJet_nRhs = new TH1D("BHCJet_nRhs","BHCJet_nRhs",300,0,300);
+		//149 - gen AK15 jet eta at detector
+		TH1D* genAK15Jet_eta = new TH1D("genAK15Jet_EtaCenter","genAK15Jet_EtaCenter",25,-3.2,3.2);
+		//150 - gen AK15 jet phi at detector
+		TH1D* genAK15Jet_phi = new TH1D("genAK15Jet_PhiCenter","genAK15Jet_PhiCenter",25,-0.2,6.4);
+		//151 - gen AK15 jet time at detector
+		TH1D* genAK15Jet_time = new TH1D("genAK15Jet_TimeCenter","genAK15Jet_TimeCenter",25,-1,1);
+		//152 - gen AK15 jet pt		
+		TH1D* genAK15Jet_pt = new TH1D("genAK15Jet_pt","genAK15Jet_pt",25,0,500);
+		//153 - gen AK15 jet mass
+		TH1D* genAK15Jet_mass = new TH1D("genAK15Jet_mass","genAK15Jet_mass",50,0,50);
+		//154 - gen AK15 jet energy
+		TH1D* genAK15Jet_energy = new TH1D("genAK15Jet_energy","genAK15Jet_energy",25,0,500);
+		//155 - # gen AK15 jets
+		TH1D* nJet_genAK15Jet = new TH1D("genAK15_nJets","genAK15_nJets",15,0,15);
+		//156 - # constituents per gen AK15 jet
+		TH1D* genAK15Jet_nConstituents = new TH1D("genAK15Jet_nConstituents","genAK15Jet_nConstituents",50,0,50);
+		//157 - # gen jets - # gen particles
+		TH1D* genAK15JetParticle_nDiff = new TH1D("genAK15Jet_genParticle_nDiff","genAK15Jet_genParticle_nDiff",20,-10,10);
+		//158 - dR bw gen jet and gen particle its exclusively matched to
+		TH1D* genAK15JetParticle_dR = new TH1D("genAK15Jet_genParticle_dR","genAK15Jet_genParticle_dR",25,0,1.5);
+		//159 - E ratio bw gen jet and gen particle its exclusively matched to - gen jet energy/gen particle energy
+		TH1D* genAK15JetParticle_Eratio = new TH1D("genAK15Jet_genParticle_Eratio","genAK15Jet_genParticle_Eratio",25,0,2);
 
 
 		//2D plots
@@ -1987,7 +2063,7 @@ class BHCJetSkimmer{
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
 		vector<node*> _trees;
-		vector<Jet> _predJets, _genjets, _recojets, _genparts;
+		vector<Jet> _predJets, _genjets, _recojets, _genparts, _genfatjets;
 		bool _smear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder

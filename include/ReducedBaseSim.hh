@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Mar 25 15:51:16 2025 by ROOT version 6.30/06
+// Thu May 22 13:56:29 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_test_ttbar.root
+// found on file: simNtuples_testFatJets_ttbar.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -49,6 +49,15 @@ public :
    Int_t           Jet_genNJet;
    vector<vector<int> > *Jet_genConstituentIdxs;
    vector<int>     *Jet_genNConstituents;
+   vector<double>  *FatJet_genEta;
+   vector<double>  *FatJet_genPhi;
+   vector<double>  *FatJet_genEnergy;
+   vector<double>  *FatJet_genPt;
+   vector<double>  *FatJet_genPz;
+   vector<double>  *FatJet_genMass;
+   Int_t           FatJet_genNFatJet;
+   vector<vector<int> > *FatJet_genConstituentIdxs;
+   vector<int>     *FatJet_genNConstituents;
    vector<int>     *Top_decayId;
    vector<double>  *Jet_eta;
    vector<double>  *Jet_phi;
@@ -99,6 +108,15 @@ public :
    TBranch        *b_Jet_genNJet;   //!
    TBranch        *b_Jet_genConstituentIdxs;   //!
    TBranch        *b_Jet_genNConstituents;   //!
+   TBranch        *b_FatJet_genEta;   //!
+   TBranch        *b_FatJet_genPhi;   //!
+   TBranch        *b_FatJet_genEnergy;   //!
+   TBranch        *b_FatJet_genPt;   //!
+   TBranch        *b_FatJet_genPz;   //!
+   TBranch        *b_FatJet_genMass;   //!
+   TBranch        *b_FatJet_genNFatJet;   //!
+   TBranch        *b_FatJet_genConstituentIdxs;   //!
+   TBranch        *b_FatJet_genNConstituents;   //!
    TBranch        *b_Top_decayId;   //!
    TBranch        *b_Jet_eta;   //!
    TBranch        *b_Jet_phi;   //!
@@ -142,11 +160,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_test_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testFatJets_ttbar.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_test_ttbar.root");
+         f = new TFile("simNtuples_testFatJets_ttbar.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_test_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testFatJets_ttbar.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -207,6 +225,14 @@ inline void ReducedBaseSim::Init(TTree *tree)
    Jet_genMass = 0;
    Jet_genConstituentIdxs = 0;
    Jet_genNConstituents = 0;
+   FatJet_genEta = 0;
+   FatJet_genPhi = 0;
+   FatJet_genEnergy = 0;
+   FatJet_genPt = 0;
+   FatJet_genPz = 0;
+   FatJet_genMass = 0;
+   FatJet_genConstituentIdxs = 0;
+   FatJet_genNConstituents = 0;
    Top_decayId = 0;
    Jet_eta = 0;
    Jet_phi = 0;
@@ -259,6 +285,15 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_genNJet", &Jet_genNJet, &b_Jet_genNJet);
    fChain->SetBranchAddress("Jet_genConstituentIdxs", &Jet_genConstituentIdxs, &b_Jet_genConstituentIdxs);
    fChain->SetBranchAddress("Jet_genNConstituents", &Jet_genNConstituents, &b_Jet_genNConstituents);
+   fChain->SetBranchAddress("FatJet_genEta", &FatJet_genEta, &b_FatJet_genEta);
+   fChain->SetBranchAddress("FatJet_genPhi", &FatJet_genPhi, &b_FatJet_genPhi);
+   fChain->SetBranchAddress("FatJet_genEnergy", &FatJet_genEnergy, &b_FatJet_genEnergy);
+   fChain->SetBranchAddress("FatJet_genPt", &FatJet_genPt, &b_FatJet_genPt);
+   fChain->SetBranchAddress("FatJet_genPz", &FatJet_genPz, &b_FatJet_genPz);
+   fChain->SetBranchAddress("FatJet_genMass", &FatJet_genMass, &b_FatJet_genMass);
+   fChain->SetBranchAddress("FatJet_genNFatJet", &FatJet_genNFatJet, &b_FatJet_genNFatJet);
+   fChain->SetBranchAddress("FatJet_genConstituentIdxs", &FatJet_genConstituentIdxs, &b_FatJet_genConstituentIdxs);
+   fChain->SetBranchAddress("FatJet_genNConstituents", &FatJet_genNConstituents, &b_FatJet_genNConstituents);
    fChain->SetBranchAddress("Top_decayId", &Top_decayId, &b_Top_decayId);
    fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
    fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
