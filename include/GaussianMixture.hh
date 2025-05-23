@@ -269,10 +269,13 @@ class GaussianMixture : public BasePDFMixture{
 
 		
 		void RemoveModel(int j){
-			_xbar.erase(_xbar.begin()+j);
-			_Sbar.erase(_Sbar.begin()+j);
-			m_Elam.erase(m_Elam.begin()+j);
-			m_Epi.erase(m_Epi.begin()+j);
+			//if only one cluster, don't remove
+			if(m_k > 1 && _xbar.size() > 1){
+				_xbar.erase(_xbar.begin()+j);
+				_Sbar.erase(_Sbar.begin()+j);
+				m_Elam.erase(m_Elam.begin()+j);
+				m_Epi.erase(m_Epi.begin()+j);
+			}
 			BaseRemoveModel(j);
 		}
 
