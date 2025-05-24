@@ -37,7 +37,7 @@ Jet::Jet(double px, double py, double pz, double E){
 	_phi = _invalid_phi;
 	_eta = _invalid_eta;
 
-	//sets eta + phi
+	//sets eta + phi from p vector
 	_ensure_valid_rap_phi();
 
 	_t = 0;
@@ -117,7 +117,6 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 
 	_vtx = vtx;
 	double phi, eta;
-	double norm = 0;
 	for(int i = 0; i < _nRHs; i++){		
 		//for momentum vector centered at PV
 		//theta is calculated between beamline (z-dir) and vector in x-y plane	
@@ -137,18 +136,9 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		
 		_E += rhs[i].E();
 
-		//eta, phi centered at (0,0,0)
-		_eta += rhs[i].eta()*rhs[i].E();
-		//if(rhs[i].phi() < 0) 
-		//	_phi += rhs[i].phi()+2*acos(-1);
-		//else
-		_phi += rhs[i].phi()*rhs[i].E();
-		
-		norm += rhs[i].E();
 	}
+	CalculateCenter();
 	
-	_eta /= norm;
-	_phi /= norm;
 	
 	_kt2 = _px*_px + _py*_py;
 	//wraparound
@@ -160,44 +150,10 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	_ensure_valid_rap_phi();
 	_set_time();
 	
-	_cov = Matrix(3,3);
-	_mu = Matrix(3,1);
-	_mu = Matrix(3,1);
-	_mu.SetEntry(_eta,0,0);
-	_mu.SetEntry(_phi,1,0);
-	_mu.SetEntry(_t,2,0);
 	_pi = 0;
 	_update_mom();
 	
-	_cov = Matrix(3,3);
-	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
-	//energy-weighted rh cov
-	for(int i = 0; i < _nRHs; i++){
-		deta = _rhs[i].eta() - _mu.at(0,0);	
-		dphi = _rhs[i].phi() - _mu.at(1,0);	
-		dphi = acos(cos(dphi));
-		dtime = _rhs[i].t() - _mu.at(2,0);
-	
-		Matrix cov_entry = Matrix(3,3);
-		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-
-
-		norm += _rhs[i].E();		
-
-		_cov.add(cov_entry);	
-
-	}
-	_cov.mult(_cov,1/norm);	
-
+	CalculateCovariance();
 }
 
 Jet::Jet(const vector<Jet>& jets){
@@ -229,43 +185,11 @@ Jet::Jet(const vector<Jet>& jets){
 	_idx = 999;
 	_ensure_valid_rap_phi();
 	_set_time();
-	
-	_mu = Matrix(3,1);
-	_mu.SetEntry(_eta,0,0);
-	_mu.SetEntry(_phi,1,0);
-	_mu.SetEntry(_t,2,0);
+
+	CalculateCenter();	
 	_pi = 0;
 	_update_mom();
-	
-	_cov = Matrix(3,3);
-	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
-	double norm = 0;
-	//energy-weighted rh cov
-	for(int i = 0; i < _nRHs; i++){
-		deta = _rhs[i].eta() - _mu.at(0,0);	
-		dphi = _rhs[i].phi() - _mu.at(1,0);	
-		dphi = acos(cos(dphi));
-		dtime = _rhs[i].t() - _mu.at(2,0);
-	
-		Matrix cov_entry = Matrix(3,3);
-		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-
-
-		norm += _rhs[i].E();		
-
-		_cov.add(cov_entry);	
-
-	}
-	_cov.mult(_cov,1/norm);	
+	CalculateCovariance();	
 }
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
@@ -404,8 +328,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_eta = 0;
 	_phi = 0;
 	_t = 0;
-	double norm = 0;
-	PointCollection thetapts; //for circular centroid of eta
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
 		BayesPoint rh = model->GetData()->at(i);
@@ -467,34 +389,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_update_mom();
 	_mass = mass();
 	
-	double deta, dphi, dtime, eta_phi, eta_time, phi_time;
-	//energy-weighted rh cov
-	for(int i = 0; i < _nRHs; i++){
-		deta = _rhs[i].eta() - _mu.at(0,0);	
-		dphi = _rhs[i].phi() - _mu.at(1,0);	
-		dphi = acos(cos(dphi));
-		dtime = _rhs[i].t() - _mu.at(2,0);
-	
-		norm += _rhs[i].E();
-		Matrix cov_entry = Matrix(3,3);
-		cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
-		cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
-		cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-		cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
-		
-
-		_cov.add(cov_entry);	
-
-	}
-	_cov.mult(_cov,1/norm);	
-
-	
+	CalculateCovariance();	
 	//set constituents (subclusters)
 	for(int k = 0; k < nsubcl; k++){
 		auto params = model->GetLHPosteriorParameters(k);

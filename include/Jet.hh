@@ -464,6 +464,65 @@ class Jet{
 			jet.add(*this);
 			return jet.mass();	
 		}
+		
+		void CalculateCenter(){
+			double phi, eta;
+			double norm = 0;
+			PointCollection phipts;
+			for(int i = 0; i < _nRHs; i++){		
+				//eta, phi centered at (0,0,0)
+				_eta += _rhs[i].eta()*_rhs[i].E();
+				norm += _rhs[i].E();
+				
+				BayesPoint phipt(1);
+				phipt.SetValue(_rhs[i].phi(),0);
+				phipt.SetWeight(_rhs[i].GetWeight());
+				
+				phipts += phipt;
+			}
+			_set_time();
+			_eta /= norm;
+			_phi = phipts.CircularCentroid(0);
+			//set mean from member variables
+			_mu.SetEntry(_eta,0,0);
+			_mu.SetEntry(_phi,1,0);
+			_set_time();
+			_mu.SetEntry(_t,2,0);
+		}
+
+
+		void CalculateCovariance(){
+			double deta, dphi, dtime, eta_phi, eta_time, phi_time;
+			//start from scratch - clear cov
+			_cov = Matrix(3,3);
+			double norm = 0;
+			//energy-weighted rh cov
+			for(int i = 0; i < _nRHs; i++){
+				deta = _rhs[i].eta() - _mu.at(0,0);	
+				dphi = _rhs[i].phi() - _mu.at(1,0);	
+				dphi = acos(cos(dphi));
+				dtime = _rhs[i].t() - _mu.at(2,0);
+			
+				norm += _rhs[i].E();
+				Matrix cov_entry = Matrix(3,3);
+				cov_entry.SetEntry(_rhs[i].E()*deta*deta,0,0);
+				cov_entry.SetEntry(_rhs[i].E()*deta*dphi,1,0);
+				cov_entry.SetEntry(_rhs[i].E()*deta*dtime,2,0);
+				cov_entry.SetEntry(_rhs[i].E()*dphi*deta,0,1);
+				cov_entry.SetEntry(_rhs[i].E()*dphi*dphi,1,1);
+				cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
+				cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
+				cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
+				cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+				cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
+				
+
+				_cov.add(cov_entry);	
+
+			}
+			_cov.mult(_cov,1/norm);	
+		}
+
 
 	
 	protected:
@@ -518,6 +577,8 @@ class Jet{
 			_mom.SetValue(_pz,2);
 			_mom.SetValue(_E,3);
 		}
+
+
 
 	private:
 		//momentum four vector

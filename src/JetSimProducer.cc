@@ -383,6 +383,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recojets, int evt){
 			}
 		}		
 		if(jet.GetNRecHits() < _minNrhs) continue;
+		jet.CalculateCenter();
+		jet.CalculateCovariance();
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
 		vector<JetPoint> jet_rhs = jet.GetJetPoints();
