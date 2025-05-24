@@ -175,7 +175,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	int col, mark;	
 	for( int i = 0 ; i < int(hist.size()); i++){
-		cout << "i " << i << " hists size " << hist.size() << endl;
+		//cout << "i " << i << " hists size " << hist.size() << endl;
 		hist[i]->UseCurrentStyle();
 		hist[i]->SetStats(false);
 		hist[i]->GetXaxis()->CenterTitle(true);
@@ -186,7 +186,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		//else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
 		
 
-		cout << "miny " << miny << " max " << 3*maxy << endl;
+//		cout << "miny " << miny << " max " << 3*maxy << endl;
 		hist[i]->GetYaxis()->SetRangeUser(1e-4, 2*maxy);
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(1e-4, 2*maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
@@ -194,7 +194,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		legentry = hist[i]->GetTitle();
 		title = legentry;	 
 		histtitle = hist[i]->GetTitle();
-		cout << " 1 - legentry " << legentry << " title " << title << " histtitle " << histtitle << endl;
 		if(pf == 0){
 			legentry = hist[i]->GetTitle(); 
 			title = title.substr(title.find("_")+1);
@@ -223,7 +222,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			legentry = legentry.substr(legentry.rfind("_")+1);
 			string sub1 = title.substr(0,title.find("_procStack"));
 			legentry = name.substr(0,name.find(legentry)-1);
-		cout << "1 - hist title " << hist[i]->GetTitle() << " hist name " << hist[i]->GetName() << " legentry " << legentry << " title " << title << endl;
 		}
 		else if(pf == 4){ 
 			string title = hist[i]->GetTitle();
@@ -235,7 +233,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			legentry = legentry.substr(0,legentry.find("PD"));		
 
 
-		cout << " 2 - legentry " << legentry << " title " << title << " histtitle " << histtitle << endl;
 		//if a key from labeltocolor is in legentry, set that color
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
@@ -268,7 +265,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 
 			}
 		}
-		cout << "1 - hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
 		string name = hist[i]->GetName();
 		string type = "";
 		if(name.find("_lead") != string::npos){
@@ -284,8 +280,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 				
 		}
 		if(type != "") legentry += "_"+type;
-		cout << "2 - hist " << hist[i]->GetName() << " col " << col << " mark " << mark << endl;
-	cout << "type " << type << " legentry " << legentry << endl;	
 
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
@@ -509,7 +503,6 @@ void GetHistsProcMethods(TDirectory* dir, string& proc, vector<TH1D*>& hists, ve
 	TString tdir("TDirectoryFile");
 	TString th1d("TH1D");
 	hists.clear();
-cout << "GETHISTSPROCMETHOD with dir " << dir->GetName() << " for proc " << proc << endl;
 	while((key = (TKey*)iter())){
 		cout << "key " << key->GetName() << " class " << key->GetClassName() << endl;
 		if(key->GetClassName() == th1d){
@@ -1214,7 +1207,6 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 				dir->cd();
 				//get histograms (stack these)
 				vector<TH1D*> hists;
-cout << "types size " << types.size() << endl;
 				if(types.size() == 0){
 					GetHistsType(dir, proc,"", hists);
 			
@@ -1599,6 +1591,8 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "nJets_jetSize");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nRhs_nSubclustersJet");
 	Hist2D(file, "ttbar", "BHC", oname, "nRhs_nSubclustersJet");
+	Hist2D(file, "ttbar", "recoAK4", oname, "jetEnergy_jetSize");
+	Hist2D(file, "ttbar", "BHC", oname, "jetEnergy_jetSize");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersJet_mass");
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersJet_mass");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclustersJet_energy");
