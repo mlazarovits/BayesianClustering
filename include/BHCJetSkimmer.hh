@@ -274,7 +274,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4Jet_nJets_jetSize);
 			_hists2D.push_back(BHCJet_nJets_jetSize);
 			_hists2D.push_back(BHCJet_nRhs_nSubclustersJet);
-			_hists2D.push_back(recoAK4Jet_nSubclustersJet_nGenConstituents);
+			_hists2D.push_back(recoAK4nSubclusters_genAK4nConstituents);
 			_hists2D.push_back(recoAK4Jet_nSubclustersJet_mass);
 			_hists2D.push_back(recoAK4Jet_nSubclustersJet_energy);
 			_hists2D.push_back(recoAK4Jet_nSubclustersEvt_nJet);
@@ -287,7 +287,26 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4Jet_nSubclusters_jetSize);
 			_hists2D.push_back(recoAK4Jet_jetEnergy_jetSize);
 			_hists2D.push_back(BHCJet_jetEnergy_jetSize);
-
+                	_hists2D.push_back(recoAK4JetPt_genAK4JetPt);
+                	_hists2D.push_back(recoAK4JetE_genAK4JetE);
+                	_hists2D.push_back(recoAK4JetMass_genAK4JetMass);
+                	_hists2D.push_back(recoAK4JetEtaCenter_genAK4JetEtaCenter);
+                	_hists2D.push_back(recoAK4JetPhiCenter_genAK4JetPhiCenter);
+                	_hists2D.push_back(recoAK4JetTimeCenter_genAK4JetTimeCenter);
+                	_hists2D.push_back(BHCJetPt_genAK4JetPt);
+                	_hists2D.push_back(BHCJetE_genAK4JetE);
+                	_hists2D.push_back(BHCJetMass_genAK4JetMass);
+                	_hists2D.push_back(BHCJetEtaCenter_genAK4JetEtaCenter);
+                	_hists2D.push_back(BHCJetPhiCenter_genAK4JetPhiCenter);
+                	_hists2D.push_back(BHCJetTimeCenter_genAK4JetTimeCenter);
+                	_hists2D.push_back(BHCnSubclusters_genAK4nConstituents);
+                	_hists2D.push_back(BHCJetPt_genAK15JetPt);
+                	_hists2D.push_back(BHCJetE_genAK15JetE);
+                	_hists2D.push_back(BHCJetMass_genAK15JetMass);
+                	_hists2D.push_back(BHCJetEtaCenter_genAK15JetEtaCenter);
+                	_hists2D.push_back(BHCJetPhiCenter_genAK15JetPhiCenter);
+                	_hists2D.push_back(BHCJetTimeCenter_genAK15JetTimeCenter);
+                	_hists2D.push_back(BHCnSubclusters_genAK15nConstituents);
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 		void SetRecoMinPt(double r){ _prod->SetRecoMinPt(r); }
@@ -345,10 +364,12 @@ class BHCJetSkimmer{
 			pair<int, int> wmass_idxs = make_pair(-999, -999);
 			Jet w, top, genpart, genW;
 			//do gen matching
-			vector<int> genMatchIdxs; //one per jet, follows same indexing as jets
+			vector<int> genAK4MatchIdxs, genAK15MatchIdxs; //one per jet, follows same indexing as jets
 			//GenMatchJet(_predJets,genMatchIdxs);
 			vector<int> recoMatchIdxs;
 			GenericMatchJet(_predJets,_recojets, recoMatchIdxs); //match BHC jets to reco jets
+			GenericMatchJet(_predJets,_genjets, genAK4MatchIdxs); //match BHC jets to reco jets
+			GenericMatchJet(_predJets,_genfatjets, genAK15MatchIdxs); //match BHC jets to reco jets
 			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
@@ -530,6 +551,34 @@ class BHCJetSkimmer{
 							}
 						}
 
+						//do gen AK4 matching hists
+						if(genAK4MatchIdxs[j] != -1){
+							int genjetidx = _genjets[genAK4MatchIdxs[j]].GetUserIdx();
+							cout << "hist 55 # entries " << _procCats[p].hists2D[pt][55]->GetEntries() << endl;
+							_procCats[p].hists2D[pt][55]->Fill(_predJets[j].pt(),_genjets[genAK4MatchIdxs[j]].pt());
+							_procCats[p].hists2D[pt][56]->Fill(_predJets[j].E(),_genjets[genAK4MatchIdxs[j]].E());
+							_procCats[p].hists2D[pt][57]->Fill(_predJets[j].m(),_genjets[genAK4MatchIdxs[j]].m());
+							_procCats[p].hists2D[pt][58]->Fill(_predJets[j].eta(),_genjets[genAK4MatchIdxs[j]].eta());
+							_procCats[p].hists2D[pt][59]->Fill(_predJets[j].phi(),_genjets[genAK4MatchIdxs[j]].phi());
+							_procCats[p].hists2D[pt][60]->Fill(_predJets[j].time(),_genjets[genAK4MatchIdxs[j]].time());
+							_procCats[p].hists2D[pt][61]->Fill(_predJets[j].GetNConstituents(), _base->Jet_genNConstituents->at(genjetidx));
+							
+						}			
+						//do gen AK15 matching hists
+						if(genAK15MatchIdxs[j] != -1){
+							int genfatjetidx = _genfatjets[genAK15MatchIdxs[j]].GetUserIdx();
+							cout << "hist 62 # entries " << _procCats[p].hists2D[pt][62]->GetEntries() << endl;
+							_procCats[p].hists2D[pt][62]->Fill(_predJets[j].pt(),_genfatjets[genAK15MatchIdxs[j]].pt());
+							_procCats[p].hists2D[pt][63]->Fill(_predJets[j].E(),_genfatjets[genAK15MatchIdxs[j]].E());
+							_procCats[p].hists2D[pt][64]->Fill(_predJets[j].m(),_genfatjets[genAK15MatchIdxs[j]].m());
+							_procCats[p].hists2D[pt][65]->Fill(_predJets[j].eta(),_genfatjets[genAK15MatchIdxs[j]].eta());
+							_procCats[p].hists2D[pt][66]->Fill(_predJets[j].phi(),_genfatjets[genAK15MatchIdxs[j]].phi());
+							_procCats[p].hists2D[pt][67]->Fill(_predJets[j].time(),_genfatjets[genAK15MatchIdxs[j]].time());
+							_procCats[p].hists2D[pt][68]->Fill(_predJets[j].GetNConstituents(), _base->FatJet_genNConstituents->at(genfatjetidx));
+					
+						}			
+
+
 						/*
 						if(j != wmass_idxs.first && j != wmass_idxs.second){
 							_procCats[p].hists1D[0][38]->Fill(cov.at(0,0));
@@ -699,7 +748,8 @@ class BHCJetSkimmer{
 			//do gen matching
 			vector<int> genMatchIdxs_jet; //one per jet, follows same indexing as jets
 			vector<int> genMatchIdxs_p; //one per jet, follows same indexing as jets
-			GenMatchJetToJet(_recojets,genMatchIdxs_jet);
+			//GenMatchJetToJet(_recojets,genMatchIdxs_jet);
+			GenericMatchJet(_recojets,_genjets,genMatchIdxs_jet);
 			//skip gen particle matching for now
 			//GenMatchJet(_recojets,genMatchIdxs_p);
 			//cout << "final best matches" << endl;
@@ -813,7 +863,16 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][91]->Fill(jetpt);	
 						_procCats[p].hists2D[pt][28]->Fill(jetpt, _recojets[j].GetNConstituents());
 						_procCats[p].hists2D[pt][36]->Fill(_recojets[j].GetNConstituents(), _base->Jet_genNConstituents->at(genjetidx));
-						
+				
+
+						_procCats[p].hists2D[pt][49]->Fill(_recojets[j].pt(),_genjets[genidx].pt());
+						_procCats[p].hists2D[pt][50]->Fill(_recojets[j].E(),_genjets[genidx].E());
+						_procCats[p].hists2D[pt][51]->Fill(_recojets[j].m(),_genjets[genidx].m());
+						_procCats[p].hists2D[pt][52]->Fill(_recojets[j].eta(),_genjets[genidx].eta());
+						_procCats[p].hists2D[pt][53]->Fill(_recojets[j].phi(),_genjets[genidx].phi());
+						_procCats[p].hists2D[pt][54]->Fill(_recojets[j].time(),_genjets[genidx].time());
+
+		
 						int genpartidx = -1;
 						int ngenparts_ptge5 = 0;
 						for(int g = 0; g < _base->Jet_genNConstituents->at(genjetidx); g++){
@@ -838,8 +897,9 @@ class BHCJetSkimmer{
 						}
 						_procCats[p].hists2D[pt][29]->Fill(ngenparts_ptge5,_recojets[j].GetNConstituents());
 
+						/*
 						//skip gen matching for now
-						continue;
+						//continue;
 						//fill gen match histograms
 						if(p == 0) cout << "found gen match to reco jet " << j << " with id " << _base->genpart_id->at(genidx) << " and dr " << dR(_base->genpart_eta->at(genidx), _base->genpart_phi->at(genidx), _recojets[j].eta(), _recojets[j].phi()) << " and gen/reco E ratio " << _base->genpart_energy->at(genidx)/_recojets[j].E() << " user idx " << genidx << endl;
 						//get matched gen particle here
@@ -869,15 +929,14 @@ class BHCJetSkimmer{
 
 						}
 						else{ }
-
+						*/
 					}
 				}
+				/*
 				//fill njets based on top decay type
 				//0 -> fully had
 				//1 -> fully lep
 				//2 -> semi lep 
-				//skip gen matching for now
-				continue;	
 
 				if(_topDecayType == 0)
 					_procCats[p].hists1D[0][71]->Fill(njets);
@@ -913,6 +972,7 @@ class BHCJetSkimmer{
 					topmass = top.mass();
 					_procCats[p].hists1D[0][28]->Fill(topmass);
 				}
+				*/
 			}
 		}
 
@@ -1625,7 +1685,7 @@ class BHCJetSkimmer{
 		//35 - # rhs vs # subclusters for BHC jets
 		TH2D* BHCJet_nRhs_nSubclustersJet = new TH2D("BHCJet_nRhs_nSubclustersJet","BHCJet_nRhs_nSubclustersJet;nRhs;nSubclustersJet;a.u.",300,0,300,30,0,30);
 		//36 - # subclusters vs # constituents in gen jets for gen-matched AK4 jets
-		TH2D* recoAK4Jet_nSubclustersJet_nGenConstituents = new TH2D("recoAK4Jet_nSubclustersJet_nGenConstituents","recoAK4Jet_nSubclustersJet_nGenConstituents;nSubclustersJet;nGenConstituents",30,0,30,100,0,100);
+		TH2D* recoAK4nSubclusters_genAK4nConstituents = new TH2D("recoAK4nSubclusters_genAK4nConstituents","recoAK4nSubclusters_genAK4nConstituents",30,0,30,30,0,30);
 		//37 - # subclusters vs jet mass for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
 		//38 - # subclusters vs jet energy for reco AK4 jets
@@ -1650,7 +1710,46 @@ class BHCJetSkimmer{
 		TH2D* recoAK4Jet_jetEnergy_jetSize = new TH2D("recoAK4Jet_jetEnergy_jetSize","recoAK4Jet_jetEnergy_jetSize;jetEnergy;jetSize",50,0,500,50,0,2);
 		//48 - BHC jet energy vs jet size
 		TH2D* BHCJet_jetEnergy_jetSize = new TH2D("BHCJet_jetEnergy_jetSize","BHCJet_jetEnergy_jetSize;jetEnergy;jetSize",50,0,500,50,0,2);
-
+		//49 - gen jet pt vs reco jet pt (AK4)
+		TH2D* recoAK4JetPt_genAK4JetPt = new TH2D("recoAK4JetPt_genAK4JetPt","recoAK4JetPt_genAK4JetPt",25,0,500,25,0,500);
+		//50 - gen jet E vs reco jet E (AK4)
+		TH2D* recoAK4JetE_genAK4JetE = new TH2D("recoAK4JetE_genAK4JetE","recoAK4JetE_genAK4JetE",25,0,2000,25,0,2000);
+		//51 - gen jet mass vs reco jet mass (AK4)
+		TH2D* recoAK4JetMass_genAK4JetMass = new TH2D("recoAK4JetMass_genAK4JetMass","recoAK4JetMass_genAK4JetMass",25,0,250,25,0,250);
+		//52 - gen jet eta vs reco jet eta (AK4)
+		TH2D* recoAK4JetEtaCenter_genAK4JetEtaCenter = new TH2D("recoAK4JetEtaCenter_genAK4JetEtaCenter","recoAK4JetEtaCenter_genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		//53 - gen jet phi vs reco jet phi (AK4)
+		TH2D* recoAK4JetPhiCenter_genAK4JetPhiCenter = new TH2D("recoAK4JetPhiCenter_genAK4JetPhiCenter","recoAK4JetPhiCenter_genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		//54 - gen jet time vs reco jet time (AK4)
+		TH2D* recoAK4JetTimeCenter_genAK4JetTimeCenter = new TH2D("recoAK4JetTimeCenter_genAK4JetTimeCenter","recoAK4JetTimeCenter_genAK4JetTimeCenter",25,-1,1,25,-1,1.);
+		//55 - gen AK4 jet pt vs BHC jet pt 
+		TH2D* BHCJetPt_genAK4JetPt = new TH2D("BHCJetPt_genAK4JetPt","BHCJetPt_genAK4JetPt",25,0,500,25,0,500);
+		//56 - gen AK4 jet E vs BHC jet E 
+		TH2D* BHCJetE_genAK4JetE = new TH2D("BHCJetE_genAK4JetE","BHCJetE_genAK4JetE",25,0,2000,25,0,2000);
+		//57 - gen AK4 jet mass vs BHC jet mass 
+		TH2D* BHCJetMass_genAK4JetMass = new TH2D("BHCJetMass_genAK4JetMass","BHCJetMass_genAK4JetMass",25,0,250,25,0,250);
+		//58 - gen AK4 jet eta vs BHC jet eta 
+		TH2D* BHCJetEtaCenter_genAK4JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK4JetEtaCenter","BHCJetEtaCenter_genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		//59 - gen AK4 jet phi vs BHC jet phi 
+		TH2D* BHCJetPhiCenter_genAK4JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK4JetPhiCenter","BHCJetPhiCenter_genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		//60 - gen AK4 jet time vs BHC jet time 
+		TH2D* BHCJetTimeCenter_genAK4JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK4JetTimeCenter","BHCJetTimeCenter_genAK4JetTimeCenter",25,-1,1,25,-1,1.);
+		//61 - gen AK4 jet # constituents vs BHC jet # subclusters
+		TH2D* BHCnSubclusters_genAK4nConstituents = new TH2D("BHCnSubclusters_genAK4nConstituents","BHCnSubclusters_genAK4nConstituents",30,0,30,30,0,30);
+		//62 - gen AK15 jet pt vs BHC jet pt 
+		TH2D* BHCJetPt_genAK15JetPt = new TH2D("BHCJetPt_genAK15JetPt","BHCJetPt_genAK15JetPt",25,0,500,25,0,500);
+		//63 - gen AK15 jet E vs BHC jet E 
+		TH2D* BHCJetE_genAK15JetE = new TH2D("BHCJetE_genAK15JetE","BHCJetE_genAK15JetE",25,0,2000,25,0,2000);
+		//64 - gen AK15 jet mass vs BHC jet mass 
+		TH2D* BHCJetMass_genAK15JetMass = new TH2D("BHCJetMass_genAK15JetMass","BHCJetMass_genAK15JetMass",25,0,250,25,0,250);
+		//65 - gen AK15 jet eta vs BHC jet eta 
+		TH2D* BHCJetEtaCenter_genAK15JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK15JetEtaCenter","BHCJetEtaCenter_genAK15JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		//66 - gen AK15 jet phi vs BHC jet phi 
+		TH2D* BHCJetPhiCenter_genAK15JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK15JetPhiCenter","BHCJetPhiCenter_genAK15JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		//67 - gen AK15 jet time vs BHC jet time 
+		TH2D* BHCJetTimeCenter_genAK15JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK15JetTimeCenter","BHCJetTimeCenter_genAK15JetTimeCenter",25,-1,1,25,-1,1.);
+		//68 - gen AK15 jet # constituents vs BHC jet # subclusters 
+		TH2D* BHCnSubclusters_genAK15nConstituents = new TH2D("BHCnSubclusters_genAK15nConstituents","BHCnSubclusters_genAK15nConstituents",30,0,30,30,0,30);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;

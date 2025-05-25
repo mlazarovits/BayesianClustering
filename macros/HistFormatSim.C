@@ -141,10 +141,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	else if(pf == 2){
 		labelToColor["recoAK4"] = TColor::GetColor("#f7a278");
 		labelToColor["genAK4"] = TColor::GetColor("#121211");
+		labelToColor["genAK15"] = TColor::GetColor("#121211");
 		labelToColor["BHC"] = TColor::GetColor("#6859f1");
 	
 		labelToMark["recoAK4"] = 71;
 		labelToMark["genAK4"] = 73;
+		labelToMark["genAK15"] = 74;
 		labelToMark["BHC"] =   72; 
 
 	}
@@ -1513,7 +1515,7 @@ void HistFormatSim(string file){
 	//decay types
 	vector<string> types = {"b_","qg","lep"};
 	vector<string> typesFullDecay = {"fullHad","semiLep","fullLep"};
-	vector<string> jettypes = {"genAK4","recoAK4","BHC"};
+	vector<string> jettypes = {"genAK4","genAK15","recoAK4","BHC"};
 	vector<string> jettypes_recoBHC = {"recoAK4","BHC"};
 	vector<string> jettypes_genBHC = {"genAK4","BHC"};
 
