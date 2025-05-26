@@ -729,7 +729,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][152]->Fill(_genfatjets[j].pt());
 					_procCats[p].hists1D[0][153]->Fill(_genfatjets[j].mass());
 					_procCats[p].hists1D[0][154]->Fill(_genfatjets[j].E());
-					_procCats[p].hists1D[0][156]->Fill(_base->Jet_genNConstituents->at(_genfatjets[j].GetUserIdx()));
+					_procCats[p].hists1D[0][156]->Fill(_base->FatJet_genNConstituents->at(_genfatjets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen particle match
 					int genmatch = genMatchIdxs[j];
 					if(genmatch != -1){
