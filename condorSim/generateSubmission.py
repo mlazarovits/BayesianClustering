@@ -43,14 +43,14 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-
-    zeroSupStr = str(args.zeroSup)
-    zeroSupStr = zeroSupStr.replace(".","p")
-    inputFile += "_eThresh-"+zeroSupStr
+    if(args.zeroSup != '0.5'):
+        zeroSupStr = zeroSupStr.replace(".","p")
+        inputFile += "_eThresh-"+zeroSupStr
 
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
-    
+
+    print("inputFile",inputFile)
     #organize output by sample, object (ie jets or photons), and strategy (for jets only - NlnN or N2)
     #find .root and then find the / before that (if it exists) - everything in between is the file name
     sampleName = inputFile[ inputFile.rfind("/")+1 : inputFile.find(".root") ]
@@ -138,7 +138,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --minTopE "+str(args.minTopE)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
@@ -186,7 +186,7 @@ def main():
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
-    parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default=0.1)
+    parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
@@ -203,9 +203,11 @@ def main():
     parser.add_argument('--tResCte',help='set time smearing constant parameter in ns',default=0.1727)
     parser.add_argument('--tResStoch',help='set time smearing stochastic parameter in ns',default=0.5109)
     parser.add_argument('--tResNoise',help='set time smearing noise parameter in ns',default=2.106)
-    parser.add_argument('--minpt',help='min object pt',default=10.)
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
-    parser.add_argument('--minE',help='min reco jet energy',default=0)
+    parser.add_argument('--minpt',help='min gen jet pt',default=0.)
+    parser.add_argument('--minE',help='min gen jet energy',default=0)
+    parser.add_argument('--minTopPt',help='min gen top pt',default=0.)
+    parser.add_argument('--minTopE',help='min gen top energy',default=0)
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
