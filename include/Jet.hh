@@ -62,14 +62,17 @@ class Jet{
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
 
-		void SetVertex(BayesPoint vtx, double detR = 129){
+		void SetVertex(BayesPoint vtx){
 			if(vtx.Dim() != 3){
 				cout << "Error: must provide 3 dimensional spacial coordinates for vertex for momentum direction." << endl;
 				return;
 			}
 			_vtx = vtx;
-			//recalculate momentum from PV
-			
+		
+		}
+		
+		//recalculate momentum from PV
+		void CalculatePfromPV(double detR = 129){	
 			//get x, y, z from eta, phi
 			double x = detR*cos(_phi);
 			double y = detR*sin(_phi);
@@ -92,7 +95,7 @@ class Jet{
 			_pz = pt*sinh(p_eta);
 
 			_kt2 = _px*_px + _py*_py;
-			_mass = mass();
+			_mass = _calc_mass();
 		}
 
 		//setting the momentum of eg subclusters with track information
@@ -162,8 +165,9 @@ class Jet{
 		double m2() const{ return (_E+_pz)*(_E-_pz)-_kt2; }
 		//invariant mass - https://fastjet.fr/repo/doxygen-3.4.0/PseudoJet_8hh_source.html L1059
 		//https://gitlab.cern.ch/CLHEP/CLHEP/-/blob/develop/Vector/Vector/LorentzVector.icc#L150
-		double mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
-		double m() const{return mass(); }
+		double _calc_mass() const{return m2() < 0.0 ? -sqrt(-m2()) : sqrt(m2()); }
+		double mass() const{ return _mass; }
+		double m() const{return _mass; }
 		
 		//different mass calculation types for comparison
 		double mass_rhs() const{
@@ -175,9 +179,9 @@ class Jet{
 			for(int i = 0; i < _nRHs; i++){		
 				//theta is calculated between beamline (z-dir) and vector in x-y plane	
 				//centered at (0,0,0)
-				double x = _rhs[i].x();// - vtx.at(0);
-				double y = _rhs[i].y();// - vtx.at(1);
-				double z = _rhs[i].z();// - vtx.at(2);
+				double x = _rhs[i].x() - _vtx.at(0);
+				double y = _rhs[i].y() - _vtx.at(1);
+				double z = _rhs[i].z() - _vtx.at(2);
 				double theta = atan2( sqrt(x*x + y*y), z );
 				double phi = atan2(y, x);
 				double eta = -log(tan(theta/2.)); 
@@ -247,7 +251,7 @@ class Jet{
 			Jet rh;
 			for(int r = 0; r < _rhs.size(); r++){
 				rh = Jet(_rhs[r], _vtx);
-				rh.SetVertex(_vtx);
+				rh.CalculatePfromPV();
 				rh.SetUserIdx(_rhs[r].rhId());
 				rhs.push_back(rh);	
 			}
@@ -343,8 +347,8 @@ class Jet{
 			if(it != _constituents.end()) return;	
 		
 			jt.SetVertex(_vtx);
+			jt.CalculatePfromPV();
 			_constituents.push_back(jt);
-			_constituents[_constituents.size()-1].SetVertex(_vtx);
 			/*
 			//reset overall cluster parameters
 			double norm = 0; //should be 1

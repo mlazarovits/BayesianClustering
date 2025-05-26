@@ -33,7 +33,7 @@ Jet::Jet(double px, double py, double pz, double E){
 	_py = py;
 	_pz = pz;
 	_kt2 = px*px + py*py;
-	_mass = mass();
+	_mass = _calc_mass();
 	_phi = _invalid_phi;
 	_eta = _invalid_eta;
 
@@ -80,7 +80,7 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 	_py = pt*sin(p_phi);
 	_pz = pt*sinh(p_eta);
 	_kt2 = _px*_px + _py*_py; 		
-	_mass = mass();
+	_mass = _calc_mass();
 
 	
 	_idx = 999;
@@ -143,7 +143,7 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 	_kt2 = _px*_px + _py*_py;
 	//wraparound
 	//_phi = acos(cos(_phi));
-	_mass = mass();
+	_mass = _calc_mass();
 //cout << "MAKING jet pts kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << sqrt(_kt2) << " mass " << _mass << " n pts " << rhs.size() << endl;
 
 	_idx = 999;
@@ -181,9 +181,11 @@ Jet::Jet(const vector<Jet>& jets){
 
 	}
 	_kt2 = _px*_px + _py*_py;
+	_ensure_valid_rap_phi();
+
+	_mass = _calc_mass();
 
 	_idx = 999;
-	_ensure_valid_rap_phi();
 	_set_time();
 
 	CalculateCenter();	
@@ -224,7 +226,7 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
-	_mass = mass();
+	_mass = _calc_mass();
 //cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
 
 	_idx = 999;
@@ -270,7 +272,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 	_pz = pt*sinh(p_eta);
 
 	_kt2 = _px*_px + _py*_py;
-	_mass = mass();
+	_mass = _calc_mass();
 //cout << "jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt << " m2 " << m2() << endl;
 
 	_idx = 999;
@@ -387,8 +389,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_mu.SetEntry(_t,2,0);
 
 	_update_mom();
-	_mass = mass();
-	
+	_mass = _calc_mass();
 	CalculateCovariance();	
 	//set constituents (subclusters)
 	for(int k = 0; k < nsubcl; k++){
@@ -419,6 +420,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 
 }
 
+//copy ctor
 Jet::Jet(const Jet& j){
 	_px = j.px();
 	_py = j.py();
@@ -430,7 +432,7 @@ Jet::Jet(const Jet& j){
 	_t = j.time();
 
 	_kt2 = j.kt2();
-	_mass = j.mass();
+	_mass = j._calc_mass();
 	
 	_idx = j.GetUserIdx();
 	_vtx = j.GetVertex();

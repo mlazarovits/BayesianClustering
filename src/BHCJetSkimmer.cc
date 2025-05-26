@@ -57,10 +57,17 @@ void BHCJetSkimmer::Skim(){
 		//at least 1 gen jet
 		_base->GetEntry(i);
 		//if(_base->Jet_genNJet < 1) continue;
-		//at least 1 top jet
 		int ngenpart = _base->genpart_ngenpart;
-		int ntop = count(_base->genpart_id->begin(), _base->genpart_id->end(), 6);
-		ntop += count(_base->genpart_id->begin(), _base->genpart_id->end(), -6);
+		//at least 1 top quark with pt, E requirements
+		int ntop = 0;
+		for(int g = 0; g < ngenpart; g++){
+			if(fabs(_base->genpart_id->at(g)) != 6) continue;
+			if(_base->genpart_energy->at(g) < _minTopE) continue;
+			if(_base->genpart_pt->at(g) < _minTopPt) continue;
+			cout << "top has pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+			ntop++;
+		}	
+
 		if(ntop < 1) continue;
 		
 		//at least 1 W	

@@ -185,7 +185,6 @@ void JetSimProducer::GetGenJets(vector<Jet>& genjets, int evt){
 		Jet jet(px, py,
 		        pz, _base->Jet_genEnergy->at(j));
 		//check that mass is the same
-		//cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
 		jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
 		//set # constituents
@@ -246,9 +245,8 @@ void JetSimProducer::GetGenFatJets(vector<Jet>& genjets, int evt){
 		pz = pt*sinh(eta);
 
 		Jet jet(px, py,
-		        pz, _base->Jet_genEnergy->at(j));
+		        pz, _base->FatJet_genEnergy->at(j));
 		//check that mass is the same
-		//cout << "jet mass " << jet.mass() << " gen jet mass " << _base->Jet_genMass->at(j) << endl;
 		jet.SetVertex(vtx);
 		jet.SetUserIdx(j);
 		//set # constituents
