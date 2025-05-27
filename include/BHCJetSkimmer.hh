@@ -1694,7 +1694,7 @@ class BHCJetSkimmer{
 		//35 - # rhs vs # subclusters for BHC jets
 		TH2D* BHCJet_nRhs_nSubclustersJet = new TH2D("BHCJet_nRhs_nSubclustersJet","BHCJet_nRhs_nSubclustersJet;nRhs;nSubclustersJet;a.u.",300,0,300,30,0,30);
 		//36 - # subclusters vs # constituents in gen jets for gen-matched AK4 jets
-		TH2D* recoAK4nSubclusters_genAK4nConstituents = new TH2D("recoAK4nSubclusters_genAK4nConstituents","recoAK4nSubclusters_genAK4nConstituents",30,0,30,30,0,30);
+		TH2D* recoAK4nSubclusters_genAK4nConstituents = new TH2D("recoAK4nSubclusters_genAK4nConstituents","recoAK4nSubclusters_genAK4nConstituents;recoAK4nSubclusters;genAK4nConstituents",30,0,30,30,0,30);
 		//37 - # subclusters vs jet mass for reco AK4 jets
 		TH2D* recoAK4Jet_nSubclustersJet_mass = new TH2D("recoAK4Jet_nSubclustersJet_mass","recoAK4Jet_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
 		//38 - # subclusters vs jet energy for reco AK4 jets
@@ -1720,45 +1720,45 @@ class BHCJetSkimmer{
 		//48 - BHC jet energy vs jet size
 		TH2D* BHCJet_jetEnergy_jetSize = new TH2D("BHCJet_jetEnergy_jetSize","BHCJet_jetEnergy_jetSize;jetEnergy;jetSize",50,0,500,50,0,2);
 		//49 - gen jet pt vs reco jet pt (AK4)
-		TH2D* recoAK4JetPt_genAK4JetPt = new TH2D("recoAK4JetPt_genAK4JetPt","recoAK4JetPt_genAK4JetPt",25,0,500,25,0,500);
+		TH2D* recoAK4JetPt_genAK4JetPt = new TH2D("recoAK4JetPt_genAK4JetPt","recoAK4JetPt_genAK4JetPt;recoAK4JetPt;genAK4JetPt",25,0,500,25,0,500);
 		//50 - gen jet E vs reco jet E (AK4)
-		TH2D* recoAK4JetE_genAK4JetE = new TH2D("recoAK4JetE_genAK4JetE","recoAK4JetE_genAK4JetE",25,0,2000,25,0,2000);
+		TH2D* recoAK4JetE_genAK4JetE = new TH2D("recoAK4JetE_genAK4JetE","recoAK4JetE_genAK4JetE;recoAK4JetE;genAK4JetE",25,0,2000,25,0,2000);
 		//51 - gen jet mass vs reco jet mass (AK4)
-		TH2D* recoAK4JetMass_genAK4JetMass = new TH2D("recoAK4JetMass_genAK4JetMass","recoAK4JetMass_genAK4JetMass",25,0,250,25,0,250);
+		TH2D* recoAK4JetMass_genAK4JetMass = new TH2D("recoAK4JetMass_genAK4JetMass","recoAK4JetMass_genAK4JetMass;recoAK4JetMass;genAK4JetMass",25,0,250,25,0,250);
 		//52 - gen jet eta vs reco jet eta (AK4)
-		TH2D* recoAK4JetEtaCenter_genAK4JetEtaCenter = new TH2D("recoAK4JetEtaCenter_genAK4JetEtaCenter","recoAK4JetEtaCenter_genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		TH2D* recoAK4JetEtaCenter_genAK4JetEtaCenter = new TH2D("recoAK4JetEtaCenter_genAK4JetEtaCenter","recoAK4JetEtaCenter_genAK4JetEtaCenter;recoAK4JetEtaCenter;genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//53 - gen jet phi vs reco jet phi (AK4)
-		TH2D* recoAK4JetPhiCenter_genAK4JetPhiCenter = new TH2D("recoAK4JetPhiCenter_genAK4JetPhiCenter","recoAK4JetPhiCenter_genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK4JetPhiCenter_genAK4JetPhiCenter = new TH2D("recoAK4JetPhiCenter_genAK4JetPhiCenter","recoAK4JetPhiCenter_genAK4JetPhiCenter;recoAK4JetPhiCenter;genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//54 - gen jet time vs reco jet time (AK4)
-		TH2D* recoAK4JetTimeCenter_genAK4JetTimeCenter = new TH2D("recoAK4JetTimeCenter_genAK4JetTimeCenter","recoAK4JetTimeCenter_genAK4JetTimeCenter",25,-1,1,25,-1,1.);
+		TH2D* recoAK4JetTimeCenter_genAK4JetTimeCenter = new TH2D("recoAK4JetTimeCenter_genAK4JetTimeCenter","recoAK4JetTimeCenter_genAK4JetTimeCenter;recoAK4JetTimeCenter;genAK4JetTimeCenter",25,-1,1,25,-1,1.);
 		//55 - gen AK4 jet pt vs BHC jet pt 
-		TH2D* BHCJetPt_genAK4JetPt = new TH2D("BHCJetPt_genAK4JetPt","BHCJetPt_genAK4JetPt",25,0,500,25,0,500);
+		TH2D* BHCJetPt_genAK4JetPt = new TH2D("BHCJetPt_genAK4JetPt","BHCJetPt_genAK4JetPt;BHCJetPt;genAK4JetPt",25,0,500,25,0,500);
 		//56 - gen AK4 jet E vs BHC jet E 
-		TH2D* BHCJetE_genAK4JetE = new TH2D("BHCJetE_genAK4JetE","BHCJetE_genAK4JetE",25,0,2000,25,0,2000);
+		TH2D* BHCJetE_genAK4JetE = new TH2D("BHCJetE_genAK4JetE","BHCJetE_genAK4JetE;BHCJetE;genAK4JetE",25,0,2000,25,0,2000);
 		//57 - gen AK4 jet mass vs BHC jet mass 
-		TH2D* BHCJetMass_genAK4JetMass = new TH2D("BHCJetMass_genAK4JetMass","BHCJetMass_genAK4JetMass",25,0,250,25,0,250);
+		TH2D* BHCJetMass_genAK4JetMass = new TH2D("BHCJetMass_genAK4JetMass","BHCJetMass_genAK4JetMass;BHCJetMass;genAK4JetMass",25,0,250,25,0,250);
 		//58 - gen AK4 jet eta vs BHC jet eta 
-		TH2D* BHCJetEtaCenter_genAK4JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK4JetEtaCenter","BHCJetEtaCenter_genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		TH2D* BHCJetEtaCenter_genAK4JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK4JetEtaCenter","BHCJetEtaCenter_genAK4JetEtaCenter;BHCJetEtaCenter;genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//59 - gen AK4 jet phi vs BHC jet phi 
-		TH2D* BHCJetPhiCenter_genAK4JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK4JetPhiCenter","BHCJetPhiCenter_genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genAK4JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK4JetPhiCenter","BHCJetPhiCenter_genAK4JetPhiCenter;BHCJetPhiCenter;genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//60 - gen AK4 jet time vs BHC jet time 
-		TH2D* BHCJetTimeCenter_genAK4JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK4JetTimeCenter","BHCJetTimeCenter_genAK4JetTimeCenter",25,-1,1,25,-1,1.);
+		TH2D* BHCJetTimeCenter_genAK4JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK4JetTimeCenter","BHCJetTimeCenter_genAK4JetTimeCenter;BHCJetTimeCenter;genAK4JetTimeCenter",25,-1,1,25,-1,1.);
 		//61 - gen AK4 jet # constituents vs BHC jet # subclusters
-		TH2D* BHCnSubclusters_genAK4nConstituents = new TH2D("BHCnSubclusters_genAK4nConstituents","BHCnSubclusters_genAK4nConstituents",30,0,30,30,0,30);
+		TH2D* BHCnSubclusters_genAK4nConstituents = new TH2D("BHCnSubclusters_genAK4nConstituents","BHCnSubclusters_genAK4nConstituents;BHCnSubclusters;genAK4nConstituents",30,0,30,30,0,30);
 		//62 - gen AK15 jet pt vs BHC jet pt 
-		TH2D* BHCJetPt_genAK15JetPt = new TH2D("BHCJetPt_genAK15JetPt","BHCJetPt_genAK15JetPt",25,0,500,25,0,500);
+		TH2D* BHCJetPt_genAK15JetPt = new TH2D("BHCJetPt_genAK15JetPt","BHCJetPt_genAK15JetPt;BHCJetPt;genAK15JetPt",25,0,500,25,0,500);
 		//63 - gen AK15 jet E vs BHC jet E 
-		TH2D* BHCJetE_genAK15JetE = new TH2D("BHCJetE_genAK15JetE","BHCJetE_genAK15JetE",25,0,2000,25,0,2000);
+		TH2D* BHCJetE_genAK15JetE = new TH2D("BHCJetE_genAK15JetE","BHCJetE_genAK15JetE;BHCJetE;genAK15JetE",25,0,2000,25,0,2000);
 		//64 - gen AK15 jet mass vs BHC jet mass 
-		TH2D* BHCJetMass_genAK15JetMass = new TH2D("BHCJetMass_genAK15JetMass","BHCJetMass_genAK15JetMass",25,0,250,25,0,250);
+		TH2D* BHCJetMass_genAK15JetMass = new TH2D("BHCJetMass_genAK15JetMass","BHCJetMass_genAK15JetMass;BHCJetMass;genAK15JetMass",25,0,250,25,0,250);
 		//65 - gen AK15 jet eta vs BHC jet eta 
-		TH2D* BHCJetEtaCenter_genAK15JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK15JetEtaCenter","BHCJetEtaCenter_genAK15JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
+		TH2D* BHCJetEtaCenter_genAK15JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK15JetEtaCenter","BHCJetEtaCenter_genAK15JetEtaCenter;BHCJetEtaCenter;genAK15JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//66 - gen AK15 jet phi vs BHC jet phi 
-		TH2D* BHCJetPhiCenter_genAK15JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK15JetPhiCenter","BHCJetPhiCenter_genAK15JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genAK15JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK15JetPhiCenter","BHCJetPhiCenter_genAK15JetPhiCenter;BHCJetPhiCenter;genAK15JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//67 - gen AK15 jet time vs BHC jet time 
-		TH2D* BHCJetTimeCenter_genAK15JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK15JetTimeCenter","BHCJetTimeCenter_genAK15JetTimeCenter",25,-1,1,25,-1,1.);
+		TH2D* BHCJetTimeCenter_genAK15JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK15JetTimeCenter","BHCJetTimeCenter_genAK15JetTimeCenter;BHCJetTimeCenter;genAK15JetTimeCenter",25,-1,1,25,-1,1.);
 		//68 - gen AK15 jet # constituents vs BHC jet # subclusters 
-		TH2D* BHCnSubclusters_genAK15nConstituents = new TH2D("BHCnSubclusters_genAK15nConstituents","BHCnSubclusters_genAK15nConstituents",30,0,30,30,0,30);
+		TH2D* BHCnSubclusters_genAK15nConstituents = new TH2D("BHCnSubclusters_genAK15nConstituents","BHCnSubclusters_genAK15nConstituents;BHCnSubclusters;genAK15nConstituents",30,0,30,30,0,30);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
