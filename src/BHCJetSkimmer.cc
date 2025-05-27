@@ -101,6 +101,11 @@ void BHCJetSkimmer::Skim(){
 		_prod->GetRecoJets(_recojets, i);
 		//if(_recojets.size() < 1){ cout << endl; continue; }
 		_prod->GetGenParticles(_genparts, i);
+		
+		//get PV info
+		_pvx = _base->PV_x;
+		_pvy = _base->PV_y;
+		_pvz = _base->PV_z;
 
 		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
 		int nsubcls_tot = 0;
@@ -194,10 +199,6 @@ void BHCJetSkimmer::Skim(){
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
 		
 		//FillResolutionHists(); - does gen matching...again?
-		//get PV info
-		_pvx = _base->PV_x;
-		_pvy = _base->PV_y;
-		_pvz = _base->PV_z;
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
 		BayesCluster* algo = new BayesCluster(rhs);
