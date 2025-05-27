@@ -1622,6 +1622,7 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "JetEtaCenter_genAK15JetEtaCenter");
 	Hist2D(file, "ttbar", "BHC", oname, "JetPhiCenter_genAK15JetPhiCenter");
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclusters_genAK15nConstituents");
+	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclusters_genAK4nConstituents");
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
