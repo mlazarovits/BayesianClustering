@@ -42,7 +42,6 @@ int main(int argc, char *argv[]){
 	double tres_stoch = 0.5109 * 1e-9;
 	double tres_noise = 2.106 * 1e-9;
 	double ethresh = 0.1; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
-	double rparam = 0.4; //for reco + gen AK jets
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -102,10 +101,6 @@ int main(int argc, char *argv[]){
 			i++;
     	 		ethresh = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--Rparam", 8) == 0){
-			i++;
-    	 		rparam = std::stod(argv[i]);
-   		}
 		if(strncmp(argv[i],"--energyCte", 11) == 0){
 			i++;
     	 		energy_c = std::stod(argv[i]);
@@ -145,7 +140,6 @@ int main(int argc, char *argv[]){
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --eThresh [ethresh]           set energy threshold for rechit reco (default = 0.1)" << endl;
-   		cout << "   --Rparam [rparam]             set R parameter for AK reco and gen jets (default = 0.4)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
    		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
@@ -217,7 +211,6 @@ int main(int argc, char *argv[]){
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
 	det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
-	det.SetRParam(rparam);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	//if(sig_delayed)
