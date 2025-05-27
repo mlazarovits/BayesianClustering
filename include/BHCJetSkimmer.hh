@@ -354,6 +354,7 @@ class BHCJetSkimmer{
 				//cout << "tree points " << endl; pc->Print();
 				//create new Jet
 				Jet predJet(_trees[i]->model, BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
+			//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
 				//put pt cut in for predjets of 5 GeV to match reco AK4 definition
 				if(predJet.pt() < 5) continue; 
 				//add Jet to jets	
@@ -564,7 +565,6 @@ class BHCJetSkimmer{
 						if(genAK4MatchIdxs[j] != -1){
 							int genjetidx = _genjets[genAK4MatchIdxs[j]].GetUserIdx();
 							_procCats[p].hists2D[pt][55]->Fill(_predJets[j].pt(),_genjets[genAK4MatchIdxs[j]].pt());
-							cout << "hist 55 # entries " << _procCats[p].hists2D[pt][55]->GetEntries() << endl;
 							_procCats[p].hists2D[pt][56]->Fill(_predJets[j].E(),_genjets[genAK4MatchIdxs[j]].E());
 							_procCats[p].hists2D[pt][57]->Fill(_predJets[j].m(),_genjets[genAK4MatchIdxs[j]].m());
 							_procCats[p].hists2D[pt][58]->Fill(_predJets[j].eta(),_genjets[genAK4MatchIdxs[j]].eta());
@@ -577,7 +577,6 @@ class BHCJetSkimmer{
 						if(genAK15MatchIdxs[j] != -1){
 							int genfatjetidx = _genfatjets[genAK15MatchIdxs[j]].GetUserIdx();
 							_procCats[p].hists2D[pt][62]->Fill(_predJets[j].pt(),_genfatjets[genAK15MatchIdxs[j]].pt());
-							cout << "hist 62 # entries " << _procCats[p].hists2D[pt][62]->GetEntries() << endl;
 							_procCats[p].hists2D[pt][63]->Fill(_predJets[j].E(),_genfatjets[genAK15MatchIdxs[j]].E());
 							_procCats[p].hists2D[pt][64]->Fill(_predJets[j].m(),_genfatjets[genAK15MatchIdxs[j]].m());
 							_procCats[p].hists2D[pt][65]->Fill(_predJets[j].eta(),_genfatjets[genAK15MatchIdxs[j]].eta());

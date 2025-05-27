@@ -135,7 +135,7 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 		_px += pt*cos(phi);
 		_py += pt*sin(phi);
 		_pz += pt*sinh(eta);
-	//cout << "i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*cosh(eta) << " " << pt*sinh(eta) << endl;
+	//cout << "rhs ctor - i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*sinh(eta) << " E " << _rhs[i].E() << " pt " << pt << " eta " << eta << " phi " << phi << endl;
 		
 		_E += rhs[i].E();
 
@@ -357,12 +357,13 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		double p_eta = -log(tan(p_theta/2));
 		double p_phi = atan2(dy, dx);
 
-		cout << "eta " << rh.at(0) << " p_eta " << p_eta << " phi " << rh.at(1) << " p_phi " << p_phi << " x " << x << " dx " << dx << " y " << y << " dy " << dy << " z " << z << " dz " << dz << " PV x " << _vtx.at(0) << " PV y " << _vtx.at(1) << " PV z " << _vtx.at(2) << endl;
+		//cout << "eta " << rh.at(0) << " p_eta " << p_eta << " phi " << rh.at(1) << " p_phi " << p_phi << " x " << x << " dx " << dx << " y " << y << " dy " << dy << " z " << z << " dz " << dz << " PV x " << _vtx.at(0) << " PV y " << _vtx.at(1) << " PV z " << _vtx.at(2) << endl;
 		//double pt = _E*sin(theta); //mass = 0
-		pt = _E/cosh(p_eta);
+		pt = _rhs[i].E()/cosh(p_eta); 
 		_px += pt*cos(p_phi);
 		_py += pt*sin(p_phi);
 		_pz += pt*sinh(p_eta);
+	//cout << "basepdfmix ctor - i " << i << " px " << pt*cos(p_phi) << " py " << pt*sin(p_phi) << " pz " << pt*sinh(p_eta) << " E " << _rhs[i].E() << " pt " << pt << " p_eta " << p_eta << " eta " << eta << " p_phi " << p_phi << " phi " << phi << endl;
 		
 	//cout << "rh #" << i << " time " << t << " phi " << phi << " weight " << rh.w() << endl;	
 		_E += _rhs[i].E();
