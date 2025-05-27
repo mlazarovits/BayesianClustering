@@ -86,7 +86,7 @@ class Jet{
 			double dz = z - _vtx.at(2);
 			//theta is calculated between beamline (z-dir) and x-y vector	
 			double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
-			double p_eta = -log(atan(p_theta/2));
+			double p_eta = -log(tan(p_theta/2));
 			double p_phi = atan2(dy, dx);
 			//double pt = _E*sin(theta); //mass = 0
 			double pt = _E/cosh(p_eta);
