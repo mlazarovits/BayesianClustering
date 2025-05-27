@@ -66,8 +66,8 @@ BasicDetectorSim::BasicDetectorSim(){
 	//set beam spot spread in z (mm) and time (mm/c)
 	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
 	_pythia.settings.readString("Beams:allowVertexSpread = on");
-	_pythia.settings.readString("Beams:sigmaVertexZ = 30");
-	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(30/(_sol*1e3))); //sol is in m/s
+	_pythia.settings.readString("Beams:sigmaVertexZ = 30"); //given in mm
+	_pythia.settings.readString("Beams:sigmaTime = "+std::to_string(30)); //sigmaTime is given in mm/c
 	_pythia.settings.readString("Beams:maxDevVertex = 1");
 	_pythia.settings.readString("Beams:maxDevTime = 1");	
 }
@@ -576,7 +576,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double x_c, y_c, r_c, vz;
 	double phi0, phid, phit, pio, etad;
 	double xd, yd, zd, td, dpv;
-	if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << "LARGE TIME - CalcTrajectory - original time " << rp.Position.T()*1e9 << " " << Position.T()*1e9 << " " << rp.Particle.tProd()/(_sol*1e3)*1e9 << endl;
+	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << "LARGE TIME - CalcTrajectory - original time " << rp.Position.T()*1e9 << " " << Position.T()*1e9 << " " << rp.Particle.tProd()/(_sol*1e3)*1e9 << endl;
 	//cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
 	//cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
 	//uncharged trajectory or no mag field
@@ -670,7 +670,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		if(r_t > 0.0)
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
 	}
-	if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
+	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
 	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
 	//cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << endl; 
 
