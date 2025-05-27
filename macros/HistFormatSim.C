@@ -1605,6 +1605,23 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclustersJet_jetSize");
 	Hist2D(file, "ttbar", "recoAK4", oname, "jetEnergy_jetMass");
 	Hist2D(file, "ttbar", "BHC", oname, "jetEnergy_jetMass");
+	Hist2D(file, "ttbar", "recoAK4", oname, "JetPt_genAK4JetPt");
+	Hist2D(file, "ttbar", "BHC", oname, "JetPt_genAK4JetPt");
+	Hist2D(file, "ttbar", "recoAK4", oname, "JetE_genAK4JetE");
+	Hist2D(file, "ttbar", "BHC", oname, "JetE_genAK4JetE");
+	Hist2D(file, "ttbar", "recoAK4", oname, "JetMass_genAK4JetMass");
+	Hist2D(file, "ttbar", "BHC", oname, "JetMass_genAK4JetMass");
+	Hist2D(file, "ttbar", "recoAK4", oname, "JetEtaCenter_genAK4JetEtaCenter");
+	Hist2D(file, "ttbar", "BHC", oname, "JetEtaCenter_genAK4JetEtaCenter");
+	Hist2D(file, "ttbar", "recoAK4", oname, "JetPhiCenter_genAK4JetPhiCenter");
+	Hist2D(file, "ttbar", "BHC", oname, "nSubclusters_genAK4nConstituents");
+	Hist2D(file, "ttbar", "BHC", oname, "JetPhiCenter_genAK4JetPhiCenter");
+	Hist2D(file, "ttbar", "BHC", oname, "JetPt_genAK15JetPt");
+	Hist2D(file, "ttbar", "BHC", oname, "JetE_genAK15JetE");
+	Hist2D(file, "ttbar", "BHC", oname, "JetMass_genAK15JetMass");
+	Hist2D(file, "ttbar", "BHC", oname, "JetEtaCenter_genAK15JetEtaCenter");
+	Hist2D(file, "ttbar", "BHC", oname, "JetPhiCenter_genAK15JetPhiCenter");
+	Hist2D(file, "ttbar", "BHC", oname, "nSubclusters_genAK15nConstituents");
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
