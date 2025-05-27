@@ -858,6 +858,7 @@ void BasicDetectorSim::MakeRecHits(){
 			//running fastjet on reco cells
 			//TURN ON HERE TO RUN FASTJET ON RECHITS
 			fastjet::PseudoJet input(jet.px(), jet.py(), jet.pz(), jet.e());
+//cout << "rh eta " << eta << " rh jet eta " << jet.eta() << " input eta " << input.eta() << endl;
 			input.set_user_index(i*1000 + j); //i = idx / 1000, j = idx % 1000
 			nrhs++;			
 			fjinputs.push_back(input); 
