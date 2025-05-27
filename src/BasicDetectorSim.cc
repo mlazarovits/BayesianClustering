@@ -59,6 +59,9 @@ BasicDetectorSim::BasicDetectorSim(){
 
 	//default PV is detector center
 	_PV = BayesPoint({0.,0.,0.});
+	_pvx = _PV.at(0);
+	_pvy = _PV.at(1);
+	_pvz = _PV.at(2);
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
@@ -118,6 +121,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 
 	//default PV is detector center
 	_PV = BayesPoint({0.,0.,0.});
+	_pvx = _PV.at(0);
+	_pvy = _PV.at(1);
+	_pvz = _PV.at(2);
 }
 
 
@@ -231,7 +237,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//set PV for event - look at first particle in record
 		Pythia8::Particle evtRec = sumEvent[1];//sumEvent.back();
 		_PV = BayesPoint({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
+		_pvx = _PV.at(0)*1e-1; //put in cm from mm
+		_pvy = _PV.at(1)*1e-1; //put in cm from mm
+		_pvz = _PV.at(2)*1e-1; //put in cm from mm
 		
+
 		//set production vertex for this event from z-smearing
 		//simulate z-shift from Gaussian
 		//zig is nominal beam spot spread - should be 3 sigma for distribution
@@ -1187,9 +1197,9 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("ECALRecHit_ID", &_rhids)->SetTitle("rec hit id");
 	_tree->Branch("nRHs",&_nRhs)->SetTitle("Number of rec hits");
 	
-	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV");
-	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV");
-	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV");
+	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV (cm)");
+	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV (cm)");
+	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV (cm)");
 
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
