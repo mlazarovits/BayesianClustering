@@ -56,31 +56,37 @@ void BHCJetSkimmer::Skim(){
 		//event level selection
 		//at least 1 gen jet
 		_base->GetEntry(i);
+		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts << endl;
 		//if(_base->Jet_genNJet < 1) continue;
 		int ngenpart = _base->genpart_ngenpart;
 		//at least 1 top quark with pt, E requirements
 		int ntop = 0;
 		for(int g = 0; g < ngenpart; g++){
 			if(fabs(_base->genpart_id->at(g)) != 6) continue;
-			if(_base->genpart_energy->at(g) < _minTopE) continue;
+			//if(_base->genpart_energy->at(g) < _minTopE) continue;
 			if(_base->genpart_pt->at(g) < _minTopPt) continue;
-			cout << "top has pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+			if(i % SKIP == 0) cout << " has top with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
 			ntop++;
 		}	
 
-		if(ntop < 1) continue;
-		
+		if(ntop < 1){
+			if(i % SKIP == 0) cout << " has no tops that pass pt > " << _minTopPt << endl;
+			continue;
+		}
 		//at least 1 W	
 		int nW = count(_base->genpart_id->begin(), _base->genpart_id->end(), 24);
 		nW += count(_base->genpart_id->begin(), _base->genpart_id->end(), -24);
-		if(nW < 1) continue;
-		
+		if(nW < 1){ 
+			if(i % SKIP == 0) cout << " has no Ws" << endl;
+			continue;
+		}
 		////at least 1 b	
 		//int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
 		//nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
 		//if(nb < 1) continue;
 	
-		//reject fully leptonic W decays - later may want to turn off to look at just displaced b decays
+		//reject fully leptonic and semi-leptonic W decays - later may want to turn off to look at just displaced b decays
+		//only look at hadronic W decays
 		int nW_lep = 0;	
 		for(int g = 0; g < ngenpart; g++){
 			int genmomidx = _base->genpart_momIdx->at(g);
@@ -91,27 +97,32 @@ void BHCJetSkimmer::Skim(){
 			//only check for !neutrinos
 			if(genid == 11 || genid == 13 || genid == 15) nW_lep++; 
 		}
+		if(i % SKIP == 0) cout << " has " << nW_lep << " leptonic Ws" << endl;
+		//if any Ws in event decay leptonically, don't count
+		if(nW_lep > 0) continue;
 		//if all Ws in event decay leptonically, don't count
-		if(nW - nW_lep == 0) continue;
+		//if(nW - nW_lep == 0) continue;
 
-		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts;
-		_prod->GetGenJets(_genjets, i);
-		_prod->GetGenFatJets(_genfatjets, i);
+		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
 		//if(_genjets.size() < 1){ cout << endl; continue; }
-		_prod->GetRecoJets(_recojets, i);
-		//if(_recojets.size() < 1){ cout << endl; continue; }
+		_prod->GetRecoJets(_recoAK4jets, _recoAK8jets, _recoAK15jets, i);
+		//if(_recoAK4jets.size() < 1){ cout << endl; continue; }
 		_prod->GetGenParticles(_genparts, i);
+		if(i % SKIP == 0) cout << " has " << _recoAK4jets.size() << " AK4 reco jets and " << _genAK4jets.size() << " AK4 gen jets" << endl;
+		if(i % SKIP == 0) cout << " has " << _recoAK8jets.size() << " AK8 reco jets and " << _genAK8jets.size() << " AK8 gen jets" << endl;
+		if(i % SKIP == 0) cout << " has " << _recoAK15jets.size() << " AK15 reco jets and " << _genAK15jets.size() << " AK15 gen jets" << endl;
+		
+		FillGenHists();
 		
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
 		_pvz = _base->PV_z;
 
-		if(i % SKIP == 0) cout << " with " << _recojets.size() << " reco jets and " << _genjets.size() << " gen jets" << endl;
 		int nsubcls_tot = 0;
 		///do GMM only option
-		for(int j = 0; j < _recojets.size(); j++){
-			 _recojets[j].GetJets(rhs);
+		for(int j = 0; j < _recoAK4jets.size(); j++){
+			 _recoAK4jets[j].GetJets(rhs);
 			//safety
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
@@ -139,7 +150,7 @@ void BHCJetSkimmer::Skim(){
 			cout << " jet has " << gmm->GetNClusters() << " clusters with parameters" << endl;
 			for(int k = 0; k < gmm->GetNClusters(); k++){
 				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
-				_recojets[j].AddConstituent(subcl);
+				_recoAK4jets[j].AddConstituent(subcl);
 				auto params = gmm->GetDataStatistics(k);
 				Matrix mean = params["mean"];
 				Matrix cov = params["cov"];
@@ -160,7 +171,7 @@ void BHCJetSkimmer::Skim(){
 		}
 		for(int p = 0; p < _procCats.size(); p++){
 			_procCats[p].hists1D[0][141]->Fill(nsubcls_tot);
-			_procCats[p].hists2D[0][39]->Fill(nsubcls_tot, (int)_recojets.size());
+			_procCats[p].hists2D[0][39]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
 		}
 		FillRecoJetHists();
 		//only does above
@@ -170,9 +181,9 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == NlnNonAK4){
 			//use rhs from reco ak4 jets
 			rhs.clear();
-			for(int j = 0; j < _recojets.size(); j++){
+			for(int j = 0; j < _recoAK4jets.size(); j++){
 				vector<Jet> jet_rhs; 
-				_recojets[j].GetJets(jet_rhs);
+				_recoAK4jets[j].GetJets(jet_rhs);
 				for(auto rh : jet_rhs) rhs.push_back(rh);
 			}
 			
@@ -240,7 +251,6 @@ void BHCJetSkimmer::Skim(){
 			_procCats[p].hists2D[0][42]->Fill(nsubcls_tot, (int)_predJets.size());
 		}
 		
-		FillGenHists(); //relies on BHC jets - fill after jets have been made
 		cout << endl;
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);

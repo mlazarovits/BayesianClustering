@@ -15,10 +15,9 @@ class JetSimProducer{
 
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<Jet>& rhs, int evt);
-		void GetGenJets(vector<Jet>& genjets, int evt);
-		void GetGenFatJets(vector<Jet>& genjets, int evt);
+		void GetGenJets(vector<Jet>& genAK4jets, vector<Jet>& genAK8jets, vector<Jet>& genAK15jets, int evt);
 		void GetGenParticles(vector<Jet>& genparts, int evt);
-		void GetRecoJets(vector<Jet>& recojets, int evt);
+		void GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8jets, vector<Jet>& recoAK15jets, int evt);
 		void GetPrimaryVertex(BayesPoint& vtx, int evt);
 		ReducedBaseSim* GetBase(){ return _base; }
 		void SetTransferFactor(double g){ _gev = g; }
@@ -99,5 +98,6 @@ class JetSimProducer{
 		int _nConstsmin;
 		double _c = 29.9792458; // speed of light in cm/ns
 		vector<int> lepIds = {11, 12, 13, 14, 15, 16};
+
 };
 #endif

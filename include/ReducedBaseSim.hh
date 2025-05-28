@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Thu May 22 13:56:29 2025 by ROOT version 6.30/06
+// Tue May 27 20:54:38 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_testFatJets_ttbar.root
+// found on file: simNtuples_testAKxJets_ttbar.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -40,32 +40,55 @@ public :
    vector<double>  *ECALSpike_energy;
    Int_t           nSpikes;
    Int_t           nRecoParticles;
-   vector<double>  *Jet_genEta;
-   vector<double>  *Jet_genPhi;
-   vector<double>  *Jet_genEnergy;
-   vector<double>  *Jet_genPt;
-   vector<double>  *Jet_genPz;
-   vector<double>  *Jet_genMass;
-   Int_t           Jet_genNJet;
-   vector<vector<int> > *Jet_genConstituentIdxs;
-   vector<int>     *Jet_genNConstituents;
-   vector<double>  *FatJet_genEta;
-   vector<double>  *FatJet_genPhi;
-   vector<double>  *FatJet_genEnergy;
-   vector<double>  *FatJet_genPt;
-   vector<double>  *FatJet_genPz;
-   vector<double>  *FatJet_genMass;
-   Int_t           FatJet_genNFatJet;
-   vector<vector<int> > *FatJet_genConstituentIdxs;
-   vector<int>     *FatJet_genNConstituents;
+   vector<double>  *AK4Jet_genEta;
+   vector<double>  *AK4Jet_genPhi;
+   vector<double>  *AK4Jet_genEnergy;
+   vector<double>  *AK4Jet_genPt;
+   vector<double>  *AK4Jet_genPz;
+   vector<double>  *AK4Jet_genMass;
+   Int_t           AK4Jet_genNJet;
+   vector<vector<int> > *AK4Jet_genConstituentIdxs;
+   vector<int>     *AK4Jet_genNConstituents;
+   vector<double>  *AK8Jet_genEta;
+   vector<double>  *AK8Jet_genPhi;
+   vector<double>  *AK8Jet_genEnergy;
+   vector<double>  *AK8Jet_genPt;
+   vector<double>  *AK8Jet_genPz;
+   vector<double>  *AK8Jet_genMass;
+   Int_t           AK8Jet_genNJet;
+   vector<vector<int> > *AK8Jet_genConstituentIdxs;
+   vector<int>     *AK8Jet_genNConstituents;
+   vector<double>  *AK15Jet_genEta;
+   vector<double>  *AK15Jet_genPhi;
+   vector<double>  *AK15Jet_genEnergy;
+   vector<double>  *AK15Jet_genPt;
+   vector<double>  *AK15Jet_genPz;
+   vector<double>  *AK15Jet_genMass;
+   Int_t           AK15Jet_genNJet;
+   vector<vector<int> > *AK15Jet_genConstituentIdxs;
+   vector<int>     *AK15Jet_genNConstituents;
    vector<int>     *Top_decayId;
-   vector<double>  *Jet_eta;
-   vector<double>  *Jet_phi;
-   vector<double>  *Jet_energy;
-   vector<double>  *Jet_pt;
-   vector<double>  *Jet_mass;
-   vector<vector<unsigned int> > *Jet_RhIDs;
-   Int_t           Jet_NJet;
+   vector<double>  *AK4Jet_eta;
+   vector<double>  *AK4Jet_phi;
+   vector<double>  *AK4Jet_energy;
+   vector<double>  *AK4Jet_pt;
+   vector<double>  *AK4Jet_mass;
+   vector<vector<unsigned int> > *AK4Jet_RhIDs;
+   Int_t           AK4Jet_NJet;
+   vector<double>  *AK8Jet_eta;
+   vector<double>  *AK8Jet_phi;
+   vector<double>  *AK8Jet_energy;
+   vector<double>  *AK8Jet_pt;
+   vector<double>  *AK8Jet_mass;
+   vector<vector<unsigned int> > *AK8Jet_RhIDs;
+   Int_t           AK8Jet_NJet;
+   vector<double>  *AK15Jet_eta;
+   vector<double>  *AK15Jet_phi;
+   vector<double>  *AK15Jet_energy;
+   vector<double>  *AK15Jet_pt;
+   vector<double>  *AK15Jet_mass;
+   vector<vector<unsigned int> > *AK15Jet_RhIDs;
+   Int_t           AK15Jet_NJet;
    vector<double>  *Track_px;
    vector<double>  *Track_py;
    vector<double>  *Track_pz;
@@ -99,32 +122,55 @@ public :
    TBranch        *b_ECALSpike_energy;   //!
    TBranch        *b_nSpikes;   //!
    TBranch        *b_nRecoParticles;   //!
-   TBranch        *b_Jet_genEta;   //!
-   TBranch        *b_Jet_genPhi;   //!
-   TBranch        *b_Jet_genEnergy;   //!
-   TBranch        *b_Jet_genPt;   //!
-   TBranch        *b_Jet_genPz;   //!
-   TBranch        *b_Jet_genMass;   //!
-   TBranch        *b_Jet_genNJet;   //!
-   TBranch        *b_Jet_genConstituentIdxs;   //!
-   TBranch        *b_Jet_genNConstituents;   //!
-   TBranch        *b_FatJet_genEta;   //!
-   TBranch        *b_FatJet_genPhi;   //!
-   TBranch        *b_FatJet_genEnergy;   //!
-   TBranch        *b_FatJet_genPt;   //!
-   TBranch        *b_FatJet_genPz;   //!
-   TBranch        *b_FatJet_genMass;   //!
-   TBranch        *b_FatJet_genNFatJet;   //!
-   TBranch        *b_FatJet_genConstituentIdxs;   //!
-   TBranch        *b_FatJet_genNConstituents;   //!
+   TBranch        *b_AK4Jet_genEta;   //!
+   TBranch        *b_AK4Jet_genPhi;   //!
+   TBranch        *b_AK4Jet_genEnergy;   //!
+   TBranch        *b_AK4Jet_genPt;   //!
+   TBranch        *b_AK4Jet_genPz;   //!
+   TBranch        *b_AK4Jet_genMass;   //!
+   TBranch        *b_AK4Jet_genNJet;   //!
+   TBranch        *b_AK4Jet_genConstituentIdxs;   //!
+   TBranch        *b_AK4Jet_genNConstituents;   //!
+   TBranch        *b_AK8Jet_genEta;   //!
+   TBranch        *b_AK8Jet_genPhi;   //!
+   TBranch        *b_AK8Jet_genEnergy;   //!
+   TBranch        *b_AK8Jet_genPt;   //!
+   TBranch        *b_AK8Jet_genPz;   //!
+   TBranch        *b_AK8Jet_genMass;   //!
+   TBranch        *b_AK8Jet_genNJet;   //!
+   TBranch        *b_AK8Jet_genConstituentIdxs;   //!
+   TBranch        *b_AK8Jet_genNConstituents;   //!
+   TBranch        *b_AK15Jet_genEta;   //!
+   TBranch        *b_AK15Jet_genPhi;   //!
+   TBranch        *b_AK15Jet_genEnergy;   //!
+   TBranch        *b_AK15Jet_genPt;   //!
+   TBranch        *b_AK15Jet_genPz;   //!
+   TBranch        *b_AK15Jet_genMass;   //!
+   TBranch        *b_AK15Jet_genNJet;   //!
+   TBranch        *b_AK15Jet_genConstituentIdxs;   //!
+   TBranch        *b_AK15Jet_genNConstituents;   //!
    TBranch        *b_Top_decayId;   //!
-   TBranch        *b_Jet_eta;   //!
-   TBranch        *b_Jet_phi;   //!
-   TBranch        *b_Jet_energy;   //!
-   TBranch        *b_Jet_pt;   //!
-   TBranch        *b_Jet_mass;   //!
-   TBranch        *b_Jet_RhIDs;   //!
-   TBranch        *b_Jet_NJet;   //!
+   TBranch        *b_AK4Jet_eta;   //!
+   TBranch        *b_AK4Jet_phi;   //!
+   TBranch        *b_AK4Jet_energy;   //!
+   TBranch        *b_AK4Jet_pt;   //!
+   TBranch        *b_AK4Jet_mass;   //!
+   TBranch        *b_AK4Jet_RhIDs;   //!
+   TBranch        *b_AK4Jet_NJet;   //!
+   TBranch        *b_AK8Jet_eta;   //!
+   TBranch        *b_AK8Jet_phi;   //!
+   TBranch        *b_AK8Jet_energy;   //!
+   TBranch        *b_AK8Jet_pt;   //!
+   TBranch        *b_AK8Jet_mass;   //!
+   TBranch        *b_AK8Jet_RhIDs;   //!
+   TBranch        *b_AK8Jet_NJet;   //!
+   TBranch        *b_AK15Jet_eta;   //!
+   TBranch        *b_AK15Jet_phi;   //!
+   TBranch        *b_AK15Jet_energy;   //!
+   TBranch        *b_AK15Jet_pt;   //!
+   TBranch        *b_AK15Jet_mass;   //!
+   TBranch        *b_AK15Jet_RhIDs;   //!
+   TBranch        *b_AK15Jet_NJet;   //!
    TBranch        *b_Track_px;   //!
    TBranch        *b_Track_py;   //!
    TBranch        *b_Track_pz;   //!
@@ -160,11 +206,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testFatJets_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testAKxJets_ttbar.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_testFatJets_ttbar.root");
+         f = new TFile("simNtuples_testAKxJets_ttbar.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testFatJets_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testAKxJets_ttbar.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -217,29 +263,49 @@ inline void ReducedBaseSim::Init(TTree *tree)
    ECALRecHit_phi = 0;
    ECALRecHit_ID = 0;
    ECALSpike_energy = 0;
-   Jet_genEta = 0;
-   Jet_genPhi = 0;
-   Jet_genEnergy = 0;
-   Jet_genPt = 0;
-   Jet_genPz = 0;
-   Jet_genMass = 0;
-   Jet_genConstituentIdxs = 0;
-   Jet_genNConstituents = 0;
-   FatJet_genEta = 0;
-   FatJet_genPhi = 0;
-   FatJet_genEnergy = 0;
-   FatJet_genPt = 0;
-   FatJet_genPz = 0;
-   FatJet_genMass = 0;
-   FatJet_genConstituentIdxs = 0;
-   FatJet_genNConstituents = 0;
+   AK4Jet_genEta = 0;
+   AK4Jet_genPhi = 0;
+   AK4Jet_genEnergy = 0;
+   AK4Jet_genPt = 0;
+   AK4Jet_genPz = 0;
+   AK4Jet_genMass = 0;
+   AK4Jet_genConstituentIdxs = 0;
+   AK4Jet_genNConstituents = 0;
+   AK8Jet_genEta = 0;
+   AK8Jet_genPhi = 0;
+   AK8Jet_genEnergy = 0;
+   AK8Jet_genPt = 0;
+   AK8Jet_genPz = 0;
+   AK8Jet_genMass = 0;
+   AK8Jet_genConstituentIdxs = 0;
+   AK8Jet_genNConstituents = 0;
+   AK15Jet_genEta = 0;
+   AK15Jet_genPhi = 0;
+   AK15Jet_genEnergy = 0;
+   AK15Jet_genPt = 0;
+   AK15Jet_genPz = 0;
+   AK15Jet_genMass = 0;
+   AK15Jet_genConstituentIdxs = 0;
+   AK15Jet_genNConstituents = 0;
    Top_decayId = 0;
-   Jet_eta = 0;
-   Jet_phi = 0;
-   Jet_energy = 0;
-   Jet_pt = 0;
-   Jet_mass = 0;
-   Jet_RhIDs = 0;
+   AK4Jet_eta = 0;
+   AK4Jet_phi = 0;
+   AK4Jet_energy = 0;
+   AK4Jet_pt = 0;
+   AK4Jet_mass = 0;
+   AK4Jet_RhIDs = 0;
+   AK8Jet_eta = 0;
+   AK8Jet_phi = 0;
+   AK8Jet_energy = 0;
+   AK8Jet_pt = 0;
+   AK8Jet_mass = 0;
+   AK8Jet_RhIDs = 0;
+   AK15Jet_eta = 0;
+   AK15Jet_phi = 0;
+   AK15Jet_energy = 0;
+   AK15Jet_pt = 0;
+   AK15Jet_mass = 0;
+   AK15Jet_RhIDs = 0;
    Track_px = 0;
    Track_py = 0;
    Track_pz = 0;
@@ -276,32 +342,55 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("ECALSpike_energy", &ECALSpike_energy, &b_ECALSpike_energy);
    fChain->SetBranchAddress("nSpikes", &nSpikes, &b_nSpikes);
    fChain->SetBranchAddress("nRecoParticles", &nRecoParticles, &b_nRecoParticles);
-   fChain->SetBranchAddress("Jet_genEta", &Jet_genEta, &b_Jet_genEta);
-   fChain->SetBranchAddress("Jet_genPhi", &Jet_genPhi, &b_Jet_genPhi);
-   fChain->SetBranchAddress("Jet_genEnergy", &Jet_genEnergy, &b_Jet_genEnergy);
-   fChain->SetBranchAddress("Jet_genPt", &Jet_genPt, &b_Jet_genPt);
-   fChain->SetBranchAddress("Jet_genPz", &Jet_genPz, &b_Jet_genPz);
-   fChain->SetBranchAddress("Jet_genMass", &Jet_genMass, &b_Jet_genMass);
-   fChain->SetBranchAddress("Jet_genNJet", &Jet_genNJet, &b_Jet_genNJet);
-   fChain->SetBranchAddress("Jet_genConstituentIdxs", &Jet_genConstituentIdxs, &b_Jet_genConstituentIdxs);
-   fChain->SetBranchAddress("Jet_genNConstituents", &Jet_genNConstituents, &b_Jet_genNConstituents);
-   fChain->SetBranchAddress("FatJet_genEta", &FatJet_genEta, &b_FatJet_genEta);
-   fChain->SetBranchAddress("FatJet_genPhi", &FatJet_genPhi, &b_FatJet_genPhi);
-   fChain->SetBranchAddress("FatJet_genEnergy", &FatJet_genEnergy, &b_FatJet_genEnergy);
-   fChain->SetBranchAddress("FatJet_genPt", &FatJet_genPt, &b_FatJet_genPt);
-   fChain->SetBranchAddress("FatJet_genPz", &FatJet_genPz, &b_FatJet_genPz);
-   fChain->SetBranchAddress("FatJet_genMass", &FatJet_genMass, &b_FatJet_genMass);
-   fChain->SetBranchAddress("FatJet_genNFatJet", &FatJet_genNFatJet, &b_FatJet_genNFatJet);
-   fChain->SetBranchAddress("FatJet_genConstituentIdxs", &FatJet_genConstituentIdxs, &b_FatJet_genConstituentIdxs);
-   fChain->SetBranchAddress("FatJet_genNConstituents", &FatJet_genNConstituents, &b_FatJet_genNConstituents);
+   fChain->SetBranchAddress("AK4Jet_genEta", &AK4Jet_genEta, &b_AK4Jet_genEta);
+   fChain->SetBranchAddress("AK4Jet_genPhi", &AK4Jet_genPhi, &b_AK4Jet_genPhi);
+   fChain->SetBranchAddress("AK4Jet_genEnergy", &AK4Jet_genEnergy, &b_AK4Jet_genEnergy);
+   fChain->SetBranchAddress("AK4Jet_genPt", &AK4Jet_genPt, &b_AK4Jet_genPt);
+   fChain->SetBranchAddress("AK4Jet_genPz", &AK4Jet_genPz, &b_AK4Jet_genPz);
+   fChain->SetBranchAddress("AK4Jet_genMass", &AK4Jet_genMass, &b_AK4Jet_genMass);
+   fChain->SetBranchAddress("AK4Jet_genNJet", &AK4Jet_genNJet, &b_AK4Jet_genNJet);
+   fChain->SetBranchAddress("AK4Jet_genConstituentIdxs", &AK4Jet_genConstituentIdxs, &b_AK4Jet_genConstituentIdxs);
+   fChain->SetBranchAddress("AK4Jet_genNConstituents", &AK4Jet_genNConstituents, &b_AK4Jet_genNConstituents);
+   fChain->SetBranchAddress("AK8Jet_genEta", &AK8Jet_genEta, &b_AK8Jet_genEta);
+   fChain->SetBranchAddress("AK8Jet_genPhi", &AK8Jet_genPhi, &b_AK8Jet_genPhi);
+   fChain->SetBranchAddress("AK8Jet_genEnergy", &AK8Jet_genEnergy, &b_AK8Jet_genEnergy);
+   fChain->SetBranchAddress("AK8Jet_genPt", &AK8Jet_genPt, &b_AK8Jet_genPt);
+   fChain->SetBranchAddress("AK8Jet_genPz", &AK8Jet_genPz, &b_AK8Jet_genPz);
+   fChain->SetBranchAddress("AK8Jet_genMass", &AK8Jet_genMass, &b_AK8Jet_genMass);
+   fChain->SetBranchAddress("AK8Jet_genNJet", &AK8Jet_genNJet, &b_AK8Jet_genNJet);
+   fChain->SetBranchAddress("AK8Jet_genConstituentIdxs", &AK8Jet_genConstituentIdxs, &b_AK8Jet_genConstituentIdxs);
+   fChain->SetBranchAddress("AK8Jet_genNConstituents", &AK8Jet_genNConstituents, &b_AK8Jet_genNConstituents);
+   fChain->SetBranchAddress("AK15Jet_genEta", &AK15Jet_genEta, &b_AK15Jet_genEta);
+   fChain->SetBranchAddress("AK15Jet_genPhi", &AK15Jet_genPhi, &b_AK15Jet_genPhi);
+   fChain->SetBranchAddress("AK15Jet_genEnergy", &AK15Jet_genEnergy, &b_AK15Jet_genEnergy);
+   fChain->SetBranchAddress("AK15Jet_genPt", &AK15Jet_genPt, &b_AK15Jet_genPt);
+   fChain->SetBranchAddress("AK15Jet_genPz", &AK15Jet_genPz, &b_AK15Jet_genPz);
+   fChain->SetBranchAddress("AK15Jet_genMass", &AK15Jet_genMass, &b_AK15Jet_genMass);
+   fChain->SetBranchAddress("AK15Jet_genNJet", &AK15Jet_genNJet, &b_AK15Jet_genNJet);
+   fChain->SetBranchAddress("AK15Jet_genConstituentIdxs", &AK15Jet_genConstituentIdxs, &b_AK15Jet_genConstituentIdxs);
+   fChain->SetBranchAddress("AK15Jet_genNConstituents", &AK15Jet_genNConstituents, &b_AK15Jet_genNConstituents);
    fChain->SetBranchAddress("Top_decayId", &Top_decayId, &b_Top_decayId);
-   fChain->SetBranchAddress("Jet_eta", &Jet_eta, &b_Jet_eta);
-   fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
-   fChain->SetBranchAddress("Jet_energy", &Jet_energy, &b_Jet_energy);
-   fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
-   fChain->SetBranchAddress("Jet_mass", &Jet_mass, &b_Jet_mass);
-   fChain->SetBranchAddress("Jet_RhIDs", &Jet_RhIDs, &b_Jet_RhIDs);
-   fChain->SetBranchAddress("Jet_NJet", &Jet_NJet, &b_Jet_NJet);
+   fChain->SetBranchAddress("AK4Jet_eta", &AK4Jet_eta, &b_AK4Jet_eta);
+   fChain->SetBranchAddress("AK4Jet_phi", &AK4Jet_phi, &b_AK4Jet_phi);
+   fChain->SetBranchAddress("AK4Jet_energy", &AK4Jet_energy, &b_AK4Jet_energy);
+   fChain->SetBranchAddress("AK4Jet_pt", &AK4Jet_pt, &b_AK4Jet_pt);
+   fChain->SetBranchAddress("AK4Jet_mass", &AK4Jet_mass, &b_AK4Jet_mass);
+   fChain->SetBranchAddress("AK4Jet_RhIDs", &AK4Jet_RhIDs, &b_AK4Jet_RhIDs);
+   fChain->SetBranchAddress("AK4Jet_NJet", &AK4Jet_NJet, &b_AK4Jet_NJet);
+   fChain->SetBranchAddress("AK8Jet_eta", &AK8Jet_eta, &b_AK8Jet_eta);
+   fChain->SetBranchAddress("AK8Jet_phi", &AK8Jet_phi, &b_AK8Jet_phi);
+   fChain->SetBranchAddress("AK8Jet_energy", &AK8Jet_energy, &b_AK8Jet_energy);
+   fChain->SetBranchAddress("AK8Jet_pt", &AK8Jet_pt, &b_AK8Jet_pt);
+   fChain->SetBranchAddress("AK8Jet_mass", &AK8Jet_mass, &b_AK8Jet_mass);
+   fChain->SetBranchAddress("AK8Jet_RhIDs", &AK8Jet_RhIDs, &b_AK8Jet_RhIDs);
+   fChain->SetBranchAddress("AK8Jet_NJet", &AK8Jet_NJet, &b_AK8Jet_NJet);
+   fChain->SetBranchAddress("AK15Jet_eta", &AK15Jet_eta, &b_AK15Jet_eta);
+   fChain->SetBranchAddress("AK15Jet_phi", &AK15Jet_phi, &b_AK15Jet_phi);
+   fChain->SetBranchAddress("AK15Jet_energy", &AK15Jet_energy, &b_AK15Jet_energy);
+   fChain->SetBranchAddress("AK15Jet_pt", &AK15Jet_pt, &b_AK15Jet_pt);
+   fChain->SetBranchAddress("AK15Jet_mass", &AK15Jet_mass, &b_AK15Jet_mass);
+   fChain->SetBranchAddress("AK15Jet_RhIDs", &AK15Jet_RhIDs, &b_AK15Jet_RhIDs);
+   fChain->SetBranchAddress("AK15Jet_NJet", &AK15Jet_NJet, &b_AK15Jet_NJet);
    fChain->SetBranchAddress("Track_px", &Track_px, &b_Track_px);
    fChain->SetBranchAddress("Track_py", &Track_py, &b_Track_py);
    fChain->SetBranchAddress("Track_pz", &Track_pz, &b_Track_pz);

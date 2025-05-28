@@ -391,7 +391,7 @@ int main(int argc, char *argv[]){
 	//double tres_n = 30*sqrt(tres_c - tres_c*tres_c); //v1//ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
 	double tres_n = 30*sqrt(1 - tres_c*tres_c); //v1//ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
 
-	vector<Jet> rhs, jets, phos;
+	vector<Jet> rhs, jets, phos, jetsAK8, jetsAK15;
 	vector<node*> trees;
 	//get rhs (as Jets) for event
 	if(obj == 0){
@@ -448,7 +448,7 @@ int main(int argc, char *argv[]){
 		}
 		else{
 			cout << "Getting rec hits for jet " << nobj << " at event " << evt << endl;
-			prod.GetRecoJets(jets, evt);
+			prod.GetRecoJets(jets, jetsAK8, jetsAK15, evt);
 			if(jets.size() < 1){ cout << "No jets passing selection found for event " << evt << endl; return -1; }
 			if(nobj > jets.size() - 1){ cout << "Only " << jets.size() << " jets passing selection found for event " << evt << endl; return -1; }
 			jets[nobj].GetJets(rhs);
