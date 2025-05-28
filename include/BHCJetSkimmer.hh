@@ -382,8 +382,6 @@ class BHCJetSkimmer{
 		void SetMinNGenConsts(int r){ _prod->SetMinNGenConsts(r); }
 		void SetGenTopMinPt(double r){ _minTopPt = r; 
 			cout << "Minimum gen top pt: " << _minTopPt << endl;}
-		void SetGenTopMinE(double r){ _minTopE = r; 
-			//cout << "Minimum gen top energy: " << _minTopE << endl;}
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;
