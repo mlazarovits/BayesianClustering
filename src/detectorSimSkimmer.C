@@ -60,7 +60,6 @@ int main(int argc, char *argv[]){
 	double minRhE = 0.5;
 	double minNconsts = 5;
 	double mintoppt = 0;
-	double mintopE = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -212,10 +211,6 @@ int main(int argc, char *argv[]){
 			i++;
     	 		mintoppt = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--minTopE", 9) == 0){
-			i++;
-    	 		mintopE = std::stod(argv[i]);
-   		}
 
 
 
@@ -239,7 +234,6 @@ int main(int argc, char *argv[]){
    		cout << "   --minpt [minpt]               set gen minimum pt (default = 30 GeV)" << endl;
    		cout << "   --minE [minE]                 set gen minimum E (default = 30 GeV)" << endl;
    		cout << "   --minTopPt [mintoppt]         set gen top minimum pt (default = 30 GeV)" << endl;
-   		cout << "   --minTopE [mintopE]           set gen top minimum E (default = 30 GeV)" << endl;
    		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhE]             set minimum rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --minNconsts [minNconsts]     set minimum number of constituents for gen jets (default = 5)" << endl;
@@ -411,7 +405,6 @@ int main(int argc, char *argv[]){
 	skimmer.SetRecoMinPt(0);
 	skimmer.SetRecoMinE(0);
 	skimmer.SetGenTopMinPt(mintoppt);
-	skimmer.SetGenTopMinE(mintopE);
 	skimmer.SetMinNGenConsts(minNconsts);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
