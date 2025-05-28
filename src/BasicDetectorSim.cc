@@ -53,8 +53,9 @@ BasicDetectorSim::BasicDetectorSim(){
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
-	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
-	_fatjetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
+	_jetdef_AK4 = fastjet::JetDefinition(fastjet::antikt_algorithm, 0.4, _recomb, _strategy); 
+	_jetdef_AK8 = fastjet::JetDefinition(fastjet::antikt_algorithm, 0.8, _recomb, _strategy); 
+	_jetdef_AK15 = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
 	_genpart_minpt = 0;
 
 	//default PV is detector center
@@ -115,8 +116,9 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_Rparam = 0.4;
 	_strategy = fastjet::Best;
 	_recomb = fastjet::E_scheme;
-	_jetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, _Rparam, _recomb, _strategy); 
-	_fatjetdef = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
+	_jetdef_AK4 = fastjet::JetDefinition(fastjet::antikt_algorithm, 0.4, _recomb, _strategy); 
+	_jetdef_AK8 = fastjet::JetDefinition(fastjet::antikt_algorithm, 0.8, _recomb, _strategy); 
+	_jetdef_AK15 = fastjet::JetDefinition(fastjet::antikt_algorithm, 1.5, _recomb, _strategy); 
 	_genpart_minpt = 0;
 
 	//default PV is detector center
@@ -196,7 +198,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	Pythia8::Event sumEvent; //one object where individual events are collected
 	
 	//declare fjinput/output containers
-	vector<fastjet::PseudoJet> fjinputs, fjoutputs, fjoutputs_fat;
+	vector<fastjet::PseudoJet> fjinputs;
 	
 	if(_evti == _evtj){
 		_evti = 0;
@@ -357,22 +359,30 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		}
 		//cout << "event total energy " << evt_Etot << endl;
 		evt_Etot = 0;
-		
+	
+
+	
 		//running fastjet on gen particles, no shower, etc.
-		_gencs = fastjet::ClusterSequence(fjinputs, _jetdef);
+		_gencsAK4 = fastjet::ClusterSequence(fjinputs, _jetdef_AK4);
 		//get jets - min 5 pt
-		fjoutputs = _gencs.inclusive_jets(5.);
-		for(int j = 0; j < fjoutputs.size(); j++) _jets.push_back(fjoutputs[j]);
+		vector<fastjet::PseudoJet> fjoutputs_AK4 = _gencsAK4.inclusive_jets(5.);
+		for(int j = 0; j < fjoutputs_AK4.size(); j++) _genAK4jets.push_back(fjoutputs_AK4[j]);
 		//sort jets by pt
-		_jets = sorted_by_pt(_jets);
+		_genAK4jets = sorted_by_pt(_genAK4jets);
 		
-		//running fastjet on gen particles, no shower, etc.
-		_fatgencs = fastjet::ClusterSequence(fjinputs, _fatjetdef);
+		_gencsAK8 = fastjet::ClusterSequence(fjinputs, _jetdef_AK8);
 		//get jets - min 5 pt
-		fjoutputs_fat = _fatgencs.inclusive_jets(5.);
-		for(int j = 0; j < fjoutputs_fat.size(); j++) _fatjets.push_back(fjoutputs_fat[j]);
+		vector<fastjet::PseudoJet> fjoutputs_AK8 = _gencsAK8.inclusive_jets(5.);
+		for(int j = 0; j < fjoutputs_AK8.size(); j++) _genAK8jets.push_back(fjoutputs_AK8[j]);
 		//sort jets by pt
-		_fatjets = sorted_by_pt(_fatjets);
+		_genAK8jets = sorted_by_pt(_genAK8jets);
+		
+		_gencsAK15 = fastjet::ClusterSequence(fjinputs, _jetdef_AK15);
+		//get jets - min 5 pt
+		vector<fastjet::PseudoJet> fjoutputs_AK15 = _gencsAK15.inclusive_jets(5.);
+		for(int j = 0; j < fjoutputs_AK15.size(); j++) _genAK15jets.push_back(fjoutputs_AK15[j]);
+		//sort jets by pt
+		_genAK15jets = sorted_by_pt(_genAK15jets);
 
 		//cout << fjoutputs.size() << " " << _jets.size() << " gen jets from " << fjinputs.size() << " inputs " <<  endl;
 		//Fill gen jet information
@@ -532,10 +542,12 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		// Reset Fastjet input
 	
 		fjinputs.resize(0);
-		fjoutputs.clear();
-		fjoutputs_fat.clear();
-		fjoutputs.resize(0);
-		fjoutputs_fat.resize(0);
+		fjoutputs_AK4.clear();
+		fjoutputs_AK4.resize(0);
+		fjoutputs_AK8.clear();
+		fjoutputs_AK8.resize(0);
+		fjoutputs_AK15.clear();
+		fjoutputs_AK15.resize(0);
 		//cout << endl;
 	}
 //cout << "nhad " << nhad << " nlep " << nlep << " nsemilep " << nsemilep << endl;
@@ -803,7 +815,7 @@ void BasicDetectorSim::MakeRecHits(){
 	double etot = 0;
 	double etot_og = 0;
 	//declare fjinput/output containers
-	vector<fastjet::PseudoJet> fjinputs, fjoutputs;
+	vector<fastjet::PseudoJet> fjinputs;
 	//do energy first to get transfer factor
 	for(int i = 0; i < _netacal; i++){
 		for(int j = 0; j < _nphical; j++){
@@ -891,12 +903,26 @@ void BasicDetectorSim::MakeRecHits(){
 	//cout << "reco event total energy " << etot << endl;
 	//cluster reco particles with fastjet	
 	//run fastjet
-	_recocs = fastjet::ClusterSequence(fjinputs, _jetdef);
+	_recocsAK4 = fastjet::ClusterSequence(fjinputs, _jetdef_AK4);
 	//get jets - min 5 pt
-	fjoutputs = _recocs.inclusive_jets(5.);
-	for(int j = 0; j < fjoutputs.size(); j++) _jetsReco.push_back(fjoutputs[j]);
+	vector<fastjet::PseudoJet> fjoutputs_AK4 = _recocsAK4.inclusive_jets(5.);
+	for(int j = 0; j < fjoutputs_AK4.size(); j++) _recoAK4jets.push_back(fjoutputs_AK4[j]);
 	//sort jets by pt
-	_jetsReco = sorted_by_pt(_jetsReco);
+	_recoAK4jets = sorted_by_pt(_recoAK4jets);
+	
+	_recocsAK8 = fastjet::ClusterSequence(fjinputs, _jetdef_AK8);
+	//get jets - min 5 pt
+	vector<fastjet::PseudoJet> fjoutputs_AK8 = _recocsAK8.inclusive_jets(5.);
+	for(int j = 0; j < fjoutputs_AK8.size(); j++) _recoAK8jets.push_back(fjoutputs_AK8[j]);
+	//sort jets by pt
+	_recoAK8jets = sorted_by_pt(_recoAK8jets);
+	
+	_recocsAK15 = fastjet::ClusterSequence(fjinputs, _jetdef_AK15);
+	//get jets - min 5 pt
+	vector<fastjet::PseudoJet> fjoutputs_AK15 = _recocsAK15.inclusive_jets(5.);
+	for(int j = 0; j < fjoutputs_AK15.size(); j++) _recoAK15jets.push_back(fjoutputs_AK15[j]);
+	//sort jets by pt
+	_recoAK15jets = sorted_by_pt(_recoAK15jets);
 	//cout << fjoutputs.size() << " " << " reco jets from " << fjinputs.size() << " inputs " << endl;
 	//for(auto j : _jetsReco){
 	//	cout << "reco jet e " << j.E() << " pt " << j.pt() << " eta " << j.eta() << " phi " << j.phi_std() << " m " << j.m() << endl;
@@ -908,8 +934,12 @@ void BasicDetectorSim::MakeRecHits(){
 
 	fjinputs.clear();
 	fjinputs.resize(0);
-	fjoutputs.clear();
-	fjoutputs.resize(0);
+	fjoutputs_AK4.clear();
+	fjoutputs_AK4.resize(0);
+	fjoutputs_AK8.clear();
+	fjoutputs_AK8.resize(0);
+	fjoutputs_AK15.clear();
+	fjoutputs_AK15.resize(0);
 
 }
 
@@ -1075,55 +1105,103 @@ void BasicDetectorSim::FillGenParticles(){
 
 void BasicDetectorSim::FillGenJets(){
 	//vector<fastjet::PseudoJet> consts;
-	_njets = _jets.size();
+	_ngenAK4jets = _genAK4jets.size();
 	vector<fastjet::PseudoJet> consts;
-	for(auto jet : _jets){
-		_jgeta.push_back(jet.eta());
-		_jgphi.push_back(jet.phi());
-		_jgenergy.push_back(jet.e());
-		_jgpt.push_back(jet.pt());
-		_jgpz.push_back(jet.pz());
-		_jgmass.push_back(jet.m());
+	for(auto jet : _genAK4jets){
+		_jgAK4eta.push_back(jet.eta());
+		_jgAK4phi.push_back(jet.phi());
+		_jgAK4energy.push_back(jet.e());
+		_jgAK4pt.push_back(jet.pt());
+		_jgAK4pz.push_back(jet.pz());
+		_jgAK4mass.push_back(jet.m());
 		consts = jet.constituents();
-		_jgnparts.push_back((int)consts.size());
+		_jgAK4nparts.push_back((int)consts.size());
 		
-		_jgpartIdxs.push_back({});
+		_jgAK4partIdxs.push_back({});
 		for(auto c : consts)
-			_jgpartIdxs[_jgpartIdxs.size()-1].push_back(c.user_index());
+			_jgAK4partIdxs[_jgAK4partIdxs.size()-1].push_back(c.user_index());
 	}
-	_nfatjets = _fatjets.size();
-	for(auto jet : _fatjets){
-		_jgfateta.push_back(jet.eta());
-		_jgfatphi.push_back(jet.phi());
-		_jgfatenergy.push_back(jet.e());
-		_jgfatpt.push_back(jet.pt());
-		_jgfatpz.push_back(jet.pz());
-		_jgfatmass.push_back(jet.m());
+
+	_ngenAK8jets = _genAK8jets.size();
+	consts.clear();
+	for(auto jet : _genAK8jets){
+		_jgAK8eta.push_back(jet.eta());
+		_jgAK8phi.push_back(jet.phi());
+		_jgAK8energy.push_back(jet.e());
+		_jgAK8pt.push_back(jet.pt());
+		_jgAK8pz.push_back(jet.pz());
+		_jgAK8mass.push_back(jet.m());
 		consts = jet.constituents();
-		_jgfatnparts.push_back((int)consts.size());
+		_jgAK8nparts.push_back((int)consts.size());
 		
-		_jgfatpartIdxs.push_back({});
+		_jgAK8partIdxs.push_back({});
 		for(auto c : consts)
-			_jgfatpartIdxs[_jgfatpartIdxs.size()-1].push_back(c.user_index());
+			_jgAK8partIdxs[_jgAK8partIdxs.size()-1].push_back(c.user_index());
 	}
+	
+	_ngenAK15jets = _genAK15jets.size();
+	consts.clear();
+	for(auto jet : _genAK15jets){
+		_jgAK15eta.push_back(jet.eta());
+		_jgAK15phi.push_back(jet.phi());
+		_jgAK15energy.push_back(jet.e());
+		_jgAK15pt.push_back(jet.pt());
+		_jgAK15pz.push_back(jet.pz());
+		_jgAK15mass.push_back(jet.m());
+		consts = jet.constituents();
+		_jgAK15nparts.push_back((int)consts.size());
+		
+		_jgAK15partIdxs.push_back({});
+		for(auto c : consts)
+			_jgAK15partIdxs[_jgAK15partIdxs.size()-1].push_back(c.user_index());
+	}
+
 }
 
 void BasicDetectorSim::FillRecoJets(){
-	_njetsReco = _jetsReco.size();
-	int njets = 0;
+	_nrecoAK4jets = _recoAK4jets.size();
 	vector<fastjet::PseudoJet> consts;
-	for(auto jet : _jetsReco){
+	for(auto jet : _recoAK4jets){
 		consts = jet.constituents();
-		_jrhids.push_back({});
+		_jAK4rhids.push_back({});
 		for(auto c : consts){
-			_jrhids[_jrhids.size()-1].push_back(c.user_index());
+			_jAK4rhids[_jAK4rhids.size()-1].push_back(c.user_index());
 		}	
-		_jeta.push_back(jet.eta());
-		_jphi.push_back(jet.phi());
-		_jenergy.push_back(jet.e());
-		_jpt.push_back(jet.pt());
-		_jmass.push_back(jet.m());
-		njets++;
+		_jAK4eta.push_back(jet.eta());
+		_jAK4phi.push_back(jet.phi());
+		_jAK4energy.push_back(jet.e());
+		_jAK4pt.push_back(jet.pt());
+		_jAK4mass.push_back(jet.m());
+	}
+	
+	_nrecoAK8jets = _recoAK8jets.size();
+	consts.clear();
+	for(auto jet : _recoAK8jets){
+		consts = jet.constituents();
+		_jAK8rhids.push_back({});
+		for(auto c : consts){
+			_jAK8rhids[_jAK8rhids.size()-1].push_back(c.user_index());
+		}	
+		_jAK8eta.push_back(jet.eta());
+		_jAK8phi.push_back(jet.phi());
+		_jAK8energy.push_back(jet.e());
+		_jAK8pt.push_back(jet.pt());
+		_jAK8mass.push_back(jet.m());
+	}
+	
+	_nrecoAK15jets = _recoAK15jets.size();
+	consts.clear();
+	for(auto jet : _recoAK15jets){
+		consts = jet.constituents();
+		_jAK15rhids.push_back({});
+		for(auto c : consts){
+			_jAK15rhids[_jAK15rhids.size()-1].push_back(c.user_index());
+		}	
+		_jAK15eta.push_back(jet.eta());
+		_jAK15phi.push_back(jet.phi());
+		_jAK15energy.push_back(jet.e());
+		_jAK15pt.push_back(jet.pt());
+		_jAK15mass.push_back(jet.m());
 	}
 }
 
@@ -1169,11 +1247,11 @@ void BasicDetectorSim::GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVec
 }
 
 
-
+//returns gen AK4 jets
 void BasicDetectorSim::GetTrueJets(vector<Jet>& jets){
 	jets.clear();
-	for(int i = 0; i < _jets.size(); i++)
-		jets.push_back(Jet( _jets[i].px(), _jets[i].py(), _jets[i].pz(), _jets[i].e()) );
+	for(int i = 0; i < _genAK4jets.size(); i++)
+		jets.push_back(Jet( _genAK4jets[i].px(), _genAK4jets[i].py(), _genAK4jets[i].pz(), _genAK4jets[i].e()) );
 
 }
 
@@ -1205,27 +1283,39 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
 	_tree->Branch("nRecoParticles", &_nRecoParticles)->SetTitle("Number of reco particles");
 
-	//gen jets - gen particles clustered with FJ AK4
-	_tree->Branch("Jet_genEta", &_jgeta)->SetTitle("Gen jet eta - FastJet AK4");
-	_tree->Branch("Jet_genPhi", &_jgphi)->SetTitle("Gen jet phi - FastJet AK4");
-	_tree->Branch("Jet_genEnergy",&_jgenergy)->SetTitle("Gen jet energy - FastJet AK4");
-	_tree->Branch("Jet_genPt",&_jgpt)->SetTitle("Gen jet pt - FastJet AK4");
-	_tree->Branch("Jet_genPz",&_jgpz)->SetTitle("Gen jet pz - FastJet AK4");
-	_tree->Branch("Jet_genMass",&_jgmass)->SetTitle("Gen jet mass - FastJet AK4");
-	_tree->Branch("Jet_genNJet",&_njets)->SetTitle("Number of gen jets - FastJet AK4");
-	_tree->Branch("Jet_genConstituentIdxs", &_jgpartIdxs)->SetTitle("Gen jet constituent indices - FastJet AK4");
-	_tree->Branch("Jet_genNConstituents", &_jgnparts)->SetTitle("Gen jet n constituents - FastJet AK4");
+	//gen AK4 jets - gen particles clustered with FJ AK4
+	_tree->Branch("AK4Jet_genEta", &_jgAK4eta)->SetTitle("Gen jet eta - FastJet AK4");
+	_tree->Branch("AK4Jet_genPhi", &_jgAK4phi)->SetTitle("Gen jet phi - FastJet AK4");
+	_tree->Branch("AK4Jet_genEnergy",&_jgAK4energy)->SetTitle("Gen jet energy - FastJet AK4");
+	_tree->Branch("AK4Jet_genPt",&_jgAK4pt)->SetTitle("Gen jet pt - FastJet AK4");
+	_tree->Branch("AK4Jet_genPz",&_jgAK4pz)->SetTitle("Gen jet pz - FastJet AK4");
+	_tree->Branch("AK4Jet_genMass",&_jgAK4mass)->SetTitle("Gen jet mass - FastJet AK4");
+	_tree->Branch("AK4Jet_genNJet",&_ngenAK4jets)->SetTitle("Number of gen jets - FastJet AK4");
+	_tree->Branch("AK4Jet_genConstituentIdxs", &_jgAK4partIdxs)->SetTitle("Gen jet constituent indices - FastJet AK4");
+	_tree->Branch("AK4Jet_genNConstituents", &_jgAK4nparts)->SetTitle("Gen jet n constituents - FastJet AK4");
 	
-	//gen fat jets - gen particles clustered with FJ AK4
-	_tree->Branch("FatJet_genEta", &_jgfateta)->SetTitle("Gen fat jet eta - FastFatJet AK15");
-	_tree->Branch("FatJet_genPhi", &_jgfatphi)->SetTitle("Gen fat jet phi - FastFatJet AK15");
-	_tree->Branch("FatJet_genEnergy",&_jgfatenergy)->SetTitle("Gen fat jet energy - FastFatJet AK15");
-	_tree->Branch("FatJet_genPt",&_jgfatpt)->SetTitle("Gen fat jet pt - FastFatJet AK15");
-	_tree->Branch("FatJet_genPz",&_jgfatpz)->SetTitle("Gen fat jet pz - FastFatJet AK15");
-	_tree->Branch("FatJet_genMass",&_jgfatmass)->SetTitle("Gen fat jet mass - FastFatJet AK15");
-	_tree->Branch("FatJet_genNFatJet",&_nfatjets)->SetTitle("Number of gen fat jets - FastFatJet AK15");
-	_tree->Branch("FatJet_genConstituentIdxs", &_jgfatpartIdxs)->SetTitle("Gen fat jet constituent indices - FastFatJet AK15");
-	_tree->Branch("FatJet_genNConstituents", &_jgfatnparts)->SetTitle("Gen fat jet n constituents - FastFatJet AK15");
+	//gen AK8 jets - gen particles clustered with FJ AK8
+	_tree->Branch("AK8Jet_genEta", &_jgAK8eta)->SetTitle("Gen jet eta - FastJet AK8");
+	_tree->Branch("AK8Jet_genPhi", &_jgAK8phi)->SetTitle("Gen jet phi - FastJet AK8");
+	_tree->Branch("AK8Jet_genEnergy",&_jgAK8energy)->SetTitle("Gen jet energy - FastJet AK8");
+	_tree->Branch("AK8Jet_genPt",&_jgAK8pt)->SetTitle("Gen jet pt - FastJet AK8");
+	_tree->Branch("AK8Jet_genPz",&_jgAK8pz)->SetTitle("Gen jet pz - FastJet AK8");
+	_tree->Branch("AK8Jet_genMass",&_jgAK8mass)->SetTitle("Gen jet mass - FastJet AK8");
+	_tree->Branch("AK8Jet_genNJet",&_ngenAK8jets)->SetTitle("Number of gen jets - FastJet AK8");
+	_tree->Branch("AK8Jet_genConstituentIdxs", &_jgAK8partIdxs)->SetTitle("Gen jet constituent indices - FastJet AK8");
+	_tree->Branch("AK8Jet_genNConstituents", &_jgAK8nparts)->SetTitle("Gen jet n constituents - FastJet AK8");
+	
+	//gen AK15 jets - gen particles clustered with FJ AK15
+	_tree->Branch("AK15Jet_genEta", &_jgAK15eta)->SetTitle("Gen jet eta - FastJet AK15");
+	_tree->Branch("AK15Jet_genPhi", &_jgAK15phi)->SetTitle("Gen jet phi - FastJet AK15");
+	_tree->Branch("AK15Jet_genEnergy",&_jgAK15energy)->SetTitle("Gen jet energy - FastJet AK15");
+	_tree->Branch("AK15Jet_genPt",&_jgAK15pt)->SetTitle("Gen jet pt - FastJet AK15");
+	_tree->Branch("AK15Jet_genPz",&_jgAK15pz)->SetTitle("Gen jet pz - FastJet AK15");
+	_tree->Branch("AK15Jet_genMass",&_jgAK15mass)->SetTitle("Gen jet mass - FastJet AK15");
+	_tree->Branch("AK15Jet_genNJet",&_ngenAK15jets)->SetTitle("Number of gen jets - FastJet AK15");
+	_tree->Branch("AK15Jet_genConstituentIdxs", &_jgAK15partIdxs)->SetTitle("Gen jet constituent indices - FastJet AK15");
+	_tree->Branch("AK15Jet_genNConstituents", &_jgAK15nparts)->SetTitle("Gen jet n constituents - FastJet AK15");
+	
 	
 	//gen top info
 	//_tree->Branch("Top_genPt_hadronic",&_topPt_had)->SetTitle("gen top pt, fully hadronic system");
@@ -1236,13 +1326,31 @@ void BasicDetectorSim::InitTree(string fname){
 
 
 	//reco jets - cells clustered with FJ AK4
-	_tree->Branch("Jet_eta",&_jeta)->SetTitle("Jet eta - FastJet AK4, reco");
-	_tree->Branch("Jet_phi",&_jphi)->SetTitle("Jet phi - FastJet AK4, reco");
-	_tree->Branch("Jet_energy",&_jenergy)->SetTitle("Jet energy - FastJet AK4, reco");
-	_tree->Branch("Jet_pt",&_jpt)->SetTitle("Jet pt - FastJet AK4, reco");
-	_tree->Branch("Jet_mass",&_jmass)->SetTitle("Jet mass - FastJet AK4, reco");
-	_tree->Branch("Jet_RhIDs",&_jrhids)->SetTitle("Jet rh ids - FastJet AK4");
-	_tree->Branch("Jet_NJet",&_njetsReco)->SetTitle("Number of jets - FastJet AK4");
+	_tree->Branch("AK4Jet_eta",&_jAK4eta)->SetTitle("Jet eta - FastJet AK4, reco");
+	_tree->Branch("AK4Jet_phi",&_jAK4phi)->SetTitle("Jet phi - FastJet AK4, reco");
+	_tree->Branch("AK4Jet_energy",&_jAK4energy)->SetTitle("Jet energy - FastJet AK4, reco");
+	_tree->Branch("AK4Jet_pt",&_jAK4pt)->SetTitle("Jet pt - FastJet AK4, reco");
+	_tree->Branch("AK4Jet_mass",&_jAK4mass)->SetTitle("Jet mass - FastJet AK4, reco");
+	_tree->Branch("AK4Jet_RhIDs",&_jAK4rhids)->SetTitle("Jet rh ids - FastJet AK4");
+	_tree->Branch("AK4Jet_NJet",&_nrecoAK4jets)->SetTitle("Number of jets - FastJet AK4");
+	
+	//reco jets - cells clustered with FJ AK8
+	_tree->Branch("AK8Jet_eta",&_jAK8eta)->SetTitle("Jet eta - FastJet AK8, reco");
+	_tree->Branch("AK8Jet_phi",&_jAK8phi)->SetTitle("Jet phi - FastJet AK8, reco");
+	_tree->Branch("AK8Jet_energy",&_jAK8energy)->SetTitle("Jet energy - FastJet AK8, reco");
+	_tree->Branch("AK8Jet_pt",&_jAK8pt)->SetTitle("Jet pt - FastJet AK8, reco");
+	_tree->Branch("AK8Jet_mass",&_jAK8mass)->SetTitle("Jet mass - FastJet AK8, reco");
+	_tree->Branch("AK8Jet_RhIDs",&_jAK8rhids)->SetTitle("Jet rh ids - FastJet AK8");
+	_tree->Branch("AK8Jet_NJet",&_nrecoAK8jets)->SetTitle("Number of jets - FastJet AK8");
+	
+	//reco jets - cells clustered with FJ AK15
+	_tree->Branch("AK15Jet_eta",&_jAK15eta)->SetTitle("Jet eta - FastJet AK15, reco");
+	_tree->Branch("AK15Jet_phi",&_jAK15phi)->SetTitle("Jet phi - FastJet AK15, reco");
+	_tree->Branch("AK15Jet_energy",&_jAK15energy)->SetTitle("Jet energy - FastJet AK15, reco");
+	_tree->Branch("AK15Jet_pt",&_jAK15pt)->SetTitle("Jet pt - FastJet AK15, reco");
+	_tree->Branch("AK15Jet_mass",&_jAK15mass)->SetTitle("Jet mass - FastJet AK15, reco");
+	_tree->Branch("AK15Jet_RhIDs",&_jAK15rhids)->SetTitle("Jet rh ids - FastJet AK15");
+	_tree->Branch("AK15Jet_NJet",&_nrecoAK15jets)->SetTitle("Number of jets - FastJet AK15");
 
 
 	_tree->Branch("Track_px", &_trackpx)->SetTitle("Track px");
@@ -1283,43 +1391,70 @@ void BasicDetectorSim::_reset(){
 			_cal[i][j] = BayesPoint({0., 0., 0.});
 	_cal_rhs.clear();
 	_recops.clear();
-	_jets.clear();
-	_fatjets.clear();
-	_jetsReco.clear();
-
-	_jgeta.clear();
-	_jgphi.clear();
-	_jgenergy.clear();
-	_jgpt.clear();
-	_jgpz.clear();
-	_jgmass.clear();
-	_jgnparts.clear();
-	for(auto j : _jgpartIdxs)
-		j.clear();
-	_jgpartIdxs.clear();
-
-	_jgfateta.clear();
-	_jgfatphi.clear();
-	_jgfatenergy.clear();
-	_jgfatpt.clear();
-	_jgfatpz.clear();
-	_jgfatmass.clear();
-	_jgfatnparts.clear();
-	for(auto j : _jgfatpartIdxs)
-		j.clear();
-	_jgfatpartIdxs.clear();
+	_recoAK4jets.clear();
+	_recoAK8jets.clear();
+	_recoAK15jets.clear();
 	
+	_genAK4jets.clear();
+	_genAK8jets.clear();
+	_genAK15jets.clear();
+
+	_jgAK4eta.clear();
+	_jgAK4phi.clear();
+	_jgAK4energy.clear();
+	_jgAK4pt.clear();
+	_jgAK4pz.clear();
+	_jgAK4mass.clear();
+	_jgAK4nparts.clear();
+	for(auto j : _jgAK4partIdxs)
+		j.clear();
+	_jgAK4partIdxs.clear();
+	
+	_jgAK8eta.clear();
+	_jgAK8phi.clear();
+	_jgAK8energy.clear();
+	_jgAK8pt.clear();
+	_jgAK8pz.clear();
+	_jgAK8mass.clear();
+	_jgAK8nparts.clear();
+	for(auto j : _jgAK8partIdxs)
+		j.clear();
+	_jgAK8partIdxs.clear();
+	
+	_jgAK15eta.clear();
+	_jgAK15phi.clear();
+	_jgAK15energy.clear();
+	_jgAK15pt.clear();
+	_jgAK15pz.clear();
+	_jgAK15mass.clear();
+	_jgAK15nparts.clear();
+	for(auto j : _jgAK15partIdxs)
+		j.clear();
+	_jgAK15partIdxs.clear();
+
 	_topPt_had.clear();
 	_topPt_hadlep.clear();
 	_topPt_lep.clear();
 	_topPt.clear();
 	_topDecayId.clear();
 
-	_jeta.clear();
-	_jphi.clear();
-	_jenergy.clear();
-	_jpt.clear();
-	_jmass.clear();
+	_jAK4eta.clear();
+	_jAK4phi.clear();
+	_jAK4energy.clear();
+	_jAK4pt.clear();
+	_jAK4mass.clear();
+	
+	_jAK8eta.clear();
+	_jAK8phi.clear();
+	_jAK8energy.clear();
+	_jAK8pt.clear();
+	_jAK8mass.clear();
+
+	_jAK15eta.clear();
+	_jAK15phi.clear();
+	_jAK15energy.clear();
+	_jAK15pt.clear();
+	_jAK15mass.clear();
 
 	_genparts.clear();
 	_genpartids.clear();
@@ -1334,9 +1469,17 @@ void BasicDetectorSim::_reset(){
 	_genpartIdx.clear();
 	
 
-	for(auto j : _jrhids)
+	for(auto j : _jAK4rhids)
 		j.clear();
-	_jrhids.clear();
+	_jAK4rhids.clear();
+	
+	for(auto j : _jAK8rhids)
+		j.clear();
+	_jAK8rhids.clear();
+	
+	for(auto j : _jAK15rhids)
+		j.clear();
+	_jAK15rhids.clear();
 	
 	_trackpx.clear();
 	_trackpy.clear();

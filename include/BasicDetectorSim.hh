@@ -192,14 +192,28 @@ struct RecoParticle;
 		vector<vector<BayesPoint>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell
 		//vector<JetPoint> _cal_rhs; //ecal rec hits
 		vector<Jet> _cal_rhs; //ecal rec hits
-		vector<fastjet::PseudoJet>  _jets; //gen outputs from fastjet
-		vector<fastjet::PseudoJet>  _fatjets; //gen outputs from fastjet for fat jets
-		vector<fastjet::PseudoJet>  _jetsReco; //reco outputs from fastjet
+	
+		vector<fastjet::PseudoJet>  _genAK4jets; //gen AK4 outputs from fastjet
+		int _ngenAK4jets;
+		vector<fastjet::PseudoJet>  _genAK8jets; //gen AK8 outputs from fastjet
+		int _ngenAK8jets;
+		vector<fastjet::PseudoJet>  _genAK15jets; //gen AK15 outputs from fastjet
+		int _ngenAK15jets;
+			
+	
+		vector<fastjet::PseudoJet>  _recoAK4jets; //reco outputs from fastjet
+		int _nrecoAK4jets;
+		vector<fastjet::PseudoJet>  _recoAK8jets; //reco outputs from fastjet
+		int _nrecoAK8jets;
+		vector<fastjet::PseudoJet>  _recoAK15jets; //reco outputs from fastjet
+		int _nrecoAK15jets;
+
 		vector<fastjet::PseudoJet>  _genparts; //gen particles
 		vector<int> _genpartids; //genpart ids
-		int _njets, _nfatjets, _njetsReco, _ngenparts; //# of objects
-		fastjet::JetDefinition _jetdef; //fastjet clustering definition 
-		fastjet::JetDefinition _fatjetdef; //fastjet clustering definition for fat jets 
+		int _ngenparts; //# of objects
+		fastjet::JetDefinition _jetdef_AK4; //fastjet clustering definition 
+		fastjet::JetDefinition _jetdef_AK8; //fastjet clustering definition 
+		fastjet::JetDefinition _jetdef_AK15; //fastjet clustering definition 
 		double _Rparam; //default Rparam for default jets (not fat jets)
 		fastjet::Strategy _strategy; //fastjet clustering strategy
 		fastjet::RecombinationScheme _recomb; //fastjet recombination strategy
@@ -225,9 +239,13 @@ struct RecoParticle;
 		int _verb;
 
 		//cluster sequences for gen and reco jets
-		fastjet::ClusterSequence _gencs;
-		fastjet::ClusterSequence _fatgencs;
-		fastjet::ClusterSequence _recocs;
+		fastjet::ClusterSequence _gencsAK4;
+		fastjet::ClusterSequence _gencsAK8;
+		fastjet::ClusterSequence _gencsAK15;
+
+		fastjet::ClusterSequence _recocsAK4;
+		fastjet::ClusterSequence _recocsAK8;
+		fastjet::ClusterSequence _recocsAK15;
 		
 
 		//for writing
@@ -236,18 +254,28 @@ struct RecoParticle;
 		void _reset();
 		vector<double> _rhE, _rhx, _rhy, _rhz, _rht, _rheta, _rhphi;
 		vector<unsigned int> _rhids;
-		//gen jets 
-		vector<double> _jgeta, _jgphi, _jgenergy, _jgpt, _jgmass, _jgpz;
-		//# particles in gen jets
-		vector<int> _jgnparts;
-		//indices of gen particles in gen jets
-		vector<vector<int>> _jgpartIdxs;
-		//gen fat jets 
-		vector<double> _jgfateta, _jgfatphi, _jgfatenergy, _jgfatpt, _jgfatmass, _jgfatpz;
-		//# particles in gen fat jets
-		vector<int> _jgfatnparts;
-		//indices of gen particles in gen fat jets
-		vector<vector<int>> _jgfatpartIdxs;
+	
+		//gen AK4 jets 
+		vector<double> _jgAK4eta, _jgAK4phi, _jgAK4energy, _jgAK4pt, _jgAK4mass, _jgAK4pz;
+		//# particles in gen AK4 jets
+		vector<int> _jgAK4nparts;
+		//indices of gen AK4 particles in gen AK4 jets
+		vector<vector<int>> _jgAK4partIdxs;
+		
+		//gen AK8 jets 
+		vector<double> _jgAK8eta, _jgAK8phi, _jgAK8energy, _jgAK8pt, _jgAK8mass, _jgAK8pz;
+		//# particles in gen AK8 jets
+		vector<int> _jgAK8nparts;
+		//indices of gen AK8 particles in gen AK8 jets
+		vector<vector<int>> _jgAK8partIdxs;
+		
+		//gen AK15 jets 
+		vector<double> _jgAK15eta, _jgAK15phi, _jgAK15energy, _jgAK15pt, _jgAK15mass, _jgAK15pz;
+		//# particles in gen AK15 jets
+		vector<int> _jgAK15nparts;
+		//indices of gen AK15 particles in gen AK15 jets
+		vector<vector<int>> _jgAK15partIdxs;
+		
 		
 		//gen top info
 		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep, _topPt;
@@ -257,9 +285,19 @@ struct RecoParticle;
 		vector<int> _genpartMomIdx;
 		set<double> _genmoms;
 		vector<int> _genpartIdx,_genpartEvtIdx;
-		//reco jets
-		vector<double> _jeta, _jphi, _jenergy, _jpt, _jmass;
-		vector<vector<unsigned int>> _jrhids;
+	
+		//reco AK4 jets
+		vector<double> _jAK4eta, _jAK4phi, _jAK4energy, _jAK4pt, _jAK4mass;
+		vector<vector<unsigned int>> _jAK4rhids;
+		
+		//reco AK8 jets
+		vector<double> _jAK8eta, _jAK8phi, _jAK8energy, _jAK8pt, _jAK8mass;
+		vector<vector<unsigned int>> _jAK8rhids;
+		
+		//reco AK15 jets
+		vector<double> _jAK15eta, _jAK15phi, _jAK15energy, _jAK15pt, _jAK15mass;
+		vector<vector<unsigned int>> _jAK15rhids;
+	
 		//pv info
 		double _pvx, _pvy, _pvz;
 		//track info
