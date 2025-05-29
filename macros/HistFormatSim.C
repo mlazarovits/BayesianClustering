@@ -92,10 +92,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	string canname = can->GetName();
 
 	string legentry;
-	//sort hists alphabetically
+	//sort hists alphabetically/numerically
 	map<string, TH1D*> nameToHist;
 	for( int i = 0 ; i < int(hist.size()); i++){
 		name = hist[i]->GetName();
+		if(name.find("AK") != string::npos){
+			if(name[name.find("AK")+2] == '1') //push to end
+				name = name.substr(0,name.find("AK")+2) + "9" + name.substr(name.find("AK")+2); 
+		}
 		nameToHist[name] = hist[i];
 		hist[i] = nullptr;
 	}
@@ -139,15 +143,23 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	}
 	//methodStack formatting
 	else if(pf == 2){
-		labelToColor["recoAK4"] = TColor::GetColor("#f7a278");
-		labelToColor["genAK4"] = TColor::GetColor("#121211");
-		labelToColor["genAK15"] = TColor::GetColor("#121211");
-		labelToColor["BHC"] = TColor::GetColor("#6859f1");
+		labelToColor["genAK4"] = TColor::GetColor("#DB95D0");
+		labelToColor["genAK8"] = TColor::GetColor("#A73993");
+		labelToColor["genAK15"] = TColor::GetColor("#2E0F2B");
+		labelToMark["genAK4"] = 74;
+		labelToMark["genAK8"] = 75;
+		labelToMark["genAK15"] = 76;
+
+		labelToColor["recoAK4"] = TColor::GetColor("#F7A278");
+		labelToColor["recoAK8"] = TColor::GetColor("#F36E2B");
+		labelToColor["recoAK15"] = TColor::GetColor("#AE410A");
 	
 		labelToMark["recoAK4"] = 71;
-		labelToMark["genAK4"] = 73;
-		labelToMark["genAK15"] = 74;
-		labelToMark["BHC"] =   72; 
+		labelToMark["recoAK8"] = 72;
+		labelToMark["recoAK15"] = 73;
+		
+		labelToColor["BHC"] = TColor::GetColor("#6859f1");
+		labelToMark["BHC"] =   78; 
 
 	}
 	//decay stack formatting
@@ -282,7 +294,6 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 				
 		}
 		if(type != "") legentry += "_"+type;
-
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -1101,7 +1112,7 @@ void DecayStackHists(string file, string proc, vector<string>& decays, string on
 				if(!match.empty() && dirname.find(match) == string::npos) continue;
 				if(dirname.find(decays[m]) == string::npos) continue;
 				dir->cd();
-				cout << "\ndir name: " << dir->GetName() << endl;
+				//cout << "\ndir name: " << dir->GetName() << endl;
 				//get histograms (stack these)
 				vector<TH1D*> hists;
 				GetHists(dir, proc, hists);
@@ -1255,7 +1266,6 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 			//cout << "end for loop - name " << name << endl;
 		}
 	}
-	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
 	double ymin, ymax;
 	string ylab, xlab;
 	name = match+"_"+proc+"_methodStack"+methodsname;
@@ -1274,6 +1284,7 @@ void MethodStackHists(string file, string proc, vector<string>& methods, string 
 		xlab = name;
 		ylab = "a.u."; 
 	}
+	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
 	TDRMultiHist(histstot, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", methodStack);
 	cv->Write(); 
 		cout << "writing canvas (1D) " << cv->GetName() << endl;
@@ -1515,9 +1526,12 @@ void HistFormatSim(string file){
 	//decay types
 	vector<string> types = {"b_","qg","lep"};
 	vector<string> typesFullDecay = {"fullHad","semiLep","fullLep"};
-	vector<string> jettypes = {"genAK4","genAK15","recoAK4","BHC"};
-	vector<string> jettypes_recoBHC = {"recoAK4","BHC"};
-	vector<string> jettypes_genBHC = {"genAK4","BHC"};
+	vector<string> jettypes_genBHC = {"genAK4","genAK8","genAK15","BHC"};
+	vector<string> jettypes_recoBHC = {"recoAK4","recoAK8", "recoAK15", "BHC"};
+	vector<string> jettypes_recoAK4BHC = {"recoAK4", "BHC"};
+	vector<string> jettypes_recoAK8BHC = {"recoAK8", "BHC"};
+	vector<string> jettypes_recoAK15BHC = {"recoAK15", "BHC"};
+
 
 
 	vector<string> pttypes = {"lead","notlead"};
@@ -1525,13 +1539,41 @@ void HistFormatSim(string file){
 
 
 	//including pttypes makes pt-split plots for reco and BHC
+	MethodStackHists(file, "ttbar", jettypes_genBHC, oname, "nJets"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nJets"); 
+	
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "jetSize",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "jetSize"); 
+	
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_EtaCenter"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_PhiCenter"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_TimeCenter"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_energy"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_pt"); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_mass");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_EtaCenter",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_PhiCenter",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_TimeCenter",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_energy",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_pt",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
 
+	Hist2D(file, "ttbar", "BHC", oname, "_genParticle");
+	Hist2D(file, "ttbar", "genAK4", oname, "_genParticle");
+	Hist2D(file, "ttbar", "genAK15", oname, "_genParticle");
+	Hist2D(file, "ttbar", "recoAK4", oname, "_genParticle");
+	Hist2D(file, "ttbar", "recoAK15", oname, "_genParticle");
+
+
+/*	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet");
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters", pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "nJets"); 
 	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter");
@@ -1563,34 +1605,11 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEnergy", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEnergy");
 	
-	MethodStackHists(file, "ttbar", jettypes, oname, "jetSize",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "jetSize"); 
-	
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_EtaCenter"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_PhiCenter"); 
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_TimeCenter",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_TimeCenter"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_energy",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_energy"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_pt",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_pt"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_mass",pttypes);
-	MethodStackHists(file, "ttbar", jettypes, oname, "Jet_mass");
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhEtaSig",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhEtaSig"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhPhiSig",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhPhiSig"); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhTimeSig",pttypes); 
-	MethodStackHists(file, "ttbar", jettypes, oname, "rhTimeSig"); 
-
-	
 	//ProcStackHists(file, procs, "genAK4", oname, "nConstituents");
 
 
-	Hist2D(file, "ttbar", "recoAK4", oname, "nJets_jetSize");
-	Hist2D(file, "ttbar", "BHC", oname, "nJets_jetSize");
+	//Hist2D(file, "ttbar", "recoAK4", oname, "nJets_jetSize");
+	//Hist2D(file, "ttbar", "BHC", oname, "nJets_jetSize");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nRhs_nSubclustersJet");
 	Hist2D(file, "ttbar", "BHC", oname, "nRhs_nSubclustersJet");
 	Hist2D(file, "ttbar", "recoAK4", oname, "jetEnergy_jetSize");
@@ -1623,6 +1642,9 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "JetPhiCenter_genAK15JetPhiCenter");
 	Hist2D(file, "ttbar", "BHC", oname, "nSubclusters_genAK15nConstituents");
 	Hist2D(file, "ttbar", "recoAK4", oname, "nSubclusters_genAK4nConstituents");
+	
+*/
+
 	/*	
 	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
 	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
