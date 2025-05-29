@@ -787,6 +787,7 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][155]->Fill((double)_genAK15jets.size());
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK15jets, _genparts, genTopMatchIdxs,6);
+				GenericMatchJet(_genAK15jets,_genparts,genWMatchIdxs, 24); //match gen AK4 jets to gen Ws
 				//cout << "gen matching gen jets to particles - end" << endl;
 				for(int j = 0; j < _genAK15jets.size(); j++){
 					if(p == 0) cout << "gen AK15 jet #" << j << " phi " << _genAK15jets[j].phi() << " eta " << _genAK15jets[j].eta() << " energy " << _genAK15jets[j].E() <<  " mass " << _genAK15jets[j].mass() << " pt " << _genAK15jets[j].pt() << endl;
