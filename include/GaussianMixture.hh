@@ -16,7 +16,8 @@ class GaussianMixture : public BasePDFMixture{
 			m_Epi.clear();
 		};
 	
-		void InitParameters(map<string, Matrix> priors = {}, unsigned long long seed = 111);
+		//has the option to take in posteriors of previous model(s) as starting point to avoid randomly-initialized kmeans
+		void InitParameters(map<string, Matrix> priors = {}, vector<map<string, Matrix>> prev_posteriors = {}, unsigned long long seed = 111);
 		//E-step
 		void CalculatePosterior();
 		//M-step
