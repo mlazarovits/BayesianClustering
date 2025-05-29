@@ -1682,7 +1682,7 @@ class BHCJetSkimmer{
 		//164 - reco AK8 jet pt		
 		TH1D* recoAK8Jet_pt = new TH1D("recoAK8Jet_pt","recoAK8Jet_pt",25,0,500);
 		//165 - reco AK8 jet mass
-		TH1D* recoAK8Jet_mass = new TH1D("recoAK8Jet_mass","recoAK8Jet_mass",50,0,50);
+		TH1D* recoAK8Jet_mass = new TH1D("recoAK8Jet_mass","recoAK8Jet_mass",50,0,250);
 		//166 - reco AK8 jet energy
 		TH1D* recoAK8Jet_energy = new TH1D("recoAK8Jet_energy","recoAK8Jet_energy",25,0,500);
 		//167 - # constituents per reco AK8 jet
@@ -1704,7 +1704,7 @@ class BHCJetSkimmer{
 		//175 - reco AK15 jet pt		
 		TH1D* recoAK15Jet_pt = new TH1D("recoAK15Jet_pt","recoAK15Jet_pt",25,0,500);
 		//176 - reco AK15 jet mass
-		TH1D* recoAK15Jet_mass = new TH1D("recoAK15Jet_mass","recoAK15Jet_mass",50,0,50);
+		TH1D* recoAK15Jet_mass = new TH1D("recoAK15Jet_mass","recoAK15Jet_mass",50,0,250);
 		//177 - reco AK15 jet energy
 		TH1D* recoAK15Jet_energy = new TH1D("recoAK15Jet_energy","recoAK15Jet_energy",25,0,500);
 		//178 - # constituents per reco AK15 jet
