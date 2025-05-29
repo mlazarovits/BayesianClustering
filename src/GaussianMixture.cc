@@ -69,30 +69,63 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	m_W0inv = Matrix(m_dim,m_dim);
 }
 
-void GaussianMixture::InitParameters(map<string, Matrix> priors, unsigned long long seed){
+void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<string, Matrix>> prev_posteriors, unsigned long long seed){
 //cout << "GaussianMixture::InitParameters - start" << endl;
 //cout << "data" << endl; m_data->Print();
 //cout << "m_n " << m_n << " m_k " << m_k << endl;
 	if(!priors.empty())
 		InitPriorParameters(priors);
+	for(int k = 0; k < m_k; k++){
+		m_model[k]->SetDim(m_dim);
+		m_model[k]->GetPrior()->SetDim(m_dim);
+		
+		//init data stat matrices here bc m_dim has been set from data
+		_xbar.push_back(Matrix(m_dim, 1));
+		_Sbar.push_back(Matrix(m_dim, m_dim));
+	}
 
+	//this bypasses kmeans and the first M step (step 0) and directly sets the posteriors from a previous model(s)
+	if(!prev_posteriors.empty()){
+		bool kmeans = false;
+		//# of clusters should be set to be the sum of the given models (ie size of prev_posteriors)
+		if(m_k != prev_posteriors.size()){
+			cout << "Error: # of clusters initialized is " << m_k << " but given " << prev_posteriors.size() << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means" << endl;
+			kmeans = true;
+		}
+		if(!kmeans){
+			//set posterior parameters from previous model(s)
+			if(_verb > 3) cout << "Setting posterior parameters from previous models" << endl;
+			for(int k = 0; k < m_k; k++){
+				map<string, Matrix> params = prev_posteriors[k];
+				m_model[k]->GetPrior()->SetParameter("dof",params["dof"].at(0,0));
+				m_alphas[k] = params["alpha"].at(0,0);
+				m_model[k]->GetPrior()->SetParameter("scale",params["scale"].at(0,0));
+				m_model[k]->GetPrior()->SetParameter("scalemat",params["scalemat"]);
+				m_model[k]->GetPrior()->SetParameter("mean",params["m"]);
+		
+				//also need to set data stats for initial logLH eval
+				_xbar[k] = params["xbar"];
+				if(m_k == m_n) _Sbar[k].InitIdentity();
+				else _Sbar[k] = params["Sbar"];
+
+			}
+			//expectation values are calculated from posteriors in E-step
+			return;
+		}
+	}
+
+
+	//if no previously defined posteriors, use randomly initialized kmeans 
+	//to seed data statistics + responsibilities (hard assignments), then calculate posterior parameters
 	m_post.SetDims(m_n, m_k);
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
 	randy.SetRange(0.,1.);
 	double coeff_norm = 0;
 	for(int k = 0; k < m_k; k++){
-		m_model[k]->SetDim(m_dim);
-		m_model[k]->GetPrior()->SetDim(m_dim);
-		//seed N_k to even posterior values (even probabilities for all clusters -> n*(1/kmax)) - make sure 0params are distinct for convergence
-		//m_norms[k] = m_data->Sumw()/double(m_k);
-
 		m_coeffs[k] = randy.SampleFlat();
 		//make sure sum_k m_coeffs[k] = 1
 		coeff_norm += m_coeffs[k];
-		//init data stat matrices here bc m_dim has been set from data
-		_xbar.push_back(Matrix(m_dim, 1));
-		_Sbar.push_back(Matrix(m_dim, m_dim));
 	}
 	//make sure sum_k m_coeffs[k] = 1
 	for(int k = 0; k < m_k; k++) m_coeffs[k] /= coeff_norm;
@@ -304,6 +337,10 @@ map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{
 	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
 	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
 	p["alpha"] = Matrix(m_alphas[k]);
+	//include data stats for initialization
+	p["xbar"] = _xbar[k];
+	p["Sbar"] = _Sbar[k];
+
 	return p;
 };
 
@@ -445,12 +482,12 @@ void GaussianMixture::CalculateExpectations(){
 void GaussianMixture::CalculateVariationalPosterior(){
 //cout << "CALCULATE POSTERIOR - E STEP - start" << endl;
 	//calculate necessary expectation values for E-step and ELBO
-		for(int k = 0; k < m_k; k++){
-		Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
- 		double dof = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
-		//cout << " e-step - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
-		//scalemat.Print();
-	}
+	//for(int k = 0; k < m_k; k++){
+	//	Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
+ 	//	double dof = m_model[k]->GetPrior()->GetParameter("dof").at(0,0);
+	//	//cout << " e-step - k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << scalemat.det() << " W[k]: " << endl;
+	//	//scalemat.Print();
+	//}
 	//cout << "calcpost - start to calc expectations" << endl;
 	CalculateExpectations();
 	//cout << "calcpost - done calc expectations" << endl;

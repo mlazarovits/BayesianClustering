@@ -156,6 +156,7 @@ class MergeTree : BaseTree{
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
 			int k;
+			vector<map<string,Matrix>> prev_posts = {};
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z || x->points->Sumw() < _thresh){ 
 				//cout << "leaf nodes - setting max # clusters == 1" << endl;
@@ -169,6 +170,13 @@ class MergeTree : BaseTree{
 				//int npts = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 				//k = npts < mincls ? npts : mincls;
 				k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+				//setting initial posterior parameters from models of previous steps
+				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
+					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
+				} 
+				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
+					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
+				} 
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
@@ -265,7 +273,8 @@ class MergeTree : BaseTree{
 			//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
 			//which in turn calls UpdateVariationalPosterior
 			//which depends on the priors 
-			x->model->InitParameters(_params);
+
+			x->model->InitParameters(_params,prev_posts);
 			
 			//inverse transformations
 			Matrix RscaleInv;
@@ -299,7 +308,7 @@ class MergeTree : BaseTree{
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
 		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
-		 //if(newpts->GetNPoints() == 163) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
+		// cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 				oldLogL = newLogL;
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
