@@ -731,8 +731,8 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][121]->Fill(_base->AK4Jet_genNConstituents->at(_genAK4jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
 					int genTopMatch = genTopMatchIdxs[j];
-					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 					if(genTopMatch != -1){
+					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genTopMatch].GetUserIdx()) << " and mass " << _genparts[genTopMatch].mass() << " and energy ratio " << _genAK4jets[j].E() / _genparts[genTopMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
 						_procCats[p].hists1D[0][123]->Fill(gendR);
 						_procCats[p].hists1D[0][124]->Fill(_genAK4jets[j].E()/_genparts[genTopMatch].E());
@@ -745,8 +745,8 @@ class BHCJetSkimmer{
 					}	
 					//dr bw gen jet and best exclusive gen W match
 					int genWMatch = genWMatchIdxs[j];
-					if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << endl;
 					if(genWMatch != -1){
+					if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genWMatch].GetUserIdx()) << " and mass " << _genparts[genWMatch].mass() << " and energy ratio " << _genAK4jets[j].E()/_genparts[genWMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genWMatch].eta(), _genparts[genWMatch].phi());
 						_procCats[p].hists1D[0][198]->Fill(gendR);
 						_procCats[p].hists1D[0][199]->Fill(_genAK4jets[j].E()/_genparts[genWMatch].E());
@@ -1153,11 +1153,11 @@ class BHCJetSkimmer{
 							_procCats[p].hists1D[pt][nhist1d_start + 26]->Fill(recojets[j].E()/_genparts[genidx].E());
 
 							if(nhist2d_start != -1){
-								_procCats[p].hists2D[pt][nhist2d_start + 28]->Fill(recojets[j].pt(), _genparts[genidx].pt());	
-								_procCats[p].hists2D[pt][nhist2d_start + 29]->Fill(recojets[j].E(), _genparts[genidx].E());		
-								_procCats[p].hists2D[pt][nhist2d_start + 30]->Fill(recojets[j].m(), _genparts[genidx].m());	
-								_procCats[p].hists2D[pt][nhist2d_start + 31]->Fill(recojets[j].eta(), _genparts[genidx].eta());	
-								_procCats[p].hists2D[pt][nhist2d_start + 32]->Fill(recojets[j].phi(), _genparts[genidx].phi());	
+								_procCats[p].hists2D[pt][nhist2d_start + 25]->Fill(recojets[j].pt(), _genparts[genidx].pt());	
+								_procCats[p].hists2D[pt][nhist2d_start + 26]->Fill(recojets[j].E(), _genparts[genidx].E());		
+								_procCats[p].hists2D[pt][nhist2d_start + 27]->Fill(recojets[j].m(), _genparts[genidx].m());	
+								_procCats[p].hists2D[pt][nhist2d_start + 28]->Fill(recojets[j].eta(), _genparts[genidx].eta());	
+								_procCats[p].hists2D[pt][nhist2d_start + 29]->Fill(recojets[j].phi(), _genparts[genidx].phi());	
 							}
 						}
 					}	
@@ -2206,20 +2206,23 @@ class BHCJetSkimmer{
 		//dr match to jet
 		double bestDr, dr;
 		vector<Jet> matchobjs;
+		//map 'local' match obj idxs to 'global' matchjets idxs
+		map<int,int> matchIdxToObjIdx;
 		//if id is specified, make matchobjs the genparts that satisfy this criteria
 		if(id != -1){
 			vector<int> qids = {1,2,3,4};
-			for(auto g : matchjets){
-				int idx = g.GetUserIdx();
+			for(int g = 0; g < matchjets.size(); g++){
+				int idx = matchjets[g].GetUserIdx();
 				int this_id = fabs(_base->genpart_id->at(idx));
 				if(id != 0 && this_id != id) continue;
 				if(id == 0){
 					if(find(qids.begin(), qids.end(), this_id) == qids.end()) continue;
 				}
-				cout << "matchobs id " << _base->genpart_id->at(idx) << " matchobjs mass " << g.mass() << endl;
-				matchobjs.push_back(g);
+				matchobjs.push_back(matchjets[g]);
+				matchIdxToObjIdx[matchobjs.size()-1] = g;
 			}
-
+			//add no match option
+			matchIdxToObjIdx[-1] = -1;
 		}
 		else{ matchobjs = matchjets; }
 
@@ -2300,7 +2303,13 @@ class BHCJetSkimmer{
 			//cout << "jet " << j << " has best exclusive match with " << best_idxs[j] << "\n" << endl;
 		}
 		bestMatchIdxs = best_idxs;
-
+		//map 'local' match obj index to 'global' all obj index
+		if(!matchIdxToObjIdx.empty()){
+			for(int i = 0; i < bestMatchIdxs.size(); i++){
+				cout << "# " << i << " best match idx " << bestMatchIdxs[i] << " best obj idx " << matchIdxToObjIdx[bestMatchIdxs[i]] << endl;
+				bestMatchIdxs[i] = matchIdxToObjIdx[bestMatchIdxs[i]];
+			}
+		}
 	}
 
 

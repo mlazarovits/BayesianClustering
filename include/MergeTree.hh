@@ -274,7 +274,8 @@ class MergeTree : BaseTree{
 			//which in turn calls UpdateVariationalPosterior
 			//which depends on the priors 
 
-			x->model->InitParameters(_params,prev_posts);
+			//x->model->InitParameters(_params,prev_posts);
+			x->model->InitParameters(_params);
 			
 			//inverse transformations
 			Matrix RscaleInv;

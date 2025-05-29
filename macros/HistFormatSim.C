@@ -1559,13 +1559,20 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_energy",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
 
-	Hist2D(file, "ttbar", "BHC", oname, "_genParticle");
-	Hist2D(file, "ttbar", "genAK4", oname, "_genParticle");
-	Hist2D(file, "ttbar", "genAK15", oname, "_genParticle");
-	Hist2D(file, "ttbar", "recoAK4", oname, "_genParticle");
-	Hist2D(file, "ttbar", "recoAK15", oname, "_genParticle");
+	Hist2D(file, "ttbar", "BHC", oname, "_genTop");
+	Hist2D(file, "ttbar", "genAK4", oname, "_genTop");
+	Hist2D(file, "ttbar", "genAK15", oname, "_genTop");
+	Hist2D(file, "ttbar", "recoAK4", oname, "_genTop");
+	Hist2D(file, "ttbar", "recoAK15", oname, "_genTop");
+	
+	Hist2D(file, "ttbar", "BHC", oname, "_genW");
+	Hist2D(file, "ttbar", "genAK4", oname, "_genW");
+	Hist2D(file, "ttbar", "genAK15", oname, "_genW");
+	Hist2D(file, "ttbar", "recoAK4", oname, "_genW");
+	Hist2D(file, "ttbar", "recoAK15", oname, "_genW");
 
 
 /*	
