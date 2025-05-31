@@ -1867,23 +1867,23 @@ class BHCJetSkimmer{
 		//193 - E ratio bw reco AK4 jet and gen top its exclusively matched to - reco AK4 jet energy/gen top energy
 		TH1D* recoAK4JetTop_Eratio = new TH1D("recoAK4Jet_genTop_Eratio","recoAK4Jet_genTop_Eratio",25,0,2);
 		//194 - dR bw reco AK4 jet and gen top its exclusively matched to
-		TH1D* recoAK4JetW_dR = new TH1D("recoAK4Jet_genW_dR","recoAK4Jet_genW_dR",25,0,1.5);
+		TH1D* recoAK4JetW_dR = new TH1D("recoAK4Jet_genW_dR","recoAK4Jet_genW_dR",25,0,0.8);
 		//195 - E ratio bw reco AK4 jet and gen top its exclusively matched to - reco AK4 jet energy/gen top energy
 		TH1D* recoAK4JetW_Eratio = new TH1D("recoAK4Jet_genW_Eratio","recoAK4Jet_genW_Eratio",25,0,2);
 		//196 - dR bw reco AK15 jet and gen top its exclusively matched to
-		TH1D* recoAK15JetW_dR = new TH1D("recoAK15Jet_genW_dR","recoAK15Jet_genW_dR",25,0,1.5);
+		TH1D* recoAK15JetW_dR = new TH1D("recoAK15Jet_genW_dR","recoAK15Jet_genW_dR",25,0,0.8);
 		//197 - E ratio bw reco AK15 jet and gen top its exclusively matched to - reco AK15 jet energy/gen top energy
 		TH1D* recoAK15JetW_Eratio = new TH1D("recoAK15Jet_genW_Eratio","recoAK15Jet_genW_Eratio",25,0,2);
 		//198 - dR bw gen AK4 jet and gen top its exclusively matched to
-		TH1D* genAK4JetW_dR = new TH1D("genAK4Jet_genW_dR","genAK4Jet_genW_dR",25,0,1.5);
+		TH1D* genAK4JetW_dR = new TH1D("genAK4Jet_genW_dR","genAK4Jet_genW_dR",25,0,0.8);
 		//199 - E ratio bw gen AK4 jet and gen top its exclusively matched to - gen AK4 jet energy/gen top energy
 		TH1D* genAK4JetW_Eratio = new TH1D("genAK4Jet_genW_Eratio","genAK4Jet_genW_Eratio",25,0,2);
 		//200 - dR bw gen AK15 jet and gen top its exclusively matched to
-		TH1D* genAK15JetW_dR = new TH1D("genAK15Jet_genW_dR","genAK15Jet_genW_dR",25,0,1.5);
+		TH1D* genAK15JetW_dR = new TH1D("genAK15Jet_genW_dR","genAK15Jet_genW_dR",25,0,0.8);
 		//201 - E ratio bw gen AK15 jet and gen top its exclusively matched to - gen AK15 jet energy/gen top energy
 		TH1D* genAK15JetW_Eratio = new TH1D("genAK15Jet_genW_Eratio","genAK15Jet_genW_Eratio",25,0,2);
 		//202 - dR bw BHC jet and gen top its exclusively matched to
-		TH1D* BHCJetW_dR = new TH1D("BHCJet_genW_dR","BHCJet_genW_dR",25,0,1.5);
+		TH1D* BHCJetW_dR = new TH1D("BHCJet_genW_dR","BHCJet_genW_dR",25,0,0.8);
 		//203 - E ratio bw BHC jet and gen top its exclusively matched to - BHC jet energy/gen top energy
 		TH1D* BHCJetW_Eratio = new TH1D("BHCJet_genW_Eratio","BHCJet_genW_Eratio",25,0,2);
 		//204 - # subclusters in BHC jets matched to Ws
