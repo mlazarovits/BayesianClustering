@@ -2035,7 +2035,7 @@ class BHCJetSkimmer{
 		//68 - gen AK15 jet # constituents vs BHC jet # subclusters 
 		TH2D* BHCnSubclusters_genAK15nConstituents = new TH2D("BHCnSubclusters_genAK15nConstituents","BHCnSubclusters_genAK15nConstituents;BHCnSubclusters;genAK15nConstituents",30,0,30,30,0,30);
 		//69 - BHC jet pt vs gen top pt 
-		TH2D* BHCJetPt_genTopPt = new TH2D("BHCJetPt_genTopPt","BHCJetPt_genTopPt;BHCJetPt;genTopPt",25,0,500,25,0,500);
+		TH2D* BHCJetPt_genTopPt = new TH2D("BHCJetPt_genTopPt","BHCJetPt_genTopPt;BHCJetPt;genTopPt",25,0,2000,25,0,2000);
 		//70 - BHC jet E vs gen top pt
 		TH2D* BHCJetE_genTopE = new TH2D("BHCJetE_genTopE","BHCJetE_genTopE;BHCJetE;genTopE",25,0,2000,25,0,2000);
 		//71 - BHC jet mass vs gen top jet mass 
@@ -2045,7 +2045,7 @@ class BHCJetSkimmer{
 		//73 - BHC jet phi vs gen top phi 
 		TH2D* BHCJetPhiCenter_genTopPhiCenter = new TH2D("BHCJetPhiCenter_genTopPhiCenter","BHCJetPhiCenter_genTopPhiCenter;BHCJetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//74 - recoAK4 jet pt vs gen top pt 
-		TH2D* recoAK4JetPt_genTopPt = new TH2D("recoAK4JetPt_genTopPt","recoAK4JetPt_genTopPt;recoAK4JetPt;genTopPt",25,0,500,25,0,500);
+		TH2D* recoAK4JetPt_genTopPt = new TH2D("recoAK4JetPt_genTopPt","recoAK4JetPt_genTopPt;recoAK4JetPt;genTopPt",25,0,2000,25,0,2000);
 		//75 - recoAK4 jet E vs gen top pt
 		TH2D* recoAK4JetE_genTopE = new TH2D("recoAK4JetE_genTopE","recoAK4JetE_genTopE;recoAK4JetE;genTopE",25,0,2000,25,0,2000);
 		//76 - recoAK4 jet mass vs gen top jet mass 
@@ -2055,7 +2055,7 @@ class BHCJetSkimmer{
 		//78 - recoAK4 jet phi vs gen top phi 
 		TH2D* recoAK4JetPhiCenter_genTopPhiCenter = new TH2D("recoAK4JetPhiCenter_genTopPhiCenter","recoAK4JetPhiCenter_genTopPhiCenter;recoAK4JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//79 - recoAK15 jet pt vs gen top pt 
-		TH2D* recoAK15JetPt_genTopPt = new TH2D("recoAK15JetPt_genTopPt","recoAK15JetPt_genTopPt;recoAK15JetPt;genTopPt",25,0,500,25,0,500);
+		TH2D* recoAK15JetPt_genTopPt = new TH2D("recoAK15JetPt_genTopPt","recoAK15JetPt_genTopPt;recoAK15JetPt;genTopPt",25,0,2000,25,0,2000);
 		//80 - recoAK15 jet E vs gen top pt
 		TH2D* recoAK15JetE_genTopE = new TH2D("recoAK15JetE_genTopE","recoAK15JetE_genTopE;recoAK15JetE;genTopE",25,0,2000,25,0,2000);
 		//81 - recoAK15 jet mass vs gen top jet mass 
@@ -2065,7 +2065,7 @@ class BHCJetSkimmer{
 		//83 - recoAK15 jet phi vs gen top phi 
 		TH2D* recoAK15JetPhiCenter_genTopPhiCenter = new TH2D("recoAK15JetPhiCenter_genTopPhiCenter","recoAK15JetPhiCenter_genTopPhiCenter;recoAK15JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//84 - genAK4 jet pt vs gen top pt 
-		TH2D* genAK4JetPt_genTopPt = new TH2D("genAK4JetPt_genTopPt","genAK4JetPt_genTopPt;genAK4JetPt;genTopPt",25,0,500,25,0,500);
+		TH2D* genAK4JetPt_genTopPt = new TH2D("genAK4JetPt_genTopPt","genAK4JetPt_genTopPt;genAK4JetPt;genTopPt",25,0,2000,25,0,2000);
 		//85 - genAK4 jet E vs gen top pt
 		TH2D* genAK4JetE_genTopE = new TH2D("genAK4JetE_genTopE","genAK4JetE_genTopE;genAK4JetE;genTopE",25,0,2000,25,0,2000);
 		//86 - genAK4 jet mass vs gen top jet mass 
@@ -2075,7 +2075,7 @@ class BHCJetSkimmer{
 		//88 - genAK4 jet phi vs gen top phi 
 		TH2D* genAK4JetPhiCenter_genTopPhiCenter = new TH2D("genAK4JetPhiCenter_genTopPhiCenter","genAK4JetPhiCenter_genTopPhiCenter;genAK4JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
 		//89 - genAK15 jet pt vs gen top pt 
-		TH2D* genAK15JetPt_genTopPt = new TH2D("genAK15JetPt_genTopPt","genAK15JetPt_genTopPt;genAK15JetPt;genTopPt",25,0,500,25,0,500);
+		TH2D* genAK15JetPt_genTopPt = new TH2D("genAK15JetPt_genTopPt","genAK15JetPt_genTopPt;genAK15JetPt;genTopPt",25,0,2000,25,0,2000);
 		//90 - genAK15 jet E vs gen top pt
 		TH2D* genAK15JetE_genTopE = new TH2D("genAK15JetE_genTopE","genAK15JetE_genTopE;genAK15JetE;genTopE",25,0,2000,25,0,2000);
 		//91 - genAK15 jet mass vs gen top jet mass 
