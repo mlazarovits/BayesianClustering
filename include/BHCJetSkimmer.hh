@@ -1813,7 +1813,7 @@ class BHCJetSkimmer{
 		//166 - reco AK8 jet energy
 		TH1D* recoAK8Jet_energy = new TH1D("recoAK8Jet_energy","recoAK8Jet_energy",25,0,500);
 		//167 - # constituents per reco AK8 jet
-		TH1D* recoAK8Jet_nConstituents = new TH1D("recoAK8Jet_nConstituents","recoAK8Jet_nConstituents",50,0,50);
+		TH1D* recoAK8Jet_nConstituents = new TH1D("recoAK8Jet_nSubclustersJet","recoAK8Jet_nSubclustersJet",30,0,30);
 		//168 - dR bw reco AK8 jet and gen top its exclusively matched to
 		TH1D* recoAK8JetTop_dR = new TH1D("recoAK8Jet_genTop_dR","recoAK8Jet_genTop_dR",25,0,1.5);
 		//169 - E ratio bw reco AK8 jet and gen top its exclusively matched to - reco AK8 jet energy/gen top energy
@@ -1835,7 +1835,7 @@ class BHCJetSkimmer{
 		//177 - reco AK15 jet energy
 		TH1D* recoAK15Jet_energy = new TH1D("recoAK15Jet_energy","recoAK15Jet_energy",25,0,500);
 		//178 - # constituents per reco AK15 jet
-		TH1D* recoAK15Jet_nConstituents = new TH1D("recoAK15Jet_nConstituents","recoAK15Jet_nConstituents",50,0,50);
+		TH1D* recoAK15Jet_nConstituents = new TH1D("recoAK15Jet_nSubclustersJet","recoAK15Jet_nSubclustersJet",30,0,30);
 		//179 - dR bw reco AK15 jet and gen top its exclusively matched to
 		TH1D* recoAK15JetTop_dR = new TH1D("recoAK15Jet_genTop_dR","recoAK15Jet_genTop_dR",25,0,1.5);
 		//180 - E ratio bw reco AK15 jet and gen top its exclusively matched to - reco AK15 jet energy/gen top energy
