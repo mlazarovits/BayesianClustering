@@ -73,6 +73,9 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 //cout << "GaussianMixture::InitParameters - start" << endl;
 //cout << "data" << endl; m_data->Print();
 //cout << "m_n " << m_n << " m_k " << m_k << endl;
+	//if no previously defined posteriors, use randomly initialized kmeans 
+	//to seed data statistics + responsibilities (hard assignments), then calculate posterior parameters
+	m_post.SetDims(m_n, m_k);
 	if(!priors.empty())
 		InitPriorParameters(priors);
 	for(int k = 0; k < m_k; k++){
@@ -85,17 +88,18 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	}
 
 	//this bypasses kmeans and the first M step (step 0) and directly sets the posteriors from a previous model(s)
+	/*
 	if(!prev_posteriors.empty()){
 		bool kmeans = false;
 		//# of clusters should be set to be the sum of the given models (ie size of prev_posteriors)
-		if(m_k != prev_posteriors.size()){
+		if(m_k < prev_posteriors.size()){
 			cout << "Error: # of clusters initialized is " << m_k << " but given " << prev_posteriors.size() << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means" << endl;
 			kmeans = true;
 		}
 		if(!kmeans){
 			//set posterior parameters from previous model(s)
-			if(_verb > 3) cout << "Setting posterior parameters from previous models" << endl;
-			for(int k = 0; k < m_k; k++){
+			cout << "Setting posterior parameters from previous models" << endl;
+			for(int k = 0; k < prev_posteriors.size(); k++){
 				map<string, Matrix> params = prev_posteriors[k];
 				m_model[k]->GetPrior()->SetParameter("dof",params["dof"].at(0,0));
 				m_alphas[k] = params["alpha"].at(0,0);
@@ -105,19 +109,45 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 		
 				//also need to set data stats for initial logLH eval
 				_xbar[k] = params["xbar"];
-				if(m_k == m_n) _Sbar[k].InitIdentity();
-				else _Sbar[k] = params["Sbar"];
+				_Sbar[k].mult(_Sbar[k], m_nu0);
+				_Sbar[k].InitIdentity();
+
+				cout << "k " << k << " alpha " << m_alphas[k] << " mean "  << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); 
+				//cout << " cov " << endl; 
+				//Matrix cov = m_model[k]->GetPrior()->GetParameter("scalemat");
+				//cov.mult(cov,m_model[k]->GetPrior()->GetParameter("dof").at(0,0));
+				//cov.Print();
 
 			}
+			//if m_k > prev_posteriors, add extra clusters as initialized to center with var of 1, set posteriors to priors
+			PointCollection initpts = m_data->SelectPoints(m_k - prev_posteriors.size(),seed);		
+			for(int k = prev_posteriors.size(); k < m_k; k++){
+				m_model[k]->GetPrior()->SetParameter("dof",m_nu0);
+				m_alphas[k] = 1;
+				m_model[k]->GetPrior()->SetParameter("scale",m_beta0);
+				m_model[k]->GetPrior()->SetParameter("scalemat",m_W0);
+				
+				//seed posterior + data statistics means randomly
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(initpts.at(k - prev_posteriors.size())));
+		
+				//also need to set data stats for initial logLH eval
+				_xbar[k] = Matrix(initpts.at(k - prev_posteriors.size())); //center of system
+				_Sbar[k].InitIdentity();
+				_Sbar[k].mult(_Sbar[k], m_nu0);
+				cout << "k " << k << " alpha " << m_alphas[k] << " mean "  << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); 
+				//cout << " cov " << endl; 
+				//Matrix cov = m_model[k]->GetPrior()->GetParameter("scalemat");
+				//cov.mult(cov,m_model[k]->GetPrior()->GetParameter("dof").at(0,0));
+				//cov.Print();
+
+			}
+			m_data->Print();
 			//expectation values are calculated from posteriors in E-step
 			return;
 		}
 	}
+	*/
 
-
-	//if no previously defined posteriors, use randomly initialized kmeans 
-	//to seed data statistics + responsibilities (hard assignments), then calculate posterior parameters
-	m_post.SetDims(m_n, m_k);
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
 	randy.SetRange(0.,1.);
@@ -134,7 +164,21 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	//for(int k = 0; k < m_k; k++) cout << "k: " << k << " Nk: " << m_norms[k] << endl;
 	//init means
 	KMeansCluster kmc = KMeansCluster(m_data, m_k);
-	kmc.Initialize(seed);
+	//if have locations from previous models, use those to initialize kmeans
+	if(!prev_posteriors.empty()){
+		PointCollection start_means;
+		for(auto params : prev_posteriors) start_means += params["m"].MatToPoints();
+		//add extra random starting positions if more clusters than previous models are given
+		if(m_k > prev_posteriors.size()){
+			PointCollection initpts = m_data->SelectPoints(m_k - prev_posteriors.size(),seed);	
+			start_means += initpts;
+		}
+		kmc.Initialize(start_means);
+	}
+	//else initial randomly
+	else{
+		kmc.Initialize(seed);
+	}
 	//use number of points that change assignment at E-step to track convergence
 	int nit = 0;
 	int nchg = 999;

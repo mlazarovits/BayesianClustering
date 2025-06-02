@@ -90,6 +90,13 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	string title, name, histtitle;
 	string canname = can->GetName();
+	if(canname[0] == '_'){
+		canname = canname.substr(1);
+		can->SetName(canname.c_str());
+	}
+	if(xtit[0] == '_'){
+		xtit = xtit.substr(1);
+	}
 
 	string legentry;
 	//sort hists alphabetically/numerically
@@ -1557,11 +1564,31 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_PhiCenter",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_TimeCenter",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_energy",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK8BHC, oname, "Jet_energy",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "Jet_energy",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_pt",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK8BHC, oname, "Jet_pt",pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
+	
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "genTop_Eratio",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "genTop_dR",{"lead"});
 
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "genTop_Eratio",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "genTop_dR",{"lead"});
+
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "genW_Eratio",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK15BHC, oname, "genW_dR",{"lead"});
+
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "genW_Eratio",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
+
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_nSubclusters",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subClusterEnergy",{"lead"});
+	
+	
 	Hist2D(file, "ttbar", "BHC", oname, "_genTop");
 	Hist2D(file, "ttbar", "genAK4", oname, "_genTop");
 	Hist2D(file, "ttbar", "genAK15", oname, "_genTop");
@@ -1575,12 +1602,7 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "recoAK15", oname, "_genW");
 
 
-/*	
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet");
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters", pttypes); 
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters"); 
 	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter");
@@ -1590,6 +1612,12 @@ void HistFormatSim(string file){
 	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter");
+/*	
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet", pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters", pttypes); 
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "drSubclusters"); 
+	
 	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaSig", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaSig");

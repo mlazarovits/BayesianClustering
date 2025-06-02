@@ -61,7 +61,7 @@ class GaussianMixture : public BasePDFMixture{
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
 				PointCollection meanpts = mean.MatToPoints();
-				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
@@ -69,7 +69,7 @@ class GaussianMixture : public BasePDFMixture{
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
 				meanpts = priormean.MatToPoints();
-				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -77,10 +77,32 @@ class GaussianMixture : public BasePDFMixture{
 
 				//shift data statistics
 				meanpts = _xbar[k].MatToPoints();
-				meanpts.Translate(pt.at(0),0);
+				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
 				_xbar[k] = Matrix(meanpts);
+			}
+		}
+		
+		void EtaToTheta_params(){
+			Matrix mean, priormean;
+			double eta;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				eta = mean.at(0,0);
+				mean.SetEntry(2*atan(exp(-eta)),0,0);
+				m_model[k]->SetParameter("mean",mean);
+				
+				//posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				eta = priormean.at(0,0);	
+				priormean.SetEntry(2*atan(exp(-eta)),0,0);
+				m_model[k]->GetPrior()->SetParameter("mean",priormean);
+
+
+				//data statistics
+				eta = _xbar[k].at(0,0);	
+				_xbar[k].SetEntry(2*atan(exp(-eta)),0,0);
 			}
 		}
 		
@@ -104,6 +126,57 @@ class GaussianMixture : public BasePDFMixture{
 				theta = _xbar[k].at(0,0);	
 				_xbar[k].SetEntry(-log(tan(theta/2)),0,0);
 			}
+		}
+		
+		//add theta projection
+		void ProjectTheta_params(){
+			Matrix mean, priormean;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				PointCollection mean_pt = mean.MatToPoints();
+				//cout << "mean" << endl; mean_pt.Print();
+				mean_pt.AngleToPlaneProject(0);	
+				//cout << "unproj mean" << endl; mean_pt.Print();
+				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				PointCollection priormean_pt = priormean.MatToPoints();
+				priormean_pt.AngleToPlaneProject(0);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+
+
+				//shift data statistics
+				PointCollection xbar_pt = _xbar[k].MatToPoints();
+				xbar_pt.AngleToPlaneProject(0);	
+				_xbar[k] = Matrix(xbar_pt);	
+			}
+		
+		}
+		//add theta projection
+		void ProjectPhi_params(){
+			Matrix mean, priormean;
+			for(int k = 0; k < m_k; k++){
+				mean = m_model[k]->GetParameter("mean");
+				PointCollection mean_pt = mean.MatToPoints();
+				//cout << "mean" << endl; mean_pt.Print();
+				mean_pt.AngleToPlaneProject(1);	
+				//cout << "unproj mean" << endl; mean_pt.Print();
+				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				
+				//translate posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				PointCollection priormean_pt = priormean.MatToPoints();
+				priormean_pt.AngleToPlaneProject(1);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+
+
+				//shift data statistics
+				PointCollection xbar_pt = _xbar[k].MatToPoints();
+				xbar_pt.AngleToPlaneProject(1);	
+				_xbar[k] = Matrix(xbar_pt);	
+			}
+		
 		}
 		
 		void UnprojectTheta_params(){
@@ -207,6 +280,32 @@ class GaussianMixture : public BasePDFMixture{
 				m_W0.Print();
 			*/
 		}
+		//scale learned model means 
+		void ScaleMeans(Matrix sc){
+			//scale means + matrices
+			Matrix mean, priormean, cov, W;
+			Matrix scT, scInv, scTinv;
+			scT.transpose(sc);
+			scInv.invert(sc);
+			scTinv.transpose(scInv);
+			for(int k = 0; k < m_k; k++){
+				//scale posterior mean in likelihood 
+				mean = m_model[k]->GetParameter("mean");
+				mean.mult(sc,mean);	
+				m_model[k]->SetParameter("mean",mean);
+				
+				//scale posterior mean in prior distribution
+				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				priormean.mult(sc,priormean);
+				m_model[k]->GetPrior()->SetParameter("mean",priormean);
+
+				//scale r stat mean
+				_xbar[k].mult(sc,_xbar[k]);
+
+			}
+
+		}
+
 	
 		//scale learned model parameters
 		void ScaleParameters(Matrix sc){

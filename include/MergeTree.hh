@@ -153,6 +153,32 @@ class MergeTree : BaseTree{
 
 	protected:
 
+		void TransformMean(Matrix& mat, BayesPoint& center, Matrix& sc){
+				//eta to theta
+				double eta = mat.at(0,0);
+				mat.SetEntry(2*atan(exp(-eta)),0,0);
+				
+				//put 02pi
+				PointCollection mat_pt = mat.MatToPoints();
+				mat_pt.Put02pi(1);	
+
+				//shift
+				mat_pt.CircularTranslate(center.at(0),0);
+				mat_pt.CircularTranslate(center.at(1),1);
+				mat_pt.Translate(center.at(2),2);
+
+				//project phi
+				mat_pt.AngleToPlaneProject(1);	
+
+				//project eta
+				mat_pt.AngleToPlaneProject(0);	
+				mat = Matrix(mat_pt);
+
+				//scale
+				mat.mult(sc,mat);	
+		}
+
+
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
 			int k;
@@ -161,14 +187,16 @@ class MergeTree : BaseTree{
 			if(x->l == _z && x->r == _z || x->points->Sumw() < _thresh){ 
 				//cout << "leaf nodes - setting max # clusters == 1" << endl;
 		 		k = 1;
+			//cout << "# clusters allowed " << k << " # pts " << x->points->GetNPoints() << " weight " << x->points->Sumw() << endl;
 			}
 			//if the sum of all weights is not enough for 1 subcluster to be "above threshold" they should not be able to be broken into multiple subclusters
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
 				//cout << "not leaf nodes - setting according to max # clusters" << endl;
-				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters() + 10;
+				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				int npts = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 				k = npts < mincls ? npts : mincls;
+				//k = npts;
 				//k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				//setting initial posterior parameters from models of previous steps
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
@@ -176,7 +204,14 @@ class MergeTree : BaseTree{
 				} 
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
-				} 
+				}
+
+				int npts_abovethresh = 0;
+				for(int n = 0; n < x->points->GetNPoints(); n++){
+					if(x->points->at(n).w() > _thresh) npts_abovethresh++;
+				}
+ 
+			//cout << "# clusters allowed " << k << " # pts " << x->points->GetNPoints() << " # clusters from l " << x->l->model->GetNClusters() << " from r " << x->r->model->GetNClusters() << " weight " << x->points->Sumw() << " with " << npts_abovethresh << " pts above thresh: " << _thresh <<  endl;
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
@@ -223,7 +258,6 @@ class MergeTree : BaseTree{
 			//it doesn't matter if this is done before or after centroid calculation
 			//bc of the way the centroid is calculated for phi (ie CircularCentroid)
 		
-			//maybe move this before centroid calculation...
 			x->model->PutPhi02pi();		
 			
 			//since the first dimension is now an angle, its centroid needs to be circularly calculated
@@ -233,7 +267,9 @@ class MergeTree : BaseTree{
 		//cout << "theta circular centroid " << x->model->GetData()->CircularCentroid(0) << " regular centroid " << x->model->GetData()->Centroid(0) << endl;	
 //cout << "original data (phi on 02pi)" << endl; x->model->GetData()->Print();
 			x->model->ShiftData(center);
-			
+
+
+
 			if(_verb > 5){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
 			//project phi onto plane
 			bool phiInf = x->model->ProjectPhi();
@@ -246,7 +282,6 @@ class MergeTree : BaseTree{
 				x->model->SetData(x->points);
 				return -1e308;
 			}
-
 
 
 			//consider this: if inserting numerical 'infinities' causes numerical instabilities in the model, (especially in the matrix inversions)
@@ -268,15 +303,33 @@ class MergeTree : BaseTree{
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(Rscale);
 			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
+			
+			
+			for(int kk = 0; kk < prev_posts.size(); kk++){
+				auto params = prev_posts[kk];
+				Matrix mean = params["m"];
+				
+				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print(); 
+				TransformMean(mean, center, Rscale);
+				prev_posts[kk]["m"] = mean;
+
+				//do for xbar too
+				mean = params["xbar"];
+				//cout << " xbar " << endl; mean.Print();
+				TransformMean(mean, center, Rscale);
+				prev_posts[kk]["xbar"] = mean;
+
+				//don't have to do for model->GetParameter("mean") bc this isn't used in the initial logLH eval
+			} 
 		
 			//cout << "scaled points" << endl; x->model->GetData()->Print();
-			//this needs to be done before InitParameters bc InitParameters calls UpdateMixture if a k-means cluster is empty
-			//which in turn calls UpdateVariationalPosterior
-			//which depends on the priors 
-
+			//needs to be done after data is set + transformed bc the initialization procedure depends on data
 			x->model->InitParameters(_params,prev_posts);
 			//x->model->InitParameters(_params);
+		
 			
+			
+	
 			//inverse transformations
 			Matrix RscaleInv;
 			RscaleInv.invert(Rscale);
@@ -292,6 +345,7 @@ class MergeTree : BaseTree{
 				algo->SetThresh(x->points->Sumw());
 			//cluster
 			double oldLogL = algo->EvalLogL();
+		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
 			double LogLThresh = 1e-3;
 			double newLogL = 0;
 			double entropy = 0;
@@ -309,7 +363,7 @@ class MergeTree : BaseTree{
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
 		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
-		// cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
+		 //cout << std::setprecision(10) << " it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 				oldLogL = newLogL;
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
@@ -331,6 +385,7 @@ cout << "from model" << endl;
 	}
 x->model->GetData()->Print();
 	}
+//cout << " # clusters found " << x->model->GetNClusters() << endl;
 //for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << " mean " << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
@@ -350,7 +405,9 @@ x->model->GetData()->Print();
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
-			x->model->ScaleParameters(RscaleInv);	
+			x->model->ScaleParameters(RscaleInv);
+
+	
 // x->model->GetData()->Print();
 //	cout << "node x means post scale" << endl;
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
@@ -366,9 +423,9 @@ x->model->GetData()->Print();
 			//cout << "untransformed points" << endl;
 
 			//only does for mean rn - not sure how to do for cov...
-			
 			x->model->UnprojectPhi_params();
 			x->model->UnprojectTheta_params();
+
 //	cout << "unprojected" << endl;
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << endl;
@@ -380,6 +437,8 @@ x->model->GetData()->Print();
 //		//params["cov"].Print();
 //	}
       		x->model->ShiftParameters(center);
+
+
 //cout << "unshifted" << endl;
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << endl;
@@ -407,18 +466,19 @@ x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
 		//cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
-	vector<double> norms;
-	x->model->GetNorms(norms);
+	//vector<double> norms;
+	//x->model->GetNorms(norms);
 //	cout << "node x means post transformation" << endl;
-//	for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << " with weight " << norms[k] << endl;
-//		auto params = x->model->GetLHPosteriorParameters(k);
-//		//auto params = x->model->GetDataStatistics(k);
-//		cout << "mean" << endl;
-//		params["mean"].Print();
-//		//cout << "cov" << endl;
-//		//params["cov"].Print();
-//	}
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << " with weight " << norms[k] << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	//auto params = x->model->GetDataStatistics(k);
+	//	cout << "mean" << endl;
+	//	params["mean"].Print();
+	//	cout << "cov" << endl;
+	//	params["cov"].Print();
+	//}
+//cout << endl;
 	//cout << std::setprecision(5) << endl;
 			return newLogL;
 		}
