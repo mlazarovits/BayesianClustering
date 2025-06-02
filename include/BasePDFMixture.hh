@@ -181,9 +181,11 @@ class BasePDFMixture : public BasePDF{
 				//if(m_norms[k] + m_alpha0 < thresh){
 //cout << std::setprecision(20) << " k " << k << " norm " << m_norms[k] << " thresh " << thresh << endl;
 				//if(thresh - m_norms[k] > 1e-15){ //precision
-				if(m_norms[k] < thresh){ //precision
-					if(_verb > 3) 
-						cout << "Removing cluster " << k << " with norm " << m_norms[k] << endl;
+				if(m_norms[k] < thresh){ 
+					if(_verb > 3){ 
+						cout << "Removing cluster " << k << " with norm " << m_norms[k] << " and mean " << endl; 
+						m_model[k]->GetPrior()->GetParameter("mean").Print();
+					}
 					//remove model + update number of clusters
 					RemoveModel(k);
 					//if the above call removes all clusters
@@ -293,6 +295,7 @@ class BasePDFMixture : public BasePDF{
 			m_data->ThetaToEta(0);
 		}
 		
+		virtual void EtaToTheta_params() = 0;
 		virtual void ThetaToEta_params() = 0;
 
 		//add theta projection
@@ -311,6 +314,9 @@ class BasePDFMixture : public BasePDF{
 			measErrInf = false;
 			return dataInf || measErrInf;
 		}
+
+		virtual void ProjectTheta_params() = 0;
+
 		void UnprojectTheta(){
 			m_data->PlaneToAngleProject(0);
 		}
