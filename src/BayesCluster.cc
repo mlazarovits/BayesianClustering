@@ -264,9 +264,11 @@ cout << "n starting pts " << n << endl;
 		//cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
 		//cout << " points" << endl; trees[i]->model->GetData()->Print();
 		cout << " tree has subclusters " << endl;
+		vector<double> norms;
+		trees[i]->model->GetNorms(norms);
 		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
 			params = trees[i]->model->GetLHPosteriorParameters(k);
-			cout << " k " << k << " center " << endl; params["mean"].Print();
+			cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
 			cout << "cov " << endl; params["cov"].Print();
 		}
 		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->points->Print();
