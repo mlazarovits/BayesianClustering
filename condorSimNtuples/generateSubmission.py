@@ -51,7 +51,7 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --Rparam '+str(args.rParam)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
@@ -96,7 +96,6 @@ def main():
     parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = 0.26)
     parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.5)',default = 0.5)
-    parser.add_argument('--rParam',help='set R parameter for AK reco and gen jets (default = 0.4)',default = 0.4)
     args = parser.parse_args()
     
     generateSubmission(args)
