@@ -35,7 +35,7 @@ def checkJobs(outputDir,match_string):
         Strategy = folder.split("/")[-1]
         Object = folder.split("/")[-2]
         print( "Evaluating "+Strategy)
-        bash = "grep -c \"Queue\" "+folder+"/src/submit.sh"
+        bash = "grep -c \"# job\" "+folder+"/src/submit.sh"
         print("N Jobs Queued")
         #os.system(bash)
         output1 = int(subprocess.check_output(['bash','-c', bash]).decode())
@@ -67,6 +67,8 @@ def checkJobs(outputDir,match_string):
         bash = "grep -e \"segmentation violation\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
         os.system(bash)
         bash = "grep -e \"core dumped\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
+        os.system(bash)
+        bash = "grep -e \"nan\" " + folder +"/log/*.out >> "+folder+"/errcount.txt"
         os.system(bash)
         with open(folder+"/errcount.txt","r") as f:
         	print(len(f.readlines()),"jobs with errors: see "+folder+"/errcount.txt for more")	
