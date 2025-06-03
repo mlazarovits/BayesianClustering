@@ -192,7 +192,7 @@ class MergeTree : BaseTree{
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
 				//cout << "not leaf nodes - setting according to max # clusters" << endl;
-				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters();
+				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters() + 10;
 				int npts = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 				k = npts < mincls ? npts : mincls;
 				//k = npts;
