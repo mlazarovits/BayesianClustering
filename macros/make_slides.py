@@ -8,6 +8,18 @@ import argparse
 def escape_for_applescript(path):
     return f'"{str(path)}"'
 
+def make_applescript_call_show(show):
+    script = f'''
+tell application "System Events"
+    set visible of application process "Keynote" to {show}
+end tell
+'''
+    with tempfile.NamedTemporaryFile("w", suffix=".applescript", delete=False) as f:
+        f.write(script)
+        script_path = f.name
+    subprocess.run(["osascript", script_path])
+
+
 def make_applescript_call_add_folder_title(folder_title):
     script = f'''
 set slideTitle to "{folder_title}"
@@ -20,8 +32,11 @@ set imageFrames to {{ ¬
     {{{{655, 257}}, {{289, 237}}}} ¬
 }}
 
+tell application "System Events"
+	set visible of application process "Keynote" to false
+end tell
 tell application "Keynote"
-    activate
+    -- activate
     set theTheme to theme "ku-cms-minimalist" -- Change to your desired theme
     if (count of documents) = 0 then
         set thisDoc to make new document with properties {{document theme:theTheme}}
@@ -73,9 +88,11 @@ def make_applescript_call_add_plots(pdf_paths, title_text):
 	    {{{{538, 428}}, {{475,322}}}} ¬
 	}}
 
-
+	tell application "System Events"
+    		set visible of application process "Keynote" to false
+	end tell
 	tell application "Keynote"
-		activate
+		-- activate
 		set theTheme to theme "ku-cms-minimalist" -- Change to your desired theme
 		if (count of documents) = 0 then
 		    set thisDoc to make new document with properties {{document theme:theTheme}}
@@ -281,7 +298,7 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--dirs","-d",help="dir(s) with plots to run over",required=True,nargs='+')
 	args = parser.parse_args()
-
+	make_applescript_call_show('false')
 	for plot_dir_name in args.dirs:
 		if(os.path.isdir(plot_dir_name)):
 			print("making slides for",plot_dir_name)
@@ -289,6 +306,7 @@ def main():
 		else:
 			print("dir",plot_dir_name,"doesn't exist")
 		
+	make_applescript_call_show('true')
 
 
 if __name__ == "__main__":
