@@ -353,29 +353,23 @@ class PointCollection{
 
 	//commented out lines don't always hold - regular translate is being called in BasePDFMixture for shifting data	
 	void CircularTranslate(double t, int d){
+		//put on [0,2pi]
+		this->Put02pi(d);
+		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			//if(d == 1) cout << std::setprecision(12) << "i " << i << " pt " << _pts[i].at(d) << " shift " << t << endl;
-			
-			//if((_pts[i].at(d) > acos(-1) && _pts[i].at(d) < 2*acos(-1)) || _pts[i].at(d) < 0)
-			//	_pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
-			//else if(_pts[i].at(d) > 2*acos(-1))
-			//	_pts[i].SetValue((acos(cos(_pts[i].at(d))) - t),d);
-			//else
-				//if(d == 1 && _pts[i].w() > 45){
-				//	cout << "pts at d " << _pts[i].at(d) << " t " << t << " diff " << _pts[i].at(d) - t << " acos(cos(diff)) " << acos(cos(_pts[i].at(d) - t)) << endl;
-		
-				//}
 		//turned off acos(cos()) from subcluster shifts	
-			if(fabs(_pts[i].at(d) - t) > acos(-1)){
-					//if(cos(_pts[i].at(d) - t) > 0) _pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
-					//else _pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
-					_pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)), d);
-				}
-				else{
-			      	_pts[i].SetValue(_pts[i].at(d) - t,d);
-				}
-//if(d == 1 && _pts[i].w() > 45) cout << "new value of pt " << _pts[i].at(d) << endl;
-			//if(d == 1){ cout << "post shift" << endl; _pts[i].Print();} 
+			//if(fabs(_pts[i].at(d) - t) > acos(-1)){
+			//	//if(cos(_pts[i].at(d) - t) > 0) _pts[i].SetValue(acos(cos(_pts[i].at(d) - t)),d);
+			//	//else _pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)),d);
+			//	_pts[i].SetValue(-acos(cos(_pts[i].at(d) - t)), d);
+			//}
+			//else{
+			//	_pts[i].SetValue(_pts[i].at(d) - t,d);
+			//}
+				double theta = _pts[i].at(d) - t;
+				//do wraparound
+				theta = fmod((theta + pi), 2*pi) - pi;
+				_pts[i].SetValue(theta,d);
 			//round to 0
 			if(fabs(_pts[i].at(d)) < 1e-16){ _pts[i].SetValue(0,d);}
 			if(fabs(fabs(_pts[i].at(d)) - 2*acos(-1)) < 1e-10){ _pts[i].SetValue(0,d);}
@@ -452,11 +446,17 @@ class PointCollection{
 	void Put02pi(int d){
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
+			int nit = 0;
 			while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
 				//if pt is negative
-				if(_pts[i].at(d) < -1e-10) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
+				if(_pts[i].at(d) < -1e-16) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
 				//if pt is geq 2*pi
 				else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
+				nit++;
+				if(nit > 100){
+					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << endl;
+					break;
+				}
 			}
 		}
 	}
