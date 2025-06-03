@@ -166,7 +166,6 @@ class MergeTree : BaseTree{
 				mat_pt.CircularTranslate(center.at(0),0);
 				mat_pt.CircularTranslate(center.at(1),1);
 				mat_pt.Translate(center.at(2),2);
-
 				//project phi
 				mat_pt.AngleToPlaneProject(1);	
 

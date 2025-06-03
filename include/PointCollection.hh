@@ -59,6 +59,11 @@ class PointCollection{
 				}
 			}
 			if(_nDim == 0) _nDim = pts.Dim();
+			//add infs if not already there
+			if(_infs.size() == 0){
+				for(int d = 0; d < _nDim; d++)
+					_infs.push_back((1+(d)/10.)*1e70);
+			}
 			return *this;
 		}
 		
@@ -69,6 +74,10 @@ class PointCollection{
 					_pts.push_back(pt);
 				}
 			if(_nDim == 0) _nDim = pt.Dim();
+			if(_infs.size() == 0){
+				for(int d = 0; d < _nDim; d++)
+					_infs.push_back((1+(d)/10.)*1e70);
+			}
 			return *this;
 		}
 		
@@ -167,7 +176,6 @@ class PointCollection{
 		PointCollection out;
 		while(out.GetNPoints() < nOut){
 			int idx = rs.SampleFlat();
-		if(nIn == 163){ cout << "sampled idx " << idx << " and pt at idx " << endl; _pts[idx].Print(); }
 			out += _pts[idx];
 		}
 		return out;
@@ -405,13 +413,14 @@ class PointCollection{
 				_pts[i].SetValue(tan(_pts[i].at(d)),d);
 			}
 			else{ //map to infinity - add original value to preserve unique coordinate
-				if(_pts[i].at(d) > 0)
+				if(_pts[i].at(d) > 0){
 					_pts[i].SetValue(_infs[d],d);
-				else	
+				}
+				else{	
 					_pts[i].SetValue(-_infs[d],d);
+				}
 			}
 		}
-
 	}
 
 	int GetInfVal(int d){
