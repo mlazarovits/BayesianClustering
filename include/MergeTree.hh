@@ -205,10 +205,10 @@ class MergeTree : BaseTree{
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
 				}
 
-				int npts_abovethresh = 0;
-				for(int n = 0; n < x->points->GetNPoints(); n++){
-					if(x->points->at(n).w() > _thresh) npts_abovethresh++;
-				}
+				//int npts_abovethresh = 0;
+				//for(int n = 0; n < x->points->GetNPoints(); n++){
+				//	if(x->points->at(n).w() > _thresh) npts_abovethresh++;
+				//}
  
 			//cout << "# clusters allowed " << k << " # pts " << x->points->GetNPoints() << " # clusters from l " << x->l->model->GetNClusters() << " from r " << x->r->model->GetNClusters() << " weight " << x->points->Sumw() << " with " << npts_abovethresh << " pts above thresh: " << _thresh <<  endl;
 			}
@@ -303,13 +303,33 @@ class MergeTree : BaseTree{
 			x->model->ScaleData(Rscale);
 			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
 			
-			
+			//put means from previous step in same transformed space as data	
 			for(int kk = 0; kk < prev_posts.size(); kk++){
 				auto params = prev_posts[kk];
 				Matrix mean = params["m"];
 				
-				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print(); 
+				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
 				TransformMean(mean, center, Rscale);
+				/*		
+				if(fabs(mean.at(0,0)) > 1e20 || fabs(mean.at(1,0)) > 1e20){
+					cout << "MEAN AT INFINITY" << endl; mean.Print();
+					cout << "original mean" << endl; params["m"].Print();
+					cout << "left node has " << x->l->model->GetNClusters() << " subclusters" << " and " << x->l->points->GetNPoints() << " pts" << endl;
+					//cout << "left node pts" << endl; x->l->points->Print();
+					cout << "centroid in phi of left node pts " << x->l->points->CircularCentroid(1) << " in eta " << x->l->points->Centroid(0) << endl;
+					cout << "left means" << endl;
+					for(int kkk = 0; kkk < x->l->model->GetNClusters(); kkk++){
+					auto paramsl = x->l->model->GetLHPosteriorParameters(kkk);
+						cout << "left subcl #" << kkk << " weight " << paramsl["alpha"].at(0,0) << " mean" << endl; paramsl["m"].Print();
+					}
+				
+	
+					cout << "right node has " << x->r->model->GetNClusters() << " subclusters" << endl;
+					//cout << "right node pts" << endl; x->r->points->Print();
+					//cout << "original data" << endl; x->points->Print();
+					//cout << "transf data" << endl; x->model->GetData()->Print();
+				}
+				*/
 				prev_posts[kk]["m"] = mean;
 
 				//do for xbar too
@@ -384,15 +404,13 @@ cout << "from model" << endl;
 	}
 x->model->GetData()->Print();
 	}
-//cout << " # clusters found " << x->model->GetNClusters() << endl;
+//cout << "transf data" << endl;
+//x->model->GetData()->Print();
+////cout << " # clusters found " << x->model->GetNClusters() << endl;
 //for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << " mean " << endl;
+//		cout << "cluster #" << k << " transf mean " << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
 //		params["mean"].Print();
-//		if(params["mean"].at(0,0) > x->model->GetData()->max(0) || params["mean"].at(0,0) < x->model->GetData()->min(0)){
-//			cout << "original data" << endl; x->points->Print();
-//			cout << "model data" << endl; x->model->GetData()->Print();
-//		}
 //}
 			//transform the parameters back into global coordinates
 			//need to unscale first then uncenter since x'' = (x-a)/b (see above)
@@ -406,14 +424,13 @@ x->model->GetData()->Print();
 			//need to unscale mean + covariances
 			x->model->ScaleParameters(RscaleInv);
 
-	
+//cout << "unscaled" << endl;	
 // x->model->GetData()->Print();
-//	cout << "node x means post scale" << endl;
 //	for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << endl;
+//		cout << "cluster #" << k << " unscaled mean" << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
 //		params["mean"].Print();
-//	}
+//}
 		
 	
 			//need to put GMM parameters AND points back in detector coordinates (not local)
@@ -425,28 +442,28 @@ x->model->GetData()->Print();
 			x->model->UnprojectPhi_params();
 			x->model->UnprojectTheta_params();
 
-//	cout << "unprojected" << endl;
-//	for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << endl;
-//		auto params = x->model->GetLHPosteriorParameters(k);
-//		//auto params = x->model->GetDataStatistics(k);
-//		cout << "mean" << endl;
-//		params["mean"].Print();
-//		//cout << "cov" << endl;
-//		//params["cov"].Print();
-//	}
+	//cout << "unprojected" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << " unproj mean" << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	//auto params = x->model->GetDataStatistics(k);
+	//	cout << "mean" << endl;
+	//	params["mean"].Print();
+	//	//cout << "cov" << endl;
+	//	//params["cov"].Print();
+	//}
       		x->model->ShiftParameters(center);
 
 
-//cout << "unshifted" << endl;
-//	for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << endl;
-//		auto params = x->model->GetLHPosteriorParameters(k);
-//		cout << "mean" << endl;
-//		params["mean"].Print();
-//		//cout << "cov" << endl;
-//		//params["cov"].Print();
-//	}
+	//cout << "unshifted" << endl;
+	//for(int k = 0; k < x->model->GetNClusters(); k++){
+	//	cout << "cluster #" << k << " unshifted means" << endl;
+	//	auto params = x->model->GetLHPosteriorParameters(k);
+	//	cout << "mean" << endl;
+	//	params["mean"].Print();
+	//	//cout << "cov" << endl;
+	//	//params["cov"].Print();
+	//}
 			x->model->PutPhi02pi_params(); //does for data and parameters - do after data + parameters shift so the [0,2pi] transformation doesn't get shifted
 //cout << "put params and data on 02pi" << endl;
 			x->model->ThetaToEta_params();
@@ -465,19 +482,19 @@ x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
 			//to consider: keeping the data in the model as the transformed points that the algorithm actually runs on and the points in the node the original ones in the detector system
 		//cout << "original allowed # subclusters " << k << " found subclusters " << x->model->GetNClusters() << endl;
+	//cout << "node x means post transformation" << endl;
 	//vector<double> norms;
 	//x->model->GetNorms(norms);
-//	cout << "node x means post transformation" << endl;
 	//for(int k = 0; k < x->model->GetNClusters(); k++){
 	//	cout << "cluster #" << k << " with weight " << norms[k] << endl;
 	//	auto params = x->model->GetLHPosteriorParameters(k);
 	//	//auto params = x->model->GetDataStatistics(k);
 	//	cout << "mean" << endl;
 	//	params["mean"].Print();
-	//	cout << "cov" << endl;
-	//	params["cov"].Print();
+	//	//cout << "cov" << endl;
+	//	//params["cov"].Print();
 	//}
-//cout << endl;
+	//cout << endl;
 	//cout << std::setprecision(5) << endl;
 			return newLogL;
 		}
