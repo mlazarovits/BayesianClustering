@@ -60,7 +60,9 @@ def checkJobs(outputDir,match_string):
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err > count.txt"
         #bash = "grep -c \"Warning\" -c \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err"
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" " + folder +"/log/*.err > count.txt"
-        bash = "grep -e \"ERROR\|FATAL\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
+        bash = "grep -e Error: " + folder +"/log/*.out > "+folder+"/errcount.txt"
+        os.system(bash)
+        bash = "grep -e \"ERROR\|FATAL\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
         os.system(bash)
         bash = "grep -e \"Aborted\" " + folder +"/log/*.err >> "+folder+"/errcount.txt"
         os.system(bash)
