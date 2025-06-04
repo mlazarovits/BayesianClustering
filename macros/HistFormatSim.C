@@ -1601,6 +1601,7 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "recoAK4", oname, "_genW");
 	Hist2D(file, "ttbar", "recoAK15", oname, "_genW");
 
+	Hist2D(file, "ttbar", "BHC", oname, "nRhs_nSubclustersJet");
 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "nSubclustersJet");
 	
