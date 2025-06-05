@@ -42,12 +42,12 @@ class Jet{
 				_pz = j.pz();
 				_E = j.E();
 				_mom = BayesPoint({_px, _py, _pz, _E});
-				_eta = j.eta();
-				_phi = j.phi();
-				_t = j.time();
+				_eta = j._eta;
+				_phi = j._phi;
+				_t = j._t;
 				
-				_kt2 = j.kt2();
-				_mass = j.mass();
+				_kt2 = j._kt2;
+				_mass = j._mass;
 				
 				_idx = j.GetUserIdx();
 				_vtx = j.GetVertex();
@@ -105,25 +105,9 @@ class Jet{
 			_pz = pz;
 		
 			_kt2 = px*px + py*py;
-			_mass = mass();
+			_mass = _calc_mass();
 		}
-		//setting momentum to sum of constituents
-		void SetP(){
-			_px = 0;
-			_py = 0;
-			_pz = 0;
-			for(int c = 0; c < _constituents.size(); c++){
-				_px += _constituents[c].px();
-				_py += _constituents[c].py();
-				_pz += _constituents[c].pz();
-			}
-			_kt2 = _px*_px + _py*_py;
-			_mass = mass();
-		}
-
-
-		//AK4 PF jets don't have x, y, z (only eta, phi)
-		//return element i in four vector
+		
 		double px() const{ return _px; }
 		double py() const{ return _py; }
 		double pz() const{ return _pz; }
@@ -196,6 +180,7 @@ class Jet{
 				E += _rhs[i].E();
 
 			}
+cout << "mass_rhs total px " << px << " py " << py << " pz " << pz << " E " << E << endl;
 			double kt2 = px*px + py*py;
 			double m2 = (E+pz)*(E-pz)-kt2;
 			return m2 < 0.0 ? -sqrt(-m2) : sqrt(m2); 
@@ -347,76 +332,8 @@ class Jet{
 			if(it != _constituents.end()) return;	
 		
 			jt.SetVertex(_vtx);
-			jt.CalculatePfromPV();
+			//jt.CalculatePfromPV();
 			_constituents.push_back(jt);
-			/*
-			//reset overall cluster parameters
-			double norm = 0; //should be 1
-			if(_constituents.size() == 1){
-				_cov = _constituents[0]._cov;
-				_mu = _constituents[0]._mu;
-				_pi = _constituents[0]._pi; //should be 1
-				norm = 1;
-			}
-			else{ //set mean as probability-weighted center and covariance from that center
-				for(int k = 0; k < _constituents.size(); k++){
-					Matrix mu;
-					mu.mult(_constituents[k]._mu, _constituents[k]._pi);
-					_mu.add(mu);
-					norm += _constituents[k]._pi;
-				}
-				_mu.mult(_mu,1./norm);		 
-				//for covariance, take into account covariance of constituents with extra term x'_k = x_k +- sig_k
-				_cov = Matrix(3,3);
-				double xi, xj;
-				for(int i = 0; i < 3; i++){
-					for(int j = 0; j < 3; j++){
-						double entry = 0;
-						for(int k = 0; k < _constituents.size(); k++){
-							double w = _constituents[k]._pi;
-							xi = _constituents[k]._mu.at(i,0);
-							xj = _constituents[k]._mu.at(j,0);
-							entry += w*(xi - _mu.at(i,0))*(xj - _mu.at(j,0));
-						}
-						_cov.SetEntry(entry/norm,i,j);	
-					}
-				}
-			}
-			//phi wraparound
-			//cout << "mu pre phi wraparound " << endl; _mu.Print();
-			if(_mu.at(1,0) > 8*atan(1)) _mu.SetEntry(acos(cos(_mu.at(1,0))),1,0);
-			//set fourvector by subcluster when hyperparameters are tuned s.t. there are enough subclusters in a jet
-			_px = 0;
-			_py = 0;
-			_pz = 0;
-			_E = 0;
-			for(auto jet : _constituents){
-				cout << "subcl px " << jet.px() << " py " << jet.py() << " pz " << jet.pz() << " E " << jet.E() << " coeff " << jet.GetCoefficient() << endl;
-				_px += jet.GetCoefficient()*jet.px();
-				_py += jet.GetCoefficient()*jet.py();
-				_pz += jet.GetCoefficient()*jet.pz();
-				_E  += jet.E();
-				
-			}
-			_px /= norm;
-			_py /= norm;
-			_pz /= norm;
-			_kt2 = _px*_px + _py*_py;
-			_mass = mass();
-			_update_mom();
-
-		
-			//set jet center as weighted sum of subclusters
-			_eta = _mu.at(0,0);
-			_phi = _mu.at(1,0);
-			_t = _mu.at(2,0);
-			//cout << "norm " << norm << " mu" << endl; _mu.Print();
-			//cout << "const mu" << endl; _constituents[0]._mu.Print();
-
-			_ensure_valid_rap_phi();
-//cout << "MAKING jet subcl kt2 " << _kt2 << " px " << _px << " py " << _py << " pz " << _pz << " eta " << _eta << " phi " << _phi << " mass " << _mass << " energy " << _E << " pt " << pt() << " m2 " << m2() <<  endl;
-
-		*/
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
 		vector<Jet>& GetConstituents(){
@@ -525,6 +442,53 @@ class Jet{
 
 			}
 			_cov.mult(_cov,1/norm);	
+		}
+
+
+		//add mixture model to associated jet that is already made (ie from AK4, etc) with correct transfer factor
+		//jet needs to have rechits set already to correctly add them to respective subclusters
+		void SetModel(BasePDFMixture* model, double gev){
+			Matrix r_nk = model->GetPosterior();
+			vector<double> norms;
+			model->GetNorms(norms);
+			for(int k = 0; k < model->GetNClusters(); k++){
+				Jet subcl(model->GetModel(k), norms[k]/gev, model->GetPi(k), _vtx); 
+				//add rechits as "effective" crystals (ie weighted by their responsibility to this cluster)
+				//their associated responsibility will be saved as the energy of that crystal for this subcluster
+				double subcl_px = 0;
+				double subcl_py = 0;
+				double subcl_pz = 0;
+
+				//posterior is r_nk*w_n for each pt n s.t. sum_k r_nk*w_n = w_n -> need just 
+				for(int n = 0; n < _nRHs; n++){
+					JetPoint effRh = _rhs[n];
+					effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
+					effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+					subcl.AddRecHit(effRh);
+					//recalculate momentum vector accordingly
+					//calculate momentum vector from PV
+					//centered at PV
+					double dx = effRh.x() - _vtx.at(0);
+					double dy = effRh.y() - _vtx.at(1);
+					double dz = effRh.z() - _vtx.at(2);
+					//theta is calculated between beamline (z-dir) and x-y vector	
+					double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+					double p_eta = -log(tan(p_theta/2));
+					double p_phi = atan2(dy, dx);
+
+					//cout << "eta " << effRh.eta() << " p_eta " << p_eta << " phi " << effRh.phi() << " p_phi " << p_phi << " x " << effRh.x() << " dx " << dx << " y " << effRh.y() << " dy " << dy << " z " << effRh.z() << " dz " << dz << " PV x " << _vtx.at(0) << " PV y " << _vtx.at(1) << " PV z " << _vtx.at(2) << endl;
+					//double pt = _E*sin(theta); //mass = 0
+					double pt = effRh.E()/cosh(p_eta); 
+					subcl_px += pt*cos(p_phi);
+					subcl_py += pt*sin(p_phi);
+					subcl_pz += pt*sinh(p_eta);
+				}
+cout << "subcluster #" << k << " px " << subcl_px << " py " << subcl_py << " pz " << subcl_pz << " E" << endl;
+				//set subcluster momentum three-vector and mass
+				subcl.SetP(subcl_px, subcl_py, subcl_pz);
+				_constituents.push_back(subcl);
+			}
+
 		}
 
 

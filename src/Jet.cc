@@ -378,6 +378,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		//pi = sum_rh sum_k r_nk
 		_pi += w;
 
+
 	}
 	_eta = model->GetData()->Centroid(0);
 	_phi = model->GetData()->CircularCentroid(1);
@@ -397,31 +398,45 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	_update_mom();
 	_mass = _calc_mass();
 	CalculateCovariance();	
+
 	//set constituents (subclusters)
 	for(int k = 0; k < nsubcl; k++){
 		auto params = model->GetLHPosteriorParameters(k);
 		Ek = norms[k]/gev;
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
-		_constituents.push_back(subcl);
-		
-		//set momentum from subclusters
-		//_px += subcl.px();
-		//_py += subcl.py();
-		//_pz += subcl.pz();
-	//	_E += subcl.E(); //set from rhs
 	
-		//_mu.add(params["mean"]);
-		//BayesPoint pt(3);
-		//pt.SetValue(subcl.eta(),0);	
-		//pt.SetValue(subcl.phi(),1);	
-		//pt.SetValue(subcl.time(),2);	
-		
-		//means += pt;
-		//_eta += subcl.eta();
-		//_phi += subcl.phi();
-		//_t += subcl.time();
+		//add rechits as "effective" crystals (ie weighted by their responsibility to this cluster)
+		//their associated responsibility will be saved as the energy of that crystal for this subcluster
+		double subcl_px = 0;
+		double subcl_py = 0;
+		double subcl_pz = 0;
+		for(int n = 0; n < _nRHs; n++){
+			JetPoint effRh = _rhs[n];
+			effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
+			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+			subcl.AddRecHit(effRh);
+	
+			//recalculate momentum vector accordingly
+			//calculate momentum vector from PV
+			//centered at PV
+			double dx = effRh.x() - _vtx.at(0);
+			double dy = effRh.y() - _vtx.at(1);
+			double dz = effRh.z() - _vtx.at(2);
+			//theta is calculated between beamline (z-dir) and x-y vector	
+			double p_theta = atan2( sqrt(dx*dx + dy*dy), dz );
+			double p_eta = -log(tan(p_theta/2));
+			double p_phi = atan2(dy, dx);
 
-		//cout << "subcl k " << k << " center " << subcl.eta() << " " << subcl.phi() << endl; params["mean"].Print();
+			//cout << "eta " << rh.at(0) << " p_eta " << p_eta << " phi " << rh.at(1) << " p_phi " << p_phi << " x " << x << " dx " << dx << " y " << y << " dy " << dy << " z " << z << " dz " << dz << " PV x " << _vtx.at(0) << " PV y " << _vtx.at(1) << " PV z " << _vtx.at(2) << endl;
+			//double pt = _E*sin(theta); //mass = 0
+			pt = effRh.E()/cosh(p_eta); 
+			subcl_px += pt*cos(p_phi);
+			subcl_py += pt*sin(p_phi);
+			subcl_pz += pt*sinh(p_eta);
+		}
+		//set subcluster momentum three-vector and mass
+		subcl.SetP(subcl_px, subcl_py, subcl_pz);
+		_constituents.push_back(subcl);
 	}
 
 }
@@ -433,12 +448,12 @@ Jet::Jet(const Jet& j){
 	_pz = j.pz();
 	_E = j.E();
 	_mom = BayesPoint({_px, _py, _pz, _E});
-	_eta = j.eta();
-	_phi = j.phi();
-	_t = j.time();
+	_eta = j._eta;
+	_phi = j._phi;
+	_t = j._t;
 
-	_kt2 = j.kt2();
-	_mass = j._calc_mass();
+	_kt2 = j._kt2;
+	_mass = j._mass;
 	
 	_idx = j.GetUserIdx();
 	_vtx = j.GetVertex();
