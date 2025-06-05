@@ -1,3 +1,8 @@
+#############################
+#Thanks to Zach Flowers (2025) for the basis 
+#for this Keynote slide maker
+#############################
+
 import os
 import shutil
 from pathlib import Path
