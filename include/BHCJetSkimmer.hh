@@ -24,7 +24,8 @@ class BHCJetSkimmer{
 
 			_minTopPt = 0;
 			_minTopE = 0;
-			
+			_minWPt = 0;		
+	
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
 			//nu
@@ -60,6 +61,7 @@ class BHCJetSkimmer{
 			_emAlpha = 0.5;
 			_thresh = 1.;
 			_minTopPt = 0;
+			_minWPt = 0;		
 			_minTopE = 0;
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
@@ -288,6 +290,11 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_Eratio);
 			_hists1D.push_back(BHCJetW_nSubclusters);
 			_hists1D.push_back(BHCJetW_subClusterEnergy);
+                	_hists1D.push_back(BHCJet_subClusterMass);
+                	_hists1D.push_back(BHCJet_subClusterEffnRhs);
+                	_hists1D.push_back(recoAK4Jet_subClusterMass);
+                	_hists1D.push_back(recoAK4Jet_subClusterEffnRhs);
+
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -408,6 +415,13 @@ class BHCJetSkimmer{
 			_hists2D.push_back(genAK15JetMass_genWMass);
 			_hists2D.push_back(genAK15JetEtaCenter_genWEtaCenter);
 			_hists2D.push_back(genAK15JetPhiCenter_genWPhiCenter);
+                	_hists2D.push_back(BHCJet_subclusterEnergy_subclusterMass);
+                	_hists2D.push_back(BHCJet_subclusterEnergy_subclusterEffnRhs);
+                	_hists2D.push_back(BHCJet_subclusterMass_subclusterEffnRhs);
+                	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterMass);
+                	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterEffnRhs);
+                	_hists2D.push_back(recoAK4Jet_subclusterMass_subclusterEffnRhs);
+
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -419,6 +433,8 @@ class BHCJetSkimmer{
 		void SetMinNGenConsts(int r){ _prod->SetMinNGenConsts(r); }
 		void SetGenTopMinPt(double r){ _minTopPt = r; 
 			cout << "Minimum gen top pt: " << _minTopPt << endl;}
+		void SetGenWMinPt(double r){ _minWPt = r; 
+			cout << "Minimum gen W pt: " << _minWPt << endl;}
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;
@@ -593,6 +609,20 @@ class BHCJetSkimmer{
 							_procCats[p].hists1D[pt][3]->Fill(subcl.eta());
 							_procCats[p].hists1D[pt][4]->Fill(subcl.phi());
 							_procCats[p].hists1D[pt][5]->Fill(subcl.time());
+							
+							_procCats[p].hists1D[pt][206]->Fill(subcl.m());
+							_procCats[p].hists2D[pt][119]->Fill(subcl.E(), subcl.m());
+							//effective # of rhs is sum of weights bc weights are each the responsibility of rechit n to this subcl
+							vector<double> ws;
+							subcl.GetWeights(ws);
+							double effnRhs = 0;
+							for(int n = 0; n < ws.size(); n++){
+								effnRhs += ws[n]; 
+							}
+							_procCats[p].hists1D[pt][207]->Fill(effnRhs);
+							_procCats[p].hists2D[pt][120]->Fill(subcl.E(), effnRhs);
+							_procCats[p].hists2D[pt][121]->Fill(subcl.m(), effnRhs);
+							if(p == 0 && pt == 0) cout << " subcl #" << c << " has " << effnRhs << " # of effective rechits of " << ws.size() << " total rhs and mass " << subcl.m() << " and energy " << subcl.E() << " px " << subcl.px() << " py " << subcl.py() << " pz " << subcl.pz() << endl;
 							
 							//do dr calcs bw all subclusters
 							for(int cc = c+1; cc < consts.size(); cc++){
@@ -884,7 +914,7 @@ class BHCJetSkimmer{
 						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
-						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << endl;
+						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << " px " << _recoAK4jets[j].px() << " py " << _recoAK4jets[j].py() << " pz " << _recoAK4jets[j].pz() << " mass from rhs " << _recoAK4jets[j].mass_rhs() << endl;
 						_procCats[p].hists1D[pt][19]->Fill(jetsize);
 						_procCats[p].hists1D[pt][135]->Fill(sqrt(jetcov.at(0,0)));
 						_procCats[p].hists1D[pt][136]->Fill(sqrt(jetcov.at(1,1)));
@@ -908,7 +938,9 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][46]->Fill(_recoAK4jets[j].GetNConstituents(), jetsize);
 						_procCats[p].hists2D[pt][47]->Fill(_recoAK4jets[j].e(), jetsize);
 						if(_recoAK4jets[j].GetNConstituents() == 0) cout << _recoAK4jets[j].GetNConstituents() << " n subcl " << _recoAK4jets[j].GetNRecHits() << " n rhs" << endl;
+						//fill subcluster hists
 						vector<Jet> consts = _recoAK4jets[j].GetConstituents();
+						double rnk = 0;
 						for(int c = 0; c < (int)consts.size(); c++){
 							Jet subcl = consts[c];
 							_procCats[p].hists1D[pt][78]->Fill(subcl.E());
@@ -928,7 +960,22 @@ class BHCJetSkimmer{
 							_procCats[p].hists1D[pt][106]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
 							_procCats[p].hists2D[pt][31]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
 							_procCats[p].hists2D[pt][32]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
-						
+					
+							_procCats[p].hists1D[pt][208]->Fill(subcl.m());
+							_procCats[p].hists2D[pt][122]->Fill(subcl.E(), subcl.m());
+							//effective # of rhs is sum of weights bc weights are each the responsibility of rechit n to this subcl
+							vector<double> ws;
+							subcl.GetWeights(ws);
+							double effnRhs = 0;
+							for(int n = 0; n < ws.size(); n++){
+								effnRhs += ws[n]; 
+							}
+							if(p == 0 && pt == 0) cout << " subcl #" << c << " has " << effnRhs << " # of effective rechits of " << ws.size() << " total rhs and mass " << subcl.m() << " and energy " << subcl.E() << " px " << subcl.px() << " py " << subcl.py() << " pz " << subcl.pz() << endl;
+							_procCats[p].hists1D[pt][209]->Fill(effnRhs);
+							_procCats[p].hists2D[pt][123]->Fill(subcl.E(), effnRhs);
+							_procCats[p].hists2D[pt][124]->Fill(subcl.m(), effnRhs);
+
+	
 							//do dr calcs bw all subclusters
 							for(int cc = c+1; cc < consts.size(); cc++){
 								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
@@ -952,7 +999,7 @@ class BHCJetSkimmer{
 						//if no gen match, skip
 						if(genMatchIdxs_jet[j] != -1){
 							genidx = genMatchIdxs_jet[j];	
-							if(p == 0 && pt == 0) cout << " matched to gen AK4 jet #" << genMatchIdxs_jet[j] << endl;
+							//if(p == 0 && pt == 0) cout << " matched to gen AK4 jet #" << genMatchIdxs_jet[j] << endl;
 							
 							int genjetidx = _genAK4jets[genMatchIdxs_jet[j]].GetUserIdx();
 							_procCats[p].hists2D[pt][21]->Fill(_base->AK4Jet_genNConstituents->at(genjetidx),_recoAK4jets[j].GetNConstituents());
@@ -1482,13 +1529,13 @@ class BHCJetSkimmer{
 		//1 - n subclusters per bhc jets
 		TH1D* nSubclusters = new TH1D("BHCJet_nSubclustersJet","BHCJet_nSubclustersJet",30,0,30);
 		//2 - bhc subcluster energy
-		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subClusterEnergy","BHCJet_subClusterEnergy",50,0,500);
+		TH1D* predJet_subClusterEnergy = new TH1D("BHCJet_subclusterEnergy","BHCJet_subclusterEnergy",50,0,500);
 		//3 - bhc subcluster eta center
-		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subClusterEtaCenter","BHCJet_subClusterEtaCenter",25,-3.2,3.2);
+		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subclusterEtaCenter","BHCJet_subclusterEtaCenter",25,-3.2,3.2);
 		//4 - bhc subcluster phi center
-		TH1D* predJet_subClusterPhiCenter = new TH1D("BHCJet_subClusterPhiCenter","BHCJet_subClusterPhiCenter",25,-0.1,6.3);
+		TH1D* predJet_subClusterPhiCenter = new TH1D("BHCJet_subclusterPhiCenter","BHCJet_subclusterPhiCenter",25,-0.1,6.3);
 		//5 - bhc jet subcluster time center
-		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subClusterTimeCenter","BHCJet_subClusterTimeCenter",25,-1,1);
+		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subclusterTimeCenter","BHCJet_subclusterTimeCenter",25,-1,1);
 		//6 - bhc jet size
 		TH1D* predJet_jetSize = new TH1D("BHCJet_jetSize","BHCJet_jetSize",50,0,2.);
 		//7 - bhc jet energy
@@ -1503,17 +1550,17 @@ class BHCJetSkimmer{
 		TH1D* predGen_nJets = new TH1D("BHCRecoAK4_diffNJets","BHCRecoAK4_diffNJets",20,-10,10);
 		//for subclusters
 		//12 - eta sigma
-		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subClusterEtaSig","BHCJet_subClusterEtaSig",50,0.,0.5);
+		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subclusterEtaSig","BHCJet_subclusterEtaSig",50,0.,0.5);
 		//13 - phi sigma
-		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subClusterPhiSig","BHCJet_subClusterPhiSig",50,0.,0.5);
+		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subclusterPhiSig","BHCJet_subclusterPhiSig",50,0.,0.5);
 		//14 - time sigma
-		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subClusterTimeSig","BHCJet_subClusterTimeSig",50,0.,5.);
+		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subclusterTimeSig","BHCJet_subclusterTimeSig",50,0.,5.);
 		//15 - etaphi cov
-		TH1D* predJet_subClusteretaPhiCov = new TH1D("BHCJet_subClusteretaPhiCov","BHCJet_subClusteretaPhiCov",50,-0.0005,0.0005);
+		TH1D* predJet_subClusteretaPhiCov = new TH1D("BHCJet_subclusterEtaPhiCov","BHCJet_subclusterEtaPhiCov",50,-0.0005,0.0005);
 		//16 - time-eta covariance
-		TH1D* predJet_subClustertimeEtaCov = new TH1D("BHCJet_subClustertimeEtaCov","BHCJet_subClustertimeEtaCov",50,-0.05,0.05);
+		TH1D* predJet_subClustertimeEtaCov = new TH1D("BHCJet_subclusterTimeEtaCov","BHCJet_subclusterTimeEtaCov",50,-0.05,0.05);
 		//17 - time-phi covariance
-		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subClustertimePhiCov","BHCJet_subClustertimePhiCov",50,-0.05,0.05);
+		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subclusterTimePhiCov","BHCJet_subclusterTimePhiCov",50,-0.05,0.05);
 		//18 - n reco AK4 jets
 		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",30,0,30);
 		//19 - reco AK4 jet size
@@ -1635,25 +1682,25 @@ class BHCJetSkimmer{
 		//77 - n GMM clusters in reco jets
 		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclustersJet","recoAK4Jet_nSubclustersJet",30,0,30);
 		//78 - energy per GMM cluster from reco jets
-		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subClusterEnergy","recoAK4Jet_subClusterEnergy",50,0,500);
+		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subclusterEnergy","recoAK4Jet_subclusterEnergy",50,0,500);
 		//79 - time center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subClusterTimeCenter","recoAK4Jet_subClusterTimeCenter",25,-1,1);
+		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subclusterTimeCenter","recoAK4Jet_subclusterTimeCenter",25,-1,1);
 		//80 - eta center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaCenter = new TH1D("recoAK4Jet_subClusterEtaCenter","recoAK4Jet_subClusterEtaCenter",25,-3.2,3.2);
+		TH1D* recoJet_subClusterEtaCenter = new TH1D("recoAK4Jet_subclusterEtaCenter","recoAK4Jet_subclusterEtaCenter",25,-3.2,3.2);
 		//81 - phi center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subClusterPhiCenter","recoAK4Jet_subClusterPhiCenter",25,-0.1,6.3);
+		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subclusterPhiCenter","recoAK4Jet_subclusterPhiCenter",25,-0.1,6.3);
 		//82 - eta sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subClusterEtaSig","recoAK4Jet_subClusterEtaSig",50,0.,0.5);
+		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subclusterEtaSig","recoAK4Jet_subclusterEtaSig",50,0.,0.5);
 		//83 - phi sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subClusterPhiSig","recoAK4Jet_subClusterPhiSig",50,0.,0.5);
+		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subclusterPhiSig","recoAK4Jet_subclusterPhiSig",50,0.,0.5);
 		//84 - time sigma of GMM cluster from reco jets
-		TH1D* recoJet_subClusterTimeSig = new TH1D("recoAK4Jet_subClusterTimeSig","recoAK4Jet_subClusterTimeSig",50,0.,5.);
+		TH1D* recoJet_subClusterTimeSig = new TH1D("recoAK4Jet_subclusterTimeSig","recoAK4Jet_subclusterTimeSig",50,0.,5.);
 		//85 - eta-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClusteretaPhiCov = new TH1D("recoAK4Jet_subClusteretaPhiCov","recoAK4Jet_subClusteretaPhiCov",50,-0.0005,0.0005);
+		TH1D* recoJet_subClusteretaPhiCov = new TH1D("recoAK4Jet_subclusterEtaPhiCov","recoAK4Jet_subclusterEtaPhiCov",50,-0.0005,0.0005);
 		//86 - time-eta covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subClustertimeEtaCov","recoAK4Jet_subClustertimeEtaCov",50,-0.05,0.05);
+		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subclusterTimeEtaCov","recoAK4Jet_subclusterTimeEtaCov",50,-0.05,0.05);
 		//87 - time-phi covariance of GMM cluster from reco jets
-		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subClustertimePhiCov","recoAK4Jet_subClustertimePhiCov",50,-0.05,0.05);
+		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subclusterTimePhiCov","recoAK4Jet_subclusterTimePhiCov",50,-0.05,0.05);
 		//88 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("recoAK4Jet_nRhs","recoAK4Jet_nRhs",300,0,300);
 		//89 - rh energy in reco jets
@@ -1890,6 +1937,15 @@ class BHCJetSkimmer{
 		TH1D* BHCJetW_nSubclusters = new TH1D("BHCJetW_nSubclusters","BHCJetW_nSubclusters",10,0,10);
 		//205 - subcluster energy in BHC jets matched to Ws
 		TH1D* BHCJetW_subClusterEnergy = new TH1D("BHCJetW_subClusterEnergy","BHCJetW_subClusterEnergy",25,0,500);
+		//206 - BHC jet subcluster mass
+		TH1D* BHCJet_subClusterMass = new TH1D("BHCJet_subclusterMass","BHCJet_subclusterMass",25,0,200);
+		//207 - BHC jet subcluster # effective rechits
+		TH1D* BHCJet_subClusterEffnRhs = new TH1D("BHCJet_subclusterEffnRhs","BHCJet_subclusterEffnRhs",25,0,200);
+		//208 - reco AK4 jet subcluster mass
+		TH1D* recoAK4Jet_subClusterMass = new TH1D("recoAK4Jet_subclusterMass","recoAK4Jet_subclusterMass",25,0,100);
+		//209 - reco AK4 jet subcluster # effective rechits
+		TH1D* recoAK4Jet_subClusterEffnRhs = new TH1D("recoAK4Jet_subclusterEffnRhs","recoAK4Jet_subclusterEffnRhs",25,0,200);
+
 
 
 
@@ -2135,7 +2191,19 @@ class BHCJetSkimmer{
 		TH2D* genAK15JetEtaCenter_genWEtaCenter = new TH2D("genAK15JetEtaCenter_genWEtaCenter","genAK15JetEtaCenter_genWEtaCenter;genAK15JetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//118 - genAK15 jet phi vs gen W phi 
 		TH2D* genAK15JetPhiCenter_genWPhiCenter = new TH2D("genAK15JetPhiCenter_genWPhiCenter","genAK15JetPhiCenter_genWPhiCenter;genAK15JetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
-		
+		//119 - BHC jet subcluster energy vs subcluster mass
+		TH2D* BHCJet_subclusterEnergy_subclusterMass = new TH2D("BHCJet_subclusterEnergy_subclusterMass","BHCJet_subclusterEnergy_subclusterMass;subclusterEnergy;subclusterMass",25,0,500,25,0,100);
+		//120 - BHC jet subcluster energy vs # effective rec hits
+		TH2D* BHCJet_subclusterEnergy_subclusterEffnRhs = new TH2D("BHCJet_subclusterEnergy_subclusterEffnRhs","BHCJet_subclusterEnergy_subclusterEffnRhs;subclusterEnergy;subclusterEffnRhs",25,0,500,25,0,500);
+		//121 - BHC jet subcluster mass vs # effective rechits 	
+		TH2D* BHCJet_subclusterMass_subclusterEffnRhs = new TH2D("BHCJet_subclusterMass_subclusterEffnRhs","BHCJet_subclusterMass_subclusterEffnRhs;subclusterMass;subclusterEffnRhs",25,0,100,25,0,200);
+		//122 - reco AK4 jet subcluster energy vs subcluster mass
+		TH2D* recoAK4Jet_subclusterEnergy_subclusterMass = new TH2D("recoAK4Jet_subclusterEnergy_subclusterMass","recoAK4Jet_subclusterEnergy_subclusterMass;subclusterEnergy;subclusterMass",25,0,500,25,0,100);
+		//123 - recoAK4 jet subcluster energy vs # effective rec hits
+		TH2D* recoAK4Jet_subclusterEnergy_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterEnergy_subclusterEffnRhs","recoAK4Jet_subclusterEnergy_subclusterEffnRhs;subclusterEnergy;subclusterEffnRhs",25,0,500,25,0,200);
+		//124 - recoAK4 jet subcluster mass vs # effective rechits 	
+		TH2D* recoAK4Jet_subclusterMass_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterMass_subclusterEffnRhs","recoAK4Jet_subclusterMass_subclusterEffnRhs;subclusterMass;subclusterEffnRhs",25,0,100,25,0,200);
+	
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
@@ -2306,7 +2374,7 @@ class BHCJetSkimmer{
 		//map 'local' match obj index to 'global' all obj index
 		if(!matchIdxToObjIdx.empty()){
 			for(int i = 0; i < bestMatchIdxs.size(); i++){
-				cout << "# " << i << " best match idx " << bestMatchIdxs[i] << " best obj idx " << matchIdxToObjIdx[bestMatchIdxs[i]] << endl;
+				//cout << "# " << i << " best match idx " << bestMatchIdxs[i] << " best obj idx " << matchIdxToObjIdx[bestMatchIdxs[i]] << endl;
 				bestMatchIdxs[i] = matchIdxToObjIdx[bestMatchIdxs[i]];
 			}
 		}
@@ -2362,7 +2430,7 @@ class BHCJetSkimmer{
 		vector<procCat> _procCats;
 		vector<node*> _trees;
 		vector<Jet> _predJets, _genAK4jets, _recoAK4jets, _genparts, _genAK15jets, _genAK8jets, _recoAK8jets, _recoAK15jets;
-		double _minTopPt, _minTopE;
+		double _minTopPt, _minTopE, _minWPt;
 		bool _smear;
 		enum Strategy{
 			//Delauney strategy - NlnN time - for 2pi cylinder
