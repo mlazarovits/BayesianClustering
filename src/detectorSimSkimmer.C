@@ -60,6 +60,7 @@ int main(int argc, char *argv[]){
 	double minRhE = 0.5;
 	double minNconsts = 5;
 	double mintoppt = 0;
+	double minwpt = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -211,6 +212,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		mintoppt = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--minWPt", 8) == 0){
+			i++;
+    	 		minwpt = std::stod(argv[i]);
+   		}
 
 
 
@@ -218,30 +223,31 @@ int main(int argc, char *argv[]){
 	if(hprint){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
-   		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --input(-i) [file]            input root file" << endl;
-   		cout << "   --output(-o) [file]           output root file" << endl;
-   		cout << "   --strategy(-s) [strat]        sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only, 3 = NlnN with reco AK4 rhs)" << endl;
-		cout << "   --alpha(-a) [a]               sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
-   		cout << "   --EMalpha(-EMa) [a]           sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
+   		cout << "   --help(-h)                           print options" << endl;
+   		cout << "   --input(-i) [file]                   input root file" << endl;
+   		cout << "   --output(-o) [file]                  output root file" << endl;
+   		cout << "   --strategy(-s) [strat]               sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only, 3 = NlnN with reco AK4 rhs)" << endl;
+		cout << "   --alpha(-a) [a]                      sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
+   		cout << "   --EMalpha(-EMa) [a]                  sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
    		cout << "   --m0 [m0_eta] [m0_phi] [m0_time]     set mean parameter for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = [0,0,0])" << endl;
    		cout << "   --W0diag [W0_ee] [W0_pp] [W0_tt]     set *diagonal elements* in covariance parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = [1/3,1/3,1/3])" << endl;
    		cout << "   --nu0 [nu0]                          set dof parameter for prior on lambda (InverseWishart(Lambda | W0, nu0) (default = 3 = dim)" << endl;
-   		cout << "   --thresh(-t) [t]              sets threshold for cluster cutoff" << endl;
-   		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
-   		cout << "   --gev [gev]                   set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
-   		cout << "   --minpt [minpt]               set gen minimum pt (default = 30 GeV)" << endl;
-   		cout << "   --minE [minE]                 set gen minimum E (default = 30 GeV)" << endl;
-   		cout << "   --minTopPt [mintoppt]         set gen top minimum pt (default = 30 GeV)" << endl;
-   		cout << "   --minNrhs [minnrhs]           set minimum # of rhs (default = 2)" << endl;
-   		cout << "   --minRhE [minRhE]             set minimum rechit energy (default = 0.5 GeV)" << endl;
-   		cout << "   --minNconsts [minNconsts]     set minimum number of constituents for gen jets (default = 5)" << endl;
-   		cout << "   --smear                       smear cov (spatial only, turns off meas error)" << endl;
-   		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
-   		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
-   		cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
-   		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
+   		cout << "   --thresh(-t) [t]                     sets threshold for cluster cutoff" << endl;
+   		cout << "   --verbosity(-v) [verb]               set verbosity (default = 0)" << endl;
+   		cout << "   --gev [gev]                          set energy weight transfer factor in N/GeV (default = 1/10 GeV)" << endl;
+   		cout << "   --minpt [minpt]                      set gen minimum pt (default = 30 GeV)" << endl;
+   		cout << "   --minE [minE]                        set gen minimum E (default = 30 GeV)" << endl;
+   		cout << "   --minTopPt [mintoppt]                set gen top minimum pt (default = 0 GeV)" << endl;
+   		cout << "   --minWPt [minwpt]                    set gen W minimum pt (default = 0 GeV)" << endl;
+   		cout << "   --minNrhs [minnrhs]                  set minimum # of rhs (default = 2)" << endl;
+   		cout << "   --minRhE [minRhE]                    set minimum rechit energy (default = 0.5 GeV)" << endl;
+   		cout << "   --minNconsts [minNconsts]            set minimum number of constituents for gen jets (default = 5)" << endl;
+   		cout << "   --smear                              smear cov (spatial only, turns off meas error)" << endl;
+   		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
+   		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
+   		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
+   		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "Example: ./detectorSimSkimmer.x -i rootfiles/simNtuples_ttbar.root -a 0.5 -t 1.6" << endl;
 		return 0;	
 	}
@@ -405,6 +411,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetRecoMinPt(0);
 	skimmer.SetRecoMinE(0);
 	skimmer.SetGenTopMinPt(mintoppt);
+	skimmer.SetGenWMinPt(minwpt);
 	skimmer.SetMinNGenConsts(minNconsts);
 	skimmer.SetStrategy(strat);
 	skimmer.SetVerbosity(verb);
