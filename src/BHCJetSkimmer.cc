@@ -73,13 +73,20 @@ void BHCJetSkimmer::Skim(){
 			if(i % SKIP == 0) cout << " has no tops that pass pt > " << _minTopPt << endl;
 			continue;
 		}
+		//at least 1 W quark with pt, E requirements
+		int nW = 0;
+		for(int g = 0; g < ngenpart; g++){
+			if(fabs(_base->genpart_id->at(g)) != 24) continue;
+			if(_base->genpart_pt->at(g) < _minWPt) continue;
+			if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+			nW++;
+		}	
 		//at least 1 W	
-		int nW = count(_base->genpart_id->begin(), _base->genpart_id->end(), 24);
-		nW += count(_base->genpart_id->begin(), _base->genpart_id->end(), -24);
 		if(nW < 1){ 
 			if(i % SKIP == 0) cout << " has no Ws" << endl;
 			continue;
 		}
+
 		////at least 1 b	
 		//int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
 		//nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
@@ -143,20 +150,17 @@ void BHCJetSkimmer::Skim(){
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
-			//set constituents
-			vector<double> norms;
-			gmm->GetNorms(norms);
+			_recoAK4jets[j].SetModel(gmm, _gev);
+			
 			nsubcls_tot += gmm->GetNClusters();
-			cout << " jet has " << gmm->GetNClusters() << " clusters with parameters" << endl;
+			cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
 			for(int k = 0; k < gmm->GetNClusters(); k++){
-				Jet subcl(gmm->GetModel(k), norms[k]/_gev, gmm->GetPi(k), BayesPoint({_pvx, _pvy, _pvz})); 
-				_recoAK4jets[j].AddConstituent(subcl);
 				auto params = gmm->GetDataStatistics(k);
 				Matrix mean = params["mean"];
 				Matrix cov = params["cov"];
-				cout << "cluster #" << k << endl;
-				cout << "mean" << endl; mean.Print();
-				cout << "cov" << endl; cov.Print();
+				//cout << "cluster #" << k << endl;
+				//cout << "mean" << endl; mean.Print();
+				//cout << "cov" << endl; cov.Print();
 				for(int p = 0; p < _procCats.size(); p++){
 					_procCats[p].hists1D[0][98]->Fill(mean.at(0,0));
 					_procCats[p].hists1D[0][99]->Fill(mean.at(1,0));
