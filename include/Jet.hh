@@ -180,7 +180,6 @@ class Jet{
 				E += _rhs[i].E();
 
 			}
-cout << "mass_rhs total px " << px << " py " << py << " pz " << pz << " E " << E << endl;
 			double kt2 = px*px + py*py;
 			double m2 = (E+pz)*(E-pz)-kt2;
 			return m2 < 0.0 ? -sqrt(-m2) : sqrt(m2); 
@@ -483,7 +482,6 @@ cout << "mass_rhs total px " << px << " py " << py << " pz " << pz << " E " << E
 					subcl_py += pt*sin(p_phi);
 					subcl_pz += pt*sinh(p_eta);
 				}
-cout << "subcluster #" << k << " px " << subcl_px << " py " << subcl_py << " pz " << subcl_pz << " E" << endl;
 				//set subcluster momentum three-vector and mass
 				subcl.SetP(subcl_px, subcl_py, subcl_pz);
 				_constituents.push_back(subcl);
