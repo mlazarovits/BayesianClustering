@@ -45,7 +45,7 @@ class BasePDFMixture : public BasePDF{
 			_tresNoise = 0.00691415;
 		}
 
-		//virtual void InitParameters(unsigned long long seed = 123) = 0;
+		virtual void InitParameters(map<string, Matrix> priors = {}, vector<map<string, Matrix>> prev_posteriors = {}, unsigned long long seed = 111) = 0;
 		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear();
 			for(auto& pointer : m_model)
 				delete pointer;
