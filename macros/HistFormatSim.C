@@ -289,13 +289,15 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		string name = hist[i]->GetName();
 		string type = "";
 		if(name.find("_lead") != string::npos){
-			type = "highpt";
+			//type = "highpt";
+			type = "small";
 			col -= 2;
 			mark -= 4;
 				
 		}
 		if(name.find("_notlead") != string::npos){
-			type = "lowpt";
+			//type = "lowpt";
+			type = "large";
 			col += 2;
 			mark += 1;
 				
@@ -1606,6 +1608,7 @@ void HistFormatSim(string file){
 	Hist2D(file, "ttbar", "BHC", oname, "subclusterEnergy_subclusterMass");
 	Hist2D(file, "ttbar", "BHC", oname, "subclusterEnergy_subclusterEffnRhs");
 	Hist2D(file, "ttbar", "BHC", oname, "subclusterMass_subclusterEffnRhs");
+	Hist2D(file, "ttbar", "BHC", oname, "subclusterdRToJet");
 	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterEnergy_subclusterMass");
 	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterEnergy_subclusterEffnRhs");
 	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterMass_subclusterEffnRhs");
