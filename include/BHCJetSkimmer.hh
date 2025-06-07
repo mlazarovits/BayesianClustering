@@ -421,8 +421,8 @@ class BHCJetSkimmer{
                 	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterMass);
                 	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterEffnRhs);
                 	_hists2D.push_back(recoAK4Jet_subclusterMass_subclusterEffnRhs);
-			_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterdRToJet);
-			_hists2D.push_back(recoAK4Jet_subclusterEffnRhs_subclusterdRToJet);
+			_hists2D.push_back(BHCJet_subclusterEnergy_subclusterdRToJet);
+			_hists2D.push_back(BHCJet_subclusterEffnRhs_subclusterdRToJet);
 
 
 		}
@@ -2227,9 +2227,9 @@ class BHCJetSkimmer{
 		//124 - recoAK4 jet subcluster mass vs # effective rechits 	
 		TH2D* recoAK4Jet_subclusterMass_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterMass_subclusterEffnRhs","recoAK4Jet_subclusterMass_subclusterEffnRhs;subclusterMass;subclusterEffnRhs",25,0,100,25,0,200);
 		//125 - subcluster energy vs dR of subcluster to jet center
-		TH2D* recoAK4Jet_subclusterEnergy_subclusterdRToJet = new TH2D("recoAK4Jet_subclusterEnergy_subclusterdRToJet","recoAK4Jet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,100,25,0,0.5);
+		TH2D* BHCJet_subclusterEnergy_subclusterdRToJet = new TH2D("BHCJet_subclusterEnergy_subclusterdRToJet","BHCJet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,100,25,0,0.5);
 		//126 - subcluster eff # rhs vs dR of subcluster to jet center
-		TH2D* recoAK4Jet_subclusterEffnRhs_subclusterdRToJet = new TH2D("recoAK4Jet_subclusterEffnRhs_subclusterdRToJet","recoAK4Jet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
+		TH2D* BHCJet_subclusterEffnRhs_subclusterdRToJet = new TH2D("BHCJet_subclusterEffnRhs_subclusterdRToJet","BHCJet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
