@@ -6,6 +6,8 @@
 #include "MultivarT.hh"
 #include "RandomSample.hh"
 #include "NodeStack.hh"
+#include "Gaussian.hh"
+
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
@@ -14,6 +16,18 @@ class MergeTree : BaseTree{
 			_tresCte = 0.133913;
 			_tresStoch = 1.60666; 
 			_tresNoise = 0.00691415;
+			//x'' = x'/b = (x-a)/b
+			//sets relative importance of dimensions
+			//decreasing cell -> eta/phi distance more important
+			//increasing entry (2,2) -> time distance more important
+			_Rscale = Matrix(3,3);
+			_RscaleInv = Matrix(3,3);
+			_Rscale.SetEntry(1/_cell,0,0);
+			_Rscale.SetEntry(1/_cell,1,1);
+			_Rscale.SetEntry(1,2,2); 
+			_RscaleInv.invert(_Rscale);
+
+			_check_merges = false;
 		}
 
 		MergeTree(double alpha){
@@ -23,6 +37,17 @@ class MergeTree : BaseTree{
 			_tresCte = 0.133913;
 			_tresStoch = 1.60666; 
 			_tresNoise = 0.00691415;
+			//x'' = x'/b = (x-a)/b
+			//sets relative importance of dimensions
+			//decreasing cell -> eta/phi distance more important
+			//increasing entry (2,2) -> time distance more important
+			_Rscale = Matrix(3,3);
+			_RscaleInv = Matrix(3,3);
+			_Rscale.SetEntry(1/_cell,0,0);
+			_Rscale.SetEntry(1/_cell,1,1);
+			_Rscale.SetEntry(1,2,2); 
+			_RscaleInv.invert(_Rscale);
+			_check_merges = false;
 		}
 
 		//copy constructor
@@ -39,6 +64,10 @@ class MergeTree : BaseTree{
 			_tresStoch = tree._tresStoch; 
 			_tresNoise = tree._tresNoise; 
 			//above tres params are for gev = 1
+		
+			_Rscale = tree._Rscale;
+			_RscaleInv = tree._RscaleInv;
+			_check_merges = tree._check_merges;
 		}
 
 		virtual ~MergeTree(){ 
@@ -54,7 +83,9 @@ class MergeTree : BaseTree{
 				AddLeaf(&pc->at(i));
 			}
 		}
-	
+
+
+		void CheckMerges(bool t){ _check_merges = t; }	
 	
 		node* Get(int i){ return _clusters[i]; }
 
@@ -153,7 +184,7 @@ class MergeTree : BaseTree{
 
 	protected:
 
-		void TransformMean(Matrix& mat, BayesPoint& center, Matrix& sc){
+		void TransformMean(Matrix& mat, BayesPoint& center){
 				//eta to theta
 				double eta = mat.at(0,0);
 				mat.SetEntry(2*atan(exp(-eta)),0,0);
@@ -174,7 +205,7 @@ class MergeTree : BaseTree{
 				mat = Matrix(mat_pt);
 
 				//scale
-				mat.mult(sc,mat);	
+				mat.mult(_Rscale,mat);	
 		}
 
 
@@ -222,17 +253,6 @@ class MergeTree : BaseTree{
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
 
-			//x'' = x'/b = (x-a)/b
-			//sets relative importance of dimensions
-			//decreasing cell -> eta/phi distance more important
-			//increasing entry (2,2) -> time distance more important
-			double cell = 4*atan(1)/180;
-			Matrix Rscale(3,3);
-			Rscale.SetEntry(1/cell,0,0);
-			Rscale.SetEntry(1/cell,1,1);
-			Rscale.SetEntry(1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
-			//Rscale.SetEntry(1e-1,2,2); //what should be considered "out of time" for a jet? 1 ns? 2 ns? 10 ns? 
-			//for right now, 1e-1 is good, nominal time is in ns, ns*1e-3 = us, ns*1e3 = ps
 
 
 
@@ -300,7 +320,7 @@ class MergeTree : BaseTree{
 			}
 
 			//cout << "scale data + lam*s" << endl;	
-			x->model->ScaleData(Rscale);
+			x->model->ScaleData(_Rscale);
 			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
 			
 			//put means from previous step in same transformed space as data	
@@ -309,7 +329,7 @@ class MergeTree : BaseTree{
 				Matrix mean = params["m"];
 				
 				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
-				TransformMean(mean, center, Rscale);
+				TransformMean(mean, center);
 				/*		
 				if(fabs(mean.at(0,0)) > 1e20 || fabs(mean.at(1,0)) > 1e20){
 					cout << "MEAN AT INFINITY" << endl; mean.Print();
@@ -335,7 +355,7 @@ class MergeTree : BaseTree{
 				//do for xbar too
 				mean = params["xbar"];
 				//cout << " xbar " << endl; mean.Print();
-				TransformMean(mean, center, Rscale);
+				TransformMean(mean, center);
 				prev_posts[kk]["xbar"] = mean;
 
 				//don't have to do for model->GetParameter("mean") bc this isn't used in the initial logLH eval
@@ -345,15 +365,25 @@ class MergeTree : BaseTree{
 			//needs to be done after data is set + transformed bc the initialization procedure depends on data
 			x->model->InitParameters(_params,prev_posts);
 			//x->model->InitParameters(_params);
-		
-			
-			
 	
-			//inverse transformations
-			Matrix RscaleInv;
-			RscaleInv.invert(Rscale);
-			center.Scale(-1);
+			//calculate list of inner products of subcluster PDFs to compare for merges
+			//only do if for # subclusters in node l = n and # subclusters in node l = m
+			//n > 1 && m > 1 => n + m > 2
+			if(_check_merges){
+				if(x->l->model->GetNClusters() + x->r->model->GetNClusters() > 2){
+				      //construct PDF inner product map to pairs of PDFs
+					map<double, pair<int, int>, std::greater<double>> prodmap;
+				      //get vectors of PDFs from left (first) then right (second)
+					vector<BasePDF*> l_pdfs, r_pdfs;
+					for(int n = 0; n < x->l->model->GetNClusters(); n++)
+						l_pdfs.push_back(x->l->model->GetModel(n));	
+					for(int n = 0; n < x->r->model->GetNClusters(); n++)
+						r_pdfs.push_back(x->r->model->GetModel(n));
+					_match_pdfs(l_pdfs, r_pdfs, prodmap);
+				}
+			}
 
+			//nominal GMM (no merges)
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
 			//make sure sum of weights for points is above threshold
 			//otherwise the algorithm will exclude all components	
@@ -404,6 +434,20 @@ cout << "from model" << endl;
 	}
 x->model->GetData()->Print();
 	}
+
+	//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
+	//	for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
+			//merge_elbo = fit GMM with merge prodit->second pair
+	//		if(merge_elbo - newLogL > 0){ (ie merge model is better)
+	//			x->model = merge_model
+	//			newLogL = merge_elbo
+	//		}
+	//	}	
+	//}
+
+
+	//inverse transformations - for after fitting
+	center.Scale(-1);
 //cout << "transf data" << endl;
 //x->model->GetData()->Print();
 ////cout << " # clusters found " << x->model->GetNClusters() << endl;
@@ -417,12 +461,12 @@ x->model->GetData()->Print();
 			//need to unscale data - also unscales lamStar measurement errors 
 			//cout << "inverse scale data + lam*s" << endl;	
 			
-			x->model->ScaleData(RscaleInv);	 
+			x->model->ScaleData(_RscaleInv);	 
 			
 			//cout << "unscaled points" << endl;
 			//x->model->GetData()->Print();
 			//need to unscale mean + covariances
-			x->model->ScaleParameters(RscaleInv);
+			x->model->ScaleParameters(_RscaleInv);
 
 //cout << "unscaled" << endl;	
 // x->model->GetData()->Print();
@@ -536,6 +580,221 @@ x->model->GetData()->Print();
 
 		}
 
+
+		//runs EM algorithm to fit GMM with cl1 and cl2 merged initially in model
+		BasePDFMixture* _merge_model(BasePDFMixture* model, vector<map<string,Matrix>>& starting_params, int cl1, int cl2, double& merge_elbo){
+			//get initial parameters and data + number of subclusters from model	
+			int merge_k = model->GetNClusters() - 1;
+			//create new starting center from centroid of cl1 + cl2
+			map<string, Matrix> new_cl;
+			Matrix new_center(3,1);
+			double w1 = starting_params[cl1]["alpha"].at(0,0) - _emAlpha;
+			double w2 = starting_params[cl2]["alpha"].at(0,0) - _emAlpha;
+			PointCollection cents = starting_params[cl1]["m"].MatToPoints({w1});
+			cents += starting_params[cl2]["m"].MatToPoints({w2});
+			//centroid bw clusters 1 and 2
+			BayesPoint center({cents.CircularCentroid(0), cents.CircularCentroid(1), cents.Centroid(2)});
+			new_cl["m"] = center;
+			//only using posterior centers of subclusters to seed parameters for now (see GaussianMixture::InitParameters())
+
+			//remove clusters specified in args - in correct order s.t. removing a subcluster doesn't affect a later subcluster
+			if(cl1 > cl2){
+				starting_params.erase(starting_params.begin() + cl1);
+				starting_params.erase(starting_params.begin() + cl2);
+			}
+			else{
+				starting_params.erase(starting_params.begin() + cl2);
+				starting_params.erase(starting_params.begin() + cl1);
+			}
+			//add new centroid
+			starting_params.push_back(new_cl);
+
+			BasePDFMixture* mergemodel = new GaussianMixture(merge_k);
+			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
+			mergemodel->SetAlpha(_emAlpha);
+			if(!_data_smear.empty()){
+				mergemodel->SetDataSmear(_data_smear);
+			}
+
+			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
+
+			PointCollection* mergepts = new PointCollection(*mergemodel->GetData()); //data should already be transformed in common frame
+			mergemodel->SetData(mergepts);
+			mergemodel->InitParameters(_params,starting_params);
+		
+			//nominal GMM (no merges)
+			VarEMCluster* algo = new VarEMCluster(mergemodel, merge_k);
+			//make sure sum of weights for points is above threshold
+			//otherwise the algorithm will exclude all components	
+			algo->SetThresh(1e-3);
+			//cluster
+			double oldLogL = algo->EvalLogL();
+		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
+			double LogLThresh = 1e-3;
+			double newLogL = 0;
+			double entropy = 0;
+			double nll = 0;
+			double dLogL = 1e308; 
+			int it = -1;
+			//cout << "oldLogL (initial) " << oldLogL << endl;
+			while(dLogL > LogLThresh*fabs(oldLogL) || it == 0){
+				it++;
+				newLogL = algo->Cluster();
+				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
+				dLogL = newLogL - oldLogL;
+		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << mergemodel->GetNClusters() << endl;
+				oldLogL = newLogL;
+			}
+
+			merge_elbo = newLogL;
+			return mergemodel;
+		}
+
+
+		//find pdf that most closely is inner product-matched to another pdf (exclusively) - map automatically sorts in descending order
+		//matching bw subcls in pseudojet n and subcls in pseudojet m with
+		//i = # subclusters in pseudojet n and j = # subclusters in pseudojet m
+		//if i > j then there *will* be "no match" cases
+		//returning indices s.t. the pair is (idx_i, idx_j) for subcluster from pseudojet i with index idx_i and subcluster idx_j from pseudojet j
+		void _match_pdfs(vector<BasePDF*>& inpdfs_n, vector<BasePDF*> inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
+			//loop through pdfs
+			double bestProd, prod;
+			bestMatchIdxs.clear();
+			bestMatchIdxs = {};
+		
+			if(inpdfs_n.size() < 1 || inpdfs_m.size() < 1) return;
+
+			//prods[i][j] = prod for jet i and jet j
+			vector<vector<double>> prods;
+			vector<int> idxs;
+			for(int j = 0; j < inpdfs_n.size(); j++){
+				prods.push_back({});
+				for(int g = 0; g < inpdfs_m.size(); g++){
+					prods[j].push_back(-999);
+			
+					prod = _gaussian_L2_inner_product(inpdfs_n[j], inpdfs_m[g]);	
+					prods[j][g] = prod;
+				}
+			}
+			vector<int> best_idxs; //one per jet
+			int otherPdf, thismatchidx, thisPdf;
+			//go back through pdfs can check to see if there are overlapping matches
+			for(int j = 0; j < inpdfs_n.size(); j++){
+				//for(int g = 0; g < nMatch; g++){
+				//	cout << "jet " << j << " and match jet " << g << " have prod " << drs[j][g] << endl;
+				//}
+				//cout << "jet " << j << " has best prod " << *min_element(drs[j].begin(), drs[j].end()) << " at match jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+				double maxprod = *max_element(prods[j].begin(), prods[j].end());
+				int matchidx = find(prods[j].begin(), prods[j].end(), maxprod) - prods[j].begin();
+				if(maxprod == -999) matchidx = -1; //no match found (ie no available match jet for best match)
+				best_idxs.push_back(matchidx);
+				thismatchidx = matchidx;
+				thisPdf = j;
+				//if other jets have the same genidx matched, go through and disambiguate until there is only 1 instance of genidx
+				while(count(best_idxs.begin(), best_idxs.end(), matchidx) > 1 && matchidx != -1){
+					otherPdf = find(best_idxs.begin(), best_idxs.end(), matchidx) - best_idxs.begin();
+					//this happens if the "otherJet" to be analyzed comes before thisjet (ie it gets found first)
+					//skip otherJet (ie thisJet) in this case and look at all other jets
+					if(otherPdf == thisPdf){
+						otherPdf = find(best_idxs.begin()+otherPdf+1, best_idxs.end(), matchidx) - best_idxs.begin();
+					}
+					//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
+					//cout << " found another match at jet " << otherJet << " with other prod " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+					//if other prod is less than current mindr
+					if(prods[otherPdf][matchidx] < maxprod){
+						//set this prod to 999 (is invalid), find new min for this jet, reset genidx to this index
+						prods[thisPdf][matchidx] = -999;
+						maxprod = *max_element(prods[thisPdf].begin(), prods[thisPdf].end());
+						if(maxprod == -999) matchidx = -1;
+						else matchidx = find(prods[thisPdf].begin(), prods[thisPdf].end(), maxprod) - prods[thisPdf].begin();
+						best_idxs[thisPdf] = matchidx;
+						//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with prod " << mindr << endl;
+			
+					}
+					//if this prod is less than (or equal to) current mindr
+					else{
+						//set other prod to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
+						prods[otherPdf][matchidx] = -999;
+						thismatchidx = matchidx;
+						maxprod = *max_element(prods[otherPdf].begin(), prods[otherPdf].end());
+						if(maxprod == -999) matchidx = -1;
+						else matchidx = find(prods[otherPdf].begin(), prods[otherPdf].end(), maxprod) - prods[otherPdf].begin();
+						thisPdf = otherPdf;
+						best_idxs[thisPdf] = matchidx;
+						//cout << " reset match of other jet " << otherJet << " to  jet " << idx << " with prod " << mindr << endl;
+					}	
+					//cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for jet " << thisJet << endl;
+
+				}
+				//cout << "jet " << j << " has best exclusive match with " << best_idxs[j] << "\n" << endl;
+				bestMatchIdxs[maxprod] = std::make_pair(thisPdf,matchidx);
+			}
+		}
+
+		double _gaussian_L2_inner_product(BasePDF* pdf1, BasePDF* pdf2){
+			//d = integral N(x | mu1, lam1)*N(x | mu2, lam2) dx
+			//analytically this integral becomes
+			//exp(-muT*lam*mu + mu_1T*lam_1*mu_1 + mu_2T*lam_2*mu_2)
+			//with some coefficients that i'm gonna ignore since we're comparing inner products
+			//where lam = (lam_1 + lam_2)
+			//mu = lam^-1(lam_1*mu_1 + lam_2*mu_2)
+				
+			Matrix mu1 = pdf1->GetParameter("mean");
+			Matrix mu1T(1,3);
+			mu1T.transpose(mu1);
+			Matrix cov1 = pdf1->GetParameter("cov");
+			Matrix lam1(3,3);
+			lam1.invert(cov1);
+			
+			Matrix mu2 = pdf2->GetParameter("mean");
+			Matrix mu2T(1,3);
+			mu2T.transpose(mu2);
+			Matrix cov2 = pdf2->GetParameter("cov");
+			Matrix lam2(3,3);
+			lam2.invert(cov2);
+		
+			Matrix lam;
+			lam.add(lam1, lam2);
+			Matrix lamInv(3,3);
+			lamInv.invert(lam);			
+		
+			Matrix mu(3,1);
+			mu.mult(lam1,mu1);
+			Matrix mu_pt2(3,1);
+			mu_pt2.mult(lam2,mu2);
+			mu.add(mu,mu_pt2);
+			mu.mult(lamInv,mu);
+			Matrix muT(1,3);
+			muT.transpose(mu);
+		
+			Matrix muLam_pt1(1,3);
+			muLam_pt1.mult(muT,lam);
+			Matrix muLam(1,1);
+			muLam.mult(muLam_pt1,mu);
+		
+			Matrix muLam1_pt1(1,3);
+			muLam1_pt1.mult(mu1T,lam1);
+			Matrix muLam1(1,1);
+			muLam1.mult(muLam1_pt1,mu1);
+			
+			Matrix muLam2_pt1(1,3);
+			muLam2_pt1.mult(mu1T,lam1);
+			Matrix muLam2(1,1);
+			muLam2.mult(muLam2_pt1,mu1);
+		
+			double p = exp(-0.5*(-muLam.at(0,0) + muLam1.at(0,0) + muLam2.at(0,0)));	
+		
+			//determinant factors
+			double det1 = lam1.det();
+			double det2 = lam2.det();
+			double det = lam.det();
+		
+			p = (sqrt(det1)*sqrt(det2)/sqrt(det))*p;
+		
+			return p;
+		
+		}
+
 	private:
 		//keep list of nodes since tree is built bottom up
 		vector<node*> _clusters;
@@ -548,5 +807,8 @@ x->model->GetData()->Print();
 		int _verb;
 		map<string, Matrix> _params;
 		void _remap_phi(PointCollection& points);
+		Matrix _Rscale;
+		Matrix _RscaleInv;
+		bool _check_merges;
 };
 #endif
