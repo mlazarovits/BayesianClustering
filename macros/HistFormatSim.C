@@ -1603,19 +1603,29 @@ void HistFormatSim(string file){
 
 	Hist2D(file, "ttbar", "BHC", oname, "nRhs_nSubclustersJet");
 
+	Hist2D(file, "ttbar", "BHC", oname, "subclusterEnergy_subclusterMass");
+	Hist2D(file, "ttbar", "BHC", oname, "subclusterEnergy_subclusterEffnRhs");
+	Hist2D(file, "ttbar", "BHC", oname, "subclusterMass_subclusterEffnRhs");
+	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterEnergy_subclusterMass");
+	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterEnergy_subclusterEffnRhs");
+	Hist2D(file, "ttbar", "recoAK4", oname, "subclusterMass_subclusterEffnRhs");
+
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterMass");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterEffnRhs");
+
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "nSubclustersJet");
 	
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter", pttypes);
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterEtaCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subclusterEtaCenter", pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subclusterEtaCenter");
 	
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterPhiCenter", pttypes);
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterPhiCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_subclusterPhiCenter", pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_subclusterPhiCenter");
 	
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter", pttypes);
-	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "subClusterTimeCenter");
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_subclusterTimeCenter", pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "Jet_subclusterTimeCenter");
 	
-	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subClusterEnergy", pttypes);
-	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subClusterEnergy");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterEnergy", pttypes);
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterEnergy");
 /*	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");

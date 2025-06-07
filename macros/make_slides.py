@@ -212,7 +212,7 @@ def clean_and_sort(groups):
 	newgroups = get_sorted_suffixes(newgroups)
 	return newgroups
 
-def make_slides(plot_dir_name):
+def make_slides(plot_dir_name, tag = ""):
 	base_dir = os.getcwd()
 	suffix_groups = defaultdict(list)
 	# Define prefix (sample) order
@@ -239,6 +239,13 @@ def make_slides(plot_dir_name):
 	slideTitles_plots["Gen Matching to Ws - Center"] = ["_genWEtaCenter","_genWPhiCenter"]
 	slideTitles_plots["Gen Matching to tops - Center"] = ["_genTopEtaCenter","_genTopPhiCenter"]
 	slideTitles_plots["Gen Matching to Ws - subclusters"] = ["W_nSubclusters","W_subClusterEnergy"]
+	slideTitles_plots["Subcluster Mass"] = ["Jet_subclusterMass"]
+	slideTitles_plots["Subcluster Energy"] = ["Jet_subclusterEnergy"]
+	slideTitles_plots["Subcluster Effective # Rhs"] = ["Jet_subclusterEffnRhs"]
+	slideTitles_plots["Subcluster Energy vs Subcluster Mass"] = ["Jet_subclusterEnergy_subclusterMass"]
+	slideTitles_plots["Subcluster Energy vs Subcluster Effective # Rhs"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
+	slideTitles_plots["Subcluster Mass vs Subcluster Effective # Rhs"] = ["Jet_subclusterMass_subclusterEffnRhs"]
+
 
 	for i in slideTitles_plots:
 		suffix_groups[i].append([])
@@ -290,6 +297,8 @@ def make_slides(plot_dir_name):
 		#if only 1 plot per slide
 		#if len(pdfs) == 1:
 		for pdflist in slides:
+			if tag is not None and tag not in suffix:
+				suffix = suffix + " " + tag
 			make_applescript_call_add_plots(pdflist, suffix)
 		#if 3 plots per slide (ie eta, phi, time centers or energy, mass pt)
 		#break
@@ -302,12 +311,13 @@ def main():
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--dirs","-d",help="dir(s) with plots to run over",required=True,nargs='+')
+	parser.add_argument("--tag","-t",help="extra tag for slide titles")
 	args = parser.parse_args()
 	make_applescript_call_show('false')
 	for plot_dir_name in args.dirs:
 		if(os.path.isdir(plot_dir_name)):
-			print("making slides for",plot_dir_name)
-			make_slides(plot_dir_name)
+			print("making slides for",plot_dir_name,"with tag",args.tag)
+			make_slides(plot_dir_name,args.tag)
 		else:
 			print("dir",plot_dir_name,"doesn't exist")
 		
