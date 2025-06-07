@@ -369,16 +369,20 @@ class MergeTree : BaseTree{
 			//calculate list of inner products of subcluster PDFs to compare for merges
 			//only do if for # subclusters in node l = n and # subclusters in node l = m
 			//n > 1 && m > 1 => n + m > 2
-			if(_check_merges){
+			map<double, pair<int, int>, std::greater<double>> prodmap;
+			if(_check_merges && x->l != _z && x->r != _z){
 				if(x->l->model->GetNClusters() + x->r->model->GetNClusters() > 2){
-				      //construct PDF inner product map to pairs of PDFs
-					map<double, pair<int, int>, std::greater<double>> prodmap;
-				      //get vectors of PDFs from left (first) then right (second)
+			cout << "Checking merges bw node with " << x->l->model->GetNClusters() << " clusters and " << x->r->model->GetNClusters() << " clusters" << endl;
+				       //construct PDF inner product map to pairs of PDFs
+			   	       //get vectors of PDFs from left (first) then right (second)
 					vector<BasePDF*> l_pdfs, r_pdfs;
-					for(int n = 0; n < x->l->model->GetNClusters(); n++)
-						l_pdfs.push_back(x->l->model->GetModel(n));	
-					for(int n = 0; n < x->r->model->GetNClusters(); n++)
+					for(int n = 0; n < x->l->model->GetNClusters(); n++){
+						l_pdfs.push_back(x->l->model->GetModel(n));
+					}
+	
+					for(int n = 0; n < x->r->model->GetNClusters(); n++){
 						r_pdfs.push_back(x->r->model->GetModel(n));
+					}
 					_match_pdfs(l_pdfs, r_pdfs, prodmap);
 				}
 			}
@@ -436,14 +440,25 @@ x->model->GetData()->Print();
 	}
 
 	//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
-	//	for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
-			//merge_elbo = fit GMM with merge prodit->second pair
-	//		if(merge_elbo - newLogL > 0){ (ie merge model is better)
-	//			x->model = merge_model
-	//			newLogL = merge_elbo
+	if(_check_merges && x->l != _z && x->r != _z){
+		double merge_elbo;
+		vector<map<string, Matrix>> starting_params = prev_posts;
+		cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
+		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
+			//fit GMM with merge prodit->second pair (if valid)
+			cout << "best match bw clusters " << prodit->second.first << " and " << prodit->second.second << " with prod " << prodit->first << endl;
+	//		if(prodit->second.first == -1 || prodit->second.second == -1) continue;
+			//BasePDFMixture* merged_model = _merge_model(x->model, starting_params, it->second.first, it->second.second, merge_elbo);
+	//		if(merge_elbo - newLogL > 0){ //ie merge model is better
+	//			cout << "model merging clusters " << it->second.first << " and " << it->second.second << " with product " << it->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
+	//			x->model = merged_model;
+	//			cout << "x->model now has " << x->model->GetNClusters() << " clusters" << endl;
+	//			newLogL = merge_elbo;
+	//			
 	//		}
-	//	}	
-	//}
+		}
+	}	
+	
 
 
 	//inverse transformations - for after fitting
@@ -582,7 +597,14 @@ x->model->GetData()->Print();
 
 
 		//runs EM algorithm to fit GMM with cl1 and cl2 merged initially in model
+		//cl1 is cluster idx in left node
+		//cl2 is cluster idx in right node
+		//TODO: here cl1 and cl2 are the indices in the overall vector of starting params, but need to be (mapped, switched, etc) to the indices above
 		BasePDFMixture* _merge_model(BasePDFMixture* model, vector<map<string,Matrix>>& starting_params, int cl1, int cl2, double& merge_elbo){
+			cout << "starting means for merge model check" << endl;
+			for(int s = 0; s < starting_params.size(); s++){
+				cout << "subcluster #" << s << " has mean" << endl; starting_params[s]["m"].Print();
+			}
 			//get initial parameters and data + number of subclusters from model	
 			int merge_k = model->GetNClusters() - 1;
 			//create new starting center from centroid of cl1 + cl2
@@ -657,6 +679,7 @@ x->model->GetData()->Print();
 		//if i > j then there *will* be "no match" cases
 		//returning indices s.t. the pair is (idx_i, idx_j) for subcluster from pseudojet i with index idx_i and subcluster idx_j from pseudojet j
 		void _match_pdfs(vector<BasePDF*>& inpdfs_n, vector<BasePDF*> inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
+cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
 			//loop through pdfs
 			double bestProd, prod;
 			bestMatchIdxs.clear();
@@ -670,64 +693,76 @@ x->model->GetData()->Print();
 			for(int j = 0; j < inpdfs_n.size(); j++){
 				prods.push_back({});
 				for(int g = 0; g < inpdfs_m.size(); g++){
-					prods[j].push_back(-999);
+					prods[j].push_back(-1e308);
 			
 					prod = _gaussian_L2_inner_product(inpdfs_n[j], inpdfs_m[g]);	
 					prods[j][g] = prod;
+					cout << "product bw pdf " << j << " of pdfs_n and " << g << " of pdfs_m " << prod << endl;
 				}
+				cout << "size of prod " << j << " is " << prods[j].size() << endl;
 			}
 			vector<int> best_idxs; //one per jet
+			vector<double> best_prods; //one per jet
 			int otherPdf, thismatchidx, thisPdf;
 			//go back through pdfs can check to see if there are overlapping matches
 			for(int j = 0; j < inpdfs_n.size(); j++){
 				//for(int g = 0; g < nMatch; g++){
 				//	cout << "jet " << j << " and match jet " << g << " have prod " << drs[j][g] << endl;
 				//}
-				//cout << "jet " << j << " has best prod " << *min_element(drs[j].begin(), drs[j].end()) << " at match jet " << find(drs[j].begin(), drs[j].end(), *min_element(drs[j].begin(), drs[j].end())) - drs[j].begin() << endl;
+				cout << "pdf " << j << " has best prod " << *max_element(prods[j].begin(), prods[j].end()) << " at match pdf " << find(prods[j].begin(), prods[j].end(), *max_element(prods[j].begin(), prods[j].end())) - prods[j].begin() << endl;
 				double maxprod = *max_element(prods[j].begin(), prods[j].end());
 				int matchidx = find(prods[j].begin(), prods[j].end(), maxprod) - prods[j].begin();
-				if(maxprod == -999) matchidx = -1; //no match found (ie no available match jet for best match)
+				if(maxprod == -1e308) matchidx = -1; //no match found (ie no available match jet for best match)
 				best_idxs.push_back(matchidx);
+				best_prods.push_back(maxprod);
 				thismatchidx = matchidx;
 				thisPdf = j;
 				//if other jets have the same genidx matched, go through and disambiguate until there is only 1 instance of genidx
 				while(count(best_idxs.begin(), best_idxs.end(), matchidx) > 1 && matchidx != -1){
 					otherPdf = find(best_idxs.begin(), best_idxs.end(), matchidx) - best_idxs.begin();
 					//this happens if the "otherJet" to be analyzed comes before thisjet (ie it gets found first)
-					//skip otherJet (ie thisJet) in this case and look at all other jets
+					//skip otherPdf (ie thisPdf) in this case and look at all other jets
 					if(otherPdf == thisPdf){
 						otherPdf = find(best_idxs.begin()+otherPdf+1, best_idxs.end(), matchidx) - best_idxs.begin();
 					}
 					//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
-					//cout << " found another match at jet " << otherJet << " with other prod " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
-					//if other prod is less than current mindr
-					if(prods[otherPdf][matchidx] < maxprod){
+					cout << " found another match at pdf " << otherPdf << " at matchidx " << matchidx << " with other prod " << prods[otherPdf][matchidx] << " against this pdf " << thisPdf << endl;
+					//if other prod is better than current mindr
+					if(prods[otherPdf][matchidx] > maxprod){
 						//set this prod to 999 (is invalid), find new min for this jet, reset genidx to this index
-						prods[thisPdf][matchidx] = -999;
+						prods[thisPdf][matchidx] = -1e308;
 						maxprod = *max_element(prods[thisPdf].begin(), prods[thisPdf].end());
-						if(maxprod == -999) matchidx = -1;
+						if(maxprod == -1e308) matchidx = -1;
 						else matchidx = find(prods[thisPdf].begin(), prods[thisPdf].end(), maxprod) - prods[thisPdf].begin();
 						best_idxs[thisPdf] = matchidx;
-						//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with prod " << mindr << endl;
+						best_prods[thisPdf] = maxprod;
+						cout << " reset match of this pdf " << thisPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
 			
 					}
-					//if this prod is less than (or equal to) current mindr
+					//if this prod is not as good as current prod
 					else{
 						//set other prod to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
-						prods[otherPdf][matchidx] = -999;
+						prods[otherPdf][matchidx] = -1e308;
 						thismatchidx = matchidx;
+						for(int p = 0; p < prods[otherPdf].size(); p++) cout << "prod #" << p << ": " << prods[otherPdf][p] << " for pdf " << otherPdf << endl; 
 						maxprod = *max_element(prods[otherPdf].begin(), prods[otherPdf].end());
+cout << "maxprod " << maxprod << endl;
 						if(maxprod == -999) matchidx = -1;
 						else matchidx = find(prods[otherPdf].begin(), prods[otherPdf].end(), maxprod) - prods[otherPdf].begin();
 						thisPdf = otherPdf;
 						best_idxs[thisPdf] = matchidx;
-						//cout << " reset match of other jet " << otherJet << " to  jet " << idx << " with prod " << mindr << endl;
+						best_idxs[thisPdf] = maxprod;
+						cout << " reset match of other pdf " << otherPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
 					}	
-					//cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for jet " << thisJet << endl;
+					cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for pdf " << thisPdf << endl;
 
 				}
-				//cout << "jet " << j << " has best exclusive match with " << best_idxs[j] << "\n" << endl;
-				bestMatchIdxs[maxprod] = std::make_pair(thisPdf,matchidx);
+				
+				//cout << "pdf " << thisPdf << " has best exclusive match with " << matchidx << " " << best_idxs[j] << " " << best_idxs[thisPdf] << " with inner prod " << maxprod << "\n" << endl;
+			}
+			for(int i = 0; i < best_idxs.size(); i++){
+				cout << "best_idxs for pdf #" << i << " is " << best_idxs[i] << " with prod " << best_prods[i] << endl;
+				bestMatchIdxs[best_prods[i]] = std::make_pair(i, best_idxs[i]);	
 			}
 		}
 
@@ -738,7 +773,7 @@ x->model->GetData()->Print();
 			//with some coefficients that i'm gonna ignore since we're comparing inner products
 			//where lam = (lam_1 + lam_2)
 			//mu = lam^-1(lam_1*mu_1 + lam_2*mu_2)
-				
+			//returns LOG of inner product
 			Matrix mu1 = pdf1->GetParameter("mean");
 			Matrix mu1T(1,3);
 			mu1T.transpose(mu1);
@@ -782,14 +817,12 @@ x->model->GetData()->Print();
 			Matrix muLam2(1,1);
 			muLam2.mult(muLam2_pt1,mu1);
 		
-			double p = exp(-0.5*(-muLam.at(0,0) + muLam1.at(0,0) + muLam2.at(0,0)));	
-		
+			double p = -0.5*(-muLam.at(0,0) + muLam1.at(0,0) + muLam2.at(0,0));	
 			//determinant factors
 			double det1 = lam1.det();
 			double det2 = lam2.det();
 			double det = lam.det();
-		
-			p = (sqrt(det1)*sqrt(det2)/sqrt(det))*p;
+			p = log(sqrt(det1)*sqrt(det2)/sqrt(det)) + p;
 		
 			return p;
 		
