@@ -421,6 +421,8 @@ class BHCJetSkimmer{
                 	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterMass);
                 	_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterEffnRhs);
                 	_hists2D.push_back(recoAK4Jet_subclusterMass_subclusterEffnRhs);
+			_hists2D.push_back(recoAK4Jet_subclusterEnergy_subclusterdRToJet);
+			_hists2D.push_back(recoAK4Jet_subclusterEffnRhs_subclusterdRToJet);
 
 
 		}
@@ -509,9 +511,9 @@ class BHCJetSkimmer{
 					for(int j = 0; j < _predJets.size(); j++){
 						//define pt bins
 						//pt == 1 -> [50,inf)
-						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
-						//pt == 2 -> [0,50)
-						if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
+						//if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
+						////pt == 2 -> [0,50)
+						//if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
 
 
 						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
@@ -524,7 +526,17 @@ class BHCJetSkimmer{
 						jetcov2D.eigenCalc(eigvals, eigvecs);
 						//define jet size as length of major axis
 						//also include rotundity
-						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						jetsize = sqrt(eigvals[1]);
+
+						//define jetsize bins
+						//pt == 1 -> [0,0.2) (AK4 level)
+						if(pt == 1 && jetsize >= 0.2) continue;
+						//pt == 2 -> [0.2,inf) (AK15 level)
+						if(pt == 2 && jetsize < 0.2) continue;
+
+
+
+
 						if(p != 0 && pt == 0){ 
 							cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << jetsize << " eta var " << jetcov.at(0,0) << " phi var " << jetcov.at(1,1) << endl;
 							if(dr > 2){
@@ -629,6 +641,10 @@ class BHCJetSkimmer{
 								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
 								_procCats[p].hists1D[pt][143]->Fill(dr);
 							}
+							//dr to jet center
+							double jet_dr = dR(consts[c].eta(), consts[c].phi(), jet_mu.at(0,0), jet_mu.at(1,0));
+							_procCats[p].hists2D[pt][125]->Fill(consts[c].E(), jet_dr);
+							_procCats[p].hists2D[pt][126]->Fill(effnRhs, jet_dr);
 		
 						}
 
@@ -898,9 +914,9 @@ class BHCJetSkimmer{
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
 						//pt == 1 -> [50,inf)
-						if(pt == 1 && _recoAK4jets[j].pt() < pt_thresh) continue;
-						//pt == 2 -> [0,50)
-						if(pt == 2 && _recoAK4jets[j].pt() >= pt_thresh) continue;
+						//if(pt == 1 && _recoAK4jets[j].pt() < pt_thresh) continue;
+						////pt == 2 -> [0,50)
+						//if(pt == 2 && _recoAK4jets[j].pt() >= pt_thresh) continue;
 	
 						Matrix jetcov = _recoAK4jets[j].GetCovariance();
 						//get 2D matrix for jet size
@@ -912,6 +928,13 @@ class BHCJetSkimmer{
 						//define jet size as length of major axis
 						//also include rotundity
 						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						
+						//define jetsize bins
+						//pt == 1 -> [0,0.2) (AK4 level)
+						if(pt == 1 && jetsize >= 0.2) continue;
+						//pt == 2 -> [0.2,inf) (AK15 level)
+						if(pt == 2 && jetsize < 0.2) continue;
+						
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
 						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << " px " << _recoAK4jets[j].px() << " py " << _recoAK4jets[j].py() << " pz " << _recoAK4jets[j].pz() << " mass from rhs " << _recoAK4jets[j].mass_rhs() << endl;
@@ -2203,7 +2226,10 @@ class BHCJetSkimmer{
 		TH2D* recoAK4Jet_subclusterEnergy_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterEnergy_subclusterEffnRhs","recoAK4Jet_subclusterEnergy_subclusterEffnRhs;subclusterEnergy;subclusterEffnRhs",25,0,500,25,0,200);
 		//124 - recoAK4 jet subcluster mass vs # effective rechits 	
 		TH2D* recoAK4Jet_subclusterMass_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterMass_subclusterEffnRhs","recoAK4Jet_subclusterMass_subclusterEffnRhs;subclusterMass;subclusterEffnRhs",25,0,100,25,0,200);
-	
+		//125 - subcluster energy vs dR of subcluster to jet center
+		TH2D* recoAK4Jet_subclusterEnergy_subclusterdRToJet = new TH2D("recoAK4Jet_subclusterEnergy_subclusterdRToJet","recoAK4Jet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,100,25,0,0.5);
+		//126 - subcluster eff # rhs vs dR of subcluster to jet center
+		TH2D* recoAK4Jet_subclusterEffnRhs_subclusterdRToJet = new TH2D("recoAK4Jet_subclusterEffnRhs_subclusterdRToJet","recoAK4Jet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
