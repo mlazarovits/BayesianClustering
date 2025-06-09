@@ -168,7 +168,6 @@ class PointCollection{
 
 	//Randomly selects points 
 	PointCollection SelectPoints(int nOut, unsigned long long seed = 123){
-		if(_pts.size() == 163) cout << "seed " << seed << " nOut " << nOut << endl;
 		RandomSample rs(seed);
 		int nIn = (int)_pts.size(); 
 		if(nOut > nIn) return *this;
