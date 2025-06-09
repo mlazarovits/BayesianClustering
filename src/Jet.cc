@@ -410,12 +410,19 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		double subcl_px = 0;
 		double subcl_py = 0;
 		double subcl_pz = 0;
+		double totw = 0;
+		double subcl_norm = 0;
+
+
 		for(int n = 0; n < _nRHs; n++){
 			JetPoint effRh = _rhs[n];
+			subcl_norm += r_nk.at(n,k);	
+
 			effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
 			subcl.AddRecHit(effRh);
-	
+
+		totw += effRh.GetWeight();	
 			//recalculate momentum vector accordingly
 			//calculate momentum vector from PV
 			//centered at PV
@@ -434,6 +441,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 			subcl_py += pt*sin(p_phi);
 			subcl_pz += pt*sinh(p_eta);
 		}
+cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
 		//set subcluster momentum three-vector and mass
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
 		_constituents.push_back(subcl);
