@@ -224,6 +224,7 @@ void BHCJetSkimmer::Skim(){
 		algo->SetSubclusterAlpha(_emAlpha);
 		algo->SetVerbosity(_verb);
 		algo->SetPriorParameters(_prior_params);
+		algo->CheckMerges(_check_merges);
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN || _strategy == NlnNonAK4){

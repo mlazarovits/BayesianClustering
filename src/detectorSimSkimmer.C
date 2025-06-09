@@ -61,6 +61,8 @@ int main(int argc, char *argv[]){
 	double minNconsts = 5;
 	double mintoppt = 0;
 	double minwpt = 0;
+
+	bool check_merges = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -216,6 +218,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minwpt = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--checkMerges", 13) == 0){
+    	 		check_merges = true;
+			cout << "Checking merges." << endl;
+   		}
 
 
 
@@ -244,6 +250,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minRhE [minRhE]                    set minimum rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --minNconsts [minNconsts]            set minimum number of constituents for gen jets (default = 5)" << endl;
    		cout << "   --smear                              smear cov (spatial only, turns off meas error)" << endl;
+   		cout << "   --checkMerges                        checking merges via Gaussian inner product (default = false)" << endl;
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
    		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
    		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
@@ -422,6 +429,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
 	skimmer.SetSmear(smear);
+	skimmer.CheckMerges(check_merges);
 	skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise);
 
 	skimmer.Skim();

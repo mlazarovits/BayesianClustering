@@ -56,6 +56,8 @@ class BayesCluster{
 			_smear = Matrix();
 			_verb = 0;
 			_trees = {};
+
+			_check_merges = false;
 			
 			//add initial jets (rec hits) to merge tree as leaves
 			int n = (int)_jets.size();
@@ -116,6 +118,8 @@ class BayesCluster{
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
 		void SetPriorParameters(map<string, Matrix> params){ _prior_params = params; }
 		void SetVerbosity(int v){ _verb = v; }
+		bool _check_merges;
+		void CheckMerges(bool t){ _check_merges = t; }
 
 		double _cell, _tresCte, _tresStoch, _tresNoise;
 		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 

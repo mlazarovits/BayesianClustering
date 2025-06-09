@@ -85,7 +85,7 @@ class MergeTree : BaseTree{
 		}
 
 
-		void CheckMerges(bool t){ _check_merges = t; }	
+		void CheckMerges(bool t){ _check_merges = t; if(_check_merges) cout << "Checking merged models" << endl;}	
 	
 		node* Get(int i){ return _clusters[i]; }
 
@@ -213,6 +213,7 @@ class MergeTree : BaseTree{
 		double Evidence(node* x){
 			int k;
 			vector<map<string,Matrix>> prev_posts = {};
+			map<int,int> left_post_indices, right_post_indices;	
   			//if leaf node (ie r == _z && l == _z) -> set k = 1
 			if(x->l == _z && x->r == _z || x->points->Sumw() < _thresh){ 
 				//cout << "leaf nodes - setting max # clusters == 1" << endl;
@@ -231,9 +232,11 @@ class MergeTree : BaseTree{
 				//setting initial posterior parameters from models of previous steps
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
+					left_post_indices[kk] = prev_posts.size()-1;
 				} 
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
+					right_post_indices[kk] = prev_posts.size()-1;
 				}
 
 				//int npts_abovethresh = 0;
@@ -244,12 +247,10 @@ class MergeTree : BaseTree{
 			//cout << "# clusters allowed " << k << " # pts " << x->points->GetNPoints() << " # clusters from l " << x->l->model->GetNClusters() << " from r " << x->r->model->GetNClusters() << " weight " << x->points->Sumw() << " with " << npts_abovethresh << " pts above thresh: " << _thresh <<  endl;
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
-			//cout << "k L " <<  x->l->model->GetNClusters() << " k R " << x->r->model->GetNClusters() << " k " << k << endl;}
  //cout << "og points" << endl; x->points->Print();
 			//cout << "original points" << endl; x->points->Print();
-			//do phi wraparound? may already be taken care of in local coords + mirror pts
+			x->points->Sort(0);
 			PointCollection* newpts = new PointCollection(*x->points);
-			newpts->Sort(0);
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
 
@@ -322,7 +323,7 @@ class MergeTree : BaseTree{
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(_Rscale);
 			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
-			
+		
 			//put means from previous step in same transformed space as data	
 			for(int kk = 0; kk < prev_posts.size(); kk++){
 				auto params = prev_posts[kk];
@@ -370,9 +371,12 @@ class MergeTree : BaseTree{
 			//only do if for # subclusters in node l = n and # subclusters in node l = m
 			//n > 1 && m > 1 => n + m > 2
 			map<double, pair<int, int>, std::greater<double>> prodmap;
-			if(_check_merges && x->l != _z && x->r != _z){
+			if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
 				if(x->l->model->GetNClusters() + x->r->model->GetNClusters() > 2){
-			cout << "Checking merges bw node with " << x->l->model->GetNClusters() << " clusters and " << x->r->model->GetNClusters() << " clusters" << endl;
+				//cout << "data in x" << endl; x->model->GetData()->Print();
+//cout << "data in x->l" << endl; x->l->model->GetData()->Print();
+//cout << "data in x->r" << endl; x->r->model->GetData()->Print();
+				//cout << "Checking merges bw left node with " << x->l->model->GetNClusters() << " clusters and right node with " << x->r->model->GetNClusters() << " clusters" << endl;
 				       //construct PDF inner product map to pairs of PDFs
 			   	       //get vectors of PDFs from left (first) then right (second)
 					vector<BasePDF*> l_pdfs, r_pdfs;
@@ -396,6 +400,7 @@ class MergeTree : BaseTree{
 			}
 			else
 				algo->SetThresh(x->points->Sumw());
+			//algo->SetThresh(5*0.25);
 			//cluster
 			double oldLogL = algo->EvalLogL();
 		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
@@ -430,36 +435,67 @@ class MergeTree : BaseTree{
 	if(newLogL > 0){
 cout << "from model" << endl;
 	for(int k = 0; k < x->model->GetNClusters(); k++){
-		cout << "cluster #" << k << " mean " << endl;
 		auto params = x->model->GetLHPosteriorParameters(k);
+		cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
 		params["mean"].Print();
-		cout << " cov" << endl;
-		params["cov"].Print();
+		//cout << " cov" << endl;
+		//params["cov"].Print();
 	}
 x->model->GetData()->Print();
 	}
-
+	//if(x->model->GetNClusters() <= 2){
+		//cout << "everything found to be in 1 cluster" << endl;
+		//cout << "from model" << endl;
+		//for(int k = 0; k < x->model->GetNClusters(); k++){
+		//	auto params = x->model->GetLHPosteriorParameters(k);
+		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+		//	params["mean"].Print();
+		//	//cout << " cov" << endl;
+		//	//params["cov"].Print();
+		//}
+		//cout << endl;
+	//}
 	//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
-	if(_check_merges && x->l != _z && x->r != _z){
+	if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 2){
 		double merge_elbo;
 		vector<map<string, Matrix>> starting_params = prev_posts;
-		cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
+		///cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
+		///cout << "from model" << endl;
+		//for(int k = 0; k < x->model->GetNClusters(); k++){
+		//	auto params = x->model->GetLHPosteriorParameters(k);
+		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+		//	params["mean"].Print();
+		//	//cout << " cov" << endl;
+		//	//params["cov"].Print();
+		//}
 		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
+			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
 			//fit GMM with merge prodit->second pair (if valid)
-			cout << "best match bw clusters " << prodit->second.first << " and " << prodit->second.second << " with prod " << prodit->first << endl;
-	//		if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			//BasePDFMixture* merged_model = _merge_model(x->model, starting_params, it->second.first, it->second.second, merge_elbo);
-	//		if(merge_elbo - newLogL > 0){ //ie merge model is better
-	//			cout << "model merging clusters " << it->second.first << " and " << it->second.second << " with product " << it->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
-	//			x->model = merged_model;
-	//			cout << "x->model now has " << x->model->GetNClusters() << " clusters" << endl;
-	//			newLogL = merge_elbo;
-	//			
-	//		}
+			//cout << "best match bw clusters " << prodit->second.first << " in left " << left_post_indices[prodit->second.first] << " and " << prodit->second.second << " in right " << right_post_indices[prodit->second.second] << " with prod " << prodit->first << endl;
+			GaussianMixture* merged_model = _merge_model(x->model, starting_params, left_post_indices[prodit->second.first], right_post_indices[prodit->second.second], merge_elbo);
+			//cout << "merge ELBO " << merge_elbo << " nominal " << newLogL << endl;
+			if(merge_elbo - newLogL > 0){ //ie merge model is better
+				if(_verb > 1) cout << "model merging clusters " << prodit->second.first << " and " << prodit->second.second << " with product " << prodit->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
+				x->model = merged_model;
+				//cout << "x->model now has " << x->model->GetNClusters() << " clusters" << endl;
+				newLogL = merge_elbo;
+				//set starting params to params of merged model
+				starting_params.clear();
+				for(int n = 0; n < x->model->GetNClusters(); n++) starting_params.push_back(x->model->GetLHPosteriorParameters(n));
+				
+			}
 		}
+		//cout << "final node model has " << x->model->GetNClusters() << " with centers" << endl;
+		//for(int k = 0; k < x->model->GetNClusters(); k++){
+		//	auto params = x->model->GetLHPosteriorParameters(k);
+		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+		//	params["mean"].Print();
+		//	cout << " cov" << endl;
+		//	params["cov"].Print();
+		//}
+		//cout << endl;
 	}	
 	
-
 
 	//inverse transformations - for after fitting
 	center.Scale(-1);
@@ -599,14 +635,18 @@ x->model->GetData()->Print();
 		//runs EM algorithm to fit GMM with cl1 and cl2 merged initially in model
 		//cl1 is cluster idx in left node
 		//cl2 is cluster idx in right node
-		//TODO: here cl1 and cl2 are the indices in the overall vector of starting params, but need to be (mapped, switched, etc) to the indices above
-		BasePDFMixture* _merge_model(BasePDFMixture* model, vector<map<string,Matrix>>& starting_params, int cl1, int cl2, double& merge_elbo){
-			cout << "starting means for merge model check" << endl;
-			for(int s = 0; s < starting_params.size(); s++){
-				cout << "subcluster #" << s << " has mean" << endl; starting_params[s]["m"].Print();
+		GaussianMixture* _merge_model(BasePDFMixture* model, vector<map<string,Matrix>> starting_params, int cl1, int cl2, double& merge_elbo){
+			//cout << "starting means for merge model check with " << starting_params.size() << " starting params" << endl;
+			if(starting_params.size() == 0){
+				merge_elbo = -1e308;
+				return nullptr;
 			}
+			//for(int s = 0; s < starting_params.size(); s++){
+			//	if(starting_params[s].empty()) continue;
+			//	cout << "subcluster #" << s << " has mean with weight " << starting_params[s]["alpha"].at(0,0) - _emAlpha << endl; starting_params[s]["m"].Print();
+			//}
+			//cout << "# initial clusters " << model->GetNClusters() << endl;
 			//get initial parameters and data + number of subclusters from model	
-			int merge_k = model->GetNClusters() - 1;
 			//create new starting center from centroid of cl1 + cl2
 			map<string, Matrix> new_cl;
 			Matrix new_center(3,1);
@@ -614,24 +654,40 @@ x->model->GetData()->Print();
 			double w2 = starting_params[cl2]["alpha"].at(0,0) - _emAlpha;
 			PointCollection cents = starting_params[cl1]["m"].MatToPoints({w1});
 			cents += starting_params[cl2]["m"].MatToPoints({w2});
-			//centroid bw clusters 1 and 2
-			BayesPoint center({cents.CircularCentroid(0), cents.CircularCentroid(1), cents.Centroid(2)});
+			//centroid bw clusters 1 and 2 - parameters have been transformed + projected to be on a plane
+			BayesPoint center({cents.Centroid(0), cents.Centroid(1), cents.Centroid(2)});
 			new_cl["m"] = center;
-			//only using posterior centers of subclusters to seed parameters for now (see GaussianMixture::InitParameters())
+			//need to also give Nk (norms) and cov to seed posteriors
+			new_cl["alpha"] = _emAlpha + (w1 + w2);
+			//cov - average of two
+			Matrix new_cov(3,3);
+			Matrix cov1 = starting_params[cl1]["cov"];
+			cov1.mult(cov1,w1);
+			Matrix cov2 = starting_params[cl2]["cov"];
+			cov2.mult(cov2,w2);
+			new_cov.add(cov1,cov2);
+			new_cov.mult(new_cov,1./(w1+w2));
+			//mult by nu0 to undo this in InitParameters
+			new_cov.mult(new_cov,_params["dof"].at(0,0));
+			//need to invert bc pulls as scalemat
+			new_cov.invert(new_cov);
+			new_cl["scalemat"] = new_cov;
+
+			starting_params = starting_params;
 
 			//remove clusters specified in args - in correct order s.t. removing a subcluster doesn't affect a later subcluster
-			if(cl1 > cl2){
-				starting_params.erase(starting_params.begin() + cl1);
-				starting_params.erase(starting_params.begin() + cl2);
-			}
-			else{
-				starting_params.erase(starting_params.begin() + cl2);
-				starting_params.erase(starting_params.begin() + cl1);
-			}
+			//cout << "removing clusters " << cl1 << " and " << cl2 << endl;
+			starting_params[cl1].clear();
+			starting_params[cl2].clear();
 			//add new centroid
 			starting_params.push_back(new_cl);
-
-			BasePDFMixture* mergemodel = new GaussianMixture(merge_k);
+			int nstart = 0;
+			for(int i = 0; i < starting_params.size(); i++){
+				if(starting_params[i].empty()) continue;
+				//cout << "subcluster #" << i << " with weight " << starting_params[i]["alpha"].at(0,0) - _emAlpha << endl; starting_params[i]["m"].Print();
+				nstart++;
+			}
+			GaussianMixture* mergemodel = new GaussianMixture(nstart);
 			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
 			mergemodel->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
@@ -640,15 +696,18 @@ x->model->GetData()->Print();
 
 			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 
-			PointCollection* mergepts = new PointCollection(*mergemodel->GetData()); //data should already be transformed in common frame
+			PointCollection* mergepts = new PointCollection(*model->GetData()); //data should already be transformed in common frame
 			mergemodel->SetData(mergepts);
 			mergemodel->InitParameters(_params,starting_params);
 		
-			//nominal GMM (no merges)
-			VarEMCluster* algo = new VarEMCluster(mergemodel, merge_k);
+			VarEMCluster* algo = new VarEMCluster(mergemodel, nstart);
 			//make sure sum of weights for points is above threshold
 			//otherwise the algorithm will exclude all components	
-			algo->SetThresh(1e-3);
+			if(mergepts->Sumw() >= _thresh){
+				algo->SetThresh(_thresh);
+			}
+			else
+				algo->SetThresh(mergepts->Sumw());
 			//cluster
 			double oldLogL = algo->EvalLogL();
 		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
@@ -669,6 +728,12 @@ x->model->GetData()->Print();
 			}
 
 			merge_elbo = newLogL;
+//cout << "merge model has " << mergemodel->GetData()->GetNPoints() << " points and " << mergemodel->GetNClusters() << " final clusters with means " << endl;
+	//for(int k = 0; k < mergemodel->GetNClusters(); k++){
+	//	auto params = mergemodel->GetLHPosteriorParameters(k);
+	//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+	//	params["mean"].Print();
+	//}
 			return mergemodel;
 		}
 
@@ -679,7 +744,7 @@ x->model->GetData()->Print();
 		//if i > j then there *will* be "no match" cases
 		//returning indices s.t. the pair is (idx_i, idx_j) for subcluster from pseudojet i with index idx_i and subcluster idx_j from pseudojet j
 		void _match_pdfs(vector<BasePDF*>& inpdfs_n, vector<BasePDF*> inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
-cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
+//cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
 			//loop through pdfs
 			double bestProd, prod;
 			bestMatchIdxs.clear();
@@ -694,12 +759,11 @@ cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << en
 				prods.push_back({});
 				for(int g = 0; g < inpdfs_m.size(); g++){
 					prods[j].push_back(-1e308);
-			
+					//cout << "product bw pdf " << j << " of pdfs_n and " << g << " of pdfs_m "; 
 					prod = _gaussian_L2_inner_product(inpdfs_n[j], inpdfs_m[g]);	
 					prods[j][g] = prod;
-					cout << "product bw pdf " << j << " of pdfs_n and " << g << " of pdfs_m " << prod << endl;
 				}
-				cout << "size of prod " << j << " is " << prods[j].size() << endl;
+				//cout << "size of prod " << j << " is " << prods[j].size() << endl;
 			}
 			vector<int> best_idxs; //one per jet
 			vector<double> best_prods; //one per jet
@@ -709,7 +773,7 @@ cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << en
 				//for(int g = 0; g < nMatch; g++){
 				//	cout << "jet " << j << " and match jet " << g << " have prod " << drs[j][g] << endl;
 				//}
-				cout << "pdf " << j << " has best prod " << *max_element(prods[j].begin(), prods[j].end()) << " at match pdf " << find(prods[j].begin(), prods[j].end(), *max_element(prods[j].begin(), prods[j].end())) - prods[j].begin() << endl;
+				//cout << "pdf " << j << " has best prod " << *max_element(prods[j].begin(), prods[j].end()) << " at match pdf " << find(prods[j].begin(), prods[j].end(), *max_element(prods[j].begin(), prods[j].end())) - prods[j].begin() << endl;
 				double maxprod = *max_element(prods[j].begin(), prods[j].end());
 				int matchidx = find(prods[j].begin(), prods[j].end(), maxprod) - prods[j].begin();
 				if(maxprod == -1e308) matchidx = -1; //no match found (ie no available match jet for best match)
@@ -726,7 +790,7 @@ cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << en
 						otherPdf = find(best_idxs.begin()+otherPdf+1, best_idxs.end(), matchidx) - best_idxs.begin();
 					}
 					//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
-					cout << " found another match at pdf " << otherPdf << " at matchidx " << matchidx << " with other prod " << prods[otherPdf][matchidx] << " against this pdf " << thisPdf << endl;
+					//cout << " found another match at pdf " << otherPdf << " at matchidx " << matchidx << " with other prod " << prods[otherPdf][matchidx] << " against this pdf " << thisPdf << endl;
 					//if other prod is better than current mindr
 					if(prods[otherPdf][matchidx] > maxprod){
 						//set this prod to 999 (is invalid), find new min for this jet, reset genidx to this index
@@ -736,7 +800,7 @@ cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << en
 						else matchidx = find(prods[thisPdf].begin(), prods[thisPdf].end(), maxprod) - prods[thisPdf].begin();
 						best_idxs[thisPdf] = matchidx;
 						best_prods[thisPdf] = maxprod;
-						cout << " reset match of this pdf " << thisPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
+						//cout << " reset match of this pdf " << thisPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
 			
 					}
 					//if this prod is not as good as current prod
@@ -744,27 +808,39 @@ cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << en
 						//set other prod to 999 (is invalid), find new min for other jet, reset other genidx to index of new mind
 						prods[otherPdf][matchidx] = -1e308;
 						thismatchidx = matchidx;
-						for(int p = 0; p < prods[otherPdf].size(); p++) cout << "prod #" << p << ": " << prods[otherPdf][p] << " for pdf " << otherPdf << endl; 
+						//for(int p = 0; p < prods[otherPdf].size(); p++) cout << "prod #" << p << ": " << prods[otherPdf][p] << " for pdf " << otherPdf << endl; 
 						maxprod = *max_element(prods[otherPdf].begin(), prods[otherPdf].end());
-cout << "maxprod " << maxprod << endl;
+						//cout << "maxprod " << maxprod << endl;
 						if(maxprod == -999) matchidx = -1;
 						else matchidx = find(prods[otherPdf].begin(), prods[otherPdf].end(), maxprod) - prods[otherPdf].begin();
 						thisPdf = otherPdf;
 						best_idxs[thisPdf] = matchidx;
-						best_idxs[thisPdf] = maxprod;
-						cout << " reset match of other pdf " << otherPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
+						best_prods[thisPdf] = maxprod;
+						//cout << " reset match of other pdf " << otherPdf << " to pdf " << matchidx << " with prod " << maxprod << endl;
 					}	
-					cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for pdf " << thisPdf << endl;
+					//cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for pdf " << thisPdf << endl;
 
 				}
 				
 				//cout << "pdf " << thisPdf << " has best exclusive match with " << matchidx << " " << best_idxs[j] << " " << best_idxs[thisPdf] << " with inner prod " << maxprod << "\n" << endl;
 			}
 			for(int i = 0; i < best_idxs.size(); i++){
-				cout << "best_idxs for pdf #" << i << " is " << best_idxs[i] << " with prod " << best_prods[i] << endl;
+				//cout << "best_idxs for pdf #" << i << " is " << best_idxs[i] << " with prod " << best_prods[i] << endl;
 				bestMatchIdxs[best_prods[i]] = std::make_pair(i, best_idxs[i]);	
 			}
 		}
+
+		double _gaussian_dist(BasePDF* pdf1, BasePDF* pdf2){
+			Matrix mu1 = pdf1->GetParameter("mean");
+			Matrix mu2 = pdf2->GetParameter("mean");
+
+			double d1 = mu1.at(0,0) - mu2.at(0,0);
+			double d2 = mu1.at(1,0) - mu2.at(1,0);
+			double d3 = mu1.at(2,0) - mu2.at(2,0);
+		
+			return sqrt(d1*d1 + d2*d2 + d3*d3);
+		}
+
 
 		double _gaussian_L2_inner_product(BasePDF* pdf1, BasePDF* pdf2){
 			//d = integral N(x | mu1, lam1)*N(x | mu2, lam2) dx
@@ -822,6 +898,7 @@ cout << "maxprod " << maxprod << endl;
 			double det1 = lam1.det();
 			double det2 = lam2.det();
 			double det = lam.det();
+			//cout << "det1 " << det1 << " det2 " << det2 << " det " << det << " p " << p << " ";
 			p = log(sqrt(det1)*sqrt(det2)/sqrt(det)) + p;
 		
 			return p;

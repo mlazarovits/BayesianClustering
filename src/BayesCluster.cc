@@ -25,6 +25,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	MergeTree* mt = new MergeTree(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
+	mt->CheckMerges(_check_merges);
 	//set data smear
 	if(!_smear.empty()) mt->SetDataSmear(_smear);
 	//set time resolution smear: c^2 + n^2/e^2

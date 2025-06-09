@@ -25,6 +25,8 @@ class BHCJetSkimmer{
 			_minTopPt = 0;
 			_minTopE = 0;
 			_minWPt = 0;		
+
+			_check_merges = false;
 	
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
@@ -63,6 +65,7 @@ class BHCJetSkimmer{
 			_minTopPt = 0;
 			_minWPt = 0;		
 			_minTopE = 0;
+			_check_merges = false;
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
 			//nu
@@ -437,6 +440,8 @@ class BHCJetSkimmer{
 			cout << "Minimum gen top pt: " << _minTopPt << endl;}
 		void SetGenWMinPt(double r){ _minWPt = r; 
 			cout << "Minimum gen W pt: " << _minWPt << endl;}
+		bool _check_merges;
+		void CheckMerges(bool t){ _check_merges = t; }
 		void Skim();
 		void SetStrategy(int i){
 			if(i == 0) _strategy = NlnN;

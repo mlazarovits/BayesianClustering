@@ -90,32 +90,44 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	//this bypasses kmeans and the first M step (step 0) and directly sets the posteriors from a previous model(s)
 	if(!prev_posteriors.empty()){
 		bool kmeans = false;
+		int n_starting_params = prev_posteriors.size();
+		for(auto post : prev_posteriors){
+			if(post.empty()) n_starting_params--;
+		}
 		//# of clusters should be set to be the sum of the given models (ie size of prev_posteriors)
-		if(m_k < prev_posteriors.size()){
-			cout << "Error: # of clusters initialized is " << m_k << " but given " << prev_posteriors.size() << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means" << endl;
+		if(m_k < n_starting_params){
+			cout << "Error: # of clusters initialized is " << m_k << " but given " << n_starting_params << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means" << endl;
 			kmeans = true;
 		}
 		if(!kmeans){
 			//set posterior parameters from previous model(s)
-			cout << "Initializing mixture model with parameters from previous posterior(s)" << endl;
+			//cout << "Initializing mixture model with parameters from previous posterior(s)" << endl;
+			int skip = 0;
 			for(int k = 0; k < prev_posteriors.size(); k++){
 				map<string, Matrix> params = prev_posteriors[k];
-		
+				if(params.empty()){
+					//cout << "skipping empty map # " << k << endl;
+					skip++; continue;}
+				//cout << "mean" << endl; params["m"].Print();
+				//cout << "norm " << params["alpha"].at(0,0) - m_alpha0 << endl;
+				//cout << "scalemat " << endl; params["scalemat"].Print();
+				//cout << "k " << k << " skip " << skip << " # xbars " << _xbar.size() << " # Sbars " << _Sbar.size() << " # norms " << m_norms.size() << endl;
 				//also need to set data stats for initial logLH eval
-				_xbar[k] = params["m"];
+				_xbar[k-skip] = params["m"];
 				Matrix SbarInv = params["scalemat"];
 				SbarInv.mult(SbarInv, m_nu0);
-				_Sbar[k].invert(SbarInv);
-				m_norms[k] = params["alpha"].at(0,0) - m_alpha0;
+				_Sbar[k-skip].invert(SbarInv);
+				m_norms[k-skip] = params["alpha"].at(0,0) - m_alpha0;
 				//cout << " cov " << endl; 
 				//Matrix cov = m_model[k]->GetPrior()->GetParameter("scalemat");
 				//cov.mult(cov,m_model[k]->GetPrior()->GetParameter("dof").at(0,0));
 				//cov.Print();
 
 			}
+//cout << "m_k " << m_k << " # starting params " << n_starting_params << endl;
 			//if m_k > prev_posteriors, add extra clusters as initialized to center with var of 1, set posteriors to priors
-			PointCollection initpts = m_data->SelectPoints(m_k - prev_posteriors.size(),seed);		
-			for(int k = prev_posteriors.size(); k < m_k; k++){
+			PointCollection initpts = m_data->SelectPoints(m_k - n_starting_params,seed);
+			for(int k = n_starting_params; k < m_k; k++){
 				//seed posterior + data statistics means randomly
 				//also need to set data stats for initial logLH eval
 				_xbar[k] = Matrix(initpts.at(k - prev_posteriors.size())); //center of system
@@ -132,10 +144,11 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 			UpdatePosteriorParameters(); 
 			//remove any kmeans initial clusters without any assigned points
 			UpdateMixture(0);
+	//cout << "InitParameters - end" << endl;
 			return;
 		}
 	}
-	cout << "Initializing mixture model with randomly seeded K-means" << endl;
+	//cout << "Initializing mixture model with randomly seeded K-means" << endl;
 
 	//randomly initialize mean, covariance + mixing coeff.
 	RandomSample randy(seed);
@@ -583,8 +596,13 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//cout << "posterior pre-norm" << endl;	
 	//m_post.Print();
 	//normalize
-	//cout << "w->at(146) " << m_data->at(146).w() << endl;
+	int idx = 0;
+	int idx1 = 1;
+	//cout << "w->at(" << idx << ") " << m_data->at(idx).w() << endl;
+	//if(m_n > 1)
+	//	cout << "w->at(" << idx1 << ") " << m_data->at(idx1).w() << endl;
 	double testnorm = 0;
+	double testnorm1 = 0;
 	for(int n = 0; n < m_n; n++){
 		for(int k = 0; k < m_k; k++){
 			//will lead to nan
@@ -598,9 +616,13 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
 			if(m_post.at(n,k) < 1e-308) m_post.SetEntry(0.,n,k);
 
-			//if(n == 146){
+			//if(n == idx){
 			//	cout << "n " << n << " k " << k << " post " << m_post.at(n,k) << endl;
 			//	testnorm += m_post.at(n,k);		
+			//}
+			//if(n == idx1){
+			//	cout << "n " << n << " k " << k << " post " << m_post.at(n,k) << endl;
+			//	testnorm1 += m_post.at(n,k);		
 			//}
 			//if(m_post.at(n,k) > 0 && isinf(1/m_post.at(n,k))){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "post_norms_adj: " << post_norms_adj[n] << " post_n_max: " << post_n_max[n] << " mu_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 
@@ -611,7 +633,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//if(k == 1) cout << "k: " << k << " n: " << n << " post: " << m_post.at(n,k) << " norm: " << post_norms[n] << endl;
 		}
 	}
-	//cout << "sum k r_146k = " << testnorm << endl;
+	//cout << "sum k r_" << idx << ",k = " << testnorm << endl;
+	//if(m_n > 1)
+	//	cout << "sum k r_" << idx1 << ",k = " << testnorm1 << endl;
 
 	//cout << "posterior normed" << endl;	
 	//m_post.Print();
@@ -911,6 +935,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 //cout << "(b*N)/(b + N)*xxT" << endl; new_scalemat.Print();
 		//N_k*S_k
 		Matrix scaledS = Matrix(m_dim, m_dim);
+//cout << "Sbar " << endl; cov.Print();
 		scaledS.mult(cov,m_norms[k]);
 		//add first two terms to last term
 		new_scalemat.add(scaledS);
