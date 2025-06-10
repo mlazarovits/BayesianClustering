@@ -1569,7 +1569,7 @@ class BHCJetSkimmer{
 		//7 - bhc jet energy
 		TH1D* predJet_energy = new TH1D("BHCJet_energy","BHCJet_energy",25,0,500);
 		//8 - bhc jet pt
-		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,500);
+		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,1000);
 		//9 - bhc jet mass
 		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,250);
 		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
@@ -1596,7 +1596,7 @@ class BHCJetSkimmer{
 		//20 - reco AK4 jet energy
 		TH1D* recoJet_energy = new TH1D("recoAK4Jet_energy","recoAK4Jet_energy",25,0,500);
 		//21 - reco AK4 jet pt
-		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,500);
+		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,1000);
 		//22 - reco AK4 jet mass
 		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,250);
 		//23 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
@@ -1788,7 +1788,7 @@ class BHCJetSkimmer{
 		//116 - gen AK4 jet time at detector
 		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_TimeCenter","genAK4Jet_TimeCenter",25,-1,1);
 		//117 - gen AK4 jet pt		
-		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,500);
+		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,1000);
 		//118 - gen AK4 jet mass
 		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",50,0,50);
 		//119 - gen AK4 jet energy
@@ -1858,7 +1858,7 @@ class BHCJetSkimmer{
 		//151 - gen AK15 jet time at detector
 		TH1D* genAK15Jet_time = new TH1D("genAK15Jet_TimeCenter","genAK15Jet_TimeCenter",25,-1,1);
 		//152 - gen AK15 jet pt		
-		TH1D* genAK15Jet_pt = new TH1D("genAK15Jet_pt","genAK15Jet_pt",25,0,500);
+		TH1D* genAK15Jet_pt = new TH1D("genAK15Jet_pt","genAK15Jet_pt",25,0,1000);
 		//153 - gen AK15 jet mass
 		TH1D* genAK15Jet_mass = new TH1D("genAK15Jet_mass","genAK15Jet_mass",50,0,50);
 		//154 - gen AK15 jet energy
@@ -1882,7 +1882,7 @@ class BHCJetSkimmer{
 		//163 - reco AK8 jet time at detector
 		TH1D* recoAK8Jet_time = new TH1D("recoAK8Jet_TimeCenter","recoAK8Jet_TimeCenter",25,-1,1);
 		//164 - reco AK8 jet pt		
-		TH1D* recoAK8Jet_pt = new TH1D("recoAK8Jet_pt","recoAK8Jet_pt",25,0,500);
+		TH1D* recoAK8Jet_pt = new TH1D("recoAK8Jet_pt","recoAK8Jet_pt",25,0,1000);
 		//165 - reco AK8 jet mass
 		TH1D* recoAK8Jet_mass = new TH1D("recoAK8Jet_mass","recoAK8Jet_mass",50,0,250);
 		//166 - reco AK8 jet energy
@@ -1904,7 +1904,7 @@ class BHCJetSkimmer{
 		//174 - reco AK15 jet time at detector
 		TH1D* recoAK15Jet_time = new TH1D("recoAK15Jet_TimeCenter","recoAK15Jet_TimeCenter",25,-1,1);
 		//175 - reco AK15 jet pt		
-		TH1D* recoAK15Jet_pt = new TH1D("recoAK15Jet_pt","recoAK15Jet_pt",25,0,500);
+		TH1D* recoAK15Jet_pt = new TH1D("recoAK15Jet_pt","recoAK15Jet_pt",25,0,1000);
 		//176 - reco AK15 jet mass
 		TH1D* recoAK15Jet_mass = new TH1D("recoAK15Jet_mass","recoAK15Jet_mass",50,0,250);
 		//177 - reco AK15 jet energy
@@ -1926,7 +1926,7 @@ class BHCJetSkimmer{
 		//185 - gen AK8 jet time at detector
 		TH1D* genAK8Jet_time = new TH1D("genAK8Jet_TimeCenter","genAK8Jet_TimeCenter",25,-1,1);
 		//186 - gen AK8 jet pt		
-		TH1D* genAK8Jet_pt = new TH1D("genAK8Jet_pt","genAK8Jet_pt",25,0,500);
+		TH1D* genAK8Jet_pt = new TH1D("genAK8Jet_pt","genAK8Jet_pt",25,0,1000);
 		//187 - gen AK8 jet mass
 		TH1D* genAK8Jet_mass = new TH1D("genAK8Jet_mass","genAK8Jet_mass",50,0,50);
 		//188 - gen AK8 jet energy
