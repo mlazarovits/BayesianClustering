@@ -239,13 +239,20 @@ def make_slides(plot_dir_name, tag = ""):
 	slideTitles_plots["Gen Matching to Ws - Center"] = ["_genWEtaCenter","_genWPhiCenter"]
 	slideTitles_plots["Gen Matching to tops - Center"] = ["_genTopEtaCenter","_genTopPhiCenter"]
 	slideTitles_plots["Gen Matching to Ws - subclusters"] = ["W_nSubclusters","W_subClusterEnergy"]
-	slideTitles_plots["Subcluster Mass"] = ["Jet_subclusterMass"]
-	slideTitles_plots["Subcluster Energy"] = ["Jet_subclusterEnergy"]
+	slideTitles_plots["Subcluster Kinematics"] = ["Jet_subclusterMass", "Jet_subclusterEnergy"]
 	slideTitles_plots["Subcluster Effective # Rhs"] = ["Jet_subclusterEffnRhs"]
 	slideTitles_plots["Subcluster Energy vs Subcluster Mass"] = ["Jet_subclusterEnergy_subclusterMass"]
 	slideTitles_plots["Subcluster Energy vs Subcluster Effective # Rhs"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
 	slideTitles_plots["Subcluster Mass vs Subcluster Effective # Rhs"] = ["Jet_subclusterMass_subclusterEffnRhs"]
 
+
+
+	#make log version of above slides
+	logslides = {}	
+	for i in slideTitles_plots:
+		logi = i+" log"
+		logslides[logi] = slideTitles_plots[i]
+	slideTitles_plots.update(logslides)
 
 	for i in slideTitles_plots:
 		suffix_groups[i].append([])
@@ -264,7 +271,13 @@ def make_slides(plot_dir_name, tag = ""):
 		if slidetag == "":
 			print("Plot",stem,"does not have an associated slidetag yet.")
 			continue
+		#if plot is logged, add it to correct slide
+		if "log" in stem and " log" not in slidetag:
+				slidetag += " log"
+		if "log" not in stem and " log" in slidetag:
+				slidetag = slidetag[:slidetag.find(" log")]	
 		slideidx = len(suffix_groups[slidetag]) - 1
+		#print("slidetag",slidetag,"has",len(suffix_groups[slidetag][slideidx]),"plots currently")
 		#if max # of plots per slide (based on slide tag) has been reached, add another slide to start to fill	
 		if(len(suffix_groups[slidetag][slideidx]) >= len(slideTitles_plots[slidetag])):
 			suffix_groups[slidetag].append([])
@@ -282,8 +295,12 @@ def make_slides(plot_dir_name, tag = ""):
 				continue
 		#print(stem,"on slide",slidetag,"#",slideidx)
 		suffix_groups[slidetag][slideidx].append(pdf)
+		#print("pdf",stem,"is on slide",slidetag,"with idx",slideidx,"and",len(suffix_groups[slidetag][slideidx]),"total plots")
+		#print("groups",suffix_groups)
 		#for debugging
 		#suffix_groups[slidetag][slideidx].append(stem)
+
+	#exit()
 	# Sorting the suffix groups by the predefined order
 	#sorted_suffixes = get_sorted_suffixes(suffix_groups)
 	sorted_suffixes = clean_and_sort(suffix_groups)
