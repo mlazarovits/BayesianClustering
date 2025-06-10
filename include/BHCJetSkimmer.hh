@@ -511,14 +511,14 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recoAK4jets.size());
 				//loop over pt bins
 				njets = _predJets.size();
-				double pt_thresh = 50;
+				double pt_thresh = 100;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
 						//define pt bins
 						//pt == 1 -> [50,inf)
-						//if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
-						////pt == 2 -> [0,50)
-						//if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
+						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
+						//pt == 2 -> [0,50)
+						if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
 
 
 						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
@@ -535,9 +535,9 @@ class BHCJetSkimmer{
 
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
-						if(pt == 1 && jetsize >= 0.2) continue;
-						//pt == 2 -> [0.2,inf) (AK15 level)
-						if(pt == 2 && jetsize < 0.2) continue;
+						//if(pt == 1 && jetsize >= 0.2) continue;
+						////pt == 2 -> [0.2,inf) (AK15 level)
+						//if(pt == 2 && jetsize < 0.2) continue;
 
 
 
@@ -910,7 +910,7 @@ class BHCJetSkimmer{
 			GenericMatchJet(_recoAK4jets,_genparts,genTopMatchIdxs, 6);
 			vector<int> genWMatchIdxs; //one per jet, follows same indexing as jets
 			GenericMatchJet(_recoAK4jets,_genparts,genWMatchIdxs, 24);
-			double pt_thresh = 50;	
+			double pt_thresh = 100;	
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recoAK4jets.size();
@@ -919,9 +919,9 @@ class BHCJetSkimmer{
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
 						//pt == 1 -> [50,inf)
-						//if(pt == 1 && _recoAK4jets[j].pt() < pt_thresh) continue;
-						////pt == 2 -> [0,50)
-						//if(pt == 2 && _recoAK4jets[j].pt() >= pt_thresh) continue;
+						if(pt == 1 && _recoAK4jets[j].pt() < pt_thresh) continue;
+						//pt == 2 -> [0,50)
+						if(pt == 2 && _recoAK4jets[j].pt() >= pt_thresh) continue;
 	
 						Matrix jetcov = _recoAK4jets[j].GetCovariance();
 						//get 2D matrix for jet size
@@ -936,9 +936,9 @@ class BHCJetSkimmer{
 						
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
-						if(pt == 1 && jetsize >= 0.2) continue;
-						//pt == 2 -> [0.2,inf) (AK15 level)
-						if(pt == 2 && jetsize < 0.2) continue;
+						//if(pt == 1 && jetsize >= 0.2) continue;
+						////pt == 2 -> [0.2,inf) (AK15 level)
+						//if(pt == 2 && jetsize < 0.2) continue;
 						
 						double rot = Rotundity(jetcov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
