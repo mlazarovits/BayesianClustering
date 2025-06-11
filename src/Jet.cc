@@ -501,11 +501,13 @@ void Jet::add(const Jet& jt){
 	_py += jt.py();
 	_pz += jt.pz();
 	_E  += jt.E();
+	//recalculate kt2 of cluster
+	_kt2 = _px*_px + _py*_py;
+	_mass = _calc_mass();
+
 	//set time to be energy-weighted average of rec hit times
 	_set_time();
 
-	//recalculate kt2 of cluster
-	_kt2 = _px*_px + _py*_py;
 	//recalculate eta and phi of cluster
 	_set_rap_phi();
 
