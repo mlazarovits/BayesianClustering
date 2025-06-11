@@ -474,14 +474,19 @@ x->model->GetData()->Print();
 			//cout << "best match bw clusters " << prodit->second.first << " in left " << left_post_indices[prodit->second.first] << " and " << prodit->second.second << " in right " << right_post_indices[prodit->second.second] << " with prod " << prodit->first << endl;
 			GaussianMixture* merged_model = _merge_model(x->model, starting_params, left_post_indices[prodit->second.first], right_post_indices[prodit->second.second], merge_elbo);
 			//cout << "merge ELBO " << merge_elbo << " nominal " << newLogL << endl;
+			//TODO: put in stopping criteria (ie if x->model->GetNClusters() == 1 stop?)
 			if(merge_elbo - newLogL > 0){ //ie merge model is better
 				if(_verb > 1) cout << "model merging clusters " << prodit->second.first << " and " << prodit->second.second << " with product " << prodit->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
 				x->model = merged_model;
-				//cout << "x->model now has " << x->model->GetNClusters() << " clusters" << endl;
+				//cout << "x->model now has " << x->model->GetNClusters() << " clusters" << " compared to " << prev_posts.size() << " # prev post subclusters " << endl;
 				newLogL = merge_elbo;
+				//only allow 1 subcluster merge bc after this merge, the list of available merges probably will change from the previous posteriors
+		
 				//set starting params to params of merged model
-				starting_params.clear();
-				for(int n = 0; n < x->model->GetNClusters(); n++) starting_params.push_back(x->model->GetLHPosteriorParameters(n));
+				//starting_params.clear();
+				//for(int n = 0; n < x->model->GetNClusters(); n++) starting_params.push_back(x->model->GetLHPosteriorParameters(n));
+
+				break;
 				
 			}
 		}
@@ -645,7 +650,7 @@ x->model->GetData()->Print();
 			//	if(starting_params[s].empty()) continue;
 			//	cout << "subcluster #" << s << " has mean with weight " << starting_params[s]["alpha"].at(0,0) - _emAlpha << endl; starting_params[s]["m"].Print();
 			//}
-			//cout << "# initial clusters " << model->GetNClusters() << endl;
+			//cout << "# initial clusters " << model->GetNClusters() << " # starting params " << starting_params.size() << " cl1 " << cl1 << " cl2 " << cl2 << endl;
 			//get initial parameters and data + number of subclusters from model	
 			//create new starting center from centroid of cl1 + cl2
 			map<string, Matrix> new_cl;
@@ -673,7 +678,6 @@ x->model->GetData()->Print();
 			new_cov.invert(new_cov);
 			new_cl["scalemat"] = new_cov;
 
-			starting_params = starting_params;
 
 			//remove clusters specified in args - in correct order s.t. removing a subcluster doesn't affect a later subcluster
 			//cout << "removing clusters " << cl1 << " and " << cl2 << endl;
@@ -684,7 +688,7 @@ x->model->GetData()->Print();
 			int nstart = 0;
 			for(int i = 0; i < starting_params.size(); i++){
 				if(starting_params[i].empty()) continue;
-				//cout << "subcluster #" << i << " with weight " << starting_params[i]["alpha"].at(0,0) - _emAlpha << endl; starting_params[i]["m"].Print();
+				//cout << "starting subcluster #" << i << " with weight " << starting_params[i]["alpha"].at(0,0) - _emAlpha << endl; starting_params[i]["m"].Print();
 				nstart++;
 			}
 			GaussianMixture* mergemodel = new GaussianMixture(nstart);
@@ -728,7 +732,7 @@ x->model->GetData()->Print();
 			}
 
 			merge_elbo = newLogL;
-//cout << "merge model has " << mergemodel->GetData()->GetNPoints() << " points and " << mergemodel->GetNClusters() << " final clusters with means " << endl;
+	//cout << "merge model has " << mergemodel->GetData()->GetNPoints() << " points and " << mergemodel->GetNClusters() << " final clusters with means " << endl;
 	//for(int k = 0; k < mergemodel->GetNClusters(); k++){
 	//	auto params = mergemodel->GetLHPosteriorParameters(k);
 	//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
@@ -744,7 +748,7 @@ x->model->GetData()->Print();
 		//if i > j then there *will* be "no match" cases
 		//returning indices s.t. the pair is (idx_i, idx_j) for subcluster from pseudojet i with index idx_i and subcluster idx_j from pseudojet j
 		void _match_pdfs(vector<BasePDF*>& inpdfs_n, vector<BasePDF*> inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
-//cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
+			//cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
 			//loop through pdfs
 			double bestProd, prod;
 			bestMatchIdxs.clear();
