@@ -379,10 +379,18 @@ class Jet{
 			_pi = p;
 		}
 		
-		//calculate invariant mass with jet
-		double invMass(Jet jet){
-			jet.add(*this);
-			return jet.mass();	
+		//calculate invariant mass with jet (without adding all the jet components - ie rechits, recalc time, etc)
+		double invMass(const Jet& jet){
+			double px = _px + jet.px();
+			double py = _py + jet.py();
+			double pz = _pz + jet.pz();
+			double E = _E + jet.E();
+			double kt2 = px*px + py*py;
+
+			double m2 = (E+pz)*(E-pz)-kt2;
+			return m2 < 0.0 ? -sqrt(-m2) : sqrt(m2);
+			
+	
 		}
 		
 		void CalculateCenter(){
