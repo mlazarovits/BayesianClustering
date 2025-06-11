@@ -8,6 +8,7 @@
 
 using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
+using BaseSkimmer::ptsort;
 
 class BHCJetSkimmer{
 	public:
@@ -298,6 +299,7 @@ class BHCJetSkimmer{
                 	_hists1D.push_back(recoAK4Jet_subClusterMass);
                 	_hists1D.push_back(recoAK4Jet_subClusterEffnRhs);
 			_hists1D.push_back(BHCJetW_subClusterMass);
+			_hists1D.push_back(BHCJetW_subClusterLeadInvMass);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -713,6 +715,13 @@ class BHCJetSkimmer{
 							//finding partons/subclusters
 							_procCats[p].hists1D[pt][204]->Fill(_predJets[j].GetNConstituents());
 							consts = _predJets[j].GetConstituents();
+							//sort by energy
+							sort(consts.begin(), consts.end(), ptsort);
+							//get invariant mass of leading two subclusters
+							if(consts.size() > 1){
+								double invmass = consts[0].invMass(consts[1]);
+								_procCats[p].hists1D[pt][211]->Fill(invmass);
+							}
 							for(int c = 0; c < (int)consts.size(); c++){
 								_procCats[p].hists1D[pt][205]->Fill(consts[c].E());
 								_procCats[p].hists1D[pt][210]->Fill(consts[c].m());
@@ -1979,7 +1988,9 @@ class BHCJetSkimmer{
 		TH1D* recoAK4Jet_subClusterEffnRhs = new TH1D("recoAK4Jet_subclusterEffnRhs","recoAK4Jet_subclusterEffnRhs",25,0,200);
 		//210 - subcluster mass in BHC jets matched to Ws
 		TH1D* BHCJetW_subClusterMass = new TH1D("BHCJetW_subclusterMass","BHCJetW_subclusterMass",25,0,200);
-
+		//211 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
+		TH1D* BHCJetW_subClusterLeadInvMass = new TH1D("BHCJetW_subclusterLeadInvMass","BHCJetW_subclusterLeadInvMass",25,0,200);
+		
 
 
 
