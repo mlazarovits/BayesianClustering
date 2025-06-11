@@ -8,7 +8,6 @@
 
 using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
-using BaseSkimmer::ptsort;
 
 class BHCJetSkimmer{
 	public:
@@ -428,8 +427,6 @@ class BHCJetSkimmer{
                 	_hists2D.push_back(recoAK4Jet_subclusterMass_subclusterEffnRhs);
 			_hists2D.push_back(BHCJet_subclusterEnergy_subclusterdRToJet);
 			_hists2D.push_back(BHCJet_subclusterEffnRhs_subclusterdRToJet);
-			_hists2D.push_back(BHCJet_nSubclustersJet_jetSize);
-			_hists2D.push_back(recoAK4Jet_nSubclustersJet_jetSize);
 			_hists2D.push_back(BHCJetW_nSubclustersJet_mass);
 
 		}
@@ -589,7 +586,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_rhs());
 						_procCats[p].hists2D[pt][48]->Fill(_predJets[j].e(), jetsize);
 						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
-						_procCats[p].hists2D[pt][127]->Fill(_predJets[j].GetNConstituents(), jetsize);	
+						_procCats[p].hists2D[pt][11]->Fill(_predJets[j].GetNConstituents(), jetsize);	
 						
 
 						Matrix jet_mu, jet_cov;
@@ -725,7 +722,8 @@ class BHCJetSkimmer{
 							for(int c = 0; c < (int)consts.size(); c++){
 								_procCats[p].hists1D[pt][205]->Fill(consts[c].E());
 								_procCats[p].hists1D[pt][210]->Fill(consts[c].m());
-								_procCats[p].hists2D[pt][129]->Fill(_predJets[j].GetNConstituents(),consts[c].m());
+							cout << "consts #" << c << " mass " << consts[c].m() << endl;
+								_procCats[p].hists2D[pt][127]->Fill(_predJets[j].GetNConstituents(),consts[c].m());
 							}	
 						}			
 
@@ -977,7 +975,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][44]->Fill(_recoAK4jets[j].e(), _recoAK4jets[j].mass());
 						_procCats[p].hists2D[pt][46]->Fill(_recoAK4jets[j].GetNConstituents(), jetsize);
 						_procCats[p].hists2D[pt][47]->Fill(_recoAK4jets[j].e(), jetsize);
-						_procCats[p].hists2D[pt][128]->Fill(_recoAK4jets[j].GetNConstituents(), jetsize);	
+						_procCats[p].hists2D[pt][46]->Fill(_recoAK4jets[j].GetNConstituents(), jetsize);	
 						if(_recoAK4jets[j].GetNConstituents() == 0) cout << _recoAK4jets[j].GetNConstituents() << " n subcl " << _recoAK4jets[j].GetNRecHits() << " n rhs" << endl;
 						//fill subcluster hists
 						vector<Jet> consts = _recoAK4jets[j].GetConstituents();
@@ -2252,11 +2250,7 @@ class BHCJetSkimmer{
 		TH2D* BHCJet_subclusterEnergy_subclusterdRToJet = new TH2D("BHCJet_subclusterEnergy_subclusterdRToJet","BHCJet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,100,25,0,0.5);
 		//126 - subcluster eff # rhs vs dR of subcluster to jet center
 		TH2D* BHCJet_subclusterEffnRhs_subclusterdRToJet = new TH2D("BHCJet_subclusterEffnRhs_subclusterdRToJet","BHCJet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
-		//127 - bhc # subclusters/jet vs jet size
-		TH2D* BHCJet_nSubclustersJet_jetSize = new TH2D("BHCJet_nSubclustersJet_jetSize","BHCJet_nSubclustersJet_jetSize;nSubclustersJet;jetSize",30,0,30,50,0,2);
-		//128 - reco AK4 # subclusters/jet vs jet size
-		TH2D* recoAK4Jet_nSubclustersJet_jetSize = new TH2D("recoAK4Jet_nSubclustersJet_jetSize","recoAK4Jet_nSubclustersJet_jetSize;nSubclustersJet;jetSize",30,0,30,50,0,2);
-		//129 - BHC jets gen-matched to Ws - subcluster mass vs # subclusters/jet
+		//127 - BHC jets gen-matched to Ws - subcluster mass vs # subclusters/jet
 		TH2D* BHCJetW_nSubclustersJet_mass = new TH2D("BHCJetW_nSubclustersJet_mass","BHCJetW_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
 
 		void SetSmear(bool t){ _smear = t; }
