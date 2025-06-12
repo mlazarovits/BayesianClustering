@@ -1588,10 +1588,10 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
 
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_nSubclusters",{"lead"});
-	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subClusterEnergy",{"lead"});
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subclusterEnergy",{"lead"});
 	
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_nSubclusters");
-	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subClusterEnergy");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subclusterEnergy");
 	
 	
 	Hist2D(file, "ttbar", "BHC", oname, "_genTop");
