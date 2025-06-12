@@ -592,7 +592,7 @@ x->model->GetData()->Print();
 //cout << "theta to eta params" << endl;
 	for(int k = 0; k < x->model->GetNClusters(); k++){
 		auto params = x->model->GetLHPosteriorParameters(k);
-		if(isnan(params["mean"].at(0,0){
+		if(std::isnan(params["mean"].at(0,0))){
 			cout << "cluster #" << k << endl;
 			cout << "mean" << endl;
 			params["mean"].Print();
