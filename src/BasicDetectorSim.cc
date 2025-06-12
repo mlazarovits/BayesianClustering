@@ -195,7 +195,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	double theta = 2*atan2(1,exp(_etamax));
 	double zmax = _rmax/tan(theta); //[mm]
 
-	Pythia8::Event sumEvent; //one object where individual events are collected
 	
 	//declare fjinput/output containers
 	vector<fastjet::PseudoJet> fjinputs;
@@ -215,29 +214,29 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		if(!_pythia.next()) continue;
 		//store event info if pileup is on
 		//cout << std::setprecision(5) << "event #" << i << endl;
-		sumEvent = _pythia.event;
+		_sumEvent = _pythia.event;
 		cout << endl;
-		cout << std::setprecision(5) << "event #" << i << " has " << sumEvent.size() << " particles" << endl;
+		cout << std::setprecision(5) << "event #" << i << " has " << _sumEvent.size() << " particles" << endl;
 		_evt = i;		
 		//save w idxs
 		set<int> w_idxs;
-		set<int> top_idxs;
+		set<int> top_idxs, d_idxs, u_idxs, s_idxs;
 
 		if(_pu){
 			//simulate n pileup events
 			int nPU = _rs.SamplePoisson(_nPUavg,1).at(0);
 			for(int p = 0; p < nPU; p++){
 				pileup.next();	
-				sumEvent += pileup.event;
+				_sumEvent += pileup.event;
 			}
 		}
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
-		//cout << "event size: " << sumEvent.size() << endl;
+		//cout << "event size: " << _sumEvent.size() << endl;
 		
 		//set PV for event - look at first particle in record
-		Pythia8::Particle evtRec = sumEvent[1];//sumEvent.back();
+		Pythia8::Particle evtRec = _sumEvent[1];//_sumEvent.back();
 		_PV = BayesPoint({evtRec.xProd(), evtRec.yProd(), evtRec.zProd()});
 		_pvx = _PV.at(0)*1e-1; //put in cm from mm
 		_pvy = _PV.at(1)*1e-1; //put in cm from mm
@@ -249,14 +248,20 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//zig is nominal beam spot spread - should be 3 sigma for distribution
 		//_rs.SetRange(-zig/3., zig/3.);
 		//zshift = _rs.SampleGaussian(0., zig/3., 1).at(0);
-		for(int p = 0; p < sumEvent.size(); p++){
+		for(int p = 0; p < _sumEvent.size(); p++){
 			//reset reco particle four momentum
-			Pythia8::Particle particle = sumEvent[p];
+			Pythia8::Particle particle = _sumEvent[p];
+			//if simulating QCD, want to save the hard partons (status 23) produced
+			if(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()){
+				if(fabs(particle.status()) == 23){
+					SaveGenInfo(particle, -1);
+				}
+			} 
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
 			// No neutrinos
-      			//if (sumEvent[p].idAbs() == 12 || sumEvent[p].idAbs() == 14 ||
-      			//    sumEvent[p].idAbs() == 16)     continue;
+      			if (_sumEvent[p].idAbs() == 12 || _sumEvent[p].idAbs() == 14 ||
+      			    _sumEvent[p].idAbs() == 16)     continue;
 		
 
 			//extreme gen momentum eta cut - for CMS tracker (not necessary here)	
@@ -283,37 +288,32 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//zero suppression threshold
 			//if(particle.e() < _ethresh) continue;
 
-			//get top from this particle's history (if it exists)
 			if(particle.mother1() > 0 && particle.mother2() == 0){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
 				int momidx = 999;
 				int thisp = p;
-				//cout << "mother search for particle " << p << ": " << sumEvent[p].id() << endl;
+				//cout << "mother search for particle " << p << ": " << _sumEvent[p].id() << endl;
 				while(thisp > 0){
-					momidx = sumEvent[thisp].mother1();
-					mothers_id.push_back(fabs(sumEvent[momidx].id()));
+					momidx = _sumEvent[thisp].mother1();
+					mothers_id.push_back(fabs(_sumEvent[momidx].id()));
 					mothers_idx.push_back(momidx);
-					//cout << "mother of " << thisp << " (id: " << sumEvent[thisp].id() << ") is " << momidx << " (id: " << sumEvent[momidx].id() << ")" << endl;
+					//cout << "mother of " << thisp << " (id: " << _sumEvent[thisp].id() << ") is " << momidx << " (id: " << _sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
 				
+				//get top from this particle's history (if it exists)
 				//need to catch W's from tops - check if top is in mother chain - starting point (need to go all the way up mother chain to get original particle that hasn't recoiled, etc)
-				vector<int>::iterator momit_top = find(mothers_id.begin(), mothers_id.end(), 6);
-				if(momit_top != mothers_id.end()){
-					int topIdx = mothers_idx[momit_top - mothers_id.begin()];
-					int momidx = sumEvent[topIdx].mother1();
-					while(sumEvent[topIdx].mother1() == sumEvent[topIdx].mother2() || fabs(sumEvent[momidx].id()) == 6){
-						//cout << "getting daughters of copy for idx " << Widx << endl;
-						//get daughters of W copy decay
-						//topIdx = sumEvent[topIdx].daughter1();
-						topIdx = sumEvent[topIdx].mother1();
-						momidx = sumEvent[topIdx].mother1();
-					}
-					//cout << "mother of top " << topIdx << ": " << momidx << " " << sumEvent[topIdx].mother2() << " mother1 id " << sumEvent[momidx].id() << " top id " << sumEvent[topIdx].id() << " grandmother " << sumEvent[sumEvent[momidx].mother1()].id() << " top status " << sumEvent[topIdx].status() << endl;
-					top_idxs.insert(topIdx);
-					//need to see if particle came from W - check if W is in mother chain (if top in mother chain, assuming top -> W -> this particle)
-				}
+				//find mothers that are d quarks
+				//FindMom(mothers_idx, mothers_id, 2, d_idxs);
+				//test top quarks
+				FindMom(mothers_idx, mothers_id, 6, top_idxs);
+				//for(auto t = top_idxs.begin(); t != top_idxs.end(); t++)
+				//	cout << "top quark idx test " << *t << " status " << _sumEvent[*t].status() << endl;
+				//for(auto d = d_idxs.begin(); d != d_idxs.end(); d++)
+				//	cout << "quark idx test " << *d << " status " << _sumEvent[*d].status() << " name " << _sumEvent[*d].name() << endl;
+				//cout << "id of particle at idx 5 " << _sumEvent[5].id() << " at idx 6 " << _sumEvent[6].id() << " status " << _sumEvent[6].status() << endl;
+				//cout << endl;	
 			}
 
 			//dont reconstruct muons - they would only mildly interact with an EM cal anyway
@@ -409,13 +409,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		int nW = 0;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){	
 			//save gen info for top
-			SaveGenInfo(sumEvent[*t],-1);
+			SaveGenInfo(_sumEvent[*t],-1);
 			//find children - going down decay chain
 			vector<int> kids_id;
-			vector<int> kids_idx = sumEvent[*t].daughterListRecursive();
+			vector<int> kids_idx = _sumEvent[*t].daughterListRecursive();
 			//cout << "top idx " << *t << " has " << kids_idx.size() << " daughters" << endl;
 			//cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
-			for(auto k : kids_idx){ kids_id.push_back(fabs(sumEvent[k].id()));}
+			for(auto k : kids_idx){ kids_id.push_back(fabs(_sumEvent[k].id()));}
 			vector<int>::iterator w_it = find(kids_id.begin(), kids_id.end(), 24);
 			vector<int>::iterator b_it = find(kids_id.begin(), kids_id.end(), 5);
 		
@@ -427,17 +427,17 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				Widx = std::distance(kids_id.begin(), w_it);
 				Widx = kids_idx[Widx];
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				while(sumEvent[Widx].daughter1() == sumEvent[Widx].daughter2() || fabs(sumEvent[sumEvent[Widx].daughter1()].id()) == 24 || fabs(sumEvent[sumEvent[Widx].daughter2()].id()) == 24){
+				while(_sumEvent[Widx].daughter1() == _sumEvent[Widx].daughter2() || fabs(_sumEvent[_sumEvent[Widx].daughter1()].id()) == 24 || fabs(_sumEvent[_sumEvent[Widx].daughter2()].id()) == 24){
 					//get daughters of W copy decay
-					Widx = sumEvent[Widx].daughter1();
+					Widx = _sumEvent[Widx].daughter1();
 				}
 				//get W index
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "W idx " << Widx << " id " << sumEvent[Widx].id() << " daughter1 " << sumEvent[Widx].daughter1() << " daughter2 " << sumEvent[Widx].daughter2() << endl;
+				cout << "W idx " << Widx << " id " << _sumEvent[Widx].id() << " daughter1 " << _sumEvent[Widx].daughter1() << " daughter2 " << _sumEvent[Widx].daughter2() << endl;
 				//save gen info of W at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
-				SaveGenInfo(sumEvent[Widx],genmomidx);
+				SaveGenInfo(_sumEvent[Widx],genmomidx);
 				_genpartEvtIdx.push_back(Widx);	
 				//cout << "W mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				
@@ -448,37 +448,37 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				bidx = std::distance(kids_id.begin(), b_it);
 				bidx = kids_idx[bidx];
 				//make sure b doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				while(sumEvent[bidx].daughter1() == sumEvent[bidx].daughter2() || fabs(sumEvent[sumEvent[bidx].daughter1()].id()) == 5 || fabs(sumEvent[sumEvent[bidx].daughter2()].id()) == 5){
+				while(_sumEvent[bidx].daughter1() == _sumEvent[bidx].daughter2() || fabs(_sumEvent[_sumEvent[bidx].daughter1()].id()) == 5 || fabs(_sumEvent[_sumEvent[bidx].daughter2()].id()) == 5){
 					//get daughters of b copy decay
-					bidx = sumEvent[bidx].daughter1();
+					bidx = _sumEvent[bidx].daughter1();
 				}
-				cout << "b quark idx " << bidx << " id " << sumEvent[bidx].id() << " daughter1 " << sumEvent[bidx].daughter1() << " daughter2 " << sumEvent[bidx].daughter2() << endl;
+				cout << "b quark idx " << bidx << " id " << _sumEvent[bidx].id() << " daughter1 " << _sumEvent[bidx].daughter1() << " daughter2 " << _sumEvent[bidx].daughter2() << endl;
 				//save gen info of b at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
-				SaveGenInfo(sumEvent[bidx],genmomidx);
+				SaveGenInfo(_sumEvent[bidx],genmomidx);
 				_genpartEvtIdx.push_back(bidx);	
 				//cout << "b mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 			}
 			
 			//save gen W daughters info
 			if(Widx != -999){
-				cout << " daughters of W " << Widx << ": " << sumEvent[sumEvent[Widx].daughter1()].id() << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+				cout << " daughters of W " << Widx << ": " << _sumEvent[_sumEvent[Widx].daughter1()].id() << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
 
 				vector<int>::iterator Wmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),Widx);
 				//and save gen info of W daughters at detector
 				//daughter 1
-				SaveGenInfo(sumEvent[sumEvent[Widx].daughter1()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[Widx].daughter1());	
+				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter1()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter1());	
 				//cout << " W daughter 1 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				vector<int>::iterator d1_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));	
 				vector<int>::iterator d1_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d1 id " << fabs(_genpartids[_genpartids.size()-1]) << " d1 had " << (d1_it_had != had.end()) << " d1 lep " << (d1_it_lep != lep.end()) << endl;
 	
 				//daughter 2
-				SaveGenInfo(sumEvent[sumEvent[Widx].daughter2()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[Widx].daughter2());	
-				//cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << sumEvent[sumEvent[Widx].daughter2()].id() << endl;
+				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter2()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter2());	
+				//cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
 				vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
 				vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d2 id " << fabs(_genpartids[_genpartids.size()-1]) << " d2 had " << (d2_it_had != had.end()) << " d2 lep " << (d2_it_lep != lep.end()) << endl;
@@ -492,16 +492,16 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//save gen b daughter info 
 			vector<int> bkids_idx;
 			if(bidx != -999){
-				cout << " daughters of b " << bidx << ": " << sumEvent[sumEvent[bidx].daughter1()].id() << " " << sumEvent[sumEvent[bidx].daughter2()].id() << endl;
+				cout << " daughters of b " << bidx << ": " << _sumEvent[_sumEvent[bidx].daughter1()].id() << " " << _sumEvent[_sumEvent[bidx].daughter2()].id() << endl;
 		
 				//and save gen info of b daughters at detector
 				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
 				//and save gen info of W daughters at detector
-				SaveGenInfo(sumEvent[sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[bidx].daughter1());	
+				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				_genpartEvtIdx.push_back(_sumEvent[bidx].daughter1());	
 				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
-				SaveGenInfo(sumEvent[sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
-				_genpartEvtIdx.push_back(sumEvent[bidx].daughter2());	
+				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				_genpartEvtIdx.push_back(_sumEvent[bidx].daughter2());	
 				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 	
 	
@@ -535,7 +535,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 		if(_tree != nullptr) _tree->Fill();
 		//reset event
-		sumEvent.clear();
+		_sumEvent.clear();
 		_reset();
 		//if only simulating one event, save for GetRecHits
 		if(evt != -1) _cal_rhs.clear();

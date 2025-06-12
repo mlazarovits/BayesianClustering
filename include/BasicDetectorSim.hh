@@ -152,7 +152,25 @@ struct RecoParticle;
 			_genpartMomIdx.push_back(genmom);
 		}
 
+		void FindMom(vector<int> mothers_idx, vector<int> mothers_id, int id, set<int>& idxs){
+			vector<int>::iterator momit = find(mothers_id.begin(), mothers_id.end(), id);
+			if(momit != mothers_id.end()){
+				int idx = mothers_idx[momit - mothers_id.begin()];
+				int momidx = _sumEvent[idx].mother1();
+				while(_sumEvent[idx].mother1() == _sumEvent[idx].mother2() || fabs(_sumEvent[momidx].id()) == id){
+					idx = _sumEvent[idx].mother1();
+					momidx = _sumEvent[idx].mother1();
+				}
+				//cout << "mother of particle " << idx << ": " << momidx << " " << _sumEvent[idx].mother2() << " mother1 id " << _sumEvent[momidx].id() << " id " << _sumEvent[idx].id() << " grandmother " << _sumEvent[_sumEvent[momidx].mother1()].id() << " status " << _sumEvent[idx].status() << endl;
+				idxs.insert(idx);
+			}
+
+		}
+
+
 	private:
+		Pythia8::Event _sumEvent; //one object where individual events are collected
+
 		double _rmax; //max radius of detector (m)
 		double _b; //magnetic field (T)
 		double _netacal; //number of cells in eta in calorimeter
