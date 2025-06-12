@@ -590,14 +590,16 @@ x->model->GetData()->Print();
 //cout << "put params and data on 02pi" << endl;
 			x->model->ThetaToEta_params();
 //cout << "theta to eta params" << endl;
-//	for(int k = 0; k < x->model->GetNClusters(); k++){
-//		cout << "cluster #" << k << endl;
-//		auto params = x->model->GetLHPosteriorParameters(k);
-//		cout << "mean" << endl;
-//		params["mean"].Print();
-//		//cout << "cov" << endl;
-//		//params["cov"].Print();
-//	}
+	for(int k = 0; k < x->model->GetNClusters(); k++){
+		auto params = x->model->GetLHPosteriorParameters(k);
+		if(isnan(params["mean"].at(0,0){
+			cout << "cluster #" << k << endl;
+			cout << "mean" << endl;
+			params["mean"].Print();
+		}
+		//cout << "cov" << endl;
+		//params["cov"].Print();
+	}
 			//resets data to original points
 			x->model->SetData(x->points);
 			//x->model->GetData()->Print();
