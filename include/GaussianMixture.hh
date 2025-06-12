@@ -29,6 +29,8 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetLikelihoodParameters(int k); 
 
+		//"add" function stitches together two (projected) mixture models for one dataset and stores in this
+		void add(GaussianMixture* model); 
 		/* 
 		void SetPriorParameters(map<string, Matrix> params){
 			m_beta0 = params["scale"].at(0,0);
