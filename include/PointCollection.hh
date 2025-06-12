@@ -453,7 +453,7 @@ class PointCollection{
 				else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
 				nit++;
 				if(nit > 100){
-					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << endl;
+					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << " setting to value " << _pts[i].at(d) << endl;
 					break;
 				}
 			}
