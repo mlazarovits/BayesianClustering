@@ -722,7 +722,7 @@ class BHCJetSkimmer{
 							for(int c = 0; c < (int)consts.size(); c++){
 								_procCats[p].hists1D[pt][205]->Fill(consts[c].E());
 								_procCats[p].hists1D[pt][210]->Fill(consts[c].m());
-							cout << "consts #" << c << " mass " << consts[c].m() << endl;
+							//cout << "consts #" << c << " mass " << consts[c].m() << endl;
 								_procCats[p].hists2D[pt][127]->Fill(_predJets[j].GetNConstituents(),consts[c].m());
 							}	
 						}			
