@@ -289,15 +289,13 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		string name = hist[i]->GetName();
 		string type = "";
 		if(name.find("_lead") != string::npos){
-			//type = "highpt";
-			type = "small";
+			type = "highpt";
 			col -= 2;
 			mark -= 4;
 				
 		}
 		if(name.find("_notlead") != string::npos){
-			//type = "lowpt";
-			type = "large";
+			type = "lowpt";
 			col += 2;
 			mark += 1;
 				
@@ -1364,8 +1362,8 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 
 			//method in this subdir needs to match what's given
 			if(name.find(method) == string::npos) continue;
-			if(name.find("_notlead") != string::npos) type = " large";//type = " low pt";
-			if(name.find("_lead") != string::npos) type = " small";//type = " high pt";
+			if(name.find("_notlead") != string::npos) type = " low pt";
+			if(name.find("_lead") != string::npos) type = " high pt";
 			//cout << "method " << method << endl;
 			//we're in the directory with hists of one method split by procs
 			GetHists(dir, proc, hists);
