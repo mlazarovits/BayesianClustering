@@ -446,6 +446,7 @@ class PointCollection{
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
 			int nit = 0;
+			double ogval = _pts[i].at(d);
 			while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
 				//if pt is negative
 				if(_pts[i].at(d) < -1e-16) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
@@ -453,7 +454,7 @@ class PointCollection{
 				else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
 				nit++;
 				if(nit > 100){
-					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << " setting to value " << _pts[i].at(d) << endl;
+					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << " setting to value " << _pts[i].at(d) << " with original value " << ogval << endl;
 					break;
 				}
 			}
