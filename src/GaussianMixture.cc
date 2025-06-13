@@ -101,25 +101,26 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 		}
 		if(!kmeans){
 			//set posterior parameters from previous model(s)
-			//cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
+			if(_verb > 7) cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
 			int skip = 0;
 			for(int k = 0; k < prev_posteriors.size(); k++){
 				map<string, Matrix> params = prev_posteriors[k];
 				if(params.empty()){
 					//cout << "skipping empty map # " << k << endl;
 					skip++; continue;}
-				//cout << "mean" << endl; params["m"].Print();
-				//cout << "norm " << params["alpha"].at(0,0) - m_alpha0 << endl;
-				//cout << "scalemat " << endl; params["scalemat"].Print();
 				//cout << "k " << k << " skip " << skip << " # xbars " << _xbar.size() << " # Sbars " << _Sbar.size() << " # norms " << m_norms.size() << endl;
 				m_model[k-skip]->GetPrior()->SetParameter("dof", params["dof"]);
 				m_model[k-skip]->GetPrior()->SetParameter("scale", params["scale"]);
 				///Matrix scalemat(3,3);
 				///scalemat.InitIdentity();
 				///scalemat.mult(scalemat,0.1);
+				//could set scalemat to inverse (properly scaled with dof and weighted with r_nk's) of empirical covariance?
 				m_model[k-skip]->GetPrior()->SetParameter("scalemat", m_W0);
+				//cout << "scalemat " << endl; m_W0.Print();
 				m_model[k-skip]->GetPrior()->SetParameter("mean", params["m"]);	
+				//cout << "mean" << endl; params["m"].Print();
 				m_alphas[k-skip] = params["alpha"].at(0,0);	
+				//cout << "alpha " << params["alpha"].at(0,0) << endl;
 	
 				//_xbar[k-skip] = params["m"];
 				//Matrix SbarInv = params["scalemat"];
@@ -848,8 +849,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 				rLamStar.add(lamStar);	
 
 				if(_verb > 6){
-					cout << "cluster #" << k << " data pt #" << n << " w " << m_data->at(n).w() << " r " << m_post.at(n,k) << " lamStar " << endl;
-					_lamStar[n].Print();
+					cout << "cluster #" << k << " data pt #" << n << " w " << m_data->at(n).w() << " r " << m_post.at(n,k) << " unweighted r " << m_post.at(n,k)/m_data->at(n).w() << " lamStar " << endl; _lamStar[n].Print();
 				}
 
 				Matrix lamStar_x(m_dim, 1);
@@ -864,6 +864,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			lamExp.mult(lamExp,m_model[k]->GetPrior()->GetParameter("dof").at(0,0));
 //cout << "lamExp (scalemat*nu)" << endl; lamExp.Print();
 //cout << "sum r_nk*lam_n" << endl; rLamStar.Print();
+//cout << "sum r_nk*lam_n*x_n" << endl; rLamStar_x.Print();
 			//need inverse for m*_k = lam*_k^-1(lam_k*(N_k*bar{x}_k + beta0*m0) + sum_n r_nk*lam*_n*x_n)
 			//			= lam*_k^-1(lam_k*m_k + sum_n r_nk*lam*_n*x_n)
 			//lam*_k = (lam_k*(N_k + beta0) + sum_n r_nk*lam_n)
@@ -873,10 +874,14 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			Matrix lamStar(m_dim, m_dim);
 			//cout << "1 - lamStar dims " << lamStar.GetDims()[0] << " " << lamStar.GetDims()[1] << endl;
 			lamStar.mult(lamExp,new_scale);
-//cout << "lamExp*beta_k" << endl; lamStar.Print();
+//cout << "lam_k*beta_k " << endl; lamStar.Print();
 			//cout << "2 - lamStar dims " << lamStar.GetDims()[0] << " " << lamStar.GetDims()[1] << endl;
 			//cout << "rLamStar dims " << rLamStar.GetDims()[0] << " " <<  rLamStar.GetDims()[1] << endl;
+		
+//cout << "sum_n r_nk*lam_n " << endl; rLamStar.Print();
 			lamStar.add(rLamStar);
+
+//cout << "lam_*k = lam_k*beta_k + sum_n r_nk*lam_n" << endl; lamStar.Print();
 			if(_verb > 6){
 				cout << "scalemat " << endl; m_model[k]->GetPrior()->GetParameter("scalemat").Print();
 				cout << "newscale " << new_scale << endl;
@@ -888,14 +893,13 @@ void GaussianMixture::UpdatePosteriorParameters(){
 //cout << "total lamStar " << endl; lamStar.Print();
 			Matrix lamStarInv(m_dim, m_dim);
 			lamStarInv.invert(lamStar);
-//cout << "lamStar inv " << endl; lamStarInv.Print();
 //cout << "lam*_k^-1 x lam_k " << endl;
 //Matrix test(m_dim, m_dim);
 //test.mult(lamStarInv,lamExp);
 //test.Print();
 //test.InitEmpty();
 //cout << "lam*_k^-1 x sum r_nk*lam*_n*x_n " << endl;
-//test = Matrix(m_dim,1);
+//Matrix test = Matrix(m_dim,1);
 //test.mult(lamStarInv,rLamStar_x);
 //test.Print();
 			if(_verb > 6){
@@ -906,18 +910,20 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			//lam_k*m_k
 			Matrix lam_mean(m_dim, 1);
 			lam_mean.mult(lamExp,new_mean);
-//cout << "initial new mean" << endl; new_mean.Print();
-//cout << "lamExp*mean " << endl; lam_mean.Print();
+//cout << "lam_k " << endl; lamExp.Print();
+//cout << "(lam_k*(N_k*bar{x}_k + beta0*m0) " << endl; lam_mean.Print();
 			//lam_k*m_k + sum_n r_nk*lam_n*x_n
-//cout << "rLamStar_x " << endl; rLamStar_x.Print();
+//cout << "sum_n r_nk*lam*_n*x_n " << endl; rLamStar_x.Print();
 			lam_mean.add(rLamStar_x);
-//cout << "lam mean " << endl; lam_mean.Print();
+//cout << "(lam_k*(N_k*bar{x}_k + beta0*m0) + sum_n r_nk*lam*_n*x_n " << endl; lam_mean.Print();
+//cout << "lam*_k^-1 " << endl; lamStarInv.Print();
 
+//cout << "initial new mean" << endl; new_mean.Print();
 			//redefine m_k (aka new_mean)
 			new_mean = Matrix(m_dim, 1);
 			new_mean.mult(lamStarInv, lam_mean);	
 		}
-//cout << "setting prior mean to " << endl; new_mean.Print();
+//cout << "setting posterior mean to " << endl; new_mean.Print();
 		m_model[k]->GetPrior()->SetParameter("mean", new_mean);
 
 		//cout << "k: " << k << " scale: " << m_model[k]->GetPrior()->GetParameter("scale").at(0,0) << endl;	

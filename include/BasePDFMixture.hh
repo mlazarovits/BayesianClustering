@@ -306,12 +306,12 @@ class BasePDFMixture : public BasePDF{
 			//project the lamStar measurement error too
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
+			measErrInf = false;
 			for(int n = 0; n < m_n; n++){
 				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) measErrInf = true;
-				double etaSig = (tan(m_data->at(n).at(0) + _cell) - tan(m_data->at(n).at(0) - _cell))/2.;
-				_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
+				double etaSig = (tan(atan2(m_data->at(n).at(n),1) + _cell) - tan(atan2(m_data->at(n).at(n),1) - _cell))/2.;
+				//_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
 			}
-			measErrInf = false;
 			return dataInf || measErrInf;
 		}
 
@@ -331,7 +331,7 @@ class BasePDFMixture : public BasePDF{
 			for(int n = 0; n < m_n; n++){
 				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) measErrInf = true;
 				double phiSig = (tan(m_data->at(n).at(1) + _cell) - tan(m_data->at(n).at(1) - _cell))/2.;
-				_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
+				//_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
 			}
 			measErrInf = false;
 			return dataInf || measErrInf;
