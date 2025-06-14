@@ -102,6 +102,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 		if(!kmeans){
 			//set posterior parameters from previous model(s)
 			if(_verb > 7) cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
+			if(_verb > 7) cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
 			int skip = 0;
 			for(int k = 0; k < prev_posteriors.size(); k++){
 				map<string, Matrix> params = prev_posteriors[k];

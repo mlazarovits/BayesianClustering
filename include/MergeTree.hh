@@ -469,7 +469,6 @@ x->model->GetData()->Print();
 		double merge_elbo;
 		//vector<map<string, Matrix>> starting_params = prev_posts;
 		//cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
-		/*
 		///cout << "from model" << endl;
 		//for(int k = 0; k < x->model->GetNClusters(); k++){
 		//	auto params = x->model->GetLHPosteriorParameters(k);
@@ -478,58 +477,34 @@ x->model->GetData()->Print();
 		//	//cout << " cov" << endl;
 		//	//params["cov"].Print();
 		//}
-		
 
 		//compare merges in its respective projected data space
 		vector<map<string, Matrix>> merge_posteriors;
+		vector<pair<int,int>> merge_pairs;
 		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
 			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			
-			//compare this merge in projected data to no merge
-			//project data ...
-			//GaussianMixture* merged_model = _merge_model(x, prev_posts, left_post_indices[prodit->second.first], right_post_indices[prodit->second.second], merge_elbo);
-	
-			//if merge is better, remove associated posteriors from starting parameters and replace with their centroid
-
-
+			cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << endl;
+			merge_pairs.push_back(std::make_pair(left_post_indices[prodit->second.first], right_post_indices[prodit->second.second]));
 		}
-		//if any merges are good, rerun whole model (unprojected) with new set of starting posteriors according to "local" merges
-		*/
-		/*	
-		GaussianMixture* merged_model_tot = new GaussianMixture();
-		merged_model_tot->SetData(newpts); 
-		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
-			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			//fit GMM with merge prodit->second pair (if valid)
-			cout << "best match bw clusters " << prodit->second.first << " in left " << left_post_indices[prodit->second.first] << " and " << prodit->second.second << " in right " << right_post_indices[prodit->second.second] << " with prod " << prodit->first << endl;
-			GaussianMixture* merged_model = _merge_model(x, prev_posts, left_post_indices[prodit->second.first], right_post_indices[prodit->second.second], merge_elbo);
-			//GaussianMixture* merged_model = _merge_model(x->model, starting_params, left_post_indices[prodit->second.first], right_post_indices[prodit->second.second], merge_elbo);
-			cout << "merge ELBO " << merge_elbo << " nominal " << newLogL << endl;
-			if(merge_elbo - newLogL > 0){ //ie merge model is better
-				if(_verb > 1) cout << "model merging clusters " << prodit->second.first << " and " << prodit->second.second << " with product " << prodit->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
-				cout << "model merging clusters " << prodit->second.first << " and " << prodit->second.second << " with product " << prodit->first << " and # clusters " << merged_model->GetNClusters() << " and ELBO " << merge_elbo << " better than nominal " << newLogL << " updating model" << endl;
-				
-				//merged_model_tot->add(merged_model);
-
-				//x->model = merged_model;
-				//cout << "x->model now has " << x->model->GetNClusters() << " clusters" << " compared to " << prev_posts.size() << " # prev post subclusters " << endl;
-				//newLogL = merge_elbo;
-				//set starting params to params of merged model
-				//starting_params.clear();
-				//for(int n = 0; n < x->model->GetNClusters(); n++) starting_params.push_back(x->model->GetLHPosteriorParameters(n));
-
-			}
+		//this function compares all the "local" (ie projected) subcluster merges to not merging, then sets the starting params for the merged model from these merge decisions
+		GaussianMixture* merged_model = _merge_model(x, prev_posts, merge_pairs, merge_elbo);
+		cout << "merged model has final # clusters " << merged_model->GetNClusters() << " with elbo " << merge_elbo << endl;
+		cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
+		/*
+		if(merge_elbo > newLogL){
+			x->model = merged_model;
+			newLogL = merge_elbo;	
 		}
 		*/
 		cout << "final node model has " << x->model->GetNClusters() << " with centers" << endl;
-		for(int k = 0; k < x->model->GetNClusters(); k++){
-			auto params = x->model->GetLHPosteriorParameters(k);
-			cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-			params["mean"].Print();
-			cout << " cov" << endl;
-			params["cov"].Print();
-		}
-		cout << endl;
+		//for(int k = 0; k < x->model->GetNClusters(); k++){
+		//	auto params = x->model->GetLHPosteriorParameters(k);
+		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+		//	params["mean"].Print();
+		//	cout << " cov" << endl;
+		//	params["cov"].Print();
+		//}
+		//cout << endl;
 	}	
 	
 
@@ -680,11 +655,42 @@ x->model->GetData()->Print();
 
 		}
 
+		void _run_model(GaussianMixture* model, double& elbo){
+			VarEMCluster* algo = new VarEMCluster(model, model->GetNClusters());
+			double thresh = 0.01*model->GetData()->Sumw(); //1% of total weight
+			algo->SetThresh(thresh);
+			//cluster
+			double oldLogL = algo->EvalLogL();
+		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
+			double LogLThresh = 1e-3;
+			double newLogL = 0;
+			double dLogL = 1e308; 
+			int it = -1;
+			//cout << "oldLogL (initial) " << oldLogL << endl;
+			while(dLogL > LogLThresh*fabs(oldLogL) || it == 0){
+				it++;
+				newLogL = algo->Cluster();
+				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
+				dLogL = newLogL - oldLogL;
+		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << model->GetNClusters() << endl;
+		 //cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << model->GetNClusters() << endl;
+				oldLogL = newLogL;
+			}
+
+			elbo = newLogL;
+			//for(int k = 0; k < mergemodel->GetNClusters(); k++){
+			//	auto params = mergemodel->GetLHPosteriorParameters(k);
+			//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+			//	params["mean"].Print();
+			//}
+
+		}
+
 		//project points using nominal model responsibilities to isolate subcluster merges
 		//need to project data from each node for node subcluster
 		PointCollection* _project_data(node* x, int cl_left, int cl_right){
 cout << "projecting data into left subcl " << cl_left << " and right subcl " << cl_right << endl;
-cout << "og data " << endl; x->points->Print();
+//cout << "og data " << endl; x->points->Print();
 			Matrix r_nk_l = x->l->model->GetPosterior();
 			if(cl_left >= r_nk_l.GetDims()[1]){
 				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.GetDims()[1] << " # cols" << endl;
@@ -711,47 +717,21 @@ cout << "og data " << endl; x->points->Print();
 				newpts->AddPoint(pt);
 			}
 			newpts->Sort();
-cout << "newpts " << endl; newpts->Print();
+//cout << "newpts " << endl; newpts->Print();
 			return newpts;
 		}
 
 
-
-		void _run_model(GaussianMixture* model, double& elbo){
-			VarEMCluster* algo = new VarEMCluster(model, model->GetNClusters());
-			double thresh = 0.01*model->GetData()->Sumw(); //1% of total weight
-			algo->SetThresh(thresh);
-			//cluster
-			double oldLogL = algo->EvalLogL();
-		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
-			double LogLThresh = 1e-3;
-			double newLogL = 0;
-			double dLogL = 1e308; 
-			int it = -1;
-			//cout << "oldLogL (initial) " << oldLogL << endl;
-			while(dLogL > LogLThresh*fabs(oldLogL) || it == 0){
-				it++;
-				newLogL = algo->Cluster();
-				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
-				dLogL = newLogL - oldLogL;
-		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << model->GetNClusters() << endl;
-				oldLogL = newLogL;
-			}
-
-			elbo = newLogL;
-			//for(int k = 0; k < mergemodel->GetNClusters(); k++){
-			//	auto params = mergemodel->GetLHPosteriorParameters(k);
-			//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-			//	params["mean"].Print();
-			//}
-
-		}
 
 		//if passing all starting params, then merge_pair idxs are in "global" frame, need in local
 		GaussianMixture* _compare_projected_models(node* x, vector<map<string,Matrix>> starting_params, pair<int, int> merge_pair){
 			//project data in x->l and x->r according to given merge pair (0: left, 1: right)
 			int cl1 = merge_pair.first;
 			int cl2 = merge_pair.second;
+
+			cout << "_compare_projected_models - comparing subcls " << cl1 << " and " << cl2 << " of " << starting_params.size() << " starting params " << endl;
+			cout << "cl1 local idx " << cl1 << " cl2 local idx " << x->l->model->GetNClusters() - cl2 << endl;
+
 
 			//get centroid of starting params
 			map<string, Matrix> new_cl;
@@ -764,7 +744,7 @@ cout << "newpts " << endl; newpts->Print();
 			BayesPoint center({cents.Centroid(0), cents.Centroid(1), cents.Centroid(2)});
 			new_cl["m"] = center;
 			//need to also give Nk (norms) and cov to seed posteriors
-			new_cl["alpha"] = _emAlpha + (w1 + w2);
+			new_cl["alpha"] = Matrix(_emAlpha + (w1 + w2));
 			//cov - average of two
 			Matrix new_cov(3,3);
 			Matrix cov1 = starting_params[cl1]["cov"];
@@ -778,8 +758,13 @@ cout << "newpts " << endl; newpts->Print();
 			//need to invert bc pulls as scalemat
 			new_cov.invert(new_cov);
 			new_cl["scalemat"] = new_cov;
+			new_cl["scale"] = Matrix(_params["scale"].at(0,0) + (w1 + w2));
+			new_cl["dof"] = Matrix(_params["dof"].at(0,0) + (w1 + w2));
+			
+
 			//project_data needs cl1 and cl2 in their "local" values
-			PointCollection* mergepts = _project_data(x,cl1,cl2);
+			PointCollection* mergepts = _project_data(x,cl1,x->l->model->GetNClusters() - cl2);
+			cout << "# total mergepts " << mergepts->GetNPoints() << endl;
 			PointCollection* seppts = new PointCollection(*mergepts);		
 	
 			//do merge model
@@ -796,7 +781,7 @@ cout << "newpts " << endl; newpts->Print();
 				// save ELBO
 			double elbo_pair;
 			_run_model(mergemodel, elbo_pair);
-		
+	cout << "elbo for proj merge " << elbo_pair << " # final clusters " << mergemodel->GetNClusters() << endl;	
 	
 			//do separate (original) model
 			GaussianMixture* sepmodel = new GaussianMixture(2);
@@ -807,14 +792,26 @@ cout << "newpts " << endl; newpts->Print();
 			}
 			sepmodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 			sepmodel->SetData(seppts);
-			sepmodel->InitParameters(_params,starting_params);
+			sepmodel->InitParameters(_params,{starting_params[cl1], starting_params[cl2]});
 				// save ELBO
 			double elbo_sep;
 			_run_model(sepmodel, elbo_sep);
+	cout << "elbo for proj sep " << elbo_sep << " # final clusters " << sepmodel->GetNClusters() << endl;	
 			//compare 2 subcluster to 1 subcluster model
 			//take ending subclusters of better model to end_params
 			//then will use end_params as starting point of full "merged" model to compare to full nominal
-			
+		
+	cout << "starting place for merge model" << endl; new_cl["m"].Print();
+	cout << "ending place for merge model with " << mergemodel->GetNClusters() << "subclusters" << endl; mergemodel->GetLHPosteriorParameters(0)["m"].Print();
+
+	cout << "starting places for sep model" << endl;
+	cout << "cluster #0" << endl; starting_params[cl1]["m"].Print();
+	cout << "cluster #1" << endl; starting_params[cl2]["m"].Print();
+	cout << "ending place for sep model with " << sepmodel->GetNClusters() << " subclusters " << endl; 
+	for(int i = 0; i < sepmodel->GetNClusters(); i++){
+		cout << "cluster #" << i << endl;
+		sepmodel->GetLHPosteriorParameters(i)["m"].Print();
+	}
 			if(elbo_pair > elbo_sep)
 				return mergemodel;
 			else
@@ -823,31 +820,49 @@ cout << "newpts " << endl; newpts->Print();
 		}
 
 		//will run model seeded from projected merges
+		//need to pass full node so we can project the data from the potential merge (ie from the x->l and x->r nodes) by their own posterior responsibilities
 		GaussianMixture* _merge_model(node* x, vector<map<string,Matrix>> starting_params, vector<pair<int, int>> merge_pairs, double& merge_elbo){
 			vector<map<string, Matrix>> merge_starting_params;
 			//for each merge 
 			for(int m = 0; m < merge_pairs.size(); m++){
 				//do projected merge - return better model (merge or separate)
-				//GaussianMixture* proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
+				cout << "looking at merge for left subcl " << merge_pairs[m].first << " and right subcl " << merge_pairs[m].second << endl;
+				GaussianMixture* proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
+				cout << "# clusters in proj model " << proj_model->GetNClusters() << endl;
 				//get final clusters of proj_model - these will be starting place for full merge model
-				//for(int k = 0; k < proj_model->GetNClusters(); k++)
-				//	merge_starting_params.push_back(proj_model->GetLHPosteriorParameters(k));
+				for(int k = 0; k < proj_model->GetNClusters(); k++)
+					merge_starting_params.push_back(proj_model->GetLHPosteriorParameters(k));
+			}
+			//loop through starting params and add those that aren't in a merge model
+			for(int i = 0; i < starting_params.size(); i++){
+				bool inPair = false;
+				for(int m = 0; m < merge_pairs.size(); m++){
+					if(i == merge_pairs[m].first || i == merge_pairs[m].second){
+						inPair = true;
+						break;
+					}
+				}
+				if(inPair) continue;
+				merge_starting_params.push_back(starting_params[i]);
 
 			}
-			//starting from merge_starting_params, fit full data
-			//GaussianMixture* mergemodel = new GaussianMixture(merge_starting_params.size());
-			//if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
-			//mergemodel->SetAlpha(_emAlpha);
-			//if(!_data_smear.empty()){
-			//	mergemodel->SetDataSmear(_data_smear);
-			//}
 
-			//mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-			//PointCollection* newpts = new PointCollection(*x->model->GetData());
-			//mergemodel->SetData(newpts);
-			//mergemodel->InitParameters(_params,merge_starting_params);
-			//_run_model(mergemodel,merge_elbo);
-			return nullptr; //return mergemodel; 
+			//starting from merge_starting_params, fit full data
+			//don't forget to include parameters that DONT have a merge pair
+			cout << "merge model starts with " << merge_starting_params.size() << endl;
+			GaussianMixture* mergemodel = new GaussianMixture(merge_starting_params.size());
+			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
+			mergemodel->SetAlpha(_emAlpha);
+			if(!_data_smear.empty()){
+				mergemodel->SetDataSmear(_data_smear);
+			}
+
+			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
+			PointCollection* newpts = new PointCollection(*x->model->GetData());
+			mergemodel->SetData(newpts);
+			mergemodel->InitParameters(_params,merge_starting_params);
+			_run_model(mergemodel,merge_elbo);
+			return mergemodel; 
 		}
 
 
