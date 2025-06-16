@@ -299,6 +299,7 @@ class BHCJetSkimmer{
                 	_hists1D.push_back(recoAK4Jet_subClusterEffnRhs);
 			_hists1D.push_back(BHCJetW_subClusterMass);
 			_hists1D.push_back(BHCJetW_subClusterLeadInvMass);
+			_hists1D.push_back(BHCJet_nGhosts);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -478,6 +479,17 @@ class BHCJetSkimmer{
 				if(predJet.pt() < 5) continue; 
 				//add Jet to jets	
 				_predJets.push_back(predJet);	
+				//fill hists for mixture model
+				for(int p = 0; p < _procCats.size(); p++){
+					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
+							//define pt bins
+							//pt == 1 -> [_pt_thresh,inf)
+							if(pt == 1 && predJet.pt() < _pt_thresh) continue;
+							//pt == 2 -> [0,_pt_thresh)
+							if(pt == 2 && predJet.pt() >= _pt_thresh) continue;
+							_procCats[p].hists1D[pt][212]->Fill(_trees[i]->model->GetNGhosts());
+					}
+				}
 			}
 			cout << njets_tot << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
@@ -512,14 +524,13 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recoAK4jets.size());
 				//loop over pt bins
 				njets = _predJets.size();
-				double pt_thresh = 100;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
 						//define pt bins
-						//pt == 1 -> [50,inf)
-						if(pt == 1 && _predJets[j].pt() < pt_thresh) continue;
-						//pt == 2 -> [0,50)
-						if(pt == 2 && _predJets[j].pt() >= pt_thresh) continue;
+						//pt == 1 -> [_pt_thresh,inf)
+						if(pt == 1 && _predJets[j].pt() < _pt_thresh) continue;
+						//pt == 2 -> [0,_pt_thresh)
+						if(pt == 2 && _predJets[j].pt() >= _pt_thresh) continue;
 
 
 						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
@@ -574,7 +585,6 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][50]->Fill(cov.at(0,1));	
 						_procCats[p].hists1D[pt][51]->Fill(cov.at(0,2));	
 						_procCats[p].hists1D[pt][52]->Fill(cov.at(2,1));	
-						
 
 						_procCats[p].hists2D[pt][7]->Fill(_predJets[j].mass(), _predJets[j].pt());
 						_procCats[p].hists2D[pt][8]->Fill(_predJets[j].mass(), jetsize);
@@ -582,8 +592,8 @@ class BHCJetSkimmer{
 						
 						_procCats[p].hists2D[pt][34]->Fill((double)_predJets.size(), jetsize);
 						_procCats[p].hists2D[pt][35]->Fill(_predJets[j].GetNRecHits(),_predJets[j].GetNConstituents());
-						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass_rhs());
-						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass_rhs());
+						_procCats[p].hists2D[pt][40]->Fill(_predJets[j].GetNConstituents(), _predJets[j].mass());
+						_procCats[p].hists2D[pt][45]->Fill(_predJets[j].e(), _predJets[j].mass());
 						_procCats[p].hists2D[pt][48]->Fill(_predJets[j].e(), jetsize);
 						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
 						_procCats[p].hists2D[pt][11]->Fill(_predJets[j].GetNConstituents(), jetsize);	
@@ -793,7 +803,7 @@ class BHCJetSkimmer{
 					//dr bw gen jet and best exclusive gen top match
 					int genTopMatch = genTopMatchIdxs[j];
 					if(genTopMatch != -1){
-					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genTopMatch].GetUserIdx()) << " and mass " << _genparts[genTopMatch].mass() << " and energy ratio " << _genAK4jets[j].E() / _genparts[genTopMatch].E() << endl;
+					//if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genTopMatch].GetUserIdx()) << " and mass " << _genparts[genTopMatch].mass() << " and energy ratio " << _genAK4jets[j].E() / _genparts[genTopMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
 						_procCats[p].hists1D[0][123]->Fill(gendR);
 						_procCats[p].hists1D[0][124]->Fill(_genAK4jets[j].E()/_genparts[genTopMatch].E());
@@ -807,7 +817,7 @@ class BHCJetSkimmer{
 					//dr bw gen jet and best exclusive gen W match
 					int genWMatch = genWMatchIdxs[j];
 					if(genWMatch != -1){
-					if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genWMatch].GetUserIdx()) << " and mass " << _genparts[genWMatch].mass() << " and energy ratio " << _genAK4jets[j].E()/_genparts[genWMatch].E() << endl;
+					//if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genWMatch].GetUserIdx()) << " and mass " << _genparts[genWMatch].mass() << " and energy ratio " << _genAK4jets[j].E()/_genparts[genWMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genWMatch].eta(), _genparts[genWMatch].phi());
 						_procCats[p].hists1D[0][198]->Fill(gendR);
 						_procCats[p].hists1D[0][199]->Fill(_genAK4jets[j].E()/_genparts[genWMatch].E());
@@ -834,7 +844,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][188]->Fill(_genAK8jets[j].E());
 					_procCats[p].hists1D[0][189]->Fill(_base->AK8Jet_genNConstituents->at(_genAK8jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
-					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
+					//if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 					int genTopMatch = genTopMatchIdxs[j];
 					if(genTopMatch != -1){
 						double gendR = dR(_genAK8jets[j].eta(), _genAK8jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
@@ -861,7 +871,7 @@ class BHCJetSkimmer{
 					_procCats[p].hists1D[0][156]->Fill(_base->AK15Jet_genNConstituents->at(_genAK15jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
 					int genTopMatch = genTopMatchIdxs[j];
-					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
+					//if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 					if(genTopMatch != -1){
 						double gendR = dR(_genAK15jets[j].eta(), _genAK15jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
 						_procCats[p].hists1D[0][158]->Fill(gendR);
@@ -920,7 +930,6 @@ class BHCJetSkimmer{
 			GenericMatchJet(_recoAK4jets,_genparts,genTopMatchIdxs, 6);
 			vector<int> genWMatchIdxs; //one per jet, follows same indexing as jets
 			GenericMatchJet(_recoAK4jets,_genparts,genWMatchIdxs, 24);
-			double pt_thresh = 100;	
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recoAK4jets.size();
@@ -928,10 +937,10 @@ class BHCJetSkimmer{
 				for(int j = 0; j < _recoAK4jets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
-						//pt == 1 -> [50,inf)
-						if(pt == 1 && _recoAK4jets[j].pt() < pt_thresh) continue;
-						//pt == 2 -> [0,50)
-						if(pt == 2 && _recoAK4jets[j].pt() >= pt_thresh) continue;
+						//pt == 1 -> [_pt_thresh,inf)
+						if(pt == 1 && _recoAK4jets[j].pt() < _pt_thresh) continue;
+						//pt == 2 -> [0,_pt_thresh)
+						if(pt == 2 && _recoAK4jets[j].pt() >= _pt_thresh) continue;
 	
 						Matrix jetcov = _recoAK4jets[j].GetCovariance();
 						//get 2D matrix for jet size
@@ -1085,7 +1094,7 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][29]->Fill(ngenparts_ptge5,_recoAK4jets[j].GetNConstituents());
 						}
 						//if no gen top match, skip
-						if(p == 0 && pt == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
+						//if(p == 0 && pt == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
 							int genpartidx = genTopMatchIdxs[j];
 							_procCats[p].hists2D[pt][74]->Fill(_recoAK4jets[j].pt(), _genparts[genpartidx].pt());
@@ -1099,7 +1108,7 @@ class BHCJetSkimmer{
 							_procCats[p].hists1D[pt][193]->Fill(_recoAK4jets[j].E()/_genparts[genpartidx].E());
 						}
 						//if no gen W match, skip
-						if(p == 0 && pt == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << endl;
+						//if(p == 0 && pt == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << endl;
 						if(genWMatchIdxs[j] != -1){
 							int genpartidx = genWMatchIdxs[j];
 							_procCats[p].hists2D[pt][99]->Fill(_recoAK4jets[j].pt(), _genparts[genpartidx].pt());
@@ -1179,19 +1188,17 @@ class BHCJetSkimmer{
 				nhist2d_start = 79;
 			}
 			else return; //not defined for other jet sizes and nominal FillRecoJetHists() fills for AK4
-			double pt_thresh = 50;	
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				int njets = recojets.size();
-				cout << "filling hist # " << nhist1d_start << " with " << njets << " has currently " << _procCats[p].hists1D[0][nhist1d_start]->GetEntries() << " entries" << endl;
 				_procCats[p].hists1D[0][nhist1d_start]->Fill(njets);
 				for(int j = 0; j < recojets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
-						//pt == 1 -> [50,inf)
-						if(pt == 1 && recojets[j].pt() < pt_thresh) continue;
-						//pt == 2 -> [0,50)
-						if(pt == 2 && recojets[j].pt() >= pt_thresh) continue;
+						//pt == 1 -> [_pt_thresh,inf)
+						if(pt == 1 && recojets[j].pt() < _pt_thresh) continue;
+						//pt == 2 -> [0,_pt_thresh)
+						if(pt == 2 && recojets[j].pt() >= _pt_thresh) continue;
 	
 						Matrix jetcov = recojets[j].GetCovariance();
 						//get 2D matrix for jet size
@@ -1213,7 +1220,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][nhist1d_start + 7]->Fill(recojets[j].GetNConstituents());
 						_procCats[p].hists1D[pt][nhist1d_start + 10]->Fill(jetsize);
 						//if no gen top match, skip
-						if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
+						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
 							int genidx = genTopMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genparts[genidx].eta(), _genparts[genidx].phi());
@@ -1230,7 +1237,7 @@ class BHCJetSkimmer{
 							}
 						}
 						//if no gen W match, skip
-						if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
+						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
 						if(genWMatchIdxs[j] != -1 && AK == 15){
 							int genidx = genWMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genparts[genidx].eta(), _genparts[genidx].phi());
@@ -1988,7 +1995,8 @@ class BHCJetSkimmer{
 		TH1D* BHCJetW_subClusterMass = new TH1D("BHCJetW_subclusterMass","BHCJetW_subclusterMass",25,0,200);
 		//211 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
 		TH1D* BHCJetW_subClusterLeadInvMass = new TH1D("BHCJetW_subclusterLeadInvMass","BHCJetW_subclusterLeadInvMass",25,0,200);
-		
+		//212 - BHC jets - # ghost leftover after clustering
+		TH1D* BHCJet_nGhosts = new TH1D("BHCJet_nGhosts","BHCJet_nGhosts",10,0,10);		
 
 
 
@@ -2506,6 +2514,7 @@ class BHCJetSkimmer{
 		//top decay info - 0 = fully had, 1 = semi lep, 2 = fully lep
 		int _topDecayType;
 
+		double _pt_thresh = 100;
 		
 
 		map<string, Matrix> _prior_params;
