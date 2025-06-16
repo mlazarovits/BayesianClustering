@@ -582,8 +582,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		}
 		//newLogL > oldLogL
 		dLogL = newLogL - oldLogL;
-		cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << gmm->GetNClusters() << endl;
-		if(_verb > 3) cout << "iteration #" << it << " log-likelihood: " << newLogL << " dLogL: " << dLogL << endl;
+		if(_verb > 2)cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << gmm->GetNClusters() << endl;
 		oldLogL = newLogL;
 	}
 		if(_verb > 2){
