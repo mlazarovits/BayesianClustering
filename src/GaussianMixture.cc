@@ -102,7 +102,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 		if(!kmeans){
 			//set posterior parameters from previous model(s)
 			if(_verb > 7) cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
-			if(_verb > 7) cout << "Initializing mixture model with parameters from " <<  n_starting_params << " previous posterior(s)" << endl;
 			int skip = 0;
 			for(int k = 0; k < prev_posteriors.size(); k++){
 				map<string, Matrix> params = prev_posteriors[k];
@@ -146,6 +145,9 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				m_model[k]->GetPrior()->SetParameter("scalemat", m_W0);
 				m_model[k]->GetPrior()->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));	
 				m_alphas[k] = 1.;	
+			
+				//if a model isn't seeded by a previous posterior in this scheme, it is considered a "ghost" subcluser to study the IR safety of the subcluster scale
+				m_model[k]->SetGhost(true);
 				
 				//_xbar[k] = Matrix(initpts.at(k - prev_posteriors.size())); //center of system
 				//_Sbar[k].InitIdentity();
@@ -403,6 +405,8 @@ map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{
 	//include data stats for initialization
 	p["xbar"] = _xbar[k];
 	p["Sbar"] = _Sbar[k];
+	//returns double (1./0. bool) for is/isn't a ghost subcluster
+	p["ghost"] = Matrix((double)m_model[k]->IsGhost());
 
 	return p;
 };
