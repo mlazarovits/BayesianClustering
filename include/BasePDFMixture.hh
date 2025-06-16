@@ -310,7 +310,6 @@ class BasePDFMixture : public BasePDF{
 
 		//add theta projection
 		bool ProjectTheta(){
-		cout << "ProjectTheta - start" << endl;
 			m_data->AngleToPlaneProject(0);
 			bool dataInf = m_data->HasInf(0);
 			bool measErrInf = false;
@@ -319,12 +318,10 @@ class BasePDFMixture : public BasePDF{
 			double pi = acos(-1);
 			measErrInf = false;
 			for(int n = 0; n < m_n; n++){
-				cout << "m_n " << m_n << " n " << n << " pt dim " << m_data->at(n).Dim() << " pt " << endl; m_data->at(n).Print();
 				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) measErrInf = true;
 				//double etaSig = (tan(atan2(m_data->at(n).at(0),1) + _cell) - tan(atan2(m_data->at(n).at(0),1) - _cell))/2.;
 				//_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
 			}
-		cout << "ProjectTheta - end" << endl;
 			return dataInf || measErrInf;
 		}
 
@@ -335,7 +332,6 @@ class BasePDFMixture : public BasePDF{
 		}
 	
 		bool ProjectPhi(){
-		cout << "ProjectPhi - start" << endl;
 			m_data->AngleToPlaneProject(1);
 			bool dataInf = m_data->HasInf(1);
 			bool measErrInf = false;
@@ -343,12 +339,10 @@ class BasePDFMixture : public BasePDF{
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
 			for(int n = 0; n < m_n; n++){
-				cout << "m_n " << m_n << " n " << n << " pt dim " << m_data->at(n).Dim() << " pt " << endl; m_data->at(n).Print();
 				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) measErrInf = true;
 				//double phiSig = (tan(m_data->at(n).at(1) + _cell) - tan(m_data->at(n).at(1) - _cell))/2.;
 				//_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
 			}
-			cout << "ProjectPhi - end" << endl;
 			return dataInf || measErrInf;
 		}
 		void UnprojectPhi(){
