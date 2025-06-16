@@ -74,11 +74,27 @@ class BayesPoint{
 
 		vector<double> Value() const{return _value;}
 		//return value at dimension d
-		double Value(int d) const{return _value[d];}
-		double at(int d) const{return _value[d];}
+		double Value(int d) const{
+			if(d < _value.size()){
+				return _value[d];
+			}
+			else{
+				cout << "Error: attempting to retrieve value at dimension " << d << " for point of dimension " << _nDim << endl;
+				return -999;
+			}
+		}
+		double at(int d) const{
+			if(d < _value.size()){
+				return _value[d];
+			}
+			else{
+				cout << "Error: attempting to retrieve value at dimension " << d << " for point of dimension " << _nDim << endl;
+				return -999;
+			}
+		}
 		
 		void SetValue(double v, int d){
-			if(d > _value.size()){
+			if(d >= _value.size()){
 				cout << "Error: initial values not set." << endl;
 				return;
 			}
