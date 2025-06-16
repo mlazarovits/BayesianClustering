@@ -272,7 +272,8 @@ cout << "n starting pts " << n << endl;
 			cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
 			cout << "cov " << endl; params["cov"].Print();
 		}
-		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->points->Print();
+		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; 
+		if(_verb > 1) trees[i]->points->Print();
 	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
 cout << "with centroid" << endl; center.Print();
 
