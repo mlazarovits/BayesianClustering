@@ -8,8 +8,8 @@ using std::string;
 
 class BasePDF{
 	public:
-		BasePDF(){ m_prefactor = 1; }
-		BasePDF(int d){ m_dim = d; m_prefactor = 1; }
+		BasePDF(){ m_prefactor = 1; _isGhost = false;}
+		BasePDF(int d){ m_dim = d; m_prefactor = 1;  _isGhost = false;}
 		virtual ~BasePDF(){ }	
 
 		virtual double Prob(const BayesPoint& x) = 0;
@@ -64,7 +64,10 @@ class BasePDF{
 			return pow(pi,m_dim*(m_dim - 1)/4.)*prod;
 		}	
 		
-
+		void SetGhost(bool g){ _isGhost = g; }
+		bool IsGhost(){return _isGhost; }
+	private:
+		bool _isGhost; //use for studying IR safety of subcluster scale
 
 };
 

@@ -128,6 +128,16 @@ class BasePDFMixture : public BasePDF{
 		void SetDirichletParameter(double alpha){ m_alpha0 = alpha; }
 		void SetAlpha(double alpha){  m_alpha0 = alpha; }
 
+
+		int GetNGhosts(){
+			int ng = 0;
+			for(auto model : m_model){
+				if(model->IsGhost())
+					ng++;
+			}
+			return ng;
+		}
+
 		BasePDF* GetModel(int k){ return m_model[k]; }
 		virtual void RemoveModel(int j) = 0; //needs to call BaseRemoveModel but also removes associated data stats
 		void BaseRemoveModel(int j){
