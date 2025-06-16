@@ -483,20 +483,19 @@ x->model->GetData()->Print();
 		vector<pair<int,int>> merge_pairs;
 		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
 			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << endl;
+			//cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << endl;
 			merge_pairs.push_back(std::make_pair(left_post_indices[prodit->second.first], right_post_indices[prodit->second.second]));
 		}
 		//this function compares all the "local" (ie projected) subcluster merges to not merging, then sets the starting params for the merged model from these merge decisions
 		GaussianMixture* merged_model = _merge_model(x, prev_posts, merge_pairs, merge_elbo);
-		cout << "merged model has final # clusters " << merged_model->GetNClusters() << " with elbo " << merge_elbo << endl;
-		cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
-		/*
+		//cout << "merged model has final # clusters " << merged_model->GetNClusters() << " with elbo " << merge_elbo << endl;
+		//cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
 		if(merge_elbo > newLogL){
+			cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters with merged model with " << merged_model->GetNClusters() << " subclusters" << endl;
 			x->model = merged_model;
 			newLogL = merge_elbo;	
 		}
-		*/
-		cout << "final node model has " << x->model->GetNClusters() << " with centers" << endl;
+		//cout << "final node model has " << x->model->GetNClusters() << " with centers" << endl;
 		//for(int k = 0; k < x->model->GetNClusters(); k++){
 		//	auto params = x->model->GetLHPosteriorParameters(k);
 		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
@@ -504,7 +503,7 @@ x->model->GetData()->Print();
 		//	cout << " cov" << endl;
 		//	params["cov"].Print();
 		//}
-		//cout << endl;
+		cout << endl;
 	}	
 	
 
@@ -689,9 +688,26 @@ x->model->GetData()->Print();
 		//project points using nominal model responsibilities to isolate subcluster merges
 		//need to project data from each node for node subcluster
 		PointCollection* _project_data(node* x, int cl_left, int cl_right){
-cout << "projecting data into left subcl " << cl_left << " and right subcl " << cl_right << endl;
-//cout << "og data " << endl; x->points->Print();
+//cout << "projecting data into left subcl " << cl_left << " and right subcl " << cl_right << " with means " << endl;
+//x->l->model->GetLHPosteriorParameters(cl_left)["m"].Print();
+//cout << " and " << endl;
+//x->r->model->GetLHPosteriorParameters(cl_right)["m"].Print();
+
+
+//cout << "og data left " << endl; x->l->model->GetData()->Print();
+//cout << "left node has " << x->l->model->GetNClusters() << " subclusters" << endl;
+//cout << "with norms" << endl;
+//vector<double> norms;
+//x->l->model->GetNorms(norms);
+//for(int n = 0; n < norms.size(); n++) cout << " left subcl #" << n << " norm " << norms[n] << endl;
+
+
+//cout << "og data right " << endl; x->r->model->GetData()->Print();
+//cout << "right node has " << x->r->model->GetNClusters() << " subclusters" << endl;
+//x->r->model->GetNorms(norms);
+//for(int n = 0; n < norms.size(); n++) cout << " right subcl #" << n << " norm " << norms[n] << endl;
 			Matrix r_nk_l = x->l->model->GetPosterior();
+//cout << "left posterior" << endl; r_nk_l.Print();
 			if(cl_left >= r_nk_l.GetDims()[1]){
 				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.GetDims()[1] << " # cols" << endl;
 				return nullptr;
@@ -700,11 +716,13 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 			PointCollection* pts_l = new PointCollection(*x->l->model->GetData()); //data should already be transformed in common frame
 			for(int n = 0; n < pts_l->GetNPoints(); n++){
 				//get unweighted responsibility
-				BayesPoint pt = pts_l->at(n);
+				BayesPoint pt = pts_l->at(n); 
+				//cout << "left pt " << endl; pt.Print(); cout << " has r_n(cl_left) " << r_nk_l.at(n,cl_left) << endl;
 				pt.SetWeight(r_nk_l.at(n,cl_left));
 				newpts->AddPoint(pt);
 			}
 			Matrix r_nk_r = x->r->model->GetPosterior();
+//cout << "right posterior" << endl; r_nk_r.Print();
 			if(cl_right >= r_nk_r.GetDims()[1]){
 				cout << "Error: accessing cluster " << cl_right << " with posterior of " << r_nk_r.GetDims()[1] << " # cols" << endl;
 				return nullptr;
@@ -713,7 +731,8 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 			for(int n = 0; n < pts_r->GetNPoints(); n++){
 				//get unweighted responsibility
 				BayesPoint pt = pts_r->at(n);
-				pt.SetWeight(r_nk_l.at(n,cl_right));
+				//cout << "right pt " << endl; pt.Print(); cout << " has r_n(cl_right) " << r_nk_r.at(n,cl_right) << endl;
+				pt.SetWeight(r_nk_r.at(n,cl_right));
 				newpts->AddPoint(pt);
 			}
 			newpts->Sort();
@@ -729,8 +748,8 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 			int cl1 = merge_pair.first;
 			int cl2 = merge_pair.second;
 
-			cout << "_compare_projected_models - comparing subcls " << cl1 << " and " << cl2 << " of " << starting_params.size() << " starting params " << endl;
-			cout << "cl1 local idx " << cl1 << " cl2 local idx " << x->l->model->GetNClusters() - cl2 << endl;
+			//cout << "_compare_projected_models - comparing subcls " << cl1 << " and " << cl2 << " of " << starting_params.size() << " starting params " << endl;
+			//cout << "cl1 local idx " << cl1 << " cl2 local idx " << x->l->model->GetNClusters() - cl2 << endl;
 
 
 			//get centroid of starting params
@@ -764,7 +783,7 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 
 			//project_data needs cl1 and cl2 in their "local" values
 			PointCollection* mergepts = _project_data(x,cl1,x->l->model->GetNClusters() - cl2);
-			cout << "# total mergepts " << mergepts->GetNPoints() << endl;
+			//cout << "# total mergepts " << mergepts->GetNPoints() << endl;
 			PointCollection* seppts = new PointCollection(*mergepts);		
 	
 			//do merge model
@@ -796,22 +815,22 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 				// save ELBO
 			double elbo_sep;
 			_run_model(sepmodel, elbo_sep);
-	cout << "elbo for proj sep " << elbo_sep << " # final clusters " << sepmodel->GetNClusters() << endl;	
+	//cout << "elbo for proj sep " << elbo_sep << " # final clusters " << sepmodel->GetNClusters() << endl;	
 			//compare 2 subcluster to 1 subcluster model
 			//take ending subclusters of better model to end_params
 			//then will use end_params as starting point of full "merged" model to compare to full nominal
 		
-	cout << "starting place for merge model" << endl; new_cl["m"].Print();
-	cout << "ending place for merge model with " << mergemodel->GetNClusters() << "subclusters" << endl; mergemodel->GetLHPosteriorParameters(0)["m"].Print();
+	//cout << "starting place for merge model" << endl; new_cl["m"].Print();
+	//cout << "ending place for merge model with " << mergemodel->GetNClusters() << " subclusters" << endl; mergemodel->GetLHPosteriorParameters(0)["m"].Print();
 
-	cout << "starting places for sep model" << endl;
-	cout << "cluster #0" << endl; starting_params[cl1]["m"].Print();
-	cout << "cluster #1" << endl; starting_params[cl2]["m"].Print();
-	cout << "ending place for sep model with " << sepmodel->GetNClusters() << " subclusters " << endl; 
-	for(int i = 0; i < sepmodel->GetNClusters(); i++){
-		cout << "cluster #" << i << endl;
-		sepmodel->GetLHPosteriorParameters(i)["m"].Print();
-	}
+	//cout << "starting places for sep model" << endl;
+	//cout << "cluster #0" << endl; starting_params[cl1]["m"].Print();
+	//cout << "cluster #1" << endl; starting_params[cl2]["m"].Print();
+	//cout << "ending place for sep model with " << sepmodel->GetNClusters() << " subclusters " << endl; 
+	//for(int i = 0; i < sepmodel->GetNClusters(); i++){
+	//	cout << "cluster #" << i << endl;
+	//	sepmodel->GetLHPosteriorParameters(i)["m"].Print();
+	//}
 			if(elbo_pair > elbo_sep)
 				return mergemodel;
 			else
@@ -826,9 +845,9 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 			//for each merge 
 			for(int m = 0; m < merge_pairs.size(); m++){
 				//do projected merge - return better model (merge or separate)
-				cout << "looking at merge for left subcl " << merge_pairs[m].first << " and right subcl " << merge_pairs[m].second << endl;
+				//cout << "looking at merge for left subcl " << merge_pairs[m].first << " and right subcl " << merge_pairs[m].second << endl;
 				GaussianMixture* proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
-				cout << "# clusters in proj model " << proj_model->GetNClusters() << endl;
+				//cout << "# clusters in proj model " << proj_model->GetNClusters() << endl;
 				//get final clusters of proj_model - these will be starting place for full merge model
 				for(int k = 0; k < proj_model->GetNClusters(); k++)
 					merge_starting_params.push_back(proj_model->GetLHPosteriorParameters(k));
@@ -849,7 +868,8 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 
 			//starting from merge_starting_params, fit full data
 			//don't forget to include parameters that DONT have a merge pair
-			cout << "merge model starts with " << merge_starting_params.size() << endl;
+			//cout << "merge model starts with " << merge_starting_params.size() << endl;
+			//cout << "starting place for merge model" << endl; for(int m = 0; m < merge_starting_params.size(); m++){ cout << "cluster #" << m << endl; merge_starting_params[m]["m"].Print();} 
 			GaussianMixture* mergemodel = new GaussianMixture(merge_starting_params.size());
 			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
 			mergemodel->SetAlpha(_emAlpha);
@@ -862,6 +882,7 @@ cout << "projecting data into left subcl " << cl_left << " and right subcl " << 
 			mergemodel->SetData(newpts);
 			mergemodel->InitParameters(_params,merge_starting_params);
 			_run_model(mergemodel,merge_elbo);
+			//cout << "ending place for merge model" << endl; for(int m = 0; m < mergemodel->GetNClusters(); m++){ cout << "cluster #" << m << endl; mergemodel->GetLHPosteriorParameters(m)["m"].Print();} 
 			return mergemodel; 
 		}
 
