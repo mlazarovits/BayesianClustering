@@ -374,7 +374,6 @@ class MergeTree : BaseTree{
 			//n > 1 && m > 1 => n + m > 2
 			map<double, pair<int, int>, std::greater<double>> prodmap;
 			if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
-				if(x->l->model->GetNClusters() + x->r->model->GetNClusters() > 2){
 				//cout << "data in x" << endl; x->model->GetData()->Print();
 //cout << "data in x->l" << endl; x->l->model->GetData()->Print();
 //cout << "data in x->r" << endl; x->r->model->GetData()->Print();
@@ -390,7 +389,6 @@ class MergeTree : BaseTree{
 						r_pdfs.push_back(x->r->model->GetModel(n));
 					}
 					_match_pdfs(l_pdfs, r_pdfs, prodmap);
-				}
 			}
 			//nominal GMM (no merges)
 			VarEMCluster* algo = new VarEMCluster(x->model, k);
@@ -465,7 +463,7 @@ x->model->GetData()->Print();
 		//cout << endl;
 	//}
 	//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
-	if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 2){
+	if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
 		double merge_elbo;
 		//vector<map<string, Matrix>> starting_params = prev_posts;
 		//cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
