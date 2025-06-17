@@ -214,7 +214,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	}
 	kmc.GetMeans(_xbar);
 
-
 //cout << "initial kmeans params" << endl;
 	vector<int> assigns;
 	kmc.GetAssignments(assigns);
@@ -241,6 +240,10 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 		if(wtot != 0) _Sbar[k].mult(_Sbar[k],1/wtot);
 		if(m_k == m_n) _Sbar[k].InitIdentity();
 		m_model[k]->SetParameter("cov",_Sbar[k]);
+		//set "ghosts" from some thresh with k-means clusters
+		if(m_norms[k] < 1.){
+			m_model[k]->SetGhost(true);
+		}
 		//cout << "cluster #" << k << " norm " << m_norms[k] << endl; 
 		//cout << "k " << k << " mean" << endl; _xbar[k].Print(); cout << " cov" << endl; _Sbar[k].Print(); 
 
