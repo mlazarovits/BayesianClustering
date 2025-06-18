@@ -97,6 +97,9 @@ void BHCJetSkimmer::Skim(){
 			int totW = 0;
 			//at least 1 W quark with pt, E requirements
 			for(int g = 0; g < ngenpart; g++){
+				if(fabs(_base->genpart_id->at(g)) == 6){
+					if(i % SKIP == 0) cout << " has top with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+				}
 				if(fabs(_base->genpart_id->at(g)) != 24) continue;
 				totW++;
 				if(_base->genpart_pt->at(g) < _minWPt) continue;
@@ -105,7 +108,7 @@ void BHCJetSkimmer::Skim(){
 			}	
 			//at least 1 W	
 			if(nW < 1){ 
-				if(i % SKIP == 0) cout << " has no Ws" << endl;
+				if(i % SKIP == 0) cout << " has no Ws that pass pt > " << _minWPt << endl;
 				continue;
 			}
 			//check # b's - should match # Ws
@@ -389,24 +392,30 @@ void BHCJetSkimmer::Skim(){
 			bool drGood = true;
 			bool EratioGood = true;
 			vector<bool> bMatch(subjets.size(), 0);
+			cout << "BHC jet matches to b-jets are " << endl;
 			for(int j = 0; j < subjets.size(); j++){
 				int genbidx = genbMatchIdxs[j];
 				//check dr
 				double dr = dR(subjets[j].eta(), subjets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
 				//check Eratio
 				double Eratio = subjets[j].E()/_genparts[genbidx].E();
+				cout << "subjet #" << j << " dR to gen-matched b " << dr << " Eratio " << Eratio << endl;
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.8 || Eratio > 1.2) EratioGood = false;
 				bMatch[j] = drGood && EratioGood;
 			}
 			//could also add requirement that top mass is made with best W+b jet combinations
 			//if ALL good b-jet matches, remove from "predJets" list s.t. predJets are only W candidate jets
+			//then gen-match remaining jet(s) to Ws (ie the "probes") - done in FillPredJets
 			if(std::all_of(bMatch.begin(), bMatch.end(), [](bool v) { return v;})){
+				cout << "good b-jet matches with BHC jets - continue with boosted W selection" << endl;
 				_predJets = leadjets;
 			}
-			//then gen-match remaining jet(s) to Ws (ie the "probes") - done in FillPredJets
-			else continue; //else, skip this event
-		
+			//else skip
+			else{
+				cout << "BHC jets did not match gen b's well enough, skip" << endl;
+				continue; //else, skip this event
+			}
 		}
 		if(_sel == boostTop){
 			if(_predJets.size() < 2) continue; //want at least two boosted tops in an event
