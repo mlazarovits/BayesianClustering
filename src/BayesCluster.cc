@@ -497,7 +497,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//x' = x - a
 	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
 	gmm->ShiftData(center);
-	cout << "centroid " << endl; center.Print();
+	//cout << "centroid " << endl; center.Print();
 	
 	//cout << "translated pts" << endl;
 	//cout << "shifted - gmm data is" << endl; gmm->GetData()->Print();
