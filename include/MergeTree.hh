@@ -28,6 +28,7 @@ class MergeTree : BaseTree{
 			_RscaleInv.invert(_Rscale);
 
 			_check_merges = false;
+			_nGhosts = 0;
 		}
 
 		MergeTree(double alpha){
@@ -47,7 +48,9 @@ class MergeTree : BaseTree{
 			_Rscale.SetEntry(1/_cell,1,1);
 			_Rscale.SetEntry(1,2,2); 
 			_RscaleInv.invert(_Rscale);
+			
 			_check_merges = false;
+			_nGhosts = 0;
 		}
 
 		//copy constructor
@@ -68,6 +71,7 @@ class MergeTree : BaseTree{
 			_Rscale = tree._Rscale;
 			_RscaleInv = tree._RscaleInv;
 			_check_merges = tree._check_merges;
+			_nGhosts = tree._nGhosts;
 		}
 
 		virtual ~MergeTree(){ 
@@ -181,6 +185,7 @@ class MergeTree : BaseTree{
 			_tresStoch = tresStoch;
 			_tresNoise = tresNoise;
 		}
+		void SetNGhosts(int n){ _nGhosts = n; }
 
 	protected:
 
@@ -489,7 +494,7 @@ x->model->GetData()->Print();
 		//cout << "merged model has final # clusters " << merged_model->GetNClusters() << " with elbo " << merge_elbo << endl;
 		//cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
 		if(merge_elbo > newLogL){
-			cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters with merged model with " << merged_model->GetNClusters() << " subclusters" << endl;
+			cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
 			x->model = merged_model;
 			newLogL = merge_elbo;	
 		}
@@ -798,7 +803,7 @@ x->model->GetData()->Print();
 				// save ELBO
 			double elbo_pair;
 			_run_model(mergemodel, elbo_pair);
-	cout << "elbo for proj merge " << elbo_pair << " # final clusters " << mergemodel->GetNClusters() << endl;	
+	//cout << "elbo for proj merge " << elbo_pair << " # final clusters " << mergemodel->GetNClusters() << endl;	
 	
 			//do separate (original) model
 			GaussianMixture* sepmodel = new GaussianMixture(2);
@@ -867,14 +872,18 @@ x->model->GetData()->Print();
 			//starting from merge_starting_params, fit full data
 			//don't forget to include parameters that DONT have a merge pair
 			//cout << "merge model starts with " << merge_starting_params.size() << endl;
-			//cout << "starting place for merge model" << endl; for(int m = 0; m < merge_starting_params.size(); m++){ cout << "cluster #" << m << endl; merge_starting_params[m]["m"].Print();} 
-			GaussianMixture* mergemodel = new GaussianMixture(merge_starting_params.size());
+			//cout << "starting place for merge model" << endl; for(int m = 0; m < merge_starting_params.size(); m++){ cout << "cluster #" << m << endl; merge_starting_params[m]["m"].Print();}
+			int mincls = merge_starting_params.size() + _nGhosts; 
+			int npts = x->model->GetData()->GetNPoints();
+			int k = npts < mincls ? npts : mincls;
+
+			//cout << "# ghosts " << _nGhosts << " total k " << merge_starting_params.size()+_nGhosts << " # merge starting params " << merge_starting_params.size() << " # pts " << npts << " k " << k << endl; 
+			GaussianMixture* mergemodel = new GaussianMixture(k);
 			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
 			mergemodel->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
 				mergemodel->SetDataSmear(_data_smear);
 			}
-
 			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 			PointCollection* newpts = new PointCollection(*x->model->GetData());
 			mergemodel->SetData(newpts);
@@ -1052,6 +1061,7 @@ x->model->GetData()->Print();
 		
 		}
 
+
 	private:
 		//keep list of nodes since tree is built bottom up
 		vector<node*> _clusters;
@@ -1067,5 +1077,6 @@ x->model->GetData()->Print();
 		Matrix _Rscale;
 		Matrix _RscaleInv;
 		bool _check_merges;
+		int _nGhosts;
 };
 #endif
