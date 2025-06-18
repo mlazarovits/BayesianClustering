@@ -154,7 +154,7 @@ def generateSubmission(args):
     	flags += ' --timeSmear'
     if(args.applyFrac):
     	flags += ' --applyFrac'
-    if(args.checkMerges):
+    if(!args.noCheckMerges):
         flags += ' --checkMerges'
     flags += ' --tResCte '+str(args.tResCte)
     flags += ' --tResStoch '+str(args.tResStoch)
@@ -221,7 +221,7 @@ def main():
     parser.add_argument('--minTopPt',help='min gen top pt',default=0.)
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
-    parser.add_argument('--checkMerges',help="turn on subcluster merging for BHC jets",default=False,action='store_true')
+    parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=True,action='store_false')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--minNconsts',help='set minimum number of constituents for gen jets',default=5)
