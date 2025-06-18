@@ -138,7 +138,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --nGhosts "+str(args.nGhosts)+' --evtSel '+str(args.evtSel)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --nGhosts "+str(args.nGhosts)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
