@@ -500,22 +500,20 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				cout << " daughters of W " << Widx << ": " << _sumEvent[_sumEvent[Widx].daughter1()].id() << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
 
 				vector<int>::iterator Wmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),Widx);
-				cout << "genpartevtidxs" << endl;
-				for(auto gg : _genpartEvtIdx) cout << gg << endl;
-				cout << "Widx " << Widx << " end? " << (Wmom_it == _genpartEvtIdx.end()) << endl;
+				int momidx = std::distance(_genpartEvtIdx.begin(),Wmom_it);
 				//and save gen info of W daughters at detector
 				//daughter 1
-				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter1()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter1()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter1());	
-				cout << " W daughter 1 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				cout << " W daughter 1 mom evt idx " << Widx << " gen mom idx " << momidx  << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				vector<int>::iterator d1_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));	
 				vector<int>::iterator d1_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d1 id " << fabs(_genpartids[_genpartids.size()-1]) << " d1 had " << (d1_it_had != had.end()) << " d1 lep " << (d1_it_lep != lep.end()) << endl;
 	
 				//daughter 2
-				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter2()],std::distance(_genpartEvtIdx.begin(),Wmom_it));	
+				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter2()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter2());	
-				cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),Wmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
+				cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << momidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
 				vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
 				vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d2 id " << fabs(_genpartids[_genpartids.size()-1]) << " d2 had " << (d2_it_had != had.end()) << " d2 lep " << (d2_it_lep != lep.end()) << endl;
@@ -533,13 +531,14 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		
 				//and save gen info of b daughters at detector
 				vector<int>::iterator bmom_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),bidx);
+				int momidx = std::distance(_genpartEvtIdx.begin(),bmom_it);
 				//and save gen info of W daughters at detector
-				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter1()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter1()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[bidx].daughter1());	
-				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
-				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter2()],std::distance(_genpartEvtIdx.begin(),bmom_it));	
+				//cout << " b daughter 1 mom evt idx " << bidx << " gen mom idx " << momidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				SaveGenInfo(_sumEvent[_sumEvent[bidx].daughter2()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[bidx].daughter2());	
-				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << std::distance(_genpartEvtIdx.begin(),bmom_it) << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				//cout << " b daughter 2 mom evt idx " << bidx << " gen mom idx " << momidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 	
 	
 				
