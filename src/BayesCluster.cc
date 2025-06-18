@@ -26,6 +26,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
 	mt->CheckMerges(_check_merges);
+	mt->SetNGhosts(_nGhosts);
 	//set data smear
 	if(!_smear.empty()) mt->SetDataSmear(_smear);
 	//set time resolution smear: c^2 + n^2/e^2
@@ -483,6 +484,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	gmm->SetData(points);
 //cout << "original points" << endl; points->Print();
 
+	//set # ghosts by points with weight below a threshold - done automatically in InitParameters()
+	
+
 	//cout << "old points w/ wraparound" << endl;
 	//points->Print();
 
@@ -528,7 +532,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	
 	//create EM algo
 	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
-	algo->SetThresh(_thresh);
+	algo->SetThresh(0.01*points->Sumw());
 
 
 

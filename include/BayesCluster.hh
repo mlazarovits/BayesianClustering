@@ -57,6 +57,7 @@ class BayesCluster{
 			_verb = 0;
 			_trees = {};
 
+			_nGhosts = 0;
 			_check_merges = false;
 			
 			//add initial jets (rec hits) to merge tree as leaves
@@ -120,6 +121,8 @@ class BayesCluster{
 		void SetVerbosity(int v){ _verb = v; }
 		bool _check_merges;
 		void CheckMerges(bool t){ _check_merges = t; }
+		int _nGhosts;
+		void SetNGhosts(int n){ _nGhosts = n; }
 
 		double _cell, _tresCte, _tresStoch, _tresNoise;
 		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
