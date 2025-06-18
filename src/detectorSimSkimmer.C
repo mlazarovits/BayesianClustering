@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 	double mintoppt = 0;
 	double minwpt = 0;
 
-	bool check_merges = false;
+	bool check_merges = true;
 	int evtsel = 0;
 	int nghosts = 0;
 	for(int i = 0; i < argc; i++){
@@ -220,9 +220,9 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minwpt = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--checkMerges", 13) == 0){
-    	 		check_merges = true;
-			cout << "Checking merges." << endl;
+		if(strncmp(argv[i],"--noCheckMerges", 15) == 0){
+    	 		check_merges = false;
+			cout << "Not checking merges." << endl;
    		}
 		if(strncmp(argv[i],"--evtSel", 8) == 0){
 			i++;
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minNconsts [minNconsts]            set minimum number of constituents for gen jets (default = 5)" << endl;
    		cout << "   --nGhosts [nghosts]                  set number of ghost subclusters to add to BHC merging steps (default = 0)" << endl;
    		cout << "   --smear                              smear cov (spatial only, turns off meas error)" << endl;
-   		cout << "   --checkMerges                        checking merges via Gaussian inner product (default = false)" << endl;
+   		cout << "   --noCheckMerges                      don't check merges via Gaussian inner product (default = true, on)" << endl;
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
    		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
    		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;

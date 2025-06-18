@@ -154,8 +154,9 @@ def generateSubmission(args):
     	flags += ' --timeSmear'
     if(args.applyFrac):
     	flags += ' --applyFrac'
-    if(!args.noCheckMerges):
-        flags += ' --checkMerges'
+    if(args.noCheckMerges):
+        flags += ' --noCheckMerges'
+
     flags += ' --tResCte '+str(args.tResCte)
     flags += ' --tResStoch '+str(args.tResStoch)
     flags += ' --tResNoise '+str(args.tResNoise) 
