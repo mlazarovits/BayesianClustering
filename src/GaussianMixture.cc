@@ -162,6 +162,13 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				//cov.Print();
 
 			}
+			int nghosts = 0;
+			int nreal = 0;
+			for(int k = 0; k < m_model.size(); k++){
+				if(m_model[k]->IsGhost()) nghosts++;
+				else nreal++;
+			}
+			//cout << "GaussianMixture - starting with " << nreal << " real models and " << nghosts << " ghost models and " << m_data->GetNPoints() << " points" << endl;
 			//expectation values are calculated from posteriors in E-step
 			//UpdatePosteriorParameters(); 
 			//remove any kmeans initial clusters without any assigned points

@@ -494,7 +494,7 @@ x->model->GetData()->Print();
 		//cout << "merged model has final # clusters " << merged_model->GetNClusters() << " with elbo " << merge_elbo << endl;
 		//cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
 		if(merge_elbo > newLogL){
-			cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
+			if(_verb > 1) cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
 			x->model = merged_model;
 			newLogL = merge_elbo;	
 		}
@@ -506,7 +506,7 @@ x->model->GetData()->Print();
 		//	cout << " cov" << endl;
 		//	params["cov"].Print();
 		//}
-		cout << endl;
+		if(_verb > 1) cout << endl;
 	}	
 	
 
@@ -888,7 +888,23 @@ x->model->GetData()->Print();
 			PointCollection* newpts = new PointCollection(*x->model->GetData());
 			mergemodel->SetData(newpts);
 			mergemodel->InitParameters(_params,merge_starting_params);
+			int nghosts = 0;
+			int nreal = 0;
+			for(int k = 0; k < mergemodel->GetNClusters(); k++){
+				auto params = mergemodel->GetLHPosteriorParameters(k);
+				if((bool)params["ghost"].at(0,0)) nghosts++;
+				else nreal++;
+			}
+			//cout << "MergeTree::_merge_model - starting with " << nreal << " real models and " << nghosts << " ghost models" << endl;
 			_run_model(mergemodel,merge_elbo);
+			nghosts = 0;
+			nreal = 0;
+			for(int k = 0; k < mergemodel->GetNClusters(); k++){
+				auto params = mergemodel->GetLHPosteriorParameters(k);
+				if((bool)params["ghost"].at(0,0)) nghosts++;
+				else nreal++;
+			}
+			//cout << "MergeTree::_merge_model - ended with " << nreal << " real models and " << nghosts << " ghost models" << endl;
 			//cout << "ending place for merge model" << endl; for(int m = 0; m < mergemodel->GetNClusters(); m++){ cout << "cluster #" << m << endl; mergemodel->GetLHPosteriorParameters(m)["m"].Print();} 
 			return mergemodel; 
 		}
