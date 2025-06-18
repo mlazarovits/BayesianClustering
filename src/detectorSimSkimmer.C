@@ -63,6 +63,8 @@ int main(int argc, char *argv[]){
 	double minwpt = 0;
 
 	bool check_merges = false;
+	int evtsel = 0;
+	int nghosts = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -222,6 +224,14 @@ int main(int argc, char *argv[]){
     	 		check_merges = true;
 			cout << "Checking merges." << endl;
    		}
+		if(strncmp(argv[i],"--evtSel", 8) == 0){
+			i++;
+    	 		evtsel = std::stoi(argv[i]);
+   		}
+		if(strncmp(argv[i],"--nGhosts", 9) == 0){
+			i++;
+    	 		nghosts = std::stoi(argv[i]);
+   		}
 
 
 
@@ -233,6 +243,7 @@ int main(int argc, char *argv[]){
    		cout << "   --input(-i) [file]                   input root file" << endl;
    		cout << "   --output(-o) [file]                  output root file" << endl;
    		cout << "   --strategy(-s) [strat]               sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only, 3 = NlnN with reco AK4 rhs)" << endl;
+   		cout << "   --evtSel [sel]                       set event selection (0: default - 2 partons, 1: boosted W, 2: boosted top, 3: QCD dijets)" << endl;
 		cout << "   --alpha(-a) [a]                      sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]                  sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
@@ -249,6 +260,7 @@ int main(int argc, char *argv[]){
    		cout << "   --minNrhs [minnrhs]                  set minimum # of rhs (default = 2)" << endl;
    		cout << "   --minRhE [minRhE]                    set minimum rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --minNconsts [minNconsts]            set minimum number of constituents for gen jets (default = 5)" << endl;
+   		cout << "   --nGhosts [nghosts]                  set number of ghost subclusters to add to BHC merging steps (default = 0)" << endl;
    		cout << "   --smear                              smear cov (spatial only, turns off meas error)" << endl;
    		cout << "   --checkMerges                        checking merges via Gaussian inner product (default = false)" << endl;
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
@@ -428,8 +440,10 @@ int main(int argc, char *argv[]){
 	skimmer.SetPriorParameters(prior_params);
 	skimmer.SetThreshold(thresh);
 	skimmer.SetEventRange(evti,evtj);
+	skimmer.SetEventSelection(evtsel);
 	skimmer.SetSmear(smear);
 	skimmer.CheckMerges(check_merges);
+	skimmer.SetNGhosts(nghosts);
 	skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise);
 
 	skimmer.Skim();
