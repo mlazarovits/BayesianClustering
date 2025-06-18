@@ -39,6 +39,9 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
+    if(int(args.nPU) > 0):
+        dirname += "_nPU"+str(args.nPU)
+        ofilename += "_nPU"+str(args.nPU)
     #put algo config in file name
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
@@ -51,7 +54,7 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --nPU '+str(args.nPU)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
@@ -60,8 +63,6 @@ def generateSubmission(args):
         flags += ' --sigDelayed'
     if(args.sigBoosted):
         flags += ' --sigBoosted'
-    if(args.pileup):
-        flags += ' --pileup'
 
     flags += ' --energyCte '+str(args.energyCte)
 
@@ -92,7 +93,7 @@ def main():
     parser.add_argument('--QCD',help="run QCD process",action='store_true')
     parser.add_argument('--sigDelayed',help="run sigDelayed process",action='store_true')
     parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
-    parser.add_argument('--pileup','-pu',help="run pileup process",action='store_true')
+    parser.add_argument('--nPU',help="set avg # pu events (default = 0, off)",default=0)
     parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = 0.26)
     parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.5)',default = 0.5)
