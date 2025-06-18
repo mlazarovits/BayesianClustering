@@ -26,6 +26,7 @@ class BHCJetSkimmer{
 			_minTopE = 0;
 			_minWPt = 0;		
 
+			_nGhosts = 0;
 			_check_merges = false;
 	
 			//beta
@@ -44,12 +45,17 @@ class BHCJetSkimmer{
 			_tresCte = 0;
 			_tresNoise = 0;
 			_tresStoch = 0;
+
+			_strategy = NlnN;
+			_sel = def;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
 
 		BHCJetSkimmer(TFile* file){
 			_prod = new JetSimProducer(file);
+			_strategy = NlnN;
+			_sel = def;
 
 			_oname = "";
 			_base = _prod->GetBase();
@@ -65,6 +71,8 @@ class BHCJetSkimmer{
 			_minTopPt = 0;
 			_minWPt = 0;		
 			_minTopE = 0;
+			
+			_nGhosts = 0;
 			_check_merges = false;
 			//beta
 			_prior_params["scale"] = Matrix(1e-3);
@@ -300,6 +308,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_subClusterMass);
 			_hists1D.push_back(BHCJetW_subClusterLeadInvMass);
 			_hists1D.push_back(BHCJet_nGhosts);
+			_hists1D.push_back(BHCJet_ghostSubClusterEnergy);
+			_hists1D.push_back(BHCJet_ghostSubClusterEffnRhs);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -452,8 +462,17 @@ class BHCJetSkimmer{
 			else if(i == 3) _strategy = NlnNonAK4;
 			else return; 
 		}
-	
-
+		void SetEventSelection(int i){
+			//default selection (generic hadronic)
+			if(i == 0) _sel = def;
+			else if(i == 1) _sel = boostW;
+			else if(i == 2) _sel = boostTop;
+			else if(i == 3) _sel = QCDdijets;
+			else return; 
+		}
+		int _nGhosts;
+		void SetNGhosts(int t){ _nGhosts = t; cout << "Adding " << _nGhosts << " ghosts to each BHC merging step." << endl;}
+		
 
 
 		void TreesToJets(){
@@ -488,9 +507,25 @@ class BHCJetSkimmer{
 							//pt == 2 -> [0,_pt_thresh)
 							if(pt == 2 && predJet.pt() >= _pt_thresh) continue;
 							_procCats[p].hists1D[pt][212]->Fill(_trees[i]->model->GetNGhosts());
+							vector<double> norms;
+							_trees[i]->model->GetNorms(norms);
+							Matrix r_post = _trees[i]->model->GetPosterior();
+							for(int k = 0; k < _trees[i]->model->GetNClusters(); k++){
+								auto params = _trees[i]->model->GetLHPosteriorParameters(k);
+								bool g = (bool)params["ghost"].at(0,0);
+								if(!g) continue;
+								_procCats[p].hists1D[pt][213]->Fill(norms[k]/_gev);
+								double eff_rhs = 0;
+								for(int n = 0; n < _trees[i]->model->GetData()->GetNPoints(); n++){
+									eff_rhs += r_post.at(n,k)/_trees[i]->model->GetData()->at(n).w();
+								}
+								_procCats[p].hists1D[pt][214]->Fill(eff_rhs);
+							}
 					}
 				}
 			}
+			//sort predicted jets
+			sort(_predJets.begin(), _predJets.end(), ptsort);
 			cout << njets_tot << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
@@ -510,11 +545,15 @@ class BHCJetSkimmer{
 			GenericMatchJet(_predJets,_recoAK4jets, recoMatchIdxs); //match BHC jets to reco jets
 			GenericMatchJet(_predJets,_genAK4jets, genAK4MatchIdxs); //match BHC jets to gen AK4 jets
 			GenericMatchJet(_predJets,_genAK15jets, genAK15MatchIdxs); //match BHC jets to gen AK15 jets
-			vector<int> genTopMatchIdxs;
-			GenericMatchJet(_predJets,_genparts, genTopMatchIdxs, 6); //match BHC jets to gen tops
-			vector<int> genWMatchIdxs;
-			GenericMatchJet(_predJets,_genparts, genWMatchIdxs, 24); //match BHC jets to gen Ws
-			
+			vector<int> genTopMatchIdxs(_predJets.size(),-1);
+			if(_sel == boostTop){
+				GenericMatchJet(_predJets,_genparts, genTopMatchIdxs, 6); //match BHC jets to gen tops
+			}
+			vector<int> genWMatchIdxs(_predJets.size(),-1);
+			if(_sel == boostW){
+				GenericMatchJet(_predJets,_genparts, genWMatchIdxs, 24); //match BHC jets to gen Ws
+			}
+	
 			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
 				//if(p != 0) cout << "process #" << p << ": " << _procCats[p].plotName << endl;
@@ -1997,7 +2036,10 @@ class BHCJetSkimmer{
 		TH1D* BHCJetW_subClusterLeadInvMass = new TH1D("BHCJetW_subclusterLeadInvMass","BHCJetW_subclusterLeadInvMass",25,0,200);
 		//212 - BHC jets - # ghost leftover after clustering
 		TH1D* BHCJet_nGhosts = new TH1D("BHCJet_nGhosts","BHCJet_nGhosts",10,0,10);		
-
+		//213 - BHC jets - ghost subcl energy
+		TH1D* BHCJet_ghostSubClusterEnergy = new TH1D("BHCJet_ghostSubclusterEnergy","BHCJet_ghostSubclusterEnergy",25,0,500);
+		//214 - BHC jets - ghost subcl eff # rhs
+		TH1D* BHCJet_ghostSubClusterEffnRhs = new TH1D("BHCJet_ghostSubclusterEffnRhs","BHCJet_ghostSubclusterEffnRhs",25,0,200);
 
 
 		////////////////////////////////////////////////////////////////////////
@@ -2500,6 +2542,18 @@ class BHCJetSkimmer{
 		};
 		//clustering strategy - N^2 or NlnN
 		Strategy _strategy;
+		//event selection type
+		enum EvtSel{
+			//default selection (generic hadronic)
+			def = 0,	
+			//boosted W selection
+			boostW = 1,
+			//boosted top selection
+			boostTop = 2,
+			//QCD dijets selection
+			QCDdijets = 3
+		};
+		EvtSel _sel;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
 		JetSimProducer* _prod = nullptr;

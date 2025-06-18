@@ -193,6 +193,8 @@ void BHCJetSkimmer::Skim(){
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(_verb);
 			algo->SetPriorParameters(_prior_params);
+			algo->SetNGhosts(_nGhosts);			
+
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
@@ -243,6 +245,8 @@ void BHCJetSkimmer::Skim(){
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(_verb);
 			algo->SetPriorParameters(_prior_params);
+			algo->SetNGhosts(_nGhosts);			
+			
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
@@ -272,6 +276,8 @@ void BHCJetSkimmer::Skim(){
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(_verb);
 			algo->SetPriorParameters(_prior_params);
+			algo->SetNGhosts(_nGhosts);			
+			
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
@@ -335,6 +341,8 @@ void BHCJetSkimmer::Skim(){
 		algo->SetVerbosity(_verb);
 		algo->SetPriorParameters(_prior_params);
 		algo->CheckMerges(_check_merges);
+		algo->SetNGhosts(_nGhosts);		
+
 		//run clustering
 		//delauney NlnN version
 		if(_strategy == NlnN || _strategy == NlnNonAK4){
