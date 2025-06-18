@@ -175,7 +175,7 @@ def generateSubmission(args):
     evtSelMap["boostTop"] = 2
     evtSelMap["QCDdijets"] = 3
 
-    flags += ' --evtSel '+str(strategyMap[args.strategy])
+    flags += ' --evtSel '+str(evtSelMap[args.evtSel])
 
     ##### Create condor submission script in src directory #####
     condorSubmitFile = dirname + "/src/submit.sh"
