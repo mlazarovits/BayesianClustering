@@ -123,8 +123,8 @@ def generateSubmission(args):
     nustr = nustr.replace(".","p")
     priorname = priorname+"_nu0-"+nustr
 
-    ofilename += "_"+priorname+"_"+args.strategy
-    dirname += "_"+priorname+"_"+args.strategy
+    ofilename += "_"+priorname+"_"+args.strategy+"_"+args.evtSel
+    dirname += "_"+priorname+"_"+args.strategy+"_"+args.evtSel
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
     if os.path.exists(dirname):
@@ -138,7 +138,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --nGhosts "+str(args.nGhosts)+' --evtSel '+str(args.evtSel)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
@@ -167,6 +167,14 @@ def generateSubmission(args):
     strategyMap["NlnNonAK4"] = 3
 
     flags += ' --strategy '+str(strategyMap[args.strategy])
+
+    evtSelMap = {}
+    evtSelMap["default"] = 0
+    evtSelMap["boostW"] = 1
+    evtSelMap["boostTop"] = 2
+    evtSelMap["QCDdijets"] = 3
+
+    flags += ' --evtSel '+str(strategyMap[args.strategy])
 
     ##### Create condor submission script in src directory #####
     condorSubmitFile = dirname + "/src/submit.sh"
@@ -205,6 +213,8 @@ def main():
     parser.add_argument('--tResCte',help='set time smearing constant parameter in ns',default=0.1727)
     parser.add_argument('--tResStoch',help='set time smearing stochastic parameter in ns',default=0.5109)
     parser.add_argument('--tResNoise',help='set time smearing noise parameter in ns',default=2.106)
+    parser.add_argument('--nGhosts',help='set number of ghost subclusters to add to BHC merging steps',default=0)
+    parser.add_argument('--evtSel',help='set event selection',default="default",choices=["default","boostW","boostTop","QCDdijets"])
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minpt',help='min gen jet pt',default=0.)
     parser.add_argument('--minE',help='min gen jet energy',default=0)
