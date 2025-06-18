@@ -136,6 +136,8 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 			}
 //cout << "m_k " << m_k << " # starting params " << n_starting_params << endl;
 			//if m_k > prev_posteriors, add extra clusters as initialized to center with var of 1, set posteriors to priors
+			//if(m_k > n_starting_params)
+			//	cout << "adding " << m_k - n_starting_params << " starting pts - mk " << m_k << " # starting params " << n_starting_params <<  endl;
 			PointCollection initpts = m_data->SelectPoints(m_k - n_starting_params,seed);
 			for(int k = n_starting_params; k < m_k; k++){
 				//seed posterior + data statistics means randomly
@@ -144,7 +146,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				m_model[k]->GetPrior()->SetParameter("scale", m_beta0);
 				m_model[k]->GetPrior()->SetParameter("scalemat", m_W0);
 				m_model[k]->GetPrior()->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));	
-				m_alphas[k] = 1.;	
+				m_alphas[k] = 0.01*m_data->Sumw();	
 			
 				//if a model isn't seeded by a previous posterior in this scheme, it is considered a "ghost" subcluser to study the IR safety of the subcluster scale
 				m_model[k]->SetGhost(true);
