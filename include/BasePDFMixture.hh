@@ -68,12 +68,13 @@ class BasePDFMixture : public BasePDF{
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
-			//m_post.SetDims(m_n, m_k); - done in InitParameters
+			m_post.SetDims(m_n, m_k);
 			if(data->GetNPoints() < m_k){
 				//remove extra models
 				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
 				m_k = data->GetNPoints();
 			}
+
 			//set up lambda_n
 			double tresSq;
 			for(int n = 0; n < m_n; n++){
