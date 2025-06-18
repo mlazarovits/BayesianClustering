@@ -42,6 +42,7 @@ int main(int argc, char *argv[]){
 	double tres_stoch = 0.5109 * 1e-9;
 	double tres_noise = 2.106 * 1e-9;
 	double ethresh = 0.1; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
+	int nPU = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -57,8 +58,9 @@ int main(int argc, char *argv[]){
     	 		i++;
 			verb = std::atoi(argv[i]);
    		}
-		if(strncmp(argv[i],"--pileup", 8) == 0){
-    	 		pu = true;
+		if(strncmp(argv[i],"--nPU", 5) == 0){
+			i++;
+    	 		nPU = std::stoi(argv[i]);
    		}
 		if(strncmp(argv[i],"-pu", 3) == 0){
     	 		pu = true;
@@ -132,7 +134,7 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --pileup(-pu)                 simulate pileup" << endl;
+   		cout << "   --nPU                         simulate nPU pileup events (default = 0: PU off)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
 		cout << "   --sigDelayed                  simulate delayed signal" << endl;
@@ -215,7 +217,7 @@ int main(int argc, char *argv[]){
 	if(qcd) det.SimQCD();
 	//if(sig_delayed)
 	//if(sig_boosted)
-	if(pu) det.TurnOnPileup();
+	if(nPU != 0) det.TurnOnPileup(nPU);
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
 	
 	///////make ntuple///////
