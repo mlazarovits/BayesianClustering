@@ -92,6 +92,12 @@ def make_applescript_call_add_plots(pdf_paths, title_text):
 	    {{{{26, 428}}, {{475,322}}}}, ¬
 	    {{{{538, 428}}, {{475,322}}}} ¬
 	}}
+	set imageFrames_4 to {{ ¬
+	    {{{{63, 108}}, {{467,316}}}}, ¬
+	    {{{{539, 108}}, {{467,316}}}}, ¬
+	    {{{{63, 423}}, {{467,316}}}}, ¬
+	    {{{{539, 423}}, {{467,316}}}} ¬
+	}}
 
 	tell application "System Events"
     		set visible of application process "Keynote" to false
@@ -179,6 +185,25 @@ def make_applescript_call_add_plots(pdf_paths, title_text):
 					    set height of newImg to imageHeight
 					end tell
 				end repeat
+			else if pdfCount is 4 then
+				repeat with i from 1 to count of pdfPaths
+					set frame to item i of imageFrames_4
+					-- Get position and size from the frame
+					set xpos to item 1 of item 1 of frame  -- X position
+					set ypos to item 2 of item 1 of frame  -- Y position
+					set imageWidth to item 1 of item 2 of frame  -- Width
+					set imageHeight to item 2 of item 2 of frame  -- Height
+					set thisPDF to item i of pdfPaths
+					set pdfAlias to POSIX file thisPDF as alias
+				
+					tell thisSlide
+					    -- Now apply these values to the new image
+					    set newImg to make new image with properties {{file:pdfAlias}}
+					    set position of newImg to {{xpos, ypos}}
+					    set width of newImg to imageWidth
+					    set height of newImg to imageHeight
+					end tell
+				end repeat
 			else
 				return "Invalid # of pdfs = " & (pdfCount)
 			end if
@@ -228,10 +253,15 @@ def make_slides(plot_dir_name, tag = ""):
 	slideTitles_plots = {}
 	slideTitles_plots["nJets"] = ["nJets"]
 	slideTitles_plots["nSubclustersJet"] = ["nSubclustersJet"]
-	slideTitles_plots["Jet Size"] = ["jetSize_ttbar"]
 	slideTitles_plots["Jet Center"] = ["Jet_EtaCenter_ttbar","Jet_PhiCenter_ttbar","Jet_TimeCenter_ttbar"]
 	slideTitles_plots["Subcluster Center"] = ["subClusterEtaCenter_ttbar","subClusterPhiCenter_ttbar","subClusterTimeCenter_ttbar"]
-	slideTitles_plots["Jet Kinematics"] = ["Jet_mass","Jet_energy","Jet_pt"]
+	#slideTitles_plots["Jet Kinematics"] = ["Jet_mass","Jet_energy","Jet_pt"]
+	#range(4) for 4 different gen/reco AK plots (AK4, AK8, AK15 all pt sep and AK4, AK8, AK15 total on one plot)
+	slideTitles_plots["Jet Energy"] = ["Jet_energy" for i in range(4)]
+	slideTitles_plots["Jet Mass"] = ["Jet_mass" for i in range(4)]
+	slideTitles_plots["Jet Pt"] = ["Jet_pt" for i in range(4)]
+	slideTitles_plots["Jet Size"] = ["jetSize_ttbar" for i in range(4)]
+	
 	slideTitles_plots["Gen Matching to Ws - dR, E ratio"] = ["genW_dR","genW_Eratio"]
 	slideTitles_plots["Gen Matching to tops - dR, Eratio"] = ["genTop_dR","genTop_Eratio"]
 	slideTitles_plots["Gen Matching to Ws - Kinematics"] = ["_genWMass","_genWE_","_genWPt"]
