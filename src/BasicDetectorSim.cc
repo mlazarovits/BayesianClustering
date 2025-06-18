@@ -63,6 +63,13 @@ BasicDetectorSim::BasicDetectorSim(){
 	_pvx = _PV.at(0);
 	_pvy = _PV.at(1);
 	_pvz = _PV.at(2);
+	_pvt = 0;
+	
+	_oot_pvx = -999;
+	_oot_pvy = -999;
+	_oot_pvz = -999;
+	_oot_pvt = -999;
+
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
@@ -126,6 +133,12 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_pvx = _PV.at(0);
 	_pvy = _PV.at(1);
 	_pvz = _PV.at(2);
+	_pvt = 0;
+	
+	_oot_pvx = -999;
+	_oot_pvy = -999;
+	_oot_pvz = -999;
+	_oot_pvt = -999;
 }
 
 
@@ -170,9 +183,18 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		pileup.settings.readString("Random:setSeed = on");
   		pileup.settings.readString("Random:seed = 10"+std::to_string(_evti));
 		pileup.settings.readString("SoftQCD:nonDiffractive = on"); //minbias events only
-  		pileup.settings.parm("Beams:eCM = 13000.");
+  		pileup.settings.readString("Beams:eCM = 13000.");
+		//have PU be out-of-time by 25 ns
+		//25 ns * 29.9792458 cm/ns * 1e1 mm/cm = 7500 mm
+		pileup.settings.readString("Beams:offsetTime = -7494.8114");
+		//for doing z-spread of PU beamspot
+		pileup.settings.readString("Beams:allowVertexSpread = on");
+		pileup.settings.readString("Beams:sigmaVertexZ = 30"); //given in mm
+		pileup.settings.readString("Beams:sigmaTime = "+std::to_string(30)); //sigmaTime is given in mm/c
+		pileup.settings.readString("Beams:maxDevVertex = 1");
+		pileup.settings.readString("Beams:maxDevTime = 1");
 		pileup.init();			
-		if(_verb > 1) cout << "Simulating pileup" << endl;
+		cout << "Simulating pileup" << endl;
 	}
 	cout << "Using tres_cte = " << _calTresCte*1e9 << " ns and tres_stoch = " << _calTresStoch*1e9 << " ns and tres_noise " << _calTresNoise*1e9 << " ns" << endl;
 	//set random number seed - 
@@ -221,19 +243,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//save w idxs
 		set<int> w_idxs;
 		set<int> top_idxs, d_idxs, u_idxs, s_idxs;
-
-		if(_pu){
-			//simulate n pileup events
-			int nPU = _rs.SamplePoisson(_nPUavg,1).at(0);
-			for(int p = 0; p < nPU; p++){
-				pileup.next();	
-				_sumEvent += pileup.event;
-			}
-		}
-		//loop through all particles
-		//make sure to only record those that would
-		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
-		//cout << "event size: " << _sumEvent.size() << endl;
 		
 		//set PV for event - look at first particle in record
 		Pythia8::Particle evtRec = _sumEvent[1];//_sumEvent.back();
@@ -241,6 +250,26 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_pvx = _PV.at(0)*1e-1; //put in cm from mm
 		_pvy = _PV.at(1)*1e-1; //put in cm from mm
 		_pvz = _PV.at(2)*1e-1; //put in cm from mm
+		_pvt = evtRec.tProd()*1e-3*(1/_sol)*1e9;	
+
+		if(_pu){
+			//simulate n pileup events
+			int nPU = _rs.SamplePoisson(_nPUavg,1).at(0);
+			for(int p = 0; p < nPU; p++){
+				pileup.next();
+				Pythia8::Event pu_event = pileup.event;
+				//save PV info of OOT pu event
+				_oot_pvx = pu_event[1].xProd()*1e-1;
+				_oot_pvy = pu_event[1].yProd()*1e-1;
+				_oot_pvz = pu_event[1].zProd()*1e-1;
+				_oot_pvt = pu_event[1].tProd()*1e-3*(1/_sol)*1e9;
+				_sumEvent += pu_event;
+			}
+		}
+		//loop through all particles
+		//make sure to only record those that would
+		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
+		//cout << "event size: " << _sumEvent.size() << endl;
 		
 
 		//set production vertex for this event from z-smearing
@@ -252,6 +281,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = _sumEvent[p];
 			//if simulating QCD, want to save the hard partons (status 23) produced
+			//may want to separate partons from hard QCD dijets and pileup (diffractive) - in which case save particles in each event before PU is added
+			//may want to save with a bool (pu, !pu)
 			if(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()){
 				if(fabs(particle.status()) == 23){
 					SaveGenInfo(particle, -1);
@@ -405,7 +436,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//if had == true && lep == true : semi-lep
 		int Whad[2] = {-1, -1}; //false = lep, true = had
 		//get top decay gen info
-		cout << "top_idxs size " << top_idxs.size() << endl;
+		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
+			cout << "top_idxs size " << top_idxs.size() << endl;
 		int nW = 0;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){	
 			//save gen info for top
@@ -433,7 +465,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				}
 				//get W index
 				//make sure W doesnt decay into a copy of itself, or the next decay isn't just a radiation 
-				cout << "W idx " << Widx << " id " << _sumEvent[Widx].id() << " daughter1 " << _sumEvent[Widx].daughter1() << " daughter2 " << _sumEvent[Widx].daughter2() << endl;
+				if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
+					cout << "W idx " << Widx << " id " << _sumEvent[Widx].id() << " daughter1 " << _sumEvent[Widx].daughter1() << " daughter2 " << _sumEvent[Widx].daughter2() << endl;
 				//save gen info of W at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
@@ -452,7 +485,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					//get daughters of b copy decay
 					bidx = _sumEvent[bidx].daughter1();
 				}
-				cout << "b quark idx " << bidx << " id " << _sumEvent[bidx].id() << " daughter1 " << _sumEvent[bidx].daughter1() << " daughter2 " << _sumEvent[bidx].daughter2() << endl;
+				if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
+					cout << "b quark idx " << bidx << " id " << _sumEvent[bidx].id() << " daughter1 " << _sumEvent[bidx].daughter1() << " daughter2 " << _sumEvent[bidx].daughter2() << endl;
 				//save gen info of b at detector
 				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
@@ -529,7 +563,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 		}
 		else _topDecayId.push_back(-1);
-		cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
+		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
+			cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
 		//fill gen particles
 		FillGenParticles();
 		
@@ -1278,6 +1313,12 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("PV_x",&_pvx)->SetTitle("x coordinate PV (cm)");
 	_tree->Branch("PV_y",&_pvy)->SetTitle("y coordinate PV (cm)");
 	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV (cm)");
+	_tree->Branch("PV_t",&_pvt)->SetTitle("t coordinate PV (ns)");
+
+	_tree->Branch("ootPV_x",&_oot_pvx)->SetTitle("x coordinate of oot PV (cm)");
+	_tree->Branch("ootPV_y",&_oot_pvy)->SetTitle("y coordinate of oot PV (cm)");
+	_tree->Branch("ootPV_z",&_oot_pvz)->SetTitle("z coordinate of oot PV (cm)");
+	_tree->Branch("ootPV_t",&_oot_pvt)->SetTitle("t coordinate of oot PV (ns)");
 
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");

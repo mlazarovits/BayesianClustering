@@ -317,7 +317,9 @@ struct RecoParticle;
 		vector<vector<unsigned int>> _jAK15rhids;
 	
 		//pv info
-		double _pvx, _pvy, _pvz;
+		double _pvx, _pvy, _pvz, _pvt;
+		//oot pu pv info
+		double _oot_pvx, _oot_pvy, _oot_pvz, _oot_pvt; 
 		//track info
 		vector<double> _trackpx, _trackpy, _trackpz, _tracketa, _trackphi;
 		//spike info	
