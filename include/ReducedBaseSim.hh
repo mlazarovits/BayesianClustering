@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue May 27 20:54:38 2025 by ROOT version 6.30/06
+// Wed Jun 18 12:44:49 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_testAKxJets_ttbar.root
+// found on file: root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -37,6 +37,11 @@ public :
    Double_t        PV_x;
    Double_t        PV_y;
    Double_t        PV_z;
+   Double_t        PV_t;
+   Double_t        ootPV_x;
+   Double_t        ootPV_y;
+   Double_t        ootPV_z;
+   Double_t        ootPV_t;
    vector<double>  *ECALSpike_energy;
    Int_t           nSpikes;
    Int_t           nRecoParticles;
@@ -119,6 +124,11 @@ public :
    TBranch        *b_PV_x;   //!
    TBranch        *b_PV_y;   //!
    TBranch        *b_PV_z;   //!
+   TBranch        *b_PV_t;   //!
+   TBranch        *b_ootPV_x;   //!
+   TBranch        *b_ootPV_y;   //!
+   TBranch        *b_ootPV_z;   //!
+   TBranch        *b_ootPV_t;   //!
    TBranch        *b_ECALSpike_energy;   //!
    TBranch        *b_nSpikes;   //!
    TBranch        *b_nRecoParticles;   //!
@@ -206,11 +216,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testAKxJets_ttbar.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_testAKxJets_ttbar.root");
+         f = new TFile("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testAKxJets_ttbar.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -339,6 +349,11 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("PV_x", &PV_x, &b_PV_x);
    fChain->SetBranchAddress("PV_y", &PV_y, &b_PV_y);
    fChain->SetBranchAddress("PV_z", &PV_z, &b_PV_z);
+   fChain->SetBranchAddress("PV_t", &PV_t, &b_PV_t);
+   fChain->SetBranchAddress("ootPV_x", &ootPV_x, &b_ootPV_x);
+   fChain->SetBranchAddress("ootPV_y", &ootPV_y, &b_ootPV_y);
+   fChain->SetBranchAddress("ootPV_z", &ootPV_z, &b_ootPV_z);
+   fChain->SetBranchAddress("ootPV_t", &ootPV_t, &b_ootPV_t);
    fChain->SetBranchAddress("ECALSpike_energy", &ECALSpike_energy, &b_ECALSpike_energy);
    fChain->SetBranchAddress("nSpikes", &nSpikes, &b_nSpikes);
    fChain->SetBranchAddress("nRecoParticles", &nRecoParticles, &b_nRecoParticles);
