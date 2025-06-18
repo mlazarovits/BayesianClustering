@@ -415,7 +415,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		Matrix cov(3,3);
 		double deta = 0;
 		double dphi = 0;
-		double dt = 0;
+		double dtime = 0;
 		double norm = 0;
 		for(int n = 0; n < _nRHs; n++){
 			JetPoint effRh = _rhs[n];
@@ -431,7 +431,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 			dphi = acos(cos(dphi));
 			dtime = effRh.t() - subcl.time();
 			
-			norm += _rhs[i].E();
+			norm += _rhs[n].E();
 			Matrix cov_entry = Matrix(3,3);
 			cov_entry.SetEntry(effRh.GetWeight()*deta*deta,0,0);
 			cov_entry.SetEntry(effRh.GetWeight()*deta*dphi,1,0);
