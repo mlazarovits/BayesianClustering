@@ -1638,6 +1638,10 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterEtaSig");
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterPhiSig");
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_subclusterTimeSig");
+	
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_nGhosts");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_ghostSubClusterEnergy");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Jet_ghostSubClusterEffnRhs");
 /*	
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersJet", pttypes);
 	MethodStackHists(file, "ttbar", jettypes_recoBHC, oname, "nSubclustersEvt");
