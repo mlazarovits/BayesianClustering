@@ -334,7 +334,12 @@ void JetSimProducer::GetGenParticles(vector<Jet>& genparts, int evt){
 		        pz, _base->genpart_energy->at(p));
 		part.SetVertex(vtx);
 		part.SetUserIdx(p); //use this to get the id from the ntuple
-		//set # constituents
+		//momentum measured from PV, spatial eta/phi from center
+		Matrix center(3,1);
+		center.SetEntry(eta,0,0);
+		center.SetEntry(phi,1,0);
+		center.SetEntry(0,2,0); //no time for gen parts
+		part.SetCenter(center);
 		genparts.push_back(part);
 	}
 }
