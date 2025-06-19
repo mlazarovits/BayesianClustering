@@ -65,15 +65,15 @@ def copyAndUpdateJob( job, jobnumber ):
 header = parseHeader()	
 #print(header)
 fresub = open('./'+datasetname+'/src/resubmit.sh','w')
+updatedJobHeader = copyAndUpdateJob( header, joblist[0])
+for line in updatedJobHeader:
+	fresub.write(line)
 for jobnumber in joblist:
-	updatedJobHeader = copyAndUpdateJob( header, jobnumber)
 	updatedJob = copyAndUpdateJob( parseJobNum(jobnumber), jobnumber)
-	for line in updatedJobHeader:
-		fresub.write(line)
 	for line in updatedJob:
 		fresub.write(line)
-
+fresub.write(")")
 fresub.close()
 
 print("Resubmission script ready! Launch with:")
-print("condor_submit ./"+datasetname+"src/resubmit.sh")
+print("condor_submit ./"+datasetname+"/src/resubmit.sh")
