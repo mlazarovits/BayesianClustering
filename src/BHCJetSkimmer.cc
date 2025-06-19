@@ -407,11 +407,11 @@ void BHCJetSkimmer::Skim(){
 				double dr = dR(subjets[j].eta(), subjets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
 				//check Eratio
 				double Eratio = subjets[j].E()/_genparts[genbidx].E();
-				//cout << "sublead jet #" << j << " has eta " << subjets[j].eta() << " phi " << subjets[j].phi() << " and E " << subjets[j].E() << endl;
-				//cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << endl; 
+				cout << "sublead jet #" << j << " has eta " << subjets[j].eta() << " phi " << subjets[j].phi() << " and E " << subjets[j].E() << endl;
+				cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << endl; 
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.5 || Eratio > 1.5) EratioGood = false;
-				//cout << " gen match dr " << dr << " Eratio " << Eratio << " match criteria " << (drGood && EratioGood) << endl;
+				cout << " gen match dr " << dr << " Eratio " << Eratio << " match criteria " << (drGood && EratioGood) << endl;
 				bMatch[j] = drGood && EratioGood;
 			}
 			//need at least 2 subleading jets to pass
