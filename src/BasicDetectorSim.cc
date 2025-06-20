@@ -439,6 +439,19 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//get top decay gen info
 		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
 			cout << "top_idxs size " << top_idxs.size() << endl;
+		//sort top_idxs by top energy
+		if(top_idxs.size() > 1){
+			map<double, int, std::greater<double>> topE_idx;
+			for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){
+				topE_idx[_sumEvent[*t].e()] = *t;
+			}
+			top_idxs.clear();
+			for(auto t = topE_idx.begin(); t != topE_idx.end(); t++){
+				top_idxs.insert(t->second);
+			}
+
+		}	
+
 		int nW = 0;
 		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){	
 			//save gen info for top
