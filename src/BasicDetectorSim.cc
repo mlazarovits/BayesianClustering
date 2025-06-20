@@ -340,7 +340,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//test top quarks
 				FindMom(mothers_idx, mothers_id, 6, top_idxs);
 				//for(auto t = top_idxs.begin(); t != top_idxs.end(); t++)
-				//	cout << "top quark idx test " << *t << " status " << _sumEvent[*t].status() << endl;
+				//	cout << "top quark idx test " << t->second << " status " << _sumEvent[t->second].status() << endl;
 				//for(auto d = d_idxs.begin(); d != d_idxs.end(); d++)
 				//	cout << "quark idx test " << *d << " status " << _sumEvent[*d].status() << " name " << _sumEvent[*d].name() << endl;
 				//cout << "id of particle at idx 5 " << _sumEvent[5].id() << " at idx 6 " << _sumEvent[6].id() << " status " << _sumEvent[6].status() << endl;
@@ -439,20 +439,27 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//get top decay gen info
 		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
 			cout << "top_idxs size " << top_idxs.size() << endl;
+		//sort top_idxs by top energy
+		map<double, int, std::greater<double>> topE_idxs;
+		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){
+			topE_idxs[_sumEvent[*t].e()] = *t;
+		}
+
 		int nW = 0;
-		for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){	
+		//for(auto t = top_idxs.begin(); t != top_idxs.end(); t++){
+		for(auto t = topE_idxs.begin(); t != topE_idxs.end(); t++){
 			//save gen info for top
-			SaveGenInfo(_sumEvent[*t],-1);
+			SaveGenInfo(_sumEvent[t->second],-1);
 			//find children - going down decay chain
 			vector<int> kids_id;
-			vector<int> kids_idx = _sumEvent[*t].daughterListRecursive();
+			vector<int> kids_idx = _sumEvent[t->second].daughterListRecursive();
 			//cout << "top idx " << *t << " has " << kids_idx.size() << " daughters" << endl;
 			//cout << "n gen particles " << _genparts.size() << " n mom gen particles " << _genpartMomIdx.size() << " " << _genmoms.size() << endl;
 			for(auto k : kids_idx){ kids_id.push_back(fabs(_sumEvent[k].id()));}
 			vector<int>::iterator w_it = find(kids_id.begin(), kids_id.end(), 24);
 			vector<int>::iterator b_it = find(kids_id.begin(), kids_id.end(), 5);
 		
-			_genpartEvtIdx.push_back((int)*t);	
+			_genpartEvtIdx.push_back((int)t->second);	
 			//save gen W info - W, idx to its mom, and daughter info
 			int Widx = -999;
 			int bidx = -999;
@@ -469,11 +476,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
 					cout << "W idx " << Widx << " id " << _sumEvent[Widx].id() << " daughter1 " << _sumEvent[Widx].daughter1() << " daughter2 " << _sumEvent[Widx].daughter2() << endl;
 				//save gen info of W at detector
-				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
+				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),t->second);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
 				SaveGenInfo(_sumEvent[Widx],genmomidx);
 				_genpartEvtIdx.push_back(Widx);	
-				//cout << "W mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				//cout << "W mom evt idx " << t->second << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 				
 			}
 			//save gen b info
@@ -489,11 +496,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
 					cout << "b quark idx " << bidx << " id " << _sumEvent[bidx].id() << " daughter1 " << _sumEvent[bidx].daughter1() << " daughter2 " << _sumEvent[bidx].daughter2() << endl;
 				//save gen info of b at detector
-				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),*t);
+				vector<int>::iterator t_it = find(_genpartEvtIdx.begin(),_genpartEvtIdx.end(),t->second);
 				int genmomidx = std::distance(_genpartEvtIdx.begin(),t_it);
 				SaveGenInfo(_sumEvent[bidx],genmomidx);
 				_genpartEvtIdx.push_back(bidx);	
-				//cout << "b mom evt idx " << *t << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
+				//cout << "b mom evt idx " << t->second << " gen mom idx " << genmomidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
 			}
 			
 			//save gen W daughters info
