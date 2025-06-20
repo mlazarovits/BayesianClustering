@@ -429,12 +429,13 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 
 		//save info on top decays!
-		vector<int> had = {1, 2, 3, 4};
+		vector<int> had = {1, 2, 3, 4, 5};
 		vector<int> lep = {11, 12, 13, 14, 15, 16};
 		//if had == true && lep == false : hadronic
 		//if had == false && lep == true : leptonic
 		//if had == true && lep == true : semi-lep
 		int Whad[2] = {-1, -1}; //false = lep, true = had
+		
 		//get top decay gen info
 		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
 			cout << "top_idxs size " << top_idxs.size() << endl;
@@ -506,20 +507,39 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter1()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter1());	
 				//cout << " W daughter 1 mom evt idx " << Widx << " gen mom idx " << momidx  << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << endl;
-				vector<int>::iterator d1_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));	
-				vector<int>::iterator d1_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
+				//vector<int>::iterator d1_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));	
+				//vector<int>::iterator d1_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d1 id " << fabs(_genpartids[_genpartids.size()-1]) << " d1 had " << (d1_it_had != had.end()) << " d1 lep " << (d1_it_lep != lep.end()) << endl;
-	
 				//daughter 2
 				SaveGenInfo(_sumEvent[_sumEvent[Widx].daughter2()],momidx);	
 				_genpartEvtIdx.push_back(_sumEvent[Widx].daughter2());	
 				//cout << " W daughter 2 mom evt idx " << Widx << " gen mom idx " << momidx << " for particle idx " << _genpartIdx[_genpartIdx.size()-1] << " particle id " << _genpartids[_genpartids.size()-1] << " " << _sumEvent[_sumEvent[Widx].daughter2()].id() << endl;
-				vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
-				vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
+				//vector<int>::iterator d2_it_had = find(had.begin(),had.end(),fabs(_genpartids[_genpartids.size()-1]));		
+				//vector<int>::iterator d2_it_lep = find(lep.begin(),lep.end(),fabs(_genpartids[_genpartids.size()-1]));
 				//cout << "d2 id " << fabs(_genpartids[_genpartids.size()-1]) << " d2 had " << (d2_it_had != had.end()) << " d2 lep " << (d2_it_lep != lep.end()) << endl;
-				if(d2_it_had != had.end() && d1_it_had != had.end()){ cout << "had W for idx " << nW << endl;Whad[nW] = true;}
-				else if(d2_it_lep != lep.end() && d1_it_lep != lep.end()) {cout << "lep W for idx " << nW << endl;Whad[nW] = false;}	
-				else{ }
+				int w_d1 = fabs(_sumEvent[_sumEvent[Widx].daughter1()].id());	
+				int w_d2 = fabs(_sumEvent[_sumEvent[Widx].daughter2()].id());	
+		
+				bool lep_d1 = (find(lep.begin(), lep.end(), w_d1) != lep.end());
+				bool lep_d2 = (find(lep.begin(), lep.end(), w_d2) != lep.end());
+
+				bool had_d1 = (find(had.begin(), had.end(), w_d1) != had.end());
+				bool had_d2 = (find(had.begin(), had.end(), w_d2) != had.end());
+				
+				//save info on gen top decays
+				//0  : fully hadronic (to light quarks)
+				//1  : fully leptonic (no taus, including neutrinos)
+				if(lep_d1 && lep_d2)
+					_topDecayId.push_back(1);
+				else if(had_d1 && had_d2)
+					_topDecayId.push_back(0);
+				else
+					_topDecayId.push_back(-1);
+				//cout << "top decay id " << _topDecayId[_topDecayId.size()-1] << " d1 id " << w_d1 << " d2 id " << w_d2 << " had1 " << had_d1 << " had_d2 " << had_d2 << " lep_d1 " << lep_d1 << " lep_d2 " << lep_d2 << endl;	
+			
+				//if(d2_it_had != had.end() && d1_it_had != had.end()){ cout << "had W for idx " << nW << endl;Whad[nW] = true;}
+				//else if(d2_it_lep != lep.end() && d1_it_lep != lep.end()) {cout << "lep W for idx " << nW << endl;Whad[nW] = false;}	
+				//else{ }
 				nW++;
 
 			}
@@ -549,23 +569,18 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 			//cout << endl;
 		}
-		//save info on gen top decays
-		//-1 : not top
-		//0  : fully hadronic (to light quarks)
-		//1  : semi-leptonic
-		//2  : fully leptonic (no taus, including neutrinos)
-		if(Whad[0] == 1){
-			 if(Whad[1] == 1 || Whad[1] == -1) _topDecayId.push_back(0);
-			 else _topDecayId.push_back(1); //Whad[1] == 0
-		}
-		else if(Whad[0] == 0){
-			 if(Whad[1] == 0 || Whad[1] == -1) _topDecayId.push_back(2);
-			 else _topDecayId.push_back(1); //Whad[1] == 1
+		//if(Whad[0] == 1){
+		//	 if(Whad[1] == 1 || Whad[1] == -1) _topDecayId.push_back(0);
+		//	 else _topDecayId.push_back(1); //Whad[1] == 0
+		//}
+		//else if(Whad[0] == 0){
+		//	 if(Whad[1] == 0 || Whad[1] == -1) _topDecayId.push_back(2);
+		//	 else _topDecayId.push_back(1); //Whad[1] == 1
 
-		}
-		else _topDecayId.push_back(-1);
-		if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
-			cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
+		//}
+		//else _topDecayId.push_back(-1);
+		//if(!(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()))
+		//	cout << "1Whad " << Whad[0] << " 2Whad " << Whad[1] << " top id " << _topDecayId[_topDecayId.size()-1] << endl;
 		//fill gen particles
 		FillGenParticles();
 		
@@ -1364,7 +1379,7 @@ void BasicDetectorSim::InitTree(string fname){
 	//_tree->Branch("Top_genPt_semiLep",&_topPt_hadlep)->SetTitle("gen top pt, semi leptonic system");
 	//_tree->Branch("Top_genPt_leptonic",&_topPt_lep)->SetTitle("gen top pt, fully leptonic system");
 	//_tree->Branch("Top_genPt",&_topPt)->SetTitle("gen top pt");
-	_tree->Branch("Top_decayId",&_topDecayId)->SetTitle("gen top decay type (0 = had, 1 = lep, -1 = neither)");
+	_tree->Branch("Top_decayId",&_topDecayId)->SetTitle("gen top decay type (0 = had, 1 = lep)");
 
 
 	//reco jets - cells clustered with FJ AK4
