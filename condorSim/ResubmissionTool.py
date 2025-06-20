@@ -95,7 +95,7 @@ for jobnumber in joblist:
         line += l[:-1]+","
     #print("full line",line)
     fresub.write(line[:-1])
-fresub.write(")\n")
+fresub.write("\n)\n")
 fresub.close()
 
 print("Resubmission script ready! Launch with:")
