@@ -26,7 +26,6 @@ void BHCJetSkimmer::Skim(){
 	else
 		cout << " default (2+ gen partons that are not tops, including gluons)" << endl;
 	
-	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, true);
 
@@ -70,69 +69,74 @@ void BHCJetSkimmer::Skim(){
 		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts << endl;
 	
 		int ngenpart = _base->genpart_ngenpart;
+		_prod->GetGenParticles(_genparts, i);
 
-		if(_sel == boostW || _sel == boostTop){
-			//reject fully leptonic and semi-leptonic W decays for ttbar - later may want to turn off to look at just displaced b decays
-			//only look at hadronic W decays
-			int nW_lep = 0;	
-			for(int g = 0; g < ngenpart; g++){
-				int genmomidx = _base->genpart_momIdx->at(g);
-				if(genmomidx == -1) continue;
-				//skip particles that didn't come from a W
-				if(fabs(_base->genpart_id->at(genmomidx)) != 24) continue;
-				int genid = fabs(_base->genpart_id->at(g));
-				//only check for !neutrinos
-				if(genid == 11 || genid == 13 || genid == 15) nW_lep++; 
-			}
-			if(i % SKIP == 0) cout << " has " << nW_lep << " leptonic Ws" << endl;
-			//if any Ws in event decay leptonically, don't count
-			if(nW_lep > 0) continue;
-			//if all Ws in event decay leptonically, don't count
-			//if(nW - nW_lep == 0) continue;
+
+		//if any leptonic top decays, continue
+		int nTops = _base->Top_decayId->size();
+		if(nTops < 1) continue;
+		bool lepTop = _base->Top_decayId->at(0);
+		//cout << "lepTop top 1 - " << lepTop << endl;
+		if(nTops > 1){
+			lepTop = lepTop && _base->Top_decayId->at(1);
+			//cout << "lepTop top 2 - " << _base->Top_decayId->at(1) << endl;
 		}
+		//cout << "lepTop evt - " << lepTop << endl;
+		if(lepTop){ cout << "Fully leptonic top decay - skipping" << endl; continue;}
 
 		int nW = 0;
 		//do event selection here based on enum
 		if(_sel == boostW){
 			int totW = 0;
-			//at least 1 W quark with pt, E requirements
-			for(int g = 0; g < ngenpart; g++){
-				if(fabs(_base->genpart_id->at(g)) == 6){
-					if(i % SKIP == 0) cout << " has top with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
-				}
-				if(fabs(_base->genpart_id->at(g)) == 5){
-					if(i % SKIP == 0) cout << " has b quark with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << " eta " << _base->genpart_eta->at(g) << " and phi " << _base->genpart_phi->at(g) << endl;
-				}
-				if(fabs(_base->genpart_id->at(g)) != 24) continue;
+			map<int,int> topidx_decayidx;
+			int ntop = 0;
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
+				//cout << "genparts idx " << g << " topidx " << genidx << " e " << _base->genpart_energy->at(genidx) << " decay idx " << ntop << endl;
+				topidx_decayidx[g] = ntop;
+				ntop++;
+			}
+			//at least 1 W with pt, E requirements
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				if(fabs(_base->genpart_id->at(genidx)) != 24) continue;
 				totW++;
-				if(_base->genpart_pt->at(g) < _minWPt) continue;
+				//min pt req
+				if(_genparts[g].pt() < _minWPt){
+					continue;
+				}
+				//make sure W has hadronic decay
+				bool lep = false;
+				int topidx = _base->genpart_momIdx->at(genidx);
+				//topdecayid: 0 = had, 1 = lep
+				lep = !_base->Top_decayId->at(topidx_decayidx[topidx]);
+				//cout << "topidx " << topidx << " E " << _base->genpart_energy->at(topidx) << " decay idx " << topidx_decayidx[topidx] << " decay id " << _base->Top_decayId->at(topidx_decayidx[topidx]) << " lep " << lep << endl;	
+				if(lep) continue;
+
 				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
 				nW++;
 			}	
 			//at least 1 W	
 			if(nW < 1){ 
-				if(i % SKIP == 0) cout << " has no Ws that pass pt > " << _minWPt << endl;
+				if(i % SKIP == 0) cout << " has no hadronic Ws that pass pt > " << _minWPt << endl;
 				continue;
 			}
-			//check # b's - should match # Ws
-			int nb = count(_base->genpart_id->begin(), _base->genpart_id->end(), 5);
-			nb += count(_base->genpart_id->begin(), _base->genpart_id->end(), -5);
-			if(i % SKIP == 0) cout << " has " << nb << " gen b's and " << totW << " total gen W's" << endl; 
-			if(nb != nW) continue;
-
-
 		}
 		else if(_sel == boostTop){
+			//tops are ordered highest to lowest energy, top decay ids follow the same order (ie first top decay id is associated to first top)
 			//at least 1 top quark with pt, E requirements
 			int ntop = 0;
-			for(int g = 0; g < ngenpart; g++){
-				if(fabs(_base->genpart_id->at(g)) != 6) continue;
-				//if(_base->genpart_energy->at(g) < _minTopE) continue;
-				if(_base->genpart_pt->at(g) < _minTopPt) continue;
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
+				if(_genparts[g].pt() < _minTopPt) continue;
 				if(i % SKIP == 0) cout << " has top with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+				//make sure top has hadronic decay (0 - hadronic, 1 - leptonic)
+				if(_base->Top_decayId->at(ntop)) continue;
+				_genTop.push_back(_genparts[g]);
 				ntop++;
 			}	
-
 			if(ntop < 1){
 				if(i % SKIP == 0) cout << " has no tops that pass pt > " << _minTopPt << endl;
 				continue;
@@ -144,8 +148,10 @@ void BHCJetSkimmer::Skim(){
 			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
 			int nparton = 0;
 			vector<int> p_ids = {1,2,3,4,5,21};
-			for(int g = 0; g < ngenpart; g++){
-				if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(g))) == p_ids.end()) continue;
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(genidx))) == p_ids.end()) continue;
+				_genq.push_back(_genparts[g]);
 				nparton++;
 			}	
 			if(nparton < 2) continue;
@@ -164,13 +170,13 @@ void BHCJetSkimmer::Skim(){
 
 		}
 	
-
+cout << "getting gen jets" << endl;
 
 		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
+cout << "getting reco jets" << endl;
 		//if(_genjets.size() < 1){ cout << endl; continue; }
 		_prod->GetRecoJets(_recoAK4jets, _recoAK8jets, _recoAK15jets, i);
 		//if(_recoAK4jets.size() < 1){ cout << endl; continue; }
-		_prod->GetGenParticles(_genparts, i);
 		if(i % SKIP == 0) cout << " has " << _recoAK4jets.size() << " AK4 reco jets and " << _genAK4jets.size() << " AK4 gen jets" << endl;
 		if(i % SKIP == 0) cout << " has " << _recoAK8jets.size() << " AK8 reco jets and " << _genAK8jets.size() << " AK8 gen jets" << endl;
 		if(i % SKIP == 0) cout << " has " << _recoAK15jets.size() << " AK15 reco jets and " << _genAK15jets.size() << " AK15 gen jets" << endl;
@@ -190,7 +196,7 @@ void BHCJetSkimmer::Skim(){
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering reco AK4 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
+			if(_strategy == gmmOnly) cout << "SubClustering reco AK4 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
@@ -211,7 +217,7 @@ void BHCJetSkimmer::Skim(){
 			_recoAK4jets[j].SetModel(gmm, _gev);
 			
 			nsubcls_tot += gmm->GetNClusters();
-			cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
+			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
 			for(int k = 0; k < gmm->GetNClusters(); k++){
 				auto params = gmm->GetDataStatistics(k);
 				Matrix mean = params["mean"];
@@ -242,7 +248,7 @@ void BHCJetSkimmer::Skim(){
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering reco AK8 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
+			if(_strategy == gmmOnly) cout << "SubClustering reco AK8 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
@@ -262,7 +268,7 @@ void BHCJetSkimmer::Skim(){
 			
 			_recoAK8jets[j].SetModel(gmm, _gev);
 			
-			cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
+			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
 			rhs.clear();
 		}
 
@@ -273,7 +279,7 @@ void BHCJetSkimmer::Skim(){
 			if(rhs.size() < 1) continue;
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
-			cout << "SubClustering reco AK15 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
+			if(_strategy == gmmOnly) cout << "SubClustering reco AK15 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
@@ -293,7 +299,7 @@ void BHCJetSkimmer::Skim(){
 			
 			_recoAK15jets[j].SetModel(gmm, _gev);
 			
-			cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
+			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
 			rhs.clear();
 		}
 
@@ -398,7 +404,6 @@ void BHCJetSkimmer::Skim(){
 			//good match = small dr, Eratio close to 1
 			bool drGood = true;
 			bool EratioGood = true;
-			vector<bool> bMatch(subjets.size(), 0);
 			//cout << "BHC jet matches to b-jets are " << endl;
 			for(int j = 0; j < subjets.size(); j++){
 				int genbidx = genbMatchIdxs[j];
@@ -412,24 +417,36 @@ void BHCJetSkimmer::Skim(){
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.5 || Eratio > 1.5) EratioGood = false;
 				cout << " gen match dr " << dr << " Eratio " << Eratio << " match criteria " << (drGood && EratioGood) << endl;
-				bMatch[j] = drGood && EratioGood;
+				if(drGood && EratioGood){
+					//find W associated with good b from match
+					int genidx = _genparts[genbidx].GetUserIdx();
+					int bmom = _base->genpart_momIdx->at(genidx);
+					int widx = -1;
+			cout << "good b match has mom idx " << bmom << endl;
+					for(int g = 0; g < _genparts.size(); g++){
+						int ggenidx = _genparts[g].GetUserIdx();
+						if(fabs(_base->genpart_id->at(ggenidx)) != 24) continue;
+						if(_base->genpart_momIdx->at(ggenidx) == bmom){
+							cout << "W at " << ggenidx << " has same mom as b at " << _base->genpart_momIdx->at(ggenidx) << endl;
+							_genW.push_back(_genparts[g]);
+							break;
+						}
+					}
+					//save b too
+					_genb.push_back(_genparts[genbidx]);
+				}
 			}
-			//need at least 2 subleading jets to pass
-			int nPass = 0;
-			for(auto b : bMatch){
-				if(b) nPass++;
-			}
-
+			int nPass = _genW.size();
 			//could also add requirement that top mass is made with best W+b jet combinations
 			//if ALL good b-jet matches, remove from "predJets" list s.t. predJets are only W candidate jets
 			//then gen-match remaining jet(s) to Ws (ie the "probes") - done in FillPredJets
-			if(nPass > 1){
-				cout << "good b-jet matches with BHC jets - continue with boosted W selection" << endl;
+			if(nPass > 0){
+				cout << "at least 1 good b-jet matches with BHC jets - continue with boosted W selection" << endl;
 				_predJets = leadjets;
 			}
 			//else skip
 			else{
-				cout << "BHC jets did not match gen b's well enough, skip" << endl;
+				cout << "no BHC jets did not match gen b's well enough, skip" << endl;
 				continue; //else, skip this event
 			}
 		}
@@ -452,6 +469,20 @@ void BHCJetSkimmer::Skim(){
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.8 || Eratio > 1.2) EratioGood = false;
 				bMatch[j] = drGood && EratioGood;
+				//if bad b match - want to save associated top
+				if(!(drGood && EratioGood)){
+					int genidx = _genparts[genbidx].GetUserIdx();
+					int bmom = _base->genpart_momIdx->at(genidx);
+					for(int g = 0; g < _genparts.size(); g++){
+						int ggenidx = _genparts[g].GetUserIdx();
+						if(fabs(_base->genpart_id->at(ggenidx)) != 6) continue;
+						if(ggenidx == bmom){ //save top
+							_genTop.push_back(_genparts[g]);
+							break;
+						}	
+					}
+
+				}
 			}
 			//if ANY good matches, skip	
 			if(std::any_of(bMatch.begin(), bMatch.end(), [](bool v) { return v;})){
@@ -490,6 +521,7 @@ void BHCJetSkimmer::Skim(){
 	graphs[0]->GetXaxis()->SetTitle("# rhs");
 	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	WriteOutput(ofile);
 
 	cout << "Wrote skim to: " << _oname << endl;
