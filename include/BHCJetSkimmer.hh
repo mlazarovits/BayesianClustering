@@ -441,6 +441,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJet_subclusterEnergy_subclusterdRToJet);
 			_hists2D.push_back(BHCJet_subclusterEffnRhs_subclusterdRToJet);
 			_hists2D.push_back(BHCJetW_nSubclustersJet_mass);
+			_hists2D.push_back(BHCJetW_dRGenPartons_nSubclustersJet);
+			_hists2D.push_back(BHCJetW_dRGenPartons_jetSize);
+			_hists2D.push_back(BHCJetW_EratioSubclGenPart_nSubclustersJet);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -530,7 +533,7 @@ class BHCJetSkimmer{
 			sort(_predJets.begin(), _predJets.end(), ptsort);
 			cout << njets_tot << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
-			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << endl;
+			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << endl;
 		}
 
 		void FillPredJetHists(){
@@ -750,6 +753,7 @@ class BHCJetSkimmer{
 						//do gen W matching hists
 						if(genWMatchIdxs[j] != -1){
 							int genWidx = genWMatchIdxs[j];
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " matched to W " << genWidx << endl;
 							_procCats[p].hists2D[pt][94]->Fill(_predJets[j].pt(),_genparts[genWMatchIdxs[j]].pt());
 							_procCats[p].hists2D[pt][95]->Fill(_predJets[j].E(),_genparts[genWMatchIdxs[j]].E());
 							_procCats[p].hists2D[pt][96]->Fill(_predJets[j].m(),_genparts[genWMatchIdxs[j]].m());
@@ -762,9 +766,25 @@ class BHCJetSkimmer{
 
 							//finding partons/subclusters
 							_procCats[p].hists1D[pt][204]->Fill(_predJets[j].GetNConstituents());
+							//get gen partons from W decay 
+							vector<int> genLeadMatchIdxs(2,-1);
+							vector<Jet> Wpartons;
+							for(int g = 0; g < _genparts.size(); g++){
+								int genidx = _genparts[g].GetUserIdx();
+								if(_base->genpart_momIdx->at(genidx) != genWidx) continue;
+								Wpartons.push_back(_genparts[g]);
+							}
+							if(Wpartons.size() != 2){
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
+								continue;
+							}
+							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
+							if(p == 0 && pt == 0) cout << "gen dr " << gendR << endl;
+							_procCats[p].hists2D[pt][128]->Fill(gendR, _predJets[j].GetNConstituents());
+							_procCats[p].hists2D[pt][129]->Fill(gendR, jetsize);
 							consts = _predJets[j].GetConstituents();
 							//sort by energy
-							sort(consts.begin(), consts.end(), ptsort);
+							sort(consts.begin(), consts.end(), Esort_jet);
 							//get invariant mass of leading two subclusters
 							if(consts.size() > 1){
 								double invmass = consts[0].invMass(consts[1]);
@@ -775,21 +795,17 @@ class BHCJetSkimmer{
 								Jet subleadcl = consts[1];
 								vector<Jet> subcls = {leadcl, subleadcl};
 
-								vector<int> genLeadMatchIdxs(2,-1);
-								vector<Jet> Wpartons;
-								for(int g = 0; g < _genparts.size(); g++){
-									int genidx = _genparts[g].GetUserIdx();
-									if(_base->genpart_momIdx->at(genidx) != genWidx) continue;
-									Wpartons.push_back(_genparts[g]);
-									cout << "W parton id " << _base->genpart_id->at(genidx) << endl;
-								}
-								cout << "Wpartons size " << Wpartons.size() << endl;
-						
 								//check that there are two daughters with light quark ids
 								GenericMatchJet(subcls,Wpartons,genLeadMatchIdxs); //match subclusters to W partons
-								//215 - dR
-								//216 - Eratio	
-
+								for(int c = 0; c < subcls.size(); c++){
+									int genmatchidx = genLeadMatchIdxs[c];
+									if(genmatchidx == -1) continue;
+									double gen_clDr = dR(subcls[c].eta(), subcls[c].phi(), Wpartons[genmatchidx].eta(), Wpartons[genmatchidx].phi());
+									double genEr = subcls[c].E() / Wpartons[genmatchidx].E();
+									_procCats[p].hists1D[pt][215]->Fill(gen_clDr);
+									_procCats[p].hists1D[pt][216]->Fill(genEr);
+									_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());	
+								}
 							}
 							for(int c = 0; c < (int)consts.size(); c++){
 								_procCats[p].hists1D[pt][205]->Fill(consts[c].E());
@@ -2052,10 +2068,11 @@ class BHCJetSkimmer{
 		TH1D* BHCJet_ghostSubClusterEnergy = new TH1D("BHCJet_ghostSubclusterEnergy","BHCJet_ghostSubclusterEnergy",25,0,500);
 		//214 - BHC jets - ghost subcl eff # rhs
 		TH1D* BHCJet_ghostSubClusterEffnRhs = new TH1D("BHCJet_ghostSubclusterEffnRhs","BHCJet_ghostSubclusterEffnRhs",25,0,200);
-		//215 - BHC jets - gen-matched W - dR of gen partons in W decay and 2 lead subclusters in BHC jet
-		TH1D* BHCJetW_subclParton_dR = new TH1D("BHCJetW_subclParton_dR","BHCJetW_subclParton_dR",25,0,0.8);
+		//215 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
+		TH1D* BHCJetW_subclParton_dR = new TH1D("BHCJetW_subclParton_dR","BHCJetW_subclParton_dR",25,0,2);
 		//216 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
 		TH1D* BHCJetW_subclParton_Eratio = new TH1D("BHCJetW_subclParton_Eratio","BHCJetW_subclParton_Eratio",25,0,2);
+		
 	
 		//217 - BHC jets - gen-matched to W - subcluster eta center		
 		//TH1D* BHCJetW_subclEtaCenter = new TH1D("BHCJetW_subclEtaCenter","BHCJetW_subclEtaCenter",25,-3.2,3.2);
@@ -2333,7 +2350,14 @@ class BHCJetSkimmer{
 		//126 - subcluster eff # rhs vs dR of subcluster to jet center
 		TH2D* BHCJet_subclusterEffnRhs_subclusterdRToJet = new TH2D("BHCJet_subclusterEffnRhs_subclusterdRToJet","BHCJet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
 		//127 - BHC jets gen-matched to Ws - subcluster mass vs # subclusters/jet
-		TH2D* BHCJetW_nSubclustersJet_mass = new TH2D("BHCJetW_nSubclustersJet_mass","BHCJetW_nSubclustersJet_mass;nSubclustersJet;mass",30,0,30,50,0,250);
+		TH2D* BHCJetW_nSubclustersJet_mass = new TH2D("BHCJetW_nSubclustersJet_mass","BHCJetW_nSubclustersJet_mass;nSubclustersJet;mass",10,0,10,50,0,250);
+		//128 - BHC jets gen-matched to Ws - dR bw gen partons of W vs # subclusters/jet
+		TH2D* BHCJetW_dRGenPartons_nSubclustersJet = new TH2D("BHCJetW_dRGenPartons_nSubclustersJet","BHCJetW_dRGenPartons_nSubclustersJet;dRGenPartons;nSubclustersJet",50,0,2.,10,0,10);
+		//129 - BHC jets gen-matched to Ws - dR bw gen partons of W vs jet size
+		TH2D* BHCJetW_dRGenPartons_jetSize = new TH2D("BHCJetW_dRGenPartons_jetSize","BHCJetW_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
+		//130 - BHC jets gen-matched to Ws - Eratio of subcl E/gen parton E vs # subclusters/jet
+		TH2D* BHCJetW_EratioSubclGenPart_nSubclustersJet = new TH2D("BHCJetW_EratioSubclGenPart_nSubclustersJet","BHCJetW_EratioSubclGenPart_nSubclustersJet;EratioSubclGenPart;nSubclustersJet",50,0,2.,10,0,10);
+
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;

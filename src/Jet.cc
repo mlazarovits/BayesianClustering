@@ -502,6 +502,7 @@ Jet::Jet(const Jet& j){
 
 Jet::~Jet(){
 	_rhs.clear();
+	_constituents.clear();
 }
 
 
