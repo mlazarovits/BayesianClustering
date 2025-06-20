@@ -15,21 +15,36 @@ for j in args.jobs:
 
 
 
-
-
 def parseHeader():
     #get header
     global datasetname
     fsub = open('./'+datasetname+'/src/submit.sh')
     header=[]
+    proc_lines = []
+    proc_order = {}
     #parse from beginning until '######'
     for line in fsub:
-        if '######' in line:
+        if 'queue' in line:
         	break
+        if "output = ." in line:
+            proc_lines.append(line)
+            continue
+        if "error =" in line:
+            proc_lines.append(line)
+            continue
+        if "transfer_output_files =" in line:
+            proc_lines.append(line)
+            continue
+        if "transfer_output_remaps =" in line:
+            proc_lines.append(line)
+            continue
         header.append(line)
         if "EXIT" in line:
             header.append("request_memory=4096\n")
-    return header
+    #transfer output_remaps needs to be at the beginning
+    transf = proc_lines.pop()
+    proc_lines.insert(0,transf)
+    return header, proc_lines
 
 def parseJobNum( jobnumber ):
 	#get the specified job
@@ -49,31 +64,39 @@ def parseJobNum( jobnumber ):
 			job.append(line)
 	
 	return job
-def copyAndUpdateJob( job, jobnumber ):
-#	print('updating',job)
-	updatedJob = []
-	for line in job:
-#		print('line',line)
-		if '$(Process)' in line:
-			updatedJob.append( line.replace('$(Process)', str(jobnumber)) )
-		else:
-			updatedJob.append(line)
-	return updatedJob
+def copyAndUpdateJob( job, jobnumber , proc_lines):
+    updatedJob = []
+    for line in proc_lines:
+        line = line[line.find(" = ")+3:]
+        job.append(line)
+    for line in job:
+    	if '$(Process)' in line:
+    		updatedJob.append( line.replace('$(Process)', str(jobnumber)) )
+    	else:
+    		updatedJob.append(line)
+    return updatedJob
 
 
 
-header = parseHeader()	
-#print(header)
-fresub = open('./'+datasetname+'/src/resubmit.sh','w')
-updatedJobHeader = copyAndUpdateJob( header, joblist[0])
-for line in updatedJobHeader:
+header, proclines = parseHeader()	
+#print(proclines)
+fresub = open('./'+datasetname+'/src/resubmit_test2.sh','w')
+for line in header:
 	fresub.write(line)
+fresub.write("queue transfer_output_remaps, output, error, transfer_output_files, Arguments from (")
 for jobnumber in joblist:
-	updatedJob = copyAndUpdateJob( parseJobNum(jobnumber), jobnumber)
-	for line in updatedJob:
-		fresub.write(line)
-fresub.write(")")
+    updatedJob = copyAndUpdateJob( parseJobNum(jobnumber), jobnumber, proclines)
+    args = updatedJob.pop(1)
+    updatedJob.append(args)
+    fresub.write("\n"+updatedJob[0])
+    line = ""
+    for l in updatedJob[1:]:
+        print("job line",l[:-1])
+        line += l[:-1]+","
+    #print("full line",line)
+    fresub.write(line)
+fresub.write(")\n")
 fresub.close()
 
 print("Resubmission script ready! Launch with:")
-print("condor_submit ./"+datasetname+"/src/resubmit.sh")
+print("condor_submit ./"+datasetname+"/src/resubmit_test2.sh")
