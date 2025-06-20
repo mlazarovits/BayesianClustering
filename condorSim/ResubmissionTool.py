@@ -91,10 +91,10 @@ for jobnumber in joblist:
     fresub.write("\n"+updatedJob[0])
     line = ""
     for l in updatedJob[1:]:
-        print("job line",l[:-1])
+        #print("job line",l[:-1])
         line += l[:-1]+","
     #print("full line",line)
-    fresub.write(line)
+    fresub.write(line[:-1])
 fresub.write(")\n")
 fresub.close()
 
