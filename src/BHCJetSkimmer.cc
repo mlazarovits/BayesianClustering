@@ -74,7 +74,7 @@ void BHCJetSkimmer::Skim(){
 		if(_sel == boostW || _sel == boostTop){
 			//reject fully leptonic and semi-leptonic W decays for ttbar - later may want to turn off to look at just displaced b decays
 			//only look at hadronic W decays
-			int nW_lep = 0;	
+			int nW_lep = 0;
 			for(int g = 0; g < ngenpart; g++){
 				int genmomidx = _base->genpart_momIdx->at(g);
 				if(genmomidx == -1) continue;
