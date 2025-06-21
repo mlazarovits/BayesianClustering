@@ -552,11 +552,11 @@ class BHCJetSkimmer{
 			GenericMatchJet(_predJets,_genAK15jets, genAK15MatchIdxs); //match BHC jets to gen AK15 jets
 			vector<int> genTopMatchIdxs(_predJets.size(),-1);
 			if(_sel == boostTop){
-				GenericMatchJet(_predJets,_genparts, genTopMatchIdxs, 6); //match BHC jets to gen tops
+				GenericMatchJet(_predJets,_genTop, genTopMatchIdxs); //match BHC jets to good gen tops
 			}
 			vector<int> genWMatchIdxs(_predJets.size(),-1);
 			if(_sel == boostW){
-				GenericMatchJet(_predJets,_genparts, genWMatchIdxs, 24); //match BHC jets to gen Ws
+				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
 			}
 	
 			int nsubs, bestMatchIdx;
@@ -753,14 +753,14 @@ class BHCJetSkimmer{
 						//do gen W matching hists
 						if(genWMatchIdxs[j] != -1){
 							int genWidx = genWMatchIdxs[j];
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " matched to W " << genWidx << endl;
 							_procCats[p].hists2D[pt][94]->Fill(_predJets[j].pt(),_genparts[genWMatchIdxs[j]].pt());
 							_procCats[p].hists2D[pt][95]->Fill(_predJets[j].E(),_genparts[genWMatchIdxs[j]].E());
 							_procCats[p].hists2D[pt][96]->Fill(_predJets[j].m(),_genparts[genWMatchIdxs[j]].m());
 							_procCats[p].hists2D[pt][97]->Fill(_predJets[j].eta(),_genparts[genWMatchIdxs[j]].eta());
 							_procCats[p].hists2D[pt][98]->Fill(_predJets[j].phi(),_genparts[genWMatchIdxs[j]].phi());
-							
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genWidx].eta(), _genparts[genWidx].phi());
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to W " << genWidx << " with dr " << dr << " and Eratio " << _predJets[j].E()/_genparts[genWidx].E() << endl;
+							
 							_procCats[p].hists1D[pt][202]->Fill(dr);
 							_procCats[p].hists1D[pt][203]->Fill(_predJets[j].E()/_genparts[genWidx].E());
 
@@ -2625,6 +2625,10 @@ class BHCJetSkimmer{
 		int _topDecayType;
 
 		double _pt_thresh = 100;
+
+
+		//good gen objects available for matching 
+		vector<Jet> _genW, _genb, _genTop, _genq;
 		
 
 		map<string, Matrix> _prior_params;
