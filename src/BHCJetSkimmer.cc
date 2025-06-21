@@ -26,7 +26,6 @@ void BHCJetSkimmer::Skim(){
 	else
 		cout << " default (2+ gen partons that are not tops, including gluons)" << endl;
 	
-	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	//cout << "oname " << _oname << endl;	
 	MakeProcCats(_oname, true);
 
@@ -490,6 +489,7 @@ void BHCJetSkimmer::Skim(){
 	graphs[0]->GetXaxis()->SetTitle("# rhs");
 	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	WriteOutput(ofile);
 
 	cout << "Wrote skim to: " << _oname << endl;
