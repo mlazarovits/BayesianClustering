@@ -114,7 +114,7 @@ void BHCJetSkimmer::Skim(){
 				//cout << "topidx " << topidx << " E " << _base->genpart_energy->at(topidx) << " decay idx " << topidx_decayidx[topidx] << " decay id " << _base->Top_decayId->at(topidx_decayidx[topidx]) << " lep " << lep << endl;	
 				if(lep) continue;
 
-				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
+				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;
 				nW++;
 			}	
 			//at least 1 W	
@@ -399,20 +399,24 @@ cout << "getting reco jets" << endl;
 					subjets.push_back(_predJets[j]);
 			}
 			vector<int> genbMatchIdxs(subjets.size(),-1);
-			GenericMatchJet(subjets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
+			GenericMatchJet(_predJets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
 			//want subleading jets to be very good matches to their respective gen b quarks (these are the "tags")
 			//good match = small dr, Eratio close to 1
-			bool drGood = true;
-			bool EratioGood = true;
+			vector<Jet> Wcand;
 			//cout << "BHC jet matches to b-jets are " << endl;
-			for(int j = 0; j < subjets.size(); j++){
+			for(int j = 0; j < _predJets.size(); j++){
+				bool drGood = true;
+				bool EratioGood = true;
 				int genbidx = genbMatchIdxs[j];
-				if(genbidx == -1) continue;
+				if(genbidx == -1){
+					Wcand.push_back(_predJets[j]);
+					continue;
+				}
 				//check dr
-				double dr = dR(subjets[j].eta(), subjets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
+				double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
 				//check Eratio
-				double Eratio = subjets[j].E()/_genparts[genbidx].E();
-				cout << "sublead jet #" << j << " has eta " << subjets[j].eta() << " phi " << subjets[j].phi() << " and E " << subjets[j].E() << endl;
+				double Eratio = _predJets[j].E()/_genparts[genbidx].E();
+				cout << "_pred jet #" << j << " has eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and E " << _predJets[j].E() << endl;
 				cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << endl; 
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.5 || Eratio > 1.5) EratioGood = false;
@@ -422,12 +426,12 @@ cout << "getting reco jets" << endl;
 					int genidx = _genparts[genbidx].GetUserIdx();
 					int bmom = _base->genpart_momIdx->at(genidx);
 					int widx = -1;
-			cout << "good b match has mom idx " << bmom << endl;
+			//cout << "good b match has mom idx " << bmom << endl;
 					for(int g = 0; g < _genparts.size(); g++){
 						int ggenidx = _genparts[g].GetUserIdx();
 						if(fabs(_base->genpart_id->at(ggenidx)) != 24) continue;
 						if(_base->genpart_momIdx->at(ggenidx) == bmom){
-							cout << "W at " << ggenidx << " has same mom as b at " << _base->genpart_momIdx->at(ggenidx) << endl;
+							//cout << "W at " << ggenidx << " has same mom as b at " << _base->genpart_momIdx->at(ggenidx) << endl;
 							_genW.push_back(_genparts[g]);
 							break;
 						}
@@ -435,14 +439,19 @@ cout << "getting reco jets" << endl;
 					//save b too
 					_genb.push_back(_genparts[genbidx]);
 				}
+				//else save for W matching
+				else{
+					Wcand.push_back(_predJets[j]);
+				}
 			}
 			int nPass = _genW.size();
+			cout << "# pred jets " << _predJets.size() << " # W cand " << Wcand.size() << endl;
 			//could also add requirement that top mass is made with best W+b jet combinations
 			//if ALL good b-jet matches, remove from "predJets" list s.t. predJets are only W candidate jets
 			//then gen-match remaining jet(s) to Ws (ie the "probes") - done in FillPredJets
 			if(nPass > 0){
-				cout << "at least 1 good b-jet matches with BHC jets - continue with boosted W selection" << endl;
-				_predJets = leadjets;
+				cout << "at least 1 good b-jet matches with BHC jets - continue with boosted W selection - have " << Wcand.size() << " possible Ws" << endl;
+				_predJets = Wcand;
 			}
 			//else skip
 			else{
@@ -484,8 +493,8 @@ cout << "getting reco jets" << endl;
 
 				}
 			}
-			//if ANY good matches, skip	
-			if(std::any_of(bMatch.begin(), bMatch.end(), [](bool v) { return v;})){
+			//if no bad b-matches (ie no top possibilities), skip
+			if(_genTop.size() < 1){
 				continue;
 			}
 
