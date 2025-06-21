@@ -469,8 +469,13 @@ cout << "getting reco jets" << endl;
 			bool drGood = true;
 			bool EratioGood = true;
 			vector<bool> bMatch(_predJets.size(), 0);
+			vector<Jet> topCand;
 			for(int j = 0; j < _predJets.size(); j++){
 				int genbidx = genbMatchIdxs[j];
+				if(genbidx == -1){
+					topCand.push_back(_predJets[j]);
+					continue;
+				}
 				//check dr
 				double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
 				//check Eratio
@@ -490,12 +495,20 @@ cout << "getting reco jets" << endl;
 							break;
 						}	
 					}
+					topCand.push_back(_predJets[genbidx]);
 
 				}
+				else{
+					_genb.push_back(_genparts[genbidx]);
+		
+				}
 			}
-			//if no bad b-matches (ie no top possibilities), skip
-			if(_genTop.size() < 1){
+			//if there's more than 1 good gen b match (ie not a candidate for a boosted top), skip
+			if(_genb.size() > 1){
 				continue;
+			}
+			else{
+				_predJets = topCand;
 			}
 
 		}
