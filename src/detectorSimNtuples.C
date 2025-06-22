@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
 	double tres_cte = 0.1727 * 1e-9;
 	double tres_stoch = 0.5109 * 1e-9;
 	double tres_noise = 2.106 * 1e-9;
-	double ethresh = 0.1; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
+	double ethresh = 0.5; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
 	int nPU = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]){
 		cout << "   --sigBoosted                  simulate boosted signal" << endl;
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
-   		cout << "   --eThresh [ethresh]           set energy threshold for rechit reco (default = 0.1)" << endl;
+   		cout << "   --eThresh [ethresh]           set energy threshold for rechit reco (default = 0.5)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
    		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
