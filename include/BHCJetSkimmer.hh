@@ -312,6 +312,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_ghostSubClusterEffnRhs);
 			_hists1D.push_back(BHCJetW_subclParton_dR);
 			_hists1D.push_back(BHCJetW_subclParton_Eratio);
+			_hists1D.push_back(BHCJetTop_nSubclusters);
+			_hists1D.push_back(BHCJetTop_subClusterMass);
+			_hists1D.push_back(BHCJetTop_subClusterLeadInvMass);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -444,6 +447,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_dRGenPartons_nSubclustersJet);
 			_hists2D.push_back(BHCJetW_dRGenPartons_jetSize);
 			_hists2D.push_back(BHCJetW_EratioSubclGenPart_nSubclustersJet);
+			_hists2D.push_back(BHCJetTop_nSubclustersJet_mass);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -531,7 +535,7 @@ class BHCJetSkimmer{
 			}
 			//sort predicted jets
 			sort(_predJets.begin(), _predJets.end(), ptsort);
-			cout << njets_tot << " pred jets total" << endl;
+			cout << _predJets.size()  << " pred jets total" << endl;
 			//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 			for(auto j : _predJets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << endl;
 		}
@@ -704,7 +708,6 @@ class BHCJetSkimmer{
 							double jet_dr = dR(consts[c].eta(), consts[c].phi(), jet_mu.at(0,0), jet_mu.at(1,0));
 							_procCats[p].hists2D[pt][125]->Fill(consts[c].E(), jet_dr);
 							_procCats[p].hists2D[pt][126]->Fill(effnRhs, jet_dr);
-		
 						}
 
 
@@ -740,38 +743,70 @@ class BHCJetSkimmer{
 						//do gen top matching hists
 						if(genTopMatchIdxs[j] != -1){
 							int gentopidx = genTopMatchIdxs[j];
-							_procCats[p].hists2D[pt][69]->Fill(_predJets[j].pt(),_genparts[gentopidx].pt());
-							_procCats[p].hists2D[pt][70]->Fill(_predJets[j].E(),_genparts[gentopidx].E());
-							_procCats[p].hists2D[pt][71]->Fill(_predJets[j].m(),_genparts[gentopidx].m());
-							_procCats[p].hists2D[pt][72]->Fill(_predJets[j].eta(),_genparts[gentopidx].eta());
-							_procCats[p].hists2D[pt][73]->Fill(_predJets[j].phi(),_genparts[gentopidx].phi());
+							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genTop[gentopidx].eta(), _genTop[gentopidx].phi());
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to top " << gentopidx << " with eta " << _genTop[gentopidx].eta() << " phi " << _genTop[gentopidx].phi() << " and energy " << _genTop[gentopidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genTop[gentopidx].E() << endl;
+							_procCats[p].hists2D[pt][69]->Fill(_predJets[j].pt(),_genTop[gentopidx].pt());
+							_procCats[p].hists2D[pt][70]->Fill(_predJets[j].E(),_genTop[gentopidx].E());
+							_procCats[p].hists2D[pt][71]->Fill(_predJets[j].m(),_genTop[gentopidx].m());
+							_procCats[p].hists2D[pt][72]->Fill(_predJets[j].eta(),_genTop[gentopidx].eta());
+							_procCats[p].hists2D[pt][73]->Fill(_predJets[j].phi(),_genTop[gentopidx].phi());
 							
-							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[gentopidx].eta(), _genparts[gentopidx].phi());
 							_procCats[p].hists1D[pt][126]->Fill(dr);
-							_procCats[p].hists1D[pt][127]->Fill(_predJets[j].E()/_genparts[gentopidx].E());
+							_procCats[p].hists1D[pt][127]->Fill(_predJets[j].E()/_genTop[gentopidx].E());
+							_procCats[p].hists1D[pt][217]->Fill(_predJets[j].GetNConstituents());
+							//sort by energy
+							consts = _predJets[j].GetConstituents();
+							sort(consts.begin(), consts.end(), Esort_jet);
+							for(int c = 0; c < consts.size(); c++){ 
+								_procCats[p].hists1D[pt][218]->Fill(consts[c].m());
+								_procCats[p].hists2D[pt][131]->Fill((int)consts.size(),consts[c].m());
+							}
+							//get invariant mass of leading two subclusters
+							if(consts.size() > 1){
+								double invmass = consts[0].invMass(consts[1]);
+								_procCats[p].hists1D[pt][219]->Fill(invmass);
+							
+								//do gen matching of 2 leading subclusters to partons from W decays
+								Jet leadcl = consts[0];
+								Jet subleadcl = consts[1];
+								vector<Jet> subcls = {leadcl, subleadcl};
+
+								//check that there are two daughters with light quark ids
+								//GenericMatchJet(subcls,Wpartons,genLeadMatchIdxs); //match subclusters to W partons
+								//for(int c = 0; c < subcls.size(); c++){
+								//	int genmatchidx = genLeadMatchIdxs[c];
+								//	if(genmatchidx == -1) continue;
+								//	double gen_clDr = dR(subcls[c].eta(), subcls[c].phi(), Wpartons[genmatchidx].eta(), Wpartons[genmatchidx].phi());
+								//	double genEr = subcls[c].E() / Wpartons[genmatchidx].E();
+								//	_procCats[p].hists1D[pt][215]->Fill(gen_clDr);
+								//	_procCats[p].hists1D[pt][216]->Fill(genEr);
+								//	_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());	
+								//}
+							}
 						}			
 						//do gen W matching hists
 						if(genWMatchIdxs[j] != -1){
 							int genWidx = genWMatchIdxs[j];
-							_procCats[p].hists2D[pt][94]->Fill(_predJets[j].pt(),_genparts[genWMatchIdxs[j]].pt());
-							_procCats[p].hists2D[pt][95]->Fill(_predJets[j].E(),_genparts[genWMatchIdxs[j]].E());
-							_procCats[p].hists2D[pt][96]->Fill(_predJets[j].m(),_genparts[genWMatchIdxs[j]].m());
-							_procCats[p].hists2D[pt][97]->Fill(_predJets[j].eta(),_genparts[genWMatchIdxs[j]].eta());
-							_procCats[p].hists2D[pt][98]->Fill(_predJets[j].phi(),_genparts[genWMatchIdxs[j]].phi());
-							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genWidx].eta(), _genparts[genWidx].phi());
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to W " << genWidx << " with dr " << dr << " and Eratio " << _predJets[j].E()/_genparts[genWidx].E() << endl;
+							_procCats[p].hists2D[pt][94]->Fill(_predJets[j].pt(),_genW[genWMatchIdxs[j]].pt());
+							_procCats[p].hists2D[pt][95]->Fill(_predJets[j].E(),_genW[genWMatchIdxs[j]].E());
+							_procCats[p].hists2D[pt][96]->Fill(_predJets[j].m(),_genW[genWMatchIdxs[j]].m());
+							_procCats[p].hists2D[pt][97]->Fill(_predJets[j].eta(),_genW[genWMatchIdxs[j]].eta());
+							_procCats[p].hists2D[pt][98]->Fill(_predJets[j].phi(),_genW[genWMatchIdxs[j]].phi());
+							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to W " << genWidx << " with dr " << dr << " and Eratio " << _predJets[j].E()/_genW[genWidx].E() << endl;
 							
 							_procCats[p].hists1D[pt][202]->Fill(dr);
-							_procCats[p].hists1D[pt][203]->Fill(_predJets[j].E()/_genparts[genWidx].E());
+							_procCats[p].hists1D[pt][203]->Fill(_predJets[j].E()/_genW[genWidx].E());
 
 							//finding partons/subclusters
 							_procCats[p].hists1D[pt][204]->Fill(_predJets[j].GetNConstituents());
 							//get gen partons from W decay 
 							vector<int> genLeadMatchIdxs(2,-1);
 							vector<Jet> Wpartons;
+							int ggenWidx = _genW[genWidx].GetUserIdx();
 							for(int g = 0; g < _genparts.size(); g++){
 								int genidx = _genparts[g].GetUserIdx();
-								if(_base->genpart_momIdx->at(genidx) != genWidx) continue;
+								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
 								Wpartons.push_back(_genparts[g]);
 							}
 							if(Wpartons.size() != 2){
@@ -2072,6 +2107,12 @@ class BHCJetSkimmer{
 		TH1D* BHCJetW_subclParton_dR = new TH1D("BHCJetW_subclParton_dR","BHCJetW_subclParton_dR",25,0,2);
 		//216 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
 		TH1D* BHCJetW_subclParton_Eratio = new TH1D("BHCJetW_subclParton_Eratio","BHCJetW_subclParton_Eratio",25,0,2);
+		//217 - # subclusters in BHC jets matched to Tops
+		TH1D* BHCJetTop_nSubclusters = new TH1D("BHCJetTop_nSubclusters","BHCJetTop_nSubclusters",10,0,10);
+		//218 - subcluster mass in BHC jets matched to Tops
+		TH1D* BHCJetTop_subClusterMass = new TH1D("BHCJetTop_subclusterMass","BHCJetTop_subclusterMass",25,0,200);
+		//219 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
+		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,200);
 		
 	
 		//217 - BHC jets - gen-matched to W - subcluster eta center		
@@ -2357,6 +2398,8 @@ class BHCJetSkimmer{
 		TH2D* BHCJetW_dRGenPartons_jetSize = new TH2D("BHCJetW_dRGenPartons_jetSize","BHCJetW_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
 		//130 - BHC jets gen-matched to Ws - Eratio of subcl E/gen parton E vs # subclusters/jet
 		TH2D* BHCJetW_EratioSubclGenPart_nSubclustersJet = new TH2D("BHCJetW_EratioSubclGenPart_nSubclustersJet","BHCJetW_EratioSubclGenPart_nSubclustersJet;EratioSubclGenPart;nSubclustersJet",50,0,2.,10,0,10);
+		//131 - BHC jets gen-matched to Tops - subcluster mass vs # subclusters/jet
+		TH2D* BHCJetTop_nSubclustersJet_mass = new TH2D("BHCJetTop_nSubclustersJet_mass","BHCJetTop_nSubclustersJet_mass;nSubclustersJet;mass",10,0,10,50,0,250);
 
 
 		void SetSmear(bool t){ _smear = t; }

@@ -85,16 +85,16 @@ void BHCJetSkimmer::Skim(){
 		if(lepTop){ cout << "Fully leptonic top decay - skipping" << endl; continue;}
 
 		int nW = 0;
+		map<int,int> topidx_decayidx;
 		//do event selection here based on enum
 		if(_sel == boostW){
 			int totW = 0;
-			map<int,int> topidx_decayidx;
 			int ntop = 0;
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
 				//cout << "genparts idx " << g << " topidx " << genidx << " e " << _base->genpart_energy->at(genidx) << " decay idx " << ntop << endl;
-				topidx_decayidx[g] = ntop;
+				topidx_decayidx[genidx] = ntop;
 				ntop++;
 			}
 			//at least 1 W with pt, E requirements
@@ -107,14 +107,13 @@ void BHCJetSkimmer::Skim(){
 					continue;
 				}
 				//make sure W has hadronic decay
-				bool lep = false;
 				int topidx = _base->genpart_momIdx->at(genidx);
 				//topdecayid: 0 = had, 1 = lep
-				lep = !_base->Top_decayId->at(topidx_decayidx[topidx]);
+				bool lep = _base->Top_decayId->at(topidx_decayidx[topidx]);
 				//cout << "topidx " << topidx << " E " << _base->genpart_energy->at(topidx) << " decay idx " << topidx_decayidx[topidx] << " decay id " << _base->Top_decayId->at(topidx_decayidx[topidx]) << " lep " << lep << endl;	
 				if(lep) continue;
 
-				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << " eta " << _base->genpart_eta->at(g) << " phi " << _base->genpart_phi->at(g) << endl;
+				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << endl;
 				nW++;
 			}	
 			//at least 1 W	
@@ -130,15 +129,25 @@ void BHCJetSkimmer::Skim(){
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
+				//cout << "genparts idx " << g << " topidx " << genidx << " e " << _base->genpart_energy->at(genidx) << " decay idx " << ntop << endl;
+				topidx_decayidx[genidx] = ntop;
+				ntop++;
+			}
+			ntop = 0;
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
 				if(_genparts[g].pt() < _minTopPt) continue;
-				if(i % SKIP == 0) cout << " has top with pt " << _base->genpart_pt->at(g) << " and energy " << _base->genpart_energy->at(g) << " and id " << _base->genpart_id->at(g) << " and pz " << _base->genpart_pz->at(g) << endl;
 				//make sure top has hadronic decay (0 - hadronic, 1 - leptonic)
-				if(_base->Top_decayId->at(ntop)) continue;
-				_genTop.push_back(_genparts[g]);
+				//topdecayid: 0 = had, 1 = lep
+				bool lep = _base->Top_decayId->at(topidx_decayidx[genidx]);
+				//cout << "topidx " << g << " E " << _base->genpart_energy->at(genidx) << " decay idx " << topidx_decayidx[g] << " decay id " << _base->Top_decayId->at(topidx_decayidx[g]) << " lep " << lep << endl;	
+				if(lep) continue;
+				if(i % SKIP == 0) cout << " has hadronic top with pt " << _genparts[g].pt() << " and energy " << _genparts[g].E() << " and id " << _base->genpart_id->at(genidx) << " and pz " << _genparts[g].pz() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " decayid " << _base->Top_decayId->at(topidx_decayidx[genidx]) << endl;
 				ntop++;
 			}	
 			if(ntop < 1){
-				if(i % SKIP == 0) cout << " has no tops that pass pt > " << _minTopPt << endl;
+				if(i % SKIP == 0) cout << " has no hadronic tops that pass pt > " << _minTopPt << endl;
 				continue;
 			}
 
@@ -170,10 +179,8 @@ void BHCJetSkimmer::Skim(){
 
 		}
 	
-cout << "getting gen jets" << endl;
 
 		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
-cout << "getting reco jets" << endl;
 		//if(_genjets.size() < 1){ cout << endl; continue; }
 		_prod->GetRecoJets(_recoAK4jets, _recoAK8jets, _recoAK15jets, i);
 		//if(_recoAK4jets.size() < 1){ cout << endl; continue; }
@@ -384,21 +391,7 @@ cout << "getting reco jets" << endl;
 				cout << "have " << _predJets.size() << " need at least " << nW*2 << " jets to match to " << nW << " W(s) and an equal number of b(s)" << endl;
 				continue;
 			}
-			//match subleading jets to gen b's using dR and Eratio - jets are sorted in TreesToJets
-			vector<Jet> subjets, leadjets;
-			//if 1 W, expect 1 b; 2 Ws = 2 b;s
-			if(nW == 1){
-				leadjets.push_back(_predJets[0]);
-				for(int j = 1; j < _predJets.size(); j++)
-					subjets.push_back(_predJets[j]);
-			}
-			else{
-				leadjets.push_back(_predJets[0]);
-				leadjets.push_back(_predJets[1]);
-				for(int j = 2; j < _predJets.size(); j++)
-					subjets.push_back(_predJets[j]);
-			}
-			vector<int> genbMatchIdxs(subjets.size(),-1);
+			vector<int> genbMatchIdxs(_predJets.size(),-1);
 			GenericMatchJet(_predJets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
 			//want subleading jets to be very good matches to their respective gen b quarks (these are the "tags")
 			//good match = small dr, Eratio close to 1
@@ -466,11 +459,11 @@ cout << "getting reco jets" << endl;
 			GenericMatchJet(_predJets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
 			//want subleading jets to be very good matches to their respective gen b quarks (these are the "tags")
 			//good match = small dr, Eratio close to 1
-			bool drGood = true;
-			bool EratioGood = true;
 			vector<bool> bMatch(_predJets.size(), 0);
 			vector<Jet> topCand;
 			for(int j = 0; j < _predJets.size(); j++){
+				bool drGood = true;
+				bool EratioGood = true;
 				int genbidx = genbMatchIdxs[j];
 				if(genbidx == -1){
 					topCand.push_back(_predJets[j]);
@@ -480,29 +473,37 @@ cout << "getting reco jets" << endl;
 				double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
 				//check Eratio
 				double Eratio = _predJets[j].E()/_genparts[genbidx].E();
+				//cout << "_pred jet #" << j << " has eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and E " << _predJets[j].E() << endl;
+				//cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << " dr " << dr << " Eratio " << Eratio << endl; 
 				if(dr > 0.1) drGood = false;
 				if(Eratio < 0.8 || Eratio > 1.2) EratioGood = false;
 				bMatch[j] = drGood && EratioGood;
 				//if bad b match - want to save associated top
 				if(!(drGood && EratioGood)){
+					//cout << "bad b match - saving associated top " << endl;
 					int genidx = _genparts[genbidx].GetUserIdx();
 					int bmom = _base->genpart_momIdx->at(genidx);
 					for(int g = 0; g < _genparts.size(); g++){
 						int ggenidx = _genparts[g].GetUserIdx();
 						if(fabs(_base->genpart_id->at(ggenidx)) != 6) continue;
+						//needs to be hadronic
+						bool lep = _base->Top_decayId->at(topidx_decayidx[ggenidx]);
+						if(lep) continue;	
 						if(ggenidx == bmom){ //save top
+							cout << "saving top # " << ggenidx << " for b " << genidx << " with energy " << _genparts[g].E() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << endl;
 							_genTop.push_back(_genparts[g]);
 							break;
 						}	
 					}
-					topCand.push_back(_predJets[genbidx]);
+					topCand.push_back(_predJets[j]);
 
 				}
 				else{
-					_genb.push_back(_genparts[genbidx]);
+					_genb.push_back(_genparts[j]);
 		
 				}
 			}
+			cout << "# gen bs " << _genb.size() << " # top candidates " << topCand.size() << " # gen tops " << _genTop.size() << endl;
 			//if there's more than 1 good gen b match (ie not a candidate for a boosted top), skip
 			if(_genb.size() > 1){
 				continue;
@@ -512,9 +513,6 @@ cout << "getting reco jets" << endl;
 			}
 
 		}
-
-
-
 
 
 
@@ -530,6 +528,11 @@ cout << "getting reco jets" << endl;
 		}
 		
 		cout << endl;
+	
+		_genTop.clear();
+		_genW.clear();
+		_genb.clear();
+		_genq.clear();
 	}
 	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
 	graphs[1]->SetName("nrhs_comptime_subcl");
