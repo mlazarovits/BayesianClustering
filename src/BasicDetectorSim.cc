@@ -83,6 +83,8 @@ BasicDetectorSim::BasicDetectorSim(){
 	_simqcd = false;
 	_simw = false;
 
+
+	_ptHatMin = 200;
 }
 
 //ctor with input pythia cmnd file
@@ -148,6 +150,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_simttbar = false;
 	_simqcd = false;
 	_simw = false;
+	
+	_ptHatMin = 200;
 }
 
 
@@ -157,7 +161,7 @@ void BasicDetectorSim::_simQCD(){
 	// above pTHat = 20 GeV for pp collisions at 13 TeV.
 	//_pythia.settings.readString("HardQCD:all = on");
 	_pythia.settings.readString("HardQCD:gg2qqbar = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating QCD" << endl;
 }
@@ -171,7 +175,7 @@ void BasicDetectorSim::_simTTbar(){
 	_pythia.settings.readString("Top:qqbar2ttbar = on");
 	_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
 	_pythia.settings.readString("Top:ffbar2ttbar(s:gmZ) = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating ttbar" << endl;
 
@@ -180,7 +184,7 @@ void BasicDetectorSim::_simTTbar(){
 void BasicDetectorSim::_simSingleW(){
 	//_pythia.settings.readString("WeakSingleBoson:ffbar2W = on");
 	_pythia.settings.readString("WeakBosonAndParton:ffbar2Wgm = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating single W" << endl;
 

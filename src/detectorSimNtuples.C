@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
 	string oname = "";
 	bool ttbar = false;
 	bool qcd = false;
+	bool singw = false;
 	bool sig_delayed = false;
 	bool sig_boosted = false;
 	double spikeProb = 0.;
@@ -42,6 +43,7 @@ int main(int argc, char *argv[]){
 	double tres_stoch = 0.5109 * 1e-9;
 	double tres_noise = 2.106 * 1e-9;
 	double ethresh = 0.5; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
+	double pthatmin = 200;
 	int nPU = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -89,6 +91,9 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--QCD", 5) == 0){
     	 		qcd = true;
    		}
+		if(strncmp(argv[i],"--W", 7) == 0){
+    	 		singw = true;
+   		}
 		if(strncmp(argv[i],"--sigDelayed", 12) == 0){
     	 		sig_delayed = true;
    		}
@@ -102,6 +107,10 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--eThresh", 9) == 0){
 			i++;
     	 		ethresh = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--ptHatMin", 10) == 0){
+			i++;
+    	 		pthatmin = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--energyCte", 11) == 0){
 			i++;
@@ -137,11 +146,13 @@ int main(int argc, char *argv[]){
    		cout << "   --nPU                         simulate nPU pileup events (default = 0: PU off)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
+		cout << "   --W                           simulate single W" << endl;
 		cout << "   --sigDelayed                  simulate delayed signal" << endl;
 		cout << "   --sigBoosted                  simulate boosted signal" << endl;
 		cout << "   --output(-o) [ofile]          set output file name" << endl; 
    		cout << "   --nevts [nevts]               set number of events to simulate (default = 1)" << endl;
    		cout << "   --eThresh [ethresh]           set energy threshold for rechit reco (default = 0.5)" << endl;
+   		cout << "   --ptHatMin [pthatmin]         set pt hat min for event generation (default = 200)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
    		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
@@ -154,7 +165,7 @@ int main(int argc, char *argv[]){
 	}
 
 
-	if(!ttbar && !qcd && !sig_delayed && !sig_boosted){
+	if(!ttbar && !qcd && !singw && !sig_delayed && !sig_boosted){
 		cout << "No process specified to simulate. Exiting..." << endl;
 		return -1;
 	}
@@ -179,6 +190,10 @@ int main(int argc, char *argv[]){
 	if(qcd){
 		cout << "QCD ";
 		if(oname.find("QCD") == string::npos) oname += "_QCD";	
+	}
+	if(singw){
+		cout << "single W ";
+		if(oname.find("singleW") == string::npos) oname += "_singleW";	
 	}
 	cout << endl;
 
@@ -213,8 +228,10 @@ int main(int argc, char *argv[]){
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
 	det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
+	det.SetPtHatMin(pthatmin);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
+	if(singw) det.SimSingleW();
 	//if(sig_delayed)
 	//if(sig_boosted)
 	if(nPU != 0) det.TurnOnPileup(nPU);

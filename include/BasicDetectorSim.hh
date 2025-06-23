@@ -81,8 +81,8 @@ struct RecoParticle;
 		double _genpart_minpt;
 		void SetMinGenPartPt(double p){_genpart_minpt = p; cout << "Minimum gen particle pt for subcluster analysis " << _genpart_minpt << " GeV" << endl; }
 
-
-
+		void SetPtHatMin(double p){ _ptHatMin = p; cout << "ptHat minimum = " << _ptHatMin << endl;}
+			
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
 		//get emissions per reco particle
@@ -327,6 +327,8 @@ struct RecoParticle;
 
 
 		int _evti, _evtj;
+
+		double _ptHatMin;
 
 		struct RecoParticle{
 			//associated gen particle
