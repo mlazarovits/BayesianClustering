@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Jun 18 12:44:49 2025 by ROOT version 6.30/06
+// Mon Jun 23 13:31:34 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root
+// found on file: simNtuples_testW_nevt100_singleW.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -73,6 +73,7 @@ public :
    vector<vector<int> > *AK15Jet_genConstituentIdxs;
    vector<int>     *AK15Jet_genNConstituents;
    vector<int>     *Top_decayId;
+   vector<int>     *W_decayId;
    vector<double>  *AK4Jet_eta;
    vector<double>  *AK4Jet_phi;
    vector<double>  *AK4Jet_energy;
@@ -160,6 +161,7 @@ public :
    TBranch        *b_AK15Jet_genConstituentIdxs;   //!
    TBranch        *b_AK15Jet_genNConstituents;   //!
    TBranch        *b_Top_decayId;   //!
+   TBranch        *b_W_decayId;   //!
    TBranch        *b_AK4Jet_eta;   //!
    TBranch        *b_AK4Jet_phi;   //!
    TBranch        *b_AK4Jet_energy;   //!
@@ -216,11 +218,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testW_nevt100_singleW.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root");
+         f = new TFile("simNtuples_testW_nevt100_singleW.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/malazaro/SimNtuples/condorSimNtuples_ttbar_defaultv9p9.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testW_nevt100_singleW.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -298,6 +300,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    AK15Jet_genConstituentIdxs = 0;
    AK15Jet_genNConstituents = 0;
    Top_decayId = 0;
+   W_decayId = 0;
    AK4Jet_eta = 0;
    AK4Jet_phi = 0;
    AK4Jet_energy = 0;
@@ -385,6 +388,7 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("AK15Jet_genConstituentIdxs", &AK15Jet_genConstituentIdxs, &b_AK15Jet_genConstituentIdxs);
    fChain->SetBranchAddress("AK15Jet_genNConstituents", &AK15Jet_genNConstituents, &b_AK15Jet_genNConstituents);
    fChain->SetBranchAddress("Top_decayId", &Top_decayId, &b_Top_decayId);
+   fChain->SetBranchAddress("W_decayId", &W_decayId, &b_W_decayId);
    fChain->SetBranchAddress("AK4Jet_eta", &AK4Jet_eta, &b_AK4Jet_eta);
    fChain->SetBranchAddress("AK4Jet_phi", &AK4Jet_phi, &b_AK4Jet_phi);
    fChain->SetBranchAddress("AK4Jet_energy", &AK4Jet_energy, &b_AK4Jet_energy);
