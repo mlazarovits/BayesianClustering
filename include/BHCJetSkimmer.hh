@@ -5,6 +5,7 @@
 #include "BaseTree.hh"
 #include "TGraph.h"
 #include <set>
+#include <Math/Vector4D.h>
 
 using node = BaseTree::node;
 using procCat = BaseSkimmer::procCat;
@@ -315,6 +316,10 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetTop_nSubclusters);
 			_hists1D.push_back(BHCJetTop_subClusterMass);
 			_hists1D.push_back(BHCJetTop_subClusterLeadInvMass);
+			_hists1D.push_back(BHCJetq_dR);
+			_hists1D.push_back(BHCJetq_Eratio);
+			_hists1D.push_back(BHCJetq_nSubclusters);
+			_hists1D.push_back(BHCJetq_subClusterEnergy);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -448,6 +453,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_dRGenPartons_jetSize);
 			_hists2D.push_back(BHCJetW_EratioSubclGenPart_nSubclustersJet);
 			_hists2D.push_back(BHCJetTop_nSubclustersJet_mass);
+			_hists2D.push_back(BHCJetW_openAng_nJets);
+			_hists2D.push_back(BHCJetW_openAng_nSubclustersJet);
+			_hists2D.push_back(BHCJetW_openAng_subclMass);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -474,9 +482,9 @@ class BHCJetSkimmer{
 		void SetEventSelection(int i){
 			//default selection (generic hadronic)
 			if(i == 0) _sel = def;
-			else if(i == 1) _sel = boostW;
-			else if(i == 2) _sel = boostTop;
-			else if(i == 3) _sel = QCDdijets;
+			else if(i == 1) _sel = singW;//single W
+			else if(i == 2) _sel = boostTop;//ttbar
+			else if(i == 3) _sel = QCDdijets;//QCD
 			else return; 
 		}
 		int _nGhosts;
@@ -555,13 +563,30 @@ class BHCJetSkimmer{
 			GenericMatchJet(_predJets,_genAK4jets, genAK4MatchIdxs); //match BHC jets to gen AK4 jets
 			GenericMatchJet(_predJets,_genAK15jets, genAK15MatchIdxs); //match BHC jets to gen AK15 jets
 			vector<int> genTopMatchIdxs(_predJets.size(),-1);
+			vector<int> genWMatchIdxs(_predJets.size(),-1);
+			vector<int> genqMatchIdxs(_predJets.size(),-1);
+			double openAng = -1;
 			if(_sel == boostTop){
 				GenericMatchJet(_predJets,_genTop, genTopMatchIdxs); //match BHC jets to good gen tops
 			}
-			vector<int> genWMatchIdxs(_predJets.size(),-1);
-			if(_sel == boostW){
+			else if(_sel == singW && _genq.size() > 1){
 				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
+				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen qs
+				//calculate polar opening angle bw gen partons from W
+				vector<double> v1, v2;
+
+				GetXYZVec(_genq[0],v1);
+				GetXYZVec(_genq[1],v2);
+
+				double dotprod = dot(v1,v2);
+				double openAng = acos(dotprod);
+				cout << "dotprod " << dotprod << " openAng " << openAng << endl;
 			}
+			else if(_sel == QCDdijets){
+				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen Ws
+
+			}
+			else{ }
 	
 			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
@@ -570,6 +595,7 @@ class BHCJetSkimmer{
 				cout << "# pred jets - # reco AK4 jets " << njets - (int)_recoAK4jets.size() << endl;
 				cout << "# pred jets - # gen AK4 jets " << njets - (int)_genAK4jets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recoAK4jets.size());
+				if(openAng != -1) _procCats[p].hists2D[0][132]->Fill(openAng,njets);
 				//loop over pt bins
 				njets = _predJets.size();
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
@@ -614,6 +640,7 @@ class BHCJetSkimmer{
 					
 						nsubs = _predJets[j].GetNConstituents();
 						_procCats[p].hists1D[pt][1]->Fill(nsubs);
+						if(openAng != -1) _procCats[p].hists2D[pt][133]->Fill(openAng,nsubs);
 						_procCats[p].hists2D[pt][11]->Fill(nsubs,jetsize);
 						//cout << "pred jet j " << j << " dr " << dr << " n constituents " << _predJets[j].GetNConstituents() << endl;
 						Matrix cov = _predJets[j].GetCovariance();
@@ -674,6 +701,7 @@ class BHCJetSkimmer{
 	
 							//E_k = norms[k]/_gev;
 							_procCats[p].hists1D[pt][2]->Fill(subcl.E());
+							if(openAng != -1) _procCats[p].hists2D[pt][134]->Fill(openAng,subcl.m());
 
 							//params = model->GetPriorParameters(k);
 							//ceta = params["mean"].at(0,0);
@@ -793,7 +821,7 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][97]->Fill(_predJets[j].eta(),_genW[genWMatchIdxs[j]].eta());
 							_procCats[p].hists2D[pt][98]->Fill(_predJets[j].phi(),_genW[genWMatchIdxs[j]].phi());
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to W " << genWidx << " with dr " << dr << " and Eratio " << _predJets[j].E()/_genW[genWidx].E() << endl;
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to W " << genWidx << " with eta " << _genW[genWidx].eta() << " phi " << _genW[genWidx].phi() << " and energy " << _genW[genWidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genW[genWidx].E() << endl;
 							
 							_procCats[p].hists1D[pt][202]->Fill(dr);
 							_procCats[p].hists1D[pt][203]->Fill(_predJets[j].E()/_genW[genWidx].E());
@@ -849,7 +877,24 @@ class BHCJetSkimmer{
 								_procCats[p].hists2D[pt][127]->Fill(_predJets[j].GetNConstituents(),consts[c].m());
 							}	
 						}			
+						//do gen q matching hists
+						if(genqMatchIdxs[j] != -1){
+							int genqidx = genqMatchIdxs[j];
+							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genq[genqidx].eta(), _genq[genqidx].phi());
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to q " << genqidx << " with eta " << _genq[genqidx].eta() << " phi " << _genq[genqidx].phi() << " and energy " << _genq[genqidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genq[genqidx].E() << endl;
+							
+							_procCats[p].hists1D[pt][220]->Fill(dr);
+							_procCats[p].hists1D[pt][221]->Fill(_predJets[j].E()/_genq[genqidx].E());
+							//finding partons/subclusters
+							_procCats[p].hists1D[pt][222]->Fill(_predJets[j].GetNConstituents());
 
+							consts = _predJets[j].GetConstituents();
+							//sort by energy
+							sort(consts.begin(), consts.end(), Esort_jet);
+							for(int c = 0; c < (int)consts.size(); c++){
+								_procCats[p].hists1D[pt][223]->Fill(consts[c].E());
+							}	
+						}			
 
 					}
 				}
@@ -1150,7 +1195,6 @@ class BHCJetSkimmer{
 						if(genMatchIdxs_jet[j] != -1){
 							genidx = genMatchIdxs_jet[j];	
 							//if(p == 0 && pt == 0) cout << " matched to gen AK4 jet #" << genMatchIdxs_jet[j] << endl;
-							
 							int genjetidx = _genAK4jets[genMatchIdxs_jet[j]].GetUserIdx();
 							_procCats[p].hists2D[pt][21]->Fill(_base->AK4Jet_genNConstituents->at(genjetidx),_recoAK4jets[j].GetNConstituents());
 							double genpt, pz, jetpt, jetpz, ratio_p;
@@ -1170,30 +1214,31 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][53]->Fill(_recoAK4jets[j].phi(),_genAK4jets[genidx].phi());
 							_procCats[p].hists2D[pt][54]->Fill(_recoAK4jets[j].time(),_genAK4jets[genidx].time());
 
-		
-							int genpartidx = -1;
-							int ngenparts_ptge5 = 0;
-							for(int g = 0; g < _base->AK4Jet_genNConstituents->at(genjetidx); g++){
-								genpartidx = _base->AK4Jet_genConstituentIdxs->at(genjetidx).at(g);
-								genpt = _base->genpart_pt->at(genpartidx);
-								pz = _base->genpart_pz->at(genpartidx);
-								ratio_p = (sqrt(genpt*genpt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
-								_procCats[p].hists1D[pt][92]->Fill(genpt);	
-								_procCats[p].hists1D[pt][93]->Fill(sqrt(genpt*genpt + pz*pz));
+							if(_sel != QCDdijets){
+								int genpartidx = -1;
+								int ngenparts_ptge5 = 0;
+								for(int g = 0; g < _base->AK4Jet_genNConstituents->at(genjetidx); g++){
+									genpartidx = _base->AK4Jet_genConstituentIdxs->at(genjetidx).at(g);
+									genpt = _base->genpart_pt->at(genpartidx);
+									pz = _base->genpart_pz->at(genpartidx);
+									ratio_p = (sqrt(genpt*genpt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
+									_procCats[p].hists1D[pt][92]->Fill(genpt);	
+									_procCats[p].hists1D[pt][93]->Fill(sqrt(genpt*genpt + pz*pz));
 
-								_procCats[p].hists1D[pt][94]->Fill( ratio_p );	
-								_procCats[p].hists1D[pt][95]->Fill( genpt/jetpt );
+									_procCats[p].hists1D[pt][94]->Fill( ratio_p );	
+									_procCats[p].hists1D[pt][95]->Fill( genpt/jetpt );
 
-								_procCats[p].hists2D[pt][22]->Fill(sqrt(genpt*genpt + pz*pz), sqrt(jetpt*jetpt + jetpz*jetpz));	
-								_procCats[p].hists2D[pt][23]->Fill(genpt, jetpt);	
-								_procCats[p].hists2D[pt][24]->Fill(sqrt(genpt*genpt + pz*pz), ratio_p);	
-								_procCats[p].hists2D[pt][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
-								_procCats[p].hists2D[pt][26]->Fill(genpt, genpt/jetpt);	
-								_procCats[p].hists2D[pt][27]->Fill(jetpt, genpt/jetpt);
+									_procCats[p].hists2D[pt][22]->Fill(sqrt(genpt*genpt + pz*pz), sqrt(jetpt*jetpt + jetpz*jetpz));	
+									_procCats[p].hists2D[pt][23]->Fill(genpt, jetpt);	
+									_procCats[p].hists2D[pt][24]->Fill(sqrt(genpt*genpt + pz*pz), ratio_p);	
+									_procCats[p].hists2D[pt][25]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz), ratio_p);	
+									_procCats[p].hists2D[pt][26]->Fill(genpt, genpt/jetpt);	
+									_procCats[p].hists2D[pt][27]->Fill(jetpt, genpt/jetpt);
 	
-								if(pt >= 5) ngenparts_ptge5++;	
+									if(pt >= 5) ngenparts_ptge5++;	
+								}
+								_procCats[p].hists2D[pt][29]->Fill(ngenparts_ptge5,_recoAK4jets[j].GetNConstituents());
 							}
-							_procCats[p].hists2D[pt][29]->Fill(ngenparts_ptge5,_recoAK4jets[j].GetNConstituents());
 						}
 						//if no gen top match, skip
 						//if(p == 0 && pt == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
@@ -1507,6 +1552,11 @@ class BHCJetSkimmer{
 				procCat qcd(_hists1D, _hists2D, "QCD", "QCD multi-jets",leadsep);
 				qcd.ids = {-999};
 				_procCats.push_back(qcd);
+			}
+			else if(sample.find("singleW") != string::npos){
+				procCat singleW(_hists1D, _hists2D, "singleW", "single W^{#pm}",leadsep);
+				singleW.ids = {-999};
+				_procCats.push_back(singleW);
 			}
 			else return;
 
@@ -2113,6 +2163,14 @@ class BHCJetSkimmer{
 		TH1D* BHCJetTop_subClusterMass = new TH1D("BHCJetTop_subclusterMass","BHCJetTop_subclusterMass",25,0,200);
 		//219 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
 		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,200);
+		//220 - dR bw BHC jet and gen q its exclusively matched to
+		TH1D* BHCJetq_dR = new TH1D("BHCJet_genq_dR","BHCJet_genq_dR",25,0,0.8);
+		//221 - E ratio bw BHC jet and gen q its exclusively matched to - BHC jet energy/gen q energy
+		TH1D* BHCJetq_Eratio = new TH1D("BHCJet_genq_Eratio","BHCJet_genq_Eratio",25,0,2);
+		//222 - # subclusters in BHC jets matched to qs
+		TH1D* BHCJetq_nSubclusters = new TH1D("BHCJetq_nSubclusters","BHCJetq_nSubclusters",10,0,10);
+		//223 - subcluster energy in BHC jets matched to qs
+		TH1D* BHCJetq_subClusterEnergy = new TH1D("BHCJetq_subclusterEnergy","BHCJetq_subclusterEnergy",25,0,500);
 		
 	
 		//217 - BHC jets - gen-matched to W - subcluster eta center		
@@ -2399,7 +2457,13 @@ class BHCJetSkimmer{
 		//130 - BHC jets gen-matched to Ws - Eratio of subcl E/gen parton E vs # subclusters/jet
 		TH2D* BHCJetW_EratioSubclGenPart_nSubclustersJet = new TH2D("BHCJetW_EratioSubclGenPart_nSubclustersJet","BHCJetW_EratioSubclGenPart_nSubclustersJet;EratioSubclGenPart;nSubclustersJet",50,0,2.,10,0,10);
 		//131 - BHC jets gen-matched to Tops - subcluster mass vs # subclusters/jet
-		TH2D* BHCJetTop_nSubclustersJet_mass = new TH2D("BHCJetTop_nSubclustersJet_mass","BHCJetTop_nSubclustersJet_mass;nSubclustersJet;mass",10,0,10,50,0,250);
+		TH2D* BHCJetTop_nSubclustersJet_mass = new TH2D("BHCJetTop_nSubclustersJet_mass","BHCJetTop_nSubclustersJet_mass;nSubclustersJet;subclMass",10,0,10,50,0,250);
+		//132 - # bhc jets as a function of opening angle of partons from W
+		TH2D* BHCJetW_openAng_nJets = new TH2D("BHCJetW_openAng_nJets","BHCJetW_openAng_nJets;openAng;nJets",30,0,30,25,0,3.3);
+		//133 - # bhc subclusters/jet as a function of opening angle of partons from W
+		TH2D* BHCJetW_openAng_nSubclustersJet = new TH2D("BHCJetW_openAng_nSubclustersJet","BHCJetW_openAng_nSubclustersJet;openAng;nSubclustersJet",30,0,30,10,0,10);
+		//134 - bhc subcluster mass as a function of opening angle of partons from W
+		TH2D* BHCJetW_openAng_subclMass = new TH2D("BHCJetW_openAng_subclMass","BHCJetW_openAng_subclMass;openAng;subclMass",30,0,30,50,0,200);
 
 
 		void SetSmear(bool t){ _smear = t; }
@@ -2475,7 +2539,7 @@ class BHCJetSkimmer{
 		map<int,int> matchIdxToObjIdx;
 		//if id is specified, make matchobjs the genparts that satisfy this criteria
 		if(id != -1){
-			vector<int> qids = {1,2,3,4};
+			vector<int> qids = {1,2,3,4,5,21};
 			for(int g = 0; g < matchjets.size(); g++){
 				int idx = matchjets[g].GetUserIdx();
 				int this_id = fabs(_base->genpart_id->at(idx));
@@ -2646,7 +2710,7 @@ class BHCJetSkimmer{
 			//default selection (generic hadronic)
 			def = 0,	
 			//boosted W selection
-			boostW = 1,
+			singW = 1,
 			//boosted top selection
 			boostTop = 2,
 			//QCD dijets selection
@@ -2683,6 +2747,45 @@ class BHCJetSkimmer{
 			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
 		}
 
+		double dot(vector<double> v1, vector<double> v2){
+			if(v1.size() != v2.size()){
+				cout << "BHCJetSkimmer::dot - vectors given are not the same size" << endl;
+				return -1;
+			}
+			//normalize vecs
+			double mag1 = 0;
+			for(auto v : v1) mag1 += v*v;
+			mag1 = sqrt(mag1);
+			for(int i = 0; i < v1.size(); i++)
+				v1[i] = v1[i]/mag1;
+			
+			double mag2 = 0;
+			for(auto v : v2) mag2 += v*v;
+			mag2 = sqrt(mag2);
+			for(int i = 0; i < v2.size(); i++)
+				v2[i] = v2[i]/mag2;
+			cout << "mag1 " << mag1 << " mag2 " << mag2 << endl;
+			//do dot prod
+			double dotprod = 0;
+			for(int i = 0; i < v1.size(); i++){
+				cout << "i " << i << " v1 " << v1[i] << " v2 " << v2[i] << endl;
+				dotprod += v1[i]*v2[i];
+			}
+			return dotprod;
+		}
+
+
+		void GetXYZVec(Jet j, vector<double>& v){
+			double x = _radius*cos(j.phi());
+			double y = _radius*sin(j.phi());
+			double theta = 2*atan2(1,exp(j.eta()));
+			double z = _radius/tan(theta);
+		
+			v.clear();
+			v.push_back(x);
+			v.push_back(y);
+			v.push_back(z);
+		}
 
 		void Get2DMat(const Matrix& inmat, Matrix& outmat){
 			if(!outmat.square()) return;

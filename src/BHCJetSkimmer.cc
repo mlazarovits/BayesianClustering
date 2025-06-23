@@ -17,11 +17,11 @@ void BHCJetSkimmer::Skim(){
 
 	//event selection
 	cout << "Using event selection";
-	if(_sel == boostW)
-		cout << " boosted Ws (fully hadronic)" << endl;
-	else if(_sel == boostTop)
+	if(_sel == singW) //single W production
+		cout << " single Ws (fully hadronic)" << endl;
+	else if(_sel == boostTop) //ttbar production
 		cout << " boosted tops (fully hadronic)" << endl;
-	else if(_sel == QCDdijets)
+	else if(_sel == QCDdijets) //self-explanatory
 		cout << " QCD dijets" << endl;
 	else
 		cout << " default (2+ gen partons that are not tops, including gluons)" << endl;
@@ -70,51 +70,39 @@ void BHCJetSkimmer::Skim(){
 	
 		int ngenpart = _base->genpart_ngenpart;
 		_prod->GetGenParticles(_genparts, i);
-
-
-		//if any leptonic top decays, continue
-		int nTops = _base->Top_decayId->size();
-		if(nTops < 1) continue;
-		bool lepTop = _base->Top_decayId->at(0);
-		//cout << "lepTop top 1 - " << lepTop << endl;
-		if(nTops > 1){
-			lepTop = lepTop && _base->Top_decayId->at(1);
-			//cout << "lepTop top 2 - " << _base->Top_decayId->at(1) << endl;
-		}
-		//cout << "lepTop evt - " << lepTop << endl;
-		if(lepTop){ cout << "Fully leptonic top decay - skipping" << endl; continue;}
-
-		int nW = 0;
+		
 		map<int,int> topidx_decayidx;
 		//do event selection here based on enum
-		if(_sel == boostW){
-			int totW = 0;
-			int ntop = 0;
-			for(int g = 0; g < _genparts.size(); g++){
-				int genidx = _genparts[g].GetUserIdx();
-				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
-				//cout << "genparts idx " << g << " topidx " << genidx << " e " << _base->genpart_energy->at(genidx) << " decay idx " << ntop << endl;
-				topidx_decayidx[genidx] = ntop;
-				ntop++;
-			}
+		if(_sel == singW){ //single W production
+			//if any leptonic W decays, continue
+			int nWs = _base->W_decayId->size();
+			if(nWs < 1) continue;
+			bool lepW = _base->W_decayId->at(0);
+			int nW = 0;
+			//cout << "lepTop evt - " << lepTop << endl;
 			//at least 1 W with pt, E requirements
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(fabs(_base->genpart_id->at(genidx)) != 24) continue;
-				totW++;
 				//min pt req
 				if(_genparts[g].pt() < _minWPt){
 					continue;
 				}
 				//make sure W has hadronic decay
-				int topidx = _base->genpart_momIdx->at(genidx);
-				//topdecayid: 0 = had, 1 = lep
-				bool lep = _base->Top_decayId->at(topidx_decayidx[topidx]);
-				//cout << "topidx " << topidx << " E " << _base->genpart_energy->at(topidx) << " decay idx " << topidx_decayidx[topidx] << " decay id " << _base->Top_decayId->at(topidx_decayidx[topidx]) << " lep " << lep << endl;	
-				if(lep) continue;
-
-				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << endl;
+				bool lep = _base->W_decayId->at(genidx);
+				if(lep){ cout << "Fully leptonic W - skipping this W" << endl; continue;}
+				if(i % SKIP == 0) cout << " has W with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << " decay id " << lep << endl;
 				nW++;
+				_genW.push_back(_genparts[g]);
+				//get decay products
+				for(int gg = 0; gg < _genparts.size(); gg++){
+					if(gg == g) continue;
+					int ggenidx = _genparts[gg].GetUserIdx();
+					if(_base->genpart_momIdx->at(ggenidx) == genidx){
+				cout << "saving W daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
+						_genq.push_back(_genparts[gg]);
+					}
+				}
 			}	
 			//at least 1 W	
 			if(nW < 1){ 
@@ -123,6 +111,17 @@ void BHCJetSkimmer::Skim(){
 			}
 		}
 		else if(_sel == boostTop){
+			//if any leptonic top decays, continue
+			int nTops = _base->Top_decayId->size();
+			if(nTops < 1) continue;
+			bool lepTop = _base->Top_decayId->at(0);
+			//cout << "lepTop top 1 - " << lepTop << endl;
+			if(nTops > 1){
+				lepTop = lepTop && _base->Top_decayId->at(1);
+				//cout << "lepTop top 2 - " << _base->Top_decayId->at(1) << endl;
+			}
+			//cout << "lepTop evt - " << lepTop << endl;
+			if(lepTop){ cout << "Fully leptonic top decay - skipping" << endl; continue;}
 			//tops are ordered highest to lowest energy, top decay ids follow the same order (ie first top decay id is associated to first top)
 			//at least 1 top quark with pt, E requirements
 			int ntop = 0;
@@ -155,15 +154,14 @@ void BHCJetSkimmer::Skim(){
 		}
 		else if(_sel == QCDdijets){
 			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
-			int nparton = 0;
 			vector<int> p_ids = {1,2,3,4,5,21};
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(genidx))) == p_ids.end()) continue;
+				cout << "saving q/g - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
 				_genq.push_back(_genparts[g]);
-				nparton++;
-			}	
-			if(nparton < 2) continue;
+			}
+			if(_genq.size() < 2) continue;
 
 		}
 		//default selection
@@ -337,7 +335,6 @@ void BHCJetSkimmer::Skim(){
 		}
 		//safety
 		if(rhs.size() < 1) continue;
-
 		x_nrhs.push_back((double)rhs.size());
 		//for(int r = 0; r < rhs.size(); r++){
 		//	rhTime->Fill(rhs[r].t());
@@ -347,7 +344,6 @@ void BHCJetSkimmer::Skim(){
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
-		
 		//FillResolutionHists(); - does gen matching...again?
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
@@ -385,7 +381,15 @@ void BHCJetSkimmer::Skim(){
 		TreesToJets();
 		
 		//do jet-based evt selection for BHC jets
-		if(_sel == boostW){
+		if(_sel == singW){
+			//at least 1 BHC jet
+			if(_predJets.size() < 1) continue;
+
+		}
+
+
+		/*//old singW selection for ttbar sample
+		if(_sel == singW){
 			//need at least nW*2 jets (ie 1 nW = 1 W jet and 1 b jet)
 			if(_predJets.size() < nW*2){
 				cout << "have " << _predJets.size() << " need at least " << nW*2 << " jets to match to " << nW << " W(s) and an equal number of b(s)" << endl;
@@ -411,7 +415,7 @@ void BHCJetSkimmer::Skim(){
 				double Eratio = _predJets[j].E()/_genparts[genbidx].E();
 				cout << "_pred jet #" << j << " has eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and E " << _predJets[j].E() << endl;
 				cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << endl; 
-				if(dr > 0.1) drGood = false;
+				if(dr > 0.15) drGood = false;
 				if(Eratio < 0.5 || Eratio > 1.5) EratioGood = false;
 				cout << " gen match dr " << dr << " Eratio " << Eratio << " match criteria " << (drGood && EratioGood) << endl;
 				if(drGood && EratioGood){
@@ -419,11 +423,18 @@ void BHCJetSkimmer::Skim(){
 					int genidx = _genparts[genbidx].GetUserIdx();
 					int bmom = _base->genpart_momIdx->at(genidx);
 					int widx = -1;
+					//make sure W (top) has hadronic decay
+					bool lep = _base->Top_decayId->at(topidx_decayidx[bmom]);
+cout << "bmom " << bmom << " idx " << topidx_decayidx[bmom] << " decay id " << lep << endl;
+					if(lep){ cout << "W/b mom " << bmom << " has decay id " << lep << " leptonic - skip" << endl; continue; }	
 			//cout << "good b match has mom idx " << bmom << endl;
 					for(int g = 0; g < _genparts.size(); g++){
 						int ggenidx = _genparts[g].GetUserIdx();
 						if(fabs(_base->genpart_id->at(ggenidx)) != 24) continue;
+						//make sure W passes pt req
+						if(_base->genpart_pt->at(ggenidx) < _minWPt) { cout << "W has pt " << _base->genpart_pt->at(ggenidx) << " " << _genparts[g].pt() << endl; continue;}
 						if(_base->genpart_momIdx->at(ggenidx) == bmom){
+							cout << "saving W # " << ggenidx << " for b " << genidx << " with energy " << _genparts[g].E() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << endl;
 							//cout << "W at " << ggenidx << " has same mom as b at " << _base->genpart_momIdx->at(ggenidx) << endl;
 							_genW.push_back(_genparts[g]);
 							break;
@@ -448,10 +459,11 @@ void BHCJetSkimmer::Skim(){
 			}
 			//else skip
 			else{
-				cout << "no BHC jets did not match gen b's well enough, skip" << endl;
+				cout << "no BHC jets did not match gen b's well enough for hadronic Ws, skip" << endl;
 				continue; //else, skip this event
 			}
 		}
+		*/
 		if(_sel == boostTop){
 			if(_predJets.size() < 2) continue; //want at least two boosted tops in an event
 			//if there are any jets that are good matches to bs then the top can't be boosted, skip
@@ -486,6 +498,8 @@ void BHCJetSkimmer::Skim(){
 					for(int g = 0; g < _genparts.size(); g++){
 						int ggenidx = _genparts[g].GetUserIdx();
 						if(fabs(_base->genpart_id->at(ggenidx)) != 6) continue;
+						//make sure top still passes gen pt req
+						if(_base->genpart_pt->at(ggenidx) < _minTopPt) continue;
 						//needs to be hadronic
 						bool lep = _base->Top_decayId->at(topidx_decayidx[ggenidx]);
 						if(lep) continue;	
