@@ -80,7 +80,7 @@ def copyAndUpdateJob( job, jobnumber , proc_lines):
 
 header, proclines = parseHeader()	
 #print(proclines)
-fresub = open('./'+datasetname+'/src/resubmit_test2.sh','w')
+fresub = open('./'+datasetname+'/src/resubmit.sh','w')
 for line in header:
 	fresub.write(line)
 fresub.write("queue transfer_output_remaps, output, error, transfer_output_files, Arguments from (")
@@ -99,4 +99,4 @@ fresub.write("\n)\n")
 fresub.close()
 
 print("Resubmission script ready! Launch with:")
-print("condor_submit ./"+datasetname+"/src/resubmit_test2.sh")
+print("condor_submit ./"+datasetname+"/src/resubmit.sh")
