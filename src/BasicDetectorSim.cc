@@ -178,7 +178,8 @@ void BasicDetectorSim::_simTTbar(){
 }
 
 void BasicDetectorSim::_simSingleW(){
-	_pythia.settings.readString("WeakSingleBoson:ffbar2W = on");
+	//_pythia.settings.readString("WeakSingleBoson:ffbar2W = on");
+	_pythia.settings.readString("WeakBosonAndParton:ffbar2Wgm = on");
 	_pythia.settings.readString("PhaseSpace:pTHatMin = 200.");
 	_pythia.settings.readString("Beams:eCM = 13000.");
 	if(_verb > 1) cout << "Simulating single W" << endl;
@@ -309,6 +310,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			}
 			if(_simw){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
+cout << "particle eta " << particle.eta() << " phi " << particle.phi() << endl;
 					SaveGenInfo(p, -1);
 				}
 					

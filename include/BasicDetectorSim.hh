@@ -131,9 +131,13 @@ struct RecoParticle;
 
 			//assume that gen particle has not been propagated to detector face
 			RecoParticle genpart(particle);
-			//cout << "pre CalcTraj - SaveGenInfo - saving gen part with pt " << genpart.Momentum.pt() << " " << particle.pT() << " mass " << genpart.Momentum.mass() << " " << particle.m() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
+			//cout << "pre CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Momentum.eta() << " " << particle.eta() << " phi " << genpart.Momentum.phi() << " " << particle.phi() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
+			//cout << "position - pre CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Position.eta() << " " << particle.eta() << " phi " << genpart.Position.phi() << " " << particle.phi() << " energy " << genpart.Position.e() << " " << particle.e() << " pz " << genpart.Position.pz() << " " << particle.pz() << endl;
 			CalcTrajectory(genpart);
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
+			
+			//cout << "post CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Momentum.eta() << " " << particle.eta() << " phi " << genpart.Momentum.phi() << " " << particle.phi() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
+			//cout << "position - post CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Position.eta() << " " << particle.eta() << " phi " << genpart.Position.phi() << " " << particle.phi() << " energy " << genpart.Position.e() << " " << particle.e() << " pz " << genpart.Position.pz() << " " << particle.pz() << endl;
 
 
 			//cout << "post CalcTraj - SaveGenInfo - saving gen part with pt " << fj_genpart.pt() << " " << genpart.Momentum.pt() << " " << particle.pT() << " mass " << fj_genpart.m() << " " << genpart.Momentum.mass() << " " << particle.m() << " energy " << fj_genpart.e() << " " << genpart.Momentum.e() << " " << particle.e() << " pz " << fj_genpart.pz() << " " << genpart.Momentum.pz() << " " << particle.pz() << endl;
