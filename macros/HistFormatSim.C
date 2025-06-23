@@ -1593,7 +1593,14 @@ void HistFormatSim(string file){
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subclusterMass");
 	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "W_subclusterLeadInvMass");
 	
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Top_nSubclusters");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Top_subclusterMass");
+	MethodStackHists(file, "ttbar", jettypes_recoAK4BHC, oname, "Top_subclusterLeadInvMass");
+	
 	Hist2D(file, "ttbar", "BHC", oname, "W_nSubclustersJet_mass");
+	Hist2D(file, "ttbar", "BHC", oname, "W_EratioSubclGenPart_nSubclustersJet");
+	Hist2D(file, "ttbar", "BHC", oname, "W_dRGenPartons_jetSize");
+	Hist2D(file, "ttbar", "BHC", oname, "Top_nSubclustersJet_mass");
 	
 	Hist2D(file, "ttbar", "BHC", oname, "_genTop");
 	Hist2D(file, "ttbar", "genAK4", oname, "_genTop");
