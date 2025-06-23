@@ -25,6 +25,7 @@ using std::string;
 using Pythia = Pythia8::Pythia;
 using std::set;
 using PtEtaPhiEVector = ROOT::Math::PtEtaPhiEVector;
+using PxPyPzEVector = ROOT::Math::PxPyPzEVector;
 using XYZTVector = ROOT::Math::XYZTVector;
 class BasicDetectorSim{
 struct RecoParticle;
@@ -35,8 +36,9 @@ struct RecoParticle;
 
 		};
 
-		void SimTTbar(){ _procs_to_sim.push_back(ttbar); };
-		void SimQCD(){ _procs_to_sim.push_back(qcd); };
+		void SimTTbar(){ _procs_to_sim.push_back(ttbar); _simttbar = true;};
+		void SimQCD(){ _procs_to_sim.push_back(qcd); _simqcd = true;};
+		void SimSingleW(){ _procs_to_sim.push_back(w); _simw = true;};
 
 		//this is what does the detector effects on the tracks
 		void CalcTrajectory(RecoParticle& rp); //calculate trajectories/tracks for 
@@ -83,10 +85,6 @@ struct RecoParticle;
 
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
-		//get gen + reco momentum
-		void GetParticlesMom(vector<PtEtaPhiEVector>& genps, vector<PtEtaPhiEVector>& recops);
-		//get gen + reco position
-		void GetParticlesPos(vector<XYZTVector>& genps, vector<XYZTVector>& recops);
 		//get emissions per reco particle
 		void GetEmissions(vector<vector<JetPoint>>& ems);
 		//get fastjet jets - run on gen particles
@@ -126,28 +124,24 @@ struct RecoParticle;
 
 
 	protected:
-		void RecordMomInfo(Pythia8::Particle particle){
-			//mother idx in gen particle list - assuming normal mother case where mother1 > 0 && mother2 == 0
-			//'top level' gen particles are tops - if top do not save mother info
-			int momidx_pythia = particle.mother1();
-			if(fabs(particle.id()) != 6)
-				_genmoms.insert(momidx_pythia);
-		}
-		void SaveGenInfo(Pythia8::Particle particle, int genmom){
-			RecordMomInfo(particle);
+		//void SaveGenInfo(Pythia8::Particle particle, int genmom){
+		void SaveGenInfo(int evtidx, int genmom){
+			Pythia8::Particle particle = _sumEvent[evtidx];
+			_genpartEvtIdx.push_back(evtidx);
 
 			//assume that gen particle has not been propagated to detector face
 			RecoParticle genpart(particle);
+			//cout << "pre CalcTraj - SaveGenInfo - saving gen part with pt " << genpart.Momentum.pt() << " " << particle.pT() << " mass " << genpart.Momentum.mass() << " " << particle.m() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
 			CalcTrajectory(genpart);
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
+
+
+			//cout << "post CalcTraj - SaveGenInfo - saving gen part with pt " << fj_genpart.pt() << " " << genpart.Momentum.pt() << " " << particle.pT() << " mass " << fj_genpart.m() << " " << genpart.Momentum.mass() << " " << particle.m() << " energy " << fj_genpart.e() << " " << genpart.Momentum.e() << " " << particle.e() << " pz " << fj_genpart.pz() << " " << genpart.Momentum.pz() << " " << particle.pz() << endl;
+
 			fj_genpart.set_user_index(_genparts.size());
 			_genparts.push_back(fj_genpart);
 			_genpartIdx.push_back(_genparts.size()-1);
 			_genpartids.push_back((int)genpart.Particle.id());
-			//save top specific info
-			if(fabs(genpart.Particle.id()) == 6){
-				_topPt.push_back(genpart.Momentum.pt());
-			}
 			//cout << "saving gen mom " << genmom << endl;
 			_genpartMomIdx.push_back(genmom);
 		}
@@ -244,11 +238,12 @@ struct RecoParticle;
 		double _spikeprob; //probability of spiking in rec hit
 
 		//process enums
-		enum _proc {ttbar, qcd};
+		enum _proc {ttbar, qcd, w};
 		vector<int> _procs_to_sim;
 		void _simQCD(); //use pythia to simulate QCD events
 		void _simTTbar(); //use pythia to simulate ttbar events
-
+		void _simSingleW();
+		bool _simttbar, _simqcd, _simw;
 
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
@@ -296,12 +291,10 @@ struct RecoParticle;
 		
 		
 		//gen top info
-		vector<double> _topPt_had, _topPt_hadlep, _topPt_lep, _topPt;
-		vector<int> _topDecayId;
+		vector<int> _topDecayId, _wDecayId;
 		//gen particle info (even intermediate particles)
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass, _genpartpz;
 		vector<int> _genpartMomIdx;
-		set<double> _genmoms;
 		vector<int> _genpartIdx,_genpartEvtIdx;
 	
 		//reco AK4 jets
@@ -337,14 +330,16 @@ struct RecoParticle;
 			//associated emissions
 			vector<JetPoint> ems;
 			//reco position and momentum vectors
-			PtEtaPhiEVector Momentum;
+			//PtEtaPhiEVector Momentum;
+			PxPyPzEVector Momentum;
 			XYZTVector Position;
 			
 			//ctor from gen particle
 			RecoParticle(Pythia8::Particle& p){ 
 				Particle = p;
 				//init momentum to gen momentum
-				Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
+				//Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
+				Momentum.SetCoordinates(p.px(), p.py(), p.pz(), p.e());
 				//init to production coordinates
 				//originally in mm
 				//convert to m and s
