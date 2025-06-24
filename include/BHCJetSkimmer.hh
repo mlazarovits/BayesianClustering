@@ -579,8 +579,8 @@ class BHCJetSkimmer{
 				GetXYZVec(_genq[1],v2);
 
 				double dotprod = dot(v1,v2);
-				double openAng = acos(dotprod);
-				cout << "dotprod " << dotprod << " openAng " << openAng << endl;
+				openAng = acos(dotprod);
+				//cout << "dotprod " << dotprod << " openAng " << openAng << endl;
 			}
 			else if(_sel == QCDdijets){
 				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen Ws
