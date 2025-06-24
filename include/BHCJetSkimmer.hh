@@ -892,7 +892,7 @@ class BHCJetSkimmer{
 							//sort by energy
 							sort(consts.begin(), consts.end(), Esort_jet);
 							for(int c = 0; c < (int)consts.size(); c++){
-								_procCats[p].hists1D[pt][223]->Fill(consts[c].E());
+								_procCats[p].hists1D[pt][223]->Fill(consts[c].m());
 							}	
 						}			
 
@@ -2169,8 +2169,8 @@ class BHCJetSkimmer{
 		TH1D* BHCJetq_Eratio = new TH1D("BHCJet_genq_Eratio","BHCJet_genq_Eratio",25,0,2);
 		//222 - # subclusters in BHC jets matched to qs
 		TH1D* BHCJetq_nSubclusters = new TH1D("BHCJetq_nSubclusters","BHCJetq_nSubclusters",10,0,10);
-		//223 - subcluster energy in BHC jets matched to qs
-		TH1D* BHCJetq_subClusterEnergy = new TH1D("BHCJetq_subclusterEnergy","BHCJetq_subclusterEnergy",25,0,500);
+		//223 - subcluster mass in BHC jets matched to qs
+		TH1D* BHCJetq_subClusterMass = new TH1D("BHCJetq_subclusterMass","BHCJetq_subclusterMass",25,0,500);
 		
 	
 		//217 - BHC jets - gen-matched to W - subcluster eta center		
