@@ -319,7 +319,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetq_dR);
 			_hists1D.push_back(BHCJetq_Eratio);
 			_hists1D.push_back(BHCJetq_nSubclusters);
-			_hists1D.push_back(BHCJetq_subClusterEnergy);
+			_hists1D.push_back(BHCJetq_subClusterMass);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
