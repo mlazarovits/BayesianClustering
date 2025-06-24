@@ -1337,6 +1337,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 	TString th2d("TH2D");
 	TString tdir("TDirectoryFile");
 
+	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	string dirname, ddirname, histname, xlab, ylab;
 	string type = "";
 	while((key = (TKey*)iter())){
@@ -1365,7 +1366,6 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 			//cout << "method " << method << endl;
 			//we're in the directory with hists of one method split by procs
 			GetHists(dir, proc, hists);
-			TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 			if(hists.size() > 0){
 				//cout << "hists got" << endl;
 				for(auto h : hists) cout << h->GetName() << endl;
@@ -1520,7 +1520,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 };
 
 
-void HistFormatSim(string file){
+void HistFormatSim(string file, string proc){
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
 
@@ -1542,8 +1542,6 @@ void HistFormatSim(string file){
 
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
-
-	string proc = "singleW";
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
@@ -1573,6 +1571,11 @@ void HistFormatSim(string file){
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
 	
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclustersJet");
+	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
+	
 
 	if(proc == "singleW"){
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",{"lead"});
@@ -1588,10 +1591,14 @@ void HistFormatSim(string file){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
 		
+	}
+
+	if(proc == "singleW" || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_dR");
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters");
 		//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass");
+
 	}
 
 	if(proc == "ttbar"){	
@@ -1636,10 +1643,6 @@ void HistFormatSim(string file){
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterMass");
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEffnRhs");
 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclustersJet");
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
 	
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEtaCenter", pttypes);
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEtaCenter");
