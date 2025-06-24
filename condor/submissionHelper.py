@@ -52,26 +52,21 @@ def writeSubmissionBase(subf, dirname, ofilename):
         subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")	
 
 #splits by event number
-def eventsSplit(infile, nChunk):
-    if nChunk == 0:
-        nChunk += 1
-    #should split by event number in file
-    rfile = ROOT.TFile.Open(infile)
-    tree = rfile.Get("tree/llpgtree")
+def eventsSplit(infile, nChunk, filelist):
+    if filelist:
+        #should split by event number in file
+        tree = ROOT.TChain("tree/llpgtree")
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            for line in lines:
+                rfile = ROOT.TFile.Open(line[:-1]) #remove new line character
+                tree.AddFile(rfile.GetName())
+    else:
+        #should split by event number in file
+        rfile = ROOT.TFile.Open(infile)
+        tree = rfile.Get("tree/llpgtree")
     nevts = tree.GetEntries()
-    if nChunk > nevts:
-            print("Please pass split of at least",nevts)
-            return
-    print("Splitting each file into "+str(nChunk)+" jobs ")
-    print("nevts",nevts)
     evts = range(nevts+1)
-    #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
-    #make sure to count first event in every chunk after first
-    arr = [[min(i)-1, max(i)] for i in np.array_split(evts,nChunk)]
-    #set first entry to 0
-    arr[0][0] = 0
-    return arr
-
 
 
 # Write each job to the condor submit file.

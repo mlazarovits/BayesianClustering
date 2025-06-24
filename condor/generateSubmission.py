@@ -159,7 +159,7 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFileList, args.split, True)
+    eventnums = SH.eventsSplit(inputFileList, args.split,True)
     if eventnums == 0 or eventnums is None:
     	return
     flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
