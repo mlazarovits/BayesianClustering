@@ -1337,6 +1337,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 	TString th2d("TH2D");
 	TString tdir("TDirectoryFile");
 
+	TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 	string dirname, ddirname, histname, xlab, ylab;
 	string type = "";
 	while((key = (TKey*)iter())){
@@ -1365,7 +1366,6 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 			//cout << "method " << method << endl;
 			//we're in the directory with hists of one method split by procs
 			GetHists(dir, proc, hists);
-			TFile* ofile = TFile::Open(oname.c_str(),"UPDATE");
 			if(hists.size() > 0){
 				//cout << "hists got" << endl;
 				for(auto h : hists) cout << h->GetName() << endl;
