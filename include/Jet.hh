@@ -397,6 +397,7 @@ class Jet{
 			double phi, eta;
 			double norm = 0;
 			PointCollection phipts;
+			_mu = Matrix(3,1);
 			for(int i = 0; i < _nRHs; i++){		
 				//eta, phi centered at (0,0,0)
 				_eta += _rhs[i].eta()*_rhs[i].E();
