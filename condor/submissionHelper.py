@@ -67,6 +67,15 @@ def eventsSplit(infile, nChunk, filelist):
         tree = rfile.Get("tree/llpgtree")
     nevts = tree.GetEntries()
     evts = range(nevts+1)
+    if nChunk == 0:
+        nChunk += 1
+    print("Splitting each file into "+str(nChunk)+" jobs ")
+    #return array of pairs of evtFirst and evtLast to pass as args into the exe to run
+    #make sure to count first event in every chunk after first
+    arr = [[min(i)-1, max(i)] for i in np.array_split(evts,nChunk)]
+    #set first entry to 0
+    arr[0][0] = 0
+    return arr
 
 
 # Write each job to the condor submit file.
