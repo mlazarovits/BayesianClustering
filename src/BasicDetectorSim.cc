@@ -669,8 +669,7 @@ cout << "particle eta " << particle.eta() << " phi " << particle.phi() << endl;
 //this code is based on ParticlePropagator class in Delphes
 //https://github.com/delphes/delphes/blob/master/modules/ParticlePropagator.cc
 void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
-	//ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
-	ROOT::Math::PxPyPzEVector Momentum = rp.Momentum;
+	ROOT::Math::PtEtaPhiEVector Momentum = rp.Momentum;
 	ROOT::Math::XYZTVector Position = rp.Position;
 	//calculate halflength from max eta
 	double theta = 2*atan2(1,exp(_etamax));
@@ -720,7 +719,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p	
 		rp.Position.SetCoordinates(x_t, y_t, z_t, Position.T() + t);
 		//keep momentum at gen values - update eta, phi
-		//rp.Momentum.SetCoordinates(pt, rp.Momentum.eta(), rp.Momentum.phi(), e); 	
+		rp.Momentum.SetCoordinates(pt, rp.Momentum.eta(), rp.Momentum.phi(), e); 	
 	}
 	//charged particles in magnetic field
 	else{
@@ -764,10 +763,10 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		// momentum at closest approach
 		px = pt * TMath::Cos(phid);
 		py = pt * TMath::Sin(phid);
-		//cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << endl;//" " << atan2(y_c, x_c) << endl;
+		//cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << " id " << rp.Particle.id() << " pt " << rp.Particle.pT() << endl;//" " << atan2(y_c, x_c) << endl;
 		//reset momentum
-		//rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
-		rp.Momentum.SetCoordinates(px, py, pz, e);
+		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
+		//rp.Momentum.SetCoordinates(px, py, pz, e);
 		// 3. time evaluation t = TMath::Min(t_r, t_z)
 		//    t_r : time to exit from the sides
 		//    t_z : time to exit from the front or the back
@@ -827,8 +826,7 @@ void BasicDetectorSim::FillTracks(RecoParticle& rp){
 //fill ecal cells - create showers
 void BasicDetectorSim::FillCal(RecoParticle& rp){
 	Pythia8::Particle p = rp.Particle;
-	//PtEtaPhiEVector Momentum = rp.Momentum;
-	PxPyPzEVector Momentum = rp.Momentum;
+	PtEtaPhiEVector Momentum = rp.Momentum;
 	XYZTVector Position = rp.Position;
 	//set energy resolution based on particle type
 	double e, e_cell, e_sig, t_cell, pt, q;
@@ -1066,8 +1064,7 @@ void BasicDetectorSim::MakeRecHits(){
 //to account for overlap
 void BasicDetectorSim::ReconstructEnergy(){
 	XYZTVector Position;
-	//PtEtaPhiEVector Momentum;
-	PxPyPzEVector Momentum;
+	PtEtaPhiEVector Momentum;
 	Pythia8::Particle Particle;
 	double eta, phi, theta, ceta, cphi;
 	int ieta, iphi, iieta, iiphi;	
@@ -1193,12 +1190,12 @@ void BasicDetectorSim::ReconstructEnergy(){
 		_recops[p].Momentum.SetE(reco_e);
 		//set pt wrt to new energy and m = 0
 		//p = cosh(eta) = E for m = 0
-		//_recops[p].Momentum.SetPt(reco_e / cosh(_recops[p].Momentum.eta()) );
-		double pt = reco_e / cosh(_recops[p].Momentum.eta());
-		_recops[p].Momentum.SetPx(pt*cos(_recops[p].Momentum.phi()));
-		_recops[p].Momentum.SetPy(pt*sin(_recops[p].Momentum.phi()));
-		_recops[p].Momentum.SetPz(pt*sinh(_recops[p].Momentum.eta()));
-		_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
+		_recops[p].Momentum.SetPt(reco_e / cosh(_recops[p].Momentum.eta()) );
+		//double pt = reco_e / cosh(_recops[p].Momentum.eta());
+		//_recops[p].Momentum.SetPx(pt*cos(_recops[p].Momentum.phi()));
+		//_recops[p].Momentum.SetPy(pt*sin(_recops[p].Momentum.phi()));
+		//_recops[p].Momentum.SetPz(pt*sinh(_recops[p].Momentum.eta()));
+		//_recops[p].Position.SetCoordinates(_recops[p].Position.x()*1e2, _recops[p].Position.y()*1e2, _recops[p].Position.z()*1e2, reco_t/((double)reco_nrh)*1e9);
 		//cout << " reco particle " << p << " eta " << _recops[p].Position.eta() << " phi " << _recops[p].Position.phi() << " gen eta " << _recops[p].Particle.eta() << " gen phi " << _recops[p].Particle.phi() << " reco pt " << _recops[p].Momentum.pt() << " gen pt " << _recops[p].Particle.pT() << " reco_e " << reco_e << " gen e " << _recops[p].Particle.e() << " ratio reco E / gen E " << _recops[p].Momentum.E()/_recops[p].Particle.e() << " mom eta " << _recops[p].Momentum.eta() << " pos eta " << _recops[p].Position.eta() << endl;
       		//RUN FASTJET ON RECO PARTICLES (NOT RECHITS)
 		//fjinputs.push_back( fastjet::PseudoJet( _recops[p].Momentum.px(),
@@ -1214,12 +1211,12 @@ void BasicDetectorSim::ReconstructEnergy(){
 void BasicDetectorSim::FillGenParticles(){
 	_ngenparts = (int)_genparts.size();
 	for(int g = 0; g < _genparts.size(); g++){
-		_genparteta.push_back(_genparts[g].eta());
-		_genpartphi.push_back(_genparts[g].phi());
-		_genpartenergy.push_back(_genparts[g].e());
-		_genpartpt.push_back(_genparts[g].pt());
-		_genpartpz.push_back(_genparts[g].pz());
-		_genpartmass.push_back(_genparts[g].m());
+		_genparteta.push_back(_genparts[g].Position.eta());
+		_genpartphi.push_back(_genparts[g].Position.phi());
+		_genpartenergy.push_back(_genparts[g].Momentum.e());
+		_genpartpt.push_back(_genparts[g].Momentum.pt());
+		_genpartpz.push_back(_genparts[g].Momentum.pz());
+		_genpartmass.push_back(_genparts[g].Momentum.mass());
 	}
 }
 

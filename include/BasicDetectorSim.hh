@@ -136,14 +136,14 @@ struct RecoParticle;
 			CalcTrajectory(genpart);
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
 			
-			//cout << "post CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Momentum.eta() << " " << particle.eta() << " phi " << genpart.Momentum.phi() << " " << particle.phi() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
 			//cout << "position - post CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Position.eta() << " " << particle.eta() << " phi " << genpart.Position.phi() << " " << particle.phi() << " energy " << genpart.Position.e() << " " << particle.e() << " pz " << genpart.Position.pz() << " " << particle.pz() << endl;
 
+			//cout << "post CalcTraj - SaveGenInfo - saving gen part with eta " << fj_genpart.eta() << " " <<  genpart.Momentum.eta() << " " << particle.eta() << " phi " << fj_genpart.phi() << " " << genpart.Momentum.phi() << " " << particle.phi() << " energy " << fj_genpart.e() << " " << genpart.Momentum.e() << " " << particle.e() << " pz " << fj_genpart.pz() << " " << genpart.Momentum.pz() << " " << particle.pz() << endl;
 
-			//cout << "post CalcTraj - SaveGenInfo - saving gen part with pt " << fj_genpart.pt() << " " << genpart.Momentum.pt() << " " << particle.pT() << " mass " << fj_genpart.m() << " " << genpart.Momentum.mass() << " " << particle.m() << " energy " << fj_genpart.e() << " " << genpart.Momentum.e() << " " << particle.e() << " pz " << fj_genpart.pz() << " " << genpart.Momentum.pz() << " " << particle.pz() << endl;
 
 			fj_genpart.set_user_index(_genparts.size());
-			_genparts.push_back(fj_genpart);
+			//_genparts.push_back(fj_genpart);
+			_genparts.push_back(genpart);
 			_genpartIdx.push_back(_genparts.size()-1);
 			_genpartids.push_back((int)genpart.Particle.id());
 			//cout << "saving gen mom " << genmom << endl;
@@ -224,7 +224,8 @@ struct RecoParticle;
 		vector<fastjet::PseudoJet>  _recoAK15jets; //reco outputs from fastjet
 		int _nrecoAK15jets;
 
-		vector<fastjet::PseudoJet>  _genparts; //gen particles
+		//vector<fastjet::PseudoJet>  _genparts; //gen particles
+		vector<RecoParticle>  _genparts; //gen particles
 		vector<int> _genpartids; //genpart ids
 		int _ngenparts; //# of objects
 		fastjet::JetDefinition _jetdef_AK4; //fastjet clustering definition 
@@ -336,16 +337,16 @@ struct RecoParticle;
 			//associated emissions
 			vector<JetPoint> ems;
 			//reco position and momentum vectors
-			//PtEtaPhiEVector Momentum;
-			PxPyPzEVector Momentum;
+			PtEtaPhiEVector Momentum;
+			//PxPyPzEVector Momentum;
 			XYZTVector Position;
 			
 			//ctor from gen particle
 			RecoParticle(Pythia8::Particle& p){ 
 				Particle = p;
 				//init momentum to gen momentum
-				//Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
-				Momentum.SetCoordinates(p.px(), p.py(), p.pz(), p.e());
+				Momentum.SetCoordinates(p.pT(), p.eta(), p.phi(), p.e());
+				//Momentum.SetCoordinates(p.px(), p.py(), p.pz(), p.e());
 				//init to production coordinates
 				//originally in mm
 				//convert to m and s
