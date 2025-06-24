@@ -2459,11 +2459,11 @@ class BHCJetSkimmer{
 		//131 - BHC jets gen-matched to Tops - subcluster mass vs # subclusters/jet
 		TH2D* BHCJetTop_nSubclustersJet_mass = new TH2D("BHCJetTop_nSubclustersJet_mass","BHCJetTop_nSubclustersJet_mass;nSubclustersJet;subclMass",10,0,10,50,0,250);
 		//132 - # bhc jets as a function of opening angle of partons from W
-		TH2D* BHCJetW_openAng_nJets = new TH2D("BHCJetW_openAng_nJets","BHCJetW_openAng_nJets;openAng;nJets",30,0,30,25,0,3.3);
+		TH2D* BHCJetW_openAng_nJets = new TH2D("BHCJetW_openAng_nJets","BHCJetW_openAng_nJets;openAng;nJets",25,0,3.3,30,0,30);
 		//133 - # bhc subclusters/jet as a function of opening angle of partons from W
-		TH2D* BHCJetW_openAng_nSubclustersJet = new TH2D("BHCJetW_openAng_nSubclustersJet","BHCJetW_openAng_nSubclustersJet;openAng;nSubclustersJet",30,0,30,10,0,10);
+		TH2D* BHCJetW_openAng_nSubclustersJet = new TH2D("BHCJetW_openAng_nSubclustersJet","BHCJetW_openAng_nSubclustersJet;openAng;nSubclustersJet",25,0,3.3,10,0,10);
 		//134 - bhc subcluster mass as a function of opening angle of partons from W
-		TH2D* BHCJetW_openAng_subclMass = new TH2D("BHCJetW_openAng_subclMass","BHCJetW_openAng_subclMass;openAng;subclMass",30,0,30,50,0,200);
+		TH2D* BHCJetW_openAng_subclMass = new TH2D("BHCJetW_openAng_subclMass","BHCJetW_openAng_subclMass;openAng;subclMass",25,0,3.3,50,0,200);
 
 
 		void SetSmear(bool t){ _smear = t; }
