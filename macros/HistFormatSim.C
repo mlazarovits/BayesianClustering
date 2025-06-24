@@ -1573,6 +1573,11 @@ void HistFormatSim(string file){
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
 	
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclustersJet");
+	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
+	
 
 	if(proc == "singleW"){
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",{"lead"});
@@ -1636,10 +1641,6 @@ void HistFormatSim(string file){
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterMass");
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEffnRhs");
 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclustersJet");
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
 	
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEtaCenter", pttypes);
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_subclusterEtaCenter");
