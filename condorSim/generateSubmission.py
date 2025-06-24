@@ -131,7 +131,7 @@ def generateSubmission(args):
     eventnums = SH.eventsSplit(inputFile, args.split)
     if eventnums is None:
         return
-    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --nGhosts "+str(args.nGhosts)
+    flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --minTopPt "+str(args.minTopPt)+" --nGhosts "+str(args.nGhosts)+' --minWPt '+str(args.minWPt)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
@@ -213,7 +213,8 @@ def main():
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minpt',help='min gen jet pt',default=0.)
     parser.add_argument('--minE',help='min gen jet energy',default=0)
-    parser.add_argument('--minTopPt',help='min gen top pt',default=0.)
+    parser.add_argument('--minTopPt',help='min gen top pt',default=50.)
+    parser.add_argument('--minWPt',help='min gen W pt',default=50.)
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=False,action='store_true')
