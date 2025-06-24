@@ -1520,7 +1520,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 };
 
 
-void HistFormatSim(string file){
+void HistFormatSim(string file, string proc){
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
 
@@ -1542,8 +1542,6 @@ void HistFormatSim(string file){
 
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
-
-	string proc = "singleW";
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
@@ -1593,10 +1591,14 @@ void HistFormatSim(string file){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
 		
+	}
+
+	if(proc == "singleW" || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_dR");
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters");
 		//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass");
+
 	}
 
 	if(proc == "ttbar"){	
