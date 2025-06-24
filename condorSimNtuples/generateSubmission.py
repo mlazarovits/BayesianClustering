@@ -29,6 +29,8 @@ def generateSubmission(args):
     	sampleName = "ttbar"
     elif args.QCD:
     	sampleName = "QCD"
+    elif args.W:
+    	sampleName = "singleW"
     else:
                 print("Sample must be provided, current options are",sampleOptions)
                 exit()
@@ -54,11 +56,13 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --nPU '+str(args.nPU)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --nPU '+str(args.nPU)+' --ptHatMin '+str(args.ptHatMin)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
         flags += ' --QCD'
+    if(args.W):
+        flags += ' --W'
     if(args.sigDelayed):
         flags += ' --sigDelayed'
     if(args.sigBoosted):
@@ -91,6 +95,8 @@ def main():
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     parser.add_argument('--ttbar',help="run ttbar process",action='store_true')
     parser.add_argument('--QCD',help="run QCD process",action='store_true')
+    parser.add_argument('--W',help="run single W process",action='store_true')
+    parser.add_argument('--ptHatMin',help='set pt hat min for event generation (default = 200)',default = 200.)
     parser.add_argument('--sigDelayed',help="run sigDelayed process",action='store_true')
     parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
     parser.add_argument('--nPU',help="set avg # pu events (default = 0, off)",default=0)
