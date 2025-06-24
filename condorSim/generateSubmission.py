@@ -25,27 +25,20 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-            inputFile = "condorSimNtuples_ttbar_defaultv9p9"
+        inputFile = "condorSimNtuples_ttbar_defaultv9p10"
     elif args.inputSample == "QCD":
-            inputFile = "condorSimNtuples_QCD_defaultv9p9"
-    #elif args.inputSample == "QCD_noSpatialSmear":
-    #        inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear.root"
-    #elif args.inputSample == "QCD_noSpatialSmear_highEnergySmear":
-    #        inputFile = "condorSimNtuples_QCD_defaultv4_noSpatialSmear_highEnergySmear.root"
-    #elif args.inputSample == "ttbar_v3_noEnergySmear":
-    #        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear.root"
-    #elif args.inputSample == "ttbar_v3_noEnergySmear_clusterFromRecoParticles":
-    #        inputFile = "condorSimNtuples_ttbar_v3_noEnergySmear_clusterFromRecoParticles.root"
-    #elif args.inputSample == "ttbar_noSpatialSmear":
-    #        inputFile = "condorSimNtuples_ttbar_defaultv4_noSpatialSmear.root"
-    #elif args.inputSample == "ttbar_noSpatialSmear_highEnergySmear":
-    #        inputFile = "condorSimNtuples_ttbar_defaultv4_noSpatialSmear_highEnergySmear.root"
+        inputFile = "condorSimNtuples_QCD_defaultv9p10"
+    elif args.inputSample == "singleW":
+        inputFile = "condorSimNtuples_singleW_defaultv9p10"
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
     if(args.zeroSup != '0.5'):
         zeroSupStr = zeroSupStr.replace(".","p")
         inputFile += "_eThresh-"+zeroSupStr
+
+    inputFile += "_ptHatMin"+args.ptHatMin
+
 
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
@@ -196,7 +189,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW'])
+    parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
     parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
