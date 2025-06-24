@@ -164,7 +164,7 @@ def generateSubmission(args):
 
     evtSelMap = {}
     evtSelMap["default"] = 0
-    evtSelMap["boostW"] = 1
+    evtSelMap["singleW"] = 1
     evtSelMap["boostTop"] = 2
     evtSelMap["QCDdijets"] = 3
 
@@ -209,7 +209,7 @@ def main():
     parser.add_argument('--tResStoch',help='set time smearing stochastic parameter in ns',default=0.5109)
     parser.add_argument('--tResNoise',help='set time smearing noise parameter in ns',default=2.106)
     parser.add_argument('--nGhosts',help='set number of ghost subclusters to add to BHC merging steps',default=0)
-    parser.add_argument('--evtSel',help='set event selection',default="default",choices=["default","boostW","boostTop","QCDdijets"])
+    parser.add_argument('--evtSel',help='set event selection',default="default",choices=["default","singleW","boostTop","QCDdijets"])
     parser.add_argument('--minnrhs',help='min object nrhs',default=2)
     parser.add_argument('--minpt',help='min gen jet pt',default=0.)
     parser.add_argument('--minE',help='min gen jet energy',default=0)
