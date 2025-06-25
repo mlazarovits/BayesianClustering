@@ -458,6 +458,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_openAng_subclMass);
 			_hists2D.push_back(BHCJetW_1subcl_dRGenPartons_jetSize);
 			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_jetSize);
+			_hists2D.push_back(BHCJetW_1subcl_dRGenPartons_avgPartonEnergy);
+			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -860,11 +862,15 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][128]->Fill(gendR, _predJets[j].GetNConstituents());
 							_procCats[p].hists2D[pt][129]->Fill(gendR, jetsize);
 							consts = _predJets[j].GetConstituents();
+
+							double avgPartE = (Wpartons[0].E() + W.partons[1].E())/2.;
 							if(consts.size() == 1){
 								_procCats[p].hists2D[pt][135]->Fill(gendR, jetsize);
+								_procCats[p].hists2D[pt][137]->Fill(gendR, avgPartE);
 							}
 							if(consts.size() > 1){
 								_procCats[p].hists2D[pt][136]->Fill(gendR, jetsize);
+								_procCats[p].hists2D[pt][138]->Fill(gendR, avgPartE);
 
 							}
 							//sort by energy
@@ -2489,6 +2495,10 @@ class BHCJetSkimmer{
 		TH2D* BHCJetW_1subcl_dRGenPartons_jetSize = new TH2D("BHCJetW_1subcl_dRGenPartons_jetSize","BHCJetW_1subcl_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
 		//136 - BHC jets gen-matched to Ws with 2+ subclusters - dR bw gen partons of W vs jet size
 		TH2D* BHCJetW_ge2subcl_dRGenPartons_jetSize = new TH2D("BHCJetW_ge2subcl_dRGenPartons_jetSize","BHCJetW_ge2subcl_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
+		//137 - BHC jets gen-matched to Ws with exactly 1 subcluster - dR bw gen partons of W vs avg. parton energy
+		TH2D* BHCJetW_1subcl_dRGenPartons_avgPartonEnergy = new TH2D("BHCJetW_1subcl_dRGenPartons_avgPartonEnergy","BHCJetW_1subcl_dRGenPartons_avgPartonEnergy;dRGenPartons;avgPartonEnergy",50,0,2.,50,0,2.);
+		//138 - BHC jets gen-matched to Ws with 2+ subclusters - dR bw gen partons of W vs avg. parton energy
+		TH2D* BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy = new TH2D("BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy","BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy;dRGenPartons;avgPartonEnergy",50,0,2.,50,0,2.);
 
 
 		void SetSmear(bool t){ _smear = t; }
