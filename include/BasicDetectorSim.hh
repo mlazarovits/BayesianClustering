@@ -123,6 +123,9 @@ struct RecoParticle;
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
 
+		void TurnOffShower(){
+			_noShower = true;
+		}
 
 
 	protected:
@@ -329,7 +332,10 @@ struct RecoParticle;
 		int _evt, _nRhs, _nSpikes, _nRecoParticles;
 		BayesPoint _PV;
 
-
+		//flag for turning off showering - saves final state gen particles 
+		//(ie not the initial ones of the hard process saved in _genparts) 
+		//as ECALRecHits to be used in clustering
+		bool _noShower;
 		int _evti, _evtj;
 
 		double _ptHatMin;

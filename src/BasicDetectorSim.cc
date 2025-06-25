@@ -80,6 +80,7 @@ BasicDetectorSim::BasicDetectorSim(){
 
 
 	_ptHatMin = 200;
+	_noShower = false;
 }
 
 //ctor with input pythia cmnd file
@@ -143,6 +144,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_simw = false;
 	
 	_ptHatMin = 200;
+	_noShower = false;
 }
 
 
@@ -865,6 +867,22 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	_get_etaphi(ieta, iphi, teta, tphi);
 	//cout << "FillCal check transformation - eta " << eta << " ieta " << ieta << " phi " << phi << " iphi " << iphi << " teta " << teta << " tphi " << tphi << " energy " << _cal[ieta][iphi].at(0) << " emissions " << _cal[ieta][iphi].at(2) << endl;
 	
+	//if no shower, just save whole energy of gen part to corresponding cell
+	if(_noShower){
+		//if these indices are out of bounds for detector indices, skip
+		if(ieta >= _netacal || ieta < 0) return;
+		if(iphi >= _nphical || iphi < 0) return;
+		
+		_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(0)+e, 0);	
+		//add time to right ieta, iphi cell	
+		_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(1)+t, 1);	
+		//add number of emissions to right ieta,iphi cell	
+		_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(2)+1,2);
+
+		return;
+	}
+
+	
 	for(int i = -_ncell; i < _ncell+1; i++){
 		for(int j = -_ncell; j < _ncell+1; j++){
 			//get ieta, iphi for cell in grid
@@ -883,6 +901,8 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 		
 			aphi = cphi - _dphi/2.;
 			bphi = cphi + _dphi/2.;
+
+			//if no shower - just save whole energy of particle to 
 
 			//do (independent) 2D (eta-phi) gaussian integral
 			//with mean = particle eta, phi
@@ -941,8 +961,13 @@ void BasicDetectorSim::MakeRecHits(){
 			//energy in this cell
 			//out to 5 sigma
 			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
-			//smear energy in each cell
-			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			//smear energy in each cell if showering
+			if(!_noShower){
+				e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			}
+			else{
+				e_cell = e;
+			}
 			//make sure e can't be negative
 			if(e_cell < 0) continue;	
 			//in each cell to find energy deposited
@@ -953,14 +978,19 @@ void BasicDetectorSim::MakeRecHits(){
 
 			t = _cal[i][j].at(1)/((double)_cal[i][j].at(2));
 			
-			//do amplitude dependent time smearing
-			t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
-			t_sig = sqrt(t_sig/2.); //divide by 2 bc params were taken from measurements of 2 rechits
-			//smear time in cell
-			//t can be negative (early times)
-			//update range to be centered on t, up to 5 sigma (calTres)
-			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
-			t_cell = t;//_rs.SampleGaussian(t, t_sig, 1).at(0);
+			//do amplitude dependent time smearing if showering
+			if(!_noShower){
+				t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
+				t_sig = sqrt(t_sig/2.); //divide by 2 bc params were taken from measurements of 2 rechits
+				//smear time in cell
+				//t can be negative (early times)
+				//update range to be centered on t, up to 5 sigma (calTres)
+				_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
+				t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			}
+			else{
+				t_cell = t;
+			}
 			//if(e_cell > 1) cout << "t " << t*1e9 << " e " << e_cell << " tsig " << t_sig*1e9 << " t_cell " << t_cell*1e9 << endl;
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
