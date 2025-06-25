@@ -69,7 +69,7 @@ def generateSubmission(args):
         flags += ' --sigBoosted'
     if(args.ootPU):
         flags += ' --ootPU'
-    if(args.noShower)
+    if(args.noShower):
         flags += ' --noShower'
 
     flags += ' --energyCte '+str(args.energyCte)
