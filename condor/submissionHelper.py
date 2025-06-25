@@ -34,22 +34,35 @@ def writeSubmissionBase(subf, dirname, ofilename):
         subf.write("error = ./"+dirname+"/log/job.$(Process).err\n")
         subf.write("log = ./"+dirname+"/log/job.log\n")
         #include tarball with CMSSW environment
-        #subf.write("transfer_input_files = /uscms/home/z374f439/nobackup/whatever_you_want/sandbox-CMSSW_10_6_5-6403d6f.tar.bz2, configSim.tgz, \n")
-        subf.write("transfer_input_files = /uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_0_13.tar.bz2, configSim.tgz, \n")
+        subf.write("transfer_input_files = /uscms/home/mlazarov/nobackup/sandboxes/sandbox-CMSSW_13_0_13.tar.bz2, config.tgz, \n")
         subf.write("should_transfer_files = YES\n")
         #subf.write("request_memory = 4096\n")
         subf.write("when_to_transfer_output = ON_EXIT\n")
-        outname = ofilename+".$(Process).root"
+        outnames = []
+        outnames.append(ofilename+".$(Process).root")
+        #if photons, write csv file for MVA
+        if "photon" in dirname or "superclusters" in dirname:
+            outnames.append(ofilename+".$(Process).csv")
+        outname = ""
+        for o in outnames:
+            outname += o+", "
+        #remove last comma and space
+        outname = outname[:-2]
+        #subf.write("transfer_output_files = "+outname+"\n")
         subf.write("transfer_output_files = "+outname+"\n")
         # need to supply absolute path for remap
         #absCWD = os.path.abspath(".") # these cwd give the wrong abs path, there is something special in the environment
         #absCWD = os.getcwd()
         absCWD = os.popen('pwd').readline().rstrip()
         #print("abs path is "+ absCWD)
-        remap= absCWD+"/"+dirname+"/out/"+outname
-        #print("remap is "+ remap)
-	#print("outname is "+outname)
-        subf.write("transfer_output_remaps = \""+outname+"="+remap+"\"\n")	
+        remap = ""
+        for o in outnames:
+            remap += o+"="+absCWD+"/"+dirname+"/out/"+o+";"
+            #print("remap is "+ remap)
+	        #print("outname is "+outname)
+        #remove last semicolon 
+        remap = remap[:-1]
+        subf.write("transfer_output_remaps = \""+remap+"\"\n")
 
 #splits by event number
 def eventsSplit(infile, nChunk, filelist):
