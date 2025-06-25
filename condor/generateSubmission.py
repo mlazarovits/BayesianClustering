@@ -52,6 +52,7 @@ def generateSubmission(args):
     #to use xrootd path cannot be relative
     #find any ../ and remove it and the dir before it
     inputPathList = "/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/BayesianClustering/filelists/"
+    #inputPathList = "filelists/"
     inputFileList = inputPathList+inputFileList
 
     objName = args.object
@@ -218,6 +219,9 @@ def generateSubmission(args):
     subf = open(condorSubmitFile, "w")
     print("outputfile name "+ofilename)
     SH.writeSubmissionBase(subf, dirname, ofilename)
+    #need to remove local lpc path for actual args
+    inputFileList = inputFileList[inputFileList.rfind("/",0,inputFileList.rfind("/"))+1:]
+    print("inputfilelist",inputFileList)
     SH.writeQueueList(subf, inputFileList, ofilename, eventnums, flags)
     
     print("------------------------------------------------------------")
