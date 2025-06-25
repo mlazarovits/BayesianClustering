@@ -456,6 +456,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_openAng_nJets);
 			_hists2D.push_back(BHCJetW_openAng_nSubclustersJet);
 			_hists2D.push_back(BHCJetW_openAng_subclMass);
+			_hists2D.push_back(BHCJetW_1subcl_dRGenPartons_jetSize);
+			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_jetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -595,7 +597,20 @@ class BHCJetSkimmer{
 				cout << "# pred jets - # reco AK4 jets " << njets - (int)_recoAK4jets.size() << endl;
 				cout << "# pred jets - # gen AK4 jets " << njets - (int)_genAK4jets.size() << endl;
 				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recoAK4jets.size());
-				if(openAng != -1) _procCats[p].hists2D[0][132]->Fill(openAng,njets);
+				if(openAng != -1){
+					_procCats[p].hists2D[0][132]->Fill(openAng,njets);
+					//count # jets over pt thresh for lead/not lead
+					int njets_lead = 0;
+					int njets_notlead = 0;
+					for(int j = 0; j < _predJets.size(); j++){
+						if(_predJets[j].pt() < _pt_thresh) njets_notlead++;
+						//pt == 2 -> [0,_pt_thresh)
+						if(_predJets[j].pt() >= _pt_thresh) njets_lead++;
+
+					}
+					_procCats[p].hists2D[1][132]->Fill(openAng,njets_lead);
+					_procCats[p].hists2D[2][132]->Fill(openAng,njets_notlead);
+				}
 				//loop over pt bins
 				njets = _predJets.size();
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
@@ -702,7 +717,7 @@ class BHCJetSkimmer{
 							//E_k = norms[k]/_gev;
 							_procCats[p].hists1D[pt][2]->Fill(subcl.E());
 							if(openAng != -1) _procCats[p].hists2D[pt][134]->Fill(openAng,subcl.m());
-
+cout << "hist 134 has " << _procCats[p].hists2D[pt][134]->GetEntries() << " entries" << endl;
 							//params = model->GetPriorParameters(k);
 							//ceta = params["mean"].at(0,0);
 							//cphi = params["mean"].at(1,0);
@@ -846,6 +861,13 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][128]->Fill(gendR, _predJets[j].GetNConstituents());
 							_procCats[p].hists2D[pt][129]->Fill(gendR, jetsize);
 							consts = _predJets[j].GetConstituents();
+							if(consts.size() == 1){
+								_procCats[p].hists2D[pt][135]->Fill(gendR, jetsize);
+							}
+							if(consts.size() > 1){
+								_procCats[p].hists2D[pt][136]->Fill(gendR, jetsize);
+
+							}
 							//sort by energy
 							sort(consts.begin(), consts.end(), Esort_jet);
 							//get invariant mass of leading two subclusters
@@ -2464,6 +2486,10 @@ class BHCJetSkimmer{
 		TH2D* BHCJetW_openAng_nSubclustersJet = new TH2D("BHCJetW_openAng_nSubclustersJet","BHCJetW_openAng_nSubclustersJet;openAng;nSubclustersJet",25,0,3.3,10,0,10);
 		//134 - bhc subcluster mass as a function of opening angle of partons from W
 		TH2D* BHCJetW_openAng_subclMass = new TH2D("BHCJetW_openAng_subclMass","BHCJetW_openAng_subclMass;openAng;subclMass",25,0,3.3,50,0,200);
+		//135 - BHC jets gen-matched to Ws with exactly 1 subcluster - dR bw gen partons of W vs jet size
+		TH2D* BHCJetW_1subcl_dRGenPartons_jetSize = new TH2D("BHCJetW_1subcl_dRGenPartons_jetSize","BHCJetW_1subcl_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
+		//136 - BHC jets gen-matched to Ws with 2+ subclusters - dR bw gen partons of W vs jet size
+		TH2D* BHCJetW_ge2subcl_dRGenPartons_jetSize = new TH2D("BHCJetW_ge2subcl_dRGenPartons_jetSize","BHCJetW_ge2subcl_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
 
 
 		void SetSmear(bool t){ _smear = t; }
