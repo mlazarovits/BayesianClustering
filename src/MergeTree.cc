@@ -85,10 +85,10 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
 	//if(x->points->Sumw() < _thresh) rk = 0;
-	if(std::isnan(rk)){
-        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
-                //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
-        }
+	//if(std::isnan(rk)){
+        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
+        //        //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
+        //}
         //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
 	double loga = elbo + log(_alpha) + lgamma(n);
 	double logb = (double)log(l->prob_tk) + (double)log(r->prob_tk) + (double)log(l->d) + (double)log(r->d);

@@ -444,17 +444,17 @@ class MergeTree : BaseTree{
 	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
 	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
 	//cout << "node x means pre scale" << endl;
-	if(newLogL > 0){
-cout << "from model" << endl;
-	for(int k = 0; k < x->model->GetNClusters(); k++){
-		auto params = x->model->GetLHPosteriorParameters(k);
-		cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-		params["mean"].Print();
-		//cout << " cov" << endl;
-		//params["cov"].Print();
-	}
-x->model->GetData()->Print();
-	}
+	//if(newLogL > 0){
+	//	cout << "from model with LogL " << newLogL << " and n pts " << x->model->GetData()->GetNPoints() << endl;
+	//	for(int k = 0; k < x->model->GetNClusters(); k++){
+	//		auto params = x->model->GetLHPosteriorParameters(k);
+	//		cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+	//		params["mean"].Print();
+	//		//cout << " cov" << endl;
+	//		//params["cov"].Print();
+	//	}
+	//	x->model->GetData()->Print();
+	//}
 	//if(x->model->GetNClusters() <= 2){
 		//cout << "everything found to be in 1 cluster" << endl;
 		//cout << "from model" << endl;
