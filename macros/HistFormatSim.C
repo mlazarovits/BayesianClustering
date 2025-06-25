@@ -145,7 +145,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		
 		labelToMark["ttbar"] = 72;
 		labelToMark["QCD"] =   73;
-
+		//TODO: add for singleW
 
 	}
 	//methodStack formatting
@@ -1273,7 +1273,9 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 	}
 	double ymin, ymax;
 	string ylab, xlab;
-	name = match+"_"+proc+"_methodStack"+methodsname;
+	name = match+"_";
+	if(proc != "") name += proc+"_methodStack"+methodsname;
+	else name += proc+"methodStack"+methodsname;
 	if(types.size() > 0) name += "_ptStack";
 	if(histstot.size() < 1) return;
 	FindListHistBounds(histstot, ymin, ymax);
@@ -1325,6 +1327,9 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 	}
 	else if(proc == "ttbar"){
 		cmslab = "t#bar{t}";
+	}
+	else if(proc == "singleW"){
+		cmslab = "single W^{#pm}";
 	}
 	else cmslab = "process";
 	cmslab += ", "+method;
@@ -1520,7 +1525,7 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 };
 
 
-void HistFormatSim(string file, string proc){
+void HistFormatSim(string file, string proc = ""){
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
 
@@ -1542,6 +1547,11 @@ void HistFormatSim(string file, string proc){
 
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
+
+
+	if(proc == ""){
+		//add procs to procstack list
+	}
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
@@ -1591,15 +1601,17 @@ void HistFormatSim(string file, string proc){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
 		
+		Hist2D(file, proc, "BHC", oname, "BHCJetW_");
 	}
 
 	if(proc == "singleW" || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_dR");
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters");
-		//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass");
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass");
 
 	}
+
 
 	if(proc == "ttbar"){	
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_Eratio",{"lead"});
