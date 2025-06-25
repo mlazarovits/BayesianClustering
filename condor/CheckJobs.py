@@ -36,7 +36,8 @@ def checkJobs(outputDir,match_string):
         Object = folder.split("/")[-2]
         DataSetName = folder.split("/")[-3]
         print( "Evaluating Dataset "+DataSetName+" on "+Object+" with strategy "+Strategy)
-        bash = "grep -c \"Queue\" "+folder+"/src/submit.sh"
+        bash = "grep -c \"# job\" "+folder+"/src/submit.sh"
+        #bash = "grep -c \"Queue\" "+folder+"/src/submit.sh"
         print("N Jobs Queued")
         #os.system(bash)
         output1 = int(subprocess.check_output(['bash','-c', bash]).decode())
