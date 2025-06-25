@@ -717,7 +717,6 @@ class BHCJetSkimmer{
 							//E_k = norms[k]/_gev;
 							_procCats[p].hists1D[pt][2]->Fill(subcl.E());
 							if(openAng != -1) _procCats[p].hists2D[pt][134]->Fill(openAng,subcl.m());
-cout << "hist 134 has " << _procCats[p].hists2D[pt][134]->GetEntries() << " entries" << endl;
 							//params = model->GetPriorParameters(k);
 							//ceta = params["mean"].at(0,0);
 							//cphi = params["mean"].at(1,0);
