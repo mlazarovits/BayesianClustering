@@ -64,12 +64,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_pvy = _PV.at(1);
 	_pvz = _PV.at(2);
 	_pvt = 0;
-	
-	_oot_pvx = -999;
-	_oot_pvy = -999;
-	_oot_pvz = -999;
-	_oot_pvt = -999;
-
+	_oot = false;	
 
 	//set beam spot spread in z (mm) and time (mm/c)
 	//t spread = 100 ps => 0.1 ns * 30 cm/ns * 1e1 mm/cm = 30 mm z spread
@@ -141,11 +136,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_pvy = _PV.at(1);
 	_pvz = _PV.at(2);
 	_pvt = 0;
-	
-	_oot_pvx = -999;
-	_oot_pvy = -999;
-	_oot_pvz = -999;
-	_oot_pvt = -999;
+	_oot = false;	
 	
 	_simttbar = false;
 	_simqcd = false;
@@ -212,7 +203,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
   		pileup.settings.readString("Beams:eCM = 13000.");
 		//have PU be out-of-time by 25 ns
 		//25 ns * 29.9792458 cm/ns * 1e1 mm/cm = 7500 mm
-		pileup.settings.readString("Beams:offsetTime = -7494.8114");
+		if(_oot) pileup.settings.readString("Beams:offsetTime = -7494.8114");
 		//for doing z-spread of PU beamspot
 		pileup.settings.readString("Beams:allowVertexSpread = on");
 		pileup.settings.readString("Beams:sigmaVertexZ = 30"); //given in mm
@@ -283,10 +274,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				pileup.next();
 				Pythia8::Event pu_event = pileup.event;
 				//save PV info of OOT pu event
-				_oot_pvx = pu_event[1].xProd()*1e-1;
-				_oot_pvy = pu_event[1].yProd()*1e-1;
-				_oot_pvz = pu_event[1].zProd()*1e-1;
-				_oot_pvt = pu_event[1].tProd()*1e-3*(1/_sol)*1e9;
+				_pu_pvx.push_back(pu_event[1].xProd()*1e-1);
+				_pu_pvy.push_back(pu_event[1].yProd()*1e-1);
+				_pu_pvz.push_back(pu_event[1].zProd()*1e-1);
+				_pu_pvt.push_back(pu_event[1].tProd()*1e-3*(1/_sol)*1e9);
 				_sumEvent += pu_event;
 			}
 		}
@@ -1375,10 +1366,10 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("PV_z",&_pvz)->SetTitle("z coordinate PV (cm)");
 	_tree->Branch("PV_t",&_pvt)->SetTitle("t coordinate PV (ns)");
 
-	_tree->Branch("ootPV_x",&_oot_pvx)->SetTitle("x coordinate of oot PV (cm)");
-	_tree->Branch("ootPV_y",&_oot_pvy)->SetTitle("y coordinate of oot PV (cm)");
-	_tree->Branch("ootPV_z",&_oot_pvz)->SetTitle("z coordinate of oot PV (cm)");
-	_tree->Branch("ootPV_t",&_oot_pvt)->SetTitle("t coordinate of oot PV (ns)");
+	_tree->Branch("puPV_x",&_pu_pvx)->SetTitle("x coordinate of pu PV (cm)");
+	_tree->Branch("puPV_y",&_pu_pvy)->SetTitle("y coordinate of pu PV (cm)");
+	_tree->Branch("puPV_z",&_pu_pvz)->SetTitle("z coordinate of pu PV (cm)");
+	_tree->Branch("puPV_t",&_pu_pvt)->SetTitle("t coordinate of pu PV (ns)");
 
 	_tree->Branch("ECALSpike_energy", &_spikeE)->SetTitle("spike energy (GeV)");
 	_tree->Branch("nSpikes", &_nSpikes)->SetTitle("Number of spikes");
@@ -1586,10 +1577,11 @@ void BasicDetectorSim::_reset(){
 	_pvy = 0;
 	_pvz = 0;
 	_pvt = 0;
-	_oot_pvx = -999;
-	_oot_pvy = -999;
-	_oot_pvz = -999;
-	_oot_pvt = -999;
+
+	_pu_pvx.clear();
+	_pu_pvy.clear();
+	_pu_pvz.clear();
+	_pu_pvt.clear();
 }
 
 void BasicDetectorSim::WriteTree(){

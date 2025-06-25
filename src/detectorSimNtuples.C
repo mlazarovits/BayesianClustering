@@ -45,6 +45,7 @@ int main(int argc, char *argv[]){
 	double ethresh = 0.5; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
 	double pthatmin = 200;
 	int nPU = 0;
+	bool ootPU = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -64,8 +65,8 @@ int main(int argc, char *argv[]){
 			i++;
     	 		nPU = std::stoi(argv[i]);
    		}
-		if(strncmp(argv[i],"-pu", 3) == 0){
-    	 		pu = true;
+		if(strncmp(argv[i],"--ootPU", 7) == 0){
+    	 		ootPU = true;
    		}
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
@@ -143,7 +144,8 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " [options]" << endl;
    		cout << "  options:" << endl;
    		cout << "   --help(-h)                    print options" << endl;
-   		cout << "   --nPU                         simulate nPU pileup events (default = 0: PU off)" << endl;
+   		cout << "   --nPU [nPU]                   simulate nPU pileup events (default = 0: PU off)" << endl;
+   		cout << "   --ootPU                       simulate OOT pileup events (default = off)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
 		cout << "   --W                           simulate single W" << endl;
@@ -234,7 +236,7 @@ int main(int argc, char *argv[]){
 	if(singw) det.SimSingleW();
 	//if(sig_delayed)
 	//if(sig_boosted)
-	if(nPU != 0) det.TurnOnPileup(nPU);
+	if(nPU != 0) det.TurnOnPileup(nPU, ootPU);
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
 	
 	///////make ntuple///////

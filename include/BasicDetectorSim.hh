@@ -65,9 +65,10 @@ struct RecoParticle;
 		void SimulateEvents(int evt = -1); //loop through pythia events to get gen level info
 
 
-		void TurnOnPileup(int npuavg = 5){
+		void TurnOnPileup(int npuavg = 5,bool oot = false){
 			_pu = true;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
+			_oot = oot;
 		}
 
 		void TurnOnSpikes(double sprob = 0.01){ _spikes = true; _spikeprob = sprob; }
@@ -82,7 +83,8 @@ struct RecoParticle;
 		void SetMinGenPartPt(double p){_genpart_minpt = p; cout << "Minimum gen particle pt for subcluster analysis " << _genpart_minpt << " GeV" << endl; }
 
 		void SetPtHatMin(double p){ _ptHatMin = p; cout << "ptHat minimum = " << _ptHatMin << endl;}
-			
+
+	
 		//get cal rec hits
 		void GetRecHits(vector<Jet>& rhs); 
 		//get emissions per reco particle
@@ -316,8 +318,9 @@ struct RecoParticle;
 	
 		//pv info
 		double _pvx, _pvy, _pvz, _pvt;
-		//oot pu pv info
-		double _oot_pvx, _oot_pvy, _oot_pvz, _oot_pvt; 
+		//pu pv info
+		vector<double> _pu_pvx, _pu_pvy, _pu_pvz, _pu_pvt;
+		bool _oot;
 		//track info
 		vector<double> _trackpx, _trackpy, _trackpz, _tracketa, _trackphi;
 		//spike info	
