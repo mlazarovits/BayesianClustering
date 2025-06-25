@@ -318,6 +318,7 @@ class BaseSkimmer{
 			vector<double> ids;
 		
 			procCat(const vector<TH1D*>& in1dhists, const vector<TH2D*>& in2dhists, string plotname = "", string legname = "", bool leadsep = true){
+				cout << "making proc cat " << plotname << endl;
 				hists1D.push_back(hists1D_nom);
 				hists2D.push_back(hists2D_nom);
 				if(leadsep){

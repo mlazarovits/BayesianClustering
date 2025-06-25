@@ -84,6 +84,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			InitHists();
+			cout << "SuperClusterSkimmer ctor - print presel" << endl;
+			_prod->PrintPreselection();
 		}
 
 		void InitHists(){

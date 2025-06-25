@@ -9,7 +9,6 @@ void SuperClusterSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered superclusters" << endl;
-	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);
 	
@@ -86,8 +85,8 @@ void SuperClusterSkimmer::Skim(){
 	//genpt of photons whose mom is ~40 (ISR)
 	//genpt of photons whose mom is ~50 (meson decay)
 	for(int e = _evti; e < _evtj; e++){
+		cout << "evt " << e << " base is nullptr? " << (_base == nullptr) << endl;
 		_base->GetEntry(e);
-
         	if(_BHFilter != notApplied){
         	        if(_BHFilter == applied){
         	                //apply beam halo filter - other noise filters needed for full Run2 recommendations
@@ -349,6 +348,7 @@ void SuperClusterSkimmer::Skim(){
 		}
 	}
 	cout << "\n" << endl;
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	ofile->WriteTObject(objE_clusterE);
 	ofile->WriteTObject(genstatus);
 	ofile->WriteTObject(genstatus_mom);
