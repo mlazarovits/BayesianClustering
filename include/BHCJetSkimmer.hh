@@ -863,7 +863,7 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][129]->Fill(gendR, jetsize);
 							consts = _predJets[j].GetConstituents();
 
-							double avgPartE = (Wpartons[0].E() + W.partons[1].E())/2.;
+							double avgPartE = (Wpartons[0].E() + Wpartons[1].E())/2.;
 							if(consts.size() == 1){
 								_procCats[p].hists2D[pt][135]->Fill(gendR, jetsize);
 								_procCats[p].hists2D[pt][137]->Fill(gendR, avgPartE);
