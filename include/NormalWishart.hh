@@ -21,6 +21,15 @@ class NormalWishart : public BasePDF{
 
 		void UpdateParameters();
 
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+			m_mean = Matrix(d, 1);
+			m_scalemat = Matrix(d, d);
+			m_dof = 0.;
+			m_scale = 0.;
+		}
+
 	private:
 		//params
 		Matrix m_mean;

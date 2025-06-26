@@ -41,7 +41,8 @@ class BasePDF{
 				return Matrix();
 			}
 		}
-		void SetDim(int d){ m_dim = d; }
+		void BaseSetDim(int d){ m_dim = d; }
+		virtual void SetDim(int d) = 0;
 	
 		int Dim(){ return m_dim; }
 		int m_dim;

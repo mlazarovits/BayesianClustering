@@ -25,6 +25,14 @@ class Wishart : public BasePDF{
 
 		double lnB();
 		double H(); //entropy
+
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+			m_W = Matrix(d,d);
+			m_nu = 0;
+		}
+
 	private:
 		Matrix m_W;
 		double m_nu;

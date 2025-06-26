@@ -22,6 +22,12 @@ class Gaussian : public BasePDF{
 
 		Gaussian* mult(Gaussian* p1); 
 
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+			m_mu = Matrix(d, 1);
+			m_cov = Matrix(d,d);
+		}
 
 	private:
 		Matrix m_mu;

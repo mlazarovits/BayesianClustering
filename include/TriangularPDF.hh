@@ -27,6 +27,11 @@ class TriangularPDF : public BasePDF{
 			m_params["c"] = Matrix(BayesPoint(_c));
 		 }	
 
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+		}
+
 	private:
 		double _a, _b, _c;
 

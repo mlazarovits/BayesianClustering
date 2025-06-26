@@ -23,6 +23,12 @@ class Dirichlet : public BasePDF{
 
 		double lnC();
 
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+			for(int i = 0; i < d; i++) m_alphas.push_back(0.);
+		} 
+
 	private:
 		//parameters
 		vector<double> m_alphas;

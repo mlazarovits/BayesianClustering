@@ -24,6 +24,11 @@ class UniformPDF : public BasePDF{
 			m_params["b"] = Matrix(BayesPoint(_b));
 		 }	
 
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+		}
+
 	private:
 		double _a, _b;
 
