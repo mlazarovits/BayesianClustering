@@ -434,7 +434,6 @@ class PointCollection{
 
 
 	bool HasInf(int d){
-cout << "PointCollection::HasInf for dim " << d << " with pc dim " << _infs.size() << " " << _nDim << endl;
 		for(int i = 0; i < (int)_pts.size(); i++){
 			if(fabs(_pts[i].at(d)) == _infs[d]){ return true; }
 		}
