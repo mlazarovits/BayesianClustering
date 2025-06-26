@@ -47,6 +47,11 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	for(int k = 0; k < m_k; k++){
 		m_model[k] = new Gaussian();
 		m_model[k]->SetPrior(new NormalWishart());
+		//init data stat matrices here bc m_dim has been set from data
+		_xbar.push_back(Matrix());
+		_Sbar.push_back(Matrix());
+		m_Elam.push_back(0.);
+		m_Epi.push_back(0.);
 	}
 	//beta > 0
 	m_beta0 = 1e-3;
@@ -70,7 +75,6 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 }
 
 void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<string, Matrix>> prev_posteriors, unsigned long long seed){
-//cout << "GaussianMixture::InitParameters - start" << endl;
 //cout << "data" << endl; m_data->Print();
 //cout << "m_n " << m_n << " m_k " << m_k << endl;
 	//if no previously defined posteriors, use randomly initialized kmeans 
@@ -81,10 +85,8 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	for(int k = 0; k < m_k; k++){
 		m_model[k]->SetDim(m_dim);
 		m_model[k]->GetPrior()->SetDim(m_dim);
-		
-		//init data stat matrices here bc m_dim has been set from data
-		_xbar.push_back(Matrix(m_dim, 1));
-		_Sbar.push_back(Matrix(m_dim, m_dim));
+		_xbar[k] = Matrix(m_dim, 1);
+		_Sbar[k] = Matrix(m_dim, m_dim);
 	}
 
 	//this bypasses kmeans and the first M step (step 0) and directly sets the posteriors from a previous model(s)
@@ -117,7 +119,9 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				//could set scalemat to inverse (properly scaled with dof and weighted with r_nk's) of empirical covariance?
 				m_model[k-skip]->GetPrior()->SetParameter("scalemat", m_W0);
 				//cout << "scalemat " << endl; m_W0.Print();
-				m_model[k-skip]->GetPrior()->SetParameter("mean", params["m"]);	
+				m_model[k-skip]->GetPrior()->SetParameter("mean", params["m"]);
+				m_model[k-skip]->SetParameter("mean", params["m"]);
+				//TODO - set model center from same parameter		
 				//cout << "mean" << endl; params["m"].Print();
 				m_alphas[k-skip] = params["alpha"].at(0,0);	
 				//cout << "alpha " << params["alpha"].at(0,0) << endl;
@@ -146,6 +150,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				m_model[k]->GetPrior()->SetParameter("scale", m_beta0);
 				m_model[k]->GetPrior()->SetParameter("scalemat", m_W0);
 				m_model[k]->GetPrior()->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));	
+				m_model[k]->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));
 				m_alphas[k] = 0.01*m_data->Sumw();	
 			
 				//if a model isn't seeded by a previous posterior in this scheme, it is considered a "ghost" subcluser to study the IR safety of the subcluster scale
@@ -173,7 +178,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 			//UpdatePosteriorParameters(); 
 			//remove any kmeans initial clusters without any assigned points
 			//UpdateMixture(0);
-	//cout << "InitParameters - end" << endl;
+			UpdateMixture(0);
 			return;
 		}
 	}
@@ -260,7 +265,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	UpdatePosteriorParameters(); 
 	//remove any kmeans initial clusters without any assigned points
 	UpdateMixture(0);
-	//cout << "InitParameters - end" << endl;
 }
 
 
@@ -402,11 +406,14 @@ map<string, Matrix> GaussianMixture::GetLikelihoodParameters(int k){
 
 //returns posterior values of parameters, with Gaussian model parameters set by expected values
 map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{ 
+//cout << "GaussianMixture::GetLHPosteriorParameters - getting params for cluster " << k << " of " << m_k << " " << m_model.size() << " total" << " dim " << m_dim << endl;
 	map<string, Matrix> p;
 	if(k >= m_k) return p;
 	if(k < 0) return p;
 	//expected value of N(mu_k | mu_k, beta_k*lam_k) = m_k
 	p["mean"] = m_model[k]->GetParameter("mean");
+//cout << "model #" << k << " mean has dim " << m_model[k]->GetParameter("mean").GetDims()[0] << " weight " << m_norms[k] << endl;
+//m_model[k]->GetParameter("mean").Print();
 	p["cov"] = m_model[k]->GetParameter("cov");
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
 	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
@@ -414,6 +421,7 @@ map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{
 	p["scale"] = m_model[k]->GetPrior()->GetParameter("scale");
 	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
 	p["alpha"] = Matrix(m_alphas[k]);
+//cout << "# xbars " << _xbar.size() << " # Sbar " << _Sbar.size() << " m_Elam " << m_Elam.size() << endl;
 	//include data stats for initialization
 	p["xbar"] = _xbar[k];
 	p["Sbar"] = _Sbar[k];
@@ -1372,36 +1380,5 @@ double GaussianMixture::EvalEntropyTerms(){
 	return -E_q_Z - E_q_pi - E_q_muLam;
 
 }; //end Entropy
-
-//assuming same priors and over same dataset
-void GaussianMixture::add(GaussianMixture* model){
-	//check that same number of pts in this as model
-	if(m_n != model->GetData()->GetNPoints()){
-		cout << "Error: cannot add models because # of data points are different " << m_n << " and " << model->GetData()->GetNPoints() << endl;
-		return;
-	}
-	m_k = model->GetNClusters() + m_k;
-	m_beta0 = model->m_beta0;
-
-	cout << "# clusters " << m_k << endl;
-	
-	for(int k = 0; k < model->GetNClusters(); k++){
-		auto params = model->GetLHPosteriorParameters(k);
-		m_coeffs.push_back(0.);
-		m_norms.push_back(params["alpha"].at(0,0) - m_alpha0);
-		m_alphas.push_back(params["alpha"].at(0,0));
-		m_model.push_back(nullptr);
-
-		m_model[k] = new Gaussian();
-		m_model[k]->SetPrior(new NormalWishart());
-		
-		m_model[k]->GetPrior()->SetParameter("dof", params["dof"]);
-		m_model[k]->GetPrior()->SetParameter("scale", params["scale"]);
-		m_model[k]->GetPrior()->SetParameter("scalemat", params["scalemat"]);
-		m_model[k]->GetPrior()->SetParameter("mean", params["scalemat"]);	
-	}
-
-
-};
 
 

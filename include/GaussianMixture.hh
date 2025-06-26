@@ -29,31 +29,6 @@ class GaussianMixture : public BasePDFMixture{
 		//returns mu, cov, and mixing coeffs for cluster k
 		map<string, Matrix> GetLikelihoodParameters(int k); 
 
-		//"add" function stitches together two (projected) mixture models for one dataset and stores in this
-		void add(GaussianMixture* model); 
-		/* 
-		void SetPriorParameters(map<string, Matrix> params){
-			m_beta0 = params["scale"].at(0,0);
-			m_nu0 = params["dof"].at(0,0);
-			m_W0 = params["scalemat"];
-			m_W0inv.invert(m_W0);
-			m_mean0 = params["mean"];
-			m_meanBeta0 = Matrix(m_dim, 1);
-			m_meanBeta0.mult(m_mean0, m_beta0);
-			if(_verb > 6){
-				cout << "Prior Parameters" << endl;
-				cout << "beta0" << endl;
-				params["scale"].Print();
-				cout << "mean0" << endl;
-				m_mean0.Print();
-				cout << "nu0" << endl;
-				params["dof"].Print();
-				cout << "W0" << endl;
-				m_W0.Print();
-			} 
-		}
-		*/
-
 		//shift learned model parameters
 		void ShiftParameters(const BayesPoint& pt){
 			//only need to shift Gaussian means + prior mean
@@ -377,8 +352,8 @@ class GaussianMixture : public BasePDFMixture{
 				_Sbar.erase(_Sbar.begin()+j);
 				m_Elam.erase(m_Elam.begin()+j);
 				m_Epi.erase(m_Epi.begin()+j);
+				BaseRemoveModel(j);
 			}
-			BaseRemoveModel(j);
 		}
 
 

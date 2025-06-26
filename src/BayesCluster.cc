@@ -71,12 +71,10 @@ cout << "n starting pts " << n << endl;
 	//but the map will be built only in 2D space
 	//structure is typdef'ed in header
 	CompareMap ProbMap, DistMap;
-	InvCompareMap InvDistMap;
 	//fill map with initial potential clusterings - including mirror pts added to MergeTree
 	for(int i = 0; i < n; i++){
 		_add_entry_to_maps(i, ProbMap, DNN);
 		_add_entry_to_maps(i, DistMap, DNN, false);	
-		_add_entry_to_maps(i, InvDistMap, DNN);	
 	}
 	bool done = false;
 	std::pair<std::multimap<double,verts>::iterator, std::multimap<double,verts>::iterator> ret;	
@@ -141,9 +139,6 @@ cout << "n starting pts " << n << endl;
 			if(map_it_i != ProbMap.end()){cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
 			if(map_it_j != ProbMap.end()){cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
 		//cout << "prob map size after " << ProbMap.size() << endl;	
-			//erase from InvDistMap too
-			if(InvDistMap.find(jet_i) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_i));
-			if(InvDistMap.find(jet_j) != InvDistMap.end()) InvDistMap.erase(InvDistMap.find(jet_j));
 			Valid2 = DNN->Valid(jet_j);
 			if(verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
@@ -225,6 +220,9 @@ cout << "n starting pts " << n << endl;
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
+		if(newpts.HasInf(0) || newpts.HasInf(1)){
+			cout << "BayesCluster - ERROR adding jet with inf" << endl;
+		}
 		if(_verb > 1)cout <<"remove combined add combination start" << endl;
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
@@ -232,14 +230,13 @@ cout << "n starting pts " << n << endl;
 		//cout << "newpts" << endl;
 		//newpts.Print(); 
 		if(_verb > 1)cout << "\n\n\n" << endl;
-		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << " with " << newpts.GetNPoints() << " newpts" << " centroid " << newpts.CircularCentroid(0) << " " << newpts.CircularCentroid(1) << " " << newpts.Centroid(2) << endl;
+		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << " with " << newpts.GetNPoints() << " newpts" << " centroid " << newpts.CircularCentroid(0) << " " << newpts.CircularCentroid(1) << " " << newpts.Centroid(2) << " current best rk " << BestRk << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
 			int ii = *it;
 			_add_entry_to_maps(ii, ProbMap, DNN);
 			_add_entry_to_maps(ii, DistMap, DNN, false);	
-			_add_entry_to_maps(ii, InvDistMap, DNN);
 		}
 		if(_verb > 0) cout << mt->GetNClusters() << " current clusters at iteration " << i << endl;
 		if(_verb > 0) cout << "\n" << endl;
@@ -273,8 +270,8 @@ cout << "n starting pts " << n << endl;
 			cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
 			cout << "cov " << endl; params["cov"].Print();
 		}
-		cout << trees[i]->points->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; 
-		if(_verb > 1) trees[i]->points->Print();
+		cout << trees[i]->points->GetNPoints() << " " << trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; 
+		//if(_verb > 1) trees[i]->points->Print();
 	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
 cout << "with centroid" << endl; center.Print();
 

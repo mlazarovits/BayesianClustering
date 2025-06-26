@@ -27,7 +27,7 @@ class BasePDFMixture : public BasePDF{
 			m_k = k; 
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
-				m_norms.push_back(1.);
+				m_norms.push_back(0.);
 				m_alphas.push_back(0.);
 				m_model.push_back(nullptr);
 			
@@ -44,6 +44,11 @@ class BasePDFMixture : public BasePDF{
 			_tresStoch = 1.60666; 
 			_tresNoise = 0.00691415;
 		}
+		void SetDim(int d){
+			if(m_dim != 0) return;
+			BaseSetDim(d);
+		}
+
 
 		virtual void InitParameters(map<string, Matrix> priors = {}, vector<map<string, Matrix>> prev_posteriors = {}, unsigned long long seed = 111) = 0;
 		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear();
@@ -421,9 +426,6 @@ class BasePDFMixture : public BasePDF{
 		//normalization on posterior
 		vector<double> m_norms;
 		Matrix m_post;
-
-	
-		int m_dim;
 
 		int _verb;
 		//data smear
