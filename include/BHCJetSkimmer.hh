@@ -610,8 +610,12 @@ class BHCJetSkimmer{
 						if(_predJets[j].pt() >= _pt_thresh) njets_lead++;
 
 					}
+					_procCats[p].hists1D[1][11]->Fill(njets_lead);
+					_procCats[p].hists1D[2][11]->Fill(njets_notlead);
+
 					_procCats[p].hists2D[1][132]->Fill(openAng,njets_lead);
 					_procCats[p].hists2D[2][132]->Fill(openAng,njets_notlead);
+					
 				}
 				//loop over pt bins
 				njets = _predJets.size();
@@ -959,6 +963,16 @@ class BHCJetSkimmer{
 		void FillGenJetHists(){
 			for(int p = 0; p < _procCats.size(); p++){
 				_procCats[p].hists1D[0][120]->Fill((double)_genAK4jets.size());
+				int njets_lead = 0;
+				int njets_notlead = 0;
+				for(int j = 0; j < _genAK4jets.size(); j++){
+					if(_genAK4Jets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(_genAK4Jets[j].pt() >= _pt_thresh) njets_lead++;
+
+				}
+				_procCats[p].hists1D[1][120]->Fill(njets_lead);
+				_procCats[p].hists1D[2][120]->Fill(njets_notlead);
 				//gen match jets to particles
 				vector<int> genTopMatchIdxs;
 				GenericMatchJet(_genAK4jets,_genparts,genTopMatchIdxs, 6); //match gen AK4 jets to gen tops
@@ -1108,6 +1122,16 @@ class BHCJetSkimmer{
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recoAK4jets.size();
 				_procCats[p].hists1D[0][18]->Fill(njets);
+				int njets_lead = 0;
+				int njets_notlead = 0;
+				for(int j = 0; j < _recoAK4Jets.size(); j++){
+					if(_recoAK4Jets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(_recoAK4Jets[j].pt() >= _pt_thresh) njets_lead++;
+
+				}
+				_procCats[p].hists1D[1][18]->Fill(njets_lead);
+				_procCats[p].hists1D[2][18]->Fill(njets_notlead);
 				for(int j = 0; j < _recoAK4jets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
@@ -1366,6 +1390,15 @@ class BHCJetSkimmer{
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				int njets = recojets.size();
 				_procCats[p].hists1D[0][nhist1d_start]->Fill(njets);
+				int njets_lead = 0;
+				int njets_notlead = 0;
+				for(int j = 0; j < recojets.size(); j++){
+					if(recojets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(recojets[j].pt() >= _pt_thresh) njets_lead++;
+				}
+				_procCats[p].hists1D[1][18]->Fill(njets_lead);
+				_procCats[p].hists1D[2][18]->Fill(njets_notlead);
 				for(int j = 0; j < recojets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
