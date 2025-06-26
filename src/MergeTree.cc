@@ -58,7 +58,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	// = exp(log(alpha) + 
 	cpp_bin_float_100 p_dk_tk_100 = pi_stable*p_dk_h1 + ((l->d*r->d)/d_100)*l->prob_tk*r->prob_tk;
 
-
 	//deal with numerical instability - rk = pi*p(Dk|H1)/p(Dk|Tk) = exp(A)/(exp(A) + exp(B))
         //exp(A) = pi*p_dk_h1 = pi*exp(ELBO(x)) = (alpha*gamma(n)/dk)*exp(ELBO) = exp(log(alpha*gamma(n)/dk))exp(ELBO(x)) = exp(log(alpha) + log(gamma(n) + ELBO(x) - log(dk))
         //exp(B) = p(Dr|Tr)*p(Dl|Tl)*dl*dr/dk = exp(log(p(Dr|Tr)*p(Dl|Tl)*dl*dr/dk)) = exp(log(p(Dr|Tr)) + log(p(Dl|Tl)) + log(dl*dr) - log(dk))
@@ -85,13 +84,14 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
 	//if(x->points->Sumw() < _thresh) rk = 0;
-	//if(std::isnan(rk)){
-        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
-        //        //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
-        //}
+	if(std::isnan(rk)){
+        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
+                //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
+        }
         //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
 	double loga = elbo + log(_alpha) + lgamma(n);
 	double logb = (double)log(l->prob_tk) + (double)log(r->prob_tk) + (double)log(l->d) + (double)log(r->d);
+	cpp_bin_float_100 logb_100 = log(l->prob_tk) + log(r->prob_tk) + log(l->d) + log(r->d);
         //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " lgam " << lgamma(n) << " log(alpha) " << log(_alpha) << endl;
 	//cout << "log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " log(d_l) " << log(l->d) << " log(d_r) "  << log(r->d) << endl;
 	//cout << "log(a) " << loga << " log(b) " << logb << endl;
@@ -106,8 +106,7 @@ if(_verb > 1)cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_
       x->log_didj = logb;
 if(_verb > 1)cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
 	x->prob_tk = p_dk_tk_100;
-if(_verb > 1) cout << "merge val = " << loga - logb << endl;	
-
+if(_verb > 1) cout << "merge val = " << loga - logb << " for n pts " << x->points->GetNPoints() << endl;	
 	return x;
 }
 

@@ -165,7 +165,9 @@ class MergeTree : BaseTree{
 			x->nndist = 1e300;
 			x->mirror = nullptr;
 			x->ismirror = false;
-			x->prob_tk = exp(Evidence(x));//p_dk_tk = p_dk_h1 since cannot be divided further
+			double elbo = Evidence(x);
+			cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
+			x->prob_tk = exp(elbo_100);//p_dk_tk = p_dk_h1 since cannot be divided further
 			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
 			//Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
@@ -239,6 +241,7 @@ class MergeTree : BaseTree{
 					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
 					left_post_indices[kk] = prev_posts.size()-1;
 				} 
+				//cout << "right node has " << x->r->model->GetNClusters() << " clusters" << endl;
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
 					right_post_indices[kk] = prev_posts.size()-1;
@@ -320,7 +323,7 @@ class MergeTree : BaseTree{
 
 			//check for infinities in eta + phi here
 			if(x->model->GetData()->HasInf(0) || x->model->GetData()->HasInf(1)){
-			//cout << "found inf, returning elbo as " << -1e308 << endl;
+				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
 				x->model->SetData(x->points);
 				return -1e308;
