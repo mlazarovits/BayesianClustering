@@ -235,7 +235,7 @@ inline ReducedBaseSim::~ReducedBaseSim()
    delete fChain->GetCurrentFile();
 }
 
-inlineInt_t ReducedBaseSim::GetEntry(Long64_t entry)
+inline Int_t ReducedBaseSim::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
