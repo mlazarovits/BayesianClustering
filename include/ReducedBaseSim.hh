@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jun 23 13:31:34 2025 by ROOT version 6.30/06
+// Wed Jun 25 19:09:16 2025 by ROOT version 6.30/06
 // from TTree ReducedBaseSim/ReducedBaseSim
-// found on file: simNtuples_testW_nevt100_singleW.root
+// found on file: root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_singleW_defaultv9p10_ptHatMin200.root
 //////////////////////////////////////////////////////////
 #ifndef ReducedBaseSim_h
 #define ReducedBaseSim_h
@@ -38,10 +38,10 @@ public :
    Double_t        PV_y;
    Double_t        PV_z;
    Double_t        PV_t;
-   Double_t        ootPV_x;
-   Double_t        ootPV_y;
-   Double_t        ootPV_z;
-   Double_t        ootPV_t;
+   vector<double>  *puPV_x;
+   vector<double>  *puPV_y;
+   vector<double>  *puPV_z;
+   vector<double>  *puPV_t;
    vector<double>  *ECALSpike_energy;
    Int_t           nSpikes;
    Int_t           nRecoParticles;
@@ -126,10 +126,10 @@ public :
    TBranch        *b_PV_y;   //!
    TBranch        *b_PV_z;   //!
    TBranch        *b_PV_t;   //!
-   TBranch        *b_ootPV_x;   //!
-   TBranch        *b_ootPV_y;   //!
-   TBranch        *b_ootPV_z;   //!
-   TBranch        *b_ootPV_t;   //!
+   TBranch        *b_puPV_x;   //!
+   TBranch        *b_puPV_y;   //!
+   TBranch        *b_puPV_z;   //!
+   TBranch        *b_puPV_t;   //!
    TBranch        *b_ECALSpike_energy;   //!
    TBranch        *b_nSpikes;   //!
    TBranch        *b_nRecoParticles;   //!
@@ -218,11 +218,11 @@ inline ReducedBaseSim::ReducedBaseSim(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("simNtuples_testW_nevt100_singleW.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_singleW_defaultv9p10_ptHatMin200.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("simNtuples_testW_nevt100_singleW.root");
+         f = new TFile("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_singleW_defaultv9p10_ptHatMin200.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("simNtuples_testW_nevt100_singleW.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/condorSimNtuples_singleW_defaultv9p10_ptHatMin200.root:/tree");
       dir->GetObject("ReducedBaseSim",tree);
 
    }
@@ -235,7 +235,7 @@ inline ReducedBaseSim::~ReducedBaseSim()
    delete fChain->GetCurrentFile();
 }
 
-inline Int_t ReducedBaseSim::GetEntry(Long64_t entry)
+inlineInt_t ReducedBaseSim::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
@@ -274,6 +274,10 @@ inline void ReducedBaseSim::Init(TTree *tree)
    ECALRecHit_eta = 0;
    ECALRecHit_phi = 0;
    ECALRecHit_ID = 0;
+   puPV_x = 0;
+   puPV_y = 0;
+   puPV_z = 0;
+   puPV_t = 0;
    ECALSpike_energy = 0;
    AK4Jet_genEta = 0;
    AK4Jet_genPhi = 0;
@@ -353,10 +357,10 @@ inline void ReducedBaseSim::Init(TTree *tree)
    fChain->SetBranchAddress("PV_y", &PV_y, &b_PV_y);
    fChain->SetBranchAddress("PV_z", &PV_z, &b_PV_z);
    fChain->SetBranchAddress("PV_t", &PV_t, &b_PV_t);
-   fChain->SetBranchAddress("ootPV_x", &ootPV_x, &b_ootPV_x);
-   fChain->SetBranchAddress("ootPV_y", &ootPV_y, &b_ootPV_y);
-   fChain->SetBranchAddress("ootPV_z", &ootPV_z, &b_ootPV_z);
-   fChain->SetBranchAddress("ootPV_t", &ootPV_t, &b_ootPV_t);
+   fChain->SetBranchAddress("puPV_x", &puPV_x, &b_puPV_x);
+   fChain->SetBranchAddress("puPV_y", &puPV_y, &b_puPV_y);
+   fChain->SetBranchAddress("puPV_z", &puPV_z, &b_puPV_z);
+   fChain->SetBranchAddress("puPV_t", &puPV_t, &b_puPV_t);
    fChain->SetBranchAddress("ECALSpike_energy", &ECALSpike_energy, &b_ECALSpike_energy);
    fChain->SetBranchAddress("nSpikes", &nSpikes, &b_nSpikes);
    fChain->SetBranchAddress("nRecoParticles", &nRecoParticles, &b_nRecoParticles);
