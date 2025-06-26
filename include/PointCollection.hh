@@ -116,13 +116,17 @@ class PointCollection{
 		void AddPoint(const BayesPoint& pt){
 		//cout << "addpoint: " << &pt << endl;
 		//pt.Print();
-		if(_nDim == 0) _nDim = pt.Dim();
+			if(_nDim == 0) _nDim = pt.Dim();
 			if(_nDim != 0 && pt.Dim() != _nDim){
 				cout << "Error: point dimension " << pt.Dim() << " does not match collection dim: " << _nDim << endl; 
 				return;
 			}
 			if(!this->Has(pt)){
 				_pts.emplace_back(pt);
+			}
+			if(_infs.size() == 0){
+				for(int d = 0; d < _nDim; d++)
+					_infs.push_back((1+(d)/10.)*1e70);
 			}
 		//cout << "addpoint pts: " << &_pts[0] << endl;
 		//_pts[0].Print();
@@ -145,6 +149,10 @@ class PointCollection{
 				for(int i = 0; i < pts.GetNPoints(); i++) _pts.push_back(pts.at(i));
 				_nDim = pts.Dim();
 			}
+			if(_infs.size() == 0){
+				for(int d = 0; d < _nDim; d++)
+					_infs.push_back((1+(d)/10.)*1e70);
+			}
 		}
 
 		void AddPoints(vector<BayesPoint> pts){
@@ -155,6 +163,10 @@ class PointCollection{
 					break;
 				}	
 				_pts.push_back(p);
+			}
+			if(_infs.size() == 0){
+				for(int d = 0; d < _nDim; d++)
+					_infs.push_back((1+(d)/10.)*1e70);
 			}
 		}
 
@@ -422,6 +434,7 @@ class PointCollection{
 
 
 	bool HasInf(int d){
+cout << "PointCollection::HasInf for dim " << d << " with pc dim " << _infs.size() << " " << _nDim << endl;
 		for(int i = 0; i < (int)_pts.size(); i++){
 			if(fabs(_pts[i].at(d)) == _infs[d]){ return true; }
 		}
