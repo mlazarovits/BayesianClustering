@@ -39,6 +39,8 @@ def generateSubmission(args):
 
     inputFile += "_ptHatMin"+args.ptHatMin
 
+    if(args.noShower):
+        inputFile += "_noShower"
 
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
@@ -54,13 +56,15 @@ def generateSubmission(args):
     if args.output is not None:
                 ofilename = ofilename+"_"+args.output
                 dirname = dirname+"_"+args.output
+
+
     #put algo config in file name
-    kname = "%.3f" % float(args.alpha)
+    kname = str(args.alpha)#"%.3f" % float(args.alpha)
     kname = kname.replace(".","p")
-    paramsname = "_bhcAlpha"+kname
-    kname = "%.3f" % float(args.EMalpha)
+    paramsname = "_bhcAlpha-"+kname
+    kname = str(args.EMalpha)#"%.3f" % float(args.EMalpha)
     kname = kname.replace(".","p")
-    paramsname += "_emAlpha"+kname
+    paramsname += "_emAlpha-"+kname
     k = float(sum(Fraction(s) for s in args.gev.split()))
     kname = "%.3f" % k
     kname = kname.replace(".","p")
@@ -116,6 +120,7 @@ def generateSubmission(args):
 
     ofilename += "_"+priorname+"_"+args.strategy+"_"+args.evtSel
     dirname += "_"+priorname+"_"+args.strategy+"_"+args.evtSel
+
     print("Preparing sample directory: {0}".format(dirname))
     ##### Create a workspace (remove existing directory) #####
     if os.path.exists(dirname):
@@ -215,6 +220,7 @@ def main():
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=False,action='store_true')
+    parser.add_argument('--noShower',help="run with ntuples without showering",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--minNconsts',help='set minimum number of constituents for gen jets',default=5)
