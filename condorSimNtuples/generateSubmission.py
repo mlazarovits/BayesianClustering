@@ -69,7 +69,8 @@ def generateSubmission(args):
         flags += ' --sigBoosted'
     if(args.ootPU):
         flags += ' --ootPU'
-    
+    if(args.noShower):
+        flags += ' --noShower'
 
     flags += ' --energyCte '+str(args.energyCte)
 
@@ -104,6 +105,7 @@ def main():
     parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
     parser.add_argument('--nPU',help="set avg # pu events (default = 0, off)",default=0)
     parser.add_argument('--ootPU',help="set oot pu (default = off)",action='store_true')
+    parser.add_argument('--noShower',help='turn off calorimeter showering (saves final state gen particles)',action='store_true')
     parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = 0.26)
     parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.5)',default = 0.5)
