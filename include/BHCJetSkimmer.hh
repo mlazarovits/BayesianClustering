@@ -967,9 +967,9 @@ cout << "avgPart E " << avgPartE << endl;
 				int njets_lead = 0;
 				int njets_notlead = 0;
 				for(int j = 0; j < _genAK4jets.size(); j++){
-					if(_genAK4Jets[j].pt() < _pt_thresh) njets_notlead++;
+					if(_genAK4jets[j].pt() < _pt_thresh) njets_notlead++;
 					//pt == 2 -> [0,_pt_thresh)
-					if(_genAK4Jets[j].pt() >= _pt_thresh) njets_lead++;
+					if(_genAK4jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
 				_procCats[p].hists1D[1][120]->Fill(njets_lead);
@@ -1125,10 +1125,10 @@ cout << "avgPart E " << avgPartE << endl;
 				_procCats[p].hists1D[0][18]->Fill(njets);
 				int njets_lead = 0;
 				int njets_notlead = 0;
-				for(int j = 0; j < _recoAK4Jets.size(); j++){
-					if(_recoAK4Jets[j].pt() < _pt_thresh) njets_notlead++;
+				for(int j = 0; j < _recoAK4jets.size(); j++){
+					if(_recoAK4jets[j].pt() < _pt_thresh) njets_notlead++;
 					//pt == 2 -> [0,_pt_thresh)
-					if(_recoAK4Jets[j].pt() >= _pt_thresh) njets_lead++;
+					if(_recoAK4jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
 				_procCats[p].hists1D[1][18]->Fill(njets_lead);

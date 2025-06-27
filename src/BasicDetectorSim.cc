@@ -307,7 +307,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			}
 			if(_simw){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
-cout << "particle eta " << particle.eta() << " phi " << particle.phi() << endl;
 					SaveGenInfo(p, -1);
 				}
 					
@@ -497,7 +496,7 @@ cout << "particle eta " << particle.eta() << " phi " << particle.phi() << endl;
 			else{
 				_wDecayId.push_back(-1);
 			}
-			cout << "final idx " << cur_idx << " d1 " << d1 << " d2 " << d2 << " final_id " << cur_id << " d1 id " << _sumEvent[d1].id() << " d2 id " << _sumEvent[d2].id() << " w decay id " << _wDecayId[_wDecayId.size()-1] << endl;
+			//cout << "final idx " << cur_idx << " d1 " << d1 << " d2 " << d2 << " final_id " << cur_id << " d1 id " << _sumEvent[d1].id() << " d2 id " << _sumEvent[d2].id() << " w decay id " << _wDecayId[_wDecayId.size()-1] << endl;
 		}
 
 
