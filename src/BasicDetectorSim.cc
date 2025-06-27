@@ -715,6 +715,13 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	}
 	//charged particles in magnetic field
 	else{
+		//calculate time to detector as straight line to account for this delay correctly
+		// solve pt2*t^2 + 2*(px*x + py*y)*t - (fRadius2 - x*x - y*y) = 0
+		tmp = px * y - py * x;
+      		tr = (TMath::Sqrt(pt2 * _rmax*_rmax - tmp * tmp) - px * x - py * y) / pt2;
+		tz = (TMath::Sign(halfLength, pz) - z) / pz;
+		double t_straight = fmin(tr, tz)*(e/_sol); //t*e/c ~ [m/GeV]*[GeV*s/m] = s
+		
 		//do helix calculation
 		// 1. initial transverse momentum p_{T0}: Part->pt
 		//    initial transverse momentum direction phi_0 = -atan(p_{X0} / p_{Y0})                omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
@@ -783,9 +790,10 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		y_t = y_c + r * TMath::Cos(phit);
 		z_t = z + vz * t;
 		r_t = TMath::Hypot(x_t, y_t);
+
 		//position in m, t in s
 		if(r_t > 0.0)
-			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
+			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t_straight));
 	}
 	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
 	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
