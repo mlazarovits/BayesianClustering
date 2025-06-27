@@ -42,6 +42,8 @@ def generateSubmission(args):
     if(args.noShower):
         inputFile += "_noShower"
 
+    #inputFile += "_neutralTrajOnly"
+
     inputFile += ".root"
     inputFile = "root://cmseos.fnal.gov//store/user/mlazarov/SimNtuples/"+inputFile
 
