@@ -610,8 +610,9 @@ class BHCJetSkimmer{
 						if(_predJets[j].pt() >= _pt_thresh) njets_lead++;
 
 					}
-					_procCats[p].hists1D[1][11]->Fill(njets_lead);
-					_procCats[p].hists1D[2][11]->Fill(njets_notlead);
+					_procCats[p].hists1D[1][0]->Fill(njets_lead);
+cout << "filling hist # 11 - 1 with " << njets_lead << " has " << _procCats[p].hists1D[1][0]->GetEntries() << " entries" << endl;
+					_procCats[p].hists1D[2][0]->Fill(njets_notlead);
 
 					_procCats[p].hists2D[1][132]->Fill(openAng,njets_lead);
 					_procCats[p].hists2D[2][132]->Fill(openAng,njets_notlead);
@@ -1020,6 +1021,16 @@ cout << "avgPart E " << avgPartE << endl;
 
 				}	
 				_procCats[p].hists1D[0][182]->Fill((double)_genAK8jets.size());
+				njets_lead = 0;
+				njets_notlead = 0;
+				for(int j = 0; j < _genAK8jets.size(); j++){
+					if(_genAK8jets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(_genAK8jets[j].pt() >= _pt_thresh) njets_lead++;
+
+				}
+				_procCats[p].hists1D[1][182]->Fill(njets_lead);
+				_procCats[p].hists1D[2][182]->Fill(njets_notlead);
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK8jets,_genparts,genTopMatchIdxs,6);
 				//cout << "gen matching gen jets to particles - end" << endl;
@@ -1045,6 +1056,16 @@ cout << "avgPart E " << avgPartE << endl;
 				}
 				
 				_procCats[p].hists1D[0][155]->Fill((double)_genAK15jets.size());
+				njets_lead = 0;
+				njets_notlead = 0;
+				for(int j = 0; j < _genAK15jets.size(); j++){
+					if(_genAK15jets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(_genAK15jets[j].pt() >= _pt_thresh) njets_lead++;
+
+				}
+				_procCats[p].hists1D[1][155]->Fill(njets_lead);
+				_procCats[p].hists1D[2][155]->Fill(njets_notlead);
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK15jets, _genparts, genTopMatchIdxs,6);
 				GenericMatchJet(_genAK15jets,_genparts,genWMatchIdxs, 24); //match gen AK4 jets to gen Ws
@@ -1398,8 +1419,8 @@ cout << "avgPart E " << avgPartE << endl;
 					//pt == 2 -> [0,_pt_thresh)
 					if(recojets[j].pt() >= _pt_thresh) njets_lead++;
 				}
-				_procCats[p].hists1D[1][18]->Fill(njets_lead);
-				_procCats[p].hists1D[2][18]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][nhist1d_start]->Fill(njets_lead);
+				_procCats[p].hists1D[2][nhist1d_start]->Fill(njets_notlead);
 				for(int j = 0; j < recojets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
