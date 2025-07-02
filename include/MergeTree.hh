@@ -407,7 +407,7 @@ class MergeTree : BaseTree{
 			//}
 			//else
 			//	algo->SetThresh(x->points->Sumw());
-			double thresh = 0.01*x->points->Sumw(); //1% of total weight
+			double thresh = 1e-5;//0.01*x->points->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
@@ -662,7 +662,7 @@ class MergeTree : BaseTree{
 
 		void _run_model(GaussianMixture* model, double& elbo){
 			VarEMCluster* algo = new VarEMCluster(model, model->GetNClusters());
-			double thresh = 0.01*model->GetData()->Sumw(); //1% of total weight
+			double thresh = 1e-5;//0.01*model->GetData()->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
