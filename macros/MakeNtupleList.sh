@@ -1,12 +1,13 @@
 if [ -z "$1" ]
 then
-        echo "Please pass [process] [selection] [year] [HTbin] to make corresponding file list"
+        echo "Please pass [process] [selection] [year] [version] [HTbin] to make corresponding file list"
         return
 fi
 PD=$1
 SEL=""
 NAME=""
 YR=""
+VER=""
 if [ -z "$3" ]
 then
 	echo "default year" 
@@ -16,18 +17,18 @@ else
 fi
 if [ ! -z "$2" ]
 then
-	SEL=${YR}_$2_v24
+	SEL=${YR}_$2_$4
 fi
 if [ $PD = "GJETS" ]
 then
-	NAME=GJets_HT-$4_TuneCP5_13TeV-madgraphMLM-pythia8
+	NAME=GJets_HT-$5_TuneCP5_13TeV-madgraphMLM-pythia8
 elif [ $PD = "QCD" ]
 then
-	if [ $4 = "50to100" ]
+	if [ $5 = "50to100" ]
 	then
-		NAME=${PD}_HT$4_TuneCP5_13TeV-madgraphMLM-pythia8
+		NAME=${PD}_HT$5_TuneCP5_13TeV-madgraphMLM-pythia8
 	else
-		NAME=${PD}_HT$4_TuneCP5_13TeV-madgraph-pythia8
+		NAME=${PD}_HT$5_TuneCP5_13TeV-madgraph-pythia8
 	fi
 elif [ $PD = "MET" ]
 then
@@ -38,6 +39,9 @@ then
 elif [ $PD = "DEG" ]
 then
 	NAME=DoubleEG
+elif [ $PD = "EGamma" ]
+then
+	NAME=EGamma
 elif [ $PD = "SMS-GlGl" ]
 then
 	NAME=CRAB_UserFiles
