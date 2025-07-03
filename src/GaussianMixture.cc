@@ -121,7 +121,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				//cout << "scalemat " << endl; m_W0.Print();
 				m_model[k-skip]->GetPrior()->SetParameter("mean", params["m"]);
 				m_model[k-skip]->SetParameter("mean", params["m"]);
-				//TODO - set model center from same parameter		
 				//cout << "mean" << endl; params["m"].Print();
 				m_alphas[k-skip] = params["alpha"].at(0,0);	
 				//cout << "alpha " << params["alpha"].at(0,0) << endl;
@@ -174,11 +173,6 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				else nreal++;
 			}
 			//cout << "GaussianMixture - starting with " << nreal << " real models and " << nghosts << " ghost models and " << m_data->GetNPoints() << " points" << endl;
-			//expectation values are calculated from posteriors in E-step
-			//UpdatePosteriorParameters(); 
-			//remove any kmeans initial clusters without any assigned points
-			//UpdateMixture(0);
-			UpdateMixture(0);
 			return;
 		}
 	}
