@@ -196,9 +196,9 @@ class BasePDFMixture : public BasePDF{
 				//alpha_k = norms_k + alpha0 -> may need to remove before all parameters have been updated
 				//if(m_norms[k] + m_alpha0 < thresh){
 //cout << std::setprecision(20) << " k " << k << " norm " << m_norms[k] << " thresh " << thresh << endl;
-				//if(thresh - m_norms[k] > 1e-15){ //precision
 				if(m_norms[k] < thresh){ 
-					if(_verb > 3){ 
+					//if(_verb > 3){ 
+					if(m_n == 108){ 
 						cout << "Removing cluster " << k << " with norm " << m_norms[k] << " and mean " << endl; 
 						m_model[k]->GetPrior()->GetParameter("mean").Print();
 					}

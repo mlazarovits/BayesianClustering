@@ -444,7 +444,8 @@ int main(int argc, char *argv[]){
 	skimmer.SetSmear(smear);
 	skimmer.CheckMerges(check_merges);
 	skimmer.SetNGhosts(nghosts);
-	skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise);
+	double cell = acos(-1)/180;
+	skimmer.SetMeasErrParams(cell, tres_cte, tres_stoch, tres_noise);
 
 	skimmer.Skim();
 

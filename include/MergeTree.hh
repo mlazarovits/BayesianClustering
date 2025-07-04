@@ -240,11 +240,19 @@ class MergeTree : BaseTree{
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
 					left_post_indices[kk] = prev_posts.size()-1;
+	if(x->points->GetNPoints() == 108){
+		cout << "left node has " << x->l->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
+		prev_posts[prev_posts.size()-1]["m"].Print();
+	}
 				} 
 				//cout << "right node has " << x->r->model->GetNClusters() << " clusters" << endl;
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
 					right_post_indices[kk] = prev_posts.size()-1;
+	if(x->points->GetNPoints() == 108){
+		cout << "right node has " << x->r->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
+		prev_posts[prev_posts.size()-1]["m"].Print();
+	}
 				}
 
 				//int npts_abovethresh = 0;
@@ -361,8 +369,9 @@ class MergeTree : BaseTree{
 				}
 				*/
 				prev_posts[kk]["m"] = mean;
-				//cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
-
+				if(x->model->GetData()->GetNPoints() == 108){
+					cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
+				}
 				//do for xbar too
 				mean = params["xbar"];
 				//cout << " xbar " << endl; mean.Print();
@@ -371,7 +380,6 @@ class MergeTree : BaseTree{
 
 				//don't have to do for model->GetParameter("mean") bc this isn't used in the initial logLH eval
 			} 
-		
 			//cout << "scaled points" << endl; x->model->GetData()->Print();
 			//needs to be done after data is set + transformed bc the initialization procedure depends on data
 			x->model->InitParameters(_params,prev_posts);
@@ -411,7 +419,7 @@ class MergeTree : BaseTree{
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
-		 //cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
+		 if(x->model->GetData()->GetNPoints() == 108) cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
 			double LogLThresh = 1e-3;
 			double newLogL = 0;
 			double entropy = 0;
@@ -425,11 +433,10 @@ class MergeTree : BaseTree{
 				//entropy = x->model->EvalEntropyTerms();
 				//nll = x->model->EvalNLLTerms();
 			//cout << "it " << it << " newLogL " << newLogL << " entropy " << entropy << " NLL " << nll << endl;
-			
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
 		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
-		//cout << std::setprecision(10) << " it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
+		if(x->model->GetData()->GetNPoints() == 108) cout << std::setprecision(10) << " it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 		//for(int k = 0; k < x->model->GetNClusters(); k++){
 		//	auto params = x->model->GetLHPosteriorParameters(k);
 		//	cout << " cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
@@ -498,6 +505,7 @@ class MergeTree : BaseTree{
 		//cout << "nominal model has final # clusters " << x->model->GetNClusters() << " with elbo " << newLogL << endl;
 		if(merge_elbo > newLogL){
 			if(_verb > 1) cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
+			if(x->model->GetData()->GetNPoints() == 108) cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
 			x->model = merged_model;
 			newLogL = merge_elbo;	
 		}

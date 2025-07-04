@@ -561,7 +561,7 @@ void GaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void GaussianMixture::CalculateVariationalPosterior(){
-//cout << "CALCULATE POSTERIOR - E STEP - start" << endl;
+///if(m_n == 108) cout << "CALCULATE POSTERIOR - E STEP - start" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	//for(int k = 0; k < m_k; k++){
 	//	Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
@@ -592,9 +592,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
 			x_min_m = Matrix(m_dim,1);
 			x_mat = Matrix(m_data->at(n));
-			//if(n == 146){cout << "n: " << n << " k " << k << " x" << endl; x_mat.Print(); cout << "m[k]" << endl; mean.Print(); cout << "xbar" << endl; _xbar[k].Print();}
+			//if(n == 96 && m_n == 108){cout << "n: " << n << " k " << k << " x" << endl; x_mat.Print(); cout << "m[k]" << endl; mean.Print(); cout << "x_min_m" << endl; x_min_m.Print();}
 			x_min_m.minus(x_mat,mean);		
-			//if(n == 146){cout << "x - m[k]" << endl;x_min_m.Print();}
+			//if(n == 96 && m_n == 108){cout << "x - m[k]" << endl;x_min_m.Print();}
 			x_min_mT = Matrix(1, m_dim);
 			x_min_mT.transpose(x_min_m);
 			//full term
@@ -620,6 +620,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//if(n == 146) cout << "n " << n << " k " << k << " pre norm post " << post << endl;
 			m_post.SetEntry(post, n, k);
 			//if(k == 1){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
+			//if(m_n == 108 && n == 96){
+			//	cout << "n " << n << " k " << k << " post " << post << " exp[pi] " << m_Epi[k] << " exp[lam] " << m_Elam[k] << " exp[(x - mu)lam(x - mu)] " << E_mu_lam << " dof " << dof << " (x_n - m_k)W_k(x_n - m_k) " << full.at(0,0) << " (x_n - m_k) " << endl; x_min_m.Print(); cout << " m_k " << endl; mean.Print(); cout << " W_k " << endl; scalemat.Print(); cout << "point #" << n << endl; x_mat.Print(); 
+			//}
 		}
 		if(post_k_vals.size() < 1) continue;
 		post_n_max.push_back(*std::max_element(post_k_vals.begin(), post_k_vals.end()));
@@ -646,7 +649,9 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//if(post_norms[n] == 0){ cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " point  " << endl; m_data->at(n).Print(); cout << "m_k: " << endl; m_model[k]->GetPrior()->GetParameter("mean").Print(); } 
 			//weight by data weight and adjusted by max ln(p_nk)
 			m_post.SetEntry(m_data->at(n).w()*exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n],n,k);
-			//cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " unweighted post " << exp(m_post.at(n,k) - post_n_max[n])/post_norms_adj[n] << " point  " << endl; m_data->at(n).Print();
+			//if(m_n == 108){
+			//	cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " unweighted post " << m_post.at(n,k)/m_data->at(n).w() << " point  " << endl; m_data->at(n).Print();
+			//}
 			
 	
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
@@ -676,7 +681,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//cout << "posterior normed" << endl;	
 	//m_post.Print();
 //cout << "\n" << endl;
-//cout << "CALCULATE POSTERIOR - E STEP - end" << endl;
+//if(m_n == 108) cout << "CALCULATE POSTERIOR - E STEP - end" << endl;
 };
 
 
