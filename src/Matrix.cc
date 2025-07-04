@@ -414,6 +414,13 @@ void Matrix::mult(const Matrix& mat, double factor){
 	//SetDims(mat.GetDims()[0], mat.GetDims()[1]);
 	//InitEmpty();
 	//in case mat = this (ie m = c*m)
+	if(m_row != 0 and m_col != 0){
+		vector<int> dims1 = mat.GetDims();
+		if(m_row != dims1[0] || m_col != dims1[1]){
+			cout << "Error: this matrix must be " << dims1[0] << " x " << dims1[1] << " dims (mult() doesn't change dimensions of this matrix)." << endl;
+			return;
+		}
+	}
 	Matrix tmp(mat.GetDims()[0],mat.GetDims()[1]);
 	for(int i = 0; i < m_row; i++)
 		for(int j = 0; j < m_col; j++)
@@ -433,7 +440,7 @@ void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
 		return;
 	}
 	if(m_row != 0 and m_col != 0){
-		if(m_row != dims1[0] or m_col != dims2[1]){
+		if(m_row != dims1[0] || m_col != dims2[1]){
 			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims (mult() doesn't change dimensions of this matrix)." << endl;
 			return;
 		}
@@ -549,14 +556,14 @@ void Matrix::add(const Matrix& mat){
 
 
 void Matrix::minus(const Matrix& mat){
-	Matrix sub;
+	Matrix sub = mat;
 	sub.mult(mat,-1);
 	add(sub);
 }
 
 
 void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
-	Matrix sub2;
+	Matrix sub2 = mat2;
 	sub2.mult(mat2, -1);
 	add(mat1, sub2);
 
