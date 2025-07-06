@@ -240,19 +240,19 @@ class MergeTree : BaseTree{
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
 					left_post_indices[kk] = prev_posts.size()-1;
-	if(x->points->GetNPoints() == 108){
-		cout << "left node has " << x->l->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
-		prev_posts[prev_posts.size()-1]["m"].Print();
-	}
+	//if(x->points->GetNPoints() == 108){
+	//	cout << "left node has " << x->l->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
+	//	prev_posts[prev_posts.size()-1]["m"].Print();
+	//}
 				} 
 				//cout << "right node has " << x->r->model->GetNClusters() << " clusters" << endl;
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
 					right_post_indices[kk] = prev_posts.size()-1;
-	if(x->points->GetNPoints() == 108){
-		cout << "right node has " << x->r->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
-		prev_posts[prev_posts.size()-1]["m"].Print();
-	}
+	//if(x->points->GetNPoints() == 108){
+	//	cout << "right node has " << x->r->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
+	//	prev_posts[prev_posts.size()-1]["m"].Print();
+	//}
 				}
 
 				//int npts_abovethresh = 0;
@@ -369,9 +369,9 @@ class MergeTree : BaseTree{
 				}
 				*/
 				prev_posts[kk]["m"] = mean;
-				if(x->model->GetData()->GetNPoints() == 108){
-					cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
-				}
+				//if(x->model->GetData()->GetNPoints() == 108){
+				//	cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
+				//}
 				//do for xbar too
 				mean = params["xbar"];
 				//cout << " xbar " << endl; mean.Print();
@@ -436,7 +436,6 @@ class MergeTree : BaseTree{
 				//ELBO should maximizing LH -> therefore newLogL > oldLogL if both are < 0	
 				dLogL = newLogL - oldLogL;
 		if(std::isnan(newLogL)) cout << std::setprecision(10) << "it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
-		if(x->model->GetData()->GetNPoints() == 108) cout << std::setprecision(10) << " it " << it << " new logl " << newLogL << " oldlogl " << oldLogL << " dlogl " << dLogL << " # clusters " << x->model->GetNClusters() << endl;
 		//for(int k = 0; k < x->model->GetNClusters(); k++){
 		//	auto params = x->model->GetLHPosteriorParameters(k);
 		//	cout << " cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
