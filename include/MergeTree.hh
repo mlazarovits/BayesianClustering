@@ -419,7 +419,7 @@ class MergeTree : BaseTree{
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
-		 if(x->model->GetData()->GetNPoints() == 108) cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
+		 //if(x->model->GetData()->GetNPoints() == 108) cout << std::setprecision(10) << " it -1  firstlogl " << oldLogL <<  " # clusters " << x->model->GetNClusters() << endl;
 			double LogLThresh = 1e-3;
 			double newLogL = 0;
 			double entropy = 0;
@@ -495,7 +495,7 @@ class MergeTree : BaseTree{
 		vector<pair<int,int>> merge_pairs;
 		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
 			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			//cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << endl;
+			cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << " left has " << x->l->model->GetNClusters() << " clusters and right has " << x->r->model->GetNClusters() << " clusters" << endl;
 			merge_pairs.push_back(std::make_pair(left_post_indices[prodit->second.first], right_post_indices[prodit->second.second]));
 		}
 		//this function compares all the "local" (ie projected) subcluster merges to not merging, then sets the starting params for the merged model from these merge decisions
@@ -593,20 +593,20 @@ class MergeTree : BaseTree{
 //	//params["cov"].Print();
 //}
 			x->model->ThetaToEta_params();
-//cout << "theta to eta params" << endl;
-//for(int k = 0; k < x->model->GetNClusters(); k++){
-//	auto params = x->model->GetLHPosteriorParameters(k);
-//	//if(std::isnan(params["mean"].at(0,0))){
-//	//	cout << "cluster #" << k << endl;
-//	//	cout << "mean" << endl;
-//	//	params["mean"].Print();
-//	//}
-//	cout << "cluster #" << k << " with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-//	cout << "mean" << endl;
-//	params["mean"].Print();
-//	//cout << "cov" << endl;
-//	//params["cov"].Print();
-//}
+for(int k = 0; k < x->model->GetNClusters(); k++){
+	auto params = x->model->GetLHPosteriorParameters(k);
+	if(std::isnan(params["mean"].at(0,0))){
+		cout << "theta to eta params" << endl;
+		cout << "cluster #" << k << " with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
+		cout << "cluster #" << k << endl;
+		cout << "mean" << endl;
+		params["mean"].Print();
+	}
+	//cout << "mean" << endl;
+	//params["mean"].Print();
+	//cout << "cov" << endl;
+	//params["cov"].Print();
+}
 			//resets data to original points
 			x->model->SetData(x->points);
 			//x->model->GetData()->Print();
@@ -722,7 +722,7 @@ class MergeTree : BaseTree{
 			Matrix r_nk_l = x->l->model->GetPosterior();
 //cout << "left posterior" << endl; r_nk_l.Print();
 			if(cl_left >= r_nk_l.GetDims()[1]){
-				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.GetDims()[1] << " # cols" << endl;
+				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.GetDims()[1] << " # cols # clusters in this model " << x->l->model->GetNClusters() << endl;
 				return nullptr;
 			}
 			PointCollection* newpts = new PointCollection();
@@ -737,7 +737,7 @@ class MergeTree : BaseTree{
 			Matrix r_nk_r = x->r->model->GetPosterior();
 //cout << "right posterior" << endl; r_nk_r.Print();
 			if(cl_right >= r_nk_r.GetDims()[1]){
-				cout << "Error: accessing cluster " << cl_right << " with posterior of " << r_nk_r.GetDims()[1] << " # cols" << endl;
+				cout << "Error: accessing cluster " << cl_right << " with posterior of " << r_nk_r.GetDims()[1] << " # cols # clusters in this model " << x->r->model->GetNClusters() << endl;
 				return nullptr;
 			}
 			PointCollection* pts_r = new PointCollection(*x->r->model->GetData()); //data should already be transformed in common frame
@@ -796,6 +796,7 @@ class MergeTree : BaseTree{
 
 			//project_data needs cl1 and cl2 in their "local" values
 			PointCollection* mergepts = _project_data(x,cl1,x->l->model->GetNClusters() - cl2);
+			if(mergepts == nullptr) return nullptr;
 			//cout << "# total mergepts " << mergepts->GetNPoints() << endl;
 			PointCollection* seppts = new PointCollection(*mergepts);		
 	
@@ -860,6 +861,10 @@ class MergeTree : BaseTree{
 				//do projected merge - return better model (merge or separate)
 				//cout << "looking at merge for left subcl " << merge_pairs[m].first << " and right subcl " << merge_pairs[m].second << endl;
 				GaussianMixture* proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
+				if(proj_model == nullptr){
+					cout << "Error: projected model null." << endl;
+					break;
+				}
 				//cout << "# clusters in proj model " << proj_model->GetNClusters() << endl;
 				//get final clusters of proj_model - these will be starting place for full merge model
 				for(int k = 0; k < proj_model->GetNClusters(); k++)
