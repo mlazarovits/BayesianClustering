@@ -75,7 +75,7 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 }
 
 void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<string, Matrix>> prev_posteriors, unsigned long long seed){
-//cout << "data" << endl; m_data->Print();
+//cout << "GaussianMixture::InitParameters - data" << endl; m_data->Print();
 //cout << "m_n " << m_n << " m_k " << m_k << endl;
 	//if no previously defined posteriors, use randomly initialized kmeans 
 	//to seed data statistics + responsibilities (hard assignments), then calculate posterior parameters
@@ -561,7 +561,7 @@ void GaussianMixture::CalculateExpectations(){
 //(10.49) r_nk = rho_nk/sum_k rho_nk
 //(10.64) ln(rho_nk) = psi(alpha_k) - psi(alpha_hat) + 1/2(sum^d_i psi( (nu_k + 1 - i) /2) + d*ln2 + ln|W_k| - D/2*ln(2pi) - 1/2( D*beta_k^inv + nu_k*(x_n - m_k)T*W_k*(x_n - m_k) )
 void GaussianMixture::CalculateVariationalPosterior(){
-///if(m_n == 108) cout << "CALCULATE POSTERIOR - E STEP - start" << endl;
+//cout << "CALCULATE POSTERIOR - E STEP - start" << endl;
 	//calculate necessary expectation values for E-step and ELBO
 	//for(int k = 0; k < m_k; k++){
 	//	Matrix scalemat = m_model[k]->GetPrior()->GetParameter("scalemat");
@@ -653,7 +653,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//	cout << "Entry at n: " << n << " k: " << k << " is " << m_post.at(n,k) << " weight - " << m_data->at(n).w() << " unweighted post " << m_post.at(n,k)/m_data->at(n).w() << " point  " << endl; m_data->at(n).Print();
 			//}
 			
-	
+			
 			//put in safeguard for computer precision for doubles (~1e\pm308)/rounding
 			if(m_post.at(n,k) < 1e-308) m_post.SetEntry(0.,n,k);
 
@@ -681,7 +681,7 @@ void GaussianMixture::CalculateVariationalPosterior(){
 	//cout << "posterior normed" << endl;	
 	//m_post.Print();
 //cout << "\n" << endl;
-//if(m_n == 108) cout << "CALCULATE POSTERIOR - E STEP - end" << endl;
+//cout << "CALCULATE POSTERIOR - E STEP - end" << endl;
 };
 
 
@@ -689,7 +689,6 @@ void GaussianMixture::CalculateVariationalPosterior(){
 
 void GaussianMixture::CalculateRStatistics(){
 //cout << "Calculate RStats - start" << endl;
-//cout << "points" << endl; m_data->Print();
 	//responsibility statistics
 	//this is for N_k (Bishop eq. 10.51) - k entries in this vector
 	for(int k = 0; k < m_k; k++){
@@ -821,7 +820,6 @@ void GaussianMixture::UpdateVariationalParameters(){
 //M-step
 void GaussianMixture::UpdatePosteriorParameters(){
 //cout << "UPDATE PARAMETERS - M STEP - start" << endl;
-
 	//now update variational distribution parameters
 	//updating based on first step (sub-0 params)
 	for(int k = 0; k < m_k; k++){

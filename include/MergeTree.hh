@@ -264,7 +264,7 @@ class MergeTree : BaseTree{
 			}
 			//k = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
  //cout << "og points" << endl; x->points->Print();
-			//cout << "original points" << endl; x->points->Print();
+			//cout << "MergeTree:Evidence - original points" << endl; x->points->Print();
 			x->points->Sort();
 			PointCollection* newpts = new PointCollection(*x->points);
 			vector<Matrix> measErrs;
@@ -285,7 +285,12 @@ class MergeTree : BaseTree{
 			
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
-	
+
+			//cout << "MergeTree::Evidence - x->points" << endl; x->points->Print();
+			//cout << "MergeTree::Evidence - newpts" << endl; newpts->Print();
+			//cout << "MergeTree::Evidence - x->model->GetData()" << endl; x->model->GetData()->Print();
+
+
 			//change eta to theta BEFORE calculating centroid
 			x->model->EtaToTheta();
 			if(_verb > 5){cout << "eta to theta" << endl; x->model->GetData()->Print();}
@@ -727,34 +732,53 @@ if(isnan){
 //cout << "right node has " << x->r->model->GetNClusters() << " subclusters" << endl;
 //x->r->model->GetNorms(norms);
 //for(int n = 0; n < norms.size(); n++) cout << " right subcl #" << n << " norm " << norms[n] << endl;
+//
+
+
+//cout << "data from node x" << endl; x->model->GetData()->Print();
+//cout << "data from node x->l" << endl; x->l->model->GetData()->Print();
+//cout << "data from node x->r" << endl; x->r->model->GetData()->Print();
+			
 			Matrix r_nk_l = x->l->model->GetPosterior();
 //cout << "left posterior" << endl; r_nk_l.Print();
-			if(cl_left >= r_nk_l.GetDims()[1]){
+			if(cl_left >= r_nk_l.GetDims()[1] || cl_left < 0){
 				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.GetDims()[1] << " # cols # clusters in this model " << x->l->model->GetNClusters() << endl;
 				return nullptr;
 			}
-			PointCollection* newpts = new PointCollection();
-			PointCollection* pts_l = new PointCollection(*x->l->model->GetData()); //data should already be transformed in common frame
-			for(int n = 0; n < pts_l->GetNPoints(); n++){
-				//get unweighted responsibility
-				BayesPoint pt = pts_l->at(n); 
-				//cout << "left pt " << endl; pt.Print(); cout << " has r_n(cl_left) " << r_nk_l.at(n,cl_left) << endl;
-				pt.SetWeight(r_nk_l.at(n,cl_left));
-				newpts->AddPoint(pt);
-			}
 			Matrix r_nk_r = x->r->model->GetPosterior();
 //cout << "right posterior" << endl; r_nk_r.Print();
-			if(cl_right >= r_nk_r.GetDims()[1]){
+			if(cl_right >= r_nk_r.GetDims()[1] || cl_right < 0){
 				cout << "Error: accessing cluster " << cl_right << " with posterior of " << r_nk_r.GetDims()[1] << " # cols # clusters in this model " << x->r->model->GetNClusters() << endl;
 				return nullptr;
 			}
-			PointCollection* pts_r = new PointCollection(*x->r->model->GetData()); //data should already be transformed in common frame
-			for(int n = 0; n < pts_r->GetNPoints(); n++){
-				//get unweighted responsibility
-				BayesPoint pt = pts_r->at(n);
-				//cout << "right pt " << endl; pt.Print(); cout << " has r_n(cl_right) " << r_nk_r.at(n,cl_right) << endl;
-				pt.SetWeight(r_nk_r.at(n,cl_right));
-				newpts->AddPoint(pt);
+			PointCollection* newpts = new PointCollection();
+			for(int i = 0; i < x->model->GetData()->GetNPoints(); i++){
+				double w_i = x->model->GetData()->at(i).w();
+				bool matched = false;
+				for(int ll = 0; ll < x->l->model->GetData()->GetNPoints(); ll++){
+					if(x->l->model->GetData()->at(ll).w() == w_i){
+						//cout << "point i " <<  i << " in left cluster " << endl; x->model->GetData()->at(i).Print();
+						BayesPoint pt = x->model->GetData()->at(i); 
+						//cout << "left pt " << endl; pt.Print(); cout << " has r_n(cl_left) " << r_nk_l.at(ll,cl_left) << " for cl_left " << cl_left << " of " << r_nk_l.GetDims()[1] << " clusters" << endl;
+						pt.SetWeight(r_nk_l.at(ll,cl_left));
+						newpts->AddPoint(pt);
+						break;
+					}
+				}
+				if(matched) continue;
+				for(int rr = 0; rr < x->r->model->GetData()->GetNPoints(); rr++){
+					if(x->r->model->GetData()->at(rr).w() == w_i){
+						//cout << "point i " <<  i << " in right cluster " << endl; x->model->GetData()->at(i).Print();
+						matched = true;
+						//get unweighted responsibility
+						BayesPoint pt = x->model->GetData()->at(i);
+						//cout << "right pt " << endl; pt.Print(); cout << " has r_n(cl_right) " << r_nk_r.at(rr,cl_right) << " for cl_right " << cl_right << " of " << r_nk_r.GetDims()[1] << " clusters" << endl;
+						pt.SetWeight(r_nk_r.at(rr,cl_right));
+						newpts->AddPoint(pt);
+						break;
+					}
+				}
+	
 			}
 			newpts->Sort();
 //cout << "newpts " << endl; newpts->Print();
@@ -770,7 +794,7 @@ if(isnan){
 			int cl2 = merge_pair.second;
 
 			//cout << "_compare_projected_models - comparing subcls " << cl1 << " and " << cl2 << " of " << starting_params.size() << " starting params " << endl;
-			//cout << "cl1 local idx " << cl1 << " cl2 local idx " << x->l->model->GetNClusters() - cl2 << endl;
+			//cout << "cl1 local idx " << cl1 << " of " << x->l->model->GetNClusters() << " clusters and cl2 local idx " << cl2 - x->l->model->GetNClusters() << " of " << x->r->model->GetNClusters() << " clusters" << endl;
 
 
 			//get centroid of starting params
@@ -803,10 +827,12 @@ if(isnan){
 			
 
 			//project_data needs cl1 and cl2 in their "local" values
-			PointCollection* mergepts = _project_data(x,cl1,x->l->model->GetNClusters() - cl2);
+			PointCollection* mergepts = _project_data(x,cl1,cl2 - x->l->model->GetNClusters());
 			if(mergepts == nullptr) return nullptr;
+			//cout << "MergeTree::_compare_project_models - merge data" << endl; mergepts->Print();
 			//cout << "# total mergepts " << mergepts->GetNPoints() << endl;
 			PointCollection* seppts = new PointCollection(*mergepts);		
+			//cout << "MergeTree::_compare_project_models - sep data" << endl; seppts->Print();
 	
 			//do merge model
 			//run GMM with projected data with 2 initial starting subclusters (ie starting_params[merge_pair.first], starting_params[merge_pair.second])
