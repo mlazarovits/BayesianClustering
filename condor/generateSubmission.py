@@ -29,6 +29,7 @@ def generateSubmission(args):
     reco_date = {}
     reco_date["2017"] = "_17Nov2017"
     reco_date["2017_DEG"] = "_09Aug2019_UL2017"
+    reco_date["2018_DEG"] = "-15Feb2022"
     reco_date["2018"] = ""
     if "GJets" in args.inputSample:
     	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
@@ -40,7 +41,8 @@ def generateSubmission(args):
     	inputFileList = "kucmsntuple_QCD_R"+yr+"_"+args.sel+"_"+ver+"_QCD_"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "EGamma" in args.inputSample:
         if "AL1SelEle" in sel:
-    	    inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+"_list.txt"
+            ver = "v28"
+            inputFileList = "kucmsntuple_EGamma_R"+yr+"_"+sel+"_"+ver+"_EGamma_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_UL2018-v1_list.txt"
         else:
             inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "gogoG" in args.inputSample:
