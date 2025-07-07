@@ -415,7 +415,7 @@ class MergeTree : BaseTree{
 			//}
 			//else
 			//	algo->SetThresh(x->points->Sumw());
-			double thresh = 1e-5;//0.01*x->points->Sumw(); //1% of total weight
+			double thresh = 1e-1;//0.01*x->points->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
@@ -495,7 +495,7 @@ class MergeTree : BaseTree{
 		vector<pair<int,int>> merge_pairs;
 		for(auto prodit = prodmap.begin(); prodit != prodmap.end(); prodit++){
 			if(prodit->second.first == -1 || prodit->second.second == -1) continue;
-			cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << " left has " << x->l->model->GetNClusters() << " clusters and right has " << x->r->model->GetNClusters() << " clusters" << endl;
+			//cout << "merge pair bw " << prodit->second.first << " and " << prodit->second.second << " or " << left_post_indices[prodit->second.first] << " and " << right_post_indices[prodit->second.second] << " left has " << x->l->model->GetNClusters() << " clusters and right has " << x->r->model->GetNClusters() << " clusters" << endl;
 			merge_pairs.push_back(std::make_pair(left_post_indices[prodit->second.first], right_post_indices[prodit->second.second]));
 		}
 		//this function compares all the "local" (ie projected) subcluster merges to not merging, then sets the starting params for the merged model from these merge decisions
@@ -593,19 +593,27 @@ class MergeTree : BaseTree{
 //	//params["cov"].Print();
 //}
 			x->model->ThetaToEta_params();
+bool isnan = false;
+
 for(int k = 0; k < x->model->GetNClusters(); k++){
 	auto params = x->model->GetLHPosteriorParameters(k);
 	if(std::isnan(params["mean"].at(0,0))){
+		isnan = true;
+	}
+}
+if(isnan){
+	for(int k = 0; k < x->model->GetNClusters(); k++){
+		auto params = x->model->GetLHPosteriorParameters(k);
 		cout << "theta to eta params" << endl;
 		cout << "cluster #" << k << " with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
 		cout << "cluster #" << k << endl;
 		cout << "mean" << endl;
 		params["mean"].Print();
 	}
-	//cout << "mean" << endl;
-	//params["mean"].Print();
-	//cout << "cov" << endl;
-	//params["cov"].Print();
+		//cout << "mean" << endl;
+		//params["mean"].Print();
+		//cout << "cov" << endl;
+		//params["cov"].Print();
 }
 			//resets data to original points
 			x->model->SetData(x->points);
@@ -669,7 +677,7 @@ for(int k = 0; k < x->model->GetNClusters(); k++){
 
 		void _run_model(GaussianMixture* model, double& elbo){
 			VarEMCluster* algo = new VarEMCluster(model, model->GetNClusters());
-			double thresh = 1e-5;//0.01*model->GetData()->Sumw(); //1% of total weight
+			double thresh = 1e-1;//0.01*model->GetData()->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
 			double oldLogL = algo->EvalLogL();
