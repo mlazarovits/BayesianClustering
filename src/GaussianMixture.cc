@@ -150,7 +150,7 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 				m_model[k]->GetPrior()->SetParameter("scalemat", m_W0);
 				m_model[k]->GetPrior()->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));	
 				m_model[k]->SetParameter("mean", Matrix(initpts.at(k - prev_posteriors.size())));
-				m_alphas[k] = 0.01*m_data->Sumw();	
+				m_alphas[k] = 0.1;	
 			
 				//if a model isn't seeded by a previous posterior in this scheme, it is considered a "ghost" subcluser to study the IR safety of the subcluster scale
 				m_model[k]->SetGhost(true);
