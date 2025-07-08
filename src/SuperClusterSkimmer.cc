@@ -215,6 +215,8 @@ void SuperClusterSkimmer::Skim(){
 			JetPoint rh_center;
 			GetCenterXtal(rh_pts, rh_center);	
 			for(int k = 0; k < mapobs.size(); k++){
+				int label = GetTrainingLabel(scidx, k, gmm);
+				if(label == -1) continue;
 				if(np != -1){
 					//do 2017 preselection
 					double r9 = _base->Photon_r9->at(np);
@@ -275,12 +277,11 @@ void SuperClusterSkimmer::Skim(){
 				mapobs[k]["event"] = e;
 				mapobs[k]["object"] = scidx;
 				mapobs[k]["subcl"] = k;
-				int label = GetTrainingLabel(scidx, k, gmm);
 				mapobs[k]["label"] = label;
-				BaseSkimmer::WriteObs(mapobs[k],"superclusters");
 
 				//get prediction from NN model for good SCs
 				if(label != -1){
+					BaseSkimmer::WriteObs(mapobs[k],"superclusters");
 					double predval = 0;
 					int nclass = CNNPredict(mapobs[k],predval);
 					cout << "class " << nclass << " predval " << predval << " for SC " << k << " with label " << label << endl;	
