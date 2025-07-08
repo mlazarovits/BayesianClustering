@@ -409,7 +409,6 @@ class Jet{
 				
 				phipts += phipt;
 			}
-			_set_time();
 			_eta /= norm;
 			_phi = phipts.CircularCentroid(0);
 			//set mean from member variables
