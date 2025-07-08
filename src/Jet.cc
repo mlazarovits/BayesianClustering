@@ -87,7 +87,6 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 
 	
 	_idx = 999;
-	_set_time();
 	_ensure_valid_rap_phi();
 	
 	_cov = Matrix(3,3);
@@ -151,7 +150,6 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
-	_set_time();
 	
 	_pi = 0;
 	_update_mom();
@@ -189,7 +187,6 @@ Jet::Jet(const vector<Jet>& jets){
 	_mass = _calc_mass();
 
 	_idx = 999;
-	_set_time();
 
 	CalculateCenter();	
 	_pi = 0;
@@ -376,11 +373,13 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		//set probabilistic coefficient
 		//pi = sum_rh sum_k r_nk
 		_pi += w;
-
+		
+		_t += _rhs[i].t()*_rhs[i].E();
 
 	}
 	_eta = model->GetData()->Centroid(0);
 	_phi = model->GetData()->CircularCentroid(1);
+	_t /= _E;
 	//put phi on 02pi
 	//if pt is negative
 	_mu = Matrix(3,1);
@@ -391,7 +390,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 
 	_idx = 999;
 	_ensure_valid_rap_phi();
-	_set_time();
 	_mu.SetEntry(_t,2,0);
 
 	_update_mom();
@@ -533,10 +531,12 @@ void Jet::add(const Jet& jt){
 	_mass = _calc_mass();
 
 	//set time to be energy-weighted average of rec hit times
-	_set_time();
+	//_set_time();
 
-	//recalculate eta and phi of cluster
-	_set_rap_phi();
+	////recalculate eta and phi of cluster
+	//_set_rap_phi();
+
+	CalculateCenter();
 
 	//add subclusters (aka constituents)
 	for(auto j : jt._constituents)
@@ -565,12 +565,12 @@ void Jet::add(const JetPoint& rh){
 	_pz += pt*sinh(rh.eta());
 	_E  += rh.E();
 	//set time to be energy-weighted average of rec hit times
-	_set_time();
+	//_set_time();
 	//recalculate kt2 of cluster
 	_kt2 = sqrt(pt);
 	//recalculate eta and phi of cluster
-	_set_rap_phi();
-
+	//_set_rap_phi();
+	CalculateCenter();
 
 }
 

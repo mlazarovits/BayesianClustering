@@ -394,13 +394,16 @@ class Jet{
 		}
 		
 		void CalculateCenter(){
-			double phi, eta;
 			double norm = 0;
 			PointCollection phipts;
 			_mu = Matrix(3,1);
+			_eta = 0;
+			_phi = 0;
+			_t = 0;
 			for(int i = 0; i < _nRHs; i++){		
 				//eta, phi centered at (0,0,0)
 				_eta += _rhs[i].eta()*_rhs[i].E();
+				_t += _rhs[i].t()*_rhs[i].E();
 				norm += _rhs[i].E();
 				
 				BayesPoint phipt(1);
@@ -408,13 +411,15 @@ class Jet{
 				phipt.SetWeight(_rhs[i].GetWeight());
 				
 				phipts += phipt;
+
 			}
 			_eta /= norm;
+			_t /= norm;
 			_phi = phipts.CircularCentroid(0);
+			
 			//set mean from member variables
 			_mu.SetEntry(_eta,0,0);
 			_mu.SetEntry(_phi,1,0);
-			_set_time();
 			_mu.SetEntry(_t,2,0);
 		}
 
