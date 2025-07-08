@@ -1555,7 +1555,9 @@ void HistFormatSim(string file, string proc = ""){
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
+	MethodStackHists(file, proc, {"genAK8","genAK15","BHC"}, oname, "nJets",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets"); 
+	MethodStackHists(file, proc, {"recoAK8","recoAK15","BHC"}, oname, "nJets",pttypes); 
 	
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
@@ -1568,9 +1570,9 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_energy"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_pt"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass");
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_EtaCenter",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_PhiCenter",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_TimeCenter",pttypes); 
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_EtaCenter",pttypes); 
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_PhiCenter",pttypes); 
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_TimeCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_energy",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_energy",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_energy",pttypes); 
