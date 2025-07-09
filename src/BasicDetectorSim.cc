@@ -76,7 +76,8 @@ BasicDetectorSim::BasicDetectorSim(){
 
 	_simttbar = false;
 	_simqcd = false;
-	_simw = false;
+	_simwgam = false;
+	_simwg = false;
 
 
 	_ptHatMin = 200;
@@ -141,7 +142,8 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	
 	_simttbar = false;
 	_simqcd = false;
-	_simw = false;
+	_simwgam = false;
+	_simwg = false;
 	
 	_ptHatMin = 200;
 	_noShower = false;
@@ -174,12 +176,17 @@ void BasicDetectorSim::_simTTbar(){
 
 }
 
-void BasicDetectorSim::_simSingleW(){
-	//_pythia.settings.readString("WeakSingleBoson:ffbar2W = on");
+void BasicDetectorSim::_simWgamma(){
 	_pythia.settings.readString("WeakBosonAndParton:ffbar2Wgm = on");
 	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
 	_pythia.settings.readString("Beams:eCM = 13000.");
-	if(_verb > 1) cout << "Simulating single W" << endl;
+	if(_verb > 1) cout << "Simulating W+gamma" << endl;
+}
+void BasicDetectorSim::_simWg(){
+	_pythia.settings.readString("WeakBosonAndParton:qqbar2Wg= on");
+	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
+	_pythia.settings.readString("Beams:eCM = 13000.");
+	if(_verb > 1) cout << "Simulating W+g" << endl;
 
 
 }
@@ -194,8 +201,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), qcd) != _procs_to_sim.end()){
 		_simQCD();
 	}	
-	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), w) != _procs_to_sim.end()){
-		_simSingleW();
+	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), wgam) != _procs_to_sim.end()){
+		_simWgamma();
+	}	
+	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), wg) != _procs_to_sim.end()){
+		_simWg();
 	}	
 	if(_pu){
   		if(_verb == 0) pileup.settings.readString("Print:quiet = on");
@@ -305,13 +315,20 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					SaveGenInfo(p, -1);
 				}
 			}
-			if(_simw){
+			if(_simwgam || _simwg){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
 					SaveGenInfo(p, -1);
 				}
-				//don't shower photon
-				if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
-					continue;
+				if(_simwgam){
+					//don't shower photon
+					if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
+						continue;
+					}
+				}
+				else{ //W+gluon - save gluon info
+					if(fabs(particle.id()) == 21 && fabs(particle.status()) == 23){
+						SaveGenInfo(p, -1);
+					}
 				}
 					
 			}
@@ -457,7 +474,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		//save info on top decays!
 		vector<int> had = {1, 2, 3, 4, 5};
 		vector<int> lep = {11, 12, 13, 14, 15, 16};
-		if(_simw)
+		if(_simwgam || _simwg)
 			cout << "w_idxs size " << w_idxs.size() << endl;
 		//save gen w + direct daughters
 		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){

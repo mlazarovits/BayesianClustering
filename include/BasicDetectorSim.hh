@@ -38,7 +38,8 @@ struct RecoParticle;
 
 		void SimTTbar(){ _procs_to_sim.push_back(ttbar); _simttbar = true;};
 		void SimQCD(){ _procs_to_sim.push_back(qcd); _simqcd = true;};
-		void SimSingleW(){ _procs_to_sim.push_back(w); _simw = true;};
+		void SimWgamma(){ _procs_to_sim.push_back(wgam); _simwgam = true;};
+		void SimWg(){ _procs_to_sim.push_back(wg); _simwg = true;};
 
 		//this is what does the detector effects on the tracks
 		void CalcTrajectory(RecoParticle& rp); //calculate trajectories/tracks for 
@@ -284,12 +285,13 @@ struct RecoParticle;
 		double _spikeprob; //probability of spiking in rec hit
 
 		//process enums
-		enum _proc {ttbar, qcd, w};
+		enum _proc {ttbar, qcd, wgam, wg};
 		vector<int> _procs_to_sim;
 		void _simQCD(); //use pythia to simulate QCD events
 		void _simTTbar(); //use pythia to simulate ttbar events
-		void _simSingleW();
-		bool _simttbar, _simqcd, _simw;
+		void _simWgamma();
+		void _simWg();
+		bool _simttbar, _simqcd, _simwgam, _simwg;
 
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
