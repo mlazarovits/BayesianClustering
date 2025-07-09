@@ -1816,7 +1816,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//3 - bhc subcluster eta center
 		TH1D* predJet_subClusterEtaCenter = new TH1D("BHCJet_subclusterEtaCenter","BHCJet_subclusterEtaCenter",25,-3.2,3.2);
 		//4 - bhc subcluster phi center
-		TH1D* predJet_subClusterPhiCenter = new TH1D("BHCJet_subclusterPhiCenter","BHCJet_subclusterPhiCenter",25,-0.1,6.3);
+		TH1D* predJet_subClusterPhiCenter = new TH1D("BHCJet_subclusterPhiCenter","BHCJet_subclusterPhiCenter",25,0.,6.283);
 		//5 - bhc jet subcluster time center
 		TH1D* predJet_subClusterTimeCenter = new TH1D("BHCJet_subclusterTimeCenter","BHCJet_subclusterTimeCenter",25,-1,1);
 		//6 - bhc jet size
@@ -1971,7 +1971,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//80 - eta center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaCenter = new TH1D("recoAK4Jet_subclusterEtaCenter","recoAK4Jet_subclusterEtaCenter",25,-3.2,3.2);
 		//81 - phi center of GMM cluster from reco jets
-		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subclusterPhiCenter","recoAK4Jet_subclusterPhiCenter",25,-0.1,6.3);
+		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subclusterPhiCenter","recoAK4Jet_subclusterPhiCenter",25,0.,6.283);
 		//82 - eta sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subclusterEtaSig","recoAK4Jet_subclusterEtaSig",50,0.,0.5);
 		//83 - phi sigma of GMM cluster from reco jets
@@ -2027,7 +2027,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//108 - gen particle eta at detector
 		TH1D* genParticle_eta = new TH1D("genParticle_eta","genParticle_eta",25,-3.2,3.2);
 		//109 - gen particle phi at detector
-		TH1D* genParticle_phi = new TH1D("genParticle_phi","genParticle_phi",25,-0.2,6.4);
+		TH1D* genParticle_phi = new TH1D("genParticle_phi","genParticle_phi",25,0.,6.283);
 		//110 - gen particle time at detector
 		TH1D* genParticle_time = new TH1D("genParticle_time","genParticle_time",25,-10,10);
 		//111 - gen particle pt		
@@ -2039,7 +2039,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//114 - gen AK4 jet eta at detector
 		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-3.2,3.2);
 		//115 - gen AK4 jet phi at detector
-		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_PhiCenter","genAK4Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_PhiCenter","genAK4Jet_PhiCenter",25,0.,6.283);
 		//116 - gen AK4 jet time at detector
 		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_TimeCenter","genAK4Jet_TimeCenter",25,-1,1);
 		//117 - gen AK4 jet pt		
@@ -2067,7 +2067,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//128 - bhc jet eta center
 		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-3.2,3.2);
 		//129 - bhc jet phi center
-		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,-0.1,6.3);
+		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,0.,6.283);
 		//130 - bhc jet center
 		TH1D* BHCJet_TimeCenter = new TH1D("BHCJet_TimeCenter","BHCJet_TimeCenter",25,-1,1);
 		//131 - rh time
@@ -2089,7 +2089,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//139 - reco AK4 jet eta at detector
 		TH1D* recoAK4Jet_EtaCenter = new TH1D("recoAK4Jet_EtaCenter","recoAK4Jet_EtaCenter",25,-3.2,3.2);
 		//140 - reco AK4 jet phi at detector
-		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,0.,6.283);
 		//141 - reco AK4 jet # subclusters in event
 		TH1D* recoAK4Jet_nSubclustersEvt = new TH1D("recoAK4Jet_nSubclustersEvt","recoAK4Jet_nSubclustersEvt",30,0,30);
 		//142 - bhc jet # subclusters in event
@@ -2109,7 +2109,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//149 - gen AK15 jet eta at detector
 		TH1D* genAK15Jet_eta = new TH1D("genAK15Jet_EtaCenter","genAK15Jet_EtaCenter",25,-3.2,3.2);
 		//150 - gen AK15 jet phi at detector
-		TH1D* genAK15Jet_phi = new TH1D("genAK15Jet_PhiCenter","genAK15Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* genAK15Jet_phi = new TH1D("genAK15Jet_PhiCenter","genAK15Jet_PhiCenter",25,0.,6.283);
 		//151 - gen AK15 jet time at detector
 		TH1D* genAK15Jet_time = new TH1D("genAK15Jet_TimeCenter","genAK15Jet_TimeCenter",25,-1,1);
 		//152 - gen AK15 jet pt		
@@ -2133,7 +2133,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//161 - reco AK15 jet eta at detector
 		TH1D* recoAK8Jet_eta = new TH1D("recoAK8Jet_EtaCenter","recoAK8Jet_EtaCenter",25,-3.2,3.2);
 		//162 - reco AK8 jet phi at detector
-		TH1D* recoAK8Jet_phi = new TH1D("recoAK8Jet_PhiCenter","recoAK8Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* recoAK8Jet_phi = new TH1D("recoAK8Jet_PhiCenter","recoAK8Jet_PhiCenter",25,0.,6.283);
 		//163 - reco AK8 jet time at detector
 		TH1D* recoAK8Jet_time = new TH1D("recoAK8Jet_TimeCenter","recoAK8Jet_TimeCenter",25,-1,1);
 		//164 - reco AK8 jet pt		
@@ -2155,7 +2155,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//172 - gen AK15 jet eta at detector
 		TH1D* recoAK15Jet_eta = new TH1D("recoAK15Jet_EtaCenter","recoAK15Jet_EtaCenter",25,-3.2,3.2);
 		//173 - reco AK15 jet phi at detector
-		TH1D* recoAK15Jet_phi = new TH1D("recoAK15Jet_PhiCenter","recoAK15Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* recoAK15Jet_phi = new TH1D("recoAK15Jet_PhiCenter","recoAK15Jet_PhiCenter",25,0.,6.283);
 		//174 - reco AK15 jet time at detector
 		TH1D* recoAK15Jet_time = new TH1D("recoAK15Jet_TimeCenter","recoAK15Jet_TimeCenter",25,-1,1);
 		//175 - reco AK15 jet pt		
@@ -2177,7 +2177,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//183 - gen AK15 jet eta at detector
 		TH1D* genAK8Jet_eta = new TH1D("genAK8Jet_EtaCenter","genAK8Jet_EtaCenter",25,-3.2,3.2);
 		//184 - gen AK8 jet phi at detector
-		TH1D* genAK8Jet_phi = new TH1D("genAK8Jet_PhiCenter","genAK8Jet_PhiCenter",25,-0.2,6.4);
+		TH1D* genAK8Jet_phi = new TH1D("genAK8Jet_PhiCenter","genAK8Jet_PhiCenter",25,0.,6.283);
 		//185 - gen AK8 jet time at detector
 		TH1D* genAK8Jet_time = new TH1D("genAK8Jet_TimeCenter","genAK8Jet_TimeCenter",25,-1,1);
 		//186 - gen AK8 jet pt		
@@ -2385,7 +2385,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//52 - gen jet eta vs reco jet eta (AK4)
 		TH2D* recoAK4JetEtaCenter_genAK4JetEtaCenter = new TH2D("recoAK4JetEtaCenter_genAK4JetEtaCenter","recoAK4JetEtaCenter_genAK4JetEtaCenter;recoAK4JetEtaCenter;genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//53 - gen jet phi vs reco jet phi (AK4)
-		TH2D* recoAK4JetPhiCenter_genAK4JetPhiCenter = new TH2D("recoAK4JetPhiCenter_genAK4JetPhiCenter","recoAK4JetPhiCenter_genAK4JetPhiCenter;recoAK4JetPhiCenter;genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK4JetPhiCenter_genAK4JetPhiCenter = new TH2D("recoAK4JetPhiCenter_genAK4JetPhiCenter","recoAK4JetPhiCenter_genAK4JetPhiCenter;recoAK4JetPhiCenter;genAK4JetPhiCenter",25,0.,6.283,25,0.,6.283);
 		//54 - gen jet time vs reco jet time (AK4)
 		TH2D* recoAK4JetTimeCenter_genAK4JetTimeCenter = new TH2D("recoAK4JetTimeCenter_genAK4JetTimeCenter","recoAK4JetTimeCenter_genAK4JetTimeCenter;recoAK4JetTimeCenter;genAK4JetTimeCenter",25,-1,1,25,-1,1.);
 		//55 - gen AK4 jet pt vs BHC jet pt 
@@ -2397,7 +2397,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//58 - gen AK4 jet eta vs BHC jet eta 
 		TH2D* BHCJetEtaCenter_genAK4JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK4JetEtaCenter","BHCJetEtaCenter_genAK4JetEtaCenter;BHCJetEtaCenter;genAK4JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//59 - gen AK4 jet phi vs BHC jet phi 
-		TH2D* BHCJetPhiCenter_genAK4JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK4JetPhiCenter","BHCJetPhiCenter_genAK4JetPhiCenter;BHCJetPhiCenter;genAK4JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genAK4JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK4JetPhiCenter","BHCJetPhiCenter_genAK4JetPhiCenter;BHCJetPhiCenter;genAK4JetPhiCenter",25,0.,6.283,25,0.,6.283);
 		//60 - gen AK4 jet time vs BHC jet time 
 		TH2D* BHCJetTimeCenter_genAK4JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK4JetTimeCenter","BHCJetTimeCenter_genAK4JetTimeCenter;BHCJetTimeCenter;genAK4JetTimeCenter",25,-1,1,25,-1,1.);
 		//61 - gen AK4 jet # constituents vs BHC jet # subclusters
@@ -2411,7 +2411,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//65 - gen AK15 jet eta vs BHC jet eta 
 		TH2D* BHCJetEtaCenter_genAK15JetEtaCenter = new TH2D("BHCJetEtaCenter_genAK15JetEtaCenter","BHCJetEtaCenter_genAK15JetEtaCenter;BHCJetEtaCenter;genAK15JetEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//66 - gen AK15 jet phi vs BHC jet phi 
-		TH2D* BHCJetPhiCenter_genAK15JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK15JetPhiCenter","BHCJetPhiCenter_genAK15JetPhiCenter;BHCJetPhiCenter;genAK15JetPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genAK15JetPhiCenter = new TH2D("BHCJetPhiCenter_genAK15JetPhiCenter","BHCJetPhiCenter_genAK15JetPhiCenter;BHCJetPhiCenter;genAK15JetPhiCenter",25,0.,6.283,25,0.,6.283);
 		//67 - gen AK15 jet time vs BHC jet time 
 		TH2D* BHCJetTimeCenter_genAK15JetTimeCenter = new TH2D("BHCJetTimeCenter_genAK15JetTimeCenter","BHCJetTimeCenter_genAK15JetTimeCenter;BHCJetTimeCenter;genAK15JetTimeCenter",25,-1,1,25,-1,1.);
 		//68 - gen AK15 jet # constituents vs BHC jet # subclusters 
@@ -2425,7 +2425,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//72 - BHC jet eta vs gen top eta 
 		TH2D* BHCJetEtaCenter_genTopEtaCenter = new TH2D("BHCJetEtaCenter_genTopEtaCenter","BHCJetEtaCenter_genTopEtaCenter;BHCJetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//73 - BHC jet phi vs gen top phi 
-		TH2D* BHCJetPhiCenter_genTopPhiCenter = new TH2D("BHCJetPhiCenter_genTopPhiCenter","BHCJetPhiCenter_genTopPhiCenter;BHCJetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genTopPhiCenter = new TH2D("BHCJetPhiCenter_genTopPhiCenter","BHCJetPhiCenter_genTopPhiCenter;BHCJetPhiCenter;genTopPhiCenter",25,0.,6.283,25,0.,6.283);
 		//74 - recoAK4 jet pt vs gen top pt 
 		TH2D* recoAK4JetPt_genTopPt = new TH2D("recoAK4JetPt_genTopPt","recoAK4JetPt_genTopPt;recoAK4JetPt;genTopPt",25,0,2000,25,0,2000);
 		//75 - recoAK4 jet E vs gen top pt
@@ -2435,7 +2435,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//77 - recoAK4 jet eta vs gen top eta 
 		TH2D* recoAK4JetEtaCenter_genTopEtaCenter = new TH2D("recoAK4JetEtaCenter_genTopEtaCenter","recoAK4JetEtaCenter_genTopEtaCenter;recoAK4JetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//78 - recoAK4 jet phi vs gen top phi 
-		TH2D* recoAK4JetPhiCenter_genTopPhiCenter = new TH2D("recoAK4JetPhiCenter_genTopPhiCenter","recoAK4JetPhiCenter_genTopPhiCenter;recoAK4JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK4JetPhiCenter_genTopPhiCenter = new TH2D("recoAK4JetPhiCenter_genTopPhiCenter","recoAK4JetPhiCenter_genTopPhiCenter;recoAK4JetPhiCenter;genTopPhiCenter",25,0.,6.283,25,0.,6.283);
 		//79 - recoAK15 jet pt vs gen top pt 
 		TH2D* recoAK15JetPt_genTopPt = new TH2D("recoAK15JetPt_genTopPt","recoAK15JetPt_genTopPt;recoAK15JetPt;genTopPt",25,0,2000,25,0,2000);
 		//80 - recoAK15 jet E vs gen top pt
@@ -2445,7 +2445,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//82 - recoAK15 jet eta vs gen top eta 
 		TH2D* recoAK15JetEtaCenter_genTopEtaCenter = new TH2D("recoAK15JetEtaCenter_genTopEtaCenter","recoAK15JetEtaCenter_genTopEtaCenter;recoAK15JetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//83 - recoAK15 jet phi vs gen top phi 
-		TH2D* recoAK15JetPhiCenter_genTopPhiCenter = new TH2D("recoAK15JetPhiCenter_genTopPhiCenter","recoAK15JetPhiCenter_genTopPhiCenter;recoAK15JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK15JetPhiCenter_genTopPhiCenter = new TH2D("recoAK15JetPhiCenter_genTopPhiCenter","recoAK15JetPhiCenter_genTopPhiCenter;recoAK15JetPhiCenter;genTopPhiCenter",25,0.,6.283,25,0.,6.283);
 		//84 - genAK4 jet pt vs gen top pt 
 		TH2D* genAK4JetPt_genTopPt = new TH2D("genAK4JetPt_genTopPt","genAK4JetPt_genTopPt;genAK4JetPt;genTopPt",25,0,2000,25,0,2000);
 		//85 - genAK4 jet E vs gen top pt
@@ -2455,7 +2455,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//87 - genAK4 jet eta vs gen top eta 
 		TH2D* genAK4JetEtaCenter_genTopEtaCenter = new TH2D("genAK4JetEtaCenter_genTopEtaCenter","genAK4JetEtaCenter_genTopEtaCenter;genAK4JetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//88 - genAK4 jet phi vs gen top phi 
-		TH2D* genAK4JetPhiCenter_genTopPhiCenter = new TH2D("genAK4JetPhiCenter_genTopPhiCenter","genAK4JetPhiCenter_genTopPhiCenter;genAK4JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* genAK4JetPhiCenter_genTopPhiCenter = new TH2D("genAK4JetPhiCenter_genTopPhiCenter","genAK4JetPhiCenter_genTopPhiCenter;genAK4JetPhiCenter;genTopPhiCenter",25,0.,6.283,25,0.,6.283);
 		//89 - genAK15 jet pt vs gen top pt 
 		TH2D* genAK15JetPt_genTopPt = new TH2D("genAK15JetPt_genTopPt","genAK15JetPt_genTopPt;genAK15JetPt;genTopPt",25,0,2000,25,0,2000);
 		//90 - genAK15 jet E vs gen top pt
@@ -2465,7 +2465,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//92 - genAK15 jet eta vs gen top eta 
 		TH2D* genAK15JetEtaCenter_genTopEtaCenter = new TH2D("genAK15JetEtaCenter_genTopEtaCenter","genAK15JetEtaCenter_genTopEtaCenter;genAK15JetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//93 - genAK15 jet phi vs gen top phi 
-		TH2D* genAK15JetPhiCenter_genTopPhiCenter = new TH2D("genAK15JetPhiCenter_genTopPhiCenter","genAK15JetPhiCenter_genTopPhiCenter;genAK15JetPhiCenter;genTopPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* genAK15JetPhiCenter_genTopPhiCenter = new TH2D("genAK15JetPhiCenter_genTopPhiCenter","genAK15JetPhiCenter_genTopPhiCenter;genAK15JetPhiCenter;genTopPhiCenter",25,0.,6.283,25,0.,6.283);
 
 		//94 - BHC jet pt vs gen W pt 
 		TH2D* BHCJetPt_genWPt = new TH2D("BHCJetPt_genWPt","BHCJetPt_genWPt;BHCJetPt;genWPt",25,0,500,25,0,500);
@@ -2476,7 +2476,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//97 - BHC jet eta vs gen W eta 
 		TH2D* BHCJetEtaCenter_genWEtaCenter = new TH2D("BHCJetEtaCenter_genWEtaCenter","BHCJetEtaCenter_genWEtaCenter;BHCJetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//98 - BHC jet phi vs gen W phi 
-		TH2D* BHCJetPhiCenter_genWPhiCenter = new TH2D("BHCJetPhiCenter_genWPhiCenter","BHCJetPhiCenter_genWPhiCenter;BHCJetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* BHCJetPhiCenter_genWPhiCenter = new TH2D("BHCJetPhiCenter_genWPhiCenter","BHCJetPhiCenter_genWPhiCenter;BHCJetPhiCenter;genWPhiCenter",25,0.,6.283,25,0.,6.283);
 		//99 - recoAK4 jet pt vs gen W pt 
 		TH2D* recoAK4JetPt_genWPt = new TH2D("recoAK4JetPt_genWPt","recoAK4JetPt_genWPt;recoAK4JetPt;genWPt",25,0,500,25,0,500);
 		//100 - recoAK4 jet E vs gen W pt
@@ -2486,7 +2486,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//102 - recoAK4 jet eta vs gen W eta 
 		TH2D* recoAK4JetEtaCenter_genWEtaCenter = new TH2D("recoAK4JetEtaCenter_genWEtaCenter","recoAK4JetEtaCenter_genWEtaCenter;recoAK4JetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//103 - recoAK4 jet phi vs gen W phi 
-		TH2D* recoAK4JetPhiCenter_genWPhiCenter = new TH2D("recoAK4JetPhiCenter_genWPhiCenter","recoAK4JetPhiCenter_genWPhiCenter;recoAK4JetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK4JetPhiCenter_genWPhiCenter = new TH2D("recoAK4JetPhiCenter_genWPhiCenter","recoAK4JetPhiCenter_genWPhiCenter;recoAK4JetPhiCenter;genWPhiCenter",25,0.,6.283,25,0.,6.283);
 		//104 - recoAK15 jet pt vs gen W pt 
 		TH2D* recoAK15JetPt_genWPt = new TH2D("recoAK15JetPt_genWPt","recoAK15JetPt_genWPt;recoAK15JetPt;genWPt",25,0,500,25,0,500);
 		//105 - recoAK15 jet E vs gen W pt
@@ -2496,7 +2496,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//107 - recoAK15 jet eta vs gen W eta 
 		TH2D* recoAK15JetEtaCenter_genWEtaCenter = new TH2D("recoAK15JetEtaCenter_genWEtaCenter","recoAK15JetEtaCenter_genWEtaCenter;recoAK15JetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//108 - recoAK15 jet phi vs gen W phi 
-		TH2D* recoAK15JetPhiCenter_genWPhiCenter = new TH2D("recoAK15JetPhiCenter_genWPhiCenter","recoAK15JetPhiCenter_genWPhiCenter;recoAK15JetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* recoAK15JetPhiCenter_genWPhiCenter = new TH2D("recoAK15JetPhiCenter_genWPhiCenter","recoAK15JetPhiCenter_genWPhiCenter;recoAK15JetPhiCenter;genWPhiCenter",25,0.,6.283,25,0.,6.283);
 		//109 - genAK4 jet pt vs gen W pt 
 		TH2D* genAK4JetPt_genWPt = new TH2D("genAK4JetPt_genWPt","genAK4JetPt_genWPt;genAK4JetPt;genWPt",25,0,500,25,0,500);
 		//110 - genAK4 jet E vs gen W pt
@@ -2506,7 +2506,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//112 - genAK4 jet eta vs gen W eta 
 		TH2D* genAK4JetEtaCenter_genWEtaCenter = new TH2D("genAK4JetEtaCenter_genWEtaCenter","genAK4JetEtaCenter_genWEtaCenter;genAK4JetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//113 - genAK4 jet phi vs gen W phi 
-		TH2D* genAK4JetPhiCenter_genWPhiCenter = new TH2D("genAK4JetPhiCenter_genWPhiCenter","genAK4JetPhiCenter_genWPhiCenter;genAK4JetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* genAK4JetPhiCenter_genWPhiCenter = new TH2D("genAK4JetPhiCenter_genWPhiCenter","genAK4JetPhiCenter_genWPhiCenter;genAK4JetPhiCenter;genWPhiCenter",25,0.,6.283,25,0.,6.283);
 		//114 - genAK15 jet pt vs gen W pt 
 		TH2D* genAK15JetPt_genWPt = new TH2D("genAK15JetPt_genWPt","genAK15JetPt_genWPt;genAK15JetPt;genWPt",25,0,500,25,0,500);
 		//115 - genAK15 jet E vs gen W pt
@@ -2516,7 +2516,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//117 - genAK15 jet eta vs gen W eta 
 		TH2D* genAK15JetEtaCenter_genWEtaCenter = new TH2D("genAK15JetEtaCenter_genWEtaCenter","genAK15JetEtaCenter_genWEtaCenter;genAK15JetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//118 - genAK15 jet phi vs gen W phi 
-		TH2D* genAK15JetPhiCenter_genWPhiCenter = new TH2D("genAK15JetPhiCenter_genWPhiCenter","genAK15JetPhiCenter_genWPhiCenter;genAK15JetPhiCenter;genWPhiCenter",25,-0.2,6.4,25,-0.2,6.4);
+		TH2D* genAK15JetPhiCenter_genWPhiCenter = new TH2D("genAK15JetPhiCenter_genWPhiCenter","genAK15JetPhiCenter_genWPhiCenter;genAK15JetPhiCenter;genWPhiCenter",25,0.,6.283,25,0.,6.283);
 		//119 - BHC jet subcluster energy vs subcluster mass
 		TH2D* BHCJet_subclusterEnergy_subclusterMass = new TH2D("BHCJet_subclusterEnergy_subclusterMass","BHCJet_subclusterEnergy_subclusterMass;subclusterEnergy;subclusterMass",25,0,500,25,0,100);
 		//120 - BHC jet subcluster energy vs # effective rec hits
