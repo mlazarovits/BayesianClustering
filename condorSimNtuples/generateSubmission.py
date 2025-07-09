@@ -23,7 +23,7 @@ def generateSubmission(args):
     # Create output directory for condor results if it does not exist.
     SH.makeDir(odir)
     
-    sampleOptions = ['ttbar','QCD']
+    sampleOptions = ['ttbar','QCD','singleW','W+gluon']
     sampleName = ""
     if args.ttbar:
     	sampleName = "ttbar"
@@ -31,6 +31,8 @@ def generateSubmission(args):
     	sampleName = "QCD"
     elif args.W:
     	sampleName = "singleW"
+    elif args.Wg:
+        sampleName = "Wgluon"
     else:
                 print("Sample must be provided, current options are",sampleOptions)
                 exit()
@@ -56,13 +58,15 @@ def generateSubmission(args):
     
     # grab relevant flags
     eventnums = SH.eventsSplit(int(args.nevts), args.split)
-    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --nPU '+str(args.nPU)+' --ptHatMin '+str(args.ptHatMin)
+    flags = '-v '+str(args.verbosity)+' --nevts '+str(args.nevts)+' --spikeProb '+str(args.spikeProb) + ' --eThresh ' +str(args.eThresh)+' --nPU '+str(args.nPU)+' --ptHatMin '+str(args.ptHatMin)+' --timeResModel '+str(args.timeResModel)
     if(args.ttbar):
         flags += ' --ttbar'
     if(args.QCD):
         flags += ' --QCD'
     if(args.W):
-        flags += ' --W'
+        flags += ' --singleW'
+    if(args.Wg):
+        flags += ' --Wg'
     if(args.sigDelayed):
         flags += ' --sigDelayed'
     if(args.sigBoosted):
@@ -100,13 +104,15 @@ def main():
     parser.add_argument('--ttbar',help="run ttbar process",action='store_true')
     parser.add_argument('--QCD',help="run QCD process",action='store_true')
     parser.add_argument('--W',help="run single W process",action='store_true')
+    parser.add_argument('--Wg',help="run W+gluon process",action='store_true')
     parser.add_argument('--ptHatMin',help='set pt hat min for event generation (default = 200)',default = 200.)
     parser.add_argument('--sigDelayed',help="run sigDelayed process",action='store_true')
     parser.add_argument('--sigBoosted',help="run sigBoosted process",action='store_true')
     parser.add_argument('--nPU',help="set avg # pu events (default = 0, off)",default=0)
     parser.add_argument('--ootPU',help="set oot pu (default = off)",action='store_true')
     parser.add_argument('--noShower',help='turn off calorimeter showering (saves final state gen particles)',action='store_true')
-    parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)	
+    parser.add_argument('--spikeProb',help='set probability of spike occuring (default = 0, off)',default = 0)
+    parser.add_argument('--timeResModel',help='set which time res model to use (default = 0 : CMS ECAL, 1 : CMS MTD, 2 : extra precise)',default = '0',choices=['0','1','2'])
     parser.add_argument('--energyCte',help='set energy smearing constant (default = 0.26)',default = 0.26)
     parser.add_argument('--eThresh',help='set energy threshold for rechit reco (default = 0.5)',default = 0.5)
     args = parser.parse_args()
