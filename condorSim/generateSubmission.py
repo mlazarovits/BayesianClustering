@@ -25,11 +25,13 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-        inputFile = "condorSimNtuples_ttbar_defaultv9p10"
+        inputFile = "condorSimNtuples_ttbar_defaultv9p11"
     elif args.inputSample == "QCD":
-        inputFile = "condorSimNtuples_QCD_defaultv9p10"
+        inputFile = "condorSimNtuples_QCD_defaultv9p11"
     elif args.inputSample == "singleW":
-        inputFile = "condorSimNtuples_singleW_defaultv9p10"
+        inputFile = "condorSimNtuples_singleW_defaultv9p11"
+    elif args.inputSample == "Wgluon":
+        inputFile = "condorSimNtuples_Wgluon_defaultv9p11"
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -194,7 +196,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW'])
+    parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW','Wgluon'])
     parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
     parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
