@@ -692,10 +692,8 @@ class BHCJetSkimmer{
 
 						Matrix jet_mu, jet_cov;
 						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
-						if(jet_mu.at(1,0) < 0 || jet_mu.at(1,0) > 2*acos(-1))
-							cout << "jet phi " << _predJets[j].phi() << " mu phi " << jet_mu.at(1,0) << endl;
 						_procCats[p].hists1D[pt][128]->Fill(jet_mu.at(0,0));
-						_procCats[p].hists1D[pt][129]->Fill(jet_mu.at(1,0));
+						_procCats[p].hists1D[pt][129]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
 						_procCats[p].hists1D[pt][130]->Fill(jet_mu.at(2,0));
 						
 						for(int r = 0; r < rhs.size(); r++){
