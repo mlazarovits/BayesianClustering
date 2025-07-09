@@ -320,6 +320,15 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetq_Eratio);
 			_hists1D.push_back(BHCJetq_nSubclusters);
 			_hists1D.push_back(BHCJetq_subClusterMass);
+			_hists1D.push_back(BHCJetW_subclEtaCenter);
+			_hists1D.push_back(BHCJetW_subclPhiCenter);
+			_hists1D.push_back(BHCJetW_subclTimeCenter);
+			_hists1D.push_back(BHCJetW_subClusterEtaSig);
+			_hists1D.push_back(BHCJetW_subClusterPhiSig);
+			_hists1D.push_back(BHCJetW_subClusterTimeSig);
+			_hists1D.push_back(BHCJetW_subClusteretaPhiCov);
+			_hists1D.push_back(BHCJetW_subClustertimeEtaCov);
+			_hists1D.push_back(BHCJetW_subClustertimePhiCov);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -460,6 +469,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_jetSize);
 			_hists2D.push_back(BHCJetW_1subcl_dRGenPartons_avgPartonEnergy);
 			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy);
+			_hists2D.push_back(BHCJetW_ge2subcl_subclEnergy_subclLeadIdx);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -629,13 +639,14 @@ class BHCJetSkimmer{
 
 
 						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
-						Matrix jetcov = _predJets[j].GetCovariance();
+						Matrix jet_mu, jet_cov;
+						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
 						//get 2D matrix for jet size
-						Matrix jetcov2D(2,2);
-						Get2DMat(jetcov,jetcov2D);	
+						Matrix jet_cov2D(2,2);
+						Get2DMat(jet_cov,jet_cov2D);	
 						vector<double> eigvals;
 						vector<Matrix> eigvecs;
-						jetcov2D.eigenCalc(eigvals, eigvecs);
+						jet_cov2D.eigenCalc(eigvals, eigvecs);
 						//define jet size as length of major axis
 						//also include rotundity
 						jetsize = sqrt(eigvals[1]);
@@ -648,10 +659,10 @@ class BHCJetSkimmer{
 
 
 						if(p != 0 && pt == 0){ 
-							cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << jetsize << " eta var " << jetcov.at(0,0) << " phi var " << jetcov.at(1,1) << endl;
+							cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << jetsize << " eta var " << jet_cov.at(0,0) << " phi var " << jet_cov.at(1,1) << endl;
 						}
 			
-						double rot = Rotundity(jetcov2D);
+						double rot = Rotundity(jet_cov2D);
 						_procCats[p].hists1D[pt][148]->Fill(rot);
 					
 						nsubs = _predJets[j].GetNConstituents();
@@ -666,9 +677,9 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][9]->Fill(_predJets[j].mass());
 						_procCats[p].hists1D[pt][6]->Fill(jetsize);
 
-						_procCats[p].hists1D[pt][132]->Fill(sqrt(jetcov.at(0,0)));
-						_procCats[p].hists1D[pt][133]->Fill(sqrt(jetcov.at(1,1)));
-						_procCats[p].hists1D[pt][134]->Fill(sqrt(jetcov.at(2,2)));
+						_procCats[p].hists1D[pt][132]->Fill(sqrt(jet_cov.at(0,0)));
+						_procCats[p].hists1D[pt][133]->Fill(sqrt(jet_cov.at(1,1)));
+						_procCats[p].hists1D[pt][134]->Fill(sqrt(jet_cov.at(2,2)));
 							
 						_procCats[p].hists1D[pt][47]->Fill(sqrt(cov.at(0,0)));	
 						_procCats[p].hists1D[pt][48]->Fill(sqrt(cov.at(1,1)));	
@@ -690,8 +701,6 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][11]->Fill(_predJets[j].GetNConstituents(), jetsize);	
 						
 
-						Matrix jet_mu, jet_cov;
-						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
 						_procCats[p].hists1D[pt][128]->Fill(jet_mu.at(0,0));
 						_procCats[p].hists1D[pt][129]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
 						_procCats[p].hists1D[pt][130]->Fill(jet_mu.at(2,0));
@@ -814,17 +823,6 @@ class BHCJetSkimmer{
 								Jet subleadcl = consts[1];
 								vector<Jet> subcls = {leadcl, subleadcl};
 
-								//check that there are two daughters with light quark ids
-								//GenericMatchJet(subcls,Wpartons,genLeadMatchIdxs); //match subclusters to W partons
-								//for(int c = 0; c < subcls.size(); c++){
-								//	int genmatchidx = genLeadMatchIdxs[c];
-								//	if(genmatchidx == -1) continue;
-								//	double gen_clDr = dR(subcls[c].eta(), subcls[c].phi(), Wpartons[genmatchidx].eta(), Wpartons[genmatchidx].phi());
-								//	double genEr = subcls[c].E() / Wpartons[genmatchidx].E();
-								//	_procCats[p].hists1D[pt][215]->Fill(gen_clDr);
-								//	_procCats[p].hists1D[pt][216]->Fill(genEr);
-								//	_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());	
-								//}
 							}
 						}			
 						//do gen W matching hists
@@ -835,7 +833,7 @@ class BHCJetSkimmer{
 							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to W " << genWidx << " with eta " << _genW[genWidx].eta() << " phi " << _genW[genWidx].phi() << " and energy " << _genW[genWidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genW[genWidx].E() << endl;
 							//put loose req on W match
 							if(dr < 0.1 && (Eratio < 1.5 && Eratio > 0.5)){
-								cout << "passed gen match reqs" << endl;
+								//cout << "passed gen match reqs" << endl;
 								_procCats[p].hists2D[pt][94]->Fill(_predJets[j].pt(),_genW[genWMatchIdxs[j]].pt());
 								_procCats[p].hists2D[pt][95]->Fill(_predJets[j].E(),_genW[genWMatchIdxs[j]].E());
 								_procCats[p].hists2D[pt][96]->Fill(_predJets[j].m(),_genW[genWMatchIdxs[j]].m());
@@ -883,13 +881,18 @@ cout << "avgPart E " << avgPartE << endl;
 								if(consts.size() > 1){
 									double invmass = consts[0].invMass(consts[1]);
 									_procCats[p].hists1D[pt][211]->Fill(invmass);
-								
+							
+									for(int c = 0; c < consts.size(); c++){
+										_procCats[p].hists2D[pt][139]->Fill(c,consts[c].E());
+									}	
+
 									//do gen matching of 2 leading subclusters to partons from W decays
 									Jet leadcl = consts[0];
 									Jet subleadcl = consts[1];
 									vector<Jet> subcls = {leadcl, subleadcl};
 
 									//check that there are two daughters with light quark ids
+									//only matching lead subclusters to W daughter partons for now
 									GenericMatchJet(subcls,Wpartons,genLeadMatchIdxs); //match subclusters to W partons
 									for(int c = 0; c < subcls.size(); c++){
 										int genmatchidx = genLeadMatchIdxs[c];
@@ -898,7 +901,19 @@ cout << "avgPart E " << avgPartE << endl;
 										double genEr = subcls[c].E() / Wpartons[genmatchidx].E();
 										_procCats[p].hists1D[pt][215]->Fill(gen_clDr);
 										_procCats[p].hists1D[pt][216]->Fill(genEr);
-										_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());	
+										_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());
+
+										_procCats[p].hists1D[pt][224]->Fill(subcls[c].eta());
+										_procCats[p].hists1D[pt][225]->Fill(subcls[c].phi());
+										_procCats[p].hists1D[pt][226]->Fill(subcls[c].time());
+										Matrix subcl_cov = subcls[c].GetCovariance();
+										_procCats[p].hists1D[pt][227]->Fill(sqrt(subcl_cov.at(0,0)));
+										_procCats[p].hists1D[pt][228]->Fill(sqrt(subcl_cov.at(1,1)));
+										_procCats[p].hists1D[pt][229]->Fill(sqrt(subcl_cov.at(2,2)));
+										_procCats[p].hists1D[pt][230]->Fill(subcl_cov.at(0,1));
+										_procCats[p].hists1D[pt][231]->Fill(subcl_cov.at(0,2));
+										_procCats[p].hists1D[pt][232]->Fill(subcl_cov.at(2,1));
+
 									}
 								}
 								for(int c = 0; c < (int)consts.size(); c++){
@@ -1165,16 +1180,16 @@ cout << "avgPart E " << avgPartE << endl;
 						//pt == 2 -> [0,_pt_thresh)
 						if(pt == 2 && _recoAK4jets[j].pt() >= _pt_thresh) continue;
 	
-						Matrix jetcov = _recoAK4jets[j].GetCovariance();
+						Matrix jet_cov = _recoAK4jets[j].GetCovariance();
 						//get 2D matrix for jet size
-						Matrix jetcov2D(2,2);
-						Get2DMat(jetcov,jetcov2D);	
+						Matrix jet_cov2D(2,2);
+						Get2DMat(jet_cov,jet_cov2D);	
 						vector<double> eigvals;
 						vector<Matrix> eigvecs;
-						jetcov2D.eigenCalc(eigvals, eigvecs);
+						jet_cov2D.eigenCalc(eigvals, eigvecs);
 						//define jet size as length of major axis
 						//also include rotundity
-						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jet_cov.at(0,0))*sqrt(jet_cov.at(1,1)));
 						
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
@@ -1182,13 +1197,13 @@ cout << "avgPart E " << avgPartE << endl;
 						////pt == 2 -> [0.2,inf) (AK15 level)
 						//if(pt == 2 && jetsize < 0.2) continue;
 						
-						double rot = Rotundity(jetcov2D);
+						double rot = Rotundity(jet_cov2D);
 						_procCats[p].hists1D[pt][146]->Fill(rot);
 						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << " px " << _recoAK4jets[j].px() << " py " << _recoAK4jets[j].py() << " pz " << _recoAK4jets[j].pz() << " mass from rhs " << _recoAK4jets[j].mass_rhs() << endl;
 						_procCats[p].hists1D[pt][19]->Fill(jetsize);
-						_procCats[p].hists1D[pt][135]->Fill(sqrt(jetcov.at(0,0)));
-						_procCats[p].hists1D[pt][136]->Fill(sqrt(jetcov.at(1,1)));
-						_procCats[p].hists1D[pt][137]->Fill(sqrt(jetcov.at(2,2)));
+						_procCats[p].hists1D[pt][135]->Fill(sqrt(jet_cov.at(0,0)));
+						_procCats[p].hists1D[pt][136]->Fill(sqrt(jet_cov.at(1,1)));
+						_procCats[p].hists1D[pt][137]->Fill(sqrt(jet_cov.at(2,2)));
 						_procCats[p].hists1D[pt][20]->Fill(_recoAK4jets[j].e());
 						_procCats[p].hists1D[pt][21]->Fill(_recoAK4jets[j].pt());
 						_procCats[p].hists1D[pt][22]->Fill(_recoAK4jets[j].mass());
@@ -1432,16 +1447,16 @@ cout << "avgPart E " << avgPartE << endl;
 						//pt == 2 -> [0,_pt_thresh)
 						if(pt == 2 && recojets[j].pt() >= _pt_thresh) continue;
 	
-						Matrix jetcov = recojets[j].GetCovariance();
+						Matrix jet_cov = recojets[j].GetCovariance();
 						//get 2D matrix for jet size
-						Matrix jetcov2D(2,2);
-						Get2DMat(jetcov,jetcov2D);	
+						Matrix jet_cov2D(2,2);
+						Get2DMat(jet_cov,jet_cov2D);	
 						vector<double> eigvals;
 						vector<Matrix> eigvecs;
-						jetcov2D.eigenCalc(eigvals, eigvecs);
+						jet_cov2D.eigenCalc(eigvals, eigvecs);
 						//define jet size as length of major axis
 						//also include rotundity
-						double jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jetcov.at(0,0))*sqrt(jetcov.at(1,1)));
+						double jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jet_cov.at(0,0))*sqrt(jet_cov.at(1,1)));
 						if(pt == 0 && p == 0) cout << "reco AK" << AK << " jet #" << j << " phi " << recojets[j].phi() << " eta " << recojets[j].eta() << " energy " << recojets[j].E() <<  " mass " << recojets[j].mass() << " nConstituents " << recojets[j].GetNConstituents() << " nRhs " << recojets[j].GetNRecHits() << " pt " << recojets[j].pt() << " jetsize " << jetsize << endl;
 						_procCats[p].hists1D[pt][nhist1d_start + 1]->Fill(recojets[j].eta());
 						_procCats[p].hists1D[pt][nhist1d_start + 2]->Fill(recojets[j].phi());
@@ -2256,20 +2271,24 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* BHCJetq_nSubclusters = new TH1D("BHCJetq_nSubclusters","BHCJetq_nSubclusters",10,0,10);
 		//223 - subcluster mass in BHC jets matched to qs
 		TH1D* BHCJetq_subClusterMass = new TH1D("BHCJetq_subclusterMass","BHCJetq_subclusterMass",25,0,500);
-		
-	
-		//217 - BHC jets - gen-matched to W - subcluster eta center		
-		//TH1D* BHCJetW_subclEtaCenter = new TH1D("BHCJetW_subclEtaCenter","BHCJetW_subclEtaCenter",25,-3.2,3.2);
-		////218 - BHC jets - gen-matched to W - subcluster phi center		
-		//TH1D* BHCJetW_subclPhiCenter = new TH1D("BHCJetW_subclPhiCenter","BHCJetW_subclPhiCenter",25,-3.2,3.2);
-		////219 - BHC jets - gen-matched to W - subcluster time center		
-		//TH1D* BHCJetW_subclTimeCenter = new TH1D("BHCJetW_subclTimeCenter","BHCJetW_subclTimeCenter",25,-3.2,3.2);
-		//220 - BHC jets - gen-matched to W - subcluster eta var
-		//221 - BHC jets - gen-matched to W - subcluster phi var
-		//222 - BHC jets - gen-matched to W - subcluster time var
-		//223 - BHC jets - gen-matched to W - subcluster eta-phi cov
-		//224 - BHC jets - gen-matched to W - subcluster eta-time cov
-		//225 - BHC jets - gen-matched to W - subcluster phi-time cov
+		//224 - BHC jets - gen-matched to W - subcluster eta center		
+		TH1D* BHCJetW_subclEtaCenter = new TH1D("BHCJetW_subclEtaCenter","BHCJetW_subclEtaCenter",25,-3.2,3.2);
+		//225 - BHC jets - gen-matched to W - subcluster phi center		
+		TH1D* BHCJetW_subclPhiCenter = new TH1D("BHCJetW_subclPhiCenter","BHCJetW_subclPhiCenter",25,-3.2,3.2);
+		//226 - BHC jets - gen-matched to W - subcluster time center		
+		TH1D* BHCJetW_subclTimeCenter = new TH1D("BHCJetW_subclTimeCenter","BHCJetW_subclTimeCenter",25,-3.2,3.2);
+		//227 - BHC jets - gen-matched to W - eta sigma of GMM cluster 
+		TH1D* BHCJetW_subClusterEtaSig = new TH1D("BHCJetW_subclusterEtaSig","BHCJetW_subclusterEtaSig",50,0.,0.5);
+		//228 - BHC jets - gen-matched to W - phi sigma of GMM cluster 
+		TH1D* BHCJetW_subClusterPhiSig = new TH1D("BHCJetW_subclusterPhiSig","BHCJetW_subclusterPhiSig",50,0.,0.5);
+		//229 - BHC jets - gen-matched to W - time sigma of GMM cluster 
+		TH1D* BHCJetW_subClusterTimeSig = new TH1D("BHCJetW_subclusterTimeSig","BHCJetW_subclusterTimeSig",50,0.,5.);
+		//230 - BHC jets - gen-matched to W - eta-phi covariance of GMM cluster 
+		TH1D* BHCJetW_subClusteretaPhiCov = new TH1D("BHCJetW_subclusterEtaPhiCov","BHCJetW_subclusterEtaPhiCov",50,-0.0005,0.0005);
+		//231 - BHC jets - gen-matched to W - time-eta covariance of GMM cluster 
+		TH1D* BHCJetW_subClustertimeEtaCov = new TH1D("BHCJetW_subclusterTimeEtaCov","BHCJetW_subclusterTimeEtaCov",50,-0.05,0.05);
+		//232 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
+		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
 		
 
 
@@ -2530,7 +2549,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//124 - recoAK4 jet subcluster mass vs # effective rechits 	
 		TH2D* recoAK4Jet_subclusterMass_subclusterEffnRhs = new TH2D("recoAK4Jet_subclusterMass_subclusterEffnRhs","recoAK4Jet_subclusterMass_subclusterEffnRhs;subclusterMass;subclusterEffnRhs",25,0,100,25,0,200);
 		//125 - subcluster energy vs dR of subcluster to jet center
-		TH2D* BHCJet_subclusterEnergy_subclusterdRToJet = new TH2D("BHCJet_subclusterEnergy_subclusterdRToJet","BHCJet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,100,25,0,0.5);
+		TH2D* BHCJet_subclusterEnergy_subclusterdRToJet = new TH2D("BHCJet_subclusterEnergy_subclusterdRToJet","BHCJet_subclusterEnergy_subclusterdRToJet;subclusterEnergy;subclusterdRToJet",25,0,500,25,0,0.5);
 		//126 - subcluster eff # rhs vs dR of subcluster to jet center
 		TH2D* BHCJet_subclusterEffnRhs_subclusterdRToJet = new TH2D("BHCJet_subclusterEffnRhs_subclusterdRToJet","BHCJet_subclusterEffnRhs_subclusterdRToJet;subclusterEffnRhs;subclusterdRToJet",25,0,100,25,0,0.5);
 		//127 - BHC jets gen-matched to Ws - subcluster mass vs # subclusters/jet
@@ -2557,6 +2576,8 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJetW_1subcl_dRGenPartons_avgPartonEnergy = new TH2D("BHCJetW_1subcl_dRGenPartons_avgPartonEnergy","BHCJetW_1subcl_dRGenPartons_avgPartonEnergy;dRGenPartons;avgPartonEnergy",50,0,2.,50,0,1000.);
 		//138 - BHC jets gen-matched to Ws with 2+ subclusters - dR bw gen partons of W vs avg. parton energy
 		TH2D* BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy = new TH2D("BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy","BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy;dRGenPartons;avgPartonEnergy",50,0,2.,50,0,1000.);
+		//139 - BHC jets gen-matched to Ws with 2+ subclusters - subcluster energy vs lead index of subcluster (ie 0 = lead, 1 = sublead, etc)
+		TH2D* BHCJetW_ge2subcl_subclEnergy_subclLeadIdx = new TH2D("BHCJetW_ge2subcl_subclEnergy_subclLeadIdx","BHCJetW_ge2subcl_subclEnergy_subclLeadIdx;subclEnergy;subclLeadIdx",5,0,5,25,0,500);
 
 
 		void SetSmear(bool t){ _smear = t; }
@@ -2824,7 +2845,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//top decay info - 0 = fully had, 1 = semi lep, 2 = fully lep
 		int _topDecayType;
 
-		double _pt_thresh = 100;
+		double _pt_thresh = 175.;
 
 
 		//good gen objects available for matching 
