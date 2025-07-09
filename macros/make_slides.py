@@ -253,14 +253,14 @@ def make_slides(plot_dir_name, tag = ""):
 	slideTitles_plots = {}
 	slideTitles_plots["nJets"] = ["nJets"]
 	slideTitles_plots["nSubclustersJet"] = ["nSubclustersJet"]
-	slideTitles_plots["Jet Center"] = ["Jet_EtaCenter_ttbar","Jet_PhiCenter_ttbar","Jet_TimeCenter_ttbar"]
-	slideTitles_plots["Subcluster Center"] = ["subClusterEtaCenter_ttbar","subClusterPhiCenter_ttbar","subClusterTimeCenter_ttbar"]
+	slideTitles_plots["Jet Center"] = ["Jet_EtaCenter","Jet_PhiCenter","Jet_TimeCenter"]
+	slideTitles_plots["Subcluster Center"] = ["subClusterEtaCenter","subClusterPhiCenter","subClusterTimeCenter"]
 	#slideTitles_plots["Jet Kinematics"] = ["Jet_mass","Jet_energy","Jet_pt"]
 	#range(4) for 4 different gen/reco AK plots (AK4, AK8, AK15 all pt sep and AK4, AK8, AK15 total on one plot)
 	slideTitles_plots["Jet Energy"] = ["Jet_energy" for i in range(4)]
 	slideTitles_plots["Jet Mass"] = ["Jet_mass" for i in range(4)]
 	slideTitles_plots["Jet Pt"] = ["Jet_pt" for i in range(4)]
-	slideTitles_plots["Jet Size"] = ["jetSize_ttbar" for i in range(4)]
+	slideTitles_plots["Jet Size"] = ["jetSize" for i in range(4)]
 	
 	slideTitles_plots["Gen Matching to Ws - dR, E ratio"] = ["genW_dR","genW_Eratio"]
 	slideTitles_plots["Gen Matching to tops - dR, Eratio"] = ["genTop_dR","genTop_Eratio"]
