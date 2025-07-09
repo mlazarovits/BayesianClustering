@@ -309,6 +309,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
 					SaveGenInfo(p, -1);
 				}
+				//don't shower photon
+				if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
+					continue;
+				}
 					
 			}
 			//make sure particle is final-state and (probably) stable
@@ -994,6 +998,7 @@ void BasicDetectorSim::MakeRecHits(){
 				//update range to be centered on t, up to 5 sigma (calTres)
 				_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
 				t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+				//if(t_cell < 0) cout << "energy " << e_cell << " mean time (ns) " << t*1e9 << " t_cell (ns) " << t_cell*1e9 << " t_sig (ns) " << t_sig*1e9 << endl;
 			}
 			else{
 				t_cell = t;

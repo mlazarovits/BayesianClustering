@@ -70,6 +70,42 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 			_oot = oot;
 		}
+		enum TimeResModel{
+			ecal = 0,
+			mtd = 1,
+			extra_precise = 2
+		};
+
+		void SetTimeResModel(int n){
+			if(n == ecal){
+				cout << "Using CMS ECAL time resolution model" << endl;
+				_calTresCte = 0.1727 * 1e-9;//0.2*1e-9; 
+				_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
+				_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
+			}
+			else if(n == mtd){
+				cout << "Using CMS MTD time resolution model at 30 ps" << endl;
+				_calTresCte = 30. * 1e-12;//30 ps 
+				_calTresNoise = 0.; 
+				_calTresStoch = 0.;
+			}
+			else if(n == extra_precise){
+				cout << "Using extremely precise time resolution model at 1 fs" << endl;
+				_calTresCte = 1. * 1e-15;//0.01 ps = 10 femtoseconds 
+				_calTresNoise = 0.; 
+				_calTresStoch = 0.;
+
+			}
+			else{
+				cout << "Time resolution model " << n << " not specified - defaulting to CMS ECAL time resolution model" << endl;
+				_calTresCte = 0.1727 * 1e-9;//0.2*1e-9; 
+				_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
+				_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
+			}
+
+
+		}
+
 
 		void TurnOnSpikes(double sprob = 0.01){ _spikes = true; _spikeprob = sprob; }
 

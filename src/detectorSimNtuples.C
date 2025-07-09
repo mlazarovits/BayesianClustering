@@ -39,14 +39,16 @@ int main(int argc, char *argv[]){
 	bool sig_boosted = false;
 	double spikeProb = 0.;
 	double energy_c = 0.26;
-	double tres_cte = 0.1727 * 1e-9;
-	double tres_stoch = 0.5109 * 1e-9;
-	double tres_noise = 2.106 * 1e-9;
+	//double tres_cte = 0.1727 * 1e-9;
+	//double tres_stoch = 0.5109 * 1e-9;
+	//double tres_noise = 2.106 * 1e-9;
 	double ethresh = 0.5; //zero suppression threshold for rechit reconstruction (and inclusion in AK4 jet)
 	double pthatmin = 200;
 	int nPU = 0;
 	bool ootPU = false;
 	bool noshower = false;
+	int timeResModel = 0; //which time resolution model to use
+
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -129,17 +131,21 @@ int main(int argc, char *argv[]){
                         i++;
                         evtj = std::atoi(argv[i]);
                 }
-		if(strncmp(argv[i],"--tResCte", 9) == 0){
-			i++;
-    	 		tres_cte = std::stod(argv[i])*1e-9; //need to convert to s
-   		}
-		if(strncmp(argv[i],"--tResNoise", 11) == 0){
-			i++;
-    	 		tres_noise = std::stod(argv[i])*1e-9; //need to convert to s
-   		}
-		if(strncmp(argv[i],"--tResStoch", 11) == 0){
-			i++;
-    	 		tres_stoch = std::stod(argv[i])*1e-9; //need to convert to s
+	//	if(strncmp(argv[i],"--tResCte", 9) == 0){
+	//		i++;
+    	// 		tres_cte = std::stod(argv[i])*1e-9; //need to convert to s
+   	//	}
+	//	if(strncmp(argv[i],"--tResNoise", 11) == 0){
+	//		i++;
+    	// 		tres_noise = std::stod(argv[i])*1e-9; //need to convert to s
+   	//	}
+	//	if(strncmp(argv[i],"--tResStoch", 11) == 0){
+	//		i++;
+    	// 		tres_stoch = std::stod(argv[i])*1e-9; //need to convert to s
+   	//	}
+		if(strncmp(argv[i],"--timeResModel", 14) == 0){
+    	 		i++;
+			timeResModel = std::atoi(argv[i]);
    		}
 
 	}
@@ -162,9 +168,10 @@ int main(int argc, char *argv[]){
    		cout << "   --ptHatMin [pthatmin]         set pt hat min for event generation (default = 200)" << endl;
    		cout << "   --spikeProb [p]               set probability of spike occuring (default = 0, off)" << endl;
    		cout << "   --energyCte [c]               set energy smearing constant (default = 0.26)" << endl;
-   		cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
-   		cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
-   		cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
+   		cout << "   --timeResModel [model]        set which time res model to use (default = 0 : CMS ECAL, 1 : CMS MTD, 2 : extra precise)" << endl;
+		//cout << "   --tResCte [t]                 set time smearing constant parameter in ns (default = 0.133913 ns)" << endl;
+   		//cout << "   --tResNoise [t]               set time smearing noise (n*n/(e*e)) parameter in ns (default = 0.00691415 ns)" << endl;
+   		//cout << "   --tResStoch [t]               set time smearing stochastic (s*s/e) parameter in ns (default = 1.60666 ns)" << endl;
 		cout << "   --verbosity(-v) [verb]        set verbosity (default = 0)" << endl;
 		cout << "   --evtFirst [i] --evtLast [j]  skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
 
@@ -234,7 +241,8 @@ int main(int argc, char *argv[]){
 	det.SetEventRange(evti,evtj);
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
-	det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
+	det.SetTimeResModel(timeResModel);
+	//det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
 	det.SetPtHatMin(pthatmin);
 	if(noshower) det.TurnOffShower();
 	if(ttbar) det.SimTTbar();
