@@ -1590,20 +1590,34 @@ void HistFormatSim(string file, string proc = ""){
 	
 
 	if(proc == "singleW"){
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_dR",{"lead"});
+		
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy",{"lead"});
-		
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterMass");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterLeadInvMass");
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_dR",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaCenter");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterPhiCenter");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterTimeCenter");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaSig");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterPhiSig");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterTimeSig");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaPhiCov");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaTimeCov");
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterPhiTimeCov");
 
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genW_dR",{"lead"});
 		
 		Hist2D(file, proc, "BHC", oname, "BHCJetW_");
+		Hist2D(file, proc, "BHC", oname, "JetMass_BHCJetPt");
+		Hist2D(file, proc, "recoAK4", oname, "recoAK4JetMass_recoAK4JetPt");
+		Hist2D(file, proc, "recoAK8", oname, "recoAK8JetMass_recoAK8JetPt");
+		Hist2D(file, proc, "recoAK15", oname, "recoAK15JetMass_recoAK15JetPt");
+		Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
+
+
 	}
 
 	if(proc == "singleW" || proc == "QCD"){
