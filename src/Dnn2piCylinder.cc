@@ -167,7 +167,8 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     PointCollection pts = _DNN->points(ip);
    // double phi = pts.mean().at(1);
     double phi = pts.CircularMean(1);
-
+	//make sure phi is on [0,2pi]
+	if(phi < 0 || phi > twopi) cout << "Dnn2PiCylinder::_CreateNecessaryMirrorPoints - phi is outside [0,2pi]" << endl;
 
     // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
     int ic = _cylinder_index_of_plane_vertex[ip];
