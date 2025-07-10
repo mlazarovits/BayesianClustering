@@ -269,7 +269,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		cout << endl;
 		cout << std::setprecision(5) << "event #" << i << " has " << _sumEvent.size() << " particles" << endl;
 		_evt = i;		
-		set<int> w_idxs, top_idxs, d_idxs, u_idxs, s_idxs;
+		set<int> w_idxs, top_idxs, d_idxs, u_idxs, s_idxs, gam_idxs;
 		
 		//set PV for event - look at first particle in record
 		Pythia8::Particle evtRec = _sumEvent[1];//_sumEvent.back();
@@ -307,6 +307,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		for(int p = 0; p < _sumEvent.size(); p++){
 			//reset reco particle four momentum
 			Pythia8::Particle particle = _sumEvent[p];
+			//cout << "particle # " << p << " id " << particle.id() << " status " << particle.status() << " mother1 idx " << particle.mother1() << " mother2 idx " << particle.mother2() << " hepMC status " << particle.statusHepMC() << endl;
 			//if simulating QCD, want to save the hard partons (status 23) produced
 			//may want to separate partons from hard QCD dijets and pileup (diffractive) - in which case save particles in each event before PU is added
 			//may want to save with a bool (pu, !pu)
@@ -319,13 +320,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
 					SaveGenInfo(p, -1);
 				}
-				if(_simwgam){
-					//don't shower photon
-					if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
-						continue;
-					}
-				}
-				else{ //W+gluon - save gluon info
+				if(_simwg){ //W+gluon - save gluon info
 					if(fabs(particle.id()) == 21 && fabs(particle.status()) == 23){
 						SaveGenInfo(p, -1);
 					}
@@ -363,6 +358,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//zero suppression threshold
 			//if(particle.e() < _ethresh) continue;
 
+
+
+
 			if(particle.mother1() > 0 && particle.mother2() == 0){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
@@ -373,7 +371,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					momidx = _sumEvent[thisp].mother1();
 					mothers_id.push_back(fabs(_sumEvent[momidx].id()));
 					mothers_idx.push_back(momidx);
-					//cout << "mother of " << thisp << " (id: " << _sumEvent[thisp].id() << ") is " << momidx << " (id: " << _sumEvent[momidx].id() << ")" << endl;
+					//cout << " mother of " << thisp << " (id: " << _sumEvent[thisp].id() << ") is " << momidx << " (id: " << _sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
 				
@@ -382,6 +380,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				FindMom(mothers_idx, mothers_id, 6, top_idxs);
 				//find mothers that are Ws
 				FindMom(mothers_idx, mothers_id, 24, w_idxs);
+				
 				//for(auto t = top_idxs.begin(); t != top_idxs.end(); t++)
 				//	cout << "top quark idx test " << t->second << " status " << _sumEvent[t->second].status() << endl;
 				//for(auto d = d_idxs.begin(); d != d_idxs.end(); d++)
@@ -390,6 +389,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				//cout << endl;	
 			}
 
+
 			//dont reconstruct muons - they would only mildly interact with an EM cal anyway
 			if(particle.idAbs() == 13)
 				continue;
@@ -397,6 +397,32 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//if(test_t > 1e2) cout << "particle energy " << particle.e() << " time (ns) " << test_t << endl;
 			//create new particle for reco one
 			RecoParticle rp(particle); 
+			//skip reconstructing hard photon in W+gamma
+			if(particle.id() == 22 && _simwgam){
+				vector<int> mothers_id;
+				vector<int> mothers_idx;
+				int momidx = 999;
+				int thisp = p;
+				//cout << "mother search for particle " << p << ": " << _sumEvent[p].id() << endl;
+				while(thisp > 0){
+					momidx = _sumEvent[thisp].mother1();
+					mothers_id.push_back(fabs(_sumEvent[momidx].id()));
+					mothers_idx.push_back(momidx);
+					//cout << " mother of " << thisp << " (id: " << _sumEvent[thisp].id() << ") is " << momidx << " (id: " << _sumEvent[momidx].id() << ")" << endl;
+					thisp = momidx;
+				}
+				int gsize = gam_idxs.size();
+				FindMom(mothers_idx, mothers_id, 22, gam_idxs);
+				if(gsize - gam_idxs.size() != 0){
+					//cout << "!!!!!!!!!reconstructing particle " << p << " with mother " << *gam_idxs.begin() << " and pt " << particle.pT() << " and energy " << particle.e() << " and time " << rp.Position.T()*1e9 << endl;
+					//cout << "skipping reconstructing particle " << p << " with mother " << *gam_idxs.begin() << endl;
+					continue;
+				}
+				///else{
+				///	//cout << "reconstructing photon " << p << " not from hard process" << endl;
+				///}
+
+			} 
 			//calculate new pt (does full pvec but same pz)
 			CalcTrajectory(rp);
 			//check if in cal cell crack
@@ -404,6 +430,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 				continue;
 			//if track curls up/exceeds zmax
 			if(fabs(rp.Position.z()) >= zmax || fabs(rp.Position.eta()) > _etamax) continue;
+			
 		
 			//if gen particle doesn't exceed min pt, skip
 			//if(rp.Momentum.pt() < _genpart_minpt) continue;
@@ -431,7 +458,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 		}
-		//cout << "event total energy " << evt_Etot << endl;
+		//cout << "event total energy " << evt_Etot << " total # reco particles " << _recops.size() << endl;
 		evt_Etot = 0;
 	
 
@@ -475,7 +502,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		vector<int> had = {1, 2, 3, 4, 5};
 		vector<int> lep = {11, 12, 13, 14, 15, 16};
 		if(_simwgam || _simwg)
-			cout << "w_idxs size " << w_idxs.size() << endl;
+			cout << "w_idxs size " << w_idxs.size() << " gam idxs size " << gam_idxs.size() << endl;
 		//save gen w + direct daughters
 		for(auto w = w_idxs.begin(); w != w_idxs.end(); w++){
 			cout << "w status " << _sumEvent[*w].status() << " daughter1 " << _sumEvent[*w].daughter1() << " daughter2 " << _sumEvent[*w].daughter2() << endl;
@@ -813,6 +840,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 		r_t = TMath::Hypot(x_t, y_t);
 
 		//position in m, t in s
+		//reconstruct charged particles with straight-line time so it can be uncorrected easier (pretend like we measured it correctly)
 		if(r_t > 0.0)
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t_straight));
 	}
@@ -906,6 +934,7 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 		_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(1)+t, 1);	
 		//add number of emissions to right ieta,iphi cell	
 		_cal[ieta][iphi].SetValue(_cal[ieta][iphi].at(2)+1,2);
+		if(rp.Particle.idAbs() == 22) cout << "energy " << e << " time " << t*1e9 << " eta " << eta << " phi " << phi << " ieta " << ieta << " iphi " << iphi << " e " << _cal[ieta][iphi].at(0) << endl;		
 
 		return;
 	}
@@ -947,7 +976,6 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 			_cal[iieta][iiphi].SetValue(_cal[iieta][iiphi].at(2)+1,2);
 			e_check += e_cell;
 			//cout << "filling cell ieta " << iieta << " iphi " << iiphi << endl;
-			//cout << "eta " << eta << " phi " << phi << " iieta " << iieta << " iiphi " << iiphi << " e_cell " << e_cell << " e " << _cal[iieta][iiphi].at(0) << endl;		
 
 		}
 	}
