@@ -883,7 +883,7 @@ cout << "avgPart E " << avgPartE << endl;
 									_procCats[p].hists1D[pt][211]->Fill(invmass);
 							
 									for(int c = 0; c < consts.size(); c++){
-										_procCats[p].hists2D[pt][139]->Fill(c,consts[c].E());
+										_procCats[p].hists2D[pt][139]->Fill(consts[c].E(),c);
 									}	
 
 									//do gen matching of 2 leading subclusters to partons from W decays
