@@ -470,6 +470,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_1subcl_dRGenPartons_avgPartonEnergy);
 			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy);
 			_hists2D.push_back(BHCJetW_ge2subcl_subclEnergy_subclLeadIdx);
+			_hists2D.push_back(BHCJetW_EratioJetGenW_nSubclustersJet);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -842,7 +843,9 @@ class BHCJetSkimmer{
 								
 								_procCats[p].hists1D[pt][202]->Fill(dr);
 								_procCats[p].hists1D[pt][203]->Fill(_predJets[j].E()/_genW[genWidx].E());
-
+								consts = _predJets[j].GetConstituents();
+								if(consts.size() > 1) _procCats[p].hists2D[pt][140]->Fill(_predJets[j].E()/_genW[genWidx].E(),consts.size());
+								
 								//finding partons/subclusters
 								_procCats[p].hists1D[pt][204]->Fill(_predJets[j].GetNConstituents());
 								//get gen partons from W decay 
@@ -862,7 +865,6 @@ class BHCJetSkimmer{
 								if(p == 0 && pt == 0) cout << "gen dr " << gendR << endl;
 								_procCats[p].hists2D[pt][128]->Fill(gendR, _predJets[j].GetNConstituents());
 								_procCats[p].hists2D[pt][129]->Fill(gendR, jetsize);
-								consts = _predJets[j].GetConstituents();
 
 								double avgPartE = (Wpartons[0].E() + Wpartons[1].E())/2.;
 cout << "avgPart E " << avgPartE << endl;
@@ -2578,6 +2580,8 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy = new TH2D("BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy","BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy;dRGenPartons;avgPartonEnergy",50,0,2.,50,0,1000.);
 		//139 - BHC jets gen-matched to Ws with 2+ subclusters - subcluster energy vs lead index of subcluster (ie 0 = lead, 1 = sublead, etc)
 		TH2D* BHCJetW_ge2subcl_subclEnergy_subclLeadIdx = new TH2D("BHCJetW_ge2subcl_subclEnergy_subclLeadIdx","BHCJetW_ge2subcl_subclEnergy_subclLeadIdx;subclEnergy;subclLeadIdx",5,0,5,25,0,500);
+		//140 - BHC jets gen-matched to Ws - Eratio of jet E/gen W E vs # subclusters/jet
+		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
 
 
 		void SetSmear(bool t){ _smear = t; }
