@@ -626,8 +626,7 @@ void DnnPlane::RemoveAndAddPoints(
     eta_center = points_to_add[ia].mean().at(0);
     phi_center = points_to_add[ia].CircularMean(1);
 
-    //if (_verbose) cout << "  adding " << index << " at "
-    //                   << eta_center << " " << phi_center << endl;
+    if(_verbose) cout << "  adding " << index << " at " << eta_center << " " << phi_center << endl;
 
     if (NeighbourUnion.size() > 0) {
       // be careful of using face (for location hinting) only when it exists
@@ -638,6 +637,13 @@ void DnnPlane::RemoveAndAddPoints(
 				  phi_center));
     }
    _supervertex[index].n = _merge_tree->Get(index);
+	//if(points_to_add[ia].GetNPoints() == 3){
+	//	cout << " points_to_add" << endl;
+	//	points_to_add[ia].Print();
+	//	cout << "node points" << endl;
+	//	_supervertex[index].n->points->Print();
+	//}
+
 //cout << "setting node for index " << index << " with points " << endl;_supervertex[index].n->points->Print();
     // check if this leads to a coincidence
     int coinciding_index = _CheckIfVertexPresent(_supervertex[index].vertex, index);

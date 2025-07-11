@@ -77,7 +77,10 @@ Dnn2piCylinder::Dnn2piCylinder(
 
   //save 2D points for triangulation
   for (int i=0; i < input_points.size(); i++) {
-    _RegisterCylinderPoint(input_points[i], plane_points);
+	PointCollection pts_phi02pi = input_points[i];
+	pts_phi02pi.Put02pi(1);
+    //_RegisterCylinderPoint(input_points[i], plane_points);
+    _RegisterCylinderPoint(pts_phi02pi, plane_points);
     plane_point_indices[i] = i;
   }
   if (_verbose) cout << "============== Preparing _DNN" << endl;
@@ -116,7 +119,7 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const EtaPhi & cylinder_point,
 void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_point,
 					     vector<PointCollection> & plane_points) {
   double eta = cylinder_point.mean().at(0);
-  double phi = cylinder_point.mean().at(1);
+  double phi = cylinder_point.CircularMean(1);
   if(!(phi >= 0.0 && phi < 2*pi)){ cout << "bad phi: " << phi << endl; cylinder_point.Print(); }
   assert(phi >= 0.0 && phi < 2*pi);
 
@@ -141,7 +144,7 @@ if(_verbose){for(int i = 0; i < _cylinder_index_of_plane_vertex.size(); i++)
 /// establish whether there is a need to create a mirror point
 /// according to the following criteria:
 ///
-/// . phi < pi
+/// . phi < pi - NO (taken out bc commented out in FJ code)
 /// . mirror does not already exist
 /// . phi < NearestNeighbourDistance 
 ///   (if this is not true then there is no way that its mirror point
@@ -165,10 +168,10 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
   for (size_t i = 0; i < plane_indices.size(); i++) {
     int ip = plane_indices[i]; // plane index
     PointCollection pts = _DNN->points(ip);
+	
    // double phi = pts.mean().at(1);
     double phi = pts.CircularMean(1);
-	//make sure phi is on [0,2pi]
-	if(phi < 0 || phi > twopi) cout << "Dnn2PiCylinder::_CreateNecessaryMirrorPoints - phi is outside [0,2pi]" << endl;
+
 
     // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
     int ic = _cylinder_index_of_plane_vertex[ip];
@@ -187,6 +190,8 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
 	//only create mirror point if nearest neighbor is further than 0 and 2pi point
     //cout << "looking at creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
+    //TODO: testing phi bumps in low pt BHC jets at ~0, 2pi
+	//if ((acos(-1) - phi)*(acos(-1) - phi) >= nndist && (-acos(-1) - phi)*(-acos(-1) - phi) >= nndist) {continue;}
     if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
@@ -195,6 +200,11 @@ if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << 
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
+	if(phi < 0){
+		cout << "Dnn2piCylinder::_CreateNecessaryMirrorPoints - phi mean " << phi << " node pts " << endl;
+		pts.Print();
+		cout << "mirrored pts" << endl; newpts->Print();
+	} 
 //cout << "original points" << endl; pts.Print();
 //    cout << "mirrored points" << endl;
 //	newpts->Print();
@@ -319,9 +329,17 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
 if(_verbose)
 cout << "adding points" << endl;
   for (unsigned int i=0; i < points_to_add.size(); i++) {
+	//make sure phi is on [0,2pi]
+	//PointCollection pts_phi02pi = points_to_add[i];
+	//if(points_to_add[i].CircularMean(1) < 0 || points_to_add[i].CircularMean(1) > 2*acos(-1)) cout << "phi mean pre 02pi " << points_to_add[i].CircularMean(1) << endl;
+	//pts_phi02pi.Put02pi(1);
+	//if(points_to_add[i].CircularMean(1) < 0 || points_to_add[i].CircularMean(1) > 2*acos(-1)) cout << "phi mean post 02pi " << pts_phi02pi.CircularMean(1) << endl;
 	indices_added.push_back(_mirror_info.size());
   if(_verbose)   cout << "adding cyl index: "  << _mirror_info.size() << " for pt to add #" << i << " main idx " << indices_added[i] << endl;
+//cout << "adding pts with mean " << points_to_add[i].CircularMean(1) << " " << pts_phi02pi.CircularMean(1) << endl; 
+//cout << " points_to_add" << endl; points_to_add[i].Print(); cout << "pts_phi02pi" << endl; pts_phi02pi.Print();
     _RegisterCylinderPoint(points_to_add[i], plane_points_to_add);
+    //_RegisterCylinderPoint(pts_phi02pi, plane_points_to_add);
   }
 
   // now get the hard work done (note that we need to supply the
@@ -331,6 +349,7 @@ cout << "adding points" << endl;
   vector<int> updated_plane_neighbours, plane_indices_added;
   _DNN->RemoveAndAddPoints(plane_indices_to_remove, plane_points_to_add,
 			     plane_indices_added, updated_plane_neighbours);
+
 if(_verbose){ 
   cout << "added points: ";
   std::vector<int>::iterator it;
