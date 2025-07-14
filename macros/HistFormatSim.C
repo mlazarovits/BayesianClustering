@@ -1588,12 +1588,16 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
 	
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterEtaCenter");
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterPhiCenter");
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterPhiCenter",pttypes);
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterTimeCenter");
 
 	if(proc == "singleW"){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_dR",{"lead"});
 		
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy");
