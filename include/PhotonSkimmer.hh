@@ -1747,11 +1747,11 @@ class PhotonSkimmer : public BaseSkimmer{
 		//247 - time maj cov vs time min cov
 		TH2D* timeMajCov_timeMinCov = new TH2D("timeMajCov_timeMinCov","timeMajCov_timeMinCov;timeMajCov;timeMinCov",25,-0.1,0.1,25,-0.1,0.1);
 		//248 - distance to plane in time vs plane eta rad
-		TH2D* tPlaneDist_planeEtaSig = new TH2D("tPlaneDist_planeMin1Sig","tPlaneDist_planeMin1Sig;tPlaneDist;planeMin1Sig",50,-3.,3.,50,0.5,3.5);
+		TH2D* tPlaneDist_planeEtaSig = new TH2D("tPlaneDist_planeEtaSig","tPlaneDist_planeEtaSig;tPlaneDist;planeEtaSig",50,-1.1,1.1,50,0.,1.1);
 		//249 - distance to plane in time vs plane phi rad
-		TH2D* tPlaneDist_planePhiSig = new TH2D("tPlaneDist_planeMin2Sig","tPlaneDist_planeMin2Sig;tPlaneDist;planeMin2Sig",50,-3.,3.,50,0.1,0.2);
+		TH2D* tPlaneDist_planePhiSig = new TH2D("tPlaneDist_planePhiSig","tPlaneDist_planePhiSig;tPlaneDist;planePhiSig",50,-1.1,1.1,50,0.,1.1);
 		//250 - distance to plane in time vs plane etaphi cov
-		TH2D* tPlaneDist_planeEtaPhiCov = new TH2D("tPlaneDist_planeEtaPhiCov","tPlaneDist_planeEtaPhiCov;tPlaneDist;planeEtaPhiCov",50,-3.,3.,50,0.05,0.2);
+		TH2D* tPlaneDist_planeEtaPhiCov = new TH2D("tPlaneDist_planeEtaPhiCov","tPlaneDist_planeEtaPhiCov;tPlaneDist;planeEtaPhiCov",50,-1.1,1.1,50,-1.1,1.1);
 
 
 		enum weightScheme{
@@ -2104,48 +2104,53 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			
 			//planar sections - on average (over many subclusters)
-			int nstep_tplane = 2;
-			double eplane_sig, pplane_sig, t0;
-			//testing
-			cout << "major axis length " << majLength << " other lengths " << sqrt(eigvals[1]) << " " << sqrt(eigvals[0]) << endl;
-			cout << "major axis" << endl; eigvecs[2].Print();
-			cout << "rotated major axis" << endl;
-			Matrix test(3,1);
-			test.mult(rotmat3D,eigvecs[2]);
-			test.Print();
 
 			//setting distance to plane along time axis based on time component of major axis
-			if(id_idx == 0){
-			for(int i = 0; i < 2*majLength*eigvecs[2].at(2,0)*nstep_tplane; i++){
+			//cout << "original pts" << endl; model->GetData()->Print();
+			//cout << "majmin rotated pts" << endl; majminpts3D.Print();
+				//need to center the data in majmin space
+			//	Matrix majmin_mean(3,1);
+			//	majmin_mean.mult(rotmat3D,params["mean"]);
+			//	BayesPoint majmin_center = majmin_mean.MatToPoints().at(0);	
+			//	majminpts3D.Translate(majmin_center);
+			//	cout << "translated pts" << endl; majminpts3D.Print();
+			//	cout << "majmin rotated pts mean " << endl; majmin_center.Print();
+			//cout << "majlength " << majLength << endl;
+			vector<double> ts;
+			for(int i = 0; i < model->GetData()->GetNPoints(); i++) ts.push_back(fabs(model->GetData()->at(i).at(2) - tc) );
+			double start = *std::max_element(ts.begin(),ts.end())+0.01;
+			double step = start/2;
+			//for(int i = -start; i < start; i++){
+			double t0 = -start;
+		
+			/*	
+			while(t0 < start+step){
 				//create plane at t0 in eta-phi according to major axis (scaled appropriately)
-				t0 = majLength*eigvecs[2].at(2,0) - (double)i/nstep_tplane;
 				Matrix plane(3,1);
 				Matrix planecov(2,2);
 				plane.SetEntry(1,2,0); //0*^eta + 0*^phi + ^time = t0
-				cout << "distance to plane is " << t0 << endl;	
+				//cout << "distance to plane is " << t0 << endl;	
 				//rotate plane s.t. ellipsoid is aligned in coord system (ie is along maj-min axes) bc thats how the plane sections are defined
-				RotateNormPlane(rotmat3D, plane, t0);
-				cout << "rotated, norm distance," << t0 << " plane " << endl; plane.Print();
-				//trad is time-proj of major
-				//get eta-phi cov matrix in planar section at (rotated) distance of t0
-				//use data rotated into maj-min axes
-				EtaPhiPlaneCov(&majminpts3D, majLength*eigvecs[2].at(2,0), plane, t0, planecov);
-				
-				//EtaPhiPlaneSection(e_var, p_var, t_var, t0, eplane_sig, pplane_sig);
-				//cout << "trad " << t_var << " t0 " << t0 << " eplanerad " << eplane_sig << " pplanerad " << pplane_sig << endl;
+				//put into Hessian normal form 
+				//https://mathworld.wolfram.com/HessianNormalForm.html
+				//double dist = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
+				//cout << "dist " << dist << endl;
+				//plane.mult(plane,1/dist);
+				//cout << "normal plane" << endl; plane.Print();
+				//t0 = t0/dist;
+			cout << "t0 " << t0 << endl;	
+				EtaPhiPlaneCov(model->GetData(), plane, t0, planecov,params["mean"]);
 				if(!planecov.empty()){
 				cout << "etaphi cov valid for this d = " << t0 << ", eta sig " << sqrt(planecov.at(0,0)) << " phi sig " << sqrt(planecov.at(1,1)) << " etaphi cov " << planecov.at(0,1) << endl;
-					_procCats[id_idx].hists2D[1][248]->Fill(t0,sqrt(planecov.at(0,0)));
-					_procCats[id_idx].hists2D[1][249]->Fill(t0,sqrt(planecov.at(1,1)));
-					_procCats[id_idx].hists2D[1][250]->Fill(t0,planecov.at(0,1));
-				}	
-			cout << endl;	
-			cout << endl;	
-		}
-cout << endl;
-cout << endl;
-cout << endl;
-}	
+					_procCats[id_idx].hists2D[1][248]->Fill(t0/start,sqrt(planecov.at(0,0))/e_var);
+					_procCats[id_idx].hists2D[1][249]->Fill(t0/start,sqrt(planecov.at(1,1))/p_var);
+					_procCats[id_idx].hists2D[1][250]->Fill(t0/start,planecov.at(0,1)/ep_cov);
+				}
+cout << endl;	
+				t0 += step;
+			}
+			*/
+			cout << "majlength " << majLength << endl;	
 
 			//do track matching
 			int nTracks = _base->ECALTrack_nTracks;
@@ -3463,61 +3468,103 @@ cout << endl;
 	//rotations preserve length so plane = d -> plane' = d
 	//but d gets scaled into Hessian normal form
 	void RotateNormPlane(Matrix& rotcov, Matrix& plane, double& d){
-		cout << "original plane" << endl; plane.Print();
+		//cout << "original plane" << endl; plane.Print();
 		plane.mult(rotcov, plane);
-		cout << "rotated plane" << endl; plane.Print();
+		//cout << "rotated plane" << endl; plane.Print();
 		//put into Hessian normal form 
 		//https://mathworld.wolfram.com/HessianNormalForm.html
 		double dist = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
-		cout << "dist " << dist << endl;
+		//cout << "dist " << dist << endl;
 		plane.mult(plane,1/dist);
-		cout << "normal plane" << endl; plane.Print();
+		//cout << "normal plane" << endl; plane.Print();
 		d = d/dist;
 	}
 
 
+
+	/*
 	//plane is plane_x*x + plane_y*y + plane_z*z = d
 	//trad should be time-component of major axis
-	void EtaPhiPlaneCov(PointCollection* pc, double trad, Matrix& plane, double d, Matrix& planecov){
+	void EtaPhiPlaneCov(PointCollection* pc, Matrix& plane, double d, Matrix& planecov, Matrix mean){
 		planecov.clear();
-		//plane cannot be above/below time-component of major axis
-		if(fabs(d) > trad){
-			return;
-		}
-		planecov = Matrix(2,2);
 		//smoothly weight pts according to distance to time slice
 		double w = -1;
 		double norm = 0;
-		Matrix planemean = Matrix(pc->mean());
-		planemean.SetEntry(pc->CircularMean(1),1,0);
-		double etadist, phidist, planedist;	
+		double ydist, xdist,zdist, planedist;	
 		double plnorm = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
-		Matrix normplane = plane;
-		normplane.mult(normplane,1/plnorm);
+		//get mean at plane first, weighed by distance to plane
+		PointCollection projpts;
+		//get point center
+		//project pts onto plane, set weight to inverse distance from plane
+		cout << "mean" << endl; mean.Print();
+		cout << "d " << d << endl;
+		cout << "original pts" << endl; pc->Print();
 		for(int i = 0; i < pc->GetNPoints(); i++){
-			//weight by inverse of distance to t0 plane
-			//min distance of point to plane - distance vector bw point and plane is perpendicular to plane
-			//use dot product to find projection of point onto plane
-			//planedist = a*pt_x + b*pt_y + c*pt_z - d in Hesse normal
-			//plane-point distance = ^n \dot ^plane + d 
-			//https://mathworld.wolfram.com/Point-PlaneDistance.html
-			planedist = fabs(normplane.at(0,0)*pc->at(i).at(0) + normplane.at(1,0)*pc->at(i).at(1) + normplane.at(2,0)*pc->at(i).at(2) - d);
-			//cout << " planedist " << planedist << " for pt " << endl; pc->at(i).Print(); 
-			w = pc->at(i).w();//1/planedist; 
-			norm += w;
+			//center point in z-axis
+			BayesPoint pt = pc->at(i);
+			//pt.SetValue(pt.at(0) - mean.at(0), 0);	
+			//pt.SetValue(pt.at(1) - mean.at(1), 1);	
+			pt.SetValue(pt.at(2) - mean.at(2,0), 2);
+			//https://www.baeldung.com/cs/3d-point-2d-plane
+			double k = (d - plane.at(0,0)*pt.at(0) - plane.at(1,0)*pt.at(1) - plane.at(2,0)*pt.at(2))/plnorm;
 
-			etadist = pc->at(i).at(0) - planemean.at(0,0);
-			phidist = pc->at(i).at(1) - planemean.at(1,0);
-			planecov.SetEntry(w*etadist*etadist + planecov.at(0,0), 0, 0);
-			planecov.SetEntry(w*etadist*phidist + planecov.at(0,1), 0, 1);
-			planecov.SetEntry(w*phidist*etadist + planecov.at(1,0), 1, 0);
-			planecov.SetEntry(w*phidist*phidist + planecov.at(1,1), 1, 1);
+			planedist = (plane.at(0,0)*pt.at(0) + plane.at(1,0)*pt.at(1) + plane.at(2,0)*pt.at(2) - d)/plnorm;
+
+			cout<< "original pt, z-centered" << endl; pt.Print();	
+			cout << "planedist " << planedist << endl; 
+			if(planedist < 0) continue; //only look at points that are "ahead" of the plane in time 
+			
+			if(planedist != 0)
+				w = 1/planedist;//*pc->at(i).w();
+			else
+				w = 1e10;
+			//project point onto plane
+			double projx = pt.at(0) + k*plane.at(0,0);
+			double projy = pt.at(1) + k*plane.at(1,0);
+			double projz = pt.at(2) + k*plane.at(2,0);
+
+			BayesPoint projpt({projx, projy, projz});
+			projpt.SetWeight(w);
+			projpts += projpt;
+
+			//cout << "original pt" << endl; pc->at(i).Print();
+			//cout << "distance to plane " << planedist << endl;
+			//cout << "projected pt" << endl; BayesPoint({projx,projy,projz}).Print();
+	
+		}
+		if(projpts.GetNPoints() < 1) return;
+		//cout << "z-centered, proj pts" << endl; projpts.Print();
+		//cout << "d = " << d << " and plane " << endl; plane.Print();
+		planecov = Matrix(2,2);
+		Matrix planemean(3,1);
+		planemean.SetEntry(projpts.Centroid(0),0,0);
+		planemean.SetEntry(projpts.CircularCentroid(1),1,0);
+		planemean.SetEntry(projpts.Centroid(2),2,0);
+		//cout << "weighted plane mean" << endl; planemean.Print();
+		for(int i = 0; i < projpts.GetNPoints(); i++){
+			//cout << " planedist " << planedist << " for pt " << endl; pc->at(i).Print(); 
+			
+			//pt = [maj, min1, min2] for min1_eigval > min2_eigval
+			xdist = projpts.at(i).at(0) - planemean.at(0,0);		
+			ydist = projpts.at(i).at(1) - planemean.at(1,0);		
+			zdist = projpts.at(i).at(2) - planemean.at(2,0);		
+
+			norm += projpts.at(i).w();
+	
+			planecov.SetEntry(projpts.at(i).w()*xdist*xdist + planecov.at(0,0), 0, 0);
+			planecov.SetEntry(projpts.at(i).w()*xdist*ydist + planecov.at(0,1), 0, 1);
+			planecov.SetEntry(projpts.at(i).w()*ydist*xdist + planecov.at(1,0), 1, 0);
+			planecov.SetEntry(projpts.at(i).w()*ydist*ydist + planecov.at(1,1), 1, 1);
 
 		}
 		planecov.mult(planecov,1/norm);
-	cout << "d " << d << " plane" << endl; plane.Print(); cout << "cov at plane" << endl; planecov.Print();
+		vector<Matrix> eigvecs;
+		vector<double> eigvals;
+		planecov.eigenCalc(eigvals,eigvecs);
+		cout << "d " << d << " plane cov" << endl; planecov.Print();
+		//cout << "eigenvals " << eigvals[0] << " " << eigvals[1] << endl;
 	} 
-
+	*/
 
 
 	//used for sig/bkg MVA, iso/!iso MVA
