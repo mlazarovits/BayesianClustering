@@ -329,10 +329,10 @@ merge_index = main_index;
   }
 if(_verbose) cout << "IDX prob main idx: " << _DNN->NearestNeighbourProbIndex(main_index) << " prob mirror idx: " << _DNN->NearestNeighbourProbIndex(mirror_index) << endl; 
 if(_verbose)cout << "current phi: ";
-if(_verbose){ if( _merge_tree->Get(current) != nullptr) cout << _merge_tree->Get(current)->points->mean().at(1);
+if(_verbose){ if( _merge_tree->Get(current) != nullptr) cout << _merge_tree->Get(current)->points->CircularMean(1);
 else cout << " current null pts";} 
 if(_verbose)cout << " main phi: ";
-if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge_tree->Get(main_index)->points->mean().at(1);
+if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge_tree->Get(main_index)->CircularMean(1);
 
   int this_cylinder_index = _cylinder_index_of_plane_vertex[plane_index];
   // either the user has acknowledged the fact that they may get the
