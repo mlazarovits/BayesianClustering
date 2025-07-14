@@ -379,9 +379,10 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	}
 	_eta = model->GetData()->Centroid(0);
 	_phi = model->GetData()->CircularCentroid(1);
+	//CircularCentroid returns via atan2 which has range [-pi,pi]
+	if (_phi < 0.0) {_phi += twopi;}
+	if (_phi >= twopi) {_phi -= twopi;} // can happen if phi=-|eps<1e-15|?
 	_t /= _E;
-	//put phi on 02pi
-	//if pt is negative
 	_mu = Matrix(3,1);
 	_mu.SetEntry(_eta,0,0);
 	_mu.SetEntry(_phi,1,0);

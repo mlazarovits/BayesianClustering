@@ -120,7 +120,10 @@ void Dnn2piCylinder::_RegisterCylinderPoint (const PointCollection & cylinder_po
 					     vector<PointCollection> & plane_points) {
   double eta = cylinder_point.mean().at(0);
   double phi = cylinder_point.CircularMean(1);
-  if(!(phi >= 0.0 && phi < 2*pi)){ cout << "bad phi: " << phi << endl; cylinder_point.Print(); }
+  //if phi is truly 'bad', one pass at +- 2*pi won't get it into the right interval of [0,2pi]
+  if(phi < 0) phi += 2*pi;
+  if(phi > 2*pi) phi -= 2*pi;
+  if(!(phi >= 0.0 && phi < 2*pi)){ cout << std::setprecision(10) << "bad phi: " << phi << endl; cylinder_point.Print(); }
   assert(phi >= 0.0 && phi < 2*pi);
 
  //cout << "RegisterCylinderPoint - rrent cyl to plane vertices: " << _cylinder_index_of_plane_vertex.size() << " points registered so far" << " " << _mirror_info.size() << " mirror_info.size() so far" << endl;
@@ -171,7 +174,8 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
 	
    // double phi = pts.mean().at(1);
     double phi = pts.CircularMean(1);
-
+    if(phi < 0) phi += 2*acos(-1);
+    if(phi >= 2*acos(-1)) phi -= 2*acos(-1);	
 
     // require absence of mirror - inexistent says a mirror point needs to be created (if necessary)
     int ic = _cylinder_index_of_plane_vertex[ip];

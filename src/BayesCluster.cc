@@ -57,6 +57,8 @@ cout << "n starting pts " << n << endl;
 			return _trees;
 		}
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
+		//make sure phis are on [0,2pi] interval
+		_points[i].Put02pi(1);
 		mt->AddLeaf(&_points[i].at(0));
 	}
 	const bool verbose = false;
@@ -156,6 +158,7 @@ cout << "n starting pts " << n << endl;
 			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
+			jeti_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
@@ -165,6 +168,7 @@ cout << "n starting pts " << n << endl;
 			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
+			jetj_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
 	
 			return _trees;
@@ -190,6 +194,7 @@ cout << "n starting pts " << n << endl;
 			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
+			jeti_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
@@ -199,6 +204,7 @@ cout << "n starting pts " << n << endl;
 			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
+			jetj_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
 		}
 
@@ -273,6 +279,7 @@ cout << "n starting pts " << n << endl;
 		cout << trees[i]->points->GetNPoints() << " " << trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; 
 		//if(_verb > 1) trees[i]->points->Print();
 	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
+	center.Put02pi(1);	
 cout << "with centroid" << endl; center.Print();
 
 		if(trees[i]->mirror != nullptr){
@@ -493,6 +500,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//zero points by energy centroid
 	//x' = x - a
 	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
+	center.Put02pi(1);	
 	gmm->ShiftData(center);
 	//cout << "centroid " << endl; center.Print();
 	

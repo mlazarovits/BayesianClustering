@@ -305,6 +305,8 @@ class MergeTree : BaseTree{
 			//since the first dimension is now an angle, its centroid needs to be circularly calculated
 			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
 			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
+			//make sure center is on [0,2pi]
+			center.Put02pi(1);
 			if(_verb > 5){ cout << "center" << endl; center.Print();}
 		//cout << "theta circular centroid " << x->model->GetData()->CircularCentroid(0) << " regular centroid " << x->model->GetData()->Centroid(0) << endl;	
 //cout << "original data (phi on 02pi)" << endl; x->model->GetData()->Print();
