@@ -329,10 +329,10 @@ merge_index = main_index;
   }
 if(_verbose) cout << "IDX prob main idx: " << _DNN->NearestNeighbourProbIndex(main_index) << " prob mirror idx: " << _DNN->NearestNeighbourProbIndex(mirror_index) << endl; 
 if(_verbose)cout << "current phi: ";
-if(_verbose){ if( _merge_tree->Get(current) != nullptr) cout << _merge_tree->Get(current)->points->mean().at(1);
+if(_verbose){ if( _merge_tree->Get(current) != nullptr) cout << _merge_tree->Get(current)->points->CircularMean(1);
 else cout << " current null pts";} 
 if(_verbose)cout << " main phi: ";
-if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge_tree->Get(main_index)->points->mean().at(1);
+if(_verbose) if( _merge_tree->Get(main_index)->points != nullptr) cout << _merge_tree->Get(main_index)->points->CircularMean(1);
 
   int this_cylinder_index = _cylinder_index_of_plane_vertex[plane_index];
   // either the user has acknowledged the fact that they may get the
@@ -389,7 +389,7 @@ if(_verbose)cout << "validity: main index - " << _DNN->Valid(main_index) << " mi
 	//if(_verbose) cout << "main idx prob: " << _DNN->NearestNeighbourProb(main_index) << " mirror idx prob: " << _DNN->NearestNeighbourProb(mirror_index) << endl;
  //if mirrored points, may need to translate back or set points to points of main idx
  if(x == nullptr) cout << "x null" << endl;
-if(_verbose) cout << "phi of selected merge node: " << x->points->mean().at(1) << endl;
+if(_verbose) cout << "phi of selected merge node: " << x->points->CircularMean(1) << endl;
 if(x->points->CircularMean(1) > twopi) x->points = _merge_tree->Get(main_index)->points;
   return x;
 /*
