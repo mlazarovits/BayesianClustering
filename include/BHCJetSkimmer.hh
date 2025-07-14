@@ -22,6 +22,7 @@ class BHCJetSkimmer{
 			_alpha = 0.1;
 			_emAlpha = 0.5;
 			_thresh = 1.;
+			_evt2disp = 0;
 
 			_minTopPt = 0;
 			_minTopE = 0;
@@ -72,6 +73,7 @@ class BHCJetSkimmer{
 			_minTopPt = 0;
 			_minWPt = 0;		
 			_minTopE = 0;
+			_evt2disp = 0;
 			
 			_nGhosts = 0;
 			_check_merges = false;
@@ -471,6 +473,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_ge2subcl_dRGenPartons_avgPartonEnergy);
 			_hists2D.push_back(BHCJetW_ge2subcl_subclEnergy_subclLeadIdx);
 			_hists2D.push_back(BHCJetW_EratioJetGenW_nSubclustersJet);
+			_hists2D.push_back(BHCJet_jetMass_jetSize);
+			_hists2D.push_back(EvtDisplay_etaCell_phiCell);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -504,7 +508,7 @@ class BHCJetSkimmer{
 		}
 		int _nGhosts;
 		void SetNGhosts(int t){ _nGhosts = t; cout << "Adding " << _nGhosts << " ghosts to each BHC merging step." << endl;}
-		
+		void SetEvent2Display(int e){ _evt2disp = e; }		
 
 
 		void TreesToJets(){
@@ -700,7 +704,7 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][48]->Fill(_predJets[j].e(), jetsize);
 						_procCats[p].hists2D[pt][41]->Fill(_predJets[j].GetNConstituents(), _predJets[j].e());	
 						_procCats[p].hists2D[pt][11]->Fill(_predJets[j].GetNConstituents(), jetsize);	
-						
+						_procCats[p].hists2D[pt][141]->Fill(_predJets[j].mass(), jetsize);	
 
 						_procCats[p].hists1D[pt][128]->Fill(jet_mu.at(0,0));
 						_procCats[p].hists1D[pt][129]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
@@ -2582,6 +2586,10 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJetW_ge2subcl_subclEnergy_subclLeadIdx = new TH2D("BHCJetW_ge2subcl_subclEnergy_subclLeadIdx","BHCJetW_ge2subcl_subclEnergy_subclLeadIdx;subclEnergy;subclLeadIdx",5,0,5,25,0,500);
 		//140 - BHC jets gen-matched to Ws - Eratio of jet E/gen W E vs # subclusters/jet
 		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
+		//141 - BHC jets - jet mass vs jet size
+		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_ge2subcl_jetMass_jetSize","BHCJetW_ge2subcl_jetMass_jetSize;jetMass;jetSize",50,0,2000.,50,0,2.);
+		//142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
+		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,2*acos(-1));
 
 
 		void SetSmear(bool t){ _smear = t; }
@@ -2854,7 +2862,7 @@ cout << "avgPart E " << avgPartE << endl;
 
 		//good gen objects available for matching 
 		vector<Jet> _genW, _genb, _genTop, _genq;
-		
+		int _evt2disp;		
 
 		map<string, Matrix> _prior_params;
 
