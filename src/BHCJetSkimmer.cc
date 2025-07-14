@@ -340,6 +340,14 @@ void BHCJetSkimmer::Skim(){
 		//	rhTime->Fill(rhs[r].t());
 		//}
 
+		//fill event display if specified _evt2disp
+		if(i == _evt2disp){
+			for(auto rh : rhs){
+				_procCats[1].hists2D[0][142]->Fill(rh.eta(), rh.phi(), rh.E());
+			}
+
+		}
+
 		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
