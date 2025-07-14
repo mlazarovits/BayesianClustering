@@ -205,6 +205,24 @@ class BayesPoint{
 		}
 		
 
+	void Put02pi(int d){
+		double pi = acos(-1);
+		int nit = 0;
+		double ogval = _value[d];
+		while(!(_value[d] >= 0 && _value[d] < 2*pi)){
+			//if pt is negative
+			if(_value[d] < -1e-16) _value[d] = _value[d] + 2*pi;
+			//if pt is geq 2*pi
+			else _value[d] = _value[d] - 2*pi;
+			nit++;
+			if(nit > 100){
+				cout << "Error: BayesPoint::Put02pi for dim " << d << " not converging -  setting to value " << _value[d] << " with original value " << ogval << endl;
+				break;
+			}
+		}
+		
+	}
+
 
 	private:
 		int _nDim;

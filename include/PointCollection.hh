@@ -455,22 +455,25 @@ class PointCollection{
 
 
 	void Put02pi(int d){
-		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
-			int nit = 0;
-			double ogval = _pts[i].at(d);
-			while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
-				//if pt is negative
-				if(_pts[i].at(d) < -1e-16) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
-				//if pt is geq 2*pi
-				else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
-				nit++;
-				if(nit > 100){
-					cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << " setting to value " << _pts[i].at(d) << " with original value " << ogval << endl;
-					break;
-				}
-			}
+			_pts[i].Put02pi(d);
 		}
+		//double pi = acos(-1);
+		//for(int i = 0; i < (int)_pts.size(); i++){
+		//	int nit = 0;
+		//	double ogval = _pts[i].at(d);
+		//	while(!(_pts[i].at(d) >= 0 && _pts[i].at(d) < 2*pi)){
+		//		//if pt is negative
+		//		if(_pts[i].at(d) < -1e-16) _pts[i].SetValue(_pts[i].at(d) + 2*pi,d);
+		//		//if pt is geq 2*pi
+		//		else _pts[i].SetValue(_pts[i].at(d) - 2*pi, d);
+		//		nit++;
+		//		if(nit > 100){
+		//			cout << "Error: PointCollection::Put02pi for dim " << d << " not converging for pt #" << i << " setting to value " << _pts[i].at(d) << " with original value " << ogval << endl;
+		//			break;
+		//		}
+		//	}
+		//}
 	}
 
 	//normalize all dimensions indepedently
@@ -571,10 +574,11 @@ class PointCollection{
 		double mean = atan2(avg_s,avg_c);
 		//precision to avoid edge cases
 		if(fabs(mean) < 1e-10) mean = round(mean);
+		return mean;
 		//atan2 returns on range [-pi, pi] - needs to match original range
-		if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
-		else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
-		else return mean;
+		//if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		//else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		//else return mean;
 	};
 
 	//weighted circular mean	
@@ -590,9 +594,13 @@ class PointCollection{
 		avg_s /= sum;
 		avg_c /= sum;
 		double mean = atan2(avg_s,avg_c);
-		if(Centroid(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
-		else if(Centroid(d) < 0 && mean > 0) return mean - 2*acos(-1);
-		else return mean;
+		//precision to avoid edge cases
+		if(fabs(mean) < 1e-10) mean = round(mean);
+		return mean;
+		//atan2 returns on range [-pi, pi] - needs to match original range
+		//if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		//else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		//else return mean;
 	};
 
 	//weighted mean	
