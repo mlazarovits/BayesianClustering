@@ -574,11 +574,10 @@ class PointCollection{
 		double mean = atan2(avg_s,avg_c);
 		//precision to avoid edge cases
 		if(fabs(mean) < 1e-10) mean = round(mean);
-		return mean;
 		//atan2 returns on range [-pi, pi] - needs to match original range
-		//if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
-		//else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
-		//else return mean;
+		if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		else return mean;
 	};
 
 	//weighted circular mean	
@@ -596,11 +595,10 @@ class PointCollection{
 		double mean = atan2(avg_s,avg_c);
 		//precision to avoid edge cases
 		if(fabs(mean) < 1e-10) mean = round(mean);
-		return mean;
 		//atan2 returns on range [-pi, pi] - needs to match original range
-		//if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
-		//else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
-		//else return mean;
+		if(this->mean().at(d) > 0 && mean < 0 ) return mean + 2*acos(-1);
+		else if(this->mean().at(d) < 0 && mean > 0) return mean - 2*acos(-1);
+		else return mean;
 	};
 
 	//weighted mean	

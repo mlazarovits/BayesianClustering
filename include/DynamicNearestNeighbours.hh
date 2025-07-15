@@ -201,7 +201,7 @@ public:
 //cout << "n1 for " << index1 << " has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
 //cout << "n2 for " << index2 << " has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
 	//newnode won't be a mirror point so in order to correctly calculate mirror point on the right interval, need to put phi in that interval ([0,2pi])
-	newnode->points->Put02pi(1);
+	//newnode->points->Put02pi(1);
 //if(newnode->points->GetNPoints() == 3){ cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newnode->points->Print();}
     _merge_tree->Insert(newnode);
     _merge_tree->Remove(n1);

@@ -344,6 +344,7 @@ class MergeTree : BaseTree{
 				return -1e308;
 			}
 
+
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(_Rscale);
 			if(_verb > 5){ cout << "scaled pts" << endl; x->model->GetData()->Print();}
