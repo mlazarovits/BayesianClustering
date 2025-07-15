@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cmath>
 using std::cout;
 using std::endl;
 
