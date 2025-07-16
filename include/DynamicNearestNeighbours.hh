@@ -193,6 +193,7 @@ public:
     node* n2 = NearestNeighbourProbNode(index2);
     //update merge tree with selected merge
     node* newnode = _merge_tree->CalculateMerge(n1, n2);
+    newnode->points = new PointCollection(newcluster);
 		//cout << "newnode model pts" << endl;
 		//newnode->model->GetData()->Print();
 		//cout << "newnode pts" << endl;

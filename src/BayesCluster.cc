@@ -153,22 +153,22 @@ cout << "n starting pts " << n << endl;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
+				_sanitize(pt);
 				jeti_pts += pt;
 			}
 			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
-			jeti_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
+				_sanitize(pt);
 				jetj_pts += pt;
 			}
 			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
-			jetj_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
 	
 			return _trees;
@@ -189,22 +189,22 @@ cout << "n starting pts " << n << endl;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
+				_sanitize(pt);
 				jeti_pts += pt;
 			}
 			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
-			jeti_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
+				_sanitize(pt);
 				jetj_pts += pt;
 			}
 			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
-			jetj_mean.Put02pi(1);	
 			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
 		}
 
@@ -223,6 +223,7 @@ cout << "n starting pts " << n << endl;
 		for(int i = 0; i < (int)jps.size(); i++){
 			//cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
+			_sanitize(pt);
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
