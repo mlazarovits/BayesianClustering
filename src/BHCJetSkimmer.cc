@@ -58,6 +58,7 @@ void BHCJetSkimmer::Skim(){
 		_evti = 0;
 		_evtj = _nEvts;
 	}
+	if(_evtj > _nEvts) _evtj = _nEvts;
 	int SKIP = 1;
 	BayesCluster* algo = nullptr;
 	clock_t t;
@@ -166,14 +167,14 @@ void BHCJetSkimmer::Skim(){
 		}
 		//default selection
 		else{
-			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
-			int nparton = 0;
-			vector<int> p_ids = {1,2,3,4,5};
-			for(int g = 0; g < ngenpart; g++){
-				if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(g))) == p_ids.end()) continue;
-				nparton++;
-			}	
-			if(nparton < 2) continue;
+			////at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
+			//int nparton = 0;
+			//vector<int> p_ids = {1,2,3,4,5};
+			//for(int g = 0; g < ngenpart; g++){
+			//	if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(g))) == p_ids.end()) continue;
+			//	nparton++;
+			//}	
+			//if(nparton < 2) continue;
 
 		}
 	
@@ -336,22 +337,20 @@ void BHCJetSkimmer::Skim(){
 		//safety
 		if(rhs.size() < 1) continue;
 		x_nrhs.push_back((double)rhs.size());
-		//for(int r = 0; r < rhs.size(); r++){
-		//	rhTime->Fill(rhs[r].t());
-		//}
 
 		//fill event display if specified _evt2disp
 		if(i == _evt2disp){
+			cout << "Displaying event " << i << endl;
 			for(auto rh : rhs){
+				_procCats[0].hists2D[0][142]->Fill(rh.eta(), rh.phi(), rh.E());
 				_procCats[1].hists2D[0][142]->Fill(rh.eta(), rh.phi(), rh.E());
 			}
 
 		}
-
 		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
-		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());	
+		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());
 		//FillResolutionHists(); - does gen matching...again?
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	

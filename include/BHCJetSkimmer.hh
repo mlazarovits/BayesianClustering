@@ -1313,12 +1313,12 @@ cout << "avgPart E " << avgPartE << endl;
 							_procCats[p].hists2D[pt][52]->Fill(_recoAK4jets[j].eta(),_genAK4jets[genidx].eta());
 							_procCats[p].hists2D[pt][53]->Fill(_recoAK4jets[j].phi(),_genAK4jets[genidx].phi());
 							_procCats[p].hists2D[pt][54]->Fill(_recoAK4jets[j].time(),_genAK4jets[genidx].time());
-
 							if(_sel != QCDdijets){
 								int genpartidx = -1;
 								int ngenparts_ptge5 = 0;
 								for(int g = 0; g < _base->AK4Jet_genNConstituents->at(genjetidx); g++){
 									genpartidx = _base->AK4Jet_genConstituentIdxs->at(genjetidx).at(g);
+									if(genpartidx >= _base->genpart_pt->size()) break;
 									genpt = _base->genpart_pt->at(genpartidx);
 									pz = _base->genpart_pz->at(genpartidx);
 									ratio_p = (sqrt(genpt*genpt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
@@ -1666,6 +1666,21 @@ cout << "avgPart E " << avgPartE << endl;
 				procCat singleW(_hists1D, _hists2D, "singleW", "single W^{#pm}",leadsep);
 				singleW.ids = {-999};
 				_procCats.push_back(singleW);
+			}
+			else if(sample.find("Wgluon") != string::npos){
+				procCat Wgluon(_hists1D, _hists2D, "Wgluon", "single W^{#pm} + g",leadsep);
+				Wgluon.ids = {-999};
+				_procCats.push_back(Wgluon);
+			}
+			else if(sample.find("singleGamma") != string::npos){
+				procCat singleGamma(_hists1D, _hists2D, "singleGamma", "single #gamma",leadsep);
+				singleGamma.ids = {-999};
+				_procCats.push_back(singleGamma);
+			}
+			else if(sample.find("singleGluon") != string::npos){
+				procCat singleGluon(_hists1D, _hists2D, "singleGluon", "single gluon",leadsep);
+				singleGluon.ids = {-999};
+				_procCats.push_back(singleGluon);
 			}
 			else return;
 
