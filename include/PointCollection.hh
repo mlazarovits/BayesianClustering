@@ -448,7 +448,11 @@ class PointCollection{
 		//for small theta => theta/2
 		//use tan(theta/2) to get range to be (-pi,pi) as max deviation then multiply by 2 to get back original (small) theta
 		for(int i = 0; i < (int)_pts.size(); i++){
-			_pts[i].SetValue(atan2(_pts[i].at(d),1),d);
+			double val = atan2(_pts[i].at(d),1);
+			//put on [0,2pi] range
+			if(val < 0) val += 2*acos(-1);
+			if(val >= 2*acos(-1)) val -= 2*acos(-1);
+			_pts[i].SetValue(val,d);
 		}
 
 	}
