@@ -240,25 +240,25 @@ class MergeTree : BaseTree{
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
 					left_post_indices[kk] = prev_posts.size()-1;
-	//if(x->points->GetNPoints() == 108){
-	//	cout << "left node has " << x->l->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
-	//	prev_posts[prev_posts.size()-1]["m"].Print();
-	//}
+					//if(x->l->ismirror){
+					//	cout << " starting parameter from left node is mirror" << endl; prev_posts[prev_posts.size()-1]["m"].Print();
+					//}
+					//if(prev_posts[prev_posts.size()-1]["m"].at(1,0) < 0){
+					//	cout << "left node is mirror? " << x->l->ismirror << endl;
+					//}
 				} 
 				//cout << "right node has " << x->r->model->GetNClusters() << " clusters" << endl;
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
 					right_post_indices[kk] = prev_posts.size()-1;
-	//if(x->points->GetNPoints() == 108){
-	//	cout << "right node has " << x->r->model->GetData()->GetNPoints() << "  - starting cluster " << prev_posts.size()-1 << " has alpha " << prev_posts[prev_posts.size()-1]["alpha"].at(0,0) << " and mean" << endl;
-	//	prev_posts[prev_posts.size()-1]["m"].Print();
-	//}
+					//if(x->r->ismirror){
+					//	cout << " starting parameter from right node is mirror" << endl; prev_posts[prev_posts.size()-1]["m"].Print();
+					//}
+					//if(prev_posts[prev_posts.size()-1]["m"].at(1,0) < 0){
+					//	cout << "right node is mirror? " << x->r->ismirror << endl;
+					//}
 				}
 
-				//int npts_abovethresh = 0;
-				//for(int n = 0; n < x->points->GetNPoints(); n++){
-				//	if(x->points->at(n).w() > _thresh) npts_abovethresh++;
-				//}
  
 			//cout << "# clusters allowed " << k << " # pts " << x->points->GetNPoints() << " # clusters from l " << x->l->model->GetNClusters() << " from r " << x->r->model->GetNClusters() << " weight " << x->points->Sumw() << " with " << npts_abovethresh << " pts above thresh: " << _thresh <<  endl;
 			}
@@ -270,10 +270,12 @@ class MergeTree : BaseTree{
 			vector<Matrix> measErrs;
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
-
-
-
-
+			//double phi = newpts->CircularCentroid(1);
+			//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+			//	cout << "original pts " << phi << endl; newpts->Print();	
+			//}
+		
+		
 			x->model = new GaussianMixture(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
@@ -305,12 +307,13 @@ class MergeTree : BaseTree{
 			//since the first dimension is now an angle, its centroid needs to be circularly calculated
 			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
 			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
-			//make sure center is on [0,2pi]
-			center.Put02pi(1);
 			if(_verb > 5){ cout << "center" << endl; center.Print();}
 		//cout << "theta circular centroid " << x->model->GetData()->CircularCentroid(0) << " regular centroid " << x->model->GetData()->Centroid(0) << endl;	
 //cout << "original data (phi on 02pi)" << endl; x->model->GetData()->Print();
 			x->model->ShiftData(center);
+			//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+			//	cout << "centered pts " << x->model->GetData()->CircularCentroid(1) << endl; x->model->GetData()->Print();
+			//}
 
 
 
@@ -319,6 +322,9 @@ class MergeTree : BaseTree{
 			bool phiInf = x->model->ProjectPhi();
 			bool thetaInf = x->model->ProjectTheta();
 			if(_verb > 5){ cout << "projected pts" << endl; x->model->GetData()->Print();}
+			//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+			//	cout << "projected pts " << x->model->GetData()->CircularCentroid(1) << endl; x->model->GetData()->Print();
+			//}
 			//check for infinities in eta + phi from measurement error
 			if(phiInf || thetaInf){
 				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
@@ -353,29 +359,9 @@ class MergeTree : BaseTree{
 			for(int kk = 0; kk < prev_posts.size(); kk++){
 				auto params = prev_posts[kk];
 				Matrix mean = params["m"];
-				
+				//cout << "original starting center #" << kk << endl; mean.Print();	
 				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
 				TransformMean(mean, center);
-				/*		
-				if(fabs(mean.at(0,0)) > 1e20 || fabs(mean.at(1,0)) > 1e20){
-					cout << "MEAN AT INFINITY" << endl; mean.Print();
-					cout << "original mean" << endl; params["m"].Print();
-					cout << "left node has " << x->l->model->GetNClusters() << " subclusters" << " and " << x->l->points->GetNPoints() << " pts" << endl;
-					//cout << "left node pts" << endl; x->l->points->Print();
-					cout << "centroid in phi of left node pts " << x->l->points->CircularCentroid(1) << " in eta " << x->l->points->Centroid(0) << endl;
-					cout << "left means" << endl;
-					for(int kkk = 0; kkk < x->l->model->GetNClusters(); kkk++){
-					auto paramsl = x->l->model->GetLHPosteriorParameters(kkk);
-						cout << "left subcl #" << kkk << " weight " << paramsl["alpha"].at(0,0) << " mean" << endl; paramsl["m"].Print();
-					}
-				
-	
-					cout << "right node has " << x->r->model->GetNClusters() << " subclusters" << endl;
-					//cout << "right node pts" << endl; x->r->points->Print();
-					//cout << "original data" << endl; x->points->Print();
-					//cout << "transf data" << endl; x->model->GetData()->Print();
-				}
-				*/
 				prev_posts[kk]["m"] = mean;
 				//if(x->model->GetData()->GetNPoints() == 108){
 				//	cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
@@ -567,6 +553,12 @@ class MergeTree : BaseTree{
 			//only does for mean rn - not sure how to do for cov...
 			x->model->UnprojectPhi_params();
 			x->model->UnprojectTheta_params();
+//for(int k = 0; k < x->model->GetNClusters(); k++){
+//	auto params = x->model->GetLHPosteriorParameters(k);
+//	if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+//		cout << "unprojected phi center #" << k << endl; params["m"].Print();
+//	}
+//}
 
 //cout << "unprojected" << endl;
 //for(int k = 0; k < x->model->GetNClusters(); k++){
@@ -605,10 +597,17 @@ bool isnan = false;
 
 for(int k = 0; k < x->model->GetNClusters(); k++){
 	auto params = x->model->GetLHPosteriorParameters(k);
+	//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+	//	cout << "final center #" << k << endl; params["m"].Print(); 
+	//}
 	if(std::isnan(params["mean"].at(0,0))){
 		isnan = true;
 	}
 }
+
+//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
+//	cout << endl;
+//}
 if(isnan){
 	for(int k = 0; k < x->model->GetNClusters(); k++){
 		auto params = x->model->GetLHPosteriorParameters(k);
