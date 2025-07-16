@@ -220,7 +220,7 @@ class GaussianMixture : public BasePDFMixture{
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
 				PointCollection priormean_pt = priormean.MatToPoints();
 				priormean_pt.Put02pi(1);	
-				m_model[k]->SetParameter("mean",Matrix(priormean_pt));
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
 
 
 				//shift data statistics
