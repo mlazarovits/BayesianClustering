@@ -198,7 +198,7 @@ if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << 
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
 	//see when phi < 0 node (should be mirror) is created
 	if(phi < 0){
-		cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
+		cout << "Error: phi for mirrored pt is less than 0 - og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     		cout << "Dnn2pi this mirror info " << _mirror_info[ic].mirror_index << endl;
 		cout << "Dnn2piCylinder::_CreateNecessaryMirrorPoints - phi mean " << phi << " node pts " << endl;
 		pts.Print();
@@ -214,7 +214,7 @@ if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << 
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _merge_tree->Get(ip);
     _merge_tree->Get(ip)->mirror = x;
-if(phi < 0) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
+if(_verbose) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
 if(_verbose) cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
