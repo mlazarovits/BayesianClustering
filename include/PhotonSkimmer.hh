@@ -3515,7 +3515,7 @@ cout << endl;
 			if(planedist < 0) continue; //only look at points that are "ahead" of the plane in time 
 			
 			if(planedist != 0)
-				w = 1/planedist;//*pc->at(i).w();
+				w = 1/planedist;
 			else
 				w = 1e10;
 			//project point onto plane
