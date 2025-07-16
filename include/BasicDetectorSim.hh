@@ -192,8 +192,9 @@ struct RecoParticle;
 			_genpartMomIdx.push_back(genmom);
 		}
 
-		void FindMom(vector<int> mothers_idx, vector<int> mothers_id, int id, set<int>& idxs){
+		void FindMom(vector<int> mothers_idx, vector<int> mothers_id, int id, set<int>& idxs, int &thismom){
 			vector<int>::iterator momit = find(mothers_id.begin(), mothers_id.end(), id);
+			thismom = -1;
 			if(momit != mothers_id.end()){
 				int idx = mothers_idx[momit - mothers_id.begin()];
 				int momidx = _sumEvent[idx].mother1();
@@ -202,6 +203,7 @@ struct RecoParticle;
 					momidx = _sumEvent[idx].mother1();
 				}
 				//cout << "mother of particle " << idx << ": " << momidx << " " << _sumEvent[idx].mother2() << " mother1 id " << _sumEvent[momidx].id() << " id " << _sumEvent[idx].id() << " grandmother " << _sumEvent[_sumEvent[momidx].mother1()].id() << " status " << _sumEvent[idx].status() << endl;
+				thismom = idx;
 				idxs.insert(idx);
 			}
 
