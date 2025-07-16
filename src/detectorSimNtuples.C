@@ -36,6 +36,7 @@ int main(int argc, char *argv[]){
 	bool qcd = false;
 	bool singw = false;
 	bool wg = false;
+	bool singg = false;
 	bool sig_delayed = false;
 	bool sig_boosted = false;
 	double spikeProb = 0.;
@@ -49,6 +50,8 @@ int main(int argc, char *argv[]){
 	bool ootPU = false;
 	bool noshower = false;
 	int timeResModel = 0; //which time resolution model to use
+
+
 
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -101,6 +104,9 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--singleW", 9) == 0){
     	 		singw = true;
+   		}
+		if(strncmp(argv[i],"--gluon", 7) == 0){
+    	 		singg = true;
    		}
 		if(strncmp(argv[i],"--Wg", 4) == 0){
     	 		wg = true;
@@ -164,6 +170,7 @@ int main(int argc, char *argv[]){
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
 		cout << "   --singleW                     simulate single W" << endl;
+		cout << "   --gluon                       simulate single gluon" << endl;
 		cout << "   --Wg                          simulate W+gluon" << endl;
 		cout << "   --sigDelayed                  simulate delayed signal" << endl;
 		cout << "   --sigBoosted                  simulate boosted signal" << endl;
@@ -184,7 +191,7 @@ int main(int argc, char *argv[]){
 	}
 
 
-	if(!ttbar && !qcd && !singw && !sig_delayed && !sig_boosted && !wg){
+	if(!ttbar && !qcd && !singw && !sig_delayed && !sig_boosted && !wg && !singg){
 		cout << "No process specified to simulate. Exiting..." << endl;
 		return -1;
 	}
@@ -218,6 +225,11 @@ int main(int argc, char *argv[]){
 		cout << "W+gluon ";
 		if(oname.find("Wgluon") == string::npos) oname += "_Wgluon";	
 	}
+	if(singg){
+		cout << "single gluon ";
+		if(oname.find("singleGluon") == string::npos) oname += "_singleGluon";	
+	}
+
 	cout << endl;
 
 	//TODO: change onames when processes are decided
@@ -258,6 +270,7 @@ int main(int argc, char *argv[]){
 	if(qcd) det.SimQCD();
 	if(singw) det.SimWgamma();
 	if(wg) det.SimWg();
+	if(singg) det.SimGluon();
 	//if(sig_delayed)
 	//if(sig_boosted)
 	if(nPU != 0) det.TurnOnPileup(nPU, ootPU);

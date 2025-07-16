@@ -444,6 +444,8 @@ int main(int argc, char *argv[]){
 	skimmer.SetSmear(smear);
 	skimmer.CheckMerges(check_merges);
 	skimmer.SetNGhosts(nghosts);
+	//TODO: set by external flag
+	skimmer.SetEvent2Display(1);
 	double cell = acos(-1)/180;
 	skimmer.SetMeasErrParams(cell, tres_cte, tres_stoch, tres_noise);
 
