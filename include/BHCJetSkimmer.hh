@@ -2339,19 +2339,19 @@ cout << "avgPart E " << avgPartE << endl;
 		//232 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
 		//233 - BHC Jet rh phi
-		TH1D* BHCJet_rhPhi = new TH1D("BHCJet_rhPhi","BHCJet_rhPHi",200,0,8*atan(1));	
+		TH1D* BHCJet_rhPhi = new TH1D("BHCJet_rhPhi","BHCJet_rhPhi",200,0,8*atan(1));	
 		//234 - recoAK4 rh phi
-		TH1D* recoAK4_rhPhi = new TH1D("recoAK4_rhPhi","recoAK4_rhPHi",200,0,8*atan(1));	
+		TH1D* recoAK4_rhPhi = new TH1D("recoAK4_rhPhi","recoAK4_rhPhi",200,0,8*atan(1));	
 		//235 - recoAK15 rh phi
-		TH1D* recoAK15_rhPhi = new TH1D("recoAK15_rhPhi","recoAK15_rhPHi",200,0,8*atan(1));	
+		TH1D* recoAK15_rhPhi = new TH1D("recoAK15_rhPhi","recoAK15_rhPhi",200,0,8*atan(1));	
 		//236 - all rhs phi in evt (from JetSimProd) 
-		TH1D* evt_rhPhi = new TH1D("evt_rhPhi","evt_rhPHi",200,0,8*atan(1));	
+		TH1D* evt_rhPhi = new TH1D("evt_rhPhi","evt_rhPhi",200,0,8*atan(1));	
 		//237 - BHCJet rh phi not in jet
-		TH1D* BHCJet_notJetrhPhi = new TH1D("BHCJet_notJetrhPhi","BHCJet_rhPHi",200,0,8*atan(1));	
+		TH1D* BHCJet_notJetrhPhi = new TH1D("BHCJet_notJetrhPhi","BHCJet_rhPhi",200,0,8*atan(1));	
 		//238 - recoAK4 rh phi
-		TH1D* recoAK4_notJetrhPhi = new TH1D("recoAK4_notJetrhPhi","recoAK4_notJetrhPHi",200,0,8*atan(1));	
+		TH1D* recoAK4_notJetrhPhi = new TH1D("recoAK4_notJetrhPhi","recoAK4_notJetrhPhi",200,0,8*atan(1));	
 		//239 - recoAK15 rh phi
-		TH1D* recoAK15_notJetrhPhi = new TH1D("recoAK15_notJetrhPhi","recoAK15_notJetrhPHi",200,0,8*atan(1));	
+		TH1D* recoAK15_notJetrhPhi = new TH1D("recoAK15_notJetrhPhi","recoAK15_notJetrhPhi",200,0,8*atan(1));	
 		
 
 
