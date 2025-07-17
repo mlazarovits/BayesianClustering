@@ -418,6 +418,7 @@ class Jet{
 			_phi = phipts.CircularCentroid(0);
 			if (_phi < 0.0) {_phi += twopi;}
 			if (_phi >= twopi) {_phi -= twopi;} // can happen if phi=-|eps<1e-15|?
+			_ensure_valid_rap_phi();
 			
 			//set mean from member variables
 			_mu.SetEntry(_eta,0,0);
