@@ -331,6 +331,13 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_subClusteretaPhiCov);
 			_hists1D.push_back(BHCJetW_subClustertimeEtaCov);
 			_hists1D.push_back(BHCJetW_subClustertimePhiCov);
+			_hists1D.push_back(BHCJet_rhPhi);	
+			_hists1D.push_back(recoAK4_rhPhi);	
+			_hists1D.push_back(recoAK15_rhPhi);	
+			_hists1D.push_back(evt_rhPhi);	
+			_hists1D.push_back(BHCJet_notJetrhPhi);	
+			_hists1D.push_back(recoAK4_notJetrhPhi);	
+			_hists1D.push_back(recoAK15_notJetrhPhi);	
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_predGen);
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -715,6 +722,7 @@ class BHCJetSkimmer{
 						
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][145]->Fill(rhs[r].E());
+							_procCats[p].hists1D[pt][233]->Fill(rhs[r].phi_02pi());
 							
 						}
 
@@ -1289,14 +1297,16 @@ cout << "avgPart E " << avgPartE << endl;
 				
 
 						}
-						vector<JetPoint> rhs = _recoAK4jets[j].GetJetPoints();
+						vector<Jet> rhs;
+						_recoAK4jets[j].GetJets(rhs);
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][89]->Fill(rhs[r].E());
 							_procCats[p].hists1D[pt][96]->Fill(rhs[r].t());
-							
+							_procCats[p].hists1D[pt][234]->Fill(rhs[r].phi_02pi());
 						}
 						vector<pair<double,double>> geoEavg_diffT;
-						CalcRhTimeDiff(rhs,geoEavg_diffT);
+						vector<JetPoint> rhs_pt = _recoAK4jets[j].GetJetPoints();
+						CalcRhTimeDiff(rhs_pt,geoEavg_diffT);
 						for(int r = 0; r < geoEavg_diffT.size(); r++){
 						      _procCats[p].hists2D[pt][30]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
 						}
@@ -1485,6 +1495,11 @@ cout << "avgPart E " << avgPartE << endl;
 						_procCats[p].hists1D[pt][nhist1d_start + 6]->Fill(recojets[j].e());
 						_procCats[p].hists1D[pt][nhist1d_start + 7]->Fill(recojets[j].GetNConstituents());
 						_procCats[p].hists1D[pt][nhist1d_start + 10]->Fill(jetsize);
+						vector<Jet> rhs;
+						recojets[j].GetJets(rhs);
+						for(int r = 0; r < rhs.size(); r++){
+							if(AK == 15) _procCats[p].hists1D[pt][nhist1d_start + 64]->Fill(rhs[r].phi_02pi());
+						}
 						//if no gen top match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
@@ -2323,8 +2338,21 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* BHCJetW_subClustertimeEtaCov = new TH1D("BHCJetW_subclusterTimeEtaCov","BHCJetW_subclusterTimeEtaCov",50,-0.05,0.05);
 		//232 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
+		//233 - BHC Jet rh phi
+		TH1D* BHCJet_rhPhi = new TH1D("BHCJet_rhPhi","BHCJet_rhPHi",200,0,8*atan(1));	
+		//234 - recoAK4 rh phi
+		TH1D* recoAK4_rhPhi = new TH1D("recoAK4_rhPhi","recoAK4_rhPHi",200,0,8*atan(1));	
+		//235 - recoAK15 rh phi
+		TH1D* recoAK15_rhPhi = new TH1D("recoAK15_rhPhi","recoAK15_rhPHi",200,0,8*atan(1));	
+		//236 - all rhs phi in evt (from JetSimProd) 
+		TH1D* evt_rhPhi = new TH1D("evt_rhPhi","evt_rhPHi",200,0,8*atan(1));	
+		//237 - BHCJet rh phi not in jet
+		TH1D* BHCJet_notJetrhPhi = new TH1D("BHCJet_notJetrhPhi","BHCJet_rhPHi",200,0,8*atan(1));	
+		//238 - recoAK4 rh phi
+		TH1D* recoAK4_notJetrhPhi = new TH1D("recoAK4_notJetrhPhi","recoAK4_notJetrhPHi",200,0,8*atan(1));	
+		//239 - recoAK15 rh phi
+		TH1D* recoAK15_notJetrhPhi = new TH1D("recoAK15_notJetrhPhi","recoAK15_notJetrhPHi",200,0,8*atan(1));	
 		
-
 
 
 
