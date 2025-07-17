@@ -342,7 +342,8 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		//push back as jet point to _rhs	
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
-		
+		_rhs[i].SetWeight(rh.w());	
+	
 		//calculate momentum vector from PV
 		//centered at PV
 		double dx = x - _vtx.at(0);
@@ -389,6 +390,15 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	//_mu.SetEntry(_phi,1,0);
 	//_mu.SetEntry(_t,2,0);
 	CalculateCenter();
+	//if(fabs(_phi - model->GetData()->CircularCentroid(1)) > 1e-10){
+	//	cout << "Jet::WARNING - CalculateCenter() _phi " << _phi << " doesn't match model->GetData()->CircularCentroid() phi " << model->GetData()->CircularCentroid(1) << endl;
+	//	//check if inputs to CalculateCenter() _phi and CircularCentroid phi are the same (ie phi coord and weights)
+	//	cout << "CalculateCenter inputs" << endl;
+	//	for(int i = 0; i < _nRHs; i++){
+	//		cout << "phi " << _rhs[i].phi_02pi() << " w " << _rhs[i].GetWeight() << endl;
+	//	}
+	//	cout << "model data" << endl; model->GetData()->Print();
+	//}
 	
 	_kt2 = _px*_px + _py*_py;
 

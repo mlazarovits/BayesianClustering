@@ -407,7 +407,7 @@ class Jet{
 				norm += _rhs[i].E();
 				
 				BayesPoint phipt(1);
-				phipt.SetValue(_rhs[i].phi(),0);
+				phipt.SetValue(_rhs[i].phi_02pi(),0);
 				phipt.SetWeight(_rhs[i].GetWeight());
 				
 				phipts += phipt;
