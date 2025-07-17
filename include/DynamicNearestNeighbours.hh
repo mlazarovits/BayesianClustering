@@ -191,6 +191,7 @@ public:
     points_to_add[0] = newcluster;
     node* n1 = NearestNeighbourProbNode(index1);
     node* n2 = NearestNeighbourProbNode(index2);
+
     //update merge tree with selected merge
     node* newnode = _merge_tree->CalculateMerge(n1, n2);
     newnode->points = new PointCollection(newcluster);
