@@ -482,6 +482,9 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_EratioJetGenW_nSubclustersJet);
 			_hists2D.push_back(BHCJet_jetMass_jetSize);
 			_hists2D.push_back(EvtDisplay_etaCell_phiCell);
+			_hists2D.push_back(BHCJet_jetSize_phiCenter); 
+			_hists2D.push_back(recoAK4Jet_jetSize_phiCenter); 
+			_hists2D.push_back(recoAK15Jet_jetSize_phiCenter); 
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -717,9 +720,16 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][141]->Fill(_predJets[j].mass(), jetsize);	
 
 						_procCats[p].hists1D[pt][128]->Fill(jet_mu.at(0,0));
-						_procCats[p].hists1D[pt][129]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
+						double ret = 0;
+						for(auto rh : rhs) ret += rh.phi_02pi();
+						ret /= (double)rhs.size();
+						_procCats[p].hists1D[pt][129]->Fill(ret);
+						//_procCats[p].hists1D[pt][129]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
 						_procCats[p].hists1D[pt][130]->Fill(jet_mu.at(2,0));
+					
 						
+						_procCats[p].hists2D[pt][143]->Fill(jetsize, _predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
+	
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][145]->Fill(rhs[r].E());
 							_procCats[p].hists1D[pt][233]->Fill(rhs[r].phi_02pi());
@@ -1236,10 +1246,11 @@ cout << "avgPart E " << avgPartE << endl;
 						_procCats[p].hists1D[pt][22]->Fill(_recoAK4jets[j].mass());
 						_procCats[p].hists1D[pt][138]->Fill(_recoAK4jets[j].time());
 						_procCats[p].hists1D[pt][139]->Fill(_recoAK4jets[j].eta());
-						_procCats[p].hists1D[pt][140]->Fill(_recoAK4jets[j].phi());
+						//_procCats[p].hists1D[pt][140]->Fill(_recoAK4jets[j].phi());
 						_procCats[p].hists2D[pt][4]->Fill(_recoAK4jets[j].mass(), _recoAK4jets[j].pt());
 						_procCats[p].hists2D[pt][5]->Fill(_recoAK4jets[j].mass(), jetsize);
 						_procCats[p].hists2D[pt][33]->Fill((double)_recoAK4jets.size(), jetsize);
+						_procCats[p].hists2D[pt][144]->Fill(jetsize, _recoAK4jets[j].phi());
 						
 						//fill subcluster hists
 						_procCats[p].hists1D[pt][77]->Fill(_recoAK4jets[j].GetNConstituents());
@@ -1299,6 +1310,10 @@ cout << "avgPart E " << avgPartE << endl;
 						}
 						vector<Jet> rhs;
 						_recoAK4jets[j].GetJets(rhs);
+						double ret = 0;
+						for(auto rh : rhs) ret += rh.phi_02pi();
+						ret /= (double)rhs.size();
+						_procCats[p].hists1D[pt][140]->Fill(ret);
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][89]->Fill(rhs[r].E());
 							_procCats[p].hists1D[pt][96]->Fill(rhs[r].t());
@@ -1500,6 +1515,7 @@ cout << "avgPart E " << avgPartE << endl;
 						for(int r = 0; r < rhs.size(); r++){
 							if(AK == 15) _procCats[p].hists1D[pt][nhist1d_start + 64]->Fill(rhs[r].phi_02pi());
 						}
+						if(AK == 15) _procCats[p].hists2D[pt][nhist2d_start + 66]->Fill(jetsize, _recoAK4jets[j].phi());
 						//if no gen top match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
@@ -2645,7 +2661,13 @@ cout << "avgPart E " << avgPartE << endl;
 		//141 - BHC jets - jet mass vs jet size
 		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_ge2subcl_jetMass_jetSize","BHCJetW_ge2subcl_jetMass_jetSize;jetMass;jetSize",50,0,2000.,50,0,2.);
 		//142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
-		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,2*acos(-1));
+		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
+		//143 - BHC jets - jet size vs jet phi center
+		TH2D* BHCJet_jetSize_phiCenter = new TH2D("BHCJet_jetSize_phiCenter","BHCJet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
+		//144 - reco AK4 jet - jet size vs jet phi center
+		TH2D* recoAK4Jet_jetSize_phiCenter = new TH2D("recoAK4Jet_jetSize_phiCenter","recoAK4Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
+		//145 - reco AK15 jets - jet size vs jet phi center
+		TH2D* recoAK15Jet_jetSize_phiCenter = new TH2D("recoAK15Jet_jetSize_phiCenter","recoAK15Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
 
 
 		void SetSmear(bool t){ _smear = t; }

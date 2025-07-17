@@ -297,7 +297,7 @@ class Jet{
 		//sets phi [0,2pi]
 		double phi_02pi() const{
 			if(_phi < 0) return _phi + 2*acos(-1);
-			else if(_phi > 2*acos(-1)) return _phi - 2*acos(-1);
+			else if(_phi >= 2*acos(-1)) return _phi - 2*acos(-1);
 			else return _phi; 
 		}
 
