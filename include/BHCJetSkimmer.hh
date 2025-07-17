@@ -799,6 +799,16 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][66]->Fill(_predJets[j].phi(),_genAK15jets[genAK15MatchIdxs[j]].phi());
 							_procCats[p].hists2D[pt][67]->Fill(_predJets[j].time(),_genAK15jets[genAK15MatchIdxs[j]].time());
 							_procCats[p].hists2D[pt][68]->Fill(_predJets[j].GetNConstituents(), _base->AK15Jet_genNConstituents->at(genAK15jetidx));
+
+							//phi debugging
+							double genphi = _genAK15jets[genAK15MatchIdxs[j]].phi_02pi();
+							double bhcphi = _predJets[j].phi();
+							double true_dphi = acos(cos(genphi - bhcphi));
+							double dphi = fabs(genphi - bhcphi);
+							if(true_dphi < 0.1 && dphi > 6.){
+								cout << "BAD PHI MATCH HERE!!!!! for bhc jet # " << j << " with phi " << bhcphi << " and gen AK15 gen # " << genAK15MatchIdxs[j] << " with phi " << genphi << endl;
+							}
+
 						}			
 						//do gen top matching hists
 						if(genTopMatchIdxs[j] != -1){
