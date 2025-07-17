@@ -806,7 +806,7 @@ class BHCJetSkimmer{
 							double true_dphi = acos(cos(genphi - bhcphi));
 							double dphi = fabs(genphi - bhcphi);
 							if(true_dphi < 0.1 && dphi > 6.){
-								cout << "BAD PHI MATCH HERE!!!!! for bhc jet # " << j << " with phi " << bhcphi << " and gen AK15 gen # " << genAK15MatchIdxs[j] << " with phi " << genphi << endl;
+								cout << "BAD PHI MATCH HERE!!!!! for bhc jet # " << j << " with phi " << bhcphi << " and gen AK15 gen # " << genAK15MatchIdxs[j] << " with phi " << genphi << " evt " << _base->event << endl;
 							}
 
 						}			
