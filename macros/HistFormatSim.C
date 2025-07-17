@@ -1193,6 +1193,9 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 	else if(proc == "singleW"){
 		cmslab = "single W^{#pm}";
 	}
+	else if(proc == "Wgluon"){
+		cmslab = "W^{#pm}+g";
+	}
 	else cmslab = "process";
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
@@ -1526,6 +1529,10 @@ void FileStackHists(vector<string>& files, vector<string>& labels, string proc, 
 
 
 void HistFormatSim(string file, string proc = ""){
+	if(gSystem->AccessPathName(file.c_str())){
+		cout << "File " << file << " does not exist." << endl;
+		return;
+	}
 	string oname = file;
 	oname = oname.substr(0,oname.find(".root"));
 
@@ -1552,6 +1559,7 @@ void HistFormatSim(string file, string proc = ""){
 	if(proc == ""){
 		//add procs to procstack list
 	}
+
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
@@ -1593,7 +1601,7 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterPhiCenter",pttypes);
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterTimeCenter");
 
-	if(proc == "singleW"){
+	if(proc.find("W") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_dR",{"lead"});
 		
