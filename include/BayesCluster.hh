@@ -29,7 +29,8 @@ class BayesCluster{
 			// this will ensure that we can point to jets without difficulties
 			// arising.
 			_jets.reserve(pseudojets.size()*2);
-			
+
+			_bestRk = 0;			
 			// insert initial jets this way so that any type L that can be
 			// converted to a pseudojet will work fine (basically PseudoJet
 			// and any type that has [] subscript access to the momentum
@@ -128,6 +129,8 @@ class BayesCluster{
 		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){ _cell = spatial; _tresCte = tresCte; _tresStoch = tresStoch; _tresNoise = tresNoise; 
 		//cout << "BayesCluster set - Using _tresCte = " << _tresCte << " ns, _tresStoch = " << _tresStoch << " ns and _tresNoise = " << _tresNoise << " ns" << endl;
 		}
+
+		double GetBestRk(){ return _bestRk; }
 
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
@@ -347,7 +350,7 @@ class BayesCluster{
 		GaussianMixture* _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }
 
-
+		double _bestRk;
 	 
 };
 #endif

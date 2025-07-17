@@ -416,82 +416,6 @@ void BHCJetSkimmer::Skim(){
 		}
 
 
-		/*//old singW selection for ttbar sample
-		if(_sel == singW){
-			//need at least nW*2 jets (ie 1 nW = 1 W jet and 1 b jet)
-			if(_predJets.size() < nW*2){
-				cout << "have " << _predJets.size() << " need at least " << nW*2 << " jets to match to " << nW << " W(s) and an equal number of b(s)" << endl;
-				continue;
-			}
-			vector<int> genbMatchIdxs(_predJets.size(),-1);
-			GenericMatchJet(_predJets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
-			//want subleading jets to be very good matches to their respective gen b quarks (these are the "tags")
-			//good match = small dr, Eratio close to 1
-			vector<Jet> Wcand;
-			//cout << "BHC jet matches to b-jets are " << endl;
-			for(int j = 0; j < _predJets.size(); j++){
-				bool drGood = true;
-				bool EratioGood = true;
-				int genbidx = genbMatchIdxs[j];
-				if(genbidx == -1){
-					Wcand.push_back(_predJets[j]);
-					continue;
-				}
-				//check dr
-				double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
-				//check Eratio
-				double Eratio = _predJets[j].E()/_genparts[genbidx].E();
-				cout << "_pred jet #" << j << " has eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and E " << _predJets[j].E() << endl;
-				cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << endl; 
-				if(dr > 0.15) drGood = false;
-				if(Eratio < 0.5 || Eratio > 1.5) EratioGood = false;
-				cout << " gen match dr " << dr << " Eratio " << Eratio << " match criteria " << (drGood && EratioGood) << endl;
-				if(drGood && EratioGood){
-					//find W associated with good b from match
-					int genidx = _genparts[genbidx].GetUserIdx();
-					int bmom = _base->genpart_momIdx->at(genidx);
-					int widx = -1;
-					//make sure W (top) has hadronic decay
-					bool lep = _base->Top_decayId->at(topidx_decayidx[bmom]);
-cout << "bmom " << bmom << " idx " << topidx_decayidx[bmom] << " decay id " << lep << endl;
-					if(lep){ cout << "W/b mom " << bmom << " has decay id " << lep << " leptonic - skip" << endl; continue; }	
-			//cout << "good b match has mom idx " << bmom << endl;
-					for(int g = 0; g < _genparts.size(); g++){
-						int ggenidx = _genparts[g].GetUserIdx();
-						if(fabs(_base->genpart_id->at(ggenidx)) != 24) continue;
-						//make sure W passes pt req
-						if(_base->genpart_pt->at(ggenidx) < _minWPt) { cout << "W has pt " << _base->genpart_pt->at(ggenidx) << " " << _genparts[g].pt() << endl; continue;}
-						if(_base->genpart_momIdx->at(ggenidx) == bmom){
-							cout << "saving W # " << ggenidx << " for b " << genidx << " with energy " << _genparts[g].E() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << endl;
-							//cout << "W at " << ggenidx << " has same mom as b at " << _base->genpart_momIdx->at(ggenidx) << endl;
-							_genW.push_back(_genparts[g]);
-							break;
-						}
-					}
-					//save b too
-					_genb.push_back(_genparts[genbidx]);
-				}
-				//else save for W matching
-				else{
-					Wcand.push_back(_predJets[j]);
-				}
-			}
-			int nPass = _genW.size();
-			cout << "# pred jets " << _predJets.size() << " # W cand " << Wcand.size() << endl;
-			//could also add requirement that top mass is made with best W+b jet combinations
-			//if ALL good b-jet matches, remove from "predJets" list s.t. predJets are only W candidate jets
-			//then gen-match remaining jet(s) to Ws (ie the "probes") - done in FillPredJets
-			if(nPass > 0){
-				cout << "at least 1 good b-jet matches with BHC jets - continue with boosted W selection - have " << Wcand.size() << " possible Ws" << endl;
-				_predJets = Wcand;
-			}
-			//else skip
-			else{
-				cout << "no BHC jets did not match gen b's well enough for hadronic Ws, skip" << endl;
-				continue; //else, skip this event
-			}
-		}
-		*/
 		if(_sel == boostTop){
 			if(_predJets.size() < 2) continue; //want at least two boosted tops in an event
 			//if there are any jets that are good matches to bs then the top can't be boosted, skip
@@ -567,6 +491,14 @@ cout << "bmom " << bmom << " idx " << topidx_decayidx[bmom] << " decay id " << l
 		for(int p = 0; p < _procCats.size(); p++){
 			_procCats[p].hists1D[0][142]->Fill(nsubcls_tot);
 			_procCats[p].hists2D[0][42]->Fill(nsubcls_tot, (int)_predJets.size());
+			for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
+				for(int j = 0; j < _predJets.size(); j++){
+					double rk = -1;
+					if(algo->GetBestRk() == -1e308) rk = 0;
+					else rk = 1;
+					_procCats[p].hists2D[pt][146]->Fill(rk, _predJets[j].phi_02pi());
+				}
+			}
 		}
 		
 		cout << endl;
