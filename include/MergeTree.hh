@@ -342,7 +342,7 @@ class MergeTree : BaseTree{
 			//and are automatically excluded from merging (ie the ELBO is set to a large negative number
 			//s.t. the merge is never chosen) 
 
-			//check for infinities in eta + phi here
+			//check for infinities in eta + phi here (after measurement errors have been set)
 			if(x->model->GetData()->HasInf(0) || x->model->GetData()->HasInf(1)){
 				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
