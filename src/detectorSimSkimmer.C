@@ -291,9 +291,9 @@ int main(int argc, char *argv[]){
 		evtj = evti;
 		evti = evt;
 	}
-	TFile* file = TFile::Open(infile.c_str());
+	//TFile* file = TFile::Open(infile.c_str());
 	if(oname.empty()){
-		oname = file->GetName();
+		oname = infile;//file->GetName();
 		string match = "simNtuples_";
 		oname = oname.substr(oname.find(match)+match.size(),oname.find(".root")-(oname.find(match)+match.size()));
 		if(oname.find("/") != string::npos)
@@ -303,7 +303,7 @@ int main(int argc, char *argv[]){
 	}
 	else{
 		if(oname.find("condor") == string::npos){
-			string oname_extra = file->GetName();
+			string oname_extra = infile;//file->GetName();
 			string match = "simNtuples_";
 			oname_extra = oname_extra.substr(oname_extra.find(match)+match.size(),oname_extra.find(".root")-(oname_extra.find(match)+match.size()))+".root";
 			oname = "simSkim_"+oname+"_"+oname_extra;
@@ -421,7 +421,7 @@ int main(int argc, char *argv[]){
 	W.Print();
 	cout << "Using tres_cte = " << tres_cte << " ns, tres_stoch = " << tres_stoch << " ns and tres_noise = " << tres_noise << " ns" << endl;
  
-	BHCJetSkimmer skimmer(file);
+	BHCJetSkimmer skimmer(infile);
 	skimmer.SetOutfile(oname);
 	skimmer.SetMinRhE(minRhE);
 	skimmer.SetMinNrhs(minnrhs);

@@ -434,7 +434,8 @@ int main(int argc, char *argv[]){
 	}
 	//sim jets
 	else if(obj == 2){
-		JetSimProducer prod(file);
+		//JetSimProducer prod(file);
+		JetSimProducer prod(in_file);
 		prod.SetTransferFactor(gev);
 		prod.SetRecoMinPt(50);
 		prod.SetRecoMinE(100);

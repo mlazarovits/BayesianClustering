@@ -488,15 +488,16 @@ void BHCJetSkimmer::Skim(){
 		for(int j = 0; j < _predJets.size(); j++){
 			nsubcls_tot += _predJets[j].GetNConstituents();
 		}
+		double rk = -1;
+		if(algo->GetBestRk() == -1e308) rk = 0;
+		else rk = 1;
 		for(int p = 0; p < _procCats.size(); p++){
 			_procCats[p].hists1D[0][142]->Fill(nsubcls_tot);
 			_procCats[p].hists2D[0][42]->Fill(nsubcls_tot, (int)_predJets.size());
 			for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 				for(int j = 0; j < _predJets.size(); j++){
-					double rk = -1;
-					if(algo->GetBestRk() == -1e308) rk = 0;
-					else rk = 1;
 					_procCats[p].hists2D[pt][146]->Fill(rk, _predJets[j].phi_02pi());
+					cout << "filling rk bin " << rk << " with best rk " << algo->GetBestRk() << " phi " << _predJets[j].phi_02pi() << endl;
 				}
 			}
 		}

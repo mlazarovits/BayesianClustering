@@ -54,7 +54,8 @@ class BHCJetSkimmer{
 
 		virtual ~BHCJetSkimmer(){ }
 
-		BHCJetSkimmer(TFile* file){
+		//BHCJetSkimmer(TFile* file){
+		BHCJetSkimmer(string file){
 			_prod = new JetSimProducer(file);
 			_strategy = NlnN;
 			_sel = def;

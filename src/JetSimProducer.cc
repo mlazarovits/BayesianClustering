@@ -18,9 +18,12 @@ JetSimProducer::~JetSimProducer(){
 	delete _base;
 }
 
-JetSimProducer::JetSimProducer(TFile* file){
-	if(gSystem->AccessPathName(file->GetName())){ cout << "Error: file " << file->GetName() << " doesn't exist." << endl; return; }
-	TTree* tree = (TTree*)file->Get("tree/llpgtree");
+//JetSimProducer::JetSimProducer(TFile* file){
+JetSimProducer::JetSimProducer(string file){
+	if(gSystem->AccessPathName(file.c_str())){ cout << "Error: file " << file << " doesn't exist." << endl; return; }
+	TFile* f = TFile::Open(file.c_str());	
+	TTree* tree = (TTree*)f->Get("tree/llpgtree");
+	//tree->SetDirectory(0); //to decouple from open file directory
 	_base = new ReducedBaseSim(tree);
 	_nEvts = _base->fChain->GetEntries();
 	//default to 1 GeV = 1 entry -> gev = 1
