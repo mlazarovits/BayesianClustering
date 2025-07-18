@@ -68,7 +68,7 @@ void BHCJetSkimmer::Skim(){
 		//event level selection
 		//at least 1 gen jet
 		_base->GetEntry(i);
-		if(i % (SKIP) == 0) cout << "evt: " << i << " of " << _nEvts << endl;
+		if(i % (SKIP) == 0) cout << "evt: " << i  << " (ntuple: " << _base->event << ") " << " of " << _nEvts << endl;
 	
 		int ngenpart = _base->genpart_ngenpart;
 		_prod->GetGenParticles(_genparts, i);
