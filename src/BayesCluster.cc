@@ -176,7 +176,7 @@ cout << "n starting pts " << n << endl;
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		//if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
-		if(BestRk <= 0.){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << endl; _bestRk = BestRk; break; }	
+		if(BestRk <= 0.){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << " probmap size " << ProbMap.size() << endl; _bestRk = BestRk; break; }	
 		//if either sides of best recombination candidate found is not valid - break
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
