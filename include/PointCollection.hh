@@ -364,8 +364,6 @@ class PointCollection{
 
 	//commented out lines don't always hold - regular translate is being called in BasePDFMixture for shifting data	
 	void CircularTranslate(double t, int d){
-		//put on [0,2pi]
-		this->Put02pi(d);
 		double pi = acos(-1);
 		for(int i = 0; i < (int)_pts.size(); i++){
 		//turned off acos(cos()) from subcluster shifts	
@@ -377,9 +375,11 @@ class PointCollection{
 			//else{
 			//	_pts[i].SetValue(_pts[i].at(d) - t,d);
 			//}
-				double theta = _pts[i].at(d) - t;
-				//do wraparound
-				theta = fmod((theta + pi), 2*pi) - pi;
+				//double theta = _pts[i].at(d) - t;
+				////do wraparound - DOESNT WORK WHEN ORIGINAL POINTS ARE OUTSIDE [0, 2pi] (event with put02pi)
+				//but don't force points on 02pi bc the translation factor may have been derived in a different frame
+				//theta = fmod((theta + pi), 2*pi) - pi;
+				double theta = atan2( sin(_pts[i].at(d) - t), cos(_pts[i].at(d) - t));
 				_pts[i].SetValue(theta,d);
 			//round to 0
 			if(fabs(_pts[i].at(d)) < 1e-16){ _pts[i].SetValue(0,d);}
