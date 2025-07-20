@@ -327,7 +327,7 @@ class MergeTree : BaseTree{
 			//}
 			//check for infinities in eta + phi from measurement error
 			if(phiInf || thetaInf){
-				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
+				if(_verb > 5) cout << "found inf in pts, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
 				x->model->SetData(x->points);
 				return -1e308;
@@ -341,15 +341,6 @@ class MergeTree : BaseTree{
 			//so, due to aforementioned numerical instabilities, these quantities are not explicitly calculated
 			//and are automatically excluded from merging (ie the ELBO is set to a large negative number
 			//s.t. the merge is never chosen) 
-
-			//check for infinities in eta + phi here (after measurement errors have been set)
-			if(x->model->GetData()->HasInf(0) || x->model->GetData()->HasInf(1)){
-				if(_verb > 5) cout << "found inf, returning elbo as " << -1e308 << endl;
-				//reset model data for further merges
-				x->model->SetData(x->points);
-				return -1e308;
-			}
-
 
 			//cout << "scale data + lam*s" << endl;	
 			x->model->ScaleData(_Rscale);
