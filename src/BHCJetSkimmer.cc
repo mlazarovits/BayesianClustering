@@ -497,7 +497,7 @@ void BHCJetSkimmer::Skim(){
 			for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 				for(int j = 0; j < _predJets.size(); j++){
 					_procCats[p].hists2D[pt][146]->Fill(rk, _predJets[j].phi_02pi());
-					cout << "filling rk bin " << rk << " with best rk " << algo->GetBestRk() << " phi " << _predJets[j].phi_02pi() << endl;
+					if(pt == 0 && p == 0) cout << "filling rk bin " << rk << " with best rk " << algo->GetBestRk() << " phi " << _predJets[j].phi_02pi() << endl;
 				}
 			}
 		}
