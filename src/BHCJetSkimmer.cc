@@ -371,7 +371,6 @@ void BHCJetSkimmer::Skim(){
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());
-		cout << "_radius " << _radius << endl;
 		//FillResolutionHists(); - does gen matching...again?
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
