@@ -206,6 +206,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
     return EtaPhi(point.first, phi);}
 
   inline PointCollection _remap_phi(const PointCollection& points) {
+//TODO: consider what it would mean to shift points according to their own phi (not the mean of the group)
     double phi = points.CircularMean(1);
     double shift;
     if (phi < pi) { shift = twopi ;} else {shift = -twopi;}

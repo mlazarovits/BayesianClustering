@@ -40,8 +40,9 @@ class PointCollection{
 			for(int d = 0; d < _nDim; d++)
 				_infs.push_back((1+(d)/10.)*1e70);
 			_pts.clear();
-			_pts = pts._pts;
-			//for(int i = 0; i < (int)pts.GetNPoints(); i++) _pts.push_back(pts.at(i));
+			//_pts = pts._pts;
+			//TODO: make sure copy is decoupled from original pts (vector::assign?)
+			for(int i = 0; i < (int)pts.GetNPoints(); i++) _pts.push_back(pts.at(i));
 		}
 		
 		virtual ~PointCollection(){
@@ -587,6 +588,9 @@ class PointCollection{
 		double mean = atan2(avg_s,avg_c);
 		//put atan2 in [0,twopi)
 		double pi = 4*atan(1);
+		//2pi is only defined up to 10 decimal places in Dnn2piCylinder (which is reasonable) so as not to double count 0 + 2pi, round here
+		if(fabs(mean) < 1e-10) mean = 0;
+		//if mean is truly negative (ie on [-pi, 0)) then reflect across to match wrapped [0, 2pi) interval
 		if(mean < 0) mean += 2*pi;
 		//get raw mean of original data
 		double euclid_mean = this->mean().at(d);	
@@ -594,10 +598,14 @@ class PointCollection{
 		double best = mean;
 		//if points cross 0--2pi seam, just use atan2 wrapped mean
 		//explicity check for seam crossings
-		if((max > 3*pi/2 && max <= 2*pi) && (min < pi/2 && min >= 0.)){	
-			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << endl;
-			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << endl; return mean - 2*pi; }
+		//if((max > 3*pi/2 && max <= 2*pi) && (min < pi/2 && min >= 0.)){	
+		if(max - min > pi){	
+			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << " " << atan2(avg_s, avg_c) << endl;
+			//TODO: consider passing a "mirror" bool that tells if the set of points is from a mirrored node or not - that way if points > pi && mirror know that mean shoul dbe in [-pi, 0) but if points <= pi && mirror points should be in [2pi, 3pi]
+			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << " points" << endl; this->Print();}
 			if(euclid_mean < 0 && mean > 0){ return mean - 2*pi; }
+			//if(euclid_mean > 2*pi && mean < 2*pi){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean + 2*pi << " points " <<  endl; this->Print();}
+			if(euclid_mean > 2*pi && mean < 2*pi){ return mean + 2*pi; }
 			return mean;
 		}
 		double min_diff = fabs(mean - euclid_mean);
@@ -649,7 +657,10 @@ class PointCollection{
 	//weighted circular mean	
 	double CircularCentroid(int d) const{
 		//make new PointCollection that will store angles on [0, 2pi]
-		PointCollection wrapped = PointCollection(*this);
+		PointCollection wrapped;
+		for(int i = 0; i < (int)_pts.size(); i++){
+			wrapped += _pts[i];
+		}		
 		wrapped.Put02pi(d);
 		double avg_s = 0;
 		double avg_c = 0;
@@ -668,15 +679,18 @@ class PointCollection{
 		double pi = 4*atan(1);
 		if(mean < 0) mean += 2*pi;
 		//get raw mean of original data
-		double euclid_mean = this->mean().at(d);	
+		double euclid_mean = this->Centroid(d);
 		//find best unwrapped version of mean
 		double best = mean;
 		//if points cross 0--2pi seam, just use atan2 wrapped mean
 		//explicity check for seam crossings
-		if((max > 3*pi/2 && max <= 2*pi) && (min < pi/2 && min >= 0.)){	
-			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << endl;
-			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << endl; return mean - 2*pi; }
+		if(max - min > pi){	
+			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << " " << atan2(avg_s, avg_c) << " euclid_centroid " << euclid_mean << endl;
+			//TODO: consider passing a "mirror" bool that tells if the set of points is from a mirrored node or not - that way if points > pi && mirror know that mean shoul dbe in [-pi, 0) but if points <= pi && mirror points should be in [2pi, 3pi]
+			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << " points" << endl; this->Print();}
 			if(euclid_mean < 0 && mean > 0){ return mean - 2*pi; }
+			//if(euclid_mean > 2*pi && mean < 2*pi){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean + 2*pi << " points " <<  endl; this->Print();}
+			if(euclid_mean > 2*pi && mean < 2*pi){ return mean + 2*pi; }
 			return mean;
 		}
 		double min_diff = fabs(mean - euclid_mean);
@@ -724,6 +738,7 @@ class PointCollection{
 
 	//weighted mean	
 	double Centroid(int d) const{
+		cout << "Centroid over pts " << endl; this->Print();
 		double cent = 0;
 		double sum = 0;
 		for(int i = 0; i < (int)_pts.size(); i++){
