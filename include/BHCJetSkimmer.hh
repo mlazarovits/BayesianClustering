@@ -50,13 +50,18 @@ class BHCJetSkimmer{
 
 			_strategy = NlnN;
 			_sel = def;
+
+			_infile = nullptr;
 		}
 
 		virtual ~BHCJetSkimmer(){ }
 
 		//BHCJetSkimmer(TFile* file){
 		BHCJetSkimmer(string file){
-			_prod = new JetSimProducer(file);
+			if(gSystem->AccessPathName(file.c_str())){ cout << "Error: file " << file << " doesn't exist." << endl; return; }
+			InitHists();
+			_infile = TFile::Open(file.c_str());
+			_prod = new JetSimProducer(_infile);
 			_strategy = NlnN;
 			_sel = def;
 
@@ -94,7 +99,10 @@ class BHCJetSkimmer{
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
-				
+			
+
+		}
+		void InitHists(){	
 	
 			graphs.push_back(nrhs_comptime);
 			graphs.push_back(nrhs_comptime_subcl);
@@ -2890,6 +2898,7 @@ cout << "avgPart E " << avgPartE << endl;
 	}
 
 	private:
+		TFile* _infile;
 		string _oname;
 		vector<TH1D*> _hists1D;
 		vector<TH2D*> _hists2D;

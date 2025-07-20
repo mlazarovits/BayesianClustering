@@ -11,8 +11,8 @@ class JetSimProducer{
 		JetSimProducer();
 		virtual ~JetSimProducer();
 
-		//JetSimProducer(TFile* file);
-		JetSimProducer(string file);
+		JetSimProducer(TFile* file);
+		//JetSimProducer(string file);
 
 		void GetRecHits(vector<JetPoint>& rhs, int evt);
 		void GetRecHits(vector<Jet>& rhs, int evt);

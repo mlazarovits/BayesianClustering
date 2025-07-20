@@ -521,8 +521,10 @@ void BHCJetSkimmer::Skim(){
 	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
+	ofile->cd();
 	WriteOutput(ofile);
-
+	ofile->Close();
+	_infile->Close();	
 	cout << "Wrote skim to: " << _oname << endl;
 }
 
