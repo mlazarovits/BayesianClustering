@@ -174,21 +174,19 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     if (_mirror_info[ic].mirror_index != INEXISTENT_VERTEX) {continue;}
 
 
+
     // check that we are sufficiently close to the border --
     // i.e. closer than nearest neighbour distance. But RECALL:
     // nearest neighbourDistance actually returns a squared distance
     // (this was really stupid on our part -- caused considerable loss
     // of time ... )
     double nndist = _DNN->NearestNeighbourDistance(ip);
-	double offset = 0.1; 
-    //if ((phi-offset)*(phi-offset) >= nndist && ((twopi+offset)-(phi))*((twopi+offset)-(phi)) >= nndist) {continue;}
 	//do not create mirror points if the nearest neighbor is closer than the 0 point or 2pi point
 	//only create mirror point if nearest neighbor is further than 0 and 2pi point
     //cout << "looking at creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     if (phi*phi >= nndist && (twopi-phi)*(twopi-phi) >= nndist) {continue;}
     //TODO: testing phi bumps in low pt BHC jets at ~0, 2pi
 	//if ((acos(-1) - phi)*(acos(-1) - phi) >= nndist && (-acos(-1) - phi)*(-acos(-1) - phi) >= nndist) {continue;}
-    if(_verbose) cout << "creating mirror point for " << ip << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
@@ -196,6 +194,15 @@ if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << 
     //copy node
     node* x = new node(*_merge_tree->Get(ip));
     PointCollection* newpts = new PointCollection(_remap_phi(pts));
+if(phi < 0 || phi > 8*atan(1)){
+	cout << "mirroring a mirror point" << endl;
+	cout << "creating mirror point for " << ip << " with current phi " << phi << " and mirrored phi " << newpts->CircularMean(1) << " and # pts " << pts.GetNPoints() << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
+	cout << "current pts" << endl; pts.Print(); cout << "mirrored pts" << endl; newpts->Print();
+}
+    if(_verbose){ 
+	cout << "creating mirror point for " << ip << " with current phi " << phi << " and mirrored phi " << newpts->CircularMean(1) << " and # pts " << pts.GetNPoints() << " with nndist: " << nndist << " with neighbor " << _DNN->NearestNeighbourIndex(ip) << " phiphi " << phi*phi << " (2pi-phi)^2 " << (twopi-phi)*(twopi-phi) << endl;
+	cout << "current pts" << endl; pts.Print(); cout << "mirrored pts" << endl; newpts->Print();
+	}
 	//see when phi < 0 node (should be mirror) is created
 	if(phi < 0){
 		cout << "Error: phi for mirrored pt is less than 0 - og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;

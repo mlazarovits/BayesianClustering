@@ -141,7 +141,7 @@ class BayesCluster{
 		//use a multimap so multiple keys can have the same value
 		//also it's automatically sorted
 		typedef std::multimap<double,verts> CompareMap;
-		typedef std::map<int,pair<int,double>> InvCompareMap;
+		//typedef std::map<int,pair<int,double>> InvCompareMap;
 		struct history_element{
 			/// index in _history where first parent of this jet
 			/// was created (InexistentParent if this jet is an
@@ -329,7 +329,7 @@ class BayesCluster{
  
 		}
 		void _add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob = true);
-		void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
+		//void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
 		void _phi_wraparound(PointCollection& pc);
 
 	private:

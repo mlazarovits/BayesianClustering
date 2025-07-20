@@ -176,7 +176,18 @@ cout << "n starting pts " << n << endl;
 		//cout << "BestRk " << BestRk << endl;
 		//if max rk < 0.5, can stop clustering
 		//if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
-		if(BestRk <= 0.){ done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << " probmap size " << ProbMap.size() << endl; _bestRk = BestRk; break; }	
+		if(BestRk <= 0.){ 
+			done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << " probmap size " << ProbMap.size() << endl; 
+			if(_verb > 3){
+				for(auto it = ProbMap.begin(); it != ProbMap.end(); it++){
+					int i = it->second.first;
+					int j = it->second.second;
+					cout << "remaining best rk " << it->first << " for jets " << i << " and " << j << " with phis " << _jets[i].phi_02pi() << " and " << _jets[j].phi_02pi() << " and eta " << _jets[i].eta() << " and " << _jets[j].eta() << " and # rhs " << _jets[i].GetNRecHits() << " and " << _jets[j].GetNRecHits() << endl;
+
+				}
+			} 
+
+		_bestRk = BestRk; break; }	
 		//if either sides of best recombination candidate found is not valid - break
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
@@ -685,7 +696,27 @@ void BayesCluster::_phi_wraparound(PointCollection& pc){
 
 	//else unmirror points
 }
+//need to add idx corresponding to plane index because those are the nodes stored in merge tree
+void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob){
+		bool verbose = false;
+		double comp;
+		int j, cyl_j;
+		if(prob){
+			comp = DNN->NearestNeighbourProb(i);
+			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
+			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << " eta for this jet (i) " << _jets[i].eta() << " phi " << _jets[i].phi() << " # rhs " << _jets[i].GetNRecHits() << " eta for pair jet (j) " << _jets[j].eta() << " phi " << _jets[j].phi() << " # rhs " << _jets[j].GetNRecHits() << endl;
+		}
+		else{
+			comp = DNN->NearestNeighbourDistance(i);
+			j = DNN->NearestNeighbourIndex(i);
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best distance " << comp << " pair " << j << std::setprecision(5) << endl;
+		}
+		inmap.insert(CompEntry(comp,verts(i,j)));
+}
 
+
+/*
 void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN){
 		double dist;
 		int j;
@@ -699,23 +730,5 @@ if(_verb > 1)cout << "adding entry " << i << " " << j << " with dist " << dist <
 			inmap[i] = std::make_pair(j,dist);
 		}
 }
-
-//need to add idx corresponding to plane index because those are the nodes stored in merge tree
-void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2piCylinder* DNN, bool prob){
-		bool verbose = false;
-		double comp;
-		int j, cyl_j;
-		if(prob){
-			comp = DNN->NearestNeighbourProb(i);
-			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
-			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
-			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << endl;
-		}
-		else{
-			comp = DNN->NearestNeighbourDistance(i);
-			j = DNN->NearestNeighbourIndex(i);
-			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best distance " << comp << " pair " << j << std::setprecision(5) << endl;
-		}
-		inmap.insert(CompEntry(comp,verts(i,j)));
-}
+*/
 
