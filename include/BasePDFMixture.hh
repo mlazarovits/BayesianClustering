@@ -315,18 +315,23 @@ class BasePDFMixture : public BasePDF{
 
 		//add theta projection
 		bool ProjectTheta(){
-			m_data->AngleToPlaneProject(0);
-			bool dataInf = m_data->HasInf(0);
 			bool measErrInf = false;
 			//project the lamStar measurement error too
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
 			measErrInf = false;
 			for(int n = 0; n < m_n; n++){
-				if((m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2) measErrInf = true;
+				if(fabs(m_data->at(n).at(0) + _cell) >= pi/2 || fabs(m_data->at(n).at(0) - _cell) >= pi/2){
+					//cout << "eta meas err inf here" << endl; m_data->at(n).Print();
+					measErrInf = true;
+				}
 				//double etaSig = (tan(atan2(m_data->at(n).at(0),1) + _cell) - tan(atan2(m_data->at(n).at(0),1) - _cell))/2.;
 				//_lamStar[n].SetEntry(1/(etaSig*etaSig),0,0);
 			}
+			m_data->AngleToPlaneProject(0);
+			bool dataInf = m_data->HasInf(0);
+			//if(measErrInf) cout << "eta meas err inf" << endl;
+			//if(dataInf) cout << "eta data inf" << endl;
 			return dataInf || measErrInf;
 		}
 
@@ -337,17 +342,22 @@ class BasePDFMixture : public BasePDF{
 		}
 	
 		bool ProjectPhi(){
-			m_data->AngleToPlaneProject(1);
-			bool dataInf = m_data->HasInf(1);
 			bool measErrInf = false;
 			//project the lamStar measurement error too
 			//if a point is within \pm cell of pi/2 away from centroid, return true for HasInf
 			double pi = acos(-1);
 			for(int n = 0; n < m_n; n++){
-				if(m_data->at(n).at(1) + _cell >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2) measErrInf = true;
+				if(fabs(m_data->at(n).at(1) + _cell) >= pi/2 || fabs(m_data->at(n).at(1) - _cell) >= pi/2){
+					//cout << "phi meas err inf here" << endl; m_data->at(n).Print();
+					measErrInf = true;
+				}
 				//double phiSig = (tan(m_data->at(n).at(1) + _cell) - tan(m_data->at(n).at(1) - _cell))/2.;
 				//_lamStar[n].SetEntry(1/(phiSig*phiSig),1,1);
 			}
+			m_data->AngleToPlaneProject(1);
+			bool dataInf = m_data->HasInf(1);
+			//if(measErrInf) cout << "phi meas err inf" << endl;
+			//if(dataInf) cout << "phi data inf" << endl;
 			return dataInf || measErrInf;
 		}
 		void UnprojectPhi(){
