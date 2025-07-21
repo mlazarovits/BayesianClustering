@@ -253,12 +253,12 @@ void BHCJetSkimmer::Skim(){
 				//cout << "mean" << endl; mean.Print();
 				//cout << "cov" << endl; cov.Print();
 				for(int p = 0; p < _procCats.size(); p++){
-					_procCats[p].hists1D[0][98]->Fill(mean.at(0,0));
-					_procCats[p].hists1D[0][99]->Fill(mean.at(1,0));
-					_procCats[p].hists1D[0][100]->Fill(mean.at(2,0));
-					_procCats[p].hists1D[0][101]->Fill(sqrt(cov.at(0,0)));
-					_procCats[p].hists1D[0][102]->Fill(sqrt(cov.at(1,1)));
-					_procCats[p].hists1D[0][103]->Fill(sqrt(cov.at(2,2)));
+					//_procCats[p].hists1D[0][98]->Fill(mean.at(0,0));
+					//_procCats[p].hists1D[0][99]->Fill(mean.at(1,0));
+					//_procCats[p].hists1D[0][100]->Fill(mean.at(2,0));
+					//_procCats[p].hists1D[0][101]->Fill(sqrt(cov.at(0,0)));
+					//_procCats[p].hists1D[0][102]->Fill(sqrt(cov.at(1,1)));
+					//_procCats[p].hists1D[0][103]->Fill(sqrt(cov.at(2,2)));
 				}
 			}
 		

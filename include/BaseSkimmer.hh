@@ -332,32 +332,42 @@ class BaseSkimmer{
 				
 				string name;
 				//for each histogram (variable or correlation)
+				int histidx = 0;
 				for(int i = 0; i < (int)in1dhists.size(); i++){
+					if(in1dhists[i] == nullptr){ histidx++; continue;}
 					//create a clone for each type
 					for(int j = 0; j < hists1D.size(); j++){
 						//make sure they have the right add-on name (ie leading, !lead, etc)
-						TH1D* hist = (TH1D*)in1dhists[i]->Clone();
+						TH1D* hist = (TH1D*)in1dhists[histidx]->Clone();
 						hists1D[j].push_back(hist);
 						name = hist->GetName();
 						if(!plotName.empty()) name += "_"+plotName;
 						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
-						hists1D[j][i]->SetName(name.c_str());
-						if(!plotName.empty()) hists1D[j][i]->SetTitle("");
+						//hists1D[j][i]->SetName(name.c_str());
+						int hhistidx = hists1D[j].size()-1;
+						hists1D[j][hhistidx]->SetName(name.c_str());
+						//if(!plotName.empty()) hists1D[j][i]->SetTitle("");
+						if(!plotName.empty()) hists1D[j][hhistidx]->SetTitle("");
 					}
-
+					histidx++;
 				}
+				histidx = 0;
 				//for each histogram
 				for(int i = 0; i < (int)in2dhists.size(); i++){
+					if(in2dhists[i] == nullptr){ histidx++; continue; }
 					//create a clone for each type
 					for(int j = 0; j < hists2D.size(); j++){
-						TH2D* hist = (TH2D*)in2dhists[i]->Clone();
+						TH2D* hist = (TH2D*)in2dhists[histidx]->Clone();
+						if(hist == nullptr) continue;
 						hists2D[j].push_back(hist);
 						name = hist->GetName();
 						if(!plotName.empty()) name += "_"+plotName;
 						if(!histcatnames[j].empty()) name += "_"+histcatnames[j];
-						hists2D[j][i]->SetName(name.c_str());
-						if(!plotName.empty()) hists2D[j][i]->SetTitle("");
+						int hhistidx = hists2D[j].size()-1;
+						hists2D[j][hhistidx]->SetName(name.c_str());
+						if(!plotName.empty()) hists2D[j][hhistidx]->SetTitle("");
 					}
+					histidx++;
 
 				}
 			}
