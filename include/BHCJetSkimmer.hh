@@ -2673,11 +2673,11 @@ cout << "avgPart E " << avgPartE << endl;
 		//142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
 		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
 		//143 - BHC jets - jet size vs jet phi center
-		TH2D* BHCJet_jetSize_phiCenter = new TH2D("BHCJet_jetSize_phiCenter","BHCJet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
+		TH2D* BHCJet_jetSize_phiCenter = new TH2D("BHCJet_jetSize_phiCenter","BHCJet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,25,0,8*atan(1)); 
 		//144 - reco AK4 jet - jet size vs jet phi center
-		TH2D* recoAK4Jet_jetSize_phiCenter = new TH2D("recoAK4Jet_jetSize_phiCenter","recoAK4Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
+		TH2D* recoAK4Jet_jetSize_phiCenter = new TH2D("recoAK4Jet_jetSize_phiCenter","recoAK4Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,25,0,8*atan(1)); 
 		//145 - reco AK15 jets - jet size vs jet phi center
-		TH2D* recoAK15Jet_jetSize_phiCenter = new TH2D("recoAK15Jet_jetSize_phiCenter","recoAK15Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,200,0,8*atan(1)); 
+		TH2D* recoAK15Jet_jetSize_phiCenter = new TH2D("recoAK15Jet_jetSize_phiCenter","recoAK15Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,25,0,8*atan(1)); 
 		//146 - BHC jet best rk (binarized for 0 = -inf and 1 = !-inf) vs phi center for jets ~0 and ~2pi
 		TH2D* BHCJet_bestRk_phiCenter = new TH2D("BHCJet_bestRk_phiCenter","BHCJet_bestRk_phiCenter;bestRk;phiCenter",2,0,2,200,0,8*atan(1));
 
