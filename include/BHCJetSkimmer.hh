@@ -744,7 +744,7 @@ class BHCJetSkimmer{
 	
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][145]->Fill(rhs[r].E());
-							_procCats[p].hists1D[pt][233]->Fill(rhs[r].phi_02pi());
+							//_procCats[p].hists1D[pt][233]->Fill(rhs[r].phi_02pi());
 							
 						}
 
@@ -1329,7 +1329,6 @@ cout << "avgPart E " << avgPartE << endl;
 						for(int r = 0; r < rhs.size(); r++){
 							_procCats[p].hists1D[pt][89]->Fill(rhs[r].E());
 							_procCats[p].hists1D[pt][96]->Fill(rhs[r].t());
-							_procCats[p].hists1D[pt][234]->Fill(rhs[r].phi_02pi());
 						}
 						vector<pair<double,double>> geoEavg_diffT;
 						vector<JetPoint> rhs_pt = _recoAK4jets[j].GetJetPoints();
@@ -1483,11 +1482,6 @@ cout << "avgPart E " << avgPartE << endl;
 						_procCats[p].hists1D[pt][nhist1d_start + 6]->Fill(recojets[j].e());
 						_procCats[p].hists1D[pt][nhist1d_start + 7]->Fill(recojets[j].GetNConstituents());
 						_procCats[p].hists1D[pt][nhist1d_start + 10]->Fill(jetsize);
-						vector<Jet> rhs;
-						recojets[j].GetJets(rhs);
-						for(int r = 0; r < rhs.size(); r++){
-							if(AK == 15) _procCats[p].hists1D[pt][nhist1d_start + 64]->Fill(rhs[r].phi_02pi());
-						}
 						if(AK == 15){
 							_procCats[p].hists2D[pt][nhist2d_start + 66]->Fill(jetsize, recojets[j].phi());
 							_procCats[p].hists2D[pt][nhist2d_start + 69]->Fill(recojets[j].m(), jetsize);
@@ -2337,19 +2331,13 @@ cout << "avgPart E " << avgPartE << endl;
 		//232 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
 		//233 - BHC Jet rh phi
-		TH1D* BHCJet_rhPhi = new TH1D("BHCJet_rhPhi","BHCJet_rhPhi",200,0,8*atan(1));	
+		TH1D* BHCJet_rhPhi = nullptr; //new TH1D("BHCJet_rhPhi","BHCJet_rhPhi",200,0,8*atan(1));	
 		//234 - recoAK4 rh phi
-		TH1D* recoAK4_rhPhi = new TH1D("recoAK4_rhPhi","recoAK4_rhPhi",200,0,8*atan(1));	
+		TH1D* recoAK4_rhPhi = nullptr; //new TH1D("recoAK4_rhPhi","recoAK4_rhPhi",200,0,8*atan(1));	
 		//235 - recoAK15 rh phi
-		TH1D* recoAK15_rhPhi = new TH1D("recoAK15_rhPhi","recoAK15_rhPhi",200,0,8*atan(1));	
+		TH1D* recoAK15_rhPhi = nullptr; //new TH1D("recoAK15_rhPhi","recoAK15_rhPhi",200,0,8*atan(1));	
 		//236 - all rhs phi in evt (from JetSimProd) 
-		TH1D* evt_rhPhi = new TH1D("evt_rhPhi","evt_rhPhi",200,0,8*atan(1));	
-		//237 - BHCJet rh phi not in jet
-		TH1D* BHCJet_notJetrhPhi = new TH1D("BHCJet_notJetrhPhi","BHCJet_rhPhi",200,0,8*atan(1));	
-		//238 - recoAK4 rh phi
-		TH1D* recoAK4_notJetrhPhi = new TH1D("recoAK4_notJetrhPhi","recoAK4_notJetrhPhi",200,0,8*atan(1));	
-		//239 - recoAK15 rh phi
-		TH1D* recoAK15_notJetrhPhi = new TH1D("recoAK15_notJetrhPhi","recoAK15_notJetrhPhi",200,0,8*atan(1));	
+		TH1D* evt_rhPhi = nullptr; //new TH1D("evt_rhPhi","evt_rhPhi",200,0,8*atan(1));	
 		
 
 

@@ -354,7 +354,6 @@ void BHCJetSkimmer::Skim(){
 		}
 		for(auto rh : rhs){
 			_procCats[1].hists1D[0][131]->Fill(rh.t());
-			_procCats[0].hists1D[0][236]->Fill(rh.phi_02pi());
 		}
 		//safety
 		if(rhs.size() < 1) continue;
