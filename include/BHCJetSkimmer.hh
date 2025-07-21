@@ -2157,7 +2157,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//128 - bhc jet eta center
 		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-3.2,3.2);
 		//129 - bhc jet phi center
-		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",200,0.,8*atan(1));
+		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,0.,8*atan(1));
 		//130 - bhc jet center
 		TH1D* BHCJet_TimeCenter = new TH1D("BHCJet_TimeCenter","BHCJet_TimeCenter",25,-1,1);
 		//131 - rh time
