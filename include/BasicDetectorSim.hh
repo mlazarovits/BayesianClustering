@@ -40,7 +40,6 @@ struct RecoParticle;
 		void SimQCD(){ _procs_to_sim.push_back(qcd); _simqcd = true;};
 		void SimWgamma(){ _procs_to_sim.push_back(wgam); _simwgam = true;};
 		void SimWg(){ _procs_to_sim.push_back(wg); _simwg = true;};
-		void SimGluon(){ _procs_to_sim.push_back(ggam); _simg = true;};
 		//this is what does the detector effects on the tracks
 		void CalcTrajectory(RecoParticle& rp); //calculate trajectories/tracks for 
 					// particles from PV to detector (cal) face
@@ -293,8 +292,7 @@ struct RecoParticle;
 		void _simTTbar(); //use pythia to simulate ttbar events
 		void _simWgamma();
 		void _simWg();
-		void _simGluonGamma();
-		bool _simttbar, _simqcd, _simwgam, _simwg, _simg;
+		bool _simttbar, _simqcd, _simwgam, _simwg;
 
 		bool _in_cell_crack(const RecoParticle& rp); //check if particle's current four vector means it is in between cells
 		void _get_etaphi_idx(double eta, double phi, int& ieta, int& iphi);
