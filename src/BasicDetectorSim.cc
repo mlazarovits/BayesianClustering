@@ -78,7 +78,6 @@ BasicDetectorSim::BasicDetectorSim(){
 	_simqcd = false;
 	_simwgam = false;
 	_simwg = false;
-	_simg = false;
 
 	_ptHatMin = 200;
 	_noShower = false;
@@ -144,7 +143,6 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_simqcd = false;
 	_simwgam = false;
 	_simwg = false;
-	_simg = false;
 	
 	_ptHatMin = 200;
 	_noShower = false;
@@ -190,13 +188,6 @@ void BasicDetectorSim::_simWg(){
 	if(_verb > 1) cout << "Simulating W+g" << endl;
 }
 
-void BasicDetectorSim::_simGluonGamma(){
-	_pythia.settings.readString("PromptPhoton:qqbar2ggamma = on");
-	_pythia.settings.readString("PhaseSpace:pTHatMin = "+std::to_string(_ptHatMin));
-	_pythia.settings.readString("Beams:eCM = 13000.");
-	if(_verb > 1) cout << "Simulating gamma+gluon" << endl;
-}
-
 
 //default arg is nevts = 1
 void BasicDetectorSim::SimulateEvents(int evt){
@@ -212,9 +203,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 	}	
 	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), wg) != _procs_to_sim.end()){
 		_simWg();
-	}	
-	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), ggam) != _procs_to_sim.end()){
-		_simGluonGamma();
 	}	
 	if(_pu){
   		if(_verb == 0) pileup.settings.readString("Print:quiet = on");
@@ -278,7 +266,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		cout << endl;
 		cout << std::setprecision(5) << "event #" << i << " has " << _sumEvent.size() << " particles" << endl;
 		_evt = i;		
-		set<int> w_idxs, top_idxs, d_idxs, u_idxs, s_idxs, gam_idxs, gam_idxs_og;
+		set<int> w_idxs, top_idxs, d_idxs, u_idxs, s_idxs, gam_idxs;
 		int hardpho = -1;
 		
 		//set PV for event - look at first particle in record
@@ -326,6 +314,11 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					SaveGenInfo(p, -1);
 				}
 			}
+			//for skipping reconstruction hard photon (and its daughters) in ie _simwgam
+			if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
+				//cout << "gen particle " << p << " id " << _sumEvent[p].id() << " status " << _sumEvent[p].status() << " phi " << _sumEvent[p].phi() << " eta " << _sumEvent[p].eta() << endl;
+				hardpho = p;
+			}
 			if(_simwgam || _simwg){
 				if(fabs(particle.id()) == 24 && fabs(particle.status()) == 22){
 					SaveGenInfo(p, -1);
@@ -336,18 +329,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					}
 				}
 					
-			}
-			//if "gamma only" simulates W+gamma but then don't reconstruct W
-			if(_simg){
-				if(fabs(particle.id()) == 21 && fabs(particle.status()) == 23){
-					//cout << "saving gen particle " << p << " - gluon" << endl;
-					SaveGenInfo(p, -1);
-				}
-				//save hard pho idx to skip resulting daughters
-				if(fabs(particle.id()) == 22 && fabs(particle.status()) == 23){
-					//cout << "gen particle " << p << " id " << _sumEvent[p].id() << " status " << _sumEvent[p].status() << " phi " << _sumEvent[p].phi() << " eta " << _sumEvent[p].eta() << endl;
-					hardpho = p;
-				}
 			}
 			//make sure particle is final-state and (probably) stable
 			if(particle.statusHepMC() != 1) continue;
@@ -385,8 +366,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 
 			//choose what to reconstruct
 
-			//skip reconstructing hard photon in W+gamma and gluon+gamma via ANY of its daughters (including pions!)
-			if(_simwgam || _simg){
+			//skip reconstructing hard photon in W+gamma via ANY of its daughters (including pions!)
+			if(_simwgam){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
 				int momidx = 999;
@@ -399,19 +380,15 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					//cout << " mother of " << thisp << " (id: " << _sumEvent[thisp].id() << ") is " << momidx << " (id: " << _sumEvent[momidx].id() << ")" << endl;
 					thisp = momidx;
 				}
-				int gsize = gam_idxs.size();
 				int thismom = -1;
 				FindMom(mothers_idx, mothers_id, 22, gam_idxs, thismom);
-				//if(thismom != -1 && thismom != hardpho)
-				//	cout << "not skipping particle " << p << " w mom idx " << thismom << " mom id " << _sumEvent[thismom].id() << " eta " << _sumEvent[thismom].eta() << " phi " << _sumEvent[thismom].phi() << endl;
 				if(thismom == hardpho){
-					//cout << "!!!!!!!!!reconstructing particle " << p << " with mother " << *gam_idxs.begin() << " and pt " << particle.pT() << " and energy " << particle.e() << " and time " << rp.Position.T()*1e9 << endl;
-					//cout << "skipping reconstructing particle " << p << " with mother " << thismom << " phi " << _sumEvent[p].phi() << " eta " << _sumEvent[p].eta() << " pt " << _sumEvent[p].pT() << " e "  << _sumEvent[p].e() << endl;
+					//cout << "skipping reconstructing particle " << p << " with mother " << thismom << " and id " << _sumEvent[p].id() << endl;
 					continue;
 				}
-				///else{
-				///	//cout << "reconstructing photon " << p << " not from hard process" << endl;
-				///}
+			//	else{
+			//		cout << "reconstructing photon " << p << " not from hard process with mom " << thismom << endl;
+			//	}
 
 			} 
 			//dont reconstruct muons - they would only mildly interact with an EM cal anyway
@@ -460,6 +437,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//save reco particle four vector (with corresponding gen info)
 			_recops.push_back(rp);	
 		}
+		cout << _recops.size() << " total reco particles" << endl;
 		//cout << "event total energy " << evt_Etot << " total # reco particles " << _recops.size() << endl;
 		evt_Etot = 0;
 	
