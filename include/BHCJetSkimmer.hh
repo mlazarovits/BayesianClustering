@@ -495,6 +495,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4Jet_jetSize_phiCenter); 
 			_hists2D.push_back(recoAK15Jet_jetSize_phiCenter); 
 			_hists2D.push_back(BHCJet_bestRk_phiCenter);
+			_hists2D.push_back(recoAK8JetMass_recoAK8JetSize);
+			_hists2D.push_back(recoAK15JetMass_recoAK15JetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -1486,7 +1488,14 @@ cout << "avgPart E " << avgPartE << endl;
 						for(int r = 0; r < rhs.size(); r++){
 							if(AK == 15) _procCats[p].hists1D[pt][nhist1d_start + 64]->Fill(rhs[r].phi_02pi());
 						}
-						if(AK == 15) _procCats[p].hists2D[pt][nhist2d_start + 66]->Fill(jetsize, _recoAK4jets[j].phi());
+						if(AK == 15){
+							_procCats[p].hists2D[pt][nhist2d_start + 66]->Fill(jetsize, recojets[j].phi());
+							_procCats[p].hists2D[pt][nhist2d_start + 69]->Fill(recojets[j].m(), jetsize);
+						}
+						if(AK == 8){
+							_procCats[p].hists2D[pt][147]->Fill(recojets[j].m(), jetsize);
+						}
+
 						//if no gen top match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
@@ -1501,7 +1510,7 @@ cout << "avgPart E " << avgPartE << endl;
 								_procCats[p].hists2D[pt][nhist2d_start + 1]->Fill(recojets[j].E(), _genparts[genidx].E());		
 								_procCats[p].hists2D[pt][nhist2d_start + 2]->Fill(recojets[j].m(), _genparts[genidx].m());	
 								_procCats[p].hists2D[pt][nhist2d_start + 3]->Fill(recojets[j].eta(), _genparts[genidx].eta());	
-								_procCats[p].hists2D[pt][nhist2d_start + 4]->Fill(recojets[j].phi(), _genparts[genidx].phi());	
+								_procCats[p].hists2D[pt][nhist2d_start + 4]->Fill(recojets[j].phi(), _genparts[genidx].phi());
 							}
 						}
 						//if no gen W match, skip
@@ -2643,6 +2652,10 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* recoAK15Jet_jetSize_phiCenter = new TH2D("recoAK15Jet_jetSize_phiCenter","recoAK15Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,25,0,8*atan(1)); 
 		//146 - BHC jet best rk (binarized for 0 = -inf and 1 = !-inf) vs phi center for jets ~0 and ~2pi
 		TH2D* BHCJet_bestRk_phiCenter = new TH2D("BHCJet_bestRk_phiCenter","BHCJet_bestRk_phiCenter;bestRk;phiCenter",2,0,2,200,0,8*atan(1));
+		//147 - reco AK8 jet mass vs reco jet pt
+		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8JetMass_recoAK8JetSize","recoAK8JetMass_recoAK8JetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
+		//148 - reco AK15 jet mass vs reco jet pt
+		TH2D* recoAK15JetMass_recoAK15JetSize = new TH2D("recoAK15JetMass_recoAK15JetSize","recoAK15JetMass_recoAK15JetSize;recoAK15JetMass;recoAK15JetSize",50,0,250,50,0,2.);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
