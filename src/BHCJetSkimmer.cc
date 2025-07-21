@@ -105,13 +105,13 @@ void BHCJetSkimmer::Skim(){
 				cout << "saving W daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
 					//phi distribution debugging - only look at events w/ jets (ie quarks) in some window around 0 and 2pi
 					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
-					double phi = _genparts[gg].phi_02pi();
-					if(phi > phiwindow && phi < 2*acos(-1) - phiwindow) continue;
-					nqs_phi++;	
+					//double phi = _genparts[gg].phi_02pi();
+					//if(phi > phiwindow && phi < 2*acos(-1) - phiwindow) continue;
+					//nqs_phi++;	
 					_genq.push_back(_genparts[gg]);
 				}
 				//skip W if not enough q's are in phi window
-				if(nqs_phi < 1) continue;
+				//if(nqs_phi < 1) continue;
 				_genW.push_back(_genparts[g]);
 			}	
 			//at least 1 W	
@@ -176,6 +176,7 @@ void BHCJetSkimmer::Skim(){
 		}
 		//default selection
 		else{
+			/*
 			//debugging phi selection
 			int nphi_parts = 0;
 			for(int g = 0; g < _genparts.size(); g++){
@@ -186,6 +187,7 @@ void BHCJetSkimmer::Skim(){
 				cout << "counting particle - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
 			}
 			if(nphi_parts < 1) continue; //skip if no gen parts in phi areas
+			*/
 			////at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
 			//int nparton = 0;
 			//vector<int> p_ids = {1,2,3,4,5};
