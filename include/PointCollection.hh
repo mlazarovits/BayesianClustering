@@ -738,7 +738,6 @@ class PointCollection{
 
 	//weighted mean	
 	double Centroid(int d) const{
-		cout << "Centroid over pts " << endl; this->Print();
 		double cent = 0;
 		double sum = 0;
 		for(int i = 0; i < (int)_pts.size(); i++){
