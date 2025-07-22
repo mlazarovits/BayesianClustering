@@ -1384,7 +1384,7 @@ cout << "avgPart E " << avgPartE << endl;
 						double jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jet_cov.at(0,0))*sqrt(jet_cov.at(1,1)));
 						if(pt == 0 && p == 0) cout << "reco AK" << AK << " jet #" << j << " phi " << recojets[j].phi() << " eta " << recojets[j].eta() << " energy " << recojets[j].E() <<  " mass " << recojets[j].mass() << " nConstituents " << recojets[j].GetNConstituents() << " nRhs " << recojets[j].GetNRecHits() << " pt " << recojets[j].pt() << " jetsize " << jetsize << endl;
 						_procCats[p].hists1D[pt][nhist1d_start + 1]->Fill(recojets[j].eta());
-						_procCats[p].hists1D[pt][nhist1d_start + 2]->Fill(recojets[j].phi());
+						_procCats[p].hists1D[pt][nhist1d_start + 2]->Fill(recojets[j].phi_02pi());
 						_procCats[p].hists1D[pt][nhist1d_start + 3]->Fill(recojets[j].time());
 						_procCats[p].hists1D[pt][nhist1d_start + 4]->Fill(recojets[j].pt());
 						_procCats[p].hists1D[pt][nhist1d_start + 5]->Fill(recojets[j].mass());
@@ -2138,7 +2138,6 @@ cout << "avgPart E " << avgPartE << endl;
 		////////////////////////////////2D plots////////////////////////////////
 		////////////////////////////////////////////////////////////////////////
 		
-		//break!!!!!!!
 		//0 - 2D histogram for recoGen pT resolution as a function of gen jet energy 
 		TH2D* jetGenE_diffDeltaPt_recoGen = new TH2D("jetGenE_diffDeltaPt_recoGen","jetGenE_diffDeltaPt_recoGen;jet_{gen} E (GeV);#Delta p_{T}_{reco, gen} (GeV)",4,&xbins_recoGenPt[0],50,-50,50);
 		//1 - 2D histogram of gen pT vs reco pT
@@ -2155,7 +2154,6 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,2);
 		//7 - pred jet n subclusters vs jet size
 		TH2D* prednSubclusters_jetSize = new TH2D("BHCJet_nSubclustersJet_jetSize","BHCJet_nSubclustersJet_jetSize;nSubclusters;jetsize",30,0,30,50,0,2);
-		//break!!!!!!!
 		//8 - 20 - # rhs vs # subclusters for AK4 jets
 		TH2D* AK4Jet_nRhs_nSubclustersJet = new TH2D("recoAK4Jet_nRhs_nSubclustersJet","recoAK4Jet_nRhs_nSubclustersJet;nRhs;nSubclustersJet;a.u.",300,0,300,30,0,30);
 		//9 - 21 - # gen particles from gen-matched jet vs # subclusters for AK4 jets
@@ -2398,7 +2396,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//127 - 140 - BHC jets gen-matched to Ws - Eratio of jet E/gen W E vs # subclusters/jet
 		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
 		//128 - 141 - BHC jets - jet mass vs jet size
-		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_ge2subcl_jetMass_jetSize","BHCJetW_ge2subcl_jetMass_jetSize;jetMass;jetSize",50,0,2000.,50,0,2.);
+		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_jetMass_jetSize","BHCJetW_jetMass_jetSize;jetMass;jetSize",50,0,2000.,50,0,2.);
 		//129 - 142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
 		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
 		//130 - 143 - BHC jets - jet size vs jet phi center
@@ -2408,9 +2406,9 @@ cout << "avgPart E " << avgPartE << endl;
 		//132 - 145 - reco AK15 jets - jet size vs jet phi center
 		TH2D* recoAK15Jet_jetSize_phiCenter = new TH2D("recoAK15Jet_jetSize_phiCenter","recoAK15Jet_jetSize_phiCenter;jetSize;phiCenter",50,0,2,25,0,8*atan(1)); 
 		//133 - 147 - reco AK8 jet mass vs reco jet pt
-		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8JetMass_recoAK8JetSize","recoAK8JetMass_recoAK8JetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
+		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8Jet_jetMass_jetSize","recoAK8Jet_jetMass_jetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
 		//134 - 148 - reco AK15 jet mass vs reco jet pt
-		TH2D* recoAK15JetMass_recoAK15JetSize = new TH2D("recoAK15JetMass_recoAK15JetSize","recoAK15JetMass_recoAK15JetSize;recoAK15JetMass;recoAK15JetSize",50,0,250,50,0,2.);
+		TH2D* recoAK15JetMass_recoAK15JetSize = new TH2D("recoAK15Jet_jetMass_jetSize","recoAK15Jet_jetMass_jetSize;recoAK15JetMass;recoAK15JetSize",50,0,250,50,0,2.);
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
