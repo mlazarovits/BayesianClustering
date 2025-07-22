@@ -805,7 +805,7 @@ class BHCJetSkimmer{
 								_procCats[p].hists1D[pt][152]->Fill(dr);
 								_procCats[p].hists1D[pt][153]->Fill(_predJets[j].E()/_genW[genWidx].E());
 								consts = _predJets[j].GetConstituents();
-								if(consts.size() > 1) _procCats[p].hists2D[pt][140]->Fill(_predJets[j].E()/_genW[genWidx].E(),consts.size());
+								if(consts.size() > 1) _procCats[p].hists2D[pt][127]->Fill(_predJets[j].E()/_genW[genWidx].E(),consts.size());
 								
 								//finding partons/subclusters
 								_procCats[p].hists1D[pt][154]->Fill(_predJets[j].GetNConstituents());
