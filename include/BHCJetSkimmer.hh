@@ -2396,7 +2396,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//127 - 140 - BHC jets gen-matched to Ws - Eratio of jet E/gen W E vs # subclusters/jet
 		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
 		//128 - 141 - BHC jets - jet mass vs jet size
-		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_jetMass_jetSize","BHCJetW_jetMass_jetSize;jetMass;jetSize",50,0,2000.,50,0,2.);
+		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_jetMass_jetSize","BHCJetW_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
 		//129 - 142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
 		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
 		//130 - 143 - BHC jets - jet size vs jet phi center
