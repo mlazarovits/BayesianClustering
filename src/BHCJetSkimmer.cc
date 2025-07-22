@@ -265,8 +265,8 @@ void BHCJetSkimmer::Skim(){
 			rhs.clear();
 		}
 		for(int p = 0; p < _procCats.size(); p++){
-			_procCats[p].hists1D[0][141]->Fill(nsubcls_tot);
-			_procCats[p].hists2D[0][39]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
+			_procCats[p].hists1D[0][91]->Fill(nsubcls_tot);
+			_procCats[p].hists2D[0][27]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
 		}
 		//do GMM for AK8
 		for(int j = 0; j < _recoAK8jets.size(); j++){
@@ -353,21 +353,12 @@ void BHCJetSkimmer::Skim(){
 			_prod->GetRecHits(rhs, i);
 		}
 		for(auto rh : rhs){
-			_procCats[1].hists1D[0][131]->Fill(rh.t());
+			_procCats[1].hists1D[0][84]->Fill(rh.t());
 		}
 		//safety
 		if(rhs.size() < 1) continue;
 		x_nrhs.push_back((double)rhs.size());
 
-		//fill event display if specified _evt2disp
-		if(i == _evt2disp){
-			cout << "Displaying event " << i << endl;
-			for(auto rh : rhs){
-				_procCats[0].hists2D[0][142]->Fill(rh.eta(), rh.phi(), rh.E());
-				_procCats[1].hists2D[0][142]->Fill(rh.eta(), rh.phi(), rh.E());
-			}
-
-		}
 		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
@@ -481,6 +472,78 @@ void BHCJetSkimmer::Skim(){
 		}
 
 
+		//fill event display if specified _evt2disp
+		if(i == _evt2disp){
+			cout << "Displaying event " << i << endl;
+			for(auto rh : rhs){
+				_procCats[0].hists2D[0][92]->Fill(rh.eta(), rh.phi(), rh.E());
+				_procCats[1].hists2D[0][92]->Fill(rh.eta(), rh.phi(), rh.E());
+			}
+			//save gen particles as tmarkers
+			for(int g = 0; g < _genparts.size(); g++){
+				int genidx = _genparts[g].GetUserIdx();
+				double eta = _genparts[g].eta();
+				double phi = _genparts[g].phi_02pi();
+				int id = fabs(_base->genpart_id->at(genidx));
+				//TODO: set to pretty colors with hex codes and make colors related ie for quarks (light vs b different but similar)
+				if(id == 24){ //W
+					plot_particles.push_back(TMarker(eta, phi, kPlus));
+					plot_particles[plot_particles.size()-1].SetMarkerColor(kRed-4);
+				}
+				else if(id == 1 || id == 2 || id == 3){ //light quarks
+					plot_particles.push_back(TMarker(eta, phi, kCircle));
+					plot_particles[plot_particles.size()-1].SetMarkerColor(kAzure+4);
+				}
+				else if(id == 5){ //b quark
+					plot_particles.push_back(TMarker(eta, phi, kOpenSquare));
+					plot_particles[plot_particles.size()-1].SetMarkerColor(kCyan-4);
+				}
+				else if(id == 21){ //gluon
+					plot_particles.push_back(TMarker(eta, phi, kStar));
+					plot_particles[plot_particles.size()-1].SetMarkerColor(kBlue-4);
+				}
+			}
+			//save BHC jets as ellipses
+			for(int j = 0; j < _predJets.size(); j++){
+				Matrix mu, cov;
+				_predJets[j].GetClusterParams(mu, cov);
+				//ellipse center
+				double eta = mu.at(0,0); 
+				double phi = mu.at(1,0);
+
+				//get 2D matrix for jet size
+				Matrix cov2D(2,2);
+				Get2DMat(cov,cov2D);	
+				vector<double> eigvals;
+				vector<Matrix> eigvecs;
+				cov2D.eigenCalc(eigvals, eigvecs);
+				
+				//define radii (r1 > r2)
+				double r1, r2;
+				Matrix leadvec;
+				if(eigvals[0] > eigvals[1]){
+					r1 = eigvals[0];
+					leadvec = eigvecs[0];
+					r2 = eigvals[1];
+				}
+				else{
+					r1 = eigvals[1];
+					leadvec = eigvecs[1];
+					r2 = eigvals[0];
+
+				}
+				//define angle of r1 rotation
+				double theta = atan2(leadvec.at(1,0), leadvec.at(0,0));
+				theta = 180 * theta/(4*atan(1)); //put to degrees
+				ellipses.push_back(TEllipse(eta, phi, r1, r2, 0, 360, theta));	
+				//plot jet centers
+				plot_particles.push_back(TMarker(eta, phi, 30)); //30 = open star may need to change if not rendering	
+				ellipses[ellipses.size()-1].SetLineColor(kGreen-4);	
+				plot_particles[plot_particles.size()-1].SetMarkerColor(kGreen-4);	
+
+			}
+
+		}
 
 		//fill pred jet hists with jets
 		FillPredJetHists();
@@ -488,19 +551,7 @@ void BHCJetSkimmer::Skim(){
 		for(int j = 0; j < _predJets.size(); j++){
 			nsubcls_tot += _predJets[j].GetNConstituents();
 		}
-		double rk = -1;
-		if(algo->GetBestRk() == -1e308) rk = 0;
-		else rk = 1;
-		for(int p = 0; p < _procCats.size(); p++){
-			_procCats[p].hists1D[0][142]->Fill(nsubcls_tot);
-			_procCats[p].hists2D[0][42]->Fill(nsubcls_tot, (int)_predJets.size());
-			for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
-				for(int j = 0; j < _predJets.size(); j++){
-					_procCats[p].hists2D[pt][146]->Fill(rk, _predJets[j].phi_02pi());
-					if(pt == 0 && p == 0) cout << "filling rk bin " << rk << " with best rk " << algo->GetBestRk() << " phi " << _predJets[j].phi_02pi() << endl;
-				}
-			}
-		}
+		_procCats[1].hists2D[0][30]->Fill(nsubcls_tot, (int)_predJets.size());
 		
 		cout << endl;
 	
@@ -524,6 +575,13 @@ void BHCJetSkimmer::Skim(){
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	ofile->cd();
 	WriteOutput(ofile);
+	//write ellispes + tmarkers to root file (if i can?)
+	//for(int el = 0; el < ellipses.size(); el++){
+	//	ellispes[el].Write();
+	//}
+	//for(int m = 0; m < plot_particles.size(); m++){
+	//	plot_particles[m].Write();
+	//}
 	ofile->Close();
 	_infile->Close();	
 	cout << "Wrote skim to: " << _oname << endl;
