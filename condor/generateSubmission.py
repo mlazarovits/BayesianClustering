@@ -28,13 +28,17 @@ def generateSubmission(args):
     yr = str(args.year)[-2:]
     reco_date = {}
     reco_date["2017"] = "_17Nov2017"
+    reco_date["2017_MET"] = ""
     reco_date["2017_DEG"] = "_09Aug2019_UL2017"
     reco_date["2018_DEG"] = "-15Feb2022"
+    reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
     reco_date["2018"] = ""
     if "GJets" in args.inputSample:
     	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "MET" in args.inputSample:
-    	inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
+        if "AL1SelEle_DEOnly" in sel:
+            ver = "v28"
+        inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "JetHT" in args.inputSample:
     	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+args.sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
     elif "QCD" in args.inputSample:
