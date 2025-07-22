@@ -265,7 +265,7 @@ void BHCJetSkimmer::Skim(){
 			rhs.clear();
 		}
 		for(int p = 0; p < _procCats.size(); p++){
-			_procCats[p].hists1D[0][91]->Fill(nsubcls_tot);
+			_procCats[p].hists1D[0][85]->Fill(nsubcls_tot);
 			_procCats[p].hists2D[0][27]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
 		}
 		//do GMM for AK8
@@ -353,7 +353,7 @@ void BHCJetSkimmer::Skim(){
 			_prod->GetRecHits(rhs, i);
 		}
 		for(auto rh : rhs){
-			_procCats[1].hists1D[0][84]->Fill(rh.t());
+			_procCats[1].hists1D[0][78]->Fill(rh.t());
 		}
 		//safety
 		if(rhs.size() < 1) continue;
@@ -476,8 +476,8 @@ void BHCJetSkimmer::Skim(){
 		if(i == _evt2disp){
 			cout << "Displaying event " << i << endl;
 			for(auto rh : rhs){
-				_procCats[0].hists2D[0][92]->Fill(rh.eta(), rh.phi(), rh.E());
-				_procCats[1].hists2D[0][92]->Fill(rh.eta(), rh.phi(), rh.E());
+				_procCats[0].hists2D[0][86]->Fill(rh.eta(), rh.phi(), rh.E());
+				_procCats[1].hists2D[0][86]->Fill(rh.eta(), rh.phi(), rh.E());
 			}
 			//save gen particles as tmarkers
 			for(int g = 0; g < _genparts.size(); g++){

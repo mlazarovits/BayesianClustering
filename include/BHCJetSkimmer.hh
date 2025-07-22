@@ -104,7 +104,7 @@ class BHCJetSkimmer{
 			
 
 		}
-		void InitHists(){	
+		void InitHists(){
 	
 			graphs.push_back(nrhs_comptime);
 			graphs.push_back(nrhs_comptime_subcl);
@@ -280,6 +280,10 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_subClusteretaPhiCov);
 			_hists1D.push_back(BHCJetW_subClustertimeEtaCov);
 			_hists1D.push_back(BHCJetW_subClustertimePhiCov);
+			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclPt);
+			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPt);
+			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclSize);
+			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclSize);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -413,6 +417,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(EvtDisplay_etaCell_phiCell);
 			_hists2D.push_back(recoAK8JetMass_recoAK8JetSize);
 			_hists2D.push_back(recoAK15JetMass_recoAK15JetSize);
+			_hists2D.push_back(recoAK8JetMass_BHCJetMass_matched);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -518,8 +523,10 @@ class BHCJetSkimmer{
 			Jet w, top, genpart, genW;
 			//do gen matching
 			vector<int> genAK4MatchIdxs, genAK15MatchIdxs; //one per jet, follows same indexing as jets
-			vector<int> recoMatchIdxs;
+			vector<int> recoMatchIdxs(_predJets.size(),-1);
+			vector<int> recoAK8MatchIdxs(_predJets.size(), -1);
 			GenericMatchJet(_predJets,_recoAK4jets, recoMatchIdxs); //match BHC jets to reco jets
+			GenericMatchJet(_predJets,_recoAK4jets, recoAK8MatchIdxs); //match BHC jets to reco AK8 jets
 			GenericMatchJet(_predJets,_genAK4jets, genAK4MatchIdxs); //match BHC jets to gen AK4 jets
 			GenericMatchJet(_predJets,_genAK15jets, genAK15MatchIdxs); //match BHC jets to gen AK15 jets
 			vector<int> genTopMatchIdxs(_predJets.size(),-1);
@@ -586,15 +593,8 @@ class BHCJetSkimmer{
 						vector<JetPoint> rhs = _predJets[j].GetJetPoints();
 						Matrix jet_mu, jet_cov;
 						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
-						//get 2D matrix for jet size
-						Matrix jet_cov2D(2,2);
-						Get2DMat(jet_cov,jet_cov2D);	
-						vector<double> eigvals;
-						vector<Matrix> eigvecs;
-						jet_cov2D.eigenCalc(eigvals, eigvecs);
-						//define jet size as length of major axis
 						//also include rotundity
-						jetsize = sqrt(eigvals[1]);
+						jetsize = CalcSize(jet_cov);
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
 						//if(pt == 1 && jetsize >= 0.2) continue;
@@ -606,7 +606,7 @@ class BHCJetSkimmer{
 							cout << "pred jet #" << j << " phi " << _predJets[j].phi() << " eta " << _predJets[j].eta() << " energy " << _predJets[j].E() <<  " mass " << _predJets[j].mass() << " nConstituents " << _predJets[j].GetNConstituents() << " nRhs " << _predJets[j].GetNRecHits() << " pt " << _predJets[j].pt() << " jetsize " << jetsize << " eta var " << jet_cov.at(0,0) << " phi var " << jet_cov.at(1,1) << endl;
 						}
 			
-						double rot = Rotundity(jet_cov2D);
+						double rot = Rotundity(jet_cov);
 						_procCats[p].hists1D[pt][91]->Fill(rot);
 						
 						nsubs = _predJets[j].GetNConstituents();
@@ -704,6 +704,12 @@ class BHCJetSkimmer{
 							if(_recoAK4jets[recoMatchIdxs[j]].GetNConstituents() == 0) cout << "reco jet #" << recoMatchIdxs[j] << " matched to bhc jet #" << j << " has " << _recoAK4jets[recoMatchIdxs[j]].GetNConstituents() << " # subclusters" << endl;
 							_procCats[p].hists2D[pt][31]->Fill(_recoAK4jets[recoMatchIdxs[j]].GetNConstituents(), _predJets[j].GetNConstituents());
 						}
+						//do reco AK8 matching hists
+						if(recoAK8MatchIdxs[j] != -1){
+							int matchidx = recoAK8MatchIdxs[j];
+							_procCats[p].hists2D[pt][132]->Fill(_recoAK8jets[matchidx].m(), _predJets[j].m());
+						}
+	
 						//do gen AK4 matching hists
 						if(genAK4MatchIdxs[j] != -1){
 							int genAK4jetidx = _genAK4jets[genAK4MatchIdxs[j]].GetUserIdx();
@@ -828,9 +834,27 @@ cout << "avgPart E " << avgPartE << endl;
 								if(consts.size() > 1){
 									double invmass = consts[0].invMass(consts[1]);
 									_procCats[p].hists1D[pt][149]->Fill(invmass);
-							
+									vector<int> subclGenMatchIdx(consts.size(), -1);	
+									GenericMatchJet(consts,Wpartons,subclGenMatchIdx); //match subclusters to W partons
 									for(int c = 0; c < consts.size(); c++){
 										_procCats[p].hists2D[pt][126]->Fill(consts[c].E(),c);
+										
+										Matrix subcl_mu, subcl_cov;
+										consts[c].GetClusterParams(subcl_mu, subcl_cov);
+										double subclsize = CalcSize(subcl_cov);
+										int genmatchidx = subclGenMatchIdx[c];
+										//high mass jets only
+										if(_predJets[j].m() > 100){ 
+											//not matched
+											if(genmatchidx == -1){
+												_procCats[p].hists1D[pt][172]->Fill(consts[c].pt());
+												_procCats[p].hists1D[pt][174]->Fill(subclsize);
+												continue;
+											}
+											//matched
+											_procCats[p].hists1D[pt][171]->Fill(consts[c].pt());
+											_procCats[p].hists1D[pt][173]->Fill(subclsize);
+										}
 									}	
 
 									//do gen matching of 2 leading subclusters to partons from W decays
@@ -1797,7 +1821,6 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		TH1D* recoGen_jetPtRatio = new TH1D("recoAK4Gen_jetPtRatio","recoAK4Gen_jetPtRatio",20,0,1.5);
 		//24 - reco jet e - gen jet e		
 		TH1D* recoGen_jetERatio = new TH1D("recoAK4Gen_jetERatio","recoAK4Gen_jetERatio",20,-10,10);
-		//break!!!!! - minus 6 from all below
 		//25 - 31 - eta sigma for jet
 		TH1D* predJet_EtaVar = new TH1D("BHCJet_EtaSig","BHCJet_EtaSig",25,0.,1.);
 		//26 - 32 - phi sigma for jet
@@ -2090,7 +2113,14 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		TH1D* BHCJetW_subClustertimeEtaCov = new TH1D("BHCJetW_subclusterTimeEtaCov","BHCJetW_subclusterTimeEtaCov",50,-0.05,0.05);
 		//170 - 182 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
-		
+		//171 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons
+		TH1D* BHCJetW_highMass_partonMatchSubclPt = new TH1D("BHCJetW_highMass_partonMatchSubclPt","BHCJetW_highMass_partonMatchSubclPt",50,0,1000);
+		//172 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons
+		TH1D* BHCJetW_highMass_partonNoMatchSubclPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPt","BHCJetW_highMass_partonNoMatchSubclPt",50,0,1000);
+		//173 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons
+		TH1D* BHCJetW_highMass_partonMatchSubclSize = new TH1D("BHCJetW_highMass_partonMatchSubclSize","BHCJetW_highMass_partonMatchSubclSize",50,0,2.);
+		//174 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons
+		TH1D* BHCJetW_highMass_partonNoMatchSubclSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSize","BHCJetW_highMass_partonNoMatchSubclSize",50,0,2.);
 
 
 
@@ -2356,13 +2386,16 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		//127 - 140 - BHC jets gen-matched to Ws - Eratio of jet E/gen W E vs # subclusters/jet
 		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
 		//128 - 141 - BHC jets - jet mass vs jet size
-		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJetW_jetMass_jetSize","BHCJetW_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
+		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJet_jetMass_jetSize","BHCJet_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
 		//129 - 142 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
 		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
 		//130 - 147 - reco AK8 jet mass vs reco jet pt
 		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8Jet_jetMass_jetSize","recoAK8Jet_jetMass_jetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
 		//131 - 148 - reco AK15 jet mass vs reco jet pt
 		TH2D* recoAK15JetMass_recoAK15JetSize = new TH2D("recoAK15Jet_jetMass_jetSize","recoAK15Jet_jetMass_jetSize;recoAK15JetMass;recoAK15JetSize",50,0,250,50,0,2.);
+		//132 - matched reco AK8 jet mass vs BHC jet mass
+		TH2D* recoAK8JetMass_BHCJetMass_matched = new TH2D("recoAK8JetMass_BHCJetMass_BHCtoAK8matched","recoAK8JetMass_BHCJetMass_BHCtoAK8matched;recoAK8 Jet Mass;BHC Jet Mass",25,0,250,25,0,250);
+
 
 		void SetSmear(bool t){ _smear = t; }
 		double _cell, _tresCte, _tresNoise, _tresStoch;
@@ -2688,6 +2721,21 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 			v.push_back(z);
 		}
 
+		double CalcSize(Matrix& cov){
+			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
+				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+				return -1;
+			}
+			Matrix cov2D(2,2);
+			Get2DMat(cov,cov2D);	
+			vector<double> eigvals;
+			vector<Matrix> eigvecs;
+			cov2D.eigenCalc(eigvals, eigvecs);
+			//define jet size as length of major axis
+			return sqrt(eigvals[1]);
+		}
+
+
 		void Get2DMat(const Matrix& inmat, Matrix& outmat){
 			if(!outmat.square()) return;
 			if(outmat.GetDims()[0] != 2) return;
@@ -2697,11 +2745,17 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 			outmat.SetEntry(inmat.at(1,0),1,0);	
 			outmat.SetEntry(inmat.at(1,1),1,1);
 		}
-		double Rotundity(Matrix& inmat){
+		double Rotundity(Matrix& cov){
+			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
+				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+				return -1;
+			}
+			Matrix cov2D(2,2);
+			Get2DMat(cov,cov2D);	
 			vector<Matrix> eigenvecs;
 			vector<double> eigenvals;
-			inmat.eigenCalc(eigenvals, eigenvecs);
-			int maxd = inmat.GetDims()[0] - 1;
+			cov.eigenCalc(eigenvals, eigenvecs);
+			int maxd = cov.GetDims()[0] - 1;
 			double rot = 0;
 			for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 			rot = eigenvals[maxd]/rot;
