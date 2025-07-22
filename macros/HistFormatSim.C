@@ -1620,6 +1620,9 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaPhiCov");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEtaTimeCov");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterPhiTimeCov");
+		
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio");
 
 		
 		Hist2D(file, proc, "BHC", oname, "BHCJetW_");
@@ -1629,7 +1632,9 @@ void HistFormatSim(string file, string proc = ""){
 		Hist2D(file, proc, "recoAK15", oname, "recoAK15JetMass_recoAK15JetPt");
 		Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 
-
+		//TODO: update name on next skimmer pass
+		Hist2D(file, proc, "BHC", oname, "BHCJetMass_ge2sucl_BHCJetSize");
+		Hist2D(file, proc, "recoAK8", oname, "recoAK8JetMass_recoAK8JetSize");
 	}
 
 	if(proc == "singleW" || proc == "QCD"){
