@@ -271,9 +271,10 @@ def make_slides(plot_dir_name, tag = ""):
 	slideTitles_plots["Gen Matching to Ws - subclusters"] = ["W_nSubclusters","W_subClusterEnergy"]
 	slideTitles_plots["Subcluster Kinematics"] = ["Jet_subclusterMass", "Jet_subclusterEnergy"]
 	slideTitles_plots["Subcluster Effective # Rhs"] = ["Jet_subclusterEffnRhs"]
-	slideTitles_plots["Subcluster Energy vs Subcluster Mass"] = ["Jet_subclusterEnergy_subclusterMass"]
-	slideTitles_plots["Subcluster Energy vs Subcluster Effective # Rhs"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
-	slideTitles_plots["Subcluster Mass vs Subcluster Effective # Rhs"] = ["Jet_subclusterMass_subclusterEffnRhs"]
+	slideTitles_plots["Subcluster Mass vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterMass"]
+	slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
+	slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Mass"] = ["Jet_subclusterMass_subclusterEffnRhs"]
+	slideTitles_plots["Jet Pt vs Jet Mass"] = ["BHCJetMass_BHCJetPt", "recoAK4JetMass_recoAK4JetPt"]
 
 
 
