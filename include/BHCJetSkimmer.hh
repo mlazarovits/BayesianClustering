@@ -1574,15 +1574,15 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 				qcd.ids = {-999};
 				_procCats.push_back(qcd);
 			}
-			else if(sample.find("singleW") != string::npos){
-				procCat singleW(_hists1D, _hists2D, "singleW", "single W^{#pm}",leadsep);
-				singleW.ids = {-999};
-				_procCats.push_back(singleW);
-			}
 			else if(sample.find("Wgluon") != string::npos){
 				procCat Wgluon(_hists1D, _hists2D, "Wgluon", "single W^{#pm} + g",leadsep);
 				Wgluon.ids = {-999};
 				_procCats.push_back(Wgluon);
+			}
+			else if(sample.find("singleW") != string::npos){
+				procCat singleW(_hists1D, _hists2D, "singleW", "single W^{#pm}",leadsep);
+				singleW.ids = {-999};
+				_procCats.push_back(singleW);
 			}
 			else if(sample.find("singleGamma") != string::npos){
 				procCat singleGamma(_hists1D, _hists2D, "singleGamma", "single #gamma",leadsep);
