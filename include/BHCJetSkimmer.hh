@@ -2121,11 +2121,11 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		//2 - gen jet mass vs reco/gen pt
 		TH2D* genJetMass_recoGenPtRatio = new TH2D("genJetMass_recoAK4GenPtRatio","genJetMass_recoAK4GenPtRatio",20,0,10,20,0.8,1.2);
 		//3 - reco jet mass vs reco jet pt
-		TH2D* recoJetMass_recoJetPt = new TH2D("recoAK4JetMass_recoAK4JetPt","recoAK4JetMass_recoAK4JetPt;recoAK4JetMass;recoAK4JetPt",50,0,250,50,0,250);
+		TH2D* recoJetMass_recoJetPt = new TH2D("recoAK4Jet_jetMass_jetPt","recoAK4Jet_jetMass_jetPt;recoAK4JetMass;recoAK4JetPt",50,0,250,50,0,250);
 		//4 - reco jet mass vs reco jet jetSize
 		TH2D* recoJetMass_recoJetSize = new TH2D("recoAK4Jet_jetMass_jetSize","recoAK4Jet_jetMass_jetSize;recoAK4JetMass;recoAK4JetSize",50,0,250,50,0,2.);
 		//5 - pred jet mass vs pred jet pt
-		TH2D* predJetMass_predJetPt = new TH2D("BHCJetMass_BHCJetPt","BHCJetMass_BHCJetPt;BHCJetMass;BHCJetPt",50,0,250,50,0,250);
+		TH2D* predJetMass_predJetPt = new TH2D("BHCJet_jetMass_jetPt","BHCJet_jetMass_jetPt;BHCJetMass;BHCJetPt",50,0,250,50,0,250);
 		//6 - pred jet pt vs pred jet jetSize
 		TH2D* predJetPt_predJetSize = new TH2D("BHCJetPt_BHCJetSize","BHCJetPt_BHCJetSize;BHCJetPt;BHCJetSize",50,0,250,50,0,2);
 		//7 - pred jet n subclusters vs jet size
