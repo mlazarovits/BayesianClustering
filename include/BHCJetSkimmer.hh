@@ -119,7 +119,6 @@ class BHCJetSkimmer{
 			_hists1D.push_back(predJet_energy);
 			_hists1D.push_back(predJet_pt);
 			_hists1D.push_back(predJet_mass);
-			_hists1D.push_back(jetGenE_sigmaDeltaPt_predGen);
 			_hists1D.push_back(predGen_nJets);
 			_hists1D.push_back(predJet_subClusterEtaSig);
 			_hists1D.push_back(predJet_subClusterPhiSig);
@@ -195,7 +194,6 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jet_EtaCenter);
 			_hists1D.push_back(recoAK4Jet_PhiCenter);
 			_hists1D.push_back(recoAK4Jet_nSubclustersEvt);
-			_hists1D.push_back(BHCJet_nSubclustersEvt);
 			_hists1D.push_back(BHCJet_drSubclusters);
 			_hists1D.push_back(recoAK4Jet_drSubclusters);
 			_hists1D.push_back(BHCJet_rhE);
@@ -488,7 +486,7 @@ class BHCJetSkimmer{
 							if(pt == 1 && predJet.pt() < _pt_thresh) continue;
 							//pt == 2 -> [0,_pt_thresh)
 							if(pt == 2 && predJet.pt() >= _pt_thresh) continue;
-							_procCats[p].hists1D[pt][150]->Fill(_trees[i]->model->GetNGhosts());
+							_procCats[p].hists1D[pt][148]->Fill(_trees[i]->model->GetNGhosts());
 							vector<double> norms;
 							_trees[i]->model->GetNorms(norms);
 							Matrix r_post = _trees[i]->model->GetPosterior();
@@ -496,12 +494,12 @@ class BHCJetSkimmer{
 								auto params = _trees[i]->model->GetLHPosteriorParameters(k);
 								bool g = (bool)params["ghost"].at(0,0);
 								if(!g) continue;
-								_procCats[p].hists1D[pt][151]->Fill(norms[k]/_gev);
+								_procCats[p].hists1D[pt][149]->Fill(norms[k]/_gev);
 								double eff_rhs = 0;
 								for(int n = 0; n < _trees[i]->model->GetData()->GetNPoints(); n++){
 									eff_rhs += r_post.at(n,k)/_trees[i]->model->GetData()->at(n).w();
 								}
-								_procCats[p].hists1D[pt][152]->Fill(eff_rhs);
+								_procCats[p].hists1D[pt][150]->Fill(eff_rhs);
 							}
 					}
 				}
@@ -561,7 +559,7 @@ class BHCJetSkimmer{
 				_procCats[p].hists1D[0][0]->Fill(njets);
 				cout << "# pred jets - # reco AK4 jets " << njets - (int)_recoAK4jets.size() << endl;
 				cout << "# pred jets - # gen AK4 jets " << njets - (int)_genAK4jets.size() << endl;
-				_procCats[p].hists1D[0][11]->Fill(njets - (int)_recoAK4jets.size());
+				_procCats[p].hists1D[0][10]->Fill(njets - (int)_recoAK4jets.size());
 				//count # jets over pt thresh for lead/not lead
 				int njets_lead = 0;
 				int njets_notlead = 0;
@@ -607,7 +605,7 @@ class BHCJetSkimmer{
 						}
 			
 						double rot = Rotundity(jet_cov);
-						_procCats[p].hists1D[pt][91]->Fill(rot);
+						_procCats[p].hists1D[pt][89]->Fill(rot);
 						
 						nsubs = _predJets[j].GetNConstituents();
 						_procCats[p].hists1D[pt][1]->Fill(nsubs);
@@ -621,12 +619,12 @@ class BHCJetSkimmer{
 						_procCats[p].hists1D[pt][9]->Fill(_predJets[j].mass());
 						_procCats[p].hists1D[pt][6]->Fill(jetsize);
 							
-						_procCats[p].hists1D[pt][25]->Fill(sqrt(cov.at(0,0)));	
-						_procCats[p].hists1D[pt][26]->Fill(sqrt(cov.at(1,1)));	
-						_procCats[p].hists1D[pt][27]->Fill(sqrt(cov.at(2,2)));	
-						_procCats[p].hists1D[pt][28]->Fill(cov.at(0,1));	
-						_procCats[p].hists1D[pt][29]->Fill(cov.at(0,2));	
-						_procCats[p].hists1D[pt][30]->Fill(cov.at(2,1));	
+						_procCats[p].hists1D[pt][24]->Fill(sqrt(cov.at(0,0)));	
+						_procCats[p].hists1D[pt][25]->Fill(sqrt(cov.at(1,1)));	
+						_procCats[p].hists1D[pt][26]->Fill(sqrt(cov.at(2,2)));	
+						_procCats[p].hists1D[pt][27]->Fill(cov.at(0,1));	
+						_procCats[p].hists1D[pt][28]->Fill(cov.at(0,2));	
+						_procCats[p].hists1D[pt][29]->Fill(cov.at(2,1));	
 
 						_procCats[p].hists2D[pt][5]->Fill(_predJets[j].mass(), _predJets[j].pt());
 						_procCats[p].hists2D[pt][6]->Fill(_predJets[j].pt(), jetsize);
@@ -640,14 +638,14 @@ class BHCJetSkimmer{
 						_procCats[p].hists2D[pt][7]->Fill(_predJets[j].GetNConstituents(), jetsize);	
 						_procCats[p].hists2D[pt][128]->Fill(_predJets[j].mass(), jetsize);	
 
-						_procCats[p].hists1D[pt][75]->Fill(jet_mu.at(0,0));
-						_procCats[p].hists1D[pt][76]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
-						_procCats[p].hists1D[pt][77]->Fill(jet_mu.at(2,0));
+						_procCats[p].hists1D[pt][74]->Fill(jet_mu.at(0,0));
+						_procCats[p].hists1D[pt][75]->Fill(_predJets[j].phi()); //so phi is [0,2pi] but equivalent to jet_mu.at(1,0)
+						_procCats[p].hists1D[pt][76]->Fill(jet_mu.at(2,0));
 					
 						
-						_procCats[p].hists1D[pt][92]->Fill((int)rhs.size());
+						_procCats[p].hists1D[pt][90]->Fill((int)rhs.size());
 						for(int r = 0; r < rhs.size(); r++){
-							_procCats[p].hists1D[pt][89]->Fill(rhs[r].E());
+							_procCats[p].hists1D[pt][87]->Fill(rhs[r].E());
 							
 						}
 
@@ -657,12 +655,12 @@ class BHCJetSkimmer{
 						for(int c = 0; c < (int)consts.size(); c++){
 							Jet subcl = consts[c];
 							Matrix subcl_cov = subcl.GetCovariance();
-							_procCats[p].hists1D[pt][8]->Fill(sqrt(subcl_cov.at(0,0)));
-							_procCats[p].hists1D[pt][9]->Fill(sqrt(subcl_cov.at(1,1)));
-							_procCats[p].hists1D[pt][10]->Fill(sqrt(subcl_cov.at(2,2)));
-							_procCats[p].hists1D[pt][11]->Fill(subcl_cov.at(0,1));
-							_procCats[p].hists1D[pt][12]->Fill(subcl_cov.at(0,2));
-							_procCats[p].hists1D[pt][13]->Fill(subcl_cov.at(1,2));
+							_procCats[p].hists1D[pt][11]->Fill(sqrt(subcl_cov.at(0,0)));
+							_procCats[p].hists1D[pt][12]->Fill(sqrt(subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][13]->Fill(sqrt(subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][14]->Fill(subcl_cov.at(0,1));
+							_procCats[p].hists1D[pt][15]->Fill(subcl_cov.at(0,2));
+							_procCats[p].hists1D[pt][16]->Fill(subcl_cov.at(1,2));
 							//do for normalized values too
 	
 							//E_k = norms[k]/_gev;
@@ -689,7 +687,7 @@ class BHCJetSkimmer{
 							//do dr calcs bw all subclusters
 							for(int cc = c+1; cc < consts.size(); cc++){
 								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
-								_procCats[p].hists1D[pt][87]->Fill(dr);
+								_procCats[p].hists1D[pt][85]->Fill(dr);
 							}
 							//dr to jet center
 							double jet_dr = dR(consts[c].eta(), consts[c].phi(), jet_mu.at(0,0), jet_mu.at(1,0));
@@ -754,20 +752,20 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][59]->Fill(_predJets[j].eta(),_genTop[gentopidx].eta());
 							_procCats[p].hists2D[pt][60]->Fill(_predJets[j].phi(),_genTop[gentopidx].phi());
 							
-							_procCats[p].hists1D[pt][73]->Fill(dr);
-							_procCats[p].hists1D[pt][74]->Fill(_predJets[j].E()/_genTop[gentopidx].E());
-							_procCats[p].hists1D[pt][155]->Fill(_predJets[j].GetNConstituents());
+							_procCats[p].hists1D[pt][72]->Fill(dr);
+							_procCats[p].hists1D[pt][73]->Fill(_predJets[j].E()/_genTop[gentopidx].E());
+							_procCats[p].hists1D[pt][153]->Fill(_predJets[j].GetNConstituents());
 							//sort by energy
 							consts = _predJets[j].GetConstituents();
 							sort(consts.begin(), consts.end(), Esort_jet);
 							for(int c = 0; c < consts.size(); c++){ 
-								_procCats[p].hists1D[pt][156]->Fill(consts[c].m());
+								_procCats[p].hists1D[pt][154]->Fill(consts[c].m());
 								_procCats[p].hists2D[pt][118]->Fill((int)consts.size(),consts[c].m());
 							}
 							//get invariant mass of leading two subclusters
 							if(consts.size() > 1){
 								double invmass = consts[0].invMass(consts[1]);
-								_procCats[p].hists1D[pt][167]->Fill(invmass);
+								_procCats[p].hists1D[pt][155]->Fill(invmass);
 							
 								//do gen matching of 2 leading subclusters to partons from W decays
 								Jet leadcl = consts[0];
@@ -791,13 +789,13 @@ class BHCJetSkimmer{
 								_procCats[p].hists2D[pt][84]->Fill(_predJets[j].eta(),_genW[genWMatchIdxs[j]].eta());
 								_procCats[p].hists2D[pt][85]->Fill(_predJets[j].phi(),_genW[genWMatchIdxs[j]].phi());
 								
-								_procCats[p].hists1D[pt][140]->Fill(dr);
-								_procCats[p].hists1D[pt][141]->Fill(_predJets[j].E()/_genW[genWidx].E());
+								_procCats[p].hists1D[pt][138]->Fill(dr);
+								_procCats[p].hists1D[pt][139]->Fill(_predJets[j].E()/_genW[genWidx].E());
 								consts = _predJets[j].GetConstituents();
 								if(consts.size() > 1) _procCats[p].hists2D[pt][127]->Fill(_predJets[j].E()/_genW[genWidx].E(),consts.size());
 								
 								//finding partons/subclusters
-								_procCats[p].hists1D[pt][142]->Fill(_predJets[j].GetNConstituents());
+								_procCats[p].hists1D[pt][140]->Fill(_predJets[j].GetNConstituents());
 								//get gen partons from W decay 
 								vector<int> genLeadMatchIdxs(2,-1);
 								vector<Jet> Wpartons;
@@ -833,7 +831,7 @@ cout << "avgPart E " << avgPartE << endl;
 								//get invariant mass of leading two subclusters
 								if(consts.size() > 1){
 									double invmass = consts[0].invMass(consts[1]);
-									_procCats[p].hists1D[pt][149]->Fill(invmass);
+									_procCats[p].hists1D[pt][147]->Fill(invmass);
 									vector<int> subclGenMatchIdx(consts.size(), -1);	
 									GenericMatchJet(consts,Wpartons,subclGenMatchIdx); //match subclusters to W partons
 									for(int c = 0; c < consts.size(); c++){
@@ -847,13 +845,13 @@ cout << "avgPart E " << avgPartE << endl;
 										if(_predJets[j].m() > 100){ 
 											//not matched
 											if(genmatchidx == -1){
-												_procCats[p].hists1D[pt][172]->Fill(consts[c].pt());
-												_procCats[p].hists1D[pt][174]->Fill(subclsize);
+												_procCats[p].hists1D[pt][170]->Fill(consts[c].pt());
+												_procCats[p].hists1D[pt][172]->Fill(subclsize);
 												continue;
 											}
 											//matched
-											_procCats[p].hists1D[pt][171]->Fill(consts[c].pt());
-											_procCats[p].hists1D[pt][173]->Fill(subclsize);
+											_procCats[p].hists1D[pt][169]->Fill(consts[c].pt());
+											_procCats[p].hists1D[pt][171]->Fill(subclsize);
 										}
 									}	
 
@@ -870,26 +868,26 @@ cout << "avgPart E " << avgPartE << endl;
 										if(genmatchidx == -1) continue;
 										double gen_clDr = dR(subcls[c].eta(), subcls[c].phi(), Wpartons[genmatchidx].eta(), Wpartons[genmatchidx].phi());
 										double genEr = subcls[c].E() / Wpartons[genmatchidx].E();
-										_procCats[p].hists1D[pt][153]->Fill(gen_clDr);
-										_procCats[p].hists1D[pt][154]->Fill(genEr);
-										_procCats[p].hists2D[pt][130]->Fill(genEr,_predJets[j].GetNConstituents());
+										_procCats[p].hists1D[pt][151]->Fill(gen_clDr);
+										_procCats[p].hists1D[pt][152]->Fill(genEr);
+										_procCats[p].hists2D[pt][117]->Fill(genEr,_predJets[j].GetNConstituents());
 
-										_procCats[p].hists1D[pt][162]->Fill(subcls[c].eta());
-										_procCats[p].hists1D[pt][163]->Fill(subcls[c].phi());
-										_procCats[p].hists1D[pt][164]->Fill(subcls[c].time());
+										_procCats[p].hists1D[pt][160]->Fill(subcls[c].eta());
+										_procCats[p].hists1D[pt][161]->Fill(subcls[c].phi());
+										_procCats[p].hists1D[pt][162]->Fill(subcls[c].time());
 										Matrix subcl_cov = subcls[c].GetCovariance();
-										_procCats[p].hists1D[pt][165]->Fill(sqrt(subcl_cov.at(0,0)));
-										_procCats[p].hists1D[pt][166]->Fill(sqrt(subcl_cov.at(1,1)));
-										_procCats[p].hists1D[pt][167]->Fill(sqrt(subcl_cov.at(2,2)));
-										_procCats[p].hists1D[pt][168]->Fill(subcl_cov.at(0,1));
-										_procCats[p].hists1D[pt][169]->Fill(subcl_cov.at(0,2));
-										_procCats[p].hists1D[pt][170]->Fill(subcl_cov.at(2,1));
+										_procCats[p].hists1D[pt][163]->Fill(sqrt(subcl_cov.at(0,0)));
+										_procCats[p].hists1D[pt][164]->Fill(sqrt(subcl_cov.at(1,1)));
+										_procCats[p].hists1D[pt][165]->Fill(sqrt(subcl_cov.at(2,2)));
+										_procCats[p].hists1D[pt][166]->Fill(subcl_cov.at(0,1));
+										_procCats[p].hists1D[pt][167]->Fill(subcl_cov.at(0,2));
+										_procCats[p].hists1D[pt][168]->Fill(subcl_cov.at(2,1));
 
 									}
 								}
 								for(int c = 0; c < (int)consts.size(); c++){
-									_procCats[p].hists1D[pt][143]->Fill(consts[c].E());
-									_procCats[p].hists1D[pt][148]->Fill(consts[c].m());
+									_procCats[p].hists1D[pt][141]->Fill(consts[c].E());
+									_procCats[p].hists1D[pt][146]->Fill(consts[c].m());
 								//cout << "consts #" << c << " mass " << consts[c].m() << endl;
 									_procCats[p].hists2D[pt][114]->Fill(_predJets[j].GetNConstituents(),consts[c].m());
 								}
@@ -904,16 +902,16 @@ cout << "avgPart E " << avgPartE << endl;
 							//put loose req on q match
 							if(dr < 0.1 && (Eratio < 1.5 && Eratio > 0.5)){
 								cout << "passed gen match reqs" << endl;
-								_procCats[p].hists1D[pt][158]->Fill(dr);
-								_procCats[p].hists1D[pt][159]->Fill(_predJets[j].E()/_genq[genqidx].E());
+								_procCats[p].hists1D[pt][156]->Fill(dr);
+								_procCats[p].hists1D[pt][157]->Fill(_predJets[j].E()/_genq[genqidx].E());
 								//finding partons/subclusters
-								_procCats[p].hists1D[pt][160]->Fill(_predJets[j].GetNConstituents());
+								_procCats[p].hists1D[pt][158]->Fill(_predJets[j].GetNConstituents());
 
 								consts = _predJets[j].GetConstituents();
 								//sort by energy
 								sort(consts.begin(), consts.end(), Esort_jet);
 								for(int c = 0; c < (int)consts.size(); c++){
-									_procCats[p].hists1D[pt][161]->Fill(consts[c].m());
+									_procCats[p].hists1D[pt][159]->Fill(consts[c].m());
 								}
 							}
 						}			
@@ -932,18 +930,17 @@ cout << "avgPart E " << avgPartE << endl;
 				int nGenParts = 0; //only count hadron-izable gen particles (ie quarks)
 				vector<int> qids = {1,2,3,4,5,6};
 				int id;
-				_procCats[p].hists1D[0][54]->Fill((double)nGenParts);
-				_procCats[p].hists1D[0][69]->Fill((double)_genAK4jets.size() - (double)nGenParts);
-				_procCats[p].hists1D[0][101]->Fill((double)_genAK15jets.size() - (double)nGenParts);
-				_procCats[p].hists1D[0][72]->Fill((double)_predJets.size() - (double)nGenParts);
-				//_procCats[p].hists1D[0][122]->Fill((double)_genfatjets.size() - (double)nGenParts);
+				_procCats[p].hists1D[0][53]->Fill((double)nGenParts);
+				_procCats[p].hists1D[0][68]->Fill((double)_genAK4jets.size() - (double)nGenParts);
+				_procCats[p].hists1D[0][99]->Fill((double)_genAK15jets.size() - (double)nGenParts);
+				_procCats[p].hists1D[0][71]->Fill((double)_predJets.size() - (double)nGenParts);
 				for(int g = 0; g < _genparts.size(); g++){
-					_procCats[p].hists1D[0][55]->Fill(_genparts[g].eta());
-					_procCats[p].hists1D[0][56]->Fill(_genparts[g].phi());
-					_procCats[p].hists1D[0][57]->Fill(_genparts[g].time());
-					_procCats[p].hists1D[0][58]->Fill(_genparts[g].pt());
-					_procCats[p].hists1D[0][59]->Fill(_genparts[g].mass());
-					_procCats[p].hists1D[0][60]->Fill(_genparts[g].E());
+					_procCats[p].hists1D[0][54]->Fill(_genparts[g].eta());
+					_procCats[p].hists1D[0][55]->Fill(_genparts[g].phi());
+					_procCats[p].hists1D[0][56]->Fill(_genparts[g].time());
+					_procCats[p].hists1D[0][57]->Fill(_genparts[g].pt());
+					_procCats[p].hists1D[0][58]->Fill(_genparts[g].mass());
+					_procCats[p].hists1D[0][59]->Fill(_genparts[g].E());
 					id = _base->genpart_id->at(_genparts[g].GetUserIdx());
 					if(find(qids.begin(), qids.end(), id) != qids.end()) nGenParts++;
 					
@@ -953,7 +950,7 @@ cout << "avgPart E " << avgPartE << endl;
 	
 		void FillGenJetHists(){
 			for(int p = 0; p < _procCats.size(); p++){
-				_procCats[p].hists1D[0][67]->Fill((double)_genAK4jets.size());
+				_procCats[p].hists1D[0][66]->Fill((double)_genAK4jets.size());
 				int njets_lead = 0;
 				int njets_notlead = 0;
 				for(int j = 0; j < _genAK4jets.size(); j++){
@@ -962,8 +959,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(_genAK4jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
-				_procCats[p].hists1D[1][67]->Fill(njets_lead);
-				_procCats[p].hists1D[2][67]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][66]->Fill(njets_lead);
+				_procCats[p].hists1D[2][66]->Fill(njets_notlead);
 				//gen match jets to particles
 				vector<int> genTopMatchIdxs;
 				GenericMatchJet(_genAK4jets,_genparts,genTopMatchIdxs, 6); //match gen AK4 jets to gen tops
@@ -972,20 +969,20 @@ cout << "avgPart E " << avgPartE << endl;
 				//cout << "gen matching gen jets to particles - end" << endl;
 				for(int j = 0; j < _genAK4jets.size(); j++){
 					if(p == 0) cout << "gen AK4 jet #" << j << " phi " << _genAK4jets[j].phi() << " eta " << _genAK4jets[j].eta() << " energy " << _genAK4jets[j].E() <<  " mass " << _genAK4jets[j].mass() << " pt " << _genAK4jets[j].pt() << endl;
-					_procCats[p].hists1D[0][61]->Fill(_genAK4jets[j].eta());
-					_procCats[p].hists1D[0][62]->Fill(_genAK4jets[j].phi());
-					_procCats[p].hists1D[0][63]->Fill(_genAK4jets[j].time());
-					_procCats[p].hists1D[0][64]->Fill(_genAK4jets[j].pt());
-					_procCats[p].hists1D[0][65]->Fill(_genAK4jets[j].mass());
-					_procCats[p].hists1D[0][66]->Fill(_genAK4jets[j].E());
-					_procCats[p].hists1D[0][68]->Fill(_base->AK4Jet_genNConstituents->at(_genAK4jets[j].GetUserIdx()));
+					_procCats[p].hists1D[0][60]->Fill(_genAK4jets[j].eta());
+					_procCats[p].hists1D[0][61]->Fill(_genAK4jets[j].phi());
+					_procCats[p].hists1D[0][62]->Fill(_genAK4jets[j].time());
+					_procCats[p].hists1D[0][63]->Fill(_genAK4jets[j].pt());
+					_procCats[p].hists1D[0][64]->Fill(_genAK4jets[j].mass());
+					_procCats[p].hists1D[0][65]->Fill(_genAK4jets[j].E());
+					_procCats[p].hists1D[0][67]->Fill(_base->AK4Jet_genNConstituents->at(_genAK4jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
 					int genTopMatch = genTopMatchIdxs[j];
 					if(genTopMatch != -1){
 					if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genTopMatch].GetUserIdx()) << " and mass " << _genparts[genTopMatch].mass() << " and energy ratio " << _genAK4jets[j].E() / _genparts[genTopMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
-						_procCats[p].hists1D[0][70]->Fill(gendR);
-						_procCats[p].hists1D[0][71]->Fill(_genAK4jets[j].E()/_genparts[genTopMatch].E());
+						_procCats[p].hists1D[0][69]->Fill(gendR);
+						_procCats[p].hists1D[0][70]->Fill(_genAK4jets[j].E()/_genparts[genTopMatch].E());
 
 						_procCats[p].hists2D[0][71]->Fill(_genAK4jets[j].pt(),_genparts[genTopMatch].pt());
 						_procCats[p].hists2D[0][72]->Fill(_genAK4jets[j].E(),_genparts[genTopMatch].E());
@@ -998,8 +995,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(genWMatch != -1){
 					if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << " with id " << _base->genpart_id->at(_genparts[genWMatch].GetUserIdx()) << " and mass " << _genparts[genWMatch].mass() << " and energy ratio " << _genAK4jets[j].E()/_genparts[genWMatch].E() << endl;
 						double gendR = dR(_genAK4jets[j].eta(), _genAK4jets[j].phi(), _genparts[genWMatch].eta(), _genparts[genWMatch].phi());
-						_procCats[p].hists1D[0][136]->Fill(gendR);
-						_procCats[p].hists1D[0][137]->Fill(_genAK4jets[j].E()/_genparts[genWMatch].E());
+						_procCats[p].hists1D[0][134]->Fill(gendR);
+						_procCats[p].hists1D[0][135]->Fill(_genAK4jets[j].E()/_genparts[genWMatch].E());
 
 						_procCats[p].hists2D[0][96]->Fill(_genAK4jets[j].pt(),_genparts[genWMatch].pt());
 						_procCats[p].hists2D[0][97]->Fill(_genAK4jets[j].E(),_genparts[genWMatch].E());
@@ -1009,7 +1006,7 @@ cout << "avgPart E " << avgPartE << endl;
 					}	
 
 				}
-				_procCats[p].hists1D[0][126]->Fill((double)_genAK8jets.size());
+				_procCats[p].hists1D[0][124]->Fill((double)_genAK8jets.size());
 				njets_lead = 0;
 				njets_notlead = 0;
 				for(int j = 0; j < _genAK8jets.size(); j++){
@@ -1025,25 +1022,26 @@ cout << "avgPart E " << avgPartE << endl;
 				//cout << "gen matching gen jets to particles - end" << endl;
 				for(int j = 0; j < _genAK8jets.size(); j++){
 					if(p == 0) cout << "gen AK8 jet #" << j << " phi " << _genAK8jets[j].phi() << " eta " << _genAK8jets[j].eta() << " energy " << _genAK8jets[j].E() <<  " mass " << _genAK8jets[j].mass() << " pt " << _genAK8jets[j].pt() << endl;
-					_procCats[p].hists1D[0][127]->Fill(_genAK8jets[j].eta());
-					_procCats[p].hists1D[0][128]->Fill(_genAK8jets[j].phi());
-					_procCats[p].hists1D[0][129]->Fill(_genAK8jets[j].time());
-					_procCats[p].hists1D[0][130]->Fill(_genAK8jets[j].pt());
-					_procCats[p].hists1D[0][131]->Fill(_genAK8jets[j].mass());
-					_procCats[p].hists1D[0][132]->Fill(_genAK8jets[j].E());
-					_procCats[p].hists1D[0][133]->Fill(_base->AK8Jet_genNConstituents->at(_genAK8jets[j].GetUserIdx()));
+					_procCats[p].hists1D[0][125]->Fill(_genAK8jets[j].eta());
+					_procCats[p].hists1D[0][126]->Fill(_genAK8jets[j].phi());
+					_procCats[p].hists1D[0][127]->Fill(_genAK8jets[j].time());
+					_procCats[p].hists1D[0][128]->Fill(_genAK8jets[j].pt());
+					_procCats[p].hists1D[0][129]->Fill(_genAK8jets[j].mass());
+					_procCats[p].hists1D[0][130]->Fill(_genAK8jets[j].E());
+					_procCats[p].hists1D[0][131]->Fill(_base->AK8Jet_genNConstituents->at(_genAK8jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
 					//if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 					int genTopMatch = genTopMatchIdxs[j];
 					if(genTopMatch != -1){
 						double gendR = dR(_genAK8jets[j].eta(), _genAK8jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
-						_procCats[p].hists1D[0][134]->Fill(gendR);
+						_procCats[p].hists1D[0][132]->Fill(gendR);
+						_procCats[p].hists1D[0][133]->Fill(_genAK8jets[j].E()/_genparts[genTopMatch].E());
 						
 					}	
 
 				}
 				
-				_procCats[p].hists1D[0][99]->Fill((double)_genAK15jets.size());
+				_procCats[p].hists1D[0][97]->Fill((double)_genAK15jets.size());
 				njets_lead = 0;
 				njets_notlead = 0;
 				for(int j = 0; j < _genAK15jets.size(); j++){
@@ -1060,20 +1058,20 @@ cout << "avgPart E " << avgPartE << endl;
 				//cout << "gen matching gen jets to particles - end" << endl;
 				for(int j = 0; j < _genAK15jets.size(); j++){
 					if(p == 0) cout << "gen AK15 jet #" << j << " phi " << _genAK15jets[j].phi() << " eta " << _genAK15jets[j].eta() << " energy " << _genAK15jets[j].E() <<  " mass " << _genAK15jets[j].mass() << " pt " << _genAK15jets[j].pt() << endl;
-					_procCats[p].hists1D[0][93]->Fill(_genAK15jets[j].eta());
-					_procCats[p].hists1D[0][94]->Fill(_genAK15jets[j].phi());
-					_procCats[p].hists1D[0][95]->Fill(_genAK15jets[j].time());
-					_procCats[p].hists1D[0][96]->Fill(_genAK15jets[j].pt());
-					_procCats[p].hists1D[0][97]->Fill(_genAK15jets[j].mass());
-					_procCats[p].hists1D[0][98]->Fill(_genAK15jets[j].E());
-					_procCats[p].hists1D[0][100]->Fill(_base->AK15Jet_genNConstituents->at(_genAK15jets[j].GetUserIdx()));
+					_procCats[p].hists1D[0][91]->Fill(_genAK15jets[j].eta());
+					_procCats[p].hists1D[0][92]->Fill(_genAK15jets[j].phi());
+					_procCats[p].hists1D[0][93]->Fill(_genAK15jets[j].time());
+					_procCats[p].hists1D[0][94]->Fill(_genAK15jets[j].pt());
+					_procCats[p].hists1D[0][95]->Fill(_genAK15jets[j].mass());
+					_procCats[p].hists1D[0][96]->Fill(_genAK15jets[j].E());
+					_procCats[p].hists1D[0][98]->Fill(_base->AK15Jet_genNConstituents->at(_genAK15jets[j].GetUserIdx()));
 					//dr bw gen jet and best exclusive gen top match
 					int genTopMatch = genTopMatchIdxs[j];
 					//if(p == 0) cout << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 					if(genTopMatch != -1){
 						double gendR = dR(_genAK15jets[j].eta(), _genAK15jets[j].phi(), _genparts[genTopMatch].eta(), _genparts[genTopMatch].phi());
-						_procCats[p].hists1D[0][102]->Fill(gendR);
-						_procCats[p].hists1D[0][103]->Fill(_genAK15jets[j].E()/_genparts[genTopMatch].E());
+						_procCats[p].hists1D[0][100]->Fill(gendR);
+						_procCats[p].hists1D[0][101]->Fill(_genAK15jets[j].E()/_genparts[genTopMatch].E());
 						
 						_procCats[p].hists2D[0][76]->Fill(_genAK15jets[j].pt(),_genparts[genTopMatch].pt());
 						_procCats[p].hists2D[0][77]->Fill(_genAK15jets[j].E(),_genparts[genTopMatch].E());
@@ -1088,8 +1086,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(p == 0) cout << " matched to gen W #" << genWMatchIdxs[j] << endl;
 					if(genWMatch != -1){
 						double gendR = dR(_genAK15jets[j].eta(), _genAK15jets[j].phi(), _genparts[genWMatch].eta(), _genparts[genWMatch].phi());
-						_procCats[p].hists1D[0][138]->Fill(gendR);
-						_procCats[p].hists1D[0][139]->Fill(_genAK15jets[j].E()/_genparts[genWMatch].E());
+						_procCats[p].hists1D[0][136]->Fill(gendR);
+						_procCats[p].hists1D[0][137]->Fill(_genAK15jets[j].E()/_genparts[genWMatch].E());
 						
 						_procCats[p].hists2D[0][101]->Fill(_genAK15jets[j].pt(),_genparts[genWMatch].pt());
 						_procCats[p].hists2D[0][102]->Fill(_genAK15jets[j].E(),_genparts[genWMatch].E());
@@ -1131,7 +1129,7 @@ cout << "avgPart E " << avgPartE << endl;
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recoAK4jets.size();
-				_procCats[p].hists1D[0][18]->Fill(njets);
+				_procCats[p].hists1D[0][17]->Fill(njets);
 				int njets_lead = 0;
 				int njets_notlead = 0;
 				for(int j = 0; j < _recoAK4jets.size(); j++){
@@ -1160,24 +1158,24 @@ cout << "avgPart E " << avgPartE << endl;
 						//if(pt == 2 && jetsize < 0.2) continue;
 						
 						double rot = Rotundity(jet_cov);
-						_procCats[p].hists1D[pt][90]->Fill(rot);
+						_procCats[p].hists1D[pt][88]->Fill(rot);
 						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << " px " << _recoAK4jets[j].px() << " py " << _recoAK4jets[j].py() << " pz " << _recoAK4jets[j].pz() << " mass from rhs " << _recoAK4jets[j].mass_rhs() << endl;
-						_procCats[p].hists1D[pt][19]->Fill(jetsize);
-						_procCats[p].hists1D[pt][79]->Fill(sqrt(jet_cov.at(0,0)));
-						_procCats[p].hists1D[pt][80]->Fill(sqrt(jet_cov.at(1,1)));
-						_procCats[p].hists1D[pt][81]->Fill(sqrt(jet_cov.at(2,2)));
-						_procCats[p].hists1D[pt][20]->Fill(_recoAK4jets[j].e());
-						_procCats[p].hists1D[pt][21]->Fill(_recoAK4jets[j].pt());
-						_procCats[p].hists1D[pt][22]->Fill(_recoAK4jets[j].mass());
-						_procCats[p].hists1D[pt][82]->Fill(_recoAK4jets[j].time());
-						_procCats[p].hists1D[pt][83]->Fill(_recoAK4jets[j].eta());
-						_procCats[p].hists1D[pt][84]->Fill(_recoAK4jets[j].phi());
+						_procCats[p].hists1D[pt][18]->Fill(jetsize);
+						_procCats[p].hists1D[pt][78]->Fill(sqrt(jet_cov.at(0,0)));
+						_procCats[p].hists1D[pt][79]->Fill(sqrt(jet_cov.at(1,1)));
+						_procCats[p].hists1D[pt][80]->Fill(sqrt(jet_cov.at(2,2)));
+						_procCats[p].hists1D[pt][19]->Fill(_recoAK4jets[j].e());
+						_procCats[p].hists1D[pt][20]->Fill(_recoAK4jets[j].pt());
+						_procCats[p].hists1D[pt][21]->Fill(_recoAK4jets[j].mass());
+						_procCats[p].hists1D[pt][81]->Fill(_recoAK4jets[j].time());
+						_procCats[p].hists1D[pt][82]->Fill(_recoAK4jets[j].eta());
+						_procCats[p].hists1D[pt][83]->Fill(_recoAK4jets[j].phi());
 						_procCats[p].hists2D[pt][3]->Fill(_recoAK4jets[j].mass(), _recoAK4jets[j].pt());
 						_procCats[p].hists2D[pt][4]->Fill(_recoAK4jets[j].mass(), jetsize);
 						_procCats[p].hists2D[pt][21]->Fill((double)_recoAK4jets.size(), jetsize);
 						
 						//fill subcluster hists
-						_procCats[p].hists1D[pt][31]->Fill(_recoAK4jets[j].GetNConstituents());
+						_procCats[p].hists1D[pt][30]->Fill(_recoAK4jets[j].GetNConstituents());
 						_procCats[p].hists2D[pt][8]->Fill(_recoAK4jets[j].GetNRecHits(),_recoAK4jets[j].GetNConstituents());
 						_procCats[p].hists2D[pt][25]->Fill(_recoAK4jets[j].GetNConstituents(), _recoAK4jets[j].mass());
 						_procCats[p].hists2D[pt][26]->Fill(_recoAK4jets[j].GetNConstituents(), _recoAK4jets[j].e());
@@ -1191,25 +1189,25 @@ cout << "avgPart E " << avgPartE << endl;
 						double rnk = 0;
 						for(int c = 0; c < (int)consts.size(); c++){
 							Jet subcl = consts[c];
-							_procCats[p].hists1D[pt][32]->Fill(subcl.E());
-							_procCats[p].hists1D[pt][33]->Fill(subcl.time());
-							_procCats[p].hists1D[pt][34]->Fill(subcl.eta());
-							_procCats[p].hists1D[pt][35]->Fill(subcl.phi());
+							_procCats[p].hists1D[pt][31]->Fill(subcl.E());
+							_procCats[p].hists1D[pt][32]->Fill(subcl.time());
+							_procCats[p].hists1D[pt][33]->Fill(subcl.eta());
+							_procCats[p].hists1D[pt][34]->Fill(subcl.phi());
 							
 							Matrix subcl_cov = subcl.GetCovariance();
-							_procCats[p].hists1D[pt][36]->Fill(sqrt(subcl_cov.at(0,0)));
-							_procCats[p].hists1D[pt][37]->Fill(sqrt(subcl_cov.at(1,1)));
-							_procCats[p].hists1D[pt][38]->Fill(sqrt(subcl_cov.at(2,2)));
-							_procCats[p].hists1D[pt][39]->Fill(subcl_cov.at(0,1));
-							_procCats[p].hists1D[pt][40]->Fill(subcl_cov.at(0,2));
-							_procCats[p].hists1D[pt][41]->Fill(subcl_cov.at(1,2));
-							_procCats[p].hists1D[pt][51]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)));
-							_procCats[p].hists1D[pt][52]->Fill(subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
-							_procCats[p].hists1D[pt][53]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][35]->Fill(sqrt(subcl_cov.at(0,0)));
+							_procCats[p].hists1D[pt][36]->Fill(sqrt(subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][37]->Fill(sqrt(subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][38]->Fill(subcl_cov.at(0,1));
+							_procCats[p].hists1D[pt][39]->Fill(subcl_cov.at(0,2));
+							_procCats[p].hists1D[pt][40]->Fill(subcl_cov.at(1,2));
+							_procCats[p].hists1D[pt][50]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)));
+							_procCats[p].hists1D[pt][51]->Fill(subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
+							_procCats[p].hists1D[pt][52]->Fill(subcl_cov.at(1,2)/sqrt(subcl_cov.at(1,1)*subcl_cov.at(2,2)));
 							_procCats[p].hists2D[pt][19]->Fill(subcl_cov.at(0,1),subcl_cov.at(0,2));
 							_procCats[p].hists2D[pt][20]->Fill(subcl_cov.at(0,1)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(1,1)),subcl_cov.at(0,2)/sqrt(subcl_cov.at(0,0)*subcl_cov.at(2,2)));
 					
-							_procCats[p].hists1D[pt][146]->Fill(subcl.m());
+							_procCats[p].hists1D[pt][144]->Fill(subcl.m());
 							_procCats[p].hists2D[pt][109]->Fill(subcl.E(), subcl.m());
 							//effective # of rhs is sum of weights bc weights are each the responsibility of rechit n to this subcl
 							vector<double> ws;
@@ -1219,7 +1217,7 @@ cout << "avgPart E " << avgPartE << endl;
 								effnRhs += ws[n]; 
 							}
 							if(p == 0 && pt == 0) cout << " subcl #" << c << " has " << effnRhs << " # of effective rechits of " << ws.size() << " total rhs and mass " << subcl.m() << " and energy " << subcl.E() << " px " << subcl.px() << " py " << subcl.py() << " pz " << subcl.pz() << endl;
-							_procCats[p].hists1D[pt][147]->Fill(effnRhs);
+							_procCats[p].hists1D[pt][145]->Fill(effnRhs);
 							_procCats[p].hists2D[pt][110]->Fill(subcl.E(), effnRhs);
 							_procCats[p].hists2D[pt][111]->Fill(subcl.m(), effnRhs);
 
@@ -1227,7 +1225,7 @@ cout << "avgPart E " << avgPartE << endl;
 							//do dr calcs bw all subclusters
 							for(int cc = c+1; cc < consts.size(); cc++){
 								double dr = dR(consts[c].eta(), consts[c].phi(), consts[cc].eta(), consts[cc].phi());
-								_procCats[p].hists1D[pt][88]->Fill(dr);
+								_procCats[p].hists1D[pt][86]->Fill(dr);
 							}
 				
 
@@ -1235,8 +1233,8 @@ cout << "avgPart E " << avgPartE << endl;
 						vector<Jet> rhs;
 						_recoAK4jets[j].GetJets(rhs);
 						for(int r = 0; r < rhs.size(); r++){
-							_procCats[p].hists1D[pt][43]->Fill(rhs[r].E());
-							_procCats[p].hists1D[pt][50]->Fill(rhs[r].t());
+							_procCats[p].hists1D[pt][42]->Fill(rhs[r].E());
+							_procCats[p].hists1D[pt][49]->Fill(rhs[r].t());
 						}
 						vector<pair<double,double>> geoEavg_diffT;
 						vector<JetPoint> rhs_pt = _recoAK4jets[j].GetJetPoints();
@@ -1244,7 +1242,7 @@ cout << "avgPart E " << avgPartE << endl;
 						for(int r = 0; r < geoEavg_diffT.size(); r++){
 						      _procCats[p].hists2D[pt][18]->Fill(geoEavg_diffT[r].first, geoEavg_diffT[r].second);
 						}
-						_procCats[p].hists1D[pt][42]->Fill(_recoAK4jets[j].GetNRecHits());
+						_procCats[p].hists1D[pt][41]->Fill(_recoAK4jets[j].GetNRecHits());
 						//if no gen match, skip
 						if(genMatchIdxs_jet[j] != -1){
 							genidx = genMatchIdxs_jet[j];	
@@ -1255,8 +1253,8 @@ cout << "avgPart E " << avgPartE << endl;
 							jetpt = _genAK4jets[genidx].pt();//_base->Jet_genPt->at(genjetidx);
 							jetpz = _genAK4jets[genidx].pz();//_base->Jet_genPz->at(genjetidx);
 
-							_procCats[p].hists1D[pt][44]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
-							_procCats[p].hists1D[pt][45]->Fill(jetpt);	
+							_procCats[p].hists1D[pt][43]->Fill(sqrt(jetpt*jetpt + jetpz*jetpz));	
+							_procCats[p].hists1D[pt][44]->Fill(jetpt);	
 							_procCats[p].hists2D[pt][16]->Fill(jetpt, _recoAK4jets[j].GetNConstituents());
 							_procCats[p].hists2D[pt][24]->Fill(_recoAK4jets[j].GetNConstituents(), _base->AK4Jet_genNConstituents->at(genjetidx));
 				
@@ -1276,10 +1274,10 @@ cout << "avgPart E " << avgPartE << endl;
 									genpt = _base->genpart_pt->at(genpartidx);
 									pz = _base->genpart_pz->at(genpartidx);
 									ratio_p = (sqrt(genpt*genpt + pz*pz))/(sqrt(jetpt*jetpt + jetpz*jetpz));	
-									_procCats[p].hists1D[pt][46]->Fill(genpt);	
-									_procCats[p].hists1D[pt][47]->Fill(sqrt(genpt*genpt + pz*pz));
-									_procCats[p].hists1D[pt][48]->Fill( ratio_p );	
-									_procCats[p].hists1D[pt][49]->Fill( genpt/jetpt );
+									_procCats[p].hists1D[pt][45]->Fill(genpt);	
+									_procCats[p].hists1D[pt][46]->Fill(sqrt(genpt*genpt + pz*pz));
+									_procCats[p].hists1D[pt][47]->Fill( ratio_p );	
+									_procCats[p].hists1D[pt][48]->Fill( genpt/jetpt );
 
 									_procCats[p].hists2D[pt][10]->Fill(sqrt(genpt*genpt + pz*pz), sqrt(jetpt*jetpt + jetpz*jetpz));	
 									_procCats[p].hists2D[pt][11]->Fill(genpt, jetpt);	
@@ -1318,8 +1316,8 @@ cout << "avgPart E " << avgPartE << endl;
 							_procCats[p].hists2D[pt][90]->Fill(_recoAK4jets[j].phi(), _genparts[genpartidx].phi());
 		
 							double dr = dR(_recoAK4jets[j].eta(), _recoAK4jets[j].phi(), _genparts[genpartidx].eta(), _genparts[genpartidx].phi());
-							_procCats[p].hists1D[pt][144]->Fill(dr);
-							_procCats[p].hists1D[pt][145]->Fill(_recoAK4jets[j].E()/_genparts[genpartidx].E());
+							_procCats[p].hists1D[pt][142]->Fill(dr);
+							_procCats[p].hists1D[pt][143]->Fill(_recoAK4jets[j].E()/_genparts[genpartidx].E());
 						}
 					}
 				}
@@ -1342,10 +1340,10 @@ cout << "avgPart E " << avgPartE << endl;
 			int nhist1d_start = -1;
 			int nhist2d_start = -1;
 			if(AK == 8){
-				nhist1d_start = 104;
+				nhist1d_start = 102;
 			}
 			else if(AK == 15){
-				nhist1d_start = 115;
+				nhist1d_start = 113;
 				nhist2d_start = 66;
 			}
 			else return; //not defined for other jet sizes and nominal FillRecoJetHists() fills for AK4
@@ -1394,7 +1392,7 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 							_procCats[p].hists2D[pt][nhist2d_start + 65]->Fill(recojets[j].m(), jetsize);
 						}
 						if(AK == 8){
-							_procCats[p].hists2D[pt][131]->Fill(recojets[j].m(), jetsize);
+							_procCats[p].hists2D[pt][130]->Fill(recojets[j].m(), jetsize);
 						}
 
 						//if no gen top match, skip
@@ -1453,8 +1451,8 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 					 bestIdx = genMatchIdxs_reco[j];
 					
 					_procCats[p].hists2D[0][0]->Fill(_genAK4jets[bestIdx].E(), _recoAK4jets[j].pt() - _genAK4jets[bestIdx].pt());
-					_procCats[p].hists1D[0][23]->Fill(_recoAK4jets[j].pt()/_genAK4jets[bestIdx].pt());
-					_procCats[p].hists1D[0][24]->Fill(_recoAK4jets[j].e()/_genAK4jets[bestIdx].e());
+					_procCats[p].hists1D[0][22]->Fill(_recoAK4jets[j].pt()/_genAK4jets[bestIdx].pt());
+					_procCats[p].hists1D[0][23]->Fill(_recoAK4jets[j].e()/_genAK4jets[bestIdx].e());
 					_procCats[p].hists2D[0][1]->Fill(_genAK4jets[bestIdx].pt(), _recoAK4jets[j].pt());
 					_procCats[p].hists2D[0][2]->Fill(_genAK4jets[bestIdx].mass(), _recoAK4jets[j].pt()/_genAK4jets[bestIdx].pt());
 				}
@@ -1782,336 +1780,332 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		TH1D* predJet_pt = new TH1D("BHCJet_pt","BHCJet_pt",25,0,1000);
 		//9 - bhc jet mass
 		TH1D* predJet_mass = new TH1D("BHCJet_mass","BHCJet_mass",50,0,250);
-		//10 - resolution of difference of pt between reco and gen jets as a function of gen jet energy
-		TH1D* jetGenE_sigmaDeltaPt_predGen = new TH1D("jetGenE_sigmaDeltaPt_predGen","jetGenE_sigmaDeltaPt_predGen",5,0,100);
-		//11 - # pred jets - # reco jets
+		//break!!!!!! -1 of all below
+		//10 - # pred jets - # reco jets
 		TH1D* predGen_nJets = new TH1D("BHCRecoAK4_diffNJets","BHCRecoAK4_diffNJets",20,-10,10);
-		//for subclusters
-		//12 - eta sigma
+		//11 - eta sigma
 		TH1D* predJet_subClusterEtaSig = new TH1D("BHCJet_subclusterEtaSig","BHCJet_subclusterEtaSig",50,0.,0.5);
-		//13 - phi sigma
+		//12 - phi sigma
 		TH1D* predJet_subClusterPhiSig = new TH1D("BHCJet_subclusterPhiSig","BHCJet_subclusterPhiSig",50,0.,0.5);
-		//14 - time sigma
+		//13 - time sigma
 		TH1D* predJet_subClusterTimeSig = new TH1D("BHCJet_subclusterTimeSig","BHCJet_subclusterTimeSig",50,0.,10.);
-		//15 - etaphi cov
+		//14 - etaphi cov
 		TH1D* predJet_subClusteretaPhiCov = new TH1D("BHCJet_subclusterEtaPhiCov","BHCJet_subclusterEtaPhiCov",50,-0.0005,0.0005);
-		//16 - time-eta covariance
+		//15 - time-eta covariance
 		TH1D* predJet_subClustertimeEtaCov = new TH1D("BHCJet_subclusterTimeEtaCov","BHCJet_subclusterTimeEtaCov",50,-0.05,0.05);
-		//17 - time-phi covariance
+		//16 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subclusterTimePhiCov","BHCJet_subclusterTimePhiCov",50,-0.05,0.05);
-		//18 - n reco AK4 jets
+		//17 - n reco AK4 jets
 		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",30,0,30);
-		//19 - reco AK4 jet size
+		//18 - reco AK4 jet size
 		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,2.);
-		//20 - reco AK4 jet energy
+		//19 - reco AK4 jet energy
 		TH1D* recoJet_energy = new TH1D("recoAK4Jet_energy","recoAK4Jet_energy",25,0,500);
-		//21 - reco AK4 jet pt
+		//20 - reco AK4 jet pt
 		TH1D* recoJet_pt = new TH1D("recoAK4Jet_pt","recoAK4Jet_pt",25,0,1000);
-		//22 - reco AK4 jet mass
+		//21 - reco AK4 jet mass
 		TH1D* recoJet_mass = new TH1D("recoAK4Jet_mass","recoAK4Jet_mass",50,0,250);
-		//23 - reco jet pt/gen jet pt
+		//22 - reco jet pt/gen jet pt
 		TH1D* recoGen_jetPtRatio = new TH1D("recoAK4Gen_jetPtRatio","recoAK4Gen_jetPtRatio",20,0,1.5);
-		//24 - reco jet e - gen jet e		
+		//23 - reco jet e - gen jet e		
 		TH1D* recoGen_jetERatio = new TH1D("recoAK4Gen_jetERatio","recoAK4Gen_jetERatio",20,-10,10);
-		//25 - 31 - eta sigma for jet
+		//24 - eta sigma for jet
 		TH1D* predJet_EtaVar = new TH1D("BHCJet_EtaSig","BHCJet_EtaSig",25,0.,1.);
-		//26 - 32 - phi sigma for jet
+		//25 - phi sigma for jet
 		TH1D* predJet_PhiVar = new TH1D("BHCJet_PhiSig","BHCJet_PhiSig",25,0., 1.);
-		//27 - 33 - time sigma for jet
+		//26 - time sigma for jet
 		TH1D* predJet_TimeVar = new TH1D("BHCJet_TimeSig","BHCJet_TimeSig",25,0.,10.);
-		//28 - 34 - eta-phi covariance for jet
+		//27 - eta-phi covariance for jet
 		TH1D* predJet_etaPhiCov = new TH1D("BHCJet_etaPhiCov","BHCJet_etaPhiCov",25,-0.0005,0.0005);
-		//29 - 35 - time-eta covariance for jet
+		//28 - time-eta covariance for jet
 		TH1D* predJet_timeEtaCov = new TH1D("BHCJet_timeEtaCov","BHCJet_timeEtaCov",25,-0.2,0.2);
-		//30 - 36 - time-phi covariance for jet
+		//29 - time-phi covariance for jet
 		TH1D* predJet_timePhiCov = new TH1D("BHCJet_timePhiCov","BHCJet_timePhiCov",25,-0.2,0.2);
-		//31 - 37 - n GMM clusters in reco jets
+		//30 - n GMM clusters in reco jets
 		TH1D* reco_nSubclusters = new TH1D("recoAK4Jet_nSubclustersJet","recoAK4Jet_nSubclustersJet",30,0,30);
-		//32 - 38 - energy per GMM cluster from reco jets
+		//31 - energy per GMM cluster from reco jets
 		TH1D* recoJet_subClusterEnergy = new TH1D("recoAK4Jet_subclusterEnergy","recoAK4Jet_subclusterEnergy",50,0,500);
-		//33 - 39 - time center of GMM cluster from reco jets
+		//32 - time center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeCenter = new TH1D("recoAK4Jet_subclusterTimeCenter","recoAK4Jet_subclusterTimeCenter",25,-1,1);
-		//34 - 40 - eta center of GMM cluster from reco jets
+		//33 - eta center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaCenter = new TH1D("recoAK4Jet_subclusterEtaCenter","recoAK4Jet_subclusterEtaCenter",25,-3.2,3.2);
-		//35 - 41 - phi center of GMM cluster from reco jets
+		//34 - phi center of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiCenter = new TH1D("recoAK4Jet_subclusterPhiCenter","recoAK4Jet_subclusterPhiCenter",25,0.,8*atan(1));
-		//36 - 42 - eta sigma of GMM cluster from reco jets
+		//35 - eta sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterEtaSig = new TH1D("recoAK4Jet_subclusterEtaSig","recoAK4Jet_subclusterEtaSig",50,0.,0.5);
-		//37 - 43 - phi sigma of GMM cluster from reco jets
+		//36 - phi sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterPhiSig = new TH1D("recoAK4Jet_subclusterPhiSig","recoAK4Jet_subclusterPhiSig",50,0.,0.5);
-		//38 - 44 - time sigma of GMM cluster from reco jets
+		//37 - time sigma of GMM cluster from reco jets
 		TH1D* recoJet_subClusterTimeSig = new TH1D("recoAK4Jet_subclusterTimeSig","recoAK4Jet_subclusterTimeSig",50,0.,10.);
-		//39 - 45 - eta-phi covariance of GMM cluster from reco jets
+		//38 - eta-phi covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClusteretaPhiCov = new TH1D("recoAK4Jet_subclusterEtaPhiCov","recoAK4Jet_subclusterEtaPhiCov",50,-0.0005,0.0005);
-		//40 - 46 - time-eta covariance of GMM cluster from reco jets
+		//39 - time-eta covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClustertimeEtaCov = new TH1D("recoAK4Jet_subclusterTimeEtaCov","recoAK4Jet_subclusterTimeEtaCov",50,-0.05,0.05);
-		//41 - 47 - time-phi covariance of GMM cluster from reco jets
+		//40 - time-phi covariance of GMM cluster from reco jets
 		TH1D* recoJet_subClustertimePhiCov = new TH1D("recoAK4Jet_subclusterTimePhiCov","recoAK4Jet_subclusterTimePhiCov",50,-0.05,0.05);
-		//42 - 48 - n rhs in reco jets
+		//41 - n rhs in reco jets
 		TH1D* recoJet_nRhs = new TH1D("recoAK4Jet_nRhs","recoAK4Jet_nRhs",300,0,300);
-		//43 - 49 - rh energy in reco jets
+		//42 - rh energy in reco jets
 		TH1D* recoJet_rhE = new TH1D("recoAK4Jet_rhE","recoAK4Jet_rhE",50,0,300);
-		//44 - 50 - AK4 Jet P 
+		//43 - AK4 Jet P 
 		TH1D* AK4Jet_GenP = new TH1D("recoAK4Jet_GenP","recoAK4Jet_GenP",50,0,500);
-		//45 - 51 - AK4 Jet Pt 
+		//44 - AK4 Jet Pt 
 		TH1D* AK4Jet_GenPt = new TH1D("recoAK4Jet_GenPt","recoAK4Jet_GenPt",50,0,500);
-		//46 - 52 - Gen particle Pt 
+		//45 - Gen particle Pt 
 		TH1D* AK4JetConstituent_GenP = new TH1D("recoAK4JetConstituent_GenP","recoAK4JetConstituent_GenP",50,0,200);
-		//47 - 53 - Gen particle Pt 
+		//46 - Gen particle Pt 
 		TH1D* AK4JetConstituent_GenPt = new TH1D("recoAK4JetConstituent_GenPt","recoAK4JetConstituent_GenPt",50,0,200);
-		//48 - 54 - Gen particle P/Gen jet P 
+		//47 - Gen particle P/Gen jet P 
 		TH1D* AK4JetConstJetRatio_GenP = new TH1D("recoAK4JetConstJetRatio_GenP","recoAK4JetConstJetRatio_GenP",50,0,1);
-		//49 - 55 - Gen particle Pt/Gen jet Pt 
+		//48 - Gen particle Pt/Gen jet Pt 
 		TH1D* AK4JetConstJetRatio_GenPt = new TH1D("recoAK4JetConstJetRatio_GenPt","recoAK4JetConstJetRatio_GenPt",50,0,1);
-		//50 - 56 - ak4 jet rh times
+		//49 - ak4 jet rh times
 		TH1D* AK4Jet_rhTimes = new TH1D("recoAK4Jet_rhTimes","recoAK4Jet_rhTimes",200,-25,25);
-		//51 - 57 - eta-phi covariance of GMM cluster from reco jets normalized
+		//50 - eta-phi covariance of GMM cluster from reco jets normalized
 		TH1D* recoJet_subClusteretaPhiCovNorm = new TH1D("recoAK4Jet_subClusteretaPhiCovNorm","recoAK4Jet_subClusteretaPhiCovNorm",50,-1.,1.);
-		//52 - 58 - time-eta covariance of GMM cluster from reco jets normalized
+		//51 - time-eta covariance of GMM cluster from reco jets normalized
 		TH1D* recoJet_subClustertimeEtaCovNorm = new TH1D("recoAK4Jet_subClustertimeEtaCovNorm","recoAK4Jet_subClustertimeEtaCovNorm",50,-1.,1.);
-		//53 - 59 - time-phi covariance of GMM cluster from reco jets normalized
+		//52 - time-phi covariance of GMM cluster from reco jets normalized
 		TH1D* recoJet_subClustertimePhiCovNorm = new TH1D("recoAK4Jet_subClustertimePhiCovNorm","recoAK4Jet_subClustertimePhiCovNorm",50,-1.,1.);
-		//54 - 60 - # gen partons (t, b, q from W)
+		//53 - # gen partons (t, b, q from W)
 		TH1D* nGenParticles = new TH1D("nGenParticles","nGenParticles",20,0,20);
-		//55 - 61 - gen particle eta at detector
+		//54 - gen particle eta at detector
 		TH1D* genParticle_eta = new TH1D("genParticle_eta","genParticle_eta",25,-3.2,3.2);
-		//56 - 62 - gen particle phi at detector
+		//55 - 62 - gen particle phi at detector
 		TH1D* genParticle_phi = new TH1D("genParticle_phi","genParticle_phi",25,0.,8*atan(1));
-		//57 - 63 - gen particle time at detector
+		//56 - 63 - gen particle time at detector
 		TH1D* genParticle_time = new TH1D("genParticle_time","genParticle_time",25,-10,10);
-		//58 - 64 - gen particle pt		
+		//57 - gen particle pt		
 		TH1D* genParticle_pt = new TH1D("genParticle_pt","genParticle_pt",25,0,500);
-		//59 - 65 - gen particle mass
+		//58 - gen particle mass
 		TH1D* genParticle_mass = new TH1D("genParticle_mass","genParticle_mass",25,0,250);
-		//60 - 66 - gen particle energy
+		//59 - gen particle energy
 		TH1D* genParticle_energy = new TH1D("genParticle_energy","genParticle_energy",50,0,500);
-		//61 - 67 - gen AK4 jet eta at detector
+		//60 - gen AK4 jet eta at detector
 		TH1D* genAK4Jet_eta = new TH1D("genAK4Jet_EtaCenter","genAK4Jet_EtaCenter",25,-3.2,3.2);
-		//62 - 68 - gen AK4 jet phi at detector
+		//61 - gen AK4 jet phi at detector
 		TH1D* genAK4Jet_phi = new TH1D("genAK4Jet_PhiCenter","genAK4Jet_PhiCenter",25,0.,8*atan(1));
-		//63 - 69 - gen AK4 jet time at detector
+		//62 - gen AK4 jet time at detector
 		TH1D* genAK4Jet_time = new TH1D("genAK4Jet_TimeCenter","genAK4Jet_TimeCenter",25,-1,1);
-		//64 - 70 - gen AK4 jet pt		
+		//63 - gen AK4 jet pt		
 		TH1D* genAK4Jet_pt = new TH1D("genAK4Jet_pt","genAK4Jet_pt",25,0,1000);
-		//65 - 71 - gen AK4 jet mass
+		//64 - gen AK4 jet mass
 		TH1D* genAK4Jet_mass = new TH1D("genAK4Jet_mass","genAK4Jet_mass",50,0,50);
-		//66 - 72 - gen AK4 jet energy
+		//65 - gen AK4 jet energy
 		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,500);
-		//67 - 73 - # gen AK4 jets
+		//66 - # gen AK4 jets
 		TH1D* nJet_genAK4Jet = new TH1D("genAK4_nJets","genAK4_nJets",30,0,30);
-		//68 - 74 - # constituents per gen AK4 jet
+		//67 - # constituents per gen AK4 jet
 		TH1D* genAK4Jet_nConstituents = new TH1D("genAK4Jet_nConstituents","genAK4Jet_nConstituents",50,0,50);
-		//69 - 75 - # gen jets - # gen particles
+		//68 - # gen jets - # gen particles
 		TH1D* genAK4JetParticle_nDiff = new TH1D("genAK4Jet_genParticle_nDiff","genAK4Jet_genParticle_nDiff",20,-10,10);
-		//70 - 76 - dR bw gen jet and gen top its exclusively matched to
+		//69 - dR bw gen jet and gen top its exclusively matched to
 		TH1D* genAK4JetTop_dR = new TH1D("genAK4Jet_genTop_dR","genAK4Jet_genTop_dR",25,0,1.5);
-		//71 - 77 - E ratio bw gen jet and gen top its exclusively matched to - gen jet energy/gen top energy
+		//70 - E ratio bw gen jet and gen top its exclusively matched to - gen jet energy/gen top energy
 		TH1D* genAK4JetTop_Eratio = new TH1D("genAK4Jet_genTop_Eratio","genAK4Jet_genTop_Eratio",25,0,2);
-		//72 - 78 - # bhc jets - # gen particles
+		//71 - # bhc jets - # gen particles
 		TH1D* BHCJetParticle_nDiff = new TH1D("BHCJet_genParticle_nDiff","BHCJet_genParticle_nDiff",20,-10,10);
-		//73 - 79 - dR bw bhc jet and gen top its exclusively matched to
+		//72 - dR bw bhc jet and gen top its exclusively matched to
 		TH1D* BHCJetTop_dR = new TH1D("BHCJet_genTop_dR","BHCJet_genTop_dR",25,0,1.5);
-		//74 - 80 - E ratio bw bhc jet and gen top its exclusively matched to - bhc jet energy/gen top energy
+		//73 - E ratio bw bhc jet and gen top its exclusively matched to - bhc jet energy/gen top energy
 		TH1D* BHCJetTop_Eratio = new TH1D("BHCJet_genTop_Eratio","BHCJet_genTop_Eratio",25,0,2);
-		//75 - 81 - bhc jet eta center
+		//74 - bhc jet eta center
 		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-3.2,3.2);
-		//76 - 82 - bhc jet phi center
+		//75 - bhc jet phi center
 		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,0.,8*atan(1));
-		//77 - 83 - bhc jet center
+		//76 - bhc jet center
 		TH1D* BHCJet_TimeCenter = new TH1D("BHCJet_TimeCenter","BHCJet_TimeCenter",25,-1,1);
-		//78 - 84 - rh time
+		//77 - rh time
 		TH1D* rhTime = new TH1D("rhTime","rhTime",25,-10,10);
-		//79 - 85 - recoAK4 jet rh eta sig
+		//78 - recoAK4 jet rh eta sig
 		TH1D* recoAK4Jet_rhEtaSig = new TH1D("recoAK4Jet_rhEtaSig","recoAK4_rhEtaSig",50,0,1);
-		//80 - 86 - recoAK4 jet rh phi sig
+		//79 - recoAK4 jet rh phi sig
 		TH1D* recoAK4Jet_rhPhiSig = new TH1D("recoAK4Jet_rhPhiSig","recoAK4_rhPhiSig",50,0,1);
-		//81 - 87 - BHC jet rh time sig
+		//80 - BHC jet rh time sig
 		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_rhTimeSig","recoAK4_rhTimeSig",50,0,5);
-		//82 - 88 - reco AK4 jet center
+		//81 - reco AK4 jet center
 		TH1D* recoAK4Jet_TimeCenter = new TH1D("recoAK4Jet_TimeCenter","recoAK4Jet_TimeCenter",25,-1,1);
-		//83 - 89 - reco AK4 jet eta at detector
+		//82 - reco AK4 jet eta at detector
 		TH1D* recoAK4Jet_EtaCenter = new TH1D("recoAK4Jet_EtaCenter","recoAK4Jet_EtaCenter",25,-3.2,3.2);
-		//84 - 90 - reco AK4 jet phi at detector
+		//83 - reco AK4 jet phi at detector
 		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,0.,8*atan(1));
-		//85 - 91 - reco AK4 jet # subclusters in event
+		//84 - reco AK4 jet # subclusters in event
 		TH1D* recoAK4Jet_nSubclustersEvt = new TH1D("recoAK4Jet_nSubclustersEvt","recoAK4Jet_nSubclustersEvt",30,0,30);
-		//86 - 92 - bhc jet # subclusters in event
-		TH1D* BHCJet_nSubclustersEvt = new TH1D("BHCJet_nSubclustersEvt","BHCJet_nSubclustersEvt",30,0,30);
-		//87 - 93 - dr bw subclusters in BHC jet
+		//85 - dr bw subclusters in BHC jet
 		TH1D* BHCJet_drSubclusters = new TH1D("BHCJet_drSubclusters","BHCJet_drSubclusters",50,0,0.1);
-		//88 - 94 - dr bw subclusters in reco AK4 jet
+		//86 - dr bw subclusters in reco AK4 jet
 		TH1D* recoAK4Jet_drSubclusters = new TH1D("recoAK4Jet_drSubclusters","recoAK4Jet_drSubclusters",50,0,0.1);
-		//89 - 95 - rh energy in reco jets
+		//87 - rh energy in reco jets
 		TH1D* BHCJet_rhE = new TH1D("BHCJet_rhE","BHCJet_rhE",50,0,300);
-		//90 - 96 - reco AK4 rotundity
+		//88 - reco AK4 rotundity
 		TH1D* recoAK4Jet_rotundity = new TH1D("recoAK4Jet_rotundity","recoAK4Jet_rotundity",50,0.4,1.1);
-		//91 - 97 - BHC rotundity	
+		//89 - BHC rotundity	
 		TH1D* BHCJet_rotundity = new TH1D("BHCJet_rotundity","BHCJet_rotundity",50,0.4,1.1);
-		//92 - 98 - BHC jet n rhs
+		//90 - BHC jet n rhs
 		TH1D* BHCJet_nRhs = new TH1D("BHCJet_nRhs","BHCJet_nRhs",300,0,300);
-		//93 - 99 - gen AK15 jet eta at detector
+		//91 - gen AK15 jet eta at detector
 		TH1D* genAK15Jet_eta = new TH1D("genAK15Jet_EtaCenter","genAK15Jet_EtaCenter",25,-3.2,3.2);
-		//94 - 100 - gen AK15 jet phi at detector
+		//92 - gen AK15 jet phi at detector
 		TH1D* genAK15Jet_phi = new TH1D("genAK15Jet_PhiCenter","genAK15Jet_PhiCenter",25,0.,8*atan(1));
-		//95 - 101 - gen AK15 jet time at detector
+		//93 - gen AK15 jet time at detector
 		TH1D* genAK15Jet_time = new TH1D("genAK15Jet_TimeCenter","genAK15Jet_TimeCenter",25,-1,1);
-		//96 - 102 - gen AK15 jet pt		
+		//94 - gen AK15 jet pt		
 		TH1D* genAK15Jet_pt = new TH1D("genAK15Jet_pt","genAK15Jet_pt",25,0,1000);
-		//97 - 103 - gen AK15 jet mass
+		//95 - gen AK15 jet mass
 		TH1D* genAK15Jet_mass = new TH1D("genAK15Jet_mass","genAK15Jet_mass",50,0,50);
-		//98 - 104 - gen AK15 jet energy
+		//96 - gen AK15 jet energy
 		TH1D* genAK15Jet_energy = new TH1D("genAK15Jet_energy","genAK15Jet_energy",25,0,500);
-		//99 - 105 - # gen AK15 jets
+		//97 - # gen AK15 jets
 		TH1D* nJet_genAK15Jet = new TH1D("genAK15_nJets","genAK15_nJets",30,0,30);
-		//100 - 106 - # constituents per gen AK15 jet
+		//98 - # constituents per gen AK15 jet
 		TH1D* genAK15Jet_nConstituents = new TH1D("genAK15Jet_nConstituents","genAK15Jet_nConstituents",50,0,50);
-		//101 - 107 - # gen jets - # gen particles
+		//99 - # gen jets - # gen particles
 		TH1D* genAK15JetParticle_nDiff = new TH1D("genAK15Jet_genParticle_nDiff","genAK15Jet_genParticle_nDiff",20,-10,10);
-		//102 - 108 - dR bw gen jet and gen top its exclusively matched to
+		//100 - dR bw gen jet and gen top its exclusively matched to
 		TH1D* genAK15JetTop_dR = new TH1D("genAK15Jet_genTop_dR","genAK15Jet_genTop_dR",25,0,1.5);
-		//103 - 109 - E ratio bw gen jet and gen top its exclusively matched to - gen jet energy/gen top energy
+		//101 - E ratio bw gen jet and gen top its exclusively matched to - gen jet energy/gen top energy
 		TH1D* genAK15JetTop_Eratio = new TH1D("genAK15Jet_genTop_Eratio","genAK15Jet_genTop_Eratio",25,0,2);
-		//104 - 110 - n reco AK8 jets
+		//102 - n reco AK8 jets
 		TH1D* nRecoAK8Jets = new TH1D("recoAK8_nJets","recoAK8_nJets",30,0,30);
-		//105 - 111 - reco AK8 jet eta at detector
+		//103 - reco AK8 jet eta at detector
 		TH1D* recoAK8Jet_eta = new TH1D("recoAK8Jet_EtaCenter","recoAK8Jet_EtaCenter",25,-3.2,3.2);
-		//106 - 112 - reco AK8 jet phi at detector
+		//104 - reco AK8 jet phi at detector
 		TH1D* recoAK8Jet_phi = new TH1D("recoAK8Jet_PhiCenter","recoAK8Jet_PhiCenter",25,0.,8*atan(1));
-		//107 - 113 - reco AK8 jet time at detector
+		//105 - reco AK8 jet time at detector
 		TH1D* recoAK8Jet_time = new TH1D("recoAK8Jet_TimeCenter","recoAK8Jet_TimeCenter",25,-1,1);
-		//108 - 114 - reco AK8 jet pt		
+		//106 - reco AK8 jet pt		
 		TH1D* recoAK8Jet_pt = new TH1D("recoAK8Jet_pt","recoAK8Jet_pt",25,0,1000);
-		//109 - 115 - reco AK8 jet mass
+		//107 - reco AK8 jet mass
 		TH1D* recoAK8Jet_mass = new TH1D("recoAK8Jet_mass","recoAK8Jet_mass",50,0,250);
-		//110 - 116 - reco AK8 jet energy
+		//108 - reco AK8 jet energy
 		TH1D* recoAK8Jet_energy = new TH1D("recoAK8Jet_energy","recoAK8Jet_energy",25,0,500);
-		//111 - 117 - # constituents per reco AK8 jet
+		//109 - # constituents per reco AK8 jet
 		TH1D* recoAK8Jet_nConstituents = new TH1D("recoAK8Jet_nSubclustersJet","recoAK8Jet_nSubclustersJet",30,0,30);
-		//112 - 118 - dR bw reco AK8 jet and gen top its exclusively matched to
+		//110 - dR bw reco AK8 jet and gen top its exclusively matched to
 		TH1D* recoAK8JetTop_dR = new TH1D("recoAK8Jet_genTop_dR","recoAK8Jet_genTop_dR",25,0,1.5);
-		//113 - 119 - E ratio bw reco AK8 jet and gen top its exclusively matched to - reco AK8 jet energy/gen top energy
+		//111 - E ratio bw reco AK8 jet and gen top its exclusively matched to - reco AK8 jet energy/gen top energy
 		TH1D* recoAK8JetTop_Eratio = new TH1D("recoAK8Jet_genTop_Eratio","recoAK8Jet_genTop_Eratio",25,0,2);
-		//114 - 120 - reco AK8 jet size
+		//112 - reco AK8 jet size
 		TH1D* recoAK8Jet_jetSize = new TH1D("recoAK8Jet_jetSize","recoAK8Jet_jetSize",50,0,2.);
-		//115 - 121 - n reco AK15 jets
+		//113 - n reco AK15 jets
 		TH1D* nRecoAK15Jets = new TH1D("recoAK15_nJets","recoAK15_nJets",30,0,30);
-		//116 - 122 - gen AK15 jet eta at detector
+		//114 - gen AK15 jet eta at detector
 		TH1D* recoAK15Jet_eta = new TH1D("recoAK15Jet_EtaCenter","recoAK15Jet_EtaCenter",25,-3.2,3.2);
-		//117 - 123 - reco AK15 jet phi at detector
+		//115 - reco AK15 jet phi at detector
 		TH1D* recoAK15Jet_phi = new TH1D("recoAK15Jet_PhiCenter","recoAK15Jet_PhiCenter",25,0.,8*atan(1));
-		//118 - 124 - reco AK15 jet time at detector
+		//116 - reco AK15 jet time at detector
 		TH1D* recoAK15Jet_time = new TH1D("recoAK15Jet_TimeCenter","recoAK15Jet_TimeCenter",25,-1,1);
-		//119 - 125 - reco AK15 jet pt		
+		//117 - reco AK15 jet pt		
 		TH1D* recoAK15Jet_pt = new TH1D("recoAK15Jet_pt","recoAK15Jet_pt",25,0,1000);
-		//120 - 126 - reco AK15 jet mass
+		//118 - reco AK15 jet mass
 		TH1D* recoAK15Jet_mass = new TH1D("recoAK15Jet_mass","recoAK15Jet_mass",50,0,250);
-		//121 - 127 - reco AK15 jet energy
+		//119 - reco AK15 jet energy
 		TH1D* recoAK15Jet_energy = new TH1D("recoAK15Jet_energy","recoAK15Jet_energy",25,0,500);
-		//122 - 128 - # constituents per reco AK15 jet
+		//120 - # constituents per reco AK15 jet
 		TH1D* recoAK15Jet_nConstituents = new TH1D("recoAK15Jet_nSubclustersJet","recoAK15Jet_nSubclustersJet",30,0,30);
-		//123 - 129 - dR bw reco AK15 jet and gen top its exclusively matched to
+		//121 - dR bw reco AK15 jet and gen top its exclusively matched to
 		TH1D* recoAK15JetTop_dR = new TH1D("recoAK15Jet_genTop_dR","recoAK15Jet_genTop_dR",25,0,1.5);
-		//124 - 130 - E ratio bw reco AK15 jet and gen top its exclusively matched to - reco AK15 jet energy/gen top energy
+		//122 - E ratio bw reco AK15 jet and gen top its exclusively matched to - reco AK15 jet energy/gen top energy
 		TH1D* recoAK15JetTop_Eratio = new TH1D("recoAK15Jet_genTop_Eratio","recoAK15Jet_genTop_Eratio",25,0,2);
-		//125 - 131 - reco AK15 jet size
+		//123 - reco AK15 jet size
 		TH1D* recoAK15Jet_jetSize = new TH1D("recoAK15Jet_jetSize","recoAK15Jet_jetSize",50,0,2.);
-		//126 - 132 - n gen AK8 jets
+		//124 - n gen AK8 jets
 		TH1D* nGenAK8Jets = new TH1D("genAK8_nJets","genAK8_nJets",30,0,30);
-		//127 - 133 - gen AK15 jet eta at detector
+		//125 - gen AK15 jet eta at detector
 		TH1D* genAK8Jet_eta = new TH1D("genAK8Jet_EtaCenter","genAK8Jet_EtaCenter",25,-3.2,3.2);
-		//128 - 134 - gen AK8 jet phi at detector
+		//126 - gen AK8 jet phi at detector
 		TH1D* genAK8Jet_phi = new TH1D("genAK8Jet_PhiCenter","genAK8Jet_PhiCenter",25,0.,8*atan(1));
-		//129 - 135 - gen AK8 jet time at detector
+		//127 - gen AK8 jet time at detector
 		TH1D* genAK8Jet_time = new TH1D("genAK8Jet_TimeCenter","genAK8Jet_TimeCenter",25,-1,1);
-		//130 - 136 - gen AK8 jet pt		
+		//128 - gen AK8 jet pt		
 		TH1D* genAK8Jet_pt = new TH1D("genAK8Jet_pt","genAK8Jet_pt",25,0,1000);
-		//131 - 137 - gen AK8 jet mass
+		//129 - gen AK8 jet mass
 		TH1D* genAK8Jet_mass = new TH1D("genAK8Jet_mass","genAK8Jet_mass",50,0,50);
-		//132 - 138 - gen AK8 jet energy
+		//130 - gen AK8 jet energy
 		TH1D* genAK8Jet_energy = new TH1D("genAK8Jet_energy","genAK8Jet_energy",25,0,500);
-		//133 - 139 - # constituents per gen AK8 jet
+		//131 - # constituents per gen AK8 jet
 		TH1D* genAK8Jet_nConstituents = new TH1D("genAK8Jet_nConstituents","genAK8Jet_nConstituents",50,0,50);
-		//134 - 140 - dR bw gen AK8 jet and gen top its exclusively matched to
+		//132 - dR bw gen AK8 jet and gen top its exclusively matched to
 		TH1D* genAK8JetTop_dR = new TH1D("genAK8Jet_genTop_dR","genAK8Jet_genTop_dR",25,0,1.5);
-		//135 - 141 - E ratio bw gen AK8 jet and gen top its exclusively matched to - gen AK8 jet energy/gen top energy
+		//133 - E ratio bw gen AK8 jet and gen top its exclusively matched to - gen AK8 jet energy/gen top energy
 		TH1D* genAK8JetTop_Eratio = new TH1D("genAK8Jet_genTop_Eratio","genAK8Jet_genTop_Eratio",25,0,2);
-		//136 - 148 - dR bw gen AK4 jet and gen top its exclusively matched to
+		//134 - dR bw gen AK4 jet and gen top its exclusively matched to
 		TH1D* genAK4JetW_dR = new TH1D("genAK4Jet_genW_dR","genAK4Jet_genW_dR",25,0,0.8);
-		//137 - 149 - E ratio bw gen AK4 jet and gen top its exclusively matched to - gen AK4 jet energy/gen top energy
+		//135 - E ratio bw gen AK4 jet and gen top its exclusively matched to - gen AK4 jet energy/gen top energy
 		TH1D* genAK4JetW_Eratio = new TH1D("genAK4Jet_genW_Eratio","genAK4Jet_genW_Eratio",25,0,2);
-		//138 - 150 - dR bw gen AK15 jet and gen top its exclusively matched to
+		//136 - dR bw gen AK15 jet and gen top its exclusively matched to
 		TH1D* genAK15JetW_dR = new TH1D("genAK15Jet_genW_dR","genAK15Jet_genW_dR",25,0,0.8);
-		//139 - 151 - E ratio bw gen AK15 jet and gen top its exclusively matched to - gen AK15 jet energy/gen top energy
+		//137 - E ratio bw gen AK15 jet and gen top its exclusively matched to - gen AK15 jet energy/gen top energy
 		TH1D* genAK15JetW_Eratio = new TH1D("genAK15Jet_genW_Eratio","genAK15Jet_genW_Eratio",25,0,2);
-		//140 - 152 - dR bw BHC jet and gen W its exclusively matched to
+		//138 - dR bw BHC jet and gen W its exclusively matched to
 		TH1D* BHCJetW_dR = new TH1D("BHCJet_genW_dR","BHCJet_genW_dR",25,0,0.8);
-		//141 - 153 - E ratio bw BHC jet and gen W its exclusively matched to - BHC jet energy/gen W energy
+		//139 - E ratio bw BHC jet and gen W its exclusively matched to - BHC jet energy/gen W energy
 		TH1D* BHCJetW_Eratio = new TH1D("BHCJet_genW_Eratio","BHCJet_genW_Eratio",25,0,2);
-		//142 - 154 - # subclusters in BHC jets matched to Ws
+		//140 - # subclusters in BHC jets matched to Ws
 		TH1D* BHCJetW_nSubclusters = new TH1D("BHCJetW_nSubclusters","BHCJetW_nSubclusters",10,0,10);
-		//143 - 155 - subcluster energy in BHC jets matched to Ws
+		//141 - subcluster energy in BHC jets matched to Ws
 		TH1D* BHCJetW_subClusterEnergy = new TH1D("BHCJetW_subclusterEnergy","BHCJetW_subclusterEnergy",25,0,500);
-		//144 - 156 - BHC jet subcluster mass
+		//142 - BHC jet subcluster mass
 		TH1D* BHCJet_subClusterMass = new TH1D("BHCJet_subclusterMass","BHCJet_subclusterMass",25,0,150);
-		//145 - 157 - BHC jet subcluster # effective rechits
+		//143 - BHC jet subcluster # effective rechits
 		TH1D* BHCJet_subClusterEffnRhs = new TH1D("BHCJet_subclusterEffnRhs","BHCJet_subclusterEffnRhs",25,0,150);
-		//146 - 158 - reco AK4 jet subcluster mass
+		//144 - reco AK4 jet subcluster mass
 		TH1D* recoAK4Jet_subClusterMass = new TH1D("recoAK4Jet_subclusterMass","recoAK4Jet_subclusterMass",25,0,100);
-		//147 - 159 - reco AK4 jet subcluster # effective rechits
+		//145 - reco AK4 jet subcluster # effective rechits
 		TH1D* recoAK4Jet_subClusterEffnRhs = new TH1D("recoAK4Jet_subclusterEffnRhs","recoAK4Jet_subclusterEffnRhs",25,0,150);
-		//148 - 160 - subcluster mass in BHC jets matched to Ws
+		//146 - subcluster mass in BHC jets matched to Ws
 		TH1D* BHCJetW_subClusterMass = new TH1D("BHCJetW_subclusterMass","BHCJetW_subclusterMass",25,0,200);
-		//149 - 161 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
+		//147 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
 		TH1D* BHCJetW_subClusterLeadInvMass = new TH1D("BHCJetW_subclusterLeadInvMass","BHCJetW_subclusterLeadInvMass",25,0,200);
-		//150 - 162 - BHC jets - # ghost leftover after clustering
+		//148 - BHC jets - # ghost leftover after clustering
 		TH1D* BHCJet_nGhosts = new TH1D("BHCJet_nGhosts","BHCJet_nGhosts",10,0,10);		
-		//151 - 163 - BHC jets - ghost subcl energy
+		//149 - BHC jets - ghost subcl energy
 		TH1D* BHCJet_ghostSubClusterEnergy = new TH1D("BHCJet_ghostSubclusterEnergy","BHCJet_ghostSubclusterEnergy",25,0,500);
-		//152 - 164 - BHC jets - ghost subcl eff # rhs
+		//150 - BHC jets - ghost subcl eff # rhs
 		TH1D* BHCJet_ghostSubClusterEffnRhs = new TH1D("BHCJet_ghostSubclusterEffnRhs","BHCJet_ghostSubclusterEffnRhs",25,0,200);
-		//153 - 165 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
+		//151 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
 		TH1D* BHCJetW_subclParton_dR = new TH1D("BHCJetW_subclParton_dR","BHCJetW_subclParton_dR",25,0,2);
-		//154 - 166 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
+		//152 - BHC jets - gen-matched W - Eratio (reco/gen) of gen partons in W decay and 2 lead subclusters in BHC jet
 		TH1D* BHCJetW_subclParton_Eratio = new TH1D("BHCJetW_subclParton_Eratio","BHCJetW_subclParton_Eratio",25,0,2);
-		//155 - 167 - # subclusters in BHC jets matched to Tops
+		//153 - # subclusters in BHC jets matched to Tops
 		TH1D* BHCJetTop_nSubclusters = new TH1D("BHCJetTop_nSubclusters","BHCJetTop_nSubclusters",10,0,10);
-		//156 - 168 - subcluster mass in BHC jets matched to Tops
+		//154 - subcluster mass in BHC jets matched to Tops
 		TH1D* BHCJetTop_subClusterMass = new TH1D("BHCJetTop_subclusterMass","BHCJetTop_subclusterMass",25,0,200);
-		//157 - 169 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
+		//155 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
 		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,200);
-		//158 - 170 - dR bw BHC jet and gen q its exclusively matched to
+		//156 - dR bw BHC jet and gen q its exclusively matched to
 		TH1D* BHCJetq_dR = new TH1D("BHCJet_genq_dR","BHCJet_genq_dR",25,0,0.8);
-		//159 - 171 - E ratio bw BHC jet and gen q its exclusively matched to - BHC jet energy/gen q energy
+		//157 - E ratio bw BHC jet and gen q its exclusively matched to - BHC jet energy/gen q energy
 		TH1D* BHCJetq_Eratio = new TH1D("BHCJet_genq_Eratio","BHCJet_genq_Eratio",25,0,2);
-		//160 - 172 - # subclusters in BHC jets matched to qs
+		//158 - # subclusters in BHC jets matched to qs
 		TH1D* BHCJetq_nSubclusters = new TH1D("BHCJetq_nSubclusters","BHCJetq_nSubclusters",10,0,10);
-		//161 - 173 - subcluster mass in BHC jets matched to qs
+		//159 - subcluster mass in BHC jets matched to qs
 		TH1D* BHCJetq_subClusterMass = new TH1D("BHCJetq_subclusterMass","BHCJetq_subclusterMass",25,0,500);
-		//162 - 174 - BHC jets - gen-matched to W - subcluster eta center		
+		//160 - BHC jets - gen-matched to W - subcluster eta center		
 		TH1D* BHCJetW_subclEtaCenter = new TH1D("BHCJetW_subclEtaCenter","BHCJetW_subclEtaCenter",25,-3.2,3.2);
-		//163 - 175 - BHC jets - gen-matched to W - subcluster phi center		
+		//161 - BHC jets - gen-matched to W - subcluster phi center		
 		TH1D* BHCJetW_subclPhiCenter = new TH1D("BHCJetW_subclPhiCenter","BHCJetW_subclPhiCenter",25,-3.2,3.2);
-		//164 - 176 - BHC jets - gen-matched to W - subcluster time center		
+		//162 - BHC jets - gen-matched to W - subcluster time center		
 		TH1D* BHCJetW_subclTimeCenter = new TH1D("BHCJetW_subclTimeCenter","BHCJetW_subclTimeCenter",25,-3.2,3.2);
-		//165 - 177 - BHC jets - gen-matched to W - eta sigma of GMM cluster 
+		//163 - BHC jets - gen-matched to W - eta sigma of GMM cluster 
 		TH1D* BHCJetW_subClusterEtaSig = new TH1D("BHCJetW_subclusterEtaSig","BHCJetW_subclusterEtaSig",50,0.,0.5);
-		//166 - 178 - BHC jets - gen-matched to W - phi sigma of GMM cluster 
+		//164 - BHC jets - gen-matched to W - phi sigma of GMM cluster 
 		TH1D* BHCJetW_subClusterPhiSig = new TH1D("BHCJetW_subclusterPhiSig","BHCJetW_subclusterPhiSig",50,0.,0.5);
-		//167 - 179 - BHC jets - gen-matched to W - time sigma of GMM cluster 
+		//165 - BHC jets - gen-matched to W - time sigma of GMM cluster 
 		TH1D* BHCJetW_subClusterTimeSig = new TH1D("BHCJetW_subclusterTimeSig","BHCJetW_subclusterTimeSig",50,0.,5.);
-		//168 - 180 - BHC jets - gen-matched to W - eta-phi covariance of GMM cluster 
+		//166 - BHC jets - gen-matched to W - eta-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClusteretaPhiCov = new TH1D("BHCJetW_subclusterEtaPhiCov","BHCJetW_subclusterEtaPhiCov",50,-0.0005,0.0005);
-		//169 - 181 - BHC jets - gen-matched to W - time-eta covariance of GMM cluster 
+		//167 - BHC jets - gen-matched to W - time-eta covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimeEtaCov = new TH1D("BHCJetW_subclusterTimeEtaCov","BHCJetW_subclusterTimeEtaCov",50,-0.05,0.05);
-		//170 - 182 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
+		//168 - 182 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
-		//171 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons
+		//169 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons
 		TH1D* BHCJetW_highMass_partonMatchSubclPt = new TH1D("BHCJetW_highMass_partonMatchSubclPt","BHCJetW_highMass_partonMatchSubclPt",50,0,1000);
-		//172 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons
+		//170 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons
 		TH1D* BHCJetW_highMass_partonNoMatchSubclPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPt","BHCJetW_highMass_partonNoMatchSubclPt",50,0,1000);
-		//173 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons
+		//171 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons
 		TH1D* BHCJetW_highMass_partonMatchSubclSize = new TH1D("BHCJetW_highMass_partonMatchSubclSize","BHCJetW_highMass_partonMatchSubclSize",50,0,2.);
-		//174 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons
+		//172 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons
 		TH1D* BHCJetW_highMass_partonNoMatchSubclSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSize","BHCJetW_highMass_partonNoMatchSubclSize",50,0,2.);
 
 
@@ -2129,7 +2123,7 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		//3 - reco jet mass vs reco jet pt
 		TH2D* recoJetMass_recoJetPt = new TH2D("recoAK4JetMass_recoAK4JetPt","recoAK4JetMass_recoAK4JetPt;recoAK4JetMass;recoAK4JetPt",50,0,250,50,0,250);
 		//4 - reco jet mass vs reco jet jetSize
-		TH2D* recoJetMass_recoJetSize = new TH2D("recoAK4JetMass_recoAK4JetSize","recoAK4JetMass_recoAK4JetSize;recoAK4JetMass;recoAK4JetSize",50,0,250,50,0,2.);
+		TH2D* recoJetMass_recoJetSize = new TH2D("recoAK4Jet_jetMass_jetSize","recoAK4Jet_jetMass_jetSize;recoAK4JetMass;recoAK4JetSize",50,0,250,50,0,2.);
 		//5 - pred jet mass vs pred jet pt
 		TH2D* predJetMass_predJetPt = new TH2D("BHCJetMass_BHCJetPt","BHCJetMass_BHCJetPt;BHCJetMass;BHCJetPt",50,0,250,50,0,250);
 		//6 - pred jet pt vs pred jet jetSize
