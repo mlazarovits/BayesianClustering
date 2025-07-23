@@ -1151,15 +1151,7 @@ cout << "avgPart E " << avgPartE << endl;
 						if(pt == 2 && _recoAK4jets[j].pt() >= _pt_thresh) continue;
 	
 						Matrix jet_cov = _recoAK4jets[j].GetCovariance();
-						//get 2D matrix for jet size
-						Matrix jet_cov2D(2,2);
-						Get2DMat(jet_cov,jet_cov2D);	
-						vector<double> eigvals;
-						vector<Matrix> eigvecs;
-						jet_cov2D.eigenCalc(eigvals, eigvecs);
-						//define jet size as length of major axis
-						//also include rotundity
-						jetsize = sqrt(eigvals[1]);//sqrt(sqrt(jet_cov.at(0,0))*sqrt(jet_cov.at(1,1)));
+						jetsize = CalcSize(jet_cov);
 						
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
@@ -1167,7 +1159,7 @@ cout << "avgPart E " << avgPartE << endl;
 						////pt == 2 -> [0.2,inf) (AK15 level)
 						//if(pt == 2 && jetsize < 0.2) continue;
 						
-						double rot = Rotundity(jet_cov2D);
+						double rot = Rotundity(jet_cov);
 						_procCats[p].hists1D[pt][90]->Fill(rot);
 						if(pt == 0 && p == 0) cout << "reco AK4 jet #" << j << " phi " << _recoAK4jets[j].phi() << " eta " << _recoAK4jets[j].eta() << " energy " << _recoAK4jets[j].E() <<  " mass " << _recoAK4jets[j].mass() << " nConstituents " << _recoAK4jets[j].GetNConstituents() << " nRhs " << _recoAK4jets[j].GetNRecHits() << " pt " << _recoAK4jets[j].pt() << " jetsize " << jetsize << " px " << _recoAK4jets[j].px() << " py " << _recoAK4jets[j].py() << " pz " << _recoAK4jets[j].pz() << " mass from rhs " << _recoAK4jets[j].mass_rhs() << endl;
 						_procCats[p].hists1D[pt][19]->Fill(jetsize);
@@ -2747,7 +2739,7 @@ cout << "nhist1d_start " << nhist1d_start << " nhist2d_start " << nhist2d_start 
 		}
 		double Rotundity(Matrix& cov){
 			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
-				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+				cout << "Error: can't calculate rotundity for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
 				return -1;
 			}
 			Matrix cov2D(2,2);
