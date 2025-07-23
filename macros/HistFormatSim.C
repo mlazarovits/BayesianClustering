@@ -1632,9 +1632,10 @@ void HistFormatSim(string file, string proc = ""){
 		Hist2D(file, proc, "recoAK15", oname, "recoAK15JetMass_recoAK15JetPt");
 		Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 
-		//TODO: update name on next skimmer pass
-		Hist2D(file, proc, "BHC", oname, "BHCJetMass_ge2sucl_BHCJetSize");
-		Hist2D(file, proc, "recoAK8", oname, "recoAK8JetMass_recoAK8JetSize");
+		Hist2D(file, proc, "BHC", oname, "jetMass_jetSize");
+		Hist2D(file, proc, "recoAK4", oname, "jetMass_jetSize");
+		Hist2D(file, proc, "recoAK8", oname, "jetMass_jetSize");
+		Hist2D(file, proc, "recoAK15", oname, "jetMass_jetSize");
 	}
 
 	if(proc == "singleW" || proc == "QCD"){
