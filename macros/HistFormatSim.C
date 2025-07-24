@@ -11,7 +11,8 @@ enum plotFormat{
 	procStack = 1,
 	methodStack = 2,
 	decayStack = 3,
-	diFileStack = 4
+	diFileStack = 4,
+	anyStack = 5
 };
 
 
@@ -131,6 +132,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 		labelToMark["!singleW"] = 72;
 		labelToMark["!QCD"] =   73;
+		labelToMark["!Wgluon"] = 74;
 		
 		labelToMark["reco"] = 71;
 		labelToMark["AK4"] = 71;
@@ -146,7 +148,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["singleW"] = 72;
 		labelToMark["QCD"] =   73;
 		//TODO: add for ttbar + Wgluon
-
+		labelToMark["Wgluon"] = 74;
 	}
 	//methodStack formatting
 	else if(pf == 2){
@@ -189,8 +191,17 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 
 	}
 	else{
-		cout << "plotFormat option " << pf << " not available." << endl;
-		return;
+		//use hist names as labels
+		int nlabel = 70;
+		int ncolor = 3;
+		for( int i = 0 ; i < int(hist.size()); i++){
+			legentry = hist[i]->GetTitle();
+			if(legentry.find(xtit) != string::npos){
+				legentry = legentry.substr(0,legentry.find(xtit));
+			}
+			labelToMark[legentry] = nlabel+i;	
+			labelToColor[legentry] = ncolor+i;
+		}
 	}
 
 
@@ -248,7 +259,10 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			string title = hist[i]->GetTitle();
 			legentry = title.substr(title.rfind("_")+1);
 		}
-		else continue;
+		else{
+			cout << "legentry " << legentry << endl;
+		}
+		//else continue;
 		//remove PD 
 		if(legentry.find("PD") != string::npos)
 			legentry = legentry.substr(0,legentry.find("PD"));		
@@ -1308,6 +1322,144 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 };
 
 
+void AnyStackHists(string file, string proc, string method, vector<string> matches, string oname, vector<string> types = {}){
+	if(gSystem->AccessPathName(file.c_str())){
+		cout << "File " << file << " does not exist." << endl;
+		return;
+	}
+	TFile* f = TFile::Open(file.c_str(),"READ");
+	string name, xtitle, ytitle, dirname;
+
+	string cmslab = "";
+	if(proc == "ttbar"){
+		cmslab = "t#bar{t}";
+	}
+	else if(proc == "QCD"){
+		cmslab = "QCD Multijets";
+	}
+	else if(proc == "singleW"){
+		cmslab = "single W^{#pm}";
+	}
+	else if(proc == "Wgluon"){
+		cmslab = "W^{#pm}+g";
+	}
+	else cmslab = "process";
+	//string cmslab = GetCMSLabel(file);
+	//string extra = "";
+	//if(file.find("Skim") != string::npos) extra = GetExtraLabel(file);
+	//if(!extra.empty()) cmslab += " "+extra;	
+
+	TString th1d("TH1D");
+	TString th2d("TH2D");
+	TString tdir("TDirectoryFile");
+
+	cmslab += " "+method;
+	
+	string matchesname = "";
+	for(auto s : matches) matchesname += "_"+s;
+
+	vector<TH1D*> histstot;
+	for(int m = 0; m < matches.size(); m++){
+		//cout << "method " << methods[m] << endl;	
+		TList* list = f->GetListOfKeys();
+		TIter iter(list);
+		TKey* key;
+		while((key = (TKey*)iter())){
+			name = key->GetName();
+			if(key->GetClassName() == tdir){
+				//get stack histograms - in directory
+				TDirectory* dir = dynamic_cast<TDirectory*>(key->ReadObj());
+				if(!dir) continue;
+				dirname = dir->GetName();
+				if(dirname.find(method) == string::npos) continue;
+				if(dirname.find(matches[m]) == string::npos) continue;
+				cout << "\ndir name: " << dir->GetName() << endl;
+				dir->cd();
+				//get histograms (stack these)
+				vector<TH1D*> hists;
+				if(types.size() == 0){
+					GetHistsType(dir, proc,"", hists);
+			
+					/*	
+					//writing methodStack hist - same proc different methods
+					string dirname = dir->GetName();
+					cout << "about to gethistsproc" << endl;
+					//GetHistsProcMethods(dir, proc, hists, methods);
+					GetHistsProcMethods(dir, proc, hists, methods);
+					*/
+					for(auto h : hists){
+						cout << "got hist " << h->GetName() << endl;
+						string title = h->GetTitle();
+						string histname = h->GetName();
+						if(histname.find("rStat") != string::npos) continue;	
+						if(title.find(matches[m]) == string::npos) h->SetTitle((matches[m]).c_str());
+						histstot.push_back(h);
+					}
+
+				}
+				else{
+					for(int t = 0; t < types.size(); t++){
+						//if(types[t] == "") continue;
+						GetHistsType(dir, proc, types[t], hists);
+			
+						/*	
+						//writing methodStack hist - same proc different methods
+						string dirname = dir->GetName();
+						cout << "about to gethistsproc" << endl;
+						//GetHistsProcMethods(dir, proc, hists, methods);
+						GetHistsProcMethods(dir, proc, hists, methods);
+						*/
+						for(auto h : hists){
+							cout << "got hist " << h->GetName() << endl;
+							string title = h->GetTitle();
+							string histname = h->GetName();
+					cout << "xaxis title " << h->GetXaxis()->GetTitle() << endl;
+							if(histname.find("rStat") != string::npos) continue;	
+							if(title.find(matches[m]) == string::npos) h->SetTitle((matches[m]).c_str());
+							histstot.push_back(h);
+						}
+					}
+				}
+			}
+			//cout << "end for loop - name " << name << endl;
+		}
+	}
+	double ymin, ymax;
+	string ylab, xlab;
+	name = method+"_";
+	if(proc != "") name += proc+"_matchStack"+matchesname;
+	else name += proc+"matchStack"+matchesname;
+	if(types.size() > 0) name += "_ptStack";
+	if(histstot.size() < 1) return;
+	FindListHistBounds(histstot, ymin, ymax);
+	if(ymin == 0 && ymax == 0) return;
+	TCanvas *cv = new TCanvas(name.c_str(), "");
+	//draw as tcanvases
+	if(name.find("sigma") != string::npos || name.find("mean") != string::npos){
+		xlab = histstot[0]->GetXaxis()->GetTitle();
+		ylab = histstot[0]->GetYaxis()->GetTitle();
+	}
+	else{
+		if(string(histstot[0]->GetXaxis()->GetTitle()).empty())
+			xlab = name;
+		else
+			xlab = histstot[0]->GetXaxis()->GetTitle();
+		ylab = "a.u."; 
+	}
+	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
+	TDRMultiHist(histstot, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", anyStack);
+	TFile* ofile = TFile::Open(oname.c_str(), "UPDATE");
+	ofile->cd();
+	cv->Write(); 
+		cout << "writing canvas (1D) " << cv->GetName() << endl;
+				
+	//cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
+	ofile->Write();
+	ofile->Close();
+	f->Close();
+
+};
+
 
 void Hist2D(string file, string proc, string method, string oname, string match){
 	if(gSystem->AccessPathName(file.c_str())){
@@ -1555,7 +1707,7 @@ void HistFormatSim(string file, string proc = ""){
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
 
-
+	
 	if(proc == ""){
 		ProcStackHists(file, procs, "BHC", oname, "subclusterEtaSig");
 		ProcStackHists(file, procs, "BHC", oname, "subclusterPhiSig");
@@ -1635,6 +1787,15 @@ void HistFormatSim(string file, string proc = ""){
 		
 
 	}
+	if(proc.find("singleW") != string::npos){
+		AnyStackHists(file, proc, "BHC", {"partonMatchSubclPt","partonNoMatchSubclPt"}, oname, {"lead"});
+		AnyStackHists(file, proc, "BHC", {"partonMatchSubclSize","partonNoMatchSubclSize"}, oname, {"lead"});
+	}
+	if(proc.find("gluon") != string::npos){
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_dR",{"lead"});
+
+	}
 
 	if(proc == "singleW" || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_Eratio",{"lead"});
@@ -1657,19 +1818,6 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_subclusterLeadInvMass");
 	}
 
-	/*	
-	DecayStackHists(file, "ttbar", types, oname, "recoJet_dR");
-	DecayStackHists(file, "ttbar", types, oname, "BHCJet_dR");
-	DecayStackHists(file, "ttbar", types, oname, "BHCJet_genOvRecoE");
-	DecayStackHists(file, "ttbar", types, oname, "recoJet_genOvRecoE");
-	DecayStackHists(file, "ttbar", typesFullDecay, oname, "reco_nJet");
-	DecayStackHists(file, "ttbar", typesFullDecay, oname, "BHC_nJet");
-
-	
-	MethodStackHists(file, "ttbar", methods, oname, "dR_b");
-	MethodStackHists(file, "ttbar", methods, oname, "qType");
-*/
-		
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
 }
