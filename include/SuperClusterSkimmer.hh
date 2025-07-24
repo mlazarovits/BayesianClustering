@@ -3754,8 +3754,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			TrackMatched(gmm,ncl,bestdr, bestp);
 			//early times, phi left/right for BH
 			//if subcl is spike
-			//if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
-			if(bestdr < 0.02 && tc <= -8){
+			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
 				label = 3;
 			}
 			else{
