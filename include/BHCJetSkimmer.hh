@@ -2148,13 +2148,13 @@ cout << "avgPart E " << avgPartE << endl;
 		//168 - 182 - BHC jets - gen-matched to W - time-phi covariance of GMM cluster 
 		TH1D* BHCJetW_subClustertimePhiCov = new TH1D("BHCJetW_subclusterTimePhiCov","BHCJetW_subclusterTimePhiCov",50,-0.05,0.05);
 		//169 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons
-		TH1D* BHCJetW_highMass_partonMatchSubclPt = new TH1D("BHCJetW_highMass_partonMatchSubclPt","BHCJetW_highMass_partonMatchSubclPt",50,0,500);
+		TH1D* BHCJetW_highMass_partonMatchSubclPt = new TH1D("BHCJetW_highMass_partonMatchSubclPt","BHCJetW_highMass_partonMatchSubclPt;SubclPt",25,0,500);
 		//170 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons
-		TH1D* BHCJetW_highMass_partonNoMatchSubclPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPt","BHCJetW_highMass_partonNoMatchSubclPt",50,0,500);
+		TH1D* BHCJetW_highMass_partonNoMatchSubclPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPt","BHCJetW_highMass_partonNoMatchSubclPt;SubclPt",25,0,500);
 		//171 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons
-		TH1D* BHCJetW_highMass_partonMatchSubclSize = new TH1D("BHCJetW_highMass_partonMatchSubclSize","BHCJetW_highMass_partonMatchSubclSize",50,0,1.5);
+		TH1D* BHCJetW_highMass_partonMatchSubclSize = new TH1D("BHCJetW_highMass_partonMatchSubclSize","BHCJetW_highMass_partonMatchSubclSize;SubclSize",25,0,1.5);
 		//172 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons
-		TH1D* BHCJetW_highMass_partonNoMatchSubclSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSize","BHCJetW_highMass_partonNoMatchSubclSize",50,0,1.5);
+		TH1D* BHCJetW_highMass_partonNoMatchSubclSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSize","BHCJetW_highMass_partonNoMatchSubclSize;SubclSize",25,0,1.5);
 		//173 - dR bw reco AK8 jet and gen W its exclusively matched to
 		TH1D* recoAK8JetW_dR = new TH1D("recoAK8Jet_genW_dR","recoAK8Jet_genW_dR",25,0,1.5);
 		//174 - E ratio bw reco AK8 jet and gen W its exclusively matched to - reco jet energy/gen top energy
