@@ -1433,7 +1433,7 @@ cout << "avgPart E " << avgPartE << endl;
 							int genidx = genGluonMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genglu[genidx].eta(), _genglu[genidx].phi());
 							double eratio = recojets[j].E()/_genparts[genidx].E();
-							
+						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
 							_procCats[p].hists1D[pt][nhist1d_start + 73]->Fill(dr);
 							_procCats[p].hists1D[pt][nhist1d_start + 74]->Fill(eratio);
 
@@ -1455,6 +1455,7 @@ cout << "avgPart E " << avgPartE << endl;
 								_procCats[p].hists2D[pt][nhist2d_start + 29]->Fill(recojets[j].phi(), _genW[genidx].phi());	
 							}
 							if(AK == 8){
+						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
 								_procCats[p].hists1D[pt][nhist1d_start + 71]->Fill(dr);
 								_procCats[p].hists1D[pt][nhist1d_start + 72]->Fill(eratio);
 
