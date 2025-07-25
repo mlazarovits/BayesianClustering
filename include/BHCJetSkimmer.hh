@@ -289,6 +289,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetGluon_dR);
 			_hists1D.push_back(BHCJetGluon_Eratio);
 			_hists1D.push_back(BHCJetW_highMass_nSubclustersJet);
+			_hists1D.push_back(recoAK8Jetq_dR);
+			_hists1D.push_back(recoAK8Jetq_Eratio);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -1355,6 +1357,8 @@ cout << "avgPart E " << avgPartE << endl;
 			GenericMatchJet(recojets,_genW,genWMatchIdxs);
 			vector<int> genGluonMatchIdxs; 
 			GenericMatchJet(recojets,_genglu,genGluonMatchIdxs);
+			vector<int> genqMatchIdxs; 
+			GenericMatchJet(recojets,_genq,genqMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
 			//	if(genMatchIdxs_p[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs_p[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_p[b]), _base->genpart_phi->at(genMatchIdxs_p[b]), _recoAK4jets[b].eta(), _recoAK4jets[b].phi()) << endl;
@@ -1439,6 +1443,19 @@ cout << "avgPart E " << avgPartE << endl;
 
 
 						}
+						if(genWMatchIdxs[j] != -1){
+							int genidx = genWMatchIdxs[j];	
+							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
+							double eratio = recojets[j].E()/_genW[genidx].E();
+
+							if(AK == 8){
+								_procCats[p].hists1D[pt][nhist1d_start + 76]->Fill(dr);
+								_procCats[p].hists1D[pt][nhist1d_start + 77]->Fill(eratio);
+
+							}
+	
+						}
+
 						//if no gen W match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
 						if(genWMatchIdxs[j] != -1){
@@ -2170,6 +2187,10 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* BHCJetGluon_Eratio = new TH1D("BHCJet_genGluon_Eratio","BHCJet_genGluon_Eratio",25,0,2);
 		//177 - high mass + W-matched BHC jets - # subclusters
 		TH1D* BHCJetW_highMass_nSubclustersJet = new TH1D("BHCJetW_highMass_nSubclustersJet","BHCJetW_highMass_nSubclustersJet",10,0,10);
+		//178 - dR bw reco AK8 jet and gen q its exclusively matched to
+		TH1D* recoAK8Jetq_dR = new TH1D("recoAK8Jet_genq_dR","recoAK8Jet_genq_dR",25,0,1.5);
+		//179 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
+		TH1D* recoAK8Jetq_Eratio = new TH1D("recoAK8Jet_genq_Eratio","recoAK8Jet_genq_Eratio",25,0,2);
 
 
 		////////////////////////////////////////////////////////////////////////
