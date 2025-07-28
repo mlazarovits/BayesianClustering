@@ -935,7 +935,8 @@ cout << "avgPart E " << avgPartE << endl;
 							int genGluonidx = genGluonMatchIdxs[j];
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genglu[genGluonidx].eta(), _genglu[genGluonidx].phi());
 							double Eratio = _predJets[j].E()/_genglu[genGluonidx].E();
-
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to gluon " << genGluonidx << " with eta " << _genglu[genGluonidx].eta() << " phi " << _genglu[genGluonidx].phi() << " and energy " << _genglu[genGluonidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genglu[genGluonidx].E() << endl;
+c
 							_procCats[p].hists1D[pt][175]->Fill(dr);
 							_procCats[p].hists1D[pt][176]->Fill(Eratio);
 						}
