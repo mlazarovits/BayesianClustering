@@ -1433,7 +1433,9 @@ c
 								_procCats[p].hists2D[pt][nhist2d_start + 4]->Fill(recojets[j].phi(), _genTop[genidx].phi());
 								_procCats[p].hists2D[pt][nhist2d_start + 9]->Fill(recojets[j].phi(), _genTop[genidx].phi());	
 							}
+						
 						}
+						cout << "AK " << AK << " jet #" << j << " gen gluon idx " << genGluonMatchIdxs[j] << endl; 
 						if(genGluonMatchIdxs[j] != -1 && AK == 8){
 							int genidx = genGluonMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genglu[genidx].eta(), _genglu[genidx].phi());
