@@ -303,6 +303,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(recoAK4Jetq_Eratio);
 			_hists1D.push_back(recoAK4JetW_dR);
 			_hists1D.push_back(recoAK4JetW_Eratio);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonMatchSubclPt);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclPt);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonMatchSubclSize);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclSize);
+			_hists1D.push_back(BHCJetW_lowMass_nSubclustersJet);
+			_hists1D.push_back(BHCJetW_Wmass_nSubclustersJet);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -683,8 +689,6 @@ class BHCJetSkimmer{
 							Matrix subcl_cov = subcl.GetCovariance();
 							_procCats[p].hists1D[pt][11]->Fill(sqrt(subcl_cov.at(0,0)));
 							_procCats[p].hists1D[pt][12]->Fill(sqrt(subcl_cov.at(1,1)));
-				//TODO: check if time sigs > 10
-				if(sqrt(subcl_cov.at(2,2)) > 10) cout << "time sig " << sqrt(subcl_cov.at(2,2)) << endl;
 							_procCats[p].hists1D[pt][13]->Fill(sqrt(subcl_cov.at(2,2)));
 							_procCats[p].hists1D[pt][14]->Fill(subcl_cov.at(0,1));
 							_procCats[p].hists1D[pt][15]->Fill(subcl_cov.at(0,2));
@@ -870,18 +874,23 @@ cout << "avgPart E " << avgPartE << endl;
 									consts[c].GetClusterParams(subcl_mu, subcl_cov);
 									double subclsize = CalcSize(subcl_cov);
 									int genmatchidx = subclGenMatchIdx[c];
-									//high mass jets only
-									if(_predJets[j].m() > 100){
-										_procCats[p].hists1D[pt][179]->Fill((int)consts.size()); 
+									if(_predJets[j].m() > 100) _procCats[p].hists1D[pt][179]->Fill((int)consts.size());
+									if(70 < _predJets[j].m() && _predJets[j].m() < 90) _procCats[p].hists1D[pt][199]->Fill((int)consts.size());
+									if(_predJets[j].m() < 50) _procCats[p].hists1D[pt][198]->Fill((int)consts.size());
+									if(genmatchidx == -1){
 										//not matched
-										if(genmatchidx == -1){
+										if(_predJets[j].m() > 100){
 											_procCats[p].hists1D[pt][170]->Fill(consts[c].pt());
 											_procCats[p].hists1D[pt][172]->Fill(subclsize);
-											continue;
 										}
+				
+									}
+									else{
 										//matched
-										_procCats[p].hists1D[pt][169]->Fill(consts[c].pt());
-										_procCats[p].hists1D[pt][171]->Fill(subclsize);
+										if(_predJets[j].m() > 100){
+											_procCats[p].hists1D[pt][169]->Fill(consts[c].pt());
+											_procCats[p].hists1D[pt][171]->Fill(subclsize);
+										}
 									}
 								}	
 
@@ -943,6 +952,24 @@ cout << "avgPart E " << avgPartE << endl;
 							for(int c = 0; c < (int)consts.size(); c++){
 								_procCats[p].hists1D[pt][159]->Fill(consts[c].m());
 							}
+							vector<int> subclGenMatchIdx(consts.size(), -1);	
+							GenericMatchJet(consts,_genq,subclGenMatchIdx); //match subclusters to hard light quarks
+							for(int c = 0; c < consts.size(); c++){
+								int genmatchidx = subclGenMatchIdx[c];
+								//1+ subcl jets only
+								if((int)consts.size() > 1){
+									//not matched
+									if(genmatchidx == -1){
+										_procCats[p].hists1D[pt][195]->Fill(consts[c].pt());
+										_procCats[p].hists1D[pt][197]->Fill(subclsize);
+										continue;
+									}
+									//matched
+									_procCats[p].hists1D[pt][194]->Fill(consts[c].pt());
+									_procCats[p].hists1D[pt][196]->Fill(subclsize);
+								}
+							}	
+
 						}			
 						//do gen gluon matching hists
 						if(genGluonMatchIdxs[j] != -1){
@@ -2367,6 +2394,18 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* recoAK4JetW_dR = new TH1D("recoAK4Jet_genW_dR","recoAK4Jet_genW_dR",25,0,1.5);
 		//193 - E ratio bw reco AK4 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK4JetW_Eratio = new TH1D("recoAK4Jet_genW_Eratio","recoAK4Jet_genW_Eratio",25,0,2);
+		//194 - high mass + q-matched BHC jets - pt of subclusters gen-matched to W partons
+		TH1D* BHCJetq_ge2Subcls_partonMatchSubclPt = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclPt","BHCJetq_ge2Subcls_partonMatchSubclPt;SubclPt",25,0,500);
+		//195 - high mass + q-matched BHC jets - pt of subclusters NOT gen-matched W partons
+		TH1D* BHCJetq_ge2Subcls_partonNoMatchSubclPt = new TH1D("BHCJetq_ge2Subcls_partonNoMatchSubclPt","BHCJetq_ge2Subcls_partonNoMatchSubclPt;SubclPt",25,0,500);
+		//196 - high mass + q-matched BHC jets - subclSize of subclusters gen-matched to W partons
+		TH1D* BHCJetq_ge2Subcls_partonMatchSubclSize = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclSize","BHCJetq_ge2Subcls_partonMatchSubclSize;SubclSize",25,0,1.5);
+		//197 - high mass + q-matched BHC jets - subclSize of subclusters NOT gen-matched W partons
+		TH1D* BHCJetq_ge2Subcls_partonNoMatchSubclSize = new TH1D("BHCJetq_ge2Subcls_partonNoMatchSubclSize","BHCJetq_ge2Subcls_partonNoMatchSubclSize;SubclSize",25,0,1.5);
+		//198 - low mass + W-matched BHC jets - # subclusters
+		TH1D* BHCJetW_lowMass_nSubclustersJet = new TH1D("BHCJetW_lowMass_nSubclustersJet","BHCJetW_lowMass_nSubclustersJet",10,0,10);
+		//199 - high mass + W-matched BHC jets - # subclusters
+		TH1D* BHCJetW_Wmass_nSubclustersJet = new TH1D("BHCJetW_Wmass_nSubclustersJet","BHCJetW_Wmass_nSubclustersJet",10,0,10);
 
 
 		////////////////////////////////////////////////////////////////////////
