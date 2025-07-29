@@ -942,8 +942,8 @@ cout << "avgPart E " << avgPartE << endl;
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genglu[genGluonidx].eta(), _genglu[genGluonidx].phi());
 							double Eratio = _predJets[j].E()/_genglu[genGluonidx].E();
 							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to gluon " << genGluonidx << " with eta " << _genglu[genGluonidx].eta() << " phi " << _genglu[genGluonidx].phi() << " and energy " << _genglu[genGluonidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genglu[genGluonidx].E() << endl;
-							_procCats[p].hists1D[pt][175]->Fill(dr);
-							_procCats[p].hists1D[pt][176]->Fill(Eratio);
+							_procCats[p].hists1D[pt][177]->Fill(dr);
+							_procCats[p].hists1D[pt][178]->Fill(Eratio);
 						}
 
 					}
@@ -1141,10 +1141,14 @@ cout << "avgPart E " << avgPartE << endl;
 		}
 
 
-		//AK4 reco jets only
 		void FillRecoJetHists(){
-			FillRecoJetHists(_recoAK8jets, 8);
-			FillRecoJetHists(_recoAK15jets, 15);
+			FillRecoAK4JetHists();
+			FillRecoAK8JetHists();
+			FillRecoAK15JetHists();
+		}
+
+		//AK4 reco jets only
+		void FillRecoAK4JetHists(){
 			int njets, tmass_idx, widx, genidx, id;
 			double wmass, topmass, dr, dr_pair, jetsize;
 			pair<int, int> wmass_idxs;
@@ -1354,108 +1358,77 @@ cout << "avgPart E " << avgPartE << endl;
 			}
 		}
 
-		//can give _recoAK4 or _recoAK8 hists 
-		void FillRecoJetHists(vector<Jet>& recojets, int AK){
+		//_recoAK8 hists 
+		void FillRecoAK8JetHists(){
 			//do gen matching
 			vector<int> genTopMatchIdxs; 
-			GenericMatchJet(recojets,_genTop,genTopMatchIdxs);
+			GenericMatchJet(_recoAK8jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs; 
-			GenericMatchJet(recojets,_genW,genWMatchIdxs);
+			GenericMatchJet(_recoAK8jets,_genW,genWMatchIdxs);
 			vector<int> genGluonMatchIdxs; 
-			GenericMatchJet(recojets,_genglu,genGluonMatchIdxs);
+			GenericMatchJet(_recoAK8jets,_genglu,genGluonMatchIdxs);
 			vector<int> genqMatchIdxs; 
-			GenericMatchJet(recojets,_genq,genqMatchIdxs);
+			GenericMatchJet(_recoAK8jets,_genq,genqMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
 			//	if(genMatchIdxs_p[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs_p[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_p[b]), _base->genpart_phi->at(genMatchIdxs_p[b]), _recoAK4jets[b].eta(), _recoAK4jets[b].phi()) << endl;
 			//	 else cout << " jet " << b << " could not be gen matched" << endl;
 
 			//}
-			int nhist1d_start = -1;
-			int nhist2d_start = -1;
-			if(AK == 8){
-				nhist1d_start = 102;
-				nhist2d_start = 130;
-			}
-			else if(AK == 15){
-				nhist1d_start = 113;
-				nhist2d_start = 66;
-			}
-			else return; //not defined for other jet sizes and nominal FillRecoJetHists() fills for AK4
+			//else return; //not defined for other jet sizes and nominal FillRecoJetHists() fills for AK4
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
-				int njets = recojets.size();
-				_procCats[p].hists1D[0][nhist1d_start]->Fill(njets);
+				int njets = _recoAK8jets.size();
+				_procCats[p].hists1D[0][102]->Fill(njets);
 				int njets_lead = 0;
 				int njets_notlead = 0;
-				for(int j = 0; j < recojets.size(); j++){
+				for(int j = 0; j < _recoAK8jets.size(); j++){
 					if(recojets[j].pt() < _pt_thresh) njets_notlead++;
 					//pt == 2 -> [0,_pt_thresh)
 					if(recojets[j].pt() >= _pt_thresh) njets_lead++;
 				}
-				_procCats[p].hists1D[1][nhist1d_start]->Fill(njets_lead);
-				_procCats[p].hists1D[2][nhist1d_start]->Fill(njets_notlead);
-				for(int j = 0; j < recojets.size(); j++){
+				_procCats[p].hists1D[1][102]->Fill(njets_lead);
+				_procCats[p].hists1D[2][102]->Fill(njets_notlead);
+				for(int j = 0; j < _recoAK8jets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
 						//pt == 1 -> [_pt_thresh,inf)
-						if(pt == 1 && recojets[j].pt() < _pt_thresh) continue;
+						if(pt == 1 && _recoAK8jets[j].pt() < _pt_thresh) continue;
 						//pt == 2 -> [0,_pt_thresh)
-						if(pt == 2 && recojets[j].pt() >= _pt_thresh) continue;
+						if(pt == 2 && _recoAK8jets[j].pt() >= _pt_thresh) continue;
 	
-						Matrix jet_cov = recojets[j].GetCovariance();
+						Matrix jet_cov = _recoAK8jets[j].GetCovariance();
 						double jetsize = CalcSize(jet_cov);
-						if(pt == 0 && p == 0) cout << "reco AK" << AK << " jet #" << j << " phi " << recojets[j].phi() << " eta " << recojets[j].eta() << " energy " << recojets[j].E() <<  " mass " << recojets[j].mass() << " nConstituents " << recojets[j].GetNConstituents() << " nRhs " << recojets[j].GetNRecHits() << " pt " << recojets[j].pt() << " jetsize " << jetsize << endl;
-						_procCats[p].hists1D[pt][nhist1d_start + 1]->Fill(recojets[j].eta());
-						_procCats[p].hists1D[pt][nhist1d_start + 2]->Fill(recojets[j].phi_02pi());
-						_procCats[p].hists1D[pt][nhist1d_start + 3]->Fill(recojets[j].time());
-						_procCats[p].hists1D[pt][nhist1d_start + 4]->Fill(recojets[j].pt());
-						_procCats[p].hists1D[pt][nhist1d_start + 5]->Fill(recojets[j].mass());
-						_procCats[p].hists1D[pt][nhist1d_start + 6]->Fill(recojets[j].e());
-						_procCats[p].hists1D[pt][nhist1d_start + 7]->Fill(recojets[j].GetNConstituents());
-						_procCats[p].hists1D[pt][nhist1d_start + 10]->Fill(jetsize);
-						if(AK == 15){
-							_procCats[p].hists2D[pt][nhist2d_start + 65]->Fill(recojets[j].m(), jetsize);
-						}
-						if(AK == 8){
-							_procCats[p].hists2D[pt][nhist2d_start]->Fill(recojets[j].m(), jetsize);
-						}
+						if(pt == 0 && p == 0) cout << "reco AK8 jet #" << j << " phi " << _recoAK8jets[j].phi() << " eta " << _recoAK8jets[j].eta() << " energy " << _recoAK8jets[j].E() <<  " mass " << _recoAK8jets[j].mass() << " nConstituents " << _recoAK8jets[j].GetNConstituents() << " nRhs " << _recoAK8jets[j].GetNRecHits() << " pt " << _recoAK8jets[j].pt() << " jetsize " << jetsize << endl;
+						_procCats[p].hists1D[pt][103]->Fill(recojets[j].eta());
+						_procCats[p].hists1D[pt][104]->Fill(recojets[j].phi_02pi());
+						_procCats[p].hists1D[pt][105]->Fill(recojets[j].time());
+						_procCats[p].hists1D[pt][106]->Fill(recojets[j].pt());
+						_procCats[p].hists1D[pt][107]->Fill(recojets[j].mass());
+						_procCats[p].hists1D[pt][108]->Fill(recojets[j].e());
+						_procCats[p].hists1D[pt][109]->Fill(recojets[j].GetNConstituents());
+						_procCats[p].hists1D[pt][112]->Fill(jetsize);
+						
+						_procCats[p].hists2D[pt][130]->Fill(recojets[j].m(), jetsize);
 
 						//if no gen top match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
 						if(genTopMatchIdxs[j] != -1){
 							int genidx = genTopMatchIdxs[j];	
-							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genTop[genidx].eta(), _genTop[genidx].phi());
+							double dr = dR(_recoAK8jets[j].eta(), _recoAK8jets[j].phi(), _genTop[genidx].eta(), _genTop[genidx].phi());
 
-							_procCats[p].hists1D[pt][nhist1d_start + 8]->Fill(dr);
-							_procCats[p].hists1D[pt][nhist1d_start + 9]->Fill(recojets[j].E()/_genTop[genidx].E());
+							_procCats[p].hists1D[pt][110]->Fill(dr);
+							_procCats[p].hists1D[pt][111]->Fill(recojets[j].E()/_genTop[genidx].E());
 
-							if(nhist2d_start != -1){
-								_procCats[p].hists2D[pt][nhist2d_start]->Fill(recojets[j].pt(), _genTop[genidx].pt());	
-								_procCats[p].hists2D[pt][nhist2d_start + 1]->Fill(recojets[j].E(), _genTop[genidx].E());		
-								_procCats[p].hists2D[pt][nhist2d_start + 2]->Fill(recojets[j].m(), _genTop[genidx].m());	
-								_procCats[p].hists2D[pt][nhist2d_start + 3]->Fill(recojets[j].eta(), _genTop[genidx].eta());	
-								_procCats[p].hists2D[pt][nhist2d_start + 4]->Fill(recojets[j].phi(), _genTop[genidx].phi());
-								_procCats[p].hists2D[pt][nhist2d_start + 9]->Fill(recojets[j].phi(), _genTop[genidx].phi());	
-							}
-						
 						}
-						cout << "AK " << AK << " jet #" << j << " gen gluon idx " << genGluonMatchIdxs[j] << endl; 
+						cout << "AK8 jet #" << j << " gen gluon idx " << genGluonMatchIdxs[j] << endl; 
 						if(genGluonMatchIdxs[j] != -1){
 							int genidx = genGluonMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genglu[genidx].eta(), _genglu[genidx].phi());
 							double eratio = recojets[j].E()/_genparts[genidx].E();
-							if(AK == 8){
-								if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-								_procCats[p].hists1D[pt][nhist1d_start + 73]->Fill(dr);
-								_procCats[p].hists1D[pt][nhist1d_start + 74]->Fill(eratio);
-							}
-							if(AK == 15){
-								if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-								_procCats[p].hists1D[pt][nhist1d_start + 69]->Fill(dr);
-								_procCats[p].hists1D[pt][nhist1d_start + 70]->Fill(eratio);
-
-							}
+							if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][175]->Fill(dr);
+							_procCats[p].hists1D[pt][176]->Fill(eratio);
 
 
 						}
@@ -1464,18 +1437,10 @@ cout << "avgPart E " << avgPartE << endl;
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genq[genidx].eta(), _genq[genidx].phi());
 							double eratio = recojets[j].E()/_genq[genidx].E();
 
-							if(AK == 8){
-						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-								_procCats[p].hists1D[pt][nhist1d_start + 76]->Fill(dr);
-								_procCats[p].hists1D[pt][nhist1d_start + 77]->Fill(eratio);
+							if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][180]->Fill(dr);
+							_procCats[p].hists1D[pt][181]->Fill(eratio);
 
-							}
-							if(AK == 15){
-								if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-								_procCats[p].hists1D[pt][nhist1d_start + 67]->Fill(dr);
-								_procCats[p].hists1D[pt][nhist1d_start + 68]->Fill(eratio);
-
-							}
 	
 						}
 
@@ -1485,6 +1450,137 @@ cout << "avgPart E " << avgPartE << endl;
 							int genidx = genWMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
 							double eratio = recojets[j].E()/_genW[genidx].E();
+							if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][173]->Fill(dr);
+							_procCats[p].hists1D[pt][174]->Fill(eratio);
+
+
+							//get gen partons from W decay 
+							vector<int> genLeadMatchIdxs(2,-1);
+							vector<Jet> Wpartons;
+							int ggenWidx = _genW[genidx].GetUserIdx();
+							for(int g = 0; g < _genparts.size(); g++){
+								int genidx = _genparts[g].GetUserIdx();
+								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
+								Wpartons.push_back(_genparts[g]);
+							}
+							if(Wpartons.size() != 2){
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								continue;
+							}
+							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
+							_procCats[p].hists2D[pt][133]->Fill(gendR, jetsize);	
+
+						}
+					}	
+				}
+			}
+		}
+
+		//_recoAK15 hists 
+		void FillRecoAK15JetHists(){
+			//do gen matching
+			vector<int> genTopMatchIdxs; 
+			GenericMatchJet(_recoAK15jets,_genTop,genTopMatchIdxs);
+			vector<int> genWMatchIdxs; 
+			GenericMatchJet(_recoAK15jets,_genW,genWMatchIdxs);
+			vector<int> genGluonMatchIdxs; 
+			GenericMatchJet(_recoAK15jets,_genglu,genGluonMatchIdxs);
+			vector<int> genqMatchIdxs; 
+			GenericMatchJet(_recoAK15jets,_genq,genqMatchIdxs);
+			//cout << "final best matches" << endl;
+			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
+			//	if(genMatchIdxs_p[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs_p[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_p[b]), _base->genpart_phi->at(genMatchIdxs_p[b]), _recoAK4jets[b].eta(), _recoAK4jets[b].phi()) << endl;
+			//	 else cout << " jet " << b << " could not be gen matched" << endl;
+
+			//}
+			//else if(AK == 15){
+			//	nhist1d_start = 113;
+			//	nhist2d_start = 66;
+			//}
+			//else return; //not defined for other jet sizes and nominal FillRecoJetHists() fills for AK4
+			for(int p = 0; p < _procCats.size(); p++){
+				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
+				int njets = _recoAK15jets.size();
+				_procCats[p].hists1D[0][113]->Fill(njets);
+				int njets_lead = 0;
+				int njets_notlead = 0;
+				for(int j = 0; j < _recoAK15jets.size(); j++){
+					if(recojets[j].pt() < _pt_thresh) njets_notlead++;
+					//pt == 2 -> [0,_pt_thresh)
+					if(recojets[j].pt() >= _pt_thresh) njets_lead++;
+				}
+				_procCats[p].hists1D[1][113]->Fill(njets_lead);
+				_procCats[p].hists1D[2][113]->Fill(njets_notlead);
+				for(int j = 0; j < _recoAK15jets.size(); j++){
+					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
+						//define pt bins
+						//pt == 1 -> [_pt_thresh,inf)
+						if(pt == 1 && _recoAK15jets[j].pt() < _pt_thresh) continue;
+						//pt == 2 -> [0,_pt_thresh)
+						if(pt == 2 && _recoAK15jets[j].pt() >= _pt_thresh) continue;
+	
+						Matrix jet_cov = _recoAK15jets[j].GetCovariance();
+						double jetsize = CalcSize(jet_cov);
+						if(pt == 0 && p == 0) cout << "reco AK15 jet #" << j << " phi " << _recoAK15jets[j].phi() << " eta " << _recoAK15jets[j].eta() << " energy " << _recoAK15jets[j].E() <<  " mass " << _recoAK15jets[j].mass() << " nConstituents " << _recoAK15jets[j].GetNConstituents() << " nRhs " << _recoAK15jets[j].GetNRecHits() << " pt " << _recoAK15jets[j].pt() << " jetsize " << jetsize << endl;
+						_procCats[p].hists1D[pt][114]->Fill(recojets[j].eta());
+						_procCats[p].hists1D[pt][115]->Fill(recojets[j].phi_02pi());
+						_procCats[p].hists1D[pt][116]->Fill(recojets[j].time());
+						_procCats[p].hists1D[pt][117]->Fill(recojets[j].pt());
+						_procCats[p].hists1D[pt][118]->Fill(recojets[j].mass());
+						_procCats[p].hists1D[pt][119]->Fill(recojets[j].e());
+						_procCats[p].hists1D[pt][120]->Fill(recojets[j].GetNConstituents());
+						_procCats[p].hists1D[pt][123]->Fill(jetsize);
+						
+						_procCats[p].hists2D[pt][131]->Fill(recojets[j].m(), jetsize);
+
+						//if no gen top match, skip
+						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen top #" << genTopMatchIdxs[j] << endl;
+						if(genTopMatchIdxs[j] != -1){
+							int genidx = genTopMatchIdxs[j];	
+							double dr = dR(_recoAK15jets[j].eta(), _recoAK15jets[j].phi(), _genTop[genidx].eta(), _genTop[genidx].phi());
+
+							_procCats[p].hists1D[pt][121]->Fill(dr);
+							_procCats[p].hists1D[pt][122]->Fill(recojets[j].E()/_genTop[genidx].E());
+
+							_procCats[p].hists2D[pt][66]->Fill(recojets[j].pt(), _genTop[genidx].pt());	
+							_procCats[p].hists2D[pt][67]->Fill(recojets[j].E(), _genTop[genidx].E());		
+							_procCats[p].hists2D[pt][68]->Fill(recojets[j].m(), _genTop[genidx].m());	
+							_procCats[p].hists2D[pt][69]->Fill(recojets[j].eta(), _genTop[genidx].eta());	
+							_procCats[p].hists2D[pt][70]->Fill(recojets[j].phi(), _genTop[genidx].phi());
+							
+						
+						}
+						cout << "AK15 jet #" << j << " gen gluon idx " << genGluonMatchIdxs[j] << endl; 
+						if(genGluonMatchIdxs[j] != -1){
+							int genidx = genGluonMatchIdxs[j];	
+							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genglu[genidx].eta(), _genglu[genidx].phi());
+							double eratio = recojets[j].E()/_genparts[genidx].E();
+							if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][182]->Fill(dr);
+							_procCats[p].hists1D[pt][183]->Fill(eratio);
+
+
+						}
+						if(genqMatchIdxs[j] != -1){
+							int genidx = genWqatchIdxs[j];	
+							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genq[genidx].eta(), _genq[genidx].phi());
+							double eratio = recojets[j].E()/_genq[genidx].E();
+
+							if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][180]->Fill(dr);
+							_procCats[p].hists1D[pt][181]->Fill(eratio);
+
+	
+						}
+
+						//if no gen W match, skip
+						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
+						if(genWMatchIdxs[j] != -1){
+							int genidx = genWMatchIdxs[j];	
+							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
+							double eratio = recojets[j].E()/_genW[genidx].E();
+								/*
 							if(AK == 15){
 								_procCats[p].hists1D[pt][nhist1d_start + 25]->Fill(dr);
 								_procCats[p].hists1D[pt][nhist1d_start + 26]->Fill(eratio);
@@ -1494,29 +1590,28 @@ cout << "avgPart E " << avgPartE << endl;
 								_procCats[p].hists2D[pt][nhist2d_start + 28]->Fill(recojets[j].eta(), _genW[genidx].eta());	
 								_procCats[p].hists2D[pt][nhist2d_start + 29]->Fill(recojets[j].phi(), _genW[genidx].phi());	
 							}
-							if(AK == 8){
-						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-								_procCats[p].hists1D[pt][nhist1d_start + 71]->Fill(dr);
-								_procCats[p].hists1D[pt][nhist1d_start + 72]->Fill(eratio);
+							*/
+							if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							_procCats[p].hists1D[pt][173]->Fill(dr);
+							_procCats[p].hists1D[pt][174]->Fill(eratio);
 
 
-								//get gen partons from W decay 
-								vector<int> genLeadMatchIdxs(2,-1);
-								vector<Jet> Wpartons;
-								int ggenWidx = _genW[genidx].GetUserIdx();
-								for(int g = 0; g < _genparts.size(); g++){
-									int genidx = _genparts[g].GetUserIdx();
-									if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
-									Wpartons.push_back(_genparts[g]);
-								}
-								if(Wpartons.size() != 2){
-									cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
-									continue;
-								}
-								double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
-								_procCats[p].hists2D[pt][nhist2d_start + 3]->Fill(gendR, jetsize);	
-
+							//get gen partons from W decay 
+							vector<int> genLeadMatchIdxs(2,-1);
+							vector<Jet> Wpartons;
+							int ggenWidx = _genW[genidx].GetUserIdx();
+							for(int g = 0; g < _genparts.size(); g++){
+								int genidx = _genparts[g].GetUserIdx();
+								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
+								Wpartons.push_back(_genparts[g]);
 							}
+							if(Wpartons.size() != 2){
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								continue;
+							}
+							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
+							_procCats[p].hists2D[pt][133]->Fill(gendR, jetsize);	
+
 						}
 					}	
 				}
@@ -2204,27 +2299,27 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* recoAK8JetGluon_dR = new TH1D("recoAK8Jet_genGluon_dR","recoAK8Jet_genGluon_dR",25,0,1.5);
 		//176 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK8JetGluon_Eratio = new TH1D("recoAK8Jet_genGluon_Eratio","recoAK8Jet_genGluon_Eratio",25,0,2);
-		//175 - dR bw bhc jet and gen gluon its exclusively matched to
+		//177 - dR bw bhc jet and gen gluon its exclusively matched to
 		TH1D* BHCJetGluon_dR = new TH1D("BHCJet_genGluon_dR","BHCJet_genGluon_dR",25,0,1.5);
-		//176 - E ratio bw bhc jet and gen gluon its exclusively matched to - bhc jet energy/gen top energy
+		//178 - E ratio bw bhc jet and gen gluon its exclusively matched to - bhc jet energy/gen top energy
 		TH1D* BHCJetGluon_Eratio = new TH1D("BHCJet_genGluon_Eratio","BHCJet_genGluon_Eratio",25,0,2);
-		//177 - high mass + W-matched BHC jets - # subclusters
+		//179 - high mass + W-matched BHC jets - # subclusters
 		TH1D* BHCJetW_highMass_nSubclustersJet = new TH1D("BHCJetW_highMass_nSubclustersJet","BHCJetW_highMass_nSubclustersJet",10,0,10);
-		//178 - dR bw reco AK8 jet and gen q its exclusively matched to
+		//180 - dR bw reco AK8 jet and gen q its exclusively matched to
 		TH1D* recoAK8Jetq_dR = new TH1D("recoAK8Jet_genq_dR","recoAK8Jet_genq_dR",25,0,1.5);
-		//179 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
+		//181 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK8Jetq_Eratio = new TH1D("recoAK8Jet_genq_Eratio","recoAK8Jet_genq_Eratio",25,0,2);
-		//180 - dR bw reco AK15 jet and gen W its exclusively matched to
+		//182 - dR bw reco AK15 jet and gen W its exclusively matched to
 		TH1D* recoAK15JetW_dR = new TH1D("recoAK15Jet_genW_dR","recoAK15Jet_genW_dR",25,0,1.5);
-		//181 - E ratio bw reco AK15 jet and gen W its exclusively matched to - reco jet energy/gen top energy
+		//183 - E ratio bw reco AK15 jet and gen W its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK15JetW_Eratio = new TH1D("recoAK15Jet_genW_Eratio","recoAK15Jet_genW_Eratio",25,0,2);
-		//182 - dR bw reco AK15 jet and gen gluon its exclusively matched to
+		//184 - dR bw reco AK15 jet and gen gluon its exclusively matched to
 		TH1D* recoAK15JetGluon_dR = new TH1D("recoAK15Jet_genGluon_dR","recoAK15Jet_genGluon_dR",25,0,1.5);
-		//183 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
-		TH1D* recoAK15JetGluon_Eratio = new TH1D("recoAK15Jet_genGluon_Eratio","recoAK15Jet_genGluon_Eratio",25,0,2);
-		//184 - dR bw reco AK15 jet and gen q its exclusively matched to
-		TH1D* recoAK15Jetq_dR = new TH1D("recoAK15Jet_genq_dR","recoAK15Jet_genq_dR",25,0,1.5);
 		//185 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
+		TH1D* recoAK15JetGluon_Eratio = new TH1D("recoAK15Jet_genGluon_Eratio","recoAK15Jet_genGluon_Eratio",25,0,2);
+		//186 - dR bw reco AK15 jet and gen q its exclusively matched to
+		TH1D* recoAK15Jetq_dR = new TH1D("recoAK15Jet_genq_dR","recoAK15Jet_genq_dR",25,0,1.5);
+		//187 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK15Jetq_Eratio = new TH1D("recoAK15Jet_genq_Eratio","recoAK15Jet_genq_Eratio",25,0,2);
 
 
