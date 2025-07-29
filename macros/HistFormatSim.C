@@ -190,7 +190,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		labelToMark["fullLep"] = 116;
 
 	}
-	else{
+	else if(pf == 5){
 		//use hist names as labels
 		int nlabel = 70;
 		int ncolor = 3;
@@ -201,6 +201,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 			}
 			labelToMark[legentry] = nlabel+i;	
 			labelToColor[legentry] = ncolor+i;
+//cout << "legentry " << legentry << " title " << xtit << " title " << hist[i]->GetTitle() << " mark " << labelToMark[legentry] << " col " << labelToColor[legentry] << endl;
 		}
 	}
 
@@ -223,10 +224,10 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(1e-4, 2*maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
 
-		legentry = hist[i]->GetTitle();
-		title = legentry;	 
-		histtitle = hist[i]->GetTitle();
 		if(pf == 0){
+			legentry = hist[i]->GetTitle();
+			title = legentry;	 
+			histtitle = hist[i]->GetTitle();
 			legentry = hist[i]->GetTitle(); 
 			title = title.substr(title.find("_")+1);
 			if(title.find("chiGam") != string::npos){
@@ -234,6 +235,9 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			}
 		}
 		else if(pf == 1){
+			legentry = hist[i]->GetTitle();
+			title = legentry;	 
+			histtitle = hist[i]->GetTitle();
 			legentry = legentry.substr(legentry.find("_")+1);
 			title = title.substr(0,title.find("_"));
 			if(legentry.find("chiGam") != string::npos){
@@ -241,6 +245,9 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			}
 		}
 		else if(pf == 2){ 
+			legentry = hist[i]->GetTitle();
+			title = legentry;	 
+			histtitle = hist[i]->GetTitle();
 			legentry = legentry.substr(0,legentry.find("_"));
 			title = title.substr(title.find("_")+1);
 			if(title.find("chiGam") != string::npos){
@@ -248,6 +255,9 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			}
 		}
 		else if(pf == 3){ 
+			legentry = hist[i]->GetTitle();
+			title = legentry;	 
+			histtitle = hist[i]->GetTitle();
 			string title = hist[i]->GetTitle();
 			string name = hist[i]->GetName();
 			legentry = name.substr(0,name.find(title));
@@ -256,13 +266,20 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			legentry = name.substr(0,name.find(legentry)-1);
 		}
 		else if(pf == 4){ 
+			legentry = hist[i]->GetTitle();
+			title = legentry;	 
+			histtitle = hist[i]->GetTitle();
 			string title = hist[i]->GetTitle();
 			legentry = title.substr(title.rfind("_")+1);
 		}
-		else{
-			cout << "legentry " << legentry << endl;
+		else if(pf == 5){
+			legentry = hist[i]->GetTitle();
+			if(legentry.find(xtit) != string::npos){
+				legentry = legentry.substr(0,legentry.find(xtit));
+			}
+			//cout << "legentry " << legentry << endl;
 		}
-		//else continue;
+		else continue;
 		//remove PD 
 		if(legentry.find("PD") != string::npos)
 			legentry = legentry.substr(0,legentry.find("PD"));		
@@ -282,7 +299,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		for(map<string, int>::iterator it = labelToMark.begin(); it != labelToMark.end(); it++){
 			string match = it->first;
 			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
-			if(pf != 3){
+			if(pf != 3 && pf != 5){
 				if(histtitle.find(match) != string::npos){
 					mark = it->second;
 					break;
@@ -315,6 +332,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 				
 		}
 		if(type != "") legentry += "_"+type;
+cout << "col " << col << " mark " << mark << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -1707,7 +1725,7 @@ void HistFormatSim(string file, string proc = ""){
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
 
-	
+
 	if(proc == ""){
 		ProcStackHists(file, procs, "BHC", oname, "subclusterEtaSig");
 		ProcStackHists(file, procs, "BHC", oname, "subclusterPhiSig");
@@ -1721,14 +1739,15 @@ void HistFormatSim(string file, string proc = ""){
 
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, {"genAK8","genAK15","BHC"}, oname, "nJets",pttypes); 
+	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets",{"lead"}); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, {"recoAK8","recoAK15","BHC"}, oname, "nJets",pttypes); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets",{"lead"}); 
 	
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "jetSize",pttypes); 
+	//MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
+	//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
+	//MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "jetSize",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "jetSize"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "jetSize",{"lead"}); 
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_EtaCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_PhiCenter"); 
@@ -1745,14 +1764,15 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_pt",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass",{"lead"});
+	//MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
+	//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
+	//MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
 	
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclustersJet");
-	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "nSubclustersJet",pttypes);
-	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_nSubclustersJet");
+	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_nSubclustersJet",pttypes);
+	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_nSubclustersJet",pttypes);
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterEtaCenter");
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "subclusterPhiCenter");
@@ -1763,10 +1783,8 @@ void HistFormatSim(string file, string proc = ""){
 	Hist2D(file, proc, "recoAK4", oname, "jetMass_jetSize");
 	Hist2D(file, proc, "recoAK8", oname, "jetMass_jetSize");
 	Hist2D(file, proc, "recoAK15", oname, "jetMass_jetSize");
-	Hist2D(file, proc, "BHC", oname, "BHCJetW_");
 	Hist2D(file, proc, "BHC", oname, "jetMass_jetPt");
 	Hist2D(file, proc, "recoAK4", oname, "jetMass_jetPt");
-	Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 	if(proc.find("W") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_dR",{"lead"});
@@ -1783,25 +1801,32 @@ void HistFormatSim(string file, string proc = ""){
 		
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR",{"lead"});
 
+		Hist2D(file, proc, "BHC", oname, "W_dRGenPartons");
+		Hist2D(file, proc, "recoAK8", oname, "W_dRGenPartons");
+		Hist2D(file, proc, "recoAK15", oname, "W_dRGenPartons");
+		//Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 		
+		AnyStackHists(file, proc, "BHC", {"partonMatchSubclPt","partonNoMatchSubclPt"}, oname, {"lead"});
+		AnyStackHists(file, proc, "BHC", {"partonMatchSubclSize","partonNoMatchSubclSize"}, oname, {"lead"});
 
 	}
 	if(proc.find("singleW") != string::npos){
-		AnyStackHists(file, proc, "BHC", {"partonMatchSubclPt","partonNoMatchSubclPt"}, oname, {"lead"});
-		AnyStackHists(file, proc, "BHC", {"partonMatchSubclSize","partonNoMatchSubclSize"}, oname, {"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_highMass_nSubclustersJet",{"lead"});
 	}
 	if(proc.find("gluon") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_dR",{"lead"});
-
+//
 	}
 
 	if(proc == "singleW" || proc == "QCD"){
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genq_dR");
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters");
-		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass");
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_dR");
+		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters",pttypes);
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass",pttypes);
 
 	}
 
