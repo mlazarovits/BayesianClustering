@@ -2276,7 +2276,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//155 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
 		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,200);
 		//156 - dR bw BHC jet and gen q its exclusively matched to
-		TH1D* BHCJetq_dR = new TH1D("BHCJet_genq_dR","BHCJet_genq_dR",25,0,0.8);
+		TH1D* BHCJetq_dR = new TH1D("BHCJet_genq_dR","BHCJet_genq_dR",25,0,1.5);
 		//157 - E ratio bw BHC jet and gen q its exclusively matched to - BHC jet energy/gen q energy
 		TH1D* BHCJetq_Eratio = new TH1D("BHCJet_genq_Eratio","BHCJet_genq_Eratio",25,0,2);
 		//158 - # subclusters in BHC jets matched to qs
