@@ -291,6 +291,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_highMass_nSubclustersJet);
 			_hists1D.push_back(recoAK8Jetq_dR);
 			_hists1D.push_back(recoAK8Jetq_Eratio);
+			_hists1D.push_back(recoAK15JetW_dR);
+			_hists1D.push_back(recoAK15JetW_Eratio);
+			_hists1D.push_back(recoAK15JetGluon_dR);
+			_hists1D.push_back(recoAK15JetGluon_Eratio);
+			_hists1D.push_back(recoAK15Jetq_dR);
+			_hists1D.push_back(recoAK15Jetq_Eratio);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -1435,24 +1441,39 @@ cout << "avgPart E " << avgPartE << endl;
 						
 						}
 						cout << "AK " << AK << " jet #" << j << " gen gluon idx " << genGluonMatchIdxs[j] << endl; 
-						if(genGluonMatchIdxs[j] != -1 && AK == 8){
+						if(genGluonMatchIdxs[j] != -1){
 							int genidx = genGluonMatchIdxs[j];	
 							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genglu[genidx].eta(), _genglu[genidx].phi());
 							double eratio = recojets[j].E()/_genparts[genidx].E();
-						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
-							_procCats[p].hists1D[pt][nhist1d_start + 73]->Fill(dr);
-							_procCats[p].hists1D[pt][nhist1d_start + 74]->Fill(eratio);
+							if(AK == 8){
+								if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+								_procCats[p].hists1D[pt][nhist1d_start + 73]->Fill(dr);
+								_procCats[p].hists1D[pt][nhist1d_start + 74]->Fill(eratio);
+							}
+							if(AK == 15){
+								if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+								_procCats[p].hists1D[pt][nhist1d_start + 69]->Fill(dr);
+								_procCats[p].hists1D[pt][nhist1d_start + 70]->Fill(eratio);
+
+							}
 
 
 						}
-						if(genWMatchIdxs[j] != -1){
-							int genidx = genWMatchIdxs[j];	
-							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
-							double eratio = recojets[j].E()/_genW[genidx].E();
+						if(genqMatchIdxs[j] != -1){
+							int genidx = genWqatchIdxs[j];	
+							double dr = dR(recojets[j].eta(), recojets[j].phi(), _genq[genidx].eta(), _genq[genidx].phi());
+							double eratio = recojets[j].E()/_genq[genidx].E();
 
 							if(AK == 8){
+						if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
 								_procCats[p].hists1D[pt][nhist1d_start + 76]->Fill(dr);
 								_procCats[p].hists1D[pt][nhist1d_start + 77]->Fill(eratio);
+
+							}
+							if(AK == 15){
+								if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to gluon " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+								_procCats[p].hists1D[pt][nhist1d_start + 67]->Fill(dr);
+								_procCats[p].hists1D[pt][nhist1d_start + 68]->Fill(eratio);
 
 							}
 	
@@ -2193,6 +2214,18 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* recoAK8Jetq_dR = new TH1D("recoAK8Jet_genq_dR","recoAK8Jet_genq_dR",25,0,1.5);
 		//179 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
 		TH1D* recoAK8Jetq_Eratio = new TH1D("recoAK8Jet_genq_Eratio","recoAK8Jet_genq_Eratio",25,0,2);
+		//180 - dR bw reco AK15 jet and gen W its exclusively matched to
+		TH1D* recoAK15JetW_dR = new TH1D("recoAK15Jet_genW_dR","recoAK15Jet_genW_dR",25,0,1.5);
+		//181 - E ratio bw reco AK15 jet and gen W its exclusively matched to - reco jet energy/gen top energy
+		TH1D* recoAK15JetW_Eratio = new TH1D("recoAK15Jet_genW_Eratio","recoAK15Jet_genW_Eratio",25,0,2);
+		//182 - dR bw reco AK15 jet and gen gluon its exclusively matched to
+		TH1D* recoAK15JetGluon_dR = new TH1D("recoAK15Jet_genGluon_dR","recoAK15Jet_genGluon_dR",25,0,1.5);
+		//183 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
+		TH1D* recoAK15JetGluon_Eratio = new TH1D("recoAK15Jet_genGluon_Eratio","recoAK15Jet_genGluon_Eratio",25,0,2);
+		//184 - dR bw reco AK15 jet and gen q its exclusively matched to
+		TH1D* recoAK15Jetq_dR = new TH1D("recoAK15Jet_genq_dR","recoAK15Jet_genq_dR",25,0,1.5);
+		//185 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
+		TH1D* recoAK15Jetq_Eratio = new TH1D("recoAK15Jet_genq_Eratio","recoAK15Jet_genq_Eratio",25,0,2);
 
 
 		////////////////////////////////////////////////////////////////////////
