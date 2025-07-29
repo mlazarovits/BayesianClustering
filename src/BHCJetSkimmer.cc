@@ -85,10 +85,10 @@ void BHCJetSkimmer::Skim(){
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(fabs(_base->genpart_id->at(genidx)) != 24) continue;
-				//min pt req
-				if(_genparts[g].pt() < _minWPt){
-					continue;
-				}
+				//min pt req - set by ptHatMin of sample
+				//if(_genparts[g].pt() < _minWPt){
+				//	continue;
+				//}
 				//make sure W has hadronic decay
 				bool lep = _base->W_decayId->at(genidx);
 				if(lep){ cout << "Fully leptonic W - skipping this W" << endl; continue;}
@@ -96,7 +96,6 @@ void BHCJetSkimmer::Skim(){
 			
 
 
-				int nqs_phi = 0;
 				//get decay products
 				for(int gg = 0; gg < _genparts.size(); gg++){
 					if(gg == g) continue;
@@ -105,19 +104,26 @@ void BHCJetSkimmer::Skim(){
 				cout << "saving W daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
 					//phi distribution debugging - only look at events w/ jets (ie quarks) in some window around 0 and 2pi
 					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
-					//double phi = _genparts[gg].phi_02pi();
-					//if(phi > phiwindow && phi < 2*acos(-1) - phiwindow) continue;
-					//nqs_phi++;	
 					_genq.push_back(_genparts[gg]);
 				}
 				//skip W if not enough q's are in phi window
-				//if(nqs_phi < 1) continue;
 				_genW.push_back(_genparts[g]);
-			}	
+			}
+			
 			//at least 1 W	
 			if(_genW.size() < 1){ 
 				if(i % SKIP == 0) cout << " has no hadronic Ws that pass pt > " << _minWPt << endl;
 				continue;
+			}
+			//if W+gluon, save gen gluon as well as gen W (save on same level as W for consistent gen-matching)
+			if(_oname.find("Wgluon") != string::npos){
+				for(int g = 0; g < _genparts.size(); g++){
+					int genidx = _genparts[g].GetUserIdx();
+					if(fabs(_base->genpart_id->at(genidx)) == 21){
+						if(i % SKIP == 0) cout << " has gluon with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << endl;
+						_genglu.push_back(_genparts[g]);	
+					}
+				}
 			}
 		}
 		else if(_sel == boostTop){
