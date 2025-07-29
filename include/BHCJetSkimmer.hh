@@ -1053,8 +1053,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(_genAK8jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
-				_procCats[p].hists1D[1][126]->Fill(njets_lead);
-				_procCats[p].hists1D[2][126]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][124]->Fill(njets_lead);
+				_procCats[p].hists1D[2][124]->Fill(njets_notlead);
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK8jets,_genparts,genTopMatchIdxs,6);
 				//cout << "gen matching gen jets to particles - end" << endl;
@@ -1088,8 +1088,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(_genAK15jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
-				_procCats[p].hists1D[1][99]->Fill(njets_lead);
-				_procCats[p].hists1D[2][99]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][97]->Fill(njets_lead);
+				_procCats[p].hists1D[2][97]->Fill(njets_notlead);
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK15jets, _genparts, genTopMatchIdxs,6);
 				GenericMatchJet(_genAK15jets,_genparts,genWMatchIdxs, 24); //match gen AK4 jets to gen Ws
