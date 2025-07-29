@@ -772,7 +772,8 @@ class BHCJetSkimmer{
 						if(genTopMatchIdxs[j] != -1){
 							int gentopidx = genTopMatchIdxs[j];
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genTop[gentopidx].eta(), _genTop[gentopidx].phi());
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to top " << gentopidx << " with eta " << _genTop[gentopidx].eta() << " phi " << _genTop[gentopidx].phi() << " and energy " << _genTop[gentopidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genTop[gentopidx].E() << endl;
+							double eratio = _predJets[j].E()/_genTop[gentopidx].E();
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with energy " << _predJets[j].E() << " matched to top " << gentopidx << " with eta " << _genTop[gentopidx].eta() << " phi " << _genTop[gentopidx].phi() << " and energy " << _genTop[gentopidx].E() << " matched with dr " << dr << " and Eratio " << eratio << endl;
 							_procCats[p].hists2D[pt][56]->Fill(_predJets[j].pt(),_genTop[gentopidx].pt());
 							_procCats[p].hists2D[pt][57]->Fill(_predJets[j].E(),_genTop[gentopidx].E());
 							_procCats[p].hists2D[pt][58]->Fill(_predJets[j].m(),_genTop[gentopidx].m());
@@ -780,7 +781,7 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][60]->Fill(_predJets[j].phi(),_genTop[gentopidx].phi());
 							
 							_procCats[p].hists1D[pt][72]->Fill(dr);
-							_procCats[p].hists1D[pt][73]->Fill(_predJets[j].E()/_genTop[gentopidx].E());
+							_procCats[p].hists1D[pt][73]->Fill(eratio);
 							_procCats[p].hists1D[pt][153]->Fill(_predJets[j].GetNConstituents());
 							//sort by energy
 							consts = _predJets[j].GetConstituents();
@@ -805,8 +806,8 @@ class BHCJetSkimmer{
 						if(genWMatchIdxs[j] != -1){
 							int genWidx = genWMatchIdxs[j];
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
-							double Eratio = _predJets[j].E()/_genW[genWidx].E();
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to W " << genWidx << " with eta " << _genW[genWidx].eta() << " phi " << _genW[genWidx].phi() << " and energy " << _genW[genWidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genW[genWidx].E() << endl;
+							double eratio = _predJets[j].E()/_genW[genWidx].E();
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to W " << genWidx << " with eta " << _genW[genWidx].eta() << " phi " << _genW[genWidx].phi() << " and energy " << _genW[genWidx].E() << " matched with dr " << dr << " and Eratio " << eratio << endl;
 							//put loose req on W match
 							//if(dr < 0.1 && (Eratio < 1.5 && Eratio > 0.5))
 							//cout << "passed gen match reqs" << endl;
@@ -925,32 +926,31 @@ cout << "avgPart E " << avgPartE << endl;
 						if(genqMatchIdxs[j] != -1){
 							int genqidx = genqMatchIdxs[j];
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genq[genqidx].eta(), _genq[genqidx].phi());
-							double Eratio = _predJets[j].E()/_genq[genqidx].E();
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to q " << genqidx << " with eta " << _genq[genqidx].eta() << " phi " << _genq[genqidx].phi() << " and energy " << _genq[genqidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genq[genqidx].E() << endl;
+							double eratio = _predJets[j].E()/_genq[genqidx].E();
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to q " << genqidx << " with eta " << _genq[genqidx].eta() << " phi " << _genq[genqidx].phi() << " and energy " << _genq[genqidx].E() << " matched with dr " << dr << " and Eratio " << eratio << endl;
 							//put loose req on q match
-							if(dr < 0.1 && (Eratio < 1.5 && Eratio > 0.5)){
-								cout << "passed gen match reqs" << endl;
-								_procCats[p].hists1D[pt][156]->Fill(dr);
-								_procCats[p].hists1D[pt][157]->Fill(_predJets[j].E()/_genq[genqidx].E());
-								//finding partons/subclusters
-								_procCats[p].hists1D[pt][158]->Fill(_predJets[j].GetNConstituents());
+							//if(dr < 0.1 && (Eratio < 1.5 && Eratio > 0.5))
+							//cout << "passed gen match reqs" << endl;
+							_procCats[p].hists1D[pt][156]->Fill(dr);
+							_procCats[p].hists1D[pt][157]->Fill(eratio);
+							//finding partons/subclusters
+							_procCats[p].hists1D[pt][158]->Fill(_predJets[j].GetNConstituents());
 
-								consts = _predJets[j].GetConstituents();
-								//sort by energy
-								sort(consts.begin(), consts.end(), Esort_jet);
-								for(int c = 0; c < (int)consts.size(); c++){
-									_procCats[p].hists1D[pt][159]->Fill(consts[c].m());
-								}
+							consts = _predJets[j].GetConstituents();
+							//sort by energy
+							sort(consts.begin(), consts.end(), Esort_jet);
+							for(int c = 0; c < (int)consts.size(); c++){
+								_procCats[p].hists1D[pt][159]->Fill(consts[c].m());
 							}
 						}			
 						//do gen gluon matching hists
 						if(genGluonMatchIdxs[j] != -1){
 							int genGluonidx = genGluonMatchIdxs[j];
 							double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genglu[genGluonidx].eta(), _genglu[genGluonidx].phi());
-							double Eratio = _predJets[j].E()/_genglu[genGluonidx].E();
-							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to gluon " << genGluonidx << " with eta " << _genglu[genGluonidx].eta() << " phi " << _genglu[genGluonidx].phi() << " and energy " << _genglu[genGluonidx].E() << " matched with dr " << dr << " and Eratio " << _predJets[j].E()/_genglu[genGluonidx].E() << endl;
+							double eratio = _predJets[j].E()/_genglu[genGluonidx].E();
+							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to gluon " << genGluonidx << " with eta " << _genglu[genGluonidx].eta() << " phi " << _genglu[genGluonidx].phi() << " and energy " << _genglu[genGluonidx].E() << " matched with dr " << dr << " and Eratio " << eratio << endl;
 							_procCats[p].hists1D[pt][177]->Fill(dr);
-							_procCats[p].hists1D[pt][178]->Fill(Eratio);
+							_procCats[p].hists1D[pt][178]->Fill(eratio);
 						}
 
 					}
