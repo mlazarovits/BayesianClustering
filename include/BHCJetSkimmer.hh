@@ -441,6 +441,7 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJet_subclTimeSig_subclSize);
 			_hists2D.push_back(BHCJet_subclTimeSig_subclPt);
 			_hists2D.push_back(recoAK15JetW_dRGenPartons_jetSize);
+			_hists2D.push_back(recoAK4JetW_dRGenPartons_jetSize);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
@@ -1378,6 +1379,21 @@ cout << "avgPart E " << avgPartE << endl;
 							double dr = dR(_recoAK4jets[j].eta(), _recoAK4jets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
 							_procCats[p].hists1D[pt][192]->Fill(dr);
 							_procCats[p].hists1D[pt][193]->Fill(_recoAK4jets[j].E()/_genW[genWidx].E());
+							//get gen partons from W decay 
+							vector<int> genLeadMatchIdxs(2,-1);
+							vector<Jet> Wpartons;
+							int ggenWidx = _genW[genidx].GetUserIdx();
+							for(int g = 0; g < _genparts.size(); g++){
+								int genidx = _genparts[g].GetUserIdx();
+								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
+								Wpartons.push_back(_genparts[g]);
+							}
+							if(Wpartons.size() != 2){
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								continue;
+							}
+							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
+							_procCats[p].hists2D[pt][137]->Fill(gendR, jetsize);	
 						}
 					}
 				}
@@ -2632,6 +2648,8 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJet_subclTimeSig_subclPt = new TH2D("BHCJet_subclTimeSig_subclPt","BHCJet_subclTimeSig_subclPt;subclTimeSig;subclPt",50,0,15,50,0,500);
 		//136 - recoAK15 jets gen-matched to Ws - dR bw gen partons of W vs jet size
 		TH2D* recoAK15JetW_dRGenPartons_jetSize = new TH2D("recoAK15JetW_dRGenPartons_jetSize","recoAK15JetW_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
+		//137 - recoAK4 jets gen-matched to Ws - dR bw gen partons of W vs jet size
+		TH2D* recoAK4JetW_dRGenPartons_jetSize = new TH2D("recoAK4JetW_dRGenPartons_jetSize","recoAK4JetW_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
 
 
 		void SetSmear(bool t){ _smear = t; }
