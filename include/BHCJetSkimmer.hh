@@ -957,6 +957,8 @@ cout << "avgPart E " << avgPartE << endl;
 							for(int c = 0; c < consts.size(); c++){
 								int genmatchidx = subclGenMatchIdx[c];
 								//1+ subcl jets only
+								Matrix subcl_cov = consts[c].GetCovariances();
+								double subclsize = CalcSize(subcl_cov);
 								if((int)consts.size() > 1){
 									//not matched
 									if(genmatchidx == -1){
