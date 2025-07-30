@@ -1411,14 +1411,14 @@ cout << "avgPart E " << avgPartE << endl;
 							//get gen partons from W decay 
 							vector<int> genLeadMatchIdxs(2,-1);
 							vector<Jet> Wpartons;
-							int ggenWidx = _genW[genidx].GetUserIdx();
+							int ggenWidx = _genW[genWidx].GetUserIdx();
 							for(int g = 0; g < _genparts.size(); g++){
 								int genidx = _genparts[g].GetUserIdx();
 								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
 								Wpartons.push_back(_genparts[g]);
 							}
 							if(Wpartons.size() != 2){
-								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
 								continue;
 							}
 							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
@@ -1520,10 +1520,10 @@ cout << "avgPart E " << avgPartE << endl;
 						//if no gen W match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
 						if(genWMatchIdxs[j] != -1){
-							int genidx = genWMatchIdxs[j];	
-							double dr = dR(_recoAK8jets[j].eta(), _recoAK8jets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
-							double eratio = _recoAK8jets[j].E()/_genW[genidx].E();
-							if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							int genWidx = genWMatchIdxs[j];	
+							double dr = dR(_recoAK8jets[j].eta(), _recoAK8jets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
+							double eratio = _recoAK8jets[j].E()/_genW[genWidx].E();
+							if(p == 0 && pt == 0) cout << "AK8 jet " << j << " matched to W " << genWidx << " with dr " << dr << " and eratio " << eratio << endl;	
 							_procCats[p].hists1D[pt][173]->Fill(dr);
 							_procCats[p].hists1D[pt][174]->Fill(eratio);
 
@@ -1531,14 +1531,14 @@ cout << "avgPart E " << avgPartE << endl;
 							//get gen partons from W decay 
 							vector<int> genLeadMatchIdxs(2,-1);
 							vector<Jet> Wpartons;
-							int ggenWidx = _genW[genidx].GetUserIdx();
+							int ggenWidx = _genW[genWidx].GetUserIdx();
 							for(int g = 0; g < _genparts.size(); g++){
 								int genidx = _genparts[g].GetUserIdx();
 								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
 								Wpartons.push_back(_genparts[g]);
 							}
 							if(Wpartons.size() != 2){
-								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
 								continue;
 							}
 							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
@@ -1646,30 +1646,30 @@ cout << "avgPart E " << avgPartE << endl;
 						//if no gen W match, skip
 						//if(p == 0 && pt == 0) cout << "reco AK" << AK << " jet #" << j << " matched to gen W #" << genWMatchIdxs[j] << endl;
 						if(genWMatchIdxs[j] != -1){
-							int genidx = genWMatchIdxs[j];	
-							double dr = dR(_recoAK15jets[j].eta(), _recoAK15jets[j].phi(), _genW[genidx].eta(), _genW[genidx].phi());
-							double eratio = _recoAK15jets[j].E()/_genW[genidx].E();
-							if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to W " << genidx << " with dr " << dr << " and eratio " << eratio << endl;	
+							int genWidx = genWMatchIdxs[j];	
+							double dr = dR(_recoAK15jets[j].eta(), _recoAK15jets[j].phi(), _genW[genWidx].eta(), _genW[genWidx].phi());
+							double eratio = _recoAK15jets[j].E()/_genW[genWidx].E();
+							if(p == 0 && pt == 0) cout << "AK15 jet " << j << " matched to W " << genWidx << " with dr " << dr << " and eratio " << eratio << endl;	
 							_procCats[p].hists1D[pt][182]->Fill(dr);
 							_procCats[p].hists1D[pt][183]->Fill(eratio);
-							_procCats[p].hists2D[pt][91]->Fill(_recoAK15jets[j].pt(), _genW[genidx].pt());	
-							_procCats[p].hists2D[pt][92]->Fill(_recoAK15jets[j].E(), _genW[genidx].E());		
-							_procCats[p].hists2D[pt][93]->Fill(_recoAK15jets[j].m(), _genW[genidx].m());	
-							_procCats[p].hists2D[pt][94]->Fill(_recoAK15jets[j].eta(), _genW[genidx].eta());	
-							_procCats[p].hists2D[pt][95]->Fill(_recoAK15jets[j].phi(), _genW[genidx].phi());	
+							_procCats[p].hists2D[pt][91]->Fill(_recoAK15jets[j].pt(), _genW[genWidx].pt());	
+							_procCats[p].hists2D[pt][92]->Fill(_recoAK15jets[j].E(), _genW[genWidx].E());		
+							_procCats[p].hists2D[pt][93]->Fill(_recoAK15jets[j].m(), _genW[genWidx].m());	
+							_procCats[p].hists2D[pt][94]->Fill(_recoAK15jets[j].eta(), _genW[genWidx].eta());	
+							_procCats[p].hists2D[pt][95]->Fill(_recoAK15jets[j].phi(), _genW[genWidx].phi());	
 
 
 							//get gen partons from W decay 
 							vector<int> genLeadMatchIdxs(2,-1);
 							vector<Jet> Wpartons;
-							int ggenWidx = _genW[genidx].GetUserIdx();
+							int ggenWidx = _genW[genWidx].GetUserIdx();
 							for(int g = 0; g < _genparts.size(); g++){
 								int genidx = _genparts[g].GetUserIdx();
 								if(_base->genpart_momIdx->at(genidx) != ggenWidx) continue;
 								Wpartons.push_back(_genparts[g]);
 							}
 							if(Wpartons.size() != 2){
-								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genidx << " skipping hist filling" << endl;
+								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
 								continue;
 							}
 							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
