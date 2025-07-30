@@ -2368,6 +2368,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//current beam halo selection
 				if((pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc )){
 					if(tc > -7 && tc <= -2){
+					_nBH_hist++;
 						_procCats[id_idx].hists2D[1][284]->Fill(tc, ec);
 						_procCats[id_idx].hists2D[1][285]->Fill(p_var, pc);
 						_procCats[id_idx].hists2D[1][286]->Fill(e_var, pc);
@@ -2397,6 +2398,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				if(bestTrackDr < 0.02){
 					if(tc <= -8){
 						if(!(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
+						_nSpike_hist++;
 							_procCats[id_idx].hists1D[1][240]->Fill(E_k);
 							_procCats[id_idx].hists2D[1][288]->Fill(bestde_dr,swCP);
 							_procCats[id_idx].hists2D[1][289]->Fill(bestde_dr,swCP);
@@ -3794,7 +3796,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		return label;
 	}
-
+	int _nBH_hist = 0;
+	int _nSpike_hist = 0;
 
 };		
 #endif
