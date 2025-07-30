@@ -84,6 +84,8 @@ void SuperClusterSkimmer::Skim(){
 	vector<double> Es, Es_nocenter;	
 	//genpt of photons whose mom is ~40 (ISR)
 	//genpt of photons whose mom is ~50 (meson decay)
+	int nspikes = 0;
+	int nBH = 0;
 	for(int e = _evti; e < _evtj; e++){
 		cout << "evt " << e << " base is nullptr? " << (_base == nullptr) << endl;
 		_base->GetEntry(e);
@@ -286,6 +288,8 @@ void SuperClusterSkimmer::Skim(){
 					int nclass = CNNPredict(mapobs[k],predval);
 					cout << "class " << nclass << " predval " << predval << " for SC " << k << " with label " << label << endl;	
 				}
+				if(label == 2) nBH++;
+				if(label == 3) nspikes++;
 
 				//make rh maps
 				vector<JetPoint> rrhs;
@@ -361,6 +365,7 @@ void SuperClusterSkimmer::Skim(){
 	cout << "Wrote MVA inputs to " << _csvname << endl;
 	_csvfile.close();
 	cout << "Total events that passed " << BHPass << " failed BH Filter " << BHFail << " \% events that passed cluster selection " << BHclusterPass/BHFail << "\% and \% of events that failed cluster selection given (for both) that the event failed the BH filter " << BHclusterFail/BHFail << "\%" << endl;
+	cout << "total # spikes " << nspikes << " _nSpike_hist " << _nSpike_hist << " total # of BH " << nBH << " total # of bh hist " << _nBH_hist << endl;
 }
 
 
