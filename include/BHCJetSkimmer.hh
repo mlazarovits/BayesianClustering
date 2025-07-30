@@ -309,6 +309,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclSize);
 			_hists1D.push_back(BHCJetW_lowMass_nSubclustersJet);
 			_hists1D.push_back(BHCJetW_Wmass_nSubclustersJet);
+			_hists1D.push_back(BHCJetGluon_nSubclusters);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -981,6 +982,7 @@ cout << "avgPart E " << avgPartE << endl;
 							if(p == 0 && pt == 0) cout << "BHC jet #" << j << " with eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and energy " << _predJets[j].E() << " matched to gluon " << genGluonidx << " with eta " << _genglu[genGluonidx].eta() << " phi " << _genglu[genGluonidx].phi() << " and energy " << _genglu[genGluonidx].E() << " matched with dr " << dr << " and Eratio " << eratio << endl;
 							_procCats[p].hists1D[pt][177]->Fill(dr);
 							_procCats[p].hists1D[pt][178]->Fill(eratio);
+							_procCats[p].hists1D[pt][200]->Fill(_predJets[j].GetNConstituents());
 						}
 
 					}
@@ -2408,6 +2410,8 @@ cout << "avgPart E " << avgPartE << endl;
 		TH1D* BHCJetW_lowMass_nSubclustersJet = new TH1D("BHCJetW_lowMass_nSubclustersJet","BHCJetW_lowMass_nSubclustersJet",10,0,10);
 		//199 - high mass + W-matched BHC jets - # subclusters
 		TH1D* BHCJetW_Wmass_nSubclustersJet = new TH1D("BHCJetW_Wmass_nSubclustersJet","BHCJetW_Wmass_nSubclustersJet",10,0,10);
+		//200 - # subclusters in BHC jets matched to Gluons
+		TH1D* BHCJetGluon_nSubclusters = new TH1D("BHCJetGluon_nSubclusters","BHCJetGluon_nSubclusters",10,0,10);
 
 
 		////////////////////////////////////////////////////////////////////////
