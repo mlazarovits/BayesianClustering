@@ -1805,6 +1805,7 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR",{"lead"});
 
 		Hist2D(file, proc, "BHC", oname, "W_dRGenPartons");
+		Hist2D(file, proc, "recoAK4", oname, "W_dRGenPartons");
 		Hist2D(file, proc, "recoAK8", oname, "W_dRGenPartons");
 		Hist2D(file, proc, "recoAK15", oname, "W_dRGenPartons");
 		//Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
@@ -1824,7 +1825,7 @@ void HistFormatSim(string file, string proc = ""){
 
 	if(proc == "singleW" || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_dR");
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_dR",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass",pttypes);
 
