@@ -216,7 +216,7 @@ void SuperClusterSkimmer::Skim(){
 			GetCenterXtal(rh_pts, rh_center);	
 			for(int k = 0; k < mapobs.size(); k++){
 				int label = GetTrainingLabel(scidx, k, gmm);
-				if(label == -1) continue;
+				//if(label == -1) continue;
 				if(np != -1){
 					//do 2017 preselection
 					double r9 = _base->Photon_r9->at(np);
