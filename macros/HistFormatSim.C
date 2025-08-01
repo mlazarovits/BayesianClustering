@@ -66,7 +66,7 @@ void FindListHistBounds(vector<TH1D*>& hists, double& ymin, double& ymax){
 
 
 
-void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label, plotFormat pf = allStack){
+void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string xtit, string ytit, double miny, double maxy, string cms_label, plotFormat pf = allStack, vector<string> legentries = {}){
 	if(can == nullptr) return;
 	if(hist.size() == 0)return;
 	can->cd();
@@ -195,9 +195,13 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		int nlabel = 70;
 		int ncolor = 3;
 		for( int i = 0 ; i < int(hist.size()); i++){
-			legentry = hist[i]->GetTitle();
-			if(legentry.find(xtit) != string::npos){
-				legentry = legentry.substr(0,legentry.find(xtit));
+			if(legentries.size() == hist.size())
+				legentry = legentries[i];
+			else{
+				legentry = hist[i]->GetTitle();
+				if(legentry.find(xtit) != string::npos){
+					legentry = legentry.substr(0,legentry.find(xtit));
+				}
 			}
 			labelToMark[legentry] = nlabel+i;	
 			labelToColor[legentry] = ncolor+i;
@@ -1340,7 +1344,7 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 };
 
 
-void AnyStackHists(string file, string proc, string method, vector<string> matches, string oname, vector<string> types = {}){
+void AnyStackHists(string file, string proc, string method, vector<string> matches, string oname, vector<string> types = {}, vector<string> legentries = {}){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
@@ -1465,7 +1469,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 		ylab = "a.u."; 
 	}
 	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
-	TDRMultiHist(histstot, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", anyStack);
+	TDRMultiHist(histstot, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", anyStack,legentries);
 	TFile* ofile = TFile::Open(oname.c_str(), "UPDATE");
 	ofile->cd();
 	cv->Write(); 
@@ -1790,7 +1794,7 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genW_dR",{"lead"});
 		
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters",pttypes);
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "W_subclusterEnergy",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_nSubclusters");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterEnergy");
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "W_subclusterMass");
@@ -1810,8 +1814,8 @@ void HistFormatSim(string file, string proc = ""){
 		Hist2D(file, proc, "recoAK15", oname, "W_dRGenPartons");
 		//Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 		
-		AnyStackHists(file, proc, "BHC", {"partonMatchSubclPt","partonNoMatchSubclPt"}, oname, {"lead"});
-		AnyStackHists(file, proc, "BHC", {"partonMatchSubclSize","partonNoMatchSubclSize"}, oname, {"lead"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPt","W_highMass_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSize","W_highMass_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 
 	}
 	if(proc.find("singleW") != string::npos){
@@ -1820,14 +1824,18 @@ void HistFormatSim(string file, string proc = ""){
 	if(proc.find("gluon") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_dR",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "Gluon_nSubclusters",pttypes);
 //
 	}
 
-	if(proc == "singleW" || proc == "QCD"){
+	if(proc.find("W") != string::npos || proc == "QCD"){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_dR",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass",pttypes);
+		
+		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclPt","q_ge2Subcls_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclSize","q_ge2Subcls_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 
 	}
 
