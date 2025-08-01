@@ -459,8 +459,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(recoAK4JetW_dRGenPartons_jetSize);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclPt_subclTime);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclPt_subclTime);
-			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclPt_subclTime);
-			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclPt_subclTime);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclSize_subclTime);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclSize_subclTime);
 
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
