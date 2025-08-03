@@ -2471,9 +2471,9 @@ cout << "avgPart E " << avgPartE << endl;
 		//204 - BHC jets - gen-matched gluon - Eratio (reco/gen) of gen gluon to lead subcluster in BHC jet
 		TH1D* BHCJetGluon_subclParton_Eratio = new TH1D("BHCJetGluon_subclParton_Eratio","BHCJetGluon_subclParton_Eratio",25,0,2);
 		//205 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons / pt jet
-		TH1D* BHCJetW_highMass_partonMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonMatchSubclPtOvJetPt","BHCJetW_highMass_partonMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,5);
+		TH1D* BHCJetW_highMass_partonMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonMatchSubclPtOvJetPt","BHCJetW_highMass_partonMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
 		//206 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet
-		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetPt","BHCJetW_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,5);
+		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetPt","BHCJetW_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
 		//207 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons / size jet
 		TH1D* BHCJetW_highMass_partonMatchSubclPtOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclPtOvJetSize","BHCJetW_highMass_partonMatchSubclPtOvJetSize;SubclPtOvJetSize",25,0,5.);
 		//208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
