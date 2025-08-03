@@ -316,8 +316,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetGluon_subclParton_Eratio);
 			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclPtOvJetPt);
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetPt);
-			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclPtOvJetSize);
-			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetSize);
+			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclSizeOvJetSize);
+			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -2475,9 +2475,9 @@ cout << "avgPart E " << avgPartE << endl;
 		//206 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet
 		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetPt","BHCJetW_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
 		//207 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons / size jet
-		TH1D* BHCJetW_highMass_partonMatchSubclPtOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclPtOvJetSize","BHCJetW_highMass_partonMatchSubclPtOvJetSize;SubclPtOvJetSize",25,0,5.);
+		TH1D* BHCJetW_highMass_partonMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclSizeOvJetSize","BHCJetW_highMass_partonMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 		//208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
-		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetSize","BHCJetW_highMass_partonNoMatchSubclPtOvJetSize;SubclPtOvJetSize",25,0,5.);
+		TH1D* BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize","BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 
 
 		////////////////////////////////////////////////////////////////////////
