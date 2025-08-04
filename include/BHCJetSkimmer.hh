@@ -872,6 +872,9 @@ cout << "avgPart E " << avgPartE << endl;
 								_procCats[p].hists2D[pt][125]->Fill(gendR, avgPartE);
 
 							}
+							if(_predJets[j].m() > 100) _procCats[p].hists1D[pt][179]->Fill((int)consts.size());
+							if(70 < _predJets[j].m() && _predJets[j].m() < 90) _procCats[p].hists1D[pt][199]->Fill((int)consts.size());
+							if(_predJets[j].m() < 50) _procCats[p].hists1D[pt][198]->Fill((int)consts.size());
 							//sort by energy
 							sort(consts.begin(), consts.end(), Esort_jet);
 							//get invariant mass of leading two subclusters
@@ -887,9 +890,6 @@ cout << "avgPart E " << avgPartE << endl;
 									consts[c].GetClusterParams(subcl_mu, subcl_cov);
 									double subclsize = CalcSize(subcl_cov);
 									int genmatchidx = subclGenMatchIdx[c];
-									if(_predJets[j].m() > 100) _procCats[p].hists1D[pt][179]->Fill((int)consts.size());
-									if(70 < _predJets[j].m() && _predJets[j].m() < 90) _procCats[p].hists1D[pt][199]->Fill((int)consts.size());
-									if(_predJets[j].m() < 50) _procCats[p].hists1D[pt][198]->Fill((int)consts.size());
 									if(genmatchidx == -1){
 										//not matched
 										if(_predJets[j].m() > 100){
