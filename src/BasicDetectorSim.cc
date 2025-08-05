@@ -722,8 +722,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 	double phi0, phid, phit, pio, etad;
 	double xd, yd, zd, td, dpv;
 	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << "LARGE TIME - CalcTrajectory - original time " << rp.Position.T()*1e9 << " " << Position.T()*1e9 << " " << rp.Particle.tProd()/(_sol*1e3)*1e9 << endl;
-	//cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
-	//cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << endl; 
+	cout << "original position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << endl;
+	cout << "original momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " pt: " << pt << " mass " << rp.Momentum.m() << endl; 
 	//uncharged trajectory or no mag field
 	if(fabs(q) < 1e-9 || fabs(_b) < 1e-9){
 		//calculate time to detector
@@ -826,8 +826,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp){
 			rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t_straight));
 	}
 	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
-	//cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
-	//cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << endl; 
+	cout << "new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << endl;
+	cout << "new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " mass " << rp.Momentum.mass() << endl; 
 
 	
 }
