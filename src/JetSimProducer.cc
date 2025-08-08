@@ -41,9 +41,8 @@ JetSimProducer::JetSimProducer(TFile* file){
 }
 
 void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
-	double t, E, eta, phi, x, y, z;
+	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
-	double time, timecorr, drh;	
 
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
@@ -62,13 +61,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		x = _base->ECALRecHit_rhx->at(r);
 		y = _base->ECALRecHit_rhy->at(r);
 		z = _base->ECALRecHit_rhz->at(r);
-		drh = sqrt(x*x + y*y + z*z)/_c;
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-		
-		timecorr = drh;
-		time = time - timecorr;
+		//time corrections done at ntuple level in CalcTrajectory	
 
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
@@ -88,9 +81,8 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 }
 
 void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
-	double t, E, eta, phi, x, y, z;
+	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
-	double time, timecorr, drh;	
 
 	if(evt > _nEvts) return;
 
@@ -111,13 +103,7 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		x = _base->ECALRecHit_rhx->at(r);
 		y = _base->ECALRecHit_rhy->at(r);
 		z = _base->ECALRecHit_rhz->at(r);
-		drh = sqrt(x*x + y*y + z*z)/_c;
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-		
-		timecorr = drh;
-		time = time - timecorr;
+		//time corrections done at ntuple level in CalcTrajectory	
 		
 		//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 		if(_base->ECALRecHit_energy->at(r) < _minrhE) continue;
@@ -149,12 +135,6 @@ void JetSimProducer::GetGenJets(vector<Jet>& genAK4jets, vector<Jet>& genAK8jets
 	genAK4jets.clear();
 	int nJets = _base->AK4Jet_genNJet;
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		pt = _base->AK4Jet_genPt->at(j);
 		phi = _base->AK4Jet_genPhi->at(j);
 		eta = _base->AK4Jet_genEta->at(j);
@@ -201,12 +181,6 @@ void JetSimProducer::GetGenJets(vector<Jet>& genAK4jets, vector<Jet>& genAK8jets
 	genAK8jets.clear();
 	nJets = _base->AK8Jet_genNJet;
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		pt = _base->AK8Jet_genPt->at(j);
 		phi = _base->AK8Jet_genPhi->at(j);
 		eta = _base->AK8Jet_genEta->at(j);
@@ -253,12 +227,6 @@ void JetSimProducer::GetGenJets(vector<Jet>& genAK4jets, vector<Jet>& genAK8jets
 	genAK15jets.clear();
 	nJets = _base->AK15Jet_genNJet;
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		pt = _base->AK15Jet_genPt->at(j);
 		phi = _base->AK15Jet_genPhi->at(j);
 		eta = _base->AK15Jet_genEta->at(j);
@@ -318,12 +286,6 @@ void JetSimProducer::GetGenParticles(vector<Jet>& genparts, int evt){
 	vtx.SetValue(_base->PV_y,1);
 	vtx.SetValue(_base->PV_z,2);
 	for(int p = 0; p < nParts; p++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		pt = _base->genpart_pt->at(p);
 		phi = _base->genpart_phi->at(p);
 		eta = _base->genpart_eta->at(p);
@@ -351,7 +313,7 @@ void JetSimProducer::GetGenParticles(vector<Jet>& genparts, int evt){
 }
 
 void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8jets, vector<Jet>& recoAK15jets, int evt){
-	double t, E, eta, phi, x, y, z, time, timecorr, drh, pt, px, py, pz;	
+	double t, E, eta, phi, x, y, z, time, pt, px, py, pz;	
 	if(evt > _nEvts) return;
 	_base->GetEntry(evt);
 	BayesPoint vtx = BayesPoint(3);
@@ -368,12 +330,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 	recoAK4jets.clear();
 	int nJets = (int)_base->AK4Jet_energy->size();
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		rhs.clear();
 
 		pt = _base->AK4Jet_pt->at(j);
@@ -410,13 +366,7 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				x = _base->ECALRecHit_rhx->at(r);
 				y = _base->ECALRecHit_rhy->at(r);
 				z = _base->ECALRecHit_rhz->at(r);
-				drh = sqrt(x*x + y*y + z*z)/_c;
-				/////TOF from PV to rh location
-				///dpv = _base->ECALRecHit_pvTOF->at(r); 
-				///timecorr = drh - dpv;
-				
-				timecorr = drh;
-				time = time - timecorr;
+				//time corrections done at ntuple level in CalcTrajectory	
 				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
@@ -446,12 +396,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 	recoAK8jets.clear();
 	nJets = (int)_base->AK8Jet_energy->size();
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		rhs.clear();
 
 		pt = _base->AK8Jet_pt->at(j);
@@ -482,19 +426,11 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;
 				totE += _base->ECALRecHit_energy->at(rhidx);
 				
-				//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
-				/////TOF from 0 to rh location
+				//time corrections done at ntuple level in CalcTrajectory	
 				time = _base->ECALRecHit_time->at(r);
 				x = _base->ECALRecHit_rhx->at(r);
 				y = _base->ECALRecHit_rhy->at(r);
 				z = _base->ECALRecHit_rhz->at(r);
-				drh = sqrt(x*x + y*y + z*z)/_c;
-				/////TOF from PV to rh location
-				///dpv = _base->ECALRecHit_pvTOF->at(r); 
-				///timecorr = drh - dpv;
-				
-				timecorr = drh;
-				time = time - timecorr;
 				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
@@ -524,12 +460,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 	recoAK15jets.clear();
 	nJets = (int)_base->AK15Jet_energy->size();
 	for(int j = 0; j < nJets; j++){
-		/////TOF from 0 to rh location
-		///drh = _base->ECALRecHit_0TOF->at(r);
-		/////TOF from PV to rh location
-		///dpv = _base->ECALRecHit_pvTOF->at(r); 
-		///timecorr = drh - dpv;
-
 		rhs.clear();
 
 		pt = _base->AK15Jet_pt->at(j);
@@ -566,13 +496,6 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				x = _base->ECALRecHit_rhx->at(r);
 				y = _base->ECALRecHit_rhy->at(r);
 				z = _base->ECALRecHit_rhz->at(r);
-				drh = sqrt(x*x + y*y + z*z)/_c;
-				/////TOF from PV to rh location
-				///dpv = _base->ECALRecHit_pvTOF->at(r); 
-				///timecorr = drh - dpv;
-				
-				timecorr = drh;
-				time = time - timecorr;
 				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh

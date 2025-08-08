@@ -41,10 +41,10 @@ struct RecoParticle;
 		void SimWgamma(){ _procs_to_sim.push_back(wgam); _simwgam = true;};
 		void SimWg(){ _procs_to_sim.push_back(wg); _simwg = true;};
 		//this is what does the detector effects on the tracks
-		void CalcTrajectory(RecoParticle& rp); //calculate trajectories/tracks for 
+		void CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx = BayesPoint({0,0,0,0})); //calculate trajectories/tracks for 
 					// particles from PV to detector (cal) face
 					// see pgs_track_res in PGS
-
+		void TestCalcTrajectory();
 		//this add "track" information to ntuples
 		//not real tracks because there is no tracker in this sim :)
 		//this is just the gen momentum information at the detector face
@@ -70,6 +70,7 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 			_oot = oot;
 		}
+		void RecoChargedPU(bool r){ _charged_pu_reco = r; }
 		enum TimeResModel{
 			ecal = 0,
 			mtd = 1,
@@ -166,7 +167,7 @@ struct RecoParticle;
 
 	protected:
 		//void SaveGenInfo(Pythia8::Particle particle, int genmom){
-		void SaveGenInfo(int evtidx, int genmom){
+		void SaveGenInfo(int evtidx, int genmom, BayesPoint vtx){
 			Pythia8::Particle particle = _sumEvent[evtidx];
 			_genpartEvtIdx.push_back(evtidx);
 
@@ -174,7 +175,7 @@ struct RecoParticle;
 			RecoParticle genpart(particle);
 			//cout << "pre CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Momentum.eta() << " " << particle.eta() << " phi " << genpart.Momentum.phi() << " " << particle.phi() << " energy " << genpart.Momentum.e() << " " << particle.e() << " pz " << genpart.Momentum.pz() << " " << particle.pz() << endl;
 			//cout << "position - pre CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Position.eta() << " " << particle.eta() << " phi " << genpart.Position.phi() << " " << particle.phi() << " energy " << genpart.Position.e() << " " << particle.e() << " pz " << genpart.Position.pz() << " " << particle.pz() << endl;
-			CalcTrajectory(genpart);
+			CalcTrajectory(genpart, vtx);
 			fastjet::PseudoJet fj_genpart( genpart.Momentum.px(), genpart.Momentum.py(), genpart.Momentum.pz(), genpart.Momentum.e() );
 			
 			//cout << "position - post CalcTraj - SaveGenInfo - saving gen part with eta " << genpart.Position.eta() << " " << particle.eta() << " phi " << genpart.Position.phi() << " " << particle.phi() << " energy " << genpart.Position.e() << " " << particle.e() << " pz " << genpart.Position.pz() << " " << particle.pz() << endl;
@@ -281,6 +282,7 @@ struct RecoParticle;
 		vector<RecoParticle> _recops; //reco particles
 		Pythia8::Pythia _pythia; //pythia object for main event generation
 		bool _pu; //pileup switch
+		bool _charged_pu_reco; //whether or not to reconstruct charged particles from PU
 		int _nPUavg; //number of pu events on average
 		bool _spikes; //spikes switch
 		double _spikeprob; //probability of spiking in rec hit
@@ -345,6 +347,9 @@ struct RecoParticle;
 		vector<double> _genparteta, _genpartphi, _genpartenergy, _genpartpt, _genpartmass, _genpartpz;
 		vector<int> _genpartMomIdx;
 		vector<int> _genpartIdx,_genpartEvtIdx;
+
+		//reco particle times to check time corrections wrt vertex (either PV or PU vertex)
+		vector<double> _recoparttime, _recoparttime_c, _recoparttime_n;
 	
 		//reco AK4 jets
 		vector<double> _jAK4eta, _jAK4phi, _jAK4energy, _jAK4pt, _jAK4mass;
@@ -399,6 +404,8 @@ struct RecoParticle;
 				//originally in mm
 				//convert to m and s
 				Position.SetCoordinates(p.xProd()*1e-3, p.yProd()*1e-3, p.zProd()*1e-3, p.tProd() / (_sol*1e3) );
+//cout << "making reco particle - particle.tProd() " << p.tProd()/(3e11)*1e9 << " ns, stored tprod " << Position.T()*1e9 << " ns" << endl;
+//cout << " particle.zProd() " << p.zProd() << " stored z prod " << Position.z() << endl;
 			}
 			void AddEmission(JetPoint& j){ ems.push_back(j); }				
 		
