@@ -358,6 +358,8 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(particle.statusHepMC() != 1) continue;
 
 
+			if(particle.e() < _ethresh) continue;
+
 			if(particle.mother1() > 0 && particle.mother2() == 0){
 				vector<int> mothers_id;
 				vector<int> mothers_idx;
@@ -432,7 +434,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					continue;
 				}
 			}
-
+			//vtx.SetValue(rp.Position.x(),0);
+			//vtx.SetValue(rp.Position.y(),1);
+			//vtx.SetValue(rp.Position.z(),2);
 			CalcTrajectory(rp,vtx);
 			//check if in cal cell crack
 			if(_in_cell_crack(rp))
@@ -450,7 +454,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			//if gen particle doesn't exceed min pt, skip
 			//if(rp.Momentum.pt() < _genpart_minpt) continue;
 			//add gen particle to be clustered for gen jet
-			//don't include electrons in gen jet clustering (or save to gen particles collection), muons are skipped above bc they are not showered
+			//don't include electrons in gen jet clustering (or save to gen particles collection - unless from W or hard process decay), muons are skipped above bc they are not showered
 			//add particle to fastjet
 			if(rp.Particle.idAbs() != 11){
 				fastjet::PseudoJet fjinput( rp.Momentum.px(), rp.Momentum.py(), rp.Momentum.pz(), rp.Momentum.e() );
@@ -459,7 +463,9 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			}
 
 			if(fabs(rp.Particle.charge()) < 1e-9) _recoparttime_n.push_back(rp.Position.T()*1e9);
-			else _recoparttime_c.push_back(rp.Position.T()*1e9);
+			else{
+				 _recoparttime_c.push_back(rp.Position.T()*1e9);
+			}
 			_recoparttime.push_back(rp.Position.T()*1e9);
 
 			//fill ecal cell with reco particle
@@ -1015,6 +1021,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		{
 			alpha = acos((r * r + r_c * r_c - _rmax * _rmax) / (2 * fabs(r) * r_c));
 			tr = td + fabs(alpha / omega); //[tr] ~ [rad] / [rad/s] = [s]
+			cout << "true alpha " << alpha << " td " << td*1e9 << " omega " << omega << " tr " << tr*1e9 << endl;
 			//if(tr*1e9 < -5) cout << "alpha " << alpha << " td " << td*1e9 << " omega " << omega << endl;
 			t = fmin(tr, tz); //t in seconds
 		}
@@ -1031,42 +1038,13 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		//for getting time in right reference frame (centered at 0 if from PV)
 		//where x, y, z is starting position of particle
 		double t_corr, tof_est;
-		double dr = r_t - r_c;
-		double dz = z_t - vtx.at(2); //assume charged particles can be reco'd from their prod vertex (whether PV or PU vertex) due to tracking
+		double beta_est, p_est;
 		if(rp.Particle.idAbs() == 11){ //electron (essentially massless charged particle)
 //cout << "particle e " << rp.Particle.e() << " momentum e " << rp.Momentum.e() << " particle p " << rp.Particle.p().pAbs() << " momentum p " << rp.Momentum.P() << " particle m " << rp.Particle.m() << " momentum m " << rp.Momentum.M() << endl;
 			double m_ele = 0.00051099999999999995;
-			double beta_ele = sqrt(rp.Particle.e()*rp.Particle.e() - m_ele*m_ele)/rp.Particle.e();
-			double gammam_est = rp.Particle.m()/sqrt(1 - beta_ele*beta_ele)*1e9/(_sol * _sol); //needs to be in [eV/c^2]
-//cout << "e " << e << " gammam (no units) " << rp.Momentum.M()/sqrt(1 - beta_ele*beta_ele) << endl;
-			double omega_est = q*_b/(gammam_est);
-			//R*omega = v -> beta = v/c -> R*omega = beta*c -> omega = beta*c/R
-			//tof is time taken to traverse in z-dir and curved path
-			double tof_est_z = dz/TMath::Sign(beta_ele*_sol, rp.Particle.pz());
-			//curved distance is arclength of helix -> r*dphi where r is helical radius
-			double d_curve = atan2(vtx.at(1), vtx.at(0)) - phit;//(phi0 - phit);
-			//tof_est = tof_est_z + d_curve/(beta_ele*_sol);
-			double tof_est_curve = d_curve/(omega_est); //dPhi/omega
-			//if(t == tr)
-			//	tof_est = tof_est_curve;
-			//else
-			//	tof_est = tof_est_z;
-			if( fabs(tof_est_curve - t) < fabs(tof_est_z - t))
-				tof_est = tof_est_curve;
-			else
-				tof_est = tof_est_z;
-			//if(tof_est < 0){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
-			//	cout << " dphi " << (phit - phi0) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t" << r_t << " phit " << phit << " phi0 " << phi0 << endl;
-			//}
-			//if(fabs(tof_est - t)*1e9 > 50 && rp.Particle.e() > 10 && rp.Particle.statusHepMC() == 1){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
-			//	cout << " dphi " << (phi0 - phit) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t " << r_t << " phit " << phit << " phi0 " << phi0 << " t true " << t*1e9 << " tz " << tz*1e9 << " tr " << tr*1e9 << endl;
-			//	
-			//}
-//cout << "beta " << beta_ele <<  " omega " << omega << " omega from beta " << omega_est << " gammam " << gammam << " gammam from beta " << gammam_est << endl;
-//cout << "tz "  << tz*1e9 << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< endl;
-	
+			//double beta_ele = sqrt(rp.Particle.e()*rp.Particle.e() - m_ele*m_ele)/rp.Particle.e();
+			p_est = sqrt(Momentum.e()*Momentum.e() - m_ele*m_ele);
+			beta_est = sqrt(Momentum.e()*Momentum.e() - m_ele*m_ele)/Momentum.e();
 		}
 		else{ //use charged pion mass hypothesis
 		//if particle is heavier than charged pion, then its radius of curvature will be larger
@@ -1076,48 +1054,102 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		//the beta_pion estimates the particle moving slower than it is (beta_pion < beta_true), but with a larger radius of curvature (more angular velocity)
 		//because there is more angular velocity (higher omega)/larger radius of curvature, it takes less time to hit a detector wall, so the particle will arrive earlier (t_corr < 0) 
 			double m_pion = 0.13956999999999999962;
-			double beta_pion = sqrt(rp.Particle.e()*rp.Particle.e() - m_pion*m_pion)/rp.Particle.e();
-			//cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_pion " << beta_pion << endl;
-			double gammam_est = rp.Particle.m()/sqrt(1 - beta_pion*beta_pion)*1e9/(_sol * _sol); //needs to be in [eV/c^2]
-//cout << "e " << e << " gammam (no units) " << rp.Momentum.M()/sqrt(1 - beta_pion*beta_pion) << endl;
-			double omega_est = q*_b/(gammam_est);
-			//R*omega = v -> beta = v/c -> R*omega = beta*c -> omega = beta*c/R
-			//tof is time taken to traverse in z-dir and curved path
-			double tof_est_z = dz/TMath::Sign(beta_pion*_sol, rp.Particle.pz());
-			//curved distance is arclength of helix -> r*dphi where r is helical radius
-			//double d_curve = (phi0 - phit);
-			double d_curve = atan2(vtx.at(1), vtx.at(0)) - phit;//(phi0 - phit);
-			//tof_est = tof_est_z + d_curve/(beta_ele*_sol);
-			double tof_est_curve = d_curve/(omega_est); //dPhi/omega
-			///if(t == tr)
-			///	tof_est = tof_est_curve;
-			///else
-			///	tof_est = tof_est_z;
+			p_est = sqrt(Momentum.e()*Momentum.e() - m_pion*m_pion);
+			beta_est = sqrt(Momentum.e()*Momentum.e() - m_pion*m_pion)/Momentum.e();
+		}
+cout << "id " << rp.Particle.id() << " true beta " << Momentum.P() / Momentum.e() << " beta_est " << beta_est << " mass " << rp.Particle.m() << endl;
+		double gammam_est = rp.Particle.m()/sqrt(1 - beta_est*beta_est)*1e9/(_sol * _sol); //needs to be in [eV/c^2]
+//cout << "e " < gammam (no units) " << rp.Momentum.M()/sqrt(1 - beta_ele*beta_ele) << endl;
+		double omega_est = q*_b/(gammam_est);
+		double theta = atan2(pt,pz);
+		double pt_est = p_est*sin(theta);
+cout << "pt true " << pt << " pt est " << pt_est << endl;
+		double r_est = pt_est / (q*_b)*1e9/(_sol);
+		//double r_est = pt / (q*_b)*1e9/(beta_est*_sol);
+		//R*omega = v -> beta = v/c -> R*omega = beta*c -> omega = beta*c/R
+		double phi0_vtx = phi0;//atan2(vtx.at(1), vtx.at(0)); // [rad] in [-pi, pi]
+cout << "phi0 " << phi0 << " phi0_vtx " << phi0_vtx << endl;
+		//2. helix axis coordinates
+		double x_c_est = vtx.at(0) + r_est * sin(phi0_vtx);
+		double y_c_est = vtx.at(1) - r_est * cos(phi0_vtx);
+		//double x_c_est = vtx.at(0) + r_est * sin(phi0_vtx);
+		//double y_c_est = vtx.at(1) - r_est * cos(phi0_vtx);
+		double r_c_est = sqrt(x_c_est*x_c_est + y_c_est*y_c_est);
+	cout << "r true " << r << " r est " << (beta_est*_sol)*(pt/Momentum.P()) / omega_est << " r_c true " << r_c << " r_c est " << r_c_est << endl;	
+		
+		// time of closest approach
+		double td_est = (phi0_vtx + atan2(x_c_est, y_c_est)) / omega_est; //original delphes
+		// remove all the modulo pi that might have come from the atan
+		double pio_est = fabs(TMath::Pi()/omega_est);
+		while(fabs(td_est) > 0.5 * pio_est)
+		{
+		  td_est -= TMath::Sign(1.0, td_est) * pio_est;
+		}
+		//if(td*1e9 < -10) cout << "td " << td*1e9 << " og td " << td_test*1e9 << " phi0 " << phi0 << " atan2 " << atan2(x_c, y_c) << " omega " << omega << endl;
 
-			if( fabs(tof_est_curve - t) < fabs(tof_est_z - t))
-				tof_est = tof_est_curve;
-			else
-				tof_est = tof_est_z;
-
-			//tof_est = fmin(tof_est_curve, tof_est_z); 
-
-			//if((tof_est - t)*1e9 > 0.1){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_pion " << beta_pion << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_pion " << m_pion << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
-			//	cout << " dphi " << (phi0 - phit) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t " << r_t << " phit " << phit << " phi0 " << phi0 << " t true " << t*1e9 << " tz " << tz*1e9 << " tr " << tr*1e9 << " td " << td*1e9 << " alpha " << alpha << " atan(y/x) " << TMath::ATan2(x_c, y_c) << endl;
+		double vz_est = beta_est*_sol*(pz/Momentum.P()); //beta = v/c = P/E -> v = P*c/E = beta*c, times pz/p to get right sign and z-component fraction
+cout << "vz_est " << vz_est << " vz true " << vz << endl;
+		// calculate coordinates of closest approach to z axis
+		//new phi
+		double phid_est = phi0_vtx - omega_est * td_est;
+		double xd_est = x_c_est - r_est * TMath::Sin(phid_est);
+		double yd_est = y_c_est + r_est * TMath::Cos(phid_est);
+		double zd_est = vtx.at(2) + vz_est * td_est;
+	cout << "prod vertex " << x << ", " << y << ", " << z << endl;
+	cout << "prim vertex " << vtx.at(0) << ", " << vtx.at(1) << ", " << vtx.at(2) << endl;
+		// 3. time evaluation t = TMath::Min(t_r, t_z)
+		//    t_r : time to exit from the sides
+		//    t_z : time to exit from the front or the back
+		double tof_est_z = (vz_est == 0.0) ? 1.0E99 : (TMath::Sign(halfLength, pz) - vtx.at(2)) / vz_est; //[tz] ~ [m/GeV]
+cout << "tofest z " << tof_est_z*1e9 << " pz " << pz << " vz_est " << vz_est << " vz true " << vz << endl;
+		double tof_est_curve;
+cout << "r_c_est + fabs(r_est) " << r_c_est + fabs(r_est) << " r_c + fabs(r) " << r_c + fabs(r) << " halfLength " << halfLength << endl;
+		if(r_c_est + fabs(r_est) < _rmax)
+		{
+			// helix does not cross the cylinder sides
+			tof_est = tof_est_z; //t in seconds (see omega dim analysis above)
+		}
+		else
+		{
+			double alpha_est = acos((r_est * r_est + r_c_est * r_c_est- _rmax * _rmax) / (2 * fabs(r_est) * r_c_est));
+			tof_est_curve = td_est + fabs(alpha_est / omega_est); //[tr] ~ [rad] / [rad/s] = [s]
+			cout << "est alpha " << alpha_est << " td " << td_est*1e9 << " omega " << omega_est << " tr " << tof_est_curve*1e9 << endl;
+			//if(tr*1e9 < -5) cout << "alpha " << alpha << " td " << td*1e9 << " omega " << omega << endl;
+			tof_est = fmin(tof_est_curve, tof_est_z); //t in seconds
+		}
+			//if(tof_est < 0){
+			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
+			//	cout << " dphi " << (phit - phi0) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t" << r_t << " phit " << phit << " phi0 " << phi0 << endl;
 			//}
 			//if(fabs(tof_est - t)*1e9 > 50 && rp.Particle.e() > 10 && rp.Particle.statusHepMC() == 1){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_pion " << beta_pion << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_pion " << m_pion << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
+			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
 			//	cout << " dphi " << (phi0 - phit) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t " << r_t << " phit " << phit << " phi0 " << phi0 << " t true " << t*1e9 << " tz " << tz*1e9 << " tr " << tr*1e9 << endl;
 			//	
 			//}
-//cout << "beta " << beta_pion <<  " omega " << omega << " omega from beta " << omega_est << " gammam " << gammam << " gammam from beta " << gammam_est << endl;
-//cout << "tz "  << tz*1e9 << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< endl;
-		}
+		double dx = x_t - vtx.at(0);
+		double dy = y_t - vtx.at(1);
+		double dz = z_t - vtx.at(2); 
+cout << "dx " << dx << " x_t " << x_t << " vtx_x " << vtx.at(0) << endl;
+cout << "dy " << dy << " y_t " << y_t << " vtx_y " << vtx.at(1) << endl;
+cout << "dz " << dz << " z_t " << z_t << " vtx_z " << vtx.at(2) << endl;
+		double tof_est_straight = sqrt(dx*dx + dy*dy + dz*dz)/(beta_est*_sol);
+
+		//arc length time
+		double arc = p_est*fabs(phit - phi0)/(fabs(q)*_b);
+		double tof_arc_est = fabs(phit - phi0_vtx)/(fabs(omega_est));
+		double tof_arc_true = fabs(phit - phi0)/(fabs(omega));
+cout << "tof_arc true " << tof_arc_true*1e9 << " tof arc est " << tof_arc_est*1e9 << endl;
+
+
+cout << "id " << rp.Particle.id() << " mass " << rp.Particle.m() << " true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_est " << beta_est << endl;
+cout << "omega " << omega << " omega from beta " << omega_est << " gammam " << gammam*1e9 << " gammam from beta " << gammam_est*1e9 << endl;
+cout << "tz "  << tz*1e9 << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< " true t " << t*1e9 << " tof straight " << tof_est_straight*1e9 << endl;
+	
 		//deltaT_vertex = t_vertex - t_PV - accounts for particles coming from PU vertices
 		//_pvt is in ns and tProd is in ns
 		double deltaT_vertex = (vtx.at(3) - _pvt)*1e-9;
 		//time to smear: tof_est - tof_true + deltaT_vertex
-		t_corr = (tof_est - t) + deltaT_vertex;
+		t_corr = (tof_est_straight - t) + deltaT_vertex;
 		//cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true straight time " << t_straight*1e9 << " true curved time " << t*1e9 << endl; 
 		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p
 		//for estimated tof, pretend you only have energy no momentum info and a mass hypothesis ->
@@ -1135,6 +1167,10 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		//	
 		//}
 
+	cout << "tof est " << tof_est*1e9 << " t true " << t*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " t_corr " << t_corr*1e9 << endl;
+	cout << "prod vertex " << x << " " << y << " " << z << endl;
+	cout << "prim vertex " << vtx.at(0) << " " << vtx.at(1) << " " << vtx.at(2) << endl;
+cout << endl;
 
 		//position in m, t in s
 		if(r_t > 0.0)
