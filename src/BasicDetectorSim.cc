@@ -1077,79 +1077,56 @@ cout << "phi0 " << phi0 << " phi0_vtx " << phi0_vtx << endl;
 		double r_c_est = sqrt(x_c_est*x_c_est + y_c_est*y_c_est);
 	cout << "r true " << r << " r est " << (beta_est*_sol)*(pt/Momentum.P()) / omega_est << " r_c true " << r_c << " r_c est " << r_c_est << endl;	
 		
-		// time of closest approach
-		double td_est = (phi0_vtx + atan2(x_c_est, y_c_est)) / omega_est; //original delphes
-		// remove all the modulo pi that might have come from the atan
-		double pio_est = fabs(TMath::Pi()/omega_est);
-		while(fabs(td_est) > 0.5 * pio_est)
-		{
-		  td_est -= TMath::Sign(1.0, td_est) * pio_est;
-		}
 		//if(td*1e9 < -10) cout << "td " << td*1e9 << " og td " << td_test*1e9 << " phi0 " << phi0 << " atan2 " << atan2(x_c, y_c) << " omega " << omega << endl;
 
 		double vz_est = beta_est*_sol*(pz/Momentum.P()); //beta = v/c = P/E -> v = P*c/E = beta*c, times pz/p to get right sign and z-component fraction
 cout << "vz_est " << vz_est << " vz true " << vz << endl;
-		// calculate coordinates of closest approach to z axis
-		//new phi
-		double phid_est = phi0_vtx - omega_est * td_est;
-		double xd_est = x_c_est - r_est * TMath::Sin(phid_est);
-		double yd_est = y_c_est + r_est * TMath::Cos(phid_est);
-		double zd_est = vtx.at(2) + vz_est * td_est;
 	cout << "prod vertex " << x << ", " << y << ", " << z << endl;
 	cout << "prim vertex " << vtx.at(0) << ", " << vtx.at(1) << ", " << vtx.at(2) << endl;
-		// 3. time evaluation t = TMath::Min(t_r, t_z)
-		//    t_r : time to exit from the sides
-		//    t_z : time to exit from the front or the back
-		double tof_est_z = (vz_est == 0.0) ? 1.0E99 : (TMath::Sign(halfLength, pz) - vtx.at(2)) / vz_est; //[tz] ~ [m/GeV]
-cout << "tofest z " << tof_est_z*1e9 << " pz " << pz << " vz_est " << vz_est << " vz true " << vz << endl;
-		double tof_est_curve;
-cout << "r_c_est + fabs(r_est) " << r_c_est + fabs(r_est) << " r_c + fabs(r) " << r_c + fabs(r) << " halfLength " << halfLength << endl;
-		if(r_c_est + fabs(r_est) < _rmax)
-		{
-			// helix does not cross the cylinder sides
-			tof_est = tof_est_z; //t in seconds (see omega dim analysis above)
-		}
-		else
-		{
-			double alpha_est = acos((r_est * r_est + r_c_est * r_c_est- _rmax * _rmax) / (2 * fabs(r_est) * r_c_est));
-			tof_est_curve = td_est + fabs(alpha_est / omega_est); //[tr] ~ [rad] / [rad/s] = [s]
-			cout << "est alpha " << alpha_est << " td " << td_est*1e9 << " omega " << omega_est << " tr " << tof_est_curve*1e9 << endl;
-			//if(tr*1e9 < -5) cout << "alpha " << alpha << " td " << td*1e9 << " omega " << omega << endl;
-			tof_est = fmin(tof_est_curve, tof_est_z); //t in seconds
-		}
-			//if(tof_est < 0){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
-			//	cout << " dphi " << (phit - phi0) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t" << r_t << " phit " << phit << " phi0 " << phi0 << endl;
-			//}
-			//if(fabs(tof_est - t)*1e9 > 50 && rp.Particle.e() > 10 && rp.Particle.statusHepMC() == 1){
-			//	cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_ele " << beta_ele << " gammam_est " << gammam_est*1e9 << " gammam true " << gammam*1e9 << " omega_est " << omega_est << " omega true " << omega << " m_ele " << m_ele << " particle m " << rp.Momentum.M() << " " << rp.Particle.m() << endl;
-			//	cout << " dphi " << (phi0 - phit) << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 <<  " tof_est " << tof_est*1e9 << " dcurve " << d_curve << " r_t " << r_t << " phit " << phit << " phi0 " << phi0 << " t true " << t*1e9 << " tz " << tz*1e9 << " tr " << tr*1e9 << endl;
-			//	
-			//}
 		double dx = x_t - vtx.at(0);
 		double dy = y_t - vtx.at(1);
-		double dz = z_t - vtx.at(2); 
+		double dz = z_t - vtx.at(2);
 cout << "dx " << dx << " x_t " << x_t << " vtx_x " << vtx.at(0) << endl;
 cout << "dy " << dy << " y_t " << y_t << " vtx_y " << vtx.at(1) << endl;
 cout << "dz " << dz << " z_t " << z_t << " vtx_z " << vtx.at(2) << endl;
 		double tof_est_straight = sqrt(dx*dx + dy*dy + dz*dz)/(beta_est*_sol);
 
-		//arc length time
-		double arc = p_est*fabs(phit - phi0)/(fabs(q)*_b);
-		double tof_arc_est = fabs(phit - phi0_vtx)/(fabs(omega_est));
-		double tof_arc_true = fabs(phit - phi0)/(fabs(omega));
-cout << "tof_arc true " << tof_arc_true*1e9 << " tof arc est " << tof_arc_est*1e9 << endl;
+
+		double phi0_2 = atan2((vtx.at(1) - y_c_est), (vtx.at(0) - x_c_est));
+		double phit_2 = atan2((y_t - y_c_est), (x_t - x_c_est));
+
+cout << "phi0_2 " << phi0_2 << " phi0 " << phi0 << " phit_2 " << phit_2 << " phit " << phit << " dphi_2 " << phit_2 - phi0_2 << " dphi " << phit - phi0 << endl;
+		double dphi = fabs(phit_2 - phi0_2);
+		if(phit - phi0 < 0 && phit_2 - phi0_2 > 0)
+			dphi -= 2*acos(-1);
+		dphi = fabs(dphi);
+		double dphi_true = fabs(phit - phi0);
+		//add rotations if called for
+		if(dphi_true - dphi > 2*acos(-1)){
+			int nrots = floor( (dphi_true - dphi) / (2*acos(-1)) );
+		cout << "adding " << nrots << " rotations to est dphi - initially was " << dphi << endl;
+			dphi += 2*acos(-1)*nrots;
+		}
+	cout << "omega true " << omega << " omega est " << omega_est << endl;	
+	cout << "est arc length " << dphi << " true arc length " << dphi_true << " tof_est_arc " << dphi/fabs(omega_est)*1e9 << " tof_arc_true " << dphi_true/fabs(omega) * 1e9 << endl;
+	//TODO: USE BELOW AS TOF (TOF_EST)	
+	cout << "dz/vz_est " << dz/(vz_est)*1e9 << " with true vz " << (z_t - z)*1e9/vz << endl;
+
+		tof_est = dz/(vz_est);
+cout << "tof_est from dz " << tof_est*1e9 << " from dphi " << dphi/fabs(omega_est)*1e9 << endl;
+		if(fabs(tof_est - dphi/fabs(omega_est))*1e9 > 1e-5) cout << "ERROR: times from dz and dphi are not equal - difference " << fabs(tof_est - dphi/fabs(omega_est))*1e9 << endl;
+  
 
 
 cout << "id " << rp.Particle.id() << " mass " << rp.Particle.m() << " true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_est " << beta_est << endl;
 cout << "omega " << omega << " omega from beta " << omega_est << " gammam " << gammam*1e9 << " gammam from beta " << gammam_est*1e9 << endl;
-cout << "tz "  << tz*1e9 << " tof_est_z " << tof_est_z*1e9 << " tof_est_curve " << tof_est_curve*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< " true t " << t*1e9 << " tof straight " << tof_est_straight*1e9 << endl;
+cout << "tz "  << tz*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< " true t " << t*1e9 << " tof straight " << tof_est_straight*1e9 << endl;
 	
 		//deltaT_vertex = t_vertex - t_PV - accounts for particles coming from PU vertices
 		//_pvt is in ns and tProd is in ns
 		double deltaT_vertex = (vtx.at(3) - _pvt)*1e-9;
 		//time to smear: tof_est - tof_true + deltaT_vertex
-		t_corr = (tof_est_straight - t) + deltaT_vertex;
+		t_corr = (tof_est - t) + deltaT_vertex;
 		//cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true straight time " << t_straight*1e9 << " true curved time " << t*1e9 << endl; 
 		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p
 		//for estimated tof, pretend you only have energy no momentum info and a mass hypothesis ->
