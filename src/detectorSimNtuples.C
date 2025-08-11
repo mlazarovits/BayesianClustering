@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
 	bool ootPU = false;
 	bool noshower = false;
 	int timeResModel = 0; //which time resolution model to use
-
+	bool reco_charged_pu = true;
 
 
 	for(int i = 0; i < argc; i++){
@@ -76,6 +76,9 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--noShower", 10) == 0){
     	 		noshower = true;
+   		}
+		if(strncmp(argv[i],"--noRecoChargedPU", 17) == 0){
+    	 		reco_charged_pu = false;
    		}
 		if(strncmp(argv[i],"--skim", 6) == 0){
     	 		skim = true;
@@ -163,6 +166,7 @@ int main(int argc, char *argv[]){
    		cout << "   --nPU [nPU]                   simulate nPU pileup events (default = 0: PU off)" << endl;
    		cout << "   --ootPU                       simulate OOT pileup events (default = off)" << endl;
    		cout << "   --noShower                    turn off calorimeter showering and energy and time smearing (default = off - showering + smearing on)" << endl;
+   		cout << "   --noRecoChargedPU             turn off reconstruction of charged particles from PU vertices (default = on - does reconstruction)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
 		cout << "   --singleW                     simulate single W" << endl;
@@ -265,6 +269,7 @@ int main(int argc, char *argv[]){
 	//if(sig_boosted)
 	if(nPU != 0) det.TurnOnPileup(nPU, ootPU);
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
+	det.RecoChargedPU(reco_charged_pu);
 	
 	///////make ntuple///////
 	det.InitTree(oname+".root");
