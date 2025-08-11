@@ -70,7 +70,7 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 			_oot = oot;
 		}
-		void RecoChargedPU(bool r){ _charged_pu_reco = r; }
+		void RecoChargedPU(bool r){ _charged_pu_reco = r; if(_charged_pu_reco) cout << "Reconstructing charged particles from PU" << endl; else cout << "Not reconstructing charged particles from PU" << endl; }
 		enum TimeResModel{
 			ecal = 0,
 			mtd = 1,

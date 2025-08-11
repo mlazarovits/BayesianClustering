@@ -282,7 +282,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_PV = BayesPoint({_pvx, _pvy, _pvz, _pvt}); //in [m], time in [ns]
 		//TestCalcTrajectory();
 		//continue;
-cout << "tProd straight "  << evtRec.tProd() << " mm/c = s " << " tprod*1e-3/sol *1e9 " << evtRec.tProd()*1e-3*1e9/_sol << " ns" << " pvt " << _pvt << " _PV.at(3) " << _PV.at(3) << endl;
 		//make map of particles to their PU vertex if from PU
 		map<int, BayesPoint> particleIdx_puVertex; 
 		if(_pu){
@@ -301,9 +300,7 @@ cout << "tProd straight "  << evtRec.tProd() << " mm/c = s " << " tprod*1e-3/sol
 					int p_idx = _sumEvent.size() + pp;
 					particleIdx_puVertex[p_idx] = pu_vtx;
 				}
-cout << "sumevent size before this pu event " << _sumEvent.size() << " this pu event size " << pu_event.size();
 				_sumEvent += pu_event;
-cout << " sumevent size after this pu event " << _sumEvent.size() << endl;
 			}
 		}
 		//loop through all particles
@@ -428,11 +425,12 @@ cout << " sumevent size after this pu event " << _sumEvent.size() << endl;
 			//create new particle for reco one
 			RecoParticle rp(particle); 
 
-			//calculate new pt (does full pvec but same pz)
 			//do not reconstruct charged particles from PU vertices (assume charged particle subtraction can be done with ie PF/PUPPI)
 			if(!_charged_pu_reco){
-				//if(particle.zProd() != _pvz && fabs(rp.Particle.charge()) > 1e-9) continue;
-				//if(particle has PU vertex as its vertex && is charged) continue;
+				//search for particle idx in pu vertex map
+				if(particleIdx_puVertex.find(p) != particleIdx_puVertex.end() && fabs(particle.charge()) > 1e-9){
+					continue;
+				}
 			}
 
 			CalcTrajectory(rp,vtx);
@@ -1034,7 +1032,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		//where x, y, z is starting position of particle
 		double t_corr, tof_est;
 		double dr = r_t - r_c;
-		double dz = z_t - z; //assume charged particles can be reco'd from their prod vertex (whether PV or PU vertex) due to tracking
+		double dz = z_t - vtx.at(2); //assume charged particles can be reco'd from their prod vertex (whether PV or PU vertex) due to tracking
 		if(rp.Particle.idAbs() == 11){ //electron (essentially massless charged particle)
 //cout << "particle e " << rp.Particle.e() << " momentum e " << rp.Momentum.e() << " particle p " << rp.Particle.p().pAbs() << " momentum p " << rp.Momentum.P() << " particle m " << rp.Particle.m() << " momentum m " << rp.Momentum.M() << endl;
 			double m_ele = 0.00051099999999999995;
@@ -1046,7 +1044,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 			//tof is time taken to traverse in z-dir and curved path
 			double tof_est_z = dz/TMath::Sign(beta_ele*_sol, rp.Particle.pz());
 			//curved distance is arclength of helix -> r*dphi where r is helical radius
-			double d_curve = (phi0 - phit);
+			double d_curve = atan2(vtx.at(1), vtx.at(0)) - phit;//(phi0 - phit);
 			//tof_est = tof_est_z + d_curve/(beta_ele*_sol);
 			double tof_est_curve = d_curve/(omega_est); //dPhi/omega
 			//if(t == tr)
@@ -1087,7 +1085,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 			//tof is time taken to traverse in z-dir and curved path
 			double tof_est_z = dz/TMath::Sign(beta_pion*_sol, rp.Particle.pz());
 			//curved distance is arclength of helix -> r*dphi where r is helical radius
-			double d_curve = (phi0 - phit);
+			//double d_curve = (phi0 - phit);
+			double d_curve = atan2(vtx.at(1), vtx.at(0)) - phit;//(phi0 - phit);
 			//tof_est = tof_est_z + d_curve/(beta_ele*_sol);
 			double tof_est_curve = d_curve/(omega_est); //dPhi/omega
 			///if(t == tr)
