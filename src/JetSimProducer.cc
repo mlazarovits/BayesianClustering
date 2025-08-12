@@ -362,10 +362,10 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				
 				//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
 				/////TOF from 0 to rh location
-				time = _base->ECALRecHit_time->at(r);
-				x = _base->ECALRecHit_rhx->at(r);
-				y = _base->ECALRecHit_rhy->at(r);
-				z = _base->ECALRecHit_rhz->at(r);
+				time = _base->ECALRecHit_time->at(rhidx);
+				x = _base->ECALRecHit_rhx->at(rhidx);
+				y = _base->ECALRecHit_rhy->at(rhidx);
+				z = _base->ECALRecHit_rhz->at(rhidx);
 				//time corrections done at ntuple level in CalcTrajectory	
 				if(fabs(time) > 20) continue;
 
@@ -427,10 +427,10 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				totE += _base->ECALRecHit_energy->at(rhidx);
 				
 				//time corrections done at ntuple level in CalcTrajectory	
-				time = _base->ECALRecHit_time->at(r);
-				x = _base->ECALRecHit_rhx->at(r);
-				y = _base->ECALRecHit_rhy->at(r);
-				z = _base->ECALRecHit_rhz->at(r);
+				time = _base->ECALRecHit_time->at(rhidx);
+				x = _base->ECALRecHit_rhx->at(rhidx);
+				y = _base->ECALRecHit_rhy->at(rhidx);
+				z = _base->ECALRecHit_rhz->at(rhidx);
 				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
@@ -492,10 +492,10 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 				
 				//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
 				/////TOF from 0 to rh location
-				time = _base->ECALRecHit_time->at(r);
-				x = _base->ECALRecHit_rhx->at(r);
-				y = _base->ECALRecHit_rhy->at(r);
-				z = _base->ECALRecHit_rhz->at(r);
+				time = _base->ECALRecHit_time->at(rhidx);
+				x = _base->ECALRecHit_rhx->at(rhidx);
+				y = _base->ECALRecHit_rhy->at(rhidx);
+				z = _base->ECALRecHit_rhz->at(rhidx);
 				if(fabs(time) > 20) continue;
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
