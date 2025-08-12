@@ -998,6 +998,7 @@ cout << "avgPart E " << avgPartE << endl;
 							Jet leadcl = consts[0];
 							vector<Jet> subcls = {leadcl};
 							vector<int> genLeadMatchIdxs(1,-1);
+							//TODO: need to match subcl to THIS (ie genGluonMatchIdxs[j]) gen gluon
 							GenericMatchJet(subcls,_genq,genLeadMatchIdxs); //match subclusters to quarks
 							for(int c = 0; c < subcls.size(); c++){
 								int genmatchidx = genLeadMatchIdxs[c];
@@ -1023,6 +1024,7 @@ cout << "avgPart E " << avgPartE << endl;
 							Jet leadcl = consts[0];
 							vector<Jet> subcls = {leadcl};
 							vector<int> genLeadMatchIdxs(1,-1);
+							//TODO: need to match subcl to THIS (ie genGluonMatchIdxs[j]) gen gluon
 							GenericMatchJet(subcls,_genglu,genLeadMatchIdxs); //match subclusters to gluons
 							for(int c = 0; c < subcls.size(); c++){
 								int genmatchidx = genLeadMatchIdxs[c];
