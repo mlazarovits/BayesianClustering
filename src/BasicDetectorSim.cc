@@ -280,8 +280,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 		_pvz = evtRec.zProd()*1e-3; //put in mm from m
 		_pvt = evtRec.tProd()*1e-3*(1/_sol)*1e9; //put in ns from mm*c - see Pythia doc on double Particle::tau() - need to divide by sol	
 		_PV = BayesPoint({_pvx, _pvy, _pvz, _pvt}); //in [m], time in [ns]
-		//TestCalcTrajectory();
-		//continue;
 		//make map of particles to their PU vertex if from PU
 		map<int, BayesPoint> particleIdx_puVertex; 
 		if(_pu){
@@ -465,6 +463,10 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(fabs(rp.Particle.charge()) < 1e-9) _recoparttime_n.push_back(rp.Position.T()*1e9);
 			else{
 				 _recoparttime_c.push_back(rp.Position.T()*1e9);
+				if(rp.Particle.idAbs() == 211)
+					_recoparttime_c_pion.push_back(rp.Position.T()*1e9);
+				else
+					_recoparttime_c_notPion.push_back(rp.Position.T()*1e9);
 			}
 			_recoparttime.push_back(rp.Position.T()*1e9);
 
@@ -731,106 +733,89 @@ void BasicDetectorSim::SimulateEvents(int evt){
 //cout << "nhad " << nhad << " nlep " << nlep << " nsemilep " << nsemilep << endl;
 }
 
-void BasicDetectorSim::TestCalcTrajectory(){
-
-	double px = 1.000000;
-	double py = 1.000000;
-	double pz = 1.000000;
-	double p = sqrt(px*px + py*py + pz*pz);
-	double m = 0.1349768; //pion mass	
-	Pythia8::Particle p1, p2, p3, p4, p5, p6, p7, p8, p9;
-	p1.vProd(0,0,0,0);
-	//p1.vProd(_pvx, _pvy, _pvz, _pvt);
-	p1.p(px, py, pz, p);
-	p1.id(22);
+//e is energy either from E = sqrt(M_pion^2 + gen P^2) or true e for real tof/loc calc
+XYZTVector BasicDetectorSim::CalcTrajectoryCharged(RecoParticle& rp, double e, double& phid, const BayesPoint& vtx){
+	double theta = 2*atan2(1,exp(_etamax));
+	double halfLength = _rmax/tan(theta); //[m]
+	double px = rp.Momentum.px();
+	double py = rp.Momentum.py();
+	double pz = rp.Momentum.pz();
+	double pt = rp.Momentum.pt();
+	double q = rp.Particle.charge();
 	
-	//p2.vProd(0,0,0,0);
-	p2.vProd(_pvx, _pvy, _pvz, _pvt);
-	p2.p(px, py, pz, sqrt(m*m + p*p));
-	p2.id(111);
-
-	//p3.vProd(0,0,0,0);
-	p3.vProd(_pvx, _pvy, _pvz, _pvt);
-	m = 0.5; //kaon mass
-	p3.p(px, py, pz, sqrt(m*m + p*p));
-	p3.id(311);
-
-	p8.vProd(_pvx, _pvy, _pvz, _pvt);
-	m = 0.09; //fake mass
-	p8.p(px, py, pz, sqrt(m*m + p*p));
-	p8.id(311);
+	double x = rp.Position.x();
+	double y = rp.Position.y();
+	double z = rp.Position.z();
 	
-	px = 2;
-	py = 2;
-	pz = 2;	
-	p = sqrt(px*px + py*py + pz*pz);
-	//p4.vProd(0,0,0,0);
-	p4.vProd(_pvx, _pvy, _pvz, _pvt);
-	p4.p(px, py, pz, p);
-	p4.id(22);
+	//do helix calculation
+	// 1. initial transverse momentum p_{T0}: Part->pt
+	//    initial transverse momentum direction phi_0 = -atan(p_{X0} / p_{Y0})                omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
 
-	px = 1.;
-	py = 1.;
-	pz = 1.;	
-	p = sqrt(px*px + py*py + pz*pz);
-	p5.vProd(_pvx, _pvy, _pvz, _pvt);
-	//m = 139.57039*1e-3; //charged pion mass
-	m = 0.51099895069*1e-3; //electron mass
-	p5.p(px, py, pz, sqrt(m*m + p*p));
-	p5.id(11);
+      	//    relativistic gamma: gamma = E / mc^2; gammam = gamma * m
+      	//    gyration frequency omega = q * Bz / (gammam)
+      	//    helix radius r = p_{T0} / (omega * gammam)
+
+	double gammam = e * 1e9 / (_sol * _sol); //gammam in [eV/c^2], c needs to be in [m/s]
+	double beta = (rp.Particle.p().pAbs() / (e*_sol));
+	double omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]? 
+	//[omega] ~ [A*s]*[V*s/m^2] / [eV / m^s/s^2] = [A*V] /[eV]
+	//  = [A*V]/[V*A*s] = 1/[s]
+	double r = pt * 1e9 / (q * _b * _sol); //in [m]
+	double phi0 = atan2(py, px); // [rad] in [-pi, pi]
+	//2. helix axis coordinates
+	double x_c = x + r * sin(phi0);
+	double y_c = y - r * cos(phi0);
+	double r_c = sqrt(x_c*x_c + y_c*y_c);
 	
-	//p6.vProd(0,0,0,0);
-	p6.vProd(_pvx, _pvy, _pvz, _pvt);
-	m = 0.105; //muon mass
-	p6.p(px, py, pz, sqrt(m*m + p*p));
-	p6.id(13);
+	// time of closest approach
+	double td = (phi0 + atan2(x_c, y_c)) / omega; //original delphes
+	// remove all the modulo pi that might have come from the atan
+	double pio = fabs(TMath::Pi()/omega);
+	while(fabs(td) > 0.5 * pio)
+	{
+	  td -= TMath::Sign(1.0, td) * pio;
+	}
+	double vz = pz * _sol/e; //beta = v/c = P/E -> v = P*c/E = beta*c
+
+	// calculate coordinates of closest approach to z axis
+	//new phi
+	phid = phi0 - omega * td;
+	double xd = x_c - r * TMath::Sin(phid);
+	double yd = y_c + r * TMath::Cos(phid);
+	double zd = z + vz * td;
 	
-	p9.vProd(_pvx, _pvy, _pvz, _pvt);
-	m = 0.5; //charged kaon mass
-	p9.p(px, py, pz, sqrt(m*m + p*p));
-	p9.id(321);
+	// momentum at closest approach
+	// 3. time evaluation t = TMath::Min(t_r, t_z)
+	//    t_r : time to exit from the sides
+	//    t_z : time to exit from the front or the back
+	double tz = (vz == 0.0) ? 1.0E99 : (TMath::Sign(halfLength, pz) - z) / vz; //[tz] ~ [m/GeV]
 
-	p7.vProd(0,0,0,0);
-	m = 139.57039*1e-3; //charged pion mass
-	p7.p(px, py, pz, sqrt(m*m + p*p));
-	p7.id(211);
+	double t;	
+	if(r_c + fabs(r) < _rmax)
+	{
+		// helix does not cross the cylinder sides
+		t = tz; //t in seconds (see omega dim analysis above)
+	}
+	else
+	{
+		double alpha = acos((r * r + r_c * r_c - _rmax * _rmax) / (2 * fabs(r) * r_c));
+		double tr = td + fabs(alpha / omega); //[tr] ~ [rad] / [rad/s] = [s]
+		t = fmin(tr, tz); //t in seconds
+	}
+	// 4. position in terms of x(t), y(t), z(t)
+	double phit = phi0 - omega * t;
+	double x_t = x_c - r * TMath::Sin(phit);
+	double y_t = y_c + r * TMath::Cos(phit);
+	double z_t = z + vz * t;
+	double r_t = TMath::Hypot(x_t, y_t);
+	//cout << "CHARGED - mass " << rp.Momentum.mass() << endl;
+	//cout << "zProd " << rp.Particle.zProd() << " PV z " << _pvz << " came from PV? " << (rp.Particle.zProd() == _pvz) << endl;
+	//cout << "tProd " << rp.Particle.tProd() << " PV t " << _pvt << " came from PV? " << (rp.Particle.tProd() == _pvt) << " position.T() " << rp.Position.T()*1e9 << endl;
 
-	RecoParticle rp1 = RecoParticle(p1);
-	RecoParticle rp2 = RecoParticle(p2);
-	RecoParticle rp3 = RecoParticle(p3);
-	RecoParticle rp4 = RecoParticle(p4);
-	RecoParticle rp5 = RecoParticle(p5);
-	RecoParticle rp6 = RecoParticle(p6);
-	RecoParticle rp7 = RecoParticle(p7);
-	RecoParticle rp8 = RecoParticle(p8);
-	RecoParticle rp9 = RecoParticle(p9);
 
-	cout << "p1: m = 0, not from PV (vertex = (0,0,0,0))" << endl;
-	CalcTrajectory(rp1);
-	cout << endl;
-	cout << "p2: m = m_pion, neutral" << endl;
-	CalcTrajectory(rp2);
-	cout << endl;
-	cout << "p3: m = m_K, neutral (heavier than pion)" << endl;
-	CalcTrajectory(rp3);
-	cout << endl;
-	cout << "p8: m = m_fake, neutral (lighter than pion)" << endl;
-	CalcTrajectory(rp8);
-	cout << endl;
-	cout << "p4: m = m_photon = 0, different p" << endl;
-	CalcTrajectory(rp4);
-	cout << endl;
-	cout << "p5: m = m_ele, mass " << rp5.Momentum.mass() << " energy " << rp5.Momentum.e() << " p " << rp5.Momentum.P() << endl;
-	CalcTrajectory(rp5);
-	cout << endl;
-	cout << "p6: m = m_mu (lighter than pion), charged" << endl;
-	CalcTrajectory(rp6);
-	cout << endl;
-	cout << "p9: m = m_kaon (heavier than pion), charged" << endl;
-	CalcTrajectory(rp9);
-	cout << endl;
-	cout << "p7: PU vertex m = m_pion, mass " << rp7.Momentum.mass() << " energy " << rp7.Momentum.e() << " p " << rp7.Momentum.P() << endl;
-	CalcTrajectory(rp7);
+	XYZTVector newpos = rp.Position;
+	if(r_t > 0.0) newpos.SetCoordinates(x_t, y_t, z_t, t);
+	return newpos;
 }
 
 
@@ -888,17 +873,8 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		y_t = y + (py/e)*_sol*t;
 		z_t = z + (pz/e)*_sol*t;
 		
-		//double new_t = fmin(tr, tz); //t*e/c ~ [m/GeV]*[GeV*s/m] = s
-		//double new_x_t = x + px*new_t; 
-		//double new_y_t = y + py*new_t;
-		//double new_z_t = z + pz*new_t;
-
 		//p = mv; p*t ~ [GeV]*[m]/[GeV] = [m]
 		//t*e ~ [m]/[GeV] *[GeV] = [m]
-//cout << "initial t " << Position.T()*1e9 << " t " << t*1e9 << " t*e " << (t/_sol)*1e9 << endl; //" new_t " << new_t << " new_t*e " << new_t*e << " m new_t in ns " << new_t*e/_sol *1e9 << " ns original x " << x << " x_t " << x_t << " new_x_t " << new_x_t << endl;
-
-	//cout << "z " << z << " zProd " << rp.Particle.zProd() << " PV z " << _pvz << " came from PV? " << (rp.Particle.zProd() == _pvz) << endl;
-	//cout << "tProd " << rp.Particle.tProd() << " PV t " << _pvt << " came from PV? " << (rp.Particle.tProd() == _pvt) << " position.T() " << rp.Position.T()*1e9 << endl;
 
 		//for getting time in right reference frame (centered at 0 if from PV)
 		//where x, y, z is starting position of particle
@@ -910,24 +886,12 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		dy = y_t - _pvy*1e-3;
 		dz = z_t - _pvz*1e-3;
 		if(rp.Particle.idAbs() == 22){ //photon
-//cout << "using photon hypothesis" << endl;
 			beta = 1;
-			//tof_est = sqrt(dx*dx + dy*dy + dz*dz)/_sol; //for photon v = c, beta = 1
 		}
 		else{ //use neutral pion mass hypothesis
-		//if particle is heavier than pion (which will always be the case bc its the lighest hadron) 
-		//then the beta_est = beta_pion > beta_true which means that we think the particle is moving faster than it actually is
-		//a larger beta means a faster tof, so the t_corr will show the particle arriving early (tof_est < tof_true -> tof_est - tof_true < 0)
-		//if particle is lighter than pion (won't happen) then the beta_pion < beta_true, we think the particle is moving slower than it is
-		//so the t_corr will show a later arrival time (tof_est > tof_true -> t_corr > 0)
-//cout << "using neutral pion hypothesis" << endl;
 			double m_pion = 134.9768*1e-3;
-//cout << "heavier than pion? " << (rp.Momentum.M() > m_pion) << endl;
 			double beta_pion = sqrt(rp.Particle.e()*rp.Particle.e() - m_pion*m_pion)/rp.Particle.e();
 			beta = beta_pion;
-//cout << "true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta hypo " << beta_pion << endl;
-//double beta_true = rp.Particle.p().pAbs() / rp.Particle.e();
-//cout << "tof_est with true beta " << sqrt(dx*dx + dy*dy + dz*dz)/(beta_true*_sol)*1e9 << " tof_est with beta = 1(photon) " << sqrt(dx*dx + dy*dy + dz*dz)/(_sol)*1e9 << endl;
 		}
 		tof_est = sqrt(dx*dx + dy*dy + dz*dz)/(beta*_sol);
 
@@ -935,7 +899,7 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		//_pvt is in ns and vtx.at(3) (aka time) is in ns
 		double deltaT_vertex = (vtx.at(3) - _pvt)*1e-9;
 		//time to smear: tof_est - tof_true + deltaT_vertex
-		t_corr = (tof_est - t) + deltaT_vertex;
+		t_corr = (t - tof_est) + deltaT_vertex;
 		//cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true time " << t*1e9 << endl; 
 		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p
 		//for estimated tof, pretend you only have energy no momentum info and a mass hypothesis ->
@@ -945,216 +909,54 @@ void BasicDetectorSim::CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx){
 		rp.Position.SetCoordinates(x_t, y_t, z_t, t_corr);
 		//keep momentum at gen values - update eta, phi
 		rp.Momentum.SetCoordinates(pt, rp.Momentum.eta(), rp.Momentum.phi(), e); 	
-		if(t_corr*1e9 > 1e4) cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true time " << t*1e9 << " tProd " << rp.Particle.tProd() << " pvt " << _pvt << " position T " << Position.T()*1e9 << " ns " << endl; 
+		//if(t_corr*1e9 > 1e4) cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true time " << t*1e9 << " tProd " << rp.Particle.tProd() << " pvt " << _pvt << " position T " << Position.T()*1e9 << " ns " << endl; 
 	//cout << " new position x: " << rp.Position.x() << " y: " << rp.Position.y() << " z: " << rp.Position.z() << " eta: " << rp.Position.eta() << " phi: " << rp.Position.phi() << " t " << rp.Position.T() *1e9 << " ns" << endl;
 	//cout << " new momentum px: " << rp.Momentum.px() << " py: " << rp.Momentum.py() << " pz: " << rp.Momentum.pz() << " eta: " << rp.Momentum.eta() << " phi: " << rp.Momentum.phi() << " mass " << rp.Momentum.mass() << " id " << rp.Particle.id() << " energy " << rp.Momentum.e() << endl; 
 	}
 	//charged particles in magnetic field
 	else{
-		//calculate time to detector as straight line to account for this delay correctly
-		// solve pt2*t^2 + 2*(px*x + py*y)*t - (fRadius2 - x*x - y*y) = 0
-		tmp = px * y - py * x;
-      		tr = (TMath::Sqrt(pt2 * _rmax*_rmax - tmp * tmp) - px * x - py * y) / pt2;
-		tz = (TMath::Sign(halfLength, pz) - z) / pz;
-		double t_straight = fmin(tr, tz)*(e/_sol); //t*e/c ~ [m/GeV]*[GeV*s/m] = s
-		
-		//do helix calculation
-		// 1. initial transverse momentum p_{T0}: Part->pt
-		//    initial transverse momentum direction phi_0 = -atan(p_{X0} / p_{Y0})                omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]?
 
-      		//    relativistic gamma: gamma = E / mc^2; gammam = gamma * m
-      		//    gyration frequency omega = q * Bz / (gammam)
-      		//    helix radius r = p_{T0} / (omega * gammam)
+		double phid;
+		XYZTVector newpos_true = CalcTrajectoryCharged(rp, e, phid, vtx);
+		double t = newpos_true.T();
 
-		gammam = e * 1e9 / (_sol * _sol); //gammam in [eV/c^2], c needs to be in [m/s]
-		double beta = (rp.Particle.p().pAbs() / (e*_sol));
-	//cout << "gammam / m " << gammam *1e9 / rp.Particle.m() << " gamma = E/mc^2 " << e * 1e9 / (rp.Particle.m() * _sol * _sol) *1e9 << " beta " << beta << " gamma from beta " << sqrt(1 - beta*beta) << " gammam from beta * m " << rp.Particle.m() * sqrt(1 - beta*beta) <<  " gammam " << gammam*1e9 << endl;
-		omega = q * _b / (gammam); //in [89875518/s] - should be [rad/s]? 
-		//[omega] ~ [A*s]*[V*s/m^2] / [eV / m^s/s^2] = [A*V] /[eV]
-		//  = [A*V]/[V*A*s] = 1/[s]
-		r = pt * 1e9 / (q * _b * _sol); //in [m]
-//cout << "radius of curvature " << r << " energy " << rp.Momentum.E() << endl;
-		phi0 = atan2(py, px); // [rad] in [-pi, pi]
-		//2. helix axis coordinates
-		x_c = x + r * sin(phi0);
-		y_c = y - r * cos(phi0);
-		r_c = sqrt(x_c*x_c + y_c*y_c);
-		
-		// time of closest approach
-		td = (phi0 + atan2(x_c, y_c)) / omega; //original delphes
-		double td_test = td;
-		// remove all the modulo pi that might have come from the atan
-		pio = fabs(TMath::Pi()/omega);
-		while(fabs(td) > 0.5 * pio)
-		{
-		  td -= TMath::Sign(1.0, td) * pio;
-		}
-		//if(td*1e9 < -10) cout << "td " << td*1e9 << " og td " << td_test*1e9 << " phi0 " << phi0 << " atan2 " << atan2(x_c, y_c) << " omega " << omega << endl;
-
-		vz = pz * _sol/e; //beta = v/c = P/E -> v = P*c/E = beta*c
-
-		// calculate coordinates of closest approach to z axis
-		//new phi
-		phid = phi0 - omega * td;
-		xd = x_c - r * TMath::Sin(phid);
-		yd = y_c + r * TMath::Cos(phid);
-		zd = z + vz * td;
-		
-		// momentum at closest approach
-		px = pt * TMath::Cos(phid);
-		py = pt * TMath::Sin(phid);
-		//cout << "r " << r << " phi0 " << phi0 << " og phi " << rp.Momentum.phi() << " phid " << phid << " omega " << omega << " td " << td << " atan(x_c, y_c) " << atan2(x_c,y_c) << " id " << rp.Particle.id() << " pt " << rp.Particle.pT() << endl;//" " << atan2(y_c, x_c) << endl;
-		//reset momentum
-		rp.Momentum.SetCoordinates(pt, rp.Momentum.Eta(), phid, e);
-		//rp.Momentum.SetCoordinates(px, py, pz, e);
-		// 3. time evaluation t = TMath::Min(t_r, t_z)
-		//    t_r : time to exit from the sides
-		//    t_z : time to exit from the front or the back
-		tz = (vz == 0.0) ? 1.0E99 : (TMath::Sign(halfLength, pz) - z) / vz; //[tz] ~ [m/GeV]
-		
-		if(r_c + fabs(r) < _rmax)
-		{
-			// helix does not cross the cylinder sides
-			t = tz; //t in seconds (see omega dim analysis above)
-		}
-		else
-		{
-			alpha = acos((r * r + r_c * r_c - _rmax * _rmax) / (2 * fabs(r) * r_c));
-			tr = td + fabs(alpha / omega); //[tr] ~ [rad] / [rad/s] = [s]
-			cout << "true alpha " << alpha << " td " << td*1e9 << " omega " << omega << " tr " << tr*1e9 << endl;
-			//if(tr*1e9 < -5) cout << "alpha " << alpha << " td " << td*1e9 << " omega " << omega << endl;
-			t = fmin(tr, tz); //t in seconds
-		}
-		// 4. position in terms of x(t), y(t), z(t)
-		phit = phi0 - omega * t;
-		x_t = x_c - r * TMath::Sin(phit);
-		y_t = y_c + r * TMath::Cos(phit);
-		z_t = z + vz * t;
-		r_t = TMath::Hypot(x_t, y_t);
-	//cout << "CHARGED - mass " << rp.Momentum.mass() << endl;
-	//cout << "zProd " << rp.Particle.zProd() << " PV z " << _pvz << " came from PV? " << (rp.Particle.zProd() == _pvz) << endl;
-	//cout << "tProd " << rp.Particle.tProd() << " PV t " << _pvt << " came from PV? " << (rp.Particle.tProd() == _pvt) << " position.T() " << rp.Position.T()*1e9 << endl;
-		
 		//for getting time in right reference frame (centered at 0 if from PV)
-		//where x, y, z is starting position of particle
-		double t_corr, tof_est;
-		double beta_est, p_est;
+		//using electron + pion mass hypotheses
+		double m_est;
 		if(rp.Particle.idAbs() == 11){ //electron (essentially massless charged particle)
-//cout << "particle e " << rp.Particle.e() << " momentum e " << rp.Momentum.e() << " particle p " << rp.Particle.p().pAbs() << " momentum p " << rp.Momentum.P() << " particle m " << rp.Particle.m() << " momentum m " << rp.Momentum.M() << endl;
 			double m_ele = 0.00051099999999999995;
-			//double beta_ele = sqrt(rp.Particle.e()*rp.Particle.e() - m_ele*m_ele)/rp.Particle.e();
-			p_est = sqrt(Momentum.e()*Momentum.e() - m_ele*m_ele);
-			beta_est = sqrt(Momentum.e()*Momentum.e() - m_ele*m_ele)/Momentum.e();
+			m_est = m_ele;
 		}
 		else{ //use charged pion mass hypothesis
-		//if particle is heavier than charged pion, then its radius of curvature will be larger
-		//the beta_pion estimates the particle moving faster than it is (beta_pion > beta_true), but with a smaller radius of curvature (less angular velocity)
-		//because the radius of curvature is smaller, it takes longer to hit a detector wall (if stopped by radius, not z) so the particle will arrive later (t_corr > 0)
-		//if the particle is lighter than charged pion, then its radius of curvature will be smaller
-		//the beta_pion estimates the particle moving slower than it is (beta_pion < beta_true), but with a larger radius of curvature (more angular velocity)
-		//because there is more angular velocity (higher omega)/larger radius of curvature, it takes less time to hit a detector wall, so the particle will arrive earlier (t_corr < 0) 
 			double m_pion = 0.13956999999999999962;
-			p_est = sqrt(Momentum.e()*Momentum.e() - m_pion*m_pion);
-			beta_est = sqrt(Momentum.e()*Momentum.e() - m_pion*m_pion)/Momentum.e();
+			m_est = m_pion;
 		}
-cout << "id " << rp.Particle.id() << " true beta " << Momentum.P() / Momentum.e() << " beta_est " << beta_est << " mass " << rp.Particle.m() << endl;
-		double gammam_est = rp.Particle.m()/sqrt(1 - beta_est*beta_est)*1e9/(_sol * _sol); //needs to be in [eV/c^2]
-//cout << "e " < gammam (no units) " << rp.Momentum.M()/sqrt(1 - beta_ele*beta_ele) << endl;
-		double omega_est = q*_b/(gammam_est);
-		double theta = atan2(pt,pz);
-		double pt_est = p_est*sin(theta);
-cout << "pt true " << pt << " pt est " << pt_est << endl;
-		double r_est = pt_est / (q*_b)*1e9/(_sol);
-		//double r_est = pt / (q*_b)*1e9/(beta_est*_sol);
-		//R*omega = v -> beta = v/c -> R*omega = beta*c -> omega = beta*c/R
-		double phi0_vtx = phi0;//atan2(vtx.at(1), vtx.at(0)); // [rad] in [-pi, pi]
-cout << "phi0 " << phi0 << " phi0_vtx " << phi0_vtx << endl;
-		//2. helix axis coordinates
-		double x_c_est = vtx.at(0) + r_est * sin(phi0_vtx);
-		double y_c_est = vtx.at(1) - r_est * cos(phi0_vtx);
-		//double x_c_est = vtx.at(0) + r_est * sin(phi0_vtx);
-		//double y_c_est = vtx.at(1) - r_est * cos(phi0_vtx);
-		double r_c_est = sqrt(x_c_est*x_c_est + y_c_est*y_c_est);
-	cout << "r true " << r << " r est " << (beta_est*_sol)*(pt/Momentum.P()) / omega_est << " r_c true " << r_c << " r_c est " << r_c_est << endl;	
-		
-		//if(td*1e9 < -10) cout << "td " << td*1e9 << " og td " << td_test*1e9 << " phi0 " << phi0 << " atan2 " << atan2(x_c, y_c) << " omega " << omega << endl;
 
-		double vz_est = beta_est*_sol*(pz/Momentum.P()); //beta = v/c = P/E -> v = P*c/E = beta*c, times pz/p to get right sign and z-component fraction
-cout << "vz_est " << vz_est << " vz true " << vz << endl;
-	cout << "prod vertex " << x << ", " << y << ", " << z << endl;
-	cout << "prim vertex " << vtx.at(0) << ", " << vtx.at(1) << ", " << vtx.at(2) << endl;
-		double dx = x_t - vtx.at(0);
-		double dy = y_t - vtx.at(1);
-		double dz = z_t - vtx.at(2);
-cout << "dx " << dx << " x_t " << x_t << " vtx_x " << vtx.at(0) << endl;
-cout << "dy " << dy << " y_t " << y_t << " vtx_y " << vtx.at(1) << endl;
-cout << "dz " << dz << " z_t " << z_t << " vtx_z " << vtx.at(2) << endl;
-		double tof_est_straight = sqrt(dx*dx + dy*dy + dz*dz)/(beta_est*_sol);
+		//calculate estimate tof from above mass hypotheses -> beta
+		double e_est = sqrt(m_est*m_est + rp.Momentum.P2());
+		double phid_est;
+		XYZTVector pos_est = CalcTrajectoryCharged(rp, e_est, phid_est, vtx);
+		double tof_est = pos_est.T();
 
+		//if(rp.Particle.idAbs() == 11){
+		//	cout << "electron true t " << t*1e9 << " tof est " << tof_est*1e9 << " true e " << e << " e_est " << e_est << endl;
+		//}
+		//if(rp.Particle.idAbs() == 211){
+		//	cout << "pion true t " << t*1e9 << " tof est " << tof_est*1e9 << " true e " << e << " e_est " << e_est << endl;
+		//}
 
-		double phi0_2 = atan2((vtx.at(1) - y_c_est), (vtx.at(0) - x_c_est));
-		double phit_2 = atan2((y_t - y_c_est), (x_t - x_c_est));
-
-cout << "phi0_2 " << phi0_2 << " phi0 " << phi0 << " phit_2 " << phit_2 << " phit " << phit << " dphi_2 " << phit_2 - phi0_2 << " dphi " << phit - phi0 << endl;
-		double dphi = fabs(phit_2 - phi0_2);
-		if(phit - phi0 < 0 && phit_2 - phi0_2 > 0)
-			dphi -= 2*acos(-1);
-		dphi = fabs(dphi);
-		double dphi_true = fabs(phit - phi0);
-		//add rotations if called for
-		if(dphi_true - dphi > 2*acos(-1)){
-			int nrots = floor( (dphi_true - dphi) / (2*acos(-1)) );
-		cout << "adding " << nrots << " rotations to est dphi - initially was " << dphi << endl;
-			dphi += 2*acos(-1)*nrots;
-		}
-	cout << "omega true " << omega << " omega est " << omega_est << endl;	
-	cout << "est arc length " << dphi << " true arc length " << dphi_true << " tof_est_arc " << dphi/fabs(omega_est)*1e9 << " tof_arc_true " << dphi_true/fabs(omega) * 1e9 << endl;
-	//TODO: USE BELOW AS TOF (TOF_EST)	
-	cout << "dz/vz_est " << dz/(vz_est)*1e9 << " with true vz " << (z_t - z)*1e9/vz << endl;
-
-		tof_est = dz/(vz_est);
-cout << "tof_est from dz " << tof_est*1e9 << " from dphi " << dphi/fabs(omega_est)*1e9 << endl;
-		if(fabs(tof_est - dphi/fabs(omega_est))*1e9 > 1e-5) cout << "ERROR: times from dz and dphi are not equal - difference " << fabs(tof_est - dphi/fabs(omega_est))*1e9 << endl;
-  
-
-
-cout << "id " << rp.Particle.id() << " mass " << rp.Particle.m() << " true beta " << rp.Particle.p().pAbs() / rp.Particle.e() << " beta_est " << beta_est << endl;
-cout << "omega " << omega << " omega from beta " << omega_est << " gammam " << gammam*1e9 << " gammam from beta " << gammam_est*1e9 << endl;
-cout << "tz "  << tz*1e9 << " tr " << tr*1e9 << " tof_est " << tof_est*1e9<< " true t " << t*1e9 << " tof straight " << tof_est_straight*1e9 << endl;
-	
 		//deltaT_vertex = t_vertex - t_PV - accounts for particles coming from PU vertices
 		//_pvt is in ns and tProd is in ns
 		double deltaT_vertex = (vtx.at(3) - _pvt)*1e-9;
 		//time to smear: tof_est - tof_true + deltaT_vertex
-		t_corr = (tof_est - t) + deltaT_vertex;
-		//cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true straight time " << t_straight*1e9 << " true curved time " << t*1e9 << endl; 
-		//time = r/(beta*c) = r/(p*c/E) = r*E/c*p
-		//for estimated tof, pretend you only have energy no momentum info and a mass hypothesis ->
-		//beta = P/E, E^2 = m^2 + p^2 -> p^2 = E^2 - m^2 -> beta = sqrt(E^2 - m^2)/E
-		//if(fabs(t_corr)*1e9 > 0.001 && rp.Particle.statusHepMC() == 1){
-		//	cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " energy " << rp.Momentum.e() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true curved time " << t*1e9 << " vtx time " << vtx.at(3) << " pvt " << _pvt << endl; 
-		//}
+		double t_corr = (t - tof_est) + deltaT_vertex;
 
-		//if(fabs(t_corr)*1e9 > 50 && rp.Particle.e() > 10 && rp.Particle.statusHepMC() == 1){
-		//	cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " energy " << rp.Momentum.e() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true curved time " << t*1e9 << endl; 
-		//	
-		//}
-		//if(t_corr < 0 && rp.Particle.statusHepMC() == 1){
-		//	cout << "id " << rp.Particle.idAbs() << " true mass " << rp.Momentum.M() << " energy " << rp.Momentum.e() << " t_corr " << t_corr*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " centered time (est - true) " << (tof_est - t)*1e9 << " estimated time " << tof_est*1e9 << " true time " << t*1e9 << endl; 
-		//	
-		//}
-
-	cout << "tof est " << tof_est*1e9 << " t true " << t*1e9 << " deltaT_vertex " << deltaT_vertex*1e9 << " t_corr " << t_corr*1e9 << endl;
-	cout << "prod vertex " << x << " " << y << " " << z << endl;
-	cout << "prim vertex " << vtx.at(0) << " " << vtx.at(1) << " " << vtx.at(2) << endl;
-cout << endl;
-
+		//reset true momentum vector
+		rp.Momentum.SetCoordinates(pt, rp.Momentum.eta(), phid, e);
+		//reset position vector
 		//position in m, t in s
-		if(r_t > 0.0)
-			rp.Position.SetCoordinates(x_t, y_t, z_t, t_corr);
-			//rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t));
-			//reconstruct charged particles with straight-line time so it can be uncorrected easier (pretend like we measured it correctly)
-			//rp.Position.SetCoordinates(x_t, y_t, z_t, (Position.T() + t_straight));
+		//new spatial location is updated, just updated time to smear around
+		rp.Position.SetCoordinates(newpos_true.x(), newpos_true.y(), newpos_true.z(), t_corr);
 	}
 	//if(rp.Particle.tProd()/(_sol*1e3)*1e9 > 1e2) cout << " energy " << e << " pt " << rp.Momentum.pt() << " new time " << rp.Position.T()*1e9 << " charge " << q << endl;
 
@@ -1857,8 +1659,10 @@ void BasicDetectorSim::InitTree(string fname){
 	_tree->Branch("genpart_ngenpart",&_ngenparts)->SetTitle("number of genparts");
 	
 	_tree->Branch("recopart_time",&_recoparttime)->SetTitle("recopart time");
-	_tree->Branch("recopart_time_c",&_recoparttime_c)->SetTitle("charged recopart time");
 	_tree->Branch("recopart_time_n",&_recoparttime_n)->SetTitle("neutral recopart time");
+	_tree->Branch("recopart_time_c",&_recoparttime_c)->SetTitle("charged recopart time");
+	_tree->Branch("recopart_time_c_pion",&_recoparttime_c_pion)->SetTitle("charged recopart time from pions");
+	_tree->Branch("recopart_time_c_notPion",&_recoparttime_c_notPion)->SetTitle("charged recopart time from not pions");
 }
 
 
@@ -1987,6 +1791,8 @@ void BasicDetectorSim::_reset(){
 	_recoparttime.clear();
 	_recoparttime_n.clear();
 	_recoparttime_c.clear();
+	_recoparttime_c_pion.clear();
+	_recoparttime_c_notPion.clear();
 }
 
 void BasicDetectorSim::WriteTree(){

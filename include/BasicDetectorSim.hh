@@ -40,11 +40,15 @@ struct RecoParticle;
 		void SimQCD(){ _procs_to_sim.push_back(qcd); _simqcd = true;};
 		void SimWgamma(){ _procs_to_sim.push_back(wgam); _simwgam = true;};
 		void SimWg(){ _procs_to_sim.push_back(wg); _simwg = true;};
-		//this is what does the detector effects on the tracks
+		//calculates trajectory for all particles
 		void CalcTrajectory(RecoParticle& rp, const BayesPoint& vtx = BayesPoint({0,0,0,0})); //calculate trajectories/tracks for 
 					// particles from PV to detector (cal) face
 					// see pgs_track_res in PGS
-		void TestCalcTrajectory();
+	
+		//Calculates trajectory for charged particles specifically
+		//returns new position in x, y, z, and t for position on detector face
+		//and returns-by-reference the new phi coord of the momentum vector
+		XYZTVector CalcTrajectoryCharged(RecoParticle& rp, double e, double& phid, const BayesPoint& vtx = BayesPoint({0,0,0,0}));
 		//this add "track" information to ntuples
 		//not real tracks because there is no tracker in this sim :)
 		//this is just the gen momentum information at the detector face
@@ -349,7 +353,7 @@ struct RecoParticle;
 		vector<int> _genpartIdx,_genpartEvtIdx;
 
 		//reco particle times to check time corrections wrt vertex (either PV or PU vertex)
-		vector<double> _recoparttime, _recoparttime_c, _recoparttime_n;
+		vector<double> _recoparttime, _recoparttime_c, _recoparttime_n, _recoparttime_c_pion, _recoparttime_c_notPion;
 	
 		//reco AK4 jets
 		vector<double> _jAK4eta, _jAK4phi, _jAK4energy, _jAK4pt, _jAK4mass;
