@@ -25,13 +25,13 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-        inputFile = "condorSimNtuples_ttbar_defaultv9p11"
+        inputFile = "condorSimNtuples_ttbar_defaultv9p12p4"
     elif args.inputSample == "QCD":
-        inputFile = "condorSimNtuples_QCD_defaultv9p11"
+        inputFile = "condorSimNtuples_QCD_defaultv9p12p4"
     elif args.inputSample == "singleW":
-        inputFile = "condorSimNtuples_singleW_defaultv9p11"
+        inputFile = "condorSimNtuples_singleW_defaultv9p12p4"
     elif args.inputSample == "Wgluon":
-        inputFile = "condorSimNtuples_Wgluon_defaultv9p11"
+        inputFile = "condorSimNtuples_Wgluon_defaultv9p12p4"
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -43,6 +43,9 @@ def generateSubmission(args):
 
     if(args.noShower):
         inputFile += "_noShower"
+
+    if(args.PU):
+        inputFile += "_nPU10"
 
     #inputFile += "_neutralTrajOnly"
 
@@ -198,6 +201,8 @@ def main():
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW','Wgluon'])
     parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
+    #TODO: if ntuples with different nPU vertices, change below from flag to string for # vertices (ie 10 would give ntuple with nPU10)
+    parser.add_argument('--PU',help='turn on pileup (currently at nPU = 10)',action='store_true')
     parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
