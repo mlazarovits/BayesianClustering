@@ -63,6 +63,9 @@ void BHCJetSkimmer::Skim(){
 	BayesCluster* algo = nullptr;
 	clock_t t;
 	double phiwindow = acos(-1)/2;
+	//for event display
+	map<string, BayesPoint> plot_centers; //plot_centers[i][j] is plot center in dim j for plot i (see above for different plot idxs)
+	map<string, BayesPoint> plot_widths;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		//event level selection
@@ -473,74 +476,174 @@ void BHCJetSkimmer::Skim(){
 		//fill event display if specified _evt2disp
 		if(i == _evt2disp){
 			cout << "Displaying event " << i << endl;
+			//fill hists for overall event
 			for(auto rh : rhs){
-				_procCats[0].hists2D[0][86]->Fill(rh.eta(), rh.phi(), rh.E());
-				_procCats[1].hists2D[0][86]->Fill(rh.eta(), rh.phi(), rh.E());
+				double w;
+				if(_evt2disp_z == 0)
+					w = rh.E();
+				else if(_evt2disp_z == 1){
+					w = rh.t();
+					_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("time [ns]");
+					for(auto h : _evtdisps_obj){
+						h->GetZaxis()->SetTitle("time [ns]");
+					}
+				}
+				else
+					w = rh.E(); //default energy weighted
+				_procCats[0].hists2D[0][129]->Fill(rh.eta(), rh.phi(), w);
+
 			}
+			double eta = -999;
+			double phi = -999;
 			//save gen particles as tmarkers
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
-				double eta = _genparts[g].eta();
-				double phi = _genparts[g].phi_02pi();
 				int id = fabs(_base->genpart_id->at(genidx));
+				string matchstring;
+				int gidx = -1;
 				//TODO: set to pretty colors with hex codes and make colors related ie for quarks (light vs b different but similar)
 				if(id == 24){ //W
-					plot_particles.push_back(TMarker(eta, phi, kPlus));
-					plot_particles[plot_particles.size()-1].SetMarkerColor(kRed-4);
+					
+					//check if first w event display is already filled
+					if(_evtdisps_obj[0]->GetEntries() == 0){
+						//fill if not
+						gidx = 0;
+						matchstring = "W";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					else{ //fill next one
+						gidx = 1;
+						matchstring = "W2";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					_plot_particles.push_back(TMarker(eta, phi, kOpenTriangleUp));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kRed-4);
+
+				}
+				if(id == 6){ //top
+					//check if first top event display is already filled
+					if(_evtdisps_obj[7]->GetEntries() == 0){
+						//fill if not
+						gidx = 7;
+						matchstring = "top";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					else{ //fill next one
+						gidx = 8;
+						matchstring = "top2";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					_plot_particles.push_back(TMarker(eta, phi, kOpenSquare));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kOrange-4);
 				}
 				else if(id == 1 || id == 2 || id == 3){ //light quarks
-					plot_particles.push_back(TMarker(eta, phi, kCircle));
-					plot_particles[plot_particles.size()-1].SetMarkerColor(kAzure+4);
+					//check if first q event display is already filled
+					if(_evtdisps_obj[3]->GetEntries() == 0){
+						//fill if not
+						gidx = 3;
+						matchstring = "q1";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					else{ //fill next one
+						gidx = 4;
+						matchstring = "q2";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					_plot_particles.push_back(TMarker(eta, phi, kPlus));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kAzure+4);
 				}
 				else if(id == 5){ //b quark
-					plot_particles.push_back(TMarker(eta, phi, kOpenSquare));
-					plot_particles[plot_particles.size()-1].SetMarkerColor(kCyan-4);
+					//check if first b event display is already filled
+					if(_evtdisps_obj[5]->GetEntries() == 0){
+						//fill if not
+						gidx = 5;
+						matchstring = "b";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					else{ //fill next one
+						gidx = 6;
+						matchstring = "b2";
+						eta = _genparts[g].eta();
+						phi = _genparts[g].phi_02pi();
+					}
+					_plot_particles.push_back(TMarker(eta, phi, kMultiply));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kCyan-4);
 				}
 				else if(id == 21){ //gluon
-					plot_particles.push_back(TMarker(eta, phi, kStar));
-					plot_particles[plot_particles.size()-1].SetMarkerColor(kBlue-4);
+					gidx = 2;
+					matchstring = "gluon";
+					eta = _genparts[g].eta();
+					phi = _genparts[g].phi_02pi();
+					_plot_particles.push_back(TMarker(eta, phi, kStar));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlue-4);
 				}
+				if(gidx == -1) continue; //skip if no gen particles specified
+				plot_centers[matchstring] = BayesPoint({eta, phi}); //gen particle in question should be centered at (0,0) in local eta, phi coords for local (not global) evt disp
+				//set by deltaR \approx 2*m/pT, taking deltaEta = deltaPhi
+				double deta = 2*_genparts[g].m()/(sqrt(2.)*_genparts[g].pt());
+				double dphi = deta;
+				plot_widths[matchstring] = BayesPoint({deta,dphi});
+				if(_evt2disp_z == 1){ //update labels to time
+					_evtdisps_obj[gidx]->GetZaxis()->SetTitle("time [ns]");
+				}
+				//fill hists for this gen particle (hist idx)
+				PointCollection rh_pts;
+				for(auto rh : rhs){
+					double w;
+					if(_evt2disp_z == 0)
+						w = rh.E();
+					else if(_evt2disp_z == 1){
+						w = rh.t();
+					}
+					else
+						w = rh.E(); //default energy weighted
+					//center according to main gen particle
+					BayesPoint rh_pt({rh.eta(), rh.phi()}); //save as BayesPoint to do correct circular translation to (0,0)
+					rh_pt.SetWeight(w);
+					rh_pts += rh_pt;	
+				}
+cout << "matchstring " << matchstring << " gidx " << gidx << " eta " << eta << " phi " << phi << " global center " << endl; plot_centers[matchstring].Print();
+				//translate into local eta, phi coords
+				rh_pts.Translate(plot_centers[matchstring].at(0),0);
+				rh_pts.CircularTranslate(plot_centers[matchstring].at(1),1);
+				for(int r = 0; r < rh_pts.GetNPoints(); r++){
+					_evtdisps_obj[gidx]->Fill(rh_pts.at(r).at(0), rh_pts.at(r).at(1), rh_pts.at(r).w());
+				}	
+				
 			}
+			if(eta == -999 && phi == -999) continue; //no gen particles specified
+cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
-				Matrix mu, cov;
-				_predJets[j].GetClusterParams(mu, cov);
-				//ellipse center
-				double eta = mu.at(0,0); 
-				double phi = mu.at(1,0);
-
-				//get 2D matrix for jet size
-				Matrix cov2D(2,2);
-				Get2DMat(cov,cov2D);	
-				vector<double> eigvals;
-				vector<Matrix> eigvecs;
-				cov2D.eigenCalc(eigvals, eigvecs);
-				
-				//define radii (r1 > r2)
-				double r1, r2;
-				Matrix leadvec;
-				if(eigvals[0] > eigvals[1]){
-					r1 = eigvals[0];
-					leadvec = eigvecs[0];
-					r2 = eigvals[1];
-				}
-				else{
-					r1 = eigvals[1];
-					leadvec = eigvecs[1];
-					r2 = eigvals[0];
-
-				}
-				//define angle of r1 rotation
-				double theta = atan2(leadvec.at(1,0), leadvec.at(0,0));
-				theta = 180 * theta/(4*atan(1)); //put to degrees
-				ellipses.push_back(TEllipse(eta, phi, r1, r2, 0, 360, theta));	
+				TEllipse el = PlotEll(_predJets[j]);
+				_ellipses.push_back(el);	
 				//plot jet centers
-				plot_particles.push_back(TMarker(eta, phi, 30)); //30 = open star may need to change if not rendering	
-				ellipses[ellipses.size()-1].SetLineColor(kGreen-4);	
-				plot_particles[plot_particles.size()-1].SetMarkerColor(kGreen-4);	
+				_plot_particles.push_back(TMarker(_predJets[j].eta(), _predJets[j].phi(), kOpenStar)); //30 = open star may need to change if not rendering	
+				_ellipses[_ellipses.size()-1].SetLineColor(kBlack);	
+				_ellipses[_ellipses.size()-1].SetFillStyle(0);	
+				_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 
+				//do for subclusters
+				int nk = _predJets[j].GetNConstituents();
+				for(int k = 0; k < nk; k++){
+					Jet subcl = _predJets[j].GetConstituent(k);
+					TEllipse sub_el = PlotEll(subcl);
+					_ellipses.push_back(sub_el);	
+					//_plot jet centers
+					_plot_particles.push_back(TMarker(subcl.eta(), subcl.phi(), kOpenDiamond)); 
+					_ellipses[_ellipses.size()-1].SetLineColor(kBlack);	
+					_ellipses[_ellipses.size()-1].SetFillStyle(0);	
+					_ellipses[_ellipses.size()-1].SetLineStyle(9);	
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
+				}
 			}
-
 		}
 
 		//fill pred jet hists with jets
@@ -572,14 +675,7 @@ void BHCJetSkimmer::Skim(){
 
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	ofile->cd();
-	WriteOutput(ofile);
-	//write ellispes + tmarkers to root file (if i can?)
-	//for(int el = 0; el < ellipses.size(); el++){
-	//	ellispes[el].Write();
-	//}
-	//for(int m = 0; m < plot_particles.size(); m++){
-	//	plot_particles[m].Write();
-	//}
+	WriteOutput(ofile, plot_centers, plot_widths);
 	ofile->Close();
 	_infile->Close();	
 	cout << "Wrote skim to: " << _oname << endl;

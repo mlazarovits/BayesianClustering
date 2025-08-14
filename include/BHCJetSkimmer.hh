@@ -6,6 +6,8 @@
 #include "TGraph.h"
 #include "TEllipse.h"
 #include "TMarker.h"
+#include "TExec.h"
+#include "TLine.h"
 #include <set>
 #include <Math/Vector4D.h>
 
@@ -25,6 +27,7 @@ class BHCJetSkimmer{
 			_emAlpha = 0.5;
 			_thresh = 1.;
 			_evt2disp = 0;
+			_evt2disp_z = 0;
 
 			_minTopPt = 0;
 			_minTopE = 0;
@@ -82,6 +85,7 @@ class BHCJetSkimmer{
 			_minWPt = 0;		
 			_minTopE = 0;
 			_evt2disp = 0;
+			_evt2disp_z = 0;
 			
 			_nGhosts = 0;
 			_check_merges = false;
@@ -462,6 +466,15 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclSize_subclTime);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclSize_subclTime);
 
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W2);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_gluon);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_q1);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_q2);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_b1);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_b2);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_top1);
+			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_top2);
 		}
 		void SetMinRhE(double r){ _prod->SetMinRhE(r); }
 		void SetRecoMinPt(double r){ _prod->SetRecoMinPt(r); }
@@ -494,9 +507,11 @@ class BHCJetSkimmer{
 		}
 		int _nGhosts;
 		void SetNGhosts(int t){ _nGhosts = t; cout << "Adding " << _nGhosts << " ghosts to each BHC merging step." << endl;}
-		void SetEvent2Display(int e){
+		//set evt display hist name according to event #
+		//z is what to put on z axis (0 : energy, 1 : time)
+		void SetEvent2Display(int e, int z = 0){
 			_evt2disp = e;
-			//set evt display hist name according to event #
+			_evt2disp_z = z;	
 		}		
 
 
@@ -1897,10 +1912,139 @@ cout << "avgPart E " << avgPartE << endl;
 			else return;
 
 		}
-		void WriteOutput(TFile* ofile){
+		//draw ellispes + tmarkers to canvas and write canvas to file
+		//center_coords = center of event display in [eta_c, phi_c] per gen object s.t. center_coords[i] = BayesPoint(eta_c, phi_c) for object i
+		//window_width = width of event display in [deta, dphi] per gen object s.t. window_width[i] = BayesPoint(deta, dphi) for object i
+		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
+		void WriteEventDisplays(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
+			ofile->cd();
+			//write overall event display
+			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
+			_procCats[0].hists2D[0][129]->Draw("colz");
+			for(int el = 0; el < _ellipses.size(); el++){
+				_ellipses[el].Draw();
+			}
+			for(int m = 0; m < _plot_particles.size(); m++){
+				_plot_particles[m].Draw();
+			}
+			cv->Write();
+		
+			vector<string> names;
+			for(auto it = center_coords.begin(); it != center_coords.end(); it++){
+				names.push_back(it->first);
+			}
+	
+			//write object specific plots
+			for(int h = 0; h < _evtdisps_obj.size(); h++){
+				if(_evtdisps_obj[h]->GetEntries() == 0) continue; //don't draw if not filled for this particle gen obj
+				//get match string for center + width
+				string name = _evtdisps_obj[h]->GetName();
+				string objmatch = "EvtDisplay_etaCell_phiCell_";
+				name = name.substr(objmatch.size());
+				//skip hists that aren't filled
+				if(find(names.begin(), names.end(), name) == names.end()) continue;
+
+				BayesPoint center = center_coords[name];
+				BayesPoint width = window_width[name];
+		cout << "plot center for " << name << endl; center.Print();	
+				//center plot
+				//double xhi = center.at(0) + width.at(0);
+				double xhi = width.at(0);
+				//xhi = min(xhi, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmax()); 
+				//double xlo = center.at(0) - width.at(0); 
+				double xlo = -width.at(0); 
+				//xlo = max(xlo, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmin()); 
+				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(xlo, xhi);
+			
+				//double yhi = center.at(1) + width.at(1); 
+				double yhi = width.at(1); 
+				//yhi = min(yhi, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
+				//double ylo = center.at(1) - width.at(1);
+				double ylo = -width.at(1);
+				//ylo = min(ylo, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
+				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(ylo, yhi);
+				
+				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
+				cv_obj->cd();
+				_evtdisps_obj[h]->Draw("colz");
+cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << " this hist y upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << endl;
+				//TODO: fix grid
+				//DrawGrid(cv_obj,xlo,xhi,ylo,yhi);
+   				//gPad->Update();
+				PointCollection ell_centers, ell_centers_og, m_centers, m_centers_og;
+				//center ellipses and particles
+				for(int el = 0; el < _ellipses.size(); el++){
+					BayesPoint ell_center({_ellipses[el].GetX1(), _ellipses[el].GetY1()});
+					ell_centers += ell_center;		
+					ell_centers_og += ell_center;		
+				}
+				for(int m = 0; m < _plot_particles.size(); m++){
+					BayesPoint m_center({_plot_particles[m].GetX(), _plot_particles[m].GetY()});
+					m_centers += m_center;		
+					m_centers_og += m_center;		
+				}
+				//center all points
+				ell_centers.Translate(center.at(0),0);
+				ell_centers.CircularTranslate(center.at(1),1);
+				m_centers.Translate(center.at(0),0);
+				m_centers.CircularTranslate(center.at(1),1);
+				//draw all jet + subcl ellipses
+				for(int el = 0; el < _ellipses.size(); el++){
+					_ellipses[el].SetX1(ell_centers.at(el).at(0));
+					_ellipses[el].SetY1(ell_centers.at(el).at(1));
+					//skip ellipses that are more than width away from center
+					double ell_center_eta = _ellipses[el].GetX1(); 
+					double ell_center_phi = _ellipses[el].GetY1();
+					double ell_maj_r = _ellipses[el].GetR1();
+					double theta = _ellipses[el].GetTheta();
+					//put in rad
+					theta *= acos(-1)/180;
+					double r_eta = ell_maj_r*cos(theta);
+					double r_phi = ell_maj_r*sin(theta);
+
+					double dr = dR(ell_center_eta, ell_center_phi, 0., 0.);
+					//if full ellipse cannot be drawn in window, skip
+					if(2*fabs(r_eta) > fabs(width.at(0))) continue;
+					if(2*fabs(r_phi) > fabs(width.at(1))) continue;
+
+					_ellipses[el].Draw();
+				}
+				//draw all particles
+				for(int m = 0; m < _plot_particles.size(); m++){
+				cout << "m " << m << " original - obj center eta " << _plot_particles[m].GetX() << " obj center phi " << _plot_particles[m].GetY() << endl;	
+					_plot_particles[m].SetX(m_centers.at(m).at(0));
+					_plot_particles[m].SetY(m_centers.at(m).at(1));
+					//skip ellipses that are more than width away from center
+					double obj_center_eta = _plot_particles[m].GetX(); 
+					double obj_center_phi = _plot_particles[m].GetY();
+				cout << "centered - obj center eta " << _plot_particles[m].GetX() << " obj center phi " << _plot_particles[m].GetY() << endl;	
+					double dr = dR(obj_center_eta, obj_center_phi, 0., 0.);
+					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
+					_plot_particles[m].Draw();
+				}
+				cv_obj->Write();
+
+				//reset object centers
+				for(int el = 0; el < _ellipses.size(); el++){
+					//reset center
+					_ellipses[el].SetX1(ell_centers_og.at(el).at(0));
+					_ellipses[el].SetY1(ell_centers_og.at(el).at(1));
+				}
+				for(int m = 0; m < _plot_particles.size(); m++){
+					//reset center
+					_plot_particles[m].SetX(m_centers_og.at(m).at(0));
+					_plot_particles[m].SetY(m_centers_og.at(m).at(1));
+				}
+			}
+
+
+		}
+
+		void WriteOutput(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
 			WriteEmptyProfiles(ofile);
 			WriteStackHists(ofile);
 			WriteHists(ofile);
+			WriteEventDisplays(ofile, center_coords, window_width);
 			string name;
 			ofile->cd();
 			for(int i = 0; i < (int)graphs.size(); i++){
@@ -2632,7 +2776,7 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* genAK4JetPt_genTopPt = new TH2D("genAK4JetPt_genTopPt","genAK4JetPt_genTopPt;genAK4JetPt;genTopPt",25,0,2000,25,0,2000);
 		//72 - 85 - genAK4 jet E vs gen top pt
 		TH2D* genAK4JetE_genTopE = new TH2D("genAK4JetE_genTopE","genAK4JetE_genTopE;genAK4JetE;genTopE",25,0,2000,25,0,2000);
-		//73 - 86 - genAK4 jet mass vs gen top jet mass 
+		//73 - genAK4 jet mass vs gen top jet mass 
 		TH2D* genAK4JetMass_genTopMass = new TH2D("genAK4JetMass_genTopMass","genAK4JetMass_genTopMass;genAK4JetMass;genTopMass",25,0,250,25,0,250);
 		//74 - 87 - genAK4 jet eta vs gen top eta 
 		TH2D* genAK4JetEtaCenter_genTopEtaCenter = new TH2D("genAK4JetEtaCenter_genTopEtaCenter","genAK4JetEtaCenter_genTopEtaCenter;genAK4JetEtaCenter;genTopEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
@@ -2659,7 +2803,7 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJetEtaCenter_genWEtaCenter = new TH2D("BHCJetEtaCenter_genWEtaCenter","BHCJetEtaCenter_genWEtaCenter;BHCJetEtaCenter;genWEtaCenter",25,-3.2,3.2,25,-3.2,3.2);
 		//85 - 98 - BHC jet phi vs gen W phi 
 		TH2D* BHCJetPhiCenter_genWPhiCenter = new TH2D("BHCJetPhiCenter_genWPhiCenter","BHCJetPhiCenter_genWPhiCenter;BHCJetPhiCenter;genWPhiCenter",25,0.,8*atan(1),25,0.,8*atan(1));
-		//86 - 99 - recoAK4 jet pt vs gen W pt 
+		//86 - recoAK4 jet pt vs gen W pt 
 		TH2D* recoAK4JetPt_genWPt = new TH2D("recoAK4JetPt_genWPt","recoAK4JetPt_genWPt;recoAK4JetPt;genWPt",25,0,500,25,0,500);
 		//87 - 100 - recoAK4 jet E vs gen W pt
 		TH2D* recoAK4JetE_genWE = new TH2D("recoAK4JetE_genWE","recoAK4JetE_genWE;recoAK4JetE;genWE",25,0,2000,25,0,2000);
@@ -2745,7 +2889,7 @@ cout << "avgPart E " << avgPartE << endl;
 		TH2D* BHCJetW_EratioJetGenW_nSubclustersJet = new TH2D("BHCJetW_ge2subcl_EratioJetGenW_nSubclustersJet","BHCJetW_EratioJetGenW_nSubclustersJet;EratioJetGenW;nSubclustersJet",50,0,2.,10,0,10);
 		//128 - BHC jets - jet mass vs jet size
 		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJet_jetMass_jetSize","BHCJet_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
-		//129 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis
+		//129 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis (overall event)
 		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
 		//130 - reco AK8 jet mass vs reco jet pt
 		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8Jet_jetMass_jetSize","recoAK8Jet_jetMass_jetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
@@ -2772,6 +2916,31 @@ cout << "avgPart E " << avgPartE << endl;
 		//141 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
 		TH2D* BHCJetW_highMass_partonNoMatchSubclSize_subclTime = new TH2D("BHCJetW_highMass_partonNoMatchSubclSize_subclTime","BHCJetW_highMass_partonNoMatchSubclSize_subclTime;SubclSize;SubclTime",25,0,1.5,25,-3,3);
 
+
+
+
+
+		//event display histograms (per gen object)
+		vector<TH2D*> _evtdisps_obj;
+		//these should be centered on their respective gen particles
+		//0 - single W, W+gluon, first W in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_W = new TH2D("EvtDisplay_etaCell_phiCell_W","EvtDisplay_etaCell_phiCell_W;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//1 - second W in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_W2 = new TH2D("EvtDisplay_etaCell_phiCell_W2","EvtDisplay_etaCell_phiCell_W2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//2 - gluon in W+gluon
+		TH2D* EvtDisplay_etaCell_phiCell_gluon = new TH2D("EvtDisplay_etaCell_phiCell_gluon","EvtDisplay_etaCell_phiCell_gluon;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//3 - q1 in QCD dijets
+		TH2D* EvtDisplay_etaCell_phiCell_q1 = new TH2D("EvtDisplay_etaCell_phiCell_q1","EvtDisplay_etaCell_phiCell_q1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//4 - q2 in QCD dijets
+		TH2D* EvtDisplay_etaCell_phiCell_q2 = new TH2D("EvtDisplay_etaCell_phiCell_q2","EvtDisplay_etaCell_phiCell_q2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//5 - b1 in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_b1 = new TH2D("EvtDisplay_etaCell_phiCell_b1","EvtDisplay_etaCell_phiCell_b1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//6 - b2 in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_b2 = new TH2D("EvtDisplay_etaCell_phiCell_b2","EvtDisplay_etaCell_phiCell_b2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//7 - top1 in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_top1 = new TH2D("EvtDisplay_etaCell_phiCell_top1","EvtDisplay_etaCell_phiCell_top1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		//8 - top2 in ttbar
+		TH2D* EvtDisplay_etaCell_phiCell_top2 = new TH2D("EvtDisplay_etaCell_phiCell_top2","EvtDisplay_etaCell_phiCell_top2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 
 
 		void SetSmear(bool t){ _smear = t; }
@@ -2996,8 +3165,8 @@ cout << "avgPart E " << avgPartE << endl;
 		vector<TH1D*> _hists1D;
 		vector<TH2D*> _hists2D;
 		vector<TGraph*> graphs;
-		vector<TEllipse> ellipses;
-		vector<TMarker> plot_particles;
+		vector<TEllipse> _ellipses;
+		vector<TMarker> _plot_particles;
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
 		vector<node*> _trees;
@@ -3047,7 +3216,7 @@ cout << "avgPart E " << avgPartE << endl;
 
 		//good gen objects available for matching 
 		vector<Jet> _genW, _genb, _genTop, _genq, _genglu;
-		int _evt2disp;		
+		int _evt2disp, _evt2disp_z;
 
 		map<string, Matrix> _prior_params;
 
@@ -3138,6 +3307,83 @@ cout << "avgPart E " << avgPartE << endl;
 			rot = eigenvals[maxd]/rot;
 			//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 			return rot;
+		}
+
+
+		TEllipse PlotEll(const Jet& jet){
+			Matrix mu, cov;
+			jet.GetClusterParams(mu, cov);
+			//ellipse center
+			double eta = mu.at(0,0); 
+			double phi = mu.at(1,0);
+
+			//get 2D matrix for jet size
+			Matrix cov2D(2,2);
+			Get2DMat(cov,cov2D);	
+			vector<double> eigvals;
+			vector<Matrix> eigvecs;
+			cov2D.eigenCalc(eigvals, eigvecs);
+			
+			//define radii (r1 > r2)
+			double r1, r2;
+			Matrix leadvec;
+			if(eigvals[0] > eigvals[1]){
+				r1 = sqrt(eigvals[0]);
+				leadvec = eigvecs[0];
+				r2 = sqrt(eigvals[1]);
+			}
+			else{
+				r1 = sqrt(eigvals[1]);
+				leadvec = eigvecs[1];
+				r2 = sqrt(eigvals[0]);
+
+			}
+			//define angle of r1 rotation
+			double theta = atan2(leadvec.at(1,0), leadvec.at(0,0));
+			theta = 180 * theta/(4*atan(1)); //put to degrees
+			TEllipse el = TEllipse(eta, phi, r1, r2, 0, 360, theta);	
+			return el;
+		}
+
+		void DrawGrid(TCanvas* cv, double true_xmin=-3, double true_xmax=3, double true_ymin=0, double true_ymax=8*atan(1)){
+   			double xmin = -3;
+			double ymin = 0;
+			double xmax = 3;
+			double ymax = 8*atan(1);
+			double nbins_x = 344;
+			double nbins_y = 360;
+			double dx = (xmax - xmin)/(nbins_x);
+			double dy = (ymax - ymin)/(nbins_y);
+	cout << "ymin " << true_ymin << " ymax " << true_ymax << endl;	
+			int nline = 0;
+			for(int i = 0; i < nbins_x; i++){
+				double xcoord = xmin + (double)i*dx;
+				if(true_xmax != xmax && xcoord > true_xmax) continue;
+				if(true_xmin != xmin && xcoord < true_xmin) continue;
+				if(nline == 0) cout << "draw line at x " << xcoord << " from y min " << true_ymin << " to " << true_ymax << " with dx " << dx << " i*dx " << (double)i*dx << " i " << i << endl;
+   				auto aline = new TLine(xcoord,true_ymin,xcoord,true_ymax);
+				aline->SetLineColor(17);
+				//aline->SetLineStyle(2);
+				//aline->Draw();
+				nline++;
+
+			}
+			nline = 0;
+			for(int i = 0; i < nbins_y; i++){
+				double ycoord = ymin + (double)i*dy;
+				if(true_ymax != ymax && ycoord > true_ymax) continue;
+				if(true_ymin != ymin && ycoord < true_ymin) continue;
+				if(nline == 0) cout << "draw line at y " << ycoord << " from x min " << true_xmin << " to " << true_xmax << " with dy " << dy << " i*dy " <<  (double)i*dy << " i " << i << endl;
+				//cout << "draw line at x " << xcoord << " xmax " << xmax << " xmin " << xmin << " dx " << dx << endl;
+   				auto aline = new TLine(true_xmin,ycoord,true_xmax,ycoord);
+				aline->SetLineColor(17);
+				//aline->SetLineStyle(2);
+				//aline->Draw();
+				nline++;
+
+			}
+	
+		
 		}
 		
 };
