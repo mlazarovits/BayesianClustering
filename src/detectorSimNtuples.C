@@ -260,7 +260,7 @@ int main(int argc, char *argv[]){
 	det.SetTimeResModel(timeResModel);
 	//det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
 	det.SetPtHatMin(pthatmin);
-	if(noshower) det.TurnOffShower();
+	if(noshower) det.SimPFCandidates();
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	if(singw) det.SimWgamma();
