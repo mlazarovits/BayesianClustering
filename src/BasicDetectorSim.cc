@@ -37,7 +37,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_ethresh = 0.1;//0.7; //(GeV)
 	_ncell = 2;
 	_pu = false; //pileup switch
-	_charged_pu_reco = true; //reconstructed charged PU particles switch
+	_charged_pu_reco = false; //reconstructed charged PU particles switch
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//create container for cal cell info
@@ -108,7 +108,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_ethresh = 0.1; //(GeV)
 	_ncell = 2;
 	_pu = false; //pileup switch
-	_charged_pu_reco = true; //reconstructed charged PU particles switch
+	_charged_pu_reco = false; //reconstructed charged PU particles switch
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//initialize cal - save e, t, n emissions
