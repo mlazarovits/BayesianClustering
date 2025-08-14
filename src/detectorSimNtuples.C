@@ -165,8 +165,8 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --nPU [nPU]                   simulate nPU pileup events (default = 0: PU off)" << endl;
    		cout << "   --ootPU                       simulate OOT pileup events (default = off)" << endl;
-   		cout << "   --noShower                    turn off calorimeter showering and energy and time smearing (default = off - showering + smearing on)" << endl;
    		cout << "   --recoChargedPU               turn on reconstruction of charged particles from PU vertices (default = off - does not do reconstruction)" << endl;
+   		cout << "   --noShower                    turn off calorimeter showering and energy and time smearing for PF approximation (default = off - showering + smearing on)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
 		cout << "   --QCD                         simulate QCD" << endl;
 		cout << "   --singleW                     simulate single W" << endl;
@@ -260,7 +260,7 @@ int main(int argc, char *argv[]){
 	det.SetTimeResModel(timeResModel);
 	//det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
 	det.SetPtHatMin(pthatmin);
-	if(noshower) det.TurnOffShower();
+	if(noshower) det.SimPFCandidates();
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	if(singw) det.SimWgamma();

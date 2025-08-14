@@ -164,7 +164,7 @@ struct RecoParticle;
 		//set energy smear constant
 		void SetEnergySmear(double c){ _c = c; }
 
-		void TurnOffShower(){
+		void SimPFCandidates(){
 			_noShower = true;
 		}
 

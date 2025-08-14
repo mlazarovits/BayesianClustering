@@ -432,9 +432,6 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					continue;
 				}
 			}
-			//vtx.SetValue(rp.Position.x(),0);
-			//vtx.SetValue(rp.Position.y(),1);
-			//vtx.SetValue(rp.Position.z(),2);
 			CalcTrajectory(rp,vtx);
 			//check if in cal cell crack
 			if(_in_cell_crack(rp))
@@ -1036,7 +1033,12 @@ void BasicDetectorSim::FillCal(RecoParticle& rp){
 	//cout << "FillCal check transformation - eta " << eta << " ieta " << ieta << " phi " << phi << " iphi " << iphi << " teta " << teta << " tphi " << tphi << " energy " << _cal[ieta][iphi].at(0) << " emissions " << _cal[ieta][iphi].at(2) << endl;
 	
 	//if no shower, just save whole energy of gen part to corresponding cell
+	//and eta, phi should be gen eta, phi (not with trajectory calculations)
 	if(_noShower){
+		eta = rp.Particle.eta();
+		phi = rp.Particle.phi();	
+		_get_etaphi_idx(eta, phi, ieta, iphi);
+
 		//if these indices are out of bounds for detector indices, skip
 		if(ieta >= _netacal || ieta < 0) return;
 		if(iphi >= _nphical || iphi < 0) return;
@@ -1135,6 +1137,12 @@ void BasicDetectorSim::MakeRecHits(){
 			}
 			else{
 				e_cell = e;
+				//smear eta, phi in cell width
+				_rs.SetRange(eta - _deta/2, eta + _deta/2);
+				eta = _rs.SampleGaussian(eta, _deta/2, 1).at(0);
+				_rs.SetRange(phi - _dphi/2, phi + _dphi/2);
+				phi = _rs.SampleGaussian(phi, _dphi/2, 1).at(0);
+
 			}
 			//make sure e can't be negative
 			if(e_cell < 0) continue;	
