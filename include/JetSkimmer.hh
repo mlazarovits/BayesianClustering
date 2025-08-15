@@ -2365,50 +2365,54 @@ class JetSkimmer : public BaseSkimmer{
 
 		}
 
-
 		//void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
 		void TrackMatched(JetPoint& rh, double& bestdr, double& bestp){
-                        //do track matching
-                        int nIDs = _base->ECALTrackDetID_detId->size();
-                        double bestTrackDr = 999;
-                        //double maxTrackDr;
-                        double dr, teta, tphi, de;
-                        unsigned int detid;
+			//do track matching
+			double bestTrackDr = 999;
+			//double maxTrackDr;
+			double dr, teta, tphi, de;
+			unsigned int detid;
 
-                        double dphi = -999;
-                        //double bestde_dr;
-                        int trackidx;
-                        double ec = rh.eta();
-                        double pc = rh.phi();
-                        //because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
-                        //there are multiple detIDs that match to one track
-                        //similar to what's done in BaseProducer to get rhs in SC (matched via detid)
-                        for(int id = 0; id < nIDs; id++){
-                                //use TrackDetId to see where in ECAL track was propagated to
-                                detid = _base->ECALTrackDetID_detId->at(id);
-                                //check if detid in map
-                                if(_detIDmap.count(detid) == 0) continue;
-                                tphi = _detIDmap[detid].detphi;
-                                teta = _detIDmap[detid].deteta;
+			double dphi = -999;
+			//double bestde_dr;
+			int trackidx;
+			double ec = rh.eta();
+			double pc = rh.phi();
 
-                                double tphi_02pi = tphi;
-                                if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
-                                else if(tphi_02pi > 2*acos(-1)) tphi_02pi -= 2*acos(-1);
-                                else tphi_02pi = tphi;
+			//loop through tracks to get best match to this subcluster (tracks are matched to superclusters, if not idx < 0)
+			//Track_scIndexs[i][j] is for track i that matched to supercluster j (tracks can match to multiple SCs)
+			int nTracks = _base->Track_scIndexs->size();
+			for(int t = 0; t < nTracks; t++){
+				if(_base->Track_scIndexs->at(t).at(0) < 0) continue; //not matched to any SC
+				
+				int nSCs = _base->Track_scIndexs->at(t).size();
+				for(int sc = 0; sc < nSCs; sc++){
+					int sc_idx = _base->Track_scIndexs->at(t).at(sc);
+					//get eta, phi of supercluster sc that track is matched to
+					double sc_eta = _base->SuperCluster_eta->at(sc_idx);
+					double sc_phi = _base->SuperCluster_phi->at(sc_idx);
+					double sc_phi_02pi = sc_phi;
+					if(sc_phi_02pi < 0) sc_phi_02pi += 2*acos(-1);
+					else if(sc_phi_02pi > 2*acos(-1)) sc_phi_02pi -= 2*acos(-1); 
+					else sc_phi_02pi = sc_phi;
 
-                                dphi = fabs(pc - tphi_02pi);
-                                dphi = acos(cos(dphi));
-dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
-                                //get track info from detid
-                                trackidx = _base->ECALTrackDetID_trackIndex->at(id);
-                                //E = p for photons
-                                if(dr < bestTrackDr){
-                                        bestTrackDr = dr;
-                                        bestp = _base->ECALTrack_p->at(trackidx);
-                                }
-                        }
-                        bestdr = bestTrackDr;
-                }
+					dphi = fabs(pc - sc_phi_02pi);
+                                	dphi = acos(cos(dphi));
+
+					dr = sqrt((sc_eta - ec)*(sc_eta - ec) + dphi*dphi);
+
+	
+					//E = p for photons
+					if(dr < bestTrackDr){
+						bestTrackDr = dr;
+						bestp = _base->Track_p->at(t);
+					}
+					
+				}
+				bestdr = bestTrackDr;
+			}
+
+		}
 
 
 		

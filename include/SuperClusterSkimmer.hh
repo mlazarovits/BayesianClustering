@@ -1986,6 +1986,58 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
 			//do track matching
+			double bestTrackDr = 999;
+			//double maxTrackDr;
+			double dr, teta, tphi, de;
+			unsigned int detid;
+
+			double dphi = -999;
+			//double bestde_dr;
+			int trackidx;
+			auto params = model->GetLHPosteriorParameters(subcl);
+			double ec = params["mean"].at(0,0);
+			double pc = params["mean"].at(1,0);
+
+			//loop through tracks to get best match to this subcluster (tracks are matched to superclusters, if not idx < 0)
+			//Track_scIndexs[i][j] is for track i that matched to supercluster j (tracks can match to multiple SCs)
+			int nTracks = _base->Track_scIndexs->size();
+			for(int t = 0; t < nTracks; t++){
+				if(_base->Track_scIndexs->at(t).at(0) < 0) continue; //not matched to any SC
+				
+				int nSCs = _base->Track_scIndexs->at(t).size();
+cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
+				for(int sc = 0; sc < nSCs; sc++){
+					int sc_idx = _base->Track_scIndexs->at(t).at(sc);
+					//get eta, phi of supercluster sc that track is matched to
+					double sc_eta = _base->SuperCluster_eta->at(sc_idx);
+					double sc_phi = _base->SuperCluster_phi->at(sc_idx);
+					double sc_phi_02pi = sc_phi;
+					if(sc_phi_02pi < 0) sc_phi_02pi += 2*acos(-1);
+					else if(sc_phi_02pi > 2*acos(-1)) sc_phi_02pi -= 2*acos(-1); 
+					else sc_phi_02pi = sc_phi;
+cout << "   track #" << t << " matched to supercluster " << sc << " with eta " << sc_eta << " and phi " << sc_phi << endl;
+
+					dphi = fabs(pc - sc_phi_02pi);
+                                	dphi = acos(cos(dphi));
+
+					dr = sqrt((sc_eta - ec)*(sc_eta - ec) + dphi*dphi);
+
+	
+					//E = p for photons
+					if(dr < bestTrackDr){
+						bestTrackDr = dr;
+						bestp = _base->Track_p->at(t);
+					}
+					
+				}
+				bestdr = bestTrackDr;
+			}
+
+		}
+
+		/* depreciated as of ntuple v30
+		void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
+			//do track matching
 			int nIDs = _base->ECALTrackDetID_detId->size();
 			double bestTrackDr = 999;
 			//double maxTrackDr;
@@ -2028,6 +2080,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 			bestdr = bestTrackDr;
 		}
+		*/
 
 
 		//k = sum_n(E_n)/N

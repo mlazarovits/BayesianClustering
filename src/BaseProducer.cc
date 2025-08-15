@@ -302,7 +302,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
         if(gev == -1) gev = _gev;
 	double px, py, pz, pt, phi, eta, theta, et, E;
         supercls.clear();
-        if(evt > _nEvts) return -1;
+        if(evt > _nEvts){ cout << "evt " << evt << " of " << _nEvts << endl; return -1;}
         _base->GetEntry(evt);
         int nSCs = (int)_base->SuperCluster_energy->size();
         int nrhs, rhidx;
@@ -319,8 +319,9 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
-
+cout << "this event " << evt << " ntuple event " << _base->Evt_event << endl;
 	vector<JetPoint> sc_rhs;
+cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 	for(int sc = 0; sc < nSCs; sc++){
                 phi = _base->SuperCluster_phi->at(sc);
                 eta = _base->SuperCluster_eta->at(sc);
@@ -329,12 +330,14 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
                 nrhs = _base->SuperCluster_rhIds->at(sc).size();
 
 		//if excluded flag is up, skip (means this one should be skipped in favor of an OOT in same collection)
-		if(_base->SuperCluster_excluded->at(sc)) continue;
+		//depreciated as of ntuple v30
+		//if(_base->SuperCluster_excluded->at(sc)) continue;
 	
 		//hem veto?
 		if(_year == 2018 && _data){
 			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
 			//skip whole event
+			if(hemVeto) cout << "hem veto - reject whole event" << endl;
 			if(hemVeto) return -1;
 		}
 
@@ -342,7 +345,9 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
                 E = _base->SuperCluster_energy->at(sc);
 		et = E*sin(theta);
                 if(et < _minpt) continue;
+cout << "sc passed et cut " << endl;
 		if(fabs(eta) > _minobjeta) continue;
+cout << "sc passed eta cut " << eta << endl;
                 
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
@@ -350,21 +355,31 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		double rhe;
 		int nrhs = 0;
 		vector<unsigned int> jrhids;
-		//cout << rhs.size() << " in SC " << rhids.size() << " in ECAL" << endl;
+		cout << rhs.size() <<  " rhs in SC " << rhids.size() << " rhs in ECAL" << endl;
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
+//cout << "rhid " << rhid << endl;
+//for(int rr = 0; rr < rhids.size(); rr++){
+//	if(rhids[rr] == rhid) cout << "ID MATCH FOUND" << endl;
+//
+//
+//}
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//skip rhs that have already been looked at - avoids duplicates in SC
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
+//cout << "rh passed duplicate check with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
 				//if rh is in endcap, skip
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+//cout << "rh passed eta req" << endl;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
+//cout << "rh passed timing reco check" << endl;
 				//energy cut
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;				
+//cout << "rh passed min energy" << endl;
 
 
 				//spike rejection? - only studied for rhE > 4 GeV
@@ -397,9 +412,10 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				}
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
                                 _base->ECALRecHit_rhz->at(rhidx), time);
-                               
+                              //cout << "rh time " << rh.t() << endl; 
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
+//cout << "rh passed in time enough req" << endl;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
 				
 				rhe = _base->ECALRecHit_energy->at(rhidx);
@@ -426,6 +442,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		Jet supercl(sc_rhs, vtx);
 		supercl.SetUserIdx(sc);
 		if(supercl.GetNRecHits() < 2) continue;
+cout << "sc passed min # rhs cut " << endl;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
 	//	for(auto rh : jrhids) cout << "rh id  " << rh << " count " << count(jrhids.begin(), jrhids.end(), rh) << endl;
 		supercls.push_back(supercl);

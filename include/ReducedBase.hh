@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Dec  4 12:24:04 2024 by ROOT version 6.30/06
+// Thu Aug 14 11:33:55 2025 by ROOT version 6.30/06
 // from TTree ReducedBase/KUCMSNtuple
-// found on file: GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root
+// found on file: root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-200To400_AODSIM_RunIISummer20UL18/250814_033313/0000/kucmsntuple_999.root
 //////////////////////////////////////////////////////////
 
 #ifndef ReducedBase_h
@@ -25,73 +25,99 @@ public :
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
-   vector<int>     *DisplacedElectron_charge;
-   Float_t         DisplacedElectron_costGen;
-   Float_t         DisplacedElectron_costSC;
-   vector<float>   *DisplacedElectron_dRGen;
-   vector<float>   *DisplacedElectron_dRSC;
-   vector<float>   *DisplacedElectron_dxy;
-   vector<float>   *DisplacedElectron_energy;
-   vector<float>   *DisplacedElectron_eta;
-   vector<float>   *DisplacedElectron_etaECAL;
-   vector<int>     *DisplacedElectron_genSigIndex;
-   vector<int>     *DisplacedElectron_indexGen;
-   vector<int>     *DisplacedElectron_indexSC;
-   vector<int>     *DisplacedElectron_indexTrack;
-   vector<float>   *DisplacedElectron_ip2D;
-   vector<float>   *DisplacedElectron_ip2Dbs;
-   vector<float>   *DisplacedElectron_ip3D;
-   vector<float>   *DisplacedElectron_ip3Dbs;
-   vector<bool>    *DisplacedElectron_isBarrel;
-   vector<bool>    *DisplacedElectron_isConversion;
-   vector<bool>    *DisplacedElectron_isEndCap;
-   vector<bool>    *DisplacedElectron_isGeneralTrack;
-   vector<bool>    *DisplacedElectron_isGsfTrack;
-   vector<bool>    *DisplacedElectron_isHeavy;
-   vector<bool>    *DisplacedElectron_isLight;
-   vector<bool>    *DisplacedElectron_isOOTSC;
-   vector<bool>    *DisplacedElectron_isSC;
-   vector<bool>    *DisplacedElectron_isSignal;
-   vector<bool>    *DisplacedElectron_isTau;
-   vector<bool>    *DisplacedElectron_isUnmatched;
-   Int_t           DisplacedElectron_nGenSig;
-   vector<int>     *DisplacedElectron_nHits;
-   Int_t           DisplacedElectron_nOOTSCs;
-   Int_t           DisplacedElectron_nSCs;
-   Int_t           DisplacedElectron_nTotal;
-   vector<float>   *DisplacedElectron_p;
-   vector<int>     *DisplacedElectron_pdgId;
-   vector<float>   *DisplacedElectron_pfIso0p4;
-   vector<float>   *DisplacedElectron_phi;
-   vector<float>   *DisplacedElectron_phiECAL;
-   vector<float>   *DisplacedElectron_pt;
-   vector<float>   *DisplacedElectron_scIso0p4;
-   vector<float>   *DisplacedElectron_sip2D;
-   vector<float>   *DisplacedElectron_sip2Dbs;
-   vector<float>   *DisplacedElectron_sip3D;
-   vector<float>   *DisplacedElectron_sip3Dbs;
-   vector<float>   *DisplacedElectron_trackIso0p4;
-   vector<float>   *DisplacedElectron_x;
-   vector<float>   *DisplacedElectron_xECAL;
-   vector<float>   *DisplacedElectron_y;
-   vector<float>   *DisplacedElectron_yECAL;
-   vector<float>   *DisplacedElectron_z;
-   vector<float>   *DisplacedElectron_zECAL;
+   vector<float>   *GenVertex_dxy;
+   vector<float>   *GenVertex_eta;
+   vector<bool>    *GenVertex_isElectron;
+   vector<bool>    *GenVertex_isHadronic;
+   vector<bool>    *GenVertex_isMuon;
+   vector<float>   *GenVertex_mass;
+   UInt_t          GenVertex_nElectron;
+   UInt_t          GenVertex_nHadronic;
+   UInt_t          GenVertex_nMuon;
+   UInt_t          GenVertex_nTotal;
+   vector<unsigned int> *GenVertex_nTracks;
+   vector<float>   *GenVertex_p;
+   vector<bool>    *GenVertex_passSelection;
+   vector<bool>    *GenVertex_passSelectionAndCuts;
+   vector<float>   *GenVertex_phi;
+   vector<float>   *GenVertex_pt;
+   vector<float>   *GenVertex_px;
+   vector<float>   *GenVertex_py;
+   vector<float>   *GenVertex_pz;
+   vector<float>   *GenVertex_x;
+   vector<float>   *GenVertex_y;
+   vector<float>   *GenVertex_z;
+   vector<float>   *VertexTrack_SCDR;
+   vector<float>   *VertexTrack_energySC;
+   vector<bool>    *VertexTrack_isSignalElectron;
+   vector<bool>    *VertexTrack_isSignalMuon;
+   vector<bool>    *VertexTrack_isSignalTrack;
+   vector<float>   *VertexTrack_ratioPToEnergySC;
+   vector<float>   *VertexTrack_shift3DAfterTrackRemoval;
+   vector<float>   *VertexTrack_shiftDzAfterTrackRemoval;
+   vector<float>   *VertexTrack_trackCompatibility;
+   vector<float>   *VertexTrack_trackCosTheta;
+   vector<float>   *VertexTrack_trackCosThetaAtCM;
+   vector<unsigned int> *VertexTrack_trackIndex;
+   vector<unsigned int> *VertexTrack_vertexIndex;
+   vector<float>   *Vertex_chi2;
+   vector<float>   *Vertex_cosTheta;
+   vector<float>   *Vertex_cxx;
+   vector<float>   *Vertex_cxy;
+   vector<float>   *Vertex_cxz;
+   vector<float>   *Vertex_cyy;
+   vector<float>   *Vertex_cyz;
+   vector<float>   *Vertex_czz;
+   vector<float>   *Vertex_decayAngle;
+   vector<float>   *Vertex_dxy;
+   vector<float>   *Vertex_dxyError;
+   vector<float>   *Vertex_eta;
+   vector<int>     *Vertex_genVertexIndex;
+   vector<bool>    *Vertex_isBronze;
+   vector<bool>    *Vertex_isGold;
+   vector<bool>    *Vertex_isSilver;
+   vector<bool>    *Vertex_isUnique;
+   vector<float>   *Vertex_mass;
+   vector<float>   *Vertex_matchRatio;
+   vector<float>   *Vertex_min3D;
+   UInt_t          Vertex_nTotal;
+   vector<unsigned int> *Vertex_nTracks;
+   vector<float>   *Vertex_ndof;
+   vector<int>     *Vertex_nearestGenVertexIndex;
+   vector<float>   *Vertex_normalizedChi2;
+   vector<float>   *Vertex_p;
+   vector<bool>    *Vertex_passLooseElectronID;
+   vector<bool>    *Vertex_passLooseID;
+   vector<bool>    *Vertex_passLooseMuonID;
+   vector<float>   *Vertex_phi;
+   vector<float>   *Vertex_pt;
+   vector<float>   *Vertex_px;
+   vector<float>   *Vertex_py;
+   vector<float>   *Vertex_pz;
+   vector<float>   *Vertex_scMatchRatio;
+   vector<int>     *Vertex_sumCharge;
+   vector<float>   *Vertex_x;
+   vector<float>   *Vertex_y;
+   vector<float>   *Vertex_z;
    vector<float>   *ECALRecHit_energy;
    vector<unsigned int> *ECALRecHit_ID;
    vector<float>   *ECALRecHit_swCross;
    vector<float>   *ECALRecHit_0TOF;
    vector<float>   *ECALRecHit_pvTOF;
    vector<float>   *ECALRecHit_time;
+   vector<float>   *ECALRecHit_timeError;
    vector<float>   *ECALRecHit_amplitude;
    vector<float>   *ECALRecHit_ampres;
    vector<float>   *ECALRecHit_eta;
+   vector<bool>    *ECALRecHit_hasGS1;
+   vector<bool>    *ECALRecHit_hasGS6;
    vector<bool>    *ECALRecHit_isDead;
    vector<bool>    *ECALRecHit_isDiWrd;
    vector<bool>    *ECALRecHit_isOOT;
    vector<bool>    *ECALRecHit_isOther;
    vector<bool>    *ECALRecHit_isPoor;
    vector<bool>    *ECALRecHit_isRecov;
+   vector<bool>    *ECALRecHit_isTimeValid;
    vector<bool>    *ECALRecHit_isWrd;
    vector<float>   *ECALRecHit_phi;
    vector<float>   *ECALRecHit_precentUsed;
@@ -131,59 +157,50 @@ public :
    vector<vector<unsigned int> > *SuperCluster_rhIds;
    vector<unsigned int> *SuperCluster_XtalSeedID;
    vector<unsigned int> *SuperCluster_nHFXtals;
+   vector<float>   *SuperCluster_SeedTime;
+   vector<vector<int> > *SuperCluster_TrackIndx;
    vector<float>   *SuperCluster_x_calo;
    vector<float>   *SuperCluster_y_calo;
    vector<float>   *SuperCluster_z_calo;
-   vector<unsigned int> *ECALTrackDetID_detId;
-   vector<bool>    *ECALTrackDetID_isECAL;
-   vector<bool>    *ECALTrackDetID_isHCAL;
-   vector<unsigned int> *ECALTrackDetID_trackIndex;
-   vector<int>     *ECALTrack_charge;
-   vector<float>   *ECALTrack_chi2;
-   vector<float>   *ECALTrack_dxy;
-   vector<float>   *ECALTrack_eta;
-   vector<float>   *ECALTrack_etaError;
-   vector<float>   *ECALTrack_genDeltaR;
-   vector<int>     *ECALTrack_genIndex;
-   vector<float>   *ECALTrack_lambda;
-   Int_t           ECALTrack_nGeneral;
-   Int_t           ECALTrack_nGsf;
-   vector<int>     *ECALTrack_nLostHits;
-   Int_t           ECALTrack_nTracks;
-   vector<int>     *ECALTrack_nValidHits;
-   vector<float>   *ECALTrack_ndof;
-   vector<float>   *ECALTrack_normalizedChi2;
-   vector<float>   *ECALTrack_p;
-   vector<int>     *ECALTrack_pdgId;
-   vector<float>   *ECALTrack_phi;
-   vector<float>   *ECALTrack_phiError;
-   vector<float>   *ECALTrack_pt;
-   vector<float>   *ECALTrack_ptError;
-   vector<float>   *ECALTrack_px;
-   vector<float>   *ECALTrack_py;
-   vector<float>   *ECALTrack_pz;
-   vector<float>   *ECALTrack_qoverp;
-   vector<int>     *ECALTrack_qualityMask;
-   vector<float>   *ECALTrack_theta;
-   vector<float>   *ECALTrack_vx;
-   vector<float>   *ECALTrack_vy;
-   vector<float>   *ECALTrack_vz;
-   vector<float>   *TrackSCMatch_deltaR;
-   vector<float>   *TrackSCMatch_scEnergyToTrackPRatio;
+   vector<float>   *Electron_DetaSCTV;
+   vector<float>   *Electron_DphiSCTV;
    vector<float>   *Electron_energy;
    vector<float>   *Electron_eta;
    vector<int>     *Electron_genIdx;
    vector<int>     *Electron_genSigWZId;
    vector<int>     *Electron_genSigXMomId;
+   vector<float>   *Electron_HOE;
+   vector<bool>    *Electron_isLVeto;
+   vector<bool>    *Electron_isLoose;
+   vector<bool>    *Electron_isMedium;
+   vector<bool>    *Electron_isPrompt;
+   vector<bool>    *Electron_isVeto;
    vector<float>   *Electron_phi;
    vector<float>   *Electron_pt;
    vector<float>   *Electron_px;
    vector<float>   *Electron_py;
    vector<float>   *Electron_pz;
    vector<float>   *Electron_seedTOFTime;
+   vector<float>   *Electron_Sieie;
    vector<float>   *Electron_trackz;
+   vector<bool>    *Electron_Vdetaseed;
+   vector<bool>    *Electron_Vdpscvc;
+   vector<bool>    *Electron_Vhoec;
+   vector<bool>    *Electron_Vmistrack;
+   vector<bool>    *Electron_Vooemoop;
+   vector<bool>    *Electron_VrelIsoWithEA;
+   vector<bool>    *Electron_Vsieiec;
+   vector<bool>    *Electron_hasGenMatch;
+   vector<bool>    *Electron_isLWZP;
    Int_t           Electron_nElectrons;
+   Int_t           Electron_nGenMatch;
+   Int_t           Electron_nPrompt;
+   Int_t           Electron_nSVMatched;
+   Int_t           Electron_nSelElectrons;
+   vector<bool>    *Electron_passConversionVeto;
+   vector<bool>    *Electron_passPrompt;
    vector<int>     *Electron_scIndex;
+   vector<bool>    *Electron_hasSVMatch;
    Bool_t          Flag_BadChargedCandidateFilter;
    Bool_t          Flag_BadPFMuonDzFilter;
    Bool_t          Flag_BadPFMuonFilter;
@@ -287,9 +304,15 @@ public :
    vector<int>     *Gen_charge;
    vector<float>   *Gen_energy;
    vector<float>   *Gen_eta;
+   vector<int>     *Gen_GMomPdgId;
+   vector<bool>    *Gen_isLWZQ;
+   vector<bool>    *Gen_isLWZX;
    vector<float>   *Gen_mass;
+   vector<float>   *Gen_matchDe;
+   vector<float>   *Gen_matchDr;
    vector<float>   *Gen_momDisplacment;
    vector<int>     *Gen_motherIdx;
+   vector<int>     *Gen_MomPdgId;
    UInt_t          Gen_nTotal;
    vector<unsigned int> *Gen_pdgId;
    vector<float>   *Gen_phi;
@@ -304,6 +327,9 @@ public :
    vector<float>   *Gen_vy;
    vector<float>   *Gen_vz;
    Float_t         Evt_genWgt;
+   Bool_t          Evt_hasLWZQ;
+   Bool_t          Evt_hasLWZX;
+   Int_t           Evt_nLWZX;
    vector<float>   *Jet_area;
    vector<float>   *Jet_chEmEF;
    vector<float>   *Jet_chHEF;
@@ -336,6 +362,29 @@ public :
    vector<float>   *Jet_phi;
    vector<float>   *Jet_pt;
    vector<int>     *Jet_nConstituents;
+   vector<float>   *Muon_energy;
+   vector<float>   *Muon_eta;
+   vector<int>     *Muon_genIdx;
+   vector<int>     *Muon_genSigWZId;
+   vector<int>     *Muon_genSigXMomId;
+   vector<bool>    *Muon_isPromptMuon;
+   vector<float>   *Muon_phi;
+   vector<float>   *Muon_pt;
+   vector<float>   *Muon_px;
+   vector<float>   *Muon_py;
+   vector<float>   *Muon_pz;
+   vector<bool>    *Muon_hasGenMatch;
+   vector<bool>    *Muon_isLWZP;
+   vector<bool>    *Muon_isLoose;
+   vector<bool>    *Muon_isMedium;
+   Int_t           Muon_nGenMatch;
+   Int_t           Muon_nMuons;
+   Int_t           Muon_nPrompt;
+   Int_t           Muon_nSelMuons;
+   Int_t           Muon_nSVMatched;
+   vector<bool>    *Muon_passPrompt;
+   vector<bool>    *Muon_hasSVMatch;
+   vector<bool>    *Muon_isTight;
    Float_t         Met_CPt;
    Float_t         Met_Cpx;
    Float_t         Met_Cpy;
@@ -374,13 +423,12 @@ public :
    vector<float>   *Photon_trkSumPtSolidConeDR04;
    vector<float>   *Photon_ecalPFClusterIso;
    vector<bool>    *Photon_electronVeto;
-   vector<vector<unsigned int> > *Photon_gloResRhId;
    vector<bool>    *hasConversionTracks;
    vector<bool>    *Photon_pixelSeed;
    vector<float>   *Photon_hcalPFClusterIso;
    vector<float>   *Photon_Hoe_PUcorr;
-   vector<vector<unsigned int> > *Photon_locResRhId;
    Int_t           Photon_nPhoton;
+   vector<bool>    *Photon_isSelect;
    vector<float>   *Photon_pfChargedIso;
    vector<float>   *Photon_pfChargedIsoPFPV;
    vector<float>   *Photon_pfChargedIsoWorstVtx;
@@ -391,75 +439,139 @@ public :
    vector<float>   *Photon_sieie;
    vector<float>   *Photon_sieip;
    vector<float>   *Photon_sipip;
+   vector<float>   *Track_absIso;
+   vector<int>     *Track_charge;
+   vector<float>   *Track_chi2;
+   vector<float>   *Track_dxy;
+   vector<vector<unsigned int> > *Track_ecalDetIds;
+   vector<float>   *Track_eta;
+   vector<float>   *Track_etaError;
+   vector<vector<unsigned int> > *Track_hcalDetIds;
+   vector<float>   *Track_ip2D;
+   vector<float>   *Track_ip3D;
+   vector<bool>    *Track_isGenTrack;
+   vector<float>   *Track_lambda;
+   vector<float>   *Track_miniRelIso;
+   vector<int>     *Track_pdgId;
+   vector<float>   *Track_mrelisolep;
+   Int_t           Track_nIsoTracks;
+   vector<int>     *Track_nLostHits;
+   vector<int>     *Track_nValidHits;
+   vector<float>   *Track_ndof;
+   vector<float>   *Track_p;
+   vector<float>   *Track_phi;
+   vector<float>   *Track_phiError;
+   vector<float>   *Track_pt;
+   vector<float>   *Track_ptError;
+   vector<float>   *Track_px;
+   vector<float>   *Track_py;
+   vector<float>   *Track_pz;
+   vector<float>   *Track_normalizedChi2;
+   vector<int>     *Track_qualityMask;
+   vector<float>   *Track_relIso;
+   vector<float>   *Track_relisolep;
+   vector<vector<int> > *Track_scIndexs;
+   vector<float>   *Track_sip2D;
+   vector<float>   *Track_sip3D;
+   vector<float>   *Track_theta;
+   vector<float>   *Track_vx;
+   vector<float>   *Track_vy;
+   vector<float>   *Track_vz;
 
    // List of branches
-   TBranch        *b_DisplacedElectron_charge;   //!
-   TBranch        *b_DisplacedElectron_costGen;   //!
-   TBranch        *b_DisplacedElectron_costSC;   //!
-   TBranch        *b_DisplacedElectron_dRGen;   //!
-   TBranch        *b_DisplacedElectron_dRSC;   //!
-   TBranch        *b_DisplacedElectron_dxy;   //!
-   TBranch        *b_DisplacedElectron_energy;   //!
-   TBranch        *b_DisplacedElectron_eta;   //!
-   TBranch        *b_DisplacedElectron_etaECAL;   //!
-   TBranch        *b_DisplacedElectron_genSigIndex;   //!
-   TBranch        *b_DisplacedElectron_indexGen;   //!
-   TBranch        *b_DisplacedElectron_indexSC;   //!
-   TBranch        *b_DisplacedElectron_indexTrack;   //!
-   TBranch        *b_DisplacedElectron_ip2D;   //!
-   TBranch        *b_DisplacedElectron_ip2Dbs;   //!
-   TBranch        *b_DisplacedElectron_ip3D;   //!
-   TBranch        *b_DisplacedElectron_ip3Dbs;   //!
-   TBranch        *b_DisplacedElectron_isBarrel;   //!
-   TBranch        *b_DisplacedElectron_isConversion;   //!
-   TBranch        *b_DisplacedElectron_isEndCap;   //!
-   TBranch        *b_DisplacedElectron_isGeneralTrack;   //!
-   TBranch        *b_DisplacedElectron_isGsfTrack;   //!
-   TBranch        *b_DisplacedElectron_isHeavy;   //!
-   TBranch        *b_DisplacedElectron_isLight;   //!
-   TBranch        *b_DisplacedElectron_isOOTSC;   //!
-   TBranch        *b_DisplacedElectron_isSC;   //!
-   TBranch        *b_DisplacedElectron_isSignal;   //!
-   TBranch        *b_DisplacedElectron_isTau;   //!
-   TBranch        *b_DisplacedElectron_isUnmatched;   //!
-   TBranch        *b_DisplacedElectron_nGenSig;   //!
-   TBranch        *b_DisplacedElectron_nHits;   //!
-   TBranch        *b_DisplacedElectron_nOOTSCs;   //!
-   TBranch        *b_DisplacedElectron_nSCs;   //!
-   TBranch        *b_DisplacedElectron_nTotal;   //!
-   TBranch        *b_DisplacedElectron_p;   //!
-   TBranch        *b_DisplacedElectron_pdgId;   //!
-   TBranch        *b_DisplacedElectron_pfIso0p4;   //!
-   TBranch        *b_DisplacedElectron_phi;   //!
-   TBranch        *b_DisplacedElectron_phiECAL;   //!
-   TBranch        *b_DisplacedElectron_pt;   //!
-   TBranch        *b_DisplacedElectron_scIso0p4;   //!
-   TBranch        *b_DisplacedElectron_sip2D;   //!
-   TBranch        *b_DisplacedElectron_sip2Dbs;   //!
-   TBranch        *b_DisplacedElectron_sip3D;   //!
-   TBranch        *b_DisplacedElectron_sip3Dbs;   //!
-   TBranch        *b_DisplacedElectron_trackIso0p4;   //!
-   TBranch        *b_DisplacedElectron_x;   //!
-   TBranch        *b_DisplacedElectron_xECAL;   //!
-   TBranch        *b_DisplacedElectron_y;   //!
-   TBranch        *b_DisplacedElectron_yECAL;   //!
-   TBranch        *b_DisplacedElectron_z;   //!
-   TBranch        *b_DisplacedElectron_zECAL;   //!
+   TBranch        *b_GenVertex_dxy;   //!
+   TBranch        *b_GenVertex_eta;   //!
+   TBranch        *b_GenVertex_isElectron;   //!
+   TBranch        *b_GenVertex_isHadronic;   //!
+   TBranch        *b_GenVertex_isMuon;   //!
+   TBranch        *b_GenVertex_mass;   //!
+   TBranch        *b_GenVertex_nElectron;   //!
+   TBranch        *b_GenVertex_nHadronic;   //!
+   TBranch        *b_GenVertex_nMuon;   //!
+   TBranch        *b_GenVertex_nTotal;   //!
+   TBranch        *b_GenVertex_nTracks;   //!
+   TBranch        *b_GenVertex_p;   //!
+   TBranch        *b_GenVertex_passSelection;   //!
+   TBranch        *b_GenVertex_passSelectionAndCuts;   //!
+   TBranch        *b_GenVertex_phi;   //!
+   TBranch        *b_GenVertex_pt;   //!
+   TBranch        *b_GenVertex_px;   //!
+   TBranch        *b_GenVertex_py;   //!
+   TBranch        *b_GenVertex_pz;   //!
+   TBranch        *b_GenVertex_x;   //!
+   TBranch        *b_GenVertex_y;   //!
+   TBranch        *b_GenVertex_z;   //!
+   TBranch        *b_VertexTrack_SCDR;   //!
+   TBranch        *b_VertexTrack_energySC;   //!
+   TBranch        *b_VertexTrack_isSignalElectron;   //!
+   TBranch        *b_VertexTrack_isSignalMuon;   //!
+   TBranch        *b_VertexTrack_isSignalTrack;   //!
+   TBranch        *b_VertexTrack_ratioPToEnergySC;   //!
+   TBranch        *b_VertexTrack_shift3DAfterTrackRemoval;   //!
+   TBranch        *b_VertexTrack_shiftDzAfterTrackRemoval;   //!
+   TBranch        *b_VertexTrack_trackCompatibility;   //!
+   TBranch        *b_VertexTrack_trackCosTheta;   //!
+   TBranch        *b_VertexTrack_trackCosThetaAtCM;   //!
+   TBranch        *b_VertexTrack_trackIndex;   //!
+   TBranch        *b_VertexTrack_vertexIndex;   //!
+   TBranch        *b_Vertex_chi2;   //!
+   TBranch        *b_Vertex_cosTheta;   //!
+   TBranch        *b_Vertex_cxx;   //!
+   TBranch        *b_Vertex_cxy;   //!
+   TBranch        *b_Vertex_cxz;   //!
+   TBranch        *b_Vertex_cyy;   //!
+   TBranch        *b_Vertex_cyz;   //!
+   TBranch        *b_Vertex_czz;   //!
+   TBranch        *b_Vertex_decayAngle;   //!
+   TBranch        *b_Vertex_dxy;   //!
+   TBranch        *b_Vertex_dxyError;   //!
+   TBranch        *b_Vertex_eta;   //!
+   TBranch        *b_Vertex_genVertexIndex;   //!
+   TBranch        *b_Vertex_isBronze;   //!
+   TBranch        *b_Vertex_isGold;   //!
+   TBranch        *b_Vertex_isSilver;   //!
+   TBranch        *b_Vertex_isUnique;   //!
+   TBranch        *b_Vertex_mass;   //!
+   TBranch        *b_Vertex_matchRatio;   //!
+   TBranch        *b_Vertex_min3D;   //!
+   TBranch        *b_Vertex_nTotal;   //!
+   TBranch        *b_Vertex_nTracks;   //!
+   TBranch        *b_Vertex_ndof;   //!
+   TBranch        *b_Vertex_nearestGenVertexIndex;   //!
+   TBranch        *b_Vertex_normalizedChi2;   //!
+   TBranch        *b_Vertex_p;   //!
+   TBranch        *b_Vertex_passLooseElectronID;   //!
+   TBranch        *b_Vertex_passLooseID;   //!
+   TBranch        *b_Vertex_passLooseMuonID;   //!
+   TBranch        *b_Vertex_phi;   //!
+   TBranch        *b_Vertex_pt;   //!
+   TBranch        *b_Vertex_px;   //!
+   TBranch        *b_Vertex_py;   //!
+   TBranch        *b_Vertex_pz;   //!
+   TBranch        *b_Vertex_scMatchRatio;   //!
+   TBranch        *b_Vertex_sumCharge;   //!
+   TBranch        *b_Vertex_x;   //!
+   TBranch        *b_Vertex_y;   //!
+   TBranch        *b_Vertex_z;   //!
    TBranch        *b_ECALRecHit_energy;   //!
    TBranch        *b_ECALRecHit_ID;   //!
    TBranch        *b_ECALRecHit_swCross;   //!
    TBranch        *b_ECALRecHit_0TOF;   //!
    TBranch        *b_ECALRecHit_pvTOF;   //!
    TBranch        *b_ECALRecHit_time;   //!
+   TBranch        *b_ECALRecHit_timeError;   //!
    TBranch        *b_ECALRecHit_amplitude;   //!
    TBranch        *b_ECALRecHit_ampres;   //!
    TBranch        *b_ECALRecHit_eta;   //!
+   TBranch        *b_ECALRecHit_hasGS1;   //!
+   TBranch        *b_ECALRecHit_hasGS6;   //!
    TBranch        *b_ECALRecHit_isDead;   //!
    TBranch        *b_ECALRecHit_isDiWrd;   //!
    TBranch        *b_ECALRecHit_isOOT;   //!
    TBranch        *b_ECALRecHit_isOther;   //!
    TBranch        *b_ECALRecHit_isPoor;   //!
    TBranch        *b_ECALRecHit_isRecov;   //!
+   TBranch        *b_ECALRecHit_isTimeValid;   //!
    TBranch        *b_ECALRecHit_isWrd;   //!
    TBranch        *b_ECALRecHit_phi;   //!
    TBranch        *b_ECALRecHit_precentUsed;   //!
@@ -499,59 +611,50 @@ public :
    TBranch        *b_SuperCluster_rhIds;   //!
    TBranch        *b_SuperCluster_XtalSeedID;   //!
    TBranch        *b_SuperCluster_nHFXtals;   //!
+   TBranch        *b_SuperCluster_SeedTime;   //!
+   TBranch        *b_SuperCluster_TrackIndx;   //!
    TBranch        *b_SuperCluster_x_calo;   //!
    TBranch        *b_SuperCluster_y_calo;   //!
    TBranch        *b_SuperCluster_z_calo;   //!
-   TBranch        *b_ECALTrackDetID_detId;   //!
-   TBranch        *b_ECALTrackDetID_isECAL;   //!
-   TBranch        *b_ECALTrackDetID_isHCAL;   //!
-   TBranch        *b_ECALTrackDetID_trackIndex;   //!
-   TBranch        *b_ECALTrack_charge;   //!
-   TBranch        *b_ECALTrack_chi2;   //!
-   TBranch        *b_ECALTrack_dxy;   //!
-   TBranch        *b_ECALTrack_eta;   //!
-   TBranch        *b_ECALTrack_etaError;   //!
-   TBranch        *b_ECALTrack_genDeltaR;   //!
-   TBranch        *b_ECALTrack_genIndex;   //!
-   TBranch        *b_ECALTrack_lambda;   //!
-   TBranch        *b_ECALTrack_nGeneral;   //!
-   TBranch        *b_ECALTrack_nGsf;   //!
-   TBranch        *b_ECALTrack_nLostHits;   //!
-   TBranch        *b_ECALTrack_nTracks;   //!
-   TBranch        *b_ECALTrack_nValidHits;   //!
-   TBranch        *b_ECALTrack_ndof;   //!
-   TBranch        *b_ECALTrack_normalizedChi2;   //!
-   TBranch        *b_ECALTrack_p;   //!
-   TBranch        *b_ECALTrack_pdgId;   //!
-   TBranch        *b_ECALTrack_phi;   //!
-   TBranch        *b_ECALTrack_phiError;   //!
-   TBranch        *b_ECALTrack_pt;   //!
-   TBranch        *b_ECALTrack_ptError;   //!
-   TBranch        *b_ECALTrack_px;   //!
-   TBranch        *b_ECALTrack_py;   //!
-   TBranch        *b_ECALTrack_pz;   //!
-   TBranch        *b_ECALTrack_qoverp;   //!
-   TBranch        *b_ECALTrack_qualityMask;   //!
-   TBranch        *b_ECALTrack_theta;   //!
-   TBranch        *b_ECALTrack_vx;   //!
-   TBranch        *b_ECALTrack_vy;   //!
-   TBranch        *b_ECALTrack_vz;   //!
-   TBranch        *b_TrackSCMatch_deltaR;   //!
-   TBranch        *b_TrackSCMatch_scEnergyToTrackPRatio;   //!
+   TBranch        *b_Electron_DetaSCTV;   //!
+   TBranch        *b_Electron_DphiSCTV;   //!
    TBranch        *b_Electron_energy;   //!
    TBranch        *b_Electron_eta;   //!
    TBranch        *b_Electron_genIdx;   //!
    TBranch        *b_Electron_genSigWZId;   //!
    TBranch        *b_Electron_genSigXMomId;   //!
+   TBranch        *b_Electron_HOE;   //!
+   TBranch        *b_Electron_isLVeto;   //!
+   TBranch        *b_Electron_isLoose;   //!
+   TBranch        *b_Electron_isMedium;   //!
+   TBranch        *b_Electron_isPrompt;   //!
+   TBranch        *b_Electron_isVeto;   //!
    TBranch        *b_Electron_phi;   //!
    TBranch        *b_Electron_pt;   //!
    TBranch        *b_Electron_px;   //!
    TBranch        *b_Electron_py;   //!
    TBranch        *b_Electron_pz;   //!
    TBranch        *b_Electron_seedTOFTime;   //!
+   TBranch        *b_Electron_Sieie;   //!
    TBranch        *b_Electron_trackz;   //!
+   TBranch        *b_Electron_Vdetaseed;   //!
+   TBranch        *b_Electron_Vdpscvc;   //!
+   TBranch        *b_Electron_Vhoec;   //!
+   TBranch        *b_Electron_Vmistrack;   //!
+   TBranch        *b_Electron_Vooemoop;   //!
+   TBranch        *b_Electron_VrelIsoWithEA;   //!
+   TBranch        *b_Electron_Vsieiec;   //!
+   TBranch        *b_Electron_hasGenMatch;   //!
+   TBranch        *b_Electron_isLWZP;   //!
    TBranch        *b_Electron_nElectrons;   //!
+   TBranch        *b_Electron_nGenMatch;   //!
+   TBranch        *b_Electron_nPrompt;   //!
+   TBranch        *b_Electron_nSVMatched;   //!
+   TBranch        *b_Electron_nSelElectrons;   //!
+   TBranch        *b_Electron_passConversionVeto;   //!
+   TBranch        *b_Electron_passPrompt;   //!
    TBranch        *b_Electron_scIndex;   //!
+   TBranch        *b_Electron_hasSVMatch;   //!
    TBranch        *b_Flag_BadChargedCandidateFilter;   //!
    TBranch        *b_Flag_BadPFMuonDzFilter;   //!
    TBranch        *b_Flag_BadPFMuonFilter;   //!
@@ -655,9 +758,15 @@ public :
    TBranch        *b_Gen_charge;   //!
    TBranch        *b_Gen_energy;   //!
    TBranch        *b_Gen_eta;   //!
+   TBranch        *b_Gen_GMomPdgId;   //!
+   TBranch        *b_Gen_isLWZQ;   //!
+   TBranch        *b_Gen_isLWZX;   //!
    TBranch        *b_Gen_mass;   //!
+   TBranch        *b_Gen_matchDe;   //!
+   TBranch        *b_Gen_matchDr;   //!
    TBranch        *b_Gen_momDisplacment;   //!
    TBranch        *b_Gen_motherIdx;   //!
+   TBranch        *b_Gen_MomPdgId;   //!
    TBranch        *b_Gen_nTotal;   //!
    TBranch        *b_Gen_pdgId;   //!
    TBranch        *b_Gen_phi;   //!
@@ -672,6 +781,9 @@ public :
    TBranch        *b_Gen_vy;   //!
    TBranch        *b_Gen_vz;   //!
    TBranch        *b_Evt_genWgt;   //!
+   TBranch        *b_Evt_hasLWZQ;   //!
+   TBranch        *b_Evt_hasLWZX;   //!
+   TBranch        *b_Evt_nLWZX;   //!
    TBranch        *b_Jet_area;   //!
    TBranch        *b_Jet_chEmEF;   //!
    TBranch        *b_Jet_chHEF;   //!
@@ -704,6 +816,29 @@ public :
    TBranch        *b_Jet_phi;   //!
    TBranch        *b_Jet_pt;   //!
    TBranch        *b_Jet_nConstituents;   //!
+   TBranch        *b_Muon_energy;   //!
+   TBranch        *b_Muon_eta;   //!
+   TBranch        *b_Muon_genIdx;   //!
+   TBranch        *b_Muon_genSigWZId;   //!
+   TBranch        *b_Muon_genSigXMomId;   //!
+   TBranch        *b_Muon_isPromptMuon;   //!
+   TBranch        *b_Muon_phi;   //!
+   TBranch        *b_Muon_pt;   //!
+   TBranch        *b_Muon_px;   //!
+   TBranch        *b_Muon_py;   //!
+   TBranch        *b_Muon_pz;   //!
+   TBranch        *b_Muon_hasGenMatch;   //!
+   TBranch        *b_Muon_isLWZP;   //!
+   TBranch        *b_Muon_isLoose;   //!
+   TBranch        *b_Muon_isMedium;   //!
+   TBranch        *b_Muon_nGenMatch;   //!
+   TBranch        *b_Muon_nMuons;   //!
+   TBranch        *b_Muon_nPrompt;   //!
+   TBranch        *b_Muon_nSelMuons;   //!
+   TBranch        *b_Muon_nSVMatched;   //!
+   TBranch        *b_Muon_passPrompt;   //!
+   TBranch        *b_Muon_hasSVMatch;   //!
+   TBranch        *b_Muon_isTight;   //!
    TBranch        *b_Met_CPt;   //!
    TBranch        *b_Met_Cpx;   //!
    TBranch        *b_Met_Cpy;   //!
@@ -742,13 +877,12 @@ public :
    TBranch        *b_Photon_trkSumPtSolidConeDR04;   //!
    TBranch        *b_Photon_ecalPFClusterIso;   //!
    TBranch        *b_Photon_electronVeto;   //!
-   TBranch        *b_Photon_gloResRhId;   //!
    TBranch        *b_hasConversionTracks;   //!
    TBranch        *b_Photon_pixelSeed;   //!
    TBranch        *b_Photon_hcalPFClusterIso;   //!
    TBranch        *b_Photon_Hoe_PUcorr;   //!
-   TBranch        *b_Photon_locResRhId;   //!
    TBranch        *b_Photon_nPhoton;   //!
+   TBranch        *b_Photon_isSelect;   //!
    TBranch        *b_Photon_pfChargedIso;   //!
    TBranch        *b_Photon_pfChargedIsoPFPV;   //!
    TBranch        *b_Photon_pfChargedIsoWorstVtx;   //!
@@ -759,6 +893,44 @@ public :
    TBranch        *b_Photon_sieie;   //!
    TBranch        *b_Photon_sieip;   //!
    TBranch        *b_Photon_sipip;   //!
+   TBranch        *b_Track_absIso;   //!
+   TBranch        *b_Track_charge;   //!
+   TBranch        *b_Track_chi2;   //!
+   TBranch        *b_Track_dxy;   //!
+   TBranch        *b_Track_ecalDetIds;   //!
+   TBranch        *b_Track_eta;   //!
+   TBranch        *b_Track_etaError;   //!
+   TBranch        *b_Track_hcalDetIds;   //!
+   TBranch        *b_Track_ip2D;   //!
+   TBranch        *b_Track_ip3D;   //!
+   TBranch        *b_Track_isGenTrack;   //!
+   TBranch        *b_Track_lambda;   //!
+   TBranch        *b_Track_miniRelIso;   //!
+   TBranch        *b_Track_pdgId;   //!
+   TBranch        *b_Track_mrelisolep;   //!
+   TBranch        *b_Track_nIsoTracks;   //!
+   TBranch        *b_Track_nLostHits;   //!
+   TBranch        *b_Track_nValidHits;   //!
+   TBranch        *b_Track_ndof;   //!
+   TBranch        *b_Track_p;   //!
+   TBranch        *b_Track_phi;   //!
+   TBranch        *b_Track_phiError;   //!
+   TBranch        *b_Track_pt;   //!
+   TBranch        *b_Track_ptError;   //!
+   TBranch        *b_Track_px;   //!
+   TBranch        *b_Track_py;   //!
+   TBranch        *b_Track_pz;   //!
+   TBranch        *b_Track_normalizedChi2;   //!
+   TBranch        *b_Track_qualityMask;   //!
+   TBranch        *b_Track_relIso;   //!
+   TBranch        *b_Track_relisolep;   //!
+   TBranch        *b_Track_scIndexs;   //!
+   TBranch        *b_Track_sip2D;   //!
+   TBranch        *b_Track_sip3D;   //!
+   TBranch        *b_Track_theta;   //!
+   TBranch        *b_Track_vx;   //!
+   TBranch        *b_Track_vy;   //!
+   TBranch        *b_Track_vz;   //!
 
    ReducedBase(TTree *tree=0);
    virtual ~ReducedBase();
@@ -766,7 +938,7 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   //virtual void     Loop();
+//   virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -779,11 +951,11 @@ inline ReducedBase::ReducedBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-200To400_AODSIM_RunIISummer20UL18/250814_033313/0000/kucmsntuple_999.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root");
+         f = new TFile("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-200To400_AODSIM_RunIISummer20UL18/250814_033313/0000/kucmsntuple_999.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("GJets_HT-100To200_AODSIM_RunIIFall17DRPremix-94X_mc2017_output476.root:/tree");
+      TDirectory * dir = (TDirectory*)f->Get("root://cmseos.fnal.gov//store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_GJets_R18_SVIPM100_v30/GJets_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/kucmsntuple_GJets_R18_SVIPM100_v30_GJets_HT-200To400_AODSIM_RunIISummer20UL18/250814_033313/0000/kucmsntuple_999.root:/tree");
       dir->GetObject("ReducedBase",tree);
 
    }
@@ -827,67 +999,94 @@ inline void ReducedBase::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
-   DisplacedElectron_charge = 0;
-   DisplacedElectron_dRGen = 0;
-   DisplacedElectron_dRSC = 0;
-   DisplacedElectron_dxy = 0;
-   DisplacedElectron_energy = 0;
-   DisplacedElectron_eta = 0;
-   DisplacedElectron_etaECAL = 0;
-   DisplacedElectron_genSigIndex = 0;
-   DisplacedElectron_indexGen = 0;
-   DisplacedElectron_indexSC = 0;
-   DisplacedElectron_indexTrack = 0;
-   DisplacedElectron_ip2D = 0;
-   DisplacedElectron_ip2Dbs = 0;
-   DisplacedElectron_ip3D = 0;
-   DisplacedElectron_ip3Dbs = 0;
-   DisplacedElectron_isBarrel = 0;
-   DisplacedElectron_isConversion = 0;
-   DisplacedElectron_isEndCap = 0;
-   DisplacedElectron_isGeneralTrack = 0;
-   DisplacedElectron_isGsfTrack = 0;
-   DisplacedElectron_isHeavy = 0;
-   DisplacedElectron_isLight = 0;
-   DisplacedElectron_isOOTSC = 0;
-   DisplacedElectron_isSC = 0;
-   DisplacedElectron_isSignal = 0;
-   DisplacedElectron_isTau = 0;
-   DisplacedElectron_isUnmatched = 0;
-   DisplacedElectron_nHits = 0;
-   DisplacedElectron_p = 0;
-   DisplacedElectron_pdgId = 0;
-   DisplacedElectron_pfIso0p4 = 0;
-   DisplacedElectron_phi = 0;
-   DisplacedElectron_phiECAL = 0;
-   DisplacedElectron_pt = 0;
-   DisplacedElectron_scIso0p4 = 0;
-   DisplacedElectron_sip2D = 0;
-   DisplacedElectron_sip2Dbs = 0;
-   DisplacedElectron_sip3D = 0;
-   DisplacedElectron_sip3Dbs = 0;
-   DisplacedElectron_trackIso0p4 = 0;
-   DisplacedElectron_x = 0;
-   DisplacedElectron_xECAL = 0;
-   DisplacedElectron_y = 0;
-   DisplacedElectron_yECAL = 0;
-   DisplacedElectron_z = 0;
-   DisplacedElectron_zECAL = 0;
+   GenVertex_dxy = 0;
+   GenVertex_eta = 0;
+   GenVertex_isElectron = 0;
+   GenVertex_isHadronic = 0;
+   GenVertex_isMuon = 0;
+   GenVertex_mass = 0;
+   GenVertex_nTracks = 0;
+   GenVertex_p = 0;
+   GenVertex_passSelection = 0;
+   GenVertex_passSelectionAndCuts = 0;
+   GenVertex_phi = 0;
+   GenVertex_pt = 0;
+   GenVertex_px = 0;
+   GenVertex_py = 0;
+   GenVertex_pz = 0;
+   GenVertex_x = 0;
+   GenVertex_y = 0;
+   GenVertex_z = 0;
+   VertexTrack_SCDR = 0;
+   VertexTrack_energySC = 0;
+   VertexTrack_isSignalElectron = 0;
+   VertexTrack_isSignalMuon = 0;
+   VertexTrack_isSignalTrack = 0;
+   VertexTrack_ratioPToEnergySC = 0;
+   VertexTrack_shift3DAfterTrackRemoval = 0;
+   VertexTrack_shiftDzAfterTrackRemoval = 0;
+   VertexTrack_trackCompatibility = 0;
+   VertexTrack_trackCosTheta = 0;
+   VertexTrack_trackCosThetaAtCM = 0;
+   VertexTrack_trackIndex = 0;
+   VertexTrack_vertexIndex = 0;
+   Vertex_chi2 = 0;
+   Vertex_cosTheta = 0;
+   Vertex_cxx = 0;
+   Vertex_cxy = 0;
+   Vertex_cxz = 0;
+   Vertex_cyy = 0;
+   Vertex_cyz = 0;
+   Vertex_czz = 0;
+   Vertex_decayAngle = 0;
+   Vertex_dxy = 0;
+   Vertex_dxyError = 0;
+   Vertex_eta = 0;
+   Vertex_genVertexIndex = 0;
+   Vertex_isBronze = 0;
+   Vertex_isGold = 0;
+   Vertex_isSilver = 0;
+   Vertex_isUnique = 0;
+   Vertex_mass = 0;
+   Vertex_matchRatio = 0;
+   Vertex_min3D = 0;
+   Vertex_nTracks = 0;
+   Vertex_ndof = 0;
+   Vertex_nearestGenVertexIndex = 0;
+   Vertex_normalizedChi2 = 0;
+   Vertex_p = 0;
+   Vertex_passLooseElectronID = 0;
+   Vertex_passLooseID = 0;
+   Vertex_passLooseMuonID = 0;
+   Vertex_phi = 0;
+   Vertex_pt = 0;
+   Vertex_px = 0;
+   Vertex_py = 0;
+   Vertex_pz = 0;
+   Vertex_scMatchRatio = 0;
+   Vertex_sumCharge = 0;
+   Vertex_x = 0;
+   Vertex_y = 0;
+   Vertex_z = 0;
    ECALRecHit_energy = 0;
    ECALRecHit_ID = 0;
    ECALRecHit_swCross = 0;
    ECALRecHit_0TOF = 0;
    ECALRecHit_pvTOF = 0;
    ECALRecHit_time = 0;
+   ECALRecHit_timeError = 0;
    ECALRecHit_amplitude = 0;
    ECALRecHit_ampres = 0;
    ECALRecHit_eta = 0;
+   ECALRecHit_hasGS1 = 0;
+   ECALRecHit_hasGS6 = 0;
    ECALRecHit_isDead = 0;
    ECALRecHit_isDiWrd = 0;
    ECALRecHit_isOOT = 0;
    ECALRecHit_isOther = 0;
    ECALRecHit_isPoor = 0;
    ECALRecHit_isRecov = 0;
+   ECALRecHit_isTimeValid = 0;
    ECALRecHit_isWrd = 0;
    ECALRecHit_phi = 0;
    ECALRecHit_precentUsed = 0;
@@ -926,61 +1125,57 @@ inline void ReducedBase::Init(TTree *tree)
    SuperCluster_rhIds = 0;
    SuperCluster_XtalSeedID = 0;
    SuperCluster_nHFXtals = 0;
+   SuperCluster_SeedTime = 0;
+   SuperCluster_TrackIndx = 0;
    SuperCluster_x_calo = 0;
    SuperCluster_y_calo = 0;
    SuperCluster_z_calo = 0;
-   ECALTrackDetID_detId = 0;
-   ECALTrackDetID_isECAL = 0;
-   ECALTrackDetID_isHCAL = 0;
-   ECALTrackDetID_trackIndex = 0;
-   ECALTrack_charge = 0;
-   ECALTrack_chi2 = 0;
-   ECALTrack_dxy = 0;
-   ECALTrack_eta = 0;
-   ECALTrack_etaError = 0;
-   ECALTrack_genDeltaR = 0;
-   ECALTrack_genIndex = 0;
-   ECALTrack_lambda = 0;
-   ECALTrack_nLostHits = 0;
-   ECALTrack_nValidHits = 0;
-   ECALTrack_ndof = 0;
-   ECALTrack_normalizedChi2 = 0;
-   ECALTrack_p = 0;
-   ECALTrack_pdgId = 0;
-   ECALTrack_phi = 0;
-   ECALTrack_phiError = 0;
-   ECALTrack_pt = 0;
-   ECALTrack_ptError = 0;
-   ECALTrack_px = 0;
-   ECALTrack_py = 0;
-   ECALTrack_pz = 0;
-   ECALTrack_qoverp = 0;
-   ECALTrack_qualityMask = 0;
-   ECALTrack_theta = 0;
-   ECALTrack_vx = 0;
-   ECALTrack_vy = 0;
-   ECALTrack_vz = 0;
-   TrackSCMatch_deltaR = 0;
-   TrackSCMatch_scEnergyToTrackPRatio = 0;
+   Electron_DetaSCTV = 0;
+   Electron_DphiSCTV = 0;
    Electron_energy = 0;
    Electron_eta = 0;
    Electron_genIdx = 0;
    Electron_genSigWZId = 0;
    Electron_genSigXMomId = 0;
+   Electron_HOE = 0;
+   Electron_isLVeto = 0;
+   Electron_isLoose = 0;
+   Electron_isMedium = 0;
+   Electron_isPrompt = 0;
+   Electron_isVeto = 0;
    Electron_phi = 0;
    Electron_pt = 0;
    Electron_px = 0;
    Electron_py = 0;
    Electron_pz = 0;
    Electron_seedTOFTime = 0;
+   Electron_Sieie = 0;
    Electron_trackz = 0;
+   Electron_Vdetaseed = 0;
+   Electron_Vdpscvc = 0;
+   Electron_Vhoec = 0;
+   Electron_Vmistrack = 0;
+   Electron_Vooemoop = 0;
+   Electron_VrelIsoWithEA = 0;
+   Electron_Vsieiec = 0;
+   Electron_hasGenMatch = 0;
+   Electron_isLWZP = 0;
+   Electron_passConversionVeto = 0;
+   Electron_passPrompt = 0;
    Electron_scIndex = 0;
+   Electron_hasSVMatch = 0;
    Gen_charge = 0;
    Gen_energy = 0;
    Gen_eta = 0;
+   Gen_GMomPdgId = 0;
+   Gen_isLWZQ = 0;
+   Gen_isLWZX = 0;
    Gen_mass = 0;
+   Gen_matchDe = 0;
+   Gen_matchDr = 0;
    Gen_momDisplacment = 0;
    Gen_motherIdx = 0;
+   Gen_MomPdgId = 0;
    Gen_pdgId = 0;
    Gen_phi = 0;
    Gen_pt = 0;
@@ -1025,6 +1220,24 @@ inline void ReducedBase::Init(TTree *tree)
    Jet_phi = 0;
    Jet_pt = 0;
    Jet_nConstituents = 0;
+   Muon_energy = 0;
+   Muon_eta = 0;
+   Muon_genIdx = 0;
+   Muon_genSigWZId = 0;
+   Muon_genSigXMomId = 0;
+   Muon_isPromptMuon = 0;
+   Muon_phi = 0;
+   Muon_pt = 0;
+   Muon_px = 0;
+   Muon_py = 0;
+   Muon_pz = 0;
+   Muon_hasGenMatch = 0;
+   Muon_isLWZP = 0;
+   Muon_isLoose = 0;
+   Muon_isMedium = 0;
+   Muon_passPrompt = 0;
+   Muon_hasSVMatch = 0;
+   Muon_isTight = 0;
    Photon_ecalRHSumEtConeDR04 = 0;
    Photon_energy = 0;
    Photon_energyErr = 0;
@@ -1053,12 +1266,11 @@ inline void ReducedBase::Init(TTree *tree)
    Photon_trkSumPtSolidConeDR04 = 0;
    Photon_ecalPFClusterIso = 0;
    Photon_electronVeto = 0;
-   Photon_gloResRhId = 0;
    hasConversionTracks = 0;
    Photon_pixelSeed = 0;
    Photon_hcalPFClusterIso = 0;
    Photon_Hoe_PUcorr = 0;
-   Photon_locResRhId = 0;
+   Photon_isSelect = 0;
    Photon_pfChargedIso = 0;
    Photon_pfChargedIsoPFPV = 0;
    Photon_pfChargedIsoWorstVtx = 0;
@@ -1069,79 +1281,142 @@ inline void ReducedBase::Init(TTree *tree)
    Photon_sieie = 0;
    Photon_sieip = 0;
    Photon_sipip = 0;
+   Track_absIso = 0;
+   Track_charge = 0;
+   Track_chi2 = 0;
+   Track_dxy = 0;
+   Track_ecalDetIds = 0;
+   Track_eta = 0;
+   Track_etaError = 0;
+   Track_hcalDetIds = 0;
+   Track_ip2D = 0;
+   Track_ip3D = 0;
+   Track_isGenTrack = 0;
+   Track_lambda = 0;
+   Track_miniRelIso = 0;
+   Track_pdgId = 0;
+   Track_mrelisolep = 0;
+   Track_nLostHits = 0;
+   Track_nValidHits = 0;
+   Track_ndof = 0;
+   Track_p = 0;
+   Track_phi = 0;
+   Track_phiError = 0;
+   Track_pt = 0;
+   Track_ptError = 0;
+   Track_px = 0;
+   Track_py = 0;
+   Track_pz = 0;
+   Track_normalizedChi2 = 0;
+   Track_qualityMask = 0;
+   Track_relIso = 0;
+   Track_relisolep = 0;
+   Track_scIndexs = 0;
+   Track_sip2D = 0;
+   Track_sip3D = 0;
+   Track_theta = 0;
+   Track_vx = 0;
+   Track_vy = 0;
+   Track_vz = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("DisplacedElectron_charge", &DisplacedElectron_charge, &b_DisplacedElectron_charge);
-   fChain->SetBranchAddress("DisplacedElectron_costGen", &DisplacedElectron_costGen, &b_DisplacedElectron_costGen);
-   fChain->SetBranchAddress("DisplacedElectron_costSC", &DisplacedElectron_costSC, &b_DisplacedElectron_costSC);
-   fChain->SetBranchAddress("DisplacedElectron_dRGen", &DisplacedElectron_dRGen, &b_DisplacedElectron_dRGen);
-   fChain->SetBranchAddress("DisplacedElectron_dRSC", &DisplacedElectron_dRSC, &b_DisplacedElectron_dRSC);
-   fChain->SetBranchAddress("DisplacedElectron_dxy", &DisplacedElectron_dxy, &b_DisplacedElectron_dxy);
-   fChain->SetBranchAddress("DisplacedElectron_energy", &DisplacedElectron_energy, &b_DisplacedElectron_energy);
-   fChain->SetBranchAddress("DisplacedElectron_eta", &DisplacedElectron_eta, &b_DisplacedElectron_eta);
-   fChain->SetBranchAddress("DisplacedElectron_etaECAL", &DisplacedElectron_etaECAL, &b_DisplacedElectron_etaECAL);
-   fChain->SetBranchAddress("DisplacedElectron_genSigIndex", &DisplacedElectron_genSigIndex, &b_DisplacedElectron_genSigIndex);
-   fChain->SetBranchAddress("DisplacedElectron_indexGen", &DisplacedElectron_indexGen, &b_DisplacedElectron_indexGen);
-   fChain->SetBranchAddress("DisplacedElectron_indexSC", &DisplacedElectron_indexSC, &b_DisplacedElectron_indexSC);
-   fChain->SetBranchAddress("DisplacedElectron_indexTrack", &DisplacedElectron_indexTrack, &b_DisplacedElectron_indexTrack);
-   fChain->SetBranchAddress("DisplacedElectron_ip2D", &DisplacedElectron_ip2D, &b_DisplacedElectron_ip2D);
-   fChain->SetBranchAddress("DisplacedElectron_ip2Dbs", &DisplacedElectron_ip2Dbs, &b_DisplacedElectron_ip2Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_ip3D", &DisplacedElectron_ip3D, &b_DisplacedElectron_ip3D);
-   fChain->SetBranchAddress("DisplacedElectron_ip3Dbs", &DisplacedElectron_ip3Dbs, &b_DisplacedElectron_ip3Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_isBarrel", &DisplacedElectron_isBarrel, &b_DisplacedElectron_isBarrel);
-   fChain->SetBranchAddress("DisplacedElectron_isConversion", &DisplacedElectron_isConversion, &b_DisplacedElectron_isConversion);
-   fChain->SetBranchAddress("DisplacedElectron_isEndCap", &DisplacedElectron_isEndCap, &b_DisplacedElectron_isEndCap);
-   fChain->SetBranchAddress("DisplacedElectron_isGeneralTrack", &DisplacedElectron_isGeneralTrack, &b_DisplacedElectron_isGeneralTrack);
-   fChain->SetBranchAddress("DisplacedElectron_isGsfTrack", &DisplacedElectron_isGsfTrack, &b_DisplacedElectron_isGsfTrack);
-   fChain->SetBranchAddress("DisplacedElectron_isHeavy", &DisplacedElectron_isHeavy, &b_DisplacedElectron_isHeavy);
-   fChain->SetBranchAddress("DisplacedElectron_isLight", &DisplacedElectron_isLight, &b_DisplacedElectron_isLight);
-   fChain->SetBranchAddress("DisplacedElectron_isOOTSC", &DisplacedElectron_isOOTSC, &b_DisplacedElectron_isOOTSC);
-   fChain->SetBranchAddress("DisplacedElectron_isSC", &DisplacedElectron_isSC, &b_DisplacedElectron_isSC);
-   fChain->SetBranchAddress("DisplacedElectron_isSignal", &DisplacedElectron_isSignal, &b_DisplacedElectron_isSignal);
-   fChain->SetBranchAddress("DisplacedElectron_isTau", &DisplacedElectron_isTau, &b_DisplacedElectron_isTau);
-   fChain->SetBranchAddress("DisplacedElectron_isUnmatched", &DisplacedElectron_isUnmatched, &b_DisplacedElectron_isUnmatched);
-   fChain->SetBranchAddress("DisplacedElectron_nGenSig", &DisplacedElectron_nGenSig, &b_DisplacedElectron_nGenSig);
-   fChain->SetBranchAddress("DisplacedElectron_nHits", &DisplacedElectron_nHits, &b_DisplacedElectron_nHits);
-   fChain->SetBranchAddress("DisplacedElectron_nOOTSCs", &DisplacedElectron_nOOTSCs, &b_DisplacedElectron_nOOTSCs);
-   fChain->SetBranchAddress("DisplacedElectron_nSCs", &DisplacedElectron_nSCs, &b_DisplacedElectron_nSCs);
-   fChain->SetBranchAddress("DisplacedElectron_nTotal", &DisplacedElectron_nTotal, &b_DisplacedElectron_nTotal);
-   fChain->SetBranchAddress("DisplacedElectron_p", &DisplacedElectron_p, &b_DisplacedElectron_p);
-   fChain->SetBranchAddress("DisplacedElectron_pdgId", &DisplacedElectron_pdgId, &b_DisplacedElectron_pdgId);
-   fChain->SetBranchAddress("DisplacedElectron_pfIso0p4", &DisplacedElectron_pfIso0p4, &b_DisplacedElectron_pfIso0p4);
-   fChain->SetBranchAddress("DisplacedElectron_phi", &DisplacedElectron_phi, &b_DisplacedElectron_phi);
-   fChain->SetBranchAddress("DisplacedElectron_phiECAL", &DisplacedElectron_phiECAL, &b_DisplacedElectron_phiECAL);
-   fChain->SetBranchAddress("DisplacedElectron_pt", &DisplacedElectron_pt, &b_DisplacedElectron_pt);
-   fChain->SetBranchAddress("DisplacedElectron_scIso0p4", &DisplacedElectron_scIso0p4, &b_DisplacedElectron_scIso0p4);
-   fChain->SetBranchAddress("DisplacedElectron_sip2D", &DisplacedElectron_sip2D, &b_DisplacedElectron_sip2D);
-   fChain->SetBranchAddress("DisplacedElectron_sip2Dbs", &DisplacedElectron_sip2Dbs, &b_DisplacedElectron_sip2Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_sip3D", &DisplacedElectron_sip3D, &b_DisplacedElectron_sip3D);
-   fChain->SetBranchAddress("DisplacedElectron_sip3Dbs", &DisplacedElectron_sip3Dbs, &b_DisplacedElectron_sip3Dbs);
-   fChain->SetBranchAddress("DisplacedElectron_trackIso0p4", &DisplacedElectron_trackIso0p4, &b_DisplacedElectron_trackIso0p4);
-   fChain->SetBranchAddress("DisplacedElectron_x", &DisplacedElectron_x, &b_DisplacedElectron_x);
-   fChain->SetBranchAddress("DisplacedElectron_xECAL", &DisplacedElectron_xECAL, &b_DisplacedElectron_xECAL);
-   fChain->SetBranchAddress("DisplacedElectron_y", &DisplacedElectron_y, &b_DisplacedElectron_y);
-   fChain->SetBranchAddress("DisplacedElectron_yECAL", &DisplacedElectron_yECAL, &b_DisplacedElectron_yECAL);
-   fChain->SetBranchAddress("DisplacedElectron_z", &DisplacedElectron_z, &b_DisplacedElectron_z);
-   fChain->SetBranchAddress("DisplacedElectron_zECAL", &DisplacedElectron_zECAL, &b_DisplacedElectron_zECAL);
+   fChain->SetBranchAddress("GenVertex_dxy", &GenVertex_dxy, &b_GenVertex_dxy);
+   fChain->SetBranchAddress("GenVertex_eta", &GenVertex_eta, &b_GenVertex_eta);
+   fChain->SetBranchAddress("GenVertex_isElectron", &GenVertex_isElectron, &b_GenVertex_isElectron);
+   fChain->SetBranchAddress("GenVertex_isHadronic", &GenVertex_isHadronic, &b_GenVertex_isHadronic);
+   fChain->SetBranchAddress("GenVertex_isMuon", &GenVertex_isMuon, &b_GenVertex_isMuon);
+   fChain->SetBranchAddress("GenVertex_mass", &GenVertex_mass, &b_GenVertex_mass);
+   fChain->SetBranchAddress("GenVertex_nElectron", &GenVertex_nElectron, &b_GenVertex_nElectron);
+   fChain->SetBranchAddress("GenVertex_nHadronic", &GenVertex_nHadronic, &b_GenVertex_nHadronic);
+   fChain->SetBranchAddress("GenVertex_nMuon", &GenVertex_nMuon, &b_GenVertex_nMuon);
+   fChain->SetBranchAddress("GenVertex_nTotal", &GenVertex_nTotal, &b_GenVertex_nTotal);
+   fChain->SetBranchAddress("GenVertex_nTracks", &GenVertex_nTracks, &b_GenVertex_nTracks);
+   fChain->SetBranchAddress("GenVertex_p", &GenVertex_p, &b_GenVertex_p);
+   fChain->SetBranchAddress("GenVertex_passSelection", &GenVertex_passSelection, &b_GenVertex_passSelection);
+   fChain->SetBranchAddress("GenVertex_passSelectionAndCuts", &GenVertex_passSelectionAndCuts, &b_GenVertex_passSelectionAndCuts);
+   fChain->SetBranchAddress("GenVertex_phi", &GenVertex_phi, &b_GenVertex_phi);
+   fChain->SetBranchAddress("GenVertex_pt", &GenVertex_pt, &b_GenVertex_pt);
+   fChain->SetBranchAddress("GenVertex_px", &GenVertex_px, &b_GenVertex_px);
+   fChain->SetBranchAddress("GenVertex_py", &GenVertex_py, &b_GenVertex_py);
+   fChain->SetBranchAddress("GenVertex_pz", &GenVertex_pz, &b_GenVertex_pz);
+   fChain->SetBranchAddress("GenVertex_x", &GenVertex_x, &b_GenVertex_x);
+   fChain->SetBranchAddress("GenVertex_y", &GenVertex_y, &b_GenVertex_y);
+   fChain->SetBranchAddress("GenVertex_z", &GenVertex_z, &b_GenVertex_z);
+   fChain->SetBranchAddress("VertexTrack_SCDR", &VertexTrack_SCDR, &b_VertexTrack_SCDR);
+   fChain->SetBranchAddress("VertexTrack_energySC", &VertexTrack_energySC, &b_VertexTrack_energySC);
+   fChain->SetBranchAddress("VertexTrack_isSignalElectron", &VertexTrack_isSignalElectron, &b_VertexTrack_isSignalElectron);
+   fChain->SetBranchAddress("VertexTrack_isSignalMuon", &VertexTrack_isSignalMuon, &b_VertexTrack_isSignalMuon);
+   fChain->SetBranchAddress("VertexTrack_isSignalTrack", &VertexTrack_isSignalTrack, &b_VertexTrack_isSignalTrack);
+   fChain->SetBranchAddress("VertexTrack_ratioPToEnergySC", &VertexTrack_ratioPToEnergySC, &b_VertexTrack_ratioPToEnergySC);
+   fChain->SetBranchAddress("VertexTrack_shift3DAfterTrackRemoval", &VertexTrack_shift3DAfterTrackRemoval, &b_VertexTrack_shift3DAfterTrackRemoval);
+   fChain->SetBranchAddress("VertexTrack_shiftDzAfterTrackRemoval", &VertexTrack_shiftDzAfterTrackRemoval, &b_VertexTrack_shiftDzAfterTrackRemoval);
+   fChain->SetBranchAddress("VertexTrack_trackCompatibility", &VertexTrack_trackCompatibility, &b_VertexTrack_trackCompatibility);
+   fChain->SetBranchAddress("VertexTrack_trackCosTheta", &VertexTrack_trackCosTheta, &b_VertexTrack_trackCosTheta);
+   fChain->SetBranchAddress("VertexTrack_trackCosThetaAtCM", &VertexTrack_trackCosThetaAtCM, &b_VertexTrack_trackCosThetaAtCM);
+   fChain->SetBranchAddress("VertexTrack_trackIndex", &VertexTrack_trackIndex, &b_VertexTrack_trackIndex);
+   fChain->SetBranchAddress("VertexTrack_vertexIndex", &VertexTrack_vertexIndex, &b_VertexTrack_vertexIndex);
+   fChain->SetBranchAddress("Vertex_chi2", &Vertex_chi2, &b_Vertex_chi2);
+   fChain->SetBranchAddress("Vertex_cosTheta", &Vertex_cosTheta, &b_Vertex_cosTheta);
+   fChain->SetBranchAddress("Vertex_cxx", &Vertex_cxx, &b_Vertex_cxx);
+   fChain->SetBranchAddress("Vertex_cxy", &Vertex_cxy, &b_Vertex_cxy);
+   fChain->SetBranchAddress("Vertex_cxz", &Vertex_cxz, &b_Vertex_cxz);
+   fChain->SetBranchAddress("Vertex_cyy", &Vertex_cyy, &b_Vertex_cyy);
+   fChain->SetBranchAddress("Vertex_cyz", &Vertex_cyz, &b_Vertex_cyz);
+   fChain->SetBranchAddress("Vertex_czz", &Vertex_czz, &b_Vertex_czz);
+   fChain->SetBranchAddress("Vertex_decayAngle", &Vertex_decayAngle, &b_Vertex_decayAngle);
+   fChain->SetBranchAddress("Vertex_dxy", &Vertex_dxy, &b_Vertex_dxy);
+   fChain->SetBranchAddress("Vertex_dxyError", &Vertex_dxyError, &b_Vertex_dxyError);
+   fChain->SetBranchAddress("Vertex_eta", &Vertex_eta, &b_Vertex_eta);
+   fChain->SetBranchAddress("Vertex_genVertexIndex", &Vertex_genVertexIndex, &b_Vertex_genVertexIndex);
+   fChain->SetBranchAddress("Vertex_isBronze", &Vertex_isBronze, &b_Vertex_isBronze);
+   fChain->SetBranchAddress("Vertex_isGold", &Vertex_isGold, &b_Vertex_isGold);
+   fChain->SetBranchAddress("Vertex_isSilver", &Vertex_isSilver, &b_Vertex_isSilver);
+   fChain->SetBranchAddress("Vertex_isUnique", &Vertex_isUnique, &b_Vertex_isUnique);
+   fChain->SetBranchAddress("Vertex_mass", &Vertex_mass, &b_Vertex_mass);
+   fChain->SetBranchAddress("Vertex_matchRatio", &Vertex_matchRatio, &b_Vertex_matchRatio);
+   fChain->SetBranchAddress("Vertex_min3D", &Vertex_min3D, &b_Vertex_min3D);
+   fChain->SetBranchAddress("Vertex_nTotal", &Vertex_nTotal, &b_Vertex_nTotal);
+   fChain->SetBranchAddress("Vertex_nTracks", &Vertex_nTracks, &b_Vertex_nTracks);
+   fChain->SetBranchAddress("Vertex_ndof", &Vertex_ndof, &b_Vertex_ndof);
+   fChain->SetBranchAddress("Vertex_nearestGenVertexIndex", &Vertex_nearestGenVertexIndex, &b_Vertex_nearestGenVertexIndex);
+   fChain->SetBranchAddress("Vertex_normalizedChi2", &Vertex_normalizedChi2, &b_Vertex_normalizedChi2);
+   fChain->SetBranchAddress("Vertex_p", &Vertex_p, &b_Vertex_p);
+   fChain->SetBranchAddress("Vertex_passLooseElectronID", &Vertex_passLooseElectronID, &b_Vertex_passLooseElectronID);
+   fChain->SetBranchAddress("Vertex_passLooseID", &Vertex_passLooseID, &b_Vertex_passLooseID);
+   fChain->SetBranchAddress("Vertex_passLooseMuonID", &Vertex_passLooseMuonID, &b_Vertex_passLooseMuonID);
+   fChain->SetBranchAddress("Vertex_phi", &Vertex_phi, &b_Vertex_phi);
+   fChain->SetBranchAddress("Vertex_pt", &Vertex_pt, &b_Vertex_pt);
+   fChain->SetBranchAddress("Vertex_px", &Vertex_px, &b_Vertex_px);
+   fChain->SetBranchAddress("Vertex_py", &Vertex_py, &b_Vertex_py);
+   fChain->SetBranchAddress("Vertex_pz", &Vertex_pz, &b_Vertex_pz);
+   fChain->SetBranchAddress("Vertex_scMatchRatio", &Vertex_scMatchRatio, &b_Vertex_scMatchRatio);
+   fChain->SetBranchAddress("Vertex_sumCharge", &Vertex_sumCharge, &b_Vertex_sumCharge);
+   fChain->SetBranchAddress("Vertex_x", &Vertex_x, &b_Vertex_x);
+   fChain->SetBranchAddress("Vertex_y", &Vertex_y, &b_Vertex_y);
+   fChain->SetBranchAddress("Vertex_z", &Vertex_z, &b_Vertex_z);
    fChain->SetBranchAddress("ECALRecHit_energy", &ECALRecHit_energy, &b_ECALRecHit_energy);
    fChain->SetBranchAddress("ECALRecHit_ID", &ECALRecHit_ID, &b_ECALRecHit_ID);
    fChain->SetBranchAddress("ECALRecHit_swCross", &ECALRecHit_swCross, &b_ECALRecHit_swCross);
    fChain->SetBranchAddress("ECALRecHit_0TOF", &ECALRecHit_0TOF, &b_ECALRecHit_0TOF);
    fChain->SetBranchAddress("ECALRecHit_pvTOF", &ECALRecHit_pvTOF, &b_ECALRecHit_pvTOF);
    fChain->SetBranchAddress("ECALRecHit_time", &ECALRecHit_time, &b_ECALRecHit_time);
+   fChain->SetBranchAddress("ECALRecHit_timeError", &ECALRecHit_timeError, &b_ECALRecHit_timeError);
    fChain->SetBranchAddress("ECALRecHit_amplitude", &ECALRecHit_amplitude, &b_ECALRecHit_amplitude);
    fChain->SetBranchAddress("ECALRecHit_ampres", &ECALRecHit_ampres, &b_ECALRecHit_ampres);
    fChain->SetBranchAddress("ECALRecHit_eta", &ECALRecHit_eta, &b_ECALRecHit_eta);
+   fChain->SetBranchAddress("ECALRecHit_hasGS1", &ECALRecHit_hasGS1, &b_ECALRecHit_hasGS1);
+   fChain->SetBranchAddress("ECALRecHit_hasGS6", &ECALRecHit_hasGS6, &b_ECALRecHit_hasGS6);
    fChain->SetBranchAddress("ECALRecHit_isDead", &ECALRecHit_isDead, &b_ECALRecHit_isDead);
    fChain->SetBranchAddress("ECALRecHit_isDiWrd", &ECALRecHit_isDiWrd, &b_ECALRecHit_isDiWrd);
    fChain->SetBranchAddress("ECALRecHit_isOOT", &ECALRecHit_isOOT, &b_ECALRecHit_isOOT);
    fChain->SetBranchAddress("ECALRecHit_isOther", &ECALRecHit_isOther, &b_ECALRecHit_isOther);
    fChain->SetBranchAddress("ECALRecHit_isPoor", &ECALRecHit_isPoor, &b_ECALRecHit_isPoor);
    fChain->SetBranchAddress("ECALRecHit_isRecov", &ECALRecHit_isRecov, &b_ECALRecHit_isRecov);
+   fChain->SetBranchAddress("ECALRecHit_isTimeValid", &ECALRecHit_isTimeValid, &b_ECALRecHit_isTimeValid);
    fChain->SetBranchAddress("ECALRecHit_isWrd", &ECALRecHit_isWrd, &b_ECALRecHit_isWrd);
    fChain->SetBranchAddress("ECALRecHit_phi", &ECALRecHit_phi, &b_ECALRecHit_phi);
    fChain->SetBranchAddress("ECALRecHit_precentUsed", &ECALRecHit_precentUsed, &b_ECALRecHit_precentUsed);
@@ -1181,59 +1456,50 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("SuperCluster_rhIds", &SuperCluster_rhIds, &b_SuperCluster_rhIds);
    fChain->SetBranchAddress("SuperCluster_XtalSeedID", &SuperCluster_XtalSeedID, &b_SuperCluster_XtalSeedID);
    fChain->SetBranchAddress("SuperCluster_nHFXtals", &SuperCluster_nHFXtals, &b_SuperCluster_nHFXtals);
+   fChain->SetBranchAddress("SuperCluster_SeedTime", &SuperCluster_SeedTime, &b_SuperCluster_SeedTime);
+   fChain->SetBranchAddress("SuperCluster_TrackIndx", &SuperCluster_TrackIndx, &b_SuperCluster_TrackIndx);
    fChain->SetBranchAddress("SuperCluster_x_calo", &SuperCluster_x_calo, &b_SuperCluster_x_calo);
    fChain->SetBranchAddress("SuperCluster_y_calo", &SuperCluster_y_calo, &b_SuperCluster_y_calo);
    fChain->SetBranchAddress("SuperCluster_z_calo", &SuperCluster_z_calo, &b_SuperCluster_z_calo);
-   fChain->SetBranchAddress("ECALTrackDetID_detId", &ECALTrackDetID_detId, &b_ECALTrackDetID_detId);
-   fChain->SetBranchAddress("ECALTrackDetID_isECAL", &ECALTrackDetID_isECAL, &b_ECALTrackDetID_isECAL);
-   fChain->SetBranchAddress("ECALTrackDetID_isHCAL", &ECALTrackDetID_isHCAL, &b_ECALTrackDetID_isHCAL);
-   fChain->SetBranchAddress("ECALTrackDetID_trackIndex", &ECALTrackDetID_trackIndex, &b_ECALTrackDetID_trackIndex);
-   fChain->SetBranchAddress("ECALTrack_charge", &ECALTrack_charge, &b_ECALTrack_charge);
-   fChain->SetBranchAddress("ECALTrack_chi2", &ECALTrack_chi2, &b_ECALTrack_chi2);
-   fChain->SetBranchAddress("ECALTrack_dxy", &ECALTrack_dxy, &b_ECALTrack_dxy);
-   fChain->SetBranchAddress("ECALTrack_eta", &ECALTrack_eta, &b_ECALTrack_eta);
-   fChain->SetBranchAddress("ECALTrack_etaError", &ECALTrack_etaError, &b_ECALTrack_etaError);
-   fChain->SetBranchAddress("ECALTrack_genDeltaR", &ECALTrack_genDeltaR, &b_ECALTrack_genDeltaR);
-   fChain->SetBranchAddress("ECALTrack_genIndex", &ECALTrack_genIndex, &b_ECALTrack_genIndex);
-   fChain->SetBranchAddress("ECALTrack_lambda", &ECALTrack_lambda, &b_ECALTrack_lambda);
-   fChain->SetBranchAddress("ECALTrack_nGeneral", &ECALTrack_nGeneral, &b_ECALTrack_nGeneral);
-   fChain->SetBranchAddress("ECALTrack_nGsf", &ECALTrack_nGsf, &b_ECALTrack_nGsf);
-   fChain->SetBranchAddress("ECALTrack_nLostHits", &ECALTrack_nLostHits, &b_ECALTrack_nLostHits);
-   fChain->SetBranchAddress("ECALTrack_nTracks", &ECALTrack_nTracks, &b_ECALTrack_nTracks);
-   fChain->SetBranchAddress("ECALTrack_nValidHits", &ECALTrack_nValidHits, &b_ECALTrack_nValidHits);
-   fChain->SetBranchAddress("ECALTrack_ndof", &ECALTrack_ndof, &b_ECALTrack_ndof);
-   fChain->SetBranchAddress("ECALTrack_normalizedChi2", &ECALTrack_normalizedChi2, &b_ECALTrack_normalizedChi2);
-   fChain->SetBranchAddress("ECALTrack_p", &ECALTrack_p, &b_ECALTrack_p);
-   fChain->SetBranchAddress("ECALTrack_pdgId", &ECALTrack_pdgId, &b_ECALTrack_pdgId);
-   fChain->SetBranchAddress("ECALTrack_phi", &ECALTrack_phi, &b_ECALTrack_phi);
-   fChain->SetBranchAddress("ECALTrack_phiError", &ECALTrack_phiError, &b_ECALTrack_phiError);
-   fChain->SetBranchAddress("ECALTrack_pt", &ECALTrack_pt, &b_ECALTrack_pt);
-   fChain->SetBranchAddress("ECALTrack_ptError", &ECALTrack_ptError, &b_ECALTrack_ptError);
-   fChain->SetBranchAddress("ECALTrack_px", &ECALTrack_px, &b_ECALTrack_px);
-   fChain->SetBranchAddress("ECALTrack_py", &ECALTrack_py, &b_ECALTrack_py);
-   fChain->SetBranchAddress("ECALTrack_pz", &ECALTrack_pz, &b_ECALTrack_pz);
-   fChain->SetBranchAddress("ECALTrack_qoverp", &ECALTrack_qoverp, &b_ECALTrack_qoverp);
-   fChain->SetBranchAddress("ECALTrack_qualityMask", &ECALTrack_qualityMask, &b_ECALTrack_qualityMask);
-   fChain->SetBranchAddress("ECALTrack_theta", &ECALTrack_theta, &b_ECALTrack_theta);
-   fChain->SetBranchAddress("ECALTrack_vx", &ECALTrack_vx, &b_ECALTrack_vx);
-   fChain->SetBranchAddress("ECALTrack_vy", &ECALTrack_vy, &b_ECALTrack_vy);
-   fChain->SetBranchAddress("ECALTrack_vz", &ECALTrack_vz, &b_ECALTrack_vz);
-   fChain->SetBranchAddress("TrackSCMatch_deltaR", &TrackSCMatch_deltaR, &b_TrackSCMatch_deltaR);
-   fChain->SetBranchAddress("TrackSCMatch_scEnergyToTrackPRatio", &TrackSCMatch_scEnergyToTrackPRatio, &b_TrackSCMatch_scEnergyToTrackPRatio);
+   fChain->SetBranchAddress("Electron_DetaSCTV", &Electron_DetaSCTV, &b_Electron_DetaSCTV);
+   fChain->SetBranchAddress("Electron_DphiSCTV", &Electron_DphiSCTV, &b_Electron_DphiSCTV);
    fChain->SetBranchAddress("Electron_energy", &Electron_energy, &b_Electron_energy);
    fChain->SetBranchAddress("Electron_eta", &Electron_eta, &b_Electron_eta);
    fChain->SetBranchAddress("Electron_genIdx", &Electron_genIdx, &b_Electron_genIdx);
    fChain->SetBranchAddress("Electron_genSigWZId", &Electron_genSigWZId, &b_Electron_genSigWZId);
    fChain->SetBranchAddress("Electron_genSigXMomId", &Electron_genSigXMomId, &b_Electron_genSigXMomId);
+   fChain->SetBranchAddress("Electron_HOE", &Electron_HOE, &b_Electron_HOE);
+   fChain->SetBranchAddress("Electron_isLVeto", &Electron_isLVeto, &b_Electron_isLVeto);
+   fChain->SetBranchAddress("Electron_isLoose", &Electron_isLoose, &b_Electron_isLoose);
+   fChain->SetBranchAddress("Electron_isMedium", &Electron_isMedium, &b_Electron_isMedium);
+   fChain->SetBranchAddress("Electron_isPrompt", &Electron_isPrompt, &b_Electron_isPrompt);
+   fChain->SetBranchAddress("Electron_isVeto", &Electron_isVeto, &b_Electron_isVeto);
    fChain->SetBranchAddress("Electron_phi", &Electron_phi, &b_Electron_phi);
    fChain->SetBranchAddress("Electron_pt", &Electron_pt, &b_Electron_pt);
    fChain->SetBranchAddress("Electron_px", &Electron_px, &b_Electron_px);
    fChain->SetBranchAddress("Electron_py", &Electron_py, &b_Electron_py);
    fChain->SetBranchAddress("Electron_pz", &Electron_pz, &b_Electron_pz);
    fChain->SetBranchAddress("Electron_seedTOFTime", &Electron_seedTOFTime, &b_Electron_seedTOFTime);
+   fChain->SetBranchAddress("Electron_Sieie", &Electron_Sieie, &b_Electron_Sieie);
    fChain->SetBranchAddress("Electron_trackz", &Electron_trackz, &b_Electron_trackz);
+   fChain->SetBranchAddress("Electron_Vdetaseed", &Electron_Vdetaseed, &b_Electron_Vdetaseed);
+   fChain->SetBranchAddress("Electron_Vdpscvc", &Electron_Vdpscvc, &b_Electron_Vdpscvc);
+   fChain->SetBranchAddress("Electron_Vhoec", &Electron_Vhoec, &b_Electron_Vhoec);
+   fChain->SetBranchAddress("Electron_Vmistrack", &Electron_Vmistrack, &b_Electron_Vmistrack);
+   fChain->SetBranchAddress("Electron_Vooemoop", &Electron_Vooemoop, &b_Electron_Vooemoop);
+   fChain->SetBranchAddress("Electron_VrelIsoWithEA", &Electron_VrelIsoWithEA, &b_Electron_VrelIsoWithEA);
+   fChain->SetBranchAddress("Electron_Vsieiec", &Electron_Vsieiec, &b_Electron_Vsieiec);
+   fChain->SetBranchAddress("Electron_hasGenMatch", &Electron_hasGenMatch, &b_Electron_hasGenMatch);
+   fChain->SetBranchAddress("Electron_isLWZP", &Electron_isLWZP, &b_Electron_isLWZP);
    fChain->SetBranchAddress("Electron_nElectrons", &Electron_nElectrons, &b_Electron_nElectrons);
+   fChain->SetBranchAddress("Electron_nGenMatch", &Electron_nGenMatch, &b_Electron_nGenMatch);
+   fChain->SetBranchAddress("Electron_nPrompt", &Electron_nPrompt, &b_Electron_nPrompt);
+   fChain->SetBranchAddress("Electron_nSVMatched", &Electron_nSVMatched, &b_Electron_nSVMatched);
+   fChain->SetBranchAddress("Electron_nSelElectrons", &Electron_nSelElectrons, &b_Electron_nSelElectrons);
+   fChain->SetBranchAddress("Electron_passConversionVeto", &Electron_passConversionVeto, &b_Electron_passConversionVeto);
+   fChain->SetBranchAddress("Electron_passPrompt", &Electron_passPrompt, &b_Electron_passPrompt);
    fChain->SetBranchAddress("Electron_scIndex", &Electron_scIndex, &b_Electron_scIndex);
+   fChain->SetBranchAddress("Electron_hasSVMatch", &Electron_hasSVMatch, &b_Electron_hasSVMatch);
    fChain->SetBranchAddress("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, &b_Flag_BadChargedCandidateFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter, &b_Flag_BadPFMuonDzFilter);
    fChain->SetBranchAddress("Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter, &b_Flag_BadPFMuonFilter);
@@ -1337,9 +1603,15 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Gen_charge", &Gen_charge, &b_Gen_charge);
    fChain->SetBranchAddress("Gen_energy", &Gen_energy, &b_Gen_energy);
    fChain->SetBranchAddress("Gen_eta", &Gen_eta, &b_Gen_eta);
+   fChain->SetBranchAddress("Gen_GMomPdgId", &Gen_GMomPdgId, &b_Gen_GMomPdgId);
+   fChain->SetBranchAddress("Gen_isLWZQ", &Gen_isLWZQ, &b_Gen_isLWZQ);
+   fChain->SetBranchAddress("Gen_isLWZX", &Gen_isLWZX, &b_Gen_isLWZX);
    fChain->SetBranchAddress("Gen_mass", &Gen_mass, &b_Gen_mass);
+   fChain->SetBranchAddress("Gen_matchDe", &Gen_matchDe, &b_Gen_matchDe);
+   fChain->SetBranchAddress("Gen_matchDr", &Gen_matchDr, &b_Gen_matchDr);
    fChain->SetBranchAddress("Gen_momDisplacment", &Gen_momDisplacment, &b_Gen_momDisplacment);
    fChain->SetBranchAddress("Gen_motherIdx", &Gen_motherIdx, &b_Gen_motherIdx);
+   fChain->SetBranchAddress("Gen_MomPdgId", &Gen_MomPdgId, &b_Gen_MomPdgId);
    fChain->SetBranchAddress("Gen_nTotal", &Gen_nTotal, &b_Gen_nTotal);
    fChain->SetBranchAddress("Gen_pdgId", &Gen_pdgId, &b_Gen_pdgId);
    fChain->SetBranchAddress("Gen_phi", &Gen_phi, &b_Gen_phi);
@@ -1354,6 +1626,9 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Gen_vy", &Gen_vy, &b_Gen_vy);
    fChain->SetBranchAddress("Gen_vz", &Gen_vz, &b_Gen_vz);
    fChain->SetBranchAddress("Evt_genWgt", &Evt_genWgt, &b_Evt_genWgt);
+   fChain->SetBranchAddress("Evt_hasLWZQ", &Evt_hasLWZQ, &b_Evt_hasLWZQ);
+   fChain->SetBranchAddress("Evt_hasLWZX", &Evt_hasLWZX, &b_Evt_hasLWZX);
+   fChain->SetBranchAddress("Evt_nLWZX", &Evt_nLWZX, &b_Evt_nLWZX);
    fChain->SetBranchAddress("Jet_area", &Jet_area, &b_Jet_area);
    fChain->SetBranchAddress("Jet_chEmEF", &Jet_chEmEF, &b_Jet_chEmEF);
    fChain->SetBranchAddress("Jet_chHEF", &Jet_chHEF, &b_Jet_chHEF);
@@ -1386,6 +1661,29 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_phi", &Jet_phi, &b_Jet_phi);
    fChain->SetBranchAddress("Jet_pt", &Jet_pt, &b_Jet_pt);
    fChain->SetBranchAddress("Jet_nConstituents", &Jet_nConstituents, &b_Jet_nConstituents);
+   fChain->SetBranchAddress("Muon_energy", &Muon_energy, &b_Muon_energy);
+   fChain->SetBranchAddress("Muon_eta", &Muon_eta, &b_Muon_eta);
+   fChain->SetBranchAddress("Muon_genIdx", &Muon_genIdx, &b_Muon_genIdx);
+   fChain->SetBranchAddress("Muon_genSigWZId", &Muon_genSigWZId, &b_Muon_genSigWZId);
+   fChain->SetBranchAddress("Muon_genSigXMomId", &Muon_genSigXMomId, &b_Muon_genSigXMomId);
+   fChain->SetBranchAddress("Muon_isPromptMuon", &Muon_isPromptMuon, &b_Muon_isPromptMuon);
+   fChain->SetBranchAddress("Muon_phi", &Muon_phi, &b_Muon_phi);
+   fChain->SetBranchAddress("Muon_pt", &Muon_pt, &b_Muon_pt);
+   fChain->SetBranchAddress("Muon_px", &Muon_px, &b_Muon_px);
+   fChain->SetBranchAddress("Muon_py", &Muon_py, &b_Muon_py);
+   fChain->SetBranchAddress("Muon_pz", &Muon_pz, &b_Muon_pz);
+   fChain->SetBranchAddress("Muon_hasGenMatch", &Muon_hasGenMatch, &b_Muon_hasGenMatch);
+   fChain->SetBranchAddress("Muon_isLWZP", &Muon_isLWZP, &b_Muon_isLWZP);
+   fChain->SetBranchAddress("Muon_isLoose", &Muon_isLoose, &b_Muon_isLoose);
+   fChain->SetBranchAddress("Muon_isMedium", &Muon_isMedium, &b_Muon_isMedium);
+   fChain->SetBranchAddress("Muon_nGenMatch", &Muon_nGenMatch, &b_Muon_nGenMatch);
+   fChain->SetBranchAddress("Muon_nMuons", &Muon_nMuons, &b_Muon_nMuons);
+   fChain->SetBranchAddress("Muon_nPrompt", &Muon_nPrompt, &b_Muon_nPrompt);
+   fChain->SetBranchAddress("Muon_nSelMuons", &Muon_nSelMuons, &b_Muon_nSelMuons);
+   fChain->SetBranchAddress("Muon_nSVMatched", &Muon_nSVMatched, &b_Muon_nSVMatched);
+   fChain->SetBranchAddress("Muon_passPrompt", &Muon_passPrompt, &b_Muon_passPrompt);
+   fChain->SetBranchAddress("Muon_hasSVMatch", &Muon_hasSVMatch, &b_Muon_hasSVMatch);
+   fChain->SetBranchAddress("Muon_isTight", &Muon_isTight, &b_Muon_isTight);
    fChain->SetBranchAddress("Met_CPt", &Met_CPt, &b_Met_CPt);
    fChain->SetBranchAddress("Met_Cpx", &Met_Cpx, &b_Met_Cpx);
    fChain->SetBranchAddress("Met_Cpy", &Met_Cpy, &b_Met_Cpy);
@@ -1424,13 +1722,12 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_trkSumPtSolidConeDR04", &Photon_trkSumPtSolidConeDR04, &b_Photon_trkSumPtSolidConeDR04);
    fChain->SetBranchAddress("Photon_ecalPFClusterIso", &Photon_ecalPFClusterIso, &b_Photon_ecalPFClusterIso);
    fChain->SetBranchAddress("Photon_electronVeto", &Photon_electronVeto, &b_Photon_electronVeto);
-   fChain->SetBranchAddress("Photon_gloResRhId", &Photon_gloResRhId, &b_Photon_gloResRhId);
    fChain->SetBranchAddress("hasConversionTracks", &hasConversionTracks, &b_hasConversionTracks);
    fChain->SetBranchAddress("Photon_pixelSeed", &Photon_pixelSeed, &b_Photon_pixelSeed);
    fChain->SetBranchAddress("Photon_hcalPFClusterIso", &Photon_hcalPFClusterIso, &b_Photon_hcalPFClusterIso);
    fChain->SetBranchAddress("Photon_Hoe_PUcorr", &Photon_Hoe_PUcorr, &b_Photon_Hoe_PUcorr);
-   fChain->SetBranchAddress("Photon_locResRhId", &Photon_locResRhId, &b_Photon_locResRhId);
    fChain->SetBranchAddress("Photon_nPhoton", &Photon_nPhoton, &b_Photon_nPhoton);
+   fChain->SetBranchAddress("Photon_isSelect", &Photon_isSelect, &b_Photon_isSelect);
    fChain->SetBranchAddress("Photon_pfChargedIso", &Photon_pfChargedIso, &b_Photon_pfChargedIso);
    fChain->SetBranchAddress("Photon_pfChargedIsoPFPV", &Photon_pfChargedIsoPFPV, &b_Photon_pfChargedIsoPFPV);
    fChain->SetBranchAddress("Photon_pfChargedIsoWorstVtx", &Photon_pfChargedIsoWorstVtx, &b_Photon_pfChargedIsoWorstVtx);
@@ -1441,6 +1738,44 @@ inline void ReducedBase::Init(TTree *tree)
    fChain->SetBranchAddress("Photon_sieie", &Photon_sieie, &b_Photon_sieie);
    fChain->SetBranchAddress("Photon_sieip", &Photon_sieip, &b_Photon_sieip);
    fChain->SetBranchAddress("Photon_sipip", &Photon_sipip, &b_Photon_sipip);
+   fChain->SetBranchAddress("Track_absIso", &Track_absIso, &b_Track_absIso);
+   fChain->SetBranchAddress("Track_charge", &Track_charge, &b_Track_charge);
+   fChain->SetBranchAddress("Track_chi2", &Track_chi2, &b_Track_chi2);
+   fChain->SetBranchAddress("Track_dxy", &Track_dxy, &b_Track_dxy);
+   fChain->SetBranchAddress("Track_ecalDetIds", &Track_ecalDetIds, &b_Track_ecalDetIds);
+   fChain->SetBranchAddress("Track_eta", &Track_eta, &b_Track_eta);
+   fChain->SetBranchAddress("Track_etaError", &Track_etaError, &b_Track_etaError);
+   fChain->SetBranchAddress("Track_hcalDetIds", &Track_hcalDetIds, &b_Track_hcalDetIds);
+   fChain->SetBranchAddress("Track_ip2D", &Track_ip2D, &b_Track_ip2D);
+   fChain->SetBranchAddress("Track_ip3D", &Track_ip3D, &b_Track_ip3D);
+   fChain->SetBranchAddress("Track_isGenTrack", &Track_isGenTrack, &b_Track_isGenTrack);
+   fChain->SetBranchAddress("Track_lambda", &Track_lambda, &b_Track_lambda);
+   fChain->SetBranchAddress("Track_miniRelIso", &Track_miniRelIso, &b_Track_miniRelIso);
+   fChain->SetBranchAddress("Track_pdgId", &Track_pdgId, &b_Track_pdgId);
+   fChain->SetBranchAddress("Track_mrelisolep", &Track_mrelisolep, &b_Track_mrelisolep);
+   fChain->SetBranchAddress("Track_nIsoTracks", &Track_nIsoTracks, &b_Track_nIsoTracks);
+   fChain->SetBranchAddress("Track_nLostHits", &Track_nLostHits, &b_Track_nLostHits);
+   fChain->SetBranchAddress("Track_nValidHits", &Track_nValidHits, &b_Track_nValidHits);
+   fChain->SetBranchAddress("Track_ndof", &Track_ndof, &b_Track_ndof);
+   fChain->SetBranchAddress("Track_p", &Track_p, &b_Track_p);
+   fChain->SetBranchAddress("Track_phi", &Track_phi, &b_Track_phi);
+   fChain->SetBranchAddress("Track_phiError", &Track_phiError, &b_Track_phiError);
+   fChain->SetBranchAddress("Track_pt", &Track_pt, &b_Track_pt);
+   fChain->SetBranchAddress("Track_ptError", &Track_ptError, &b_Track_ptError);
+   fChain->SetBranchAddress("Track_px", &Track_px, &b_Track_px);
+   fChain->SetBranchAddress("Track_py", &Track_py, &b_Track_py);
+   fChain->SetBranchAddress("Track_pz", &Track_pz, &b_Track_pz);
+   fChain->SetBranchAddress("Track_normalizedChi2", &Track_normalizedChi2, &b_Track_normalizedChi2);
+   fChain->SetBranchAddress("Track_qualityMask", &Track_qualityMask, &b_Track_qualityMask);
+   fChain->SetBranchAddress("Track_relIso", &Track_relIso, &b_Track_relIso);
+   fChain->SetBranchAddress("Track_relisolep", &Track_relisolep, &b_Track_relisolep);
+   fChain->SetBranchAddress("Track_scIndexs", &Track_scIndexs, &b_Track_scIndexs);
+   fChain->SetBranchAddress("Track_sip2D", &Track_sip2D, &b_Track_sip2D);
+   fChain->SetBranchAddress("Track_sip3D", &Track_sip3D, &b_Track_sip3D);
+   fChain->SetBranchAddress("Track_theta", &Track_theta, &b_Track_theta);
+   fChain->SetBranchAddress("Track_vx", &Track_vx, &b_Track_vx);
+   fChain->SetBranchAddress("Track_vy", &Track_vy, &b_Track_vy);
+   fChain->SetBranchAddress("Track_vz", &Track_vz, &b_Track_vz);
    Notify();
 }
 

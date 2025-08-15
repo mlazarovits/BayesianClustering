@@ -2153,35 +2153,49 @@ cout << endl;
 			cout << "majlength " << majLength << endl;	
 
 			//do track matching
-			int nTracks = _base->ECALTrack_nTracks;
 			double bestTrackDr = 999;
 			//double maxTrackDr;
-			double dr, teta, tphi, de;
+			double dr, teta, tphi, de, bestp;
 			unsigned int detid;
-			int ieta, iphi;
-			pair<double, double> tcoords;
-			double pc_02pi = pc;
-			if(pc_02pi < 0) pc_02pi += 2*pi;
+
+			double dphi = -999;
+			//double bestde_dr;
+			int trackidx;
+
+			//loop through tracks to get best match to this subcluster (tracks are matched to superclusters, if not idx < 0)
+			//Track_scIndexs[i][j] is for track i that matched to supercluster j (tracks can match to multiple SCs)
+			int nTracks = _base->Track_scIndexs->size();
 			for(int t = 0; t < nTracks; t++){
-				//use TrackDetId to see where in ECAL track was propagated to
-				detid = _base->ECALTrackDetID_detId->at(t);
-				//check if detid in map
-				if(_detIDmap.count(detid) == 0) continue;
-				iphi = _detIDmap[detid].i1;
-				ieta = _detIDmap[detid].i2;
-		
-				tcoords = iEtaiPhi2EtaPhi(ieta, iphi);
-				teta = tcoords.first;
-				tphi = tcoords.second;			
-	
-				dr = sqrt((teta - ec)*(teta - ec) + (tphi - pc_02pi)*(tphi - pc_02pi));
+				if(_base->Track_scIndexs->at(t).at(0) < 0) continue; //not matched to any SC
 				
-				if(dr < bestTrackDr){
-					bestTrackDr = dr;
+				int nSCs = _base->Track_scIndexs->at(t).size();
+cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
+				for(int sc = 0; sc < nSCs; sc++){
+					int sc_idx = _base->Track_scIndexs->at(t).at(sc);
+					//get eta, phi of supercluster sc that track is matched to
+					double sc_eta = _base->SuperCluster_eta->at(sc_idx);
+					double sc_phi = _base->SuperCluster_phi->at(sc_idx);
+					double sc_phi_02pi = sc_phi;
+					if(sc_phi_02pi < 0) sc_phi_02pi += 2*acos(-1);
+					else if(sc_phi_02pi > 2*acos(-1)) sc_phi_02pi -= 2*acos(-1); 
+					else sc_phi_02pi = sc_phi;
+cout << "   track #" << t << " matched to supercluster " << sc << " with eta " << sc_eta << " and phi " << sc_phi << endl;
+
+					dphi = fabs(pc - sc_phi_02pi);
+                                	dphi = acos(cos(dphi));
+
+					dr = sqrt((sc_eta - ec)*(sc_eta - ec) + dphi*dphi);
+
+	
 					//E = p for photons
-					de = (E_k - _base->ECALTrack_p->at(t))/E_k;
+					if(dr < bestTrackDr){
+						bestTrackDr = dr;
+						bestp = _base->Track_p->at(t);
+					}
+					
 				}
 			}
+
 
                         obs["eta_center"] = ec;
                         obs["phi_center"] = pc;

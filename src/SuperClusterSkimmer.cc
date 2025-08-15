@@ -87,7 +87,7 @@ void SuperClusterSkimmer::Skim(){
 	int nspikes = 0;
 	int nBH = 0;
 	for(int e = _evti; e < _evtj; e++){
-		cout << "evt " << e << " base is nullptr? " << (_base == nullptr) << endl;
+		//cout << "evt " << e << " base is nullptr? " << (_base == nullptr) << endl;
 		_base->GetEntry(e);
         	if(_BHFilter != notApplied){
         	        if(_BHFilter == applied){
@@ -108,6 +108,7 @@ void SuperClusterSkimmer::Skim(){
 			
 		int nSC = scs.size();
 		int npho = _base->Photon_energy->size();
+cout << "event " << e << " has " << nSC << " scs" << endl;
 		//loop over selected scs
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
@@ -115,7 +116,7 @@ void SuperClusterSkimmer::Skim(){
 			scs[s].GetJets(rhs);
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
-			if(rhs.size() < 1){ continue; }
+			if(rhs.size() < 1){ cout << "sc #" << s << " has " << rhs.size() << " rhs " << endl; continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
