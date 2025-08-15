@@ -465,6 +465,8 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclPt_subclTime);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclSize_subclTime);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclSize_subclTime);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt);
 
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W);
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W2);
@@ -915,6 +917,7 @@ cout << "avgPart E " << avgPartE << endl;
 											
 											_procCats[p].hists2D[pt][139]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][141]->Fill(subclsize, consts[c].t());
+											_procCats[p].hists2D[pt][143]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
 										}
 				
 									}
@@ -928,6 +931,7 @@ cout << "avgPart E " << avgPartE << endl;
 
 											_procCats[p].hists2D[pt][138]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][140]->Fill(subclsize, consts[c].t());
+											_procCats[p].hists2D[pt][142]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
 										}
 									}
 								}	
@@ -1946,31 +1950,6 @@ cout << "avgPart E " << avgPartE << endl;
 
 				BayesPoint center = center_coords[name];
 				BayesPoint width = window_width[name];
-		cout << "plot center for " << name << endl; center.Print();	
-				//center plot
-				//double xhi = center.at(0) + width.at(0);
-				double xhi = width.at(0);
-				//xhi = min(xhi, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmax()); 
-				//double xlo = center.at(0) - width.at(0); 
-				double xlo = -width.at(0); 
-				//xlo = max(xlo, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmin()); 
-				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(xlo, xhi);
-			
-				//double yhi = center.at(1) + width.at(1); 
-				double yhi = width.at(1); 
-				//yhi = min(yhi, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
-				//double ylo = center.at(1) - width.at(1);
-				double ylo = -width.at(1);
-				//ylo = min(ylo, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
-				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(ylo, yhi);
-				
-				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
-				cv_obj->cd();
-				_evtdisps_obj[h]->Draw("colz");
-cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << " this hist y upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << endl;
-				//TODO: fix grid
-				//DrawGrid(cv_obj,xlo,xhi,ylo,yhi);
-   				//gPad->Update();
 				PointCollection ell_centers, ell_centers_og, m_centers, m_centers_og;
 				//center ellipses and particles
 				for(int el = 0; el < _ellipses.size(); el++){
@@ -1988,11 +1967,10 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 				ell_centers.CircularTranslate(center.at(1),1);
 				m_centers.Translate(center.at(0),0);
 				m_centers.CircularTranslate(center.at(1),1);
-				//draw all jet + subcl ellipses
+		
 				for(int el = 0; el < _ellipses.size(); el++){
 					_ellipses[el].SetX1(ell_centers.at(el).at(0));
 					_ellipses[el].SetY1(ell_centers.at(el).at(1));
-					//skip ellipses that are more than width away from center
 					double ell_center_eta = _ellipses[el].GetX1(); 
 					double ell_center_phi = _ellipses[el].GetY1();
 					double ell_maj_r = _ellipses[el].GetR1();
@@ -2002,10 +1980,72 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 					double r_eta = ell_maj_r*cos(theta);
 					double r_phi = ell_maj_r*sin(theta);
 
-					double dr = dR(ell_center_eta, ell_center_phi, 0., 0.);
+cout << "ell center " << ell_center_eta << ", " << ell_center_phi << " eta plot window " << width.at(0) << " r_eta " << fabs(r_eta) << " phi plot window " << width.at(1) << " r_phi " << fabs(r_phi) << " ell_maj_r " << ell_maj_r << " theta " << theta << endl;
 					//if full ellipse cannot be drawn in window, skip
-					if(2*fabs(r_eta) > fabs(width.at(0))) continue;
-					if(2*fabs(r_phi) > fabs(width.at(1))) continue;
+					//if(fabs(r_eta) > fabs(width.at(0))) continue;
+					//if(fabs(r_phi) > fabs(width.at(1))) continue;
+
+					double newwidth_eta = width.at(0);
+					double newwidth_phi = width.at(1);
+					//maybe just set according to r and not r_eta?
+					if(fabs(r_eta) > width.at(0)){
+						newwidth_eta = ell_center_eta + r_eta;
+					}
+					if(fabs(r_phi) > width.at(1)){
+						newwidth_phi = ell_center_phi + r_phi;
+					}
+					double newwidth = max(newwidth_eta, newwidth_phi);
+cout << "newwidth " << newwidth << endl;
+					width.SetValue(newwidth,0);
+					width.SetValue(newwidth,1);
+
+				}
+
+
+
+				//center plot
+				//double xhi = center.at(0) + width.at(0);
+				double xhi = width.at(0);
+				//xhi = min(xhi, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmax()); 
+				//double xlo = center.at(0) - width.at(0); 
+				double xlo = -width.at(0); 
+				//xlo = max(xlo, _procCats[0].hists2D[0][129]->GetXaxis()->GetXmin()); 
+				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(xlo, xhi);
+			
+				//double yhi = center.at(1) + width.at(1); 
+				double yhi = width.at(1); 
+				//yhi = min(yhi, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
+				//double ylo = center.at(1) - width.at(1);
+				double ylo = -width.at(1);
+				//ylo = min(ylo, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
+				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(ylo, yhi);
+		cout << "plot center for " << name << endl; center.Print();	
+				
+				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
+				cv_obj->cd();
+				_evtdisps_obj[h]->Draw("colz");
+cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << " this hist y upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << endl;
+				//TODO: fix grid
+				//DrawGrid(cv_obj,xlo,xhi,ylo,yhi);
+   				//gPad->Update();
+				//draw all jet + subcl ellipses
+				for(int el = 0; el < _ellipses.size(); el++){
+					//_ellipses[el].SetX1(ell_centers.at(el).at(0));
+					//_ellipses[el].SetY1(ell_centers.at(el).at(1));
+					////skip ellipses that are more than width away from center
+					//double ell_center_eta = _ellipses[el].GetX1(); 
+					//double ell_center_phi = _ellipses[el].GetY1();
+					//double ell_maj_r = _ellipses[el].GetR1();
+					//double theta = _ellipses[el].GetTheta();
+					////put in rad
+					//theta *= acos(-1)/180;
+					//double r_eta = ell_maj_r*cos(theta);
+					//double r_phi = ell_maj_r*sin(theta);
+
+//cout << "ell center " << ell_center_eta << ", " << ell_center_phi << " eta plot window " << width.at(0) << " r_eta " << fabs(r_eta) << " phi plot window " << width.at(1) << " r_phi " << fabs(r_phi) << " ell_maj_r " << ell_maj_r << " theta " << theta << endl;
+					//if full ellipse cannot be drawn in window, skip
+					//if(fabs(r_eta) > fabs(width.at(0))) continue;
+					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
 					_ellipses[el].Draw();
 				}
@@ -2909,12 +2949,16 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 		TH2D* recoAK4JetW_dRGenPartons_jetSize = new TH2D("recoAK4JetW_dRGenPartons_jetSize","recoAK4JetW_dRGenPartons_jetSize;dRGenPartons;jetSize",50,0,2.,50,0,2.);
 		//138 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonMatchSubclPt_subclTime = new TH2D("BHCJetW_highMass_partonMatchSubclPt_subclTime","BHCJetW_highMass_partonMatchSubclPt_subclTime;SubclPt;SubclTime",25,0,500,25,-3,3);
-		//139 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet
+		//139 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet vs subcl time
 		TH2D* BHCJetW_highMass_partonNoMatchSubclPt_subclTime = new TH2D("BHCJetW_highMass_partonNoMatchSubclPt_subclTime","BHCJetW_highMass_partonNoMatchSubclPt_subclTime;SubclPt;SubclTime",25,0,500,25,-3,3);
-		//140 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons / size jet
+		//140 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons / size jet vs subcl time
 		TH2D* BHCJetW_highMass_partonMatchSubclSize_subclTime = new TH2D("BHCJetW_highMass_partonMatchSubclSize_subclTime","BHCJetW_highMass_partonMatchSubclSize_subclTime;SubclSize;SubclTime",25,0,1.5,25,-3,3);
-		//141 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
+		//141 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet vs subcl time
 		TH2D* BHCJetW_highMass_partonNoMatchSubclSize_subclTime = new TH2D("BHCJetW_highMass_partonNoMatchSubclSize_subclTime","BHCJetW_highMass_partonNoMatchSubclSize_subclTime;SubclSize;SubclTime",25,0,1.5,25,-3,3);
+		//142 - high mass + W-matched BHC jets - subclSize of subclsuters gen-matched to W partons / size jet vs pt of subclusters gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt;RelSubclSize;RelSubclPt",25,0,5,25,0,1.2);
+		//143 - high mass + W-matched BHC jets - subclSize of subclsuters NOT gen-matched to W partons / size jet vs pt of subclusters NOT gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt;RelSubclSize;RelSubclPt",25,0,5,25,0,1.2);
 
 
 
@@ -3320,28 +3364,23 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 			//get 2D matrix for jet size
 			Matrix cov2D(2,2);
 			Get2DMat(cov,cov2D);	
-			vector<double> eigvals;
-			vector<Matrix> eigvecs;
-			cov2D.eigenCalc(eigvals, eigvecs);
+		
+			double var_eta = cov2D.at(0,0);
+			double var_phi = cov2D.at(1,1);
+			double covar = cov2D.at(0,1);	
+			//use analytic form of eigenvalues for 2x2 matrix - so correct r1, r2 can be passed to TEllipse
+			double temp_a  = 0.5*(var_eta + var_phi);
+        		double temp_b  = 0.5*sqrt((var_eta-var_phi)*(var_eta-var_phi) + 4*covar*covar);
+        		double lambda_eta = temp_a + temp_b;
+        		double lambda_phi = temp_a - temp_b;
+			double x_r = sqrt(lambda_eta);
+			double y_r = sqrt(lambda_phi); 
 			
-			//define radii (r1 > r2)
-			double r1, r2;
-			Matrix leadvec;
-			if(eigvals[0] > eigvals[1]){
-				r1 = sqrt(eigvals[0]);
-				leadvec = eigvecs[0];
-				r2 = sqrt(eigvals[1]);
-			}
-			else{
-				r1 = sqrt(eigvals[1]);
-				leadvec = eigvecs[1];
-				r2 = sqrt(eigvals[0]);
-
-			}
-			//define angle of r1 rotation
-			double theta = atan2(leadvec.at(1,0), leadvec.at(0,0));
+			double theta = 0;
+			if(covar > 0) theta = atan((lambda_eta - var_eta)/covar);
+			else theta = -atan((lambda_eta - var_eta)/-covar);
 			theta = 180 * theta/(4*atan(1)); //put to degrees
-			TEllipse el = TEllipse(eta, phi, r1, r2, 0, 360, theta);	
+			TEllipse el = TEllipse(eta, phi, x_r, y_r, 0, 360, theta);	
 			return el;
 		}
 
