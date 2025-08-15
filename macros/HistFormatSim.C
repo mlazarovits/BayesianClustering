@@ -1382,7 +1382,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 
 	vector<TH1D*> histstot;
 	for(int m = 0; m < matches.size(); m++){
-		//cout << "method " << methods[m] << endl;	
+		cout << "\nmatch " << matches[m] << endl;	
 		TList* list = f->GetListOfKeys();
 		TIter iter(list);
 		TKey* key;
@@ -1395,7 +1395,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 				dirname = dir->GetName();
 				if(dirname.find(method) == string::npos) continue;
 				if(dirname.find(matches[m]) == string::npos) continue;
-				cout << "\ndir name: " << dir->GetName() << endl;
+				cout << "dir name: " << dir->GetName() << endl;
 				dir->cd();
 				//get histograms (stack these)
 				vector<TH1D*> hists;
@@ -1452,6 +1452,8 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 	if(proc != "") name += proc+"_matchStack"+matchesname;
 	else name += proc+"matchStack"+matchesname;
 	if(types.size() > 0) name += "_ptStack";
+	while(name.find("__") != string::npos)
+		name.replace(name.find("__"),2,"_");
 	if(histstot.size() < 1) return;
 	FindListHistBounds(histstot, ymin, ymax);
 	if(ymin == 0 && ymax == 0) return;
@@ -1740,7 +1742,6 @@ void HistFormatSim(string file, string proc = ""){
 		//add procs to procstack list
 	}
 
-
 	//including pttypes makes pt-split plots for reco and BHC
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets",{"lead"}); 
@@ -1807,6 +1808,10 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio",{"lead"});
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR",{"lead"});
+		///MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_highMass_nSubclustersJet",{"lead"});
+	
+		AnyStackHists(file, proc, "BHC", {"W_highMass_nSubclustersJet","W_lowMass_nSubclustersJet","W_Wmass_nSubclustersJet"},oname,{"lead"},{"highMass","lowMass","Wmass"});
+
 
 		Hist2D(file, proc, "BHC", oname, "W_dRGenPartons");
 		Hist2D(file, proc, "recoAK4", oname, "W_dRGenPartons");
@@ -1814,18 +1819,21 @@ void HistFormatSim(string file, string proc = ""){
 		Hist2D(file, proc, "recoAK15", oname, "W_dRGenPartons");
 		//Hist2D(file, proc, "BHC", oname, "BHCJetW_subclEnergy_subclLeadIdx");
 		
-		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPt","W_highMass_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
-		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSize","W_highMass_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPt_","W_highMass_partonNoMatchSubclPt_"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSize_","W_highMass_partonNoMatchSubclSize_"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPtOvJetPt","W_highMass_partonNoMatchSubclPtOvJetPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSizeOvJetSize","W_highMass_partonNoMatchSubclSizeOvJetSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		Hist2D(file, proc, "BHC", oname, "W_highMass");
 
-	}
-	if(proc.find("singleW") != string::npos){
-		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_highMass_nSubclustersJet",{"lead"});
 	}
 	if(proc.find("gluon") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_dR",{"lead"});
 		MethodStackHists(file, proc, {"BHC"}, oname, "Gluon_nSubclusters",pttypes);
-//
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetGluon_subclParton_dR");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetGluon_subclParton_Eratio");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetGluon_subclParton_Eratio",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetGluon_subclParton_dR",{"lead"});
 	}
 
 	if(proc.find("W") != string::npos || proc == "QCD"){
@@ -1836,7 +1844,11 @@ void HistFormatSim(string file, string proc = ""){
 		
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclPt","q_ge2Subcls_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclSize","q_ge2Subcls_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
-
+		
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio");
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR",{"lead"});
 	}
 
 
