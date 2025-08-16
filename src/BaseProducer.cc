@@ -319,9 +319,9 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
-cout << "this event " << evt << " ntuple event " << _base->Evt_event << endl;
+//cout << "this event " << evt << " ntuple event " << _base->Evt_event << endl;
 	vector<JetPoint> sc_rhs;
-cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
+//cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 	for(int sc = 0; sc < nSCs; sc++){
                 phi = _base->SuperCluster_phi->at(sc);
                 eta = _base->SuperCluster_eta->at(sc);
@@ -337,7 +337,6 @@ cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 		if(_year == 2018 && _data){
 			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
 			//skip whole event
-			if(hemVeto) cout << "hem veto - reject whole event" << endl;
 			if(hemVeto) return -1;
 		}
 
@@ -345,9 +344,9 @@ cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
                 E = _base->SuperCluster_energy->at(sc);
 		et = E*sin(theta);
                 if(et < _minpt) continue;
-cout << "sc passed et cut " << endl;
+//cout << "sc passed et cut " << endl;
 		if(fabs(eta) > _minobjeta) continue;
-cout << "sc passed eta cut " << eta << endl;
+//cout << "sc passed eta cut " << eta << endl;
                 
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
