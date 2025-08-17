@@ -593,7 +593,8 @@ void BHCJetSkimmer::Skim(){
 				if(_evt2disp_z == 1){ //update labels to time
 					_evtdisps_obj[gidx]->GetZaxis()->SetTitle("time [ns]");
 				}
-				//fill hists for this gen particle (hist idx)
+				//fill hists for this gen particle (hist idx) - this is done in WriteEventDisplay() now
+				/*
 				PointCollection rh_pts;
 				for(auto rh : rhs){
 					double w;
@@ -615,7 +616,8 @@ cout << "matchstring " << matchstring << " gidx " << gidx << " eta " << eta << "
 				rh_pts.CircularTranslate(plot_centers[matchstring].at(1),1);
 				for(int r = 0; r < rh_pts.GetNPoints(); r++){
 					_evtdisps_obj[gidx]->Fill(rh_pts.at(r).at(0), rh_pts.at(r).at(1), rh_pts.at(r).w());
-				}	
+				}
+				*/	
 				
 			}
 			if(eta == -999 && phi == -999) continue; //no gen particles specified
@@ -623,25 +625,30 @@ cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);
+				el.SetLineColor(kBlack);	
+				el.SetFillStyle(0);	
 				_ellipses.push_back(el);	
+				_jellipses[j] = el;			
+	
+				TMarker m(_predJets[j].eta(), _predJets[j].phi(), kOpenStar);
+				m.SetMarkerColor(kBlack);
 				//plot jet centers
-				_plot_particles.push_back(TMarker(_predJets[j].eta(), _predJets[j].phi(), kOpenStar)); //30 = open star may need to change if not rendering	
-				_ellipses[_ellipses.size()-1].SetLineColor(kBlack);	
-				_ellipses[_ellipses.size()-1].SetFillStyle(0);	
-				_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
-
-				//do for subclusters
+				//_plot_particles.push_back(m); //30 = open star may need to change if not rendering	
+				_jcenters[j] = m;			
+	
 				int nk = _predJets[j].GetNConstituents();
 				for(int k = 0; k < nk; k++){
 					Jet subcl = _predJets[j].GetConstituent(k);
 					TEllipse sub_el = PlotEll(subcl);
-					_ellipses.push_back(sub_el);	
+					sub_el.SetLineColor(kBlack);	
+					sub_el.SetFillStyle(0);	
+					sub_el.SetLineStyle(9);	
 					//_plot jet centers
-					_plot_particles.push_back(TMarker(subcl.eta(), subcl.phi(), kOpenDiamond)); 
-					_ellipses[_ellipses.size()-1].SetLineColor(kBlack);	
-					_ellipses[_ellipses.size()-1].SetFillStyle(0);	
-					_ellipses[_ellipses.size()-1].SetLineStyle(9);	
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
+					TMarker sub_m(subcl.eta(), subcl.phi(), kOpenDiamond); 
+					sub_m.SetMarkerColor(kBlack);
+					_subclellipses[j][k] = sub_el;
+					_subclcenters[j][k] = sub_m;
+	
 				}
 			}
 		}

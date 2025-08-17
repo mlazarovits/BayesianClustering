@@ -1925,9 +1925,17 @@ cout << "avgPart E " << avgPartE << endl;
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
 			_procCats[0].hists2D[0][129]->Draw("colz");
-			for(int el = 0; el < _ellipses.size(); el++){
-				_ellipses[el].Draw();
+			//plot jets
+			for(int j = 0; j < _predJets.size(); j++){
+				_jellipses[j].Draw();
+				_jcenters[j].Draw();
+				
+				for(int k = 0; k < _predJets[j].GetNConstituents(); k++){
+					_subclellipses[j][k].Draw();
+					_subclcenters[j][k].Draw();
+				}
 			}
+			//plot gen particles
 			for(int m = 0; m < _plot_particles.size(); m++){
 				_plot_particles[m].Draw();
 			}
@@ -1940,7 +1948,6 @@ cout << "avgPart E " << avgPartE << endl;
 	
 			//write object specific plots
 			for(int h = 0; h < _evtdisps_obj.size(); h++){
-				if(_evtdisps_obj[h]->GetEntries() == 0) continue; //don't draw if not filled for this particle gen obj
 				//get match string for center + width
 				string name = _evtdisps_obj[h]->GetName();
 				string objmatch = "EvtDisplay_etaCell_phiCell_";
@@ -1949,19 +1956,124 @@ cout << "avgPart E " << avgPartE << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
 
 				BayesPoint center = center_coords[name];
-				BayesPoint width = window_width[name];
-				PointCollection ell_centers, ell_centers_og, m_centers, m_centers_og;
-				//center ellipses and particles
-				for(int el = 0; el < _ellipses.size(); el++){
-					BayesPoint ell_center({_ellipses[el].GetX1(), _ellipses[el].GetY1()});
-					ell_centers += ell_center;		
-					ell_centers_og += ell_center;		
+				BayesPoint width;// - set by rhs drawn to get everything in frame = window_width[name];
+				double eta_max = 0;
+				double phi_max = 0;
+				double eta_min = 999;
+				double phi_min = 999;
+cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
+				//TODO - fill _evtdisps_obj[h] ONLY WITH RECHITS THAT ARE ASSOCIATED WITH JETS IN THIS WINDOW
+				for(int j = 0; j < _predJets.size(); j++){
+					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
+					ell_center.Translate(center.at(0),0);
+					ell_center.CircularTranslate(center.at(1),1);
+					
+					double ell_maj_r = _jellipses[j].GetR1();
+					double ell_min_r = _jellipses[j].GetR2();
+					double theta = _jellipses[j].GetTheta();
+					//put in rad
+					theta *= acos(-1)/180;
+					double r_eta = ell_maj_r*cos(theta);
+					double r_phi = ell_maj_r*sin(theta);
+					//if full ellipse cannot be drawn in window, skip
+					double dr = dR(ell_center.at(0), ell_center.at(1), 0., 0.);
+					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
+					if(fabs(r_eta) > fabs(width.at(0))) continue;
+					if(fabs(r_phi) > fabs(width.at(1))) continue;
+
+					vector<JetPoint> rhs = _predJets[j].GetJetPoints();	
+					for(auto rh : rhs){
+						double w;
+						if(_evt2disp_z == 0)
+							w = rh.E();
+						else if(_evt2disp_z == 1){
+							w = rh.t();
+						}
+						else
+							w = rh.E(); //default energy weighted
+						//center according to main gen particle
+						BayesPoint rh_pt({rh.eta(), rh.phi()}); //save as BayesPoint to do correct circular translation to (0,0)
+						rh_pt.SetWeight(w);
+						//translate into local eta, phi coords
+						rh_pt.Translate(center.at(0),0);
+						rh_pt.CircularTranslate(center.at(1),1);
+						if(rh_pt.at(0) > eta_max)
+							eta_max = rh_pt.at(0);
+						if(rh_pt.at(1) > phi_max)
+							phi_max = rh_pt.at(1);
+						if(rh_pt.at(0) < eta_min)
+							eta_min = rh_pt.at(0);
+						if(rh_pt.at(1) < phi_min)
+							phi_min = rh_pt.at(1);
+					
+						_evtdisps_obj[h]->Fill(rh_pt.at(0), rh_pt.at(1), rh_pt.w());
+					}
 				}
+				width.SetValue(max(fabs(eta_max), fabs(eta_min)), 0);
+				width.SetValue(max(fabs(phi_max), fabs(phi_min)), 1);
+				if(_evtdisps_obj[h]->GetEntries() == 0) continue; //don't draw if not filled for this particle gen obj
+				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
+				cv_obj->cd();
+				_evtdisps_obj[h]->Draw("colz");
+				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(-width.at(0), width.at(0));
+				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(-width.at(1), width.at(1));
+cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << " entries " << _evtdisps_obj[h]->GetEntries() << endl;
+				//do for gen particles too 
 				for(int m = 0; m < _plot_particles.size(); m++){
 					BayesPoint m_center({_plot_particles[m].GetX(), _plot_particles[m].GetY()});
-					m_centers += m_center;		
-					m_centers_og += m_center;		
+					m_center.Translate(center.at(0),0);
+					m_center.CircularTranslate(center.at(1),1);
+				
+					double dr = dR(m_center.at(0), m_center.at(1), 0., 0.);
+					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
+					_plot_particles[m].DrawMarker(m_center.at(0), m_center.at(1));
+
 				}
+				for(int j = 0; j < _predJets.size(); j++){
+					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
+					ell_center.Translate(center.at(0),0);
+					ell_center.CircularTranslate(center.at(1),1);
+					
+					double ell_center_eta = _jellipses[j].GetX1(); 
+					double ell_center_phi = _jellipses[j].GetY1();
+					double ell_maj_r = _jellipses[j].GetR1();
+					double ell_min_r = _jellipses[j].GetR2();
+					double theta = _jellipses[j].GetTheta();
+					//put in rad
+					theta *= acos(-1)/180;
+					double r_eta = ell_maj_r*cos(theta);
+					double r_phi = ell_maj_r*sin(theta);
+					//if full ellipse cannot be drawn in window, skip
+					if(fabs(r_eta) > fabs(width.at(0))) continue;
+					if(fabs(r_phi) > fabs(width.at(1))) continue;
+
+		
+					_jellipses[j].DrawEllipse(ell_center.at(0), ell_center.at(1), ell_maj_r, ell_min_r, 0, 360, _jellipses[j].GetTheta());
+				
+
+					
+					_jcenters[j].DrawMarker(ell_center.at(0), ell_center.at(1));
+				
+					for(int k = 0; k < _predJets[j].GetNConstituents(); k++){
+						BayesPoint subcl_center({_subclellipses[j][k].GetX1(), _subclellipses[j][k].GetY1()});
+						subcl_center.Translate(center.at(0),0);
+						subcl_center.CircularTranslate(center.at(1),1);
+						ell_center_eta = _subclellipses[j][k].GetX1(); 
+						ell_center_phi = _subclellipses[j][k].GetY1();
+						ell_maj_r = _subclellipses[j][k].GetR1();
+						ell_min_r = _subclellipses[j][k].GetR2();
+						theta = _subclellipses[j][k].GetTheta();
+						
+						_subclellipses[j][k].DrawEllipse(subcl_center.at(0), subcl_center.at(1), ell_maj_r, ell_min_r, 0, 360, theta);
+					
+						_subclcenters[j][k].DrawMarker(subcl_center.at(0), subcl_center.at(1));
+					}
+
+				}
+
+				/*
+
+				PointCollection ell_centers, ell_centers_og, m_centers, m_centers_og;
 				//center all points
 				ell_centers.Translate(center.at(0),0);
 				ell_centers.CircularTranslate(center.at(1),1);
@@ -2020,10 +2132,8 @@ cout << "newwidth " << newwidth << endl;
 				//ylo = min(ylo, _procCats[0].hists2D[0][129]->GetYaxis()->GetXmax()); 
 				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(ylo, yhi);
 		cout << "plot center for " << name << endl; center.Print();	
-				
-				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
-				cv_obj->cd();
-				_evtdisps_obj[h]->Draw("colz");
+				*/	
+				/*
 cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << " this hist y upper bound " << _evtdisps_obj[h]->GetYaxis()->GetXmax() << endl;
 				//TODO: fix grid
 				//DrawGrid(cv_obj,xlo,xhi,ylo,yhi);
@@ -2047,7 +2157,7 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 					//if(fabs(r_eta) > fabs(width.at(0))) continue;
 					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
-					_ellipses[el].Draw();
+					//_ellipses[el].Draw();
 				}
 				//draw all particles
 				for(int m = 0; m < _plot_particles.size(); m++){
@@ -2062,8 +2172,10 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
 					_plot_particles[m].Draw();
 				}
+				*/
 				cv_obj->Write();
 
+				/*
 				//reset object centers
 				for(int el = 0; el < _ellipses.size(); el++){
 					//reset center
@@ -2075,6 +2187,7 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 					_plot_particles[m].SetX(m_centers_og.at(m).at(0));
 					_plot_particles[m].SetY(m_centers_og.at(m).at(1));
 				}
+				*/
 			}
 
 
@@ -3211,6 +3324,14 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 		vector<TGraph*> graphs;
 		vector<TEllipse> _ellipses;
 		vector<TMarker> _plot_particles;
+		map<int, TEllipse> _jellipses;
+		map<int, TMarker> _jcenters;
+		map<int,map<int,TEllipse>> _subclellipses;
+		map<int,map<int,TMarker>> _subclcenters;
+
+		//do for subclusters
+		//map<
+
 		vector<Jet> _phos; //photons for event
 		vector<procCat> _procCats;
 		vector<node*> _trees;
@@ -3352,6 +3473,8 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 			//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 			return rot;
 		}
+
+
 
 
 		TEllipse PlotEll(const Jet& jet){
