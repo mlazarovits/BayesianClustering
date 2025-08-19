@@ -223,6 +223,19 @@ class BayesPoint{
 		}
 		
 	}
+	void CircularTranslate(double t, int d){
+		double pi = acos(-1);
+		double theta = atan2( sin(_value[d] - t), cos(_value[d] - t));
+		_value[d] = theta;
+		//round to 0
+		if(fabs(_value[d]) < 1e-16){ _value[d] = 0.;}
+		if(fabs(fabs(_value[d]) - 2*acos(-1)) < 1e-10){ _value[d] = 0.;}
+	}
+	void Translate(double t, int d){
+		_value[d] = _value[d] - t;
+		//round to 0
+		if(fabs(_value[d]) < 1e-16) _value[d] = 0.;
+	}
 
 
 	private:
