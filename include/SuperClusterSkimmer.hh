@@ -661,6 +661,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_hists2D.push_back(ENeighborsSkipCenter_BH);	
 			_hists2D.push_back(ENeighborsSkipCenter_spikes);	
 			_hists2D.push_back(ENeighbors);
+			_hists2D.push_back(etaPhi_overlaidsubcl_spikesample);
 		};
 	
 
@@ -1773,7 +1774,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//268 - E/p vs E with spike sel (dR < 0.02 && -10 <= Sc time < -2)
 		TH2D* EovP_E_timegeNeg10leNeg5_dRle0p02 = new TH2D("EovP_E_timegeNeg10leNeg5_dRle0p02","EovP_E_timegeNeg10leNeg5_dRle0p02;EovP;E",25,0.,15,25,0,1000);
 		//269 - E/p vs dR with spike sel (dR < 0.02 && -10 <= Sc time < -2)
-		TH2D* EovP_dRtrack_timegeNeg10leNeg5_dRle0p02 = new TH2D("EovP_dRtrack_timegeNeg10leNeg5_dRle0p02","EovP_dRtrack_timegeNeg10leNeg5_dRle0p02;EovP;dRtrack",25,0.,15,25,0,0.1);
+		TH2D* EovP_dRtrack_timegeNeg10leNeg5_dRle0p02 = new TH2D("EovP_dRtrack_spikeSel","EovP_dRtrack_spikeSel;EovP;dRtrack",25,0.,15,25,0,0.05);
 		//270 - time vs eta with spike sel
 		TH2D* timeCenter_etaCenter_timegeNeg10leNeg5_dRle0p02 = new TH2D("timeCenter_etaCenter_timegeNeg10leNeg5_dRle0p02","timeCenter_etaCenter_timegeNeg10leNeg5_dRle0p02;timeCenter;etaCenter_timegeNeg10leNeg5_dRle0p02",25,-15,15,25,-1.6,1.6);
 		//271 - phi sig vs phi center with spike sel	
@@ -1827,7 +1828,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//295 - eta sig vs phi center, time <= -7, dR < 0.02
 		TH2D* etaSig_phiCenter_spikeSel = new TH2D("etaSig_phiCenter_spikeSel","etaSig_phiCenter_spikeSel;etaSig;phiCenter_spikeSel",25,0.01,0.09,25,-0.2,6.4);
 		//296 - E/p vs dR, -7 < time < -2, phi left/right
-		TH2D* EovP_dRtrack_BHsel = new TH2D("EovP_dRtrack_BHsel","EovP_dRtrack_BHsel;EovP_BHsel;dRtrack",25,0.,15,25,0,0.1);
+		TH2D* EovP_dRtrack_BHsel = new TH2D("EovP_dRtrack_BHsel","EovP_dRtrack_BHsel;EovP_BHsel;dRtrack",25,0.,15,25,0,0.05);
 		//297 - E/p vs sw+', -7 < time < -2, phi left/right
 		TH2D* EovP_swCrossPrime_BHsel = new TH2D("EovP_swCrossPrime_BHsel","EovP_swCrossPrime_BHsel;EovPBHsel;swCrossPrime",25,0.,15,25,-0.05,0.4);
 		//298 - E/p vs sw+' zoomed out, -7 < time < -2, phi left/right
@@ -1852,6 +1853,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		TH2D* ENeighborsSkipCenter_spikes = new TH2D("ENeighborsSkipCenter_spikes","ENeighborsSkipCenter_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
 		//308 - eta vs phi grid
 		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",61,-30,31,61,-30,31);
+		//309 - spike eta-phi view of overlaid subcl (energy = z axis) in 20x20 grid (oversized)
+		TH2D* etaPhi_overlaidsubcl_spikesample = new TH2D("etaPhi_overlaidsubcl_spikesample","etaPhi_overlaidsubcl_spikesample;eta;phi;energy",30,-0.2618,0.2618,30,-0.2618,0.2618);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -2138,21 +2141,32 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				tc = params["mean"].at(2,0);
 				pi = params["pi"].at(0,0);
 				cov = params["cov"];	
+				
+				double bestTrackDr, bestde_dr;
+				TrackMatched(model, k, bestTrackDr, bestde_dr);
+				bestde_dr = E_k/bestde_dr;
 
 				//defining requirements for BH subclusters
-				bool pcFilter, tcFilterEarly, tcFilterPrompt;
+				bool pcFilter, pcFilterSpike, tcFilterEarly, tcFilterPrompt, tcFilterSpike, tcFilterBH, drMatch;
 				//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
 				pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+				pcFilterSpike = (pc < 0.3 || (acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) || 2*acos(-1) - 0.3 < pc );
 				//early times
 				tcFilterEarly = tc <= -2;
 				tcFilterPrompt = (-2 < tc && tc < 2);
+				tcFilterSpike = (tc <= -8);
+				tcFilterBH = (tc <= -2 && tc > -7);
+				drMatch = (bestTrackDr < 0.02);
 				//fill 2D SC eta-phi map - centered on subcluster, weighted by energy 
 				for(int r = 0; r < npts; r++){
 					//cout << "r " << r << " x " << points->at(r).at(0) - ec << " y " << points->at(r).at(1) - pc << " w " << points->at(r).w()/_gev << endl;
 					_procCats[id_idx].hists2D[1][263]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
 					//if subcl is BH: fill 264
-					if(pcFilter && tcFilterEarly)	
+					if(pcFilter && tcFilterBH)
 						_procCats[id_idx].hists2D[1][264]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
+					//if subcl is spike: fill 309
+					if(!pcFilterSpike && tcFilterSpike && drMatch)
+						_procCats[id_idx].hists2D[1][309]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
 					//if subcl is not BH: fill 265
 					if(_base->Flag_globalSuperTightHalo2016Filter && tcFilterPrompt)
 						_procCats[id_idx].hists2D[1][265]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
@@ -2220,9 +2234,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				majtime_cov_unnorm = CalcCov(majminCovMat,2,0,false);
 				mintime_cov_unnorm = CalcCov(majminCovMat,2,1,false);
 
-				double bestTrackDr, bestde_dr;
-				TrackMatched(model, k, bestTrackDr, bestde_dr);
-				bestde_dr = E_k/bestde_dr;
 
 
 				map<string, double> mapobs;
@@ -2386,10 +2397,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				_procCats[id_idx].hists1D[1][238]->Fill(bestde_dr);
 				//spike selection
 				//if(-10 <= tc && tc < -5){
-				if(tc < -8){
+				if(tc <= -8){
 					if(bestTrackDr < 0.088)
 						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
-					if(bestTrackDr < 0.02){
+					if(bestTrackDr < 0.02 && !pcFilterSpike){
 						_procCats[id_idx].hists1D[1][239]->Fill(bestde_dr);
 						_procCats[id_idx].hists2D[1][267]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][268]->Fill(bestde_dr,E_k);
