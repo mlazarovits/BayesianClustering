@@ -408,7 +408,7 @@ class Jet{
 				
 				BayesPoint phipt(1);
 				phipt.SetValue(_rhs[i].phi_02pi(),0);
-				phipt.SetWeight(_rhs[i].GetWeight());
+				phipt.SetWeight(_rhs[i].E());
 				
 				phipts += phipt;
 
@@ -449,7 +449,6 @@ class Jet{
 				cov_entry.SetEntry(_rhs[i].E()*dtime*dphi,2,1);
 				cov_entry.SetEntry(_rhs[i].E()*deta*dtime,0,2);
 				cov_entry.SetEntry(_rhs[i].E()*dphi*dtime,1,2);
-				cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
 				cov_entry.SetEntry(_rhs[i].E()*dtime*dtime,2,2);
 				
 

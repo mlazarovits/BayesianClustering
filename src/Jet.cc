@@ -430,37 +430,16 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		double deta = 0;
 		double dphi = 0;
 		double dtime = 0;
-		double norm = 0;
 		for(int n = 0; n < _nRHs; n++){
 			JetPoint effRh = _rhs[n];
 			subcl_norm += r_nk.at(n,k);	
 
 			effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+
+			BayesPoint effRh_pt({effRh.eta(), effRh.phi(), effRh.t()});
+			effRh_pt.SetWeight(_rhs[n].E()*effRh.GetWeight());
 			subcl.AddRecHit(effRh);
-
-			//calculate responsibility-weighted covariance
-			deta = effRh.eta() - subcl.eta();	
-			dphi = effRh.phi() - subcl.phi();	
-			dphi = acos(cos(dphi));
-			dtime = effRh.t() - subcl.time();
-			
-			norm += _rhs[n].E();
-			Matrix cov_entry = Matrix(3,3);
-			cov_entry.SetEntry(effRh.GetWeight()*deta*deta,0,0);
-			cov_entry.SetEntry(effRh.GetWeight()*deta*dphi,1,0);
-			cov_entry.SetEntry(effRh.GetWeight()*deta*dtime,2,0);
-			cov_entry.SetEntry(effRh.GetWeight()*dphi*deta,0,1);
-			cov_entry.SetEntry(effRh.GetWeight()*dphi*dphi,1,1);
-			cov_entry.SetEntry(effRh.GetWeight()*dtime*dphi,2,1);
-			cov_entry.SetEntry(effRh.GetWeight()*deta*dtime,0,2);
-			cov_entry.SetEntry(effRh.GetWeight()*dphi*dtime,1,2);
-			cov_entry.SetEntry(effRh.GetWeight()*dtime*dtime,2,2);
-			cov_entry.SetEntry(effRh.GetWeight()*dtime*dtime,2,2);
-			
-			cov.add(cov_entry);	
-
-			totw += effRh.GetWeight();	
 			//recalculate momentum vector accordingly
 			//calculate momentum vector from PV
 			//centered at PV
@@ -479,10 +458,18 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 			subcl_py += pt*sin(p_phi);
 			subcl_pz += pt*sinh(p_eta);
 		}
-cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
 		//set subcluster momentum three-vector and mass
-		cov.mult(cov,1/totw);	
-		subcl.SetCovariance(cov);
+		//cov.mult(cov,1/totw);
+		//TODO - make sure jet covariance (center) == subcluster covariance (center) when # constituents == 1	
+		//subcl.SetCovariance(cov);
+		subcl.CalculateCenter();
+		subcl.CalculateCovariance();
+if(nsubcl == 1){
+cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
+cout << "subcl center eta " << subcl.eta() << " phi " << subcl.phi() << " jet eta " << _eta << " phi " << _phi << endl;
+cout << "subcl cov from CalcCov" << endl; subcl._cov.Print();
+cout << "jet cov" << endl; _cov.Print();
+}
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
 		_constituents.push_back(subcl);
 	}
