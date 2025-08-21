@@ -1956,30 +1956,31 @@ cout << "avgPart E " << avgPartE << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
 
 				BayesPoint center = center_coords[name];
-				BayesPoint width;// - set by rhs drawn to get everything in frame = window_width[name];
 				double eta_max = 0;
 				double phi_max = 0;
 				double eta_min = 999;
 				double phi_min = 999;
+				BayesPoint width = BayesPoint({eta_max, phi_max});// - set by rhs drawn to get everything in frame = window_width[name];
 cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
-				//TODO - fill _evtdisps_obj[h] ONLY WITH RECHITS THAT ARE ASSOCIATED WITH JETS IN THIS WINDOW
 				for(int j = 0; j < _predJets.size(); j++){
-					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
+					BayesPoint ell_center({_predJets[j].eta(), _predJets[j].phi()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
-					
-					double ell_maj_r = _jellipses[j].GetR1();
-					double ell_min_r = _jellipses[j].GetR2();
-					double theta = _jellipses[j].GetTheta();
-					//put in rad
-					theta *= acos(-1)/180;
-					double r_eta = ell_maj_r*cos(theta);
-					double r_phi = ell_maj_r*sin(theta);
-					//if full ellipse cannot be drawn in window, skip
+					//
+					//double ell_maj_r = _jellipses[j].GetR1();
+					//double ell_min_r = _jellipses[j].GetR2();
+					//double theta = _jellipses[j].GetTheta();
+					////put in rad
+					//theta *= acos(-1)/180;
+					//double r_eta = ell_maj_r*cos(theta);
+					//double r_phi = ell_maj_r*sin(theta);
+					////if full ellipse cannot be drawn in window, skip
 					double dr = dR(ell_center.at(0), ell_center.at(1), 0., 0.);
-					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
-					if(fabs(r_eta) > fabs(width.at(0))) continue;
-					if(fabs(r_phi) > fabs(width.at(1))) continue;
+					cout << "jet #" << j << " window width eta " << window_width[name].at(0) << " phi " << window_width[name].at(1) << " this jet center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
+					if(fabs(ell_center.at(0)) > window_width[name].at(0)) continue; //out of frame in eta
+					if(fabs(ell_center.at(1)) > window_width[name].at(1)) continue; //out of frame in phi
+					//if(fabs(r_eta) > fabs(width.at(0))) continue;
+					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
 					vector<JetPoint> rhs = _predJets[j].GetJetPoints();	
 					for(auto rh : rhs){
@@ -2009,6 +2010,8 @@ cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name "
 						_evtdisps_obj[h]->Fill(rh_pt.at(0), rh_pt.at(1), rh_pt.w());
 					}
 				}
+//TODO - check eta/phi_max/min values (see drawn canvases)
+cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
 				width.SetValue(max(fabs(eta_max), fabs(eta_min)), 0);
 				width.SetValue(max(fabs(phi_max), fabs(phi_min)), 1);
 				if(_evtdisps_obj[h]->GetEntries() == 0) continue; //don't draw if not filled for this particle gen obj
@@ -2033,6 +2036,8 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
+					if(fabs(ell_center.at(0)) > width.at(0)) continue; //out of frame in eta
+					if(fabs(ell_center.at(1)) > width.at(1)) continue; //out of frame in phi
 					
 					double ell_center_eta = _jellipses[j].GetX1(); 
 					double ell_center_phi = _jellipses[j].GetY1();
@@ -2044,6 +2049,8 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					double r_eta = ell_maj_r*cos(theta);
 					double r_phi = ell_maj_r*sin(theta);
 					//if full ellipse cannot be drawn in window, skip
+					double dr = dR(ell_center.at(0), ell_center.at(1), 0., 0.);
+					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
 					if(fabs(r_eta) > fabs(width.at(0))) continue;
 					if(fabs(r_phi) > fabs(width.at(1))) continue;
 
@@ -2175,19 +2182,6 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 				*/
 				cv_obj->Write();
 
-				/*
-				//reset object centers
-				for(int el = 0; el < _ellipses.size(); el++){
-					//reset center
-					_ellipses[el].SetX1(ell_centers_og.at(el).at(0));
-					_ellipses[el].SetY1(ell_centers_og.at(el).at(1));
-				}
-				for(int m = 0; m < _plot_particles.size(); m++){
-					//reset center
-					_plot_particles[m].SetX(m_centers_og.at(m).at(0));
-					_plot_particles[m].SetY(m_centers_og.at(m).at(1));
-				}
-				*/
 			}
 
 
