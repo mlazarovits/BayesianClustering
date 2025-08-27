@@ -2431,7 +2431,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				}
 				//current beam halo selection
 				if((pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc )){
-					if(tc > -7 && tc <= -2){
+					if(tc > -7 && tc <= -2 && bestTrackDr > 0.03){
 					_nBH_hist++;
 						_procCats[id_idx].hists2D[1][284]->Fill(tc, ec);
 						_procCats[id_idx].hists2D[1][285]->Fill(p_var, pc);
@@ -3846,8 +3846,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 					}
 				}
 				else{
-					//if subcl is BH
-					if((tc > -7 && tc <= -2) && pcFilter)	
+					//if subcl is BH - with dR track veto
+					if((tc > -7 && tc <= -2) && pcFilter && bestdr > 0.03)	
 						label = 2;
 					//if subcl is not BH or spike (ie prompt, 'physics' bkg)
 					if(tc > -0.5 && tc < 0.5)
