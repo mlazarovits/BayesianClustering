@@ -1132,11 +1132,8 @@ void BasicDetectorSim::MakeRecHits(){
 			//out to 5 sigma
 			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
 			//smear energy in each cell if showering
-			if(!_noShower){
-				e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
-			}
-			else{
-				e_cell = e;
+			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			if(_noShower){
 				//smear eta, phi in cell width
 				_rs.SetRange(eta - _deta/2, eta + _deta/2);
 				eta = _rs.SampleGaussian(eta, _deta/2, 1).at(0);
@@ -1155,19 +1152,14 @@ void BasicDetectorSim::MakeRecHits(){
 			t = _cal[i][j].at(1)/((double)_cal[i][j].at(2));
 			
 			//do amplitude dependent time smearing if showering
-			if(!_noShower){
-				t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
-				t_sig = sqrt(t_sig/2.); //divide by 2 bc params were taken from measurements of 2 rechits
-				//smear time in cell
-				//t can be negative (early times)
-				//update range to be centered on t, up to 5 sigma (calTres)
-				_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
-				t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
-				//if(t_cell < 0) cout << "energy " << e_cell << " mean time (ns) " << t*1e9 << " t_cell (ns) " << t_cell*1e9 << " t_sig (ns) " << t_sig*1e9 << endl;
-			}
-			else{
-				t_cell = t;
-			}
+			t_sig = _calTresCte*_calTresCte + _calTresNoise*_calTresNoise/(e_cell*e_cell) + (_calTresStoch*_calTresStoch)/e_cell;
+			t_sig = sqrt(t_sig/2.); //divide by 2 bc params were taken from measurements of 2 rechits
+			//smear time in cell
+			//t can be negative (early times)
+			//update range to be centered on t, up to 5 sigma (calTres)
+			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
+			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			//if(t_cell < 0) cout << "energy " << e_cell << " mean time (ns) " << t*1e9 << " t_cell (ns) " << t_cell*1e9 << " t_sig (ns) " << t_sig*1e9 << endl;
 			//if(e_cell > 1) cout << "t " << t*1e9 << " e " << e_cell << " tsig " << t_sig*1e9 << " t_cell " << t_cell*1e9 << endl;
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
 			//reset e and t for cal cells
