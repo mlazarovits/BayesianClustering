@@ -467,6 +467,16 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclSize_subclTime);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highMassOvPt_partonMatchSubclMassOvPt_JetMassOvPt);
+			_hists2D.push_back(BHCJetW_highMassOvPt_partonNoMatchSubclMassOvPt_JetMassOvPt);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt);
 
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W);
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W2);
@@ -578,7 +588,7 @@ class BHCJetSkimmer{
 			int tmass_idx, id, widx;
 			tmass_idx = -999;
 
-			double wmass, topmass, dr, dr_pair, jetsize;
+			double wmass, topmass, dr, dr_pair, jetsize, jetsize_full;
 			pair<int, int> wmass_idxs = make_pair(-999, -999);
 			Jet w, top, genpart, genW;
 			//do gen matching
@@ -656,6 +666,7 @@ class BHCJetSkimmer{
 						_predJets[j].GetClusterParams(jet_mu,jet_cov);	
 						//also include rotundity
 						jetsize = CalcSize(jet_cov);
+						jetsize_full = CalcSize(jet_cov, true);
 						//define jetsize bins
 						//pt == 1 -> [0,0.2) (AK4 level)
 						//if(pt == 1 && jetsize >= 0.2) continue;
@@ -906,6 +917,7 @@ cout << "avgPart E " << avgPartE << endl;
 									Matrix subcl_mu, subcl_cov;
 									consts[c].GetClusterParams(subcl_mu, subcl_cov);
 									double subclsize = CalcSize(subcl_cov);
+									double subclsize_full = CalcSize(subcl_cov, true);
 									int genmatchidx = subclGenMatchIdx[c];
 									if(genmatchidx == -1){
 										//not matched
@@ -918,6 +930,15 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][139]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][141]->Fill(subclsize, consts[c].t());
 											_procCats[p].hists2D[pt][143]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][145]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
+											//relative time variance vs relative pt
+											_procCats[p].hists2D[pt][147]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), consts[c].pt() / _predJets[j].pt());
+											//relative time variance vs relative size
+											_procCats[p].hists2D[pt][149]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), subclsize / jetsize);
+											//subcl mass / pt vs jet mass / pt
+											_procCats[p].hists2D[pt][151]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
+											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
+											_procCats[p].hists2D[pt][153]->Fill(subclsize_full / jetsize_full, consts[c].pt() / _predJets[j].pt());
 										}
 				
 									}
@@ -932,6 +953,15 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][138]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][140]->Fill(subclsize, consts[c].t());
 											_procCats[p].hists2D[pt][142]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][144]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
+											//relative time variance vs relative pt
+											_procCats[p].hists2D[pt][146]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), consts[c].pt() / _predJets[j].pt());
+											//relative time variance vs relative size
+											_procCats[p].hists2D[pt][148]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), subclsize / jetsize);
+											//subcl mass / pt vs jet mass / pt
+											_procCats[p].hists2D[pt][150]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
+											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
+											_procCats[p].hists2D[pt][152]->Fill(subclsize_full / jetsize_full, consts[c].pt() / _predJets[j].pt());
 										}
 									}
 								}	
@@ -3064,8 +3094,28 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 		TH2D* BHCJetW_highMass_partonNoMatchSubclSize_subclTime = new TH2D("BHCJetW_highMass_partonNoMatchSubclSize_subclTime","BHCJetW_highMass_partonNoMatchSubclSize_subclTime;SubclSize;SubclTime",25,0,1.5,25,-3,3);
 		//142 - high mass + W-matched BHC jets - subclSize of subclsuters gen-matched to W partons / size jet vs pt of subclusters gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt;RelSubclSize;RelSubclPt",25,0,5,25,0,1.2);
-		//143 - high mass + W-matched BHC jets - subclSize of subclsuters NOT gen-matched to W partons / size jet vs pt of subclusters NOT gen-matched to W partons / pt jet
+		//143 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched to W partons / size jet vs pt of subclusters NOT gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt;RelSubclSize;RelSubclPt",25,0,5,25,0,1.2);
+		//144 - high mass + W-matched BHC jets - subclMass of subclusters gen-matched to W partons / mass jet vs pt of subclusters gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt;RelSubclMass;RelSubclPt",25,0,1.2,25,0,1.2);
+		//145 - high mass + W-matched BHC jets - subclMass of subclusters NOT gen-matched to W partons / mass jet vs pt of subclusters NOT gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt;RelSubclMass;RelSubclPt",25,0,1.2,25,0,1.2);
+		//146 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs pt of subclusters gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclPt","BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
+		//147 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs pt of subclusters NOT gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclPt","BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
+		//148 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs size of subclusters gen-matched to W partons / size jet
+		TH2D* BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,5);
+		//149 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs size of subclusters NOT gen-matched to W partons / size jet
+		TH2D* BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,5);
+		//150 - high mass + W-matched BHC jets - matched subcl mass / pt vs jet mass / pt 
+		TH2D* BHCJetW_highMassOvPt_partonMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMassOvPt_partonMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMassOvPt_partonMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,50,25,0,50);
+		//151 - high mass + W-matched BHC jets - NOT matched subcl mass / pt vs jet mass / pt 
+		TH2D* BHCJetW_highMassOvPt_partonNoMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMassOvPt_partonNoMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMassOvPt_partonNoMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,50,25,0,50);
+		//152 - high mass + W-matched BHC jets - subclSize (space + time) of subclsuters gen-matched to W partons / size (space + time) jet vs pt of subclusters gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt;RelSubclSizeSpatioTemp;RelSubclPt",25,0,5,25,0,1.2);
+		//153 - high mass + W-matched BHC jets - subclSize (space + time) of subclusters NOT gen-matched to W partons / size (space + time) jet vs pt of subclusters NOT gen-matched to W partons / pt jet
+		TH2D* BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt;RelSubclSizeSpatioTemp;RelSubclPt",25,0,5,25,0,1.2);
 
 
 
@@ -3426,18 +3476,25 @@ cout << "name " << name << " 1 - ylo " << ylo << " yhi " << yhi << " hist y axis
 			v.push_back(z);
 		}
 
-		double CalcSize(Matrix& cov){
+		double CalcSize(Matrix& cov, bool time = false){
 			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
 				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
 				return -1;
 			}
-			Matrix cov2D(2,2);
-			Get2DMat(cov,cov2D);	
 			vector<double> eigvals;
 			vector<Matrix> eigvecs;
-			cov2D.eigenCalc(eigvals, eigvecs);
-			//define jet size as length of major axis
-			return sqrt(eigvals[1]);
+			if(time){
+				cov.eigenCalc(eigvals, eigvecs);
+				//define jet size as length of major axis
+				return sqrt(eigvals[2]);
+			}
+			else{
+				Matrix cov2D(2,2);
+				Get2DMat(cov,cov2D);	
+				cov2D.eigenCalc(eigvals, eigvecs);
+				//define jet size as length of major axis
+				return sqrt(eigvals[1]);
+			}
 		}
 
 
