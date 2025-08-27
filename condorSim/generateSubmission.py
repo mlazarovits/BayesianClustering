@@ -41,11 +41,14 @@ def generateSubmission(args):
 
     inputFile += "_ptHatMin"+args.ptHatMin
 
-    if(args.noShower):
-        inputFile += "_noShower"
 
-    if(args.PU):
-        inputFile += "_nPU10"
+    if(int(args.nPU) > 0):
+        inputFile += "_nPU"+args.nPU
+    if(args.nPU == '60'):
+        inputFile = inputFile.replace('v9p12p4','v9p13')
+    
+    if(args.PFCand):
+        inputFile += "_PFCand"
 
     #inputFile += "_neutralTrajOnly"
 
@@ -201,8 +204,7 @@ def main():
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW','Wgluon'])
     parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
-    #TODO: if ntuples with different nPU vertices, change below from flag to string for # vertices (ie 10 would give ntuple with nPU10)
-    parser.add_argument('--PU',help='turn on pileup (currently at nPU = 10)',action='store_true')
+    parser.add_argument('--nPU',help='turn on pileup for given # vertices',default='0')
     parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
@@ -229,7 +231,7 @@ def main():
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=False,action='store_true')
-    parser.add_argument('--noShower',help="run with ntuples without showering",default=False,action='store_true')
+    parser.add_argument('--PFCand',help="run with ntuples with ~PF candidates",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--minNconsts',help='set minimum number of constituents for gen jets',default=5)
