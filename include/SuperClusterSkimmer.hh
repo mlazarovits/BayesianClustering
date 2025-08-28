@@ -2147,7 +2147,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				bestde_dr = E_k/bestde_dr;
 
 				//defining requirements for BH subclusters
-				bool pcFilter, pcFilterSpike, tcFilterEarly, tcFilterPrompt, tcFilterSpike, tcFilterBH, drMatch;
+				bool pcFilter, pcFilterSpike, tcFilterEarly, tcFilterPrompt, tcFilterSpike, tcFilterBH, drMatch, drVeto;
 				//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
 				pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
 				pcFilterSpike = (pc < 0.3 || (acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) || 2*acos(-1) - 0.3 < pc );
@@ -2156,13 +2156,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				tcFilterPrompt = (-2 < tc && tc < 2);
 				tcFilterSpike = (tc <= -8);
 				tcFilterBH = (tc <= -2 && tc > -7);
-				drMatch = (bestTrackDr < 0.02);
+				drMatch = (bestTrackDr <= 0.02);
+				drVeto = (bestTrackDr > 0.03);
 				//fill 2D SC eta-phi map - centered on subcluster, weighted by energy 
 				for(int r = 0; r < npts; r++){
 					//cout << "r " << r << " x " << points->at(r).at(0) - ec << " y " << points->at(r).at(1) - pc << " w " << points->at(r).w()/_gev << endl;
 					_procCats[id_idx].hists2D[1][263]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
 					//if subcl is BH: fill 264
-					if(pcFilter && tcFilterBH)
+					if(pcFilter && tcFilterBH && drVeto)
 						_procCats[id_idx].hists2D[1][264]->Fill(points->at(r).at(0) - ec,points->at(r).at(1) - pc,(points->at(r).w()/_gev)/double(npts));
 					//if subcl is spike: fill 309
 					if(!pcFilterSpike && tcFilterSpike && drMatch)
