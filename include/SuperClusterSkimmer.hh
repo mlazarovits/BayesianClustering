@@ -2398,9 +2398,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//spike selection
 				//if(-10 <= tc && tc < -5){
 				if(tc <= -8){
-					if(bestTrackDr < 0.088)
-						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
 					if(bestTrackDr < 0.02 && !pcFilterSpike){
+						_procCats[id_idx].hists2D[1][269]->Fill(bestde_dr,bestTrackDr);
 						_procCats[id_idx].hists1D[1][239]->Fill(bestde_dr);
 						_procCats[id_idx].hists2D[1][267]->Fill(bestde_dr,swCP);
 						_procCats[id_idx].hists2D[1][268]->Fill(bestde_dr,E_k);
