@@ -2012,16 +2012,34 @@ cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name "
 					//if(fabs(r_eta) > fabs(width.at(0))) continue;
 					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
-					vector<JetPoint> rhs = _predJets[j].GetJetPoints();	
+					vector<JetPoint> rhs;
+					if(_evt2disp_z % 2 == 0){
+						int k = _evt2disp_z / 2;
+						if(k >= _predJets[j].GetNConstituents()){
+							rhs = _predJets[j].GetJetPoints();
+						}
+						else{
+							Jet subcl = _predJets[j].GetConstituent(k);
+							rhs = subcl.GetJetPoints();
+						}
+					}
+					else{
+						rhs = _predJets[j].GetJetPoints();
+					}
 					for(auto rh : rhs){
 						double w;
-						if(_evt2disp_z == 0)
+						if(_evt2disp_z == 0){ //energy
 							w = rh.E();
-						else if(_evt2disp_z == 1){
+						}
+						else if(_evt2disp_z == 1){ //time
 							w = rh.t();
 						}
-						else
+						else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
+							w = rh.GetWeight();
+						}
+						else{
 							w = rh.E(); //default energy weighted
+						}
 						//center according to main gen particle
 						BayesPoint rh_pt({rh.eta(), rh.phi()}); //save as BayesPoint to do correct circular translation to (0,0)
 						rh_pt.SetWeight(w);
