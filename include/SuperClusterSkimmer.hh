@@ -3819,7 +3819,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			TrackMatched(gmm,ncl,bestdr, bestp);
 			//early times, phi left/right for BH
 			//if subcl is spike
-			if(bestdr < 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
+			if(bestdr <= 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
 				label = 3;
 			}
 			else{
@@ -3837,7 +3837,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
                 				if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 						//for physics bkg + BH match to photons + apply isolation criteria
 						//if subcl is BH - need to match to photon and apply isolation
-						if((tc > -7 && tc <= -2) && pcFilter && iso)	
+						if((tc > -7 && tc <= -2) && pcFilter && iso && bestdr > 0.03)	
 							label = 2;
 						//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
 						if(tc > -0.5 && tc < 0.5 && iso)
