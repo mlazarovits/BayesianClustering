@@ -519,7 +519,8 @@ void BHCJetSkimmer::Skim(){
 						phi = _genparts[g].phi_02pi();
 					}
 					_plot_particles.push_back(TMarker(eta, phi, kOpenTriangleUp));
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kRed-4);
+					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kRed-4);
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 
 				}
 				if(id == 6){ //top
@@ -556,7 +557,8 @@ void BHCJetSkimmer::Skim(){
 						phi = _genparts[g].phi_02pi();
 					}
 					_plot_particles.push_back(TMarker(eta, phi, kPlus));
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kAzure+4);
+					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kAzure+4);
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
 				else if(id == 5){ //b quark
 					//check if first b event display is already filled
@@ -582,7 +584,8 @@ void BHCJetSkimmer::Skim(){
 					eta = _genparts[g].eta();
 					phi = _genparts[g].phi_02pi();
 					_plot_particles.push_back(TMarker(eta, phi, kStar));
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlue-4);
+					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlue-4);
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
 				if(gidx == -1) continue; //skip if no gen particles specified
 				plot_centers[matchstring] = BayesPoint({eta, phi}); //gen particle in question should be centered at (0,0) in local eta, phi coords for local (not global) evt disp
@@ -625,13 +628,13 @@ cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);
-				el.SetLineColor(kBlack);	
+				el.SetLineColor(j+2);	
 				el.SetFillStyle(0);	
 				_ellipses.push_back(el);	
 				_jellipses[j] = el;			
 	
 				TMarker m(_predJets[j].eta(), _predJets[j].phi(), kOpenStar);
-				m.SetMarkerColor(kBlack);
+				m.SetMarkerColor(j+2);
 				//plot jet centers
 				//_plot_particles.push_back(m); //30 = open star may need to change if not rendering	
 				_jcenters[j] = m;			
@@ -640,12 +643,12 @@ cout << "eta " << eta << " phi " << phi << endl;
 				for(int k = 0; k < nk; k++){
 					Jet subcl = _predJets[j].GetConstituent(k);
 					TEllipse sub_el = PlotEll(subcl);
-					sub_el.SetLineColor(kBlack);	
+					sub_el.SetLineColor(j+2);	
 					sub_el.SetFillStyle(0);	
 					sub_el.SetLineStyle(9);	
 					//_plot jet centers
 					TMarker sub_m(subcl.eta(), subcl.phi(), kOpenDiamond); 
-					sub_m.SetMarkerColor(kBlack);
+					sub_m.SetMarkerColor(j+2);
 					_subclellipses[j][k] = sub_el;
 					_subclcenters[j][k] = sub_m;
 	
