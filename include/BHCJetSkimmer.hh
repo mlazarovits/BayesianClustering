@@ -1951,6 +1951,7 @@ cout << "avgPart E " << avgPartE << endl;
 		//window_width = width of event display in [deta, dphi] per gen object s.t. window_width[i] = BayesPoint(deta, dphi) for object i
 		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
 		void WriteEventDisplays(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
+			if(_procCats[0].hists2D[0][129]->Integral() == 0) return; //don't write canvases if this event display isn't filled
 			ofile->cd();
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
