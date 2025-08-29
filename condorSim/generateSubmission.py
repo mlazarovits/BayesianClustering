@@ -25,13 +25,13 @@ def generateSubmission(args):
     
     #make sure ntuple names are updated for latest version otherwise skimmer might crash
     if args.inputSample == "ttbar":
-        inputFile = "condorSimNtuples_ttbar_defaultv9p12p4"
+        inputFile = "condorSimNtuples_ttbar_defaultv9p13"
     elif args.inputSample == "QCD":
-        inputFile = "condorSimNtuples_QCD_defaultv9p12p4"
+        inputFile = "condorSimNtuples_QCD_defaultv9p13"
     elif args.inputSample == "singleW":
-        inputFile = "condorSimNtuples_singleW_defaultv9p12p4"
+        inputFile = "condorSimNtuples_singleW_defaultv9p13"
     elif args.inputSample == "Wgluon":
-        inputFile = "condorSimNtuples_Wgluon_defaultv9p12p4"
+        inputFile = "condorSimNtuples_Wgluon_defaultv9p13"
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
@@ -44,8 +44,6 @@ def generateSubmission(args):
 
     if(int(args.nPU) > 0):
         inputFile += "_nPU"+args.nPU
-    if(args.nPU == '60'):
-        inputFile = inputFile.replace('v9p12p4','v9p13')
     
     if(args.PFCand):
         inputFile += "_PFCand"
