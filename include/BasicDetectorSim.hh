@@ -252,7 +252,6 @@ struct RecoParticle;
 		//speed of light in (m/s)
 		constexpr static double _sol = 2.99792458e8; //cm/ns = 29.9792458;
 	
-		RandomSample _rs; //random sampler for smearing
 		int _nevts; //number of events to simulate
 		//this needs to be separate from JetPoint bc there is no field in JetPoint to track how many emissions are in a cell
 		vector<vector<BayesPoint>>  _cal; //3-dim point where each point is (e, t, n) for individual emissions in [eta][phi] cell

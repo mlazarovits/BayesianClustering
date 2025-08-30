@@ -27,7 +27,6 @@ BasicDetectorSim::BasicDetectorSim(){
 	_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
 	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
-	_rs = RandomSample(); //random sampler
 	_nevts = 1000;
 	//initialize cal - save e, t, n emissions
 	_etamax = 3.;//1.479 + _deta/2.; //puts outermost corner at true etamax
@@ -101,7 +100,6 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_calTresNoise = 2.106 * 1e-9;//0.34641*1e-9; 
 	_calTresStoch = 0.5109 * 1e-9;//1.60666*1e-9;
 	_sagres = 0.000013; //value from LHC parameters in PGS (examples/par/lhc.par)
-	_rs = RandomSample(); //random sampler
 	_etamax = 3.;//1.479;
 	_etamin = -_etamax;
 	_phimin = -acos(-1);
@@ -195,8 +193,6 @@ void BasicDetectorSim::_simWg(){
 
 //default arg is nevts = 1
 void BasicDetectorSim::SimulateEvents(int evt){
-cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of charged PU)" << endl;
-
 	Pythia8::Pythia pileup(_pythia.settings, _pythia.particleData);
 	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), ttbar) != _procs_to_sim.end()){
 		_simTTbar();
@@ -286,7 +282,9 @@ cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of ch
 		map<int, BayesPoint> particleIdx_puVertex; 
 		if(_pu){
 			//simulate n pileup events
-			int nPU = _rs.SamplePoisson(_nPUavg,1).at(0);
+			RandomSample rs_PU(i);
+			int nPU = rs_PU.SamplePoisson(_nPUavg,1).at(0);
+cout << "event has " << nPU << " pileup vertices" << endl;
 			for(int p = 0; p < nPU; p++){
 				pileup.next();
 				Pythia8::Event pu_event = pileup.event;
@@ -296,24 +294,20 @@ cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of ch
 				_pu_pvz.push_back(pu_event[1].zProd()*1e-3);
 				_pu_pvt.push_back(pu_event[1].tProd()*1e-3*(1/_sol)*1e9);
 				BayesPoint pu_vtx({pu_event[1].xProd()*1e-3, pu_event[1].yProd()*1e-3, pu_event[1].zProd()*1e-3, pu_event[1].tProd()*1e-3*(1/_sol)*1e9});
+
 				for(int pp = 0; pp < pu_event.size(); pp++){
-					int p_idx = _sumEvent.size() + pp;
+					if(pu_event[pp].statusHepMC() != 1) continue;
+					int p_idx = _sumEvent.size() + pp - 1;
 					particleIdx_puVertex[p_idx] = pu_vtx;
 				}
 				_sumEvent += pu_event;
+				pu_event.clear();
 			}
 		}
 		//loop through all particles
 		//make sure to only record those that would
 		//leave RecHits in ECAL (ie EM particles (ie ie photons and electrons))
 		//cout << "event size: " << _sumEvent.size() << endl;
-		
-
-		//set production vertex for this event from z-smearing
-		//simulate z-shift from Gaussian
-		//zig is nominal beam spot spread - should be 3 sigma for distribution
-		//_rs.SetRange(-zig/3., zig/3.);
-		//zshift = _rs.SampleGaussian(0., zig/3., 1).at(0);
 		BayesPoint vtx;
 		for(int p = 0; p < _sumEvent.size(); p++){
 			//reset reco particle four momentum
@@ -431,7 +425,7 @@ cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of ch
 			if(!_charged_pu_reco){
 				//search for particle idx in pu vertex map
 				if(particleIdx_puVertex.find(p) != particleIdx_puVertex.end() && fabs(particle.charge()) > 1e-9){
-					cout << "skipping particle #" << p << " from pileup with charge " << particle.charge() << endl;
+					//cout << "skipping particle #" << p << " from pileup with charge " << particle.charge() << " and id " << particle.id() << endl;
 					continue;
 				}
 			}
@@ -506,6 +500,7 @@ cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of ch
 			_recops.push_back(rp);	
 		}
 		cout << _recops.size() << " total reco particles" << endl;
+		cout << _recoparttime.size() << " total reco " << _recoparttime_c.size() << " charged " << _recoparttime_n.size() << " neutral" << endl;
 		//cout << "event total energy " << evt_Etot << " total # reco particles " << _recops.size() << endl;
 		evt_Etot = 0;
 	
@@ -1153,15 +1148,16 @@ void BasicDetectorSim::MakeRecHits(){
 			//update random sampling range to match
 			//energy in this cell
 			//out to 5 sigma
-			_rs.SetRange(e - 5*e_sig, e + 5*e_sig);
+			RandomSample rs_rh(i*1000 + j);
+			rs_rh.SetRange(e - 5*e_sig, e + 5*e_sig);
 			//smear energy in each cell if showering
-			e_cell = _rs.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
+			e_cell = rs_rh.SampleGaussian(e, e_sig, 1).at(0); //returns a vector, take first (and only) element
 			if(_noShower){
 				//smear eta, phi in cell width
-				_rs.SetRange(eta - _deta/2, eta + _deta/2);
-				eta = _rs.SampleGaussian(eta, _deta/2, 1).at(0);
-				_rs.SetRange(phi - _dphi/2, phi + _dphi/2);
-				phi = _rs.SampleGaussian(phi, _dphi/2, 1).at(0);
+				rs_rh.SetRange(eta - _deta/2, eta + _deta/2);
+				eta = rs_rh.SampleGaussian(eta, _deta/2, 1).at(0);
+				rs_rh.SetRange(phi - _dphi/2, phi + _dphi/2);
+				phi = rs_rh.SampleGaussian(phi, _dphi/2, 1).at(0);
 
 			}
 			//make sure e can't be negative
@@ -1180,8 +1176,8 @@ void BasicDetectorSim::MakeRecHits(){
 			//smear time in cell
 			//t can be negative (early times)
 			//update range to be centered on t, up to 5 sigma (calTres)
-			_rs.SetRange(t - 5*t_sig, t + 5*t_sig);
-			t_cell = _rs.SampleGaussian(t, t_sig, 1).at(0);
+			rs_rh.SetRange(t - 5*t_sig, t + 5*t_sig);
+			t_cell = rs_rh.SampleGaussian(t, t_sig, 1).at(0);
 			//if(t_cell < 0) cout << "energy " << e_cell << " mean time (ns) " << t*1e9 << " t_cell (ns) " << t_cell*1e9 << " t_sig (ns) " << t_sig*1e9 << endl;
 			//if(e_cell > 1) cout << "t " << t*1e9 << " e " << e_cell << " tsig " << t_sig*1e9 << " t_cell " << t_cell*1e9 << endl;
 			//cout << "filling cell ieta " << i << " iphi " << j << " og e " << e << " ecell " << e_cell << " esig " << e_sig << " e_sig % " << e_sig/e << endl;	
@@ -1348,8 +1344,9 @@ void BasicDetectorSim::ReconstructEnergy(){
 				//don't want to conflate spike energy/times with shower energy/times
 				if(_spikes){
 					//roll dice to see if spike occurs
-					_rs.SetRange(0.,1.);
-					r = _rs.SampleFlat();
+					RandomSample rs_spike(i*1000 + j);
+					rs_spike.SetRange(0.,1.);
+					r = rs_spike.SampleFlat();
 					if(r > _spikeprob) continue;				
 			
 					//if yes, roll dice for energy
@@ -1357,21 +1354,21 @@ void BasicDetectorSim::ReconstructEnergy(){
 					//gain switch is not calibrated for energies above 120 GeV
 					//so the time reco gets weird (in CMS)
 					//0 is 4sigma away so captures most of the distribution
-					_rs.SetRange(0.,120.);
-					reco_e = _rs.SampleGaussian(80., 20., 1).at(0);
+					rs_spike.SetRange(0.,120.);
+					reco_e = rs_spike.SampleGaussian(80., 20., 1).at(0);
 					//roll dice for time
 					//assume spikes have an early time between 5 to 15 ns early
 					//peaked at -10 ns
 					//5 sigma spread, make sure spike is OUT of time
 					//t can be negative (early times)
-					_rs.SetRange(-35*1e-9, 0.);
-					reco_t = _rs.SampleGaussian(-10.*1e-9,5.*1e-9,1).at(0); 
+					rs_spike.SetRange(-35*1e-9, 0.);
+					reco_t = rs_spike.SampleGaussian(-10.*1e-9,5.*1e-9,1).at(0); 
 					//smear eta, phi based on cell dimensions
 					//this is to avoid 2D overlap with true rec hits
-					_rs.SetRange(ceta - _deta/2., ceta + _deta/2.);
-					ceta = _rs.SampleFlat();
-					_rs.SetRange(cphi - _dphi/2., cphi + _dphi/2.);
-					cphi = _rs.SampleFlat();
+					rs_spike.SetRange(ceta - _deta/2., ceta + _deta/2.);
+					ceta = rs_spike.SampleFlat();
+					rs_spike.SetRange(cphi - _dphi/2., cphi + _dphi/2.);
+					cphi = rs_spike.SampleFlat();
 					//that are measured in cell center
 					//get x, y, z based on cell eta phi
 					x = _rmax*cos(cphi);
