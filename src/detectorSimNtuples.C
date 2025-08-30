@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
 	bool noshower = false;
 	int timeResModel = 0; //which time resolution model to use
 	bool reco_charged_pu = false;
-
+	bool reduce_pu = false;
 
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
@@ -73,6 +73,9 @@ int main(int argc, char *argv[]){
    		}
 		if(strncmp(argv[i],"--ootPU", 7) == 0){
     	 		ootPU = true;
+   		}
+		if(strncmp(argv[i],"--reducePU", 10) == 0){
+    	 		reduce_pu = true;
    		}
 		if(strncmp(argv[i],"--noShower", 10) == 0){
     	 		noshower = true;
@@ -268,6 +271,7 @@ int main(int argc, char *argv[]){
 	//if(sig_delayed)
 	//if(sig_boosted)
 	if(nPU != 0) det.TurnOnPileup(nPU, ootPU);
+	if(reduce_pu) det.ReducedPileup();
 	if(spikeProb > 0) det.TurnOnSpikes(0.01);
 	det.RecoChargedPU(reco_charged_pu);
 	
