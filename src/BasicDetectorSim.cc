@@ -38,6 +38,7 @@ BasicDetectorSim::BasicDetectorSim(){
 	_ncell = 2;
 	_pu = false; //pileup switch
 	_charged_pu_reco = false; //reconstructed charged PU particles switch
+	_reduced_pu = false;
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//create container for cal cell info
@@ -109,6 +110,7 @@ BasicDetectorSim::BasicDetectorSim(string infile){
 	_ncell = 2;
 	_pu = false; //pileup switch
 	_charged_pu_reco = false; //reconstructed charged PU particles switch
+	_reduced_pu = false;
 	_spikes = false; //spikes switch
 	_spikeprob = 0.01; //event-by-event probability of spike occurring
 	//initialize cal - save e, t, n emissions
@@ -432,7 +434,27 @@ void BasicDetectorSim::SimulateEvents(int evt){
 					continue;
 				}
 			}
+
+
 			CalcTrajectory(rp,vtx);
+			//do not reconstruct PU emissions that are far away from particles/partons from hard scattering (for cluster runtime efficiency)
+			//need to do after CalcTrajectory to get particle p eta, phi on detector face (done for gen particles in SaveGenInfo)
+			if(_reduced_pu){
+				if(particleIdx_puVertex.find(p) != particleIdx_puVertex.end()){
+					//draw large max dr cone around each gen part, if pu emission doesn't fall within that, skip
+					double maxDr = 4;
+					double bestDr = 999;
+					for(auto genpart : _genparts){
+						double deta = genpart.Position.eta() - rp.Position.eta();
+						double dphi = genpart.Position.phi() - rp.Position.phi();
+						dphi = acos(cos(dphi));
+						double dr = sqrt(deta*deta + dphi*dphi);
+						if(dr < bestDr)
+							bestDr = dr;
+					}
+					if(bestDr > maxDr) continue;
+				}
+			}
 			//check if in cal cell crack
 			if(_in_cell_crack(rp))
 				continue;

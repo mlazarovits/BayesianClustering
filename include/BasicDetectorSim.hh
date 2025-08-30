@@ -74,6 +74,8 @@ struct RecoParticle;
 			_nPUavg = npuavg; //number of pu events on average (used for poisson sampling)
 			_oot = oot;
 		}
+		void ReducedPileup(){ cout << "Not reconstructing PU emissions further than dR = 4 away from hard gen particles/partons" << endl; _reduced_pu = true; }
+
 		void RecoChargedPU(bool r){ _charged_pu_reco = r; if(_charged_pu_reco) cout << "Reconstructing charged particles from PU" << endl; else cout << "Not reconstructing charged particles from PU" << endl; }
 		enum TimeResModel{
 			ecal = 0,
@@ -288,6 +290,7 @@ struct RecoParticle;
 		bool _pu; //pileup switch
 		bool _charged_pu_reco; //whether or not to reconstruct charged particles from PU
 		int _nPUavg; //number of pu events on average
+		bool _reduced_pu; //don't reconstruct PU emissions that are outside of a dR cone of 4 from any gen particles from the hard scattering
 		bool _spikes; //spikes switch
 		double _spikeprob; //probability of spiking in rec hit
 
