@@ -24,7 +24,7 @@ def main():
         proc = proc[:proc.find("/")]
         proc = proc[:proc.rfind("_AOD")]
 
-        bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
+        bashfilename = "haddScripts/doHadd_"+oname+".sh"
         bashfile = open(bashfilename,"w")
         #write cmds to bash script
         if(args.big):
@@ -48,7 +48,7 @@ def main():
                 #    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
                 #print("Wrote to "+oname)
             oname = d.name+"_"+proc+".root"
-            oname = "condor_"+oname
+            oname = "condorSimNtuples_"+oname
             oname = d.path+"/"+oname
             #check if file exists
             if os.path.exists(oname):
@@ -64,7 +64,7 @@ def main():
             bashfile.close()
         else:
             oname += "_"+proc+".root"
-            oname = "condor_"+oname
+            oname = "condorSimNtuples_"+oname
             oname = d.path+"/"+oname
             cmd = cmdHadd
             #check if file exists
