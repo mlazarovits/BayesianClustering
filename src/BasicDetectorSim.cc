@@ -193,7 +193,7 @@ void BasicDetectorSim::_simWg(){
 
 //default arg is nevts = 1
 void BasicDetectorSim::SimulateEvents(int evt){
-
+cout << "_charged_pu_reco " << _charged_pu_reco << " (if false, skips reco of charged PU)" << endl;
 
 	Pythia8::Pythia pileup(_pythia.settings, _pythia.particleData);
 	if(find(_procs_to_sim.begin(), _procs_to_sim.end(), ttbar) != _procs_to_sim.end()){
@@ -429,6 +429,7 @@ void BasicDetectorSim::SimulateEvents(int evt){
 			if(!_charged_pu_reco){
 				//search for particle idx in pu vertex map
 				if(particleIdx_puVertex.find(p) != particleIdx_puVertex.end() && fabs(particle.charge()) > 1e-9){
+					cout << "skipping particle #" << p << " from pileup with charge " << particle.charge() << endl;
 					continue;
 				}
 			}
