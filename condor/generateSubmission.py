@@ -36,8 +36,8 @@ def generateSubmission(args):
     if "GJets" in args.inputSample:
     	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
     elif "MET" in args.inputSample:
-        if "AL1SelEle_DEOnly" in sel:
-            ver = "v28"
+        if "AL1NpSC_DEOnly" in sel:
+            ver = "v31"
         inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "JetHT" in args.inputSample:
     	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+args.sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"

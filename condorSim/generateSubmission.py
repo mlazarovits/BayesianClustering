@@ -41,12 +41,12 @@ def generateSubmission(args):
 
     inputFile += "_ptHatMin"+args.ptHatMin
 
+    if(args.PFCand):
+        inputFile += "_PFCand"
 
     if(int(args.nPU) > 0):
         inputFile += "_nPU"+args.nPU
     
-    if(args.PFCand):
-        inputFile += "_PFCand"
 
     #inputFile += "_neutralTrajOnly"
 
