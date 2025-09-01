@@ -590,7 +590,7 @@ void BHCJetSkimmer::Skim(){
 				if(gidx == -1) continue; //skip if no gen particles specified
 				plot_centers[matchstring] = BayesPoint({eta, phi}); //gen particle in question should be centered at (0,0) in local eta, phi coords for local (not global) evt disp
 				//set by deltaR \approx 2*m/pT, taking deltaEta = deltaPhi
-				double deta = 2*_genparts[g].m()/(sqrt(2.)*_genparts[g].pt());
+				double deta = 4*_genparts[g].m()/(_genparts[g].pt());
 				double dphi = deta;
 				plot_widths[matchstring] = BayesPoint({deta,dphi});
 				if(_evt2disp_z == 1){ //update labels to time
