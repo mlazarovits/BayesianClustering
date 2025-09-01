@@ -29,6 +29,9 @@ class BHCJetSkimmer{
 			_evt2disp = 0;
 			_evt2disp_z = 0;
 
+			_minRelPt = 0.2;
+			_maxRelSize = 1.;
+			
 			_minTopPt = 0;
 			_minTopE = 0;
 			_minWPt = 0;		
@@ -86,6 +89,9 @@ class BHCJetSkimmer{
 			_minTopE = 0;
 			_evt2disp = 0;
 			_evt2disp_z = 0;
+			
+			_minRelPt = 0.2;
+			_maxRelSize = 1.;
 			
 			_nGhosts = 0;
 			_check_merges = false;
@@ -322,6 +328,14 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetPt);
 			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclSizeOvJetSize);
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize);
+			_hists1D.push_back(BHCJet_mass_PUdownweighted);
+			_hists1D.push_back(BHCJet_mass_PUremoved);
+			_hists1D.push_back(BHCJetW_subclParton_dR_PUcleaned);
+			_hists1D.push_back(nBHCJetsW_eq2cleanedSubcls);
+			_hists1D.push_back(BHCJet_subclTimeCenter_PUlike);
+			_hists1D.push_back(BHCJet_subclTimeCenter_PUcleaned);
+			_hists1D.push_back(BHCJet_subClusterTimeSig_PUlike);
+			_hists1D.push_back(BHCJet_subClusterTimeSig_PUcleaned);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(genPt_recoPt);
@@ -653,6 +667,7 @@ class BHCJetSkimmer{
 				}
 				//loop over pt bins
 				njets = _predJets.size();
+				int njets_eq2CleanedSubcls = 0;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
 						//define pt bins
@@ -725,6 +740,7 @@ class BHCJetSkimmer{
 					//cout << "pred jet #" << j << " phi1 " << _predJets[j].phi() << " phi " << jet_mu.at(1,0) << " phi std " << _predJets[j].phi_std() << endl;
 						//get subcluster information
 						vector<Jet> consts = _predJets[j].GetConstituents();
+						vector<Jet> consts_puCleaned;
 						for(int c = 0; c < (int)consts.size(); c++){
 							Jet subcl = consts[c];
 							Matrix subcl_cov = subcl.GetCovariance();
@@ -766,7 +782,25 @@ class BHCJetSkimmer{
 							double jet_dr = dR(consts[c].eta(), consts[c].phi(), jet_mu.at(0,0), jet_mu.at(1,0));
 							_procCats[p].hists2D[pt][112]->Fill(consts[c].E(), jet_dr);
 							_procCats[p].hists2D[pt][113]->Fill(effnRhs, jet_dr);
+						
+							//PU cleaning subclusters
+							double subclsize_full = CalcSize(subcl_cov, true);
+							//hard subcl
+							if(consts[c].pt() / _predJets[j].pt() >= _minRelPt && subclsize_full / jetsize_full <= _maxRelSize){
+								_procCats[p].hists1D[pt][214]->Fill(consts[c].t());
+								_procCats[p].hists1D[pt][216]->Fill(subcl_cov.at(2,2));
+								consts_puCleaned.push_back(consts[c]);
+							}
+							else{ //PU-like subcl
+								_procCats[p].hists1D[pt][213]->Fill(consts[c].t());
+								_procCats[p].hists1D[pt][215]->Fill(subcl_cov.at(2,2));
+					
+							}
+
+
 						}
+
+
 
 
 						if(p == 0 && pt == 0) cout << "pred jet #" << j << " matched to reco AK4 jet #" << recoMatchIdxs[j] << " gen AK4 jet #" << genAK4MatchIdxs[j] << " and gen AK15 jet #" << genAK15MatchIdxs[j] << " and gen top #" << genTopMatchIdxs[j] << " and gen W #" << genWMatchIdxs[j] << endl;
@@ -968,7 +1002,23 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][152]->Fill(subclsize_full / jetsize_full, consts[c].pt() / _predJets[j].pt());
 										}
 									}
+
 								}	
+								//dR matched cleaned subclusters
+								vector<int> subclGenMatchIdx_puCleaned(consts_puCleaned.size(), -1);	
+								GenericMatchJet(consts_puCleaned,Wpartons,subclGenMatchIdx_puCleaned); //match subclusters to W partons
+								for(int c = 0; c < consts_puCleaned.size(); c++){
+									int genmatchidx = subclGenMatchIdx_puCleaned[c];
+									if(genmatchidx == -1) continue;
+									double gen_clDr = dR(consts_puCleaned[c].eta(), consts_puCleaned[c].phi(), Wpartons[genmatchidx].eta(), Wpartons[genmatchidx].phi());
+									_procCats[p].hists1D[pt][211]->Fill(gen_clDr);
+
+
+								}
+								njets_eq2CleanedSubcls++;
+								
+
+
 
 								//do gen matching of 2 leading subclusters to partons from W decays
 								Jet leadcl = consts[0];
@@ -1091,6 +1141,7 @@ cout << "avgPart E " << avgPartE << endl;
 						}
 
 					}
+					_procCats[p].hists1D[pt][212]->Fill((double)njets/(double)njets_eq2CleanedSubcls);
 				}
 			}
 		}
@@ -2657,7 +2708,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//161 - BHC jets - gen-matched to W - subcluster phi center		
 		TH1D* BHCJetW_subclPhiCenter = new TH1D("BHCJetW_subclPhiCenter","BHCJetW_subclPhiCenter",25,-3.2,3.2);
 		//162 - BHC jets - gen-matched to W - subcluster time center		
-		TH1D* BHCJetW_subclTimeCenter = new TH1D("BHCJetW_subclTimeCenter","BHCJetW_subclTimeCenter",25,-3.2,3.2);
+		TH1D* BHCJetW_subclTimeCenter = new TH1D("BHCJetW_subclTimeCenter","BHCJetW_subclTimeCenter",25,-1.,1);
 		//163 - BHC jets - gen-matched to W - eta sigma of GMM cluster 
 		TH1D* BHCJetW_subClusterEtaSig = new TH1D("BHCJetW_subclusterEtaSig","BHCJetW_subclusterEtaSig",50,0.,0.5);
 		//164 - BHC jets - gen-matched to W - phi sigma of GMM cluster 
@@ -2750,6 +2801,23 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJetW_highMass_partonMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclSizeOvJetSize","BHCJetW_highMass_partonMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 		//208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
 		TH1D* BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize","BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
+		//209 - PU-downweighted bhc jet mass
+		TH1D* BHCJet_mass_PUdownweighted = new TH1D("BHCJet_mass_PUdownweighted","BHCJet_mass_PUdownweighted",50,0,250);
+		//210 - PU-removed bhc jet mass
+		TH1D* BHCJet_mass_PUremoved = new TH1D("BHCJet_mass_PUremoved","BHCJet_mass_PUremoved",50,0,250);
+		//211 - dR bw parton and PU-cleaned subclusters for bhc jets matched to Ws
+		TH1D* BHCJetW_subclParton_dR_PUcleaned = new TH1D("BHCJetW_subclParton_dR_PUcleaned","BHCJetW_subclParton_dR_PUcleaned",25,0,2);
+		//212 - # bhc jets with ==2 cleaned subclusters matched to Ws / # bhc jets matched to Ws
+		TH1D* nBHCJetsW_eq2cleanedSubcls = new TH1D("BHC_nJetsW_eq2cleanedSubcls","BHC_nJetsW_eq2cleanedSubcls",30,0,30);
+		//213 - time of PU-like subclusters from bhc jets
+		TH1D* BHCJet_subclTimeCenter_PUlike = new TH1D("BHCJet_subclTimeCenter_PUlike","BHCJet_subclTimeCenter_PUlike",25,-1.,1.);
+		//214 - time of PU-cleaned suclusters from bhc jets
+		TH1D* BHCJet_subclTimeCenter_PUcleaned = new TH1D("BHCJet_subclTimeCenter_PUcleaned","BHCJet_subclTimeCenter_PUcleaned",25,-1.,1);
+		//215 - time var of PU-like subclusters from bhc jets
+		TH1D* BHCJet_subClusterTimeSig_PUlike = new TH1D("BHCJet_subclusterTimeSig_PUlike","BHCJet_subclusterTimeSig_PUlike",50,0.,5.);
+		//216 - time var of PU-cleaned suclusters from bhc jets
+		TH1D* BHCJet_subClusterTimeSig_PUcleaned = new TH1D("BHCJet_subclusterTimeSig_PUcleaned","BHCJet_subclusterTimeSig_PUcleaned",50,0.,5.);
+		
 
 
 		////////////////////////////////////////////////////////////////////////
@@ -3473,6 +3541,15 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 			return rot;
 		}
+
+
+
+
+		//PU cleaning stuff
+		double _minRelPt, _maxRelSize;
+		//function that takes in jet and returns new, PU-cleaned jet with bool option for subcl downweight or full removal
+
+		
 
 
 
