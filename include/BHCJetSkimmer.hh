@@ -1956,6 +1956,14 @@ cout << "avgPart E " << avgPartE << endl;
 			ofile->cd();
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
+			if(_evt2disp_z == 1){ //time
+				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("time [ns]")
+			}
+			else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
+				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("responsibility")
+			}
+			else{
+			}
 			_procCats[0].hists2D[0][129]->Draw("colz");
 			//plot jets
 			for(int j = 0; j < _predJets.size(); j++){
@@ -2055,6 +2063,14 @@ cout << "at jet #" << j << " rh eta " << rh_pt.at(0) << " rh_phi " << rh_pt.at(1
 				}
 //TODO - check eta/phi_max/min values (see drawn canvases)
 cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
+				if(_evt2disp_z == 1){ //time
+					_evtdisps_obj[h]->GetZaxis()->SetTitle("time [ns]")
+				}
+				else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
+					_evtdisps_obj[h]->GetZaxis()->SetTitle("responsibility")
+				}
+				else{
+				}
 				min_width.SetValue(eta_min, 0);
 				min_width.SetValue(phi_min, 1);
 				max_width.SetValue(eta_max, 0);
@@ -2996,7 +3012,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//128 - BHC jets - jet mass vs jet size
 		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJet_jetMass_jetSize","BHCJet_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
 		//129 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis (overall event)
-		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;eta;phi;energy",344,-3,3,360,0,8*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;#eta;#phi;Energy [GeV]",344,-3,3,360,0,8*atan(1));
 		//130 - reco AK8 jet mass vs reco jet pt
 		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8Jet_jetMass_jetSize","recoAK8Jet_jetMass_jetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
 		//131 - reco AK15 jet mass vs reco jet pt
