@@ -953,6 +953,10 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][138]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][140]->Fill(subclsize, consts[c].t());
 											_procCats[p].hists2D[pt][142]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
+					//check if subcl pt > jet pt
+					if(consts[c].pt() > _predJets[j].pt()){
+						cout << "jet #" << j << " has pt " << _predJets[j].pt() << " const #" << c << " has pt " << consts[c].pt() << endl;
+					}
 											_procCats[p].hists2D[pt][144]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative pt
 											_procCats[p].hists2D[pt][146]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), consts[c].pt() / _predJets[j].pt());
