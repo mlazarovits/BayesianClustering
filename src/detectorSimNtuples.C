@@ -168,6 +168,7 @@ int main(int argc, char *argv[]){
    		cout << "   --help(-h)                    print options" << endl;
    		cout << "   --nPU [nPU]                   simulate nPU pileup events (default = 0: PU off)" << endl;
    		cout << "   --ootPU                       simulate OOT pileup events (default = off)" << endl;
+   		cout << "   --reducePU                    reduce PU to only reconstruct PU emissions within dR = 5 of hard scattering (default = off)" << endl;
    		cout << "   --recoChargedPU               turn on reconstruction of charged particles from PU vertices (default = off - does not do reconstruction)" << endl;
    		cout << "   --noShower                    turn off calorimeter showering and energy and time smearing for PF approximation (default = off - showering + smearing on)" << endl;
 		cout << "   --ttbar                       simulate ttbar" << endl;
