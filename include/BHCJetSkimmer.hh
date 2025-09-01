@@ -1951,7 +1951,8 @@ cout << "avgPart E " << avgPartE << endl;
 		//window_width = width of event display in [deta, dphi] per gen object s.t. window_width[i] = BayesPoint(deta, dphi) for object i
 		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
 		void WriteEventDisplays(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
-			if(_procCats[0].hists2D[0][129]->Integral() == 0) return; //don't write canvases if this event display isn't filled
+			if(_procCats[0].hists2D[0][129]->Integral() == 0){ cout << "skipping all evt disps" << endl; return;} //don't write canvases if this event display isn't filled
+			cout << "writing event display hist" << endl;
 			ofile->cd();
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
@@ -1976,7 +1977,7 @@ cout << "avgPart E " << avgPartE << endl;
 			for(auto it = center_coords.begin(); it != center_coords.end(); it++){
 				names.push_back(it->first);
 			}
-	
+cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;	
 			//write object specific plots
 			for(int h = 0; h < _evtdisps_obj.size(); h++){
 				//get match string for center + width
@@ -1984,6 +1985,7 @@ cout << "avgPart E " << avgPartE << endl;
 				string objmatch = "EvtDisplay_etaCell_phiCell_";
 				name = name.substr(objmatch.size());
 				//skip hists that aren't filled
+				cout << "hist #" << h << " name of obj evtdisp to be filled " << name << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
 
 				BayesPoint center = center_coords[name];
