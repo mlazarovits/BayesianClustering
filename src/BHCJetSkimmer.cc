@@ -130,46 +130,39 @@ void BHCJetSkimmer::Skim(){
 			}
 		}
 		else if(_sel == boostTop){
-			//if any leptonic top decays, continue
+			//if any leptonic Top decays, continue
 			int nTops = _base->Top_decayId->size();
 			if(nTops < 1) continue;
 			bool lepTop = _base->Top_decayId->at(0);
-			//cout << "lepTop top 1 - " << lepTop << endl;
-			if(nTops > 1){
-				lepTop = lepTop && _base->Top_decayId->at(1);
-				//cout << "lepTop top 2 - " << _base->Top_decayId->at(1) << endl;
-			}
 			//cout << "lepTop evt - " << lepTop << endl;
-			if(lepTop){ cout << "Fully leptonic top decay - skipping" << endl; continue;}
-			//tops are ordered highest to lowest energy, top decay ids follow the same order (ie first top decay id is associated to first top)
-			//at least 1 top quark with pt, E requirements
-			int ntop = 0;
+			//at least 1 W with pt, E requirements
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
-				//cout << "genparts idx " << g << " topidx " << genidx << " e " << _base->genpart_energy->at(genidx) << " decay idx " << ntop << endl;
-				topidx_decayidx[genidx] = ntop;
-				ntop++;
+				//make sure Top has hadronic decay
+				bool lep = _base->Top_decayId->at(genidx);
+				if(lep){ cout << "Fully leptonic Top - skipping this Top" << endl; continue;}
+				if(i % SKIP == 0) cout << " has Top with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << " decay id " << lep << endl;
+			
+
+				//get decay products
+				for(int gg = 0; gg < _genparts.size(); gg++){
+					if(gg == g) continue;
+					int ggenidx = _genparts[gg].GetUserIdx();
+					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
+				cout << "saving Top daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
+					//phi distribution debugging - only look at events w/ jets (ie quarks) in some window around 0 and 2pi
+					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
+					_genq.push_back(_genparts[gg]);
+				}
+				_genTop.push_back(_genparts[g]);
 			}
-			ntop = 0;
-			for(int g = 0; g < _genparts.size(); g++){
-				int genidx = _genparts[g].GetUserIdx();
-				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
-				if(_genparts[g].pt() < _minTopPt) continue;
-				//make sure top has hadronic decay (0 - hadronic, 1 - leptonic)
-				//topdecayid: 0 = had, 1 = lep
-				bool lep = _base->Top_decayId->at(topidx_decayidx[genidx]);
-				//cout << "topidx " << g << " E " << _base->genpart_energy->at(genidx) << " decay idx " << topidx_decayidx[g] << " decay id " << _base->Top_decayId->at(topidx_decayidx[g]) << " lep " << lep << endl;	
-				if(lep) continue;
-				if(i % SKIP == 0) cout << " has hadronic top with pt " << _genparts[g].pt() << " and energy " << _genparts[g].E() << " and id " << _base->genpart_id->at(genidx) << " and pz " << _genparts[g].pz() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " decayid " << _base->Top_decayId->at(topidx_decayidx[genidx]) << endl;
-				ntop++;
-			}	
-			if(ntop < 1){
-				if(i % SKIP == 0) cout << " has no hadronic tops that pass pt > " << _minTopPt << endl;
+			
+			//at least 1 Top	
+			if(_genTop.size() < 1){ 
+				if(i % SKIP == 0) cout << " has no hadronic Tops that pass pt > " << _minTopPt << endl;
 				continue;
 			}
-
-
 		}
 		else if(_sel == QCDdijets){
 			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
@@ -409,67 +402,8 @@ void BHCJetSkimmer::Skim(){
 
 
 		if(_sel == boostTop){
-			if(_predJets.size() < 2) continue; //want at least two boosted tops in an event
-			//if there are any jets that are good matches to bs then the top can't be boosted, skip
-			vector<int> genbMatchIdxs(_predJets.size(),-1);
-			GenericMatchJet(_predJets,_genparts, genbMatchIdxs, 5); //dr match BHC jets to gen Ws
-			//want subleading jets to be very good matches to their respective gen b quarks (these are the "tags")
-			//good match = small dr, Eratio close to 1
-			vector<bool> bMatch(_predJets.size(), 0);
-			vector<Jet> topCand;
-			for(int j = 0; j < _predJets.size(); j++){
-				bool drGood = true;
-				bool EratioGood = true;
-				int genbidx = genbMatchIdxs[j];
-				if(genbidx == -1){
-					topCand.push_back(_predJets[j]);
-					continue;
-				}
-				//check dr
-				double dr = dR(_predJets[j].eta(), _predJets[j].phi(), _genparts[genbidx].eta(), _genparts[genbidx].phi());
-				//check Eratio
-				double Eratio = _predJets[j].E()/_genparts[genbidx].E();
-				//cout << "_pred jet #" << j << " has eta " << _predJets[j].eta() << " phi " << _predJets[j].phi() << " and E " << _predJets[j].E() << endl;
-				//cout << " gen-matched to b #" << genbidx << "  with eta " << _genparts[genbidx].eta() << " phi " << _genparts[genbidx].phi() << " and E " << _genparts[genbidx].E() << " dr " << dr << " Eratio " << Eratio << endl; 
-				if(dr > 0.1) drGood = false;
-				if(Eratio < 0.8 || Eratio > 1.2) EratioGood = false;
-				bMatch[j] = drGood && EratioGood;
-				//if bad b match - want to save associated top
-				if(!(drGood && EratioGood)){
-					//cout << "bad b match - saving associated top " << endl;
-					int genidx = _genparts[genbidx].GetUserIdx();
-					int bmom = _base->genpart_momIdx->at(genidx);
-					for(int g = 0; g < _genparts.size(); g++){
-						int ggenidx = _genparts[g].GetUserIdx();
-						if(fabs(_base->genpart_id->at(ggenidx)) != 6) continue;
-						//make sure top still passes gen pt req
-						if(_base->genpart_pt->at(ggenidx) < _minTopPt) continue;
-						//needs to be hadronic
-						bool lep = _base->Top_decayId->at(topidx_decayidx[ggenidx]);
-						if(lep) continue;	
-						if(ggenidx == bmom){ //save top
-							cout << "saving top # " << ggenidx << " for b " << genidx << " with energy " << _genparts[g].E() << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << endl;
-							_genTop.push_back(_genparts[g]);
-							break;
-						}	
-					}
-					topCand.push_back(_predJets[j]);
-
-				}
-				else{
-					_genb.push_back(_genparts[j]);
-		
-				}
-			}
-			cout << "# gen bs " << _genb.size() << " # top candidates " << topCand.size() << " # gen tops " << _genTop.size() << endl;
-			//if there's more than 1 good gen b match (ie not a candidate for a boosted top), skip
-			if(_genb.size() > 1){
-				continue;
-			}
-			else{
-				_predJets = topCand;
-			}
-
+			//at least 1 BHC jet
+			if(_predJets.size() < 1) continue;
 		}
 
 
