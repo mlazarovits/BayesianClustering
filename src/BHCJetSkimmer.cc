@@ -136,7 +136,6 @@ void BHCJetSkimmer::Skim(){
 			//at least 1 W with pt, E requirements
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
-cout << "gen part #" << g << " with genidx " << genidx << endl;
 				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
 				//make sure Top has hadronic decay
 				bool lep = _base->Top_decayId->at(_genTop.size());
@@ -159,7 +158,6 @@ cout << "gen part #" << g << " with genidx " << genidx << endl;
 					}
 						
 				}
-cout << "Widx " << Widx << endl;
 				//get W daughters
 				if(Widx != -1){
 					for(int gg = 0; gg < _genparts.size(); gg++){
@@ -172,7 +170,6 @@ cout << "Widx " << Widx << endl;
 					}
 
 				}
-cout << "saving top " << g << " of " << _genparts.size() << endl;
 				_genTop.push_back(_genparts[g]);
 			}
 			
