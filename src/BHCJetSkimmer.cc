@@ -105,8 +105,6 @@ void BHCJetSkimmer::Skim(){
 					int ggenidx = _genparts[gg].GetUserIdx();
 					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
 				cout << "saving W daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
-					//phi distribution debugging - only look at events w/ jets (ie quarks) in some window around 0 and 2pi
-					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
 					_genq.push_back(_genparts[gg]);
 				}
 				//skip W if not enough q's are in phi window
@@ -138,31 +136,54 @@ void BHCJetSkimmer::Skim(){
 			//at least 1 W with pt, E requirements
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
+cout << "gen part #" << g << " with genidx " << genidx << endl;
 				if(fabs(_base->genpart_id->at(genidx)) != 6) continue;
 				//make sure Top has hadronic decay
-				bool lep = _base->Top_decayId->at(genidx);
+				bool lep = _base->Top_decayId->at(_genTop.size());
 				if(lep){ cout << "Fully leptonic Top - skipping this Top" << endl; continue;}
 				if(i % SKIP == 0) cout << " has Top with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << " decay id " << lep << endl;
 			
 
 				//get decay products
+				int Widx = -1;
 				for(int gg = 0; gg < _genparts.size(); gg++){
 					if(gg == g) continue;
 					int ggenidx = _genparts[gg].GetUserIdx();
 					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
 				cout << "saving Top daughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
-					//phi distribution debugging - only look at events w/ jets (ie quarks) in some window around 0 and 2pi
-					if(_base->genpart_momIdx->at(ggenidx) != genidx) continue;
-					_genq.push_back(_genparts[gg]);
+					if(fabs(_base->genpart_id->at(ggenidx)) == 5)
+						_genb.push_back(_genparts[gg]);
+					if(fabs(_base->genpart_id->at(ggenidx)) == 24){
+						Widx = ggenidx;
+						_genW.push_back(_genparts[gg]);
+					}
+						
 				}
+cout << "Widx " << Widx << endl;
+				//get W daughters
+				if(Widx != -1){
+					for(int gg = 0; gg < _genparts.size(); gg++){
+						if(gg == g) continue;
+						if(gg == Widx) continue;
+						int ggenidx = _genparts[gg].GetUserIdx();
+						if(_base->genpart_momIdx->at(ggenidx) != Widx) continue;
+					cout << "saving Top granddaughter - id " << _base->genpart_id->at(ggenidx) << " eta " << _genparts[gg].eta() << " phi " << _genparts[gg].phi() << " energy " << _genparts[gg].e() << endl;
+						_genq.push_back(_genparts[gg]);		
+					}
+
+				}
+cout << "saving top " << g << " of " << _genparts.size() << endl;
 				_genTop.push_back(_genparts[g]);
 			}
 			
+cout << "1 - finished top selection" << endl;
 			//at least 1 Top	
 			if(_genTop.size() < 1){ 
-				if(i % SKIP == 0) cout << " has no hadronic Tops that pass pt > " << _minTopPt << endl;
+				if(i % SKIP == 0) cout << " has no hadronic Tops" << endl;
 				continue;
 			}
+cout << "2 - finished top selection" << endl;
+
 		}
 		else if(_sel == QCDdijets){
 			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
@@ -200,7 +221,7 @@ void BHCJetSkimmer::Skim(){
 			//if(nparton < 2) continue;
 
 		}
-	
+cout << "get gen jets" << endl;	
 
 		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
 		//if(_genjets.size() < 1){ cout << endl; continue; }
