@@ -1,4 +1,4 @@
-ifndef BHCJETSKIMMER_HH
+#ifndef BHCJETSKIMMER_HH
 #define BHCJETSKIMMER_HH
 #include "JetSimProducer.hh"
 #include "BaseSkimmer.hh"
@@ -469,12 +469,12 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt);
-			_hists2D.push_back(BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetW_highTimeVar_partonMatchRelSubclTimeVar_RelSubclSize);
-			_hists2D.push_back(BHCJetW_highTimeVar_partonNoMatchRelSubclTimeVar_RelSubclSize);
-			_hists2D.push_back(BHCJetW_highMassOvPt_partonMatchSubclMassOvPt_JetMassOvPt);
-			_hists2D.push_back(BHCJetW_highMassOvPt_partonNoMatchSubclMassOvPt_JetMassOvPt);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt);
 
@@ -1961,10 +1961,10 @@ cout << "avgPart E " << avgPartE << endl;
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
 			if(_evt2disp_z == 1){ //time
-				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("time [ns]")
+				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("time [ns]");
 			}
 			else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
-				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("responsibility")
+				_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("responsibility");
 			}
 			else{
 			}
@@ -2068,10 +2068,10 @@ cout << "at jet #" << j << " rh eta " << rh_pt.at(0) << " rh_phi " << rh_pt.at(1
 //TODO - check eta/phi_max/min values (see drawn canvases)
 cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
 				if(_evt2disp_z == 1){ //time
-					_evtdisps_obj[h]->GetZaxis()->SetTitle("time [ns]")
+					_evtdisps_obj[h]->GetZaxis()->SetTitle("time [ns]");
 				}
 				else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
-					_evtdisps_obj[h]->GetZaxis()->SetTitle("responsibility")
+					_evtdisps_obj[h]->GetZaxis()->SetTitle("responsibility");
 				}
 				else{
 				}
