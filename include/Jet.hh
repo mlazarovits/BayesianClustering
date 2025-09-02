@@ -505,6 +505,93 @@ class Jet{
 		}
 
 
+	//add PU cleaning method
+	//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
+	Jet CleanOutPU(double maxRelSize = 1, double minRelPt = 0.2, bool remove = false){
+		if(_constituents.size() < 1) return *this; //if no subclusters, return current jet
+		Matrix cov = GetCovariance();
+		
+		if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
+			cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+			return *this;
+		}
+		vector<double> eigvals;
+		vector<Matrix> eigvecs;
+		cov.eigenCalc(eigvals, eigvecs);
+		double jetsize = sqrt(eigvals[2]);
+
+		Jet cleanedJet;
+		vector<JetPoint> cleanedRhs;
+		//loop through constituents and reset rh weights based on above
+		//loop through rhs - for rechit n
+		//DOWNWEIGHTING
+		// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 1 - max(r_nk)
+		// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by max(r_nk)
+		//REMOVING
+		// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 0.
+		// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by 1.
+		//(unweighted) r_nk's are saved as rh weights
+		vector<bool> pass; //true = pass, false = fail
+		for(int k = 0; k < _constituents.size(); k++){
+			double rel_subcl_pt = _constituents[k].pt() / this->pt();
+			Matrix subcl_cov = _constituents[k].GetCovariance();
+			
+			if(subcl_cov.GetDims()[0] != 3 || subcl_cov.GetDims()[1] != 3){
+				cout << "Error: can't calculate size for matrix of size " << subcl_cov.GetDims()[0] << " x " << subcl_cov.GetDims()[1] << endl;
+				continue;
+			}
+			vector<double> eigvals;
+			vector<Matrix> eigvecs;
+			subcl_cov.eigenCalc(eigvals, eigvecs);
+			//define jet size as length of major axis
+			double rel_subcl_size = sqrt(eigvals[2]) / jetsize;
+
+			if(rel_subcl_pt > minRelPt && rel_subcl_size < maxRelSize)
+				pass.push_back(true);
+			else
+				pass.push_back(false);	
+		}
+
+		for(int n = 0; n < _nRHs; n++){
+			double maxRnk = 0;
+			int assignedK = -1;
+			JetPoint effRh;
+			for(int k = 0; k < _constituents.size(); k++){
+				effRh = _constituents[k]._rhs[n];
+				if(effRh.GetWeight() > maxRnk){
+					maxRnk = effRh.GetWeight();
+					assignedK = k;
+				}
+			}
+			if(pass[assignedK]){
+				effRh.SetWeight(1.);
+			}
+			else{
+				if(remove){
+					effRh.SetWeight(0.);
+				}
+				else{
+					effRh.SetWeight(1-maxRnk);
+				}
+			}
+			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+
+			cleanedRhs.push_back(effRh);
+		}
+		cleanedJet = Jet(cleanedRhs, _vtx);
+		for(int k = 0; k < pass.size(); k++){
+			if(remove){
+				if(pass[k])
+					cleanedJet.AddConstituent(_constituents[k]);
+			}
+			else{
+				cleanedJet.AddConstituent(_constituents[k]);
+			}
+		}	
+		return cleanedJet;
+	}
+
+
 	
 	protected:
 		void _ensure_valid_rap_phi() const{
