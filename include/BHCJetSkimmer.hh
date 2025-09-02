@@ -1576,7 +1576,7 @@ cout << "avgPart E " << avgPartE << endl;
 								Wpartons.push_back(_genparts[g]);
 							}
 							if(Wpartons.size() != 2){
-								cout << "Error: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
+								cout << "Warning: " << Wpartons.size() << " daughter particles found for W " << genWidx << " skipping hist filling" << endl;
 								continue;
 							}
 							double gendR = dR(Wpartons[0].eta(), Wpartons[0].phi(), Wpartons[1].eta(), Wpartons[1].phi());
