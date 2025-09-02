@@ -65,6 +65,7 @@ int main(int argc, char *argv[]){
 	bool check_merges = true;
 	int evtsel = 0;
 	int nghosts = 0;
+	int evt2disp = 1;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -111,6 +112,10 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"-t", 2) == 0){
 			i++;
     	 		thresh = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--evt2disp", 9) == 0){
+			i++;
+    	 		evt2disp = std::stoi(argv[i]);
    		}
 		if(strncmp(argv[i],"--thresh", 8) == 0){
 			i++;
@@ -244,6 +249,7 @@ int main(int argc, char *argv[]){
    		cout << "   --output(-o) [file]                  output root file" << endl;
    		cout << "   --strategy(-s) [strat]               sets clustering strategy (0 = NlnN, default; 1 = N2, 2 = gmm only, 3 = NlnN with reco AK4 rhs)" << endl;
    		cout << "   --evtSel [sel]                       set event selection (0: default - 2 partons, 1: single W, 2: boosted top, 3: QCD dijets)" << endl;
+   		cout << "   --evt2disp [evt]                     set event to display (default = 1)" << endl;
 		cout << "   --alpha(-a) [a]                      sets concentration parameter alpha for DPM in BHC (default = 0.1)" << endl;
    		cout << "   --EMalpha(-EMa) [a]                  sets concentration parameter alpha for variational EM GMM (default = 0.5)" << endl;
    		cout << "   --beta0 [beta0]                      set scale parameter on covariance for prior on mu (N(mu | m0, (beta0*Lambda)^-1) (default = 0.001)" << endl;
@@ -444,8 +450,7 @@ int main(int argc, char *argv[]){
 	skimmer.SetSmear(smear);
 	skimmer.CheckMerges(check_merges);
 	skimmer.SetNGhosts(nghosts);
-	//TODO: set by external flag
-	skimmer.SetEvent2Display(1);
+	skimmer.SetEvent2Display(evt2disp);
 	double cell = acos(-1)/180;
 	skimmer.SetMeasErrParams(cell, tres_cte, tres_stoch, tres_noise);
 
