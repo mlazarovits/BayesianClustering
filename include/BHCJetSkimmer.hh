@@ -993,9 +993,9 @@ cout << "avgPart E " << avgPartE << endl;
 					}
 											_procCats[p].hists2D[pt][144]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative pt
-											_procCats[p].hists2D[pt][146]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][146]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative size
-											_procCats[p].hists2D[pt][148]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), subclsize / jetsize);
+											_procCats[p].hists2D[pt][148]->Fill((subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
 											//subcl mass / pt vs jet mass / pt
 											_procCats[p].hists2D[pt][150]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
 											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
