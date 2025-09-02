@@ -277,7 +277,7 @@ cout << "get gen jets" << endl;
 			rhs.clear();
 		}
 		for(int p = 0; p < _procCats.size(); p++){
-			_procCats[p].hists1D[0][84]->Fill(nsubcls_tot);
+			_procCats[p].hists1D[0][70]->Fill(nsubcls_tot);
 			_procCats[p].hists2D[0][27]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
 		}
 		//do GMM for AK8
@@ -365,7 +365,7 @@ cout << "get gen jets" << endl;
 			_prod->GetRecHits(rhs, i);
 		}
 		for(auto rh : rhs){
-			_procCats[1].hists1D[0][77]->Fill(rh.t());
+			_procCats[1].hists1D[0][63]->Fill(rh.t());
 		}
 		//safety
 		if(rhs.size() < 1) continue;
@@ -435,7 +435,7 @@ cout << "get gen jets" << endl;
 					w = rh.E();
 				else if(_evt2disp_z == 1){
 					w = rh.t();
-					_procCats[0].hists2D[0][129]->GetZaxis()->SetTitle("time [ns]");
+					_procCats[0].hists2D[0][44]->GetZaxis()->SetTitle("time [ns]");
 					for(auto h : _evtdisps_obj){
 						h->GetZaxis()->SetTitle("time [ns]");
 					}
@@ -443,7 +443,7 @@ cout << "get gen jets" << endl;
 				else
 					w = rh.E(); //default energy weighted
 				if(w == 0) continue;
-				_procCats[0].hists2D[0][129]->Fill(rh.eta(), rh.phi(), w);
+				_procCats[0].hists2D[0][44]->Fill(rh.eta(), rh.phi(), w);
 
 			}
 			double eta = -999;
@@ -615,7 +615,7 @@ cout << "eta " << eta << " phi " << phi << endl;
 		for(int j = 0; j < _predJets.size(); j++){
 			nsubcls_tot += _predJets[j].GetNConstituents();
 		}
-		_procCats[1].hists2D[0][30]->Fill(nsubcls_tot, (int)_predJets.size());
+		_procCats[1].hists2D[0][5]->Fill(nsubcls_tot, (int)_predJets.size());
 		
 		cout << endl;
 	
