@@ -442,6 +442,7 @@ cout << "get gen jets" << endl;
 				}
 				else
 					w = rh.E(); //default energy weighted
+				if(w == 0) continue;
 				_procCats[0].hists2D[0][129]->Fill(rh.eta(), rh.phi(), w);
 
 			}
