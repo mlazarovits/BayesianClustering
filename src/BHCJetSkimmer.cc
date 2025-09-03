@@ -173,13 +173,11 @@ void BHCJetSkimmer::Skim(){
 				_genTop.push_back(_genparts[g]);
 			}
 			
-cout << "1 - finished top selection" << endl;
 			//at least 1 Top	
 			if(_genTop.size() < 1){ 
 				if(i % SKIP == 0) cout << " has no hadronic Tops" << endl;
 				continue;
 			}
-cout << "2 - finished top selection" << endl;
 
 		}
 		else if(_sel == QCDdijets){

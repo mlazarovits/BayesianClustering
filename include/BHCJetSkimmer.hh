@@ -1206,9 +1206,10 @@ cout << "avgPart E " << avgPartE << endl;
 			vector<int> genMatchIdxs_jet; //one per jet, follows same indexing as jets
 			GenericMatchJet(_recoAK4jets,_genAK4jets,genMatchIdxs_jet);
 			vector<int> genTopMatchIdxs; //one per jet, follows same indexing as jets
-			GenericMatchJet(_recoAK4jets,_genparts,genTopMatchIdxs, 6);
+			if(_sel == boostTop)
+				GenericMatchJet(_recoAK4jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs; //one per jet, follows same indexing as jets
-			GenericMatchJet(_recoAK4jets,_genparts,genWMatchIdxs, 24);
+			GenericMatchJet(_recoAK4jets,_genW,genWMatchIdxs);
 			vector<int> genqMatchIdxs; //one per jet, follows same indexing as jets
 			GenericMatchJet(_recoAK4jets,_genq,genqMatchIdxs);
 			vector<int> genGluonMatchIdxs; //one per jet, follows same indexing as jets
