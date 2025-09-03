@@ -32,6 +32,7 @@ def generateSubmission(args):
     reco_date["2017_DEG"] = "_09Aug2019_UL2017"
     reco_date["2018_DEG"] = "-15Feb2022"
     reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
+    reco_date["2022_MET"] = "-27Jun2023-v2"
     reco_date["2018"] = ""
     if "GJets" in args.inputSample:
     	inputFileList = "kucmsntuple_GJETS_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
@@ -247,7 +248,7 @@ def main():
     parser.add_argument('--era',help='era (run) for PDs',default='RunF')
     parser.add_argument('--selection',help='ntuple preselection or gluino mass',required=True)#choices=['MET100','AL1IsoPho','AL1IsoPhoMET100','MRL_MET100','MRL_None'],required=True)
     parser.add_argument('--output','-o',help='output label')
-    parser.add_argument('--year',help='year of sample',default='2017',choices=['2017','2018'])
+    parser.add_argument('--year',help='year of sample',default='2017',choices=['2017','2018','2022'])
     #which object to analyze (jets or photons currently supported)
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
