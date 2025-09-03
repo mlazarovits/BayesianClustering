@@ -17,7 +17,7 @@ Jet::Jet(){
 	_t = 0;
 	
 	_nRHs = 0;
-	
+	_idx = 999;	
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
 	_pi = 0;
@@ -47,6 +47,7 @@ Jet::Jet(double px, double py, double pz, double E){
 	_mu = Matrix(3,1);
 	_pi = 0;
 	
+	_idx = 999;	
 	_update_mom();
 
 }
@@ -460,16 +461,15 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		}
 		//set subcluster momentum three-vector and mass
 		//cov.mult(cov,1/totw);
-		//TODO - make sure jet covariance (center) == subcluster covariance (center) when # constituents == 1	
 		//subcl.SetCovariance(cov);
 		subcl.CalculateCenter();
 		subcl.CalculateCovariance();
-if(nsubcl == 1){
-cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
-cout << "subcl center eta " << subcl.eta() << " phi " << subcl.phi() << " jet eta " << _eta << " phi " << _phi << endl;
-cout << "subcl cov from CalcCov" << endl; subcl._cov.Print();
-cout << "jet cov" << endl; _cov.Print();
-}
+//if(nsubcl == 1){
+//cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
+//cout << "subcl center eta " << subcl.eta() << " phi " << subcl.phi() << " jet eta " << _eta << " phi " << _phi << endl;
+//cout << "subcl cov from CalcCov" << endl; subcl._cov.Print();
+//cout << "jet cov" << endl; _cov.Print();
+//}
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
 		_constituents.push_back(subcl);
 	}
