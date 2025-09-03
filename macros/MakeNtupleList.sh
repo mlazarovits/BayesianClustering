@@ -61,13 +61,6 @@ components1=($FILE1)
 for dir in "${components1[@]}"
 do
 	DIR1=$dir
-	
-	FILE2=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1})
-	IFS="/" read -ra components2 <<< "$FILE2"
-	DIR2="${components2[-1]}"
-	
-	FILE3=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1}/${DIR2})
-	
 	outfile=filelists/${DIR1}_list.txt
 	if [ -f ${outfile} ]; then
 		echo "Recreating file" $outfile
@@ -76,9 +69,21 @@ do
 		echo "Creating file" $outfile
 	fi
 	
-	for index in ${FILE3[@]}; do
-		#eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_R17_${SEL}_v24/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
-		xrdfs ${PREFIX} ls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
+	FILE2=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1})
+	#IFS="/" read -ra components2 <<< "$FILE2"
+	#for ddir in "${components2[@]}"
+	for ddir in $FILE2
+	do
+		DIR2=$ddir
+		echo $DIR2	
+		FILE3=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1}/${DIR2})
+		
+		
+		for index in ${FILE3[@]}; do
+			#eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_R17_${SEL}_v24/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
+			xrdfs ${PREFIX} ls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/${DIR1}/${DIR2}/${index}/ >> ${outfile}
+		done
+	
 	done
 	sed -i 's/^/root:\/\/cmseos.fnal.gov\//' ${outfile}
 	echo Wrote file list to $outfile
