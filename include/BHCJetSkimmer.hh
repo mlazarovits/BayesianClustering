@@ -513,13 +513,15 @@ class BHCJetSkimmer{
 			vector<int> genGluonMatchIdxs(_predJets.size(),-1);
 			vector<int> genqMatchIdxs(_predJets.size(),-1);
 			double openAng = -1;
-			if(_sel == boostTop){
+			if(_genTop.size() > 0)
 				GenericMatchJet(_predJets,_genTop, genTopMatchIdxs); //match BHC jets to good gen tops
-			}
-			else if(_sel == singW && _genq.size() > 1){
-				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
-				GenericMatchJet(_predJets,_genglu, genGluonMatchIdxs); //match BHC jets to good gen gluons
+			if(_genglu.size() > 0)
 				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen qs
+			if(_genW.size() > 0)
+				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
+			if(_genq.size() > 0)
+				GenericMatchJet(_predJets,_genglu, genGluonMatchIdxs); //match BHC jets to good gen gluons
+			if(_sel == singW && _genq.size() > 1){
 				//calculate polar opening angle bw gen partons from W
 				vector<double> v1, v2;
 
@@ -530,10 +532,6 @@ class BHCJetSkimmer{
 				openAng = acos(dotprod);
 				//cout << "dotprod " << dotprod << " openAng " << openAng << endl;
 			}
-			else if(_sel == QCDdijets){
-				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen Ws
-			}
-			else{ }
 	
 			int nsubs, bestMatchIdx;
 			for(int p = 0; p < _procCats.size(); p++){
@@ -1205,15 +1203,18 @@ cout << "avgPart E " << avgPartE << endl;
 			//do gen matching
 			vector<int> genMatchIdxs_jet; //one per jet, follows same indexing as jets
 			GenericMatchJet(_recoAK4jets,_genAK4jets,genMatchIdxs_jet);
-			vector<int> genTopMatchIdxs; //one per jet, follows same indexing as jets
-			if(_sel == boostTop)
+			vector<int> genTopMatchIdxs(_recoAK4jets.size(), -1); //one per jet, follows same indexing as jets
+			if(_genTop.size() > 0)
 				GenericMatchJet(_recoAK4jets,_genTop,genTopMatchIdxs);
-			vector<int> genWMatchIdxs; //one per jet, follows same indexing as jets
-			GenericMatchJet(_recoAK4jets,_genW,genWMatchIdxs);
-			vector<int> genqMatchIdxs; //one per jet, follows same indexing as jets
-			GenericMatchJet(_recoAK4jets,_genq,genqMatchIdxs);
-			vector<int> genGluonMatchIdxs; //one per jet, follows same indexing as jets
-			GenericMatchJet(_recoAK4jets,_genglu,genGluonMatchIdxs);
+			vector<int> genWMatchIdxs(_recoAK4jets.size(), -1); //one per jet, follows same indexing as jets
+			if(_genW.size() > 0)
+				GenericMatchJet(_recoAK4jets,_genW,genWMatchIdxs);
+			vector<int> genqMatchIdxs(_recoAK4jets.size(), -1); //one per jet, follows same indexing as jets
+			if(_genq.size() > 0)
+				GenericMatchJet(_recoAK4jets,_genq,genqMatchIdxs);
+			vector<int> genGluonMatchIdxs(_recoAK4jets.size(), -1); //one per jet, follows same indexing as jets
+			if(_genglu.size() > 0)
+				GenericMatchJet(_recoAK4jets,_genglu,genGluonMatchIdxs);
 			for(int p = 0; p < _procCats.size(); p++){
 				//cout << "process #" << p << ": " << _procCats[p].plotName << endl;
 				njets = _recoAK4jets.size();
@@ -1400,13 +1401,17 @@ cout << "avgPart E " << avgPartE << endl;
 		void FillRecoAK8JetHists(){
 			//do gen matching
 			vector<int> genTopMatchIdxs; 
-			GenericMatchJet(_recoAK8jets,_genTop,genTopMatchIdxs);
+			if(_genTop.size() > 0)
+				GenericMatchJet(_recoAK8jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs; 
-			GenericMatchJet(_recoAK8jets,_genW,genWMatchIdxs);
+			if(_genW.size() > 0)
+				GenericMatchJet(_recoAK8jets,_genW,genWMatchIdxs);
 			vector<int> genGluonMatchIdxs; 
-			GenericMatchJet(_recoAK8jets,_genglu,genGluonMatchIdxs);
+			if(_genglu.size() > 0)
+				GenericMatchJet(_recoAK8jets,_genglu,genGluonMatchIdxs);
 			vector<int> genqMatchIdxs; 
-			GenericMatchJet(_recoAK8jets,_genq,genqMatchIdxs);
+			if(_genq.size() > 0)
+				GenericMatchJet(_recoAK8jets,_genq,genqMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
 			//	if(genMatchIdxs_p[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs_p[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_p[b]), _base->genpart_phi->at(genMatchIdxs_p[b]), _recoAK4jets[b].eta(), _recoAK4jets[b].phi()) << endl;
@@ -1521,13 +1526,17 @@ cout << "avgPart E " << avgPartE << endl;
 		void FillRecoAK15JetHists(){
 			//do gen matching
 			vector<int> genTopMatchIdxs; 
-			GenericMatchJet(_recoAK15jets,_genTop,genTopMatchIdxs);
+			if(_genTop.size() > 0)
+				GenericMatchJet(_recoAK15jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs; 
-			GenericMatchJet(_recoAK15jets,_genW,genWMatchIdxs);
+			if(_genW.size() > 0)
+				GenericMatchJet(_recoAK15jets,_genW,genWMatchIdxs);
 			vector<int> genGluonMatchIdxs; 
-			GenericMatchJet(_recoAK15jets,_genglu,genGluonMatchIdxs);
+			if(_genglu.size() > 0)
+				GenericMatchJet(_recoAK15jets,_genglu,genGluonMatchIdxs);
 			vector<int> genqMatchIdxs; 
-			GenericMatchJet(_recoAK15jets,_genq,genqMatchIdxs);
+			if(_genq.size() > 0)
+				GenericMatchJet(_recoAK15jets,_genq,genqMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
 			//	if(genMatchIdxs_p[b] != -1) cout << " jet " << b << " is exclusively matched to gen particle " << genMatchIdxs_p[b] << " with dr " << dR(_base->genpart_eta->at(genMatchIdxs_p[b]), _base->genpart_phi->at(genMatchIdxs_p[b]), _recoAK4jets[b].eta(), _recoAK4jets[b].phi()) << endl;
