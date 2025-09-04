@@ -521,7 +521,7 @@ class BHCJetSkimmer{
 				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
 			if(_genq.size() > 0)
 				GenericMatchJet(_predJets,_genglu, genGluonMatchIdxs); //match BHC jets to good gen gluons
-			if(_sel == singW && _genq.size() > 1){
+			if(_sel == singW && _genq.size() > 0){
 				//calculate polar opening angle bw gen partons from W
 				vector<double> v1, v2;
 
@@ -843,9 +843,9 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][56]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
 											_procCats[p].hists2D[pt][58]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative pt
-											_procCats[p].hists2D[pt][60]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][60]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative size
-											_procCats[p].hists2D[pt][62]->Fill(subcl_cov.at(2,2) / jet_cov.at(2,2), subclsize / jetsize);
+											_procCats[p].hists2D[pt][62]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
 											//subcl mass / pt vs jet mass / pt
 											_procCats[p].hists2D[pt][64]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
 											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
@@ -872,7 +872,7 @@ cout << "avgPart E " << avgPartE << endl;
 											//relative time variance vs relative pt
 											_procCats[p].hists2D[pt][59]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative size
-											_procCats[p].hists2D[pt][61]->Fill((subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
+											_procCats[p].hists2D[pt][61]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
 											//subcl mass / pt vs jet mass / pt
 											_procCats[p].hists2D[pt][63]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
 											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
@@ -1404,13 +1404,13 @@ cout << "avgPart E " << avgPartE << endl;
 			if(_genTop.size() > 0)
 				GenericMatchJet(_recoAK8jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs(_recoAK8jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genW.size() > 1)
+			if(_genW.size() > 0)
 				GenericMatchJet(_recoAK8jets,_genW,genWMatchIdxs);
 			vector<int> genqMatchIdxs(_recoAK8jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genq.size() > 1)
+			if(_genq.size() > 0)
 				GenericMatchJet(_recoAK8jets,_genq,genqMatchIdxs);
 			vector<int> genGluonMatchIdxs(_recoAK8jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genglu.size() > 1)
+			if(_genglu.size() > 0)
 				GenericMatchJet(_recoAK8jets,_genglu,genGluonMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
@@ -1529,13 +1529,13 @@ cout << "avgPart E " << avgPartE << endl;
 			if(_genTop.size() > 0)
 				GenericMatchJet(_recoAK15jets,_genTop,genTopMatchIdxs);
 			vector<int> genWMatchIdxs(_recoAK15jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genW.size() > 1)
+			if(_genW.size() > 0)
 				GenericMatchJet(_recoAK15jets,_genW,genWMatchIdxs);
 			vector<int> genqMatchIdxs(_recoAK15jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genq.size() > 1)
+			if(_genq.size() > 0)
 				GenericMatchJet(_recoAK15jets,_genq,genqMatchIdxs);
 			vector<int> genGluonMatchIdxs(_recoAK15jets.size(),-1); //one per jet, follows same indexing as jets
-			if(_genglu.size() > 1)
+			if(_genglu.size() > 0)
 				GenericMatchJet(_recoAK15jets,_genglu,genGluonMatchIdxs);
 			//cout << "final best matches" << endl;
 			//for(int b = 0; b < genMatchIdxs_p.size(); b++){
