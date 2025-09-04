@@ -2221,7 +2221,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//16 - time-phi covariance
 		TH1D* predJet_subClustertimePhiCov = new TH1D("BHCJet_subclusterTimePhiCov","BHCJet_subclusterTimePhiCov",50,-0.05,0.05);
 		//17 - n reco AK4 jets
-		TH1D* nRecoJets = new TH1D("recoAK4_nJets","recoAK4_nJets",30,0,30);
+		TH1D* nRecoJets = new TH1D("recoAK4Jet_nJets","recoAK4Jet_nJets",30,0,30);
 		//18 - reco AK4 jet size
 		TH1D* recoJet_jetSize = new TH1D("recoAK4Jet_jetSize","recoAK4Jet_jetSize",50,0,2.);
 		//19 - reco AK4 jet energy
@@ -2300,7 +2300,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//54 - 65 - gen AK4 jet energy
 		TH1D* genAK4Jet_energy = new TH1D("genAK4Jet_energy","genAK4Jet_energy",25,0,500);
 		//55 - 66 - # gen AK4 jets
-		TH1D* nJet_genAK4Jet = new TH1D("genAK4_nJets","genAK4_nJets",30,0,30);
+		TH1D* nJet_genAK4Jet = new TH1D("genAK4Jet_nJets","genAK4Jet_nJets",30,0,30);
 		//BREAK!!!!! -13
 		//56 - 69 - dR bw gen jet and gen top its exclusively matched to
 		TH1D* genAK4JetTop_dR = new TH1D("genAK4Jet_genTop_dR","genAK4Jet_genTop_dR",25,0,1.5);
@@ -2355,14 +2355,14 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//80 - 96 - gen AK15 jet energy
 		TH1D* genAK15Jet_energy = new TH1D("genAK15Jet_energy","genAK15Jet_energy",25,0,500);
 		//81 - 97 - # gen AK15 jets
-		TH1D* nJet_genAK15Jet = new TH1D("genAK15_nJets","genAK15_nJets",30,0,30);
+		TH1D* nJet_genAK15Jet = new TH1D("genAK15Jet_nJets","genAK15Jet_nJets",30,0,30);
 		//BREAK!!!! -18
 		//82 - 100 - dR bw gen jet and gen top its exclusively matched to
 		TH1D* genAK15JetTop_dR = new TH1D("genAK15Jet_genTop_dR","genAK15Jet_genTop_dR",25,0,1.5);
 		//83 - 101 - E ratio bw gen jet and gen top its exclusively matched to - gen jet energy/gen top energy
 		TH1D* genAK15JetTop_Eratio = new TH1D("genAK15Jet_genTop_Eratio","genAK15Jet_genTop_Eratio",25,0,2);
 		//84 - 102 - n reco AK8 jets
-		TH1D* nRecoAK8Jets = new TH1D("recoAK8_nJets","recoAK8_nJets",30,0,30);
+		TH1D* nRecoAK8Jets = new TH1D("recoAK8Jet_nJets","recoAK8Jet_nJets",30,0,30);
 		//85 - 103 - reco AK8 jet eta at detector
 		TH1D* recoAK8Jet_eta = new TH1D("recoAK8Jet_EtaCenter","recoAK8Jet_EtaCenter",25,-3.2,3.2);
 		//86 - 104 - reco AK8 jet phi at detector
@@ -2384,7 +2384,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//94 - 112 - reco AK8 jet size
 		TH1D* recoAK8Jet_jetSize = new TH1D("recoAK8Jet_jetSize","recoAK8Jet_jetSize",50,0,2.);
 		//95 - 113 - n reco AK15 jets
-		TH1D* nRecoAK15Jets = new TH1D("recoAK15_nJets","recoAK15_nJets",30,0,30);
+		TH1D* nRecoAK15Jets = new TH1D("recoAK15Jet_nJets","recoAK15Jet_nJets",30,0,30);
 		//96 - 114 - gen AK15 jet eta at detector
 		TH1D* recoAK15Jet_eta = new TH1D("recoAK15Jet_EtaCenter","recoAK15Jet_EtaCenter",25,-3.2,3.2);
 		//97 - 115 - reco AK15 jet phi at detector
@@ -2406,7 +2406,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//105 - 123 - reco AK15 jet size
 		TH1D* recoAK15Jet_jetSize = new TH1D("recoAK15Jet_jetSize","recoAK15Jet_jetSize",50,0,2.);
 		//106 - 124 - n gen AK8 jets
-		TH1D* nGenAK8Jets = new TH1D("genAK8_nJets","genAK8_nJets",30,0,30);
+		TH1D* nGenAK8Jets = new TH1D("genAK8Jet_nJets","genAK8Jet_nJets",30,0,30);
 		//107 - 125 - gen AK15 jet eta at detector
 		TH1D* genAK8Jet_eta = new TH1D("genAK8Jet_EtaCenter","genAK8Jet_EtaCenter",25,-3.2,3.2);
 		//108 - 126 - gen AK8 jet phi at detector
@@ -2582,7 +2582,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//193 - 211 - dR bw parton and PU-cleaned subclusters for bhc jets matched to Ws
 		TH1D* BHCJetW_subclParton_dR_PUcleaned = new TH1D("BHCJetW_subclParton_dR_PUcleaned","BHCJetW_subclParton_dR_PUcleaned",25,0,2);
 		//194 - 212 - # bhc jets with ==2 cleaned subclusters matched to Ws / # bhc jets matched to Ws
-		TH1D* nBHCJetsW_eq2cleanedSubcls = new TH1D("BHC_nJetsW_eq2cleanedSubcls","BHC_nJetsW_eq2cleanedSubcls",30,0,30);
+		TH1D* nBHCJetsW_eq2cleanedSubcls = new TH1D("BHCJetW_nJets_eq2cleanedSubcls","BHCJetW_nJets_eq2cleanedSubcls",30,0,30);
 		//195 - 213 - time of PU-like subclusters from bhc jets
 		TH1D* BHCJet_subclTimeCenter_PUlike = new TH1D("BHCJet_subclTimeCenter_PUlike","BHCJet_subclTimeCenter_PUlike",25,-1.,1.);
 		//196 - 214 - time of PU-cleaned suclusters from bhc jets
