@@ -1743,10 +1743,11 @@ void HistFormatSim(string file, string proc = ""){
 	}
 
 	//including pttypes makes pt-split plots for reco and BHC
-	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, jettypes_genBHC, oname, "nJets",{"lead"}); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets",{"lead"}); 
+	MethodStackHists(file, proc, jettypes_genBHC, oname, "Jet_nJets"); 
+	MethodStackHists(file, proc, jettypes_genBHC, oname, "Jet_nJets",{"lead"}); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_nJets"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_nJets",{"lead"}); 
+
 	
 	//MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
 	//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
@@ -1760,6 +1761,7 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_energy"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_pt"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass");
+	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_EtaCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_EtaCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_PhiCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_TimeCenter",pttypes); 
@@ -1824,6 +1826,7 @@ void HistFormatSim(string file, string proc = ""){
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPtOvJetPt","W_highMass_partonNoMatchSubclPtOvJetPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSizeOvJetSize","W_highMass_partonNoMatchSubclSizeOvJetSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		Hist2D(file, proc, "BHC", oname, "W_highMass");
+		Hist2D(file, proc, "BHC", oname, "W_highTimeVar");
 
 	}
 	if(proc.find("gluon") != string::npos){
