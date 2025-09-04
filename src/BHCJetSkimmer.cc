@@ -108,6 +108,7 @@ void BHCJetSkimmer::Skim(){
 					_genq.push_back(_genparts[gg]);
 				}
 				//skip W if not enough q's are in phi window
+				cout << "saving W - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
 				_genW.push_back(_genparts[g]);
 			}
 			
@@ -121,7 +122,8 @@ void BHCJetSkimmer::Skim(){
 				for(int g = 0; g < _genparts.size(); g++){
 					int genidx = _genparts[g].GetUserIdx();
 					if(fabs(_base->genpart_id->at(genidx)) == 21){
-						if(i % SKIP == 0) cout << " has gluon with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << endl;
+						//if(i % SKIP == 0) cout << " has gluon with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << endl;
+						cout << "saving gluon - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
 						_genglu.push_back(_genparts[g]);	
 					}
 				}
@@ -141,6 +143,7 @@ void BHCJetSkimmer::Skim(){
 				bool lep = _base->Top_decayId->at(_genTop.size());
 				if(lep){ cout << "Fully leptonic Top - skipping this Top" << endl; continue;}
 				if(i % SKIP == 0) cout << " has Top with pt " << _base->genpart_pt->at(genidx) << " and energy " << _base->genpart_energy->at(genidx) << " and id " << _base->genpart_id->at(genidx) << " and pz " << _base->genpart_pz->at(genidx) << " eta " << _base->genpart_eta->at(genidx) << " phi " << _base->genpart_phi->at(genidx) << " decay id " << lep << endl;
+				cout << "saving top - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
 			
 
 				//get decay products
@@ -182,11 +185,11 @@ void BHCJetSkimmer::Skim(){
 		}
 		else if(_sel == QCDdijets){
 			//at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
-			vector<int> p_ids = {1,2,3,4,5,21};
+			vector<int> p_ids = {1,2,3,4};
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(genidx))) == p_ids.end()) continue;
-				cout << "saving q/g - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
+				cout << "saving q - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << " momidx " << _base->genpart_momIdx->at(genidx) << endl;
 				_genq.push_back(_genparts[g]);
 			}
 			if(_genq.size() < 2) continue;
