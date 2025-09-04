@@ -328,7 +328,7 @@ cout << "event has " << nPU << " pileup vertices" << endl;
 			//may want to separate partons from hard QCD dijets and pileup (diffractive) - in which case save particles in each event before PU is added
 			//may want to save with a bool (pu, !pu)
 			if(_simqcd){
-				if(fabs(particle.status()) == 23){
+				if(fabs(particle.status()) == 23 && (p == 5 || p == 6)){
 					SaveGenInfo(p, -1, vtx);
 				}
 			}
