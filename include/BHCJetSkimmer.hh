@@ -2733,9 +2733,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//62 - 149 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs size of subclusters NOT gen-matched to W partons / size jet
 		TH2D* BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,5);
 		//63 - 150 - high mass + W-matched BHC jets - matched subcl mass / pt vs jet mass / pt 
-		TH2D* BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,10,25,0,10);
+		TH2D* BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,6,25,0,3);
 		//64 - 151 - high mass + W-matched BHC jets - NOT matched subcl mass / pt vs jet mass / pt 
-		TH2D* BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,10,25,0,10);
+		TH2D* BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt = new TH2D("BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt","BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt;SubclMassOvPt;JetMassOvPt",25,0,6,25,0,3);
 		//65 - 152 - high mass + W-matched BHC jets - subclSize (space + time) of subclsuters gen-matched to W partons / size (space + time) jet vs pt of subclusters gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt;RelSubclSizeSpatioTemp;RelSubclPt",25,0,5,25,0,1.2);
 		//66 - 153 - high mass + W-matched BHC jets - subclSize (space + time) of subclusters NOT gen-matched to W partons / size (space + time) jet vs pt of subclusters NOT gen-matched to W partons / pt jet
