@@ -556,23 +556,27 @@ class Jet{
 			double maxRnk = 0;
 			int assignedK = -1;
 			JetPoint effRh;
+			double totR = 0;
 			for(int k = 0; k < _constituents.size(); k++){
 				effRh = _constituents[k]._rhs[n];
 				if(effRh.GetWeight() > maxRnk){
 					maxRnk = effRh.GetWeight();
 					assignedK = k;
 				}
+				if(pass[k]) //responsibility of good subclusters sum to overall weight
+					totR += effRh.GetWeight();
 			}
-			if(pass[assignedK]){
-				effRh.SetWeight(1.);
-			}
-			else{
-				if(remove){
+		
+			if(remove){
+				if(pass[assignedK]){
+					effRh.SetWeight(1.);
+				}
+				else
 					effRh.SetWeight(0.);
-				}
-				else{
-					effRh.SetWeight(1-maxRnk);
-				}
+
+			}
+			else{ //downweight
+				effRh.SetWeight(totR);
 			}
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
 
