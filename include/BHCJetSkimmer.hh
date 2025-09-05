@@ -515,11 +515,11 @@ class BHCJetSkimmer{
 			double openAng = -1;
 			if(_genTop.size() > 0)
 				GenericMatchJet(_predJets,_genTop, genTopMatchIdxs); //match BHC jets to good gen tops
-			if(_genglu.size() > 0)
+			if(_genq.size() > 0)
 				GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen qs
 			if(_genW.size() > 0)
 				GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
-			if(_genq.size() > 0)
+			if(_genglu.size() > 0)
 				GenericMatchJet(_predJets,_genglu, genGluonMatchIdxs); //match BHC jets to good gen gluons
 			if(_sel == singW && _genq.size() > 0){
 				//calculate polar opening angle bw gen partons from W
