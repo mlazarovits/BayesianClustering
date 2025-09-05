@@ -316,8 +316,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(nBHCJetsW_eq2cleanedSubcls);
 			_hists1D.push_back(BHCJet_subclTimeCenter_PUlike);
 			_hists1D.push_back(BHCJet_subclTimeCenter_PUcleaned);
-			_hists1D.push_back(BHCJet_subClusterTimeSig_PUlike);
-			_hists1D.push_back(BHCJet_subClusterTimeSig_PUcleaned);
+			_hists1D.push_back(BHCJet_subclTimeSig_PUlike);
+			_hists1D.push_back(BHCJet_subclTimeSig_PUcleaned);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(geoEavg_diffDeltaTime_adjRhs);
@@ -690,10 +690,22 @@ class BHCJetSkimmer{
 						}
 						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(_maxRelSize, _minRelPt, false);
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(_maxRelSize, _minRelPt, true);
-						_procCats[p].hists1D[pt][191]->Fill(cleanedJet_downweight.mass());
-						_procCats[p].hists1D[pt][192]->Fill(cleanedJet_remove.mass());
 
+						//only plot for jets within a "gen frame" of gen W
+						if(_genW.size() == 1){ //only do for single W sample
+							double maxDr = 1.;
+							double dR_dwnwt = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_downweight.eta(), cleanedJet_downweight.phi());
+							if(dR_dwnwt < maxDr)	
+								_procCats[p].hists1D[pt][191]->Fill(cleanedJet_downweight.mass());
+							double dR_remove = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_remove.eta(), cleanedJet_remove.phi());
+							if(dR_remove < maxDr)	
+								_procCats[p].hists1D[pt][192]->Fill(cleanedJet_remove.mass());
 
+						}
+						if(p != 0 && pt == 0){ 
+							cout << "cleaned (dwnwt) pred jet #" << j << " phi " << cleanedJet_downweight.phi() << " eta " << cleanedJet_downweight.eta() << " energy " << cleanedJet_downweight.E() <<  " mass " << cleanedJet_downweight.mass() << " nConstituents " << cleanedJet_downweight.GetNConstituents() << " nRhs " << cleanedJet_downweight.GetNRecHits() << " pt " << cleanedJet_downweight.pt() << " jetsize " << jetsize << " eta var " << jet_cov.at(0,0) << " phi var " << jet_cov.at(1,1) << endl;
+							cout << "cleaned (remove) pred jet #" << j << " phi " << cleanedJet_remove.phi() << " eta " << cleanedJet_remove.eta() << " energy " << cleanedJet_remove.E() <<  " mass " << cleanedJet_remove.mass() << " nConstituents " << cleanedJet_remove.GetNConstituents() << " nRhs " << cleanedJet_remove.GetNRecHits() << " pt " << cleanedJet_remove.pt() << " jetsize " << jetsize << " eta var " << jet_cov.at(0,0) << " phi var " << jet_cov.at(1,1) << endl;
+						}
 
 						if(p == 0 && pt == 0) cout << "pred jet #" << j << " matched to reco AK4 jet #" << recoMatchIdxs[j] << " gen AK4 jet #" << genAK4MatchIdxs[j] << " and gen AK15 jet #" << genAK15MatchIdxs[j] << " and gen top #" << genTopMatchIdxs[j] << " and gen W #" << genWMatchIdxs[j] << endl;
 						//exclusively dr-matched to reco jet
@@ -883,7 +895,7 @@ cout << "avgPart E " << avgPartE << endl;
 									}
 
 								}	
-								//dR matched cleaned subclusters
+								//TODO - do only for cleaned jets within maxDr = 1 of gen W - dR matched cleaned subclusters
 								vector<int> subclGenMatchIdx_puCleaned(consts_puCleaned.size(), -1);	
 								GenericMatchJet(consts_puCleaned,Wpartons,subclGenMatchIdx_puCleaned); //match subclusters to W partons
 								for(int c = 0; c < consts_puCleaned.size(); c++){
@@ -1862,7 +1874,22 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				//skip hists that aren't filled
 				cout << "hist #" << h << " name of obj evtdisp to be filled " << name << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
-
+		
+				vector<int> jet_idxs; //which jets to draw	
+				if(name.find("W") != string::npos && _genW.size() > 0){
+					vector<int> genWMatchIdxs(_predJets.size(),-1);
+					GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
+					for(auto idx : genWMatchIdxs){
+						if(idx != -1) jet_idxs.push_back(idx);
+					}
+				}
+				if(name.find("q") != string::npos && _genq.size() > 0){
+					vector<int> genqMatchIdxs(_predJets.size(),-1);
+					GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen qs
+					for(auto idx : genqMatchIdxs){
+						if(idx != -1) jet_idxs.push_back(idx);
+					}
+				}
 				BayesPoint center = center_coords[name];
 				double eta_max = 0;
 				double phi_max = 0;
@@ -1873,6 +1900,7 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				BayesPoint min_width = BayesPoint({eta_min, phi_min});// - set by rhs drawn to get everything in frame = window_width[name];
 cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
 				for(int j = 0; j < _predJets.size(); j++){
+					if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
 					BayesPoint ell_center({_predJets[j].eta(), _predJets[j].phi()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
@@ -1966,6 +1994,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 				}
 				for(int j = 0; j < _predJets.size(); j++){
+					if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
 					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
@@ -1989,11 +2018,11 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					double dr = dR(ell_center.at(0), ell_center.at(1), 0., 0.);
 					if(dr > sqrt(width.at(0)*width.at(0) + width.at(1)*width.at(1))) continue;
 					
-					if(ell_center.at(0) + r_eta > max_width.at(0)) continue; 
-					if(ell_center.at(0) - r_eta < min_width.at(0)) continue; 
+					//if(ell_center.at(0) + r_eta > max_width.at(0)) continue; 
+					//if(ell_center.at(0) - r_eta < min_width.at(0)) continue; 
 
-					if(ell_center.at(1) + r_phi > max_width.at(1)) continue; 
-					if(ell_center.at(1) - r_phi < min_width.at(1)) continue; 
+					//if(ell_center.at(1) + r_phi > max_width.at(1)) continue; 
+					//if(ell_center.at(1) - r_phi < min_width.at(1)) continue; 
 					//if(fabs(r_eta) > fabs(width.at(0))) continue;
 					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
@@ -2596,9 +2625,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//196 - 214 - time of PU-cleaned suclusters from bhc jets
 		TH1D* BHCJet_subclTimeCenter_PUcleaned = new TH1D("BHCJet_subclTimeCenter_PUcleaned","BHCJet_subclTimeCenter_PUcleaned",25,-1.,1);
 		//197 - 215 - time var of PU-like subclusters from bhc jets
-		TH1D* BHCJet_subClusterTimeSig_PUlike = new TH1D("BHCJet_subclusterTimeSig_PUlike","BHCJet_subclusterTimeSig_PUlike",50,0.,5.);
+		TH1D* BHCJet_subclTimeSig_PUlike = new TH1D("BHCJet_subclTimeSig_PUlike","BHCJet_subclusterTimeSig_PUlike",50,0.,5.);
 		//198 - 216 - time var of PU-cleaned suclusters from bhc jets
-		TH1D* BHCJet_subClusterTimeSig_PUcleaned = new TH1D("BHCJet_subclusterTimeSig_PUcleaned","BHCJet_subclusterTimeSig_PUcleaned",50,0.,5.);
+		TH1D* BHCJet_subclTimeSig_PUcleaned = new TH1D("BHCJet_subclTimeSig_PUcleaned","BHCJet_subclusterTimeSig_PUcleaned",50,0.,5.);
 		
 
 
