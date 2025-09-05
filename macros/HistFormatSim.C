@@ -281,7 +281,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 			if(legentry.find(xtit) != string::npos){
 				legentry = legentry.substr(0,legentry.find(xtit));
 			}
-			//cout << "legentry " << legentry << endl;
+			cout << "legentry " << legentry << endl;
 		}
 		else continue;
 		//remove PD 
@@ -1247,7 +1247,7 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 
 	vector<TH1D*> histstot;
 	for(int m = 0; m < methods.size(); m++){
-		//cout << "method " << methods[m] << endl;	
+		cout << "method " << methods[m] << endl;	
 		TList* list = f->GetListOfKeys();
 		TIter iter(list);
 		TKey* key;
@@ -1731,7 +1731,6 @@ void HistFormatSim(string file, string proc = ""){
 	vector<string> pttypes = {"lead","notlead"};
 	vector<string> tottypes = {};
 
-
 	if(proc == ""){
 		ProcStackHists(file, procs, "BHC", oname, "subclusterEtaSig");
 		ProcStackHists(file, procs, "BHC", oname, "subclusterPhiSig");
@@ -1828,6 +1827,19 @@ void HistFormatSim(string file, string proc = ""){
 		Hist2D(file, proc, "BHC", oname, "W_highMass");
 		Hist2D(file, proc, "BHC", oname, "W_highTimeVar");
 
+		//PU cleaning hists - labels (last arg) need to match (or be in) given hist names
+		AnyStackHists(file, proc, "BHC", {"subclTimeCenter_PUlike","subclTimeCenter_PUcleaned"},oname,{"lead"},{"PUlike","PUcleaned"});
+		AnyStackHists(file, proc, "BHC", {"subclusterTimeSig_PUlike","subclusterTimeSig_PUcleaned"},oname,{"lead"},{"PUlike","PUcleaned"});
+		//AnyStackHists(file, proc, "BHC", {"Jet_mass","Jet_PUremoved_mass"},oname,{"lead"},{"BHCJet_mass","PUdownweighted","PUremoved"});
+		AnyStackHists(file, proc, "BHC", {"Jet_mass"},oname,{"lead"},{"BHCJet_mass","PUdownweighted","PUremoved"});
+
+
+		//causes segfault - need to rerun with _nom for the first hist
+		//AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR_nom","BHCJetW_subclParton_dR_PUcleaned"},oname,{"lead"},{"","PUcleaned"});
+		AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR"},oname,{"lead"},{"","PUcleaned"});
+		//need to pt separate correctly
+		//MethodStackHists(file, proc, {"BHC"}, oname, "JetW_nJets_eq2cleanedSubcls",{"lead"});
+
 	}
 	if(proc.find("gluon") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
@@ -1853,7 +1865,6 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio",{"lead"});
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR",{"lead"});
 	}
-
 
 	if(proc == "ttbar"){	
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_Eratio",{"lead"});
