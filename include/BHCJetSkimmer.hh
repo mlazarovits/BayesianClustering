@@ -310,9 +310,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetPt);
 			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclSizeOvJetSize);
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize);
-			_hists1D.push_back(BHCJet_mass_PUdownweighted);
-			_hists1D.push_back(BHCJet_mass_PUremoved);
-			_hists1D.push_back(BHCJetW_subclParton_dR_PUcleaned);
+			_hists1D.push_back(BHCJet_PUdownweighted_mass);
+			_hists1D.push_back(BHCJet_PUremoved_mass);
+			_hists1D.push_back(BHCJetW_subclParton_PUcleaned_dR);
 			_hists1D.push_back(nBHCJetsW_eq2cleanedSubcls);
 			_hists1D.push_back(BHCJet_subclTimeCenter_PUlike);
 			_hists1D.push_back(BHCJet_subclTimeCenter_PUcleaned);
@@ -561,6 +561,8 @@ class BHCJetSkimmer{
 				//loop over pt bins
 				njets = _predJets.size();
 				int njets_eq2CleanedSubcls = 0;
+				int njets_eq2CleanedSubcls_lead = 0;
+				int njets_eq2CleanedSubcls_notlead = 0;
 				for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 					for(int j = 0; j < _predJets.size(); j++){
 						//define pt bins
@@ -892,8 +894,11 @@ cout << "avgPart E " << avgPartE << endl;
 
 
 								}
-								njets_eq2CleanedSubcls++;
-								
+								if(consts_puCleaned.size() == 2){
+									if(pt == 0) njets_eq2CleanedSubcls++;
+									if(pt == 1 && cleanedJet_remove.pt() > _pt_thresh) njets_eq2CleanedSubcls_lead++;
+									if(pt == 2 && cleanedJet_remove.pt() <= _pt_thresh) njets_eq2CleanedSubcls_lead++;
+								}
 
 
 
@@ -978,7 +983,6 @@ cout << "avgPart E " << avgPartE << endl;
 							Jet leadcl = consts[0];
 							vector<Jet> subcls = {leadcl};
 							vector<int> genLeadMatchIdxs(1,-1);
-							//TODO: need to match subcl to THIS (ie genGluonMatchIdxs[j]) gen gluon
 							GenericMatchJet(subcls,_genq,genLeadMatchIdxs); //match subclusters to quarks
 							for(int c = 0; c < subcls.size(); c++){
 								int genmatchidx = genLeadMatchIdxs[c];
@@ -1004,7 +1008,6 @@ cout << "avgPart E " << avgPartE << endl;
 							Jet leadcl = consts[0];
 							vector<Jet> subcls = {leadcl};
 							vector<int> genLeadMatchIdxs(1,-1);
-							//TODO: need to match subcl to THIS (ie genGluonMatchIdxs[j]) gen gluon
 							GenericMatchJet(subcls,_genglu,genLeadMatchIdxs); //match subclusters to gluons
 							for(int c = 0; c < subcls.size(); c++){
 								int genmatchidx = genLeadMatchIdxs[c];
@@ -1018,7 +1021,12 @@ cout << "avgPart E " << avgPartE << endl;
 						}
 
 					}
-					_procCats[p].hists1D[pt][194]->Fill((double)njets/(double)njets_eq2CleanedSubcls);
+					if(p == 0) 
+						_procCats[p].hists1D[pt][194]->Fill((double)njets/(double)njets_eq2CleanedSubcls);
+					if(p == 1) 
+						_procCats[p].hists1D[pt][194]->Fill((double)njets_lead/(double)njets_eq2CleanedSubcls_lead);
+					if(p == 2) 
+						_procCats[p].hists1D[pt][194]->Fill((double)njets_notlead/(double)njets_eq2CleanedSubcls_notlead);
 				}
 			}
 		}
@@ -2576,11 +2584,11 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//190 - 208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
 		TH1D* BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize","BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 		//191 - 209 - PU-downweighted bhc jet mass
-		TH1D* BHCJet_mass_PUdownweighted = new TH1D("BHCJet_mass_PUdownweighted","BHCJet_mass_PUdownweighted",50,0,250);
+		TH1D* BHCJet_PUdownweighted_mass = new TH1D("BHCJet_PUdownweighted_mass","BHCJet_PUdownweighted_mass",50,0,250);
 		//192 - 210 - PU-removed bhc jet mass
-		TH1D* BHCJet_mass_PUremoved = new TH1D("BHCJet_mass_PUremoved","BHCJet_mass_PUremoved",50,0,250);
+		TH1D* BHCJet_PUremoved_mass = new TH1D("BHCJet_PUremoved_mass","BHCJet_PUremoved_mass",50,0,250);
 		//193 - 211 - dR bw parton and PU-cleaned subclusters for bhc jets matched to Ws
-		TH1D* BHCJetW_subclParton_dR_PUcleaned = new TH1D("BHCJetW_subclParton_dR_PUcleaned","BHCJetW_subclParton_dR_PUcleaned",25,0,2);
+		TH1D* BHCJetW_subclParton_PUcleaned_dR = new TH1D("BHCJetW_subclParton_PUcleaned_dR","BHCJetW_subclParton_PUcleaned_dR",25,0,2);
 		//194 - 212 - # bhc jets with ==2 cleaned subclusters matched to Ws / # bhc jets matched to Ws
 		TH1D* nBHCJetsW_eq2cleanedSubcls = new TH1D("BHCJetW_nJets_eq2cleanedSubcls","BHCJetW_nJets_eq2cleanedSubcls",30,0,30);
 		//195 - 213 - time of PU-like subclusters from bhc jets
