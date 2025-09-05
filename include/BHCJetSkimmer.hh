@@ -1058,8 +1058,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(_genAK4jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
-				_procCats[p].hists1D[1][66]->Fill(njets_lead);
-				_procCats[p].hists1D[2][66]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][55]->Fill(njets_lead);
+				_procCats[p].hists1D[2][55]->Fill(njets_notlead);
 				//gen match jets to particles
 				vector<int> genTopMatchIdxs;
 				GenericMatchJet(_genAK4jets,_genparts,genTopMatchIdxs, 6); //match gen AK4 jets to gen tops
@@ -1138,8 +1138,8 @@ cout << "avgPart E " << avgPartE << endl;
 					if(_genAK15jets[j].pt() >= _pt_thresh) njets_lead++;
 
 				}
-				_procCats[p].hists1D[1][97]->Fill(njets_lead);
-				_procCats[p].hists1D[2][97]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][81]->Fill(njets_lead);
+				_procCats[p].hists1D[2][81]->Fill(njets_notlead);
 				//cout << "gen matching gen jets to particles - start" << endl;
 				GenericMatchJet(_genAK15jets, _genparts, genTopMatchIdxs,6);
 				GenericMatchJet(_genAK15jets,_genparts,genWMatchIdxs, 24); //match gen AK4 jets to gen Ws
@@ -1430,8 +1430,8 @@ cout << "avgPart E " << avgPartE << endl;
 					//pt == 2 -> [0,_pt_thresh)
 					if(_recoAK8jets[j].pt() >= _pt_thresh) njets_lead++;
 				}
-				_procCats[p].hists1D[1][102]->Fill(njets_lead);
-				_procCats[p].hists1D[2][102]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][84]->Fill(njets_lead);
+				_procCats[p].hists1D[2][84]->Fill(njets_notlead);
 				for(int j = 0; j < _recoAK8jets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
@@ -2313,27 +2313,27 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJetTop_Eratio = new TH1D("BHCJet_genTop_Eratio","BHCJet_genTop_Eratio",25,0,2);
 		//60 - 74 - bhc jet eta center
 		TH1D* BHCJet_EtaCenter = new TH1D("BHCJet_EtaCenter","BHCJet_EtaCenter",25,-3.2,3.2);
-		//75 - bhc jet phi center
+		//61 - 75 - bhc jet phi center
 		TH1D* BHCJet_PhiCenter = new TH1D("BHCJet_PhiCenter","BHCJet_PhiCenter",25,0.,8*atan(1));
-		//76 - bhc jet center
+		//62 - 76 - bhc jet center
 		TH1D* BHCJet_TimeCenter = new TH1D("BHCJet_TimeCenter","BHCJet_TimeCenter",25,-1,1);
-		//77 - rh time
+		//63 - 77 - rh time
 		TH1D* rhTime = new TH1D("rhTime","rhTime",25,-10,10);
-		//78 - recoAK4 jet rh eta sig
+		//64 - 78 - recoAK4 jet rh eta sig
 		TH1D* recoAK4Jet_rhEtaSig = new TH1D("recoAK4Jet_EtaSig","recoAK4_EtaSig",50,0,1);
-		//79 - recoAK4 jet rh phi sig
+		//65 - 79 - recoAK4 jet rh phi sig
 		TH1D* recoAK4Jet_rhPhiSig = new TH1D("recoAK4Jet_PhiSig","recoAK4_PhiSig",50,0,1);
-		//80 - recoAK4 jet rh time sig
+		//66 - 80 - recoAK4 jet rh time sig
 		TH1D* recoAK4Jet_rhTimeSig = new TH1D("recoAK4Jet_TimeSig","recoAK4_TimeSig",50,0,15.);
-		//81 - reco AK4 jet center
+		//67 - 81 - reco AK4 jet center
 		TH1D* recoAK4Jet_TimeCenter = new TH1D("recoAK4Jet_TimeCenter","recoAK4Jet_TimeCenter",25,-1,1);
-		//82 - reco AK4 jet eta at detector
+		//68 - 82 - reco AK4 jet eta at detector
 		TH1D* recoAK4Jet_EtaCenter = new TH1D("recoAK4Jet_EtaCenter","recoAK4Jet_EtaCenter",25,-3.2,3.2);
-		//83 - reco AK4 jet phi at detector
+		//69 - 83 - reco AK4 jet phi at detector
 		TH1D* recoAK4Jet_PhiCenter = new TH1D("recoAK4Jet_PhiCenter","recoAK4Jet_PhiCenter",25,0.,8*atan(1));
-		//84 - reco AK4 jet # subclusters in event
+		//70 -84 - reco AK4 jet # subclusters in event
 		TH1D* recoAK4Jet_nSubclustersEvt = new TH1D("recoAK4Jet_nSubclustersEvt","recoAK4Jet_nSubclustersEvt",30,0,30);
-		//85 - dr bw subclusters in BHC jet
+		//71 - 85 - dr bw subclusters in BHC jet
 		TH1D* BHCJet_drSubclusters = new TH1D("BHCJet_drSubclusters","BHCJet_drSubclusters",50,0,0.1);
 		//72 - 86 - dr bw subclusters in reco AK4 jet
 		TH1D* recoAK4Jet_drSubclusters = new TH1D("recoAK4Jet_drSubclusters","recoAK4Jet_drSubclusters",50,0,0.1);
