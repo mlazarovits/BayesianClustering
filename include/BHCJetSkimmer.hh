@@ -30,7 +30,7 @@ class BHCJetSkimmer{
 			_evt2disp_z = 0;
 
 			_minRelPt = 0.2;
-			_maxRelSize = 1.;
+			_maxRelTimeVar = 1.;
 			
 			_minTopPt = 0;
 			_minTopE = 0;
@@ -91,7 +91,7 @@ class BHCJetSkimmer{
 			_evt2disp_z = 0;
 			
 			_minRelPt = 0.2;
-			_maxRelSize = 1.;
+			_maxRelTimeVar = 1.;
 			
 			_nGhosts = 0;
 			_check_merges = false;
@@ -675,7 +675,7 @@ class BHCJetSkimmer{
 							//PU cleaning subclusters
 							double subclsize_full = CalcSize(subcl_cov, true);
 							//hard subcl
-							if(consts[c].pt() / _predJets[j].pt() >= _minRelPt && subclsize_full / jetsize_full <= _maxRelSize){
+							if(consts[c].pt() / _predJets[j].pt() >= _minRelPt && sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) <= _maxRelTimeVar){
 								_procCats[p].hists1D[pt][196]->Fill(consts[c].t());
 								_procCats[p].hists1D[pt][198]->Fill(sqrt(subcl_cov.at(2,2)));
 								consts_puCleaned.push_back(consts[c]);
@@ -688,8 +688,8 @@ class BHCJetSkimmer{
 
 
 						}
-						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(_maxRelSize, _minRelPt, false);
-						Jet cleanedJet_remove = _predJets[j].CleanOutPU(_maxRelSize, _minRelPt, true);
+						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(_maxRelTimeVar, _minRelPt, false);
+						Jet cleanedJet_remove = _predJets[j].CleanOutPU(_maxRelTimeVar, _minRelPt, true);
 
 						//only plot for jets within a "gen frame" of gen W
 						if(_genW.size() == 1){ //only do for single W sample
@@ -909,7 +909,7 @@ cout << "avgPart E " << avgPartE << endl;
 								if(consts_puCleaned.size() == 2){
 									if(pt == 0) njets_eq2CleanedSubcls++;
 									if(pt == 1 && cleanedJet_remove.pt() > _pt_thresh) njets_eq2CleanedSubcls_lead++;
-									if(pt == 2 && cleanedJet_remove.pt() <= _pt_thresh) njets_eq2CleanedSubcls_lead++;
+									if(pt == 2 && cleanedJet_remove.pt() <= _pt_thresh) njets_eq2CleanedSubcls_notlead++;
 								}
 
 
@@ -2612,9 +2612,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJetW_highMass_partonMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclSizeOvJetSize","BHCJetW_highMass_partonMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 		//190 - 208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
 		TH1D* BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize","BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
-		//191 - 209 - PU-downweighted bhc jet mass
+		//191 - 209 - PU-downweighted bhc jet mass for jets within dR = 1 of gen W
 		TH1D* BHCJet_PUdownweighted_mass = new TH1D("BHCJet_PUdownweighted_mass","BHCJet_PUdownweighted_mass",50,0,250);
-		//192 - 210 - PU-removed bhc jet mass
+		//192 - 210 - PU-removed bhc jet mass for jets within dR = 1 of gen W
 		TH1D* BHCJet_PUremoved_mass = new TH1D("BHCJet_PUremoved_mass","BHCJet_PUremoved_mass",50,0,250);
 		//193 - 211 - dR bw parton and PU-cleaned subclusters for bhc jets matched to Ws
 		TH1D* BHCJetW_subclParton_PUcleaned_dR = new TH1D("BHCJetW_subclParton_PUcleaned_dR","BHCJetW_subclParton_PUcleaned_dR",25,0,2);
@@ -3190,7 +3190,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 
 		//PU cleaning stuff
-		double _minRelPt, _maxRelSize;
+		double _minRelPt, _maxRelTimeVar;
 		//function that takes in jet and returns new, PU-cleaned jet with bool option for subcl downweight or full removal
 
 		
