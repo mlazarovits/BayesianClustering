@@ -688,6 +688,7 @@ class BHCJetSkimmer{
 
 
 						}
+						//TODO: only do for samples with PU
 						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(_maxRelTimeVar, _minRelPt, false);
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(_maxRelTimeVar, _minRelPt, true);
 
@@ -1875,6 +1876,7 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				cout << "hist #" << h << " name of obj evtdisp to be filled " << name << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
 		
+				/*
 				vector<int> jet_idxs; //which jets to draw	
 				if(name.find("W") != string::npos && _genW.size() > 0){
 					vector<int> genWMatchIdxs(_predJets.size(),-1);
@@ -1890,6 +1892,7 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 						if(idx != -1) jet_idxs.push_back(idx);
 					}
 				}
+				*/
 				BayesPoint center = center_coords[name];
 				double eta_max = 0;
 				double phi_max = 0;
@@ -1900,7 +1903,7 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				BayesPoint min_width = BayesPoint({eta_min, phi_min});// - set by rhs drawn to get everything in frame = window_width[name];
 cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
 				for(int j = 0; j < _predJets.size(); j++){
-					if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
+					//if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
 					BayesPoint ell_center({_predJets[j].eta(), _predJets[j].phi()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
@@ -1953,7 +1956,7 @@ cout << "drawing rhs from jet #" << j << endl;
 							eta_min = rh_pt.at(0);
 						if(rh_pt.at(1) < phi_min)
 							phi_min = rh_pt.at(1);
-cout << "at jet #" << j << " rh eta " << rh_pt.at(0) << " rh_phi " << rh_pt.at(1) << " eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
+//cout << "at jet #" << j << " rh eta " << rh_pt.at(0) << " rh_phi " << rh_pt.at(1) << " eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
 						_evtdisps_obj[h]->Fill(rh_pt.at(0), rh_pt.at(1), rh_pt.w());
 					}
 				}
@@ -1994,7 +1997,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 				}
 				for(int j = 0; j < _predJets.size(); j++){
-					if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
+					//if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
 					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);

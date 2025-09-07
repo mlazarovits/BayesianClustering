@@ -508,9 +508,9 @@ class Jet{
 	//add PU cleaning method
 	//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
 	Jet CleanOutPU(double maxRelTimeVar = 1, double minRelPt = 0.2, bool remove = false){
-		if(_constituents.size() < 1) return *this; //if no subclusters, return current jet
+		if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
+
 		Matrix cov = GetCovariance();
-		
 		Jet cleanedJet;
 		vector<JetPoint> cleanedRhs;
 		//loop through constituents and reset rh weights based on above
@@ -532,7 +532,8 @@ class Jet{
 			if(rel_subcl_pt > minRelPt && rel_subcl_size < maxRelTimeVar)
 				pass.push_back(true);
 			else
-				pass.push_back(false);	
+				pass.push_back(false);
+//cout << "subcluster #" << k << " rel time var " << rel_subcl_size << " rel pt " << rel_subcl_pt << " pass? " << pass[k] << endl;	
 		}
 
 		for(int n = 0; n < _nRHs; n++){
@@ -540,6 +541,7 @@ class Jet{
 			int assignedK = -1;
 			JetPoint effRh;
 			double totR = 0;
+//cout << "rh #" << n;
 			for(int k = 0; k < _constituents.size(); k++){
 				effRh = _constituents[k]._rhs[n];
 				if(effRh.GetWeight() > maxRnk){
@@ -548,6 +550,7 @@ class Jet{
 				}
 				if(pass[k]) //responsibility of good subclusters sum to overall weight
 					totR += effRh.GetWeight();
+//cout << " subcl #" << k << " r_nk " << effRh.GetWeight();
 			}
 		
 			if(remove){
@@ -562,10 +565,12 @@ class Jet{
 				effRh.SetWeight(totR);
 			}
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+//cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E() << " original energy " << _rhs[n].e() << endl;
 
 			cleanedRhs.push_back(effRh);
 		}
 		cleanedJet = Jet(cleanedRhs, _vtx);
+cout << "cleaned jet energy " << cleanedJet.e() << " pt " << cleanedJet.pt() << " mass " << cleanedJet.mass() << " eta " << cleanedJet.eta() << " phi " << cleanedJet.phi() << endl; 
 		for(int k = 0; k < pass.size(); k++){
 			if(remove){
 				if(pass[k])
