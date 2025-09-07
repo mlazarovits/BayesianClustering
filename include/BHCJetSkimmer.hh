@@ -318,6 +318,9 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_subclTimeCenter_PUcleaned);
 			_hists1D.push_back(BHCJet_subclTimeSig_PUlike);
 			_hists1D.push_back(BHCJet_subclTimeSig_PUcleaned);
+			_hists1D.push_back(BHCJet_PUdownweighted_nSubcleq2_mass);
+			_hists1D.push_back(BHCJet_PUdownweighted_nSubcllt2_mass);
+			_hists1D.push_back(BHCJet_PUdownweighted_nSubclgt2_mass);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(geoEavg_diffDeltaTime_adjRhs);
@@ -696,8 +699,18 @@ class BHCJetSkimmer{
 						if(_genW.size() == 1){ //only do for single W sample
 							double maxDr = 1.;
 							double dR_dwnwt = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_downweight.eta(), cleanedJet_downweight.phi());
-							if(dR_dwnwt < maxDr)	
+							if(dR_dwnwt < maxDr){
 								_procCats[p].hists1D[pt][191]->Fill(cleanedJet_downweight.mass());
+								if(cleanedJet_remove.GetNConstituents() == 2){
+									_procCats[p].hists1D[pt][199]->Fill(cleanedJet_downweight.mass());
+								}
+								else if(cleanedJet_remove.GetNConstituents() < 2){
+									_procCats[p].hists1D[pt][200]->Fill(cleanedJet_downweight.mass());
+								}
+								else{
+									_procCats[p].hists1D[pt][201]->Fill(cleanedJet_downweight.mass());
+								}
+							}
 							double dR_remove = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_remove.eta(), cleanedJet_remove.phi());
 							if(dR_remove < maxDr)	
 								_procCats[p].hists1D[pt][192]->Fill(cleanedJet_remove.mass());
@@ -2631,6 +2644,12 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJet_subclTimeSig_PUlike = new TH1D("BHCJet_subclTimeSig_PUlike","BHCJet_subclusterTimeSig_PUlike",50,0.,5.);
 		//198 - 216 - time var of PU-cleaned suclusters from bhc jets
 		TH1D* BHCJet_subclTimeSig_PUcleaned = new TH1D("BHCJet_subclTimeSig_PUcleaned","BHCJet_subclusterTimeSig_PUcleaned",50,0.,5.);
+		//199 - PU-downweighted bhc jet mass for jets within dR = 1 of gen W for # subclusters = 2
+		TH1D* BHCJet_PUdownweighted_nSubcleq2_mass = new TH1D("BHCJet_PUdownweighted_nSubcleq2_mass","BHCJet_PUdownweighted_nSubcleq2_mass",50,0,250);
+		//200 - PU-downweighted bhc jet mass for jets within dR = 1 of gen W for # subclusters < 2
+		TH1D* BHCJet_PUdownweighted_nSubcllt2_mass = new TH1D("BHCJet_PUdownweighted_nSubcllt2_mass","BHCJet_PUdownweighted_nSubcllt2_mass",50,0,250);
+		//201 - PU-downweighted bhc jet mass for jets within dR = 1 of gen W for # subclusters > 2
+		TH1D* BHCJet_PUdownweighted_nSubclgt2_mass = new TH1D("BHCJet_PUdownweighted_nSubclgt2_mass","BHCJet_PUdownweighted_nSubclgt2_mass",50,0,250);
 		
 
 
