@@ -168,6 +168,7 @@ struct RecoParticle;
 
 		void SimPFCandidates(){
 			_noShower = true;
+			SetTimeResModel(2);
 		}
 
 

@@ -261,10 +261,12 @@ int main(int argc, char *argv[]){
 	det.SetEventRange(evti,evtj);
 	det.SetVerbosity(verb);
 	det.SetEnergySmear(energy_c);
-	det.SetTimeResModel(timeResModel);
 	//det.SetTimeResCts(tres_cte, tres_stoch, tres_noise);
 	det.SetPtHatMin(pthatmin);
-	if(noshower) det.SimPFCandidates();
+	if(noshower)
+		det.SimPFCandidates();
+	else //default using extra precise time model for PF cand reco
+		det.SetTimeResModel(timeResModel);
 	if(ttbar) det.SimTTbar();
 	if(qcd) det.SimQCD();
 	if(singw) det.SimWgamma();
