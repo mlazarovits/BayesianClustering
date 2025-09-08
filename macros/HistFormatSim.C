@@ -450,7 +450,7 @@ cout << "col " << col << " mark " << mark << endl;
 	myleg->Draw("same"); 
 	gPad->Update();
 	if(highpt && !lowpt){
-		string jetsel_str = "175 #leq Jet p_{T}";
+		string jetsel_str = "Jet p_{T} #geq 175 GeV";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -458,12 +458,12 @@ cout << "col " << col << " mark " << mark << endl;
 		jetsel.DrawLatex(0.63,0.62,jetsel_str.c_str());
 	}
 	if(highpt && lowpt){
-		string jetsel_str = "#splitline{low p_{T}: 175 > Jet p_{T}}{high p_{T}: 175 #leq Jet p_{T}}";
+		string jetsel_str = "#splitline{low p_{T}: Jet p_{T} < 175 GeV}{high p_{T}: Jet p_{T} #geq 175 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.63,0.56,jetsel_str.c_str());
+		jetsel.DrawLatex(0.60,0.56,jetsel_str.c_str());
 		//adjust legend bounds
 		myleg->SetX1NDC(0.60);
 		myleg->SetY1NDC(0.65);
@@ -1419,6 +1419,16 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 			xlab = "Jet azimuthal angle (#phi)";
 		if(xlab == "Jet_nJets")
 			xlab = "Number of jets";
+		if(xlab.find("_dR") != string::npos){
+			string frac = xlab.substr(0,xlab.find("_dR_"));
+			if(frac.find("subclParton") != string::npos)
+				xlab = "#DeltaR_{subcluster}^{gen q}";
+		}
+		if(xlab.find("_Eratio") != string::npos){
+			string frac = xlab.substr(0,xlab.find("_Eratio"));
+			if(frac.find("subclParton") != string::npos)
+				xlab = "#frac{E_{subcluster}}{E_{gen q}}";
+		}
 		ylab = "a.u."; 
 	}
 	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
@@ -1900,8 +1910,8 @@ void HistFormatSim(string file, string proc = ""){
 		
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio");
-		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio",{"lead"});
-		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR",{"lead"});
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_Eratio",pttypes);
+		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_subclParton_dR",pttypes);
 		///MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetW_highMass_nSubclustersJet",{"lead"});
 	
 		AnyStackHists(file, proc, "BHC", {"W_highMass_nSubclustersJet","W_lowMass_nSubclustersJet","W_Wmass_nSubclustersJet"},oname,{"lead"},{"highMass","lowMass","Wmass"});
