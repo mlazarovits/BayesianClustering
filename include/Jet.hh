@@ -535,6 +535,12 @@ class Jet{
 				pass.push_back(false);
 //cout << "subcluster #" << k << " rel time var " << rel_subcl_size << " rel pt " << rel_subcl_pt << " pass? " << pass[k] << endl;	
 		}
+		//return empty jet if no subclusters pass criteria
+		if(find(pass.begin(), pass.end(), true) == pass.end()){
+			Jet ret;
+			return ret;
+		}
+
 
 		for(int n = 0; n < _nRHs; n++){
 			double maxRnk = 0;
@@ -570,7 +576,6 @@ class Jet{
 			cleanedRhs.push_back(effRh);
 		}
 		cleanedJet = Jet(cleanedRhs, _vtx);
-cout << "cleaned jet energy " << cleanedJet.e() << " pt " << cleanedJet.pt() << " mass " << cleanedJet.mass() << " eta " << cleanedJet.eta() << " phi " << cleanedJet.phi() << endl; 
 		for(int k = 0; k < pass.size(); k++){
 			if(remove){
 				if(pass[k])

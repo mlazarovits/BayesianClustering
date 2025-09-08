@@ -699,7 +699,7 @@ class BHCJetSkimmer{
 						if(_genW.size() == 1){ //only do for single W sample
 							double maxDr = 1.;
 							double dR_dwnwt = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_downweight.eta(), cleanedJet_downweight.phi());
-							if(dR_dwnwt < maxDr){
+							if(dR_dwnwt < maxDr && cleanedJet_downweight.mass() > 0){
 								_procCats[p].hists1D[pt][191]->Fill(cleanedJet_downweight.mass());
 								if(cleanedJet_remove.GetNConstituents() == 2){
 									_procCats[p].hists1D[pt][199]->Fill(cleanedJet_downweight.mass());
@@ -712,7 +712,7 @@ class BHCJetSkimmer{
 								}
 							}
 							double dR_remove = dR(_genW[0].eta(), _genW[0].phi(), cleanedJet_remove.eta(), cleanedJet_remove.phi());
-							if(dR_remove < maxDr)	
+							if(dR_remove < maxDr && cleanedJet_remove.mass() > 0)	
 								_procCats[p].hists1D[pt][192]->Fill(cleanedJet_remove.mass());
 
 						}
