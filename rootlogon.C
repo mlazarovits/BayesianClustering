@@ -2,7 +2,7 @@
 //gROOT->ProcessLine(" #include "\
 //gStyle->SetPalette(kCandy);
 gSystem->Load("lib/libvecDict.so");
-gROOT->ProcessLine(".x SetPalette.C(2)");
+gROOT->ProcessLine(".x SetPalette.C()");
 gStyle->SetPadGridX(true);
 gStyle->SetPadGridY(true);
 gStyle->SetOptStat(0000);
