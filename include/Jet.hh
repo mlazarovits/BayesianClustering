@@ -533,7 +533,7 @@ class Jet{
 				pass.push_back(true);
 			else
 				pass.push_back(false);
-//cout << "subcluster #" << k << " rel time var " << rel_subcl_size << " rel pt " << rel_subcl_pt << " pass? " << pass[k] << endl;	
+cout << "subcluster #" << k << " rel time var " << rel_subcl_size << " rel pt " << rel_subcl_pt << " pass? " << pass[k] << endl;	
 		}
 		//return empty jet if no subclusters pass criteria
 		if(find(pass.begin(), pass.end(), true) == pass.end()){
@@ -541,7 +541,7 @@ class Jet{
 			return ret;
 		}
 
-
+		double totE = 0;
 		for(int n = 0; n < _nRHs; n++){
 			double maxRnk = 0;
 			int assignedK = -1;
@@ -571,11 +571,17 @@ class Jet{
 				effRh.SetWeight(totR);
 			}
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-//cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E() << " original energy " << _rhs[n].e() << endl;
+			totE += effRh.e();
+cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E() << " original energy " << _rhs[n].e() << endl;
 
 			cleanedRhs.push_back(effRh);
 		}
+		if(totE == 0){
+			Jet ret;
+			return ret;
+		}
 		cleanedJet = Jet(cleanedRhs, _vtx);
+cout << "cleaned jet - remove? " << remove << " eta " << cleanedJet.eta() << " phi " << cleanedJet.phi() << " e " << cleanedJet.e() << endl;
 		for(int k = 0; k < pass.size(); k++){
 			if(remove){
 				if(pass[k])
