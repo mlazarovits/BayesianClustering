@@ -210,7 +210,10 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	}
 
 
-	int col, mark;	
+	int col, mark;
+	bool highpt = false;
+	bool lowpt = false;
+	vector<string> legentries2;
 	for( int i = 0 ; i < int(hist.size()); i++){
 		//cout << "i " << i << " hists size " << hist.size() << endl;
 		hist[i]->UseCurrentStyle();
@@ -324,18 +327,25 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		string name = hist[i]->GetName();
 		string type = "";
 		if(name.find("_lead") != string::npos){
-			type = "highpt";
+			type = "high p_{T}";
 			col -= 2;
 			mark -= 4;
-				
+			highpt = true;		
 		}
-		if(name.find("_notlead") != string::npos){
-			type = "lowpt";
+		else if(name.find("_notlead") != string::npos){
+			type = "low p_{T}";
 			col += 2;
 			mark += 1;
+			lowpt = true;
 				
 		}
-		if(type != "") legentry += "_"+type;
+		else{
+			lowpt = false;
+			highpt = false;
+		}
+		legentry = legentry.substr(0,legentry.find("Jet"));
+		if(type != "") legentry += " "+type;
+		legentries2.push_back(legentry);
 cout << "col " << col << " mark " << mark << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
@@ -351,9 +361,6 @@ cout << "col " << col << " mark " << mark << endl;
 		}else{
 			hist[i]->Draw("epsame");
 		}
-		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
-
-		gPad->Update();
 
 		if(canname.find("sigma") != string::npos && hist[i]->GetEntries() > 3){
 			cout << "do fit for sigma" << endl;
@@ -419,19 +426,63 @@ cout << "col " << col << " mark " << mark << endl;
 			fitparams.DrawLatex(0.2,0.3+(hist.size()+1)*0.05-i*0.05,teststr.c_str());
 		}
 	}
+	for( int i = 0 ; i < int(hist.size()); i++){
+		string legentry = legentries2[i];
+		if(highpt && !lowpt){
+			legentry = legentry.substr(0,legentry.find(" high"));
+		}	
+		if(!highpt && lowpt){
+			legentry = legentry.substr(0,legentry.find(" low"));
+		}	
+		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
+
+		gPad->Update();
+	}	
+	cout << "plot title " << plot_title << endl;
+	//draw mass lines
+	if(plot_title == "single W^{#pm}" && xtit == "Jet mass [GeV]"){
+		TLine* wmass = new TLine(80.4,1e-4, 80.4,2*maxy);
+		wmass->SetLineStyle(6);
+		wmass->Draw("same");
+
+	}
+	cout << "highpt " << highpt << " lowpt " << lowpt << endl;
 	myleg->Draw("same"); 
 	gPad->Update();
-	string lat_cms = "#it{Work in Progress} "+cms_label;
+	if(highpt && !lowpt){
+		string jetsel_str = "175 #leq Jet p_{T}";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.63,0.62,jetsel_str.c_str());
+	}
+	if(highpt && lowpt){
+		string jetsel_str = "#splitline{low p_{T}: 175 > Jet p_{T}}{high p_{T}: 175 #leq Jet p_{T}}";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.63,0.56,jetsel_str.c_str());
+		//adjust legend bounds
+		myleg->SetX1NDC(0.60);
+		myleg->SetY1NDC(0.65);
+		myleg->SetX2NDC(0.85);
+		myleg->SetY2NDC(0.87);
+		gPad->Modified();
+	}
+	
+	string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV"+cms_label;
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
-	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+	lat.DrawLatex(0.03,0.92,lat_cms.c_str());
 	TLatex lat1;
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.50,0.92,plot_title.c_str());
+	lat1.DrawLatex(0.8,0.92,plot_title.c_str());
 	
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -478,12 +529,39 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	string name = hist->GetName();
 	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
 	
-	string lat_cms = "#it{Work In Progress} "+cms_label+" "+title;
+	string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV";
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.025);
+	lat.SetTextSize(0.04);
 	lat.SetTextFont(42);
-	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
+	lat.DrawLatex(0.03,0.92,lat_cms.c_str());
+
+
+	if(cms_label.find("high pt") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find(" high pt"));
+		string jetsel_str = "175 #leq Jet p_{T}";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.75,0.85,jetsel_str.c_str());
+	}
+	if(cms_label.find("low pt") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find(" low pt"));
+		string jetsel_str = "175 > Jet p_{T}";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.75,0.85,jetsel_str.c_str());
+	}
+	cms_label = cms_label + " Jets";
+	
+	TLatex lat1;
+	lat1.SetNDC();
+	lat1.SetTextSize(0.04);
+	lat1.SetTextFont(42);
+	lat1.DrawLatex(0.72,0.92,cms_label.c_str());
 
 	return;
 }
@@ -1326,10 +1404,25 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 		ylab = histstot[0]->GetYaxis()->GetTitle();
 	}
 	else{
-		xlab = name;
+		xlab = name.substr(0,name.find("_"+proc));
+		if(xlab == "Jet_mass")
+			xlab = "Jet mass [GeV]";
+		if(xlab == "Jet_pt")
+			xlab = "Jet p_{T} [GeV]";
+		if(xlab == "Jet_energy")
+			xlab = "Jet energy [GeV]";
+		if(xlab == "Jet_TimeCenter")
+			xlab = "Jet time [ns]";
+		if(xlab == "Jet_EtaCenter")
+			xlab = "Jet pseudorapidity (#eta)";
+		if(xlab == "Jet_PhiCenter")
+			xlab = "Jet azimuthal angle (#phi)";
+		if(xlab == "Jet_nJets")
+			xlab = "Number of jets";
 		ylab = "a.u."; 
 	}
 	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
+cout << "xlab " << xlab << " name " << name << " proc " << proc << endl;
 	TDRMultiHist(histstot, cv, cmslab, xlab, ylab, ymin-fabs(ymin*0.5), ymax, "", methodStack);
 	TFile* ofile = TFile::Open(oname.c_str(), "UPDATE");
 	ofile->cd();
