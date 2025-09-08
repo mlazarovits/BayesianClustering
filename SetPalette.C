@@ -1,4 +1,4 @@
-void SetPalette(int k = 2){
+void SetPalette(int k = 5){
 
 
 	//int k = 2;
@@ -16,6 +16,32 @@ void SetPalette(int k = 2){
 		return;
 	}
 
+	//dark red
+	red.push_back(132./255.);
+	green.push_back(28./255.);
+	blue.push_back(38./255.);
+	
+	//reddish pink
+	red.push_back(186./255.);
+	green.push_back(39./255.);
+	blue.push_back(74./255.);
+	
+	//fifth color = pink
+	red.push_back(227./255.);
+	green.push_back(132./255.);
+	blue.push_back(255./255.);
+	//first color = light blue
+	red.push_back(132./255.);
+	green.push_back(201./255.);
+	blue.push_back(244./255.);
+	
+	//teal
+	red.push_back(178./255.);
+	green.push_back(236./255.);
+	blue.push_back(225./255.);
+	
+
+	/*
 	//[0,1] values are R, G or B/255.
 	//first color = light blue
 	red.push_back(0.52);
@@ -25,13 +51,8 @@ void SetPalette(int k = 2){
 	red.push_back(0.89);
 	green.push_back(0.52);
 	blue.push_back(0.96);
-
-	//third color = light green
-	red.push_back(0.52);
-	green.push_back(0.95);
-	blue.push_back(0.79);
-
-	//fourth color = light purple
+	
+	//third color = light purple
 	red.push_back(0.67);
 	green.push_back(0.52);
 	blue.push_back(0.95);
@@ -41,12 +62,17 @@ void SetPalette(int k = 2){
 	green.push_back(0.796);
 	blue.push_back(0.52);
 
+	//fourth color = light green
+	red.push_back(0.52);
+	green.push_back(0.95);
+	blue.push_back(0.79);
+
 	//sixth color = light yellow
 	red.push_back(0.95);
 	green.push_back(0.89);
 	blue.push_back(0.52);
+	*/	
 
-	
 	//where to switch colors
 	stops.push_back(0.0);
 	stops.push_back(0.16666);
