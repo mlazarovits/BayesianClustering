@@ -22,6 +22,10 @@ fi
 if [ $PD = "GJETS" ]
 then
 	NAME=GJets_HT-$5_TuneCP5_13TeV-madgraphMLM-pythia8
+elif [ $PD = "GJets" ]
+then
+
+	NAME=GJets_HT-$5_TuneCP5_13TeV-madgraphMLM-pythia8
 elif [ $PD = "QCD" ]
 then
 	if [ $5 = "50to100" ]
