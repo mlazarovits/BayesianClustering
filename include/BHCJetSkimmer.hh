@@ -1845,18 +1845,34 @@ cout << "avgPart E " << avgPartE << endl;
 		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
 		void WriteEventDisplays(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
 			if(_procCats[0].hists2D[0][44]->Integral() == 0){ cout << "skipping all evt disps" << endl; return;} //don't write canvases if this event display isn't filled
+			string plot_title;
+			if(_sel == singW){
+				plot_title = "single W^{#pm}";
+				if(_oname.find("Wgluon") != string::npos){
+					plot_title = "single W^{#pm}+gluon";
+				}
+			}
+			if(_sel == QCDdijets){
+				plot_title = "QCD dijets";
+			}
+			if(_sel == boostTop){
+				plot_title = "t#bar{t}";
+			}
 			cout << "writing event display hist" << endl;
 			ofile->cd();
 			//write overall event display
 			TCanvas* cv = new TCanvas("evtdisp","evtdisp");
+			cv->SetTitle("");
+			cv->SetRightMargin(0.15);
 			if(_evt2disp_z == 1){ //time
 				_procCats[0].hists2D[0][44]->GetZaxis()->SetTitle("time [ns]");
 			}
-			else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
+			else if(_evt2disp_z % 2 == 0 && _evt2disp_z > 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
 				_procCats[0].hists2D[0][44]->GetZaxis()->SetTitle("responsibility");
 			}
 			else{
 			}
+			_procCats[0].hists2D[0][44]->SetTitle("");
 			_procCats[0].hists2D[0][44]->Draw("colz");
 			//plot jets
 			for(int j = 0; j < _predJets.size(); j++){
@@ -1872,6 +1888,18 @@ cout << "avgPart E " << avgPartE << endl;
 			for(int m = 0; m < _plot_particles.size(); m++){
 				_plot_particles[m].Draw();
 			}
+			//write labels
+			string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV";
+        		TLatex lat;
+        		lat.SetNDC();
+        		lat.SetTextSize(0.04);
+        		lat.SetTextFont(42);
+        		lat.DrawLatex(0.03,0.92,lat_cms.c_str());
+			TLatex lat2;
+        		lat2.SetNDC();
+        		lat2.SetTextSize(0.04);
+        		lat2.SetTextFont(42);
+        		lat2.DrawLatex(0.8,0.92,plot_title.c_str());
 			cv->Write();
 		
 			vector<string> names;
@@ -1927,7 +1955,7 @@ cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name "
 cout << "drawing rhs from jet #" << j << endl;
 
 					vector<JetPoint> rhs;
-					if(_evt2disp_z % 2 == 0){
+					if(_evt2disp_z % 2 == 0 && _evt2disp_z > 0){
 						int k = _evt2disp_z / 2;
 						if(k >= _predJets[j].GetNConstituents()){
 							rhs = _predJets[j].GetJetPoints();
@@ -1978,7 +2006,7 @@ cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_ma
 				if(_evt2disp_z == 1){ //time
 					_evtdisps_obj[h]->GetZaxis()->SetTitle("time [ns]");
 				}
-				else if(_evt2disp_z % 2 == 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
+				else if(_evt2disp_z % 2 == 0 && _evt2disp_z > 0){ //responsibility is event numbers where _evt2disp_z / 2 == k of subcl responsibility to display
 					_evtdisps_obj[h]->GetZaxis()->SetTitle("responsibility");
 				}
 				else{
@@ -1991,9 +2019,11 @@ cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_ma
 				width.SetValue(max(fabs(phi_max), fabs(phi_min)), 1);
 				if(_evtdisps_obj[h]->GetEntries() == 0) continue; //don't draw if not filled for this particle gen obj
 				TCanvas* cv_obj = new TCanvas(_evtdisps_obj[h]->GetName(),_evtdisps_obj[h]->GetTitle());
+				cv_obj->SetRightMargin(0.15);
 				cv_obj->cd();
 				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(min_width.at(0), max_width.at(0));
 				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(min_width.at(1), max_width.at(1));
+				_evtdisps_obj[h]->SetTitle("");
 				_evtdisps_obj[h]->Draw("colz");
 cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << " entries " << _evtdisps_obj[h]->GetEntries() << endl;
 				//do for gen particles too 
@@ -2068,6 +2098,17 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 				}
 
+        			TLatex lat1;
+        			lat1.SetNDC();
+        			lat1.SetTextSize(0.04);
+        			lat1.SetTextFont(42);
+        			lat1.DrawLatex(0.03,0.92,lat_cms.c_str());
+				TLatex lat3;
+        			lat3.SetNDC();
+        			lat3.SetTextSize(0.04);
+        			lat3.SetTextFont(42);
+        			lat3.DrawLatex(0.8,0.92,plot_title.c_str());
+				cv_obj->SetTitle("");
 				cv_obj->Write();
 
 			}

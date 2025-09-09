@@ -510,7 +510,7 @@ cout << "get gen jets" << endl;
 						eta = _genparts[g].eta();
 						phi = _genparts[g].phi_02pi();
 					}
-					_plot_particles.push_back(TMarker(eta, phi, kPlus));
+					_plot_particles.push_back(TMarker(eta, phi, 28));
 					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kAzure+4);
 					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
@@ -544,7 +544,7 @@ cout << "get gen jets" << endl;
 				if(gidx == -1) continue; //skip if no gen particles specified
 				plot_centers[matchstring] = BayesPoint({eta, phi}); //gen particle in question should be centered at (0,0) in local eta, phi coords for local (not global) evt disp
 				//set by deltaR \approx 2*m/pT, taking deltaEta = deltaPhi
-				double deta = 4*_genparts[g].m()/(_genparts[g].pt());
+				double deta = 2*_genparts[g].m()/(_genparts[g].pt());
 				double dphi = deta;
 				plot_widths[matchstring] = BayesPoint({deta,dphi});
 				if(_evt2disp_z == 1){ //update labels to time
@@ -582,13 +582,13 @@ cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);
-				el.SetLineColor(j+2);	
+				el.SetLineColor(j+4);	
 				el.SetFillStyle(0);	
 				_ellipses.push_back(el);	
 				_jellipses[j] = el;			
 	
 				TMarker m(_predJets[j].eta(), _predJets[j].phi(), kOpenStar);
-				m.SetMarkerColor(j+2);
+				m.SetMarkerColor(j+4);
 				//plot jet centers
 				//_plot_particles.push_back(m); //30 = open star may need to change if not rendering	
 				_jcenters[j] = m;			
@@ -597,12 +597,12 @@ cout << "eta " << eta << " phi " << phi << endl;
 				for(int k = 0; k < nk; k++){
 					Jet subcl = _predJets[j].GetConstituent(k);
 					TEllipse sub_el = PlotEll(subcl);
-					sub_el.SetLineColor(j+2);	
+					sub_el.SetLineColor(j+4);	
 					sub_el.SetFillStyle(0);	
 					sub_el.SetLineStyle(9);	
 					//_plot jet centers
 					TMarker sub_m(subcl.eta(), subcl.phi(), kOpenDiamond); 
-					sub_m.SetMarkerColor(j+2);
+					sub_m.SetMarkerColor(j+4);
 					_subclellipses[j][k] = sub_el;
 					_subclcenters[j][k] = sub_m;
 	
