@@ -1203,7 +1203,7 @@ void DecayStackHists(string file, string proc, vector<string>& decays, string on
 		cmslab = "t#bar{t}";
 	}
 	if(proc == "QCD"){
-		cmslab = "QCD Multijets";
+		cmslab = "QCD dijets";
 	}
 	//string cmslab = GetCMSLabel(file);
 	//string extra = "";
@@ -1302,7 +1302,7 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 		cmslab = "t#bar{t}";
 	}
 	else if(proc == "QCD"){
-		cmslab = "QCD Multijets";
+		cmslab = "QCD dijets";
 	}
 	else if(proc == "singleW"){
 		cmslab = "single W^{#pm}";
@@ -1460,7 +1460,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 		cmslab = "t#bar{t}";
 	}
 	else if(proc == "QCD"){
-		cmslab = "QCD Multijets";
+		cmslab = "QCD dijets";
 	}
 	else if(proc == "singleW"){
 		cmslab = "single W^{#pm}";
@@ -1605,7 +1605,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 
 	string cmslab = "";
 	if(proc == "QCD"){
-		cmslab = "QCD Multijets, 2017";
+		cmslab = "QCD dijets";
 	}
 	else if(proc == "ttbar"){
 		cmslab = "t#bar{t}";
@@ -1849,7 +1849,6 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_genBHC, oname, "Jet_nJets",{"lead"}); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_nJets"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_nJets",{"lead"}); 
-
 	
 	//MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "jetSize",pttypes); 
 	//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "jetSize",pttypes); 
