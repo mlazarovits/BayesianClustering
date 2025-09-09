@@ -1587,8 +1587,8 @@ cout << "avgPart E " << avgPartE << endl;
 					//pt == 2 -> [0,_pt_thresh)
 					if(_recoAK15jets[j].pt() >= _pt_thresh) njets_lead++;
 				}
-				_procCats[p].hists1D[1][113]->Fill(njets_lead);
-				_procCats[p].hists1D[2][113]->Fill(njets_notlead);
+				_procCats[p].hists1D[1][95]->Fill(njets_lead);
+				_procCats[p].hists1D[2][95]->Fill(njets_notlead);
 				for(int j = 0; j < _recoAK15jets.size(); j++){
 					for(int pt = 0; pt < _procCats[p].hists1D.size(); pt++){
 						//define pt bins
