@@ -86,12 +86,20 @@ class BasePDFMixture : public BasePDF{
 				Matrix lamStar(m_dim, m_dim);
 				//need to make sure tResRate = tResRate_true*gev for units to match
 				tresSq = _tresCte*_tresCte + _tresStoch*_tresStoch/(m_data->at(n).w()) + _tresNoise*_tresNoise/(m_data->at(n).w()*m_data->at(n).w());
+				if(m_data->at(n).w() < 1e-50 && _tresStoch == 0 && _tresNoise == 0){ //avoid nans
+					tresSq = _tresCte*_tresCte;
+				}
 				tresSq /= 2;
-
 
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);
 				lamStar.SetEntry(1/(tresSq),2,2);
+				if(tresSq < 1e-20){ //if time res is too small, just set to 0 
+					lamStar.SetEntry(0,2,2);
+				}	
+				if(isnan(lamStar.at(2,2))){ 
+					cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();
+				}
 				//if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();}
 				_lamStar.push_back(lamStar); //r = 1 for all k on init
 				

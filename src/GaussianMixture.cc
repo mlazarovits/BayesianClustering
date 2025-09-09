@@ -876,6 +876,9 @@ void GaussianMixture::UpdatePosteriorParameters(){
 
 				Matrix lamStar_x(m_dim, 1);
 				lamStar_x.mult(lamStar,Matrix(m_data->at(n)));
+				if(lamStar_x.at(2,0) < 1e-20){
+					lamStar_x.SetEntry(0,2,0);
+				}	
 				//cout << "for data pt " << endl; m_data->at(n).Print(); cout << " with r_nk " << m_post.at(n,k) << " r_nk * lam*_n * x_n is " << endl; lamStar_x.Print();
 				rLamStar_x.add(lamStar_x);	
 			}
@@ -904,7 +907,8 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			lamStar.add(rLamStar);
 
 //cout << "lam_*k = lam_k*beta_k + sum_n r_nk*lam_n" << endl; lamStar.Print();
-			if(_verb > 6){
+			//if(_verb > 6){
+			if(isnan(rLamStar_x.at(2,0))){
 				cout << "scalemat " << endl; m_model[k]->GetPrior()->GetParameter("scalemat").Print();
 				cout << "newscale " << new_scale << endl;
 				cout << "lamExp" << endl; lamExp.Print();
