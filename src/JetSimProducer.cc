@@ -40,7 +40,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_nConstsmin = 0;
 }
 
-void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
+void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection central_points){
 	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
 
@@ -73,14 +73,42 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt){
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
+		//save any rechit within dtheta, dphi of any given coord
+		if(central_points.GetNPoints() > 0){
+			bool passTheta = false;
+			bool passPhi = false;
+			for(int i = 0; i < central_points.GetNPoints(); i++){	
+				double theta_rh = 2*atan(exp(-rh.eta()));
+				double phi_rh = rh.phi();
+
+				double theta_pt = 2*atan(exp(-central_points.at(i).at(0)));
+				double phi_pt = central_points.at(i).at(1);
+
+				//only keep if rh falls in window of d_i = 2.5 for i = {theta, phi} FOR ANY GIVEN POINT
+				double dtheta = fabs(theta_rh - theta_pt);
+				double dphi = fabs(phi_rh - phi_pt);
+				dphi = acos(cos(dphi));
+
+				if(dtheta < 2.5) passTheta = true;
+				if(dphi < 2.5) passPhi = true;
+
+			}
+			if(!(passTheta && passPhi)) continue;
+		}
+
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 		Jet j(rh, vtx);
+
+		//if central points are defined, only take rhs within a dtheta, dphi window of these points
+		
+
+
 		rhs.push_back(j);
 	}	
 }
 
-void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
+void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt, PointCollection central_points){
 	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
 
@@ -115,6 +143,28 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt){
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
+		//save any rechit within dtheta, dphi of any given coord
+		if(central_points.GetNPoints() > 0){
+			bool passTheta = false;
+			bool passPhi = false;
+			for(int i = 0; i < central_points.GetNPoints(); i++){	
+				double theta_rh = 2*atan(exp(-rh.eta()));
+				double phi_rh = rh.phi();
+
+				double theta_pt = 2*atan(exp(-central_points.at(i).at(0)));
+				double phi_pt = central_points.at(i).at(1);
+
+				//only keep if rh falls in window of d_i = 2.5 for i = {theta, phi} FOR ANY GIVEN POINT
+				double dtheta = fabs(theta_rh - theta_pt);
+				double dphi = fabs(phi_rh - phi_pt);
+				dphi = acos(cos(dphi));
+
+				if(dtheta < 2.5) passTheta = true;
+				if(dphi < 2.5) passPhi = true;
+
+			}
+			if(!(passTheta && passPhi)) continue;
+		}
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
 
