@@ -34,6 +34,10 @@ then
 	else
 		NAME=${PD}_HT$5_TuneCP5_13TeV-madgraph-pythia8
 	fi
+	if [ $4 = "v31" ]
+	then
+		NAME=${PD}_HT$5_TuneCP5_13TeV-madgraphMLM-pythia8
+	fi
 elif [ $PD = "MET" ]
 then
 	NAME=$PD
