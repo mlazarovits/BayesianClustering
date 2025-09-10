@@ -363,7 +363,23 @@ cout << "get gen jets" << endl;
 		}
 		else{
 			//get all rhs in event
-			_prod->GetRecHits(rhs, i);
+			if(_zoom_window){
+				//get relevant gen particles from hard scattering
+				PointCollection genpts;
+				if(_sel == singW)
+					genpts += BayesPoint({_genW[0].eta(), _genW[0].phi()});
+				else if(_sel == QCDdijets){
+					for(auto part : _genq)
+						genpts += BayesPoint({part.eta(), part.phi()});
+				}
+				else if(_sel == boostTop){
+					for(auto part : _genTop)
+						genpts += BayesPoint({part.eta(), part.phi()});
+				}
+				_prod->GetRecHits(rhs, i, genpts);
+			}
+			else
+				_prod->GetRecHits(rhs, i);
 		}
 		for(auto rh : rhs){
 			_procCats[1].hists1D[0][63]->Fill(rh.t());

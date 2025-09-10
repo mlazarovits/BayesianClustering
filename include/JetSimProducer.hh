@@ -14,8 +14,8 @@ class JetSimProducer{
 		JetSimProducer(TFile* file);
 		//JetSimProducer(string file);
 
-		void GetRecHits(vector<JetPoint>& rhs, int evt);
-		void GetRecHits(vector<Jet>& rhs, int evt);
+		void GetRecHits(vector<JetPoint>& rhs, int evt, PointCollection central_points = PointCollection());
+		void GetRecHits(vector<Jet>& rhs, int evt, PointCollection central_points = PointCollection());
 		void GetGenJets(vector<Jet>& genAK4jets, vector<Jet>& genAK8jets, vector<Jet>& genAK15jets, int evt);
 		void GetGenParticles(vector<Jet>& genparts, int evt);
 		void GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8jets, vector<Jet>& recoAK15jets, int evt);

@@ -32,6 +32,9 @@ class BHCJetSkimmer{
 			_minRelPt = 0.2;
 			_maxRelTimeVar = 1.;
 			
+
+			_zoom_window = false;
+			
 			_minTopPt = 0;
 			_minTopE = 0;
 			_minWPt = 0;		
@@ -90,6 +93,7 @@ class BHCJetSkimmer{
 			_evt2disp = 0;
 			_evt2disp_z = 0;
 			
+			_zoom_window = false;
 			_minRelPt = 0.2;
 			_maxRelTimeVar = 1.;
 			
@@ -3049,6 +3053,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 	void SetSubclusterAlpha(double a){_emAlpha = a; }
 	void SetThreshold(double t){ _thresh = t; }
 	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
+	void SetReducePU(bool t){ _zoom_window = t; if(_zoom_window) cout << "Reducing PU with zoom window." << endl; }//draws rectangle around hard scattering to reduce # of rechits to cluster
 
 	void CalcRhTimeDiff(vector<JetPoint>& rhs, vector<pair<double, double>>& geoEavg_diffT){
 		geoEavg_diffT.clear();
@@ -3133,8 +3138,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
 		JetSimProducer* _prod = nullptr;
-		bool _data;
-		bool _debug;
+		bool _data, _debug, _zoom_window;
 		int _evti, _evtj;
 		double _gev;
 		double _c = 29.9792458; // speed of light in cm/ns

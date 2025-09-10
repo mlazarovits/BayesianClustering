@@ -66,6 +66,7 @@ int main(int argc, char *argv[]){
 	int evtsel = 0;
 	int nghosts = 0;
 	int evt2disp = 1;
+	bool zoom_window = false;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -225,6 +226,10 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minwpt = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--zoomPUWindow", 14) == 0){
+    	 		zoom_window = true;
+			cout << "Zoom in on hard interaction." << endl;
+   		}
 		if(strncmp(argv[i],"--noCheckMerges", 15) == 0){
     	 		check_merges = false;
 			cout << "Not checking merges." << endl;
@@ -269,6 +274,7 @@ int main(int argc, char *argv[]){
    		cout << "   --nGhosts [nghosts]                  set number of ghost subclusters to add to BHC merging steps (default = 0)" << endl;
    		cout << "   --smear                              smear cov (spatial only, turns off meas error)" << endl;
    		cout << "   --noCheckMerges                      don't check merges via Gaussian inner product (default = true, on)" << endl;
+   		cout << "   --zoomPUWindow                       zoom in on particles from hard interaction (default = false, off)" << endl;
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
    		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
    		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
@@ -451,6 +457,7 @@ int main(int argc, char *argv[]){
 	skimmer.CheckMerges(check_merges);
 	skimmer.SetNGhosts(nghosts);
 	skimmer.SetEvent2Display(evt2disp);
+	skimmer.SetReducePU(zoom_window);
 	double cell = acos(-1)/180;
 	skimmer.SetMeasErrParams(cell, tres_cte, tres_stoch, tres_noise);
 
