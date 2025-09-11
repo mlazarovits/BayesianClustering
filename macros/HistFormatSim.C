@@ -345,6 +345,7 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		}
 		legentry = legentry.substr(0,legentry.find("Jet"));
 		if(type != "") legentry += " "+type;
+
 		legentries2.push_back(legentry);
 cout << "col " << col << " mark " << mark << endl;
 		hist[i]->SetLineColor(col);
@@ -434,13 +435,16 @@ cout << "col " << col << " mark " << mark << endl;
 		if(!highpt && lowpt){
 			legentry = legentry.substr(0,legentry.find(" low"));
 		}	
+		if(legentry == "highMass") legentry = "high mass";
+		if(legentry == "lowMass") legentry = "low mass";
+		if(legentry == "Wmass") legentry = "W mass";
 		myleg->AddEntry( hist[i], legentry.c_str(), "p" );
 
 		gPad->Update();
 	}	
 	cout << "plot title " << plot_title << endl;
 	//draw mass lines
-	if(plot_title == "single W^{#pm}" && xtit == "Jet mass [GeV]"){
+	if(plot_title.find("W^{#pm}") != string::npos && xtit == "Jet mass [GeV]"){
 		TLine* wmass = new TLine(80.4,1e-4, 80.4,2*maxy);
 		wmass->SetLineStyle(6);
 		wmass->Draw("same");
@@ -471,6 +475,35 @@ cout << "col " << col << " mark " << mark << endl;
 		myleg->SetY2NDC(0.87);
 		gPad->Modified();
 	}
+	if(canname.find("highMass") != string::npos){
+		string jetsel_str = "high mass: Jet mass > 100 GeV";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.53,0.57,jetsel_str.c_str());
+
+	}
+	if(canname.find("Wmass") != string::npos){
+		string jetsel_str = "W mass: 70 GeV < Jet mass < 90 GeV";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.45,0.52,jetsel_str.c_str());
+
+	}
+	if(canname.find("lowMass") != string::npos){
+		string jetsel_str = "low mass: Jet mass < 50 GeV";
+		TLatex jetsel;	
+		jetsel.SetNDC();
+		jetsel.SetTextSize(0.04);
+		jetsel.SetTextFont(42);
+		jetsel.DrawLatex(0.554,0.47,jetsel_str.c_str());
+
+	}
+	
+
 	
 	string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV"+cms_label;
 	TLatex lat;
@@ -513,6 +546,8 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+	hist->GetZaxis()->SetTitle("a.u.");
+	hist->GetZaxis()->CenterTitle(true);
 	string histname = hist->GetName();
 	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
 		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
@@ -544,7 +579,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.75,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.70,0.85,jetsel_str.c_str());
 	}
 	if(cms_label.find("low pt") != string::npos){
 		cms_label = cms_label.substr(0,cms_label.find(" low pt"));
@@ -553,7 +588,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.75,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.70,0.85,jetsel_str.c_str());
 	}
 	cms_label = cms_label + " Jets";
 	
@@ -561,7 +596,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.72,0.92,cms_label.c_str());
+	lat1.DrawLatex(0.69,0.92,cms_label.c_str());
 
 	return;
 }
@@ -1308,7 +1343,7 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 		cmslab = "single W^{#pm}";
 	}
 	else if(proc == "Wgluon"){
-		cmslab = "W^{#pm}+g";
+		cmslab = "W^{#pm}+gluon";
 	}
 	else cmslab = "process";
 	//string cmslab = GetCMSLabel(file);
@@ -1405,7 +1440,8 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 	}
 	else{
 		xlab = name.substr(0,name.find("_"+proc));
-		if(xlab == "Jet_mass")
+		//if(xlab == "Jet_mass")
+		if(xlab.find("Jet_mass") != string::npos)
 			xlab = "Jet mass [GeV]";
 		if(xlab == "Jet_pt")
 			xlab = "Jet p_{T} [GeV]";
@@ -1428,6 +1464,10 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 			string frac = xlab.substr(0,xlab.find("_Eratio"));
 			if(frac.find("subclParton") != string::npos)
 				xlab = "#frac{E_{subcluster}}{E_{gen q}}";
+		}
+		if(xlab.find("_nSubclusters") != string::npos){
+			string frac = xlab.substr(0,xlab.find("_nSubclusters"));
+			xlab = frac+" # subclusters";
 		}
 		ylab = "a.u."; 
 	}
@@ -1466,7 +1506,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 		cmslab = "single W^{#pm}";
 	}
 	else if(proc == "Wgluon"){
-		cmslab = "W^{#pm}+g";
+		cmslab = "W^{#pm}+gluon";
 	}
 	else cmslab = "process";
 	//string cmslab = GetCMSLabel(file);
@@ -1571,6 +1611,9 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 			xlab = name;
 		else
 			xlab = histstot[0]->GetXaxis()->GetTitle();
+		if(xlab.find("_nSubclusters") != string::npos){
+			xlab = "# subclusters";
+		}
 		ylab = "a.u."; 
 	}
 	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
@@ -1612,6 +1655,9 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 	}
 	else if(proc == "singleW"){
 		cmslab = "single W^{#pm}";
+	}
+	else if(proc == "Wgluon"){
+		cmslab = "W^{#pm}+gluon";
 	}
 	else cmslab = "process";
 	cmslab += ", "+method;
@@ -1657,6 +1703,7 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 				//cout << "hists got" << endl;
 				for(auto h : hists) cout << h->GetName() << endl;
 				hist = hists[0];
+				//hist->Scale(1/hist->Integral());
 				name = hist->GetName();
 				string cvname = name;
 				TCanvas *cv = new TCanvas(cvname.c_str(), "");
@@ -1668,8 +1715,13 @@ void Hist2D(string file, string proc, string method, string oname, string match)
 					xlab = name.substr(0,name.find("_"));
 					ylab = name.substr(xlab.size()+1,name.find("_")-1);
 				}
+				if(ylab == "jetSize")
+					ylab = "Jet Size";
+				if(xlab == "jetMass")
+					xlab = "Jet Mass [GeV]"; 	
 				cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
 				TDR2DHist(hist, cv, xlab, ylab, cmslab+type, "");
+				cv->SetRightMargin(0.15);
 				cout << "writing canvas (2D) " << cv->GetName() << endl;
 				cv->Write(); 
 			}
@@ -1860,8 +1912,9 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_PhiCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_TimeCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_energy"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_pt"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass");
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_pt");
+	//TODO - remove procStack
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass_procStack");
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_EtaCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_EtaCenter",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_PhiCenter",pttypes); 
@@ -1872,7 +1925,8 @@ void HistFormatSim(string file, string proc = ""){
 	MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_pt",pttypes); 
 	MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_pt",pttypes); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass",{"lead"});
+	//TODO - remove procStack
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Jet_mass_lead",{"lead"});
 	//MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Jet_mass",pttypes);
 	//MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "Jet_mass",pttypes);
 	//MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "Jet_mass",pttypes);
