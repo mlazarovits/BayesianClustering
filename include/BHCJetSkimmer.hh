@@ -325,6 +325,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_PUdownweighted_nSubcleq2_mass);
 			_hists1D.push_back(BHCJet_PUdownweighted_nSubcllt2_mass);
 			_hists1D.push_back(BHCJet_PUdownweighted_nSubclgt2_mass);
+			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclTimeSigOvJetTimeSig);
+			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetPt);
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
 			_hists2D.push_back(geoEavg_diffDeltaTime_adjRhs);
@@ -869,6 +871,7 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists1D[pt][188]->Fill(consts[c].pt() / _predJets[j].pt());
 											_procCats[p].hists1D[pt][154]->Fill(subclsize);
 											_procCats[p].hists1D[pt][190]->Fill(subclsize / jetsize);
+											_procCats[p].hists1D[pt][203]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2));
 											
 											_procCats[p].hists2D[pt][52]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][54]->Fill(subclsize, consts[c].t());
@@ -892,6 +895,7 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists1D[pt][187]->Fill(consts[c].pt()/_predJets[j].pt());
 											_procCats[p].hists1D[pt][153]->Fill(subclsize);
 											_procCats[p].hists1D[pt][189]->Fill(subclsize / jetsize);
+											_procCats[p].hists1D[pt][202]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2));
 
 											_procCats[p].hists2D[pt][51]->Fill(consts[c].pt(), consts[c].t());
 											_procCats[p].hists2D[pt][53]->Fill(subclsize, consts[c].t());
@@ -2695,6 +2699,10 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJet_PUdownweighted_nSubcllt2_mass = new TH1D("BHCJet_PUdownweighted_nSubcllt2_mass","BHCJet_PUdownweighted_nSubcllt2_mass",50,0,250);
 		//201 - PU-downweighted bhc jet mass for jets within dR = 1 of gen W for # subclusters > 2
 		TH1D* BHCJet_PUdownweighted_nSubclgt2_mass = new TH1D("BHCJet_PUdownweighted_nSubclgt2_mass","BHCJet_PUdownweighted_nSubclgt2_mass",50,0,250);
+		//202 - high mass + W-matched BHC jets - time sig of subclusters gen-matched to W partons / time sig jet
+		TH1D* BHCJetW_highMass_partonMatchSubclTimeSigOvJetTimeSig = new TH1D("BHCJetW_highMass_partonMatchSubclTimeSigOvJetTimeSig","BHCJetW_highMass_partonMatchSubclTimeSigOvJetTimeSig;SubclTimeSigOvJetTimeSig",25,0,5.);
+		//203 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet
+		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetPt","BHCJetW_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,5.);
 		
 
 
