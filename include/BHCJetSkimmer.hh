@@ -2530,15 +2530,15 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//116 - 134 - dR bw gen AK4 jet and gen top its exclusively matched to
 		TH1D* genAK4JetW_dR = new TH1D("genAK4Jet_genW_dR","genAK4Jet_genW_dR",25,0,1.5);
 		//117 - 135 - E ratio bw gen AK4 jet and gen top its exclusively matched to - gen AK4 jet energy/gen top energy
-		TH1D* genAK4JetW_Eratio = new TH1D("genAK4Jet_genW_Eratio","genAK4Jet_genW_Eratio",25,0,2.5);
+		TH1D* genAK4JetW_Eratio = new TH1D("genAK4Jet_genW_Eratio","genAK4Jet_genW_Eratio",25,0,2.);
 		//118 - 136 - dR bw gen AK15 jet and gen top its exclusively matched to
 		TH1D* genAK15JetW_dR = new TH1D("genAK15Jet_genW_dR","genAK15Jet_genW_dR",25,0,1.5);
 		//119 - 137 - E ratio bw gen AK15 jet and gen top its exclusively matched to - gen AK15 jet energy/gen top energy
-		TH1D* genAK15JetW_Eratio = new TH1D("genAK15Jet_genW_Eratio","genAK15Jet_genW_Eratio",25,0,2.5);
+		TH1D* genAK15JetW_Eratio = new TH1D("genAK15Jet_genW_Eratio","genAK15Jet_genW_Eratio",25,0,2.);
 		//120 - 138 - dR bw BHC jet and gen W its exclusively matched to
 		TH1D* BHCJetW_dR = new TH1D("BHCJet_genW_dR","BHCJet_genW_dR",25,0,1.5);
 		//121 - 139 - E ratio bw BHC jet and gen W its exclusively matched to - BHC jet energy/gen W energy
-		TH1D* BHCJetW_Eratio = new TH1D("BHCJet_genW_Eratio","BHCJet_genW_Eratio",25,0,2.5);
+		TH1D* BHCJetW_Eratio = new TH1D("BHCJet_genW_Eratio","BHCJet_genW_Eratio",25,0,2.);
 		//122 - 140 - # subclusters in BHC jets matched to Ws
 		TH1D* BHCJetW_nSubclusters = new TH1D("BHCJetW_nSubclusters","BHCJetW_nSubclusters",10,0,10);
 		//123 - 141 - subcluster energy in BHC jets matched to Ws
@@ -2608,7 +2608,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//155 - 173 - dR bw reco AK8 jet and gen W its exclusively matched to
 		TH1D* recoAK8JetW_dR = new TH1D("recoAK8Jet_genW_dR","recoAK8Jet_genW_dR",25,0,1.5);
 		//156 - 174 - E ratio bw reco AK8 jet and gen W its exclusively matched to - reco jet energy/gen top energy
-		TH1D* recoAK8JetW_Eratio = new TH1D("recoAK8Jet_genW_Eratio","recoAK8Jet_genW_Eratio",25,0,2.5);
+		TH1D* recoAK8JetW_Eratio = new TH1D("recoAK8Jet_genW_Eratio","recoAK8Jet_genW_Eratio",25,0,2.);
 		//157 - 175 - dR bw reco AK8 jet and gen gluon its exclusively matched to
 		TH1D* recoAK8JetGluon_dR = new TH1D("recoAK8Jet_genGluon_dR","recoAK8Jet_genGluon_dR",25,0,1.5);
 		//158 - 176 - E ratio bw reco AK8 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
@@ -2626,7 +2626,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//164 - 182 - dR bw reco AK15 jet and gen W its exclusively matched to
 		TH1D* recoAK15JetW_dR = new TH1D("recoAK15Jet_genW_dR","recoAK15Jet_genW_dR",25,0,1.5);
 		//165 - 183 - E ratio bw reco AK15 jet and gen W its exclusively matched to - reco jet energy/gen top energy
-		TH1D* recoAK15JetW_Eratio = new TH1D("recoAK15Jet_genW_Eratio","recoAK15Jet_genW_Eratio",25,0,2.5);
+		TH1D* recoAK15JetW_Eratio = new TH1D("recoAK15Jet_genW_Eratio","recoAK15Jet_genW_Eratio",25,0,2.);
 		//166 - 184 - dR bw reco AK15 jet and gen gluon its exclusively matched to
 		TH1D* recoAK15JetGluon_dR = new TH1D("recoAK15Jet_genGluon_dR","recoAK15Jet_genGluon_dR",25,0,1.5);
 		//167 - 185 - E ratio bw reco AK15 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
@@ -2646,7 +2646,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//174 - 192 - dR bw reco AK4 jet and gen W its exclusively matched to
 		TH1D* recoAK4JetW_dR = new TH1D("recoAK4Jet_genW_dR","recoAK4Jet_genW_dR",25,0,1.5);
 		//175 - 193 - E ratio bw reco AK4 jet and gen gluon its exclusively matched to - reco jet energy/gen top energy
-		TH1D* recoAK4JetW_Eratio = new TH1D("recoAK4Jet_genW_Eratio","recoAK4Jet_genW_Eratio",25,0,2.5);
+		TH1D* recoAK4JetW_Eratio = new TH1D("recoAK4Jet_genW_Eratio","recoAK4Jet_genW_Eratio",25,0,2.);
 		//176 - 194 - high mass + q-matched BHC jets - pt of subclusters gen-matched to W partons
 		TH1D* BHCJetq_ge2Subcls_partonMatchSubclPt = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclPt","BHCJetq_ge2Subcls_partonMatchSubclPt;SubclPt",25,0,500);
 		//177 - 195 - high mass + q-matched BHC jets - pt of subclusters NOT gen-matched W partons
