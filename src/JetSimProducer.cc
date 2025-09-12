@@ -54,6 +54,9 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 	vtx.SetValue(_base->PV_z,2);
 	//make weights - E/e_avg
 	vector<double> ws;
+
+	for(int i = 0; i < central_points.GetNPoints(); i++) cout << "central eta " << central_points.at(i).at(0) << " phi " << central_points.at(i).at(1) << endl;
+	cout << nRHs << " initial total rhs" << endl;
 	for(int r = 0; r < nRHs; r++){
 		//need to correct for geometric effects in detector (ie takes longer to get to more forward areas than central ones)
 		/////TOF from 0 to rh location
@@ -73,6 +76,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
+		double maxdist = 2.;
 		//save any rechit within dtheta, dphi of any given coord
 		if(central_points.GetNPoints() > 0){
 			bool passTheta = false;
@@ -89,11 +93,13 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 				double dphi = fabs(phi_rh - phi_pt);
 				dphi = acos(cos(dphi));
 
-				if(dtheta < 2.5) passTheta = true;
-				if(dphi < 2.5) passPhi = true;
+				if(dtheta < maxdist) passTheta = true;
+				if(dphi < maxdist) passPhi = true;
+				//cout << "rh eta " << rh.eta() << " rh phi " << rh.phi() << " dtheta " << dtheta << " dphi " << dphi << endl;
 
 			}
-			if(!(passTheta && passPhi)) continue;
+			//if(!(passTheta && passPhi)) continue;//cout << "skipping rh with eta " << rh.eta() << " phi " << rh.phi() << endl; continue;}
+			if(!passTheta || !passPhi) continue;//cout << "skipping rh with eta " << rh.eta() << " phi " << rh.phi() << endl; continue;}
 		}
 
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
