@@ -498,7 +498,7 @@ cout << "get gen jets" << endl;
 					if(_evtdisps_obj[7]->GetEntries() == 0){
 						//fill if not
 						gidx = 7;
-						matchstring = "top";
+						matchstring = "top1";
 						eta = _genparts[g].eta();
 						phi = _genparts[g].phi_02pi();
 					}
@@ -509,7 +509,7 @@ cout << "get gen jets" << endl;
 						phi = _genparts[g].phi_02pi();
 					}
 					_plot_particles.push_back(TMarker(eta, phi, kOpenSquare));
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kOrange-4);
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
 				else if(id == 1 || id == 2 || id == 3){ //light quarks
 					//check if first q event display is already filled
@@ -535,7 +535,7 @@ cout << "get gen jets" << endl;
 					if(_evtdisps_obj[5]->GetEntries() == 0){
 						//fill if not
 						gidx = 5;
-						matchstring = "b";
+						matchstring = "b1";
 						eta = _genparts[g].eta();
 						phi = _genparts[g].phi_02pi();
 					}
@@ -545,15 +545,15 @@ cout << "get gen jets" << endl;
 						eta = _genparts[g].eta();
 						phi = _genparts[g].phi_02pi();
 					}
-					_plot_particles.push_back(TMarker(eta, phi, kMultiply));
-					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kCyan-4);
+					_plot_particles.push_back(TMarker(eta, phi, 46));
+					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
 				else if(id == 21){ //gluon
 					gidx = 2;
 					matchstring = "gluon";
 					eta = _genparts[g].eta();
 					phi = _genparts[g].phi_02pi();
-					_plot_particles.push_back(TMarker(eta, phi, kStar));
+					_plot_particles.push_back(TMarker(eta, phi, 42));
 					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlue-4);
 					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
