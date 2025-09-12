@@ -160,6 +160,8 @@ def generateSubmission(args):
     	flags += ' --applyFrac'
     if(args.noCheckMerges):
         flags += ' --noCheckMerges'
+    if(args.zoomPUWindow):
+        flags += ' --zoomPUWindow'
 
     flags += ' --tResCte '+str(args.tResCte)
     flags += ' --tResStoch '+str(args.tResStoch)
@@ -230,6 +232,7 @@ def main():
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=False,action='store_true')
     parser.add_argument('--PFCand',help="run with ntuples with ~PF candidates",default=False,action='store_true')
+    parser.add_argument('--zoomPUWindow',help="zoom in on particles from hard interaction",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
     parser.add_argument('--minNconsts',help='set minimum number of constituents for gen jets',default=5)
