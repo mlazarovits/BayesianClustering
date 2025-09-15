@@ -26,6 +26,10 @@ elif [ $PD = "GJets" ]
 then
 
 	NAME=GJets_HT-$5_TuneCP5_13TeV-madgraphMLM-pythia8
+elif [ $PD = "WJets" ]
+then
+
+	NAME=WJetsToLNu_HT-$5_TuneCP5_13TeV-madgraphMLM-pythia8
 elif [ $PD = "QCD" ]
 then
 	if [ $5 = "50to100" ]
@@ -51,6 +55,10 @@ elif [ $PD = "EGamma" ]
 then
 	NAME=EGamma
 elif [ $PD = "SMS-GlGl" ]
+then
+	NAME=CRAB_UserFiles
+	SEL=$2
+elif [ $PD = "SMS" ]
 then
 	NAME=CRAB_UserFiles
 	SEL=$2

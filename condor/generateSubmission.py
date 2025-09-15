@@ -33,15 +33,17 @@ def generateSubmission(args):
     reco_date["2018_DEG"] = "-15Feb2022"
     reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
     reco_date["2022_MET"] = "-27Jun2023-v2"
+    reco_date["2018_GJets"] = "RunIISummer20UL18"
+    reco_date["2017_GJets"] = "RunIISummer20UL18"
     reco_date["2018"] = ""
     if sel == "SVIPM100":
         ver = "v31"
     if "QCD" in args.inputSample:
         inputFileList = "kucmsntuple_QCD_R"+yr+"_"+sel+"_"+ver+"_QCD_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
     if "GJets" in args.inputSample:
-        if sel == "SVIPM100":
+        if "IPM100" in sel:
             ver = "v30"
-    	inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
+        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_"+reco_date[args.year+"_GJets"]+"_list.txt"
     elif "MET" in args.inputSample:
         if "AL1NpSC" in sel:
             ver = "v31"
