@@ -43,7 +43,7 @@ Jet VectorSum(vector<Jet>& jets){
         return ret;
 }
 
-int EventWeightCalc_FileList(string selection = ""){
+int EventWeightCalc_FileList(string selection = "", string year = "18"){
 	double gev_jet = 0.1;
 	double gev_pho = 1./30.;
 	if(selection != "")
@@ -54,24 +54,33 @@ int EventWeightCalc_FileList(string selection = ""){
 	double maxmet = 50;
 	double pi = 4*atan(1);
 
+	map<string, string> recodates;
+	recodates["17"] = "RunIIFall17DRPremix";
+	recodates["18"] = "RunIISummer20UL18";
+
 	//just for MCs - data weight = 1
 	vector<string> filelists;
-	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-40To100_AODSIM_RunIIFall17DRPremix_list");
-	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-100To200_AODSIM_RunIIFall17DRPremix_list");
-	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-200To400_AODSIM_RunIIFall17DRPremix_list");
-	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-400To600_AODSIM_RunIIFall17DRPremix_list");
-	filelists.push_back("filelists/kucmsntuple_GJETS_R17"+selection+"_v24_GJets_HT-600ToInf_AODSIM_RunIIFall17DRPremix_list");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT1000to1500_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT100to200_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT1500to2000_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT2000toInf_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT200to300_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT300to500_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT500to700_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT50to100_AODSIM_RunIIFall17DRPremix");
-	//files.push_back("QCD_R17"+selection+"_v24_QCD_HT700to1000_AODSIM_RunIIFall17DRPremix");
+	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-40To100_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-100To200_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-200To400_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-400To600_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-600ToInf_AODSIM_"+recodates[year]+"_list");
+
+
+	if(selection == "IPM100")
+		selection = "SVIPM100";	
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-50To100_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-100To200_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-200To300_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-300To500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-500To700_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-700To1000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1000To1500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1500To2000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-2000ToInf_AODSIM_"+recodates[year]+"_list");
+
 	ofstream ofile;
-	string ofilename = "info/EventWeights"+selection+".txt";
+	string ofilename = "info/EventWeights"+selection+"_R"+year+".txt";
 	ofile.open(ofilename);
 	//dont write just for remembering what's being written
 	//ofile << "file	jet_weight	pho_weight" << endl;
