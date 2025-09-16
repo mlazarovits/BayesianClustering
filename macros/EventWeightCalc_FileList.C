@@ -5,10 +5,10 @@
 #include "../include/JetProducer.hh"
 #include "../include/PhotonProducer.hh"
 #include "../include/SampleWeight.hh"
+#include "TSystem.h"
 //#include "../include/BaseSkimmer.hh"
 using std::cout;
 using std::endl;
-
 
 //make tchain from filelist
 TChain* MakeTChain(string flist){
@@ -44,10 +44,9 @@ Jet VectorSum(vector<Jet>& jets){
 }
 
 int EventWeightCalc_FileList(string selection = "", string year = "18"){
+	gSystem->Load("lib/libBayesianClustering.so");
 	double gev_jet = 0.1;
 	double gev_pho = 1./30.;
-	if(selection != "")
-		selection = "_"+selection;
 
 	bool isoBkgSel = true;
 	double minht = 50;
