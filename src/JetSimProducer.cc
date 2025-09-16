@@ -76,7 +76,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
-		double maxdist = 2.;
+		double maxdist = 2.0;
 		//save any rechit within dtheta, dphi of any given coord
 		if(central_points.GetNPoints() > 0){
 			bool passTheta = false;
