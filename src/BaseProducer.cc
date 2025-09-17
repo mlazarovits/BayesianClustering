@@ -168,6 +168,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
+cout << "n total phos " << nPhos << endl;
 	for(int p = 0; p < nPhos; p++){
 		//if selected photons # is already 2, return (only want 2 highest pt photons that pass selection)
 		if(selPhoCount == 2) return;
@@ -185,7 +186,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 		scidx = _base->Photon_scIndex->at(p);
 
                 nrhs = _base->SuperCluster_rhIds->at(scidx).size();
-	
+cout << "pt " << _base->Photon_pt->at(p) << " eta " << _base->Photon_eta->at(p) << endl;	
 		//hem veto?
 		if(_year == 2018 && _data){
 			hemVeto = ( (_base->Evt_run >= 319077) && (eta > -1.58) && (eta < -1.34) && (phi > 4.8) && (phi < 5.4) );
@@ -284,9 +285,10 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				//cout << "_spatial_corr " << _spatial_corr << " timecorr " << timecorr << " photon raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
                 		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
 		        }
+			//else cout << "rechit with ID " << rhid << " not found in ECAL collection" << endl;
 
                 }
-		
+		cout << "# rechits " << pho.GetNRecHits() << endl;	
 		if(pho.GetNRecHits() < 2) continue;
 		selPhoCount++;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
@@ -344,10 +346,11 @@ cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 		//SuperCluster selection
                 E = _base->SuperCluster_energy->at(sc);
 		et = E*sin(theta);
+//cout << "sc Et " << et << " eta " << eta << endl;
                 if(et < _minpt) continue;
-cout << "sc passed et cut " << endl;
+//cout << "sc passed et cut " << endl;
 		if(fabs(eta) > _minobjeta) continue;
-cout << "sc passed eta cut " << eta << endl;
+//cout << "sc passed eta cut " << eta << endl;
                 
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
