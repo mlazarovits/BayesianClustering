@@ -2620,9 +2620,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//135 - 153 - # subclusters in BHC jets matched to Tops
 		TH1D* BHCJetTop_nSubclusters = new TH1D("BHCJetTop_nSubclusters","BHCJetTop_nSubclusters",10,0,10);
 		//136 - 154 - subcluster mass in BHC jets matched to Tops
-		TH1D* BHCJetTop_subClusterMass = new TH1D("BHCJetTop_subclusterMass","BHCJetTop_subclusterMass",25,0,200);
+		TH1D* BHCJetTop_subClusterMass = new TH1D("BHCJetTop_subclusterMass","BHCJetTop_subclusterMass",25,0,250);
 		//137 - 155 - BHC jets - invariant mass of lead two subclusters (for jets with at least 2 subclusters)
-		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,200);
+		TH1D* BHCJetTop_subClusterLeadInvMass = new TH1D("BHCJetTop_subclusterLeadInvMass","BHCJetTop_subclusterLeadInvMass",25,0,250);
 		//138 - 156 - dR bw BHC jet and gen q its exclusively matched to
 		TH1D* BHCJetq_dR = new TH1D("BHCJet_genq_dR","BHCJet_genq_dR",25,0,1.5);
 		//139 - 157 - E ratio bw BHC jet and gen q its exclusively matched to - BHC jet energy/gen q energy
