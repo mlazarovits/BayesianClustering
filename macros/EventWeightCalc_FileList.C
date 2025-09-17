@@ -68,15 +68,15 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 
 	if(selection == "IPM100")
 		selection = "SVIPM100";	
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-50To100_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-100To200_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-200To300_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-300To500_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-500To700_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-700To1000_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1000To1500_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1500To2000_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-2000ToInf_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-50to100_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-100to200_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-200to300_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-300to500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-500to700_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-700to1000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1000to1500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1500to2000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-2000toInf_AODSIM_"+recodates[year]+"_list");
 
 	ofstream ofile;
 	string ofilename = "info/EventWeights"+selection+"_R"+year+".txt";
@@ -95,7 +95,7 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 		ReducedBase* base = jet_prod->GetBase();
 		int nEvts = base->fChain->GetEntries();
 
-		pho_prod->SetMinPt(50.); //50 for iso bkg (same for jets + photons), 30 for nominal
+		pho_prod->SetMinPt(30.); //50 for iso bkg (same for jets + photons), 30 for nominal
 		pho_prod->SetMinNrhs(15);
                 pho_prod->SetMinEmE(30); 
                 pho_prod->SetMinRhE(0.5);
