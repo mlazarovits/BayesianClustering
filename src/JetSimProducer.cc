@@ -76,7 +76,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 		rh.SetEnergy(_base->ECALRecHit_energy->at(r));
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
-		double maxdist = 2.;
+		double maxdist = 2.0;
 		//save any rechit within dtheta, dphi of any given coord
 		if(central_points.GetNPoints() > 0){
 			bool passTheta = false;
@@ -150,6 +150,7 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt, PointCollection 
 		rh.SetEta(_base->ECALRecHit_eta->at(r));
 		rh.SetPhi(_base->ECALRecHit_phi->at(r));
 		//save any rechit within dtheta, dphi of any given coord
+		double maxdist = 2.0;
 		if(central_points.GetNPoints() > 0){
 			bool passTheta = false;
 			bool passPhi = false;
@@ -165,11 +166,12 @@ void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt, PointCollection 
 				double dphi = fabs(phi_rh - phi_pt);
 				dphi = acos(cos(dphi));
 
-				if(dtheta < 2.5) passTheta = true;
-				if(dphi < 2.5) passPhi = true;
+				if(dtheta < maxdist) passTheta = true;
+				if(dphi < maxdist) passPhi = true;
 
 			}
-			if(!(passTheta && passPhi)) continue;
+			//if(!(passTheta && passPhi)) continue;
+			if(!passTheta || !passPhi) continue;//cout << "skipping rh with eta " << rh.eta() << " phi " << rh.phi() << endl; continue;}
 		}
 		rh.SetWeight(_base->ECALRecHit_energy->at(r)*_gev);
 		rh.SetRecHitId(_base->ECALRecHit_ID->at(r));
