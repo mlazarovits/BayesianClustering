@@ -562,7 +562,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetMinRhE(minRhE);
 		skimmer.SetOutfile(fname);
 		skimmer.SetTransferFactor(gev);
-        	skimmer.ApplyFractions(frac);
+        	skimmer.ApplyFractions(false);
+		skimmer.SetMinPt(minpt);
 		//skimmer.SetDebug(debug);
 		//set EMalpha, thresh
 		skimmer.SetThresh(thresh);
@@ -573,8 +574,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTimeSmear(timesmear);
 		skimmer.SetBeamHaloFilter(bh);
 		
-		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-		skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		//skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+		//skimmer.SetMinHt_IsoBkg(minht_isobkg);
 		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
 		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
