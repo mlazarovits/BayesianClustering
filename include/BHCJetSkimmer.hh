@@ -1969,7 +1969,21 @@ cout << "avgPart E " << avgPartE << endl;
 			else{
 			}
 			_procCats[0].hists2D[0][44]->SetTitle("");
-			_procCats[0].hists2D[0][44]->Draw("colz");
+			//do formatting
+			_procCats[0].hists2D[0][44]->GetXaxis()->CenterTitle(true);
+			_procCats[0].hists2D[0][44]->GetYaxis()->CenterTitle(true);
+			_procCats[0].hists2D[0][44]->GetZaxis()->CenterTitle(true);
+			_procCats[0].hists2D[0][44]->GetYaxis()->SetLabelFont(132);
+			_procCats[0].hists2D[0][44]->GetXaxis()->SetLabelFont(132);
+			_procCats[0].hists2D[0][44]->GetZaxis()->SetLabelFont(132);
+			_procCats[0].hists2D[0][44]->GetYaxis()->SetTitleFont(132);
+			_procCats[0].hists2D[0][44]->GetXaxis()->SetTitleFont(132);
+			_procCats[0].hists2D[0][44]->GetZaxis()->SetTitleFont(132);
+			_procCats[0].hists2D[0][44]->GetYaxis()->SetTitleSize(0.04);
+			_procCats[0].hists2D[0][44]->GetXaxis()->SetTitleOffset(1.05);
+			_procCats[0].hists2D[0][44]->GetXaxis()->SetTitleSize(0.04);
+			_procCats[0].hists2D[0][44]->GetZaxis()->SetTitleSize(0.04);
+			_procCats[0].hists2D[0][44]->Draw("colz1");
 			//plot jets
 			for(int j = 0; j < _predJets.size(); j++){
 				_jellipses[j].Draw();
@@ -1985,7 +1999,7 @@ cout << "avgPart E " << avgPartE << endl;
 				_plot_particles[m].Draw();
 			}
 			//write labels
-			string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV";
+			string lat_cms = "#font[22]{Pythia 8} #font[132]{event generation, #sqrt{s} = 13 TeV}";
         		TLatex lat;
         		lat.SetNDC();
         		lat.SetTextSize(0.04);
@@ -1995,7 +2009,8 @@ cout << "avgPart E " << avgPartE << endl;
         		lat2.SetNDC();
         		lat2.SetTextSize(0.04);
         		lat2.SetTextFont(42);
-        		lat2.DrawLatex(0.8,0.92,plot_title.c_str());
+        		plot_title = "#font[132]{"+plot_title+"}";
+			lat2.DrawLatex(0.8,0.92,plot_title.c_str());
 			cv->Write();
 		
 			vector<string> names;
@@ -2120,7 +2135,20 @@ cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_ma
 				_evtdisps_obj[h]->GetXaxis()->SetRangeUser(min_width.at(0), max_width.at(0));
 				_evtdisps_obj[h]->GetYaxis()->SetRangeUser(min_width.at(1), max_width.at(1));
 				_evtdisps_obj[h]->SetTitle("");
-				_evtdisps_obj[h]->Draw("colz");
+				_evtdisps_obj[h]->GetXaxis()->CenterTitle(true);
+				_evtdisps_obj[h]->GetYaxis()->CenterTitle(true);
+				_evtdisps_obj[h]->GetZaxis()->CenterTitle(true);
+				_evtdisps_obj[h]->GetYaxis()->SetLabelFont(132);
+				_evtdisps_obj[h]->GetXaxis()->SetLabelFont(132);
+				_evtdisps_obj[h]->GetZaxis()->SetLabelFont(132);
+				_evtdisps_obj[h]->GetYaxis()->SetTitleFont(132);
+				_evtdisps_obj[h]->GetXaxis()->SetTitleFont(132);
+				_evtdisps_obj[h]->GetZaxis()->SetTitleFont(132);
+				_evtdisps_obj[h]->GetYaxis()->SetTitleSize(0.04);
+				_evtdisps_obj[h]->GetXaxis()->SetTitleOffset(1.05);
+				_evtdisps_obj[h]->GetXaxis()->SetTitleSize(0.04);
+				_evtdisps_obj[h]->GetZaxis()->SetTitleSize(0.04);
+				_evtdisps_obj[h]->Draw("colz1");
 cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << " entries " << _evtdisps_obj[h]->GetEntries() << endl;
 				//do for gen particles too 
 				for(int m = 0; m < _plot_particles.size(); m++){
@@ -2910,7 +2938,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//43 - 128 - BHC jets - jet mass vs jet size
 		TH2D* BHCJet_jetMass_jetSize = new TH2D("BHCJet_jetMass_jetSize","BHCJet_jetMass_jetSize;jetMass;jetSize",50,0,250.,50,0,2.);
 		//44 - 129 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis (overall event)
-		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;#eta;#phi;Energy [GeV]",344,-3,3,360,0,8*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,0,8*atan(1));
 		//45 - 130 - reco AK8 jet mass vs reco jet pt
 		TH2D* recoAK8JetMass_recoAK8JetSize = new TH2D("recoAK8Jet_jetMass_jetSize","recoAK8Jet_jetMass_jetSize;recoAK8JetMass;recoAK8JetSize",50,0,250,50,0,2.);
 		//46 - 131 - reco AK15 jet mass vs reco jet pt
@@ -2993,23 +3021,23 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		vector<TH2D*> _evtdisps_obj;
 		//these should be centered on their respective gen particles
 		//0 - single W, W+gluon, first W in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_W = new TH2D("EvtDisplay_etaCell_phiCell_W","EvtDisplay_etaCell_phiCell_W;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_W = new TH2D("EvtDisplay_etaCell_phiCell_W","EvtDisplay_etaCell_phiCell_W;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//1 - second W in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_W2 = new TH2D("EvtDisplay_etaCell_phiCell_W2","EvtDisplay_etaCell_phiCell_W2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_W2 = new TH2D("EvtDisplay_etaCell_phiCell_W2","EvtDisplay_etaCell_phiCell_W2;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//2 - gluon in W+gluon
-		TH2D* EvtDisplay_etaCell_phiCell_gluon = new TH2D("EvtDisplay_etaCell_phiCell_gluon","EvtDisplay_etaCell_phiCell_gluon;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_gluon = new TH2D("EvtDisplay_etaCell_phiCell_gluon","EvtDisplay_etaCell_phiCell_gluon;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//3 - q1 in QCD dijets
-		TH2D* EvtDisplay_etaCell_phiCell_q1 = new TH2D("EvtDisplay_etaCell_phiCell_q1","EvtDisplay_etaCell_phiCell_q1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_q1 = new TH2D("EvtDisplay_etaCell_phiCell_q1","EvtDisplay_etaCell_phiCell_q1;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//4 - q2 in QCD dijets
-		TH2D* EvtDisplay_etaCell_phiCell_q2 = new TH2D("EvtDisplay_etaCell_phiCell_q2","EvtDisplay_etaCell_phiCell_q2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_q2 = new TH2D("EvtDisplay_etaCell_phiCell_q2","EvtDisplay_etaCell_phiCell_q2;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//5 - b1 in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_b1 = new TH2D("EvtDisplay_etaCell_phiCell_b1","EvtDisplay_etaCell_phiCell_b1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_b1 = new TH2D("EvtDisplay_etaCell_phiCell_b1","EvtDisplay_etaCell_phiCell_b1;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//6 - b2 in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_b2 = new TH2D("EvtDisplay_etaCell_phiCell_b2","EvtDisplay_etaCell_phiCell_b2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_b2 = new TH2D("EvtDisplay_etaCell_phiCell_b2","EvtDisplay_etaCell_phiCell_b2;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//7 - top1 in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_top1 = new TH2D("EvtDisplay_etaCell_phiCell_top1","EvtDisplay_etaCell_phiCell_top1;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_top1 = new TH2D("EvtDisplay_etaCell_phiCell_top1","EvtDisplay_etaCell_phiCell_top1;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 		//8 - top2 in ttbar
-		TH2D* EvtDisplay_etaCell_phiCell_top2 = new TH2D("EvtDisplay_etaCell_phiCell_top2","EvtDisplay_etaCell_phiCell_top2;#eta;#phi;Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell_top2 = new TH2D("EvtDisplay_etaCell_phiCell_top2","EvtDisplay_etaCell_phiCell_top2;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,-4*atan(1),4*atan(1));
 
 
 		void SetSmear(bool t){ _smear = t; }
