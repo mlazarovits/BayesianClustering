@@ -310,8 +310,8 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetq_subclParton_Eratio);
 			_hists1D.push_back(BHCJetGluon_subclParton_dR);
 			_hists1D.push_back(BHCJetGluon_subclParton_Eratio);
-			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclPtOvJetPt);
-			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclPtOvJetPt);
+			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclEOvJetE);
+			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclEOvJetE);
 			_hists1D.push_back(BHCJetW_highMass_partonMatchSubclSizeOvJetSize);
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclSizeOvJetSize);
 			_hists1D.push_back(BHCJet_PUdownweighted_mass);
@@ -329,12 +329,12 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJetW_highMass_partonNoMatchSubclTimeSigOvJetTimeSig);
 			_hists1D.push_back(BHCJetq_ge2Subcls_partonMatchSubclTimeSigOvJetTimeSig);
 			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclTimeSigOvJetTimeSig);
-			_hists1D.push_back(BHCJetq_ge2Subcls_partonMatchSubclPtOvJetPt);
-			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclPtOvJetPt);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonMatchSubclEOvJetE);
+			_hists1D.push_back(BHCJetq_ge2Subcls_partonNoMatchSubclEOvJetE);
 			_hists1D.push_back(BHCJetTop_highMass_partonMatchSubclTimeSigOvJetTimeSig);
 			_hists1D.push_back(BHCJetTop_highMass_partonNoMatchSubclTimeSigOvJetTimeSig);
-			_hists1D.push_back(BHCJetTop_highMass_partonMatchSubclPtOvJetPt);
-			_hists1D.push_back(BHCJetTop_highMass_partonNoMatchSubclPtOvJetPt);
+			_hists1D.push_back(BHCJetTop_highMass_partonMatchSubclEOvJetE);
+			_hists1D.push_back(BHCJetTop_highMass_partonNoMatchSubclEOvJetE);
 		
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -396,18 +396,28 @@ class BHCJetSkimmer{
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclMass_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt);
-			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclSize);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclSize);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchSubclMassOvPt_JetMassOvPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchSubclMassOvPt_JetMassOvPt);
 			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt);
 			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt);
-			_hists2D.push_back(BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclPt);
-			_hists2D.push_back(BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt);
+			_hists2D.push_back(BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclSize);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonMatchRelSubclSize_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclSize_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE);
+			_hists2D.push_back(BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE);
 
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W);
 			_evtdisps_obj.push_back(EvtDisplay_etaCell_phiCell_W2);
@@ -813,14 +823,14 @@ class BHCJetSkimmer{
 										//not-matched
 										if(subclGenMatchIdx[c] == -1){
 											_procCats[p].hists1D[pt][209]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)));
-											_procCats[p].hists1D[pt][211]->Fill(consts[c].pt() / _predJets[j].pt() );
-											_procCats[p].hists2D[pt][70]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists1D[pt][211]->Fill(consts[c].E() / _predJets[j].E() );
+											_procCats[p].hists2D[pt][70]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].E() / _predJets[j].E());
 										}
 										//matched
 										else{
 											_procCats[p].hists1D[pt][208]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)));
-											_procCats[p].hists1D[pt][210]->Fill(consts[c].pt() / _predJets[j].pt() );
-											_procCats[p].hists2D[pt][69]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists1D[pt][210]->Fill(consts[c].E() / _predJets[j].E() );
+											_procCats[p].hists2D[pt][69]->Fill( sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].E() / _predJets[j].E());
 
 										}
 
@@ -909,11 +919,17 @@ cout << "avgPart E " << avgPartE << endl;
 									double subclsize = CalcSize(subcl_cov);
 									double subclsize_full = CalcSize(subcl_cov, true);
 									int genmatchidx = subclGenMatchIdx[c];
+									//do 3D cuts in relE-relSize-relTimeVar space
+									//relTimeVar - relE <= 0 is nonPU else is PU
+									//relTimeVar + relSize <= 1 is nonPU else is PU
+									double relTimeVar = sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2));
+									double relSize = subclsize / jetsize;
+									double relE = consts[c].E() / _predJets[j].E();
 									if(genmatchidx == -1){
 										//not matched
 										if(_predJets[j].m() > 100){
 											_procCats[p].hists1D[pt][152]->Fill(consts[c].pt());
-											_procCats[p].hists1D[pt][188]->Fill(consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists1D[pt][188]->Fill(consts[c].E() / _predJets[j].E());
 											_procCats[p].hists1D[pt][154]->Fill(subclsize);
 											_procCats[p].hists1D[pt][190]->Fill(subclsize / jetsize);
 											_procCats[p].hists1D[pt][203]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)));
@@ -923,13 +939,24 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists2D[pt][56]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
 											_procCats[p].hists2D[pt][58]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative pt
-											_procCats[p].hists2D[pt][60]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][60]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].E() / _predJets[j].E());
 											//relative time variance vs relative size
 											_procCats[p].hists2D[pt][62]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
 											//subcl mass / pt vs jet mass / pt
 											_procCats[p].hists2D[pt][64]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
 											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
 											_procCats[p].hists2D[pt][66]->Fill(subclsize_full / jetsize_full, consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][72]->Fill((sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2))) + (subclsize / jetsize) , consts[c].E() / _predJets[j].E());
+
+											//apply cuts for nonPU
+											if(relTimeVar - relE <= 0 && relTimeVar + relSize <= 1){
+												_procCats[p].hists2D[pt][74]->Fill(relTimeVar, relE);
+												_procCats[p].hists2D[pt][76]->Fill(relTimeVar, relSize);
+												_procCats[p].hists2D[pt][78]->Fill(relTimeVar, relSize);
+												_procCats[p].hists2D[pt][80]->Fill(relTimeVar + relSize, relE);
+
+											}	
+																		
 										}
 				
 									}
@@ -937,7 +964,7 @@ cout << "avgPart E " << avgPartE << endl;
 										//matched
 										if(_predJets[j].m() > 100){
 											_procCats[p].hists1D[pt][151]->Fill(consts[c].pt());
-											_procCats[p].hists1D[pt][187]->Fill(consts[c].pt()/_predJets[j].pt());
+											_procCats[p].hists1D[pt][187]->Fill(consts[c].E()/_predJets[j].E());
 											_procCats[p].hists1D[pt][153]->Fill(subclsize);
 											_procCats[p].hists1D[pt][189]->Fill(subclsize / jetsize);
 											_procCats[p].hists1D[pt][202]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)));
@@ -951,13 +978,22 @@ cout << "avgPart E " << avgPartE << endl;
 					}
 											_procCats[p].hists2D[pt][57]->Fill(consts[c].m() / _predJets[j].m(), consts[c].pt() / _predJets[j].pt());
 											//relative time variance vs relative pt
-											_procCats[p].hists2D[pt][59]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][59]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].E() / _predJets[j].E());
 											//relative time variance vs relative size
 											_procCats[p].hists2D[pt][61]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), subclsize / jetsize);
 											//subcl mass / pt vs jet mass / pt
 											_procCats[p].hists2D[pt][63]->Fill(consts[c].m() / consts[c].pt() , _predJets[j].m() / _predJets[j].pt());
 											//full (space + time) subcl size / full jet size vs subcl pt / jet pt
 											_procCats[p].hists2D[pt][65]->Fill(subclsize_full / jetsize_full, consts[c].pt() / _predJets[j].pt());
+											_procCats[p].hists2D[pt][71]->Fill((sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2))) + (subclsize / jetsize) , consts[c].E() / _predJets[j].E());
+											//apply cuts for nonPU
+											if(relTimeVar - relE <= 0 && relTimeVar + relSize <= 1){
+												_procCats[p].hists2D[pt][73]->Fill(relTimeVar, relE);
+												_procCats[p].hists2D[pt][75]->Fill(relTimeVar, relSize);
+												_procCats[p].hists2D[pt][77]->Fill(relTimeVar, relSize);
+												_procCats[p].hists2D[pt][81]->Fill(relTimeVar + relSize, relE);
+
+											}	
 										}
 									}
 
@@ -1052,16 +1088,16 @@ cout << "avgPart E " << avgPartE << endl;
 										_procCats[p].hists1D[pt][177]->Fill(consts[c].pt());
 										_procCats[p].hists1D[pt][179]->Fill(subclsize);
 										_procCats[p].hists1D[pt][205]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) );
-										_procCats[p].hists1D[pt][207]->Fill(consts[c].pt() / _predJets[j].pt());
-										_procCats[p].hists2D[pt][68]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) ,consts[c].pt() / _predJets[j].pt());
+										_procCats[p].hists1D[pt][207]->Fill(consts[c].E() / _predJets[j].E());
+										_procCats[p].hists2D[pt][68]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) ,consts[c].E() / _predJets[j].E());
 									}
 									//matched
 									else{
 										_procCats[p].hists1D[pt][176]->Fill(consts[c].pt());
 										_procCats[p].hists1D[pt][178]->Fill(subclsize);
 										_procCats[p].hists1D[pt][204]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) );
-										_procCats[p].hists1D[pt][206]->Fill(consts[c].pt() / _predJets[j].pt());
-										_procCats[p].hists2D[pt][67]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) ,consts[c].pt() / _predJets[j].pt());
+										_procCats[p].hists1D[pt][206]->Fill(consts[c].E() / _predJets[j].E());
+										_procCats[p].hists2D[pt][67]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)) ,consts[c].E() / _predJets[j].E());
 									}
 								}
 							}	
@@ -2721,10 +2757,10 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJetGluon_subclParton_dR = new TH1D("BHCJetGluon_subclParton_dR","BHCJetGluon_subclParton_dR",25,0,2);
 		//186 - 204 - BHC jets - gen-matched gluon - Eratio (reco/gen) of gen gluon to lead subcluster in BHC jet
 		TH1D* BHCJetGluon_subclParton_Eratio = new TH1D("BHCJetGluon_subclParton_Eratio","BHCJetGluon_subclParton_Eratio",25,0,2);
-		//187 - 205 - high mass + W-matched BHC jets - pt of subclusters gen-matched to W partons / pt jet
-		TH1D* BHCJetW_highMass_partonMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonMatchSubclPtOvJetPt","BHCJetW_highMass_partonMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
-		//188 - 206 - high mass + W-matched BHC jets - pt of subclusters NOT gen-matched W partons / pt jet
-		TH1D* BHCJetW_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetW_highMass_partonNoMatchSubclPtOvJetPt","BHCJetW_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
+		//187 - 205 - high mass + W-matched BHC jets - E of subclusters gen-matched to W partons / E jet
+		TH1D* BHCJetW_highMass_partonMatchSubclEOvJetE = new TH1D("BHCJetW_highMass_partonMatchSubclEOvJetE","BHCJetW_highMass_partonMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
+		//188 - 206 - high mass + W-matched BHC jets - E of subclusters NOT gen-matched W partons / E jet
+		TH1D* BHCJetW_highMass_partonNoMatchSubclEOvJetE = new TH1D("BHCJetW_highMass_partonNoMatchSubclEOvJetE","BHCJetW_highMass_partonNoMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
 		//189 - 207 - high mass + W-matched BHC jets - subclSize of subclusters gen-matched to W partons / size jet
 		TH1D* BHCJetW_highMass_partonMatchSubclSizeOvJetSize = new TH1D("BHCJetW_highMass_partonMatchSubclSizeOvJetSize","BHCJetW_highMass_partonMatchSubclSizeOvJetSize;SubclSizeOvJetSize",25,0,5.);
 		//190 - 208 - high mass + W-matched BHC jets - subclSize of subclusters NOT gen-matched W partons / size jet
@@ -2759,18 +2795,18 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH1D* BHCJetq_ge2Subcls_partonMatchSubclTimeSigOvJetTimeSig = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclTimeSigOvJetTimeSig","BHCJetq_ge2Subcls_partonMatchSubclTimeSigOvJetTimeSig;SubclTimeSigOvJetTimeSig",25,0,5.);
 		//205 - ge2Subcls + q-matched BHC jets - time sig of subclusters NOT gen-matched qs / time sig jet
 		TH1D* BHCJetq_ge2Subcls_partonNoMatchSubclTimeSigOvJetTimeSig = new TH1D("BHCJetq_ge2Subcls_partonNoMatchSubclTimeSigOvJetTimeSig","BHCJetq_ge2Subcls_partonNoMatchSubclTimeSigOvJetTimeSig;SubclTimeSigOvJetTimeSig",25,0,5.);
-		//206 - ge2Subcls + q-matched BHC jets - pt of subclusters gen-matched to qs / pt jet
-		TH1D* BHCJetq_ge2Subcls_partonMatchSubclPtOvJetPt = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclPtOvJetPt","BHCJetq_ge2Subcls_partonMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
-		//207 - ge2Subcls + q-matched BHC jets - pt of subclusters NOT gen-matched qs / pt jet
-		TH1D* BHCJetq_ge2Subcls_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetq_ge2Subcls_partonNoMatchSubclPtOvJetPt","BHCJetq_ge2Subcls_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
+		//206 - ge2Subcls + q-matched BHC jets - E of subclusters gen-matched to qs / E jet
+		TH1D* BHCJetq_ge2Subcls_partonMatchSubclEOvJetE = new TH1D("BHCJetq_ge2Subcls_partonMatchSubclEOvJetE","BHCJetq_ge2Subcls_partonMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
+		//207 - ge2Subcls + q-matched BHC jets - E of subclusters NOT gen-matched qs / E jet
+		TH1D* BHCJetq_ge2Subcls_partonNoMatchSubclEOvJetE = new TH1D("BHCJetq_ge2Subcls_partonNoMatchSubclEOvJetE","BHCJetq_ge2Subcls_partonNoMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
 		//208 - highMass + top-matched BHC jets - time sig of subclusters gen-matched to tops / time sig jet
 		TH1D* BHCJetTop_highMass_partonMatchSubclTimeSigOvJetTimeSig = new TH1D("BHCJetTop_highMass_partonMatchSubclTimeSigOvJetTimeSig","BHCJetTop_highMass_partonMatchSubclTimeSigOvJetTimeSig;SubclTimeSigOvJetTimeSig",25,0,5.);
 		//209 - highMass + top-matched BHC jets - time sig of subclusters NOT gen-matched tops / time sig jet
 		TH1D* BHCJetTop_highMass_partonNoMatchSubclTimeSigOvJetTimeSig = new TH1D("BHCJetTop_highMass_partonNoMatchSubclTimeSigOvJetTimeSig","BHCJetTop_highMass_partonNoMatchSubclTimeSigOvJetTimeSig;SubclTimeSigOvJetTimeSig",25,0,5.);
-		//210 - highMass + top-matched BHC jets - pt of subclusters gen-matched to tops / pt jet
-		TH1D* BHCJetTop_highMass_partonMatchSubclPtOvJetPt = new TH1D("BHCJetTop_highMass_partonMatchSubclPtOvJetPt","BHCJetTop_highMass_partonMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
-		//211 - highMass + top-matched BHC jets - pt of subclusters NOT gen-matched tops / pt jet
-		TH1D* BHCJetTop_highMass_partonNoMatchSubclPtOvJetPt = new TH1D("BHCJetTop_highMass_partonNoMatchSubclPtOvJetPt","BHCJetTop_highMass_partonNoMatchSubclPtOvJetPt;SubclPtOvJetPt",25,0,1.2);
+		//210 - highMass + top-matched BHC jets - E of subclusters gen-matched to tops / E jet
+		TH1D* BHCJetTop_highMass_partonMatchSubclEOvJetE = new TH1D("BHCJetTop_highMass_partonMatchSubclEOvJetE","BHCJetTop_highMass_partonMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
+		//211 - highMass + top-matched BHC jets - E of subclusters NOT gen-matched tops / E jet
+		TH1D* BHCJetTop_highMass_partonNoMatchSubclEOvJetE = new TH1D("BHCJetTop_highMass_partonNoMatchSubclEOvJetE","BHCJetTop_highMass_partonNoMatchSubclEOvJetE;SubclEOvJetE",25,0,1.2);
 		
 
 
@@ -2905,9 +2941,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//58 - 145 - high mass + W-matched BHC jets - subclMass of subclusters NOT gen-matched to W partons / mass jet vs pt of subclusters NOT gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclMass_RelSubclPt;RelSubclMass;RelSubclPt",25,0,1.2,25,0,1.2);
 		//59 - 146 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs pt of subclusters gen-matched to W partons / pt jet
-		TH2D* BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
-		//60 - 147 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs pt of subclusters NOT gen-matched to W partons / pt jet
-		TH2D* BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
+		TH2D* BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//60 - 147 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs E of subclusters NOT gen-matched to W partons / E jet
+		TH2D* BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
 		//61 - 148 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs size of subclusters gen-matched to W partons / size jet
 		TH2D* BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,5);
 		//62 - 149 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs size of subclusters NOT gen-matched to W partons / size jet
@@ -2920,14 +2956,34 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TH2D* BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt = new TH2D("BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt","BHCJetW_highMass_partonMatchRelSubclSizeSpatioTemp_RelSubclPt;RelSubclSizeSpatioTemp;RelSubclPt",25,0,5,25,0,1.2);
 		//66 - 153 - high mass + W-matched BHC jets - subclSize (space + time) of subclusters NOT gen-matched to W partons / size (space + time) jet vs pt of subclusters NOT gen-matched to W partons / pt jet
 		TH2D* BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSizeSpatioTemp_RelSubclPt;RelSubclSizeSpatioTemp;RelSubclPt",25,0,5,25,0,1.2);
-		//67 - ge2Subcls + q-matched BHC jets - subcl time var of subclusters gen-matched to qs / time var jet vs pt of subclusters gen-matched to qs / pt jet
-		TH2D* BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclPt","BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
-		//68 - ge2Subcls + q-matched BHC jets - subcl time var of subclusters NOT gen-matched to qs / time var jet vs pt of subclusters NOT gen-matched to qs / pt jet
-		TH2D* BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclPt","BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
-		//69 - highMass + top-matched BHC jets - subcl time var of subclusters gen-matched to tops / time var jet vs pt of subclusters gen-matched to tops / pt jet
-		TH2D* BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclPt","BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
-		//70 - highMass + top-matched BHC jets - subcl time var of subclusters NOT gen-matched to tops / time var jet vs pt of subclusters NOT gen-matched to tops / pt jet
-		TH2D* BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt = new TH2D("BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt","BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclPt;RelSubclTimeVar;RelSubclPt",25,0,5,25,0,1.2);
+		//67 - ge2Subcls + q-matched BHC jets - subcl time var of subclusters gen-matched to qs / time var jet vs E of subclusters gen-matched to qs / E jet
+		TH2D* BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclE","BHCJetq_ge2Subcls_partonMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//68 - ge2Subcls + q-matched BHC jets - subcl time var of subclusters NOT gen-matched to qs / time var jet vs E of subclusters NOT gen-matched to qs / E jet
+		TH2D* BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclE","BHCJetq_ge2Subcls_partonNoMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//69 - highMass + top-matched BHC jets - subcl time var of subclusters gen-matched to tops / time var jet vs E of subclusters gen-matched to tops / E jet
+		TH2D* BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclE","BHCJetTop_highMass_partonMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//70 - highMass + top-matched BHC jets - subcl time var of subclusters NOT gen-matched to tops / time var jet vs E of subclusters NOT gen-matched to tops / E jet
+		TH2D* BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclE","BHCJetTop_highMass_partonNoMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//71 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet + subcl spatial size / jet spatial size vs E of subclusters gen-matched to W partons / E jet
+		TH2D* BHCJetW_highMass_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE","BHCJetW_highMass_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE;RelSubclTimeVarPlusRelSubclSize;RelSubclE",25,0,10,25,0,1.2);
+		//72 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet + subcl spatial size / jet spatial size vs E of subclusters NOT gen-matched to W partons / E jet
+		TH2D* BHCJetW_highMass_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE;RelSubclTimeVarPlusRelSubclSize;RelSubclE",25,0,10,25,0,1.2);
+		//73 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs pt of subclusters gen-matched to W partons / pt jet with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//74 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs E of subclusters NOT gen-matched to W partons / E jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclE;RelSubclTimeVar;RelSubclE",25,0,5,25,0,1.2);
+		//75 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs size of subclusters gen-matched to W partons / size jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,5);
+		//76 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs E of subclusters NOT gen-matched to W partons / E jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclSize = new TH2D("BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclSize","BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVar_RelSubclSize;RelSubclTimeVar;RelSubclSize",25,0,5,25,0,1.2);
+		//77 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet vs pt of subclusters gen-matched to W partons / pt jet with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonMatchRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonMatchRelSubclSize_RelSubclE","BHCJetW_highMass_3Dcuts_partonMatchRelSubclSize_RelSubclE;RelSubclSize;RelSubclE",25,0,5,25,0,1.2);
+		//78 - high mass + W-matched BHC jets - subcl time var of subclusters NOT gen-matched to W partons / time var jet vs E of subclusters NOT gen-matched to W partons / E jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclSize_RelSubclE","BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclSize_RelSubclE;RelSubclSize;RelSubclE",25,0,5,25,0,1.2);
+		//79 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet + subcl spatial size / jet spatial size vs E of subclusters gen-matched to W partons / E jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE","BHCJetW_highMass_3Dcuts_partonMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE;RelSubclTimeVarPlusRelSubclSize;RelSubclE",25,0,10,25,0,1.2);
+		//80 - high mass + W-matched BHC jets - subcl time var of subclusters gen-matched to W partons / time var jet + subcl spatial size / jet spatial size vs E of subclusters NOT gen-matched to W partons / E jet, with cuts on rel size, rel E, rel time var
+		TH2D* BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE = new TH2D("BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE","BHCJetW_highMass_3Dcuts_partonNoMatchRelSubclTimeVarPlusRelSubclSize_RelSubclE;RelSubclTimeVarPlusRelSubclSize;RelSubclE",25,0,10,25,0,1.2);
 
 
 
