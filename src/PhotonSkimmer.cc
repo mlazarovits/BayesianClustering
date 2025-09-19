@@ -161,7 +161,7 @@ void PhotonSkimmer::Skim(){
 			//cout << "passed min ht" << endl;	
 			//az angle bw hardest presel photon + jet system
 			//cout << "dphi " << dphi_phojet << " met " << _base->Met_pt << endl;	
-			if(dphi_phojet < pi-0.6) continue; //want dphi ~ phi - implies less MET in event
+			if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
 			//cout << "passed dphi " << endl;	
 			//trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
 	

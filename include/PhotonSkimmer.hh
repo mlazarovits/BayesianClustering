@@ -30,7 +30,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minPhoPt_isoBkg = 70;
 			_minHt_isoBkg = 50;
 			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 150;
+			_maxMet_isoBkg = 50;
 
 			_weight = 1;
 			_cell = 0;
@@ -94,7 +94,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minPhoPt_isoBkg = 70;
 			_minHt_isoBkg = 50;
 			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 150;
+			_maxMet_isoBkg = 50;
 			
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
@@ -158,7 +158,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minPhoPt_isoBkg = 70;
 			_minHt_isoBkg = 50;
 			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 150;
+			_maxMet_isoBkg = 50;
 			
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
@@ -3675,11 +3675,11 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 							label = 5;
 						else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
 							label = 5;
-						//photons from QCD are all nonisolated - !iso bkg
-						else if(_oname.find("QCD") != string::npos)
-							label = 6;
 						else
 							label = 1; //removal of GMSB !sig photons is done in data processing for NN	
+						//photons from QCD are all nonisolated - !iso bkg
+						if(_oname.find("QCD") != string::npos)
+							label = 6;
 					}
 				}
 				else //no gen match

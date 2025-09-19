@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
 	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
 	double minjetpt_isobkg = 50;
-	double maxmet_isobkg = 150;
+	double maxmet_isobkg = 50;
 	bool isobkg = false; 
 	double tres_cte = 0.1727;//0.133913;
 	double tres_stoch = 0.5109;//1.60666;
@@ -574,8 +574,8 @@ int main(int argc, char *argv[]){
 		skimmer.SetTimeSmear(timesmear);
 		skimmer.SetBeamHaloFilter(bh);
 		
-		//skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-		//skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+		skimmer.SetMinHt_IsoBkg(minht_isobkg);
 		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
 		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
