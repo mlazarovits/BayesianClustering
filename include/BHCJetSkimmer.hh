@@ -991,7 +991,7 @@ cout << "avgPart E " << avgPartE << endl;
 												_procCats[p].hists2D[pt][73]->Fill(relTimeVar, relE);
 												_procCats[p].hists2D[pt][75]->Fill(relTimeVar, relSize);
 												_procCats[p].hists2D[pt][77]->Fill(relTimeVar, relSize);
-												_procCats[p].hists2D[pt][81]->Fill(relTimeVar + relSize, relE);
+												_procCats[p].hists2D[pt][79]->Fill(relTimeVar + relSize, relE);
 
 											}	
 										}

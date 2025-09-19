@@ -572,7 +572,7 @@ cout << "subcluster #" << k << " rel time var " << rel_subcl_size << " rel pt " 
 			}
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
 			totE += effRh.e();
-cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E() << " original energy " << _rhs[n].e() << endl;
+//cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E() << " original energy " << _rhs[n].e() << endl;
 
 			cleanedRhs.push_back(effRh);
 		}
@@ -581,7 +581,7 @@ cout << " total weight " << effRh.GetWeight() << " weighted energy " << effRh.E(
 			return ret;
 		}
 		cleanedJet = Jet(cleanedRhs, _vtx);
-cout << "cleaned jet - remove? " << remove << " eta " << cleanedJet.eta() << " phi " << cleanedJet.phi() << " e " << cleanedJet.e() << endl;
+//cout << "cleaned jet - remove? " << remove << " eta " << cleanedJet.eta() << " phi " << cleanedJet.phi() << " e " << cleanedJet.e() << endl;
 		for(int k = 0; k < pass.size(); k++){
 			if(remove){
 				if(pass[k])
