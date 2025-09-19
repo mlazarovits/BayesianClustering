@@ -8,6 +8,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 	- `make`
 
 ### Dependencies
+Once all of the below packages are downloaded, the corresponding paths in the Makefile must be updated to point to the relevant packages
 - ROOT for producers and skimmers
 - Python for macros for visualization
 	- at least v3.x
