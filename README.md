@@ -7,6 +7,8 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 - to run on local machine:
 	- make sure paths in Makefile are updated accordingly
 	- `make`
+- for compiling in a larger package, like [KUCMSNtupleizer](https://github.com/jking79/KUCMSNtupleizer/tree/master) with some classes already defined, like the KUCMSTimeCalibration class, make sure to use the most updated versions of these classes from [here](https://github.com/jking79/KUCMSNtupleizer/tree/master/KUCMSSkimmer/KUCMSTimeCaliFiles)
+
 
 ### Dependencies
 Once all of the below packages are downloaded, the corresponding paths in the Makefile must be updated to point to the relevant packages
