@@ -56,20 +56,22 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			//set histogram weights for HT slices, etc
 			_weight = 1;
-			if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
+			if(_data){ _weight = 1.; }
 			else{
-				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
-			        string filein;
-			        string filename = file->GetName();
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filename.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
-			        }
+				if(fname.find("GJets") != string::npos){
+					cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
+			        	ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
+			        	string filein;
+			        	string filename = file->GetName();
+			        	double jet_weight, pho_weight;
+			        	while( weights >> filein >> jet_weight >> pho_weight){
+			        	        if(filename.find(filein) == string::npos) continue;
+			        	        else{
+			        	                _weight = pho_weight;
+			        	                break;
+			        	        }
+			        	}
+				}
 			}		
 
 
@@ -2150,7 +2152,7 @@ cout << endl;
 				t0 += step;
 			}
 			*/
-			cout << "majlength " << majLength << endl;	
+			//cout << "majlength " << majLength << endl;	
 
 			//do track matching
 			double bestTrackDr = 999;
@@ -2169,7 +2171,7 @@ cout << endl;
 				if(_base->Track_scIndexs->at(t).at(0) < 0) continue; //not matched to any SC
 				
 				int nSCs = _base->Track_scIndexs->at(t).size();
-cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
+//cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
 				for(int sc = 0; sc < nSCs; sc++){
 					int sc_idx = _base->Track_scIndexs->at(t).at(sc);
 					//get eta, phi of supercluster sc that track is matched to
@@ -2179,7 +2181,7 @@ cout << "track #" << t << " matched to " << nSCs << " superclusters" << endl;
 					if(sc_phi_02pi < 0) sc_phi_02pi += 2*acos(-1);
 					else if(sc_phi_02pi > 2*acos(-1)) sc_phi_02pi -= 2*acos(-1); 
 					else sc_phi_02pi = sc_phi;
-cout << "   track #" << t << " matched to supercluster " << sc << " with eta " << sc_eta << " and phi " << sc_phi << endl;
+//cout << "   track #" << t << " matched to supercluster " << sc << " with eta " << sc_eta << " and phi " << sc_phi << endl;
 
 					dphi = fabs(pc - sc_phi_02pi);
                                 	dphi = acos(cos(dphi));
@@ -3582,7 +3584,7 @@ cout << "   track #" << t << " matched to supercluster " << sc << " with eta " <
 
 
 	//used for sig/bkg MVA, iso/!iso MVA
-	int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
+	int GetTrainingLabel(int phoidx, int ncl, BasePDFMixture* gmm){
 		//labels
 		//unmatched = -1
 
@@ -3627,16 +3629,16 @@ cout << "   track #" << t << " matched to supercluster " << sc << " with eta " <
 		
 		bool trksum, ecalrhsum, htowoverem, iso;	
 		int label = -1;
+cout << "phoidx " << phoidx << " isocuts " << _isocuts << endl;
 		//signal
 		if(!_data){
-			//find photon associated with subcluster
-			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
 			//matched to photon
 			if(phoidx != -1){
                 		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
+cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso << " isoBkgSel " << _isoBkgSel << endl;
 				if(_base->Photon_genIdx->at(phoidx) != -1){
 					int genidx = _base->Photon_genIdx->at(phoidx);
                 			//needs to be isolated
@@ -3653,7 +3655,7 @@ cout << "   track #" << t << " matched to supercluster " << sc << " with eta " <
 								//iso bkg = 4
 								//obj selection for iso bkg
 								if(_isoBkgSel){
-									if(_base->Photon_pt->at(nobj) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
+									if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
 									//pt asymmetry bw photon + jet - put in if modelling bw data/MC is not good enough
 									else{
 										label = 4; //selection for iso bkg is on (event sel)
@@ -3690,7 +3692,6 @@ cout << "   track #" << t << " matched to supercluster " << sc << " with eta " <
 		//else in data - could be spikes or BH
 		else{
 			if(_isocuts){
-				int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
 				if(phoidx == -1){
 					//not matched to a photon so cant be bkg
 					label = -1;
@@ -3705,7 +3706,7 @@ cout << "   track #" << t << " matched to supercluster " << sc << " with eta " <
 					//iso bkg = 4
 					//obj selection for iso bkg
 					if(_isoBkgSel){
-						if(_base->Photon_pt->at(nobj) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
+						if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
 						//pt asymmetry bw photon + jet - put in if modelling bw data/MC is not good enough
 						else label = 4; //selection for iso bkg is on (event sel)
 					}

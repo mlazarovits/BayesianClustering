@@ -87,8 +87,8 @@ void SuperClusterSkimmer::Skim(){
 	int nspikes = 0;
 	int nBH = 0;
 	for(int e = _evti; e < _evtj; e++){
-		//cout << "evt " << e << " base is nullptr? " << (_base == nullptr) << endl;
 		_base->GetEntry(e);
+		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
         	if(_BHFilter != notApplied){
         	        if(_BHFilter == applied){
         	                //apply beam halo filter - other noise filters needed for full Run2 recommendations
@@ -278,6 +278,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 				MakeCNNInputGrid(gmm, k, rh_pts, rh_center, mapobs[k]);
 
 				mapobs[k]["event"] = e;
+				mapobs[k]["event_weight"] = 1.;
 				mapobs[k]["object"] = scidx;
 				mapobs[k]["subcl"] = k;
 				mapobs[k]["label"] = label;

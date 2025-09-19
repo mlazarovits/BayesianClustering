@@ -94,6 +94,7 @@ void PhotonSkimmer::Skim(){
 	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
+		cout << "evt: " << e << " of " << _nEvts;
 		if(_BHFilter != notApplied){
 		cout << "BH filter applied - flag " << _base->Flag_globalSuperTightHalo2016Filter << " BHFilter " << _BHFilter << endl;
                         if(_BHFilter == applied){
@@ -151,6 +152,7 @@ void PhotonSkimmer::Skim(){
 			jet_phi = jet_sys.phi_02pi();
 			dphi_phojet = pho_phi - jet_phi;
 			dphi_phojet = acos(cos(dphi_phojet)); //wraparound - will always be < pi
+			cout << "# jets " << jets.size() << " ht " << ht << " met " << _base->Met_pt << " dphi " << dphi_phojet << endl;
 			//MET upper limit - orthogonal to signal MET selection
 			if(_base->Met_pt > _maxMet_isoBkg) continue;
 			//cout << "passed max met" << endl;	
@@ -159,7 +161,7 @@ void PhotonSkimmer::Skim(){
 			//cout << "passed min ht" << endl;	
 			//az angle bw hardest presel photon + jet system
 			//cout << "dphi " << dphi_phojet << " met " << _base->Met_pt << endl;	
-			if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
+			if(dphi_phojet < pi-0.6) continue; //want dphi ~ phi - implies less MET in event
 			//cout << "passed dphi " << endl;	
 			//trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
 	
@@ -175,7 +177,7 @@ void PhotonSkimmer::Skim(){
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
 			if(rhs.size() < 1){ continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
@@ -323,10 +325,11 @@ void PhotonSkimmer::Skim(){
 			
 			int ncl = gmm->GetNClusters();
 			int label = GetTrainingLabel(phoidx,0,gmm);
-
+		cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
 			//cout << "label: " << label << endl;
 				obs["event"] = e;
                                 obs["object"] = phoidx;
+				obs["event_weight"] = _weight;
 			//only get lead subcluster -> ncl = 0
                                 obs["subcl"] = 0;
 				obs["lead"] = 0;

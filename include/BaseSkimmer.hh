@@ -560,6 +560,8 @@ class BaseSkimmer{
 			_inputs.push_back("sample");
 			//event
 			_inputs.push_back("event");
+			//event weight
+			_inputs.push_back("event_weight");
 			//supercl
 			_inputs.push_back("object");
 			//subcl
