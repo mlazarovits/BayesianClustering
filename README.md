@@ -3,11 +3,15 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Compiling
 - to run on LPC: `make lpc`
+	- because of the fact that this command makes (or updates) directories with condor tarballs, this command cannot be run with multithreading (ie `-j` flag not allowed)
 - to run on local machine:
 	- make sure paths in Makefile are updated accordingly
 	- `make`
+- for compiling in a larger package, like [KUCMSNtupleizer](https://github.com/jking79/KUCMSNtupleizer/tree/master) with some classes already defined, like the KUCMSTimeCalibration class, make sure to use the most updated versions of these classes from [here](https://github.com/jking79/KUCMSNtupleizer/tree/master/KUCMSSkimmer/KUCMSTimeCaliFiles)
+
 
 ### Dependencies
+Once all of the below packages are downloaded, the corresponding paths in the Makefile must be updated to point to the relevant packages
 - ROOT for producers and skimmers
 - Python for macros for visualization
 	- at least v3.x
