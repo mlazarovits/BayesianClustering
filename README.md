@@ -3,6 +3,7 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Compiling
 - to run on LPC: `make lpc`
+	- because of the fact that this command makes (or updates) directories with condor tarballs, this command cannot be run with multithreading (ie `-j` flag not allowed)
 - to run on local machine:
 	- make sure paths in Makefile are updated accordingly
 	- `make`
