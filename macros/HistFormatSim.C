@@ -231,6 +231,15 @@ cout << "title " << xtit << " canname " << canname << " y title " << ytit << " h
 		if(canname.find("meanDeltaTime") == string::npos) hist[i]->GetYaxis()->SetRangeUser(1e-4, 2*maxy);
 		else hist[i]->GetYaxis()->SetRangeUser(1.5*miny, 3*maxy);
 
+		hist[i]->GetYaxis()->SetLabelFont(132);
+		hist[i]->GetXaxis()->SetLabelFont(132);
+		hist[i]->GetYaxis()->SetTitleFont(132);
+		hist[i]->GetXaxis()->SetTitleFont(132);
+		hist[i]->GetYaxis()->SetTitleSize(0.04);
+		hist[i]->GetXaxis()->SetTitleOffset(1.05);
+		hist[i]->GetXaxis()->SetTitleSize(0.04);
+
+
 		if(pf == 0){
 			legentry = hist[i]->GetTitle();
 			title = legentry;	 
@@ -451,10 +460,12 @@ cout << "col " << col << " mark " << mark << endl;
 
 	}
 	cout << "highpt " << highpt << " lowpt " << lowpt << endl;
+	myleg->SetTextFont(132);
+	myleg->SetMargin(0.3);
 	myleg->Draw("same"); 
 	gPad->Update();
 	if(highpt && !lowpt){
-		string jetsel_str = "Jet p_{T} #geq 175 GeV";
+		string jetsel_str = "#font[132]{Jet p_{T} #geq 175 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -462,7 +473,7 @@ cout << "col " << col << " mark " << mark << endl;
 		jetsel.DrawLatex(0.63,0.62,jetsel_str.c_str());
 	}
 	if(highpt && lowpt){
-		string jetsel_str = "#splitline{low p_{T}: Jet p_{T} < 175 GeV}{high p_{T}: Jet p_{T} #geq 175 GeV}";
+		string jetsel_str = "#font[132]{#splitline{low p_{T}: Jet p_{T} < 175 GeV}{high p_{T}: Jet p_{T} #geq 175 GeV}}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -476,7 +487,7 @@ cout << "col " << col << " mark " << mark << endl;
 		gPad->Modified();
 	}
 	if(canname.find("highMass") != string::npos){
-		string jetsel_str = "high mass: Jet mass > 100 GeV";
+		string jetsel_str = "#font[132]{high mass: Jet mass > 100 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -485,7 +496,7 @@ cout << "col " << col << " mark " << mark << endl;
 
 	}
 	if(canname.find("Wmass") != string::npos){
-		string jetsel_str = "W mass: 70 GeV < Jet mass < 90 GeV";
+		string jetsel_str = "#font[132]{W mass: 70 GeV < Jet mass < 90 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -494,7 +505,7 @@ cout << "col " << col << " mark " << mark << endl;
 
 	}
 	if(canname.find("lowMass") != string::npos){
-		string jetsel_str = "low mass: Jet mass < 50 GeV";
+		string jetsel_str = "#font[132]{low mass: Jet mass < 50 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
@@ -505,7 +516,8 @@ cout << "col " << col << " mark " << mark << endl;
 	
 
 	
-	string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV"+cms_label;
+	//string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV"+cms_label;
+	string lat_cms = "#font[22]{Pythia 8} #font[132]{event generation, #sqrt{s} = 13 TeV"+cms_label+"}";
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
@@ -515,7 +527,8 @@ cout << "col " << col << " mark " << mark << endl;
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.8,0.92,plot_title.c_str());
+	plot_title = "#font[132]{"+plot_title+"}";
+	lat1.DrawLatex(0.75,0.92,plot_title.c_str());
 	
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -548,6 +561,16 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetYaxis()->SetTitle(ytit.c_str());
 	hist->GetZaxis()->SetTitle("a.u.");
 	hist->GetZaxis()->CenterTitle(true);
+	hist->GetYaxis()->SetLabelFont(132);
+	hist->GetXaxis()->SetLabelFont(132);
+	hist->GetZaxis()->SetLabelFont(132);
+	hist->GetYaxis()->SetTitleFont(132);
+	hist->GetXaxis()->SetTitleFont(132);
+	hist->GetZaxis()->SetTitleFont(132);
+	hist->GetYaxis()->SetTitleSize(0.04);
+	hist->GetXaxis()->SetTitleOffset(1.05);
+	hist->GetXaxis()->SetTitleSize(0.04);
+	hist->GetZaxis()->SetTitleSize(0.04);
 	string histname = hist->GetName();
 	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
 		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
@@ -564,7 +587,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	string name = hist->GetName();
 	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
 	
-	string lat_cms = "#bf{Pythia 8} event generation, #sqrt{s} = 13 TeV";
+	string lat_cms = "#font[22]{Pythia 8} #font[132]{event generation, #sqrt{s} = 13 TeV}";
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.04);
@@ -574,23 +597,24 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 
 	if(cms_label.find("high pt") != string::npos){
 		cms_label = cms_label.substr(0,cms_label.find(" high pt"));
-		string jetsel_str = "175 #leq Jet p_{T}";
+		string jetsel_str = "#font[132]{Jet p_{T} #geq 175 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.70,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
 	}
 	if(cms_label.find("low pt") != string::npos){
 		cms_label = cms_label.substr(0,cms_label.find(" low pt"));
-		string jetsel_str = "175 > Jet p_{T}";
+		string jetsel_str = "#font[132]{Jet p_{T} < 175 GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.70,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
 	}
 	cms_label = cms_label + " Jets";
+	cms_label = "#font[132]{"+cms_label+"}";
 	
 	TLatex lat1;
 	lat1.SetNDC();
@@ -1466,9 +1490,10 @@ void MethodStackHists(string file, string proc, vector<string> methods, string o
 				xlab = "#frac{E_{subcluster}}{E_{gen q}}";
 		}
 		if(xlab.find("_nSubclusters") != string::npos){
-			string frac = xlab.substr(0,xlab.find("_nSubclusters"));
-			xlab = frac+" # subclusters";
+			xlab = "Number of subclusters";
 		}
+		if(xlab == "jetSize")
+			xlab = "Jet Size";
 		ylab = "a.u."; 
 	}
 	for(auto h : histstot){ cout << "have hist " << h->GetName() << endl;  }
@@ -1518,7 +1543,7 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 	TString th2d("TH2D");
 	TString tdir("TDirectoryFile");
 
-	cmslab += " "+method;
+	cmslab += ", "+method+" Jets";
 	
 	string matchesname = "";
 	for(auto s : matches) matchesname += "_"+s;
@@ -1612,7 +1637,10 @@ void AnyStackHists(string file, string proc, string method, vector<string> match
 		else
 			xlab = histstot[0]->GetXaxis()->GetTitle();
 		if(xlab.find("_nSubclusters") != string::npos){
-			xlab = "# subclusters";
+			xlab = "Number of subclusters";
+		}
+		if(xlab.find("Jet_mass") != string::npos){
+			xlab = "Jet mass [GeV]";
 		}
 		ylab = "a.u."; 
 	}
@@ -1979,20 +2007,19 @@ void HistFormatSim(string file, string proc = ""){
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPt_","W_highMass_partonNoMatchSubclPt_"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSize_","W_highMass_partonNoMatchSubclSize_"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPtOvJetPt","W_highMass_partonNoMatchSubclPtOvJetPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
-		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclSizeOvJetSize","W_highMass_partonNoMatchSubclSizeOvJetSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
+		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclTimeSigOvJetTimeSig","W_highMass_partonNoMatchSubclTimeSigOvJetTimeSig"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		Hist2D(file, proc, "BHC", oname, "W_highMass");
 		Hist2D(file, proc, "BHC", oname, "W_highTimeVar");
 
 		//PU cleaning hists - labels (last arg) need to match (or be in) given hist names
 		AnyStackHists(file, proc, "BHC", {"subclTimeCenter_PUlike","subclTimeCenter_PUcleaned"},oname,{"lead"},{"PUlike","PUcleaned"});
 		AnyStackHists(file, proc, "BHC", {"subclusterTimeSig_PUlike","subclusterTimeSig_PUcleaned"},oname,{"lead"},{"PUlike","PUcleaned"});
-		//AnyStackHists(file, proc, "BHC", {"Jet_mass","Jet_PUremoved_mass"},oname,{"lead"},{"BHCJet_mass","PUdownweighted","PUremoved"});
-		AnyStackHists(file, proc, "BHC", {"Jet_mass"},oname,{"lead"},{"BHCJet_mass","PUdownweighted","PUremoved"});
 
 
 		//causes segfault - need to rerun with _nom for the first hist
 		//AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR_nom","BHCJetW_subclParton_dR_PUcleaned"},oname,{"lead"},{"","PUcleaned"});
 		AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR"},oname,{"lead"},{"","PUcleaned"});
+		AnyStackHists(file, proc, "BHC",{"BHCJet_mass","BHCJet_PUremoved_mass","BHCJet_PUdownweighted_mass","W_subclusterLeadInvMass"},oname,{"lead"},{"_mass","PUremoved","PUdownweighted","subclusterLeadInvMass"});
 		//need to pt separate correctly
 		//MethodStackHists(file, proc, {"BHC"}, oname, "JetW_nJets_eq2cleanedSubcls",{"lead"});
 
@@ -2016,22 +2043,33 @@ void HistFormatSim(string file, string proc = ""){
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclPt","q_ge2Subcls_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclSize","q_ge2Subcls_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		
+	}
+	if(proc == "QCD"){
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio",{"lead"});
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR",{"lead"});
+		Hist2D(file, proc, "BHC", oname, "q_ge2Subcl");
 	}
 
 	if(proc == "ttbar"){	
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_dR",{"lead"});
 
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genTop_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "genTop_dR",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genTop_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genTop_dR",{"lead"});
+		
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_dR",{"lead"});
 
-		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_nSubclusters");
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genW_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genW_dR",{"lead"});
+
+		MethodStackHists(file, proc, {"BHC"}, oname, "Top_nSubclusters",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_subclusterMass");
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_subclusterLeadInvMass");
+		Hist2D(file, proc, "BHC", oname, "Top_highMass");
+		Hist2D(file, proc, "BHC", oname, "Top_highTimeVar");
 	}
 
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
