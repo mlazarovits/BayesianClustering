@@ -12,6 +12,7 @@ Once all of the below packages are downloaded, the corresponding paths in the Ma
 - ROOT for producers and skimmers
 - Python for macros for visualization
 	- at least v3.x
+All external packages below are header only: 
 - [eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 - [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)
 - [nlohmman-json](https://github.com/nlohmann/json) to make jsons for python macros
