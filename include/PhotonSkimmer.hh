@@ -57,22 +57,33 @@ class PhotonSkimmer : public BaseSkimmer{
 			//set histogram weights for HT slices, etc
 			_weight = 1;
 			if(_data){ _weight = 1.; }
-			else{
-				if(fname.find("GJets") != string::npos){
-					cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        	ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
-			        	string filein;
-			        	string filename = file->GetName();
-			        	double jet_weight, pho_weight;
-			        	while( weights >> filein >> jet_weight >> pho_weight){
-			        	        if(filename.find(filein) == string::npos) continue;
-			        	        else{
-			        	                _weight = pho_weight;
-			        	                break;
-			        	        }
-			        	}
-				}
+			else if(fname.find("QCD") != string::npos){
+				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
+			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
+			        string filein;
+			        double jet_weight, pho_weight;
+			        while( weights >> filein >> jet_weight >> pho_weight){
+			                if(filelist.find(filein) == string::npos) continue;
+			                else{
+			                        _weight = pho_weight;
+			                        break;
+			                }
+			        }
 			}		
+			else if(fname.find("GJets") != string::npos){
+				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
+			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
+			        string filein;
+			        double jet_weight, pho_weight;
+			        while( weights >> filein >> jet_weight >> pho_weight){
+			                if(filelist.find(filein) == string::npos) continue;
+			                else{
+			                        _weight = pho_weight;
+			                        break;
+			                }
+			        }
+			}
+			else _weight = 1;	
 
 
 			_base = _prod->GetBase();
@@ -123,8 +134,21 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			//set histogram weights for HT slices, etc
 			_weight = 1;
-			if(_data || filelist.find("QCD") != string::npos){ _weight = 1.; }
-			else{
+			if(_data){ _weight = 1.; }
+			else if(filelist.find("QCD") != string::npos){
+				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
+			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
+			        string filein;
+			        double jet_weight, pho_weight;
+			        while( weights >> filein >> jet_weight >> pho_weight){
+			                if(filelist.find(filein) == string::npos) continue;
+			                else{
+			                        _weight = pho_weight;
+			                        break;
+			                }
+			        }
+			}		
+			else if(filelist.find("GJets") != string::npos){
 				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
 			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
 			        string filein;
@@ -136,7 +160,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			                        break;
 			                }
 			        }
-			}		
+			}
+			else _weight = 1;	
 
 
 			_base = _prod->GetBase();
