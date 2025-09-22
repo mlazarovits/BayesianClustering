@@ -43,12 +43,11 @@ Jet VectorSum(vector<Jet>& jets){
         return ret;
 }
 
-int EventWeightCalc_FileList(string selection = "", string year = "18"){
+int EventWeightCalc_FileList(string selection = "", string year = "18", bool isoBkgSel = true){
 	gSystem->Load("lib/libBayesianClustering.so");
 	double gev_jet = 0.1;
 	double gev_pho = 1./30.;
 
-	bool isoBkgSel = true;
 	double minht = 50;
 	double maxmet = 50;
 	double pi = 4*atan(1);
@@ -59,27 +58,30 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 
 	//just for MCs - data weight = 1
 	vector<string> filelists;
-	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-40To100_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-100To200_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-200To400_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-400To600_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v30_GJets_HT-600ToInf_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT50to100_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT100to200_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT200to300_AODSIM_"+recodates[year]+"_list");
+        filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT300to500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT500to700_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT700to1000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT1000to1500_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT1500to2000_AODSIM_"+recodates[year]+"_list");
+	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT2000toInf_AODSIM_"+recodates[year]+"_list");
+	if(year == "18")
+		recodates[year] += "RECO";
+//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-40To100_TuneCP5_AODSIM_"+recodates[year]+"_list");
+//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-100To200_TuneCP5_AODSIM_"+recodates[year]+"_list");
+//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-200To400_TuneCP5_AODSIM_"+recodates[year]+"_list");
+//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-400To600_TuneCP5_AODSIM_"+recodates[year]+"_list");
+//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-600ToInf_TuneCP5_AODSIM_"+recodates[year]+"_list");
 
 
-	if(selection == "IPM100")
-		selection = "SVIPM100";	
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-50to100_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-100to200_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-200to300_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-300to500_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-500to700_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-700to1000_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1000to1500_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-1500to2000_AODSIM_"+recodates[year]+"_list");
-	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT-2000toInf_AODSIM_"+recodates[year]+"_list");
 
 	ofstream ofile;
-	string ofilename = "info/EventWeights"+selection+"_R"+year+".txt";
+	string ofilename = "info/EventWeights_"+selection+"_R"+year;
+	if(isoBkgSel)
+		ofilename += "_isoBkgSel";
+	ofilename += ".txt";
 	ofile.open(ofilename);
 	//dont write just for remembering what's being written
 	//ofile << "file	jet_weight	pho_weight" << endl;
@@ -96,6 +98,7 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 		int nEvts = base->fChain->GetEntries();
 
 		pho_prod->SetMinPt(30.); //50 for iso bkg (same for jets + photons), 30 for nominal
+		if(isoBkgSel) pho_prod->SetMinPt(50.); //50 for iso bkg (same for jets + photons), 30 for nominal
 		pho_prod->SetMinNrhs(15);
                 pho_prod->SetMinEmE(30); 
                 pho_prod->SetMinRhE(0.5);
@@ -113,7 +116,7 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 		swts.Init();
 		double scale, xsec;
 		swts.GetWeights(filelists[f],scale,xsec);
-
+cout << "scale " << scale << " xsec " << xsec << endl;
 		int nSelEvts_jet = 0;
 		int nSelEvts_pho = 0;
 		vector<Jet> jets, phos;
@@ -192,11 +195,12 @@ int EventWeightCalc_FileList(string selection = "", string year = "18"){
 		if(nSelEvts_pho == 0) pho_weight = 0;
 		else pho_weight = (scale * (xsec * 1000) * base->Evt_genWgt) / (double)nSelEvts_pho;
 		
-
+cout << "scale " << scale << " xsec " << xsec << " genwt " << base->Evt_genWgt << " n sel evts pho " << nSelEvts_pho << " n sel evts jet " << nSelEvts_jet << " out of " << nEvts << " total events" << endl;
 
 		ofile << filelists[f] << "	" << jet_weight << "	" << pho_weight << endl;
 
 	}
+	cout << "Wrote event weights to " << ofilename << endl;
 	ofile.close();
 	return 1;
 };
