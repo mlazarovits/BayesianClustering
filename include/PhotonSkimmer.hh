@@ -63,11 +63,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
+			                _weight = pho_weight;
+			                break;
 			        }
 			}		
 			else if(fname.find("GJets") != string::npos){
@@ -76,11 +73,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
+			                _weight = pho_weight;
+			                break;
 			        }
 			}
 			else _weight = 1;	
