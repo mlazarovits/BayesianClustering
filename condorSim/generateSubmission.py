@@ -35,10 +35,6 @@ def generateSubmission(args):
     else:
                 print("Sample "+args.inputSample+" not found")
                 exit()
-    if(args.zeroSup != '0.5'):
-        zeroSupStr = zeroSupStr.replace(".","p")
-        inputFile += "_eThresh-"+zeroSupStr
-
     inputFile += "_ptHatMin"+args.ptHatMin
 
     if(args.PFCand):
@@ -47,6 +43,10 @@ def generateSubmission(args):
     if(int(args.nPU) > 0):
         inputFile += "_nPU"+args.nPU
     
+    if(args.zeroSup != '0.5'):
+        zeroSupStr = args.zeroSup.replace(".","p")
+        inputFile += "_minE"+zeroSupStr
+
 
     #inputFile += "_neutralTrajOnly"
 

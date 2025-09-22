@@ -33,25 +33,23 @@ def generateSubmission(args):
     reco_date["2018_DEG"] = "-15Feb2022"
     reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
     reco_date["2022_MET"] = "-27Jun2023-v2"
-    reco_date["2018_GJets"] = "RunIISummer20UL18"
-    reco_date["2017_GJets"] = "RunIISummer20UL18"
+    reco_date["2018_MC"] = "RunIISummer20UL18"
+    reco_date["2017_MC"] = "RunIIFall17DRPremix"
     reco_date["2018"] = ""
     if sel == "SVIPM100":
         ver = "v31"
-    if "QCD" in args.inputSample:
-        inputFileList = "kucmsntuple_QCD_R"+yr+"_"+sel+"_"+ver+"_QCD_HT-"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
     if "GJets" in args.inputSample:
         if "IPM100" in sel:
             ver = "v30"
-        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_"+reco_date[args.year+"_GJets"]+"_list.txt"
+        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_"+reco_date[args.year+"_MC"]+"_list.txt"
     elif "MET" in args.inputSample:
         if "AL1NpSC" in sel:
             ver = "v31"
         inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "JetHT" in args.inputSample:
-    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+args.sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
+    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
     elif "QCD" in args.inputSample:
-    	inputFileList = "kucmsntuple_QCD_R"+yr+"_"+args.sel+"_"+ver+"_QCD_"+args.HT+"_AODSIM_RunIIFall17DRPremix_list.txt"
+    	inputFileList = "kucmsntuple_QCD_R"+yr+"_"+sel+"_"+ver+"_QCD_HT"+args.HT+"_AODSIM_"+reco_date[args.year+"_MC"]+"_list.txt"
     elif "EGamma" in args.inputSample:
         if "AL1SelEle" in sel:
             ver = "v28"
