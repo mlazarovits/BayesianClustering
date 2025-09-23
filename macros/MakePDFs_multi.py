@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--files","-f",help="formatted ('_formatted.root') file(s) to run over",required=True,nargs='+')
 parser.add_argument("--observable","-obs",help="observable(s) to plot (string match)", required=True,nargs='+')
 parser.add_argument("--outdir","-odir",help="output directory of plots (per file)",required=True)
+parser.add_argument("--lead",help="only make lead hists",action='store_true',default=False)
 parser.add_argument("--logy",action='store_true')
 parser.add_argument("--logz",action='store_true')
 args = parser.parse_args()
@@ -24,6 +25,11 @@ for obs in args.observable:
 			logstr += ",true"
 		else:
 			logstr += ",false"
-		cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+obs+'",'+logstr+')\''
+		leadstr = ""
+		if args.lead:
+			leadstr = "true"
+		else:
+			leadstr = "false"
+		cmd = 'root -l -b -q \'macros/MakePDFs.C("'+f+'","'+args.outdir+'","'+obs+'",'+logstr+','+leadstr+')\''
 		print("Executing",cmd)
 		subprocess.run(split(cmd))

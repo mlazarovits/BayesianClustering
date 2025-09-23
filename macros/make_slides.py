@@ -237,7 +237,7 @@ def clean_and_sort(groups):
 	newgroups = get_sorted_suffixes(newgroups)
 	return newgroups
 
-def make_slides(plot_dir_name, tag = ""):
+def make_slides(plot_dir_name, tag = "",pu=False):
 	base_dir = os.getcwd()
 	suffix_groups = defaultdict(list)
 	# Define prefix (sample) order
@@ -249,32 +249,43 @@ def make_slides(plot_dir_name, tag = ""):
 	pdf_files = sorted(pdf_files)
 	#print("pdf_files",pdf_files)
 
-	#maps slide title to plots on slide
 	slideTitles_plots = {}
-	slideTitles_plots["nJets"] = ["nJets"]
-	slideTitles_plots["nSubclustersJet"] = ["nSubclustersJet"]
-	slideTitles_plots["Jet Center"] = ["Jet_EtaCenter","Jet_PhiCenter","Jet_TimeCenter"]
-	slideTitles_plots["Subcluster Center"] = ["subClusterEtaCenter","subClusterPhiCenter","subClusterTimeCenter"]
-	#slideTitles_plots["Jet Kinematics"] = ["Jet_mass","Jet_energy","Jet_pt"]
-	#range(4) for 4 different gen/reco AK plots (AK4, AK8, AK15 all pt sep and AK4, AK8, AK15 total on one plot)
-	slideTitles_plots["Jet Energy"] = ["Jet_energy" for i in range(4)]
-	slideTitles_plots["Jet Mass"] = ["Jet_mass" for i in range(4)]
-	slideTitles_plots["Jet Pt"] = ["Jet_pt" for i in range(4)]
-	slideTitles_plots["Jet Size"] = ["jetSize" for i in range(4)]
+	if(pu):
+		slideTitles_plots["Relative Sigma time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeSig_RelSubclE"]
+		slideTitles_plots["Relative Size vs Relative Pt"] = ["BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt"]
+		slideTitles_plots["Relative Sublead Size vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclSubleadSize_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclSubleadSize_RelSubclE"]
+		slideTitles_plots["Relative Sigma eta vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclEtaSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclEtaSig_RelSubclE"]
+		slideTitles_plots["Relative Sigma phi vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclPhiSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclPhiSig_RelSubclE"]
+		slideTitles_plots["Relative Sigma^2 time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE"]
+		slideTitles_plots["Relative Avg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchAvg_RelSubclTimeRelSize_RelSubclE","BHCJetW_highMass_partonNoMatchAvg_RelSubclTimeRelSize_RelSubclE"]
+		slideTitles_plots["Relative GeoAvg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE"]
 	
-	slideTitles_plots["Gen Matching to Ws - dR, E ratio"] = ["genW_dR","genW_Eratio"]
-	slideTitles_plots["Gen Matching to tops - dR, Eratio"] = ["genTop_dR","genTop_Eratio"]
-	slideTitles_plots["Gen Matching to Ws - Kinematics"] = ["_genWMass","_genWE_","_genWPt"]
-	slideTitles_plots["Gen Matching to tops - Kinematics"] = ["_genTopMass","_genTopE_","_genTopPt"]
-	slideTitles_plots["Gen Matching to Ws - Center"] = ["_genWEtaCenter","_genWPhiCenter"]
-	slideTitles_plots["Gen Matching to tops - Center"] = ["_genTopEtaCenter","_genTopPhiCenter"]
-	slideTitles_plots["Gen Matching to Ws - subclusters"] = ["W_nSubclusters","W_subClusterEnergy"]
-	slideTitles_plots["Subcluster Kinematics"] = ["Jet_subclusterMass", "Jet_subclusterEnergy"]
-	slideTitles_plots["Subcluster Effective # Rhs"] = ["Jet_subclusterEffnRhs"]
-	slideTitles_plots["Subcluster Mass vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterMass"]
-	slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
-	slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Mass"] = ["Jet_subclusterMass_subclusterEffnRhs"]
-	slideTitles_plots["Jet Pt vs Jet Mass"] = ["BHCJetMass_BHCJetPt", "recoAK4JetMass_recoAK4JetPt"]
+	else: #maps slide title to plots on slide
+		slideTitles_plots["nJets"] = ["nJets"]
+		slideTitles_plots["nSubclustersJet"] = ["nSubclustersJet"]
+		slideTitles_plots["Jet Center"] = ["Jet_EtaCenter","Jet_PhiCenter","Jet_TimeCenter"]
+		slideTitles_plots["Subcluster Center"] = ["subClusterEtaCenter","subClusterPhiCenter","subClusterTimeCenter"]
+		#slideTitles_plots["Jet Kinematics"] = ["Jet_mass","Jet_energy","Jet_pt"]
+		#range(4) for 4 different gen/reco AK plots (AK4, AK8, AK15 all pt sep and AK4, AK8, AK15 total on one plot)
+		slideTitles_plots["Jet Energy"] = ["Jet_energy" for i in range(4)]
+		slideTitles_plots["Jet Mass"] = ["Jet_mass" for i in range(4)]
+		slideTitles_plots["Jet Pt"] = ["Jet_pt" for i in range(4)]
+		slideTitles_plots["Jet Size"] = ["jetSize" for i in range(4)]
+		
+		slideTitles_plots["Gen Matching to Ws - dR, E ratio"] = ["genW_dR","genW_Eratio"]
+		slideTitles_plots["Gen Matching to tops - dR, Eratio"] = ["genTop_dR","genTop_Eratio"]
+		slideTitles_plots["Gen Matching to Ws - Kinematics"] = ["_genWMass","_genWE_","_genWPt"]
+		slideTitles_plots["Gen Matching to tops - Kinematics"] = ["_genTopMass","_genTopE_","_genTopPt"]
+		slideTitles_plots["Gen Matching to Ws - Center"] = ["_genWEtaCenter","_genWPhiCenter"]
+		slideTitles_plots["Gen Matching to tops - Center"] = ["_genTopEtaCenter","_genTopPhiCenter"]
+		slideTitles_plots["Gen Matching to Ws - subclusters"] = ["W_nSubclusters","W_subClusterEnergy"]
+		slideTitles_plots["Subcluster Kinematics"] = ["Jet_subclusterMass", "Jet_subclusterEnergy"]
+		slideTitles_plots["Subcluster Effective # Rhs"] = ["Jet_subclusterEffnRhs"]
+		slideTitles_plots["Subcluster Mass vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterMass"]
+		slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Energy"] = ["Jet_subclusterEnergy_subclusterEffnRhs"]
+		slideTitles_plots["Subcluster Effective # Rhs vs Subcluster Mass"] = ["Jet_subclusterMass_subclusterEffnRhs"]
+		slideTitles_plots["Jet Pt vs Jet Mass"] = ["BHCJetMass_BHCJetPt", "recoAK4JetMass_recoAK4JetPt"]
+
 
 
 
@@ -360,12 +371,13 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--dirs","-d",help="dir(s) with plots to run over",required=True,nargs='+')
 	parser.add_argument("--tag","-t",help="extra tag for slide titles")
+	parser.add_argument("--PU",help="make pu slides",action='store_true',default=False)
 	args = parser.parse_args()
 	make_applescript_call_show('false')
 	for plot_dir_name in args.dirs:
 		if(os.path.isdir(plot_dir_name)):
 			print("making slides for",plot_dir_name,"with tag",args.tag)
-			make_slides(plot_dir_name,args.tag)
+			make_slides(plot_dir_name,args.tag,args.PU)
 		else:
 			print("dir",plot_dir_name,"doesn't exist")
 		
