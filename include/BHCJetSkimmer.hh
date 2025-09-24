@@ -757,7 +757,7 @@ class BHCJetSkimmer{
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(true);
 
 						_procCats[p].hists1D[pt][212]->Fill(cleanedJet_downweight.mass());
-cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_removed.mass() << " PU dwnwt mass " << cleanedJet_downweight.mass() << endl;
+cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_remove.mass() << " PU dwnwt mass " << cleanedJet_downweight.mass() << endl;
 						//look at low mass jets (resolved)
 						if(cleanedJet_remove.mass() < 30){
 							nJets_mle30++;
