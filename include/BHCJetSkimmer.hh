@@ -338,7 +338,7 @@ class BHCJetSkimmer{
 			_hists1D.push_back(BHCJet_PUdownweighted_mass);
 			_hists1D.push_back(BHCJet_massle30_nJets);
 			_hists1D.push_back(BHCJet_massle30_PUremoved_SubclInvMass);
-			_hists1D.push_back(BHCJet_massle30_PUremovednSubclusters);
+			_hists1D.push_back(BHCJet_massle30_PUremoved_nSubclusters);
 		
 
 			_hists2D.push_back(jetGenE_diffDeltaPt_recoGen);
@@ -757,6 +757,7 @@ class BHCJetSkimmer{
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(true);
 
 						_procCats[p].hists1D[pt][212]->Fill(cleanedJet_downweight.mass());
+cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_removed.mass() << endl;
 						//look at low mass jets (resolved)
 						if(cleanedJet_remove.mass() < 30){
 							nJets_mle30++;
@@ -2977,7 +2978,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		//214 - invariant mass bw jets with mass < 30 and PU cleaned
 		TH1D* BHCJet_massle30_PUremoved_SubclInvMass = new TH1D("BHCJet_massle30_PUremoved_SubclInvMass","BHCJet_massle30_PUremoved_SubclInvMass",50,0,250);
 		//215 - # subclusters for jets with mass < 30 and PU cleaned	
-		TH1D* BHCJet_massle30_PUremovednSubclusters = new TH1D("BHCJet_massle30_PUremovednSubclusters","BHCJet_massle30_PUremovednSubclusters",10,0,10);
+		TH1D* BHCJet_massle30_PUremoved_nSubclusters = new TH1D("BHCJet_massle30_PUremoved_nSubclusters","BHCJet_massle30_PUremoved_nSubclusters",10,0,10);
 
 
 		////////////////////////////////////////////////////////////////////////
