@@ -459,6 +459,16 @@ cout << "col " << col << " mark " << mark << endl;
 		wmass->Draw("same");
 
 	}
+	if(plot_title.find("t#bar{t}") != string::npos && xtit == "Jet mass [GeV]"){
+		TLine* wmass = new TLine(80.4,1e-4, 80.4,2*maxy);
+		wmass->SetLineStyle(6);
+		wmass->Draw("same");
+		
+		TLine* topmass = new TLine(172.,1e-4, 172.,2*maxy);
+		topmass->SetLineStyle(6);
+		topmass->Draw("same");
+
+	}
 	cout << "highpt " << highpt << " lowpt " << lowpt << endl;
 	myleg->SetTextFont(132);
 	myleg->SetMargin(0.3);
@@ -582,8 +592,10 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		}
 		hist->Draw("colz1text");
 	}
-	else hist->Draw("colz1");
-
+	else{
+		hist->Scale(1./hist->Integral());
+		hist->Draw("colz1");
+	}
 	string name = hist->GetName();
 	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
 	
@@ -2009,7 +2021,6 @@ void HistFormatSim(string file, string proc = ""){
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclPtOvJetPt","W_highMass_partonNoMatchSubclPtOvJetPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"W_highMass_partonMatchSubclTimeSigOvJetTimeSig","W_highMass_partonNoMatchSubclTimeSigOvJetTimeSig"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		Hist2D(file, proc, "BHC", oname, "W_highMass");
-		Hist2D(file, proc, "BHC", oname, "W_highTimeVar");
 
 		//PU cleaning hists - labels (last arg) need to match (or be in) given hist names
 		AnyStackHists(file, proc, "BHC", {"subclTimeCenter_PUlike","subclTimeCenter_PUcleaned"},oname,{"lead"},{"PUlike","PUcleaned"});
@@ -2039,6 +2050,9 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genq_dR",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "q_nSubclusters",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass",pttypes);
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_nJets",pttypes);
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_PUremoved_SubclInvMass",pttypes);
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_PUremovednSubclusters",pttypes);
 		
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclPt","q_ge2Subcls_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclSize","q_ge2Subcls_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
@@ -2049,16 +2063,13 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio");
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_Eratio",{"lead"});
 		MethodStackHists(file, proc, {"BHC"}, oname, "BHCJetq_subclParton_dR",{"lead"});
-		Hist2D(file, proc, "BHC", oname, "q_ge2Subcl");
+		Hist2D(file, proc, "BHC", oname, "q_highMass");
 	}
 
 	if(proc == "ttbar"){	
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genTop_dR",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genTop_Eratio",{"lead"});
+		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genTop_dR",{"lead"});
 
-		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genTop_Eratio",{"lead"});
-		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "genTop_dR",{"lead"});
-		
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_Eratio",{"lead"});
 		MethodStackHists(file, proc, jettypes_recoAK15BHC, oname, "genW_dR",{"lead"});
 
@@ -2069,12 +2080,11 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_subclusterMass");
 		MethodStackHists(file, proc, jettypes_recoAK4BHC, oname, "Top_subclusterLeadInvMass");
 		Hist2D(file, proc, "BHC", oname, "Top_highMass");
-		Hist2D(file, proc, "BHC", oname, "Top_highTimeVar");
+		Hist2D(file, proc, "BHC", oname, "W_highMass");
 	}
 
 	cout << "Wrote formatted canvases to: " << ofile->GetName() << endl;
 
 }
-
 
 
