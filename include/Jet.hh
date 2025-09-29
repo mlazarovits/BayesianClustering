@@ -592,7 +592,7 @@ class Jet{
 					effRh.SetWeight(totR);
 				}
 				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endlo
+cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
 				totE += effRh.e();
 
 				cleanedRhs.push_back(effRh);
