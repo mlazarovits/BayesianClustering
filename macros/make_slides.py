@@ -251,14 +251,18 @@ def make_slides(plot_dir_name, tag = "",pu=False):
 
 	slideTitles_plots = {}
 	if(pu):
-		slideTitles_plots["Relative Sigma time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeSig_RelSubclE"]
-		slideTitles_plots["Relative Size vs Relative Pt"] = ["BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt"]
-		slideTitles_plots["Relative Sublead Size vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclSubleadSize_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclSubleadSize_RelSubclE"]
-		slideTitles_plots["Relative Sigma eta vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclEtaSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclEtaSig_RelSubclE"]
-		slideTitles_plots["Relative Sigma phi vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclPhiSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclPhiSig_RelSubclE"]
-		slideTitles_plots["Relative Sigma^2 time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE"]
-		slideTitles_plots["Relative Avg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchAvg_RelSubclTimeRelSize_RelSubclE","BHCJetW_highMass_partonNoMatchAvg_RelSubclTimeRelSize_RelSubclE"]
-		slideTitles_plots["Relative GeoAvg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE"]
+		slideTitles_plots["Relative GeoAvg(Sigma^2 time, sigma^2 phi, sigma^2 eta) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclGeoAvgAllVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclGeoAvgAllVar_RelSubclE"]
+		slideTitles_plots["Relative sigma^2 eta vs Relative sigma^2 phi"] = ["BHCJetW_highMass_partonMatchRelSubclEtaVar_RelSubclPhiVar","BHCJetW_highMass_partonNoMatchRelSubclEtaVar_RelSubclPhiVar"]
+		slideTitles_plots["Relative sigma^2 eta vs Relative sigma^2 time"] = ["BHCJetW_highMass_partonMatchRelSubclEtaVar_RelSubclTimeVar","BHCJetW_highMass_partonNoMatchRelSubclEtaVar_RelSubclTimeVar"]
+		slideTitles_plots["Relative sigma^2 time vs Relative sigma^2 phi"] = ["BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclPhiVar","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclPhiVar"]
+		#slideTitles_plots["Relative Sigma time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeSig_RelSubclE"]
+		#slideTitles_plots["Relative Size vs Relative Pt"] = ["BHCJetW_highMass_partonMatchRelSubclSize_RelSubclPt","BHCJetW_highMass_partonNoMatchRelSubclSize_RelSubclPt"]
+		#slideTitles_plots["Relative Sublead Size vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclSubleadSize_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclSubleadSize_RelSubclE"]
+		#slideTitles_plots["Relative Sigma eta vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclEtaSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclEtaSig_RelSubclE"]
+		#slideTitles_plots["Relative Sigma phi vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclPhiSig_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclPhiSig_RelSubclE"]
+		#slideTitles_plots["Relative Sigma^2 time vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclTimeVar_RelSubclE"]
+		#slideTitles_plots["Relative Avg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchAvg_RelSubclTimeRelSize_RelSubclE","BHCJetW_highMass_partonNoMatchAvg_RelSubclTimeRelSize_RelSubclE"]
+		#slideTitles_plots["Relative GeoAvg(Sigma time, Size) vs Relative Energy"] = ["BHCJetW_highMass_partonMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE","BHCJetW_highMass_partonNoMatchRelSubclGeoAvgSpatialSizeTimeVar_RelSubclE"]
 	
 	else: #maps slide title to plots on slide
 		slideTitles_plots["nJets"] = ["nJets"]
