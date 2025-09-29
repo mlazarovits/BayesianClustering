@@ -42,7 +42,7 @@ void JetSkimmer::Skim(){
 
 
 	//set NN model + features - can move to .C for more flexibility
-	SetNNModel("json/small8CNN_EMultr.json");
+	SetNNModel("json/small3CNN_EMultr.json");
 	//SetNNFeatures();
 	_nnfeatures = {"EMultr"};
 
