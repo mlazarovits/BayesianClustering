@@ -558,7 +558,7 @@ class Jet{
 					pass.push_back(true);
 				else
 					pass.push_back(false);
-			cout <<	"subcluster #" << k << " rel time var " << relTimeVar << " rel E " << relE << " rel size " << relSize << " pass? " << pass[k] << endl;	
+			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
