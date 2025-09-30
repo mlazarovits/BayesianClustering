@@ -554,7 +554,7 @@ class Jet{
 				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 
 				//PU cleaning definition
-				if(relGeoAvg + relE < 0)
+				if(relGeoAvg - relE < 0)
 					pass.push_back(true);
 				else
 					pass.push_back(false);

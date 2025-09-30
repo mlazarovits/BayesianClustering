@@ -719,7 +719,7 @@ class BHCJetSkimmer{
 							double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
 							double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 							//hard subcl
-							if(relGeoAvg + relE < 0){
+							if(relGeoAvg - relE < 0){
 								_procCats[p].hists1D[pt][196]->Fill(consts[c].t());
 								_procCats[p].hists1D[pt][198]->Fill(sqrt(subcl_cov.at(2,2)));
 								consts_puCleaned.push_back(consts[c]);
