@@ -713,13 +713,13 @@ class BHCJetSkimmer{
 							_procCats[p].hists2D[pt][28]->Fill(effnRhs, jet_dr);
 						
 							//PU cleaning subclusters
-							double subclsize_full = CalcSize(subcl_cov, true);
-							double relTimeSig = sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2));
-							double subclsize = CalcSize(subcl_cov);
-							double relSize = subclsize / jetsize;
 							double relE = consts[c].E() / _predJets[j].E();
+							double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
+							double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
+							double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
+							double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 							//hard subcl
-							if(relTimeSig - relE <= 0 && relTimeSig + relSize <= 1){
+							if(relGeoAvg + relE < 0){
 								_procCats[p].hists1D[pt][196]->Fill(consts[c].t());
 								_procCats[p].hists1D[pt][198]->Fill(sqrt(subcl_cov.at(2,2)));
 								consts_puCleaned.push_back(consts[c]);
@@ -732,7 +732,6 @@ class BHCJetSkimmer{
 
 
 						}
-						//TODO: only do for samples with PU
 						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(false);
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(true);
 
@@ -795,26 +794,6 @@ cout << "lowMassJets.size() " << lowMassJets.size() << endl;
 						}
 	
 						//do gen AK4 matching hists
-						/*
-						if(genAK4MatchIdxs[j] != -1){
-							int genAK4jetidx = _genAK4jets[genAK4MatchIdxs[j]].GetUserIdx();
-							
-						}			
-						//do gen AK15 matching hists
-						if(genAK15MatchIdxs[j] != -1){
-							int genAK15jetidx = _genAK15jets[genAK15MatchIdxs[j]].GetUserIdx();
-
-							//phi debugging
-							double genphi = _genAK15jets[genAK15MatchIdxs[j]].phi_02pi();
-							double bhcphi = _predJets[j].phi();
-							double true_dphi = acos(cos(genphi - bhcphi));
-							double dphi = fabs(genphi - bhcphi);
-							if(true_dphi < 0.1 && dphi > 6.){
-								cout << "BAD PHI MATCH HERE!!!!! for bhc jet # " << j << " with phi " << bhcphi << " and gen AK15 gen # " << genAK15MatchIdxs[j] << " with phi " << genphi << " evt " << _base->event << endl;
-							}
-
-						}
-						*/			
 						//do gen top matching hists
 						if(genTopMatchIdxs[j] != -1){
 							int gentopidx = genTopMatchIdxs[j];
@@ -1014,10 +993,6 @@ cout << "avgPart E " << avgPartE << endl;
 											_procCats[p].hists1D[pt][202]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)));
 
 											_procCats[p].hists2D[pt][51]->Fill(subclsize / jetsize, consts[c].pt() / _predJets[j].pt());
-					//check if subcl pt > jet pt
-					if(consts[c].pt() > _predJets[j].pt()){
-						cout << "jet #" << j << " has pt " << _predJets[j].pt() << " const #" << c << " has pt " << consts[c].pt() << endl;
-					}
 											//relative time variance vs relative pt
 											_procCats[p].hists2D[pt][53]->Fill(sqrt(subcl_cov.at(2,2)) / sqrt(jet_cov.at(2,2)), consts[c].E() / _predJets[j].E());
 											//relative time variance vs relative size
@@ -1033,7 +1008,6 @@ cout << "avgPart E " << avgPartE << endl;
 									}
 
 								}	
-								//TODO - do only for cleaned jets within maxDr = 1 of gen W - dR matched cleaned subclusters
 								vector<int> subclGenMatchIdx_puCleaned(consts_puCleaned.size(), -1);	
 								GenericMatchJet(consts_puCleaned,Wpartons,subclGenMatchIdx_puCleaned); //match subclusters to W partons
 								for(int c = 0; c < consts_puCleaned.size(); c++){

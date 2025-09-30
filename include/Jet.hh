@@ -548,10 +548,13 @@ class Jet{
 			for(int k = 0; k < _constituents.size(); k++){
 				double relE = _constituents[k].e() / this->e();
 				Matrix subcl_cov = _constituents[k].GetCovariance();
-				double relTimeVar = sqrt(subcl_cov.at(2,2)) / sqrt(cov.at(2,2));
-				double relSize = _constituents[k].CalcSpatialSize() / this->CalcSpatialSize();
+				double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
+				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
+				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
+				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 
-				if(relTimeVar - relE <= 0 && relTimeVar + relSize <= 1)
+				//PU cleaning definition
+				if(relGeoAvg + relE < 0)
 					pass.push_back(true);
 				else
 					pass.push_back(false);
@@ -592,7 +595,7 @@ class Jet{
 					effRh.SetWeight(totR);
 				}
 				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
+//cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
 				totE += effRh.e();
 
 				cleanedRhs.push_back(effRh);
@@ -613,89 +616,6 @@ cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effec
 			}	
 			return cleanedJet;
 		}
-		/*
-		Jet CleanOutPU(double maxRelTimeVar = 1, double minRelPt = 0.2, bool remove = false){
-			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
-
-			Matrix cov = GetCovariance();
-			Jet cleanedJet;
-			vector<JetPoint> cleanedRhs;
-			//loop through constituents and reset rh weights based on above
-			//loop through rhs - for rechit n
-			//DOWNWEIGHTING
-			// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 1 - max(r_nk)
-			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by max(r_nk)
-			//REMOVING
-			// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 0.
-			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by 1.
-			//(unweighted) r_nk's are saved as rh weights
-			vector<bool> pass; //true = pass, false = fail
-			for(int k = 0; k < _constituents.size(); k++){
-				double rel_subcl_pt = _constituents[k].pt() / this->pt();
-				Matrix subcl_cov = _constituents[k].GetCovariance();
-				
-				double rel_subcl_size = sqrt(subcl_cov.at(2,2)) / sqrt(cov.at(2,2));
-
-				if(rel_subcl_pt > minRelPt && rel_subcl_size < maxRelTimeVar)
-					pass.push_back(true);
-				else
-					pass.push_back(false);
-			}
-			//return empty jet if no subclusters pass criteria
-			if(find(pass.begin(), pass.end(), true) == pass.end()){
-				Jet ret;
-				return ret;
-			}
-
-			double totE = 0;
-			for(int n = 0; n < _nRHs; n++){
-				double maxRnk = 0;
-				int assignedK = -1;
-				JetPoint effRh;
-				double totR = 0;
-				for(int k = 0; k < _constituents.size(); k++){
-					effRh = _constituents[k]._rhs[n];
-					if(effRh.GetWeight() > maxRnk){
-						maxRnk = effRh.GetWeight();
-						assignedK = k;
-					}
-					if(pass[k]) //responsibility of good subclusters sum to overall weight
-						totR += effRh.GetWeight();
-				}
-			
-				if(remove){
-					if(pass[assignedK]){
-						effRh.SetWeight(1.);
-					}
-					else
-						effRh.SetWeight(0.);
-
-				}
-				else{ //downweight
-					effRh.SetWeight(totR);
-				}
-				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-				totE += effRh.e();
-
-				cleanedRhs.push_back(effRh);
-			}
-			if(totE == 0){
-				Jet ret;
-				return ret;
-			}
-			cleanedJet = Jet(cleanedRhs, _vtx);
-			for(int k = 0; k < pass.size(); k++){
-				if(remove){
-					if(pass[k])
-						cleanedJet.AddConstituent(_constituents[k]);
-				}
-				else{
-					cleanedJet.AddConstituent(_constituents[k]);
-				}
-			}	
-			return cleanedJet;
-		}
-		*/
 
 	
 	protected:
