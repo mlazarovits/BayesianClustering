@@ -736,15 +736,15 @@ class BHCJetSkimmer{
 						Jet cleanedJet_remove = _predJets[j].CleanOutPU(true);
 
 						_procCats[p].hists1D[pt][212]->Fill(cleanedJet_downweight.mass());
-cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_remove.mass() << " PU dwnwt mass " << cleanedJet_downweight.mass() << endl;
-cout << "original # subclusters " << _predJets[j].GetNConstituents() << " PU removed # subcls " << cleanedJet_remove.GetNConstituents() << endl;
+//cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_remove.mass() << " PU dwnwt mass " << cleanedJet_downweight.mass() << endl;
+//cout << "original # subclusters " << _predJets[j].GetNConstituents() << " PU removed # subcls " << cleanedJet_remove.GetNConstituents() << endl;
 						//look at low mass jets (resolved)
 						if(cleanedJet_remove.mass() < 30){
 							if(pt == 1 && cleanedJet_remove.pt() < _pt_thresh) continue;
 							if(pt == 2 && cleanedJet_remove.pt() >= _pt_thresh) continue;
 							lowMassJets.push_back(cleanedJet_remove);
 						}
-cout << "lowMassJets.size() " << lowMassJets.size() << endl;
+//cout << "lowMassJets.size() " << lowMassJets.size() << endl;
 						//only plot for jets within a "gen frame" of gen particle
 						if(_genparts.size() > 0){ 
 							double maxDr = 1.;
@@ -1192,7 +1192,7 @@ cout << "avgPart E " << avgPartE << endl;
 						for(int j = 0; j < lowMassJets.size(); j++){
 							int genmatchidx = genLowMassIdxs[j];
 							if(genmatchidx == -1) continue;
-							cout << "lowMassJet #" << j << " matched to q # " << genmatchidx << " with dR " << dR(lowMassJets[j].eta(), lowMassJets[j].phi(), _genq[genmatchidx].eta(), _genq[genmatchidx].phi()) << endl;
+							//cout << "lowMassJet #" << j << " matched to q # " << genmatchidx << " with dR " << dR(lowMassJets[j].eta(), lowMassJets[j].phi(), _genq[genmatchidx].eta(), _genq[genmatchidx].phi()) << endl;
 							for(int jj = j+1; jj < lowMassJets.size(); jj++){
 								int ggenmatchidx = genLowMassIdxs[jj];
 								if(ggenmatchidx == -1) continue;
@@ -1203,11 +1203,9 @@ cout << "avgPart E " << avgPartE << endl;
 									nsubcls1 = lowMassJets[j].GetNConstituents();
 									nsubcls2 = lowMassJets[jj].GetNConstituents();
 								}	
-								cout << "j " << j << " and " << jj << " bestInvMass " << bestInvMass << endl;
 								_procCats[p].hists1D[pt][214]->Fill(bestInvMass);
 								_procCats[p].hists1D[pt][215]->Fill(nsubcls1);
 								_procCats[p].hists1D[pt][215]->Fill(nsubcls2);
-								cout << "invmass hist # ents " << _procCats[p].hists1D[pt][214]->GetEntries() << endl;
 							}
 						}
 					}
