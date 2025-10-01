@@ -16,7 +16,7 @@ JetPoint::JetPoint(){
 	_rhId = -999;
 	
 	_w = 1;
-
+	_skipTime = false;
 }
 
 
@@ -35,6 +35,7 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 	_idx = -999;
 	_rhId = -999;
 	_w = 1;
+	_skipTime = false;
 
 }
 
@@ -54,6 +55,7 @@ JetPoint::JetPoint(const JetPoint& jp){
 	_idx = jp._idx;
 	_rhId = jp._rhId;
 	_w = jp._w;
+	_skipTime = false;
 }
 
 

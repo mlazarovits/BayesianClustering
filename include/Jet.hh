@@ -529,9 +529,9 @@ class Jet{
 
 		//add PU cleaning method
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
-		Jet CleanOutPU(bool remove = false){
+		Jet CleanOutPU(vector<bool>& scores,bool remove = false){
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
-
+			scores.clear();
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
 			vector<JetPoint> cleanedRhs;
@@ -560,6 +560,7 @@ class Jet{
 					pass.push_back(false);
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
+			scores = pass;
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
 				Jet ret;
@@ -595,6 +596,7 @@ class Jet{
 					effRh.SetWeight(totR);
 				}
 				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+				if(effRh.E() == 0) continue; //skip rhs that are skipped
 //cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
 				totE += effRh.e();
 

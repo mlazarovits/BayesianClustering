@@ -93,7 +93,11 @@ class BasePDFMixture : public BasePDF{
 
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);
-				lamStar.SetEntry(1/(tresSq),2,2);
+				//don't apply time meas err for unreliable times
+				if(m_data->at(n).Skip())
+					lamStar.SetEntry(1,2,2);
+				else
+					lamStar.SetEntry(1/(tresSq),2,2);
 				if(tresSq < 1e-20){ //if time res is too small, just set to 0 
 					lamStar.SetEntry(0,2,2);
 				}	

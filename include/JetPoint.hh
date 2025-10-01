@@ -23,6 +23,9 @@ class JetPoint{
 		double GetWeight() const{ return _w; } 
 
 
+		void SetSkipTime(){_skipTime = true; _t = -999; }
+		bool SkipTime(){ return _skipTime; }
+
 		//sets phi [0,2pi]
 		double phi_02pi() const{
 			if(_phi < 0) return _phi + 2*acos(-1);
@@ -174,7 +177,7 @@ class JetPoint{
 		
 		mutable double _eta, _phi, _theta;
 		double _E;
-
+		bool _skipTime; //skip time if bad reco, gain switched, etc
 
 		//rechit info
 		unsigned int _rhId;
