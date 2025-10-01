@@ -732,8 +732,9 @@ class BHCJetSkimmer{
 
 
 						}
-						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(false);
-						Jet cleanedJet_remove = _predJets[j].CleanOutPU(true);
+						vector<bool> scores;
+						Jet cleanedJet_downweight = _predJets[j].CleanOutPU(scores, false);
+						Jet cleanedJet_remove = _predJets[j].CleanOutPU(scores, true);
 
 						_procCats[p].hists1D[pt][212]->Fill(cleanedJet_downweight.mass());
 //cout << "original jet mass " << _predJets[j].mass() << " PU removed jet mass " << cleanedJet_remove.mass() << " PU dwnwt mass " << cleanedJet_downweight.mass() << endl;

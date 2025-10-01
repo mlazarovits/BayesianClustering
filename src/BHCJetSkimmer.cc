@@ -230,7 +230,7 @@ cout << "get gen jets" << endl;
 		if(i % SKIP == 0) cout << " has " << _recoAK15jets.size() << " AK15 reco jets and " << _genAK15jets.size() << " AK15 gen jets" << endl;
 		
 		FillGenHists();
-		
+	cout << "done w gen jet hists" << endl;	
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
@@ -246,6 +246,7 @@ cout << "get gen jets" << endl;
 			
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK4 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
+cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << endl;
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			if(_smear) algo->SetDataSmear(smear);
 			algo->SetThresh(_thresh);
@@ -346,6 +347,7 @@ cout << "get gen jets" << endl;
 
 
 		FillRecoJetHists();
+		cout << "done w reco jet hists" << endl;
 		//only does above
 		if(_strategy == gmmOnly){
 			continue;
@@ -625,7 +627,7 @@ cout << "eta " << eta << " phi " << phi << endl;
 				}
 			}
 		}
-
+cout << "Filling pred jet hists" << endl;
 		//fill pred jet hists with jets
 		FillPredJetHists();
 		nsubcls_tot = 0;
