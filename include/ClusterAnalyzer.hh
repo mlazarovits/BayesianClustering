@@ -13,13 +13,13 @@ using std::make_pair;
 using std::to_string;
 
 //wrapper class for clustering
-double _SOL = 29.9792458; //in cm/ns
 class ClusterAnalyzer{
 	public:
 		ClusterAnalyzer();
 		virtual ~ClusterAnalyzer(){
 			delete _algo;
 		};
+		constexpr static double _SOL = 29.9792458; //in cm/ns
 
 		//needs PV info for geometric corrections and correct momentum calculations of clustered elements
 		void SetPV(double pvx, double pvy, double pvz){ _PV = BayesPoint({pvx, pvy, pvz});}
@@ -65,11 +65,8 @@ class ClusterAnalyzer{
 				}
 				_detTime = locs.Centroid(3);
 				//include geo factor to PV for PV time
-				BayesPoint center;
-				center.SetValue(locs.Centroid(0),0);	
-				center.SetValue(locs.Centroid(1),1);	
-				center.SetValue(locs.Centroid(2),2);	
-				
+				BayesPoint center({locs.Centroid(0), locs.Centroid(1), locs.Centroid(2)});
+				//
 				double dx = center.at(0) - _PV.at(0);
 				double dy = center.at(1) - _PV.at(1);
 				double dz = center.at(2) - _PV.at(2);
@@ -119,7 +116,7 @@ class ClusterAnalyzer{
 			} 
 			
 			vector<pair<int, double>> _detBkgScores; //is a vector of pairs s.t. _detBkgScore[k] = pair(max_class, max_score) 
-			void GetDetBkgScore(vector<pair<int,double>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
+			void GetDetBkgScores(vector<pair<int,double>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
 			fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
 			vector<string> _nnfeatures = {"Er"};
 			int _ngrid = 7;
