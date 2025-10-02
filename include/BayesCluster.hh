@@ -73,7 +73,14 @@ class BayesCluster{
 				pt.SetValue(_jets[i].phi_02pi(), 1);
 				pt.SetValue(_jets[i].time(), 2);
 				_jets[i].GetWeights(weight);
-				pt.SetWeight(weight[0]); 
+				pt.SetWeight(weight[0]);
+				//set time skip
+				pt.SetSkipDim(2);
+				vector<JetPoint> rhs = _jets[i].GetJetPoints();
+				if(rhs[0].SkipTime()){
+					pt.SetSkip();
+				}
+	
 			//	//make sure phi is in the right range - [0,2pi]
 				_sanitize(pt);
 				if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;

@@ -753,6 +753,11 @@ class PointCollection{
 		for(int i = 0; i < (int)_pts.size(); i++) ret += _pts[i].w();
 		return ret;
 	}
+	void SetSkipDim(int d){
+		if(d >= _nDim) return;
+		for(int i = 0; i < (int)_pts.size(); i++) _pts[i].SetSkipDim(d);
+	}
+	int GetSkipDim(){ if(_pts.size() < 1) return -1; else return _pts[0].GetSkipDim(); }
 
 	private:
 		int _nDim = 0;

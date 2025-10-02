@@ -85,7 +85,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 					//add tighter sw+ cut
 					if(_base->ECALRecHit_swCross->at(rhidx) > 0.4) continue;
 				}
-				
+			
+	
 				//TOF from 0 to rh location
 				drh = _base->ECALRecHit_0TOF->at(rhidx);
 				//TOF from PV to rh location
@@ -125,6 +126,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
 				rh.SetUserIdx(rhidx);
+				//if rh is gain-switched, set flag for 2D-only rechit
+				if(_base->ECALRecHit_hasGS1->at(rhidx) || _base->ECALRecHit_hasGS6->at(rhidx)) rh.SetSkipTime();
 				//cut out mist if specified
 				if(_mistcuts){
 					if(rh.t() < -0.5 && rh.E() < 500 && rh.E() > 10) continue;
@@ -277,6 +280,8 @@ cout << "\n evt " << evt << " n total phos " << nPhos << endl;
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
+				//if rh is gain-switched, set flag for 2D-only rechit
+				if(_base->ECALRecHit_hasGS1->at(rhidx) || _base->ECALRecHit_hasGS6->at(rhidx)) rh.SetSkipTime();
 	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;
 				nrhs++; 
                                 pho.AddRecHit(rh);
@@ -371,16 +376,16 @@ cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 				//skip rhs that have already been looked at - avoids duplicates in SC
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
-cout << "rh passed duplicate check with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
+//cout << "rh passed duplicate check with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
 				//if rh is in endcap, skip
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
-cout << "rh passed eta req" << endl;
+//cout << "rh passed eta req" << endl;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
-cout << "rh passed timing reco check" << endl;
+//cout << "rh passed timing reco check" << endl;
 				//energy cut
 				if(_base->ECALRecHit_energy->at(rhidx) < _minrhE) continue;				
-cout << "rh passed min energy" << endl;
+//cout << "rh passed min energy" << endl;
 
 
 				//spike rejection? - only studied for rhE > 4 GeV
@@ -416,7 +421,7 @@ cout << "rh passed min energy" << endl;
                               //cout << "rh time " << rh.t() << endl; 
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
-cout << "rh passed in time enough req" << endl;
+///cout << "rh passed in time enough req" << endl;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			
 				
 				rhe = _base->ECALRecHit_energy->at(rhidx);
@@ -432,21 +437,23 @@ cout << "rh passed in time enough req" << endl;
                                 rh.SetPhi(_base->ECALRecHit_phi->at(rhidx));
                                 rh.SetWeight(_base->ECALRecHit_energy->at(rhidx)*gev);
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
+				//if rh is gain-switched, set flag for 2D-only rechit
+				if(_base->ECALRecHit_hasGS1->at(rhidx) || _base->ECALRecHit_hasGS6->at(rhidx)) rh.SetSkipTime();
 	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;
 				nrhs++; 
                                 sc_rhs.push_back(rh);
                 		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
 		        }
-			else{
-				cout << "no match found for rh #" << r << " with id " << rhid << " in ECAL rechit list" << endl;
-			}
+			//else{
+			//	cout << "no match found for rh #" << r << " with id " << rhid << " in ECAL rechit list" << endl;
+			//}
 
                 }
 
 		Jet supercl(sc_rhs, vtx);
 		supercl.SetUserIdx(sc);
 		if(supercl.GetNRecHits() < 2) continue;
-cout << "sc passed min # rhs cut " << endl;
+//cout << "sc passed min # rhs cut " << endl;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
 	//	for(auto rh : jrhids) cout << "rh id  " << rh << " count " << count(jrhids.begin(), jrhids.end(), rh) << endl;
 		supercls.push_back(supercl);
