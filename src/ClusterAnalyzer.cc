@@ -71,7 +71,8 @@ ClusterAnalyzer::ClusterObj ClusterAnalyzer::RunClustering(){
 	//do hierarchical clustering for subcluster constraints
 	vector<node*> trees = _algo->NlnNCluster();
 	vector<ClusterObj> objs;
-	_treesToObjs(trees, objs);	
+	_treesToObjs(trees, objs);
+	sort(objs.begin(), objs.end(), Esort);
 	return objs[0];
 
 }
