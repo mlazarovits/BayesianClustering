@@ -5,7 +5,6 @@ ClusterAnalyzer::ClusterAnalyzer(){
 	_gev = 1;
 	_radius = 1.29;
 	_detCenter = BayesPoint({0., 0., 0.});
-	_PV = BayesPoint({0., 0., 0.});
 }
 
 //add rechit to list of rechits to be clustered
