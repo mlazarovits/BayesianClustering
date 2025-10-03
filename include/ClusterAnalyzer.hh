@@ -27,7 +27,7 @@ class ClusterAnalyzer{
 		//sets transfer factor for energy weighting in clustering
 		void SetTransferFactor(double g){ _gev = g; }
 		//adding data to clustering algorithm
-		void AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId, bool skipTime);
+		void AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId);
 		void ClearRecHitList();
 
 

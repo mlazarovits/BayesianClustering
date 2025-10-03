@@ -10,7 +10,7 @@ ClusterAnalyzer::ClusterAnalyzer(){
 
 //add rechit to list of rechits to be clustered
 //can be run in a for-loop, looping over all rechits
-void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId, bool skipTime){
+void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId){
 	//TODO - maybe set the (0,0,0) point with a separate function s.t. it can be set from beamspot
 	//take center point to be (0,0,0) for now to account for TOF to detector
 	double dx = rhx - _detCenter.at(0);
@@ -22,7 +22,7 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	JetPoint rh(rhx, rhy, rhz, rht);
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
-	if(skipTime) rh.SetSkipTime();
+	
 	Jet jet(rh, _PV);
 	_rhs.push_back(jet);
 }
