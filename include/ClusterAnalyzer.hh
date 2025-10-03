@@ -225,4 +225,5 @@ class ClusterAnalyzer{
 
 
 };
+static bool Esort(ClusterAnalyzer::ClusterObj j1, ClusterAnalyzer::ClusterObj j2){ return (j1._jet.E() > j2._jet.E()); }
 #endif
