@@ -58,7 +58,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_weight = 1;
 			if(_data){ _weight = 1.; }
 			else if(fname.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
+				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for QCD" << endl;
 			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
@@ -130,7 +130,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_weight = 1;
 			if(_data){ _weight = 1.; }
 			else if(filelist.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
+				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for QCD" << endl;
 			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
