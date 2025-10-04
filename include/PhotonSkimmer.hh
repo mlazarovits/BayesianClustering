@@ -19,8 +19,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			_jetprod = nullptr;
@@ -89,8 +89,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			
@@ -167,8 +167,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			
@@ -449,6 +449,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timePhiCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeEtaCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeMaj2DCovOvtimeMaj3DCov);	
+			_hists1D.push_back(nClusters);
+			_hists1D.push_back(E_leadBHCPho);
+			_hists1D.push_back(E_subleadBHCPho);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1234,7 +1237,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* timesSigSq_measErr = new TH1D("timesSigSq_measErr","timesSigSq_measErr",25,0,5);
 		//258 - input rh times
 		TH1D* rhTime = new TH1D("rhTime","rhTime",50,-3,3);
-		//259 - photon ps
+		//259 - photon pt
 		TH1D* photonPt = new TH1D("photonPt","photonPt",25,30,1000);
 		//260 - eta angle (angle bw maj axis + eta axis in 2D) with |time maj cov| > 0.1
 		TH1D* etaAngle2D_absTimeMajCovge0p1 = new TH1D("etaAngle2D_absTimeMajCovge0p1","etaAngle2D_absTimeMajCovge0p1",25,-0.4,3.4);
@@ -1246,6 +1249,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* timeEtaCovOvtimeMaj2DCov = new TH1D("timeEtaCovOvtimeMaj2DCov","timeEtaCovOvtimeMaj2DCov",25,-2,2);
 		//264 - time maj 2d / time maj 3d
 		TH1D* timeMaj2DCovOvtimeMaj3DCov = new TH1D("timeMaj2DCovOvtimeMaj3DCov","timeMaj2DCovOvtimeMaj3DCov",25,-3,3);	
+		//265 - # 'jets' after BHC clustering photon 
+		TH1D* nClusters = new TH1D("nClusters","nClusters",5,0,5);	
+		//266 - energy of leading bhc pho 
+		TH1D* E_leadBHCPho = new TH1D("E_leadBHCPho","E_leadBHCPho",25,0,500);	
+		//267 - energy of subleading bhc pho 
+		TH1D* E_subleadBHCPho = new TH1D("E_subleadBHCPho","E_subleadBHCPho",25,0,500);	
 		
 
 
