@@ -167,7 +167,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 	vtx.SetValue(_base->PV_x, 0);
 	vtx.SetValue(_base->PV_y, 1);
 	vtx.SetValue(_base->PV_z, 2);
-cout << "\n evt " << evt << " n total phos " << nPhos << endl;
+//cout << "\n evt " << evt << " n total phos " << nPhos << endl;
 	for(int p = 0; p < nPhos; p++){
 		//if selected photons # is already 2, return (only want 2 highest pt photons that pass selection)
 		if(selPhoCount == 2) return;
@@ -286,7 +286,7 @@ cout << "\n evt " << evt << " n total phos " << nPhos << endl;
 			//else cout << "rechit with ID " << rhid << " not found in ECAL collection" << endl;
 
                 }
-		cout << "pt " << _base->Photon_pt->at(p) << " eta " << _base->Photon_eta->at(p) << " # rechits " << pho.GetNRecHits() << endl;	
+		//cout << "pt " << _base->Photon_pt->at(p) << " eta " << _base->Photon_eta->at(p) << " # rechits " << pho.GetNRecHits() << endl;	
 		if(pho.GetNRecHits() < 2) continue;
 		selPhoCount++;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
