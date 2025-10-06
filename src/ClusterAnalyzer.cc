@@ -20,9 +20,11 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	JetPoint rh(rhx, rhy, rhz, rht);
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
-	if(invalidTime) rh.SetInvalidTime();
+	//TODO - turn back on when split dim framework is implemented
+	//if(invalidTime) rh.SetInvalidTime();
 	Jet jet(rh, _PV);
-cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
+//cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
+cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << endl;
 	_rhs.push_back(jet);
 }
 
