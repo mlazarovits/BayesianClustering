@@ -10,9 +10,7 @@ ClusterAnalyzer::ClusterAnalyzer(){
 
 //add rechit to list of rechits to be clustered
 //can be run in a for-loop, looping over all rechits
-void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId){
-	//TODO - maybe set the (0,0,0) point with a separate function s.t. it can be set from beamspot
-	//take center point to be (0,0,0) for now to account for TOF to detector
+void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId, bool invalidTime){
 	double dx = rhx - _detCenter.at(0);
 	double dy = rhy - _detCenter.at(1);
 	double dz = rhz - _detCenter.at(2);
@@ -22,8 +20,11 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	JetPoint rh(rhx, rhy, rhz, rht);
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
-	
+	//TODO - turn back on when split dim framework is implemented
+	//if(invalidTime) rh.SetInvalidTime();
 	Jet jet(rh, _PV);
+//cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
+cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << endl;
 	_rhs.push_back(jet);
 }
 

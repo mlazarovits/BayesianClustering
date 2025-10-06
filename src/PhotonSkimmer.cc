@@ -6,6 +6,34 @@
 #include <TH2D.h>
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
+	//set histogram weights for HT slices, etc
+	_weight = 1;
+	if(_data){ _weight = 1.; }
+	else if(_fname.find("QCD") != string::npos && !_isoBkgSel){
+		cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
+	        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
+	        string filein;
+	        double jet_weight, pho_weight;
+	        while( weights >> filein >> jet_weight >> pho_weight){
+			if(_fname.find(filein) == string::npos) continue;
+	                _weight = pho_weight;
+	                break;
+	        }
+	}		
+	else if(_fname.find("GJets") != string::npos && _isoBkgSel){
+		cout << "Getting weights from info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
+	        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
+	        string filein;
+	        double jet_weight, pho_weight;
+	        while( weights >> filein >> jet_weight >> pho_weight){
+			if(_fname.find(filein) == string::npos) continue;
+	                _weight = pho_weight;
+	                break;
+	        }
+	}
+	else _weight = 1;	
+
+
 
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;
@@ -51,12 +79,14 @@ void PhotonSkimmer::Skim(){
 	double sumE;
 
 	//set kin reqs for jets
+	if(_isoBkgSel){
+		_jetprod->SetTransferFactor(0.1);
+		_jetprod->SetMinPt(_minJetPt_isoBkg);
+		_jetprod->SetMinNrhs(15);
+		_jetprod->SetMinEmE(10);
+		_jetprod->SetMinRhE(0.5);
+	}
 	vector<Jet> jets;
-	_jetprod->SetTransferFactor(0.1);
-	_jetprod->SetMinPt(_minJetPt_isoBkg);
-	_jetprod->SetMinNrhs(15);
-	_jetprod->SetMinEmE(10);
-	_jetprod->SetMinRhE(0.5);
 	double ht, pho_phi, jet_phi, dphi_phojet;
 	Jet jet_sys, pho_sys;
 	double pi = 4*atan(1);
@@ -65,6 +95,17 @@ void PhotonSkimmer::Skim(){
 	double nIsoBkgPass = 0;
 	double totEvt = 0;
 
+	cout << "transfer factor (gev) N/Energy " << _gev << " EM alpha " << _emAlpha << " BHC alpha " << _alpha << endl;	
+	cout << "Prior Parameters" << endl;
+	cout << "beta0" << endl;
+	_prior_params["scale"].Print();
+	cout << "mean0" << endl;
+	_prior_params["mean"].Print();
+	cout << "nu0" << endl;
+	_prior_params["dof"].Print();
+	cout << "W0" << endl;
+	_prior_params["W"].Print(); 
+	
 	//set iso cuts
 	if(_isocuts){
 		_prod->SetIsoCut();
@@ -190,7 +231,23 @@ void PhotonSkimmer::Skim(){
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetVerbosity(_verb);
-			GaussianMixture* gmm = algo->SubCluster();
+			//GaussianMixture* gmm = algo->SubCluster();
+			//using full BHC algorithm for subcluster containment
+			vector<node*> trees = algo->NlnNCluster();
+			vector<Jet> bhc_phos;
+			vector<GaussianMixture*> models;
+			TreesToJets(trees, models, bhc_phos, BayesPoint({pvx, pvy, pvz}));
+			_procCats[1].hists1D[0][265]->Fill(bhc_phos.size());
+			_procCats[1].hists1D[0][266]->Fill(bhc_phos[0].E());
+			if(bhc_phos.size() > 1){
+				for(int bp = 1; bp < bhc_phos.size(); bp++)
+					_procCats[1].hists1D[0][267]->Fill(bhc_phos[bp].E());
+			}
+			//define photons by leading bhc_pho
+			GaussianMixture* gmm = models[0];
+			rhs.clear();
+			bhc_phos[0].GetJets(rhs); 
+
 			vector<Matrix> lamstars;
 			gmm->GetMeasErrs(lamstars);
 			

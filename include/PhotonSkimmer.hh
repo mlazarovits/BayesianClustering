@@ -19,8 +19,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			_jetprod = nullptr;
@@ -47,39 +47,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
 			_prod = new PhotonProducer(file);
+			_fname = file->GetName();
 
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
 			string fname = file->GetName();
 			TFile* f2 = TFile::Open(fname.c_str());
 			_jetprod = new JetProducer(f2);
 			
-
-			//set histogram weights for HT slices, etc
-			_weight = 1;
-			if(_data){ _weight = 1.; }
-			else if(fname.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                _weight = pho_weight;
-			                break;
-			        }
-			}		
-			else if(fname.find("GJets") != string::npos){
-				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                _weight = pho_weight;
-			                break;
-			        }
-			}
-			else _weight = 1;	
-
-
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -89,8 +63,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			
@@ -100,6 +74,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minHt_isoBkg = 50;
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 50;
+
 			
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
@@ -120,44 +95,11 @@ class PhotonSkimmer : public BaseSkimmer{
                         TChain* ch = MakeTChain(filelist);
                         if(ch == nullptr) return;
 			_prod = new PhotonProducer(ch);
-
+			_fname = filelist;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
                         TChain* ch2 = MakeTChain(filelist);
 			_jetprod = new JetProducer(ch2);
 			
-
-			//set histogram weights for HT slices, etc
-			_weight = 1;
-			if(_data){ _weight = 1.; }
-			else if(filelist.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
-			        }
-			}		
-			else if(filelist.find("GJets") != string::npos){
-				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
-			        }
-			}
-			else _weight = 1;	
-
-
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -167,8 +109,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			_isocuts = false;
 			_oskip = 10;
 			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
+			_alpha = 1e-300;
+			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
 			
@@ -449,6 +391,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timePhiCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeEtaCovOvtimeMaj2DCov);
 			_hists1D.push_back(timeMaj2DCovOvtimeMaj3DCov);	
+			_hists1D.push_back(nClusters);
+			_hists1D.push_back(E_leadBHCPho);
+			_hists1D.push_back(E_subleadBHCPho);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1234,7 +1179,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* timesSigSq_measErr = new TH1D("timesSigSq_measErr","timesSigSq_measErr",25,0,5);
 		//258 - input rh times
 		TH1D* rhTime = new TH1D("rhTime","rhTime",50,-3,3);
-		//259 - photon ps
+		//259 - photon pt
 		TH1D* photonPt = new TH1D("photonPt","photonPt",25,30,1000);
 		//260 - eta angle (angle bw maj axis + eta axis in 2D) with |time maj cov| > 0.1
 		TH1D* etaAngle2D_absTimeMajCovge0p1 = new TH1D("etaAngle2D_absTimeMajCovge0p1","etaAngle2D_absTimeMajCovge0p1",25,-0.4,3.4);
@@ -1246,6 +1191,12 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* timeEtaCovOvtimeMaj2DCov = new TH1D("timeEtaCovOvtimeMaj2DCov","timeEtaCovOvtimeMaj2DCov",25,-2,2);
 		//264 - time maj 2d / time maj 3d
 		TH1D* timeMaj2DCovOvtimeMaj3DCov = new TH1D("timeMaj2DCovOvtimeMaj3DCov","timeMaj2DCovOvtimeMaj3DCov",25,-3,3);	
+		//265 - # 'jets' after BHC clustering photon 
+		TH1D* nClusters = new TH1D("nClusters","nClusters",5,0,5);	
+		//266 - energy of leading bhc pho 
+		TH1D* E_leadBHCPho = new TH1D("E_leadBHCPho","E_leadBHCPho",25,0,500);	
+		//267 - energy of subleading bhc pho 
+		TH1D* E_subleadBHCPho = new TH1D("E_subleadBHCPho","E_subleadBHCPho",25,0,500);	
 		
 
 
@@ -3771,7 +3722,8 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 	private:
 		JetProducer* _jetprod;
 		double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
-		bool _isoBkgSel; 
+		bool _isoBkgSel;
+		string _fname; 
 
 };
 #endif
