@@ -40,12 +40,14 @@ def generateSubmission(args):
         ver = "v31"
     if "GJets" in args.inputSample:
         if "IPM100" in sel:
-            ver = "v30"
-        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_AODSIM_"+reco_date[args.year+"_MC"]+"_list.txt"
+            ver = "v31"
+        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_TuneCP5_AODSIM_"+reco_date[args.year+"_MC"]+"RECO_list.txt"
     elif "MET" in args.inputSample:
         if "AL1NpSC" in sel:
             ver = "v31"
-        inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
+        #inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
+        #shorted path - jack produced
+        inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+"_list.txt"
     elif "JetHT" in args.inputSample:
     	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
     elif "QCD" in args.inputSample:
@@ -57,7 +59,7 @@ def generateSubmission(args):
         else:
             inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "gogoG" in args.inputSample:
-        ver = "v24"
+        ver = "v31"
         inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
     else:
     	print("Sample "+args.inputSample+" not found")
