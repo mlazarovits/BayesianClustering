@@ -67,13 +67,13 @@ int EventWeightCalc_FileList(string selection = "", string year = "18", bool iso
 	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT1000to1500_AODSIM_"+recodates[year]+"_list");
 	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT1500to2000_AODSIM_"+recodates[year]+"_list");
 	filelists.push_back("filelists/kucmsntuple_QCD_R"+year+"_"+selection+"_v31_QCD_HT2000toInf_AODSIM_"+recodates[year]+"_list");
-	if(year == "18")
-		recodates[year] += "RECO";
-//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-40To100_TuneCP5_AODSIM_"+recodates[year]+"_list");
-//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-100To200_TuneCP5_AODSIM_"+recodates[year]+"_list");
-//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-200To400_TuneCP5_AODSIM_"+recodates[year]+"_list");
-//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-400To600_TuneCP5_AODSIM_"+recodates[year]+"_list");
-//	filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-600ToInf_TuneCP5_AODSIM_"+recodates[year]+"_list");
+	//if(year == "18")
+	//	recodates[year] += "RECO";
+	//filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-40To100_TuneCP5_AODSIM_"+recodates[year]+"_list");
+	//filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-100To200_TuneCP5_AODSIM_"+recodates[year]+"_list");
+	//filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-200To400_TuneCP5_AODSIM_"+recodates[year]+"_list");
+	//filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-400To600_TuneCP5_AODSIM_"+recodates[year]+"_list");
+	//filelists.push_back("filelists/kucmsntuple_GJets_R"+year+"_"+selection+"_v31_GJets_HT-600ToInf_TuneCP5_AODSIM_"+recodates[year]+"_list");
 
 
 
@@ -103,7 +103,8 @@ int EventWeightCalc_FileList(string selection = "", string year = "18", bool iso
                 pho_prod->SetMinEmE(30); 
                 pho_prod->SetMinRhE(0.5);
 	       	pho_prod->SetTransferFactor(1/30.);
-		pho_prod->SetIsoCut();	
+		//if(filelists[f].find("GJets") != string::npos) pho_prod->SetIsoCut();	
+		if(isoBkgSel) pho_prod->SetIsoCut();	
 
 		jet_prod->SetMinPt(50.); //50 for iso bkg (same for jets + photons), 30 for nominal
 		jet_prod->SetMinNrhs(15);
