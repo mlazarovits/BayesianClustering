@@ -57,9 +57,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			//set histogram weights for HT slices, etc
 			_weight = 1;
 			if(_data){ _weight = 1.; }
-			else if(fname.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
+			else if(fname.find("QCD") != string::npos && !_isoBkgSel){
+				cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
+			        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
@@ -67,9 +67,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			                break;
 			        }
 			}		
-			else if(fname.find("GJets") != string::npos){
-				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
+			else if(fname.find("GJets") != string::npos && _isoBkgSel){
+				cout << "Getting weights from info/EventWeights_GJets_SVIPM100_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
+			        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
@@ -129,9 +129,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			//set histogram weights for HT slices, etc
 			_weight = 1;
 			if(_data){ _weight = 1.; }
-			else if(filelist.find("QCD") != string::npos){
-				cout << "Getting weights from info/EventWeights_SVIPM100_R18.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_SVIPM100_R18.txt", std::ios::in);
+			else if(filelist.find("QCD") != string::npos && !_isoBkgSel){
+				cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
+			        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
@@ -142,9 +142,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			                }
 			        }
 			}		
-			else if(filelist.find("GJets") != string::npos){
-				cout << "Getting weights from info/EventWeights_AL1IsoPho.txt for GJets" << endl;
-			        ifstream weights("info/EventWeights_AL1IsoPho.txt", std::ios::in);
+			else if(filelist.find("GJets") != string::npos && _isoBkg){
+				cout << "Getting weights from info/EventWeights_GJets_SVIPM100_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
+			        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
 			        string filein;
 			        double jet_weight, pho_weight;
 			        while( weights >> filein >> jet_weight >> pho_weight){
