@@ -62,7 +62,7 @@ class BaseSkimmer{
 			_tresNoise = 0;
 			_tresStoch = 0;
 			
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
 
 		};
@@ -109,7 +109,7 @@ class BaseSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
 
 		}
@@ -151,7 +151,7 @@ class BaseSkimmer{
 			_hists1D.push_back(objE);
 			_hists1D.push_back(clusterE);
 
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 			
 			_cell = acos(-1)/180;
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
@@ -815,7 +815,7 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel = fdeep::load_model("json/small8CNN_EMultr.json");
+		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
 		void SetNNModel(string fname){
 			_nnmodel = fdeep::load_model(fname);
 		}
