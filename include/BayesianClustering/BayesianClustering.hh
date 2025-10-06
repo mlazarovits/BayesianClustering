@@ -8,6 +8,7 @@
 #include "BaseSkimmer.hh"
 #include "BaseTree.hh"
 #include "BayesCluster.hh"
+#include "ClusterAnalyzer.hh"
 #include "ClusterViz2D.hh"
 #include "ClusterVizBase.hh"
 #include "Dirichlet.hh"
