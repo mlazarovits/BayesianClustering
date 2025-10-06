@@ -5,6 +5,7 @@
 #include "JetPoint.hh"
 #include "BasePDFMixture.hh"
 #include "BaseProducer.hh"
+#include "BaseTree.hh"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TLegend.h"
@@ -21,6 +22,7 @@
 #include "fdeep/fdeep.hpp"
 
 using weights = SampleWeight::weights;
+using node = BaseTree::node;
 static bool Esort(JetPoint j1, JetPoint j2){ return (j1.E() > j2.E()); }
 static bool Esort_jet(Jet j1, Jet j2){ return (j1.E() > j2.E()); }
 static bool ptsort(Jet j1, Jet j2){ return (j1.pt() > j2.pt()); }
@@ -893,5 +895,37 @@ class BaseSkimmer{
  }
 	int _verb;
 	void SetVerbosity(int v){_verb = v;}
+
+	void TreesToJets(vector<node*>& trees, vector<GaussianMixture*>& gmms, vector<Jet>& jets, BayesPoint pv){
+		jets.clear();
+		gmms.clear();
+		map<double, GaussianMixture*> ptToModel;
+
+		double radius = 1.29;
+		double x, y, z, eta, phi, t, theta, px, py, pz;
+		for(int i = 0; i < trees.size(); i++){
+			//get points from tree
+			PointCollection* pc = trees[i]->points;
+			//at least 2 points (rhs)
+			if(pc->GetNPoints() < 2) continue;
+			Jet predJet(trees[i]->model, pv, _gev, radius);
+		//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
+			//if(predJet.pt() < 5) continue; 
+			//add Jet to jets	
+			jets.push_back(predJet);
+			ptToModel[predJet.pt()] = trees[i]->model;
+		}
+		//sort predicted jets
+		sort(jets.begin(), jets.end(), ptsort);
+		//fill model vector
+		for(int i = 0; i < jets.size(); i++){
+			gmms.push_back(ptToModel[jets[i].pt()]);
+		}
+
+		cout << jets.size()  << " pred jets total" << endl;
+		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
+		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
+	}
+
 };
 #endif

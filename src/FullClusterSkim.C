@@ -573,13 +573,15 @@ int main(int argc, char *argv[]){
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear);
 		skimmer.SetBeamHaloFilter(bh);
-		
-		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-		skimmer.SetMinHt_IsoBkg(minht_isobkg);
-		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
-		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
-		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
+	
 		skimmer.SetIsoBkgSel(isobkg);
+		if(isobkg){	
+			skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+			skimmer.SetMinHt_IsoBkg(minht_isobkg);
+			skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
+			skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+			skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
+		}
 		skimmer.SetVerbosity(verb);
         	skimmer.Skim();
 	}

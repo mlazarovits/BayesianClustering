@@ -2028,12 +2028,9 @@ void HistFormatSim(string file, string proc = ""){
 
 
 		//causes segfault - need to rerun with _nom for the first hist
-		//AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR_nom","BHCJetW_subclParton_dR_PUcleaned"},oname,{"lead"},{"","PUcleaned"});
+		AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR_nom","BHCJetW_subclParton_dR_PUcleaned"},oname,{"lead"},{"","PUcleaned"});
 		AnyStackHists(file, proc, "BHC",{"BHCJetW_subclParton_dR"},oname,{"lead"},{"","PUcleaned"});
-		AnyStackHists(file, proc, "BHC",{"BHCJet_mass","BHCJet_PUremoved_mass","BHCJet_PUdownweighted_mass","W_subclusterLeadInvMass"},oname,{"lead"},{"_mass","PUremoved","PUdownweighted","subclusterLeadInvMass"});
-		//need to pt separate correctly
-		//MethodStackHists(file, proc, {"BHC"}, oname, "JetW_nJets_eq2cleanedSubcls",{"lead"});
-
+		AnyStackHists(file, proc, "BHC",{"BHCJet_mass_","BHCJet_PUremoved_mass","BHCJet_PUdownweighted_mass","W_subclusterLeadInvMass"},oname,{"lead"},{"_mass","PUremoved","PUdownweighted","subclusterLeadInvMass"});
 	}
 	if(proc.find("gluon") != string::npos){
 		MethodStackHists(file, proc, jettypes_recoBHC, oname, "genGluon_Eratio",{"lead"});
@@ -2052,7 +2049,7 @@ void HistFormatSim(string file, string proc = ""){
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "q_subclusterMass",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_nJets",pttypes);
 		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_PUremoved_SubclInvMass",pttypes);
-		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_PUremovednSubclusters",pttypes);
+		MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "massle30_PUremoved_nSubclusters",pttypes);
 		
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclPt","q_ge2Subcls_partonNoMatchSubclPt"}, oname, {"lead"},{"partonMatch","partonNoMatch"});
 		AnyStackHists(file, proc, "BHC", {"q_ge2Subcls_partonMatchSubclSize","q_ge2Subcls_partonNoMatchSubclSize"}, oname, {"lead"},{"partonMatch","partonNoMatch"});

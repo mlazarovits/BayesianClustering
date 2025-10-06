@@ -12,6 +12,8 @@ Repository for generic EM/hierarchical clustering algorithm (to be used for jet 
 
 ### Dependencies
 Once all of the below packages are downloaded, the corresponding paths in the Makefile must be updated to point to the relevant packages
+- g++ for compilation of executables and linking of shared objects
+	- this framework was developed with g++11, moving to a more recent g++ version may have some compilation/linking issues
 - ROOT for producers and skimmers
 - Python for macros for visualization
 	- at least v3.x
@@ -40,12 +42,12 @@ All external packages below are header only:
 
 ### Use as an external package
 - make sure `lib/libBayesianClustering.so` exists
-	- if not, it can be made with `make lib`
+	- if not, it can be made with `make lib` or `make lpclib` if on LPC
 - be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
 	```
 	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesianClustering/lib
 	```
-- In Makefile:
+- In Makefile of overall framework where you want to include `BayesianClustering`:
 	- Add the following flags to `CXXFLAGS` (or equivalent)
 	```
 	CXXFLAGS += -I/path/to/BayesianClustering/include -frounding-math
@@ -71,7 +73,13 @@ All external packages below are header only:
 	```
 - Then, in your executable be sure to include the header `#include BayesianClustering/BayesianClustering.hh`
 
-### Calling the algorithm
+### Interfacing with `BayesianClustering`
+A user can interface with the clustering algorithm through the API class `ClusterAnalyzer.` After declaring an instance of the class and setting any advance values (like `SetDetectorCenter(x, y, z)` or `SetTransferFactor(t)`), the user can loop over the points for clustering. Within this for loop, the user can call `AddRecHit(x, y, z, E, t, rhId)` to add a point to the list for clustering. After all the points have been added and the clustering is run, be sure to call `ClearRecHitList()` to clear the list of data points and start again, if desired.
+
+When all the relevant data points have been added, the user can call `RunClustering()` to run the clustering algorithm and produce a `ClusterObj`, returned by this method. This object will have methods to calculate and return various observables such as the object time at the detector face (`GetObjTime_Det()`), the object time at the primary vertex (`GetObjTime_PV()`), the object's time significance given a resolution map in the form `map<int rhId, double res>` (`GetObjTimeSig()`). Each of these methods must be called after the corresponding calculation method. So, for example, the `GetObjTime()` methods need to be called after `CalculateObjTime()` and the `GetObjTimeSig()` needs to be called after `CalculateObjTimeSig(map<rhId, res>)`. As default, the clustering algorithm run in the `RunClustering()` method is the NlnN version of the full hierarchical clustering algorithm. The priors and other hyperparameters for this algorithm are hard-coded into the `RunClustering()` method. 
+
+### Calling the algorithm - outdated
+The following information is kept here for completeness. Please review the previous section for information on how to interface with `BayesianClustering` via the API class`ClusterAnalyzer`.
 First, instantiate a BayesCluster class instance with a vector of Jets passed as the data to the constructor. Various hyperparameters can now be set with the respective methods of the BayesCluster class. Calling `algo->SubCluster()` will return a GaussianMixture pointer, which is the model that contains all the information on the subclusters, their means, and covariances. These observables can be accessed by `GetLHPosteriorParameters(k)` within the GaussianMixture class, where `k` is the index of the subcluster for which you want these parameters. To sum up,
 ```
 BayesCluster* algo = new BayesCluster(data);
