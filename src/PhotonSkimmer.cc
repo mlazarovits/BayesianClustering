@@ -6,6 +6,34 @@
 #include <TH2D.h>
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
+	//set histogram weights for HT slices, etc
+	_weight = 1;
+	if(_data){ _weight = 1.; }
+	else if(_fname.find("QCD") != string::npos && !_isoBkgSel){
+		cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
+	        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
+	        string filein;
+	        double jet_weight, pho_weight;
+	        while( weights >> filein >> jet_weight >> pho_weight){
+			if(_fname.find(filein) == string::npos) continue;
+	                _weight = pho_weight;
+	                break;
+	        }
+	}		
+	else if(_fname.find("GJets") != string::npos && _isoBkgSel){
+		cout << "Getting weights from info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
+	        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
+	        string filein;
+	        double jet_weight, pho_weight;
+	        while( weights >> filein >> jet_weight >> pho_weight){
+			if(_fname.find(filein) == string::npos) continue;
+	                _weight = pho_weight;
+	                break;
+	        }
+	}
+	else _weight = 1;	
+
+
 
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;

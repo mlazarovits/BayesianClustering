@@ -47,39 +47,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
 			_prod = new PhotonProducer(file);
+			_fname = file->GetName();
 
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
 			string fname = file->GetName();
 			TFile* f2 = TFile::Open(fname.c_str());
 			_jetprod = new JetProducer(f2);
 			
-
-			//set histogram weights for HT slices, etc
-			_weight = 1;
-			if(_data){ _weight = 1.; }
-			else if(fname.find("QCD") != string::npos && !_isoBkgSel){
-				cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
-			        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                _weight = pho_weight;
-			                break;
-			        }
-			}		
-			else if(fname.find("GJets") != string::npos && _isoBkgSel){
-				cout << "Getting weights from info/EventWeights_GJets_SVIPM100_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
-			        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                _weight = pho_weight;
-			                break;
-			        }
-			}
-			else _weight = 1;	
-
-
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -100,6 +74,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minHt_isoBkg = 50;
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 50;
+
 			
 			objE->SetTitle("totphoE");
 			objE->SetName("totphoE");
@@ -120,44 +95,11 @@ class PhotonSkimmer : public BaseSkimmer{
                         TChain* ch = MakeTChain(filelist);
                         if(ch == nullptr) return;
 			_prod = new PhotonProducer(ch);
-
+			_fname = filelist;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
                         TChain* ch2 = MakeTChain(filelist);
 			_jetprod = new JetProducer(ch2);
 			
-
-			//set histogram weights for HT slices, etc
-			_weight = 1;
-			if(_data){ _weight = 1.; }
-			else if(filelist.find("QCD") != string::npos && !_isoBkgSel){
-				cout << "Getting weights from info/EventWeights_QCD_SVIPM100_R18.txt for QCD" << endl;
-			        ifstream weights("info/EventWeights_QCD_SVIPM100_R18.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
-			        }
-			}		
-			else if(filelist.find("GJets") != string::npos && _isoBkg){
-				cout << "Getting weights from info/EventWeights_GJets_SVIPM100_isoBkgSel.txt for GJets with isolated bkg selection" << endl;
-			        ifstream weights("info/EventWeights_GJets_SVIPM100_R18_isoBkgSel.txt", std::ios::in);
-			        string filein;
-			        double jet_weight, pho_weight;
-			        while( weights >> filein >> jet_weight >> pho_weight){
-			                if(filelist.find(filein) == string::npos) continue;
-			                else{
-			                        _weight = pho_weight;
-			                        break;
-			                }
-			        }
-			}
-			else _weight = 1;	
-
-
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -3780,7 +3722,8 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 	private:
 		JetProducer* _jetprod;
 		double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
-		bool _isoBkgSel; 
+		bool _isoBkgSel;
+		string _fname; 
 
 };
 #endif
