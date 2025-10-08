@@ -393,7 +393,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timeMaj2DCovOvtimeMaj3DCov);	
 			_hists1D.push_back(nClusters);
 			_hists1D.push_back(E_leadBHCPho);
-			_hists1D.push_back(E_subleadBHCPho);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1195,8 +1194,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* nClusters = new TH1D("nClusters","nClusters",5,0,5);	
 		//266 - energy of leading bhc pho 
 		TH1D* E_leadBHCPho = new TH1D("E_leadBHCPho","E_leadBHCPho",25,0,500);	
-		//267 - energy of subleading bhc pho 
-		TH1D* E_subleadBHCPho = new TH1D("E_subleadBHCPho","E_subleadBHCPho",25,0,500);	
 		
 
 
