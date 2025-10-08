@@ -86,7 +86,6 @@ void PhotonSkimmer::Skim(){
 		_jetprod->SetMinEmE(10);
 		_jetprod->SetMinRhE(0.5);
 	}
-	vector<Jet> jets;
 	double ht, pho_phi, jet_phi, dphi_phojet;
 	Jet jet_sys, pho_sys;
 	double pi = 4*atan(1);
@@ -155,7 +154,7 @@ void PhotonSkimmer::Skim(){
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
 		pvz = _base->PV_z;
-		
+		BayesPoint PV({pvx, pvy, pvz});	
 		//do iso bkg evt selection to compare data/MC
 		if(_isoBkgSel){
 			//L1 seed
@@ -175,26 +174,20 @@ void PhotonSkimmer::Skim(){
 			//cout << "passed HT > 135" << endl;	
 			
 			//gev = 0.1 for jets
-			_jetprod->GetTrueJets(jets, e);
+			_jetprod->GetTrueJets(_jets, e);
 			//min photon multiplicity
 			if(phos.size() < 1) continue;
 			//cout << "passed pho mult" << endl;	
 			//min jet multiplicity
-			if(jets.size() < 1) continue;
+			if(_jets.size() < 1) continue;
 			//cout << "passed jet mult" << endl;	
 		
 			//ht - scalar sum
 			ht = 0;
-			for(auto j : jets) ht += j.pt();
+			for(auto j : _jets) ht += j.pt();
 			//dphi bw photon and jet systems (vector sum of objects)
-			jet_sys = VectorSum(jets);
-			pho_sys = VectorSum(phos);
-			pho_phi = pho_sys.phi_02pi(); 
-			//cout << "pho system E " << pho_sys.E() << " phi " << pho_sys.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
-			jet_phi = jet_sys.phi_02pi();
-			dphi_phojet = pho_phi - jet_phi;
-			dphi_phojet = acos(cos(dphi_phojet)); //wraparound - will always be < pi
-			cout << "# jets " << jets.size() << " ht " << ht << " met " << _base->Met_pt << " dphi " << dphi_phojet << endl;
+			jet_sys = VectorSum(_jets);
+			
 			//MET upper limit - orthogonal to signal MET selection
 			if(_base->Met_pt > _maxMet_isoBkg) continue;
 			//cout << "passed max met" << endl;	
@@ -203,9 +196,6 @@ void PhotonSkimmer::Skim(){
 			//cout << "passed min ht" << endl;	
 			//az angle bw hardest presel photon + jet system
 			//cout << "dphi " << dphi_phojet << " met " << _base->Met_pt << endl;	
-			if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
-			//cout << "passed dphi " << endl;	
-			//trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
 	
 			nIsoBkgPass++;
 		}
@@ -216,42 +206,37 @@ void PhotonSkimmer::Skim(){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			phos[p].GetJets(rhs);
+			double pho_rhE = 0;
+			for(auto rh : rhs)
+				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
 			if(rhs.size() < 1){ cout << endl; continue; }
-			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << endl;
-		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-			BayesCluster *algo = new BayesCluster(rhs);
-			if(_smear) algo->SetDataSmear(smear);
-	//cout << "PhotonSkimmer - Using _tresCte = " << _tresCte << " ns, _tresStoch = " << _tresStoch << " ns and _tresNoise = " << _tresNoise << " ns" << endl;
-			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
-			algo->SetPriorParameters(_prior_params);
-			//set time resolution smearing
-			//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
-			algo->SetThresh(_thresh);
-			algo->SetAlpha(_alpha);
-			algo->SetSubclusterAlpha(_emAlpha);
-			algo->SetVerbosity(_verb);
-			//GaussianMixture* gmm = algo->SubCluster();
-			//using full BHC algorithm for subcluster containment
-			vector<node*> trees = algo->NlnNCluster();
-			vector<Jet> bhc_phos;
-			vector<GaussianMixture*> models;
-			TreesToJets(trees, models, bhc_phos, BayesPoint({pvx, pvy, pvz}));
-			_procCats[1].hists1D[0][265]->Fill(bhc_phos.size());
-			_procCats[1].hists1D[0][266]->Fill(bhc_phos[0].E());
-			if(bhc_phos.size() > 1){
-				for(int bp = 1; bp < bhc_phos.size(); bp++)
-					_procCats[1].hists1D[0][267]->Fill(bhc_phos[bp].E());
+			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			if(_isoBkgSel){
+				pho_phi = phos[p].phi_02pi(); 
+				cout << "\npho system E " << phos[p].E() << " phi " << phos[p].phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+				cout << "pho system pt " << phos[p].pt() << " phi " << phos[p].phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
+				jet_phi = jet_sys.phi_02pi();
+				dphi_phojet = pho_phi - jet_phi;
+				dphi_phojet = acos(cos(dphi_phojet)); //wraparound - will always be < pi
+				cout << "# jets " << _jets.size() << " ht " << ht << " met " << _base->Met_pt << " dphi " << dphi_phojet << endl;
+				if(dphi_phojet < pi-0.3) continue; //want dphi ~ phi - implies less MET in event
+				//cout << "passed dphi " << endl;	
+				//trigger req - take baseline, photon pt leg + jet ht legs from HLT Photon60 R9Id90 CaloIdL IsoL DisplacedIdL PFHT350MinPFJet15
 			}
-			//define photons by leading bhc_pho
-			GaussianMixture* gmm = models[0];
+		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
+			Jet bhc_pho;
+			int ret = RunClustering(rhs, PV, bhc_pho);
+			if(ret == -1){
+				continue;
+			}
 			rhs.clear();
-			bhc_phos[0].GetJets(rhs); 
+			bhc_pho.GetJets(rhs); 
+			//get parameters for model
+	
+			_procCats[1].hists1D[0][266]->Fill(bhc_pho.E());
 
-			vector<Matrix> lamstars;
-			gmm->GetMeasErrs(lamstars);
-			
 			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
 			
 			vector<pair<int,int>> icoords;
@@ -263,18 +248,18 @@ void PhotonSkimmer::Skim(){
 			}
 			double maxE = 0;
 			Jet maxE_rh;
+			PointCollection* points = new PointCollection();
 			for(int r = 0; r < rhs.size(); r++){
 				sumE += rhs[r].E();
 				if(rhs[r].E() > maxE){
 					maxE = rhs[r].E();
 					maxE_rh = rhs[r];
 				}
-				_procCats[0].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
-				_procCats[1].hists1D[0][257]->Fill(1/lamstars[r].at(2,2));
-				_procCats[0].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
-				_procCats[1].hists2D[0][236]->Fill(rhs[r].E(),1/lamstars[r].at(2,2));
 				_procCats[0].hists1D[0][258]->Fill(rhs[r].t());
 				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
+				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
+				pt.SetWeight(rhs[r].E()*_gev);
+				points->AddPoint(pt);
 			}
 			for(int r = 0; r < rhs.size(); r++){
 				_procCats[0].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
@@ -302,7 +287,8 @@ void PhotonSkimmer::Skim(){
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
-						FillModelHists(gmm, i, obs);
+						FillModelHists(bhc_pho, i, obs);
+						//FillModelHists(gmm, i, obs);
 						//FillCMSHists(rhs,i);
 						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
@@ -325,7 +311,8 @@ void PhotonSkimmer::Skim(){
 			}
 			else{
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
-					FillModelHists(gmm, i, obs);
+					FillModelHists(bhc_pho, i, obs);
+					//FillModelHists(gmm, i, obs);
 					//FillCMSHists(rhs,i);
 					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
 					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
@@ -381,8 +368,7 @@ void PhotonSkimmer::Skim(){
                                         obs["trkSumPtHollowConeDR03OvPt"] = -999;	
 			}
 			
-			int ncl = gmm->GetNClusters();
-			int label = GetTrainingLabel(phoidx,0,gmm);
+			int label = GetTrainingLabel(phoidx,bhc_pho);
 		cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
 			//cout << "label: " << label << endl;
 				obs["event"] = e;
