@@ -150,6 +150,7 @@ void PhotonSkimmer::Skim(){
 		totEvt++;
 
 		_prod->GetTruePhotons(phos, e, _gev);
+		if(phos.size() < 1){ cout << endl; continue; }
 		//PV info
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
@@ -217,8 +218,8 @@ void PhotonSkimmer::Skim(){
 			phos[p].GetJets(rhs);
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			if(rhs.size() < 1){ continue; }
-			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << endl;
+			if(rhs.size() < 1){ cout << endl; continue; }
+			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
