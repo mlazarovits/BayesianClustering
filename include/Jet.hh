@@ -627,7 +627,6 @@ class Jet{
 		//minscore = min score val to qualify as "keep" 
 		Jet GenericClean(vector<pair<int, double>> class_score, int sigclass, double minscore, bool remove = false){
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
-			scores.clear();
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
 			vector<JetPoint> cleanedRhs;
