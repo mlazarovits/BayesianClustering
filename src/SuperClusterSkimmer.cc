@@ -145,7 +145,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
 			*/
 			Jet bhc_sc;
-			int ret = RunClustering(rhs, PV, bhc_sc, true); //fully remove PU clusters
+			int ret = RunClustering(scs[s], bhc_sc, true); //fully remove PU clusters
 			if(ret == -1){
 				continue;
 			}
