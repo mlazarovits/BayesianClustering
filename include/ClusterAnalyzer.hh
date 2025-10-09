@@ -63,7 +63,7 @@ class ClusterAnalyzer{
 				majlen = -1;
 				minlen = -1;
 
-				Matrix space_mat;
+				Matrix space_mat(2,2);
 				Matrix cov = _jet.GetCovariance();
 				vector<double> eigvals;
 				vector<Matrix> eigvecs; 
