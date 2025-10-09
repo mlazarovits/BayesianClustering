@@ -61,6 +61,7 @@ class Jet{
 
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
+		static bool Esort(Jet j1, Jet j2){ return (j1.E() > j2.E()); }
 
 		void SetVertex(BayesPoint vtx){
 			if(vtx.Dim() != 3){
@@ -527,6 +528,10 @@ class Jet{
 			return sqrt(eigvals[1]);
 		}
 
+		void SortConstituents(){
+			sort(_constituents.begin(), _constituents.end(), Esort);
+		}
+
 		//add PU cleaning method
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
 		Jet CleanOutPU(vector<bool>& scores, bool remove = false){
@@ -546,9 +551,11 @@ class Jet{
 			//(unweighted) r_nk's are saved as rh weights
 			vector<bool> pass; //true = pass, false = fail
 //cout << "original energy " << this->E() << " pt " << this->pt() << endl;
-			for(int k = 0; k < _constituents.size(); k++){
-				double relE = _constituents[k].e() / this->e();
-				Matrix subcl_cov = _constituents[k].GetCovariance();
+			//sort constituents by energy
+			vector<Jet> constituents = _constituents;
+			for(int k = 0; k < constituents.size(); k++){
+				double relE = constituents[k].e() / this->e();
+				Matrix subcl_cov = constituents[k].GetCovariance();
 				double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
 				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
 				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
@@ -575,8 +582,8 @@ class Jet{
 				JetPoint effRh;
 				double totR = 0;
 				//cout << "rh #" << n;
-				for(int k = 0; k < _constituents.size(); k++){
-					effRh = _constituents[k]._rhs[n];
+				for(int k = 0; k < constituents.size(); k++){
+					effRh = constituents[k]._rhs[n];
 					if(effRh.GetWeight() > maxRnk){
 						maxRnk = effRh.GetWeight();
 						assignedK = k;
@@ -610,10 +617,10 @@ class Jet{
 			for(int k = 0; k < pass.size(); k++){
 				if(remove){
 					if(pass[k])
-						cleanedJet.AddConstituent(_constituents[k]);
+						cleanedJet.AddConstituent(constituents[k]);
 				}
 				else{
-					cleanedJet.AddConstituent(_constituents[k]);
+					cleanedJet.AddConstituent(constituents[k]);
 				}
 			}	
 //cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
