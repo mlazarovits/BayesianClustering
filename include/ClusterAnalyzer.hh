@@ -72,7 +72,8 @@ class ClusterAnalyzer{
 				majlen = sqrt(eigvals[1]);
 				if(eigvals[0] < 0) minlen = -sqrt(-eigvals[0]);
 				else minlen = sqrt(eigvals[0]);	
-			}	
+			}
+			double GetEnergy(){ return _jet.E(); }	
 			//per-object information
 			double _pvTime = -999; //time at PV
 			double _detTime = -999;
