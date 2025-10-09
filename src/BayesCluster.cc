@@ -302,8 +302,10 @@ cout << "with centroid" << endl; center.Print();
 		}
 	cout << endl;
 	}
-	//cout << " all points" << endl;
-	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
+	if(_trees.size() < 1){
+		cout << " all points" << endl;
+		for (int i = 0; i < n; i++) {	_points[i].Print(); }
+	}
 	cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	return _trees;
 	

@@ -36,13 +36,43 @@ class ClusterAnalyzer{
 			Jet _jet;
 			BayesPoint _PV;
 			std::map<UInt_t,DetIDStruct> _detIDmap;
-			ClusterObj(Jet jet){ _jet = jet; _PV = _jet.GetVertex();}
+			ClusterObj(Jet jet){ _jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents(); }
 			void SetDetIdMap(std::map<UInt_t,DetIDStruct> detidmap){ _detIDmap = detidmap; }
+
+
+			int GetNSubclusters(){ return _jet.GetNConstituents(); }
+			void GetSubclusters(vector<Jet>& subcls){
+				subcls.clear();
+				subcls = _jet.GetConstituents();
+			}
 
 			vector<bool> _PUscores;
 			//will fully remove PU clusters - ie set all w_nk = 0 for PU subcluster k
 			void CleanOutPU(){ _jet.CleanOutPU(_PUscores, true);}
-			
+		
+
+			double GetEtaCenter(){ return _jet.eta(); }
+			double GetPhiCenter(){ return _jet.phi(); }
+			double GetEtaVar(){ return _jet.GetCovariance().at(0,0); }
+			double GetPhiVar(){ return _jet.GetCovariance().at(1,1); }
+			double GetTimeVar(){ return _jet.GetCovariance().at(2,2); }
+			double GetEtaPhiCov(){ return _jet.GetCovariance().at(0,1); }
+			double GetEtaTimeCov(){ return _jet.GetCovariance().at(0,2); }
+			double GetPhiTimeCov(){ return _jet.GetCovariance().at(1,2); }
+			void GetMajMinLengths(double& majlen, double& minlen){
+				majlen = -1;
+				minlen = -1;
+
+				Matrix space_mat;
+				Matrix cov = _jet.GetCovariance();
+				vector<double> eigvals;
+				vector<Matrix> eigvecs; 
+				Get2DMat(cov,space_mat);
+				space_mat.eigenCalc(eigvals, eigvecs);
+				majlen = sqrt(eigvals[1]);
+				if(eigvals[0] < 0) minlen = -sqrt(-eigvals[0]);
+				else minlen = sqrt(eigvals[0]);	
+			}	
 			//per-object information
 			double _pvTime = -999; //time at PV
 			double _detTime = -999;
@@ -86,7 +116,7 @@ class ClusterAnalyzer{
 				}
 				return _detTime / _timeRes;
 			} 
-			void CalculateObjTimeSig(map<int, double> res){ //calculate time significance - needs to be called after CalculateObjTime
+			void CalculateObjTimeSig(map<unsigned int, float> res){ //calculate time significance - needs to be called after CalculateObjTime
 				//match resolutions via rh ids
 				double restot = 0;
 				double norm = 0;
@@ -112,7 +142,13 @@ class ClusterAnalyzer{
 				scores.clear(); scores = _PUscores;
 			}
 			void CalculatePUScores(){
-				if(_PUscores.size() == 0) _jet.CleanOutPU(_PUscores, true);
+				Jet jet = _jet;
+				if(_PUscores.size() == 0) jet.CleanOutPU(_PUscores, true);
+			}
+
+
+			void CleanOutDetBkg(double minscore, int sigclass = 0, bool remove = false){
+				_jet.GenericClean(_detBkgScores, sigclass, minscore, remove);
 			} 
 			
 			vector<pair<int, double>> _detBkgScores; //is a vector of pairs s.t. _detBkgScore[k] = pair(max_class, max_score) 
@@ -206,6 +242,15 @@ class ClusterAnalyzer{
 					pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 					_detBkgScores.push_back(make_pair((int)result.first, result.second));
 				}
+			}
+			void Get2DMat(const Matrix& inmat, Matrix& outmat){
+				if(!outmat.square()) return;
+				if(outmat.GetDims()[0] != 2) return;
+				outmat.reset();
+				outmat.SetEntry(inmat.at(0,0),0,0);	
+				outmat.SetEntry(inmat.at(0,1),0,1);	
+				outmat.SetEntry(inmat.at(1,0),1,0);	
+				outmat.SetEntry(inmat.at(1,1),1,1);
 			}
 
 		};
