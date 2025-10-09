@@ -924,7 +924,8 @@ class JetSkimmer : public BaseSkimmer{
 			}
 			//using subcl_predict predictions (class, score), sigclass == 0, minscore == 0.9, fully remove subclusters
 			//TODO - verify signal class and minscore from ROC curve
-			if(_cleansubcl) sdetBkgCleanedJet = bhc_jet.GenericClean(subcl_predict, 0, 0.9, true);
+			Jet detBkgCleanedJet;
+			if(_cleansubcls) detBkgCleanedJet = jet.GenericClean(subcl_predict, 0, 0.9, true);
 		}
 
 
