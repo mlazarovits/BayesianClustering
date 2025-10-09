@@ -104,6 +104,7 @@ void SuperClusterSkimmer::Skim(){
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
 		pvz = _base->PV_z;
+		BayesPoint PV({pvx, pvy, pvz});	
 
 			
 		int nSC = scs.size();
@@ -117,7 +118,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ cout << "sc #" << s << " has " << rhs.size() << " rhs " << endl; continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << endl;
+			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
 			//fill eta phi map
@@ -129,7 +130,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 				_procCats[1].hists2D[0][308]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 			}
 
-
+			/*
 			BayesCluster *algo = new BayesCluster(rhs);
 			if(_smear) algo->SetDataSmear(smear);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
@@ -142,11 +143,19 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			algo->SetPriorParameters(_prior_params);
 			GaussianMixture* gmm = algo->SubCluster();
 			for(int r = 0; r < rhs.size(); r++) sumE += rhs[r].E();
+			*/
+			Jet bhc_sc;
+			int ret = RunClustering(scs[s], bhc_sc, true); //fully remove PU clusters
+			if(ret == -1){
+				continue;
+			}
+			rhs.clear();
+			bhc_sc.GetJets(rhs); 
 	
 			//make swiss cross
 			_swcross = swissCross(rhs);
 			//make BH filter
-			_clusterSize = MakeBHFilterCluster(scs[s],bhRhs);
+			_clusterSize = MakeBHFilterCluster(bhc_sc,bhRhs);
 			if(_clusterSize <= 3) _BHcluster = false;
 			else if(_clusterSize >= 6) _BHcluster = true;
 			else{
@@ -184,9 +193,9 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			vector<map<string,double>> mapobs;			
 			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 			int id_idx = -999;
-			//skip "total" procCat for always separated hists
-			FillModelHists(gmm, 1, mapobs);
-			FillCMSHists(rhs,1);
+			//skip "total" procCat for always separated hists (id_idx == 1)
+			FillModelHists(bhc_sc, 1, mapobs);
+			//FillCMSHists(rhs,1);
 			nscran++;
 			//no separate categories for SCs - only fill "total" category
 			_procCats[1].hists1D[0][4]->Fill(_base->SuperCluster_energy->at(scidx));
@@ -213,12 +222,13 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//SuperCluster_photonIndx
 			int np = _base->SuperCluster_PhotonIndx->at(scidx);
 			//get jet points (rhs with IDs) for CNN grid
-			rh_pts = scs[s].GetJetPoints();
+			rh_pts = bhc_sc.GetJetPoints();
 			
 			JetPoint rh_center;
 			GetCenterXtal(rh_pts, rh_center);	
 			for(int k = 0; k < mapobs.size(); k++){
-				int label = GetTrainingLabel(scidx, k, gmm);
+				//int label = GetTrainingLabel(scidx, k, gmm);
+				int label = GetTrainingLabel(scidx, bhc_sc);
 				//if(label == -1) continue;
 				if(np != -1){
 					//do 2017 preselection
@@ -275,14 +285,13 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 					mapobs[k]["hadTowOverEM"] = -999;
 				}
 				//make CNN training grid
-				MakeCNNInputGrid(gmm, k, rh_pts, rh_center, mapobs[k]);
+				MakeCNNInputGrid(rh_pts, rh_center, mapobs[k]);
 
 				mapobs[k]["event"] = e;
 				mapobs[k]["event_weight"] = 1.;
 				mapobs[k]["object"] = scidx;
 				mapobs[k]["subcl"] = k;
 				mapobs[k]["label"] = label;
-
 				//get prediction from NN model for good SCs
 				if(label != -1){
 					BaseSkimmer::WriteObs(mapobs[k],"superclusters");
@@ -326,7 +335,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 
 
 		//cout << "iso vars" << endl;
-		cout << "trkSumPtSolidConeDR04 " << mapobs[k]["trkSumPtSolidConeDR04"] << " ecalRHSumEtConeDR04 " << mapobs[k]["ecalRHSumEtConeDR04"] << " hadTowOverEM " << mapobs[k]["hadTowOverEM"];
+		//cout << "trkSumPtSolidConeDR04 " << mapobs[k]["trkSumPtSolidConeDR04"] << " ecalRHSumEtConeDR04 " << mapobs[k]["ecalRHSumEtConeDR04"] << " hadTowOverEM " << mapobs[k]["hadTowOverEM"];
 			if(np != -1 && !_data){
 				int genidx = _base->Photon_genIdx->at(np);
 				//do mother chase to see if 23 is in chain

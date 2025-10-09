@@ -393,7 +393,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_hists1D.push_back(timeMaj2DCovOvtimeMaj3DCov);	
 			_hists1D.push_back(nClusters);
 			_hists1D.push_back(E_leadBHCPho);
-			_hists1D.push_back(E_subleadBHCPho);
 			
 			_hists2D.push_back(time_E);
                         _hists2D.push_back(az_E);
@@ -1195,8 +1194,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		TH1D* nClusters = new TH1D("nClusters","nClusters",5,0,5);	
 		//266 - energy of leading bhc pho 
 		TH1D* E_leadBHCPho = new TH1D("E_leadBHCPho","E_leadBHCPho",25,0,500);	
-		//267 - energy of subleading bhc pho 
-		TH1D* E_subleadBHCPho = new TH1D("E_subleadBHCPho","E_subleadBHCPho",25,0,500);	
 		
 
 
@@ -1862,11 +1859,11 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 		//k = sum_n(E_n)/N
-		//void FillModelHists(BasePDFMixture* model, int id_idx, vector<double>& obs){
-		void FillModelHists(BasePDFMixture* model, int id_idx, map<string,double>& obs){
+		//void FillModelHists(BasePDFMixture* model, int id_idx, map<string,double>& obs){
+		void FillModelHists(Jet bhc_pho, int id_idx, map<string,double>& obs){
 			obs.clear();	
 			map<string, Matrix> params;
-			vector<double> eigenvals, eigenvals_space, norms;
+			vector<double> eigenvals, eigenvals_space;
 			vector<Matrix> eigenvecs, eigenvecs_space; 
 			Matrix space_mat = Matrix(2,2);
 			Matrix rotmat2D = Matrix(3,3);		
@@ -1874,8 +1871,21 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix majmin2DCovMat = Matrix(3,3);
 			PointCollection majminpts3D, majminpts2D;
 
-			double npts = (double)model->GetData()->GetNPoints();
-		//	cout << "FillHists - starting subcluster loop" << endl;	
+
+			Matrix mu, cov;
+			bhc_pho.GetClusterParams(mu, cov);
+			PointCollection* points = new PointCollection();
+			vector<JetPoint> rhs = bhc_pho.GetJetPoints();
+			for(int r = 0; r < rhs.size(); r++){
+				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
+				pt.SetWeight(rhs[r].E()*_gev);
+				points->AddPoint(pt);
+			}
+
+
+			//double npts = (double)model->GetData()->GetNPoints();
+			double npts = points->GetNPoints();
+			//cout << "FillHists - starting subcluster loop" << endl;	
 			double E_k, phi, rot2D, ec, pc, tc, pi, E_lead, phi2D;
 			//double theta, r, rot3D, vel, v_x, v_y, v_z;
 			double ep_cov, te_cov, tp_cov, e_var, p_var, t_var;
@@ -1886,7 +1896,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			double timespace_cov;		
 	
 			//for swiss cross prime - wmax/N_k	
-			PointCollection* points = model->GetData();
 			vector<double> spikeObs;
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
@@ -1894,52 +1903,49 @@ class PhotonSkimmer : public BaseSkimmer{
 			double etaCentroid = points->Centroid(0);
 
 	
-			int nclusters = model->GetNClusters();
+			int nclusters = 1;//model->GetNClusters();
 			//get leading cluster index
-			vector<int> idxs;
-			//sort by mixing coeffs in ascending order (smallest first)
-			model->SortIdxs(idxs);
-			int leadidx = idxs[nclusters-1];
-			int k = leadidx;
+			//vector<int> idxs;
+			////sort by mixing coeffs in ascending order (smallest first)
+			//model->SortIdxs(idxs);
+			//int leadidx = idxs[nclusters-1];
+			//int k = leadidx;
+			int k = 0;
 			
 			double E_tot = 0.;
 			int nrhs_thresh = 0;
 			double rnk_thresh = 0.8;
-			Matrix post = model->GetPosterior();
+			//Matrix post = model->GetPosterior();
+			//for(int i = 0; i < npts; i++){
+			//	E_tot += model->GetData()->at(i).w()/_gev;
+			//	if(post.at(i,k) > rnk_thresh) nrhs_thresh++;
+			//}
+			//_procCats[id_idx].hists1D[0][250]->Fill(nrhs_thresh);
 			for(int i = 0; i < npts; i++){
-				E_tot += model->GetData()->at(i).w()/_gev;
-				if(post.at(i,k) > rnk_thresh) nrhs_thresh++;
+				E_tot += points->at(i).w()/_gev;
 			}
-			_procCats[id_idx].hists1D[0][250]->Fill(nrhs_thresh);
-			Matrix cov, lead_eigenvec, lead_eigenvec_space;
+			Matrix lead_eigenvec, lead_eigenvec_space;
 			
 			_procCats[id_idx].hists1D[0][0]->Fill(nclusters);
 			_procCats[id_idx].hists2D[0][10]->Fill((double)nclusters,npts);
 			
 
-			//fill for lead subcluster only
-			//E_k = sum_n(E_n*r_nk) -> avgE/w*sum_n(r_nk)
-			model->GetNorms(norms);
-			E_k = norms[k]/_gev; 
+			E_k = E_tot; //'subcluster' is no longer the atom, but instead used to clean out soft emissions
+			//now, considering all rhs with appropriate PU weights applied	
 			
-			
-			params = model->GetLHPosteriorParameters(k);
-			//params = model->GetDataStatistics(k);
-			ec = params["mean"].at(0,0);
-			pc = params["mean"].at(1,0);
+			ec = mu.at(0,0);
+			pc = mu.at(1,0);
 			if(isnan(pc)) cout << "pc is nan" << endl;
 			if(isinf(pc)) cout << "pc is inf" << endl;
 			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
-			tc = params["mean"].at(2,0);
-			pi = params["pi"].at(0,0);
-			cov = params["cov"];	
+			tc = mu.at(2,0);
+			pi = 1;//params["pi"].at(0,0);
 			//distance from xmax to mean_k
 			///double dist = 0;
 			///for(int d = 0; d < xmax.Dim(); d++)
 			///	dist += (xmax.at(d) - params["mean"].at(d,0))*(xmax.at(d) - params["mean"].at(d,0));
 			///dist = sqrt(dist);
 			///
-			///cout << "wmax " << wmax << " norms_k " << norms[k] << " Nk/wmax " << -(swCP-1) << " wmax/Nk " << wmax/norms[k] << " E_k " << E_k << " Emax " << wmax/_gev << " distance to mean " << dist << " wmax/Nk * (1/dist) " << wmax/(norms[k]*dist) << endl;
 			//eta - time sign convention
 			//define relative sign for eta and time components
 			//based on where the cluster is in the detector
@@ -1974,7 +1980,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			tp_cov_unnorm = CalcCov(cov, 2, 1, false);
 
 
-//cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << " ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
+cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig " << t_var << " ep cov " << ep_cov << " te cov " << te_cov << " tp cov " << tp_cov << endl; 
 //			cout << "exp post cov/e cov" << endl; cov.Print();
 			
 			vector<Matrix> eigvecs;
@@ -1989,7 +1995,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//rotate into 3D eigenvector space
 			Matrix rotmat3D(3,3);
 			Get3DRotationMatrix(eigvecs,rotmat3D);
-			RotatePoints(model->GetData(), rotmat3D, majminpts3D);
+			RotatePoints(points, rotmat3D, majminpts3D);
 			MakeCovMat(&majminpts3D, majmin3DCovMat, weightScheme(1));
 			majtime_cov_3d = CalcCov(majmin3DCovMat,2,0, false);
 			if(majtime_cov_3d < 0){
@@ -2011,7 +2017,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			//rotate points into 2D (spatial only) maj/min axes
 			Get2DRotationMatrix(eigenvecs_space,rotmat2D);
-			RotatePoints(model->GetData(), rotmat2D, majminpts2D);
+			RotatePoints(points, rotmat2D, majminpts2D);
 			MakeCovMat(&majminpts2D, majmin2DCovMat, weightScheme(1));
 
 			
@@ -2075,54 +2081,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			cov_spacetimeR.mult(cov_spacetimeR,spacetimeR);
 
 			
-			//planar sections - on average (over many subclusters)
-
-			//setting distance to plane along time axis based on time component of major axis
-			//cout << "original pts" << endl; model->GetData()->Print();
-			//cout << "majmin rotated pts" << endl; majminpts3D.Print();
-				//need to center the data in majmin space
-			//	Matrix majmin_mean(3,1);
-			//	majmin_mean.mult(rotmat3D,params["mean"]);
-			//	BayesPoint majmin_center = majmin_mean.MatToPoints().at(0);	
-			//	majminpts3D.Translate(majmin_center);
-			//	cout << "translated pts" << endl; majminpts3D.Print();
-			//	cout << "majmin rotated pts mean " << endl; majmin_center.Print();
-			//cout << "majlength " << majLength << endl;
-			vector<double> ts;
-			for(int i = 0; i < model->GetData()->GetNPoints(); i++) ts.push_back(fabs(model->GetData()->at(i).at(2) - tc) );
-			double start = *std::max_element(ts.begin(),ts.end())+0.01;
-			double step = start/2;
-			//for(int i = -start; i < start; i++){
-			double t0 = -start;
-		
-			/*	
-			while(t0 < start+step){
-				//create plane at t0 in eta-phi according to major axis (scaled appropriately)
-				Matrix plane(3,1);
-				Matrix planecov(2,2);
-				plane.SetEntry(1,2,0); //0*^eta + 0*^phi + ^time = t0
-				//cout << "distance to plane is " << t0 << endl;	
-				//rotate plane s.t. ellipsoid is aligned in coord system (ie is along maj-min axes) bc thats how the plane sections are defined
-				//put into Hessian normal form 
-				//https://mathworld.wolfram.com/HessianNormalForm.html
-				//double dist = sqrt(plane.at(0,0)*plane.at(0,0) + plane.at(1,0)*plane.at(1,0) + plane.at(2,0)*plane.at(2,0));
-				//cout << "dist " << dist << endl;
-				//plane.mult(plane,1/dist);
-				//cout << "normal plane" << endl; plane.Print();
-				//t0 = t0/dist;
-			cout << "t0 " << t0 << endl;	
-				EtaPhiPlaneCov(model->GetData(), plane, t0, planecov,params["mean"]);
-				if(!planecov.empty()){
-				cout << "etaphi cov valid for this d = " << t0 << ", eta sig " << sqrt(planecov.at(0,0)) << " phi sig " << sqrt(planecov.at(1,1)) << " etaphi cov " << planecov.at(0,1) << endl;
-					_procCats[id_idx].hists2D[1][248]->Fill(t0/start,sqrt(planecov.at(0,0))/e_var);
-					_procCats[id_idx].hists2D[1][249]->Fill(t0/start,sqrt(planecov.at(1,1))/p_var);
-					_procCats[id_idx].hists2D[1][250]->Fill(t0/start,planecov.at(0,1)/ep_cov);
-				}
-cout << endl;	
-				t0 += step;
-			}
-			*/
-			//cout << "majlength " << majLength << endl;	
 
 			//do track matching
 			double bestTrackDr = 999;
@@ -2321,7 +2279,6 @@ cout << endl;
 			}
 
 
-	
 			//2D hists
 			_procCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
 			_procCats[id_idx].hists2D[1][1]->Fill(phi,E_k);
@@ -2332,7 +2289,7 @@ cout << endl;
 			_procCats[id_idx].hists2D[1][6]->Fill(tc,pi);
 			_procCats[id_idx].hists2D[1][7]->Fill(E_k,pi);
 			//_procCats[id_idx].hists2D[1][8]->Fill(rot3D,E_k);
-			_procCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
+			//_procCats[id_idx].hists2D[1][9]->Fill(norms[k], E_k);
 			_procCats[id_idx].hists2D[1][11]->Fill(nclusters, pi);
 			_procCats[id_idx].hists2D[1][12]->Fill(e_var, p_var);
 			_procCats[id_idx].hists2D[1][13]->Fill(t_var, e_var);
@@ -2399,10 +2356,6 @@ cout << endl;
 			_procCats[id_idx].hists2D[1][247]->Fill(majtime_cov_2d,mintime_cov_2d);
 	
 			
-
-
-	
-
 			if((phi2D < 0.2 && phi2D > -0.2) || (fabs(phi2D) < 0.2+acos(-1)/2. && fabs(phi2D) > -0.2+acos(-1)/2.)){
 				_procCats[id_idx].hists2D[1][70]->Fill(rot2D,ep_cov);
 				_procCats[id_idx].hists2D[1][74]->Fill(rot2D,te_cov);
@@ -2643,7 +2596,6 @@ cout << endl;
 			if(tc > -10 && tc < -2) _procCats[id_idx].hists2D[1][233]->Fill(bestTrackDr,de);
 			if(tc > -2 && tc < 2) _procCats[id_idx].hists2D[1][234]->Fill(bestTrackDr,de);
 			if(tc > 2 && tc < 10) _procCats[id_idx].hists2D[1][235]->Fill(bestTrackDr,de);
-
 		}
 
 
@@ -3552,18 +3504,15 @@ cout << endl;
 	} 
 	*/
 
-
+	vector<Jet> _jets;
 	//used for sig/bkg MVA, iso/!iso MVA
-	int GetTrainingLabel(int phoidx, int ncl, BasePDFMixture* gmm){
+	int GetTrainingLabel(int phoidx, Jet bhc_pho){
 		//labels
 		//unmatched = -1
 
-		//sig vs bkg
 		//signal = 0
 		//iso bkg = 4
-
-		//iso vs !iso
-		//iso sig = 5
+		//iso bkg (gen level) = 5
 		//!iso bkg = 6
 
 		//phys bkg vs det bkg - these are done in SuperClusterSkimmer
@@ -3571,17 +3520,35 @@ cout << endl;
 		//BH = 2
 		//spike = 3
 		
+		//pt asymmetry bw photon + jet system
+//cout << "# jets " << _jets.size() << endl;
+		Jet jet_sys = VectorSum(_jets);
+		Jet jet1, jet2; //jet2 is sublead system
+//cout << "pho pt " << bhc_pho.pt() << " pho e " << bhc_pho.E() << " jets pt " << jet_sys.pt() << " jets e " << jet_sys.E() << endl;	
+		if(jet_sys.e() > bhc_pho.e()){
+			jet1 = jet_sys;
+			jet2 = bhc_pho;
+		}
+		else{
+			jet1 = bhc_pho;
+			jet2 = jet_sys;
+		}
+		double easym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
+		
+		bool minpt, easym;
+		if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) minpt = false;
+		else minpt = true; 
+		if(jet2.e() / jet1.e() < easym_thresh) easym = false;
+		else easym = true;
+		
+
+		Matrix mu, cov;
+		bhc_pho.GetClusterParams(mu, cov);
 		double ec, pc, tc;
-		auto params = gmm->GetLHPosteriorParameters(ncl);
-		ec = params["mean"].at(0,0);
-		pc = params["mean"].at(1,0);
-		tc = params["mean"].at(2,0);
+		ec = mu.at(0,0);
+		pc = mu.at(1,0);
+		tc = mu.at(2,0);
 
-		vector<double> norms;
-		gmm->GetNorms(norms);
-		double Ek = norms[ncl]/_gev;
-
-		Matrix cov = params["cov"];
 		vector<Matrix> eigvecs;
 		vector<double> eigvals;
 		cov.eigenCalc(eigvals,eigvecs);
@@ -3597,21 +3564,23 @@ cout << endl;
 		double phi2D = PhiEll(space_mat);			
 		double rot2D = Rotundity(space_mat);
 		
-		bool trksum, ecalrhsum, htowoverem, iso;	
+		//bool trksum, ecalrhsum, htowoverem, iso;	
 		int label = -1;
 cout << "phoidx " << phoidx << " isocuts " << _isocuts << endl;
-		//signal
+		//MC
 		if(!_data){
 			//matched to photon
 			if(phoidx != -1){
-                		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
-                		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
-                		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
-                		iso = trksum && ecalrhsum && htowoverem;
-cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso << " isoBkgSel " << _isoBkgSel << endl;
+                		//trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
+                		//ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
+                		//htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
+                		//iso = trksum && ecalrhsum && htowoverem;
+//cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso << " isoBkgSel " << _isoBkgSel << endl;
+cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " isoBkgSel " << _isoBkgSel << endl;
 				if(_base->Photon_genIdx->at(phoidx) != -1){
 					int genidx = _base->Photon_genIdx->at(phoidx);
                 			//needs to be isolated
+					/*
 					if(_isocuts){
 						if(!iso) label = -1;
 						else{
@@ -3635,7 +3604,18 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 							}	
 						}
 					}
-					//not applying isolation - use for iso network
+					*/
+					//non isolated bkg
+					if(_oname.find("QCD") != string::npos && !_isoBkgSel)
+						label = 6;
+					//isolated bkg
+					else if(_isoBkgSel){
+						if(minpt && easym) label = 4; //failed pho pt req for iso bkg
+						else{
+							label = -1; //failed pho pt req and/or ptasym req 
+						}
+					}
+					//signal
 					else{
 						//photon from C2
 						if(_base->Gen_susId->at(genidx) == 22)
@@ -3646,11 +3626,9 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 						else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
 							label = 5;
 						else
-							label = 1; //removal of GMSB !sig photons is done in data processing for NN	
-						//photons from QCD are all nonisolated - !iso bkg
-						if(_oname.find("QCD") != string::npos)
-							label = 6;
+							label = 1; //removal of GMSB !sig photons is done in data processing for NN
 					}
+					//}
 				}
 				else //no gen match
 					label = -1;
@@ -3661,24 +3639,29 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 		}
 		//else in data - could be spikes or BH
 		else{
-			if(_isocuts){
+			if(!_isocuts){
 				if(phoidx == -1){
 					//not matched to a photon so cant be bkg
 					label = -1;
 				}
 				else{
-                			trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
-                			ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
-                			htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
-                			iso = trksum && ecalrhsum && htowoverem;
-                			if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
-					//sig vs bkg
+                			//trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
+                			//ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
+                			//htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
+                			//iso = trksum && ecalrhsum && htowoverem;
+                			//if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 					//iso bkg = 4
+					
 					//obj selection for iso bkg
-					if(_isoBkgSel){
-						if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
-						//pt asymmetry bw photon + jet - put in if modelling bw data/MC is not good enough
-						else label = 4; //selection for iso bkg is on (event sel)
+					//non isolated bkg
+					if(_oname.find("JetHT") != string::npos && !_isoBkgSel)
+						label = 6;
+					//isolated bkg
+					else if(_isoBkgSel){
+						if(minpt && easym) label = 4; //failed pho pt req for iso bkg
+						else{
+							label = -1; //failed pho pt req and/or ptasym req 
+						}
 					}
 					else label = -1; 
 					
@@ -3686,7 +3669,7 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 				}
 			}
 			else{
-				//no iso cuts -> photons for iso network -> can only be evaluated in MC gen-matching above (n/a data)
+				label = -1; //isolation shouldn't be applied for training MVA
 			}
 		
 		}
@@ -3694,7 +3677,7 @@ cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso <<
 		if(label == 4){
 			//cout << "prompt Ek " << Ek << " norm " << norms[ncl] << " for subcl " << ncl << " of " << norms.size() << endl;
 			for(int i = 0; i < (int)_procCats.size(); i++){
-				_procCats[i].hists1D[0][239]->Fill(Ek, _weight);
+				_procCats[i].hists1D[0][239]->Fill(bhc_pho.E(), _weight);
 				_procCats[i].hists1D[0][240]->Fill(sqrt(cov.at(0,0)), _weight);
 				_procCats[i].hists1D[0][241]->Fill(sqrt(cov.at(1,1)), _weight);
 				_procCats[i].hists1D[0][242]->Fill(cov.at(0,1), _weight);

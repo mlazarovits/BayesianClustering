@@ -61,6 +61,7 @@ class Jet{
 
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
+		static bool Esort(Jet j1, Jet j2){ return (j1.E() > j2.E()); }
 
 		void SetVertex(BayesPoint vtx){
 			if(vtx.Dim() != 3){
@@ -527,6 +528,10 @@ class Jet{
 			return sqrt(eigvals[1]);
 		}
 
+		void SortConstituents(){
+			sort(_constituents.begin(), _constituents.end(), Esort);
+		}
+
 		//add PU cleaning method
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
 		Jet CleanOutPU(vector<bool>& scores, bool remove = false){
@@ -545,9 +550,12 @@ class Jet{
 			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by 1.
 			//(unweighted) r_nk's are saved as rh weights
 			vector<bool> pass; //true = pass, false = fail
-			for(int k = 0; k < _constituents.size(); k++){
-				double relE = _constituents[k].e() / this->e();
-				Matrix subcl_cov = _constituents[k].GetCovariance();
+//cout << "original energy " << this->E() << " pt " << this->pt() << endl;
+			//sort constituents by energy
+			vector<Jet> constituents = _constituents;
+			for(int k = 0; k < constituents.size(); k++){
+				double relE = constituents[k].e() / this->e();
+				Matrix subcl_cov = constituents[k].GetCovariance();
 				double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
 				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
 				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
@@ -561,6 +569,100 @@ class Jet{
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
 			scores = pass;
+			//return empty jet if no subclusters pass criteria
+			if(find(pass.begin(), pass.end(), true) == pass.end()){
+				Jet ret;
+				return ret;
+			}
+
+			double totE = 0;
+			for(int n = 0; n < _nRHs; n++){
+				double maxRnk = 0;
+				int assignedK = -1;
+				JetPoint effRh;
+				double totR = 0;
+				//cout << "rh #" << n;
+				for(int k = 0; k < constituents.size(); k++){
+					effRh = constituents[k]._rhs[n];
+					if(effRh.GetWeight() > maxRnk){
+						maxRnk = effRh.GetWeight();
+						assignedK = k;
+					}
+					if(pass[k]) //responsibility of good subclusters sum to overall weight
+						totR += effRh.GetWeight();
+				}
+			
+				if(remove){
+					if(pass[assignedK]){
+						effRh.SetWeight(1.);
+					}
+					else
+						effRh.SetWeight(0.);
+
+				}
+				else{ //downweight
+					effRh.SetWeight(totR);
+				}
+				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+//cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
+				totE += effRh.e();
+
+				cleanedRhs.push_back(effRh);
+			}
+			if(totE == 0){
+				Jet ret;
+				return ret;
+			}
+			cleanedJet = Jet(cleanedRhs, _vtx);
+			for(int k = 0; k < pass.size(); k++){
+				if(remove){
+					if(pass[k])
+						cleanedJet.AddConstituent(constituents[k]);
+				}
+				else{
+					cleanedJet.AddConstituent(constituents[k]);
+				}
+			}	
+//cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
+			return cleanedJet;
+		}
+		
+
+		//add PU cleaning method
+		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
+		//sigclass = number that corresponds to signal class that want to keep
+		//minscore = min score val to qualify as "keep" 
+		Jet GenericClean(vector<pair<int, double>> class_score, int sigclass, double minscore, bool remove = false){
+			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
+			Matrix cov = GetCovariance();
+			Jet cleanedJet;
+			vector<JetPoint> cleanedRhs;
+			//loop through constituents and reset rh weights based on above
+			//loop through rhs - for rechit n
+			//DOWNWEIGHTING
+			// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 1 - max(r_nk)
+			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by max(r_nk)
+			//REMOVING
+			// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 0.
+			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by 1.
+			//(unweighted) r_nk's are saved as rh weights
+			vector<bool> pass; //true = pass, false = fail
+//cout << "original energy " << this->E() << " pt " << this->pt() << endl;
+			for(int k = 0; k < _constituents.size(); k++){
+				double relE = _constituents[k].e() / this->e();
+				Matrix subcl_cov = _constituents[k].GetCovariance();
+				double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
+				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
+				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
+				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
+
+				//PU cleaning definition
+				if(class_score[k].first == sigclass && class_score[k].second > minscore)
+					pass.push_back(true);
+				else
+					pass.push_back(false);
+			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
+			}
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
 				Jet ret;
@@ -615,6 +717,7 @@ class Jet{
 					cleanedJet.AddConstituent(_constituents[k]);
 				}
 			}	
+//cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
 			return cleanedJet;
 		}
 

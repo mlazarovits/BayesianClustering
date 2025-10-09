@@ -64,22 +64,37 @@ void JetSkimmer::Skim(){
                         }
                 }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
-		_prod->GetTruePhotons(_phos, i, phogev);
+		vector<Jet> phos, bhc_phos;
+		_prod->GetTruePhotons(phos, i, phogev);
+		for(int p = 0; p < phos.size(); p++){
+			Jet bhc_pho;
+			int ret = RunClustering(phos[p], bhc_pho, true);
+			if(ret == -1) continue;
+			bhc_phos.push_back(bhc_pho);
+		}
 		_scprod->GetTrueSuperClusters(_SCs, i, phogev);
 		if(i % (_skip) == 0) cout << "evt: " << i << " of " << _nEvts;
 		//calc max time for photons
 		//cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;
 		//if(_phos.size() > 1) cout << "sublead photon pt " << _phos[1].pt() << " max time " << CalcMaxTime(_phos[1]) << endl;
 
-		if(_phos.size() > 1) FillTruePhotonHists(_phos);
+		if(phos.size() > 1) FillTruePhotonHists(phos);
 		totEvt++;	
 	
 
 		////fill true jet histograms
-		vector<Jet> jets;
+		vector<Jet> jets, bhc_jets;
 		_prod->GetTrueJets(jets, i, _gev);
 		if(jets.size() < 1){ cout << endl; continue; }
-		FillTrueJetHists(jets);	
+		
+		//run BHC clustering
+		for(int j = 0; j < jets.size(); j++){	
+			Jet bhc_jet;
+			int ret = RunClustering(jets[j], bhc_jet, true); //fully remove PU subclusters
+			if(ret == -1) continue;
+			bhc_jets.push_back(bhc_jet);
+		}
+		FillTrueJetHists(bhc_jets);	
 		totJet += (int)jets.size();
 		if(_data){
 			//cut on ratio of MET pt to geo average of 2 leading jets
@@ -92,11 +107,20 @@ void JetSkimmer::Skim(){
 		}
 
 	
-		if(i % (_skip) == 0) cout << " with " << jets.size() << " jets to cluster and " << _phos.size() << " photons";
+		if(i % (_skip) == 0) cout << " with " << jets.size() << " jets to cluster and " << phos.size() << " photons";
 		cout << endl;
-		for(int i = 0; i < trCats.size(); i++)	
-			//make sure time smearing doesn't happen here when it's turned off by the flag
-			FillPVTimeHists(jets, i);
+		for(int i = 0; i < trCats.size(); i++){
+			vector<Jet> injets, inphos;
+			if(i == 2){ //mmavg
+				injets = bhc_jets;
+				inphos = bhc_phos;
+			}
+			else{
+				injets = jets;
+				inphos = phos;
+			}
+			FillPVTimeHists(injets, inphos, i);
+		}
 		
 		jetSelEff++;
 

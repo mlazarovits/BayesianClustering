@@ -5,6 +5,7 @@
 #include "JetPoint.hh"
 #include "BasePDFMixture.hh"
 #include "BaseProducer.hh"
+#include "BayesCluster.hh"
 #include "BaseTree.hh"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -40,7 +41,7 @@ class BaseSkimmer{
 			_weight = 1;
 			_ngrid = 7;
 			_thresh = 1.;
-			_alpha = 0.1;
+			_alpha = 1e-300;
 			_emAlpha = 0.5;
                 	_BHFilter = beamHaloFilter(0); //default not applied
 			_verb = 0;
@@ -62,7 +63,7 @@ class BaseSkimmer{
 			_tresNoise = 0;
 			_tresStoch = 0;
 			
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
 
 		};
@@ -75,7 +76,7 @@ class BaseSkimmer{
 			_ngrid = 7;
                 	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
-			_alpha = 0.1;
+			_alpha = 1e-300;
 			_emAlpha = 0.5;
 			_verb = 0;
 			//beta
@@ -109,7 +110,7 @@ class BaseSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
 
 		}
@@ -123,7 +124,7 @@ class BaseSkimmer{
 			_ngrid = 7;
                 	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
-			_alpha = 0.1;
+			_alpha = 1e-300;
 			_emAlpha = 0.5;
 			_verb = 0;
 			//beta
@@ -151,7 +152,7 @@ class BaseSkimmer{
 			_hists1D.push_back(objE);
 			_hists1D.push_back(clusterE);
 
-			cout << "Default NN model: small8CNN_EMultr.json" << endl;
+			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 			
 			_cell = acos(-1)/180;
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
@@ -619,13 +620,13 @@ class BaseSkimmer{
 			//CNN inputs
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-					_inputs.push_back("CNNgrid_E_cell"+to_string(i)+"_"+to_string(j));
-			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
-				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-					_inputs.push_back("CNNgrid_t_cell"+to_string(i)+"_"+to_string(j));
-			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
-				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-					_inputs.push_back("CNNgrid_r_cell"+to_string(i)+"_"+to_string(j));
+					_inputs.push_back("CNNgrid_cleanedE_cell"+to_string(i)+"_"+to_string(j));
+			//for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
+			//	for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
+			//		_inputs.push_back("CNNgrid_t_cell"+to_string(i)+"_"+to_string(j));
+			//for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
+			//	for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
+			//		_inputs.push_back("CNNgrid_r_cell"+to_string(i)+"_"+to_string(j));
 			//label
 			_inputs.push_back("label");
 			for(auto s : _inputs){
@@ -754,7 +755,9 @@ class BaseSkimmer{
 
 		//write nxn grid of E, t, r_nk here
 		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
-		void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
+		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
+		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
+		void MakeCNNInputGrid(vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
 			map<pair<int,int>, vector<double>> grid;
 			//make sure ngrid is odd to include center crystal
 			if(_ngrid % 2 == 0)
@@ -773,8 +776,8 @@ class BaseSkimmer{
 			int rh_ieta = _detIDmap[center.rhId()].i2;
 			int rh_iphi = _detIDmap[center.rhId()].i1;
 			int deta, dphi;
-			Matrix post = model->GetPosterior();
-			for(int j = 0; j < post.GetDims()[0]; j++){
+			//Matrix post = model->GetPosterior();
+			for(int j = 0; j < rhs.size(); j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
 				iphi = _detIDmap[rhs[j].rhId()].i1;
 				//do eta flip
@@ -791,7 +794,8 @@ class BaseSkimmer{
 				if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
 					//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
 					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
-					grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
+					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
+					grid[make_pair(deta, dphi)] = {rhs[j].E()};	
 					//mapobs[k]["CNNgrid_E_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].E();
 					//mapobs[k]["CNNgrid_t_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].t() - center.t();
 					//mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] = post.at(j,k)/model->GetData()->at(j).w();
@@ -804,10 +808,10 @@ class BaseSkimmer{
 			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 					icoords_grid = make_pair(i,j);
-					mapobs["CNNgrid_E_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
-					mapobs["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
-					mapobs["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
-					mapobs["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
+					mapobs["CNNgrid_cleanedE_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
+					//mapobs["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
+					//mapobs["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
+					//mapobs["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
 					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
 				}
 			}
@@ -815,7 +819,7 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel = fdeep::load_model("json/small8CNN_EMultr.json");
+		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
 		void SetNNModel(string fname){
 			_nnmodel = fdeep::load_model(fname);
 		}
@@ -896,11 +900,38 @@ class BaseSkimmer{
 	int _verb;
 	void SetVerbosity(int v){_verb = v;}
 
-	void TreesToJets(vector<node*>& trees, vector<GaussianMixture*>& gmms, vector<Jet>& jets, BayesPoint pv){
-		jets.clear();
-		gmms.clear();
-		map<double, GaussianMixture*> ptToModel;
 
+	//int RunClustering(vector<Jet>& inputs, BayesPoint PV, Jet& result, bool remove = false){
+	int RunClustering(Jet inputobj, Jet& result, bool remove = false){
+	//remove == false - downweight PU clusters
+	//remove == true - fully remove PU clusters
+		vector<Jet> rhs;
+		inputobj.GetJets(rhs);
+		BayesPoint PV = inputobj.GetVertex();
+		
+		BayesCluster *algo = new BayesCluster(rhs);
+		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
+		algo->SetPriorParameters(_prior_params);
+		algo->SetThresh(_thresh);
+		algo->SetAlpha(_alpha);
+		algo->SetSubclusterAlpha(_emAlpha);
+		algo->SetVerbosity(_verb);
+		//using full BHC algorithm for subcluster regularization
+		vector<node*> trees = algo->NlnNCluster();
+		vector<Jet> bhc_jets;
+		TreesToJets(trees, bhc_jets, PV);
+		if(bhc_jets.size() < 1)
+			return -1;
+		//define objects by lead PU-cleaned model
+		vector<bool> scores; //PU discriminator scores of subclusters
+		result = bhc_jets[0].CleanOutPU(scores, false);
+		result.SetUserIdx(inputobj.GetUserIdx());
+		return 0;
+	}
+
+
+	void TreesToJets(vector<node*>& trees, vector<Jet>& jets, BayesPoint pv){
+		jets.clear();
 		double radius = 1.29;
 		double x, y, z, eta, phi, t, theta, px, py, pz;
 		for(int i = 0; i < trees.size(); i++){
@@ -913,15 +944,10 @@ class BaseSkimmer{
 			//if(predJet.pt() < 5) continue; 
 			//add Jet to jets	
 			jets.push_back(predJet);
-			ptToModel[predJet.pt()] = trees[i]->model;
 		}
+cout << "TreesToJets - # jets " << jets.size() << endl;
 		//sort predicted jets
 		sort(jets.begin(), jets.end(), ptsort);
-		//fill model vector
-		for(int i = 0; i < jets.size(); i++){
-			gmms.push_back(ptToModel[jets[i].pt()]);
-		}
-
 		cout << jets.size()  << " pred jets total" << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
