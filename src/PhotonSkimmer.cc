@@ -176,6 +176,7 @@ void PhotonSkimmer::Skim(){
 			//gev = 0.1 for jets
 			_jetprod->GetTrueJets(_jets, e);
 			//min photon multiplicity
+cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 			if(phos.size() < 1) continue;
 			//cout << "passed pho mult" << endl;	
 			//min jet multiplicity
@@ -188,6 +189,7 @@ void PhotonSkimmer::Skim(){
 			//dphi bw photon and jet systems (vector sum of objects)
 			jet_sys = VectorSum(_jets);
 			
+			cout << "met " << _base->Met_pt << " ht " << ht << endl;	
 			//MET upper limit - orthogonal to signal MET selection
 			if(_base->Met_pt > _maxMet_isoBkg) continue;
 			//cout << "passed max met" << endl;	
@@ -195,7 +197,6 @@ void PhotonSkimmer::Skim(){
 			if(ht < _minHt_isoBkg) continue; 
 			//cout << "passed min ht" << endl;	
 			//az angle bw hardest presel photon + jet system
-			//cout << "dphi " << dphi_phojet << " met " << _base->Met_pt << endl;	
 	
 			nIsoBkgPass++;
 		}

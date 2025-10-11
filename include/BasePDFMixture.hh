@@ -94,6 +94,10 @@ class BasePDFMixture : public BasePDF{
 				lamStar.SetEntry(1/(_cell*_cell),0,0);
 				lamStar.SetEntry(1/(_cell*_cell),1,1);
 				lamStar.SetEntry(1/(tresSq),2,2);
+				//set precision (uncertainty) for unreliable times to be very small (large)
+//cout << "w " << m_data->at(n).w() << " tresSq " << tresSq << endl;
+				if(m_data->at(n).Skip())
+					lamStar.SetEntry(1e-100,2,2);
 				if(std::isnan(lamStar.at(2,2))){ 
 					cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();
 				}
@@ -386,8 +390,10 @@ class BasePDFMixture : public BasePDF{
 			x.mult(sc,x);
 			//get weights from original data
 			vector<double> ws;
+			vector<int> skips;
 			m_data->GetWeights(ws);
-			m_data = new PointCollection(x.MatToPoints(ws));
+			m_data->GetSkipDims(skips);
+			m_data = new PointCollection(x.MatToPoints(ws,skips));
 
 			//also scale smear - if datacov is set
 			if(_smear){

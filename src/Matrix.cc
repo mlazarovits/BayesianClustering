@@ -572,7 +572,7 @@ void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 }
 
 
-PointCollection Matrix::MatToPoints(vector<double> weights){
+PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims){
 	PointCollection pc;
 	for(int j = 0; j < m_col; j++){
 		vector<double> val;
@@ -582,6 +582,8 @@ PointCollection Matrix::MatToPoints(vector<double> weights){
 		BayesPoint pt = BayesPoint(val);
 		if(weights.size() == m_col)
 			pt.SetWeight(weights[j]);
+		if(skipdims.size() == m_col)
+			pt.SetSkipDim(skipdims[j]);
 		pc += pt;
 	}
 	return pc;

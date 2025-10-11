@@ -55,7 +55,7 @@ class Matrix{
 		double trace();
 		Matrix cholesky();
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
-		PointCollection MatToPoints(vector<double> weights = {});
+		PointCollection MatToPoints(vector<double> weights = {}, vector<int> skipdims = {});
 		void PointsToMat(PointCollection& pc);
 		void PointToMat(const BayesPoint& pc);
 		void mean(const PointCollection& data);
@@ -91,6 +91,28 @@ class Matrix{
 			}
 			return ret;
 		}
+
+		//return matrix with dimension d marginalized out
+		void ExcludeDim(int d){
+			Matrix ret;
+			int nrow = m_row == 1 ? 1 : m_row - 1;
+			int ncol = m_col == 1 ? 1 : m_col - 1;
+			ret.SetDims(nrow, ncol);
+			int irow = 0;
+			int icol = 0;
+			for(int i = 0; i < m_row; i++){
+				icol = 0;
+				if(i == d && nrow > 1) continue;
+				for(int j = 0; j < m_col; j++){
+					if(j == d && ncol > 1) continue;
+					ret.SetEntry(m_entries[i][j],irow,icol);
+					icol++;
+				}
+				irow++;
+			}
+			*this = ret;
+		}
+
 	private:
 		int m_row;
 		int m_col;

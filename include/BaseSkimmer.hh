@@ -908,7 +908,8 @@ class BaseSkimmer{
 		vector<Jet> rhs;
 		inputobj.GetJets(rhs);
 		BayesPoint PV = inputobj.GetVertex();
-		
+		vector<JetPoint> jps;
+	
 		BayesCluster *algo = new BayesCluster(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetPriorParameters(_prior_params);

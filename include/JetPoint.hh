@@ -22,6 +22,9 @@ class JetPoint{
 		void SetWeight(double w){ _w = w; } 
 		double GetWeight() const{ return _w; } 
 
+		void SetInvalidTime(){ _skipTime = true; }
+		bool InvalidTime() const{ return _skipTime; }
+
 
 		//sets phi [0,2pi]
 		double phi_02pi() const{
@@ -175,6 +178,9 @@ class JetPoint{
 		mutable double _eta, _phi, _theta;
 		double _E;
 
+
+		//if time is invalid
+		bool _skipTime;
 
 		//rechit info
 		unsigned int _rhId;

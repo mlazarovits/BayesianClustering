@@ -20,6 +20,8 @@ class PointCollection{
 			_nDim = pt.Dim();
 			for(int d = 0; d < _nDim; d++)
 				_infs.push_back((1+(d)/10.)*1e70);
+			if(_skipDim == -1) _skipDim = pt.GetSkipDim();
+			AllSkip();
 		}
 		PointCollection(const vector<BayesPoint>& pts){
 			_nDim = pts[0].Dim();
@@ -32,6 +34,8 @@ class PointCollection{
 			for(int d = 0; d < _nDim; d++)
 				_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pts[0].GetSkipDim();
+			AllSkip();
 		}
 
 		//copy constructor
@@ -43,6 +47,8 @@ class PointCollection{
 			//_pts = pts._pts;
 			//TODO: make sure copy is decoupled from original pts (vector::assign?)
 			for(int i = 0; i < (int)pts.GetNPoints(); i++) _pts.push_back(pts.at(i));
+			_skipDim = pts._skipDim;
+			AllSkip();
 		}
 		
 		virtual ~PointCollection(){
@@ -58,6 +64,7 @@ class PointCollection{
 				if(!this->Has(pts.at(i))){
 					_pts.push_back(pts.at(i));
 				}
+				if(!pts.at(i).Skip()) _allskip = false; 
 			}
 			if(_nDim == 0) _nDim = pts.Dim();
 			//add infs if not already there
@@ -65,20 +72,23 @@ class PointCollection{
 				for(int d = 0; d < _nDim; d++)
 					_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pts.at(0).GetSkipDim();
 			return *this;
 		}
 		
 		//add only unique points
 		PointCollection& operator +=(BayesPoint& pt){
 			//cout << "PointCollection+=Point" << endl;
-				if(!this->Has(pt)){
-					_pts.push_back(pt);
-				}
+			if(!this->Has(pt)){
+				_pts.push_back(pt);
+			}
+			if(!pt.Skip()) _allskip = false; 
 			if(_nDim == 0) _nDim = pt.Dim();
 			if(_infs.size() == 0){
 				for(int d = 0; d < _nDim; d++)
 					_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pt.GetSkipDim();
 			return *this;
 		}
 		
@@ -129,6 +139,8 @@ class PointCollection{
 				for(int d = 0; d < _nDim; d++)
 					_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pt.GetSkipDim();
+			if(!pt.Skip()) _allskip = false; 
 		//cout << "addpoint pts: " << &_pts[0] << endl;
 		//_pts[0].Print();
 		}
@@ -140,6 +152,7 @@ class PointCollection{
 					for(int i = 0; i < pts.GetNPoints(); i++){
 						if(!this->Has(pts.at(i))){ 
 						_pts.push_back(pts.at(i));}
+						if(!pts.at(i).Skip()) _allskip = false; 
 					}
 				}
 				else{
@@ -154,6 +167,7 @@ class PointCollection{
 				for(int d = 0; d < _nDim; d++)
 					_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pts.at(0).GetSkipDim();
 		}
 
 		void AddPoints(vector<BayesPoint> pts){
@@ -164,11 +178,13 @@ class PointCollection{
 					break;
 				}	
 				_pts.push_back(p);
+				if(p.Skip()) _allskip = false; 
 			}
 			if(_infs.size() == 0){
 				for(int d = 0; d < _nDim; d++)
 					_infs.push_back((1+(d)/10.)*1e70);
 			}
+			if(_skipDim == -1) _skipDim = pts[0].GetSkipDim();
 		}
 
 		void Print() const{
@@ -275,17 +291,30 @@ class PointCollection{
 	
 	}
 	
+	void AllSkip(){
+		for(int i = 0; i < GetNPoints(); i++){
+			if(!_pts[i].Skip()) _allskip = false;
+		}
+		_allskip = true;
+	}
+
 	double max(int d = 0){
-		vector<double> pts; 
-		for(int i = 0; i < GetNPoints(); i++)
+		vector<double> pts;
+		for(int i = 0; i < GetNPoints(); i++){
+			//only include skipped pts if the pointcollection is made up of entirely skipped pt
+			if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 			pts.push_back(_pts[i].Value(d));
+		}
 		return *std::max_element(pts.begin(), pts.end());
 	}
 
 	double min(int d = 0){
 		vector<double> pts; 
-		for(int i = 0; i < GetNPoints(); i++)
+		for(int i = 0; i < GetNPoints(); i++){
+			//only include skipped pts if the pointcollection is made up of entirely skipped pt
+			if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 			pts.push_back(_pts[i].Value(d));
+		}
 		return *std::min_element(pts.begin(), pts.end());
 	}
 
@@ -297,8 +326,9 @@ class PointCollection{
 		//includes weights
 		BayesPoint avg = mean();//BayesPoint(_nDim);//mean();
 		for(int d = 0; d < _nDim; d++){
-			//avg.SetValue(Centroid(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
+				//only include skipped pts if the pointcollection is made up of entirely skipped pt
+				if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 				_pts[i].SetValue(_pts[i].at(d) - avg.at(d),d);
 				//round to 0
 				if(fabs(_pts[i].at(d)) < 1e-16) _pts[i].SetValue(0,d);
@@ -317,6 +347,8 @@ class PointCollection{
 			//min.push_back(this->min(d));
 			min.SetValue(this->min(d),d);
 			for(int i = 0; i < (int)_pts.size(); i++){
+				//only include skipped pts if the pointcollection is made up of entirely skipped pt
+				if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 				_pts[i].SetValue(_pts[i].at(d) - min.at(d),d);
 			}
 		}
@@ -495,6 +527,7 @@ class PointCollection{
 			min = this->min(d);
 			max = this->max(d);
 			for(int i = 0; i < (int)_pts.size(); i++){
+				if(_pts[i].Skip() && _pts[i].GetSkipDim() == d) continue;
 				_pts[i].SetValue(_pts[i].at(d)/(max - min),d);
 			}
 			//scale.push_back(1./(max - min));
@@ -535,6 +568,8 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
 		for(int i = 0; i < (int)_pts.size(); i++){
 			for(int d = 0; d < _nDim; d++){
+				//only include skipped pts if the pointcollection is made up of entirely skipped pt
+				if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 				m.SetValue(m.at(d)+_pts[i].at(d),d);
 			}
 		}
@@ -549,6 +584,8 @@ class PointCollection{
 		for(int d = 0; d < _nDim; d++) m.SetValue(0.,d);
 		for(int i = 0; i < (int)_pts.size(); i++){
 			for(int d = 0; d < _nDim; d++){
+				//only include skipped pts if the pointcollection is made up of entirely skipped pt
+				if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 				val = pow(_pts[i].at(d) - m.at(d),2);
 				sd.SetValue(sd.at(d)+val,d);
 			}
@@ -578,6 +615,8 @@ class PointCollection{
 		double max = -1e308;
 		double min = 1e308;
 		for(int i = 0; i < (int)_pts.size(); i++){
+			//only include skipped pts if the pointcollection is made up of entirely skipped pt
+			if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 			avg_s += sin(wrapped.at(i).at(d));
 			avg_c += cos(wrapped.at(i).at(d));
 			if(wrapped.at(i).at(d) > max) max = wrapped.at(i).at(d);
@@ -667,6 +706,8 @@ class PointCollection{
 		double max = -1e308;
 		double min = 1e308;
 		for(int i = 0; i < (int)_pts.size(); i++){
+			//only include skipped pts if the pointcollection is made up of entirely skipped pt
+			if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 			avg_s += sin(wrapped.at(i).at(d))*wrapped.at(i).w();
 			avg_c += cos(wrapped.at(i).at(d))*wrapped.at(i).w();
 			if(wrapped.at(i).at(d) > max) max = wrapped.at(i).at(d);
@@ -741,6 +782,8 @@ class PointCollection{
 		double cent = 0;
 		double sum = 0;
 		for(int i = 0; i < (int)_pts.size(); i++){
+			//only include skipped pts if the pointcollection is made up of entirely skipped pt
+			if(_pts[i].Skip() && _pts[i].GetSkipDim() == d && !_allskip) continue;
 			cent += _pts[i].at(d)*_pts[i].w();
 			sum += _pts[i].w();
 		}
@@ -754,11 +797,23 @@ class PointCollection{
 		return ret;
 	}
 
+	void SetPointSkip(int n, int d){
+		if(_skipDim != -1)
+			_pts[n].SetSkipDim(d);
+	}
+	void GetSkipDims(vector<int>& ds) const{
+		ds.clear();
+		for(int n = 0; n < _pts.size(); n++){
+			ds.push_back(_pts[n].GetSkipDim());
+		}
+	}
+
 	private:
 		int _nDim = 0;
 		vector<BayesPoint> _pts = {};
 		vector<double> _infs = {};
-
+		int _skipDim = -1;
+		bool _allskip = false;	
 
 };
 #endif
