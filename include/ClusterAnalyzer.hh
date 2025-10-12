@@ -256,7 +256,7 @@ class ClusterAnalyzer{
 
 		};
 
-		ClusterObj RunClustering();
+		ClusterObj RunClustering(map<double, unsigned int> energyToId = {});
 
 	private:
 		vector<Jet> _rhs;
