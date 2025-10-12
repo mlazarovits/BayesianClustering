@@ -298,7 +298,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 }
 
 
-Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
+Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR, map<double, unsigned int> energyToId){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
 	
@@ -343,7 +343,8 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		//push back as jet point to _rhs	
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
-		_rhs[i].SetWeight(rh.w());	
+		_rhs[i].SetWeight(rh.w());
+		if(energyToId.size() > 0) _rhs[i].SetRecHitId(energyToId[_rhs[i].E()]);	
 	
 		//calculate momentum vector from PV
 		//centered at PV
@@ -437,6 +438,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 
 			effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
+			if(energyToId.size() > 0) effRh.SetRecHitId(energyToId[_rhs[n].E()]); //use full energy
 
 			BayesPoint effRh_pt({effRh.eta(), effRh.phi(), effRh.t()});
 			effRh_pt.SetWeight(_rhs[n].E()*effRh.GetWeight());

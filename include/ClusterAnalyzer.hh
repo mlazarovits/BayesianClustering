@@ -265,7 +265,7 @@ class ClusterAnalyzer{
 		BayesPoint _PV;
 		BayesPoint _detCenter;
 		BayesCluster* _algo;
-		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
+		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, map<double, unsigned int> energyToId = {});
 
 
 
