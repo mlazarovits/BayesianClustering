@@ -78,7 +78,7 @@ ClusterAnalyzer::ClusterObj ClusterAnalyzer::RunClustering(){
 }
 
 
-void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
+void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, map<double, unsigned int> energyToId){
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -88,7 +88,7 @@ void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& obj
 		PointCollection* pc = trees[i]->points;
 		//at least 2 points (rhs)
 		if(pc->GetNPoints() < 2) continue;
-		Jet predJet(trees[i]->model, _PV, _gev, _radius);
+		Jet predJet(trees[i]->model, _PV, _gev, _radius, energyToId);
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));	
 	}
