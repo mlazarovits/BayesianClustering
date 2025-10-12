@@ -33,7 +33,7 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 
 //should be run after all rechits for clustering have been added
-ClusterAnalyzer::ClusterObj ClusterAnalyzer::RunClustering(){
+ClusterAnalyzer::ClusterObj ClusterAnalyzer::RunClustering(map<double, unsigned int> energyToId){
 	_algo = new BayesCluster(_rhs);	
 	
 	//hard coding parameters that won't change
@@ -71,7 +71,7 @@ ClusterAnalyzer::ClusterObj ClusterAnalyzer::RunClustering(){
 	//do hierarchical clustering for subcluster constraints
 	vector<node*> trees = _algo->NlnNCluster();
 	vector<ClusterObj> objs;
-	_treesToObjs(trees, objs);
+	_treesToObjs(trees, objs, energyToId);
 	sort(objs.begin(), objs.end(), Esort);
 	return objs[0];
 
