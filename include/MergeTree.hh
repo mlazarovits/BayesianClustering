@@ -284,7 +284,7 @@ class MergeTree : BaseTree{
 			}
 
 			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-			
+		
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
 
@@ -354,9 +354,6 @@ class MergeTree : BaseTree{
 				//cout << "pre-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
 				TransformMean(mean, center);
 				prev_posts[kk]["m"] = mean;
-				//if(x->model->GetData()->GetNPoints() == 108){
-				//	cout << "post-transform - k " << kk << " alpha " << params["alpha"].at(0,0) << " mean "  << endl; mean.Print();
-				//}
 				//do for xbar too
 				mean = params["xbar"];
 				//cout << " xbar " << endl; mean.Print();
@@ -509,7 +506,7 @@ class MergeTree : BaseTree{
 	center.Scale(-1);
 //cout << "transf data" << endl;
 //x->model->GetData()->Print();
-////cout << " # clusters found " << x->model->GetNClusters() << endl;
+//cout << " # clusters found " << x->model->GetNClusters() << endl;
 //for(int k = 0; k < x->model->GetNClusters(); k++){
 //		cout << "cluster #" << k << " transf mean " << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
@@ -533,7 +530,7 @@ class MergeTree : BaseTree{
 //		cout << "cluster #" << k << " unscaled mean" << endl;
 //		auto params = x->model->GetLHPosteriorParameters(k);
 //		params["mean"].Print();
-//}
+//	}
 		
 	
 			//need to put GMM parameters AND points back in detector coordinates (not local)
@@ -565,6 +562,7 @@ class MergeTree : BaseTree{
 
 
 //cout << "unshifted" << endl;
+//cout << "center" << endl; center.Print();
 //for(int k = 0; k < x->model->GetNClusters(); k++){
 //	cout << "cluster #" << k << " unshifted means" << endl;
 //	auto params = x->model->GetLHPosteriorParameters(k);
