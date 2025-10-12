@@ -8,7 +8,7 @@
 void SuperClusterSkimmer::Skim(){
 
 	cout << "Writing skim to: " << _oname << endl;
-	cout << "Using clustering strategy mixture model with pre-clustered superclusters" << endl;
+	cout << "Using clustering strategy NlnN full BHC with supercluster objects" << endl;
 
 	MakeProcCats(_oname);
 	

@@ -235,6 +235,8 @@ cout << "n starting pts " << n << endl;
 			//cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
 			_sanitize(pt);
+			if(jps[i].InvalidTime())
+				pt.SetSkipDim(2);
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
@@ -302,10 +304,8 @@ cout << "with centroid" << endl; center.Print();
 		}
 	cout << endl;
 	}
-	if(_trees.size() < 1){
-		cout << " all points" << endl;
-		for (int i = 0; i < n; i++) {	_points[i].Print(); }
-	}
+	//cout << " all points" << endl;
+	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
 	cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	return _trees;
 	

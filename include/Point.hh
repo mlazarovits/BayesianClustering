@@ -17,6 +17,7 @@ class BayesPoint{
 		BayesPoint(){
 			_nDim = 0;
 			_weight = 1.;
+			_skipDim = -1;
 		}
 
 		BayesPoint(const int d){
@@ -24,6 +25,7 @@ class BayesPoint{
 			for(int i = 0; i < _nDim; i++) _value.push_back(-1);	
 			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
 			_weight = 1.;
+			_skipDim = -1;
 		}
 		
 		//copy constructor
@@ -34,6 +36,7 @@ class BayesPoint{
 			_value = p.Value();
 			_rank = p.Rank();	
 			_weight = p._weight;
+			_skipDim = p._skipDim;
 		}
 
 		BayesPoint(const vector<double>& x){
@@ -41,6 +44,7 @@ class BayesPoint{
 			for(int i = 0; i < _nDim; i++) _value.push_back(x[i]);	
 			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
 			_weight = 1.;
+			_skipDim = -1;
 		}
 		
 		
@@ -51,6 +55,7 @@ class BayesPoint{
 			_value = p.Value();
 			_rank = p.Rank();	
 			_weight = p.Weight();
+			_skipDim = p.GetSkipDim();
 			return *this;
 		}
 		bool operator == (const BayesPoint& pt2) const{
@@ -61,6 +66,7 @@ class BayesPoint{
 		bool operator != (const BayesPoint& pt2) const{
 			if(_nDim != pt2.Dim()) return true;
 			if(_weight != pt2.w()) return true;
+			if(_skipDim != pt2.GetSkipDim()) return true;
 			for(int i = 0; i < _nDim; i++){
 				if(_value[i] != pt2.Value(i)) return true;
 			}
@@ -238,12 +244,16 @@ class BayesPoint{
 	}
 
 
+	void SetSkipDim(int s){ _skipDim = s; }
+	int GetSkipDim() const{ return _skipDim; }
+	bool Skip() const{ return _skipDim != -1; }
+
 	private:
 		int _nDim;
 		vector<double> _value;
 		vector<double> _rank;
 		double _weight;
-
+		int _skipDim;
 
 
 
