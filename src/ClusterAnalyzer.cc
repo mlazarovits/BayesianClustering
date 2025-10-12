@@ -20,6 +20,7 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	JetPoint rh(rhx, rhy, rhz, rht);
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
+	rh.SetRecHitId(rhId);
 	if(invalidTime) rh.SetInvalidTime();
 	Jet jet(rh, _PV);
 cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
