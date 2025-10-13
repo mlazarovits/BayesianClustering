@@ -30,7 +30,7 @@ class Jet{
 		Jet(const vector<Jet>& jets);
 		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
 		Jet(BasePDF* pdf, double E, double pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
-		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129, map<double, unsigned int> energyToId = {}); //need detector radius to convert eta, phi to x, y, z - detR in cm
+		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
@@ -57,6 +57,14 @@ class Jet{
 				_mu = j._mu;
 				_cov = j._cov;
 				_pi = j._pi;
+		}
+
+		void SetRecHitId(int i, int id){
+			if(i > _nRHs) return;
+			_rhs[i].SetRecHitId(id);
+			for(int k = 0; k < _constituents.size(); k++){
+				_constituents[k]._rhs[i].SetRecHitId(id);
+			}
 		}
 
 		//return four vector for clustering
