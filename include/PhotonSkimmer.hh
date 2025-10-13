@@ -1871,7 +1871,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			Matrix majmin2DCovMat = Matrix(3,3);
 			PointCollection majminpts3D, majminpts2D;
 
-
 			Matrix mu, cov;
 			bhc_pho.GetClusterParams(mu, cov);
 			PointCollection* points = new PointCollection();
@@ -1894,7 +1893,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			double majtime_cov_3d, mintime_cov_3d, majtime_cov_unnorm, mintime_cov_unnorm;
 			double majtime_cov_2d, mintime_cov_2d;
 			double timespace_cov;		
-	
 			//for swiss cross prime - wmax/N_k	
 			vector<double> spikeObs;
 			SpikeObs(points, spikeObs);
@@ -1902,7 +1900,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			//calculate weighted eta mean of points to check eta calculation
 			double etaCentroid = points->Centroid(0);
 
-	
 			int nclusters = 1;//model->GetNClusters();
 			//get leading cluster index
 			//vector<int> idxs;
@@ -2126,7 +2123,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 				}
 			}
 
-
+cout << "did track matching " << endl;
                         obs["eta_center"] = ec;
                         obs["phi_center"] = pc;
                         obs["time_center"] = tc;
@@ -2142,7 +2139,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
 			obs["maxOvtotE"] = maxE/E_k;	
-	
+cout << "wrote obs" << endl;	
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
@@ -2277,7 +2274,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 				_procCats[id_idx].hists1D[1][260]->Fill(eta_angle_2d);
 				_procCats[id_idx].hists2D[1][246]->Fill(te_cov,tp_cov);
 			}
-
+cout << "did some 1D hists" << endl;
 
 			//2D hists
 			_procCats[id_idx].hists2D[1][0]->Fill(tc, E_k);
@@ -2377,7 +2374,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 				_procCats[id_idx].hists2D[1][153]->Fill(rot2D,swCP);
 			}
 
-			
+		cout << "did some 2D hists" << endl;	
 			if(-10 <= tc && tc < -2){
 				_procCats[id_idx].hists2D[1][102]->Fill(E_tot, phi2D);
 				_procCats[id_idx].hists2D[1][124]->Fill(rot2D, phi2D);
@@ -3190,11 +3187,15 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 	}
 
 	void SpikeObs(PointCollection* pc, vector<double>& obs){
+cout << "SpikeObs - start " << endl;
 		obs.clear();
 		pc->Sort();
 		int npts = pc->GetNPoints();
+cout << "npts " << npts << endl;
 		double wmax = pc->at(npts-1).w();
+cout << "wmax " << wmax << endl;
 		BayesPoint xmax = pc->at(npts-1);
+cout << "xmax " << endl; xmax.Print();
 		//find 4 closest neighbors to xmax
 		//map<double, Point> distToMax;
 		double dist, deta, dphi;
@@ -3202,6 +3203,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 		double distThresh = 0.02;
 		int nNeighbors = 0;
 		double sumNeighbors = 0;
+cout << "npts " << npts << endl;
 		for(int i = 0; i < npts; i++){
 			//skip xmax
 			if(xmax == pc->at(i)) continue;
@@ -3217,6 +3219,7 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 		//swCP
 		obs.push_back(sumNeighbors/wmax);
 
+cout << "SpikeObs - end " << endl;
 	}
 
 

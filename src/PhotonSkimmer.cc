@@ -229,13 +229,15 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			Jet bhc_pho;
 			int ret = RunClustering(phos[p], bhc_pho);
-			if(ret == -1){
+			if(ret < 0){
+				if(ret == -1){
+					//fill PU hists
+				}
 				continue;
 			}
 			rhs.clear();
-			bhc_pho.GetJets(rhs); 
+			bhc_pho.GetJets(rhs);
 			//get parameters for model
-	
 			_procCats[1].hists1D[0][266]->Fill(bhc_pho.E());
 
 			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
@@ -268,14 +270,12 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 
 			}
 
-
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
 			for(int d = 0; d < _inputs.size(); d++){
 				obs[_inputs[d]] = -999;
 			}
-
 			if(!_data){
 				//find corresponding histogram category (signal, ISR, notSunm)	
 				//split by LLP ID
@@ -288,6 +288,7 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
 					vector<double> ids = _procCats[i].ids;
 					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
+
 						FillModelHists(bhc_pho, i, obs);
 						//FillModelHists(gmm, i, obs);
 						//FillCMSHists(rhs,i);

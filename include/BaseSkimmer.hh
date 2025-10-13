@@ -922,10 +922,12 @@ class BaseSkimmer{
 		vector<Jet> bhc_jets;
 		TreesToJets(trees, bhc_jets, PV);
 		if(bhc_jets.size() < 1)
-			return -1;
+			return -2;
 		//define objects by lead PU-cleaned model
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0].CleanOutPU(scores, false);
+		//below returns empty jet if no subclusters pass PU cut - put in safety for this
+		if(result.GetNRecHits() < 1) return -1;
 		result.SetUserIdx(inputobj.GetUserIdx());
 		return 0;
 	}
