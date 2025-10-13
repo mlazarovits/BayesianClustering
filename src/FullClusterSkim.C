@@ -358,7 +358,7 @@ int main(int argc, char *argv[]){
 		//file = TFile::Open(in_file.c_str());
 	}
 
-
+cout << "cmslab " << cmslab << " version " << version << endl;
 	string fname;
 	if(obj == 0)
 		fname = "jets";
