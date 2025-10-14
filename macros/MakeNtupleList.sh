@@ -48,12 +48,12 @@ then
 elif [ $PD = "JetHT" ]
 then
 	NAME=$PD
-elif [ $PD = "DEG" ]
+elif [ $PD = "DoubleEG" ]
 then
-	NAME=DoubleEG
+	NAME=$PD
 elif [ $PD = "EGamma" ]
 then
-	NAME=EGamma
+	NAME=$PD
 elif [ $PD = "SMS-GlGl" ]
 then
 	NAME=CRAB_UserFiles
