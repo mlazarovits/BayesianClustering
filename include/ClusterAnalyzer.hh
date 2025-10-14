@@ -257,6 +257,7 @@ class ClusterAnalyzer{
 		void SetTransferFactor(double g){ _gev = g; }
 		//adding data to clustering algorithm
 		void AddRecHit(double rhx, double rhy, double rhz, double rhE, double rht, int rhId, bool invalidTime = false);
+		int GetNRecHits(){ return _rhs.size(); }
 		void ClearRecHitList();
 
                 //void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
