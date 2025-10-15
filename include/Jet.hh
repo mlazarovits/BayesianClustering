@@ -59,14 +59,6 @@ class Jet{
 				_pi = j._pi;
 		}
 
-		void SetRecHitId(int i, int id){
-			if(i > _nRHs) return;
-			_rhs[i].SetRecHitId(id);
-			for(int k = 0; k < _constituents.size(); k++){
-				_constituents[k]._rhs[i].SetRecHitId(id);
-			}
-		}
-
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
 		static bool Esort(Jet j1, Jet j2){ return (j1.E() > j2.E()); }

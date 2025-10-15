@@ -572,7 +572,7 @@ void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 }
 
 
-PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims){
+PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims, vector<int> idxs){
 	PointCollection pc;
 	for(int j = 0; j < m_col; j++){
 		vector<double> val;
@@ -584,6 +584,8 @@ PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims
 			pt.SetWeight(weights[j]);
 		if(skipdims.size() == m_col)
 			pt.SetSkipDim(skipdims[j]);
+		if(idxs.size() == m_col)
+			pt.SetUserIdx(idxs[j]);
 		pc += pt;
 	}
 	return pc;

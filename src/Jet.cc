@@ -344,7 +344,9 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
 		_rhs[i].SetWeight(rh.w());
-	
+		if(rh.Skip())
+			_rhs[i].SetInvalidTime();
+		_rhs[i].SetRecHitId(rh.GetUserIdx());
 		//calculate momentum vector from PV
 		//centered at PV
 		double dx = x - _vtx.at(0);

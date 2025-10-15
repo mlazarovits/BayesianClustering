@@ -807,6 +807,12 @@ class PointCollection{
 			ds.push_back(_pts[n].GetSkipDim());
 		}
 	}
+	void GetUserIdxs(vector<int>& ds) const{
+		ds.clear();
+		for(int n = 0; n < _pts.size(); n++){
+			ds.push_back(_pts[n].GetUserIdx());
+		}
+	}
 
 	private:
 		int _nDim = 0;

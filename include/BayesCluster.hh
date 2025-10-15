@@ -78,6 +78,8 @@ class BayesCluster{
 				if(_jets[i].GetJetPoints()[0].InvalidTime()){
 					pt.SetSkipDim(2);
 				}
+				vector<JetPoint> jps = _jets[i].GetJetPoints();
+				pt.SetUserIdx(jps[0].rhId());
 			//	//make sure phi is in the right range - [0,2pi]
 				_sanitize(pt);
 				if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;

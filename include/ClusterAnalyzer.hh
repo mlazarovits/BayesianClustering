@@ -298,7 +298,6 @@ class ClusterAnalyzer{
 		BayesPoint _detCenter;
 		BayesCluster* _algo;
 		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
-		void _setRhIds(Jet& jet); //where Jet has the rhs you want to assign ids to and _rhs have the ids
 		void _iEtaiPhi(JetPoint rh, int& ieta, int& iphi);
 		std::map<pair<int,int>, UInt_t> _invDetIDmap;
 		std::map<UInt_t,DetIDStruct> _detIDmap;

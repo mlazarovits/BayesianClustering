@@ -235,6 +235,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			_sanitize(pt);
 			if(jps[i].InvalidTime())
 				pt.SetSkipDim(2);
+			pt.SetUserIdx(jps[i].rhId());
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}

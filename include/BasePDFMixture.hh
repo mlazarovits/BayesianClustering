@@ -390,10 +390,11 @@ class BasePDFMixture : public BasePDF{
 			x.mult(sc,x);
 			//get weights from original data
 			vector<double> ws;
-			vector<int> skips;
+			vector<int> skips, idxs;
 			m_data->GetWeights(ws);
 			m_data->GetSkipDims(skips);
-			m_data = new PointCollection(x.MatToPoints(ws,skips));
+			m_data->GetUserIdxs(idxs);
+			m_data = new PointCollection(x.MatToPoints(ws,skips,idxs));
 
 			//also scale smear - if datacov is set
 			if(_smear){

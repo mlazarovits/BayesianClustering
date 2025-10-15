@@ -55,7 +55,7 @@ class Matrix{
 		double trace();
 		Matrix cholesky();
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
-		PointCollection MatToPoints(vector<double> weights = {}, vector<int> skipdims = {});
+		PointCollection MatToPoints(vector<double> weights = {}, vector<int> skipdims = {}, vector<int> idxs = {});
 		void PointsToMat(PointCollection& pc);
 		void PointToMat(const BayesPoint& pc);
 		void mean(const PointCollection& data);
