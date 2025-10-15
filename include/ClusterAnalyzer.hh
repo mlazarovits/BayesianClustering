@@ -260,6 +260,8 @@ class ClusterAnalyzer{
 		int GetNRecHits(){ return _rhs.size(); }
 		void ClearRecHitList();
 
+		void SetVerbosity(int v){ _verb = v; }
+
                 //void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
                 void SetupDetIDsEB(){
                         const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
@@ -300,7 +302,7 @@ class ClusterAnalyzer{
 		void _iEtaiPhi(JetPoint rh, int& ieta, int& iphi);
 		std::map<pair<int,int>, UInt_t> _invDetIDmap;
 		std::map<UInt_t,DetIDStruct> _detIDmap;
-
+		int _verb;
 
 };
 static bool Esort(ClusterObj j1, ClusterObj j2){ return (j1._jet.E() > j2._jet.E()); }

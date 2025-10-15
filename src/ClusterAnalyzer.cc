@@ -7,6 +7,7 @@ ClusterAnalyzer::ClusterAnalyzer(){
 	_detCenter = BayesPoint({0., 0., 0.});
 	_PV = BayesPoint({0., 0., 0.});
 	SetupDetIDsEB();
+	_verb = -1;
 }
 
 
@@ -52,7 +53,7 @@ ClusterObj ClusterAnalyzer::RunClustering(){
 	_algo->SetAlpha(alpha);
 	double emAlpha = 1e-5;
 	_algo->SetSubclusterAlpha(emAlpha);
-	_algo->SetVerbosity(-1);
+	_algo->SetVerbosity(_verb);
 	map<string, Matrix> prior_params;
 	//beta
 	prior_params["scale"] = Matrix(1e-3);
