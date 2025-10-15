@@ -37,7 +37,6 @@ void ClusterAnalyzer::ClearRecHitList(){
 //should be run after all rechits for clustering have been added
 ClusterObj ClusterAnalyzer::RunClustering(){
 	_algo = new BayesCluster(_rhs);	
-	
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
 	//time resolution parameters - set by detector time resolution
@@ -53,7 +52,7 @@ ClusterObj ClusterAnalyzer::RunClustering(){
 	_algo->SetAlpha(alpha);
 	double emAlpha = 1e-5;
 	_algo->SetSubclusterAlpha(emAlpha);
-	_algo->SetVerbosity(0);
+	_algo->SetVerbosity(-1);
 	map<string, Matrix> prior_params;
 	//beta
 	prior_params["scale"] = Matrix(1e-3);

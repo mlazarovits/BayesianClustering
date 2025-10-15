@@ -33,27 +33,28 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	//remember time is already in ns
 	//e = w/gev
 	if(_thresh != -999) mt->SetThresh(_thresh);
-	cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
-	cout << "beta0" << endl;
-	_prior_params["scale"].Print();
-	cout << "mean0" << endl;
-	_prior_params["mean"].Print();
-	cout << "nu0" << endl;
-	_prior_params["dof"].Print();
-	cout << "W0" << endl;
-	_prior_params["scalemat"].Print();
+	if(_verb > -1){
+		cout << "BayesCluster thresh " << _thresh << " alpha " << _alpha << " EM alpha " << _subalpha << endl;
+		cout << "beta0" << endl;
+		_prior_params["scale"].Print();
+		cout << "mean0" << endl;
+		_prior_params["mean"].Print();
+		cout << "nu0" << endl;
+		_prior_params["dof"].Print();
+		cout << "W0" << endl;
+		_prior_params["scalemat"].Print();
 
-	cout << "BayesCluster delauney cluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+		cout << "BayesCluster delauney cluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
+	}
 	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
  
 	mt->SetPriorParameters(_prior_params);
 	int n = _points.size();	
-cout << "n starting pts " << n << endl;
+	if(_verb > -2) cout << "n starting pts " << n << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
-			cout << "return" << endl;
 			return _trees;
 		}
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
@@ -65,7 +66,6 @@ cout << "n starting pts " << n << endl;
 	if(verbose) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
 	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
-	//cout << "post mirror # clusters " << mt->GetNAllClusters() << endl;
 	if(_verb > 1) cout << "# clusters in merge tree: " << mt->GetNClusters() << endl;
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
@@ -90,8 +90,6 @@ cout << "n starting pts " << n << endl;
 		int jet_i, jet_j;
 		bool Valid2;
 		double dist_i, dist_j;
-		//cout << "Prob map size " << ProbMap.size() << endl;
-		//cout << " dnn validity bool " << (!DNN->Valid(jet_i) || !Valid2) << " total bool " << ((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0) << endl;
 		if(ProbMap.size() == 0){done = true; break;}
 		do{
 			if(_verb > 1) cout << "probmap size " << ProbMap.size() << endl;
@@ -102,7 +100,6 @@ cout << "n starting pts " << n << endl;
 			BestRkPair = map_it->second;
 			//check for equal rks (more than three - may be two for i,j and j,i), break tie with 3d distance
 			//right now - only equal rks are for equivalent merges
-			//cout << "number of pairs with same bestRk = " << BestRk << ": " << ProbMap.count(BestRk) << endl;
 			map_it_i = ProbMap.end();
 			map_it_j = ProbMap.end();
 			if(ProbMap.count(BestRk) > 2){
@@ -133,14 +130,11 @@ cout << "n starting pts " << n << endl;
 
 			if(verbose){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
-			//if(_verb > 1)cout << "erasing from prob map pair " << map_it->second.first << " " << map_it->second.second << endl;
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
-		//cout << "prob map size before " << ProbMap.size() << endl;	
 			if(map_it != ProbMap.end()){ if(_verb > 1) cout << "erasing it for jets " << map_it->second.first << " " << map_it->second.second << endl; ProbMap.erase(map_it);}
 			//not guaranteed that pair that is merged is corresponding pair in prob map
-			if(map_it_i != ProbMap.end()){cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
-			if(map_it_j != ProbMap.end()){cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
-		//cout << "prob map size after " << ProbMap.size() << endl;	
+			if(map_it_i != ProbMap.end()){ if(_verb > 1)cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
+			if(map_it_j != ProbMap.end()){ if(_verb > 1)cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
 			Valid2 = DNN->Valid(jet_j);
 			if(verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
@@ -173,11 +167,10 @@ cout << "n starting pts " << n << endl;
 	
 			return _trees;
 		}
-		//cout << "BestRk " << BestRk << endl;
-		//if max rk < 0.5, can stop clustering
-		//if(BestRk < 0.5){ done = true; if(_verb > 0) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << endl; break; }	
+		//if max rk < 0.0 (0.5 without computational/numerical trickery), can stop clustering
 		if(BestRk <= 0.){ 
-			done = true; cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << " probmap size " << ProbMap.size() << endl; 
+			done = true; 
+			if(_verb > -1) cout << "stop with BestRk " << BestRk << " for combo " << jet_i << " + " << jet_j << " with phis " << _jets[jet_i].phi() << " and " << _jets[jet_j].phi() << " probmap size " << ProbMap.size() << endl; 
 			if(_verb > 3){
 				for(auto it = ProbMap.begin(); it != ProbMap.end(); it++){
 					int i = it->second.first;
@@ -224,7 +217,9 @@ cout << "n starting pts " << n << endl;
 		// exit the loop because we do not want to look for nearest neighbours
 		// etc. of zero partons
 		if(_verb > 1) cout << "BayesCluster - i " << i << " n " << n << endl;
-		if (i == n-1) {cout << "i " << i << " n " << n << " i == n-1 - breaking" << endl;break;}//get eta phi (and time!) of new point - centroid of points in combined vertices
+		if (i == n-1) {
+			if(_verb > -1) cout << "i " << i << " n " << n << " i == n-1 - breaking" << endl;
+			break;}//get eta phi (and time!) of new point - centroid of points in combined vertices
 		int pt3;
 		vector<int> updated_neighbors;
 		//update DNN with RemoveCombinedAddCombination
@@ -232,7 +227,6 @@ cout << "n starting pts " << n << endl;
 		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
 		PointCollection newpts = PointCollection();
 		for(int i = 0; i < (int)jps.size(); i++){
-			//cout << "adding pt to new cluster - eta " << jps[i].eta() << " raw phi " << jps[i].phi() << " time " << jps[i].t() << endl;
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
 			_sanitize(pt);
 			if(jps[i].InvalidTime())
@@ -247,8 +241,6 @@ cout << "n starting pts " << n << endl;
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
 							newpts, pt3, updated_neighbors);
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
-		//cout << "newpts" << endl;
-		//newpts.Print(); 
 		if(_verb > 1)cout << "\n\n\n" << endl;
 		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << " with " << newpts.GetNPoints() << " newpts" << " centroid " << newpts.CircularCentroid(0) << " " << newpts.CircularCentroid(1) << " " << newpts.Centroid(2) << " current best rk " << BestRk << endl;
 		//update map
@@ -272,41 +264,35 @@ cout << "n starting pts " << n << endl;
 		//if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
 		if(trees[i]->ismirror){
 			nmirror++;
-				//cout << "\nMIRROR tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-			//cout << " points" << endl; trees[i]->model->GetData()->Print();
 			continue; }
 		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
-
-		//cout << "getting " << _trees[i]->points->GetNPoints() << " " << _trees[i]->model->GetData()->GetNPoints() << " points in cluster #" << i << endl;
-		//cout << trees[i]->l->points->GetNPoints() << " in left branch " << trees[i]->r->points->GetNPoints() << " in right branch" << endl;
 		_trees.push_back(trees[i]);
-		//cout << "\nREAL tree model params " << trees[i]->model->GetNClusters() << " clusters and "<< trees[i]->model->GetData()->GetNPoints() << " points and " << trees[i]->model->GetData()->Sumw() << " weight" << endl;
-		//cout << " points" << endl; trees[i]->model->GetData()->Print();
-		cout << " tree has subclusters " << endl;
-		vector<double> norms;
-		trees[i]->model->GetNorms(norms);
-		for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
-			params = trees[i]->model->GetLHPosteriorParameters(k);
-			cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
-			cout << "cov " << endl; params["cov"].Print();
-		}
-		cout << trees[i]->points->GetNPoints() << " " << trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print(); 
-		//if(_verb > 1) trees[i]->points->Print();
-	BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
-cout << "with centroid" << endl; center.Print();
-
-		if(trees[i]->mirror != nullptr){
-			cout << " tree has mirror node with subclusters " << endl;
-			for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
-				params = trees[i]->mirror->model->GetLHPosteriorParameters(k);
-				cout << " k " << k << " center " << endl; params["mean"].Print();
+		if(_verb > -1){
+			cout << " tree has subclusters " << endl;
+			vector<double> norms;
+			trees[i]->model->GetNorms(norms);
+			for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
+				params = trees[i]->model->GetLHPosteriorParameters(k);
+				cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
+				cout << "cov " << endl; params["cov"].Print();
 			}
+			cout << trees[i]->points->GetNPoints() << " " << trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print(); 
+			BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
+			cout << "with centroid" << endl; center.Print();
+
+			if(trees[i]->mirror != nullptr){
+				cout << " tree has mirror node with subclusters " << endl;
+				for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
+					params = trees[i]->mirror->model->GetLHPosteriorParameters(k);
+					cout << " k " << k << " center " << endl; params["mean"].Print();
+				}
+			}
+			cout << endl;
 		}
-	cout << endl;
 	}
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
-	cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
+	if(_verb > -2) cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	return _trees;
 	
 	
