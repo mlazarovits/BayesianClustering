@@ -163,9 +163,16 @@ def generateSubmission(args):
     if(args.zoomPUWindow):
         flags += ' --zoomPUWindow'
 
-    flags += ' --tResCte '+str(args.tResCte)
-    flags += ' --tResStoch '+str(args.tResStoch)
-    flags += ' --tResNoise '+str(args.tResNoise) 
+
+    #default time measurement error parameters for PFCand
+    if not args.PFCand:
+        flags += ' --tResCte '+str(args.tResCte)
+        flags += ' --tResStoch '+str(args.tResStoch)
+        flags += ' --tResNoise '+str(args.tResNoise) 
+    else:
+        flags += ' --tResCte 1e-6'
+        flags += ' --tResStoch 0'
+        flags += ' --tResNoise 0' 
 
     strategyMap = {}
     strategyMap["NlnN"] = 0
