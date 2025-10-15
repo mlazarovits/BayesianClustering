@@ -19,13 +19,6 @@ struct ClusterObj{
 	BayesPoint _PV;
 	ClusterObj(Jet jet){ _jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents(); }
 
-
-        std::map<UInt_t,DetIDStruct> _detIDmap;
-	std::map<pair<int,int>, UInt_t> _invDetIDmap;
-        void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> DetIDMap, std::map<pair<int,int>, UInt_t> iEtaiPhiToDetID ){
-		_invDetIDmap = iEtaiPhiToDetID;
-		_detIDmap = DetIDMap;
-	}
 	int GetNSubclusters(){ return _jet.GetNConstituents(); }
 	void GetSubclusters(vector<Jet>& subcls){
 		subcls.clear();
@@ -262,32 +255,7 @@ class ClusterAnalyzer{
 
 		void SetVerbosity(int v){ _verb = v; }
 
-                //void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
-                void SetupDetIDsEB(){
-                        const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
-                        std::ifstream infile( detIDConfigEB, std::ios::in);
-                
-                        UInt_t cmsswId, dbID;
-                        pair<int, int> ietaiphi;
-                        int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-                        float deteta, detphi;
-                        std::string pos;
-                
-                        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
-                            //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-                            ietaiphi = make_pair(ieta, iphi);
-                            _detIDmap[cmsswId] = DetIDStruct(iphi,ieta,TT25,0,deteta,detphi);
-                            _invDetIDmap[ietaiphi] = cmsswId;
-                            //DetIDMap[cmsswId] = DetIDStruct(iphi,ieta,TT25,0,deteta,detphi);
-                            //iEtaiPhiToDetID[ietaiphi] = cmsswId;
-                            //auto idinfo = DetIDMap[cmsswId];
-                            //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
-                        }//while (infile >>
-                
-                }//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
-
-
-		ClusterObj RunClustering();
+		int RunClustering(ClusterObj& retobj);
 
 
 	private:
@@ -298,9 +266,6 @@ class ClusterAnalyzer{
 		BayesPoint _detCenter;
 		BayesCluster* _algo;
 		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
-		void _iEtaiPhi(JetPoint rh, int& ieta, int& iphi);
-		std::map<pair<int,int>, UInt_t> _invDetIDmap;
-		std::map<UInt_t,DetIDStruct> _detIDmap;
 		int _verb;
 
 };

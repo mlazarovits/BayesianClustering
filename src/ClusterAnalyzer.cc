@@ -6,7 +6,6 @@ ClusterAnalyzer::ClusterAnalyzer(){
 	_radius = 1.29;
 	_detCenter = BayesPoint({0., 0., 0.});
 	_PV = BayesPoint({0., 0., 0.});
-	SetupDetIDsEB();
 	_verb = -1;
 }
 
@@ -36,7 +35,7 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 
 //should be run after all rechits for clustering have been added
-ClusterObj ClusterAnalyzer::RunClustering(){
+int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 	_algo = new BayesCluster(_rhs);	
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
@@ -74,16 +73,15 @@ ClusterObj ClusterAnalyzer::RunClustering(){
 	vector<node*> trees = _algo->NlnNCluster();
 	//safety for no trees found
 	if(trees.size() < 1){
-		cout << "No BHC clusters found. Returning empty ClusterObj." << endl;
-		return ClusterObj(Jet());
+		cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
+		return -1;
 	}
 	vector<ClusterObj> objs;
 	_treesToObjs(trees, objs);
 	sort(objs.begin(), objs.end(), Esort);
 
-	objs[0].SetupDetIDsEB(_detIDmap, _invDetIDmap);
-	return objs[0];
-
+	retobj = objs[0];
+	return 0;
 }
 
 void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
