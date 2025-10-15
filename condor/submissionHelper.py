@@ -65,20 +65,24 @@ def writeSubmissionBase(subf, dirname, ofilename):
         subf.write("transfer_output_remaps = \""+remap+"\"\n")
 
 #splits by event number
-def eventsSplit(infile, nChunk, filelist):
-    if filelist:
-        #should split by event number in file
-        tree = ROOT.TChain("tree/llpgtree")
-        with open(infile,"r") as f:
-            lines = f.readlines()
-            for line in lines:
-                rfile = ROOT.TFile.Open(line[:-1]) #remove new line character
-                tree.AddFile(rfile.GetName())
+def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
+    nevts = -1
+    if nevtsmax != -999:
+        nevts = nevtsmax
     else:
-        #should split by event number in file
-        rfile = ROOT.TFile.Open(infile)
-        tree = rfile.Get("tree/llpgtree")
-    nevts = tree.GetEntries()
+        if filelist:
+            #should split by event number in file
+            tree = ROOT.TChain("tree/llpgtree")
+            with open(infile,"r") as f:
+                lines = f.readlines()
+                for line in lines:
+                    rfile = ROOT.TFile.Open(line[:-1]) #remove new line character
+                    tree.AddFile(rfile.GetName())
+        else:
+            #should split by event number in file
+            rfile = ROOT.TFile.Open(infile)
+            tree = rfile.Get("tree/llpgtree")
+        nevts = tree.GetEntries()
     evts = range(nevts+1)
     if nChunk == 0:
         nChunk += 1

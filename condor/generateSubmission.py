@@ -28,8 +28,8 @@ def generateSubmission(args):
     yr = str(args.year)[-2:]
     reco_date = {}
     reco_date["2017"] = "_17Nov2017"
-    reco_date["2017_MET"] = ""
-    reco_date["2017_DEG"] = "_09Aug2019_UL2017"
+    reco_date["2017_MET"] = "-09Aug2019_UL2017_rsb-v1"
+    reco_date["2017_DEG"] = "-09Aug2019_UL2017-v1"
     reco_date["2018_DEG"] = "-15Feb2022"
     reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
     reco_date["2022_MET"] = "-27Jun2023-v2"
@@ -50,8 +50,8 @@ def generateSubmission(args):
     elif "EGamma" in args.inputSample:
         if "AL1SelEle" in sel:
             inputFileList = "kucmsntuple_EGamma_R"+yr+"_"+sel+"_"+ver+"_EGamma_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_UL2018-v1_list.txt"
-        else:
-            inputFileList = "kucmsntuple_DEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
+    elif "DoubleEG" in args.inputSample:
+        inputFileList = "kucmsntuple_DoubleEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
     elif "gogoG" in args.inputSample:
         inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
     else:
@@ -168,7 +168,7 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFileList, args.split,True)
+    eventnums = SH.eventsSplit(inputFileList, args.split,True, args.maxnevts)
     if eventnums == 0 or eventnums is None:
         print("eventnums",eventnums)
         return
@@ -241,7 +241,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','GJets','QCD','MET','gogoG'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','DoubleEG','GJets','QCD','MET','gogoG'])
     parser.add_argument('--mGl',help='gluino mass for signal',default='2000')
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='1950')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='1')
@@ -254,6 +254,7 @@ def main():
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
+    parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     
     #add algorithm parameters - emAlpha, priors, verbosity, thresh
