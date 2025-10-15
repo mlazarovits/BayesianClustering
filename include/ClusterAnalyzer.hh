@@ -113,7 +113,7 @@ struct ClusterObj{
 			for(int r = 0; r < rhs.size(); r++){
 				double w = rhs[r].GetWeight(); //weight = r_nk*isPU_k
 				restot += w*res[rhs[r].rhId()];
-				cout << "k " << k << " r " << r << " w " << w << " energy " << rhs[r].E() << " time " << rhs[r].t() << " id " << rhs[r].rhId() << " res " << res[rhs[r].rhId()] << endl;
+				//cout << "k " << k << " r " << r << " w " << w << " energy " << rhs[r].E() << " time " << rhs[r].t() << " id " << rhs[r].rhId() << " res " << res[rhs[r].rhId()] << endl;
 				norm += w;
 			}
 		}

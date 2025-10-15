@@ -118,14 +118,14 @@ void ClusterAnalyzer::_setRhIds(Jet& jet){
 		_iEtaiPhi(rh, ieta, iphi);
 		//check if iphi in map
 		pair<int, int> icoords = make_pair(ieta, iphi);
-		cout << "rh #" << r << " id from ieta iphi " << _invDetIDmap.at(icoords) << " ieta " << ieta << " iphi " << iphi << " eta " << rhs[r].eta() << " phi " << rhs[r].phi() << " time " << rhs[r].t() << " energy " << rhs[r].e() << endl;
+		//cout << "rh #" << r << " id from ieta iphi " << _invDetIDmap.at(icoords) << " ieta " << ieta << " iphi " << iphi << " eta " << rhs[r].eta() << " phi " << rhs[r].phi() << " time " << rhs[r].t() << " energy " << rhs[r].e() << endl;
 		for(int rr = 0; rr < _rhs.size(); rr++){
 			//placeholder logic for now
 			if(rhs[r].eta() == _rhs[rr].eta() || rhs[r].phi() == _rhs[rr].phi() || rhs[r].t() == _rhs[rr].t()){
 				//set ID for rh r - add function to Jet
 				JetPoint rrh = _rhs[rr].GetJetPoints()[0];
 				unsigned int id = rrh.rhId();
-				cout << "id from eta, phi, time match " << id << " _rhs eta " << _rhs[rr].eta() << " _rhs phi " << _rhs[rr].phi() << " time " << _rhs[rr].t() << " energy " << _rhs[rr].e() << endl;
+				//cout << "id from eta, phi, time match " << id << " _rhs eta " << _rhs[rr].eta() << " _rhs phi " << _rhs[rr].phi() << " time " << _rhs[rr].t() << " energy " << _rhs[rr].e() << endl;
 				jet.SetRecHitId(r, id);
 				//TODO - this strategy is implemented (see above) but is off from the id provided from the placeholder logic by 10 
 				//figure out how to make (eta, phi) -> (ieta, iphi) -> rechit ID from functions in KUCMSTimeCaliFiles/KUCMS_TimeCalibration.hh
@@ -136,7 +136,7 @@ void ClusterAnalyzer::_setRhIds(Jet& jet){
 			}
 		}
 	}
-	cout << "found " << nmatch << " matches for " << rhs.size() << " rhs and " << _rhs.size() << " _rhs" << endl;
+	//cout << "found " << nmatch << " matches for " << rhs.size() << " rhs and " << _rhs.size() << " _rhs" << endl;
 }
 
 void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
