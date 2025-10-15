@@ -49,8 +49,12 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
  
 	mt->SetPriorParameters(_prior_params);
-	int n = _points.size();	
-	if(_verb > -2) cout << "n starting pts " << n << endl;
+	int n = _points.size();
+	if(n < 2){
+		cout << "ERROR: only have 1 pt for clustering - returning vector of nulls" << endl;
+		return _trees;
+	}
+	if(_verb > -1) cout << "n starting pts " << n << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){

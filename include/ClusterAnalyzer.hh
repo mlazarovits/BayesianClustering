@@ -141,7 +141,7 @@ struct ClusterObj{
 	
 	vector<pair<int, double>> _detBkgScores; //is a vector of pairs s.t. _detBkgScore[k] = pair(max_class, max_score) 
 	void GetDetBkgScores(vector<pair<int,double>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
-	fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
+	fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json",true,fdeep::dev_null_logger);
 	vector<string> _nnfeatures = {"Er"};
 	int _ngrid = 7;
 	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }

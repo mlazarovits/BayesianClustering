@@ -394,7 +394,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	double ret = 0;
 	for(auto rh : _rhs) ret += rh.phi_02pi();
 	ret /= (double)_rhs.size();
-	cout << "phi centroid from CalculateCenter " << _phi << " euclidean phi mean " << ret << " circular phi mean " << model->GetData()->CircularMean(1) << endl;
+	//cout << "phi centroid from CalculateCenter " << _phi << " euclidean phi mean " << ret << " circular phi mean " << model->GetData()->CircularMean(1) << endl;
 	//if(fabs(_phi - model->GetData()->CircularCentroid(1)) > 1e-10){
 	//	cout << "Jet::WARNING - CalculateCenter() _phi " << _phi << " doesn't match model->GetData()->CircularCentroid() phi " << model->GetData()->CircularCentroid(1) << endl;
 	//	//check if inputs to CalculateCenter() _phi and CircularCentroid phi are the same (ie phi coord and weights)
