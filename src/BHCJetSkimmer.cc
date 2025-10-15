@@ -2,6 +2,7 @@
 #include "BayesCluster.hh"
 
 void BHCJetSkimmer::Skim(){
+	InitMapTree();
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy";
 	if(_strategy == NlnN)
@@ -26,25 +27,7 @@ void BHCJetSkimmer::Skim(){
 	else
 		cout << " default (2+ gen partons that are not tops, including gluons)" << endl;
 	
-	//cout << "oname " << _oname << endl;	
-	MakeProcCats(_oname, true);
 
-	//cout << "n procs: " << _procCats.size() << endl;
-	//for(auto proc : _procCats) cout << "proc: " << proc.plotName << endl;
-
-	//create data smear matrix - smear in eta/phi
-	Matrix smear = Matrix(3,3);
-	double dphi = 2*acos(-1)/360.; //1 degree in radians
-	double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
-	//diagonal matrix
-	smear.SetEntry(deta*deta,0,0);
-	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(0.,2,2); 
-	//for time smearing (energy dependent)
-	double tres_c = 0.2;
-	double tres_n = sqrt(1 - tres_c*tres_c)*_gev;	
-
-	
 	map<string, Matrix> params;
 	vector<Jet> rhs;
 
@@ -71,11 +54,14 @@ void BHCJetSkimmer::Skim(){
 		//event level selection
 		//at least 1 gen jet
 		_base->GetEntry(i);
+		_obs.at("evt") = (double)i;
 		if(i % (SKIP) == 0) cout << "evt: " << i  << " (ntuple: " << _base->event << ") " << " of " << _nEvts << endl;
 	
 		int ngenpart = _base->genpart_ngenpart;
 		_prod->GetGenParticles(_genparts, i);
-		
+	
+		FillGenParticleHists();
+	
 		map<int,int> topidx_decayidx;
 		//do event selection here based on enum
 		if(_sel == singW){ //single W production
@@ -197,29 +183,7 @@ void BHCJetSkimmer::Skim(){
 		}
 		//default selection
 		else{
-			/*
-			//debugging phi selection
-			int nphi_parts = 0;
-			for(int g = 0; g < _genparts.size(); g++){
-				double phi = _genparts[g].phi_02pi();
-				int genidx = _genparts[g].GetUserIdx();
-				if(phi > phiwindow && phi < 2*acos(-1) - phiwindow) continue;
-				nphi_parts++;	
-				cout << "counting particle - id " << _base->genpart_id->at(genidx) << " eta " << _genparts[g].eta() << " phi " << _genparts[g].phi() << " energy " << _genparts[g].e() << endl;
-			}
-			if(nphi_parts < 1) continue; //skip if no gen parts in phi areas
-			*/
-			////at least two gen partons to be reconstructed as jets in event (ie saved gen partons)
-			//int nparton = 0;
-			//vector<int> p_ids = {1,2,3,4,5};
-			//for(int g = 0; g < ngenpart; g++){
-			//	if(find(p_ids.begin(), p_ids.end(), fabs(_base->genpart_id->at(g))) == p_ids.end()) continue;
-			//	nparton++;
-			//}	
-			//if(nparton < 2) continue;
-
 		}
-cout << "get gen jets" << endl;	
 
 		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
 		//if(_genjets.size() < 1){ cout << endl; continue; }
@@ -229,8 +193,7 @@ cout << "get gen jets" << endl;
 		if(i % SKIP == 0) cout << " has " << _recoAK8jets.size() << " AK8 reco jets and " << _genAK8jets.size() << " AK8 gen jets" << endl;
 		if(i % SKIP == 0) cout << " has " << _recoAK15jets.size() << " AK15 reco jets and " << _genAK15jets.size() << " AK15 gen jets" << endl;
 		
-		FillGenHists();
-	cout << "done w gen jet hists" << endl;	
+		FillGenJetHists();
 		//get PV info
 		_pvx = _base->PV_x;
 		_pvy = _base->PV_y;
@@ -246,9 +209,7 @@ cout << "get gen jets" << endl;
 			
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK4 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
-cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << endl;
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
-			if(_smear) algo->SetDataSmear(smear);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -261,7 +222,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			t = clock() - t;
 			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
-			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
+			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
 			_recoAK4jets[j].SetModel(gmm, _gev);
 			
@@ -278,10 +239,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 		
 			rhs.clear();
 		}
-		for(int p = 0; p < _procCats.size(); p++){
-			_procCats[p].hists1D[0][70]->Fill(nsubcls_tot);
-			_procCats[p].hists2D[0][27]->Fill(nsubcls_tot, (int)_recoAK4jets.size());
-		}
 		//do GMM for AK8
 		for(int j = 0; j < _recoAK8jets.size(); j++){
 			 _recoAK8jets[j].GetJets(rhs);
@@ -292,7 +249,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK8 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
-			if(_smear) algo->SetDataSmear(smear);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -305,7 +261,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			t = clock() - t;
 			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
-			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
+			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
 			_recoAK8jets[j].SetModel(gmm, _gev);
 			
@@ -323,7 +279,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK15 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
 			algo = new BayesCluster(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
-			if(_smear) algo->SetDataSmear(smear);
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
 			algo->SetSubclusterAlpha(_emAlpha);
@@ -336,7 +291,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			t = clock() - t;
 			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
-			comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
+			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
 			_recoAK15jets[j].SetModel(gmm, _gev);
 			
@@ -347,7 +302,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 
 
 		FillRecoJetHists();
-		cout << "done w reco jet hists" << endl;
 		//only does above
 		if(_strategy == gmmOnly){
 			continue;
@@ -383,9 +337,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 			else
 				_prod->GetRecHits(rhs, i);
 		}
-		for(auto rh : rhs){
-			_procCats[1].hists1D[0][63]->Fill(rh.t());
-		}
 		//safety
 		if(rhs.size() < 1) continue;
 		x_nrhs.push_back((double)rhs.size());
@@ -394,11 +345,9 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 		//this should be true for all events
 		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
 		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());
-		//FillResolutionHists(); - does gen matching...again?
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
 		BayesCluster* algo = new BayesCluster(rhs);
-		if(_smear) algo->SetDataSmear(smear);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
@@ -424,7 +373,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 		t = clock() - t;
 		y_time.push_back((double)t/CLOCKS_PER_SEC);
 		//cout <<  "y time entry " << y_time[y_time.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
-		comptime->Fill((double)t/CLOCKS_PER_SEC);
+		//comptime->Fill((double)t/CLOCKS_PER_SEC);
 
 		cout << _trees.size() << " trees" << endl;
 		//transform trees (nodes) to jets
@@ -454,7 +403,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 					w = rh.E();
 				else if(_evt2disp_z == 1){
 					w = rh.t();
-					_procCats[0].hists2D[0][44]->GetZaxis()->SetTitle("time [ns]");
+					EvtDisplay_etaCell_phiCell->GetZaxis()->SetTitle("time [ns]");
 					for(auto h : _evtdisps_obj){
 						h->GetZaxis()->SetTitle("time [ns]");
 					}
@@ -462,7 +411,7 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 				else
 					w = rh.E(); //default energy weighted
 				if(w == 0) continue;
-				_procCats[0].hists2D[0][44]->Fill(rh.eta(), rh.phi(), w);
+				EvtDisplay_etaCell_phiCell->Fill(rh.eta(), rh.phi(), w);
 
 			}
 			double eta = -999;
@@ -475,7 +424,6 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 				int gidx = -1;
 				//TODO: set to pretty colors with hex codes and make colors related ie for quarks (light vs b different but similar)
 				if(id == 24){ //W
-					
 					//check if first w event display is already filled
 					if(_evtdisps_obj[0]->GetEntries() == 0){
 						//fill if not
@@ -568,35 +516,10 @@ cout << "_tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise 
 				if(_evt2disp_z == 1){ //update labels to time
 					_evtdisps_obj[gidx]->GetZaxis()->SetTitle("time [ns]");
 				}
-				//fill hists for this gen particle (hist idx) - this is done in WriteEventDisplay() now
-				/*
-				PointCollection rh_pts;
-				for(auto rh : rhs){
-					double w;
-					if(_evt2disp_z == 0)
-						w = rh.E();
-					else if(_evt2disp_z == 1){
-						w = rh.t();
-					}
-					else
-						w = rh.E(); //default energy weighted
-					//center according to main gen particle
-					BayesPoint rh_pt({rh.eta(), rh.phi()}); //save as BayesPoint to do correct circular translation to (0,0)
-					rh_pt.SetWeight(w);
-					rh_pts += rh_pt;	
-				}
-cout << "matchstring " << matchstring << " gidx " << gidx << " eta " << eta << " phi " << phi << " global center " << endl; plot_centers[matchstring].Print();
-				//translate into local eta, phi coords
-				rh_pts.Translate(plot_centers[matchstring].at(0),0);
-				rh_pts.CircularTranslate(plot_centers[matchstring].at(1),1);
-				for(int r = 0; r < rh_pts.GetNPoints(); r++){
-					_evtdisps_obj[gidx]->Fill(rh_pts.at(r).at(0), rh_pts.at(r).at(1), rh_pts.at(r).w());
-				}
-				*/	
 				
 			}
 			if(eta == -999 && phi == -999) continue; //no gen particles specified
-cout << "eta " << eta << " phi " << phi << endl;
+//cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);
@@ -627,14 +550,12 @@ cout << "eta " << eta << " phi " << phi << endl;
 				}
 			}
 		}
-cout << "Filling pred jet hists" << endl;
 		//fill pred jet hists with jets
 		FillPredJetHists();
 		nsubcls_tot = 0;
 		for(int j = 0; j < _predJets.size(); j++){
 			nsubcls_tot += _predJets[j].GetNConstituents();
 		}
-		_procCats[1].hists2D[0][5]->Fill(nsubcls_tot, (int)_predJets.size());
 		
 		cout << endl;
 	
@@ -642,21 +563,15 @@ cout << "Filling pred jet hists" << endl;
 		_genW.clear();
 		_genb.clear();
 		_genq.clear();
-	}
-	graphs[1] = new TGraph(x_nrhs_subcl.size(), &x_nrhs_subcl[0], &y_time_subcl[0]);
-	graphs[1]->SetName("nrhs_comptime_subcl");
-	graphs[1]->SetTitle("nrhs_comptime_subcl");
-	graphs[1]->GetXaxis()->SetTitle("# rhs");
-	graphs[1]->GetYaxis()->SetTitle("computational time GMM only (sec)");
-	
-	graphs[0] = new TGraph(x_nrhs.size(), &x_nrhs[0], &y_time[0]);
-	graphs[0]->SetName("nrhs_comptime");
-	graphs[0]->SetTitle("nrhs_comptime");
-	graphs[0]->GetXaxis()->SetTitle("# rhs");
-	graphs[0]->GetYaxis()->SetTitle("computational time (sec)");
 
+
+		_tree->Fill();
+		_reset();
+	}
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
+	_tree->SetDirectory(ofile);
 	ofile->cd();
+	_tree->Write();
 	WriteOutput(ofile, plot_centers, plot_widths);
 	ofile->Close();
 	_infile->Close();	
