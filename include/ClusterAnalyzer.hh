@@ -74,8 +74,12 @@ struct ClusterObj{
 			Jet subcl = _jet.GetConstituent(k);
 			vector<JetPoint> rhs = subcl.GetJetPoints();	
 			for(int r = 0; r < rhs.size(); r++){
-				double w = rhs[r].GetWeight(); //weight = r_nk*isPU_k
+				double w = rhs[r].GetWeight()*rhs[r].E(); //weight = r_nk*isPU_k
 				BayesPoint loc({rhs[r].x(), rhs[r].y(), rhs[r].z(), rhs[r].t()});
+				double dx = rhs[r].x();// - _detCenter.at(0);
+				double dy = rhs[r].y();// - _detCenter.at(1);
+				double dz = rhs[r].z();// - _detCenter.at(2);
+				double d_rh = sqrt(dx*dx + dy*dy + dz*dz)/_SOL;
 				loc.SetWeight(w);
 				locs += loc;	
 			}
@@ -83,6 +87,7 @@ struct ClusterObj{
 		_detTime = locs.Centroid(3);
 		//include geo factor to PV for PV time
 		BayesPoint center({locs.Centroid(0), locs.Centroid(1), locs.Centroid(2)});
+		locs.Print();
 		//
 		double dx = center.at(0) - _PV.at(0);
 		double dy = center.at(1) - _PV.at(1);
