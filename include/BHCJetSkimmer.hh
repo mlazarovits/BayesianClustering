@@ -448,7 +448,6 @@ class BHCJetSkimmer{
 					matchDaughters = false; //match subclusters to parent particles (bc qs, bs, gluons do not have daughters that are saved in gen record)
 				//don't do subcluster matching for gen jets (they don't have subclusters)
 				if(type.find("gen") == string::npos){
-					cout << "addVector subclusterPartonMatchedIdx for " << type+gmit->first << endl;
 					addVector(type+gmit->first, "subclusterPartonMatchedIdx");
 					SubclusterPartonGenMatching(type+gmit->first, gmit->second[jidx], jet, jidx, matchDaughters);
 				}
@@ -554,7 +553,7 @@ class BHCJetSkimmer{
 				//if no subclusters in jet pass PU cleaning, "remove" jet (ie don't count it towards nJets_noPU or plot its properties
 				if(find(scores.begin(), scores.end(), true) == scores.end())
 					continue;
-				FillBranchesJet(jet_puCleaned, "BHCnoPU", njets_noPU, genmatches);
+				FillBranchesJet(jet_puCleaned, "BHCnoPU", njets_noPU, genmatches); //use njets_noPU as jet idx since this is incremented in the correct way for noPU jets
 				njets_noPU++;
 			}
 			FillBranch((double)njets_noPU, "BHCnoPUJet", "nJets");
