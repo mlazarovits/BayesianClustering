@@ -17,6 +17,7 @@ constexpr static double _SOL = 29.9792458; //in cm/ns
 struct ClusterObj{
 	Jet _jet;
 	BayesPoint _PV;
+	ClusterObj(){ };
 	ClusterObj(Jet jet){ _jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents(); }
 
 
