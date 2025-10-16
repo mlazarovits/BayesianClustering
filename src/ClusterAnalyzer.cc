@@ -71,16 +71,17 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 
 	//do hierarchical clustering for subcluster constraints
 	vector<node*> trees = _algo->NlnNCluster();
+	vector<ClusterObj> objs;
+	_treesToObjs(trees, objs);
 	//safety for no trees found
-	if(trees.size() < 1){
+	if(objs.size() < 1){
 		cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
 		return -1;
 	}
-	vector<ClusterObj> objs;
-	_treesToObjs(trees, objs);
 	sort(objs.begin(), objs.end(), Esort);
-
+	//returns lead (energy) cluster
 	retobj = objs[0];
+	retobj.SetupDetIDsEB(_detIDmap);
 	return 0;
 }
 
