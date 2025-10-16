@@ -75,12 +75,15 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 	_treesToObjs(trees, objs);
 	//safety for no trees found
 	if(objs.size() < 1){
-		cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
+		if(_verb > -1) cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
 		return -1;
 	}
 	sort(objs.begin(), objs.end(), Esort);
 	//returns lead (energy) cluster
 	retobj = objs[0];
+	if(_verb > -1 && _detIDmap.size() == 0){
+		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
+	}
 	retobj.SetupDetIDsEB(_detIDmap);
 	return 0;
 }

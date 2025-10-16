@@ -157,6 +157,10 @@ struct ClusterObj{
 		}
 	}
 	void MakeCNNGrid(int k, JetPoint& center, map<string,double>& mapobs){
+		if(_detIDmap.size() == 0){
+			cout << "ERROR: detIDmap not setup for this ClusterObj. Please use SetupDetIDsEB( std::map<UInt_t,DetIDStruct> DetIDMap) to set the detID map for the CNN grid creation. Not running CNN detector bkg classification." << endl;
+			return;
+		}
 		mapobs.clear();
 		map<pair<int,int>, vector<double>> grid;
 		//make sure ngrid is odd to include center crystal
