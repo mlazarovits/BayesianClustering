@@ -543,10 +543,22 @@ class BHCJetSkimmer{
 			
 			map<string, vector<int>> genmatches;	
 			DoGenMatching(_predJets, genmatches);
+			int njets_noPU = 0;
 			//jet observables (subclusters observables inside)
 			for(int j = 0; j < _predJets.size(); j++){
 				FillBranchesJet(_predJets[j], "BHC", j, genmatches);
+				//do PU cleaning - downweighted not complete removal
+				vector<bool> scores;
+				Jet jet_puCleaned = _predJets[j].CleanOutPU(scores,false);
+				//if no subclusters in jet pass PU cleaning, "remove" jet (ie don't count it towards nJets_noPU or plot its properties
+				if(find(scores.begin(), scores.end(), true) == scores.end())
+					continue;
+				njets_noPU++;	
+				FillBranchesJet(jet_puCleaned, "BHCnoPU", j, genmatches);
 			}
+			FillBranch((double)njets_noPU, "BHCnoPUJet", "nJets");
+
+
 			
 		}
 
@@ -1192,7 +1204,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		map<string, double> _obs;
 		map<string, vector<double>> _vobs;
 		map<string, vector<vector<double>>> _vvobs;
-		vector<string> _types = {"BHC","genAK4", "genAK8", "genAK15","recoAK4", "recoAK8", "recoAK15"};
+		vector<string> _types = {"BHC","BHCnoPU","genAK4", "genAK8", "genAK15","recoAK4", "recoAK8", "recoAK15"};
 		vector<string> _genmatches = {"W", "Top", "b", "q", "gluon"};
 		
 	
