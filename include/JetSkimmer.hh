@@ -2069,7 +2069,7 @@ class JetSkimmer : public BaseSkimmer{
 			//1 == 2 == BH
 			//2 == 3 == spike
 			vector<JetPoint> rhs = jet.GetJetPoints();
-			double ovalue; //discriminator output value, pass-by-ref
+			vector<double> ovalues; //discriminator output value, pass-by-ref
 			map<string, double> obs; //k maps for k subclusters
 			JetPoint center;
 			GetCenterXtal(rhs, center);
@@ -2079,7 +2079,11 @@ class JetSkimmer : public BaseSkimmer{
 			//TODO - make sure bhc jet itself is PU cleaned (ie weights applied to rhs)
 			//can apply CNN weights as an additional weight to rhs in SCs matched to jet
 			MakeCNNInputGrid(rhs, center, obs);
-			int nclass = CNNPredict(obs,ovalue);
+			CNNPredict(obs,ovalues);
+			//TODO - update with discriminator score cut
+			auto max_el = max_element(ovalues.begin(), ovalues.end());
+			double ovalue = *max_el;
+			int nclass = std::distance(ovalues.begin(), max_el);
 			return make_pair(nclass, ovalue);
 		}	
 
