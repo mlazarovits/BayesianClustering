@@ -30,7 +30,7 @@ void SuperClusterSkimmer::Skim(){
 	//set NN model + features - can move to .C for more flexibility
 	SetNNModel("json/small8CNN_EMultr.json");
 	//SetNNFeatures();
-	_nnfeatures = {"EMultr"};
+	_nnfeatures = {"cleanedE"};
 
 	
 	int nPho;
@@ -146,7 +146,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			*/
 			Jet bhc_sc;
 			int ret = RunClustering(scs[s], bhc_sc, true); //fully remove PU clusters
-			if(ret == -1){
+			if(ret < 0){
 				continue;
 			}
 			rhs.clear();
@@ -295,8 +295,12 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 				//get prediction from NN model for good SCs
 				if(label != -1){
 					BaseSkimmer::WriteObs(mapobs[k],"superclusters");
-					double predval = 0;
-					int nclass = CNNPredict(mapobs[k],predval);
+					vector<double> ovalues; //discriminator output value, pass-by-ref
+					CNNPredict(mapobs[k],ovalues);
+					//TODO - update with discriminator score cut
+					auto max_el = max_element(ovalues.begin(), ovalues.end());
+					double predval = *max_el;
+					int nclass = std::distance(ovalues.begin(), max_el);
 					cout << "class " << nclass << " predval " << predval << " for SC " << k << " with label " << label << endl;	
 				}
 				if(label == 2) nBH++;

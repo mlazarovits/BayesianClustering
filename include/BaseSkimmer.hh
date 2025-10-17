@@ -620,13 +620,7 @@ class BaseSkimmer{
 			//CNN inputs
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-					_inputs.push_back("CNNgrid_cleanedE_cell"+to_string(i)+"_"+to_string(j));
-			//for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
-			//	for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-			//		_inputs.push_back("CNNgrid_t_cell"+to_string(i)+"_"+to_string(j));
-			//for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++)
-			//	for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++)
-			//		_inputs.push_back("CNNgrid_r_cell"+to_string(i)+"_"+to_string(j));
+					_inputs.push_back("CNNgrid_cell"+to_string(i)+"_"+to_string(j));
 			//label
 			_inputs.push_back("label");
 			for(auto s : _inputs){
@@ -780,6 +774,7 @@ class BaseSkimmer{
 			for(int j = 0; j < rhs.size(); j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
 				iphi = _detIDmap[rhs[j].rhId()].i1;
+//cout << "MakeCNNInputGrid - rh id " << rhs[j].rhId() << endl;
 				//do eta flip
 				if(rh_ieta < 0)
 					deta = -(ieta - rh_ieta);
@@ -796,10 +791,6 @@ class BaseSkimmer{
 					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
 					grid[make_pair(deta, dphi)] = {rhs[j].E()};	
-					//mapobs[k]["CNNgrid_E_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].E();
-					//mapobs[k]["CNNgrid_t_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].t() - center.t();
-					//mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] = post.at(j,k)/model->GetData()->at(j).w();
-					//mapobs[k]["CNNgrid_Er_cell"+to_string(deta)+"_"+to_string(dphi)] = rhs[j].E()*(post.at(j,k)/model->GetData()->at(j).w());
 					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
 
 				}
@@ -808,10 +799,8 @@ class BaseSkimmer{
 			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 					icoords_grid = make_pair(i,j);
-					mapobs["CNNgrid_cleanedE_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
-					//mapobs["CNNgrid_t_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][1];
-					//mapobs["CNNgrid_r_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][2];
-					//mapobs["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0]*grid[icoords_grid][2];
+//cout << "MakeCNNInput - grid i " << i << " j " << j << " val " << grid[icoords_grid][0] << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+					mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
 					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
 				}
 			}
@@ -847,35 +836,44 @@ class BaseSkimmer{
 	
 		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
 		//grid maps int pair to vector of channels
-		int CNNPredict(map<string, double>& obs, double& ovalue){
+		void CNNPredict(map<string, double>& obs, vector<double>& ovalue){
+			ovalue.clear();
 			int nchan = _nnfeatures.size();
 			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, nchan);
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
 			//transform grid to input_sample
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					for(int c = 0; c < _nnfeatures.size(); c++){
-						double val;
-						if (_nnfeatures[c].find("Mult") != string::npos){
-							string ch1(_nnfeatures[c]);
-							ch1 = ch1[0];
-							string ch2(_nnfeatures[c]);
-							ch2 = ch2[ch2.size()-1];
-							val = obs["CNNgrid_"+ch1+"_cell"+to_string(i)+"_"+to_string(j)]*obs["CNNgrid_"+ch2+"_cell"+to_string(i)+"_"+to_string(j)];
-						}
-						else
-							val = obs["CNNgrid_"+_nnfeatures[c]+"_cell"+to_string(i)+"_"+to_string(j)];
-						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), val);
-					}
+					double val = obs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
+					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+					cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+					//for(int c = 0; c < _nnfeatures.size(); c++){
+					//	double val;
+					//	if (_nnfeatures[c].find("Mult") != string::npos){
+					//		string ch1(_nnfeatures[c]);
+					//		ch1 = ch1[0];
+					//		string ch2(_nnfeatures[c]);
+					//		ch2 = ch2[ch2.size()-1];
+					//		val = obs["CNNgrid_"+ch1+"_cell"+to_string(i)+"_"+to_string(j)]*obs["CNNgrid_"+ch2+"_cell"+to_string(i)+"_"+to_string(j)];
+					//	}
+					//	else
+					//		val = obs["CNNgrid_"+_nnfeatures[c]+"_cell"+to_string(i)+"_"+to_string(j)];
+					//	input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), val);
+					//}
 					
 				}
 			}	
 	
-			//predict_class returns predicted class number and value of max output neuron
-			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
-			ovalue = result.second;
+			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
+			fdeep::tensors result = _nnmodel.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back((double)reti[j]);
+			}
+			for(int i = 0; i < ovalue.size(); i++)
+				cout << "class #" << i << " score " << ovalue[i] << endl;
 			//cout << " pred class " << result.first << " with value " << result.second << endl;
-			return (int)result.first;
 		}
 
 	//returns vector sum of given objects
