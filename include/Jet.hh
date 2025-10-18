@@ -559,9 +559,8 @@ class Jet{
 				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
 				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
 				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
-
-				//PU cleaning definition
-				if(relGeoAvg - relE < 0)
+				//PU cleaning definition - includes 1 subcluster case
+				if(relGeoAvg - relE <= 0)
 					pass.push_back(true);
 				else
 					pass.push_back(false);
