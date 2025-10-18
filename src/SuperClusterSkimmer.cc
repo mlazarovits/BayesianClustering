@@ -173,13 +173,11 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			int label = GetTrainingLabel(scidx, bhc_sc);
 			//make CNN training grid
 			MakeCNNInputGrid(rh_pts, mapobs);
-
 			FillBranches(bhc_sc);
-
-			mapobs.at("event") = e;
-			mapobs.at("event_weight") = 1.;
-			mapobs.at("object") = scidx;
-			mapobs.at("label") = label;
+			mapobs["event"] = e;
+			mapobs["event_weight"] = 1.;
+			mapobs["object"] = scidx;
+			mapobs["label"] = label;
 			
 			vector<double> ovalues; //discriminator output value, pass-by-ref
 			CNNPredict(mapobs,ovalues);

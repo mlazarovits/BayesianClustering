@@ -364,6 +364,10 @@ class BaseSkimmer{
 		}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
+		void InitObs(map<string, double>& obs){
+			for(int i = 0; i < _inputs.size(); i++)
+				obs[_inputs[i]] = -999;
+		}
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
@@ -853,7 +857,7 @@ class BaseSkimmer{
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 					icoords_grid = make_pair(i,j);
 //cout << "MakeCNNInput - grid i " << i << " j " << j << " val " << grid[icoords_grid][0] << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
-					mapobs.at("CNNgrid_cell"+to_string(i)+"_"+to_string(j)) = grid[icoords_grid][0];
+					mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
 					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
 				}
 			}
