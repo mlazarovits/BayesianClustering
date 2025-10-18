@@ -135,6 +135,15 @@ class JetSkimmer : public BaseSkimmer{
 			
 			InitHists();
 		}
+
+		void SetObs(){ 
+			_obj = "jet";
+		};
+		void WriteHeader(){ };
+		void FillBranches(Jet bhc_obj){
+
+		}
+
 		void InitHists(){
 			//true jet hists
 			_hists1D.push_back(nTrueJets);
@@ -2071,14 +2080,12 @@ class JetSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs = jet.GetJetPoints();
 			vector<double> ovalues; //discriminator output value, pass-by-ref
 			map<string, double> obs; //k maps for k subclusters
-			JetPoint center;
-			GetCenterXtal(rhs, center);
 			//features = vector of strings of features to use - set with SetNNFeatures
 			//obs = map<string, double> observations for each feature per subcluster
 			//makeDNNinputs too (if using later) 
 			//TODO - make sure bhc jet itself is PU cleaned (ie weights applied to rhs)
 			//can apply CNN weights as an additional weight to rhs in SCs matched to jet
-			MakeCNNInputGrid(rhs, center, obs);
+			MakeCNNInputGrid(rhs, obs);
 			CNNPredict(obs,ovalues);
 			//TODO - update with discriminator score cut
 			auto max_el = max_element(ovalues.begin(), ovalues.end());

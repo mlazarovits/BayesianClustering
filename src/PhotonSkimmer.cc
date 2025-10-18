@@ -38,7 +38,6 @@ void PhotonSkimmer::Skim(){
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;
 	cout << setprecision(10) << "weight " << _weight << endl; 
-	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 
 	MakeProcCats(_oname);
 	
@@ -55,21 +54,9 @@ void PhotonSkimmer::Skim(){
 	}
 	_csvfile.open(_csvname);
 	//write header
-	SetObs();
+	WriteHeader();
 	
 	int nPho;
-	//create data smear matrix - smear in eta/phi
-	Matrix smear = Matrix(3,3);
-	double dphi = 2*acos(-1)/360.; //1 degree in radians
-	double deta = dphi;//-log( tan(1./2) ); //pseudorap of 1 degree
-	//diagonal matrix
-	smear.SetEntry(deta*deta,0,0);
-	smear.SetEntry(dphi*dphi,1,1);
-	smear.SetEntry(0.,2,2); //no smear in time	
-	double tres_c = 0.2;
-	double tres_n = 30*sqrt(1 - tres_c*tres_c)*_gev;
-	//if(_timesmear) cout << "Smearing covariance in time with energy dependence." << endl;	
-
 	
 	vector<Jet> rhs;
 	vector<Jet> phos;
@@ -202,6 +189,8 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 		}
 		
 		int nPho = phos.size();
+		_obs.at("evt") = (double)e;
+		_obs.at("evt_wt") = _weight;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
 			sumE = 0;
@@ -273,132 +262,78 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
-			for(int d = 0; d < _inputs.size(); d++){
-				obs[_inputs[d]] = -999;
-			}
-			if(!_data){
-				//find corresponding histogram category (signal, ISR, notSunm)	
-				//split by LLP ID
-				//0 = all
-				//1 = signal: chi_any -> gamma (22, 32, 25, 35)
-				//2 = not susy or not matched: p -> gamma, not matched (29, -1)
-				genidx = _base->Photon_genIdx->at(p);
-				if(genidx == -1) phoid = -1;
-				else phoid = _base->Gen_susId->at(genidx);
-				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
-					vector<double> ids = _procCats[i].ids;
-					if(std::any_of(ids.begin(), ids.end(), [&](double iid){return (iid == double(phoid)) || (iid == -999);})){
+			InitObs(obs);
+			obs.at("event") = e;
+			obs.at("event_weight") = _weight;
+			obs.at("object") = phoidx;
 
-						FillModelHists(bhc_pho, i, obs);
-						//FillModelHists(gmm, i, obs);
-						//FillCMSHists(rhs,i);
-						_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
-						_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
-						_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
-		
-						_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
-						_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
-						_procCats[i].hists1D[0][228]->Fill(double(rhs.size()));
-						if(_base->Photon_energy->at(phoidx) >= 0 && _base->Photon_energy->at(phoidx) < 200)
-							_procCats[i].hists1D[0][229]->Fill(rhs.size());
-						if(_base->Photon_energy->at(phoidx) >= 200 && _base->Photon_energy->at(phoidx) < 400)
-							_procCats[i].hists1D[0][230]->Fill(rhs.size());
-						if(_base->Photon_energy->at(phoidx) >= 400 && _base->Photon_energy->at(phoidx) < 600)
-							_procCats[i].hists1D[0][231]->Fill(rhs.size());
-						if(_base->Photon_energy->at(phoidx) >= 600 && _base->Photon_energy->at(phoidx) < 1000)
-							_procCats[i].hists1D[0][232]->Fill(rhs.size());
-
-					}
-				}
-			}
-			else{
-				for(int i = 0; i < (int)_procCats.size(); i++){ //exclude total category - overlaps with above categories
-					FillModelHists(bhc_pho, i, obs);
-					//FillModelHists(gmm, i, obs);
-					//FillCMSHists(rhs,i);
-					_procCats[i].hists1D[0][4]->Fill(_base->Photon_energy->at(phoidx));
-					_procCats[i].hists1D[0][226]->Fill(_base->Photon_sieie->at(phoidx));
-					_procCats[i].hists1D[0][227]->Fill(_base->Photon_sipip->at(phoidx));
-		
-					scidx = _base->Photon_scIndex->at(phoidx);
-					_procCats[i].hists1D[0][224]->Fill(_base->SuperCluster_smaj->at(scidx));
-					_procCats[i].hists1D[0][225]->Fill(_base->SuperCluster_smin->at(scidx));
-					_procCats[i].hists1D[0][228]->Fill(rhs.size());
-				}
-				
-
-			}
+			FillJetObs(bhc_pho, obs);
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
 			//add CMS benchmark variable - isolation information
 			//need to find associated photon
-			//do 2017 preselection
 			double r9 = _base->Photon_r9->at(phoidx);
 			double HoE = _base->Photon_hadOverEM->at(phoidx);
 			double Sieie = _base->Photon_sieie->at(phoidx);
 			double Sipip = _base->Photon_sipip->at(phoidx);
+
+			//isolation variables
 			double eIso = _base->Photon_ecalRHSumEtConeDR04->at(phoidx);//_base->Photon_ecalPFClusterIso->at(phoidx);
 			double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx);//_base->Photon_hcalPFClusterIso->at(phoidx);
 			double tIso = _base->Photon_trkSumPtHollowConeDR03->at(phoidx);
 			double pt = _base->Photon_pt->at(phoidx);
+			obs.at("R9") = r9;
+                        obs.at("Sietaieta") = Sieie;
+			obs.at("Siphiiphi") = Sipip;
+                        obs.at("Smajor") = _base->SuperCluster_smaj->at(scidx);
+                        obs.at("Sminor") = _base->SuperCluster_smin->at(scidx);
+                        //iso/pT
+                        obs.at("Pt") = pt;
+                        obs.at("hcalTowerSumEtConeDR04") = hIso;
+                        obs.at("trkSumPtHollowConeDR04") = _base->Photon_trkSumPtHollowConeDR04->at(phoidx);
+                        obs.at("trkSumPtSolidConeDR04") = _base->Photon_trkSumPtSolidConeDR04->at(phoidx);
+                        obs.at("hadTowOverEM") = _base->Photon_hadTowOverEM->at(phoidx);
+                        obs.at("ecalRHSumEtConeDR04") = eIso;
 			double ptmin;
 			if(p == 0)
 				ptmin = 70;
 			else
 				ptmin = 40;
 			//cout << "sc " << scidx << " pho " << phoidx << " eIso/pt " << eIso/pt << " hIso/pt " << hIso/pt << " tIso/pt " << tIso/pt << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << endl;	
+			//do 2017 preselection
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > ptmin){
-                                        obs["R9"] = r9;
-                                        obs["Sietaieta"] = Sieie;
-					obs["Siphiiphi"] = Sipip;
-                                        obs["Smajor"] = _base->SuperCluster_smaj->at(scidx);
-                                        obs["Sminor"] = _base->SuperCluster_smin->at(scidx);
-                                        //iso/pT
-                                        obs["ecalPFClusterIsoOvPt"] = eIso/pt;
-                                        obs["hcalPFClusterIsoOvPt"] = hIso/pt;
-                                        obs["trkSumPtHollowConeDR03OvPt"] = tIso/pt;	
+                               		obs.at("2017_presel") = 1;
 			
 			}
 			else{ //failed preselection
-                                        obs["R9"] = -999;
-                                        obs["Sietaieta"] = -999;
-					obs["Siphiiphi"] = -999;
-                                        obs["Smajor"] = -999;
-                                        obs["Sminor"] = -999;
-                                        //iso/pT
-                                        obs["ecalPFClusterIsoOvPt"] = -999;
-                                        obs["hcalPFClusterIsoOvPt"] = -999;
-                                        obs["trkSumPtHollowConeDR03OvPt"] = -999;	
+                               		obs.at("2017_presel") = 0;
 			}
 			
 			int label = GetTrainingLabel(phoidx,bhc_pho);
 		cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
 			//cout << "label: " << label << endl;
-				obs["event"] = e;
-                                obs["object"] = phoidx;
-				obs["event_weight"] = _weight;
+				obs.at("event") = e;
+                                obs.at("object") = phoidx;
+				obs.at("event_weight") = _weight;
 			//only get lead subcluster -> ncl = 0
-                                obs["subcl"] = 0;
-				obs["lead"] = 0;
-				if(p == 0)
-					obs["lead"] = 1;
-                                obs["label"] = label;
+                                obs.at("label") = label;
 				BaseSkimmer::WriteObs(obs,"photons");
-				objE_clusterE->Fill(_base->SuperCluster_energy->at(scidx), sumE);
-		//cout << "n obs " << obs.size() << " " << _inputs.size() << endl;
-		//int no = 0;
-		//for(auto o : obs)
-		//	cout << o.first << ": " << o.second << endl;
-		//cout << endl;
-		//for(int o = 0; o < _inputs.size(); o++)
-		//	cout << o << ": " << _inputs[o] << endl;	
+			FillBranches(obs);	
 		}
+		_tree->Fill();
+		_reset();
 	}
 	cout << "\n" << endl;
-	ofile->WriteTObject(objE_clusterE);
-	WriteHists(ofile);
+	//ofile->WriteTObject(objE_clusterE);
+	//WriteHists(ofile);
+	_csvfile.close();
+	cout << "\n" << endl;
+	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
+	_tree->SetDirectory(ofile);
+	ofile->cd();
+	_tree->Write();
+	ofile->Close();
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
-	_csvfile.close();
 
 	cout << "Total number of events ran over: " << totEvt << " events that passed isolated bkg selection: " << nIsoBkgPass << " fraction: " << nIsoBkgPass/totEvt << endl;
 }

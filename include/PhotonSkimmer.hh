@@ -14,6 +14,8 @@ using procCat = BaseSkimmer::procCat;
 class PhotonSkimmer : public BaseSkimmer{
 	public:
 		PhotonSkimmer(){
+			SetObs();
+			InitMapTree();
 			_evti = 0;
 			_evtj = 0;
 			_isocuts = false;
@@ -43,6 +45,8 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		//get rechits from file to cluster
 		PhotonSkimmer(TFile* file) : BaseSkimmer(file){
+			SetObs();
+			InitMapTree();
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
@@ -76,11 +80,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			_maxMet_isoBkg = 50;
 
 			
-			objE->SetTitle("totphoE");
-			objE->SetName("totphoE");
-			
-			objE_clusterE->SetTitle("phoE_clusterE");
-			objE_clusterE->SetName("phoE_clusterE");
+			//objE->SetTitle("totphoE");
+			//objE->SetName("totphoE");
+			//
+			//objE_clusterE->SetTitle("phoE_clusterE");
+			//objE_clusterE->SetName("phoE_clusterE");
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			InitHists();
@@ -88,6 +92,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		
 		//get rechits from file to cluster
 		PhotonSkimmer(string filelist) : BaseSkimmer(filelist){
+			SetObs();
+			InitMapTree();
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
@@ -121,11 +127,11 @@ class PhotonSkimmer : public BaseSkimmer{
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 50;
 			
-			objE->SetTitle("totphoE");
-			objE->SetName("totphoE");
-			
-			objE_clusterE->SetTitle("phoE_clusterE");
-			objE_clusterE->SetName("phoE_clusterE");
+			//objE->SetTitle("totphoE");
+			//objE->SetName("totphoE");
+			//
+			//objE_clusterE->SetTitle("phoE_clusterE");
+			//objE_clusterE->SetName("phoE_clusterE");
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			InitHists();
@@ -1747,7 +1753,73 @@ class PhotonSkimmer : public BaseSkimmer{
 		bool _applyFrac;
 
 
+		void PhotonAddBranches(){
+			_obj = "pho";
+			_obsnames.push_back("Pt");
+			//sw+
+			_obsnames.push_back("swCP");
+			//subcl major length
+			_obsnames.push_back("majorLength");
+			//subcl minor length
+			_obsnames.push_back("minorLength");
+			_obsnames.push_back("rot2D");
+			_obsnames.push_back("phiE2D");
+			//subcl max pt / total E
+			_obsnames.push_back("maxOvtotE");
+			//R9
+			_obsnames.push_back("R9");
+			//Sietaieta
+			_obsnames.push_back("Sietaieta");
+			//Siphiiphi
+			_obsnames.push_back("Siphiiphi");
+			//Smajor
+			_obsnames.push_back("Smajor");
+			//Sminor
+			_obsnames.push_back("Sminor");
+			//hcalTowerSumEtConeDR04
+			_obsnames.push_back("hcalTowerSumEtConeDR04");
+			//trkSumPtSolidConeDR04
+			_obsnames.push_back("trkSumPtSolidConeDR04");
+			//trkSumPtHollowConeDR04
+			_obsnames.push_back("trkSumPtHollowConeDR04");
+                	//ecalRHSumEtConeDR04
+                	_obsnames.push_back("ecalRHSumEtConeDR04");
+                	//hadTowOverEM
+                	_obsnames.push_back("hadTowOverEM");
+		}
 
+
+
+		void SetObs(){
+			PhotonAddBranches();
+			//sample
+			_inputs.push_back("sample");
+			//event
+			_inputs.push_back("event");
+			//event weight
+			_inputs.push_back("event_weight");
+			//supercl
+			_inputs.push_back("object");
+			for(int o = 0; o < _obsnames.size(); o++){
+				_inputs.push_back(_obsnames[o]);
+			}
+			_inputs.push_back("2017_presel");
+			//label
+			_inputs.push_back("label");
+		}
+
+		void WriteHeader(){
+			for(auto s : _inputs){
+				if(s != "label") _csvfile << s << ","; 
+				else _csvfile << s << endl;
+			}
+		}
+
+
+		void InitObs(map<string, double>& obs){
+			for(int i = 0; i < _inputs.size(); i++)
+				obs[_inputs[i]] = -999;
+		}
 
 		void WritePlotCat1D(TFile* ofile, const procCat& pc){
 			ofile->cd();
@@ -1852,6 +1924,71 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(_procCats.size() > 1) WritePlotCatStack(ofile, id_cats);
 
 			ofile->Close();
+
+		}
+
+		void FillBranches(Jet bhc_obj){ }
+
+		void FillBranches(map<string, double> obs){
+			for(auto it = obs.begin(); it != obs.end(); it++){
+				vFillBranch(it->second, it->first);
+			}
+
+		}
+
+		void FillJetObs(Jet bhc_obj, map<string, double>& obs){
+			double E_tot = bhc_obj.E();
+
+			double ec = bhc_obj.eta();
+			double pc = bhc_obj.phi();
+			double tc = bhc_obj.t();
+			if(isnan(pc)) cout << "pc is nan" << endl;
+			if(isinf(pc)) cout << "pc is inf" << endl;
+			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
+			obs.at("EtaCenter") = ec;		
+			obs.at("PhiCenter") = pc;		
+			obs.at("TimeCenter") = tc;		
+			
+			Matrix cov = bhc_obj.GetCovariance();
+			obs.at("EtaVar") = cov.at(0,0);		
+			obs.at("PhiVar") = cov.at(1,1);		
+			obs.at("TimeVar") = cov.at(2,2);		
+			obs.at("EtaPhiCov") = cov.at(0,1);		
+			obs.at("EtaTimeCov") = cov.at(0,2);		
+			obs.at("PhiTimeCov") = cov.at(1,2);
+
+
+			//rotundity - 2D
+			//take upper 2x2 submatrix from covariance
+			Matrix space_mat(2,2);
+			Get2DMat(cov,space_mat);
+			vector<Matrix> eigenvecs_space;
+			vector<double> eigenvals_space;
+			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			double majLength_2D = sqrt(eigenvals_space[2]);
+			if(eigenvals_space[1] < 0) cout << "negative eigenvalue " << eigenvals_space[1] << endl;
+			double minLength_2D; 
+			if(eigenvals_space[1] < 0) minLength_2D = -sqrt(-eigenvals_space[1]);
+			else minLength_2D = sqrt(eigenvals_space[1]);	
+			double phi2D = PhiEll(space_mat);			
+			double rot2D = Rotundity(space_mat);
+			
+			obs.at("majorLength") = majLength_2D;
+			obs.at("minorLength") = minLength_2D;
+			obs.at("rot2D") = rot2D;
+			obs.at("phiE2D") = phi2D;
+
+			PointCollection* points = new PointCollection();
+			vector<JetPoint> rhs = bhc_obj.GetJetPoints();
+			for(int r = 0; r < rhs.size(); r++){
+				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
+				pt.SetWeight(rhs[r].E()*_gev);
+				points->AddPoint(pt);
+			}
+			points->Sort();
+			double maxE = points->at(points->GetNPoints() - 1).w();
+			
+			obs.at("maxOvtotE") = maxE/E_tot;
 
 		}
 
@@ -2009,6 +2146,11 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 			//take upper 2x2 submatrix from covariance
 			Get2DMat(cov,space_mat);
 			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			double majLength_2D = sqrt(eigenvals_space[2]);
+			if(eigenvals_space[1] < 0) cout << "negative eigenvalue " << eigenvals_space[1] << endl;
+			double minLength_2D; 
+			if(eigenvals_space[1] < 0) minLength_2D = -sqrt(-eigenvals_space[1]);
+			else minLength_2D = sqrt(eigenvals_space[1]);	
 			phi2D = PhiEll(space_mat);			
 			rot2D = Rotundity(space_mat);
 			
@@ -2123,7 +2265,6 @@ cout << "lead subcluster has e sig " << e_var << " p sig " << p_var << " t sig "
 				}
 			}
 
-cout << "did track matching " << endl;
                         obs["eta_center"] = ec;
                         obs["phi_center"] = pc;
                         obs["time_center"] = tc;
@@ -2133,13 +2274,14 @@ cout << "did track matching " << endl;
                         obs["timeeta_cov"] = te_cov;
                         obs["energy"] = E_k;
                         obs["sw+"] = swCP;
-                        obs["major_length"] = majLength;
-                        obs["minor_length"] = minLength;	
+                        obs["major_length"] = majLength_2D;
+                        obs["minor_length"] = minLength_2D;
+			obs["rot2D"] = rot2D;
+			obs["phiE2D"] = phi2D;	
 			//get max weighted point
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
 			obs["maxOvtotE"] = maxE/E_k;	
-cout << "wrote obs" << endl;	
 			//fill hists - lead only
 			//centers
 			_procCats[id_idx].hists1D[1][1]->Fill(tc);
