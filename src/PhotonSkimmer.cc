@@ -39,7 +39,6 @@ void PhotonSkimmer::Skim(){
 	cout << "Using clustering strategy mixture model with pre-clustered photons" << endl;
 	cout << setprecision(10) << "weight " << _weight << endl; 
 
-	MakeProcCats(_oname);
 	
 	//make output csv file
 	//write to csv dir if not condor job else write to current dir
@@ -55,7 +54,8 @@ void PhotonSkimmer::Skim(){
 	_csvfile.open(_csvname);
 	//write header
 	WriteHeader();
-	
+	SetNNModel("json/med16DNN_photonID.json");
+
 	int nPho;
 	
 	vector<Jet> rhs;
@@ -116,8 +116,6 @@ void PhotonSkimmer::Skim(){
 		_evtj = _nEvts;
 	}
 	double pvx, pvy, pvz;
-	_timeoffset = 0;
-	_swcross = 0;
 	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
@@ -227,39 +225,7 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 			rhs.clear();
 			bhc_pho.GetJets(rhs);
 			//get parameters for model
-			_procCats[1].hists1D[0][266]->Fill(bhc_pho.E());
-
-			_procCats[1].hists1D[0][259]->Fill(phos[p].pt());
 			
-			vector<pair<int,int>> icoords;
-			vector<double> neighborEs;
-			rh_pts = phos[p].GetJetPoints();
-			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,9);
-			for(int e = 0; e < (int)neighborEs.size(); e++){
-				_procCats[1].hists2D[0][237]->Fill(icoords[e].first, icoords[e].second, neighborEs[e]*_weight);
-			}
-			double maxE = 0;
-			Jet maxE_rh;
-			PointCollection* points = new PointCollection();
-			for(int r = 0; r < rhs.size(); r++){
-				sumE += rhs[r].E();
-				if(rhs[r].E() > maxE){
-					maxE = rhs[r].E();
-					maxE_rh = rhs[r];
-				}
-				_procCats[0].hists1D[0][258]->Fill(rhs[r].t());
-				_procCats[1].hists1D[0][258]->Fill(rhs[r].t());
-				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
-				pt.SetWeight(rhs[r].E()*_gev);
-				points->AddPoint(pt);
-			}
-			for(int r = 0; r < rhs.size(); r++){
-				_procCats[0].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
-				_procCats[1].hists2D[0][238]->Fill(rhs[r].eta() - maxE_rh.eta(), acos(cos(rhs[r].phi() - maxE_rh.phi())), rhs[r].E()*_weight);
-
-			}
-
-			_swcross = swissCross(rhs);
 			//vector<double> obs;				
 			map<string,double> obs; //init obs map
 			InitObs(obs);
@@ -317,6 +283,22 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 			//only get lead subcluster -> ncl = 0
                                 obs.at("label") = label;
 				BaseSkimmer::WriteObs(obs,"photons");
+				vFillBranch(label,"trueLabel");
+
+			//do DNN prediction
+			vector<double> dnn_scores;
+			DNNPredict(obs, dnn_scores);
+			//TODO - update with discriminator score cut
+			auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
+			double predval = *max_el;
+			//labeling starts from 1
+			int nclass = std::distance(dnn_scores.begin(), max_el) + 1;
+			nclass = (nclass == 0) ? 4 : 6;
+			cout << "class " << nclass << " predval " << predval << " for photon " << phoidx << " with label " << label << endl;	
+			vFillBranch(nclass,"predLabel");
+			vFillBranch(dnn_scores[0],"predScore_isoBkg");
+			vFillBranch(dnn_scores[1],"predScore_nonIsoBkg");	
+
 			FillBranches(obs);	
 		}
 		_tree->Fill();

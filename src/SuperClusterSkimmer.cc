@@ -174,6 +174,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//make CNN training grid
 			MakeCNNInputGrid(rh_pts, mapobs);
 			FillBranches(bhc_sc);
+			
 			mapobs["event"] = e;
 			mapobs["event_weight"] = 1.;
 			mapobs["object"] = scidx;

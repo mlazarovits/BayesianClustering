@@ -203,6 +203,8 @@ class BaseSkimmer{
 			bool subcl = true;
 			for(int o = 0; o < _obsnames.size(); o++){
 				string units = "";
+				obj = true;
+				subcl = true;
 				if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
 					units = " [GeV]";
 				if(_obsnames[o] == "TimeCenter")
@@ -223,15 +225,13 @@ class BaseSkimmer{
 				}
 	
 				//only fill subcluster branches for jet skimmer	
-				if(subcl && _obj == "jet"){	
+				if(subcl && _obj == "jet"){
 					//subcluster	
 					string key = "subcluster_"+_obsnames[o];
 					_vvobs[key] = {};
 					string title = "subcluster "+_obsnames[o]+" per "+_obj+units;
 					_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 				}
-				obj = true;
-				subcl = true;
 			}
 
 			
@@ -364,10 +364,6 @@ class BaseSkimmer{
 		}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
 
-		void InitObs(map<string, double>& obs){
-			for(int i = 0; i < _inputs.size(); i++)
-				obs[_inputs[i]] = -999;
-		}
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
 		void SetEventRange(int evti, int evtj){ _evti = evti; _evtj = evtj; }
@@ -875,21 +871,25 @@ class BaseSkimmer{
 			_nnfeatures = features;
 		}
 		//returns predicted class, by reference the discriminator value - DNN
-		int DNNPredict(map<string,double>& obs, double& ovalue){
+		void DNNPredict(map<string,double>& obs, vector<double>& ovalue){
+			ovalue.clear();
 			vector<float> input_sample;
 			//transform obs to input_sample
-			for(int f = 0; f < _nnfeatures.size(); f++)
-				input_sample.push_back(obs[_nnfeatures[f]]);		
+			for(int f = 0; f < _nnfeatures.size(); f++){
+				input_sample.push_back(obs[_nnfeatures[f]]);
+			}
 
 			int size = input_sample.size();
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 			
 			//predict_class returns predicted class number and value of max output neuron
-			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
-			ovalue = result.second;
-			return (int)result.first;
+			fdeep::tensors result = _nnmodel.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back((double)reti[j]);
+			}
 		}
-	
 	
 		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
 		//grid maps int pair to vector of channels
@@ -963,15 +963,15 @@ class BaseSkimmer{
 		TreesToJets(trees, bhc_jets, PV);
 		if(bhc_jets.size() < 1)
 			return -2;
-		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters");
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0].CleanOutPU(scores, false);
+		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters_prePUcleaning");
+		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		//below returns empty jet if no subclusters pass PU cut - put in safety for this
 		if(result.GetNRecHits() < 1) return -1;
 		result.SetUserIdx(inputobj.GetUserIdx());
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
-		//TODO - make sure idx is consistent with obj indices
 		addVectors();
 		Matrix cov = bhc_jets[0].GetCovariance();
 		for(int k = 0; k < scores.size(); k++){
