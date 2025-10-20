@@ -69,6 +69,7 @@ int main(int argc, char *argv[]){
 	double tres_cte = 0.1727;//0.133913;
 	double tres_stoch = 0.5109;//1.60666;
 	double tres_noise = 2.106;//0.00691415;
+	vector<string> nnfeatures ={"EtaVar","PhiVar","EtaPhiCov","majorLength","minorLength"} ;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -582,6 +583,7 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 			skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 			skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		}
+		skimmer.SetNNFeatures(nnfeatures);
 		skimmer.SetVerbosity(verb);
         	skimmer.Skim();
 	}
