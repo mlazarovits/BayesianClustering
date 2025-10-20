@@ -3,7 +3,7 @@
 ClusterAnalyzer::ClusterAnalyzer(){
 	_algo = nullptr;
 	_gev = 1;
-	_radius = 1.29;
+	_radius = 129;
 	_detCenter = BayesPoint({0., 0., 0.});
 	_PV = BayesPoint({0., 0., 0.});
 	_verb = -1;
@@ -23,6 +23,7 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
 	rh.SetRecHitId(rhId);
+	cout << "adding rh with e " << rhE << " x " << rhx << " y " << rhy << " z " << rhz << " t " << rht << " time from 0 to rh " << d_rh << " eta " << rh.eta() << " phi " << rh.phi() << endl;
 	if(invalidTime) rh.SetInvalidTime();
 	Jet jet(rh, _PV);
 	//cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
