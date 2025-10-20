@@ -87,7 +87,6 @@ struct ClusterObj{
 		_detTime = locs.Centroid(3);
 		//include geo factor to PV for PV time
 		BayesPoint center({locs.Centroid(0), locs.Centroid(1), locs.Centroid(2)});
-		locs.Print();
 		//
 		double dx = center.at(0) - _PV.at(0);
 		double dy = center.at(1) - _PV.at(1);
