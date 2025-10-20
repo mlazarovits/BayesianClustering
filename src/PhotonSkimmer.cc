@@ -189,6 +189,7 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 		int nPho = phos.size();
 		_obs.at("evt") = (double)e;
 		_obs.at("evt_wt") = _weight;
+		_obs.at("MET") = _base->Met_pt;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
 			sumE = 0;

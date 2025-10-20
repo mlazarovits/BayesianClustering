@@ -198,7 +198,9 @@ class BaseSkimmer{
 			_tree->Branch("evt",&_obs.at("evt"))->SetTitle("event");
 			_obs["evt_wt"] = -1;
 			_tree->Branch("evt_wt",&_obs.at("evt_wt"))->SetTitle("event weight");
-			
+			_obs["MET"] = -1;
+			_tree->Branch("MET",&_obs.at("MET"))->SetTitle("Met_pt");		
+	
 			bool obj = true;
 			bool subcl = true;
 			for(int o = 0; o < _obsnames.size(); o++){
