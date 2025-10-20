@@ -1210,10 +1210,6 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 	
 		//ttree member variables
 		TTree* _tree;
-		int _njets;
-		vector<int> _BHCJet_nSubclustersJet;
-		vector<double> _BHCJet_pt, _BHCJet_energy, _BHCJet_mass, _BHCJet_size;
-		vector<vector<double>> _BHCJet_subclusterMass, _BHCJet_subclusterEnergy, _BHCJet_subclusterEtaCenter, _BHCJet_subclusterPhiCenter, _BHCJet_subclusterTimeCenter;
 
 		vector<Jet> _phos; //photons for event
 		vector<node*> _trees;
