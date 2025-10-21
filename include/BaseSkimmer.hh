@@ -397,7 +397,7 @@ class BaseSkimmer{
 			t_tot /= norm;
 			res_tot /= norm;
 //cout << "t_tot " << t_tot << " res_tot " << res_tot << " norm " << norm << " tim sig " << t_tot / res_tot << endl;
-			return t_tot / res_tot;
+			return (t_tot / res_tot) * sqrt(2);
 		}
 
 
