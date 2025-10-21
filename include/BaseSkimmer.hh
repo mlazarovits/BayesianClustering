@@ -98,13 +98,6 @@ class BaseSkimmer{
 			else
 				_data = true;
 			
-			_hists1D.push_back(nSubClusters);
-			_hists1D.push_back(time_center);
-			_hists1D.push_back(eta_center);
-			_hists1D.push_back(phi_center);
-			_hists1D.push_back(objE);
-			_hists1D.push_back(clusterE);
-			
 			_cell = acos(-1)/180;
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
@@ -145,13 +138,6 @@ class BaseSkimmer{
 			else
 				_data = true;
 			
-			_hists1D.push_back(nSubClusters);
-			_hists1D.push_back(time_center);
-			_hists1D.push_back(eta_center);
-			_hists1D.push_back(phi_center);
-			_hists1D.push_back(objE);
-			_hists1D.push_back(clusterE);
-
 			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 			
 			_cell = acos(-1)/180;
@@ -165,6 +151,7 @@ class BaseSkimmer{
 			delete _base;
 			_hists1D.clear();
 			_hists2D.clear();
+			_procCats.clear();
 		}
 
 		virtual void Skim() = 0;
@@ -216,6 +203,8 @@ class BaseSkimmer{
 				if(_obsnames[o] == "nSubclusters")
 					subcl = false;
 				if(_obsnames[o].find("Label") != string::npos)
+					subcl = false;
+				if(_obsnames[o] == "timeSignificance")
 					subcl = false;
 			
 				//object
@@ -319,7 +308,7 @@ class BaseSkimmer{
 
 
 		TTree* _tree;
-		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov", "PUscores"};
+		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov", "PUscores", "timeSignificance"};
 		map<string, double> _obs;
 		map<string, vector<double>> _vobs;
 		map<string, vector<vector<double>>> _vvobs;
@@ -385,28 +374,31 @@ class BaseSkimmer{
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
-		vector<TH1D*> _hists1D;
-		//0 - # of subclusters
-		TH1D* nSubClusters = new TH1D("nSubClusters","nSubClusters",10,0,10.);
-		//1 - mean time - center in t
-		TH1D* time_center = new TH1D("timeCenter","timeCenter",50,-5,5);
-		//2 - mean eta - center in eta
-		TH1D* eta_center = new TH1D("etaCenter","etaCenter",50,-1.6,1.6);
-		//3 - mean phi - center in phi
-		TH1D* phi_center = new TH1D("phiCenter","phiCenter",50,-0.2,6.4);
-		//4 - object energy
-		TH1D* objE = new TH1D("objE","objE",50,0,1000);
-		//5 - cluster energy
-		TH1D* clusterE = new TH1D("clusterE","clusterE",10,0,1000);
 
-	
-		//two dimensional histograms
-		vector<TH2D*> _hists2D;
-
-		//reco object histograms
-		//NOT in hist vectors
-		TH2D* objE_clusterE = new TH2D("objE_clusterE","objE_clusterE;objE;clusterE",50,0,1050,50,0,1050);
-
+		double CalcTimeSignificance(PointCollection* pts){
+			double t_tot = 0;
+			double norm = 0;
+			double res_tot = 0;
+			for(int i = 0; i < pts->GetNPoints(); i++){
+				double e = pts->at(i).w()*_gev;
+				double res;
+				if(fabs(e) < 1e-20){
+					e = 0;
+					res = 0;
+				}
+				else{
+					res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
+				}
+				t_tot += e*pts->at(i).at(2);
+//cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()*_gev << " res " << res << endl;
+				res_tot += e*res;
+				norm += e;
+			}
+			t_tot /= norm;
+			res_tot /= norm;
+//cout << "t_tot " << t_tot << " res_tot " << res_tot << " norm " << norm << " tim sig " << t_tot / res_tot << endl;
+			return t_tot / res_tot;
+		}
 
 
 		//for sample weights
@@ -574,6 +566,9 @@ class BaseSkimmer{
 			
 
 		};
+		vector<TH1D*> _hists1D;
+		vector<TH2D*> _hists2D;
+		
 		vector<procCat> _procCats;
 		//void MakeProcCats(string sample, bool leadsep = true){
 		void MakeProcCats(string sample, bool leadsep = true){
@@ -966,7 +961,12 @@ class BaseSkimmer{
 		if(bhc_jets.size() < 1)
 			return -2;
 		vector<bool> scores; //PU discriminator scores of subclusters
-		result = bhc_jets[0].CleanOutPU(scores, false);
+		result = bhc_jets[0].CleanOutPU(scores, true);
+//vector<JetPoint> rhs_jp = bhc_jets[0].GetJetPoints();
+//for(int r = 0; r < bhc_jets[0].GetNRecHits(); r++){
+//cout << "t " << rhs_jp[r].t() << " e " << rhs_jp[r].e() << endl;
+//
+//}
 		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters_prePUcleaning");
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		//below returns empty jet if no subclusters pass PU cut - put in safety for this
@@ -977,6 +977,7 @@ class BaseSkimmer{
 		addVectors();
 		Matrix cov = bhc_jets[0].GetCovariance();
 		for(int k = 0; k < scores.size(); k++){
+//cout << "subcl #" << k << " score " << scores[k] << endl;
 			vvFillBranch((double)scores[k],"PUscores",idx);
 			Jet subcl = bhc_jets[0].GetConstituent(k);
 			Matrix subcl_cov = subcl.GetCovariance();

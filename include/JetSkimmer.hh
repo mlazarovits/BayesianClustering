@@ -80,8 +80,6 @@ class JetSkimmer : public BaseSkimmer{
 			//} 
 
 
-			objE_clusterE->SetTitle("jetE_clusterE");
-			objE_clusterE->SetName("jetE_clusterE");
 			
 			InitHists();
 		}
@@ -130,8 +128,6 @@ class JetSkimmer : public BaseSkimmer{
 			//} 
 
 
-			objE_clusterE->SetTitle("jetE_clusterE");
-			objE_clusterE->SetName("jetE_clusterE");
 			
 			InitHists();
 		}
@@ -815,7 +811,6 @@ class JetSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs;
 			for(int j = 0; j < njets; j++){
 				e_nRhs->Fill(jets[j].E(), jets[j].GetNRecHits(), _weight);
-				objE->Fill(jets[j].E(), _weight);
 				TrueJet_pT->Fill(jets[j].pt(), _weight);
 				TrueJet_nRhs->Fill(jets[j].GetNRecHits(), _weight);
 				ijet = jets[j].GetUserIdx();

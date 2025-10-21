@@ -419,15 +419,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			bhc_obj.GetJets(rh_jets);
 			double sw = swissCross(rh_jets);
 			vFillBranch(sw, "swCrossCMS");	
-			//label = 1
-			bool physBkg_label = false;
-			//label = 2
-			bool BH_label = false;
-			//label = 3
-			bool spike_label = false;
-			
+		
+			//time signifiance	
+			double timesig = CalcTimeSignificance(points);
+			vFillBranch(timesig, "timeSignificance");			
 	
 		}
+
+
 
 	double sqrtcov(double c){
 		if(c > 0)
