@@ -106,7 +106,7 @@ struct ClusterObj{
 			return -999;
 		}
 		//include factor of sqrt(2) to account for the fact that each resolution is measured as a difference between two crystals
-		return (_detTime / _timeRes) * sqrt(2);
+		return (_detTime / _timeRes) * sqrt(2.);
 	} 
 	void CalculateObjTimeSig(map<unsigned int, float> res){ //calculate time significance - needs to be called after CalculateObjTime
 		//match resolutions via rh ids
