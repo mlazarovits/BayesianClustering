@@ -21,8 +21,8 @@ struct ClusterObj{
 	ClusterObj(Jet jet){ _jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents(); }
 
 
-        std::map<UInt_t,DetIDStruct> _detIDmap;
-        void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> DetIDMap){
+        std::map<UInt_t,pair<int,int>> _detIDmap;
+        void SetupDetIDsEB( std::map<UInt_t,pair<int,int>> DetIDMap){
 		_detIDmap = DetIDMap;
 	}
 
@@ -163,7 +163,7 @@ struct ClusterObj{
 	}
 	void MakeCNNGrid(int k, JetPoint& center, map<string,double>& mapobs){
 		if(_detIDmap.size() == 0){
-			cout << "ERROR: detIDmap not setup for this ClusterObj. Please use SetupDetIDsEB( std::map<UInt_t,DetIDStruct> DetIDMap) to set the detID map for the CNN grid creation. Not running CNN detector bkg classification." << endl;
+			cout << "ERROR: detIDmap not setup for this ClusterObj. Please use SetupDetIDsEB( std::map<UInt_t,pair<int,int>> DetIDMap) to set the detID map for the CNN grid creation. Not running CNN detector bkg classification." << endl;
 			return;
 		}
 		mapobs.clear();
@@ -273,29 +273,9 @@ class ClusterAnalyzer{
 
 		int RunClustering(ClusterObj& retobj);
 
-		void SetDetIDsEB(std::map<UInt_t,DetIDStruct> detidmap){
+		void SetDetIDsEB(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
-
-		//TODO - see if _detIDmap can be passed from TimeCalibration class in skimmer code
-                void SetupDetIDsEB(){
-                        const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
-                        std::ifstream infile( detIDConfigEB, std::ios::in);
-                
-                        UInt_t cmsswId, dbID;
-                        pair<int, int> ietaiphi;
-                        int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-                        float deteta, detphi;
-                        std::string pos;
-                
-                        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
-                            //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-                            _detIDmap[cmsswId] = DetIDStruct(iphi,ieta,TT25,0,deteta,detphi);
-                        }//while (infile >>
-                
-                }//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
-
-
 
 	private:
 		vector<Jet> _rhs;
@@ -305,7 +285,7 @@ class ClusterAnalyzer{
 		BayesPoint _detCenter;
 		BayesCluster* _algo;
 		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
-		std::map<UInt_t,DetIDStruct> _detIDmap;
+		std::map<UInt_t,pair<int,int>> _detIDmap;
 		int _verb;
 
 };
