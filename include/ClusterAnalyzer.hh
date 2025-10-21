@@ -182,14 +182,14 @@ struct ClusterObj{
 
 		//get ngrid x ngrid around center point 
 		int ieta, iphi;
-		int rh_ieta = _detIDmap.at(center.rhId()).i2;
-		int rh_iphi = _detIDmap.at(center.rhId()).i1;
+		int rh_ieta = _detIDmap.at(center.rhId()).first;
+		int rh_iphi = _detIDmap.at(center.rhId()).second;
 		int deta, dphi;
 		Jet subcl = _jet.GetConstituent(k);
 		vector<JetPoint> rhs = subcl.GetJetPoints();
 		for(int j = 0; j < rhs.size(); j++){
-			ieta = _detIDmap.at(rhs[j].rhId()).i2;
-			iphi = _detIDmap.at(rhs[j].rhId()).i1;
+			ieta = _detIDmap.at(rhs[j].rhId()).first;
+			iphi = _detIDmap.at(rhs[j].rhId()).second;
 			//do eta flip
 			if(rh_ieta < 0)
 				deta = -(ieta - rh_ieta);
