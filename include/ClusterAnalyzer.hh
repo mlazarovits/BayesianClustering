@@ -272,6 +272,10 @@ class ClusterAnalyzer{
 
 		int RunClustering(ClusterObj& retobj);
 
+		void SetDetIDsEB(std::map<UInt_t,DetIDStruct> detidmap){
+			_detIDmap = detidmap;
+		}
+
 		//TODO - see if _detIDmap can be passed from TimeCalibration class in skimmer code
                 void SetupDetIDsEB(){
                         const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
