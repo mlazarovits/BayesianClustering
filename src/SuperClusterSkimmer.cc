@@ -25,7 +25,7 @@ void SuperClusterSkimmer::Skim(){
 	//write header
 	WriteHeader();
 	//set NN model + features - can move to .C for more flexibility
-	SetNNModel("json/small8CNN_EMultr.json");
+	SetNNModel("json/small3CNN_EMultr.json");
 	
 	int nPho;
 	
