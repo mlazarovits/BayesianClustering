@@ -20,20 +20,20 @@ Matrix::Matrix(int row, int col){
 	m_col = col;
 	if(m_row == m_col) _square = true;
 	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
+		m_entries.emplace_back(vector<double>());
 		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back(0.);
+			m_entries[i].emplace_back(0.);
 		}
 	}		
 }
 
-Matrix::Matrix(vector<double> in){
+Matrix::Matrix(const vector<double>& in){
 	m_row = (int)in.size();
 	m_col = 1;
 	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
+		m_entries.emplace_back(vector<double>());
 		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back(in[i]);
+			m_entries[i].emplace_back(in[i]);
 		}
 	}
 } 
@@ -42,24 +42,24 @@ Matrix::Matrix(vector<double> in){
 Matrix::Matrix(double pt){
 	m_row = 1;
 	m_col = 1;
-	m_entries.push_back({});
-	m_entries[0].push_back(pt);
+	m_entries.emplace_back(vector<double>());
+	m_entries[0].emplace_back(pt);
 
 }
 
-Matrix::Matrix(BayesPoint pt){
+Matrix::Matrix(const BayesPoint& pt){
 	m_row = pt.Dim();
 	m_col = 1;
 
 	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
+		m_entries.emplace_back(vector<double>());
 		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back(pt.at(i));
+			m_entries[i].emplace_back(pt.at(i));
 		}
 	}
 }
 
-Matrix::Matrix(PointCollection pts){
+Matrix::Matrix(const PointCollection& pts){
 	m_row = pts.Dim();
 	m_col = pts.GetNPoints();
 	InitEmpty();
@@ -82,9 +82,9 @@ Matrix::Matrix(const Matrix& mat){
 	_square = mat.square();
 
 	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
+		m_entries.emplace_back(vector<double>());
 		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back( mat.at(i,j) );
+			m_entries[i].emplace_back( mat.at(i,j) );
 		}
 	}
 }	
@@ -186,9 +186,9 @@ void Matrix::InitEmpty(){
 		return;
 	}
 	for(int i = 0; i < m_row; i++){
-		m_entries.push_back({});
+		m_entries.emplace_back(vector<double>());
 		for(int j = 0; j < m_col; j++){
-			m_entries[i].push_back(0.);
+			m_entries[i].emplace_back(0.);
 		}
 	}		
 }
@@ -572,12 +572,29 @@ void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
 }
 
 
-PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims, vector<int> idxs){
-	PointCollection pc;
+void Matrix::MatToPoint(BayesPoint& pt, double weight, int skipdim, int idx){
+		if(m_col > 1){
+			cout << "Error: cannot turn matrix of dimensions " << m_col << " x " << m_row << " into single point. Try MatToPoints(PointCollection pc)." << endl;
+			return;
+		}
+		vector<double> val;
+		for(int i = 0; i < m_row; i++){
+			val.emplace_back(m_entries[i][0]);
+		}
+		pt = BayesPoint(val);
+		if(weight != -999)
+			pt.SetWeight(weight);
+		if(skipdim != -999)
+			pt.SetSkipDim(skipdim);
+		if(idx != -999)
+			pt.SetUserIdx(idx);
+}
+void Matrix::MatToPoints(PointCollection& pc, const vector<double>& weights, const vector<int>& skipdims, const vector<int>& idxs){
+	pc.Clear(); 
 	for(int j = 0; j < m_col; j++){
 		vector<double> val;
 		for(int i = 0; i < m_row; i++){
-			val.push_back(m_entries[i][j]);
+			val.emplace_back(m_entries[i][j]);
 		}
 		BayesPoint pt = BayesPoint(val);
 		if(weights.size() == m_col)
@@ -588,20 +605,19 @@ PointCollection Matrix::MatToPoints(vector<double> weights, vector<int> skipdims
 			pt.SetUserIdx(idxs[j]);
 		pc += pt;
 	}
-	return pc;
 }
 
 //from Numerical Recipes 3rd Ed., Ch. 2.9
-Matrix Matrix::cholesky(){
+void Matrix::cholesky(Matrix& L) const{
 	//check if matrix is square, symmetric
-	Matrix L = Matrix(m_row, m_col);
+	L = Matrix(m_row, m_col);
 	if(!_square){
 		cout << "Error: matrix is not square." << endl;
-		return L;
+		return;
 	}
 	if(!symmetric()){
 		cout << "Error: matrix is not symmetric." << endl;
-		return L;
+		return;
 	}
 	double sum;
 	int k;
@@ -616,7 +632,7 @@ Matrix Matrix::cholesky(){
 				if(sum <= 0.0){
 					cout << "mat not posdef. " << sum << endl;
 					Print();	
-					return L;
+					return;
 				}
 				L.SetEntry(sqrt(sum),i,i);
 			}
@@ -629,13 +645,12 @@ Matrix Matrix::cholesky(){
 	for(int i = 0; i < m_row; i++)
 		for(int j = 0; j < i; j++)
 			L.SetEntry(0.,j,i);
-	return L;
 	
 }
 
 //from Numerical Recipes 3rd Ed., Ch. 7.4
 //return Nsample random d-dim points (xmin, xmax) according to n-dim Gaussian distribuion
-void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
+void Matrix::SampleNDimGaussian(const Matrix& mean, const Matrix& sigma, int Nsample){
 	//need cholesky decomposition: takes sigma = LL^T
 	//returns Nsample normally distributed n-dim points (one point = x)
 	//x = L*y + mu for vectors x, y, mu and matrix L
@@ -643,7 +658,8 @@ void Matrix::SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample){
 	SetDims(d,Nsample);
 	InitEmpty();
 //	//aggregate points
-	Matrix L = sigma.cholesky();	
+	Matrix L;
+	sigma.cholesky(L);
 	RandomSample rs;
 	vector<double> y;
 	for(int n = 0; n < Nsample; n++){
@@ -671,7 +687,7 @@ void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
 	Eigen::MatrixXd m(m_row, m_col);
 
 	for(int i = 0; i < m_row; i++){
-		vecs.push_back( Matrix(m_row,1) );
+		vecs.emplace_back( Matrix(m_row,1) );
 		for(int j = 0; j < m_col; j++){
 			m(i,j) = m_entries[i][j];
 		}
@@ -688,7 +704,7 @@ void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
 		for(int j = 0; j < m_col; j++){
 			vecs[d].SetEntry(eigensolver.eigenvectors()(d,j),j,0);
 		}
-		vals.push_back(eigensolver.eigenvalues()(d));
+		vals.emplace_back(eigensolver.eigenvalues()(d));
 	}
 
 }

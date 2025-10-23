@@ -11,10 +11,10 @@ class Matrix{
 		Matrix();
 		//x_dim = dim (rows), y_dim = # points (cols)
 		Matrix(int row, int col);
-		Matrix(vector<double> in);
+		Matrix(const vector<double>& in);
 		Matrix(double pt);
-		Matrix(BayesPoint pt);
-		Matrix(PointCollection pts);
+		Matrix(const BayesPoint& pt);
+		Matrix(const PointCollection& pts);
 		//copy constructor
 		Matrix(const Matrix& mat);
 		virtual ~Matrix();
@@ -26,7 +26,7 @@ class Matrix{
 		//initializes identity matrix
 		void InitIdentity();
 		//fills this matrix with data pts from n-dim gaus
-		void SampleNDimGaussian(Matrix mean, Matrix sigma, int Nsample);
+		void SampleNDimGaussian(const Matrix& mean, const Matrix& sigma, int Nsample);
 		void SetDims(int row, int col);
 		void SetEntry(double val, int i, int j);
 		double at(int i, int j) const;
@@ -53,9 +53,10 @@ class Matrix{
 		void adjoint(const Matrix& mat);
 		void invert(const Matrix& mat);
 		double trace();
-		Matrix cholesky();
+		void cholesky(Matrix& L) const;
 		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
-		PointCollection MatToPoints(vector<double> weights = {}, vector<int> skipdims = {}, vector<int> idxs = {});
+		void MatToPoints(PointCollection& pc, const vector<double>& weights = {}, const vector<int>& skipdims = {}, const vector<int>& idxs = {});
+		void MatToPoint(BayesPoint& pt, double weight = -999, int skipdim = -999, int idx = -999);
 		void PointsToMat(PointCollection& pc);
 		void PointToMat(const BayesPoint& pc);
 		void mean(const PointCollection& data);
