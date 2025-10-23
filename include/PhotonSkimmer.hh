@@ -278,7 +278,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			obs.at("phiE2D") = phi2D;
 
 			PointCollection* points = new PointCollection();
-			vector<JetPoint> rhs = bhc_obj.GetJetPoints();
+			vector<JetPoint> rhs; bhc_obj.GetJetPoints(rhs);
 			for(int r = 0; r < rhs.size(); r++){
 				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
 				pt.SetWeight(rhs[r].E()*_gev);
@@ -490,7 +490,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		for(int j = 0; j < jets.size(); j++){
 			//should only have 1 rh per jet
 			if(jets[j].GetNRecHits() > 1) continue;
-			rh = jets[j].GetJetPoints()[0];
+			jets[j].GetJetPointAt(0,rh);
 			BayesPoint pt(1);
 			pt.SetValue(int(rh.rhId()),0);
 			pt.SetWeight(rh.GetWeight());

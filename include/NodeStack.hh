@@ -21,7 +21,7 @@ class NodeStack{
 			h->log_d = -1;
 			h->log_prob_tk = -1;
 			h->model = nullptr; //h->color = -1; 
-			h->points = new PointCollection();
+			h->points = new PointCollection();//std::make_unique<PointCollection>();
 			_head->n = h;	
 		
 			_z = (listnode*)malloc(sizeof *_z);
@@ -33,7 +33,7 @@ class NodeStack{
 			z->log_d = -1;
 			z->log_prob_tk = -1; 
 			z->model = nullptr; //z->color = -1; 
-			z->points = new PointCollection(); 
+			z->points = new PointCollection();//std::make_unique<PointCollection>();
 			_z->n = z;
 			
 			_head->next = _z; _z->next = _z; 

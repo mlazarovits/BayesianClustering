@@ -165,7 +165,7 @@ class MergeTree : BaseTree{
 			//x->d = _alpha;
 			x->log_d = log(_alpha);
 			x->model = nullptr;
-			if(pt != nullptr) x->points = new PointCollection(*pt);
+			if(pt != nullptr) x->points = new PointCollection(*pt);//std::make_unique<PointCollection>(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
 			int n = _clusters.size();
@@ -206,7 +206,7 @@ class MergeTree : BaseTree{
 				mat.SetEntry(2*atan(exp(-eta)),0,0);
 				
 				//put 02pi
-				PointCollection mat_pt = mat.MatToPoints();
+				PointCollection mat_pt; mat.MatToPoints(mat_pt);
 				mat_pt.Put02pi(1);	
 
 				//shift
@@ -341,6 +341,7 @@ class MergeTree : BaseTree{
 			if(phiInf || thetaInf){
 				if(_verb > 5) cout << "found inf in pts, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
+				//x->model->SetData(x->points.get());
 				x->model->SetData(x->points);
 				return -1e308;
 			}
@@ -626,6 +627,7 @@ if(isnan){
 		//params["cov"].Print();
 }
 			//resets data to original points
+			//x->model->SetData(x->points.get());
 			x->model->SetData(x->points);
 			//x->model->GetData()->Print();
 			//cout << "end evidence" << endl;
@@ -646,7 +648,7 @@ if(isnan){
 	//cout << endl;
 	//cout << std::setprecision(5) << endl;
 			t = clock() - t;
-			cout << "time for Evidence " << (double)t/CLOCKS_PER_SEC << " sec" << endl;
+			//cout << "time for Evidence " << (double)t/CLOCKS_PER_SEC << " sec" << endl;
 			_total_evidence_time += (double)t/CLOCKS_PER_SEC;
 			_n_evidence_calls++;
 			return newLogL;
@@ -811,8 +813,9 @@ if(isnan){
 			Matrix new_center(3,1);
 			double w1 = starting_params[cl1]["alpha"].at(0,0) - _emAlpha;
 			double w2 = starting_params[cl2]["alpha"].at(0,0) - _emAlpha;
-			PointCollection cents = starting_params[cl1]["m"].MatToPoints({w1});
-			cents += starting_params[cl2]["m"].MatToPoints({w2});
+			PointCollection cents, cents2; starting_params[cl1]["m"].MatToPoints(cents, {w1});
+			starting_params[cl2]["m"].MatToPoints(cents2, {w2});
+			cents += cents2;
 			//centroid bw clusters 1 and 2 - parameters have been transformed + projected to be on a plane
 			BayesPoint center({cents.Centroid(0), cents.Centroid(1), cents.Centroid(2)});
 			new_cl["m"] = center;

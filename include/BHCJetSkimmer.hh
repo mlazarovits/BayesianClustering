@@ -113,7 +113,6 @@ class BHCJetSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 			
-
 		}
 
 		//instructions for adding a branch:
@@ -366,7 +365,8 @@ class BHCJetSkimmer{
 		//type = jettype+genparent = type+gmit->first 
 		void SubclusterPartonGenMatching(string type, int parentidx, Jet jet, int jidx, bool matchDaughters = true){
 			//if jet was matched to this type of gen particle, find subcluster matches to W partons
-			vector<Jet> consts = jet.GetConstituents();
+			vector<Jet> consts;
+			jet.GetConstituents(consts);
 			vector<int> subclGenMatchIdx(consts.size(), -1);	
 			if(parentidx != -1){
 				//subcluster-parton matching
@@ -469,8 +469,9 @@ class BHCJetSkimmer{
 			addVector(type, "subclusterEtaPhiCov");
 			addVector(type, "subclusterEtaTimeCov");
 			addVector(type, "subclusterPhiTimeCov");
+			Jet subcl;
 			for(int k = 0; k < jet.GetNConstituents(); k++){
-				Jet subcl = jet.GetConstituent(k);
+				jet.GetConstituent(k, subcl);
 				Matrix subcl_cov = subcl.GetCovariance();
 
 				vvFillBranch(subcl.e(), type, "subclusterEnergy",jidx);
@@ -490,7 +491,7 @@ class BHCJetSkimmer{
 		}
 
 
-		void DoGenMatching(vector<Jet> jets, map<string, vector<int>>& genmatches){
+		void DoGenMatching(const vector<Jet>& jets, map<string, vector<int>>& genmatches){
 			genmatches.clear();
 
 			vector<int> genWMatchIdxs_genParts(jets.size(),-1);
@@ -780,18 +781,19 @@ cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name "
 cout << "drawing rhs from jet #" << j << endl;
 
 					vector<JetPoint> rhs;
+					Jet subcl;
 					if(_evt2disp_z % 2 == 0 && _evt2disp_z > 0){
 						int k = _evt2disp_z / 2;
 						if(k >= _predJets[j].GetNConstituents()){
-							rhs = _predJets[j].GetJetPoints();
+							_predJets[j].GetJetPoints(rhs);
 						}
 						else{
-							Jet subcl = _predJets[j].GetConstituent(k);
-							rhs = subcl.GetJetPoints();
+							_predJets[j].GetConstituent(k, subcl);
+							subcl.GetJetPoints(rhs);
 						}
 					}
 					else{
-						rhs = _predJets[j].GetJetPoints();
+						_predJets[j].GetJetPoints(rhs);
 					}
 					for(auto rh : rhs){
 						double w;
@@ -1002,57 +1004,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		void SetVerbosity(int verb){_verb = verb;}
 		int _verb;
 
-		void FindResonances(vector<Jet>& jets, pair<int,int>& wmass_idxs, int& tmass_idx){
-			//find W candidates
-			double mW = 80.377;
-			double diff = 1e6;
-			double mij;
-			int j1, j2;
-			if(jets.size() < 2){
-				wmass_idxs = make_pair(-999,-999);
-				tmass_idx = -999;
-				return;
-			}
-			diff = fabs(jets[0].invMass(jets[1]) - diff);
-			j1 = 0;
-			j2 = 1;
-			for(int i = 1; i < jets.size(); i++){
-				for(int j = i+1; j < jets.size(); j++){
-					mij = jets[i].invMass(jets[j]);
-					if(fabs(mij - mW) < diff){
-						diff = fabs(mij - mW);
-						j1 = i;
-						j2 = j;
-					}
-				}
-			}
-			wmass_idxs = make_pair(j1, j2);
-			if(jets.size() < 3){
-				tmass_idx = -999;
-				return;
-			}
-			//find top candidates
-			double mTop = 172.69;
-			mij = -999;
-			Jet wJet = jets[j1];
-			wJet.add(jets[j2]);
-			diff = fabs(jets[2].invMass(wJet) - mTop);
-			tmass_idx = 2;
-			for(int i = 2; i < jets.size(); i++){
-				if(i != j1 && i != j2){
-					mij = jets[i].invMass(wJet);
-					if(fabs(mij - mTop) < diff){
-						diff = fabs(mij - mTop);
-						tmass_idx = i;
-					}
-				}
-			}
-
-		}
-
 	//find gen object that most closely is dr matched to jet
 	//when gen parts are used, need to specify id to match to (ie W - 24, top - 6, any light quark - 0)
-	void GenericMatchJet(vector<Jet>& injets, vector<Jet>& matchjets, vector<int>& bestMatchIdxs, int id = -1){
+	void GenericMatchJet(const vector<Jet>& injets, const vector<Jet>& matchjets, vector<int>& bestMatchIdxs, int id = -1){
 		//loop through gen particles
 		//dr match to jet
 		double bestDr, dr;
@@ -1267,46 +1221,6 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			double dphi = (phi1-phi2);
 			dphi = acos(cos(dphi));
 			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
-		}
-
-		double dot(vector<double> v1, vector<double> v2){
-			if(v1.size() != v2.size()){
-				cout << "BHCJetSkimmer::dot - vectors given are not the same size" << endl;
-				return -1;
-			}
-			//normalize vecs
-			double mag1 = 0;
-			for(auto v : v1) mag1 += v*v;
-			mag1 = sqrt(mag1);
-			for(int i = 0; i < v1.size(); i++)
-				v1[i] = v1[i]/mag1;
-			
-			double mag2 = 0;
-			for(auto v : v2) mag2 += v*v;
-			mag2 = sqrt(mag2);
-			for(int i = 0; i < v2.size(); i++)
-				v2[i] = v2[i]/mag2;
-			//cout << "mag1 " << mag1 << " mag2 " << mag2 << endl;
-			//do dot prod
-			double dotprod = 0;
-			for(int i = 0; i < v1.size(); i++){
-				//cout << "i " << i << " v1 " << v1[i] << " v2 " << v2[i] << endl;
-				dotprod += v1[i]*v2[i];
-			}
-			return dotprod;
-		}
-
-
-		void GetXYZVec(Jet j, vector<double>& v){
-			double x = _radius*cos(j.phi());
-			double y = _radius*sin(j.phi());
-			double theta = 2*atan2(1,exp(j.eta()));
-			double z = _radius/tan(theta);
-		
-			v.clear();
-			v.push_back(x);
-			v.push_back(y);
-			v.push_back(z);
 		}
 
 		double CalcSize(Matrix& cov, bool time = false){

@@ -1,6 +1,7 @@
 #include "BHCJetSkimmer.hh"
 #include "BayesCluster.hh"
 
+
 void BHCJetSkimmer::Skim(){
 	InitMapTree();
 	cout << "Writing skim to: " << _oname << endl;
@@ -220,7 +221,8 @@ void BHCJetSkimmer::Skim(){
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
-			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
+			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
+cout << "reco AK4 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
@@ -229,7 +231,8 @@ void BHCJetSkimmer::Skim(){
 			nsubcls_tot += gmm->GetNClusters();
 			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
 			for(int k = 0; k < gmm->GetNClusters(); k++){
-				auto params = gmm->GetDataStatistics(k);
+				map<string, Matrix> params;
+				gmm->GetDataStatistics(k, params);
 				Matrix mean = params["mean"];
 				Matrix cov = params["cov"];
 				//cout << "cluster #" << k << endl;
@@ -259,7 +262,8 @@ void BHCJetSkimmer::Skim(){
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
-			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
+cout << "reco AK8 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
+			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
@@ -289,7 +293,8 @@ void BHCJetSkimmer::Skim(){
 			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
 			t = clock() - t;
-			y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
+cout << "reco AK15 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
+			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
@@ -343,8 +348,9 @@ void BHCJetSkimmer::Skim(){
 
 		//assume detector radius is constant and equal for all rhs (all rhs in event are recorded in same type of detector)
 		//this should be true for all events
-		vector<JetPoint> rh = rhs[0].GetJetPoints(); //only 1 rh
-		_radius = sqrt(rh[0].x()*rh[0].x() + rh[0].y()*rh[0].y());
+		JetPoint rh;
+		rhs[0].GetJetPointAt(0,rh); //only 1 rh
+		_radius = sqrt(rh.x()*rh.x() + rh.y()*rh.y());
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
 		BayesCluster* algo = new BayesCluster(rhs);
@@ -371,7 +377,8 @@ void BHCJetSkimmer::Skim(){
 			_trees = algo->N2Cluster();
 		}
 		t = clock() - t;
-		y_time.push_back((double)t/CLOCKS_PER_SEC);
+cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
+		//y_time.push_back((double)t/CLOCKS_PER_SEC);
 		//cout <<  "y time entry " << y_time[y_time.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 		//comptime->Fill((double)t/CLOCKS_PER_SEC);
 
@@ -535,8 +542,9 @@ void BHCJetSkimmer::Skim(){
 				_jcenters[j] = m;			
 	
 				int nk = _predJets[j].GetNConstituents();
+				Jet subcl;
 				for(int k = 0; k < nk; k++){
-					Jet subcl = _predJets[j].GetConstituent(k);
+					_predJets[j].GetConstituent(k, subcl);
 					TEllipse sub_el = PlotEll(subcl);
 					sub_el.SetLineColor(j+4);	
 					sub_el.SetFillStyle(0);	

@@ -104,7 +104,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//fill eta phi map
 			vector<double> neighborEs; 
 			std::vector<std::pair<int, int>> icoords;
-			vector<JetPoint> rh_pts = scs[s].GetJetPoints();
+			vector<JetPoint> rh_pts; scs[s].GetJetPoints(rh_pts);
 			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,61);
 			for(int e = 0; e < (int)neighborEs.size(); e++){
 				ENeighbors->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
@@ -168,7 +168,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//SuperCluster_photonIndx
 			int np = _base->SuperCluster_PhotonIndx->at(scidx);
 			//get jet points (rhs with IDs) for CNN grid
-			rh_pts = bhc_sc.GetJetPoints();
+			bhc_sc.GetJetPoints(rh_pts);
 			
 			//int label = GetTrainingLabel(scidx, k, gmm);
 			int label = GetTrainingLabel(scidx, bhc_sc);
@@ -202,8 +202,11 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			if(label == 3) nspikes++;
 
 			//make rh maps
-			vector<JetPoint> rrhs;
-			for(int r = 0; r < rhs.size(); r++) rrhs.push_back(rhs[r].GetJetPoints()[0]);
+			vector<JetPoint> rrhs; JetPoint rrh; 
+			for(int r = 0; r < rhs.size(); r++){
+				rhs[r].GetJetPointAt(0,rrh);
+				rrhs.push_back(rrh);
+			}
 			cout << "label " << label << endl;
 			for(int r = 0; r < rrhs.size(); r++){
 				GetNeighborE(rrhs,r,icoords,Es);

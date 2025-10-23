@@ -25,12 +25,12 @@ class Jet{
 	public:
 		Jet();
 		Jet(double px, double py, double pz, double E);
-		Jet(JetPoint rh, BayesPoint vtx);
-		Jet(const vector<JetPoint>& rhs, BayesPoint vtx);
+		Jet(const JetPoint& rh, const BayesPoint& vtx);
+		Jet(const vector<JetPoint>& rhs, const BayesPoint& vtx);
 		Jet(const vector<Jet>& jets);
 		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
 		Jet(BasePDF* pdf, double E, double pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
-		Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
+		Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 
@@ -51,7 +51,7 @@ class Jet{
 				
 				_idx = j.GetUserIdx();
 				_vtx = j.GetVertex();
-				_rhs = j.GetJetPoints();
+				j.GetJetPoints(_rhs);
 				_nRHs = (int)_rhs.size();
 				_constituents = j._constituents;
 				_mu = j._mu;
@@ -221,15 +221,26 @@ class Jet{
 		double deltaR(Jet& jet) const{ return sqrt( (_eta - jet.eta())*(_eta - jet.eta()) + (_phi - jet.phi())*(_phi - jet.phi())); }
 		
 		void SetWeight(double w){ for(int i = 0; i < _nRHs; i++) _rhs[i].SetWeight(w); }
-		void SetWeight(vector<double> w){ if(w.size() != _nRHs) return;
+		void SetWeight(const vector<double>& w){ if(w.size() != _nRHs) return;
 			for(int i = 0; i < _nRHs; i++) _rhs[i].SetWeight(w[i]); }
-		void GetWeights(vector<double>& ws){
+		void GetWeights(vector<double>& ws) const{
 			ws.clear();
 			for(int i = 0; i < _nRHs; i++) ws.push_back(_rhs[i].GetWeight()); 
 		}
 
 		//returns rec hits as jet points
-		const vector<JetPoint>& GetJetPoints() const{return _rhs;}
+		void GetJetPoints(vector<JetPoint>& rhs) const{
+			rhs.clear();
+			rhs = _rhs;
+		}	
+
+		void GetJetPointAt(int i, JetPoint& rh) const{
+			if(i >= _nRHs){
+				return;
+			}
+			rh = _rhs[i];
+		}
+		
 		//returns rec hits as jets
 		const void GetJets(vector<Jet>& rhs) const{
 			rhs.clear();
@@ -336,16 +347,17 @@ class Jet{
 			_constituents.push_back(jt);
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		vector<Jet>& GetConstituents(){
-			return _constituents;
+		void GetConstituents(vector<Jet>& consts){
+			consts.clear();
+			consts = _constituents;
 		}
 	
-		Jet& GetConstituent(int c){
-			if(c > _constituents.size()){
+		void GetConstituent(int c, Jet& j){
+			if(c >= _constituents.size()){
 				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
-				return *this;
+				return;
 			}
-			return _constituents[c];
+			j = _constituents[c];
 		}
 	
 
@@ -363,9 +375,7 @@ class Jet{
 
 
 		int GetNConstituents() const{
-			//if only 1 subcluster, jet is its own constituent
-			if(_constituents.size() == 0 && !_cov.empty()) return 1;
-			else return (int)_constituents.size();
+			return (int)_constituents.size();
 		}
 		void SetCenter(Matrix& mu){
 			_eta = mu.at(0,0);
@@ -551,10 +561,9 @@ class Jet{
 			vector<bool> pass; //true = pass, false = fail
 //cout << "original energy " << this->E() << " pt " << this->pt() << endl;
 			//sort constituents by energy
-			vector<Jet> constituents = _constituents;
-			for(int k = 0; k < constituents.size(); k++){
-				double relE = constituents[k].e() / this->e();
-				Matrix subcl_cov = constituents[k].GetCovariance();
+			for(int k = 0; k < _constituents.size(); k++){
+				double relE = _constituents[k].e() / this->e();
+				Matrix subcl_cov = _constituents[k].GetCovariance();
 				double relEtaVar = subcl_cov.at(0,0) / cov.at(0,0);
 				double relPhiVar = subcl_cov.at(1,1) / cov.at(1,1);
 				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
@@ -573,7 +582,6 @@ class Jet{
 				Jet ret;
 				return ret;
 			}
-
 			double totE = 0;
 			for(int n = 0; n < _nRHs; n++){
 				double maxRnk = 0;
@@ -581,8 +589,8 @@ class Jet{
 				JetPoint effRh;
 				double totR = 0;
 				//cout << "rh #" << n;
-				for(int k = 0; k < constituents.size(); k++){
-					effRh = constituents[k]._rhs[n];
+				for(int k = 0; k < _constituents.size(); k++){
+					effRh = _constituents[k]._rhs[n];
 					if(effRh.GetWeight() > maxRnk){
 						maxRnk = effRh.GetWeight();
 						assignedK = k;
@@ -603,7 +611,7 @@ class Jet{
 					effRh.SetWeight(totR);
 				}
 				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-//cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << endl;
+//cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << " totR " << totR << endl;
 				totE += effRh.e();
 
 				cleanedRhs.push_back(effRh);
@@ -616,12 +624,13 @@ class Jet{
 			for(int k = 0; k < pass.size(); k++){
 				if(remove){
 					if(pass[k])
-						cleanedJet.AddConstituent(constituents[k]);
+						cleanedJet.AddConstituent(_constituents[k]);
 				}
 				else{
-					cleanedJet.AddConstituent(constituents[k]);
+					cleanedJet.AddConstituent(_constituents[k]);
 				}
-			}	
+			}
+//cout << "# subclusters cleaned jet has " << cleanedJet.GetNConstituents() << endl;
 //cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
 			return cleanedJet;
 		}
@@ -631,7 +640,7 @@ class Jet{
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
 		//sigclass = number that corresponds to signal class that want to keep
 		//minscore = min score val to qualify as "keep" 
-		Jet GenericClean(vector<pair<int, double>> class_score, int sigclass, double minscore, bool remove = false){
+		Jet GenericClean(const vector<pair<int, double>>& class_score, int sigclass, double minscore, bool remove = false){
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
@@ -790,7 +799,6 @@ class Jet{
 		BayesPoint _mom;
 		BayesPoint _vtx;
 
-		//mutable double _eta, _phi, _theta;
 		//rec hits (ids) in jet
 		vector<JetPoint> _rhs;
 

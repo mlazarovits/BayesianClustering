@@ -61,6 +61,10 @@ class BaseTree{
 			
 			//node* operator =(const node* n){
 			node(const node& n){
+			//	if(n.points)
+			//		points = std::make_unique<PointCollection>(*n.points);
+			//	else
+			//		points = nullptr;
 				points = n.points;
 				l = n.l;
 				r = n.r;
@@ -82,9 +86,6 @@ class BaseTree{
 			//destructor for node
 			~node(){
 				//cout << "~node start" << endl;
-				points = nullptr;
-				//cout << "a" << endl;
-				delete points;
 				//cout << "b" << endl;
 				model = nullptr;
 				//cout << "c" << endl;

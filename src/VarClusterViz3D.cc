@@ -122,9 +122,9 @@ void VarClusterViz3D::WriteJson(string filename){
 	
 	double x0, y0, z0;
 	Matrix mean, cov, scT;
-	scT.transpose(_scale);	
+	scT.transpose(_scale);
 	for(int k = 0; k < _k; k++){
-		cluster_params = _model->GetLHPosteriorParameters(k);
+		_model->GetLHPosteriorParameters(k, cluster_params);
 		//"un"scale locally to keep model parameters + data unaffected
 		mean = cluster_params["mean"];
 		mean.mult(_scale,mean);

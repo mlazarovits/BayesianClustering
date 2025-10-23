@@ -442,7 +442,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 		jet.CalculateCovariance();
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->AK4Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->AK4Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
-		vector<JetPoint> jet_rhs = jet.GetJetPoints();
+		vector<JetPoint> jet_rhs;
+		jet.GetJetPoints(jet_rhs);
 		//cout << "jet #" << recoAK4jets.size() << " has";
 		//for(auto rh : jet_rhs) cout << " rh time " << rh.time() << " energy " << rh.E() << endl;
 		recoAK4jets.push_back(jet);
@@ -506,7 +507,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 		jet.CalculateCovariance();
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->AK8Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->AK8Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
-		vector<JetPoint> jet_rhs = jet.GetJetPoints();
+		vector<JetPoint> jet_rhs;
+		jet.GetJetPoints(jet_rhs);
 		//cout << "jet #" << recoAK8jets.size() << " has";
 		//for(auto rh : jet_rhs) cout << " rh time " << rh.time() << " energy " << rh.E() << endl;
 		recoAK8jets.push_back(jet);
@@ -571,7 +573,8 @@ void JetSimProducer::GetRecoJets(vector<Jet>& recoAK4jets, vector<Jet>& recoAK8j
 		jet.CalculateCovariance();
 		//cout << "jet " << j << " has " << jet.GetNRecHits() << " rhs - energy " << _base->AK15Jet_energy->at(j) << " tot rh e " << totE << " ratio " << totE/_base->AK15Jet_energy->at(j) << endl;
 		//put cut on min n rhs (ie 2)
-		vector<JetPoint> jet_rhs = jet.GetJetPoints();
+		vector<JetPoint> jet_rhs;
+		jet.GetJetPoints(jet_rhs);
 		//cout << "jet #" << recoAK15jets.size() << " has";
 		//for(auto rh : jet_rhs) cout << " rh time " << rh.time() << " energy " << rh.E() << endl;
 		recoAK15jets.push_back(jet);

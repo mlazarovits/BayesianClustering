@@ -145,12 +145,16 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
 			cout << "Uh oh best probability merger is jet to its mirror point. Returning for debugging..." << endl;
-			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
-			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
+			vector<JetPoint> jps_i, jps_j;
+			_jets[jet_i].GetJetPoints(jps_i);
+			_jets[jet_j].GetJetPoints(jps_j);
 			PointCollection jeti_pts, jetj_pts;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
+				pt.SetUserIdx(jps_i[i].rhId());
+				if(jps_i[i].InvalidTime())
+					pt.SetSkipDim(2);
 				_sanitize(pt);
 				jeti_pts += pt;
 			}
@@ -161,6 +165,9 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
+				pt.SetUserIdx(jps_j[i].rhId());
+				if(jps_j[i].InvalidTime())
+					pt.SetSkipDim(2);
 				_sanitize(pt);
 				jetj_pts += pt;
 			}
@@ -191,12 +198,16 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		int nn;
 		if(verbose){
 			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
-			vector<JetPoint> jps_i = _jets[jet_i].GetJetPoints();
-			vector<JetPoint> jps_j = _jets[jet_j].GetJetPoints();
+			vector<JetPoint> jps_i, jps_j;
+			_jets[jet_i].GetJetPoints(jps_i);
+			_jets[jet_j].GetJetPoints(jps_j);
 			PointCollection jeti_pts, jetj_pts;
 			for(int i = 0; i < (int)jps_i.size(); i++){
 				BayesPoint pt = BayesPoint({jps_i[i].eta(), jps_i[i].phi_02pi(), jps_i[i].t()});
 				pt.SetWeight(jps_i[i].GetWeight());
+				pt.SetUserIdx(jps_j[i].rhId());
+				if(jps_j[i].InvalidTime())
+					pt.SetSkipDim(2);
 				_sanitize(pt);
 				jeti_pts += pt;
 			}
@@ -207,6 +218,9 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
+				pt.SetUserIdx(jps_j[i].rhId());
+				if(jps_j[i].InvalidTime())
+					pt.SetSkipDim(2);
 				_sanitize(pt);
 				jetj_pts += pt;
 			}
@@ -228,7 +242,8 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		vector<int> updated_neighbors;
 		//update DNN with RemoveCombinedAddCombination
 		//this should also update the merge tree - RemoveAndAddPoints in DnnPlane does
-		vector<JetPoint> jps = _jets[_jets.size() - 1].GetJetPoints();
+		vector<JetPoint> jps;
+		_jets[_jets.size() - 1].GetJetPoints(jps);
 		PointCollection newpts = PointCollection();
 		for(int i = 0; i < (int)jps.size(); i++){
 			BayesPoint pt = BayesPoint({jps[i].eta(), jps[i].phi_02pi(), jps[i].t()});
@@ -277,7 +292,8 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			vector<double> norms;
 			trees[i]->model->GetNorms(norms);
 			for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
-				params = trees[i]->model->GetLHPosteriorParameters(k);
+				std::map<string, Matrix> params;
+				trees[i]->model->GetLHPosteriorParameters(k, params);
 				cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
 				cout << "cov " << endl; params["cov"].Print();
 			}
@@ -288,13 +304,15 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			if(trees[i]->mirror != nullptr){
 				cout << " tree has mirror node with subclusters " << endl;
 				for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
-					params = trees[i]->mirror->model->GetLHPosteriorParameters(k);
+					std::map<string, Matrix> params;
+					trees[i]->mirror->model->GetLHPosteriorParameters(k, params);
 					cout << " k " << k << " center " << endl; params["mean"].Print();
 				}
 			}
 			cout << endl;
 		}
 	}
+	mt->avg_time();
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
 	if(_verb > -1) cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
@@ -627,8 +645,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 		vector<double> norms;
 		gmm->GetNorms(norms);
 		for(int k = 0; k < gmm->GetNClusters(); k++){
-			auto params1 = gmm->GetLHPosteriorParameters(k);
-			auto params2 = gmm->GetDataStatistics(k);
+			std::map<string, Matrix> params1, params2;
+			gmm->GetLHPosteriorParameters(k, params1);
+			gmm->GetDataStatistics(k, params2);
 			cout << "weight " << k << ": " << params1["pi"].at(0,0) << " alpha: " << params1["alpha"].at(0,0) << " eff evts: " << norms[k] << endl;
 			cout << "subcl #" << k << endl;	
 			cout << "mean " << endl;

@@ -28,8 +28,7 @@ struct ClusterObj{
 
 	int GetNSubclusters(){ return _jet.GetNConstituents(); }
 	void GetSubclusters(vector<Jet>& subcls){
-		subcls.clear();
-		subcls = _jet.GetConstituents();
+		_jet.GetConstituents(subcls);
 	}
 
 	vector<bool> _PUscores;
@@ -70,9 +69,11 @@ struct ClusterObj{
 		double t = 0;
 		double norm = 0;
 		PointCollection locs;
+		Jet subcl;
+		vector<JetPoint> rhs;
 		for(int k = 0; k < _jet.GetNConstituents(); k++){
-			Jet subcl = _jet.GetConstituent(k);
-			vector<JetPoint> rhs = subcl.GetJetPoints();	
+			_jet.GetConstituent(k, subcl);
+			subcl.GetJetPoints(rhs);
 			for(int r = 0; r < rhs.size(); r++){
 				double w = rhs[r].GetWeight()*rhs[r].E(); //weight = r_nk*isPU_k
 				BayesPoint loc({rhs[r].x(), rhs[r].y(), rhs[r].z(), rhs[r].t()});
@@ -112,9 +113,11 @@ struct ClusterObj{
 		//match resolutions via rh ids
 		double restot = 0;
 		double norm = 0;
+		Jet subcl;
+		vector<JetPoint> rhs;
 		for(int k = 0; k < _jet.GetNConstituents(); k++){
-			Jet subcl = _jet.GetConstituent(k);
-			vector<JetPoint> rhs = subcl.GetJetPoints();
+			_jet.GetConstituent(k, subcl);
+			subcl.GetJetPoints(rhs);
 			for(int r = 0; r < rhs.size(); r++){
 				double w = rhs[r].GetWeight(); //weight = r_nk*isPU_k
 				restot += w*res[rhs[r].rhId()];
@@ -152,7 +155,8 @@ struct ClusterObj{
 	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
 	void GetCenterXtal(JetPoint& center){
 		//get center of pts in ieta, iphi -> max E point
-		vector<JetPoint> rhs = _jet.GetJetPoints();
+		vector<JetPoint> rhs;
+		_jet.GetJetPoints(rhs);
 		double maxE = 0;
 		for(int r = 0; r < rhs.size(); r++){
 			if(rhs[r].E() > maxE){
@@ -185,8 +189,10 @@ struct ClusterObj{
 		int rh_ieta = _detIDmap.at(center.rhId()).first;
 		int rh_iphi = _detIDmap.at(center.rhId()).second;
 		int deta, dphi;
-		Jet subcl = _jet.GetConstituent(k);
-		vector<JetPoint> rhs = subcl.GetJetPoints();
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		vector<JetPoint> rhs;
+		subcl.GetJetPoints(rhs);
 		for(int j = 0; j < rhs.size(); j++){
 			ieta = _detIDmap.at(rhs[j].rhId()).first;
 			iphi = _detIDmap.at(rhs[j].rhId()).second;

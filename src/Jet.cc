@@ -52,9 +52,10 @@ Jet::Jet(double px, double py, double pz, double E){
 
 }
 
-Jet::Jet(JetPoint rh, BayesPoint vtx){
+Jet::Jet(const JetPoint& rh, const BayesPoint& vtx){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
+	_rhs.reserve(1);
 	_rhs.push_back(rh);
 	_nRHs = (int)_rhs.size();
 	
@@ -100,10 +101,11 @@ Jet::Jet(JetPoint rh, BayesPoint vtx){
 }
 
 
-Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
+Jet::Jet(const vector<JetPoint>& rhs, const BayesPoint& vtx){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
-	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
+	//for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
+	_rhs = rhs;
 	_nRHs = (int)_rhs.size();	
 	double theta, pt, x, y, z;
 	_phi = _invalid_phi;
@@ -161,10 +163,12 @@ Jet::Jet(const vector<JetPoint>& rhs, BayesPoint vtx){
 Jet::Jet(const vector<Jet>& jets){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
+	vector<JetPoint> rhs;
 	for(int i = 0; i < (int)jets.size(); i++){
-		vector<JetPoint> rhs = jets[i].GetJetPoints();
+		jets[i].GetJetPoints(rhs);
+		_rhs = rhs;
 		for(int j = 0; j < (int)rhs.size(); j++)
-		_rhs.push_back(rhs[j]);
+			_rhs.push_back(rhs[j]);
 	}
 	_nRHs = (int)_rhs.size();	
 	double pt;
@@ -298,7 +302,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 }
 
 
-Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
+Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
 	
@@ -308,6 +312,7 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	model->GetNorms(norms);
 	int nsubcl = model->GetNClusters();
 	_nRHs = model->GetData()->GetNPoints();
+	_rhs.reserve(_nRHs);
 	double pt = 0;
 	_E = 0;
 	_px = 0;
@@ -393,19 +398,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 	//_mu.SetEntry(_phi,1,0);
 	//_mu.SetEntry(_t,2,0);
 	CalculateCenter();
-	double ret = 0;
-	for(auto rh : _rhs) ret += rh.phi_02pi();
-	ret /= (double)_rhs.size();
-	//cout << "phi centroid from CalculateCenter " << _phi << " euclidean phi mean " << ret << " circular phi mean " << model->GetData()->CircularMean(1) << endl;
-	//if(fabs(_phi - model->GetData()->CircularCentroid(1)) > 1e-10){
-	//	cout << "Jet::WARNING - CalculateCenter() _phi " << _phi << " doesn't match model->GetData()->CircularCentroid() phi " << model->GetData()->CircularCentroid(1) << endl;
-	//	//check if inputs to CalculateCenter() _phi and CircularCentroid phi are the same (ie phi coord and weights)
-	//	cout << "CalculateCenter inputs" << endl;
-	//	for(int i = 0; i < _nRHs; i++){
-	//		cout << "phi " << _rhs[i].phi_02pi() << " w " << _rhs[i].GetWeight() << endl;
-	//	}
-	//	cout << "model data" << endl; model->GetData()->Print();
-	//}
 	
 	_kt2 = _px*_px + _py*_py;
 
@@ -417,7 +409,8 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 
 	//set constituents (subclusters)
 	for(int k = 0; k < nsubcl; k++){
-		auto params = model->GetLHPosteriorParameters(k);
+		map<string, Matrix> params;
+		model->GetLHPosteriorParameters(k, params);
 		Ek = norms[k]/gev;
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 	
@@ -475,7 +468,6 @@ Jet::Jet(BasePDFMixture* model, BayesPoint vtx, double gev, double detR){
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
 		_constituents.push_back(subcl);
 	}
-
 }
 
 //copy ctor
@@ -494,7 +486,7 @@ Jet::Jet(const Jet& j){
 	
 	_idx = j.GetUserIdx();
 	_vtx = j.GetVertex();
-	_rhs = j.GetJetPoints();
+	j.GetJetPoints(_rhs);
 	_nRHs = (int)_rhs.size();
 
 	_constituents = j._constituents;
@@ -521,7 +513,8 @@ bool Jet::operator !=(const Jet& jet) const{
 //adding four vectors - recalculate invariant mass and other kinematic quantities
 void Jet::add(const Jet& jt){
 	//add rhs from jt
-	vector<JetPoint> rhs = jt.GetJetPoints();
+	vector<JetPoint> rhs;
+	jt.GetJetPoints(rhs);
 
 	for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_nRHs += (int)rhs.size();

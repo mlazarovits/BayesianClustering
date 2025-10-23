@@ -139,7 +139,7 @@ Gaussian* Gaussian::mult(Gaussian* p1){
 	//then invert added covariances for overall distribution
 	new_cov.invert(new_cov); 
 
-	BayesPoint x = mu1.MatToPoints().at(0);
+	BayesPoint x; mu1.MatToPoint(x);
 	double coeff = gaus_coeff->Prob(x);	
 
 	ret->SetParameter("mean",new_mu);

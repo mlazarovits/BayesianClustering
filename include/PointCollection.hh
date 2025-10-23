@@ -58,7 +58,7 @@ class PointCollection{
 
 
 		//add only unique points
-		PointCollection& operator +=(PointCollection pts){
+		PointCollection& operator +=(const PointCollection& pts){
 			//cout << "PointCollection+=PointCollection" << endl;
 			for(int i = 0; i < pts.GetNPoints(); i++){
 				if(!this->Has(pts.at(i))){
@@ -77,7 +77,7 @@ class PointCollection{
 		}
 		
 		//add only unique points
-		PointCollection& operator +=(BayesPoint& pt){
+		PointCollection& operator +=(const BayesPoint& pt){
 			//cout << "PointCollection+=Point" << endl;
 			if(!this->Has(pt)){
 				_pts.push_back(pt);

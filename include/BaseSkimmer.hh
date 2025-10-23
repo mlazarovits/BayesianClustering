@@ -976,10 +976,11 @@ class BaseSkimmer{
 		//plot PU scores of subclusters
 		addVectors();
 		Matrix cov = bhc_jets[0].GetCovariance();
+		Jet subcl;
 		for(int k = 0; k < scores.size(); k++){
 //cout << "subcl #" << k << " score " << scores[k] << endl;
 			vvFillBranch((double)scores[k],"PUscores",idx);
-			Jet subcl = bhc_jets[0].GetConstituent(k);
+			bhc_jets[0].GetConstituent(k, subcl);
 			Matrix subcl_cov = subcl.GetCovariance();
 			double relEta = subcl_cov.at(0,0) / cov.at(0,0);
 			double relPhi = subcl_cov.at(1,1) / cov.at(1,1);

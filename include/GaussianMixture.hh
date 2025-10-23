@@ -17,7 +17,7 @@ class GaussianMixture : public BasePDFMixture{
 		};
 	
 		//has the option to take in posteriors of previous model(s) as starting point to avoid randomly-initialized kmeans
-		void InitParameters(map<string, Matrix> priors = {}, vector<map<string, Matrix>> prev_posteriors = {}, unsigned long long seed = 111);
+		void InitParameters(const map<string, Matrix>& priors = {}, const vector<std::map<string, Matrix>>& prev_posteriors = {}, unsigned long long seed = 111);
 		//E-step
 		void CalculatePosterior();
 		//M-step
@@ -27,7 +27,7 @@ class GaussianMixture : public BasePDFMixture{
 
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
-		map<string, Matrix> GetLikelihoodParameters(int k); 
+		void GetLikelihoodParameters(int k, std::map<string,Matrix>& p); 
 
 		//shift learned model parameters
 		void ShiftParameters(const BayesPoint& pt){
@@ -35,9 +35,10 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			Matrix shift;
 			shift.PointToMat(pt);
+			PointCollection meanpts;
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection meanpts = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
@@ -45,7 +46,7 @@ class GaussianMixture : public BasePDFMixture{
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				meanpts = priormean.MatToPoints();
+				priormean.MatToPoints(meanpts);
 				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
@@ -53,7 +54,7 @@ class GaussianMixture : public BasePDFMixture{
 
 
 				//shift data statistics
-				meanpts = _xbar[k].MatToPoints();
+				_xbar[k].MatToPoints(meanpts);
 				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
 				meanpts.Translate(pt.at(2),2);
@@ -108,99 +109,103 @@ class GaussianMixture : public BasePDFMixture{
 		//add theta projection
 		void ProjectTheta_params(){
 			Matrix mean, priormean;
+			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection mean_pt = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
-				mean_pt.AngleToPlaneProject(0);	
+				meanpts.AngleToPlaneProject(0);	
 				//cout << "unproj mean" << endl; mean_pt.Print();
-				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				PointCollection priormean_pt = priormean.MatToPoints();
-				priormean_pt.AngleToPlaneProject(0);	
-				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+				PointCollection priormean_pt; priormean.MatToPoints(meanpts);
+				meanpts.AngleToPlaneProject(0);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 
 				//shift data statistics
-				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				xbar_pt.AngleToPlaneProject(0);	
-				_xbar[k] = Matrix(xbar_pt);	
+				_xbar[k].MatToPoints(meanpts);
+				meanpts.AngleToPlaneProject(0);	
+				_xbar[k] = Matrix(meanpts);	
 			}
 		
 		}
 		//add theta projection
 		void ProjectPhi_params(){
 			Matrix mean, priormean;
+			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection mean_pt = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
-				mean_pt.AngleToPlaneProject(1);	
+				meanpts.AngleToPlaneProject(1);	
 				//cout << "unproj mean" << endl; mean_pt.Print();
-				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				PointCollection priormean_pt = priormean.MatToPoints();
-				priormean_pt.AngleToPlaneProject(1);	
-				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+				priormean.MatToPoints(meanpts);
+				meanpts.AngleToPlaneProject(1);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 
 				//shift data statistics
-				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				xbar_pt.AngleToPlaneProject(1);	
-				_xbar[k] = Matrix(xbar_pt);	
+				_xbar[k].MatToPoints(meanpts);
+				meanpts.AngleToPlaneProject(1);	
+				_xbar[k] = Matrix(meanpts);
 			}
 		
 		}
 		
 		void UnprojectTheta_params(){
 			Matrix mean, priormean;
+			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection mean_pt = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
-				mean_pt.PlaneToAngleProject(0);	
+				meanpts.PlaneToAngleProject(0);	
 				//cout << "unproj mean" << endl; mean_pt.Print();
-				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				PointCollection priormean_pt = priormean.MatToPoints();
-				priormean_pt.PlaneToAngleProject(0);	
-				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+				priormean.MatToPoints(meanpts);
+				meanpts.PlaneToAngleProject(0);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 
 				//shift data statistics
-				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				xbar_pt.PlaneToAngleProject(0);	
-				_xbar[k] = Matrix(xbar_pt);	
+				_xbar[k].MatToPoints(meanpts);
+				meanpts.PlaneToAngleProject(0);	
+				_xbar[k] = Matrix(meanpts);	
 			}
 		}
 	
 		void UnprojectPhi_params(){
 			Matrix mean, priormean;
+			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection mean_pt = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
-				mean_pt.PlaneToAngleProject(1);	
+				meanpts.PlaneToAngleProject(1);	
 				//cout << "unproj mean" << endl; mean_pt.Print();
-				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				PointCollection priormean_pt = priormean.MatToPoints();
-				priormean_pt.PlaneToAngleProject(1);	
-				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
+				priormean.MatToPoints(meanpts);
+				meanpts.PlaneToAngleProject(1);
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 
 				//shift data statistics
-				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				xbar_pt.PlaneToAngleProject(1);	
-				_xbar[k] = Matrix(xbar_pt);	
+				_xbar[k].MatToPoints(meanpts);
+				meanpts.PlaneToAngleProject(1);	
+				_xbar[k] = Matrix(meanpts);
 			}
 		}
 
@@ -208,25 +213,25 @@ class GaussianMixture : public BasePDFMixture{
 		void PutPhi02pi_params(){
 			//put means on [0,2pi]
 			Matrix mean, priormean;
+			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
 				mean = m_model[k]->GetParameter("mean");
-				PointCollection mean_pt = mean.MatToPoints();
+				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
-				mean_pt.Put02pi(1);	
+				meanpts.Put02pi(1);
 				//cout << "02pi mean" << endl; mean_pt.Print();
-				m_model[k]->SetParameter("mean",Matrix(mean_pt));
+				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
 				priormean = m_model[k]->GetPrior()->GetParameter("mean");
-				PointCollection priormean_pt = priormean.MatToPoints();
-				priormean_pt.Put02pi(1);	
-				m_model[k]->GetPrior()->SetParameter("mean",Matrix(priormean_pt));
-
+				priormean.MatToPoints(meanpts);
+				meanpts.Put02pi(1);	
+				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
 
 				//shift data statistics
-				PointCollection xbar_pt = _xbar[k].MatToPoints();
-				xbar_pt.Put02pi(1);
-				_xbar[k] = Matrix(xbar_pt);	
+				_xbar[k].MatToPoints(meanpts);
+				meanpts.Put02pi(1);
+				_xbar[k] = Matrix(meanpts);
 			}
 		}
 	
@@ -339,9 +344,9 @@ class GaussianMixture : public BasePDFMixture{
 		double EvalEntropyTerms();
 		double EvalNLLTerms();
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		map<string, Matrix> GetLHPosteriorParameters(int k) const; 
-		map<string, Matrix> GetOnlyPosteriorParameters(int k);
-		map<string, Matrix> GetDataStatistics(int k) const; 
+		void GetLHPosteriorParameters(int k, std::map<string,Matrix>& p) const; 
+		void GetOnlyPosteriorParameters(int k, std::map<string,Matrix>& p);
+		void GetDataStatistics(int k,std::map<string,Matrix>& p) const; 
 
 
 		
@@ -362,7 +367,7 @@ class GaussianMixture : public BasePDFMixture{
 		//this needs to be called BEFORE init parameters because InitParameters can remove subclusters if the k-means algo
 		//finds nothing assigned to the subcluster BUT it relies on the priors still
 		//bc the UpdateMixture method also updates the posterior parameters (ie the dims of m_post, etc)
-		void InitPriorParameters(map<string, Matrix> params = {});
+		void InitPriorParameters(const map<string, Matrix>& params = {});
 
 
 	private:

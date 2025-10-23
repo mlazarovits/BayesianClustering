@@ -50,7 +50,7 @@ class BasePDFMixture : public BasePDF{
 		}
 
 
-		virtual void InitParameters(map<string, Matrix> priors = {}, vector<map<string, Matrix>> prev_posteriors = {}, unsigned long long seed = 111) = 0;
+		virtual void InitParameters(const map<string, Matrix>& priors = {}, const vector<std::map<string, Matrix>>& prev_posteriors = {}, unsigned long long seed = 111) = 0;
 		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear();
 			for(auto& pointer : m_model)
 				delete pointer;
@@ -125,17 +125,17 @@ class BasePDFMixture : public BasePDF{
 		virtual void CalculatePosterior() = 0;
 		virtual void UpdateParameters() = 0;
 		//returns mu, cov, and mixing coeffs for cluster k
-		virtual map<string, Matrix> GetLikelihoodParameters(int k) = 0; 
+		virtual void GetLikelihoodParameters(int k, std::map<string, Matrix>& p) = 0; 
 		
 		//for variational EM algorithm
-		virtual void InitPriorParameters(map<string, Matrix> params = {}) = 0;
+		virtual void InitPriorParameters(const map<string, Matrix>& params = {}) = 0;
 		//virtual void SetPriorParameters(map<string, Matrix> params) = 0;
 		//virtual void InitPriorParameters(unsigned long long seed = 123) = 0;
 		virtual void CalculateVariationalPosterior() = 0;
 		virtual void UpdateVariationalParameters() = 0;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		virtual map<string, Matrix> GetLHPosteriorParameters(int k) const = 0; 
-		virtual map<string, Matrix> GetDataStatistics(int k) const = 0; 
+		virtual void GetLHPosteriorParameters(int k, std::map<string,Matrix>& p) const = 0; 
+		virtual void GetDataStatistics(int k, std::map<string,Matrix>& p) const = 0; 
 		double GetPi(int k){ return (m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()); }
 		double GetCoeff(int k){ return m_coeffs[k]; }
 
@@ -394,7 +394,8 @@ class BasePDFMixture : public BasePDF{
 			m_data->GetWeights(ws);
 			m_data->GetSkipDims(skips);
 			m_data->GetUserIdxs(idxs);
-			m_data = new PointCollection(x.MatToPoints(ws,skips,idxs));
+			x.MatToPoints(*m_data,ws,skips,idxs);
+			//m_data = new PointCollection(x.MatToPoints(ws,skips,idxs));
 
 			//also scale smear - if datacov is set
 			if(_smear){

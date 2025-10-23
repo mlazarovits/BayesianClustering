@@ -74,7 +74,7 @@ GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	m_W0inv = Matrix(m_dim,m_dim);
 }
 
-void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<string, Matrix>> prev_posteriors, unsigned long long seed){
+void GaussianMixture::InitParameters(const map<string, Matrix>& priors, const vector<map<string, Matrix>>& prev_posteriors, unsigned long long seed){
 //cout << "GaussianMixture::InitParameters - data" << endl; m_data->Print();
 //cout << "m_n " << m_n << " m_k " << m_k << endl;
 	//if no previously defined posteriors, use randomly initialized kmeans 
@@ -197,7 +197,10 @@ void GaussianMixture::InitParameters(map<string, Matrix> priors, vector<map<stri
 	//if have locations from previous models, use those to initialize kmeans
 	if(!prev_posteriors.empty()){
 		PointCollection start_means;
-		for(auto params : prev_posteriors) start_means += params["m"].MatToPoints();
+		for(auto params : prev_posteriors){
+			PointCollection sm; params["m"].MatToPoints(sm);
+			start_means += sm; 
+		}
 		//add extra random starting positions if more clusters than previous models are given
 		if(m_k > prev_posteriors.size()){
 			PointCollection initpts = m_data->SelectPoints(m_k - prev_posteriors.size(),seed);	
@@ -386,24 +389,23 @@ double GaussianMixture::EvalLogL(){
 
 
 //returns expected value of LH parameters from posterior distributions
-map<string, Matrix> GaussianMixture::GetLikelihoodParameters(int k){ 
-	map<string, Matrix> p;
-	if(k >= m_k) return p;
-	if(k < 0) return p;
+void GaussianMixture::GetLikelihoodParameters(int k,map<string, Matrix>& p){ 
+	p.clear();
+	if(k >= m_k) return;
+	if(k < 0) return; 
 	//expected value of N(mu_k | mu_k, beta_k*lam_k) = m_k
 	p["mean"] = m_model[k]->GetParameter("mean");
 	//expected value of Wishart(lam_k | nu_k, W_k) = nu_k*W_k
 	p["cov"] = m_model[k]->GetParameter("cov");
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
-	return p;
 };
 
 //returns posterior values of parameters, with Gaussian model parameters set by expected values
-map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{ 
+void GaussianMixture::GetLHPosteriorParameters(int k, map<string, Matrix>& p) const{ 
 //cout << "GaussianMixture::GetLHPosteriorParameters - getting params for cluster " << k << " of " << m_k << " " << m_model.size() << " total" << " dim " << m_dim << endl;
-	map<string, Matrix> p;
-	if(k >= m_k) return p;
-	if(k < 0) return p;
+	p.clear();
+	if(k >= m_k) return;
+	if(k < 0) return;
 	//expected value of N(mu_k | mu_k, beta_k*lam_k) = m_k
 	p["mean"] = m_model[k]->GetParameter("mean");
 //cout << "model #" << k << " mean has dim " << m_model[k]->GetParameter("mean").GetDims()[0] << " weight " << m_norms[k] << endl;
@@ -422,24 +424,22 @@ map<string, Matrix> GaussianMixture::GetLHPosteriorParameters(int k) const{
 	//returns double (1./0. bool) for is/isn't a ghost subcluster
 	p["ghost"] = Matrix((double)m_model[k]->IsGhost());
 
-	return p;
 };
 
 //returns data statistics
-map<string, Matrix> GaussianMixture::GetDataStatistics(int k) const{ 
-	map<string, Matrix> p;
-	if(k >= m_k) return p;
-	if(k < 0) return p;
+void GaussianMixture::GetDataStatistics(int k, map<string, Matrix>& p) const{ 
+	p.clear();
+	if(k >= m_k) return;
+	if(k < 0) return; 
 	p["mean"] = _xbar[k];
 	p["cov"] = _Sbar[k];
 	p["pi"] = Matrix(m_coeffs[k]);
-	return p;
 };
 
-map<string, Matrix> GaussianMixture::GetOnlyPosteriorParameters(int k){ 
-	map<string, Matrix> p;
-	if(k >= m_k) return p;
-	if(k < 0) return p;
+void GaussianMixture::GetOnlyPosteriorParameters(int k, map<string, Matrix>& p){ 
+	p.clear();
+	if(k >= m_k) return;
+	if(k < 0) return;
 	p["pi"] = Matrix((m_alpha0 + m_norms[k])/(m_k*m_alpha0 + m_data->Sumw()));
 	p["scalemat"] = m_model[k]->GetPrior()->GetParameter("scalemat");
 	p["mean"] = m_model[k]->GetPrior()->GetParameter("mean");
@@ -447,11 +447,10 @@ map<string, Matrix> GaussianMixture::GetOnlyPosteriorParameters(int k){
 	p["dof"] = m_model[k]->GetPrior()->GetParameter("dof");
 	p["alpha"] = Matrix(m_alphas[k]);
 	
-	return p;
 };
 
 //initializes prior parameters to default values 
-void GaussianMixture::InitPriorParameters(map<string, Matrix> params){
+void GaussianMixture::InitPriorParameters(const map<string, Matrix>& params){
 //cout << "INIT PRIOR PARAMS - start" << endl;
 	if(m_dim == 0){
 		cout << "VarGaussianMixture Initialize - Error: data has not been set." << endl;
@@ -468,20 +467,20 @@ void GaussianMixture::InitPriorParameters(map<string, Matrix> params){
 
 	
 	if(params.count("dof") != 0){
-		m_nu0 = params["dof"].at(0,0);
+		m_nu0 = params.at("dof").at(0,0);
 	}
 	if(params.count("scale") != 0){
-		m_beta0 = params["scale"].at(0,0);
+		m_beta0 = params.at("scale").at(0,0);
 	}
 	if(params.count("mean") != 0){
-		if(params["mean"].GetDims()[0] == m_dim && params["mean"].GetDims()[1] == 1){
-			m_mean0 = params["mean"];
+		if(params.at("mean").GetDims()[0] == m_dim && params.at("mean").GetDims()[1] == 1){
+			m_mean0 = params.at("mean");
 		}
 	}
 	m_meanBeta0.mult(m_mean0, m_beta0);
 	if(params.count("scalemat") != 0){
-		if(params["scalemat"].GetDims()[0] == m_dim && params["scalemat"].GetDims()[1] == m_dim){
-			m_W0 = params["scalemat"];
+		if(params.at("scalemat").GetDims()[0] == m_dim && params.at("scalemat").GetDims()[1] == m_dim){
+			m_W0 = params.at("scalemat");
 			m_W0inv.invert(m_W0);
 		}
 	}

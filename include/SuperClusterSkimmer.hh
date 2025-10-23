@@ -406,7 +406,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			
 			vector<double> spikeObs;
 			PointCollection* points = new PointCollection();
-			vector<JetPoint> rhs = bhc_obj.GetJetPoints();
+			vector<JetPoint> rhs; bhc_obj.GetJetPoints(rhs);
 			for(int r = 0; r < rhs.size(); r++){
 				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
 				pt.SetWeight(rhs[r].E()*_gev);
@@ -493,7 +493,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		for(int j = 0; j < jets.size(); j++){
 			//should only have 1 rh per jet
 			if(jets[j].GetNRecHits() > 1) continue;
-			rh = jets[j].GetJetPoints()[0];
+			jets[j].GetJetPointAt(0,rh);
 			BayesPoint pt(1);
 			pt.SetValue(int(rh.rhId()),0);
 			pt.SetWeight(rh.GetWeight());
@@ -601,7 +601,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	int MakeBHFilterCluster(Jet& sc, vector<JetPoint>& bh_rhs){
 		bh_rhs.clear();
 		//get rhs
-		vector<JetPoint> rhs = sc.GetJetPoints();
+		vector<JetPoint> rhs; sc.GetJetPoints(rhs);
 		//find seed xtal
 		double maxE = 0;
 		pair<int, int> iSeed; //ieta, iphi of seed

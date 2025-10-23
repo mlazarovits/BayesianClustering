@@ -762,8 +762,7 @@ class JetSkimmer : public BaseSkimmer{
 			double rhx, rhy, rhz, maxE;
 			JetPoint maxE_rh;
 			for(int p = 0; p < nphos; p++){
-				rhs.clear();
-				rhs = phos[p].GetJetPoints();
+				phos[p].GetJetPoints(rhs);
 				pvx = phos[p].GetVertex().at(0);
 				pvy = phos[p].GetVertex().at(1);
 				pvz = phos[p].GetVertex().at(2);
@@ -819,8 +818,7 @@ class JetSkimmer : public BaseSkimmer{
 				TrueJet_EmE->Fill(eECAL, _weight);
 				TrueJet_nConstituents->Fill(_base->Jet_nConstituents->at(ijet), _weight);
 				
-				rhs.clear();
-				rhs = jets[j].GetJetPoints();
+				jets[j].GetJetPoints(rhs);
 				for(int r = 0; r < rhs.size(); r++){
 					erhs_trhs->Fill(rhs[r].E(), rhs[r].t(), _weight);
 				}		
@@ -876,9 +874,9 @@ class JetSkimmer : public BaseSkimmer{
 			double subcl_dist_etaphi = 0;
 			double ec1, ec2, pc1, pc2, tc1, tc2, Ek;
 			vector<pair<int, double>> subcl_predict;
-
+			Jet subcl;
 			for(int k = 0; k < n_k; k++){
-				Jet subcl = jet.GetConstituent(k);
+				jet.GetConstituent(k, subcl);
 				Ek = subcl.E();
 
 				subclusterEfrac->Fill(Ek/jet.E());
@@ -963,7 +961,8 @@ class JetSkimmer : public BaseSkimmer{
 					jettime = CalcJetTime(ts, jets[j]);
 					jets[j].SetJetTime(jettime);
 					//fill jet map
-					vector<JetPoint> rhs = jets[j].GetJetPoints();
+					vector<JetPoint> rhs;
+					jets[j].GetJetPoints(rhs);
 					if(tr_idx == 0){
 						vector<double> neighborEs_jet; 
 						std::vector<std::pair<int, int>> icoords_jet;
@@ -993,7 +992,7 @@ class JetSkimmer : public BaseSkimmer{
 					Erh1 = 0;
 					Erh2 = 0;	
 					double bestp, bestdr, kweird;
-					vector<JetPoint> rhs = hardjets.first.GetJetPoints();
+					vector<JetPoint> rhs; hardjets.first.GetJetPoints(rhs);
 					vector<double> neighborEs, neighborEs_noCenter, neighborEs_time;
 					std::vector<std::pair<int, int>> icoords, icoords_noCenter, icoords_time;
 				
@@ -1003,8 +1002,9 @@ class JetSkimmer : public BaseSkimmer{
 					int nscs = nSC_dRMatch(hardjets.first);	
 					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
+					Jet constit;
 					for(int k = 0; k < nk; k++){
-						Jet constit = hardjets.first.GetConstituent(k);
+						hardjets.first.GetConstituent(k, constit);
 						trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(constit.t(), constit.E(), _weight);
 					}
 					nk = hardjets.second.GetNConstituents();
@@ -1012,7 +1012,7 @@ class JetSkimmer : public BaseSkimmer{
 					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
 					for(int k = 0; k < nk; k++){
-						Jet constit = hardjets.second.GetConstituent(k);
+						hardjets.second.GetConstituent(k, constit);
 						trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(constit.t(), constit.E(), _weight);
 					}
 
@@ -1094,8 +1094,7 @@ class JetSkimmer : public BaseSkimmer{
 						
 						}
 					}
-					rhs.clear();
-					rhs = hardjets.second.GetJetPoints();
+					hardjets.second.GetJetPoints(rhs);
 					for(int r = 0; r < rhs.size(); r++){
 						if(rhs[r].E() < _minRhE) continue;
 						//if(rhs[r].t() > -1) continue;
@@ -1334,9 +1333,10 @@ class JetSkimmer : public BaseSkimmer{
 				//cout << "pv time " << pvtime << endl;
 				Ejets = 0;
 				vector<Jet> jets_highpt;
+				vector<JetPoint> jrhs;
 				for(auto j : jets){
 					if(j.pt() > 50) jets_highpt.push_back(j);
-					vector<JetPoint> jrhs = j.GetJetPoints();
+					j.GetJetPoints(jrhs);
 					for(auto r : jrhs){
 						Ejets += r.E();
 						trCats[tr_idx].procCats[p].hists1D[0][66]->Fill(r.t());
@@ -1360,7 +1360,7 @@ class JetSkimmer : public BaseSkimmer{
 						dphi_phoJets = deltaPhi(phos[0], jets);
 						if(dphi_phoJets > pi-0.35 && dphi_phoJets < pi+0.35){
 							Epho = 0;
-							phorhs = phos[0].GetJetPoints();
+							phos[0].GetJetPoints(phorhs);
 							for(auto r : phorhs) Epho += r.E();
 						//cout << "x " << sqrt(Epho*Ejets) << " y " << deltaT_gampv << endl;
 							trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets) , deltaT_gampv, _weight);
@@ -1381,7 +1381,7 @@ class JetSkimmer : public BaseSkimmer{
 							dphi_phoJets = deltaPhi(phos[1], jets);
 							if(dphi_phoJets > pi-0.35 && dphi_phoJets < pi+0.35){
 								Epho = 0;
-								phorhs = phos[1].GetJetPoints();
+								phos[1].GetJetPoints(phorhs);
 								for(auto r : phorhs) Epho += r.E();
 								trCats[tr_idx].procCats[p].hists2D[0][16]->Fill(sqrt(Epho*Ejets), deltaT_gampv, _weight);
 							}
@@ -1403,7 +1403,7 @@ class JetSkimmer : public BaseSkimmer{
 					//make sure id is in current vector of ids (or ids does not contain -999)
 					if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
 						//get sum of pho rh energy
-						phorhs = phos[0].GetJetPoints();
+						phos[0].GetJetPoints(phorhs);
 						Epho = 0;
 						for(auto r : phorhs) Epho += r.E();
 						//cout << "LEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " E " << Epho << endl;
@@ -1480,7 +1480,7 @@ class JetSkimmer : public BaseSkimmer{
 					      //make sure id is in current vector of ids (or ids does not contain -999)
 					      //cout << "!leading phoid " << phoid << " " << (std::find(ids.begin(), ids.end(), phoid) != ids.end()) << " null id " <<  (std::find(ids.begin(), ids.end(), -999) != ids.end()) << endl;
 						if(std::find(ids.begin(), ids.end(), phoid) != ids.end() || std::find(ids.begin(), ids.end(), -999) != ids.end()){
-							phorhs = phos[1].GetJetPoints();
+							phos[1].GetJetPoints(phorhs);
 							Epho = 0;
 							for(auto r : phorhs) Epho += r.E();
 							//cout << "SUBLEAD CALC GAMTIME - tridx: " << tr_idx << " p " << p << " Epho " << Epho << endl;
@@ -1796,8 +1796,11 @@ class JetSkimmer : public BaseSkimmer{
 					//use only ECAL energy for asymmetry cut
 					double e1 = 0;
 					double e2 = 0;
-					for(auto r : jet1.GetJetPoints()) e1 += r.e();
-					for(auto r : jet2.GetJetPoints()) e2 += r.e();
+					vector<JetPoint> rhs;
+					jet1.GetJetPoints(rhs);
+					for(auto r : rhs) e1 += r.e();
+					jet2.GetJetPoints(rhs);
+					for(auto r : rhs) e2 += r.e();
 					if(e2 < e1){
 						if(e2 / e1 < 1 - ptasym) return -999; 
 					}
@@ -1821,7 +1824,7 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcJetTime(const TimeStrategy& ts, Jet& jet, bool pho = false){
 			//cout << "CalcJetTime method " << ts << endl;
 			double time = -999;
-			vector<JetPoint> rhs = jet.GetJetPoints();
+			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
 			if(ts == med) time = CalcMedianTime(jet);
 			else if(ts == eavg) time = CalcEAvgTime(jet);
 			else if(ts == mmavg){
@@ -1883,7 +1886,7 @@ class JetSkimmer : public BaseSkimmer{
 				double e = 0;
 				vector<JetPoint> rhs;
 				for(int j = 0; j < njets; j++){
-					rhs = jets[j].GetJetPoints();
+					jets[j].GetJetPoints(rhs);
 					for(int r = 0; r < rhs.size(); r++)
 						e += rhs[r].E();
 					t += e*jets[j].t();
@@ -1907,7 +1910,8 @@ class JetSkimmer : public BaseSkimmer{
 
 		double CalcMaxTime(Jet& j){
 			map<double, double> eneTime;
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs;
+			j.GetJetPoints(rhs);
 			for(int i = 0; i < rhs.size(); i++)
 				eneTime[rhs[i].E()] = rhs[i].t();
 			return eneTime.rbegin()->second;
@@ -1915,7 +1919,7 @@ class JetSkimmer : public BaseSkimmer{
 
 		BayesPoint CalcMaxCenter(Jet& j){
 			map<double, BayesPoint> eneLoc;
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs; j.GetJetPoints(rhs);
 			for(int i = 0; i < rhs.size(); i++){
 				BayesPoint pt({rhs[i].x(), rhs[i].y(), rhs[i].z()});
 				//cout << "x " << rhs[i].x() << " y " << rhs[i].y() << " z " << rhs[i].z() << " eta " << rhs[i].eta() << " phi " << rhs[i].phi() << " phi02pi " << rhs[i].phi_02pi() << " rphi " << atan2(rhs[i].y(), rhs[i].x()) << endl;
@@ -1927,7 +1931,7 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcMedianTime(Jet& j){
 			vector<double> times;
 			double time = -999;
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs; j.GetJetPoints(rhs);
 			int nrhs = rhs.size();
 			for(int i = 0; i < nrhs; i++)
 				times.push_back(rhs[i].t());
@@ -1947,7 +1951,7 @@ class JetSkimmer : public BaseSkimmer{
 			BayesPoint center(3);
 			double time = -999;
 			vector<double> times;
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs; j.GetJetPoints(rhs);
 			int nrhs = rhs.size();
 			BayesPoint pt(3);
 			//cout << "MEDIAN CENTER" << endl;
@@ -1996,7 +2000,7 @@ class JetSkimmer : public BaseSkimmer{
 			double y = 0;
 			double z = 0;
 			BayesPoint center(3);
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs; j.GetJetPoints(rhs);
 			int nrhs = rhs.size();
 			double minpt = 10;
 			for(int i = 0; i < nrhs; i++){
@@ -2016,7 +2020,7 @@ class JetSkimmer : public BaseSkimmer{
 		double CalcEAvgTime(Jet& j){
 			double t = 0;
 			double norm = 0;
-			vector<JetPoint> rhs = j.GetJetPoints();
+			vector<JetPoint> rhs; j.GetJetPoints(rhs);
 			int nrhs = rhs.size();
 			double minpt = 10;
 			for(int i = 0; i < nrhs; i++){
@@ -2032,7 +2036,7 @@ class JetSkimmer : public BaseSkimmer{
 
 
 		GaussianMixture* _subcluster(Jet& jet){
-			vector<JetPoint> rhs = jet.GetJetPoints();
+			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
@@ -2052,7 +2056,8 @@ class JetSkimmer : public BaseSkimmer{
 			vector<double> norms;
 			gmm->GetNorms(norms);
 			for(int k = 0; k < gmm->GetNClusters(); k++){
-				auto params = gmm->GetLHPosteriorParameters(k);
+				map<string, Matrix> params;
+				gmm->GetLHPosteriorParameters(k, params);
 				double E_k = norms[k]/_gev;
 				Matrix mu = params["mean"];
 				Matrix cov = params["cov"];
@@ -2072,7 +2077,7 @@ class JetSkimmer : public BaseSkimmer{
 			//0 == 1 == phys bkg
 			//1 == 2 == BH
 			//2 == 3 == spike
-			vector<JetPoint> rhs = jet.GetJetPoints();
+			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
 			vector<double> ovalues; //discriminator output value, pass-by-ref
 			map<string, double> obs; //k maps for k subclusters
 			//features = vector of strings of features to use - set with SetNNFeatures
@@ -2099,13 +2104,18 @@ class JetSkimmer : public BaseSkimmer{
 			int kmax = model->GetNClusters();
 			pair<int, double> class_discr;
 			int nclass; double score;
-			//cout << kmax << " # subclusters " << endl; 
+			//cout << kmax << " # subclusters " << endl;
+			Jet subcl;
 			for(int k = 0; k < kmax; k++){
 				//cout << "k " << k << " of " << kmax;
-				Jet subcl = jet.GetConstituent(k);
+				jet.GetConstituent(k, subcl);
 				class_discr = PredictSubcluster(subcl);
 				nclass = class_discr.first;
 				score = class_discr.second;
+
+				double e = subcl.E();
+				double t = subcl.t();
+
 				//downweight - pushback prob == physbkg value
 				//remove - if nclass != phys bkg, probID = 0
 				//remove for now bc need to custom hack frugally-deep to return output of all neurons in the last layer
@@ -2117,31 +2127,31 @@ class JetSkimmer : public BaseSkimmer{
 				//}
 				//fill dijet subcl hists
 				if(nclass == 0){ //phys bkg
-					trCats[0].procCats[0].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[0].hists2D[0][54]->Fill(t, e, _weight);
+					trCats[0].procCats[0].hists2D[0][57]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[0].hists2D[0][60]->Fill(class_discr.second, t, _weight);
 					
-					trCats[0].procCats[1].hists2D[0][54]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][57]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][60]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[1].hists2D[0][54]->Fill(t, e, _weight);
+					trCats[0].procCats[1].hists2D[0][57]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[1].hists2D[0][60]->Fill(class_discr.second, t, _weight);
 				}	
 				else if(nclass == 1 && score > 0.99){ //bh
-					trCats[0].procCats[0].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[0].hists2D[0][53]->Fill(t, e, _weight);
+					trCats[0].procCats[0].hists2D[0][56]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[0].hists2D[0][59]->Fill(class_discr.second, t, _weight);
 					
-					trCats[0].procCats[1].hists2D[0][53]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][56]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][59]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[1].hists2D[0][53]->Fill(t, e, _weight);
+					trCats[0].procCats[1].hists2D[0][56]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[1].hists2D[0][59]->Fill(class_discr.second, t, _weight);
 				}	
 				else if(nclass == 2 && score > 0.99){ //spikes
-					trCats[0].procCats[0].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[0].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[0].hists2D[0][52]->Fill(t, e, _weight);
+					trCats[0].procCats[0].hists2D[0][55]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[0].hists2D[0][58]->Fill(class_discr.second, t, _weight);
 					
-					trCats[0].procCats[1].hists2D[0][52]->Fill(jet.GetConstituent(k).t(), jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][55]->Fill(class_discr.second, jet.GetConstituent(k).E(), _weight);
-					trCats[0].procCats[1].hists2D[0][58]->Fill(class_discr.second, jet.GetConstituent(k).t(), _weight);
+					trCats[0].procCats[1].hists2D[0][52]->Fill(t, e, _weight);
+					trCats[0].procCats[1].hists2D[0][55]->Fill(class_discr.second, e, _weight);
+					trCats[0].procCats[1].hists2D[0][58]->Fill(class_discr.second, t, _weight);
 				}	
 			}
 		}
@@ -2190,7 +2200,7 @@ class JetSkimmer : public BaseSkimmer{
 			Matrix muk, covk;
 			Jet subcl;	
 			for(int k = 0; k < kmax; k++){
-				subcl = jet.GetConstituent(k);
+				jet.GetConstituent(k, subcl);
 				pik = subcl.GetCoefficient();
 				subcl.GetClusterParams(muk,covk);
 				eta = muk.at(0,0);

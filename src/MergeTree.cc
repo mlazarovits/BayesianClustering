@@ -28,12 +28,15 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double logd_LSE = _log_sum_exp(logd_terms);
 	double log_pi = log(_alpha) + lgamma(n) - logd_LSE;
 	
-	PointCollection* points = new PointCollection();
-	points->AddPoints(*l->points);
-	points->AddPoints(*r->points);
+	//PointCollection* points = new PointCollection();
+	//points->AddPoints(*l->points);
+	//points->AddPoints(*r->points);
 	struct node* x = (struct node*)malloc(sizeof *x);
-	x->points = points;
-	
+	//auto x = std::make_unique<node>();
+	x->points = new PointCollection();
+	x->points->AddPoints(*l->points);
+	x->points->AddPoints(*r->points);
+
 	//x->d = d_100;
 	x->log_d = logd_LSE;
 	x->l = l;
