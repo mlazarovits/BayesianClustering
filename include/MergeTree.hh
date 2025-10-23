@@ -8,6 +8,8 @@
 #include "NodeStack.hh"
 #include "Gaussian.hh"
 
+using std::map;
+
 class MergeTree : BaseTree{
 	public:
 		MergeTree(){ 
@@ -77,6 +79,11 @@ class MergeTree : BaseTree{
 		virtual ~MergeTree(){ 
 			for(auto n : _clusters) delete n;
 			_clusters.clear();
+		}
+		
+		void avg_time(){
+			cout << "Average CalcMerge time " << _total_calcmerge_time / _n_calcmerge_calls << " seconds with " << _n_calcmerge_calls << " calls and " << _total_calcmerge_time << " seconds total time" << endl;
+			cout << "Average Evidence time " << _total_evidence_time / _n_evidence_calls << " seconds with " << _n_evidence_calls << " calls and " << _total_evidence_time << " seconds total time" << endl;
 		}
 
 		void SetThresh(double t){ _thresh = t; }
@@ -154,8 +161,9 @@ class MergeTree : BaseTree{
 			node* x = (node*)malloc(sizeof *x);
 			x->l = _z; x->r = _z;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
-			x->val = 1.;	
-			x->d = _alpha; 
+			//x->val = 1.;	
+			//x->d = _alpha;
+			x->log_d = log(_alpha);
 			x->model = nullptr;
 			if(pt != nullptr) x->points = new PointCollection(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
@@ -166,8 +174,9 @@ class MergeTree : BaseTree{
 			x->mirror = nullptr;
 			x->ismirror = false;
 			double elbo = Evidence(x);
-			cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
-			x->prob_tk = exp(elbo_100);//p_dk_tk = p_dk_h1 since cannot be divided further
+			//cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
+			//x->prob_tk = exp(elbo);//p_dk_tk = p_dk_h1 since cannot be divided further
+			x->log_prob_tk = elbo;
 			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
 			//Evidence = ELBO \approx log(LH)
 			_clusters[n-1] = x;
@@ -218,6 +227,7 @@ class MergeTree : BaseTree{
 
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
+			clock_t t = clock();
 			int k;
 			vector<map<string,Matrix>> prev_posts = {};
 			map<int,int> left_post_indices, right_post_indices;	
@@ -238,7 +248,8 @@ class MergeTree : BaseTree{
 				//k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				//setting initial posterior parameters from models of previous steps
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
-					prev_posts.push_back(x->l->model->GetLHPosteriorParameters(kk));
+					prev_posts.emplace_back(map<string, Matrix>());
+					x->l->model->GetLHPosteriorParameters(kk,prev_posts[prev_posts.size()-1]);
 					left_post_indices[kk] = prev_posts.size()-1;
 					//if(x->l->ismirror){
 					//	cout << " starting parameter from left node is mirror" << endl; prev_posts[prev_posts.size()-1]["m"].Print();
@@ -249,7 +260,8 @@ class MergeTree : BaseTree{
 				} 
 				//cout << "right node has " << x->r->model->GetNClusters() << " clusters" << endl;
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
-					prev_posts.push_back(x->r->model->GetLHPosteriorParameters(kk));
+					prev_posts.emplace_back(map<string, Matrix>());
+					x->r->model->GetLHPosteriorParameters(kk, prev_posts[prev_posts.size()-1]);
 					right_post_indices[kk] = prev_posts.size()-1;
 					//if(x->r->ismirror){
 					//	cout << " starting parameter from right node is mirror" << endl; prev_posts[prev_posts.size()-1]["m"].Print();
@@ -585,7 +597,8 @@ class MergeTree : BaseTree{
 bool isnan = false;
 
 for(int k = 0; k < x->model->GetNClusters(); k++){
-	auto params = x->model->GetLHPosteriorParameters(k);
+	map<string, Matrix> params;
+	x->model->GetLHPosteriorParameters(k, params);
 	//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
 	//	cout << "final center #" << k << endl; params["m"].Print(); 
 	//}
@@ -599,7 +612,8 @@ for(int k = 0; k < x->model->GetNClusters(); k++){
 //}
 if(isnan){
 	for(int k = 0; k < x->model->GetNClusters(); k++){
-		auto params = x->model->GetLHPosteriorParameters(k);
+		map<string, Matrix> params;
+		x->model->GetLHPosteriorParameters(k, params);
 		cout << "theta to eta params" << endl;
 		cout << "cluster #" << k << " with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
 		cout << "cluster #" << k << endl;
@@ -631,6 +645,10 @@ if(isnan){
 	//}
 	//cout << endl;
 	//cout << std::setprecision(5) << endl;
+			t = clock() - t;
+			cout << "time for Evidence " << (double)t/CLOCKS_PER_SEC << " sec" << endl;
+			_total_evidence_time += (double)t/CLOCKS_PER_SEC;
+			_n_evidence_calls++;
 			return newLogL;
 		}
 
@@ -779,7 +797,7 @@ if(isnan){
 
 
 		//if passing all starting params, then merge_pair idxs are in "global" frame, need in local
-		GaussianMixture* _compare_projected_models(node* x, vector<map<string,Matrix>> starting_params, pair<int, int> merge_pair){
+		GaussianMixture* _compare_projected_models(node* x, vector<map<string,Matrix>>& starting_params, const pair<int, int>& merge_pair){
 			//project data in x->l and x->r according to given merge pair (0: left, 1: right)
 			int cl1 = merge_pair.first;
 			int cl2 = merge_pair.second;
@@ -879,7 +897,7 @@ if(isnan){
 
 		//will run model seeded from projected merges
 		//need to pass full node so we can project the data from the potential merge (ie from the x->l and x->r nodes) by their own posterior responsibilities
-		GaussianMixture* _merge_model(node* x, vector<map<string,Matrix>> starting_params, vector<pair<int, int>> merge_pairs, double& merge_elbo){
+		GaussianMixture* _merge_model(node* x, vector<map<string,Matrix>>& starting_params, vector<pair<int, int>>& merge_pairs, double& merge_elbo){
 			vector<map<string, Matrix>> merge_starting_params;
 			//for each merge 
 			for(int m = 0; m < merge_pairs.size(); m++){
@@ -892,8 +910,11 @@ if(isnan){
 				}
 				//cout << "# clusters in proj model " << proj_model->GetNClusters() << endl;
 				//get final clusters of proj_model - these will be starting place for full merge model
-				for(int k = 0; k < proj_model->GetNClusters(); k++)
-					merge_starting_params.push_back(proj_model->GetLHPosteriorParameters(k));
+				for(int k = 0; k < proj_model->GetNClusters(); k++){
+					map<string, Matrix> params;
+					proj_model->GetLHPosteriorParameters(k, params);
+					merge_starting_params.emplace_back(params);
+				}
 			}
 			//loop through starting params and add those that aren't in a merge model
 			for(int i = 0; i < starting_params.size(); i++){
@@ -931,7 +952,8 @@ if(isnan){
 			int nghosts = 0;
 			int nreal = 0;
 			for(int k = 0; k < mergemodel->GetNClusters(); k++){
-				auto params = mergemodel->GetLHPosteriorParameters(k);
+				map<string, Matrix> params;
+				mergemodel->GetLHPosteriorParameters(k, params);
 				if((bool)params["ghost"].at(0,0)) nghosts++;
 				else nreal++;
 			}
@@ -940,7 +962,8 @@ if(isnan){
 			nghosts = 0;
 			nreal = 0;
 			for(int k = 0; k < mergemodel->GetNClusters(); k++){
-				auto params = mergemodel->GetLHPosteriorParameters(k);
+				map<string, Matrix> params;
+				mergemodel->GetLHPosteriorParameters(k, params);
 				if((bool)params["ghost"].at(0,0)) nghosts++;
 				else nreal++;
 			}
@@ -1134,5 +1157,10 @@ if(isnan){
 		Matrix _RscaleInv;
 		bool _check_merges;
 		int _nGhosts;
+		double _log_sum_exp(vector<double>& terms);
+		double _total_calcmerge_time = 0;
+		double _n_calcmerge_calls = 0;
+		double _total_evidence_time = 0;
+		double _n_evidence_calls = 0;
 };
 #endif

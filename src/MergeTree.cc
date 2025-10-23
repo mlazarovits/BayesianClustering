@@ -1,45 +1,46 @@
 #include "MergeTree.hh"
 #include "VarEMCluster.hh"
+
+double MergeTree::_log_sum_exp(vector<double>& terms){
+	double m = *std::max_element(terms.begin(), terms.end());
+	double sum = 0.0;
+	for(double t : terms){
+		sum += exp(t - m);
+	}
+	return m + log(sum);
+}
+
 //BHC with varEM
 //assuming Dirichlet Process Model (sets priors)
 node* MergeTree::CalculateMerge(node *l, node* r){
+	clock_t t;
+	t = clock();
 	//get points from l and points from r
 	//get number of points in merged tree
-	//double n = l->points->GetNPoints() + r->points->GetNPoints();	
 	double n = l->points->Sumw() + r->points->Sumw();	
-
-	double pi_a = log(_alpha) + lgamma(n);
-	double pi_b = (double)log(l->d) + (double)log(r->d);
-	double pi_max = fmax(pi_a,pi_b);
-	double pi_stable = exp(pi_a - pi_max)/(exp(pi_a - pi_max) + exp(pi_b - pi_max));
-
+	
 	//d = alpha*gam(n) + dl*dr 
 	//  = dr*dl*(alpha*gam(n)/(dl*dr) + 1)
 	//  = dr*dl*(exp( log(alpha*gam(n)/(dl*dr)) ) + 1)
 	//  = dr*dl*(exp( log(alpha) + lgam(n) - log(dl) - log(dr) ) + 1)
 	//  = exp( log(dr) + log(dl) )*(exp( log(alpha) + lgam(n) - log(dl) - log(dr) ) + 1)
-	//cpp_bin_float_100 d_100 = cpp_bin_float_100(_alpha)*tgamma(cpp_bin_float_100(n)) + cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d);
-	cpp_bin_float_100 d_100 = (exp( log(_alpha) + lgamma(n) - log(l->d) - log(r->d) ) + 1)*exp( log(l->d) + log(r->d)); 
+	vector<double> logd_terms = {log(_alpha) + lgamma(n), l->log_d + r->log_d};
+	double logd_LSE = _log_sum_exp(logd_terms);
+	double log_pi = log(_alpha) + lgamma(n) - logd_LSE;
 	
 	PointCollection* points = new PointCollection();
 	points->AddPoints(*l->points);
 	points->AddPoints(*r->points);
 	struct node* x = (struct node*)malloc(sizeof *x);
 	x->points = points;
-//if(l->points->GetNPoints() + r->points->GetNPoints() != x->points->GetNPoints()){
-//	cout << "mismatched pts" << endl;
-//	cout << "x pts " << x->points->GetNPoints() << " l pts " << l->points->GetNPoints() << " r pts " << r->points->GetNPoints() << endl;
-//	cout << "l pts" << endl; l->points->Print();
-//	cout << "r pts" << endl; r->points->Print();
-//	cout << "x pts" << endl; x->points->Print();
-//}
-	x->d = d_100;
+	
+	//x->d = d_100;
+	x->log_d = logd_LSE;
 	x->l = l;
 	x->r = r;
 	x->mirror = nullptr;
 	x->ismirror = false;//l->ismirror || r->ismirror;
 	x->idx = -1; //hasn't been added to merge tree yet
-	//cout << "calcmerge ismirror " << x->ismirror << " l ismirror " << l->ismirror << " r ismirror " << r->ismirror << endl;
 	double nndist = 1e300;
 	//find nndist for x (should be O(n) operation)
 	for(int i = 0; i < (int)_clusters.size(); i++){
@@ -49,63 +50,49 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
 	double elbo = Evidence(x);
-	cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
-	//cpp_bin_float_100 p_dk_h1_100 = exp(elbo_100);
-	cpp_bin_float_100 p_dk_h1 = exp(elbo_100);
 	//marginal prob of t_k = null + alterantive hypo (separate trees) - need to save for future recursions
 	//p_dk_tk = pi*p_dk_h1 + dr*dl*p_dl*p_dr/d
 	// = pi*p_dk_h1(1 + dr*dl*p_dl*p_dr/(d*pi*p_dk_h1))
-	// = exp(log(alpha) + 
-	cpp_bin_float_100 p_dk_tk_100 = pi_stable*p_dk_h1 + ((l->d*r->d)/d_100)*l->prob_tk*r->prob_tk;
-
-	//deal with numerical instability - rk = pi*p(Dk|H1)/p(Dk|Tk) = exp(A)/(exp(A) + exp(B))
-        //exp(A) = pi*p_dk_h1 = pi*exp(ELBO(x)) = (alpha*gamma(n)/dk)*exp(ELBO) = exp(log(alpha*gamma(n)/dk))exp(ELBO(x)) = exp(log(alpha) + log(gamma(n) + ELBO(x) - log(dk))
-        //exp(B) = p(Dr|Tr)*p(Dl|Tl)*dl*dr/dk = exp(log(p(Dr|Tr)*p(Dl|Tl)*dl*dr/dk)) = exp(log(p(Dr|Tr)) + log(p(Dl|Tl)) + log(dl*dr) - log(dk))
-        //log(dk) appears in all terms in rk, so it can be factored out and cancelled (this is the recursively defined normalization term)
-        //can rewrite exp(A) = exp(log(alpha) + log(gamma(n) + ELBO(x))
-        //and rewrite exp(B) = exp(log(p(Dr|Tr)) + log(p(Dl|Tl)) + log(dl*dr))
-        //where A = log(alpha) + log(gamma(n) + ELBO(x)
-        cpp_bin_float_100 a = log(_alpha) + lgamma(n) + elbo_100;
-        // and B = log(dr*dl/d) + log(p_dr_tr) + log(p_dl_tl)
-        cpp_bin_float_100 b = log(l->d*r->d) + log(l->prob_tk) + log(r->prob_tk);
-        //find m = max(A,B)
-        cpp_bin_float_100 m = fmax(a,b);
-        //rewrite rk as rk = exp(A)/(exp(A) + exp(B)) = exp(A - m)/(exp(A - m) + exp(B - m))
-        cpp_bin_float_100 rk_stable = exp(a - m)/(exp(a - m) + exp(b - m));	
 
 
-	
-	//cpp_bin_float_100 p_dk_tk_100 = pi_100*p_dk_h1_100 + ((cpp_bin_float_100(l->d)*cpp_bin_float_100(r->d))/d_100)*cpp_bin_float_100(l->prob_tk)*cpp_bin_float_100(r->prob_tk);
-	//cpp_bin_float_100 rk_100 = pi_100*p_dk_h1_100/p_dk_tk_100;
-	//double rk_d100 = (double)rk_100;
-	
-	double rk = (double)rk_stable;//pi*p_dk_h1/p_dk_tk;
+	//calculate log_prob_dk_tk
+	// = log(exp(log(a)) + exp(log(b)))
+	// for log(a) = log(pi_k * exp(elbo)) = log(pi_k)*elbo = elbo*(log(alpha) + lgamma(n) - log(dk))
+	//            log(dk) calculated above with LSE
+	// and log(b) = log(p_dl_tl*p_dr_tr*dl*dr/dk) = log(p_dl_tl) + log(p_dr_tr) + log(dl) + log(dr) - log(dk)
+	//	      log(dl), log(dr), log(p_dl_tl), log(p_dr_tr) from previous step
+	//	      log(dk) calculated above
+
+	vector<double> logpk_dk_terms = {elbo + log(_alpha) + lgamma(n) - logd_LSE, l->log_prob_tk + r->log_prob_tk + l->log_d + r->log_d - logd_LSE};
+	double log_p_dk_tk_LSE = _log_sum_exp(logpk_dk_terms);
+
+	double log_rk = log_pi + elbo - log_p_dk_tk_LSE;
+
+	double rk;
+	if(log_rk == -1e308)
+		rk = -1e308;
+	else
+		rk = exp(log_rk);
 	//if total weight of tree is below threshold, break into separate points (ie dont merge, ie low posterior)
 	//removing subclusters whose weight (ie norm) is below threshold is done within the GMM, but is not done at the BHC level
 	//can put a requirement on predicted jets that # pts >= 2
-	//if(x->points->Sumw() < _thresh) rk = 0;
 	if(std::isnan(rk)){
-        cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " pi_stable " << pi_stable << " d " << d_100 <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
+        cout << std::setprecision(10) << "log_rk " << log_rk << " rk " << rk << " elbo " << elbo << " lgamma(n) " << lgamma(n) << " log_pi " << log_pi << " logd_LSE " << logd_LSE << " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << endl;
                 //cout << "evidence is 0? " << (p_dk_h1 == 0) << " p_dk_tk == 0? " << (p_dk_tk == 0) << endl;
         }
-        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " gamma(n) " << tgamma(n) << " lgamma(n) " << lgamma(n) << " dl " << l->d << " dr " << r->d << " log(dl*dr) " << log(l->d*r->d) << " p(Dl|Tl) " << l->prob_tk << " log(p(Dl|Tl)) " << log(l->prob_tk)  <<" p(Dr|Tr) " << r->prob_tk <<   " log(p(Dr|Tr)) " << log(r->prob_tk)  <<  " a " << a << " b " << b << " m " << m <<  " with # subclusters " << x->model->GetNClusters() << " n " << n << " npts " << l->points->GetNPoints() + r->points->GetNPoints() << " p_dk_tk " << p_dk_tk << " p_dk_tk100 " << p_dk_tk_100 << endl;
 	double loga = elbo + log(_alpha) + lgamma(n);
-	double logb = (double)log(l->prob_tk) + (double)log(r->prob_tk) + (double)log(l->d) + (double)log(r->d);
-	cpp_bin_float_100 logb_100 = log(l->prob_tk) + log(r->prob_tk) + log(l->d) + log(r->d);
-        //cout << std::setprecision(10) << "rk " << rk << " elbo " << elbo << " lgam " << lgamma(n) << " log(alpha) " << log(_alpha) << endl;
-	//cout << "log(p_dl) " << log(l->prob_tk) << " log(p_dr) " << log(r->prob_tk) << " log(d_l) " << log(l->d) << " log(d_r) "  << log(r->d) << endl;
-	//cout << "log(a) " << loga << " log(b) " << logb << endl;
-	//cout << "log(a) - log(b) " << loga - logb << endl;
-	//cout << " 3d distance from centroid " << endl;
+	double logb = l->log_prob_tk + r->log_prob_tk + l->log_d + r->log_d;
 
-
-if(_verb > 1)cout << "p_dk_tk_100 " << p_dk_tk_100 << " pi_stable " << pi_stable << " p_dk_h1 " << p_dk_h1 << " dl " << l->d << " dr " << r->d << " d " << d_100 << " p(dl) " << l->prob_tk << " p(dr) " << r->prob_tk << " n " << n << endl;
       x->val = rk;
+      x->log_val = log_rk; 
       x->log_h1_prior = loga;
-if(_verb > 1)cout << "log h1 prior = elbo " << elbo << " + log(alpha) " << log(_alpha) << " + lgam(n) " << lgamma(n) << endl;
       x->log_didj = logb;
-if(_verb > 1)cout << "log didj = log(p_dl) " << log(l->prob_tk) << " " << (double)log(l->prob_tk) << " + log(p_dr) " << log(r->prob_tk) << " " << (double)log(r->prob_tk) << " + log(dl) " << log(l->d) << " " << (double)log(l->d) << " + log(dr) " << log(r->d) << " " << (double)log(r->d) << endl;
-	x->prob_tk = p_dk_tk_100;
+      //x->prob_tk = p_dk_tk_100;
+      x->log_prob_tk = log_p_dk_tk_LSE;
+	t = clock() - t;
+	_total_calcmerge_time += (double)t/CLOCKS_PER_SEC;
+	_n_calcmerge_calls++;
+if(_verb > 1)cout << "log didj = log(p_dl) " << l->log_prob_tk << " + log(p_dr) " << r->log_prob_tk << " + log(dl) " << l->log_d  << " + log(dr) " << r->log_d << endl;
 if(_verb > 1) cout << "merge val = " << loga - logb << " for n pts " << x->points->GetNPoints() << endl;	
 	return x;
 }
@@ -162,9 +149,12 @@ void MergeTree::CreateMirrorNode(node* x){
 	y->l = new node(*x->l);
 	y->r = new node(*x->r);	
 	y->val = x->val;
-	y->d = x->d;
+	y->log_val = x->log_val;
+	//y->d = x->d;
+	y->log_d = x->log_d;
 	y->model = x->model;
-	y->prob_tk = x->prob_tk;
+	//y->prob_tk = x->prob_tk;
+	y->log_prob_tk = x->log_prob_tk;
 	y->nndist = x->nndist;
 	//map points across 0-2pi boundary
 	_remap_phi(*y->points);

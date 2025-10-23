@@ -4,8 +4,8 @@
 #include "RandomSample.hh"
 #include "PointCollection.hh"
 #include "BaseTree.hh"
-#include <boost/multiprecision/cpp_bin_float.hpp>
-using namespace boost::multiprecision;
+//#include <boost/multiprecision/cpp_bin_float.hpp>
+//using namespace boost::multiprecision;
 
 using node = BaseTree::node;
 using listnode = BaseTree::listnode;
@@ -13,14 +13,26 @@ class NodeStack{
 	public:
 		NodeStack(){
 			_head = (listnode*)malloc(sizeof *_head);
-			node* h = (node*)malloc(sizeof* h); h->val = 999; //sort high to low
-			h->l = h; h->r = h; h->d = -1; h->prob_tk = -1; h->model = nullptr; //h->color = -1; 
+			node* h = (node*)malloc(sizeof* h); 
+			h->val = 999; //sort high to low
+			h->log_val = 999;
+			h->l = h; h->r = h;
+			//h->d = -1; h->prob_tk = -1;
+			h->log_d = -1;
+			h->log_prob_tk = -1;
+			h->model = nullptr; //h->color = -1; 
 			h->points = new PointCollection();
 			_head->n = h;	
 		
 			_z = (listnode*)malloc(sizeof *_z);
-			node* z = (node*)malloc(sizeof* z); z->val = -999; //sort high to low
-			z->l = z; z->r = z; z->d = -1; z->prob_tk = -1; z->model = nullptr; //z->color = -1; 
+			node* z = (node*)malloc(sizeof* z);
+			z->val = -999; //sort high to low
+			z->log_val = -999;
+			z->l = z; z->r = z;
+			//z->d = -1; z->prob_tk = -1;
+			z->log_d = -1;
+			z->log_prob_tk = -1; 
+			z->model = nullptr; //z->color = -1; 
 			z->points = new PointCollection(); 
 			_z->n = z;
 			

@@ -13,7 +13,10 @@ class NodeQueue{
 		
 			//end delimiter
 			_z = (node*)malloc(sizeof *_z);
-			_z->l = _z; _z->r = _z; _z->val = -1; _z->d = -1; _z->prob_tk = -1; _z->model = nullptr;
+			_z->l = _z; _z->r = _z; _z->val = -1; _z->log_val = -1; 
+			//_z->d = -1; _z->prob_tk = -1; 
+			_z->log_d = -1; _z->log_prob_tk = -1; 
+			_z->model = nullptr;
 			_none->n = _z;
 			_none->next = _none;	
 
