@@ -28,8 +28,8 @@ class Jet{
 		Jet(const JetPoint& rh, const BayesPoint& vtx);
 		Jet(const vector<JetPoint>& rhs, const BayesPoint& vtx);
 		Jet(const vector<Jet>& jets);
-		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
-		Jet(BasePDF* pdf, double E, double pi = 1, BayesPoint vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
+		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, const BayesPoint& vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
+		Jet(BasePDF* pdf, double E, double pi = 1, const BayesPoint& vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
 		Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
@@ -347,12 +347,12 @@ class Jet{
 			_constituents.push_back(jt);
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		void GetConstituents(vector<Jet>& consts){
+		void GetConstituents(vector<Jet>& consts) const{
 			consts.clear();
 			consts = _constituents;
 		}
 	
-		void GetConstituent(int c, Jet& j){
+		void GetConstituent(int c, Jet& j) const{
 			if(c >= _constituents.size()){
 				cout << "Error: index " << c << " out of bounds for # of constituents " << _constituents.size() << endl;
 				return;
