@@ -31,9 +31,9 @@ class BayesPoint{
 		
 		//copy constructor
 		BayesPoint(const BayesPoint &p){
-			_nDim = p.Dim();
+			_nDim = p._nDim;
 			_value.clear();
-			_value = p.Value();
+			_value = p._value;
 			_weight = p._weight;
 			_skipDim = p._skipDim;
 			_userIdx = p._userIdx;
@@ -49,12 +49,12 @@ class BayesPoint{
 		
 		
 		BayesPoint& operator =(const BayesPoint& p){
-			_nDim = p.Dim();
+			_nDim = p._nDim;
 			_value.clear();
-			_value = p.Value();
-			_weight = p.Weight();
-			_skipDim = p.GetSkipDim();
-			_userIdx = p.GetUserIdx();
+			_value = p._value;
+			_weight = p._weight;
+			_skipDim = p._skipDim;
+			_userIdx = p._userIdx;
 			return *this;
 		}
 		bool operator == (const BayesPoint& pt2) const{
@@ -78,7 +78,10 @@ class BayesPoint{
 		}
 		
 
-		vector<double> Value() const{return _value;}
+		void Value(vector<double>& val) const{
+			val.clear();
+			val = _value;
+		}
 		//return value at dimension d
 		double Value(int d) const{
 			if(d < _value.size()){

@@ -226,7 +226,7 @@ class PointCollection{
 		rs.SetRange(0,N);
 		int idx = rs.SampleFlat();		
 		BayesPoint pivot = _pts[idx];
-		if(pivot.Value().size() < 1){
+		if(pivot.Dim() < 1){
 			cout << "Error: no value for pivot point #" << idx << " found." << endl;
 			return;
 		}
@@ -265,7 +265,7 @@ class PointCollection{
 		rs.SetRange(0,N);
 		int idx = rs.SampleFlat();		
 		BayesPoint pivot = _pts[idx];
-		if(pivot.Value().size() < 1){
+		if(pivot.Dim() < 1){
 			cout << "Error: no value for pivot point #" << idx << " found." << endl;
 			return;
 		}
