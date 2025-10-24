@@ -54,7 +54,7 @@ class Matrix{
 		void invert(const Matrix& mat);
 		double trace();
 		void cholesky(Matrix& L) const;
-		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs);
+		void eigenCalc(vector<double>& vals, vector<Matrix>& vecs) const;
 		void MatToPoints(PointCollection& pc, const vector<double>& weights = {}, const vector<int>& skipdims = {}, const vector<int>& idxs = {});
 		void MatToPoint(BayesPoint& pt, double weight = -999, int skipdim = -999, int idx = -999);
 		void PointsToMat(PointCollection& pc);

@@ -680,7 +680,7 @@ void Matrix::SampleNDimGaussian(const Matrix& mean, const Matrix& sigma, int Nsa
 
 
 //fill vals + vecs vectors
-void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs){
+void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs) const{
 	vals.clear();
 	vecs.clear();
 
