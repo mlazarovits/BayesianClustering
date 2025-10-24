@@ -322,7 +322,7 @@ void GaussianMixture::UpdateParameters(){
 		//check above does what we want (clear the entries and reset an empty matrix)
 		for(int n = 0; n < m_n; n++){
 			//add data pt x_n,
-			Matrix x = Matrix(m_data->at(n).Value());
+			Matrix x = Matrix(m_data->at(n));
 			//weighted by posterior value gamma(z_nk),
 			x.mult(x,m_post.at(n,k));
 			//to new mu for cluster k
@@ -346,7 +346,7 @@ void GaussianMixture::UpdateParameters(){
 			Matrix cov_k = Matrix(m_dim, m_dim);
 			m_model[k]->GetParameter("mean", mu);
 			//construct x - mu
-			Matrix x_min_mu = Matrix(m_data->at(n).Value());
+			Matrix x_min_mu = Matrix(m_data->at(n));
 			x_min_mu.minus(mu);
 	
 			//transpose x - mu
