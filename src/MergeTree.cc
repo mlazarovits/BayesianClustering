@@ -31,7 +31,7 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	//PointCollection* points = new PointCollection();
 	//points->AddPoints(*l->points);
 	//points->AddPoints(*r->points);
-	struct node* x = (struct node*)malloc(sizeof *x);
+	struct node* x = new node();//(struct node*)malloc(sizeof *x);
 	//auto x = std::make_unique<node>();
 	x->points = new PointCollection();
 	x->points->AddPoints(*l->points);
@@ -90,7 +90,6 @@ node* MergeTree::CalculateMerge(node *l, node* r){
       x->log_val = log_rk; 
       x->log_h1_prior = loga;
       x->log_didj = logb;
-      //x->prob_tk = p_dk_tk_100;
       x->log_prob_tk = log_p_dk_tk_LSE;
 	t = clock() - t;
 	_total_calcmerge_time += (double)t/CLOCKS_PER_SEC;
@@ -147,16 +146,14 @@ void MergeTree::CreateMirrorNode(node* x){
 	if(_verb > 1) cout << "creating mirror point for point " << x->idx << "  with phi center: " << phi << " with nndist: " << nndist << endl;
 
 	//copy node x into node y so it has all the same info
-	node* y = (node*)malloc(sizeof *y);
+	node* y = new node();//(node*)malloc(sizeof *y);
 	y->points = new PointCollection(*x->points);
 	y->l = new node(*x->l);
 	y->r = new node(*x->r);	
 	y->val = x->val;
 	y->log_val = x->log_val;
-	//y->d = x->d;
 	y->log_d = x->log_d;
 	y->model = x->model;
-	//y->prob_tk = x->prob_tk;
 	y->log_prob_tk = x->log_prob_tk;
 	y->nndist = x->nndist;
 	//map points across 0-2pi boundary

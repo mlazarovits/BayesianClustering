@@ -352,7 +352,7 @@ class BayesCluster{
 		Matrix _smear;
 		int _verb;
 
-		const vector<node*>& _delauney_cluster();
+		const vector<node*> & _delauney_cluster();
 		const vector<node*>& _naive_cluster();
 		GaussianMixture* _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }

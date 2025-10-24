@@ -153,12 +153,12 @@ class MergeTree : BaseTree{
 
 		void SetVerbosity(int v){ _verb = v; }
 
-		void SetPriorParameters(map<string, Matrix> params){ _params = params; }
+		void SetPriorParameters(const map<string, Matrix>& params){ _params = params; }
 
 		void AddLeaf(const BayesPoint* pt = nullptr){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
 			_clusters.push_back(nullptr);
-			node* x = (node*)malloc(sizeof *x);
+			node* x = new node();
 			x->l = _z; x->r = _z;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			//x->val = 1.;	
@@ -725,31 +725,6 @@ if(isnan){
 		//project points using nominal model responsibilities to isolate subcluster merges
 		//need to project data from each node for node subcluster
 		PointCollection* _project_data(node* x, int cl_left, int cl_right){
-//cout << "projecting data into left subcl " << cl_left << " and right subcl " << cl_right << " with means " << endl;
-//x->l->model->GetLHPosteriorParameters(cl_left)["m"].Print();
-//cout << " and " << endl;
-//x->r->model->GetLHPosteriorParameters(cl_right)["m"].Print();
-
-
-//cout << "og data left " << endl; x->l->model->GetData()->Print();
-//cout << "left node has " << x->l->model->GetNClusters() << " subclusters" << endl;
-//cout << "with norms" << endl;
-//vector<double> norms;
-//x->l->model->GetNorms(norms);
-//for(int n = 0; n < norms.size(); n++) cout << " left subcl #" << n << " norm " << norms[n] << endl;
-
-
-//cout << "og data right " << endl; x->r->model->GetData()->Print();
-//cout << "right node has " << x->r->model->GetNClusters() << " subclusters" << endl;
-//x->r->model->GetNorms(norms);
-//for(int n = 0; n < norms.size(); n++) cout << " right subcl #" << n << " norm " << norms[n] << endl;
-//
-
-
-//cout << "data from node x" << endl; x->model->GetData()->Print();
-//cout << "data from node x->l" << endl; x->l->model->GetData()->Print();
-//cout << "data from node x->r" << endl; x->r->model->GetData()->Print();
-			
 			Matrix r_nk_l = x->l->model->GetPosterior();
 //cout << "left posterior" << endl; r_nk_l.Print();
 			if(cl_left >= r_nk_l.GetDims()[1] || cl_left < 0){
@@ -981,7 +956,7 @@ if(isnan){
 		//i = # subclusters in pseudojet n and j = # subclusters in pseudojet m
 		//if i > j then there *will* be "no match" cases
 		//returning indices s.t. the pair is (idx_i, idx_j) for subcluster from pseudojet i with index idx_i and subcluster idx_j from pseudojet j
-		void _match_pdfs(vector<BasePDF*>& inpdfs_n, vector<BasePDF*> inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
+		void _match_pdfs(const vector<BasePDF*>& inpdfs_n, const vector<BasePDF*>& inpdfs_m, map<double,pair<int,int>, std::greater<double>>& bestMatchIdxs){
 			//cout << "matching pdfs - " << inpdfs_n.size() << " to " << inpdfs_m.size() << endl;
 			//loop through pdfs
 			double bestProd, prod;

@@ -383,7 +383,7 @@ class BasePDFMixture : public BasePDF{
 			m_data->Put02pi(1);
 		}
 		//scale data 
-		void ScaleData(Matrix sc){
+		void ScaleData(const Matrix& sc){
 			Matrix x;
 			x.PointsToMat(*m_data);
 			//Matrix scaled_data(x.GetDims()[0], x.GetDims()[1]);
@@ -429,9 +429,9 @@ class BasePDFMixture : public BasePDF{
 		//shift learned parameters
 		virtual void ShiftParameters(const BayesPoint& pt) = 0;
 		//scale learned parameters 
-		virtual void ScaleParameters(Matrix sc) = 0;
+		virtual void ScaleParameters(const Matrix& sc) = 0;
 		//scale prior parameters 
-		virtual void ScalePriorParameters(Matrix sc) = 0;
+		virtual void ScalePriorParameters(const Matrix& sc) = 0;
 
 		PointCollection* m_data;
 		//number of data points

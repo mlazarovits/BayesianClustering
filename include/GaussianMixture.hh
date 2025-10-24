@@ -236,7 +236,7 @@ class GaussianMixture : public BasePDFMixture{
 		}
 	
 		//scale prior parameters
-		void ScalePriorParameters(Matrix sc){
+		void ScalePriorParameters(const Matrix& sc){
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
 			Matrix scT, scInv, scTinv;
@@ -250,20 +250,9 @@ class GaussianMixture : public BasePDFMixture{
 			
 			m_mean0.mult(sc,m_mean0);	
 			m_meanBeta0.mult(m_mean0, m_beta0);
-				/*
-				cout << "Scaled prior Parameters" << endl;
-				cout << "beta0" << endl;
-				cout << m_beta0 << endl;
-				cout << "mean0" << endl;
-				m_mean0.Print();
-				cout << "nu0" << endl;
-				cout << m_nu0 << endl;
-				cout << "W0" << endl;
-				m_W0.Print();
-			*/
 		}
 		//scale learned model means 
-		void ScaleMeans(Matrix sc){
+		void ScaleMeans(const Matrix& sc){
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
 			Matrix scT, scInv, scTinv;
@@ -290,7 +279,7 @@ class GaussianMixture : public BasePDFMixture{
 
 	
 		//scale learned model parameters
-		void ScaleParameters(Matrix sc){
+		void ScaleParameters(const Matrix& sc){
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
 			Matrix scT, scInv, scTinv;

@@ -3,13 +3,11 @@
 
 #include "PointCollection.hh"
 #include "GaussianMixture.hh" 
-//#include <boost/multiprecision/cpp_bin_float.hpp>
-//using namespace boost::multiprecision;
 
 class BaseTree{
 	public:
 		BaseTree(){
-			_z = (struct node*) malloc(sizeof *_z);
+			_z = new node();
 			_z->l = _z; _z->r = _z; _z->val = -1; 
 			//_z->d = -1; _z->prob_tk = -1; 
 			_z->log_val = -1; _z->log_d = -1; _z->log_prob_tk = -1; 
@@ -18,7 +16,7 @@ class BaseTree{
 			_z->idx = -1;
 			_z->nndist = -999;
 
-			_head = (struct node*)malloc(sizeof *_head);
+			_head = new node();
 			_head->l = _head; _head->r = _head; _head->val = -1; 
 			//_head->d = -1; _head->prob_tk = -1; 
 			_head->log_val = -1; _head->log_d = -1; _head->log_prob_tk = -1; 
@@ -59,6 +57,8 @@ class BaseTree{
 			bool ismirror = false;
 			int idx = -999; //index of node in merge tree
 			
+			node(){ };
+
 			//node* operator =(const node* n){
 			node(const node& n){
 			//	if(n.points)

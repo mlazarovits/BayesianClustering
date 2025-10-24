@@ -15,7 +15,7 @@ using std::endl;
 class PointCollection{
 	public:
 		PointCollection() = default;
-		PointCollection(BayesPoint pt){
+		PointCollection(const BayesPoint& pt){
 			_pts.push_back(pt);
 			_nDim = pt.Dim();
 			for(int d = 0; d < _nDim; d++)
@@ -170,7 +170,7 @@ class PointCollection{
 			if(_skipDim == -1) _skipDim = pts.at(0).GetSkipDim();
 		}
 
-		void AddPoints(vector<BayesPoint> pts){
+		void AddPoints(const vector<BayesPoint>& pts){
 			_nDim = pts[0].Dim();
 			for(auto p : pts){
 				if(p.Dim() != _nDim){
@@ -354,7 +354,7 @@ class PointCollection{
 		}
 		return min;
 	}
-	void Translate(BayesPoint t){
+	void Translate(const BayesPoint& t){
 		if(t.Dim() != _nDim) return;
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
@@ -365,7 +365,7 @@ class PointCollection{
 		}
 
 	}
-	void Translate(vector<double> t){
+	void Translate(const vector<double>& t){
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d) - t[d],d);
@@ -536,7 +536,7 @@ class PointCollection{
 		return scale;
 	}
 	
-	void Scale(BayesPoint s){
+	void Scale(const BayesPoint& s){
 		if(s.Dim() != _nDim) return;
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
@@ -545,7 +545,7 @@ class PointCollection{
 		}
 
 	}
-	void Scale(vector<double> s){
+	void Scale(const vector<double>& s){
 		for(int d = 0; d < _nDim; d++){
 			for(int i = 0; i < (int)_pts.size(); i++){
 				_pts[i].SetValue(_pts[i].at(d)*(s[d]),d);
@@ -639,9 +639,6 @@ class PointCollection{
 		//explicity check for seam crossings
 		//if((max > 3*pi/2 && max <= 2*pi) && (min < pi/2 && min >= 0.)){	
 		if(max - min > pi){	
-			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << " " << atan2(avg_s, avg_c) << endl;
-			//TODO: consider passing a "mirror" bool that tells if the set of points is from a mirrored node or not - that way if points > pi && mirror know that mean shoul dbe in [-pi, 0) but if points <= pi && mirror points should be in [2pi, 3pi]
-			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << " points" << endl; this->Print();}
 			if(euclid_mean < 0 && mean > 0){ return mean - 2*pi; }
 			//if(euclid_mean > 2*pi && mean < 2*pi){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean + 2*pi << " points " <<  endl; this->Print();}
 			if(euclid_mean > 2*pi && mean < 2*pi){ return mean + 2*pi; }
@@ -658,39 +655,6 @@ class PointCollection{
 		}
 		//cout << "CircularMean() - wrapped mean " << mean << " raw mean " << euclid_mean << " unwrapped mean " << best << endl;
 		return best;
-		/*
-		double avg_s = 0;
-		double avg_c = 0;
-		for(int i = 0; i < (int)_pts.size(); i++){
-			avg_s += sin(_pts[i].at(d));
-			avg_c += cos(_pts[i].at(d));
-		}
-		avg_s /= (double)_pts.size();
-		avg_c /= (double)_pts.size();
-		double mean = atan2(avg_s,avg_c);
-		//precision to avoid edge cases
-		if(fabs(mean) < 1e-10) mean = round(mean);
-		//doesn't work for mirror points
-		//if(mean < 0) mean += 2*acos(-1);
-		//if(mean >= 2*acos(-1)) mean -= 2*acos(-1);
-		//return mean; 
-		//atan2 returns on range [-pi, pi] - needs to match original range
-		double euclid_mean = this->mean().at(d);
-		double pi = 4*atan(1);
-		cout << "CircularMean() - pre interval adjust (straight from atan2) " << mean << " mean " << euclid_mean << endl;
-		double diff = 999;
-		while(diff > 0){
-			diff = euclid_mean - mean;
-		}
-		//could also just add/subtract 2pi until distance bw mean/euclid mean is minimized to match pts
-		//in [0,pi]
-		//if((euclid_mean > 0 && euclid_mean < pi) && mean < 0 ){ cout << "add 2pi" << endl; return mean + 2*acos(-1); }
-		////in [pi,2pi]
-		//else if((euclid_mean > pi) && mean < pi ){ cout << "add 2pi" << endl; return mean + 2*acos(-1); }
-		//else if(euclid_mean < 0 && mean > 0) { cout << "minus 2pi" << endl; return mean - 2*acos(-1); }
-		//else if(euclid_mean < pi && mean > pi) { cout << "minus 2pi" << endl; return mean - 2*acos(-1); }
-		//else return mean;
-		*/
 	};
 
 	//weighted circular mean	
@@ -726,9 +690,6 @@ class PointCollection{
 		//if points cross 0--2pi seam, just use atan2 wrapped mean
 		//explicity check for seam crossings
 		if(max - min > pi){	
-			//cout << "points crossing seam! with max " << max << " and min " << min << " returing atan2 wrapped mean " << mean << " " << atan2(avg_s, avg_c) << " euclid_centroid " << euclid_mean << endl;
-			//TODO: consider passing a "mirror" bool that tells if the set of points is from a mirrored node or not - that way if points > pi && mirror know that mean shoul dbe in [-pi, 0) but if points <= pi && mirror points should be in [2pi, 3pi]
-			//if(euclid_mean < 0 && mean > 0){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean - 2*pi << " points" << endl; this->Print();}
 			if(euclid_mean < 0 && mean > 0){ return mean - 2*pi; }
 			//if(euclid_mean > 2*pi && mean < 2*pi){ cout << " euclid_mean " << euclid_mean << " mean " << mean << " would return " << mean + 2*pi << " points " <<  endl; this->Print();}
 			if(euclid_mean > 2*pi && mean < 2*pi){ return mean + 2*pi; }
@@ -745,36 +706,6 @@ class PointCollection{
 		}
 		//cout << "CircularCentroid() - wrapped mean " << mean << " raw mean " << euclid_mean << " unwrapped mean " << best << endl;
 		return best;
-		/*
-		double avg_s = 0;
-		double avg_c = 0;
-		double sum = 0;
-		for(int i = 0; i < (int)_pts.size(); i++){
-			avg_s += sin(_pts[i].at(d))*_pts[i].w();
-			avg_c += cos(_pts[i].at(d))*_pts[i].w();
-			sum += _pts[i].w();
-		}
-		avg_s /= sum;
-		avg_c /= sum;
-		double mean = atan2(avg_s,avg_c);
-		//precision to avoid edge cases
-		if(fabs(mean) < 1e-10) mean = round(mean);
-		///if(mean < 0) mean += 2*acos(-1);
-		///if(mean >= 2*acos(-1)) mean -= 2*acos(-1);
-		///return mean; 
-		//atan2 returns on range [-pi, pi] - needs to match original range
-		double euclid_mean = this->mean().at(d);
-		double pi = 4*atan(1);
-		cout << "CircularCentroid() - pre interval adjust (straight from atan2) " << mean << " mean " << euclid_mean << endl;
-		//could also just add/subtract 2pi until distance bw mean/euclid mean is minimized to match pts
-		//in [0,pi]
-		if((euclid_mean > 0 && euclid_mean < pi) && mean < 0 ){ cout << "add 2pi" << endl; return mean + 2*acos(-1); }
-		//in [pi,2pi]
-		//else if((euclid_mean > pi) && mean < pi ){ cout << "add 2pi" << endl; return mean + 2*acos(-1); }
-		//else if(euclid_mean < 0 && mean > 0) { cout << "minus 2pi" << endl; return mean - 2*acos(-1); }
-		//else if(euclid_mean < pi && mean > 0) { cout << "minus 2pi" << endl; return mean - 2*acos(-1); }
-		//else return mean;
-		*/
 	};
 
 	//weighted mean	

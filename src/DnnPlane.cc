@@ -744,7 +744,7 @@ if(_verbose) cout << "SetNearest - start" << endl;
   //probability quantities
   double rk;
   double maxrk = 0;
-   node* bestmerge = nullptr;//( node*)malloc(sizeof *bestmerge);
+   node* bestmerge = nullptr;
    //bestmerge->val = -999;
   Vertex_handle best_vtx = _TR.infinite_vertex();
   // when there is only one finite point left in the triangulation, 
@@ -866,7 +866,7 @@ void DnnPlane::_SetAndUpdateNearest(
   //probability quantities
   double rk;
   double maxrk = -1; //probability could be zero, needs to be set to zero if that's the case
-  node* bestmerge = nullptr;//(node*)malloc(sizeof *bestmerge);
+  node* bestmerge = nullptr;
    //bestmerge->val = -999;
   Vertex_handle best_vtx = _TR.infinite_vertex();
   // when there is only one finite point left in the triangulation, 
