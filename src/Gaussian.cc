@@ -109,10 +109,10 @@ void Gaussian::InitParameters(unsigned long long seed){
 
 Gaussian* Gaussian::mult(Gaussian* p1){ 
 	//check that p1 is a Gaussian by looking at parameters
-	Matrix mu2 = p1->GetParameter("mean");
+	Matrix mu2; p1->GetParameter("mean", mu2);
 	Matrix mu1 = m_mu;
 
-	Matrix cov2 = p1->GetParameter("cov");
+	Matrix cov2; p1->GetParameter("cov", cov2);
 	cov2.invert(cov2);
 	Matrix cov1 = Matrix(m_dim, m_dim);
 	cov1.invert(m_cov);

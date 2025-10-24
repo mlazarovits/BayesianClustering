@@ -208,8 +208,10 @@ class BasePDFMixture : public BasePDF{
 //cout << std::setprecision(20) << " k " << k << " norm " << m_norms[k] << " thresh " << thresh << endl;
 				if(m_norms[k] < thresh){ 
 					if(_verb > 3){ 
-						cout << "Removing cluster " << k << " with norm " << m_norms[k] << " and mean " << endl; 
-						m_model[k]->GetPrior()->GetParameter("mean").Print();
+						cout << "Removing cluster " << k << " with norm " << m_norms[k] << " and mean " << endl;
+						Matrix mean;
+						m_model[k]->GetPrior()->GetParameter("mean", mean);
+						mean.Print();
 					}
 					//remove model + update number of clusters
 					RemoveModel(k);

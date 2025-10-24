@@ -279,13 +279,8 @@ class MergeTree : BaseTree{
 			//cout << "MergeTree:Evidence - original points" << endl; x->points->Print();
 			x->points->Sort();
 			PointCollection* newpts = new PointCollection(*x->points);
-			vector<Matrix> measErrs;
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
-			//double phi = newpts->CircularCentroid(1);
-			//if( (0 < phi && phi < 1.57) || (4.7 < phi && phi < 2*acos(-1))){
-			//	cout << "original pts " << phi << endl; newpts->Print();	
-			//}
 		
 		
 			x->model = new GaussianMixture(k); //p(x | theta)
@@ -442,49 +437,9 @@ class MergeTree : BaseTree{
 			}
 //cout << "finished in " << it << " iterations with final dLogL " << dLogL << " and final logL " << newLogL << endl;
 			if(_verb > 5) cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
-//cout << " with points in node model " << endl; x->model->GetData()->Print();  
-//cout << "original points" << endl; x->points->Print();
-//cout << "x is mirror? " << x->ismirror << " x->l ismirror? " << x->l->ismirror << " x->r ismirror? " << x->r->ismirror << endl;
-	//cout << "model has " << x->model->GetData()->GetNPoints() << " points" << endl;
-	//if(x->model->GetData()->GetNPoints() < 3){ cout << "model pts" << endl; x->model->GetData()->Print(); cout << "node pts" << endl; x->points->Print(); }
-	//cout << "node x means pre scale" << endl;
-	//if(newLogL > 0){
-	//	cout << "from model with LogL " << newLogL << " and n pts " << x->model->GetData()->GetNPoints() << endl;
-	//	for(int k = 0; k < x->model->GetNClusters(); k++){
-	//		auto params = x->model->GetLHPosteriorParameters(k);
-	//		cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-	//		params["mean"].Print();
-	//		//cout << " cov" << endl;
-	//		//params["cov"].Print();
-	//	}
-	//	x->model->GetData()->Print();
-	//}
-	//if(x->model->GetNClusters() <= 2){
-		//cout << "everything found to be in 1 cluster" << endl;
-		//cout << "from model" << endl;
-		//for(int k = 0; k < x->model->GetNClusters(); k++){
-		//	auto params = x->model->GetLHPosteriorParameters(k);
-		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-		//	params["mean"].Print();
-		//	//cout << " cov" << endl;
-		//	//params["cov"].Print();
-		//}
-		//cout << endl;
-	//}
 	//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
 	if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
 		double merge_elbo;
-		//vector<map<string, Matrix>> starting_params = prev_posts;
-		//cout << "x->model currently has " << x->model->GetNClusters() << " clusters" << endl;
-		///cout << "from model" << endl;
-		//for(int k = 0; k < x->model->GetNClusters(); k++){
-		//	auto params = x->model->GetLHPosteriorParameters(k);
-		//	cout << "cluster #" << k << " mean with weight " << params["alpha"].at(0,0) - _emAlpha << endl;
-		//	params["mean"].Print();
-		//	//cout << " cov" << endl;
-		//	//params["cov"].Print();
-		//}
-
 		//compare merges in its respective projected data space
 		vector<map<string, Matrix>> merge_posteriors;
 		vector<pair<int,int>> merge_pairs;
@@ -1044,8 +999,9 @@ if(isnan){
 		}
 
 		double _gaussian_dist(BasePDF* pdf1, BasePDF* pdf2){
-			Matrix mu1 = pdf1->GetParameter("mean");
-			Matrix mu2 = pdf2->GetParameter("mean");
+			Matrix mu1, mu2;
+			pdf1->GetParameter("mean", mu1);
+			pdf2->GetParameter("mean", mu2);
 
 			double d1 = mu1.at(0,0) - mu2.at(0,0);
 			double d2 = mu1.at(1,0) - mu2.at(1,0);
@@ -1063,17 +1019,17 @@ if(isnan){
 			//where lam = (lam_1 + lam_2)
 			//mu = lam^-1(lam_1*mu_1 + lam_2*mu_2)
 			//returns LOG of inner product
-			Matrix mu1 = pdf1->GetParameter("mean");
+			Matrix mu1; pdf1->GetParameter("mean", mu1);
 			Matrix mu1T(1,3);
 			mu1T.transpose(mu1);
-			Matrix cov1 = pdf1->GetParameter("cov");
+			Matrix cov1; pdf1->GetParameter("cov", cov1);
 			Matrix lam1(3,3);
 			lam1.invert(cov1);
 			
-			Matrix mu2 = pdf2->GetParameter("mean");
+			Matrix mu2; pdf2->GetParameter("mean", mu2);
 			Matrix mu2T(1,3);
 			mu2T.transpose(mu2);
-			Matrix cov2 = pdf2->GetParameter("cov");
+			Matrix cov2; pdf2->GetParameter("cov", cov2);
 			Matrix lam2(3,3);
 			lam2.invert(cov2);
 		

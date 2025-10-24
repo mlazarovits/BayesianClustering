@@ -17,8 +17,7 @@ class BasePDF{
 
 		virtual void InitParameters(unsigned long long seed = 123) = 0;
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
-		virtual map<string, Matrix> GetParameters(){ return m_params; }
-//		virtual void SetParameters(map<string, Matrix> params) = 0;
+		virtual void GetParameters(map<string, Matrix>& p){ p.clear(); p = m_params; }
 		void SetParameter(string name, const Matrix& param){
 			map<string, Matrix>::iterator it = m_params.find(name);
 			if(it != m_params.end()){
@@ -33,12 +32,12 @@ class BasePDF{
 		}
 		//to call once the SetParameters function has been called
 		virtual void UpdateParameters() = 0;
-		Matrix GetParameter(string name){
-			if(m_params.empty()) return Matrix(); 
-			if(m_params.find(name) != m_params.end()) return m_params[name]; 
+		void GetParameter(string name, Matrix& param){
+			if(m_params.empty()) param = Matrix(); 
+			if(m_params.find(name) != m_params.end()) param = m_params[name]; 
 			else{
 				cout << "Parameter " << name << " not valid for this PDF." << endl;
-				return Matrix();
+				param = Matrix();
 			}
 		}
 		void BaseSetDim(int d){ m_dim = d; }

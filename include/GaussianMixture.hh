@@ -37,7 +37,7 @@ class GaussianMixture : public BasePDFMixture{
 			shift.PointToMat(pt);
 			PointCollection meanpts;
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean",mean);
 				mean.MatToPoints(meanpts);
 				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
@@ -45,7 +45,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean",priormean);
 				priormean.MatToPoints(meanpts);
 				meanpts.CircularTranslate(pt.at(0),0);
 				meanpts.CircularTranslate(pt.at(1),1);
@@ -66,13 +66,13 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			double eta;
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				eta = mean.at(0,0);
 				mean.SetEntry(2*atan(exp(-eta)),0,0);
 				m_model[k]->SetParameter("mean",mean);
 				
 				//posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				eta = priormean.at(0,0);	
 				priormean.SetEntry(2*atan(exp(-eta)),0,0);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
@@ -88,13 +88,13 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			double theta;
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				theta = mean.at(0,0);
 				mean.SetEntry(-log(tan(theta/2)),0,0);
 				m_model[k]->SetParameter("mean",mean);
 				
 				//posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				theta = priormean.at(0,0);	
 				priormean.SetEntry(-log(tan(theta/2)),0,0);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
@@ -111,7 +111,7 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
 				meanpts.AngleToPlaneProject(0);	
@@ -119,7 +119,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				PointCollection priormean_pt; priormean.MatToPoints(meanpts);
 				meanpts.AngleToPlaneProject(0);	
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -137,7 +137,7 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
 				meanpts.AngleToPlaneProject(1);	
@@ -145,7 +145,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.MatToPoints(meanpts);
 				meanpts.AngleToPlaneProject(1);	
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -163,7 +163,7 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
 				meanpts.PlaneToAngleProject(0);	
@@ -171,7 +171,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.MatToPoints(meanpts);
 				meanpts.PlaneToAngleProject(0);	
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -188,7 +188,7 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
 				meanpts.PlaneToAngleProject(1);	
@@ -196,7 +196,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.MatToPoints(meanpts);
 				meanpts.PlaneToAngleProject(1);
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -215,7 +215,7 @@ class GaussianMixture : public BasePDFMixture{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.MatToPoints(meanpts);
 				//cout << "mean" << endl; mean_pt.Print();
 				meanpts.Put02pi(1);
@@ -223,7 +223,7 @@ class GaussianMixture : public BasePDFMixture{
 				m_model[k]->SetParameter("mean",Matrix(meanpts));
 				
 				//translate posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.MatToPoints(meanpts);
 				meanpts.Put02pi(1);	
 				m_model[k]->GetPrior()->SetParameter("mean",Matrix(meanpts));
@@ -261,12 +261,12 @@ class GaussianMixture : public BasePDFMixture{
 			scTinv.transpose(scInv);
 			for(int k = 0; k < m_k; k++){
 				//scale posterior mean in likelihood 
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.mult(sc,mean);	
 				m_model[k]->SetParameter("mean",mean);
 				
 				//scale posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.mult(sc,priormean);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
 
@@ -288,12 +288,12 @@ class GaussianMixture : public BasePDFMixture{
 			scTinv.transpose(scInv);
 			for(int k = 0; k < m_k; k++){
 				//scale posterior mean in likelihood 
-				mean = m_model[k]->GetParameter("mean");
+				m_model[k]->GetParameter("mean", mean);
 				mean.mult(sc,mean);	
 				m_model[k]->SetParameter("mean",mean);
 				
 				//scale posterior mean in prior distribution
-				priormean = m_model[k]->GetPrior()->GetParameter("mean");
+				m_model[k]->GetPrior()->GetParameter("mean", priormean);
 				priormean.mult(sc,priormean);
 				m_model[k]->GetPrior()->SetParameter("mean",priormean);
 
@@ -303,13 +303,13 @@ class GaussianMixture : public BasePDFMixture{
 
 				//scale posterior cov in likelihood
 				//var(AX) = Avar(X)A^T 
-				cov = m_model[k]->GetParameter("cov");
+				m_model[k]->GetParameter("cov", cov);
 				cov.mult(sc,cov); //Avar(X)
 				cov.mult(cov,scT); //Avar(X)A^T
 				m_model[k]->SetParameter("cov",cov);
 
 				//scale posterior W in prior distribution
-				W = m_model[k]->GetPrior()->GetParameter("scalemat");
+				m_model[k]->GetPrior()->GetParameter("scalemat", W);
 				W.mult(scInv,W); //Avar(X)
 				W.mult(W,scTinv); //Avar(X)A^T
 				m_model[k]->GetPrior()->SetParameter("scalemat",W);

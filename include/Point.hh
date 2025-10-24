@@ -24,7 +24,6 @@ class BayesPoint{
 		BayesPoint(const int d){
 			_nDim = d;
 			for(int i = 0; i < _nDim; i++) _value.push_back(-1);	
-			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
 			_weight = 1.;
 			_skipDim = -1;
 			_userIdx = -1;
@@ -34,9 +33,7 @@ class BayesPoint{
 		BayesPoint(const BayesPoint &p){
 			_nDim = p.Dim();
 			_value.clear();
-			_rank.clear();
 			_value = p.Value();
-			_rank = p.Rank();	
 			_weight = p._weight;
 			_skipDim = p._skipDim;
 			_userIdx = p._userIdx;
@@ -45,7 +42,6 @@ class BayesPoint{
 		BayesPoint(const vector<double>& x){
 			_nDim = (int)x.size();
 			for(int i = 0; i < _nDim; i++) _value.push_back(x[i]);	
-			for(int i = 0; i < _nDim; i++) _rank.push_back(-1.);	
 			_weight = 1.;
 			_skipDim = -1;
 			_userIdx = -1;
@@ -55,9 +51,7 @@ class BayesPoint{
 		BayesPoint& operator =(const BayesPoint& p){
 			_nDim = p.Dim();
 			_value.clear();
-			_rank.clear();
 			_value = p.Value();
-			_rank = p.Rank();	
 			_weight = p.Weight();
 			_skipDim = p.GetSkipDim();
 			_userIdx = p.GetUserIdx();
@@ -81,7 +75,6 @@ class BayesPoint{
 		
 		~BayesPoint(){
 			_value.clear();
-			_rank.clear();
 		}
 		
 
@@ -129,35 +122,7 @@ class BayesPoint{
 		double Weight() const{ return _weight; }	
 		double w() const{ return _weight; }
 
-		vector<double> Rank() const{return _rank;}
-		//return rank at dimension d
-		double Rank(int d) const{return _rank[d];}
-		
 		int Dim() const{ return _nDim; }
-
-		void SetRank(vector<double>& r){
-			if(r.size() != _nDim){
-				cout << "Error: length of vector " << r.size() << " does not match BayesPoint dimension " << _nDim << endl;
-				return;
-			}
-			_rank.clear();
-			_rank = r;
-			return;
-		}
-
-		void SetRank(double r, int d){
-			if(d > _rank.size()){
-				cout << "Error: initial values not set." << endl;
-				return;
-			}
-			if(d > _nDim){
-				cout << "Error: dimension: " << d << " inaccessible for BayesPoint of dimension: " << _nDim << endl;
-				return;
-			}
-			_rank[d] = r;
-			return;
-		}
-
 
 		//compare along axis
 		bool eq(BayesPoint pt2, int d = 0){
@@ -260,7 +225,6 @@ class BayesPoint{
 	private:
 		int _nDim;
 		vector<double> _value;
-		vector<double> _rank;
 		double _weight;
 		int _skipDim;
 		int _userIdx;

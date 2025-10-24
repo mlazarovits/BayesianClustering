@@ -251,7 +251,7 @@ Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
 	_mom = BayesPoint(4);
 	_E = E;
 
-	map<string, Matrix> params = pdf->GetParameters();
+	map<string, Matrix> params; pdf->GetParameters(params);
 	_eta = params["mean"].at(0,0);
 	_phi = params["mean"].at(1,0);
 	_t =   params["mean"].at(2,0);
