@@ -406,9 +406,9 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		
 		string mean_string;
 		stream.str("");
-		for(int i = 0; i < m.GetDims()[0]; i++){
+		for(int i = 0; i < m.nRows(); i++){
 			stream << m.at(i,0);
-			if(i < m.GetDims()[0]-1) stream << "-";
+			if(i < m.nRows()-1) stream << "-";
 		}
 		mean_string = stream.str();
 		idx = 0;
@@ -422,9 +422,9 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		
 		string W_string;
 		stream.str("");
-		for(int i = 0; i < W.GetDims()[0]; i++){
+		for(int i = 0; i < W.nRows(); i++){
 			stream << W.at(i,i);
-			if(i < W.GetDims()[0]-1) stream << "-";
+			if(i < W.nRows()-1) stream << "-";
 		}
 		W_string = stream.str();
 		idx = 0;
