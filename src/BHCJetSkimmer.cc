@@ -29,7 +29,6 @@ void BHCJetSkimmer::Skim(){
 		cout << " default (2+ gen partons that are not tops, including gluons)" << endl;
 	
 
-	map<string, Matrix> params;
 	vector<Jet> rhs;
 
 
@@ -218,11 +217,8 @@ void BHCJetSkimmer::Skim(){
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 
-			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
-			t = clock() - t;
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
-cout << "reco AK4 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
@@ -259,10 +255,7 @@ cout << "reco AK4 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << en
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 			
-			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
-			t = clock() - t;
-cout << "reco AK8 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
@@ -290,10 +283,7 @@ cout << "reco AK8 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << en
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 			
-			t = clock();
 			GaussianMixture* gmm = algo->SubCluster();
-			t = clock() - t;
-cout << "reco AK15 subcluster time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
@@ -526,7 +516,6 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 				
 			}
 			if(eta == -999 && phi == -999) continue; //no gen particles specified
-//cout << "eta " << eta << " phi " << phi << endl;
 			//save BHC jets as ellipses
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);

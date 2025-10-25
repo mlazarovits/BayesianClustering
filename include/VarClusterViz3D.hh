@@ -33,7 +33,7 @@ class VarClusterViz3D : public ClusterVizBase{
 			if(_n == 0){
 				return;
 			}
-			_post = _model->GetPosterior();
+			_model->GetPosterior(_post);
 			_k = _model->GetNClusters();
 		}	
 		void SeeData();

@@ -33,7 +33,7 @@ class ClusterVizBase{
 			_points = algo->GetData();
 			_n = _points->GetNPoints();
 			_k = algo->GetNClusters();
-			_post = _model->GetPosterior();
+			_model->GetPosterior(_post);
 			_verb = 0;
 			
 			//default = no shift, no scale
@@ -47,7 +47,7 @@ class ClusterVizBase{
 		};
 	
 		void UpdatePosterior(){
-			_post = _model->GetPosterior();
+			_model->GetPosterior(_post);
 		
 		}	
 		virtual void AddPlot(string plotName = "test") = 0;

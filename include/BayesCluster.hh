@@ -125,7 +125,7 @@ class BayesCluster{
 		void SetDataSmear(const Matrix& cov){ _smear = cov; }		
 		void SetAlpha(double a){ _alpha = a; }
 		void SetSubclusterAlpha(double a){ _subalpha = a; }
-		void SetPriorParameters(map<string, Matrix> params){ _prior_params = params; }
+		void SetPriorParameters(const map<string, Matrix>& params){ _prior_params = params; }
 		void SetVerbosity(int v){ _verb = v; }
 		bool _check_merges;
 		void CheckMerges(bool t){ _check_merges = t; }
@@ -193,7 +193,7 @@ class BayesCluster{
 			/// if max_rk < 0.5, clustering can stop
 			double max_rk_so_far;
 		};
-		void _sanitize(BayesPoint pt){
+		void _sanitize(BayesPoint& pt){
 			if(pt.Dim() < 2) return;
   			double twopi = 6.28318530717;
 			double second = pt.at(1);

@@ -248,7 +248,7 @@ struct ClusterObj{
 	}
 	void Get2DMat(const Matrix& inmat, Matrix& outmat){
 		if(!outmat.square()) return;
-		if(outmat.GetDims()[0] != 2) return;
+		if(outmat.nRows() != 2) return;
 		outmat.reset();
 		outmat.SetEntry(inmat.at(0,0),0,0);	
 		outmat.SetEntry(inmat.at(0,1),0,1);	

@@ -25,6 +25,7 @@ MultivarT::MultivarT(Matrix mean, Matrix scale, double dof){
 
 
 void MultivarT::InitParameters(unsigned long long seed){
+cout << "HERE" << endl;
 	m_mean.InitEmpty();
 	m_scale.InitIdentity();
 	m_dof = 1.1;

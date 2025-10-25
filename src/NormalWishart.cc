@@ -57,7 +57,8 @@ double NormalWishart::Prob(const Matrix& mu, const Matrix& precision){
 
 
 
-void NormalWishart::InitParameters(unsigned long long seed){ 
+void NormalWishart::InitParameters(unsigned long long seed){
+cout << "HERE" << endl;
 	m_mean.InitEmpty();
 	m_scalemat.InitIdentity();
 	m_scale = 1.;

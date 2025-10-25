@@ -14,17 +14,37 @@ using std::string;
 class BasePDFMixture : public BasePDF{
 	public:
 		BasePDFMixture(){
-			m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; m_post.SetDims(m_n, m_k);
+			m_k = 0; m_n = 0; m_alpha0 = 0.; _verb = 0; _smear = false; 
 			_cell = 0;
 			_tresCte = 0;
 			_tresStoch = 0;
 			_tresNoise = 0;
 			m_dim = 0;
+			m_data = nullptr;
+
+		}
+		//copy constructor
+		BasePDFMixture(const BasePDFMixture& pdfmix){
+			m_data = pdfmix.m_data;
+			m_n = pdfmix.m_n;
+			m_k = pdfmix.m_k;
+			m_model = pdfmix.m_model;
+			m_coeffs = pdfmix.m_coeffs;
+			m_alphas = pdfmix.m_alphas;
+			m_alpha0 = pdfmix.m_alpha0;
+			m_norms = pdfmix.m_norms;
+			m_post = pdfmix.m_post;
+
+			_verb = pdfmix._verb;
+			_data_cov = pdfmix._data_cov;
+			_smear = pdfmix._smear;
+			_lamStar = pdfmix._lamStar;
 
 		}
 		BasePDFMixture(int k){ 
 			m_dim = 0;
 			m_k = k; 
+			m_data = nullptr;
 			for(int k = 0; k < m_k; k++){
 				m_coeffs.push_back(0.);
 				m_norms.push_back(0.);
@@ -36,7 +56,6 @@ class BasePDFMixture : public BasePDF{
 			//alpha > 0
 			//choose the same value for all alpha_0k by symmetry (see Bishop eq. 10.39)
 			m_alpha0 = 0.1; _verb = 0; _smear = false;
-			m_post.SetDims(m_n, m_k);
 			_cell = acos(-1)/180; //default is CMS ECAL cell size
 			//default is EGamma res - https://github.com/jking79/GammaResTool/blob/main/macros/ecal_config/caliSmearConfig.txt
 			//times should already be given in ns
@@ -70,6 +89,11 @@ class BasePDFMixture : public BasePDF{
 		
 		void SetData(PointCollection* data){
 			if(_verb > 6) cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
+			//if just resetting data (not setting for the first time) only reset data
+			if(m_data != nullptr){
+				m_data = data;
+				return;
+			}
 			m_data = data; 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
@@ -80,7 +104,7 @@ class BasePDFMixture : public BasePDF{
 				m_k = data->GetNPoints();
 			}
 
-			//set up lambda_n
+			//set up lambda_n 
 			double tresSq;
 			for(int n = 0; n < m_n; n++){
 				Matrix lamStar(m_dim, m_dim);
@@ -249,8 +273,8 @@ class BasePDFMixture : public BasePDF{
 
 		int Dim(){ return m_dim; }
 	
-		Matrix GetPosterior() const{
-			return m_post;
+		void GetPosterior(Matrix& post) const{
+			post = m_post;
 		}
 
 		int GetNClusters() const{ return m_k; }		
@@ -388,7 +412,6 @@ class BasePDFMixture : public BasePDF{
 		void ScaleData(const Matrix& sc){
 			Matrix x;
 			x.PointsToMat(*m_data);
-			//Matrix scaled_data(x.GetDims()[0], x.GetDims()[1]);
 			x.mult(sc,x);
 			//get weights from original data
 			vector<double> ws;

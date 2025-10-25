@@ -30,7 +30,7 @@ VarClusterViz2D::VarClusterViz2D(VarEMCluster* algo, string fname){
 	m_points = algo->GetData();
 	m_n = m_points->GetNPoints();
 	m_k = algo->GetNClusters();
-	m_post = m_model->GetPosterior();
+	m_model->GetPosterior(m_post);
 }
 
 VarClusterViz2D::VarClusterViz2D(const VarClusterViz2D& viz){ 

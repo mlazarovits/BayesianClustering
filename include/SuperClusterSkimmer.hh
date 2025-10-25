@@ -438,8 +438,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 
 	double CalcCov(const Matrix& cov, int i, int j, bool norm = true){
-		if(i >= cov.GetDims()[0]) return -999;
-		if(j >= cov.GetDims()[1]) return -999;
+		if(i >= cov.nRows()) return -999;
+		if(j >= cov.nCols()) return -999;
 		if(cov.empty()) return -999;
 		double denom = 1;
 		if(norm){

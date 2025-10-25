@@ -34,7 +34,7 @@ VarClusterViz3D::VarClusterViz3D(VarEMCluster* algo, string fname){
 	_points = algo->GetData();
 	_n = _points->GetNPoints();
 	_k = algo->GetNClusters();
-	_post = _model->GetPosterior();
+	_model->GetPosterior(_post);
 	vector<double> pt(_points->Dim());
 	_shift = BayesPoint(pt);
 	_scale = Matrix(_points->Dim(), _points->Dim());

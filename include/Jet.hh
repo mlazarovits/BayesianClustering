@@ -430,7 +430,6 @@ class Jet{
 			if (_phi < 0.0) {_phi += twopi;}
 			if (_phi >= twopi) {_phi -= twopi;} // can happen if phi=-|eps<1e-15|?
 			_ensure_valid_rap_phi();
-			
 			//set mean from member variables
 			_mu.SetEntry(_eta,0,0);
 			_mu.SetEntry(_phi,1,0);
@@ -473,7 +472,7 @@ class Jet{
 		//add mixture model to associated jet that is already made (ie from AK4, etc) with correct transfer factor
 		//jet needs to have rechits set already to correctly add them to respective subclusters
 		void SetModel(BasePDFMixture* model, double gev){
-			Matrix r_nk = model->GetPosterior();
+			Matrix r_nk; model->GetPosterior(r_nk);
 			vector<double> norms;
 			model->GetNorms(norms);
 			for(int k = 0; k < model->GetNClusters(); k++){
@@ -517,7 +516,7 @@ class Jet{
 
 		void Get2DMat(const Matrix& inmat, Matrix& outmat){
 			if(!outmat.square()) return;
-			if(outmat.GetDims()[0] != 2) return;
+			if(outmat.nRows() != 2) return;
 			outmat.reset();
 			outmat.SetEntry(inmat.at(0,0),0,0);	
 			outmat.SetEntry(inmat.at(0,1),0,1);	
@@ -525,8 +524,8 @@ class Jet{
 			outmat.SetEntry(inmat.at(1,1),1,1);
 		}
 		double CalcSpatialSize(){
-			if(_cov.GetDims()[0] != 3 || _cov.GetDims()[1] != 3){
-				cout << "Error: can't calculate size for matrix of size " << _cov.GetDims()[0] << " x " << _cov.GetDims()[1] << endl;
+			if(_cov.nRows() != 3 || _cov.nCols() != 3){
+				cout << "Error: can't calculate size for matrix of size " << _cov.nRows() << " x " << _cov.nCols() << endl;
 				return -1;
 			}
 			vector<double> eigvals;

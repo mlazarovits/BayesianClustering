@@ -125,19 +125,16 @@ void KMeansCluster::Estimate(){
 //M-step: update means
 void KMeansCluster::Update(){
 	for(int k = 0; k < m_k; k++){
-		m_means[k].clear();
 		m_means[k].InitEmpty();
 	}
 	double val, w;
 	double test = 0;
-	//	cout << "m_n " << m_n << " m_k " << m_k << " d " << m_dim << " means " << m_means.size() << " assigns " << m_assigns.size() << " counts " << m_counts.size() << " data " << m_data->GetNPoints() << " data dim " << m_data->Dim() << endl;
 	//sum over data points in cluster they've been assigned to
 	for(int n = 0; n < m_n; n++){
 		w = m_data->at(n).w();
 		for(int d = 0; d < m_dim; d++){
 			val = m_means[m_assigns[n]].at(d,0);
 			//unweighted data -> w = 1
-			//cout << "setting entry for n " << n << " d " << d << " assignment " << m_assigns[n] << " means size  " << m_means[m_assigns[n]].GetDims()[0] << " " << m_means[m_assigns[n]].GetDims()[1] << endl;
 			m_means[m_assigns[n]].SetEntry(val + w*m_data->at(n).Value(d),d,0);
 		}
 	}
@@ -149,7 +146,6 @@ void KMeansCluster::Update(){
 				m_means[k].SetEntry(val/m_counts[k],d,0);
 			}
 		}
-	//cout << "kmeans cluster #" << k << " with counts " << m_counts[k] << " updated to mean" << endl; m_means[k].Print();
 	}
 }
 

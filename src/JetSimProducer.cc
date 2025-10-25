@@ -40,7 +40,7 @@ JetSimProducer::JetSimProducer(TFile* file){
 	_nConstsmin = 0;
 }
 
-void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection central_points){
+void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, const PointCollection& central_points){
 	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
 
@@ -114,7 +114,7 @@ void JetSimProducer::GetRecHits(vector<Jet>& rhs, int evt, PointCollection centr
 	}	
 }
 
-void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt, PointCollection central_points){
+void JetSimProducer::GetRecHits(vector<JetPoint>& rhs, int evt, const PointCollection& central_points){
 	double t, E, eta, phi, x, y, z, time;
 	rhs.clear();
 

@@ -346,7 +346,7 @@ class BHCJetSkimmer{
 
 		}
 
-		void FillBranchesGen(Jet jet){
+		void FillBranchesGen(const Jet& jet){
 			string type = "genpart";
 			vFillBranch(jet.e(), type, "Energy");
 			vFillBranch(jet.pt(), type, "Pt");
@@ -363,7 +363,7 @@ class BHCJetSkimmer{
 		//gmit->second[jidx] = parentidx;
 		//genWidx = parentidx
 		//type = jettype+genparent = type+gmit->first 
-		void SubclusterPartonGenMatching(string type, int parentidx, Jet jet, int jidx, bool matchDaughters = true){
+		void SubclusterPartonGenMatching(string type, int parentidx, const Jet& jet, int jidx, bool matchDaughters = true){
 			//if jet was matched to this type of gen particle, find subcluster matches to W partons
 			vector<Jet> consts;
 			jet.GetConstituents(consts);
@@ -407,7 +407,7 @@ class BHCJetSkimmer{
 
 
 
-		void FillBranchesJet(Jet jet, string type, int jidx, map<string, vector<int>> genmatches){
+		void FillBranchesJet(const Jet& jet, string type, int jidx, const map<string, vector<int>>& genmatches){
 			if(find(_types.begin(), _types.end(), type) == _types.end()){
 				cout << "Type " << type << " not in predetermined list. Not filling hists." << endl;
 				return;
@@ -420,7 +420,6 @@ class BHCJetSkimmer{
 			vFillBranch(jet.eta(), type, "EtaCenter");
 			vFillBranch(jet.phi(), type, "PhiCenter");
 			vFillBranch(jet.t(), type, "TimeCenter");
-		
 			if(type.find("gen") == string::npos){
 				Matrix cov = jet.GetCovariance();
 				vFillBranch(cov.at(0,0), type, "EtaVar");
@@ -454,7 +453,6 @@ class BHCJetSkimmer{
 			}
 			//skip filling subcluster branches for gen jets 
 			if(type.find("gen") != string::npos) return;
-	
 			vFillBranch(jet.GetNConstituents(), type, "nSubclustersJet");
 			//subcluster observables
 			addVector(type, "subclusterEnergy");
@@ -542,7 +540,7 @@ class BHCJetSkimmer{
 			//		nclusters = BHCJet_nSubclustersJet[j];
 			//		do subcluster dR matching with daughters of W that BHCJet is matched to (genq_Widx)
 			
-			map<string, vector<int>> genmatches;	
+			map<string, vector<int>> genmatches;
 			DoGenMatching(_predJets, genmatches);
 			int njets_noPU = 0;
 			//jet observables (subclusters observables inside)
@@ -559,8 +557,6 @@ class BHCJetSkimmer{
 			}
 			FillBranch((double)njets_noPU, "BHCnoPUJet", "nJets");
 
-
-			
 		}
 
 
@@ -573,19 +569,6 @@ class BHCJetSkimmer{
 		}
 	
 		void FillGenJetHists(){
-
-			//TODO - put into own function and make a subcluster counterpart
-			//should be able to do in post - BHCJet_WMatched == 1 && BHCJet_subclusterqMatched == 1
-			//for e in events:
-			//	tree->GetEntry(i);
-			//	set branch addresses
-			//	njets = BHCJet_nJets;
-			//	for j in njets:
-			//		if(!BHCJet_WMatched[j]) continue;
-			//		nclusters = BHCJet_nSubclustersJet[j];
-			//		do subcluster dR matching with daughters of W that BHCJet is matched to (genq_Widx)
-		
-
 			map<string, vector<int>> genmatches;	
 			//genAK4
 			//event observables
@@ -654,7 +637,7 @@ class BHCJetSkimmer{
 		//center_coords = center of event display in [eta_c, phi_c] per gen object s.t. center_coords[i] = BayesPoint(eta_c, phi_c) for object i
 		//window_width = width of event display in [deta, dphi] per gen object s.t. window_width[i] = BayesPoint(deta, dphi) for object i
 		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
-		void WriteEventDisplays(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
+		void WriteEventDisplays(TFile* ofile, const map<string,BayesPoint>& center_coords = {}, const map<string,BayesPoint>& window_width = {}){
 			if(EvtDisplay_etaCell_phiCell->Integral() == 0){ cout << "skipping all evt disps" << endl; return;} //don't write canvases if this event display isn't filled
 			string plot_title;
 			if(_sel == singW){
@@ -743,24 +726,7 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				cout << "hist #" << h << " name of obj evtdisp to be filled " << name << endl;
 				if(find(names.begin(), names.end(), name) == names.end()) continue;
 		
-				/*
-				vector<int> jet_idxs; //which jets to draw	
-				if(name.find("W") != string::npos && _genW.size() > 0){
-					vector<int> genWMatchIdxs(_predJets.size(),-1);
-					GenericMatchJet(_predJets,_genW, genWMatchIdxs); //match BHC jets to good gen Ws
-					for(auto idx : genWMatchIdxs){
-						if(idx != -1) jet_idxs.push_back(idx);
-					}
-				}
-				if(name.find("q") != string::npos && _genq.size() > 0){
-					vector<int> genqMatchIdxs(_predJets.size(),-1);
-					GenericMatchJet(_predJets,_genq, genqMatchIdxs); //match BHC jets to good gen qs
-					for(auto idx : genqMatchIdxs){
-						if(idx != -1) jet_idxs.push_back(idx);
-					}
-				}
-				*/
-				BayesPoint center = center_coords[name];
+				BayesPoint center = center_coords.at(name);
 				double eta_max = 0;
 				double phi_max = 0;
 				double eta_min = 999;
@@ -774,9 +740,9 @@ cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name "
 					BayesPoint ell_center({_predJets[j].eta(), _predJets[j].phi()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
-					cout << "jet #" << j << " window width eta " << window_width[name].at(0) << " phi " << window_width[name].at(1) << " this jet center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
-					if(fabs(ell_center.at(0)) > window_width[name].at(0)) continue; //out of frame in eta
-					if(fabs(ell_center.at(1)) > window_width[name].at(1)) continue; //out of frame in phi
+					cout << "jet #" << j << " window width eta " << window_width.at(name).at(0) << " phi " << window_width.at(name).at(1) << " this jet center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
+					if(fabs(ell_center.at(0)) > window_width.at(name).at(0)) continue; //out of frame in eta
+					if(fabs(ell_center.at(1)) > window_width.at(name).at(1)) continue; //out of frame in phi
 
 cout << "drawing rhs from jet #" << j << endl;
 
@@ -956,7 +922,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 		}
 
-		void WriteOutput(TFile* ofile, map<string,BayesPoint> center_coords = {}, map<string,BayesPoint> window_width = {}){
+		void WriteOutput(TFile* ofile, const map<string,BayesPoint>& center_coords = {}, const map<string,BayesPoint>& window_width = {}){
 			ofile->cd();
 			EvtDisplay_etaCell_phiCell->Write();
 			WriteEventDisplays(ofile, center_coords, window_width);
@@ -1050,8 +1016,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			drs.push_back({});
 			for(int g = 0; g < nMatch; g++){
 				drs[j].push_back(999);
-			
+				//cout << "jet #" << j << " eta " << injets[j].eta() << " phi " << injets[j].phi() << " matchobj #" << g << " eta " << matchobjs[g].eta() << " phi " << matchobjs[g].phi() << endl;
 				dr = dR(matchobjs[g].eta(), matchobjs[g].phi(), injets[j].eta(), injets[j].phi());
+				//cout << "jet # " << j << " matchobj # " << g << " dr " << dr << endl;		
 				drs[j][g] = dr;
 			}
 		}
@@ -1078,7 +1045,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					otherJet = find(best_idxs.begin()+otherJet+1, best_idxs.end(), matchidx) - best_idxs.begin();
 				}
 				//for(int b = 0; b < best_idxs.size(); b++) cout << "b " << b << " bestidx " << best_idxs[b] << endl;
-				//cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][genidx] << " against this jet " << thisJet << endl;
+				//cout << " found another match at jet " << otherJet << " with other dr " << drs[otherJet][matchidx] << " against this jet " << thisJet << endl;
 				//if other dr is less than current mindr
 				if(drs[otherJet][matchidx] < mindr){
 					//set this dr to 999 (is invalid), find new min for this jet, reset genidx to this index
@@ -1087,7 +1054,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					if(mindr == 999) matchidx = -1;
 					else matchidx = find(drs[thisJet].begin(), drs[thisJet].end(), mindr) - drs[thisJet].begin();
 					best_idxs[thisJet] = matchidx;
-					//cout << " reset gen match of this jet " << thisJet << " to gen jet " << genidx << " with dr " << mindr << endl;
+					//cout << " reset gen match of this jet " << thisJet << " to gen jet " << matchidx << " with dr " << mindr << endl;
 		
 				}
 				//if this dr is less than (or equal to) current mindr
@@ -1100,7 +1067,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					else matchidx = find(drs[otherJet].begin(), drs[otherJet].end(), mindr) - drs[otherJet].begin();
 					thisJet = otherJet;
 					best_idxs[thisJet] = matchidx;
-					//cout << " reset match of other jet " << otherJet << " to  jet " << idx << " with dr " << mindr << endl;
+					//cout << " reset match of other jet " << otherJet << " to jet " << matchidx << " with dr " << mindr << endl;
 				}	
 				//cout << "matchidx is now " << matchidx << " with count " << count(best_idxs.begin(), best_idxs.end(), matchidx) << " for jet " << thisJet << endl;
 
@@ -1122,7 +1089,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 	void SetAlpha(double a){_alpha = a;}
 	void SetSubclusterAlpha(double a){_emAlpha = a; }
 	void SetThreshold(double t){ _thresh = t; }
-	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
+	void SetPriorParameters(const map<string, Matrix>& params){_prior_params = params;} 		
 	void SetReducePU(bool t){ _zoom_window = t; if(_zoom_window) cout << "Reducing PU with zoom window." << endl; }//draws rectangle around hard scattering to reduce # of rechits to cluster
 
 	void _reset(){
@@ -1223,9 +1190,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			return sqrt((eta1-eta2)*(eta1-eta2) + dphi*dphi);
 		}
 
-		double CalcSize(Matrix& cov, bool time = false){
-			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
-				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+		double CalcSize(const Matrix& cov, bool time = false){
+			if(cov.nRows() != 3 || cov.nCols() != 3){
+				cout << "Error: can't calculate size for matrix of size " << cov.nRows() << " x " << cov.nCols() << endl;
 				return -1;
 			}
 			vector<double> eigvals;
@@ -1244,9 +1211,9 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			}
 		}
 
-		double CalcSubleadSize(Matrix& cov, bool time = false){
-			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
-				cout << "Error: can't calculate size for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+		double CalcSubleadSize(const Matrix& cov, bool time = false){
+			if(cov.nRows() != 3 || cov.nCols() != 3){
+				cout << "Error: can't calculate size for matrix of size " << cov.nRows() << " x " << cov.nCols() << endl;
 				return -1;
 			}
 			vector<double> eigvals;
@@ -1268,16 +1235,16 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 		void Get2DMat(const Matrix& inmat, Matrix& outmat){
 			if(!outmat.square()) return;
-			if(outmat.GetDims()[0] != 2) return;
+			if(outmat.nRows() != 2) return;
 			outmat.reset();
 			outmat.SetEntry(inmat.at(0,0),0,0);	
 			outmat.SetEntry(inmat.at(0,1),0,1);	
 			outmat.SetEntry(inmat.at(1,0),1,0);	
 			outmat.SetEntry(inmat.at(1,1),1,1);
 		}
-		double Rotundity(Matrix& cov){
-			if(cov.GetDims()[0] != 3 || cov.GetDims()[1] != 3){
-				cout << "Error: can't calculate rotundity for matrix of size " << cov.GetDims()[0] << " x " << cov.GetDims()[1] << endl;
+		double Rotundity(const Matrix& cov){
+			if(cov.nRows() != 3 || cov.nCols() != 3){
+				cout << "Error: can't calculate rotundity for matrix of size " << cov.nRows() << " x " << cov.nCols() << endl;
 				return -1;
 			}
 			Matrix cov2D(2,2);
@@ -1285,7 +1252,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 			vector<Matrix> eigenvecs;
 			vector<double> eigenvals;
 			cov.eigenCalc(eigenvals, eigenvecs);
-			int maxd = cov.GetDims()[0] - 1;
+			int maxd = cov.nRows() - 1;
 			double rot = 0;
 			for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 			rot = eigenvals[maxd]/rot;

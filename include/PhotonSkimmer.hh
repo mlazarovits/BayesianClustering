@@ -300,7 +300,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	void MakeCovMat(PointCollection* pc, Matrix& outcov, const weightScheme& ws){
 		if(!outcov.square()) return;
-		if(outcov.GetDims()[0] != pc->Dim()) return;
+		if(outcov.nRows() != pc->Dim()) return;
 		
 		//set weights to logE
 		//og w_i = _gev*E_i
@@ -388,8 +388,8 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 	double CalcCov(const Matrix& cov, int i, int j, bool norm = true){
-		if(i >= cov.GetDims()[0]) return -999;
-		if(j >= cov.GetDims()[1]) return -999;
+		if(i >= cov.nRows()) return -999;
+		if(j >= cov.nCols()) return -999;
 		if(cov.empty()) return -999;
 		double denom = 1;
 		if(norm){
@@ -404,7 +404,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		vector<Matrix> eigenvecs;
 		vector<double> eigenvals;
 		inmat.eigenCalc(eigenvals, eigenvecs);
-		int maxd = inmat.GetDims()[0] - 1;
+		int maxd = inmat.nRows() - 1;
 		double rot = 0;
 		for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 		rot = eigenvals[maxd]/rot;
@@ -416,7 +416,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		vector<Matrix> eigenvecs;
 		vector<double> eigenvals;
 		inmat.eigenCalc(eigenvals, eigenvecs);
-		int maxd = inmat.GetDims()[0] - 1;
+		int maxd = inmat.nRows() - 1;
 		double v_x = eigenvecs[maxd].at(0,0);	
 		double v_y = eigenvecs[maxd].at(1,0);	
 		//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
@@ -474,7 +474,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 	void Get2DMat(const Matrix& inmat, Matrix& outmat){
 		if(!outmat.square()) return;
-		if(outmat.GetDims()[0] != 2) return;
+		if(outmat.nRows() != 2) return;
 		outmat.reset();
 		outmat.SetEntry(inmat.at(0,0),0,0);	
 		outmat.SetEntry(inmat.at(0,1),0,1);	

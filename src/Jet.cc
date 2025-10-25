@@ -201,7 +201,7 @@ Jet::Jet(const vector<Jet>& jets){
 
 //_pi = 1 ==> 1 subcluster in jet, _pi != 1 ==> >1 subcluster in jet
 //no weighting yet because if this is the only component, weight (ie pi) should be 1
-Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vtx, double detR){
+Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, const BayesPoint& vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
@@ -246,15 +246,16 @@ Jet::Jet(const Matrix& mu, const Matrix& cov, double E, double pi, BayesPoint vt
 	_update_mom();
 }
 
-Jet::Jet(BasePDF* pdf, double E, double pi, BayesPoint vtx, double detR){
+Jet::Jet(BasePDF* pdf, double E, double pi, const BayesPoint& vtx, double detR){
 	_vtx = BayesPoint(3);
 	_mom = BayesPoint(4);
 	_E = E;
+	_nRHs = 0;
 
 	map<string, Matrix> params; pdf->GetParameters(params);
-	_eta = params["mean"].at(0,0);
-	_phi = params["mean"].at(1,0);
-	_t =   params["mean"].at(2,0);
+	_eta = params.at("mean").at(0,0);
+	_phi = params.at("mean").at(1,0);
+	_t =   params.at("mean").at(2,0);
 	//get x, y, z from eta, phi
 	double x = detR*cos(_phi);
 	double y = detR*sin(_phi);
@@ -306,7 +307,7 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
 	
-	Matrix r_nk = model->GetPosterior();
+	Matrix r_nk; model->GetPosterior(r_nk);
 	double Ek;
 	vector<double> norms;
 	model->GetNorms(norms);
@@ -459,12 +460,6 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 		//subcl.SetCovariance(cov);
 		subcl.CalculateCenter();
 		subcl.CalculateCovariance();
-//if(nsubcl == 1){
-//cout << "subcl norm " << subcl_norm << " " << norms[k] << " with total w for cluster #" << k << ": " << totw << " for jet with " << _nRHs << " rechits" << endl;
-//cout << "subcl center eta " << subcl.eta() << " phi " << subcl.phi() << " jet eta " << _eta << " phi " << _phi << endl;
-//cout << "subcl cov from CalcCov" << endl; subcl._cov.Print();
-//cout << "jet cov" << endl; _cov.Print();
-//}
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
 		_constituents.push_back(subcl);
 	}

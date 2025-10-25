@@ -11,6 +11,22 @@ class GaussianMixture : public BasePDFMixture{
 	public:
 		GaussianMixture();
 		GaussianMixture(int k);
+		//copy constructor
+		GaussianMixture(const GaussianMixture& gausmix) : BasePDFMixture(gausmix){
+			m_beta0 = gausmix.m_beta0;
+			m_nu0 = gausmix.m_nu0;
+			m_W0 = gausmix.m_W0;
+			m_W0inv = gausmix.m_W0inv;
+			m_mean0 = gausmix.m_mean0;
+			m_meanBeta0 = gausmix.m_meanBeta0;
+
+			_xbar = gausmix._xbar;
+			_Sbar = gausmix._Sbar;
+			
+			m_Elam = gausmix.m_Elam; 
+			m_Epi = gausmix.m_Epi;
+		
+		}
 		virtual ~GaussianMixture(){
 			m_Elam.clear();
 			m_Epi.clear();

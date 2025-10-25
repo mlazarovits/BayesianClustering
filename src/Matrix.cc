@@ -2,7 +2,6 @@
 #include "RandomSample.hh"
 #include "PointCollection.hh"
 #include <iostream>
-#include <Eigen/Dense>
 
 using std::cout;
 using std::endl;
@@ -10,65 +9,44 @@ using std::endl;
 
 Matrix::Matrix(){
 	_square = true;
-	m_row = 0;
-	m_col = 0;
+	_mat = Eigen::MatrixXd();
 }
 
 
 Matrix::Matrix(int row, int col){
-	m_row = row;
-	m_col = col;
-	if(m_row == m_col) _square = true;
-	for(int i = 0; i < m_row; i++){
-		m_entries.emplace_back(vector<double>());
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].emplace_back(0.);
-		}
-	}		
+	_mat = Eigen::MatrixXd(row, col);
+	InitEmpty();
+	if(_mat.rows() == _mat.cols()) _square = true;
 }
 
-Matrix::Matrix(const vector<double>& in){
-	m_row = (int)in.size();
-	m_col = 1;
-	for(int i = 0; i < m_row; i++){
-		m_entries.emplace_back(vector<double>());
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].emplace_back(in[i]);
-		}
-	}
+Matrix::Matrix(vector<double>& in){
+	_mat = Eigen::Map<Eigen::MatrixXd>(in.data(), (int)in.size(), 1);
 } 
 
 
 Matrix::Matrix(double pt){
-	m_row = 1;
-	m_col = 1;
-	m_entries.emplace_back(vector<double>());
-	m_entries[0].emplace_back(pt);
+	_mat = Eigen::MatrixXd(1,1);
+	_mat(0,0) = pt;
 
 }
 
 Matrix::Matrix(const BayesPoint& pt){
-	m_row = pt.Dim();
-	m_col = 1;
-
-	for(int i = 0; i < m_row; i++){
-		m_entries.emplace_back(vector<double>());
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].emplace_back(pt.at(i));
-		}
-	}
+	vector<double> vals;
+	pt.Value(vals);
+	_mat = Eigen::Map<Eigen::MatrixXd>(vals.data(), pt.Dim(), 1);
 }
 
 Matrix::Matrix(const PointCollection& pts){
-	m_row = pts.Dim();
-	m_col = pts.GetNPoints();
-	InitEmpty();
-	
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m_entries[i][j] = pts.at(j).at(i);
-		}
+	int row = pts.Dim();
+	int col = pts.GetNPoints();
+
+	std::vector<double> buffer(row * col);
+	std::vector<double> pt;
+	for(int j = 0; j < col; j++){
+		pts.at(j).Value(pt);
+		std::copy(pt.begin(), pt.end(), buffer.begin() + j * row);
 	}
+	_mat = Eigen::Map<Eigen::MatrixXd>(buffer.data(), row, col);
 
 }
 
@@ -76,541 +54,193 @@ Matrix::Matrix(const PointCollection& pts){
 
 //copy constructor
 Matrix::Matrix(const Matrix& mat){
-	m_row = mat.GetDims()[0];
-	m_col = mat.GetDims()[1];
-
-	_square = mat.square();
-
-	for(int i = 0; i < m_row; i++){
-		m_entries.emplace_back(vector<double>());
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].emplace_back( mat.at(i,j) );
-		}
-	}
+	_square = mat._square;
+	_mat = mat._mat;
 }	
 
 
-Matrix::~Matrix(){
-//	for(int i = 0; i < m_entries.size(); i++){
-//		m_entries[i].clear();
-//	}
+Matrix::~Matrix(){ }
 
-}
+
+
 //creates a random matrix
 void Matrix::InitRandom(double min, double max, unsigned long long seed){
-	if(m_entries.size() < 0){
-		cout << "Need dimensions to init." << endl;
+	if(_mat.size() > 0){
+		cout << "InitRandom Need dimensions to init." << endl;
 		return;
 	}
 	RandomSample rs(seed);
-	//TODO: set range by data
 	rs.SetRange(min, max);
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m_entries[i][j] = rs.SampleFlat();
-		}
-	}		
+
+	_mat = _mat.unaryExpr([&](double){return rs.SampleFlat();});
+
 }
 
-//creates a symmetric random matrix
-void Matrix::InitRandomSym(double min, double max, unsigned long long seed){
-	if(m_entries.size() < 0){
-		cout << "Need dimensions to init." << endl;
-		return;
-	}
-	RandomSample rs(seed);
-	//TODO: set range by data
-	rs.SetRange(min, max);
-	if(!_square){
-		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix)" << endl;
-		return;
-	}
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			if(i <= j){
-				m_entries[i][j] = rs.SampleFlat();
-			}
-			else if(i > j){
-				m_entries[i][j] = m_entries[j][i];
-			}
-		}
-	}	
-}
-
-
-//creates a random symmetric positive definite matrix
-void Matrix::InitRandomSymPosDef(double min, double max, unsigned long long seed){
-	if(m_entries.size() < 0){
-		cout << "Need dimensions to init." << endl;
-		return;
-	}
-	if(!_square){
-		cout << "Error: cannot initiate a symmetric matrix because dimensions provided were not equal (needs to be a square matrix). Rows: " << m_row << " cols: " << m_col << endl;
-		return;
-	}
-	Matrix A = Matrix(m_row, m_col);
-	Matrix A_T;// = Matrix(m_col, m_row);
-	A.InitRandom(min,max,seed);
-	A_T.transpose(A);
-	
-//	for(int i = 0; i < m_row; i++){
-//		for(int j = 0; j < m_col; j++){
-//			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << endl;
-//			A_T.SetEntry(A.at(i,j),j,i);
-//			//cout << "i: " << i << " j: " << j << " A: " << A.at(i,j) << " A_T: " << A_T.at(i,j) << endl;
-//		}
-//	}
-	//Matrix sym(m_row, m_col);
-	//sym.mult(A_T,A);
-	//cout << "sym" << endl;
-	//sym.Print();
-	this->mult(A_T,A);
-//	double val;
-//	for(int i = 0; i < m_row; i++){
-//	cout << "m_entries row " << i << " size: " << m_entries[i].size() << endl;
-//		for(int j = 0; j < m_col; j++){
-//			cout << "i: " << i << " j: " << j << " m_entries: " << m_entries[i][j] << endl;
-//			val = 0;
-//			for(int k = 0; k < m_row; k++){
-//				val += A_T.at(i,k)*A.at(k,j);
-//			}
-//			m_entries[i][j] = val;
-//		}
-//	}
-}
 
 //creates an empty matrix
 void Matrix::InitEmpty(){
-	if(m_entries.size() > 0){
-	//	cout << "Matrix already initialized: " << m_entries.size() << endl;
+	if(_mat.rows() == 0 && _mat.cols() == 0){
+		cout << "InitEmpty - Need dimensions to init. - mat size "  << _mat.size() << " # rows " << _mat.rows() << " # cols " << _mat.cols() << endl;
 		return;
 	}
-	for(int i = 0; i < m_row; i++){
-		m_entries.emplace_back(vector<double>());
-		for(int j = 0; j < m_col; j++){
-			m_entries[i].emplace_back(0.);
-		}
-	}		
+	_mat.setZero();
 }
 
 //creates the identity matrix
 void Matrix::InitIdentity(){
-	if(m_entries.size() < 0){
-		cout << "Need dimensions to init." << endl;
+	if(_mat.rows() == 0 && _mat.cols() == 0){
+		cout << "InitIdentity - Need dimensions to init. - mat size "  << _mat.size() << " # rows " << _mat.rows() << " # cols " << _mat.cols() << endl;
 		return;
 	}
-	if(m_row != m_col){ cout << "Matrix::InitEmpty - Non-square matrix." << endl; return;}
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			if(i == j)	
-				m_entries[i][j] = 1.;
-			else
-				m_entries[i][j] = 0.;
-		}
-	}	
+	if(_mat.rows() != _mat.cols()){ cout << "Matrix::InitEmpty - Non-square matrix." << endl; return;}
+
+
+	_mat.setIdentity();
+
 	_square = true;
 
 }
 
 void Matrix::SetDims(int row, int col){
-	m_row = row;
-	m_col = col;
-	if(m_row == m_col) _square = true;
-	if(m_entries.size() < 1)
-		InitEmpty();
+	_mat = Eigen::MatrixXd(row, col);
+	InitEmpty();
+	if(_mat.rows() == _mat.cols()) _square = true;
 }
 
 
 void Matrix::SetEntry(double val, int i, int j){
-	m_entries[i][j] = val;
-
-}
-
-
-void Matrix::GetCofactor(Matrix& temp, int p, int q, int n) const{
-	int i = 0, j = 0;
-	//int n = temp.GetDims()[0];
-	// Looping for each element of the matrix
-	for (int row = 0; row < n; row++) {
-		for (int col = 0; col < n; col++) {
-			//  Copying into temporary matrix only those elements which are not in given row and column
-			if (row != p && col != q) {
-				temp.SetEntry(m_entries[row][col],i,j++);
-				// Row is filled, so increase row index and reset col index
-				if (j == n - 1) {
-				    j = 0;
-				    i++;
-				}
-			}
-		}
-	}
+	_mat(i,j) = val;
 }
 
 
 //n is current dim of cofactor
-double Matrix::det(int n) const{
-	double D = 0; // Initialize result
-	if(!_square){
-		cout << "Error: non-square matrix, cannot calculate determinant." << m_row << " " << m_col << endl;
-		return -999;
-	}
-	if( n == 0){
-		n = m_row;
-	}
-
-	//  Base case : if matrix contains single element
-	if (n == 1)
-	    return m_entries[0][0];
-	
-	Matrix temp(n,n); // To store cofactors
-	
-	int sign = 1; // To store sign multiplier
-	
-	// Iterate for each element of first row
-	for (int f = 0; f < n; f++) {
-	    // Getting Cofactor of m_entries[0][f]
-	    GetCofactor(temp, 0, f, n);
-	    D += sign * m_entries[0][f] * temp.det(n - 1);
-	
-	    // terms are to be added with alternate sign
-	    sign = -sign;
-	}
-	return D;
+double Matrix::det() const{
+	//unstable for large matrices, uses formulas for 2x2 and 3x3 matrices
+	return _mat.determinant();
 
 }
-
-// Function to get adjoint of m_entries[N][N] in adj[N][N].
-void Matrix::adjoint(const Matrix& mat){
-	if(m_row == 0 && m_col == 0){
-		SetDims(mat.GetDims()[0],mat.GetDims()[1]);
-		InitEmpty();
-	}
-	if(m_row != mat.GetDims()[0] || m_col != mat.GetDims()[1]){
-		cout << "Error: dimensions of this matrix do not match mat (matrix given for adjoint calculation." << endl;
-		return;
-	}
-	if(!_square){
-		cout << "Error: non-square matrix, cannot calculate adjoint." << m_row << " " << m_col << endl;
-		return;
-	}
-
-	if (m_row == 1) {
-	    m_entries[0][0] = 1;
-	    return;
-	}
-	
-	// temp is used to store cofactors of m_entries[][]
-	int sign = 1;
-	int N = m_row;
-	Matrix temp = Matrix(N,N);
-	
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			// Get cofactor of m_entries[i][j]
-			mat.GetCofactor(temp, i, j, N);
-			// sign of adj[j][i] positive if sum of row and column indexes is even.
-			sign = ((i + j) % 2 == 0) ? 1 : -1;
-			
-			// Interchanging rows and columns to get the transpose of the cofactor matrix
-			m_entries[j][i] = (sign) * (temp.det(N - 1));
-		}
-	}
-}
-
 
 
 //invert mat and store in this
 void Matrix::invert(const Matrix& mat){
 	if(!mat.square()){
-		cout << "Error: non-square matrix, cannot calculate inverse." << m_row << " " << m_col << endl;
+		cout << "Error: non-square matrix, cannot calculate inverse." << _mat.rows() << " " << _mat.cols() << endl;
 		return;
 	}
-	vector<int> dims = mat.GetDims();
-	SetDims(dims[0],dims[1]);	
-	double det = mat.det(dims[0]);
-	bool sym = mat.symmetric();
-	if (det == 0) {
-	    cout << "Singular matrix, can't find its inverse" << endl;
-	    return;
-	}
-	Eigen::MatrixXd m(m_row, m_col);
-	//copy mat into m in case mat = this
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m(i,j) = mat.at(i,j);
-		}
-	}
-//cout << "1 - matrix to invert " << m << endl;
-//cout << "1 - mat symmetric? " << sym << endl;
-      //use analytical form of 3x3 matrix if this is the dimensions
-      if(m_row == 3 && m_col == 3){
-//cout << "doing analytical inverse for 3x3" << endl;
-      	m_entries[0][0] = m(1,1)*m(2,2) - m(1,2)*m(2,1);
-//cout << "2 - matrix to invert " << m << endl;
-//cout << "2 - mat symmetric? " << sym << endl;
-      	m_entries[1][1] = m(0,0)*m(2,2) - m(0,2)*m(2,0);
-//cout << "3 - matrix to invert " << m << endl;
-//cout << "3 - mat symmetric? " << sym << endl;
-      	m_entries[2][2] = m(0,0)*m(1,1) - m(0,1)*m(1,0);
-//cout << "4 - matrix to invert " << m << endl;
-//cout << "4 - mat symmetric? " << sym << endl;
-      
-      	m_entries[1][0] = -(m(1,0)*m(2,2) - m(1,2)*m(2,0));
-//cout << "5 - matrix to invert " << m << endl;
-//cout << "5 - mat symmetric? " << sym << endl;
-      	m_entries[2][0] = m(1,0)*m(2,1) - m(1,1)*m(2,0);
-//cout << "6 - matrix to invert " << m << endl;
-//cout << "6 - mat symmetric? " << sym << endl;
-      	m_entries[1][2] = -(m(0,0)*m(2,1) - m(0,1)*m(2,0));
-//cout << "7 - matrix to invert " << m << endl;
-//cout << "7 - mat symmetric? " << sym << endl;
-
-		//use shortcut if is symmetric -> inverse will be symmetric too
-	//cout << "matrix is symmetric? " << sym << endl;
-		if(sym){
-			m_entries[0][1] = m_entries[1][0];
-			m_entries[0][2] = m_entries[2][0];
-			m_entries[2][1] = m_entries[1][2];
-		}
-		else{
-			m_entries[0][1] = -(m(0,1)*m(2,2) - m(0,2)*m(2,1));
-			m_entries[0][2] = m(0,1)*m(1,2) - m(0,2)*m(1,1);
-			m_entries[2][1] = -(m(0,0)*m(2,1) - m(0,1)*m(2,0));
-		}
-//cout << "det " << det << endl;
-		this->mult(*this,1./det);
-		return;
-	}
-
-	Eigen::MatrixXd minv = m.inverse();
-
-	for (int i = 0; i < dims[0]; i++)
-	    for (int j = 0; j < dims[1]; j++)
-	        m_entries[i][j] = minv(i,j);
-
+	_mat = mat._mat.inverse();
 }
 
 
 
 
-
-
-
-
-vector<int> Matrix::GetDims() const{
-	return {m_row, m_col};
-}
+int Matrix::nRows() const{ return _mat.rows(); }
+int Matrix::nCols() const{ return _mat.cols(); }
 
 double Matrix::at(int i, int j) const{
-	if(i > m_row-1 || j > m_col-1){
-		cout << "Error: accessing element (" << i << "," << j << ") for matrix of dimension (" << m_row << "," << m_col << ")" << endl; 
+	if(i > _mat.rows()-1 || j > _mat.cols()-1){
+		cout << "Error: accessing element (" << i << "," << j << ") for matrix of dimension (" << _mat.rows() << "," << _mat.cols() << ")" << endl; 
 		return -999; }
-	return m_entries[i][j];
+	return _mat(i,j);
 }
 
 
 //multiply mat by factor and store in this
 void Matrix::mult(const Matrix& mat, double factor){
-	//SetDims(mat.GetDims()[0], mat.GetDims()[1]);
-	//InitEmpty();
-	//in case mat = this (ie m = c*m)
-	if(m_row != 0 and m_col != 0){
-		vector<int> dims1 = mat.GetDims();
-		if(m_row != dims1[0] || m_col != dims1[1]){
-			cout << "Error: this matrix must be " << dims1[0] << " x " << dims1[1] << " dims (mult() doesn't change dimensions of this matrix)." << endl;
-			return;
-		}
-	}
-	Matrix tmp(mat.GetDims()[0],mat.GetDims()[1]);
-	for(int i = 0; i < m_row; i++)
-		for(int j = 0; j < m_col; j++)
-			tmp.SetEntry(factor*mat.at(i,j),i,j);
-			//m_entries[i][j] = factor*mat.at(i,j);
-	*this = tmp;
+	_mat = mat._mat * factor;
 }
 
 //multiply two matrices and store result in this matrix
 void Matrix::mult(const Matrix& mat1, const Matrix& mat2){
-	double val;
-	vector<int> dims1 = mat1.GetDims();
-	vector<int> dims2 = mat2.GetDims();
-	//clear current matrix to be filled with mutliplied matrix
-	if(dims1[1] != dims2[0]){
-		cout << "Matrix::mult error: matrices have incompatible dimensions. mat1: " << dims1[0] << " x " << dims1[1] << " mat2: " << dims2[0] << " x " << dims2[1] << endl;
-		return;
-	}
-	if(m_row != 0 and m_col != 0){
-		if(m_row != dims1[0] || m_col != dims2[1]){
-			cout << "Error: this matrix must be " << dims1[0] << " x " << dims2[1] << " dims (mult() doesn't change dimensions of this matrix)." << endl;
-			return;
-		}
-	}
-	//else{
-	//	//SetDims(dims1[0],dims2[1]);
-	//	//InitEmpty();
-	//}
-	//need to create temp matrix in case one of the passed matrices is this (ie m = A*m)
-	Matrix tmp(dims1[0],dims2[1]);
-		
-	for(int i = 0; i < dims1[0]; i++){
-		for(int j = 0; j < dims2[1]; j++){
-			val = 0;
-			for(int k = 0; k < dims2[0]; k++){
-				val += mat1.at(i,k) * mat2.at(k,j);
-			}
-			//m_entries[i][j] = val;
-			tmp.SetEntry(val,i,j);
-		}
-	}
-	*this = tmp;
+	_mat = mat1._mat * mat2._mat;
 }
 
 
 
 void Matrix::transpose(const Matrix& mat){
-	clear();
-	SetDims(mat.GetDims()[1], mat.GetDims()[0]);
-	InitEmpty();
-	
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m_entries[i][j] = mat.at(j,i);
-		}
-	}
+	_mat = mat._mat.transpose();
 }
 			
 //clear
 void Matrix::clear(){
-	for(int i = 0; i < m_row; i++){
-		m_entries[i].clear();
-	}
-	m_entries.clear();
+	_mat = Eigen::MatrixXd();
 }
 
 
 
-bool Matrix::symmetric() const{
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			if(i < j) break; //only need to look at one half of the matrix
-			if(m_entries[i][j] != m_entries[j][i]){
-	//cout << std::setprecision(25) << "Not symmetric - entry at " << i << " " << j << " " << m_entries[i][j] <<endl;
-	//cout << "Not symmetric - entry at " << j << " " << i << " " << m_entries[j][i] << endl;
-				return false;
-			}
-		}
-	}
-	return true;
+bool Matrix::symmetric(double tol) const{
+	return (_mat - _mat.transpose()).cwiseAbs().maxCoeff() < tol;
 
 }
 
 void Matrix::Print() const{
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			cout << m_entries[i][j] << " ";
-		}
-		cout << endl;
-	}
+	cout << _mat << endl;
 }
 
 
 
 
 void Matrix::add(const Matrix& mat1, const Matrix& mat2){
-	//check dims are compatible
-	vector<int> dims1 = mat1.GetDims();
-	vector<int> dims2 = mat2.GetDims();
-	if(dims1[0] != dims2[0] || dims1[1] != dims2[1]){
-		cout << "Error: matrix dimensions are not compatible for addition: " << dims1[0] << "x" << dims1[1] << " and " << dims2[0] << "x" << dims2[1] << endl;
-		return;
-	}
-	SetDims(dims1[0],dims1[1]);
-	for(int i = 0; i < dims1[0]; i++){
-		for(int j = 0; j < dims1[1]; j++){
-			m_entries[i][j] = mat1.at(i,j) + mat2.at(i,j);
-		}
-	}
+	_mat = mat1._mat + mat2._mat;
 }
 
 
 
 void Matrix::add(const Matrix& mat){
-	//check dims are compatible
-	//cout << "MATRIX::ADD - START" << endl;
-	vector<int> dims1 = mat.GetDims();
-	if(dims1[0] != m_row || dims1[1] != m_col){
-		cout << "Error: matrix dimensions are not compatible for addition: " << dims1[0] << "x" << dims1[1] << " and " << m_row << "x" << m_col << endl;
-		return;
-	}
-	for(int i = 0; i < dims1[0]; i++){
-		for(int j = 0; j < dims1[1]; j++){
-			//cout << "i " << i << " j " << j << " og entry " << m_entries[i][j] << " + " << mat.at(i,j) << endl;
-			m_entries[i][j] += mat.at(i,j);
-			//cout << "i " << i << " j " << j << " new entry " << m_entries[i][j] << endl;
-		}
-	}
-	//cout << "MATRIX::ADD - END" << endl;
-	
+	_mat += mat._mat;	
 }
 
 
 
 void Matrix::minus(const Matrix& mat){
-	Matrix sub = mat;
-	sub.mult(mat,-1);
-	add(sub);
+	_mat -= mat._mat;
 }
 
 
 void Matrix::minus(const Matrix& mat1, const Matrix& mat2){
-	Matrix sub2 = mat2;
-	sub2.mult(mat2, -1);
-	add(mat1, sub2);
-
+	_mat = mat1._mat - mat2._mat;
 
 
 }
 
 
-void Matrix::MatToPoint(BayesPoint& pt, double weight, int skipdim, int idx){
-		if(m_col > 1){
-			cout << "Error: cannot turn matrix of dimensions " << m_col << " x " << m_row << " into single point. Try MatToPoints(PointCollection pc)." << endl;
-			return;
-		}
-		vector<double> val;
-		for(int i = 0; i < m_row; i++){
-			val.emplace_back(m_entries[i][0]);
-		}
-		pt = BayesPoint(val);
-		if(weight != -999)
-			pt.SetWeight(weight);
-		if(skipdim != -999)
-			pt.SetSkipDim(skipdim);
-		if(idx != -999)
-			pt.SetUserIdx(idx);
+void Matrix::MatToPoint(BayesPoint& pt, double weight, int skipdim, int idx) const{
+	if(_mat.cols() > 1){
+		cout << "Error: cannot turn matrix of dimensions " << _mat.cols() << " x " << _mat.rows() << " into single point. Try MatToPoints(PointCollection pc)." << endl;
+		return;
+	}
+	vector<double> val(_mat.data(), _mat.data() + _mat.size());
+	pt = BayesPoint(val);
+	if(weight != -999)
+		pt.SetWeight(weight);
+	if(skipdim != -999)
+		pt.SetSkipDim(skipdim);
+	if(idx != -999)
+		pt.SetUserIdx(idx);
 }
-void Matrix::MatToPoints(PointCollection& pc, const vector<double>& weights, const vector<int>& skipdims, const vector<int>& idxs){
+
+
+
+void Matrix::MatToPoints(PointCollection& pc, const vector<double>& weights, const vector<int>& skipdims, const vector<int>& idxs) const{
 	pc.Clear(); 
-	for(int j = 0; j < m_col; j++){
-		vector<double> val;
-		for(int i = 0; i < m_row; i++){
-			val.emplace_back(m_entries[i][j]);
-		}
+	for(int j = 0; j < _mat.cols(); j++){
+		Eigen::VectorXd col = _mat.col(j);
+		vector<double> val(col.data(), col.data() + col.size());
 		BayesPoint pt = BayesPoint(val);
-		if(weights.size() == m_col)
+		if(weights.size() == _mat.cols())
 			pt.SetWeight(weights[j]);
-		if(skipdims.size() == m_col)
+		if(skipdims.size() == _mat.cols())
 			pt.SetSkipDim(skipdims[j]);
-		if(idxs.size() == m_col)
+		if(idxs.size() == _mat.cols())
 			pt.SetUserIdx(idxs[j]);
 		pc += pt;
 	}
 }
 
+/*
 //from Numerical Recipes 3rd Ed., Ch. 2.9
 void Matrix::cholesky(Matrix& L) const{
 	//check if matrix is square, symmetric
-	L = Matrix(m_row, m_col);
+	L = Matrix(_mat.rows(), _mat.cols());
 	if(!_square){
 		cout << "Error: matrix is not square." << endl;
 		return;
@@ -621,8 +251,8 @@ void Matrix::cholesky(Matrix& L) const{
 	}
 	double sum;
 	int k;
-	for(int i = 0; i < m_row; i++){
-		for(int j = i; j < m_col; j++){
+	for(int i = 0; i < _mat.rows(); i++){
+		for(int j = i; j < _mat.cols(); j++){
 			//copy mat into L
 			L.SetEntry(m_entries[i][j],i,j);
 			for(sum = m_entries[i][j], k = i - 1; k >= 0; k--){
@@ -642,7 +272,7 @@ void Matrix::cholesky(Matrix& L) const{
 		}
 	} 
 	//set upper-triangular part to 0 - L should be lower-triangular
-	for(int i = 0; i < m_row; i++)
+	for(int i = 0; i < _mat.rows(); i++)
 		for(int j = 0; j < i; j++)
 			L.SetEntry(0.,j,i);
 	
@@ -654,7 +284,7 @@ void Matrix::SampleNDimGaussian(const Matrix& mean, const Matrix& sigma, int Nsa
 	//need cholesky decomposition: takes sigma = LL^T
 	//returns Nsample normally distributed n-dim points (one point = x)
 	//x = L*y + mu for vectors x, y, mu and matrix L
-	int d = mean.GetDims()[0];
+	int d = mean.nRows();
 	SetDims(d,Nsample);
 	InitEmpty();
 //	//aggregate points
@@ -677,91 +307,65 @@ void Matrix::SampleNDimGaussian(const Matrix& mean, const Matrix& sigma, int Nsa
 	}
 	cout << "Sampled " << Nsample << " " << d << "-dimensional points from a multidim Gaussian via cholesky decomposition." << endl;
 }
-
+*/
 
 //fill vals + vecs vectors
 void Matrix::eigenCalc(vector<double>& vals, vector<Matrix>& vecs) const{
 	vals.clear();
 	vecs.clear();
 
-	Eigen::MatrixXd m(m_row, m_col);
-
-	for(int i = 0; i < m_row; i++){
-		vecs.emplace_back( Matrix(m_row,1) );
-		for(int j = 0; j < m_col; j++){
-			m(i,j) = m_entries[i][j];
-		}
-	}
-
-	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(m);
+	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(_mat);
 	if( eigensolver.info() != Eigen::Success){
 		cout << "eigenCalc Error: not able to calculate eigenvalues/vectors." << endl;
 		return;
 	}
  
-	//columns are eigenvectors
-	for(int d = 0; d < m_row; d++){
-		for(int j = 0; j < m_col; j++){
-			vecs[d].SetEntry(eigensolver.eigenvectors()(d,j),j,0);
-		}
-		vals.emplace_back(eigensolver.eigenvalues()(d));
-	}
+	vals.assign(eigensolver.eigenvalues().begin(), eigensolver.eigenvalues().begin() + eigensolver.eigenvalues().size());
 
+	//columns are eigenvectors
+	for(int d = 0; d < _mat.rows(); d++){
+		vecs.push_back(Matrix(_mat.rows(), 1));
+		vecs[d]._mat = eigensolver.eigenvectors().row(d);
+	}
 }
 
 
 
 double Matrix::trace(){
-	double tr = 0;
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			if(i == j)
-				tr += m_entries[i][j];
-		}
-	}
-	return tr;
+	return _mat.trace();
 }
 
 
 //stores pc as mat in this
-void Matrix::PointsToMat(PointCollection& pc){
-	m_col = pc.GetNPoints();
-	m_row = pc.Dim();
-
+void Matrix::PointsToMat(const PointCollection& pc){
+	int col = pc.GetNPoints();
+	int row = pc.Dim();
+	_mat = Eigen::MatrixXd(row, col);
 	InitEmpty();
-	
-	for(int i = 0; i < m_row; i++){
-		for(int j = 0; j < m_col; j++){
-			m_entries[i][j] = pc.at(j).at(i);
-		}
+	for(int j = 0; j < col; j++){
+		vector<double> in;
+		pc.at(j).Value(in);
+		_mat.col(j) = Eigen::Map<Eigen::VectorXd>(in.data(), in.size());
 	}
 }
 //stores pc as mat in this
 void Matrix::PointToMat(const BayesPoint& pc){
-	m_col = 1;
-	m_row = pc.Dim();
-
+	int col = 1;
+	int row = pc.Dim();
+	_mat = Eigen::MatrixXd(row, col);
 	InitEmpty();
-	
-	for(int i = 0; i < m_row; i++){
-			m_entries[i][0] = pc.at(i);
-	}
+
+	vector<double> in;
+	pc.Value(in);
+	_mat = Eigen::Map<Eigen::MatrixXd>(in.data(), row, col);
+
 }
 
 
 
 void Matrix::mean(const PointCollection& data){
-	int n = data.GetNPoints();
-	int d = data.Dim();
-	m_col = 1;
-	m_row = d;
-	InitEmpty();
-	for(int j = 0; j < d; j++){
-		for(int i = 0; i < n; i++){
-			m_entries[j][0] += data.at(i).at(j); 
-		}
-	}
-	for(int j = 0; j < d; j++) m_entries[j][0] = m_entries[j][0]/double(n);
+	PointsToMat(data);
+	_mat = _mat.rowwise().mean();
 }
 
 
@@ -770,8 +374,6 @@ void Matrix::mean(const PointCollection& data){
 void Matrix::scatter(const PointCollection& data){
 	int n = data.GetNPoints();
 	int d = data.Dim();
-	m_row = d;
-	m_col = d;
 
 	Matrix m = Matrix(d, 1);
 	Matrix mT = Matrix(1, d);
