@@ -64,7 +64,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
 		//make sure phis are on [0,2pi] interval
 		_points[i].Put02pi(1);
-		mt->AddLeaf(&_points[i].at(0));
+		mt->AddLeaf(_points[i].at(0));
 	}
 	const bool verbose = false;
 	if(verbose) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
@@ -359,7 +359,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector. " << _points[i].GetNPoints() << " points in collection " << i << "." << endl;
 			return _trees;
 		} 
-		mt->AddLeaf(&_points[i].at(0));
+		mt->AddLeaf(_points[i].at(0));
 	//experiment with not adding mirror points for leaves
 	//mirror points are calculated here and CalculateMerge because nndist is set with DistanceConstraint (called in calculate merge)
 	//so here nndist for all leaves is set to default
