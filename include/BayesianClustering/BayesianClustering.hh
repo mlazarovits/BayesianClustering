@@ -27,7 +27,6 @@
 #include "Matrix.hh"
 #include "MergeTree.hh"
 #include "MultivarT.hh"
-#include "NodeQueue.hh"
 #include "NodeStack.hh"
 #include "NormalWishart.hh"
 #include "PhotonProducer.hh"
