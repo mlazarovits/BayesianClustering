@@ -26,24 +26,19 @@ struct ClusterObj{
 		_detIDmap = DetIDMap;
 	}
 
-	int GetNSubclusters(){ return _jet.GetNConstituents(); }
-	void GetSubclusters(vector<Jet>& subcls){
-		_jet.GetConstituents(subcls);
-	}
-
 	vector<bool> _PUscores;
 	//will fully remove PU clusters - ie set all w_nk = 0 for PU subcluster k
 	void CleanOutPU(){ _jet.CleanOutPU(_PUscores, true);}
 
 
-	double GetEtaCenter(){ return _jet.eta(); }
-	double GetPhiCenter(){ return _jet.phi(); }
-	double GetEtaVar(){ return _jet.GetCovariance().at(0,0); }
-	double GetPhiVar(){ return _jet.GetCovariance().at(1,1); }
-	double GetTimeVar(){ return _jet.GetCovariance().at(2,2); }
-	double GetEtaPhiCov(){ return _jet.GetCovariance().at(0,1); }
-	double GetEtaTimeCov(){ return _jet.GetCovariance().at(0,2); }
-	double GetPhiTimeCov(){ return _jet.GetCovariance().at(1,2); }
+	float GetEtaCenter(){ return (float)_jet.eta(); }
+	float GetPhiCenter(){ return (float)_jet.phi(); }
+	float GetEtaVar(){ return (float)_jet.GetCovariance().at(0,0); }
+	float GetPhiVar(){ return (float)_jet.GetCovariance().at(1,1); }
+	float GetTimeVar(){ return (float)_jet.GetCovariance().at(2,2); }
+	float GetEtaPhiCov(){ return (float)_jet.GetCovariance().at(0,1); }
+	float GetEtaTimeCov(){ return (float)_jet.GetCovariance().at(0,2); }
+	float GetPhiTimeCov(){ return (float)_jet.GetCovariance().at(1,2); }
 	void GetMajMinLengths(double& majlen, double& minlen){
 		majlen = -1;
 		minlen = -1;
@@ -59,6 +54,56 @@ struct ClusterObj{
 		else minlen = sqrt(eigvals[0]);	
 	}
 	double GetEnergy(){ return _jet.E(); }	
+	
+	int GetNSubclusters(){ return _jet.GetNConstituents(); }
+	void GetSubclusters(vector<Jet>& subcls){
+		_jet.GetConstituents(subcls);
+	}
+	float GetSubclusterEtaCenter(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.eta(); 
+	}
+	float GetSubclusterPhiCenter(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.phi(); 
+	}
+	float GetSubclusterEtaVar(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(0,0); 
+	}
+	float GetSubclusterPhiVar(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(1,1); 
+	}
+	float GetSubclusterTimeVar(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(2,2); 
+	}
+	float GetSubclusterEtaPhiCov(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(0,1); 
+	}
+	float GetSubclusterEtaTimeCov(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(0,2); 
+	}
+	float GetSubclusterPhiTimeCov(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.GetCovariance().at(1,2); 
+	}
+	float GetSubclusterEnergy(int k){
+		Jet subcl;
+		_jet.GetConstituent(k, subcl);
+		return (float)subcl.E(); 
+	}
 	//per-object information
 	double _pvTime = -999; //time at PV
 	double _detTime = -999;
@@ -143,15 +188,16 @@ struct ClusterObj{
 	}
 
 
-	void CleanOutDetBkg(double minscore, int sigclass = 0, bool remove = false){
-		_jet.GenericClean(_detBkgScores, sigclass, minscore, remove);
-	} 
+	//void CleanOutDetBkg(double minscore, int sigclass = 0, bool remove = false){
+		//_jet.GenericClean(_detBkgScores, sigclass, minscore, remove);
+	//} 
 	
-	vector<pair<int, double>> _detBkgScores; //is a vector of pairs s.t. _detBkgScore[k] = pair(max_class, max_score) 
-	void GetDetBkgScores(vector<pair<int,double>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
+	vector<vector<float>> _detBkgScores; //is a vector of vectors s.t. _detBkgScores[k] = {score_physbkg, score_bh, score_spike} 
+	void GetDetBkgScores(vector<vector<float>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
 	fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json",true,fdeep::dev_null_logger);
 	int _ngrid = 7;
 	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
+	void SetCNNModel(fdeep::model model){ _nnmodel = model; }
 	void GetCenterXtal(JetPoint& center){
 		//get center of pts in ieta, iphi -> max E point
 		vector<JetPoint> rhs;
@@ -241,8 +287,11 @@ struct ClusterObj{
 				}							
 			}
 			//predict_class returns predicted class number and value of max output neuron
-			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
-			_detBkgScores.push_back(make_pair((int)result.first, result.second));
+			fdeep::tensors result = _nnmodel.predict({input_tensor});
+                        for(int i = 0; i < result.size(); i++){
+                                vector<float> reti = result[i].to_vector();
+                                _detBkgScores.push_back(reti);
+                        }
 		}
 		else{
 			for(int k = 0; k < _jet.GetNConstituents(); k++){
@@ -255,8 +304,11 @@ struct ClusterObj{
 					}							
 				}
 				//predict_class returns predicted class number and value of max output neuron
-				pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
-				_detBkgScores.push_back(make_pair((int)result.first, result.second));
+				fdeep::tensors result = _nnmodel.predict({input_tensor});
+                        	for(int i = 0; i < result.size(); i++){
+                        	        vector<float> reti = result[i].to_vector();
+                                	_detBkgScores.push_back(reti);
+                        	}
 			}
 		}
 	}
@@ -281,7 +333,8 @@ class ClusterAnalyzer{
 
 		//needs PV info for geometric corrections and correct momentum calculations of clustered elements
 		void SetPV(double pvx, double pvy, double pvz){
-			BayesPoint _PV({pvx, pvy, pvz});
+			vector<double> pv = {pvx, pvy, pvz};
+			_PV = BayesPoint(pv);
 		}
 		void SetDetectorCenter(double x, double y, double z){ _detCenter = BayesPoint({x,y,z});}
 		//sets transfer factor for energy weighting in clustering
@@ -298,8 +351,8 @@ class ClusterAnalyzer{
 		void SetDetIDsEB(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
-		string _nnmodel = "json/small3CNN_EMultr.json";
-		void SetCNNModel(string model){ _nnmodel = model; }
+		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
+		void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
 
 	private:
 		vector<Jet> _rhs;
