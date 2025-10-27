@@ -312,7 +312,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			cout << endl;
 		}
 	}
-	mt->avg_time();
+	//mt->avg_time();
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
 	if(_verb > -1) cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
