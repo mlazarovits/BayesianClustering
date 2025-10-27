@@ -280,7 +280,9 @@ class ClusterAnalyzer{
 		};
 
 		//needs PV info for geometric corrections and correct momentum calculations of clustered elements
-		void SetPV(double pvx, double pvy, double pvz){ _PV = BayesPoint({pvx, pvy, pvz});}
+		void SetPV(double pvx, double pvy, double pvz){
+			BayesPoint _PV({pvx, pvy, pvz});
+		}
 		void SetDetectorCenter(double x, double y, double z){ _detCenter = BayesPoint({x,y,z});}
 		//sets transfer factor for energy weighting in clustering
 		void SetTransferFactor(double g){ _gev = g; }
