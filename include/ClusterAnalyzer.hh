@@ -150,7 +150,6 @@ struct ClusterObj{
 	vector<pair<int, double>> _detBkgScores; //is a vector of pairs s.t. _detBkgScore[k] = pair(max_class, max_score) 
 	void GetDetBkgScores(vector<pair<int,double>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
 	fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json",true,fdeep::dev_null_logger);
-	vector<string> _nnfeatures = {"Er"};
 	int _ngrid = 7;
 	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
 	void GetCenterXtal(JetPoint& center){
@@ -190,7 +189,10 @@ struct ClusterObj{
 		int rh_iphi = _detIDmap.at(center.rhId()).second;
 		int deta, dphi;
 		Jet subcl;
-		_jet.GetConstituent(k, subcl);
+		if(k == -1) //do over whole object
+			subcl = _jet;
+		else
+			_jet.GetConstituent(k, subcl);
 		vector<JetPoint> rhs;
 		subcl.GetJetPoints(rhs);
 		for(int j = 0; j < rhs.size(); j++){
@@ -218,32 +220,44 @@ struct ClusterObj{
 		for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 			for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 				icoords_grid = make_pair(i,j);
-				mapobs["CNNgrid_Er_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
+				mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
 			}
 		}
 	}
-	void CalculateDetBkgScores(){
-		int nchan = _nnfeatures.size();
-		fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, nchan);
+	void CalculateDetBkgScores(bool pho){
+		fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);
 		fdeep::tensor input_tensor(tensor_shape, 0.0f);
 		//make grid for each subclusters in jet
 		JetPoint center;
 		GetCenterXtal(center);
-		for(int k = 0; k < _jet.GetNConstituents(); k++){
-			map<string, double> inputs;
-			MakeCNNGrid(k, center, inputs);
+		map<string, double> inputs;
+		if(pho){
+			MakeCNNGrid(-1, center, inputs);
 			//transform grid to input_sample
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					for(int c = 0; c < _nnfeatures.size(); c++){
-						double val = inputs["CNNgrid_"+_nnfeatures[c]+"_cell"+to_string(i)+"_"+to_string(j)];
-						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, c), val);
-					}
+					double val = inputs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
+					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 				}							
 			}
 			//predict_class returns predicted class number and value of max output neuron
 			pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
 			_detBkgScores.push_back(make_pair((int)result.first, result.second));
+		}
+		else{
+			for(int k = 0; k < _jet.GetNConstituents(); k++){
+				MakeCNNGrid(k, center, inputs);
+				//transform grid to input_sample
+				for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+						double val = inputs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
+						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+					}							
+				}
+				//predict_class returns predicted class number and value of max output neuron
+				pair<size_t, double> result = _nnmodel.predict_class_with_confidence({input_tensor});
+				_detBkgScores.push_back(make_pair((int)result.first, result.second));
+			}
 		}
 	}
 	void Get2DMat(const Matrix& inmat, Matrix& outmat){
@@ -282,6 +296,8 @@ class ClusterAnalyzer{
 		void SetDetIDsEB(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
+		string _nnmodel = "json/small3CNN_EMultr.json";
+		void SetCNNModel(string model){ _nnmodel = model; }
 
 	private:
 		vector<Jet> _rhs;
