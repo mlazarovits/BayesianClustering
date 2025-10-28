@@ -431,7 +431,6 @@ class BHCJetSkimmer{
 				double jetsize = CalcSize(cov);
 				vFillBranch(jetsize, type, "JetSize");
 			}
-
 			//gen matching
 			//in genmatches map: key is particle type, value is index matched to (in object's own vector)
 			//need to save idx in overall genparticles list
@@ -448,7 +447,9 @@ class BHCJetSkimmer{
 				//don't do subcluster matching for gen jets (they don't have subclusters)
 				if(type.find("gen") == string::npos){
 					addVector(type+gmit->first, "subclusterPartonMatchedIdx");
+					cout << "do subcluster parton matching" << endl;
 					SubclusterPartonGenMatching(type+gmit->first, gmit->second[jidx], jet, jidx, matchDaughters);
+					cout << "subcluster parton matching end" << endl;
 				}
 			}
 			//skip filling subcluster branches for gen jets 
@@ -494,10 +495,12 @@ class BHCJetSkimmer{
 
 			vector<int> genWMatchIdxs_genParts(jets.size(),-1);
 			vector<int> genqMatchIdxs_genParts(jets.size(),-1);
+			vector<int> genbMatchIdxs_genParts(jets.size(),-1);
 			vector<int> genTopMatchIdxs_genParts(jets.size(),-1);
 			vector<int> genGluonMatchIdxs_genParts(jets.size(),-1);
 			GenericMatchJet(jets,_genparts, genWMatchIdxs_genParts, 24); //match BHC jets to good gen Ws
 			GenericMatchJet(jets,_genparts, genqMatchIdxs_genParts, 0); //match BHC jets to good gen qs
+			GenericMatchJet(jets,_genparts, genbMatchIdxs_genParts, 5); //match BHC jets to good gen qs
 			GenericMatchJet(jets,_genparts, genTopMatchIdxs_genParts, 6); //match BHC jets to good gen qs
 			GenericMatchJet(jets,_genparts, genGluonMatchIdxs_genParts, 21); //match BHC jets to good gen qs
 			int val = -1;
@@ -510,6 +513,9 @@ class BHCJetSkimmer{
 				}
 				else if(_genmatches[g] == "q"){
 					vals_global = genqMatchIdxs_genParts;
+				}
+				else if(_genmatches[g] == "b"){
+					vals_global = genbMatchIdxs_genParts;
 				}
 				else if(_genmatches[g] == "Top"){
 					vals_global = genTopMatchIdxs_genParts;
