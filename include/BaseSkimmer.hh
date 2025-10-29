@@ -858,7 +858,7 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
+		fdeep::model _nnmodel = fdeep::load_model("config/json/small3CNN_EMultr.json");
 		void SetNNModel(string fname){
 			_nnmodel = fdeep::load_model(fname);
 		}
