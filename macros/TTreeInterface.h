@@ -284,7 +284,8 @@ void TTreeInterface::CreateFlattenedCSV( std::vector<std::string> branchList, st
 		_ttree->SetBranchAddress(subBranchList[i].c_str(),&subBranchVec[i]);
 		
 		//write the csv headers
-		ocsv << subBranchList[i] << " ";
+		ocsv << subBranchList[i];
+		if(i < subBranchList.size()-1) ocsv << " ";
 	}
 	ocsv << "\n";
 	
@@ -340,7 +341,8 @@ void TTreeInterface::CreateFlattenedCSV( std::vector<std::string> branchList, st
 					//debug print
 					//std::cout<<subBranchList[k]<<" "<<subBranchVec[k]->at(j).at(n)<<" \n";
 					//write subBranch quantities and evtid
-					ocsv<<subBranchVec[k]->at(j).at(n)<<" "; 
+					ocsv<<subBranchVec[k]->at(j).at(n); 
+					if(k < subBranchVec.size()-1) ocsv << " ";
 				}
 				ocsv<<"\n";
 			}	
