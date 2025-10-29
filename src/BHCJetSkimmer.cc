@@ -60,7 +60,6 @@ void BHCJetSkimmer::Skim(){
 		int ngenpart = _base->genpart_ngenpart;
 		_prod->GetGenParticles(_genparts, i);
 	
-		FillGenParticleHists();
 	
 		map<int,int> topidx_decayidx;
 		//do event selection here based on enum
@@ -184,6 +183,8 @@ void BHCJetSkimmer::Skim(){
 		//default selection
 		else{
 		}
+		
+		FillGenParticleHists();
 
 		_prod->GetGenJets(_genAK4jets, _genAK8jets, _genAK15jets, i);
 		//if(_genjets.size() < 1){ cout << endl; continue; }
