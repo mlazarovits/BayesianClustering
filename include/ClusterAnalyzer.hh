@@ -351,7 +351,7 @@ class ClusterAnalyzer{
 		void SetDetIDsEB(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
-		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
+		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json",true,fdeep::dev_null_logger);
 		void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
 
 	private:
