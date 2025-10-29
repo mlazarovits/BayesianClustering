@@ -129,6 +129,7 @@ std::vector<std::vector<double>>* TTreeInterface::GetSubBranchAlreadyAssigned( s
 		{
 			std::string key = iter->first;
 		  if( _idxSubMaps[ key].first == idxBranchName ){
+cout << "found idx branch " << key << " for idxbranchname " << idxBranchName << endl;
 		  	return _branchSubMaps[key].first;
 		  }
 		}
@@ -136,7 +137,6 @@ std::vector<std::vector<double>>* TTreeInterface::GetSubBranchAlreadyAssigned( s
 
 }
 void TTreeInterface::MapIdx( std::string idxBranchName, std::string targetBranch, std::string outLabel ){
-	_idxMaps[ outLabel ] = std::make_pair( idxBranchName, targetBranch );
 	std::vector<double>* v1 =0;
 	std::vector<double>* v2 =0;
 	_branchMaps[ outLabel ] = std::make_pair( v1, v2 );//init pointers to 0
@@ -153,6 +153,8 @@ void TTreeInterface::MapIdx( std::string idxBranchName, std::string targetBranch
 	else{
 		_branchMaps[outLabel].second = GetTargetBranchAlreadyAssigned( targetBranch );
 	}
+     //need to do this after branch setting in case outlabel comes before branches that are already assigned in the map 
+    _idxMaps[ outLabel ] = std::make_pair( idxBranchName, targetBranch );
     _idxSet.insert( idxBranchName );
     _brSet.insert( targetBranch );
 }
@@ -161,7 +163,6 @@ void TTreeInterface::MapIdx( std::string idxBranchName, std::string targetBranch
 //if branch address is already set, map _branchSubMaps[outLabel] to the vector it is set to
 //similar to what's done for idxBranchName
 void TTreeInterface::MapIdxToSubIdx( std::string idxBranchName, std::string targetBranch, std::string outLabel ){
-	_idxSubMaps[ outLabel ] = std::make_pair( idxBranchName, targetBranch );
 	std::vector<std::vector<double>>* v1 =0;
 	std::vector<double>* v2 =0;
 	_branchSubMaps[ outLabel ] = std::make_pair( v1, v2 );//init pointers to 0
@@ -179,8 +180,10 @@ void TTreeInterface::MapIdxToSubIdx( std::string idxBranchName, std::string targ
 	else{
 		_branchSubMaps[outLabel].second = GetTargetBranchAlreadyAssigned( targetBranch );
 	}
-    
+     //need to do this after branch setting in case outlabel comes before branches that are already assigned in the map 
+    _idxSubMaps[ outLabel ] = std::make_pair( idxBranchName, targetBranch );
     _idxSet.insert( idxBranchName );
+    _brSet.insert( targetBranch );
 }
 
 double TTreeInterface::RetrieveMapValue(std::string mapkey, int dim_idx){
@@ -192,7 +195,10 @@ double TTreeInterface::RetrieveMapValue(std::string mapkey, int dim_idx){
 	}
 	
 	if( (_branchMaps[mapkey].first)->at(dim_idx) < 0 ){
-		return -1;
+		if(mapkey.find("ID") != string::npos)
+			return -999;
+		else
+			return -1;
 	}
 	else{
 		idx = (_branchMaps[mapkey].first)->at(dim_idx);
@@ -209,7 +215,10 @@ double TTreeInterface::RetrieveSubMapValue(std::string mapkey, int dim_idx, int 
 		return -999;
 	}
 	if( (_branchSubMaps[mapkey].first)->at(dim_idx).at(sub_idx) < 0 ){
-		return -1;
+		if(mapkey.find("ID") != string::npos)
+			return -999;
+		else
+			return -1;
 	}
 	else{
 		idx = (_branchSubMaps[mapkey].first)->at(dim_idx).at(sub_idx);
