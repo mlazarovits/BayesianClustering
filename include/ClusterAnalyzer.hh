@@ -194,9 +194,9 @@ struct ClusterObj{
 	
 	vector<vector<float>> _detBkgScores; //is a vector of vectors s.t. _detBkgScores[k] = {score_physbkg, score_bh, score_spike} 
 	void GetDetBkgScores(vector<vector<float>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
-	fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json",true,fdeep::dev_null_logger);
+	fdeep::model _nnmodel;
 	int _ngrid = 7;
-	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
+	void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
 	void SetCNNModel(fdeep::model model){ _nnmodel = model; }
 	void GetCenterXtal(JetPoint& center){
 		//get center of pts in ieta, iphi -> max E point
@@ -351,8 +351,8 @@ class ClusterAnalyzer{
 		void SetDetIDsEB(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
-		fdeep::model _nnmodel = fdeep::load_model("json/small3CNN_EMultr.json");
-		void SetCNNModel(string model){ _nnmodel = fdeep::load_model(model); }
+		fdeep::model _nnmodel;
+		void SetCNNModel(string model){ cout << "Using CNN model " << model << endl; _nnmodel = fdeep::load_model(model); }
 
 	private:
 		vector<Jet> _rhs;
