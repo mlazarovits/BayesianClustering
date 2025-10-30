@@ -187,6 +187,8 @@ class BaseSkimmer{
 			_tree->Branch("evt_wt",&_obs.at("evt_wt"))->SetTitle("event weight");
 			_obs["MET"] = -1;
 			_tree->Branch("MET",&_obs.at("MET"))->SetTitle("Met_pt");		
+			_obs["Flag_globalSuperTightHalo2016Filter"] = -1;
+			_tree->Branch("Flag_globalSuperTightHalo2016Filter",&_obs.at("Flag_globalSuperTightHalo2016Filter"))->SetTitle("beam halo filter");		
 	
 			bool obj = true;
 			bool subcl = true;

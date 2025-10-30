@@ -68,6 +68,7 @@ void SuperClusterSkimmer::Skim(){
 		_obs.at("evt") = (double)e;
 		_obs.at("evt_wt") = _weight;
 		_obs.at("MET") = _base->Met_pt;
+		_obs.at("Flag_globalSuperTightHalo2016Filter") = _base->Flag_globalSuperTightHalo2016Filter;
 		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
         	if(_BHFilter != notApplied){
         	        if(_BHFilter == applied){

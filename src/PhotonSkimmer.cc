@@ -67,7 +67,7 @@ void PhotonSkimmer::Skim(){
 
 	//set kin reqs for jets
 	if(_isoBkgSel){
-		_jetprod->SetTransferFactor(0.1);
+		_jetprod->SetTransferFactor(0.0333333);
 		_jetprod->SetMinPt(_minJetPt_isoBkg);
 		_jetprod->SetMinNrhs(15);
 		_jetprod->SetMinEmE(10);
@@ -190,6 +190,7 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 		_obs.at("evt") = (double)e;
 		_obs.at("evt_wt") = _weight;
 		_obs.at("MET") = _base->Met_pt;
+		_obs.at("Flag_globalSuperTightHalo2016Filter") = _base->Flag_globalSuperTightHalo2016Filter;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
 			sumE = 0;
