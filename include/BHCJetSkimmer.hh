@@ -447,9 +447,7 @@ class BHCJetSkimmer{
 				//don't do subcluster matching for gen jets (they don't have subclusters)
 				if(type.find("gen") == string::npos){
 					addVector(type+gmit->first, "subclusterPartonMatchedIdx");
-					cout << "do subcluster parton matching" << endl;
 					SubclusterPartonGenMatching(type+gmit->first, gmit->second[jidx], jet, jidx, matchDaughters);
-					cout << "subcluster parton matching end" << endl;
 				}
 			}
 			//skip filling subcluster branches for gen jets 
