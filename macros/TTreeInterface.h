@@ -203,7 +203,7 @@ double TTreeInterface::RetrieveMapValue(std::string mapkey, int dim_idx){
 		if(mapkey.find("ID") != string::npos)
 			return -999;
 		else
-			return -1.00;
+			return -1;
 	}
 	else{
 		idx = (_branchMaps[mapkey].first)->at(dim_idx);
@@ -223,7 +223,7 @@ double TTreeInterface::RetrieveSubMapValue(std::string mapkey, int dim_idx, int 
 		if(mapkey.find("ID") != string::npos)
 			return -999;
 		else
-			return -1.00;
+			return -1;
 	}
 	else{
 		idx = (_branchSubMaps[mapkey].first)->at(dim_idx).at(sub_idx);

@@ -194,7 +194,7 @@ void MakeHistsSim(string file = "", string proc = ""){
 
 		ROOT::RDataFrame df_njets("tree",file,{jetname+"_Pt"});
 		//remove intermediate csv
-		//removefile(csvname);
+		removefile(csvname);
 		
 
 		//df.Display({"evtidx","jetidx","subclidx","BHCJet_subclusterTimeVar"},10,10)->Print();
