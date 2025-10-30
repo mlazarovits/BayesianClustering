@@ -29,6 +29,8 @@ class TTreeInterface{
 	std::string _treename{};
 	std::set<std::string> _idxSet{}; //set of idx branches
 	std::set<std::string> _brSet{}; //set of target branches
+
+	std::string _subobjBranchName;
 	
 	//index chasing var
 	strIdxMap _idxMaps{};//stores name associations, keep names around for debug and printing
@@ -201,7 +203,7 @@ double TTreeInterface::RetrieveMapValue(std::string mapkey, int dim_idx){
 		if(mapkey.find("ID") != string::npos)
 			return -999;
 		else
-			return -1;
+			return -1.00;
 	}
 	else{
 		idx = (_branchMaps[mapkey].first)->at(dim_idx);
@@ -221,7 +223,7 @@ double TTreeInterface::RetrieveSubMapValue(std::string mapkey, int dim_idx, int 
 		if(mapkey.find("ID") != string::npos)
 			return -999;
 		else
-			return -1;
+			return -1.00;
 	}
 	else{
 		idx = (_branchSubMaps[mapkey].first)->at(dim_idx).at(sub_idx);
@@ -234,7 +236,7 @@ double TTreeInterface::RetrieveSubMapValue(std::string mapkey, int dim_idx, int 
 
 void TTreeInterface::SetNSubBranch( std::string branchname){
 	_ttree->SetBranchAddress(branchname.c_str(),&_nsubobj);
-
+	_subobjBranchName = branchname;
 }
 
 
@@ -249,6 +251,7 @@ void TTreeInterface::CreateFlattenedCSV( std::vector<std::string> branchList, st
   	ocsv << "evtidx ";
 	ocsv<<"jetidx ";
 	ocsv<<"subclidx ";
+	ocsv<<_subobjBranchName<<" ";
 	//object observables
 	//idx mapping abstraction
 	for(strIdxMap::iterator iter = _idxMaps.begin(); iter != _idxMaps.end(); ++iter)
@@ -276,7 +279,7 @@ void TTreeInterface::CreateFlattenedCSV( std::vector<std::string> branchList, st
 	for(strIdxMap::iterator iter = _idxSubMaps.begin(); iter != _idxSubMaps.end(); ++iter)
 	{
 	  std::string key =  iter->first;
-	  std::cout<<"found mapping: "<<key<<" "<<_idxSubMaps[key].first<<":"<<_idxSubMaps[key].second<<"\n"; 
+	  std::cout<<"found submapping: "<<key<<" "<<_idxSubMaps[key].first<<":"<<_idxSubMaps[key].second<<"\n"; 
 	  ocsv<<key<<" ";		
 	}
 	
@@ -320,6 +323,7 @@ void TTreeInterface::CreateFlattenedCSV( std::vector<std::string> branchList, st
 				ocsv<<j<<" ";
 				//subcluster index
 				ocsv<<n<<" ";
+				ocsv<<_nsubobj->at(j)<<" ";
 				//if newever versions extract the values from the idx mapping
 				for(strIdxMap::iterator iter = _idxMaps.begin(); iter != _idxMaps.end(); ++iter)
 				{
