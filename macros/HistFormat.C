@@ -209,7 +209,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	}
 	myleg->Draw("same"); 
 	gPad->Update();
-	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
+	string lat_cms = "#bf{CMS} #it{Work In Progress} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.025);
@@ -223,7 +223,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	return;
 }
 
-void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_label, string title = ""){
+void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_label, string title = "", bool scale = false){
 	can->SetGridx();
 	can->SetGridy();
 	can->cd();
@@ -234,6 +234,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	hist->GetXaxis()->SetTitle(xtit.c_str());
 	hist->GetYaxis()->CenterTitle(true);
 	hist->GetYaxis()->SetTitle(ytit.c_str());
+	hist->GetZaxis()->CenterTitle(true);
 	string histname = hist->GetName();
 	if((hist->GetNbinsX() == 2 && hist->GetNbinsY() == 2) || histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos ){
 		if(histname.find("geoEavg_genDeltaTime_meanRecoGenDeltaT") != string::npos)
@@ -247,13 +248,13 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	}
 	else hist->Draw("colz1");
 
+	if(scale) hist->Scale(1./hist->Integral());
 	string name = hist->GetName();
 	//if(name.find("genDeltaTime_meanRecoGenDeltaT") != string::npos) cout << "n entries: " << hist->GetEntries() << endl;
-	
-	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label+" "+title;
+	string lat_cms = "#bf{CMS} #it{Work In Progress} "+cms_label+" "+title;
 	TLatex lat;
 	lat.SetNDC();
-	lat.SetTextSize(0.025);
+	lat.SetTextSize(0.03);
 	lat.SetTextFont(42);
 	lat.DrawLatex(0.02,0.92,lat_cms.c_str());
 
@@ -279,7 +280,7 @@ void TDRHist(TH1D* hist, TCanvas* &can, string plot_title, string xtit, string y
 	}
 	hist->Draw();
 	
-	string lat_cms = "#bf{CMS} #it{WIP} "+cms_label;
+	string lat_cms = "#bf{CMS} #it{Work In Progress} "+cms_label;
 	TLatex lat;
 	lat.SetNDC();
 	lat.SetTextSize(0.025);
@@ -404,6 +405,33 @@ void GetProcs(TDirectory* dir, vector<string>& procs){
 
 }
 
+
+string Get2DTitle(string title){
+	//apply three times since the format of 2D hist titles should be: obj_xvar_yvar_extraTitle_extraTitle
+	string obj;
+	if(title.find("SC_") != string::npos)
+		obj = "Supercluster";
+	string obs;
+	if(title.find("Center_") != string::npos)
+		obs = "Center";
+
+	string ret = title.substr(title.find("_")+1);
+	ret = ret.substr(ret.find("_")+1);
+	ret = ret.substr(ret.find("_")+1);
+	size_t start_pos = 0;
+	string from = "_";
+	string to = " ";
+	while ((start_pos = ret.find(from, start_pos)) != std::string::npos) {
+    	    ret.replace(start_pos, from.length(), to);
+    	    // Advance start_pos to avoid replacing the newly inserted 'to' string
+    	    // if 'to' itself contains 'from'
+    	    start_pos += to.length(); 
+    	}
+	if(ret.find("METlt100") != string::npos)
+		ret.replace(ret.find("METlt100"),8,"MET < 100");
+
+	return obj+" "+obs+" "+ret;
+}
 
 string GetExtraLabel(string in_file){
 	int idx = in_file.find("Skim_")+4;
@@ -538,7 +566,8 @@ void HistFormat(string file){
 				TCanvas *cv = new TCanvas(name.c_str(), "");
 				ofile->cd();
 				//draw as tcanvases
-				TDR2DHist(hist, cv, xtitle, ytitle, cmslab, hist->GetTitle());
+				TDR2DHist(hist, cv, xtitle, ytitle, " ", Get2DTitle(hist->GetTitle()), true);
+				cv->SetRightMargin(0.15);
 				//cout << "writing hist " << cv->GetName() << " in file " << endl;
 				cv->Write(); 
 			}
