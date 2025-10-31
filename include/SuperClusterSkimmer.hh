@@ -92,6 +92,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_obsnames.push_back("predScore_spike"); //CNN prediction
 			_obsnames.push_back("swCrossPrime");
 			_obsnames.push_back("swCrossCMS");
+
+			_obsnames.push_back("rh_iEta");
+			_obsnames.push_back("rh_iPhi");
+			_obsnames.push_back("rh_energy");
 		}
 
 		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
@@ -244,6 +248,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		void TrackMatched(Matrix mu, double& bestdr, double& bestp){
 			//do track matching
 			bestdr = 999;
+			bestp = 999;
 			double bestTrackDr = 999;
 			//double maxTrackDr;
 			double dr, teta, tphi, de;
@@ -298,55 +303,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		}
 
-		/* depreciated as of ntuple v30
-		void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
-			//do track matching
-			int nIDs = _base->ECALTrackDetID_detId->size();
-			double bestTrackDr = 999;
-			//double maxTrackDr;
-			double dr, teta, tphi, de;
-			unsigned int detid;
-
-			double dphi = -999;
-			//double bestde_dr;
-			int trackidx;
-			auto params = model->GetLHPosteriorParameters(subcl);
-			double ec = params["mean"].at(0,0);
-			double pc = params["mean"].at(1,0);
-			//because of the flatness of the ntuples, need to match detids to tracks via ECALTrackDetID_trackIndex
-			//there are multiple detIDs that match to one track
-			//similar to what's done in BaseProducer to get rhs in SC (matched via detid)
-			for(int id = 0; id < nIDs; id++){
-				//use TrackDetId to see where in ECAL track was propagated to
-				detid = _base->ECALTrackDetID_detId->at(id);
-				//check if detid in map
-				if(_detIDmap.count(detid) == 0) continue;
-				tphi = _detIDmap[detid].detphi;
-				teta = _detIDmap[detid].deteta;
-	
-				double tphi_02pi = tphi;
-				if(tphi_02pi < 0) tphi_02pi += 2*acos(-1);
-				else if(tphi_02pi > 2*acos(-1)) tphi_02pi -= 2*acos(-1); 
-				else tphi_02pi = tphi;
-				
-				dphi = fabs(pc - tphi_02pi);
-                                dphi = acos(cos(dphi));
-
-				dr = sqrt((teta - ec)*(teta - ec) + dphi*dphi);
-				//get track info from detid
-				trackidx = _base->ECALTrackDetID_trackIndex->at(id);
-				//E = p for photons
-				if(dr < bestTrackDr){
-					bestTrackDr = dr;
-					bestp = _base->ECALTrack_p->at(trackidx);
-				}
-			}
-			bestdr = bestTrackDr;
-		}
-		*/
-
-
-
 		void SetObs(){
 			SuperClusterAddBranches();
 			//sample
@@ -399,8 +355,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			double bestTrackDr, bestde_dr;
 			Matrix mu = bhc_obj.GetCenter();
 			TrackMatched(mu, bestTrackDr, bestde_dr);
-			bestde_dr = E_tot/bestde_dr;
-
+			if(bestde_dr != 999) bestde_dr = E_tot/bestde_dr;
+			
 			vFillBranch(bestde_dr, "EovP_trackSubcl");
 			vFillBranch(bestTrackDr, "dR_trackSubcl");
 			
@@ -423,6 +379,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//time signifiance	
 			double timesig = CalcTimeSignificance(points);
 			vFillBranch(timesig, "timeSignificance");			
+
 	
 		}
 
@@ -769,6 +726,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//do track matching for spikes
 			double bestdr, bestp;
 			TrackMatched(mu,bestdr, bestp);
+			
 			//early times, phi left/right for BH
 			//if subcl is spike
 cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;

@@ -50,7 +50,6 @@ void SuperClusterSkimmer::Skim(){
 	}
 	double pvx, pvy, pvz;
 	_timeoffset = 0;
-	int scidx;
 	vector<JetPoint> bhRhs;
 	double BHclusterPass = 0;
 	double BHclusterFail = 0;
@@ -92,6 +91,8 @@ void SuperClusterSkimmer::Skim(){
 		int npho = _base->Photon_energy->size();
 cout << "event " << e << " has " << nSC << " scs" << endl;
 		//loop over selected scs
+		int jet_scIdx = 0;
+		int scidx;
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
@@ -116,45 +117,6 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			if(ret < 0){
 				continue;
 			}
-			rhs.clear();
-			bhc_sc.GetJets(rhs); 
-	
-			//make BH filter
-			/*
-			_clusterSize = MakeBHFilterCluster(bhc_sc,bhRhs);
-			if(_clusterSize <= 3) _BHcluster = false;
-			else if(_clusterSize >= 6) _BHcluster = true;
-			else{
-				double td = BHTimeDiscriminant(bhRhs);
-				if(_clusterSize == 4){
-					//make sure seed > 10 GeV
-					double maxE = 0;
-					for(auto rh : bhRhs){
-						if(rh.E() > maxE) maxE = rh.E();
-					}
-					if(maxE <= 10) _BHcluster = false;
-					else{
-						if(!BHclusterIso(bhRhs)) _BHcluster = false;
-						else{
-							if(td < 0) _BHcluster = true;
-							else _BHcluster = false;
-						}
-					}
-					//cout << "clustersize 4 - maxE " << maxE << " iso " << BHclusterIso(bhRhs) << " td " << td << " ~BH " << _BHcluster << endl;
-				}
-				if(_clusterSize == 5){
-					if(td < 0) _BHcluster = true;
-					else _BHcluster = false;
-				}
-			}
-			if(!_base->Flag_globalSuperTightHalo2016Filter){
-				BHFail++;
-				if(_BHcluster) BHclusterPass++;
-				else BHclusterFail++;
-			}
-			else BHPass++;
-			*/
-		//if(_clusterSize > 3) cout << "~BH " << _BHcluster << " cluster size " << _clusterSize << " true BH filter " << _base->Flag_globalSuperTightHalo2016Filter << endl;
 		
 			map<string,double> mapobs;
 			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
@@ -174,7 +136,10 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//int label = GetTrainingLabel(scidx, k, gmm);
 			int label = GetTrainingLabel(scidx, bhc_sc);
 			//make CNN training grid
-			MakeCNNInputGrid(rh_pts, mapobs);
+			addVector("rh_iEta",false);
+			addVector("rh_iPhi",false);
+			addVector("rh_energy",false);
+			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
 			FillBranches(bhc_sc);
 			
 			mapobs["event"] = e;
@@ -212,33 +177,27 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			for(int r = 0; r < rrhs.size(); r++){
 				GetNeighborE(rrhs,r,icoords,Es);
 				GetNeighborE(rrhs,r,icoords_nocenter,Es_nocenter,true);
-				if(label == 1){ //phys bkg
-					for(int ee = 0; ee < Es.size(); ee++)
+				for(int ee = 0; ee < Es.size(); ee++){
+					if(label == 1) //phys bkg
 						ENeighbors_physBkg->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					for(int ee = 0; ee < Es_nocenter.size(); ee++)
-						ENeighborsSkipCenter_physBkg->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-						
-				}
-				else if(label == 2){ //BH
-					for(int ee = 0; ee < Es.size(); ee++)
+					else if(label == 2) //BH
 						ENeighbors_BH->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					for(int ee = 0; ee < Es_nocenter.size(); ee++)
-						ENeighborsSkipCenter_BH->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-	
-				}
-				else if(label == 3){ //spike
-					for(int ee = 0; ee < Es.size(); ee++)
+					else if(label == 3) //spike
 						ENeighbors_spikes->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					for(int ee = 0; ee < Es_nocenter.size(); ee++)
-						ENeighborsSkipCenter_spikes->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+					else{ }
 				}
-				else {}
-	
+				for(int ee = 0; ee < Es_nocenter.size(); ee++){
+					if(label == 1) //phys bkg
+						ENeighborsSkipCenter_physBkg->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+					else if(label == 2) //BH
+						ENeighborsSkipCenter_BH->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+					else if(label == 3) //spike
+						ENeighborsSkipCenter_spikes->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
+					else{ }
+				}
 			}
-
-		//cout << "n obs " << mapobs.size() << " " << _inputs.size() << endl;			
-			
-			
+	
+			jet_scIdx++;	
 		}
 		_tree->Fill();
 		_reset();

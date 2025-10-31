@@ -208,7 +208,9 @@ class BaseSkimmer{
 					subcl = false;
 				if(_obsnames[o] == "timeSignificance")
 					subcl = false;
-			
+				if(_obsnames[o] == "rh_iEta" || _obsnames[o] == "rh_iPhi" || _obsnames[o] == "rh_energy")
+					obj = false;
+
 				//object
 				if(obj){
 					string key = _obj+"_"+_obsnames[o];
@@ -223,6 +225,12 @@ class BaseSkimmer{
 					string key = "subcluster_"+_obsnames[o];
 					_vvobs[key] = {};
 					string title = "subcluster "+_obsnames[o]+" per "+_obj+units;
+					_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
+				}
+				if(subcl && _obj == "SC" && _obsnames[o].find("rh_") != string::npos){
+					string key = _obsnames[o];
+					_vvobs[key] = {};
+					string title = _obsnames[o];
 					_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 				}
 			}
@@ -262,8 +270,9 @@ class BaseSkimmer{
 			_vobs.at(key).push_back(obs);
 		}
 		
-		void vvFillBranch(double obs, string obsname, int idx){
-			string key = "subcluster_"+obsname;
+		void vvFillBranch(double obs, string obsname, int idx, bool subcl = true){
+			string key = obsname;
+			if(subcl) key = "subcluster_"+obsname;
 			if(_vvobs.find(key) == _vvobs.end()){
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map" << endl;
 				return;
@@ -277,8 +286,9 @@ class BaseSkimmer{
 		}
 
 
-		void addVector(string obsname){
-			string key = "subcluster_"+obsname;
+		void addVector(string obsname, bool subcl = false){
+			string key = obsname;
+			if(subcl) key = "subcluster_"+obsname;
 			if(_vvobs.find(key) == _vvobs.end()){
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map - skipping adding vector" << endl;
 				return;
@@ -720,7 +730,7 @@ class BaseSkimmer{
 			}
 			_csvfile << endl;
 		}
-		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false, int ngrid = 5){
+		void GetNeighborE(vector<JetPoint>& rhs, int r, vector<pair<int, int>>& icoords, vector<double>& Es, bool skipCenter = false, int ngrid = 7){
 			int ieta, iphi;
 			JetPoint rh;
 			int ngrid_thresh = ngrid/2;
@@ -801,7 +811,7 @@ class BaseSkimmer{
 		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
 		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
 		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
-		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs){
+		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1){
 			JetPoint center;
 			GetCenterXtal(rhs, center);	
 			map<pair<int,int>, vector<double>> grid;
@@ -842,7 +852,12 @@ class BaseSkimmer{
 					//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
 					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
-					grid[make_pair(deta, dphi)] = {rhs[j].E()};	
+					grid[make_pair(deta, dphi)] = {rhs[j].E()};
+					if(jet_scIdx != -1){	
+						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
+						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
+						vvFillBranch(rhs[j].E(), "rh_energy", jet_scIdx,false);
+					}
 					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
 
 				}
