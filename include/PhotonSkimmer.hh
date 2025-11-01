@@ -203,6 +203,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			for(int o = 0; o < _obsnames.size(); o++){
 				if(_obsnames[o] == "PUscores") continue;
 				if(_obsnames[o].find("nSubclusters") != string::npos) continue;
+				if(_obsnames[o].find("predScore") != string::npos) continue;
+				if(_obsnames[o].find("Label") != string::npos) continue;
 				_inputs.push_back(_obsnames[o]);
 			}
 			_inputs.push_back("2017_presel");
@@ -237,7 +239,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		void FillJetObs(Jet bhc_obj, map<string, double>& obs){
 			double E_tot = bhc_obj.E();
 			obs.at("Energy") = E_tot;
-
+			
 			double ec = bhc_obj.eta();
 			double pc = bhc_obj.phi();
 			double tc = bhc_obj.t();
@@ -269,7 +271,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			double minLength_2D; 
 			if(eigenvals_space[0] < 0) minLength_2D = -sqrt(-eigenvals_space[0]);
 			else minLength_2D = sqrt(eigenvals_space[0]);	
-			double phi2D = PhiEll(space_mat);			
+			double phi2D = PhiEll(space_mat);
 			double rot2D = Rotundity(space_mat);
 			
 			obs.at("majorLength") = majLength_2D;
@@ -292,6 +294,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
 			obs.at("swCP") = swCP;
+
+			//time significance not set
 
 		}
 
@@ -418,7 +422,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		inmat.eigenCalc(eigenvals, eigenvecs);
 		int maxd = inmat.nRows() - 1;
 		double v_x = eigenvecs[maxd].at(0,0);	
-		double v_y = eigenvecs[maxd].at(1,0);	
+		double v_y = eigenvecs[maxd].at(0,1);	
 		//azimuthal angle with lead eigenvector (from 2D spatial submatrix)
 		double phi = atan2( v_y , v_x );
 		return phi;
