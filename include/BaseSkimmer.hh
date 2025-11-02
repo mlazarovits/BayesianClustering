@@ -210,7 +210,7 @@ class BaseSkimmer{
 					subcl = false;
 				if(_obsnames[o] == "rh_iEta" || _obsnames[o] == "rh_iPhi" || _obsnames[o] == "rh_energy")
 					obj = false;
-				if(_obsnames[o] == "nRHs")
+				if(_obsnames[o] == "nRHs_grid")
 					subcl = false;
 
 				//object
@@ -834,6 +834,7 @@ class BaseSkimmer{
 			int rh_ieta = _detIDmap[center.rhId()].i2;
 			int rh_iphi = _detIDmap[center.rhId()].i1;
 			int deta, dphi;
+			double nrhs = 0;
 			//Matrix post = model->GetPosterior();
 			for(int j = 0; j < rhs.size(); j++){
 				ieta = _detIDmap[rhs[j].rhId()].i2;
@@ -859,11 +860,13 @@ class BaseSkimmer{
 						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
 						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
 						vvFillBranch(rhs[j].E(), "rh_energy", jet_scIdx,false);
+						nrhs++;
 					}
 					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
 
 				}
 			}
+			vFillBranch(nrhs,"nRHs_grid");
 			pair<int, int> icoords_grid;
 			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){

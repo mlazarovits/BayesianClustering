@@ -93,7 +93,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_obsnames.push_back("swCrossPrime");
 			_obsnames.push_back("swCrossCMS");
 
-			_obsnames.push_back("nRHs");
+			_obsnames.push_back("nRHs_grid");
 			_obsnames.push_back("rh_iEta");
 			_obsnames.push_back("rh_iPhi");
 			_obsnames.push_back("rh_energy");
@@ -333,7 +333,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			double E_tot = bhc_obj.E();
 			vFillBranch(E_tot, "Energy");		
 
-			vFillBranch((double)bhc_obj.GetNPoints(),"nRHs");
 
 			double ec = bhc_obj.eta();
 			double pc = bhc_obj.phi();
