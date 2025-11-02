@@ -210,6 +210,8 @@ class BaseSkimmer{
 					subcl = false;
 				if(_obsnames[o] == "rh_iEta" || _obsnames[o] == "rh_iPhi" || _obsnames[o] == "rh_energy")
 					obj = false;
+				if(_obsnames[o] == "nRHs")
+					subcl = false;
 
 				//object
 				if(obj){
