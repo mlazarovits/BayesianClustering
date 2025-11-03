@@ -210,6 +210,11 @@ class BaseProducer{
 			cout << "Spatially correcting times to PV location? " << _spatial_corr << endl;
 		}
 
+		map<unsigned int, double> _rhIdToRes;
+		void GetRhIdResMap(map<unsigned int, double>& omap){
+			omap.clear();
+			omap = _rhIdToRes;
+		}
 
 		ReducedBase* _base = nullptr;
 		int _nEvts;
