@@ -359,8 +359,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vector<JetPoint> rhs; bhc_obj.GetJetPoints(rhs);
 			for(int r = 0; r < rhs.size(); r++){
 				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
-				pt.SetWeight(rhs[r].E()*_gev);
+				pt.SetWeight(rhs[r].E()/_gev);
+				pt.SetUserIdx(rhs[r].rhId());
 				points->AddPoint(pt);
+				
 			}
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
@@ -438,7 +440,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	}
 
 	double swissCross(const vector<Jet>& jets){
-		//find seed crystal (highest weight, E = w*_gev)
+		//find seed crystal (highest weight, E = w/_gev)
 		PointCollection sc(1); //save cmsswIds with associated weights for rec hit id
 		JetPoint rh;
 		for(int j = 0; j < jets.size(); j++){
