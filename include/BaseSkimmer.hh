@@ -227,6 +227,9 @@ class BaseSkimmer{
 					key += "_prePUcleaning";
 					title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
 				}
+				if(key.find("_track") != string::npos)
+					title += " for original SC";
+
 				_vobs[key] = {};
 				_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
 			}		
@@ -252,7 +255,6 @@ class BaseSkimmer{
 						title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
 					}
 				}
-cout << "making branch " << key << endl;
 				_vvobs[key] = {};
 				_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 				
@@ -412,15 +414,28 @@ cout << "making branch " << key << endl;
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
+		PointCollection* GetPointsFromJet(const Jet& jet){
+			PointCollection* points = new PointCollection();
+			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
+			for(int r = 0; r < rhs.size(); r++){
+				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
+				pt.SetWeight(rhs[r].E()*_gev);
+				pt.SetUserIdx(rhs[r].rhId());
+				points->AddPoint(pt);
+				
+			}
+			return points;
+		}
+
 
 		map<unsigned int, double> _rhIdToRes;
-		double CalcTimeSignificance(PointCollection* pts){
+		double CalcTimeSignificance(PointCollection* pts, unsigned int seed_id = -1){
 			double t_tot = 0;
 			double norm = 0;
 			double res_tot = 0;
 			for(int i = 0; i < pts->GetNPoints(); i++){
-				double e = pts->at(i).w()*_gev;
-				double res;
+				double e = pts->at(i).w()/_gev;
+				double res, w;
 				if(fabs(e) < 1e-20){
 					e = 0;
 					res = 0;
@@ -429,8 +444,12 @@ cout << "making branch " << key << endl;
 					//res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
 					res = _rhIdToRes.at(pts->at(i).GetUserIdx());
 				}
+				if(seed_id != -1 && pts->at(i).GetUserIdx() == seed_id){
+					return pts->at(i).at(2) / (res) * sqrt(2.);
+				}
+				w = (1/res)*e;
 				t_tot += e*pts->at(i).at(2);
-//cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()*_gev << " res " << res << endl;
+cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()/_gev << " res " << res << endl;
 				res_tot += e*res;
 				norm += e;
 			}

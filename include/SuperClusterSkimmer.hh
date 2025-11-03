@@ -94,6 +94,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_obsnames.push_back("swCrossCMS");
 
 			vAddBranch("nRHs_grid","# rhs in CNN input grid");
+			vAddBranch("nRHs_ogSC","# of rhs in original SC");
+			vAddBranch("nRHs_bhcSC","# of rhs in BHC SC");
+			vAddBranch("timeSignificanceSeed","time significance from seed rh in original SC");
+			vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
 
 			vvAddBranch("rh_iEta","local ieta for CNN input grid");
 			vvAddBranch("rh_iPhi","local iphi for CNN input grid");
@@ -355,15 +359,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			
 			vector<double> spikeObs;
-			PointCollection* points = new PointCollection();
-			vector<JetPoint> rhs; bhc_obj.GetJetPoints(rhs);
-			for(int r = 0; r < rhs.size(); r++){
-				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
-				pt.SetWeight(rhs[r].E()/_gev);
-				pt.SetUserIdx(rhs[r].rhId());
-				points->AddPoint(pt);
-				
-			}
+			PointCollection* points = GetPointsFromJet(bhc_obj);
+			vFillBranch((double)points->GetNPoints(),"nRHs_bhcSC");
+
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
 			vFillBranch(swCP, "swCrossPrime");
@@ -375,7 +373,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//time signifiance	
 			double timesig = CalcTimeSignificance(points);
 			vFillBranch(timesig, "timeSignificance");			
-
 	
 		}
 
@@ -637,7 +634,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 		return true;
 	}
-	//int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
 	int GetTrainingLabel(int nobj, const Jet& bhc_sc, const Jet& og_sc){
 		//labels
 		//unmatched = -1
@@ -663,13 +659,21 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		ec = mu.at(0,0);
 		pc = mu.at(1,0);
-		tc = mu.at(2,0);
+		//tc = mu.at(2,0);
+		//use seed time from original SC
+		unsigned int seed_id = _base->SuperCluster_XtalSeedID->at(og_sc.GetUserIdx());
+		//time significance to enhance purity of det bkg CRs
+		//using seed of original SC
+		PointCollection* points = GetPointsFromJet(og_sc);
+		double tsig = CalcTimeSignificance(points, seed_id);
 		bool trksum, ecalrhsum, htowoverem, iso;	
 		//for BH definition
 		bool pcFilter;
 		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
 		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
-		
+	
+
+	
 		int label = -1;
 		//signal
 		if(!_data){
@@ -726,8 +730,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			
 			//early times, phi left/right for BH
 			//if subcl is spike
-cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
-			if(bestdr <= 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc )){
+//cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
+			if(bestdr <= 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc && tsig < -3)){
 				label = 3;
 			}
 			else{
@@ -736,13 +740,14 @@ cout << "time center " << tc << " phi center " << pc << " dr to track " << bestd
 					if(phoidx == -1){
 						//not spikes, but also not matched to a photon so cant be BH or physics bkg
 						label = -1;
+						iso = 0;
 					}
 					else{
                 				trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
                 				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 				htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 				iso = trksum && ecalrhsum && htowoverem;
-cout << "pass iso? " << iso << endl;
+//cout << "pass iso? " << iso << endl;
                 				if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 						//for physics bkg + BH match to photons + apply isolation criteria
 						//if subcl is BH - need to match to photon and apply isolation
@@ -752,13 +757,14 @@ cout << "pass iso? " << iso << endl;
 						if(tc > -0.5 && tc < 0.5 && iso)
 							label = 1;
 					}
+					vFillBranch((double)iso,"isoPresel");
 				}
 				else{
 					//if subcl is BH - with dR track veto
-					if((tc > -7 && tc <= -2) && pcFilter && bestdr > 0.03)	
+					if((tc > -7 && tc <= -2) && pcFilter && bestdr > 0.03 && tsig < -3)	
 						label = 2;
 					//if subcl is not BH or spike (ie prompt, 'physics' bkg)
-					if(tc > -0.5 && tc < 0.5)
+					if(tc > -0.5 && tc < 0.5 && (-1 < tsig && tsig < 1))
 						label = 1;
 				}
 

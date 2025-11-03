@@ -97,6 +97,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			scs[s].GetJets(rhs);
+			vFillBranch((double)rhs.size(), "nRHs_ogSC");
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ cout << "sc #" << s << " has " << rhs.size() << " rhs " << endl; continue; }
@@ -143,6 +144,9 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			addVector("rh_energy",false);
 			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
 			FillBranches(bhc_sc);
+			PointCollection* points = GetPointsFromJet(scs[s]);
+			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));
+			vFillBranch(timesig_seed, "timeSignificanceSeed");			
 			
 			//EovP, dR trackSubcl
 			double bestTrackDr, bestde_dr;
