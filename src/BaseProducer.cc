@@ -459,6 +459,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				nrhs++; 
                                 sc_rhs.push_back(rh);
                 		jrhids.push_back(_base->ECALRecHit_ID->at(rhidx));
+	//cout << "adding rh with rhidx " << rhidx << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " energy " << rhe << " res " << _rhIdToRes[rh.rhId()] <<  endl;
 		        }
 			//else{
 			//	cout << "no match found for rh #" << r << " with id " << rhid << " in ECAL rechit list" << endl;
