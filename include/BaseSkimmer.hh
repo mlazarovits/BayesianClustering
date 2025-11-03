@@ -317,7 +317,6 @@ cout << "making branch " << key << endl;
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map - skipping adding vector" << endl;
 				return;
 			}
-cout << "adding vector for " << key << endl;
 			_vvobs[key].push_back({});
 
 		}
@@ -428,7 +427,7 @@ cout << "adding vector for " << key << endl;
 				}
 				else{
 					//res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
-					res = _rhIdToRes[pts->at(i).GetUserIdx()];
+					res = _rhIdToRes.at(pts->at(i).GetUserIdx());
 				}
 				t_tot += e*pts->at(i).at(2);
 //cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()*_gev << " res " << res << endl;
@@ -1009,8 +1008,6 @@ cout << "adding vector for " << key << endl;
 		TreesToJets(trees, bhc_jets, PV);
 		if(bhc_jets.size() < 1)
 			return -2;
-		vector<bool> scores; //PU discriminator scores of subclusters
-		result = bhc_jets[0].CleanOutPU(scores, true);
 		///fill pre PU cleaning branches
 		Matrix cov = bhc_jets[0].GetCovariance();
 		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters_prePUcleaning");
@@ -1022,6 +1019,9 @@ cout << "adding vector for " << key << endl;
 		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
 		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
+		vector<bool> scores; //PU discriminator scores of subclusters
+		//result = bhc_jets[0].CleanOutPU(scores, true);
+		result = bhc_jets[0];
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		addVectors();
