@@ -272,7 +272,7 @@ void MakeHistsSim(string file = "", string proc = ""){
 		auto hist2d_pu_cleaning = df.Filter(leadjetcut+" && "+wmatched_cut)
 				.Define("subclRelEnergy",jetname+"_subclusterEnergy / "+jetname+"_Energy") //relative energy
 				.Define("subclRelGeoAvgVar",relGeoAvgFuncStr) //relative geo avg var
-				.Histo2D({(jetname+"_subclRelGeoAvgVar_subclRelEnergy_lead_WMatched_ge2Subcls").c_str(),(jetname+"_subclRelGeoAvgVar_subclRelEnergy_lead_WMatched_ge2Subcls;subclRelGeoAvgVar;subclRelEnergy:a.u.").c_str(),50,0,1.2,50,0,1.2},"subclRelGeoAvgVar","subclRelEnergy");
+				.Histo2D({(jetname+"_subclRelGeoAvgVar_subclRelEnergy_lead_WMatched_ge2Subcls").c_str(),(jetname+"_subclRelGeoAvgVar_subclRelEnergy_lead_WMatched_ge2Subcls;subclRelGeoAvgVar;subclRelEnergy;a.u.").c_str(),50,0,1.2,50,0,1.2},"subclRelGeoAvgVar","subclRelEnergy");
 			//subcluster relative energy vs geo avg of relative variances for jets matched to relevant gen particles (ie W for single W, top for boostTop, etc) 
 		hists2d.push_back(hist2d_pu_cleaning);
 	
