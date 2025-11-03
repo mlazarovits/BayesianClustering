@@ -226,7 +226,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		}
 
 
-		void FillBranches(Jet bhc_obj){ }
+		void FillBranches(const Jet& bhc_obj){ }
 
 		void FillBranches(map<string, double> obs){
 			for(auto it = obs.begin(); it != obs.end(); it++){

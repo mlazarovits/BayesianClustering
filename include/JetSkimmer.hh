@@ -136,7 +136,7 @@ class JetSkimmer : public BaseSkimmer{
 			_obj = "jet";
 		};
 		void WriteHeader(){ };
-		void FillBranches(Jet bhc_obj){
+		void FillBranches(const Jet& bhc_obj){
 
 		}
 
