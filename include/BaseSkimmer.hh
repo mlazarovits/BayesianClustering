@@ -65,6 +65,7 @@ class BaseSkimmer{
 			
 			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
+			_tree = new TTree("tree","tree");
 
 		};
 		BaseSkimmer(TFile* file){
@@ -105,6 +106,7 @@ class BaseSkimmer{
 
 			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
+			_tree = new TTree("tree","tree");
 
 		}
 		
@@ -145,6 +147,7 @@ class BaseSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
+			_tree = new TTree("tree","tree");
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -178,9 +181,28 @@ class BaseSkimmer{
 			}
 			return ch;
 		}
+	
+		void AddBranch(string obs, string title){
+			_obs[obs] = -1;
+			_tree->Branch(obs.c_str(),&_obs.at(obs))->SetTitle(title.c_str());
+		}
 		
+		void vAddBranch(string obs, string title){
+			string key = _obj+"_"+obs;
+			_vobs[key] = {};
+			_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
+		}
+		
+		void vvAddBranch(string obs, string title, string extra = ""){
+			string key = _obj+"_"+obs;
+			if(extra != "") key += "_"+extra;
+			_vvobs[key] = {};
+			_tree->Branch(key.c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
+		}
+	
 		void InitMapTree(){
-			_tree = new TTree("tree","tree");
+
+			//event level branches
 			_obs["evt"] = -1;
 			_tree->Branch("evt",&_obs.at("evt"))->SetTitle("event");
 			_obs["evt_wt"] = -1;
@@ -189,52 +211,51 @@ class BaseSkimmer{
 			_tree->Branch("MET",&_obs.at("MET"))->SetTitle("Met_pt");		
 			_obs["Flag_globalSuperTightHalo2016Filter"] = -1;
 			_tree->Branch("Flag_globalSuperTightHalo2016Filter",&_obs.at("Flag_globalSuperTightHalo2016Filter"))->SetTitle("beam halo filter");		
-	
-			bool obj = true;
-			bool subcl = true;
+
+			//object level branches
 			for(int o = 0; o < _obsnames.size(); o++){
 				string units = "";
-				obj = true;
-				subcl = true;
 				if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
 					units = " [GeV]";
 				if(_obsnames[o] == "TimeCenter")
 					units = " [ns]";
-				if(_obsnames[o] == "PUscores")
-					obj = false;
-				if(_obsnames[o] == "nSubclusters")
-					subcl = false;
-				if(_obsnames[o].find("Label") != string::npos)
-					subcl = false;
-				if(_obsnames[o] == "timeSignificance")
-					subcl = false;
-				if(_obsnames[o] == "rh_iEta" || _obsnames[o] == "rh_iPhi" || _obsnames[o] == "rh_energy")
-					obj = false;
-				if(_obsnames[o] == "nRHs_grid")
-					subcl = false;
-
-				//object
-				if(obj){
-					string key = _obj+"_"+_obsnames[o];
-					_vobs[key] = {};
-					string title = _obj+" "+units;
-					_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
+				
+				string key = _obj+"_"+_obsnames[o];
+				string title = _obj+" "+_obsnames[o]+" "+units;
+				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
+					//object pre-PU cleaning	
+					key += "_prePUcleaning";
+					title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
 				}
-	
-				//only fill subcluster branches for jet skimmer	
-				if(subcl && _obj == "jet"){
+				_vobs[key] = {};
+				_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
+			}		
+			//subobject level branches
+			for(int o = 0; o < _obsnames_subcl.size(); o++){
+				string units = "";
+				if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
+					units = " [GeV]";
+				if(_obsnames[o] == "TimeCenter")
+					units = " [ns]";
+				string key, title;
+				if(_obj == "SC" && _obsnames_subcl[o].find("rh_") != string::npos){
+					key = _obsnames_subcl[o];
+					title = _obsnames_subcl[o];
+				}
+				else{
 					//subcluster	
-					string key = "subcluster_"+_obsnames[o];
-					_vvobs[key] = {};
-					string title = "subcluster "+_obsnames[o]+" per "+_obj+units;
-					_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
+					key = _obj+"_subcluster_"+_obsnames_subcl[o];
+					title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
+					//subcluster pre-PU cleaning	
+					if(_obsnames_subcl[o].find("Energy") != string::npos || _obsnames_subcl[o].find("Var") != string::npos || _obsnames_subcl[o].find("nSubclusters") != string::npos){
+						key += "_prePUcleaning";
+						title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
+					}
 				}
-				if(subcl && _obj == "SC" && _obsnames[o].find("rh_") != string::npos){
-					string key = _obsnames[o];
-					_vvobs[key] = {};
-					string title = _obsnames[o];
-					_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
-				}
+cout << "making branch " << key << endl;
+				_vvobs[key] = {};
+				_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
+				
 			}
 
 			
@@ -273,8 +294,8 @@ class BaseSkimmer{
 		}
 		
 		void vvFillBranch(double obs, string obsname, int idx, bool subcl = true){
-			string key = obsname;
-			if(subcl) key = "subcluster_"+obsname;
+			string key = _obj+"_"+obsname;
+			if(subcl) key = _obj+"_subcluster_"+obsname;
 			if(_vvobs.find(key) == _vvobs.end()){
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map" << endl;
 				return;
@@ -288,20 +309,23 @@ class BaseSkimmer{
 		}
 
 
-		void addVector(string obsname, bool subcl = false){
-			string key = obsname;
-			if(subcl) key = "subcluster_"+obsname;
+		void addVector(string obsname, bool subcl = false, string extra = ""){
+			string key = _obj+"_"+obsname;
+			if(subcl) key = _obj+"_subcluster_"+obsname;
+			if(extra != "") key += "_"+extra;
 			if(_vvobs.find(key) == _vvobs.end()){
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map - skipping adding vector" << endl;
 				return;
 			}
+cout << "adding vector for " << key << endl;
 			_vvobs[key].push_back({});
 
 		}
 
 		void addVectors(){
-			for(int o = 0; o < _obsnames.size(); o++){
-				addVector(_obsnames[o]);
+			for(int o = 0; o < _obsnames_subcl.size(); o++){
+				addVector(_obsnames_subcl[o],true);
+				addVector(_obsnames_subcl[o],true,"prePUcleaning");
 			}
 		}
 
@@ -322,7 +346,8 @@ class BaseSkimmer{
 
 
 		TTree* _tree;
-		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov", "PUscores", "timeSignificance"};
+		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
+		vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
 		map<string, double> _obs;
 		map<string, vector<double>> _vobs;
 		map<string, vector<vector<double>>> _vvobs;
@@ -389,6 +414,7 @@ class BaseSkimmer{
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
 
+		map<unsigned int, double> _rhIdToRes;
 		double CalcTimeSignificance(PointCollection* pts){
 			double t_tot = 0;
 			double norm = 0;
@@ -401,7 +427,8 @@ class BaseSkimmer{
 					res = 0;
 				}
 				else{
-					res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
+					//res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
+					res = _rhIdToRes[pts->at(i).GetUserIdx()];
 				}
 				t_tot += e*pts->at(i).at(2);
 //cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()*_gev << " res " << res << endl;
@@ -689,7 +716,7 @@ class BaseSkimmer{
 		int _ngrid;
 		virtual void SetObs() = 0;
 		virtual void WriteHeader() = 0;
-		virtual void FillBranches(Jet bhc_obj) = 0;
+		virtual void FillBranches(const Jet& bhc_obj) = 0;
 
 		void WriteObs(map<string,double> inputs, string object){
 			string samp = "";
@@ -984,20 +1011,20 @@ class BaseSkimmer{
 			return -2;
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0].CleanOutPU(scores, true);
-//vector<JetPoint> rhs_jp = bhc_jets[0].GetJetPoints();
-//for(int r = 0; r < bhc_jets[0].GetNRecHits(); r++){
-//cout << "t " << rhs_jp[r].t() << " e " << rhs_jp[r].e() << endl;
-//
-//}
+		///fill pre PU cleaning branches
+		Matrix cov = bhc_jets[0].GetCovariance();
 		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters_prePUcleaning");
+		vFillBranch(cov.at(0,0),"EtaVar_prePUcleaning");
+		vFillBranch(cov.at(1,1),"PhiVar_prePUcleaning");
+		vFillBranch(cov.at(2,2),"TimeVar_prePUcleaning");
+		vFillBranch(bhc_jets[0].eta(),"EtaCenter_prePUcleaning");
+		vFillBranch(bhc_jets[0].phi(),"PhiCenter_prePUcleaning");
+		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
+		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
-		//below returns empty jet if no subclusters pass PU cut - put in safety for this
-		if(result.GetNRecHits() < 1) return -1;
-		result.SetUserIdx(inputobj.GetUserIdx());
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		addVectors();
-		Matrix cov = bhc_jets[0].GetCovariance();
 		Jet subcl;
 		for(int k = 0; k < scores.size(); k++){
 //cout << "subcl #" << k << " score " << scores[k] << endl;
@@ -1008,13 +1035,22 @@ class BaseSkimmer{
 			double relPhi = subcl_cov.at(1,1) / cov.at(1,1);
 			double relTime = subcl_cov.at(2,2) / cov.at(2,2);
 			double rel_geoavg = pow( (relEta * relPhi * relTime), 1./3.);
-			vvFillBranch(subcl_cov.at(0,0),"EtaVar",idx);
-			vvFillBranch(subcl_cov.at(1,1),"PhiVar",idx);
-			vvFillBranch(subcl_cov.at(2,2),"TimeVar",idx);
-			vvFillBranch(subcl.eta(),"EtaCenter",idx);
-			vvFillBranch(subcl.phi(),"PhiCenter",idx);
-			vvFillBranch(subcl.t(),"TimeCenter",idx);
+			vvFillBranch(subcl_cov.at(0,0),"EtaVar_prePUcleaning",idx);
+			vvFillBranch(subcl_cov.at(1,1),"PhiVar_prePUcleaning",idx);
+			vvFillBranch(subcl_cov.at(2,2),"TimeVar_prePUcleaning",idx);
+			vvFillBranch(subcl.eta(),"EtaCenter_prePUcleaning",idx);
+			vvFillBranch(subcl.phi(),"PhiCenter_prePUcleaning",idx);
+			vvFillBranch(subcl.t(),"TimeCenter_prePUcleaning",idx);
+			vvFillBranch(subcl.e(),"Energy_prePUcleaning",idx);
+			if(scores[k]){
+				vvFillBranch(subcl.t(),"TimeCenter",idx);
+				vvFillBranch(subcl.eta(),"EtaCenter",idx);
+				vvFillBranch(subcl.phi(),"PhiCenter",idx);
+			}
 		}
+		//below returns empty jet if no subclusters pass PU cut - put in safety for this
+		if(result.GetNRecHits() < 1) return -1;
+		result.SetUserIdx(inputobj.GetUserIdx());
 		return 0;
 	}
 

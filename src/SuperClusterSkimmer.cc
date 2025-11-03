@@ -124,6 +124,8 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//skip "total" procCat for always separated hists (id_idx == 1)
 			
 
+			_prod->GetRhIdResMap(_rhIdToRes);
+
 			nscran++;
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
 			//add CMS benchmark variable - isolation information
@@ -134,13 +136,22 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			bhc_sc.GetJetPoints(rh_pts);
 			
 			//int label = GetTrainingLabel(scidx, k, gmm);
-			int label = GetTrainingLabel(scidx, bhc_sc);
+			int label = GetTrainingLabel(scidx, bhc_sc, scs[s]);
 			//make CNN training grid
 			addVector("rh_iEta",false);
 			addVector("rh_iPhi",false);
 			addVector("rh_energy",false);
 			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
 			FillBranches(bhc_sc);
+			
+			//EovP, dR trackSubcl
+			double bestTrackDr, bestde_dr;
+			Matrix mu = scs[s].GetCenter();
+			TrackMatched(mu, bestTrackDr, bestde_dr);
+			if(bestde_dr != 999) bestde_dr = bhc_sc.e()/bestde_dr;
+			
+			vFillBranch(bestde_dr, "EovP_trackSubcl");
+			vFillBranch(bestTrackDr, "dR_trackSubcl");
 			
 			mapobs["event"] = e;
 			mapobs["event_weight"] = 1.;

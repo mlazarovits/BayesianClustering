@@ -83,8 +83,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		void SuperClusterAddBranches(){
 			_obj = "SC";
-			_obsnames.push_back("EovP_trackSubcl");
-			_obsnames.push_back("dR_trackSubcl");
+			_obsnames.push_back("EovP_track");
+			_obsnames.push_back("dR_track");
 			_obsnames.push_back("trueLabel"); //CR designation
 			_obsnames.push_back("predLabel"); //CNN prediction
 			_obsnames.push_back("predScore_physBkg"); //CNN prediction
@@ -93,10 +93,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_obsnames.push_back("swCrossPrime");
 			_obsnames.push_back("swCrossCMS");
 
-			_obsnames.push_back("nRHs_grid");
-			_obsnames.push_back("rh_iEta");
-			_obsnames.push_back("rh_iPhi");
-			_obsnames.push_back("rh_energy");
+			vAddBranch("nRHs_grid","# rhs in CNN input grid");
+
+			vvAddBranch("rh_iEta","local ieta for CNN input grid");
+			vvAddBranch("rh_iPhi","local iphi for CNN input grid");
+			vvAddBranch("rh_energy","rh energy for CNN input grid");
 		}
 
 		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
@@ -245,7 +246,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 
 
-		//void TrackMatched(BasePDFMixture* model, int subcl, double& bestdr, double& bestp){
 		void TrackMatched(Matrix mu, double& bestdr, double& bestp){
 			//do track matching
 			bestdr = 999;
@@ -329,7 +329,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		}
 
-		void FillBranches(Jet bhc_obj){
+		void FillBranches(const Jet& bhc_obj){
 			double E_tot = bhc_obj.E();
 			vFillBranch(E_tot, "Energy");		
 
@@ -353,14 +353,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vFillBranch(cov.at(1,2), "PhiTimeCov");
 
 
-			//EovP, dR trackSubcl
-			double bestTrackDr, bestde_dr;
-			Matrix mu = bhc_obj.GetCenter();
-			TrackMatched(mu, bestTrackDr, bestde_dr);
-			if(bestde_dr != 999) bestde_dr = E_tot/bestde_dr;
-			
-			vFillBranch(bestde_dr, "EovP_trackSubcl");
-			vFillBranch(bestTrackDr, "dR_trackSubcl");
 			
 			vector<double> spikeObs;
 			PointCollection* points = new PointCollection();
@@ -644,7 +636,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		return true;
 	}
 	//int GetTrainingLabel(int nobj, int ncl, BasePDFMixture* gmm){
-	int GetTrainingLabel(int nobj, Jet bhc_sc){
+	int GetTrainingLabel(int nobj, const Jet& bhc_sc, const Jet& og_sc){
 		//labels
 		//unmatched = -1
 
@@ -726,6 +718,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//else in data - could be spikes or BH
 		else{
 			//do track matching for spikes
+			og_sc.GetClusterParams(mu, cov);
 			double bestdr, bestp;
 			TrackMatched(mu,bestdr, bestp);
 			
