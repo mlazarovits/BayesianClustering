@@ -12,7 +12,8 @@
 #include "TPad.h"
 #include "TLatex.h"
 #include "TCanvas.h"
-#include "KUCMSTimeCalibration.hh"
+//#include "KUCMSTimeCalibration.hh"
+#include "KUCMSTimeCalibration/KUCMSTimeCalibration.hh"
 #include <fstream>
 
 class BaseProducer{
@@ -35,6 +36,7 @@ class BaseProducer{
 			_spatial_corr = true;
 			_timecalibTool = new KUCMSTimeCalibration();
 			_timecalibTag = "";
+			_mctype = -1;
 			_mistcuts = false;
 			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
 			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
@@ -62,6 +64,7 @@ class BaseProducer{
 			_spatial_corr = true;
 			_timecalibTag = "";
 			_timecalibTool = new KUCMSTimeCalibration();
+			_mctype = -1;
 			_mistcuts = false;
 			
 			//set year
@@ -74,10 +77,14 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
-			if(_data)
-				_timecalibTag = "EG_EOY_MINI";
-			else
-				_timecalibTag = "DYJetsToLLRunIIFall17AOD";
+			if(_data){
+				_timecalibTag = "r2_ul18";
+				_mctype = 0;
+			}
+			else{
+				_timecalibTag = "r2_ul18_mc";
+				_mctype = 1;
+			}
 				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
@@ -112,6 +119,7 @@ class BaseProducer{
 			_timesmear = false;
 			_spatial_corr = true;
 			_timecalibTool = new KUCMSTimeCalibration();
+			_mctype = -1;
 			_mistcuts = false;
 			//set year
 			string name = file->GetName();
@@ -123,10 +131,14 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
-			if(_data)
-				_timecalibTag = "EG_EOY_MINI";
-			else
-				_timecalibTag = "DYJetsToLLRunIIFall17AOD";
+			if(_data){
+				_timecalibTag = "r2_ul18";
+				_mctype = 0;
+			}
+			else{
+				_timecalibTag = "r2_ul18_mc";
+				_mctype = 1;
+			}
 				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			SetupDetIDsEB();
@@ -184,6 +196,7 @@ class BaseProducer{
 
 		KUCMSTimeCalibration* _timecalibTool;
 		string _timecalibTag;
+		int _mctype;
 
 		void PrintPreselection(){
 			cout << "Default energy transfer factor: " << _gev << endl;

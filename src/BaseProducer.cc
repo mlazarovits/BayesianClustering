@@ -101,6 +101,8 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
+				/*
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
@@ -108,12 +110,13 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				else{
 					calibfactor = 0;	
 				}
-				time = time + timecorr - calibfactor;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
+				*/
+				time = time + timecorr;
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                _base->ECALRecHit_rhz->at(rhidx), time);
+                                _base->ECALRecHit_rhz->at(rhidx), (double)time);
 				//cout << "_spatial_corr " << _spatial_corr << " jet raw time " <<  _base->ECALRecHit_time->at(rhidx) << " saved rh time " << rh.t() << endl;
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
@@ -247,6 +250,8 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 					timecorr = 0;
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
+				/*
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
@@ -255,13 +260,14 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 					calibfactor = 0;	
 				}
 				//cout << "og time " << time;
-				time = time + timecorr - calibfactor;
+				*/
+				time = time + timecorr;
 				//cout << " calibrated time " << time - timecorr << " calib factor " << calibfactor << endl;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                _base->ECALRecHit_rhz->at(rhidx), time);
+                                _base->ECALRecHit_rhz->at(rhidx), (double)time);
                                
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
@@ -406,6 +412,8 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
+				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);
+				/*	
 				double time = _base->ECALRecHit_time->at(rhidx);
 				if(_calib){
                           		calibfactor = GetTimeCalibrationFactor(_base->ECALRecHit_ID->at(rhidx), (int)_base->Evt_run);
@@ -413,12 +421,13 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				else{
 					calibfactor = 0;	
 				}
-				time = time + timecorr - calibfactor;
 				if(_timesmear){
 					time = SmearRecHitTime(_base->ECALRecHit_ampres->at(rhidx), time);
 				}
+				*/
+				time = time + timecorr;
 				rh = JetPoint(_base->ECALRecHit_rhx->at(rhidx), _base->ECALRecHit_rhy->at(rhidx),
-                                _base->ECALRecHit_rhz->at(rhidx), time);
+                                _base->ECALRecHit_rhz->at(rhidx), (double)time);
                               //cout << "rh time " << rh.t() << endl; 
 				//rec hit selection
 				if(fabs(rh.t()) > 20) continue;
