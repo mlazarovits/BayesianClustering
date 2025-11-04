@@ -204,6 +204,7 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 		_obs.at("evt_wt") = _weight;
 		_obs.at("MET") = _base->Met_pt;
 		_obs.at("Flag_globalSuperTightHalo2016Filter") = _base->Flag_globalSuperTightHalo2016Filter;
+		int bhc_pho_idx = 0;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
 			sumE = 0;
@@ -230,13 +231,11 @@ cout << "# jets " << _jets.size() << " # phos " << phos.size() << endl;
 			}
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			Jet bhc_pho;
-			int ret = RunClustering(phos[p], bhc_pho);
+			int ret = RunClustering(phos[p], bhc_pho, true, bhc_pho_idx);
 			if(ret < 0){
-				if(ret == -1){
-					//fill PU hists
-				}
 				continue;
 			}
+			bhc_pho_idx++;
 			rhs.clear();
 			bhc_pho.GetJets(rhs);
 			//get parameters for model
