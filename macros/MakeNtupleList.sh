@@ -58,10 +58,10 @@ elif [ $PD = "SMS-GlGl" ]
 then
 	NAME=CRAB_UserFiles
 	SEL=$2
-elif [ $PD = "SMS" ]
+elif [ $PD = "SMS_Sig" ]
 then
 	NAME=CRAB_UserFiles
-	SEL=$2
+	SEL=$2_$4
 elif [ $PD = "gogoG_Sig" ]
 then
 	NAME=CRAB_UserFiles
