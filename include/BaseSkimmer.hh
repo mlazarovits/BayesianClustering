@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include "SampleWeight.hh"
+#include "JSONTool.hh"
 //frugally deep for loading NN model
 #include "fdeep/fdeep.hpp"
 
@@ -63,8 +64,9 @@ class BaseSkimmer{
 			_tresNoise = 0;
 			_tresStoch = 0;
 			
-			cout << "Default NN model: small3CNN_EMultr.json" << endl;
 
+			_applyLumiMask = true;
+			cout << "Applying lumi mask." << endl;
 			_tree = new TTree("tree","tree");
 
 		};
@@ -104,9 +106,32 @@ class BaseSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
-			cout << "Default NN model: small3CNN_EMultr.json" << endl;
-
 			_tree = new TTree("tree","tree");
+
+			_applyLumiMask = true;
+			//get year to apply lumi mask
+			_jsonfile = "";
+			if(_data){
+				if(filename.find("Run2017") != string::npos)
+					_jsonfile = "Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
+				else if(filename.find("Run2018") != string::npos)
+					_jsonfile = "Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
+				else if(filename.find("Run2022") != string::npos)
+					_jsonfile = "Cert_Collisions2022_355100_362760_Golden.json";
+				else if(filename.find("Run2023") != string::npos)
+					_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
+				else{
+					cout << "Golden JSON not specified for year of sample " << filename << endl;
+				}
+				if(_jsonfile != ""){
+					cout << "Applying lumi mask " << _jsonfile << endl;
+					_jsonTool.BuildMap(_jsonfile);
+
+				}
+
+			}
+
+
 
 		}
 		
@@ -140,14 +165,35 @@ class BaseSkimmer{
 			else
 				_data = true;
 			
-			cout << "Default NN model: small3CNN_EMultr.json" << endl;
-			
 			_cell = acos(-1)/180;
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
 			_tree = new TTree("tree","tree");
+			_applyLumiMask = true;
+			//get year to apply lumi mask
+			_jsonfile = "";
+			if(_data){
+				if(flist.find("R17") != string::npos)
+					_jsonfile = "Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
+				else if(flist.find("R18") != string::npos)
+					_jsonfile = "Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
+				else if(flist.find("R22") != string::npos)
+					_jsonfile = "Cert_Collisions2022_355100_362760_Golden.json";
+				else if(flist.find("R23") != string::npos)
+					_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
+				else{
+					cout << "Golden JSON not specified for year of sample " << flist << endl;
+				}
+				if(_jsonfile != ""){
+					cout << "Applying lumi mask " << _jsonfile << endl;
+					_jsonTool.BuildMap(_jsonfile);
+
+				}
+
+			}
+
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -344,7 +390,9 @@ class BaseSkimmer{
 		void SetBHCAlpha(double a){ _alpha = a; }
 		void SetEMAlpha(double a){ _emAlpha = a; }
 		void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
-
+		JSONTool _jsonTool;
+		string _jsonfile;
+		bool _applyLumiMask;
 
 		TTree* _tree;
 		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
@@ -353,6 +401,8 @@ class BaseSkimmer{
 		map<string, vector<double>> _vobs;
 		map<string, vector<vector<double>>> _vvobs;
 		string _obj;	
+
+		void TurnOffLumiMask(){ _applyLumiMask = false; cout << "Not applying lumi mask." << endl; }
 
 
 		double _c = 29.9792458; // speed of light in cm/ns
@@ -434,12 +484,7 @@ class BaseSkimmer{
 			double norm = 0;
 			double res_tot = 0;
 			for(int i = 0; i < pts->GetNPoints(); i++){
-				double e = pts->at(i).w()/_gev;
 				double res, w;
-				if(fabs(e) < 1e-20){
-					e = 0;
-					res = 0;
-				}
 				else{
 					//res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
 					res = _rhIdToRes.at(pts->at(i).GetUserIdx());
@@ -447,11 +492,12 @@ class BaseSkimmer{
 				if(seed_id != -1 && pts->at(i).GetUserIdx() == seed_id){
 					return pts->at(i).at(2) / (res) * sqrt(2.);
 				}
-				w = (1/res)*e;
-				t_tot += e*pts->at(i).at(2);
-cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()/_gev << " res " << res << endl;
-				res_tot += e*res;
-				norm += e;
+				//using inverse variances as optimal weights (adding in parallel)
+				w = (1/res);
+				t_tot += w*pts->at(i).at(2);
+//cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()/_gev << " res " << res << endl;
+				res_tot += w*res;
+				norm += w;
 			}
 			t_tot /= norm;
 			res_tot /= norm;
@@ -925,7 +971,7 @@ cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel = fdeep::load_model("config/json/small3CNN_EMultr.json");
+		fdeep::model _nnmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json");
 		void SetNNModel(string fname){
 			_nnmodel = fdeep::load_model(fname);
 		}
