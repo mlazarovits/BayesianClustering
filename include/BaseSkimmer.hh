@@ -1038,7 +1038,6 @@ class BaseSkimmer{
 	void SetVerbosity(int v){_verb = v;}
 
 
-	//int RunClustering(vector<Jet>& inputs, BayesPoint PV, Jet& result, bool remove = false){
 	int RunClustering(Jet inputobj, Jet& result, bool remove = false, int idx = -1){
 	//remove == false - downweight PU clusters
 	//remove == true - fully remove PU clusters
@@ -1072,8 +1071,7 @@ class BaseSkimmer{
 		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		vector<bool> scores; //PU discriminator scores of subclusters
-		//result = bhc_jets[0].CleanOutPU(scores, true);
-		result = bhc_jets[0];
+		result = bhc_jets[0].CleanOutPU(scores, true);
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		addVectors();
