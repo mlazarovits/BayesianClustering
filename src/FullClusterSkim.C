@@ -60,6 +60,7 @@ int main(int argc, char *argv[]){
 	bool spatcorr = true;
 	bool cleansubcls = false;
 	bool cleanmist = false;
+	bool applyLumiMask = true;
 
 	double minpt_isobkg = 50;
 	double minht_isobkg = 50;
@@ -242,6 +243,10 @@ int main(int argc, char *argv[]){
 			iso = false;
 			cout << "Not applying isolation to photons" << endl;
    		}
+		if(strncmp(argv[i],"--noLumiMask", 12) == 0){
+			applyLumiMask = false;
+			cout << "Not applying lumi mask." << endl;
+   		}
 		if(strncmp(argv[i],"--isoBkg", 8) == 0){
 			isobkg = true;
 			cout << "Selecting photons with isolated background cuts" << endl;
@@ -302,6 +307,7 @@ int main(int argc, char *argv[]){
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
    		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
    		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
+   		cout << "   --noLumiMask                         do not apply lumi mask (default = true, lumi mask on)" << endl;
    		cout << "   --cleanSubclusters                   clean subclusters from jet time (default = false, off - jets only)" << endl;
    		cout << "   --cleanMist                          clean mist rhs from jets (default = false, off - jets only)" << endl;
    		cout << "   --smear                              turns on smearing data (default = false, off - measurement error on)" << endl;
@@ -522,6 +528,7 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetMistClean(cleanmist);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
+		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 		//do only mm/true jet pv times
 		skimmer.Skim();
 	}
@@ -552,6 +559,7 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
+		if(!applyLumiMask) skimmer.TurnOffLumiMask();
         	skimmer.Skim();
 	}
 	else if(obj == 2){
@@ -574,6 +582,7 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear);
 		skimmer.SetBeamHaloFilter(bh);
+		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 	
 		skimmer.SetIsoBkgSel(isobkg);
 		if(isobkg){	

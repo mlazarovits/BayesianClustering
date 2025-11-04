@@ -10,6 +10,11 @@
 //make cluster param histograms
 //if specified, skim from events i to j
 void JetSkimmer::Skim(){
+	if(_jsonfile != "" && _applyLumiMask){
+		_jsonfile = "config/json/"+_jsonfile;
+		cout << "Applying lumi mask " << _jsonfile << endl;
+		_jsonTool.BuildMap(_jsonfile);
+	}
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy mixture model with pre-clustered AK4 jets (time calculated using MM components + naive methods)" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
@@ -42,7 +47,7 @@ void JetSkimmer::Skim(){
 
 
 	//set NN model + features - can move to .C for more flexibility
-	SetNNModel("config/json/small3CNN_EMultr.json");
+	SetNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 	//SetNNFeatures();
 	_nnfeatures = {"EMultr"};
 
@@ -51,8 +56,14 @@ void JetSkimmer::Skim(){
 	double phogev = _gev;//1./30.;
 	_prod->PrintPreselection();
 	for(int i = _evti; i < _evtj; i+=_skip){
-		//do data MET selection
 		_base->GetEntry(i);
+		//apply lumi mask
+		if(_applyLumiMask){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+				cout << "Skipping event " << i << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
+				continue;
+			}
+		}
 		if(_BHFilter != notApplied){
                         if(_BHFilter == applied){
                                 //apply beam halo filter - other noise filters needed for full Run2 recommendations

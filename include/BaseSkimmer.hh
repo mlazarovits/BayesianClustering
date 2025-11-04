@@ -123,11 +123,6 @@ class BaseSkimmer{
 				else{
 					cout << "Golden JSON not specified for year of sample " << filename << endl;
 				}
-				if(_jsonfile != ""){
-					cout << "Applying lumi mask " << _jsonfile << endl;
-					_jsonTool.BuildMap(_jsonfile);
-
-				}
 
 			}
 
@@ -185,11 +180,6 @@ class BaseSkimmer{
 					_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
 				else{
 					cout << "Golden JSON not specified for year of sample " << flist << endl;
-				}
-				if(_jsonfile != ""){
-					cout << "Applying lumi mask " << _jsonfile << endl;
-					_jsonTool.BuildMap(_jsonfile);
-
 				}
 
 			}
@@ -485,10 +475,7 @@ class BaseSkimmer{
 			double res_tot = 0;
 			for(int i = 0; i < pts->GetNPoints(); i++){
 				double res, w;
-				else{
-					//res = _tresCte*_tresCte + _tresStoch*_tresStoch/(e) + _tresNoise*_tresNoise/(e*e);
-					res = _rhIdToRes.at(pts->at(i).GetUserIdx());
-				}
+				res = _rhIdToRes.at(pts->at(i).GetUserIdx());
 				if(seed_id != -1 && pts->at(i).GetUserIdx() == seed_id){
 					return pts->at(i).at(2) / (res) * sqrt(2.);
 				}

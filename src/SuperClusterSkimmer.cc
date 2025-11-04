@@ -6,6 +6,12 @@
 #include <TH2D.h>
 //make cluster param histograms
 void SuperClusterSkimmer::Skim(){
+	if(_jsonfile != "" && _applyLumiMask){
+		_jsonfile = "config/json/"+_jsonfile;
+		cout << "Applying lumi mask " << _jsonfile << endl;
+		_jsonTool.BuildMap(_jsonfile);
+
+	}
 
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy NlnN full BHC with supercluster objects" << endl;
@@ -64,6 +70,15 @@ void SuperClusterSkimmer::Skim(){
 	int nBH = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
+		//apply lumi mask
+		if(_applyLumiMask){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
+				continue;
+			}
+		}
+
+
 		_obs.at("evt") = (double)e;
 		_obs.at("evt_wt") = _weight;
 		_obs.at("MET") = _base->Met_pt;

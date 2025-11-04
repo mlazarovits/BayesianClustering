@@ -6,6 +6,12 @@
 #include <TH2D.h>
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
+	if(_jsonfile != "" && _applyLumiMask){
+		_jsonfile = "config/json/"+_jsonfile;
+		cout << "Applying lumi mask " << _jsonfile << endl;
+		_jsonTool.BuildMap(_jsonfile);
+
+	}
 	//set histogram weights for HT slices, etc
 	_weight = 1;
 	if(_data){ _weight = 1.; }
@@ -119,6 +125,13 @@ void PhotonSkimmer::Skim(){
 	int phoidx, scidx;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
+		//apply lumi mask
+		if(_applyLumiMask){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
+				continue;
+			}
+		}
 		cout << "evt: " << e << " of " << _nEvts;
 		if(_BHFilter != notApplied){
 		cout << "BH filter applied - flag " << _base->Flag_globalSuperTightHalo2016Filter << " BHFilter " << _BHFilter << endl;
