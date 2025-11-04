@@ -79,11 +79,11 @@ class BaseProducer{
 			_calib = true;
 			if(_data){
 				_timecalibTag = "r2_ul18";
-				_mctype = 0;
+				_mctype = 1;
 			}
 			else{
 				_timecalibTag = "r2_ul18_mc";
-				_mctype = 1;
+				_mctype = 0;
 			}
 				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
@@ -133,11 +133,11 @@ class BaseProducer{
 			_calib = true;
 			if(_data){
 				_timecalibTag = "r2_ul18";
-				_mctype = 0;
+				_mctype = 1;
 			}
 			else{
 				_timecalibTag = "r2_ul18_mc";
-				_mctype = 1;
+				_mctype = 0;
 			}
 				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
