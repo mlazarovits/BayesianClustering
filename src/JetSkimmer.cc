@@ -10,7 +10,7 @@
 //make cluster param histograms
 //if specified, skim from events i to j
 void JetSkimmer::Skim(){
-	if(_jsonfile != "" && _applyLumiMask){
+	if(_jsonfile != "" && _applyLumiMask && _data){
 		_jsonfile = "config/json/"+_jsonfile;
 		cout << "Applying lumi mask " << _jsonfile << endl;
 		_jsonTool.BuildMap(_jsonfile);
@@ -59,7 +59,7 @@ void JetSkimmer::Skim(){
 		_base->GetEntry(i);
 		//apply lumi mask
 		if(_applyLumiMask){
-			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
 				cout << "Skipping event " << i << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}

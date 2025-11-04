@@ -6,7 +6,7 @@
 #include <TH2D.h>
 //make cluster param histograms
 void PhotonSkimmer::Skim(){
-	if(_jsonfile != "" && _applyLumiMask){
+	if(_jsonfile != "" && _applyLumiMask && _data){
 		_jsonfile = "config/json/"+_jsonfile;
 		cout << "Applying lumi mask " << _jsonfile << endl;
 		_jsonTool.BuildMap(_jsonfile);
@@ -127,7 +127,7 @@ void PhotonSkimmer::Skim(){
 		_base->GetEntry(e);
 		//apply lumi mask
 		if(_applyLumiMask){
-			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
 				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
