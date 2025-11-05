@@ -101,9 +101,9 @@ void SuperClusterSkimmer::Skim(){
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
 		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
-		if(!evtfilters) continue;
+		if(!evtfilters){cout << "skipping event - failed event filters" << endl; continue;}
 
-		if(!_passGJetsEvtSel && (_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos)) continue;
+		if(!_passGJetsEvtSel && (_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){ cout << "skipping event - failed GJets CR selection" << endl; continue;}
 		
 		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
 		
