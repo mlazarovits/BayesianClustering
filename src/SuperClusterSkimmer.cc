@@ -6,7 +6,7 @@
 #include <TH2D.h>
 //make cluster param histograms
 void SuperClusterSkimmer::Skim(){
-	if(_jsonfile != "" && _applyLumiMask){
+	if(_jsonfile != "" && _applyLumiMask && _data){
 		_jsonfile = "config/json/"+_jsonfile;
 		cout << "Applying lumi mask " << _jsonfile << endl;
 		_jsonTool.BuildMap(_jsonfile);
@@ -41,7 +41,7 @@ void SuperClusterSkimmer::Skim(){
 	if(_debug){ _oskip = 1000; }
 	double sumE;
 
-	
+	if(_isocuts) cout << "Applying isolation for SCs matched to photons." << endl;	
 	//set iso cuts
 	if(_isocuts) _prod->SetIsoCut();
 	//set energy weight transfer factor
@@ -49,6 +49,10 @@ void SuperClusterSkimmer::Skim(){
 	_prod->ApplyFractions(_applyFrac);
 	
 	_prod->PrintPreselection();
+	cout << "Jet selection for GJets CR" << endl;
+	_jetprod->PrintPreselection();
+	cout << "Minimum ht: " << _minHt_isoBkg << endl;
+	cout << "Maximum met: " << _maxMet_isoBkg << endl;
 	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;
@@ -72,28 +76,33 @@ void SuperClusterSkimmer::Skim(){
 		_base->GetEntry(e);
 		//apply lumi mask
 		if(_applyLumiMask){
-			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != ""){
+			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
 				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
 		}
 
+		//event filters - true is good event
+		FillBranch(_base->Flag_BadChargedCandidateFilter ,"Flag_BadChargedCandidateFilter");
+		FillBranch(_base->Flag_BadPFMuonDzFilter ,"Flag_BadPFMuonDzFilter");
+		FillBranch(_base->Flag_BadPFMuonFilter ,"Flag_BadPFMuonFilter");
+		FillBranch(_base->Flag_EcalDeadCellTriggerPrimitiveFilter ,"Flag_EcalDeadCellTriggerPrimitiveFilter");
+		FillBranch(_base->Flag_HBHENoiseFilter ,"Flag_HBHENoiseFilter");
+		FillBranch(_base->Flag_HBHENoiseIsoFilter ,"Flag_HBHENoiseIsoFilter");
+		FillBranch(_base->Flag_ecalBadCalibFilter ,"Flag_ecalBadCalibFilter");
+		FillBranch(_base->Flag_goodVertices ,"Flag_goodVertices");
+		FillBranch(_base->Flag_hfNoisyHitsFilter ,"Flag_hfNoisyHitsFilter");
+		FillBranch(_base->Flag_globalSuperTightHalo2016Filter ,"Flag_globalSuperTightHalo2016Filter");
 
-		_obs.at("evt") = (double)e;
-		_obs.at("evt_wt") = _weight;
-		_obs.at("MET") = _base->Met_pt;
-		_obs.at("Flag_globalSuperTightHalo2016Filter") = _base->Flag_globalSuperTightHalo2016Filter;
+		FillBranch((double)e,"evt");
+		FillBranch(_weight,"evt_wt");
+		FillBranch(_base->Met_pt,"MET");
+		SetGJetsCR_EvtSel(e);
+		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
+		
 		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
-        	if(_BHFilter != notApplied){
-        	        if(_BHFilter == applied){
-        	                //apply beam halo filter - other noise filters needed for full Run2 recommendations
-        	                if(!_base->Flag_globalSuperTightHalo2016Filter) continue;
-        	        }
-        	        else{
-        	                //inversely apply beam halo filter - other noise filters needed for full Run2 recommendations
-        	                if(_base->Flag_globalSuperTightHalo2016Filter) continue;
-        	        }
-        	}
+		
+
 		_prod->GetTrueSuperClusters(scs, e, _gev);
 		//PV info
 		pvx = _base->PV_x;
@@ -108,11 +117,12 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 		//loop over selected scs
 		int jet_scIdx = 0;
 		int scidx;
+		if(nSC < 1) continue;	
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			scs[s].GetJets(rhs);
-			vFillBranch((double)rhs.size(), "nRHs_ogSC");
+
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(rhs.size() < 1){ cout << "sc #" << s << " has " << rhs.size() << " rhs " << endl; continue; }
@@ -129,7 +139,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			}
 
 			Jet bhc_sc;
-			int ret = RunClustering(scs[s], bhc_sc, true, s); //fully remove PU clusters
+			int ret = RunClustering(scs[s], bhc_sc, true, jet_scIdx); //fully remove PU clusters
 			if(ret < 0){
 				continue;
 			}
@@ -140,6 +150,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//skip "total" procCat for always separated hists (id_idx == 1)
 			
 
+			vFillBranch((double)rhs.size(), "nRHs_ogSC");
 			_prod->GetRhIdResMap(_rhIdToRes);
 
 			nscran++;
@@ -151,14 +162,13 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//get jet points (rhs with IDs) for CNN grid
 			bhc_sc.GetJetPoints(rh_pts);
 			
-			//int label = GetTrainingLabel(scidx, k, gmm);
+			FillBranches(bhc_sc);
 			int label = GetTrainingLabel(scidx, bhc_sc, scs[s]);
 			//make CNN training grid
 			addVector("rh_iEta",false);
 			addVector("rh_iPhi",false);
 			addVector("rh_energy",false);
 			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
-			FillBranches(bhc_sc);
 			PointCollection* points = GetPointsFromJet(scs[s]);
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));
 			vFillBranch(timesig_seed, "timeSignificanceSeed");			

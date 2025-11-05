@@ -25,14 +25,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
-			_jetprod = nullptr;
 
-			//reqs on iso bkg sample
-			_isoBkgSel = false;
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
 
 			_weight = 1;
 			_cell = 0;
@@ -53,10 +46,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_prod = new PhotonProducer(file);
 			_fname = file->GetName();
 
-			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-			string fname = file->GetName();
-			TFile* f2 = TFile::Open(fname.c_str());
-			_jetprod = new JetProducer(f2);
 			
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -72,13 +61,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_gev = 1/30.;
 			_applyFrac = false;
 			
-			//reqs on iso bkg sample
-			_isoBkgSel = false;
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
-
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		}
 		
@@ -94,9 +76,6 @@ class PhotonSkimmer : public BaseSkimmer{
                         if(ch == nullptr) return;
 			_prod = new PhotonProducer(ch);
 			_fname = filelist;
-			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-                        TChain* ch2 = MakeTChain(filelist);
-			_jetprod = new JetProducer(ch2);
 			
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -111,13 +90,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			_emAlpha = 1e-5;
 			_gev = 1/30.;
 			_applyFrac = false;
-			
-			//reqs on iso bkg sample
-			_isoBkgSel = false;
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
 			
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
@@ -150,7 +122,6 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		void PhotonAddBranches(){
 			_obj = "pho";
-			_obsnames.push_back("nSubclusters_prePUcleaning");
 			_obsnames.push_back("Pt");
 			//sw+
 			_obsnames.push_back("swCP");
@@ -182,12 +153,14 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_obsnames.push_back("ecalRHSumEtConeDR04");
                 	//hadTowOverEM
                 	_obsnames.push_back("hadTowOverEM");
-			_obsnames.push_back("trueLabel"); //CR designation
-			_obsnames.push_back("predLabel"); //DNN prediction
-			_obsnames.push_back("predScore_isoBkg"); //DNN prediction
-			_obsnames.push_back("predScore_nonIsoBkg"); //DNN prediction
-		}
 
+			vAddBranch("predScore_isoBkg","score for iso bkg designation from DNN"); //DNN prediction
+			vAddBranch("predScore_nonIsoBkg","score for non iso bkg designation from DNN"); //DNN prediction
+			vAddBranch("trueLabel","true DNN label of photon");
+			
+		}
+		//obsnames will save as branches
+		//inputs will save to training CSV
 
 
 		void SetObs(){
@@ -201,10 +174,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			//supercl
 			_inputs.push_back("object");
 			for(int o = 0; o < _obsnames.size(); o++){
-				if(_obsnames[o] == "PUscores") continue;
-				if(_obsnames[o].find("nSubclusters") != string::npos) continue;
-				if(_obsnames[o].find("predScore") != string::npos) continue;
-				if(_obsnames[o].find("Label") != string::npos) continue;
 				_inputs.push_back(_obsnames[o]);
 			}
 			_inputs.push_back("2017_presel");
@@ -562,9 +531,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		return i != 0 && (std::abs(i) <= max_ieta) && (j >= min_iphi) && (j <= max_iphi);
 	}
 
-	vector<Jet> _jets;
 	//used for sig/bkg MVA, iso/!iso MVA
-	int GetTrainingLabel(int phoidx, Jet bhc_pho){
+	int GetTrainingLabel(int phoidx, const Jet& bhc_pho, const Jet& og_pho){
 		//labels
 		//unmatched = -1
 
@@ -578,173 +546,66 @@ class PhotonSkimmer : public BaseSkimmer{
 		//BH = 2
 		//spike = 3
 		
-		//pt asymmetry bw photon + jet system
-//cout << "# jets " << _jets.size() << endl;
-		Jet jet_sys = VectorSum(_jets);
-		Jet jet1, jet2; //jet2 is sublead system
-//cout << "pho pt " << bhc_pho.pt() << " pho e " << bhc_pho.E() << " jets pt " << jet_sys.pt() << " jets e " << jet_sys.E() << endl;	
-		if(jet_sys.e() > bhc_pho.e()){
-			jet1 = jet_sys;
-			jet2 = bhc_pho;
-		}
-		else{
-			jet1 = bhc_pho;
-			jet2 = jet_sys;
-		}
-		double easym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
-		
-		bool minpt, easym;
-		if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) minpt = false;
-		else minpt = true; 
-		if(jet2.e() / jet1.e() < easym_thresh) easym = false;
-		else easym = true;
-		
-
-		Matrix mu, cov;
-		bhc_pho.GetClusterParams(mu, cov);
-		double ec, pc, tc;
-		ec = mu.at(0,0);
-		pc = mu.at(1,0);
-		tc = mu.at(2,0);
-
-		vector<Matrix> eigvecs;
-		vector<double> eigvals;
-		cov.eigenCalc(eigvals,eigvecs);
-		double majLength = sqrt(eigvals[2]);
-		if(eigvals[1] < 0) cout << "negative eigenvalue " << eigvals[1] << endl;
-		double minLength; 
-		if(eigvals[1] < 0) minLength = -sqrt(-eigvals[1]);
-		else minLength = sqrt(eigvals[1]);	
-		
-		double rot3D = Rotundity(cov);
-		Matrix space_mat(2,2);
-		Get2DMat(cov,space_mat);
-		double phi2D = PhiEll(space_mat);			
-		double rot2D = Rotundity(space_mat);
-		
 		//bool trksum, ecalrhsum, htowoverem, iso;	
+		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 		int label = -1;
-cout << "phoidx " << phoidx << " isocuts " << _isocuts << endl;
+		bool isoBkgSel = GJetsCR_ObjSel(og_pho, true);
+		vFillBranch((double)isoBkgSel,"PassGJetsCR_Obj");
 		//MC
 		if(!_data){
-			//matched to photon
-			if(phoidx != -1){
-                		//trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
-                		//ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
-                		//htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
-                		//iso = trksum && ecalrhsum && htowoverem;
-//cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " iso " << iso << " isoBkgSel " << _isoBkgSel << endl;
-cout << "genmatch idx " << _base->Photon_genIdx->at(phoidx) << " isoBkgSel " << _isoBkgSel << endl;
-				if(_base->Photon_genIdx->at(phoidx) != -1){
-					int genidx = _base->Photon_genIdx->at(phoidx);
-                			//needs to be isolated
-					/*
-					if(_isocuts){
-						if(!iso) label = -1;
-						else{
-							//sig vs bkg
-							//iso bkg = 0
-							//obj selection for iso bkg
-							if(_base->Gen_susId->at(genidx) == 22)
-								label = 0;
-							else{
-								//sig vs bkg
-								//iso bkg = 4
-								//obj selection for iso bkg
-								if(_isoBkgSel){
-									if(_base->Photon_pt->at(phoidx) < _minPhoPt_isoBkg) label = -1; //failed pho pt req for iso bkg
-									//pt asymmetry bw photon + jet - put in if modelling bw data/MC is not good enough
-									else{
-										label = 4; //selection for iso bkg is on (event sel)
-									}
-								}
-								else label = -1; //removal of GMSB !sig photons is done in data processing for NN
-							}	
-						}
-					}
-					*/
-					//non isolated bkg
-					if(_oname.find("QCD") != string::npos && !_isoBkgSel)
-						label = 6;
-					//isolated bkg
-					else if(_isoBkgSel){
-						if(minpt && easym) label = 4; //failed pho pt req for iso bkg
-						else{
-							label = -1; //failed pho pt req and/or ptasym req 
-						}
-					}
-					//signal
-					else{
-						//photon from C2
-						if(_base->Gen_susId->at(genidx) == 22)
-							label = 0;
-						//photon from hard subprocess - isolated sig 
-						else if(_base->Gen_status->at(genidx) == 23)
-							label = 5;
-						else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
-							label = 5;
-						else
-							label = 1; //removal of GMSB !sig photons is done in data processing for NN
-					}
-					//}
-				}
-				else //no gen match
-					label = -1;
+                	//trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
+                	//ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
+                	//htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
+                	//iso = trksum && ecalrhsum && htowoverem;
+			if(_base->Photon_genIdx->at(phoidx) != -1){
+				int genidx = _base->Photon_genIdx->at(phoidx);
+                		//needs to be isolated
+				//non isolated bkg
+				if(_oname.find("SMS") != string::npos){
+					//photon from C2
+					if(_base->Gen_susId->at(genidx) == 22)
+						label = 0;
+					//photon from hard subprocess - isolated sig 
+					else if(_base->Gen_status->at(genidx) == 23)
+						label = 5;
+					else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
+						label = 5;
+					else
+						label = 1; //removal of GMSB !sig photons is done in data processing for NN
 
+				}
+				//isolated bkg
+				if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+					label = 4;
+				else if(!isoBkgSel && _oname.find("QCD") != string::npos && evtfilters)
+					label = 6;
+				else
+					label = -1;
 			}
-			else
+			else //no gen match
 				label = -1;
 		}
 		//else in data - could be spikes or BH
 		else{
-			if(!_isocuts){
-				if(phoidx == -1){
-					//not matched to a photon so cant be bkg
-					label = -1;
-				}
-				else{
-                			//trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
-                			//ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
-                			//htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
-                			//iso = trksum && ecalrhsum && htowoverem;
-                			//if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
-					//iso bkg = 4
-					
-					//obj selection for iso bkg
-					//non isolated bkg
-					if(_oname.find("JetHT") != string::npos && !_isoBkgSel)
-						label = 6;
-					//isolated bkg
-					else if(_isoBkgSel){
-						if(minpt && easym) label = 4; //failed pho pt req for iso bkg
-						else{
-							label = -1; //failed pho pt req and/or ptasym req 
-						}
-					}
-					else label = -1; 
-					
-		
-				}
-			}
-			else{
-				label = -1; //isolation shouldn't be applied for training MVA
-			}
-		
+			//iso bkg = 4
+			
+			//obj selection for iso bkg
+			//non isolated bkg
+			//isolated bkg
+			//isolated bkg
+			if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+				label = 4;
+			else if(!isoBkgSel && _oname.find("QCD") != string::npos && evtfilters)
+				label = 6;
+			else label = -1; 
 		}
 		return label;
 	}
 
 
-	void SetMinPt_IsoBkg(double p){ _minPhoPt_isoBkg = p; _prod->SetMinPt(p); }
-	void SetMinHt_IsoBkg(double p){ _minHt_isoBkg = p; }
-	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; _jetprod->SetMinPt(p); }
-	void SetMaxMet_IsoBkg(double p){ _maxMet_isoBkg = p; }
-	void SetIsoBkgSel(bool b){ _isoBkgSel = b;}
 
 	private:
-		JetProducer* _jetprod;
-		double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
-		bool _isoBkgSel;
 		string _fname; 
 
 };

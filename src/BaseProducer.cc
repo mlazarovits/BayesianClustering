@@ -337,7 +337,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 	vector<JetPoint> sc_rhs;
 //cout << "producer found " << nSCs << " scs from ntuple for event" << endl;
 	for(int sc = 0; sc < nSCs; sc++){
-		cout << "sc #" << sc << endl;
+		//cout << "sc #" << sc << endl;
                 phi = _base->SuperCluster_phi->at(sc);
                 eta = _base->SuperCluster_eta->at(sc);
 		theta = 2*atan2(1,exp(eta));
@@ -370,7 +370,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		double rhe;
 		int nrhs = 0;
 		vector<unsigned int> jrhids;
-		cout << rhs.size() <<  " rhs in SC " << rhids.size() << " rhs in ECAL" << endl;
+		//cout << rhs.size() <<  " rhs in SC " << rhids.size() << " rhs in ECAL" << endl;
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
 //cout << "rhid " << rhid << endl;
@@ -452,7 +452,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
                                 rh.SetRecHitId(_base->ECALRecHit_ID->at(rhidx));
 				//specify if this rechit as tripped a gain switch - if so, the time will be assigned a large uncertainty
 				if(_base->ECALRecHit_hasGS1->at(rhidx) || _base->ECALRecHit_hasGS6->at(rhidx)){
-				cout << "RH HAS INVALID TIME with weight " << rh.GetWeight() << endl;
+					//cout << "RH HAS INVALID TIME with weight " << rh.GetWeight() << endl;
 					rh.SetInvalidTime();
 				}
 	//cout << "adding rh with rhidx " << rhidx << " x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) << " phi " << _base->ECALRecHit_phi->at(rhidx) << " nrhs so far " << nrhs << " r " << r << " rhid " << rhid << " counts in SC " << count(rhs.begin(), rhs.end(), rhid) << " counts in ECAL " << count(rhids.begin(), rhids.end(), rhid) << endl;

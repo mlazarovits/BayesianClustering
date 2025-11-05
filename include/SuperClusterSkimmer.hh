@@ -77,7 +77,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
-			_prod->PrintPreselection();
 		}
 
 
@@ -96,8 +95,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vAddBranch("nRHs_grid","# rhs in CNN input grid");
 			vAddBranch("nRHs_ogSC","# of rhs in original SC");
 			vAddBranch("nRHs_bhcSC","# of rhs in BHC SC");
-			vAddBranch("timeSignificanceSeed","time significance from seed rh in original SC");
-			vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
+			vAddBranch("seedTimeSignificance","time significance from seed rh in original SC");
+			vAddBranch("seedTime","time from seed rh in original SC");
 
 			vvAddBranch("rh_iEta","local ieta for CNN input grid");
 			vvAddBranch("rh_iPhi","local iphi for CNN input grid");
@@ -663,114 +662,86 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//use seed time from original SC
 		unsigned int seed_id = _base->SuperCluster_XtalSeedID->at(og_sc.GetUserIdx());
 		//time significance to enhance purity of det bkg CRs
-		//using seed of original SC
+		//using seed of original SC for time and time significance
 		PointCollection* points = GetPointsFromJet(og_sc);
 		double tsig = CalcTimeSignificance(points, seed_id);
+		tc = -999;
+		for(int n = 0; n < points->GetNPoints(); n++){
+			if(points->at(n).GetUserIdx() == seed_id){
+				tc = points->at(n).at(2);
+				break;
+			}
+		}
+		vFillBranch(tc,"seedTime");
+		vFillBranch(tsig,"seedTimeSignificance");
+		
+		//do track matching for spikes
+		og_sc.GetClusterParams(mu, cov);
+		double bestdr, bestp;
+		TrackMatched(mu,bestdr, bestp);
+		
 		bool trksum, ecalrhsum, htowoverem, iso;	
 		//for BH definition
-		bool pcFilter;
 		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
-		pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
-	
+		bool pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
+		bool pcFilter_wide = (pc < 0.3 || (acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) || 2*acos(-1) - 0.3 < pc );
+		bool spikeTime = (tc <= -10);
+		bool bhTime = (-7 < tc && tc <= -2);
+		bool physBkgTime = (-0.5 < tc && tc <= 0.5); 
+		bool detBkgTimeSig = (tsig < -3);
+		bool physBkgTimeSig = (-1 < tsig && tsig < 1);
+		bool spikeTrackMatch = (bestdr <= 0.02);
+		bool notSpikeTrackVeto = (bestdr > 0.03);
+		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 
 	
 		int label = -1;
-		//signal
-		if(!_data){
-			//find photon associated with subcluster
+		bool passGJetsObjSel = GJetsCR_ObjSel(og_sc,false);
+		//in data - could be spikes or BH
+		if(_data){
+			//early times, phi left/right for BH
+			//if subcl is spike
+//cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
-			//matched to photon
-			if(phoidx != -1){
+			if(phoidx == -1){
+				//not not matched to an e/gamma candidate so cant be det bkg 
+				label = -1;
+				iso = 0;
+			}
+			else{ //matched to e/gamma candidate
                 		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
-				if(_base->Photon_genIdx->at(phoidx) != -1){
-					int genidx = _base->Photon_genIdx->at(phoidx);
-                			//needs to be isolated
-					if(_isocuts){
-						if(!iso) label = -1;
-						else{
-							if(_base->Gen_susId->at(genidx) == 22)
-								label = 0;
-							else
-								label = 1; //removal of GMSB !sig photons is done in data processing for NN	
-						}
-					}
-					//not applying isolation - use for iso network
-					else{
-						//photon from C2
-						if(_base->Gen_susId->at(genidx) == 22)
-							label = 0;
-						//photon from hard subprocess - isolated 
-						else if(_base->Gen_status->at(genidx) == 23)
-							label = 4;
-						else if(_base->Gen_motherIdx->at(genidx) != -1 && _base->Gen_status->at(_base->Gen_motherIdx->at(genidx)) == 23)
-							label = 4;
-						//photons from QCD are all nonisolated - need to convert to 1 for other trainings
-						else if(_oname.find("QCD") != string::npos)
-							label = 5;
-						else
-							label = 1; //removal of GMSB !sig photons is done in data processing for NN	
+                		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
+				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
+				if(_base->Photon_pixelSeed->at(phoidx)){ //true if has tracker seed
+					//spike
+					if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
+						label = 3;
 					}
 				}
-				else //no gen match
-					label = -1;
-
-			}
-			else
-				label = -1;
-		}
-		//else in data - could be spikes or BH
-		else{
-			//do track matching for spikes
-			og_sc.GetClusterParams(mu, cov);
-			double bestdr, bestp;
-			TrackMatched(mu,bestdr, bestp);
-			
-			//early times, phi left/right for BH
-			//if subcl is spike
-//cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
-			if(bestdr <= 0.02 && tc <= -8 && !(pc < 0.3) && !(acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) && !(2*acos(-1) - 0.3 < pc && tsig < -3)){
-				label = 3;
-			}
-			else{
-				if(_isocuts){
-					int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
-					if(phoidx == -1){
-						//not spikes, but also not matched to a photon so cant be BH or physics bkg
-						label = -1;
-						iso = 0;
-					}
-					else{
-                				trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
-                				ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
-                				htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
-                				iso = trksum && ecalrhsum && htowoverem;
-//cout << "pass iso? " << iso << endl;
-                				if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
-						//for physics bkg + BH match to photons + apply isolation criteria
-						//if subcl is BH - need to match to photon and apply isolation
-						if((tc > -7 && tc <= -2) && pcFilter && iso && bestdr > 0.03)	
-							label = 2;
-						//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
-						if(tc > -0.5 && tc < 0.5 && iso)
-							label = 1;
-					}
-					vFillBranch((double)iso,"isoPresel");
-				}
-				else{
-					//if subcl is BH - with dR track veto
-					if((tc > -7 && tc <= -2) && pcFilter && bestdr > 0.03 && tsig < -3)	
+				else{ //no track pixel seed (no track)
+					//for physics bkg + BH match to photons + apply isolation criteria
+					//if subcl is BH - need to match to photon and apply isolation
+					if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig && evtfilters){	
 						label = 2;
-					//if subcl is not BH or spike (ie prompt, 'physics' bkg)
-					if(tc > -0.5 && tc < 0.5 && (-1 < tsig && tsig < 1))
+					}
+					//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
+					if(physBkgTime && iso && physBkgTimeSig && !pcFilter_wide && notSpikeTrackVeto && _passGJetsEvtSel && passGJetsObjSel && evtfilters && bh_filter){
 						label = 1;
+					}
 				}
 
 			}
-		
+			vFillBranch((double)iso,"isoPresel");
+			vFillBranch((double)passGJetsObjSel,"PassGJetsCR_Obj");
+			double pixseed = phoidx == -1 ? -1 : (double)_base->Photon_pixelSeed->at(phoidx); 
+			vFillBranch(pixseed,"passPixelSeed");
 		}
+		else // not data
+			label = -1;
 
 		return label;
 	}
