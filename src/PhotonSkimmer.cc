@@ -76,8 +76,6 @@ void PhotonSkimmer::Skim(){
 	_jetprod->SetMinNrhs(15);
 	_jetprod->SetMinEmE(10);
 	_jetprod->SetMinRhE(0.5);
-	double nIsoBkgPass = 0;
-	double totEvt = 0;
 
 	cout << "transfer factor (gev) N/Energy " << _gev << " EM alpha " << _emAlpha << " BHC alpha " << _alpha << endl;	
 	cout << "Prior Parameters" << endl;
@@ -112,6 +110,9 @@ void PhotonSkimmer::Skim(){
 	}
 	double pvx, pvy, pvz;
 	int phoidx, scidx;
+	int nEvts_tot = 0;
+	int nEvts_EvtFilterPass = 0;
+	int nEvts_GJetsPass = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
@@ -122,8 +123,7 @@ void PhotonSkimmer::Skim(){
 			}
 		}
 		cout << "evt: " << e << " of " << _nEvts;
-		totEvt++;
-
+		nEvts_tot++;
 		_prod->GetTruePhotons(phos, e, _gev);
 		if(phos.size() < 1){ cout << endl; continue; }
 		//PV info
@@ -147,7 +147,8 @@ void PhotonSkimmer::Skim(){
 		FillBranch((double)e,"evt");
 		FillBranch(_weight,"evt_wt");
 		FillBranch(_base->Met_pt,"MET");
-		FillBranch(GJetsCR_EvtSel(e),"PassGJetsCR");	
+		SetGJetsCR_EvtSel(e);
+		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
 			if(!evtfilters){
@@ -155,14 +156,14 @@ void PhotonSkimmer::Skim(){
 				_tree->Fill();
 				_reset();
 				continue;
-			}
+			} else nEvts_EvtFilterPass++;
 
 			if(!_passGJetsEvtSel){
 				cout << "skipping event - failed GJets CR selection" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
-			}
+			} else nEvts_GJetsPass++;
 		}	
 		int bhc_pho_idx = 0;
 		//loop over selected photons
@@ -280,8 +281,7 @@ void PhotonSkimmer::Skim(){
 	ofile->Close();
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
-
-	cout << "Total number of events ran over: " << totEvt << " events that passed isolated bkg selection: " << nIsoBkgPass << " fraction: " << nIsoBkgPass/totEvt << endl;
+	cout << "Total events ran over " << nEvts_tot << " events that passed event filters " << nEvts_EvtFilterPass << " events that pass event filters and GJets selection " << nEvts_GJetsPass << endl;
 }
 
 

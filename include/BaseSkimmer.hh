@@ -232,11 +232,11 @@ class BaseSkimmer{
 				jet_sys = VectorSum(_jets);
 				cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
 			}
-			FillBranch((double)_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS,"Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS");
-			FillBranch((double)_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter,"Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter");
-			FillBranch((double)_base->Trigger_hltEG60EtFilter,"Trigger_hltEG60EtFilter");
-			FillBranch((double)_base->Trigger_hltHT175Jet10,"Trigger_hltHT175Jet10");
-			FillBranch((double)_base->Trigger_hltPFHT350Jet15,"Trigger_hltPFHT350Jet15");
+			//FillBranch((double)_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS,"Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS");
+			//FillBranch((double)_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter,"Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter");
+			//FillBranch((double)_base->Trigger_hltEG60EtFilter,"Trigger_hltEG60EtFilter");
+			//FillBranch((double)_base->Trigger_hltHT175Jet10,"Trigger_hltHT175Jet10");
+			//FillBranch((double)_base->Trigger_hltPFHT350Jet15,"Trigger_hltPFHT350Jet15");
 			FillBranch((double)_jets.size(),"nSelJets");
 			//ht - scalar sum
 			double ht = 0;
@@ -244,19 +244,19 @@ class BaseSkimmer{
 			FillBranch(ht,"ht");
 
 			//L1 seed
-			if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) return false;
-			//cout << "passed L1 seed" << endl;	
-			//L1 to HLT Regional EGM matching leg
-			if(!_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter) return false;
-			//cout << "passed L1 to HLT" << endl;	
-			//photon pt > 60
-			if(!_base->Trigger_hltEG60EtFilter) return false;
+			//if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) return false;
+			////cout << "passed L1 seed" << endl;	
+			////L1 to HLT Regional EGM matching leg
+			//if(!_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter) return false;
+			////cout << "passed L1 to HLT" << endl;	
+			////photon pt > 60
+			//if(!_base->Trigger_hltEG60EtFilter) return false;
 			//cout << "passed photon pt > 60" << endl;	
 			//jet ht > 175 && jet pt > 10 && |eta jet| < 3
-			if(!_base->Trigger_hltHT175Jet10) return false;
-			//cout << "passed HT > 175" << endl;	
-			//jet ht > 350 && jet pt > 15 && |eta jet| < 3
-			if(!_base->Trigger_hltPFHT350Jet15) return false;
+			//if(!_base->Trigger_hltHT175Jet10) return false;
+			////cout << "passed HT > 175" << endl;	
+			////jet ht > 350 && jet pt > 15 && |eta jet| < 3
+			//if(!_base->Trigger_hltPFHT350Jet15) return false;
 			//cout << "passed HT > 135" << endl;	
 			
 			//cout << "passed pho mult" << endl;	
@@ -265,8 +265,7 @@ class BaseSkimmer{
 			//cout << "passed jet mult" << endl;	
 		
 			//dphi bw photon and jet systems (vector sum of objects)
-		cout << "jet sys pt " << jet_sys.pt() << " energy " << jet_sys.e() << endl;	
-			cout << "met " << _base->Met_pt << " ht " << ht << endl;	
+			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_isoBkg << " ht " << ht << " min ht " << _minHt_isoBkg << endl;	
 			//MET upper limit - orthogonal to signal MET selection
 			if(_base->Met_pt > _maxMet_isoBkg) return false;
 			//cout << "passed max met" << endl;	
@@ -386,11 +385,11 @@ class BaseSkimmer{
 			AddBranch("Flag_goodVertices","goodVertices");
 			AddBranch("Flag_hfNoisyHitsFilter","hfNoisyHitsFilter");
 			AddBranch("PassGJetsCR","event passes GJets CR selection");
-			AddBranch("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS","");
-			AddBranch("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter","");
-			AddBranch("Trigger_hltEG60EtFilter","");
-			AddBranch("Trigger_hltHT175Jet10","");
-			AddBranch("Trigger_hltPFHT350Jet15","");
+			//AddBranch("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS","");
+			//AddBranch("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter","");
+			//AddBranch("Trigger_hltEG60EtFilter","");
+			//AddBranch("Trigger_hltHT175Jet10","");
+			//AddBranch("Trigger_hltPFHT350Jet15","");
 			AddBranch("nSelJets","");
 			AddBranch("ht","jet ht, scalar sum of jet pts");
 
@@ -404,14 +403,15 @@ class BaseSkimmer{
 				
 				string key = _obsnames[o];
 				string title = _obj+" "+_obsnames[o]+" "+units;
+				if(key.find("_track") != string::npos)
+					title += " for original SC";
+				vAddBranch(key,title);
 				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
 					//object pre-PU cleaning	
 					key += "_prePUcleaning";
 					title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
+					vAddBranch(key,title);
 				}
-				if(key.find("_track") != string::npos)
-					title += " for original SC";
-				vAddBranch(key,title);
 			}
 			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
 			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
