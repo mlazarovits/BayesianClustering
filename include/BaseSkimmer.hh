@@ -1272,7 +1272,7 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 	}
 	void SetMinPt_IsoBkg(double p){ _minPhoPt_isoBkg = p; _prod->SetMinPt(p); }
 	void SetMinHt_IsoBkg(double p){ _minHt_isoBkg = p; }
-	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; cout << "_minJetPt_isoBkg " << _minJetPt_isoBkg << endl;_jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
+	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
 	void SetMaxMet_IsoBkg(double p){ _maxMet_isoBkg = p; }
 };
 #endif
