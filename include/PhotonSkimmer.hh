@@ -121,7 +121,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 
 		void PhotonAddBranches(){
-			_obj = "pho";
+			_obj = "Photon";
 			_obsnames.push_back("Pt");
 			//sw+
 			_obsnames.push_back("swCP");
