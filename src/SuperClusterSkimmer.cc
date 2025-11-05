@@ -81,6 +81,7 @@ void SuperClusterSkimmer::Skim(){
 				continue;
 			}
 		}
+		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
 
 		//event filters - true is good event
 		FillBranch(_base->Flag_BadChargedCandidateFilter ,"Flag_BadChargedCandidateFilter");
@@ -101,11 +102,21 @@ void SuperClusterSkimmer::Skim(){
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
 		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
-		if(!evtfilters){cout << "skipping event - failed event filters" << endl; continue;}
+		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
+			if(!evtfilters){
+				cout << "skipping event - failed event filters" << endl; 
+				_tree->Fill();
+				_reset();
+				continue;
+			}
 
-		if(!_passGJetsEvtSel && (_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){ cout << "skipping event - failed GJets CR selection" << endl; continue;}
-		
-		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
+			if(!_passGJetsEvtSel){
+				cout << "skipping event - failed GJets CR selection" << endl; 
+				_tree->Fill();
+				_reset();
+				continue;
+			}
+		}	
 		
 
 		_prod->GetTrueSuperClusters(scs, e, _gev);

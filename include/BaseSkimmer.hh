@@ -224,11 +224,14 @@ class BaseSkimmer{
 		}
 		bool GJetsCR_EvtSel(int e){
 			_jetprod->GetTrueJets(_jets, e);
-			if(_jets.size() < 1)
-				jet_sys = Jet();
-			else
+			if(_jets.size() < 1){
+				jet_sys = Jet(0,0,0,0);
+				cout << "# jets " << _jets.size() << endl;
+			}
+			else{
 				jet_sys = VectorSum(_jets);
-cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+				cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+			}
 			FillBranch((double)_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS,"Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS");
 			FillBranch((double)_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter,"Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter");
 			FillBranch((double)_base->Trigger_hltEG60EtFilter,"Trigger_hltEG60EtFilter");
