@@ -55,7 +55,6 @@ int main(int argc, char *argv[]){
 	bool calib = true;
 	bool spikes = false;
 	int skip = 1;
-	int bh = 1;
 	bool iso = true;
 	bool spatcorr = true;
 	bool cleansubcls = false;
@@ -66,7 +65,6 @@ int main(int argc, char *argv[]){
 	double minht_isobkg = 50;
 	double minjetpt_isobkg = 50;
 	double maxmet_isobkg = 50;
-	bool isobkg = false; 
 	double tres_cte = 0.1727;//0.133913;
 	double tres_stoch = 0.5109;//1.60666;
 	double tres_noise = 2.106;//0.00691415;
@@ -219,10 +217,6 @@ int main(int argc, char *argv[]){
 			spikes = true;
 			cout << "Rejecting spikes with swiss cross cut" << endl;
    		}
-		if(strncmp(argv[i],"--BHFilter", 10) == 0){
-			i++;
-    	 		bh = std::stoi(argv[i]);
-   		}
 		if(strncmp(argv[i],"--skip", 6) == 0){
 			i++;
     	 		skip = std::stoi(argv[i]);
@@ -246,10 +240,6 @@ int main(int argc, char *argv[]){
 		if(strncmp(argv[i],"--noLumiMask", 12) == 0){
 			applyLumiMask = false;
 			cout << "Not applying lumi mask." << endl;
-   		}
-		if(strncmp(argv[i],"--isoBkg", 8) == 0){
-			isobkg = true;
-			cout << "Selecting photons with isolated background cuts" << endl;
    		}
 		if(strncmp(argv[i],"--minphopt_isobkg", 17) == 0){
 			i++;
@@ -301,7 +291,6 @@ int main(int argc, char *argv[]){
    		cout << "   --minemE [mineme]                    set minimum ECAL energy (default = 10 GeV)" << endl;
    		cout << "   --minRhE [minRhe]                    set minimum ECAL rechit energy (default = 0.5 GeV)" << endl;
    		cout << "   --maxRhE [maxRhe]                    set maximum ECAL rechit energy (default = -999, off)" << endl;
-   		cout << "   --BHFilter [bh]                      set how beam halo filter is applied (0 : not applied, 1 : applied (default), 2 : inversely applied)" << endl;
    		cout << "   --evtFirst [i] --evtLast [j]         skim from event i to event j (default evtFirst = evtLast = 0 to skim over everything)" << endl;
    		cout << "   --skip [skip]                        set skip for event loop (default = 1)" << endl;
    		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
@@ -522,12 +511,15 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
-		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpatialCorr(spatcorr);
 		skimmer.SetCleanSubclusters(cleansubcls);
 		skimmer.SetMistClean(cleanmist);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
+		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+		skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
+		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 		//do only mm/true jet pv times
 		skimmer.Skim();
@@ -555,10 +547,13 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear); 
-		skimmer.SetBeamHaloFilter(bh);
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
+		skimmer.SetMinPt_IsoBkg(minpt);
+		skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
+		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
         	skimmer.Skim();
 	}
@@ -581,17 +576,13 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetEventRange(evti,evtj);
 		skimmer.SetSmear(smear);
 		skimmer.SetTimeSmear(timesmear);
-		skimmer.SetBeamHaloFilter(bh);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 	
-		skimmer.SetIsoBkgSel(isobkg);
-		if(isobkg){	
-			skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-			skimmer.SetMinHt_IsoBkg(minht_isobkg);
-			skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
-			skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
-			skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
-		}
+		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
+		skimmer.SetMinHt_IsoBkg(minht_isobkg);
+		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
+		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetNNFeatures(nnfeatures);
 		skimmer.SetVerbosity(verb);
         	skimmer.Skim();

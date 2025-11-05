@@ -64,16 +64,6 @@ void JetSkimmer::Skim(){
 				continue;
 			}
 		}
-		if(_BHFilter != notApplied){
-                        if(_BHFilter == applied){
-                                //apply beam halo filter - other noise filters needed for full Run2 recommendations
-                                if(!_base->Flag_globalSuperTightHalo2016Filter){ cout << "BH Filter flagged - skipping" << endl; continue;}
-                        }
-                        else{
-                                //inversely apply beam halo filter - other noise filters needed for full Run2 recommendations
-                                if(_base->Flag_globalSuperTightHalo2016Filter) continue;
-                        }
-                }
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		vector<Jet> phos, bhc_phos;
 		_prod->GetTruePhotons(phos, i, phogev);

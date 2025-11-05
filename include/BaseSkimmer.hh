@@ -5,6 +5,7 @@
 #include "JetPoint.hh"
 #include "BasePDFMixture.hh"
 #include "BaseProducer.hh"
+#include "JetProducer.hh"
 #include "BayesCluster.hh"
 #include "BaseTree.hh"
 #include "TH1D.h"
@@ -44,7 +45,6 @@ class BaseSkimmer{
 			_thresh = 1.;
 			_alpha = 1e-300;
 			_emAlpha = 0.5;
-                	_BHFilter = beamHaloFilter(0); //default not applied
 			_verb = 0;
 
 			//beta
@@ -68,6 +68,13 @@ class BaseSkimmer{
 			_applyLumiMask = true;
 			cout << "Applying lumi mask." << endl;
 			_tree = new TTree("tree","tree");
+			
+			//reqs on gjets CR sample
+			_minPhoPt_isoBkg = 70;
+			_minHt_isoBkg = 50;
+			_minJetPt_isoBkg = 50;
+			_maxMet_isoBkg = 50;
+			_jetprod = nullptr;
 
 		};
 		BaseSkimmer(TFile* file){
@@ -77,7 +84,6 @@ class BaseSkimmer{
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
-                	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
 			_alpha = 1e-300;
 			_emAlpha = 0.5;
@@ -126,7 +132,16 @@ class BaseSkimmer{
 
 			}
 
-
+			//reqs on gjets CR sample
+			_minPhoPt_isoBkg = 70;
+			_minHt_isoBkg = 50;
+			_minJetPt_isoBkg = 50;
+			_maxMet_isoBkg = 50;
+			//set producer to get jets with different kin reqs - can't use same file pointer ig?
+			string fname = file->GetName();
+			TFile* f2 = TFile::Open(fname.c_str());
+			_jetprod = new JetProducer(f2);
+			
 
 		}
 		
@@ -137,7 +152,6 @@ class BaseSkimmer{
 			_skip = 1;
 			_weight = 1;
 			_ngrid = 7;
-                	_BHFilter = beamHaloFilter(0); //default not applied
 			_thresh = 1.;
 			_alpha = 1e-300;
 			_emAlpha = 0.5;
@@ -183,17 +197,131 @@ class BaseSkimmer{
 				}
 
 			}
-
+			//reqs on gjets CR sample
+			_minPhoPt_isoBkg = 70;
+			_minHt_isoBkg = 50;
+			_minJetPt_isoBkg = 50;
+			_maxMet_isoBkg = 50;
+			//set producer to get jets with different kin reqs - can't use same file pointer ig?
+                        TChain* ch2 = MakeTChain(flist);
+			_jetprod = new JetProducer(ch2);
 
 		}
 		virtual ~BaseSkimmer(){ 
 			delete _base;
+			delete _jetprod;
 			_hists1D.clear();
 			_hists2D.clear();
 			_procCats.clear();
+			_jets.clear();
 		}
 
 		virtual void Skim() = 0;
+
+		bool _passGJetsEvtSel = false;
+		void SetGJetsCR_EvtSel(int e){
+			_passGJetsEvtSel = GJetsCR_EvtSel(e);
+		}
+		bool GJetsCR_EvtSel(int e){
+			_jetprod->GetTrueJets(_jets, e);
+			if(_jets.size() < 1)
+				jet_sys = Jet();
+			else
+				jet_sys = VectorSum(_jets);
+cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+			FillBranch((double)_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS,"Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS");
+			FillBranch((double)_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter,"Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter");
+			FillBranch((double)_base->Trigger_hltEG60EtFilter,"Trigger_hltEG60EtFilter");
+			FillBranch((double)_base->Trigger_hltHT175Jet10,"Trigger_hltHT175Jet10");
+			FillBranch((double)_base->Trigger_hltPFHT350Jet15,"Trigger_hltPFHT350Jet15");
+			FillBranch((double)_jets.size(),"nSelJets");
+			//ht - scalar sum
+			double ht = 0;
+			for(auto j : _jets) ht += j.pt();
+			FillBranch(ht,"ht");
+
+			//L1 seed
+			if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) return false;
+			//cout << "passed L1 seed" << endl;	
+			//L1 to HLT Regional EGM matching leg
+			if(!_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter) return false;
+			//cout << "passed L1 to HLT" << endl;	
+			//photon pt > 60
+			if(!_base->Trigger_hltEG60EtFilter) return false;
+			//cout << "passed photon pt > 60" << endl;	
+			//jet ht > 175 && jet pt > 10 && |eta jet| < 3
+			if(!_base->Trigger_hltHT175Jet10) return false;
+			//cout << "passed HT > 175" << endl;	
+			//jet ht > 350 && jet pt > 15 && |eta jet| < 3
+			if(!_base->Trigger_hltPFHT350Jet15) return false;
+			//cout << "passed HT > 135" << endl;	
+			
+			//cout << "passed pho mult" << endl;	
+			//min jet multiplicity
+			if(_jets.size() < 1) return false;
+			//cout << "passed jet mult" << endl;	
+		
+			//dphi bw photon and jet systems (vector sum of objects)
+		cout << "jet sys pt " << jet_sys.pt() << " energy " << jet_sys.e() << endl;	
+			cout << "met " << _base->Met_pt << " ht " << ht << endl;	
+			//MET upper limit - orthogonal to signal MET selection
+			if(_base->Met_pt > _maxMet_isoBkg) return false;
+			//cout << "passed max met" << endl;	
+			//min jet ht
+			if(ht < _minHt_isoBkg) return false; 
+			//cout << "passed min ht" << endl;	
+			//az angle bw hardest presel photon + jet system
+			return true;
+		}
+
+	
+		bool GJetsCR_ObjSel(const Jet& obj, bool pho = true){
+			if(_jets.size() < 1) return false;
+			double obj_phi = obj.phi_02pi(); 
+			cout << "\nobj system E " << obj.E() << " phi " << obj.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+			cout << "obj system pt " << obj.pt() << " phi " << obj.phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
+			double jet_phi = jet_sys.phi_02pi();
+			double dphi_objjet = obj_phi - jet_phi;
+			dphi_objjet = acos(cos(dphi_objjet)); //wraparound - will always be < pi
+			cout << " dphi " << dphi_objjet << endl;
+			double pi = 4*atan(1);
+			Jet jet1, jet2; //jet2 is sublead system
+			if(jet_sys.e() > obj.e()){
+				jet1 = jet_sys;
+				jet2 = obj;
+			}
+			else{
+				jet1 = obj;
+				jet2 = jet_sys;
+			}
+			double easym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
+			
+			bool minpt, easym;
+			double objpt;
+			if(objpt < _minPhoPt_isoBkg) minpt = false;
+			else minpt = true; 
+			if(jet2.e() / jet1.e() < easym_thresh) easym = false;
+			else easym = true;
+			vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
+			vFillBranch(jet2.e() / jet1.e(),"JetObjEnergyAsym");
+			if(pho)
+				objpt = _base->Photon_pt->at(obj.GetUserIdx());
+			else{ //super cluster
+				int phoidx = _base->SuperCluster_PhotonIndx->at(obj.GetUserIdx());
+				if(phoidx == -1){
+					vFillBranch(-999,"Photon_Pt");
+					return false;
+				}
+				objpt = _base->Photon_pt->at(phoidx);
+				vFillBranch(objpt,"Photon_Pt");
+			}
+			
+			if(dphi_objjet < pi-0.3) return false; //want dphi ~ phi - implies less MET in event
+
+			if(minpt && easym) return true;
+			else return false;
+		}
+
 
 		//make tchain from filelist
 		TChain* MakeTChain(string flist){
@@ -220,12 +348,14 @@ class BaseSkimmer{
 	
 		void AddBranch(string obs, string title){
 			_obs[obs] = -1;
+			 //cout << "adding branch " << obs << endl;
 			_tree->Branch(obs.c_str(),&_obs.at(obs))->SetTitle(title.c_str());
 		}
 		
 		void vAddBranch(string obs, string title){
 			string key = _obj+"_"+obs;
 			_vobs[key] = {};
+			 //cout << "adding vbranch " << key << endl;
 			_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
 		}
 		
@@ -233,20 +363,33 @@ class BaseSkimmer{
 			string key = _obj+"_"+obs;
 			if(extra != "") key += "_"+extra;
 			_vvobs[key] = {};
+			 //cout << "adding vvbranch " << key << endl;
 			_tree->Branch(key.c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 		}
 	
 		void InitMapTree(){
-
 			//event level branches
-			_obs["evt"] = -1;
-			_tree->Branch("evt",&_obs.at("evt"))->SetTitle("event");
-			_obs["evt_wt"] = -1;
-			_tree->Branch("evt_wt",&_obs.at("evt_wt"))->SetTitle("event weight");
-			_obs["MET"] = -1;
-			_tree->Branch("MET",&_obs.at("MET"))->SetTitle("Met_pt");		
-			_obs["Flag_globalSuperTightHalo2016Filter"] = -1;
-			_tree->Branch("Flag_globalSuperTightHalo2016Filter",&_obs.at("Flag_globalSuperTightHalo2016Filter"))->SetTitle("beam halo filter");		
+			AddBranch("evt","event");
+			AddBranch("evt_wt","event weight");
+			AddBranch("MET","Met_pt");
+			AddBranch("Flag_globalSuperTightHalo2016Filter","beam halo filter");	
+			AddBranch("Flag_BadChargedCandidateFilter","BadChargedCandidateFilter");
+			AddBranch("Flag_BadPFMuonDzFilter","BadPFMuonDzFilter");
+			AddBranch("Flag_BadPFMuonFilter","BadPFMuonFilter");
+			AddBranch("Flag_EcalDeadCellTriggerPrimitiveFilter","EcalDeadCellTriggerPrimitiveFilter");
+			AddBranch("Flag_HBHENoiseFilter","HBHENoiseFilter");
+			AddBranch("Flag_HBHENoiseIsoFilter","HBHENoiseIsoFilter");
+			AddBranch("Flag_ecalBadCalibFilter","ecalBadCalibFilter");
+			AddBranch("Flag_goodVertices","goodVertices");
+			AddBranch("Flag_hfNoisyHitsFilter","hfNoisyHitsFilter");
+			AddBranch("PassGJetsCR","event passes GJets CR selection");
+			AddBranch("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS","");
+			AddBranch("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter","");
+			AddBranch("Trigger_hltEG60EtFilter","");
+			AddBranch("Trigger_hltHT175Jet10","");
+			AddBranch("Trigger_hltPFHT350Jet15","");
+			AddBranch("nSelJets","");
+			AddBranch("ht","jet ht, scalar sum of jet pts");
 
 			//object level branches
 			for(int o = 0; o < _obsnames.size(); o++){
@@ -256,7 +399,7 @@ class BaseSkimmer{
 				if(_obsnames[o] == "TimeCenter")
 					units = " [ns]";
 				
-				string key = _obj+"_"+_obsnames[o];
+				string key = _obsnames[o];
 				string title = _obj+" "+_obsnames[o]+" "+units;
 				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
 					//object pre-PU cleaning	
@@ -265,10 +408,15 @@ class BaseSkimmer{
 				}
 				if(key.find("_track") != string::npos)
 					title += " for original SC";
-
-				_vobs[key] = {};
-				_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
-			}		
+				vAddBranch(key,title);
+			}
+			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
+			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
+			vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
+			vAddBranch("passPixelSeed","if e/gamma candidate has seed in pixel tracker");
+			if(_obj == "SC")
+				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
+			vAddBranch("JetObjEnergyAsym","(as)symmetry of min(obj.e(), jet sys.e())/max(obj.e(), jet sys.e())");
 			//subobject level branches
 			for(int o = 0; o < _obsnames_subcl.size(); o++){
 				string units = "";
@@ -283,7 +431,7 @@ class BaseSkimmer{
 				}
 				else{
 					//subcluster	
-					key = _obj+"_subcluster_"+_obsnames_subcl[o];
+					key = "subcluster_"+_obsnames_subcl[o];
 					title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
 					//subcluster pre-PU cleaning	
 					if(_obsnames_subcl[o].find("Energy") != string::npos || _obsnames_subcl[o].find("Var") != string::npos || _obsnames_subcl[o].find("nSubclusters") != string::npos){
@@ -291,9 +439,7 @@ class BaseSkimmer{
 						title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
 					}
 				}
-				_vvobs[key] = {};
-				_tree->Branch((key).c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
-				
+				vvAddBranch(key,title);
 			}
 
 			
@@ -316,7 +462,7 @@ class BaseSkimmer{
 		void FillBranch(double obs, string obsname){
 			string key = obsname;
 			if(_obs.find(key) == _obs.end()){
-				cout << "obs key " << key << " not found in map" << endl;
+				if(_verb > 1) cout << "obs key " << key << " not found in map" << endl;
 				return;
 			}
 			_obs.at(key) = obs;
@@ -368,6 +514,10 @@ class BaseSkimmer{
 
 
 		ReducedBase* _base = nullptr;
+		JetProducer* _jetprod = nullptr;
+		double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
+		vector<Jet> _jets;
+		Jet jet_sys;
 		int _nEvts;
 		BaseProducer* _prod;
 		bool _data;
@@ -867,13 +1017,6 @@ class BaseSkimmer{
                         applied = 1,
                         invApplied = 2
                 };
-                beamHaloFilter _BHFilter;
-                void SetBeamHaloFilter(int bh){
-                        _BHFilter = beamHaloFilter(bh);
-                        if(_BHFilter == notApplied) cout << "Not applying beam halo filter." << endl;
-                        else if(_BHFilter == applied) cout << "Applying beam halo filter." << endl;
-                        else cout << "Applying inverse beam halo filter." << endl;
-                }
 
 		void GetCenterXtal(vector<JetPoint>& rhs, JetPoint& center){
 			//get center of pts in ieta, iphi -> max E point
@@ -1127,6 +1270,9 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
 	}
-
+	void SetMinPt_IsoBkg(double p){ _minPhoPt_isoBkg = p; _prod->SetMinPt(p); }
+	void SetMinHt_IsoBkg(double p){ _minHt_isoBkg = p; }
+	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; cout << "_minJetPt_isoBkg " << _minJetPt_isoBkg << endl;_jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
+	void SetMaxMet_IsoBkg(double p){ _maxMet_isoBkg = p; }
 };
 #endif
