@@ -61,17 +61,14 @@ void SuperClusterSkimmer::Skim(){
 	double pvx, pvy, pvz;
 	_timeoffset = 0;
 	vector<JetPoint> bhRhs;
-	double BHclusterPass = 0;
-	double BHclusterFail = 0;
-	double BHPass = 0;
-	double BHFail = 0;
 	int nscran = 0;
 	vector<pair<int,int>> icoords, icoords_nocenter;
 	vector<double> Es, Es_nocenter;	
 	//genpt of photons whose mom is ~40 (ISR)
 	//genpt of photons whose mom is ~50 (meson decay)
-	int nspikes = 0;
-	int nBH = 0;
+	int nEvts_tot = 0;
+	int nEvts_EvtFilterPass = 0;
+	int nEvts_GJetsPass = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
@@ -82,6 +79,7 @@ void SuperClusterSkimmer::Skim(){
 			}
 		}
 		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
+		nEvts_tot++;
 
 		//event filters - true is good event
 		FillBranch(_base->Flag_BadChargedCandidateFilter ,"Flag_BadChargedCandidateFilter");
@@ -108,14 +106,14 @@ void SuperClusterSkimmer::Skim(){
 				_tree->Fill();
 				_reset();
 				continue;
-			}
+			} else nEvts_EvtFilterPass++;
 
 			if(!_passGJetsEvtSel){
 				cout << "skipping event - failed GJets CR selection" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
-			}
+			} else nEvts_GJetsPass++;
 		}	
 		
 
@@ -220,8 +218,6 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			if(label != -1){
 				BaseSkimmer::WriteObs(mapobs,"superclusters");
 			}
-			if(label == 2) nBH++;
-			if(label == 3) nspikes++;
 
 			//make rh maps
 			vector<JetPoint> rrhs; JetPoint rrh; 
@@ -275,8 +271,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 	cout << "Ran over " << nscran << " superclusters" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
-	cout << "Total events that passed " << BHPass << " failed BH Filter " << BHFail << " \% events that passed cluster selection " << BHclusterPass/BHFail << "\% and \% of events that failed cluster selection given (for both) that the event failed the BH filter " << BHclusterFail/BHFail << "\%" << endl;
-	cout << "total # spikes " << nspikes << " _nSpike_hist " << _nSpike_hist << " total # of BH " << nBH << " total # of bh hist " << _nBH_hist << endl;
+	cout << "Total events ran over " << nEvts_tot << " events that passed event filters " << nEvts_EvtFilterPass << " events that pass event filters and GJets selection " << nEvts_GJetsPass << endl;
 }
 
 
