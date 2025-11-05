@@ -148,6 +148,10 @@ void PhotonSkimmer::Skim(){
 		FillBranch(_weight,"evt_wt");
 		FillBranch(_base->Met_pt,"MET");
 		FillBranch(GJetsCR_EvtSel(e),"PassGJetsCR");	
+		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		if(!evtfilters) continue;
+
+		if(!_passGJetsEvtSel && (_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)) continue;
 		int bhc_pho_idx = 0;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
