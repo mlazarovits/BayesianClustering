@@ -76,12 +76,9 @@ lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-stati
 
 #specify local paths
 INCLUDEDIR  = ./include/
-lpc: INCLUDEDIR += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCalibration/
-local: INCLUDEDIR += -I./KUCMSTimeCalibration/ 
 SRCDIR      = ./src/
 #make sure compiler knows where local include files are
-CXX        += -I$(INCLUDEDIR) -I.
-SRCDIR      = ./src/
+CXX	   += -I$(INCLUDEDIR) -I.
 OUTOBJ	    = ./obj/
 
 #specify local source, include, and object files
@@ -94,7 +91,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
 #specify what to make
 #all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
-all: detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x #SpikeCheck.x
+all: detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x#FullClusterSingle.x FullClusterSkim.x detectorSimNtuples.x detectorSimSkimmer.x #SpikeCheck.x
 local: all
 loca: loca.x
 lpc:   all configtar lpclib simconfigtar
