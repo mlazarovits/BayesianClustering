@@ -1215,9 +1215,9 @@ class BaseSkimmer{
 		vFillBranch(bhc_jets[0].phi(),"PhiCenter_prePUcleaning");
 		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
 		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
-		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0].CleanOutPU(scores, true);
+		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		addVectors();
