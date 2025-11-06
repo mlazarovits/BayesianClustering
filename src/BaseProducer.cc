@@ -371,19 +371,20 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 		int nrhs = 0;
 		vector<unsigned int> jrhids;
 		//cout << rhs.size() <<  " rhs in SC " << rhids.size() << " rhs in ECAL" << endl;
-		unsigned int seed_id = _base->SuperCluster_XtalSeedID->at(sc);
                 for(int r = 0; r < rhs.size(); r++){
                         unsigned int rhid = rhs[r];
+//cout << "rhid " << rhid << endl;
+//for(int rr = 0; rr < rhids.size(); rr++){
+//	if(rhids[rr] == rhid) cout << "ID MATCH FOUND" << endl;
+//
+//
+//}
                         rhit = std::find(rhids.begin(), rhids.end(), rhid);
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//skip rhs that have already been looked at - avoids duplicates in SC
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
-				//check for seed crystal
-				if(_base->ECALRecHit_ID->at(rhidx) == seed_id)
-					cout << "seed xtal found with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
-
 //cout << "rh passed duplicate check with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
 				//if rh is in endcap, skip
 				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
@@ -432,8 +433,6 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
                                 _base->ECALRecHit_rhz->at(rhidx), (double)time);
                               //cout << "rh time " << rh.t() << endl; 
 				//rec hit selection
-				if(_base->ECALRecHit_ID->at(rhidx) == seed_id)
-					cout << "seed xtal found with time " << rh.t() << endl;
 				if(fabs(rh.t()) > 20) continue;
 //cout << "rh passed in time enough req" << endl;
 //	cout << "adding rh with x " << _base->ECALRecHit_rhx->at(rhidx) << " y " << _base->ECALRecHit_rhy->at(rhidx) << " z " << _base->ECALRecHit_rhz->at(rhidx) << " t " << _base->ECALRecHit_time->at(rhidx) << " eta " << _base->ECALRecHit_eta->at(rhidx) <<  " etajetpoint " << rh.eta() << " phi " << _base->ECALRecHit_phi->at(rhidx) << " phijp " << rh.phi() << " timecorr " << timecorr << " calib " << calibfactor << endl;			

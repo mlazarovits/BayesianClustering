@@ -672,7 +672,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				break;
 			}
 		}
-		cout << "seed time " << tc << endl;
 		vFillBranch(tc,"seedTime");
 		vFillBranch(tsig,"seedTimeSignificance");
 		
@@ -708,20 +707,17 @@ cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " <
 			//if subcl is spike
 //cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
-			double pixseed = -1;
 			if(phoidx == -1){
 				//not not matched to an e/gamma candidate so cant be det bkg
 cout << "no photon match" << endl; 
 				label = -1;
 				iso = 0;
-				pixseed = -1;
 			}
 			else{ //matched to e/gamma candidate
                 		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
-				pixseed = _base->Photon_pixelSeed->at(phoidx);
 cout << "pass iso? " << iso << endl;
                 		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
@@ -749,6 +745,7 @@ cout << "pass pixel seed " << _base->Photon_pixelSeed->at(phoidx) << endl;
 			}
 			vFillBranch((double)iso,"isoPresel");
 			vFillBranch((double)passGJetsObjSel,"PassGJetsCR_Obj");
+			double pixseed = phoidx == -1 ? -1 : (double)_base->Photon_pixelSeed->at(phoidx); 
 			vFillBranch(pixseed,"passPixelSeed");
 		}
 		else // not data
