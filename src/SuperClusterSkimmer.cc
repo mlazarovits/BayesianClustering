@@ -187,15 +187,6 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));
 			vFillBranch(timesig_seed, "timeSignificanceSeed");			
 			
-			//EovP, dR trackSubcl
-			double bestTrackDr, bestde_dr;
-			Matrix mu = scs[s].GetCenter();
-			TrackMatched(mu, bestTrackDr, bestde_dr);
-			if(bestde_dr != 999) bestde_dr = bhc_sc.e()/bestde_dr;
-			
-			vFillBranch(bestde_dr, "EovP_trackSubcl");
-			vFillBranch(bestTrackDr, "dR_trackSubcl");
-			
 			mapobs["event"] = e;
 			mapobs["event_weight"] = 1.;
 			mapobs["object"] = scidx;

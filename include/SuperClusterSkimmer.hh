@@ -677,8 +677,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		
 		//do track matching for spikes
 		og_sc.GetClusterParams(mu, cov);
-		double bestdr, bestp;
-		TrackMatched(mu,bestdr, bestp);
+		double bestdr, bestde_dr;
+		TrackMatched(mu,bestdr, bestde_dr);
+		if(bestde_dr != 999) bestde_dr = og_sc.e()/bestde_dr;
+		vFillBranch(bestdr,"dR_track");
+		vFillBranch(bestde_dr,"EovP_track");
 		
 		bool trksum, ecalrhsum, htowoverem, iso;	
 		//for BH definition
@@ -695,9 +698,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 
-	
 		int label = -1;
 		bool passGJetsObjSel = GJetsCR_ObjSel(og_sc,false);
+cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " << bestdr << " gjets evt sel " << _passGJetsEvtSel << " gjets obj sel " << passGJetsObjSel << endl;	
 		//in data - could be spikes or BH
 		if(_data){
 			//early times, phi left/right for BH
@@ -705,7 +708,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 //cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
 			if(phoidx == -1){
-				//not not matched to an e/gamma candidate so cant be det bkg 
+				//not not matched to an e/gamma candidate so cant be det bkg
+cout << "no photon match" << endl; 
 				label = -1;
 				iso = 0;
 			}
@@ -714,18 +718,22 @@ class SuperClusterSkimmer : public BaseSkimmer{
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
+cout << "pass iso? " << iso << endl;
                 		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
+cout << "pass pixel seed " << _base->Photon_pixelSeed->at(phoidx) << endl;
 				if(_base->Photon_pixelSeed->at(phoidx)){ //true if has tracker seed
 					//spike
-					if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
+					//if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
+					if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && iso){
 						label = 3;
 					}
 				}
 				else{ //no track pixel seed (no track)
 					//for physics bkg + BH match to photons + apply isolation criteria
 					//if subcl is BH - need to match to photon and apply isolation
-					if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig && evtfilters){	
+					//if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig && evtfilters){	
+					if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig){	
 						label = 2;
 					}
 					//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
