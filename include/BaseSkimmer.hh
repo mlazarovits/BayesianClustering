@@ -242,7 +242,7 @@ class BaseSkimmer{
 			double ht = 0;
 			for(auto j : _jets) ht += j.pt();
 			FillBranch(ht,"ht");
-
+			//correct HLT paths are not saved in ntuples - skip triggers
 			//L1 seed
 			//if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) return false;
 			////cout << "passed L1 seed" << endl;	
