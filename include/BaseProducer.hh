@@ -12,8 +12,7 @@
 #include "TPad.h"
 #include "TLatex.h"
 #include "TCanvas.h"
-//#include "KUCMSTimeCalibration.hh"
-#include "KUCMSTimeCalibration/KUCMSTimeCalibration.hh"
+#include "KUCMS_TimeCalibration.hh"
 #include <fstream>
 
 class BaseProducer{
@@ -34,7 +33,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			_timecalibTool = new KUCMSTimeCalibration();
+			_timecalibTool = new KUCMS_TimeCalibration();
 			_timecalibTag = "";
 			_mctype = -1;
 			_mistcuts = false;
@@ -63,7 +62,7 @@ class BaseProducer{
 			_timesmear = false;
 			_spatial_corr = true;
 			_timecalibTag = "";
-			_timecalibTool = new KUCMSTimeCalibration();
+			_timecalibTool = new KUCMS_TimeCalibration();
 			_mctype = -1;
 			_mistcuts = false;
 			
@@ -118,7 +117,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			_timecalibTool = new KUCMSTimeCalibration();
+			_timecalibTool = new KUCMS_TimeCalibration();
 			_mctype = -1;
 			_mistcuts = false;
 			//set year
@@ -194,7 +193,7 @@ class BaseProducer{
 
 		ReducedBase* GetBase(){ return _base; }
 
-		KUCMSTimeCalibration* _timecalibTool;
+		KUCMS_TimeCalibration* _timecalibTool;
 		string _timecalibTag;
 		int _mctype;
 
