@@ -36,11 +36,9 @@ def generateSubmission(args):
     reco_date["2018_MC"] = "RunIISummer20UL18"
     reco_date["2017_MC"] = "RunIIFall17DRPremix"
     reco_date["2018"] = ""
+    inputFilterList = ""
     if "GJets" in args.inputSample:
-        if sel == "InvMetPho30":
-            inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_TuneCP5_AODSIM_"+reco_date[args.year+"_MC"]+"RECO_list.txt"
-        else:
-            inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_TuneCP5_AODSIM_"+reco_date[args.year+"_MC"]+"RECO_list.txt"
+        inputFileList = "kucmsntuple_GJets_R"+yr+"_"+sel+"_"+ver+"_GJets_HT-"+args.HT+"_TuneCP5_AODSIM_"+reco_date[args.year+"_MC"]+"RECO_list.txt"
     elif "MET" in args.inputSample:
         inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "JetHT" in args.inputSample:
@@ -50,10 +48,14 @@ def generateSubmission(args):
     elif "EGamma" in args.inputSample:
         if "AL1SelEle" in sel:
             inputFileList = "kucmsntuple_EGamma_R"+yr+"_"+sel+"_"+ver+"_EGamma_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_UL2018-v1_list.txt"
+        else:
+            inputFileList = "kucmsntuple_EGamma_R"+yr+"_"+sel+"_"+ver+"_EGamma_AOD_Run20"+yr+args.era+"_list.txt"
     elif "DoubleEG" in args.inputSample:
         inputFileList = "kucmsntuple_DoubleEG_R"+yr+"_"+sel+"_"+ver+"_DoubleEG_AOD_Run20"+yr+args.era+reco_date[args.year+"_DEG"]+"_list.txt"
-    elif "gogoG" in args.inputSample:
-        inputFileList = "kucmsntuple_gogoG_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
+    elif "gogo" in args.inputSample:
+        inputFileList = "kucmsntuple_SMS_Sig_"+sel+"_"+ver+"_SMS-GlGl_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
+    elif "sqsq" in args.inputSample:
+        inputFileList = "kucmsntuple_SMS_Sig_"+sel+"_"+ver+"_SMS-SqSq_AODSIM_mGl-"+args.mGl+"_mN2-"+args.mN2+"_mN1-"+args.mN1+"_list.txt"
     else:
     	print("Sample "+args.inputSample+" not found")
     	exit()
@@ -209,6 +211,8 @@ def generateSubmission(args):
         flags += ' --cleanMist'
     if(args.cleanMist and "AODSIM" in inputFileList):
         print("--cleanMist only for data") 
+    if(args.noLumiMask):
+        flags += ' --noLumiMask'
     
 
 
@@ -241,7 +245,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','DoubleEG','GJets','QCD','MET','gogoG'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','DoubleEG','GJets','QCD','MET','gogo','sqsq'])
     parser.add_argument('--mGl',help='gluino mass for signal',default='2000')
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default='1950')
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default='1')
@@ -278,6 +282,7 @@ def main():
     parser.add_argument('--rejectSpikes',help="reject spikes based on swiss cross cut (default = false, off)",default=False,action='store_true')
     parser.add_argument('--beamHaloFilter',help="apply BH filter (0: off - default, 1: on, 2: inverse)",default=0)
     parser.add_argument('--noIso',help='turn off isolation for photons in preselection',default=False,action='store_true')
+    parser.add_argument('--noLumiMask',help='do not apply lumi mask',default=False,action='store_true')
     parser.add_argument('--isoBkg',help='turn on event selection for isolated background',default=False,action='store_true')
     parser.add_argument('--maxmet_isobkg',help='max MET for isolated background event selection',default=100)
     parser.add_argument('--minphopt_isobkg',help='min photon pt for isolated background event selection',default=50)

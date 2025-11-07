@@ -40,6 +40,9 @@ def generateSubmission(args):
     if(args.PFCand):
         inputFile += "_PFCand"
 
+    if(args.MTD):
+        inputFile += "_MTD"
+
     if(int(args.nPU) > 0):
         inputFile += "_nPU"+args.nPU
     
@@ -165,14 +168,20 @@ def generateSubmission(args):
 
 
     #default time measurement error parameters for PFCand
-    if not args.PFCand:
+    if args.PFCand:
+        if args.MTD:
+            print("Particle flow candidates selected. Using particle flow extra precise time resolution")
+        flags += ' --tResCte 1e-6' #0.01 ps = 10 femptoseconds (in ns)
+        flags += ' --tResStoch 0'
+        flags += ' --tResNoise 0'
+    elif args.MTD:
+        flags += ' --tResCte 0.03' #30 ps (in ns)
+        flags += ' --tResStoch 0'
+        flags += ' --tResNoise 0' 
+    else:
         flags += ' --tResCte '+str(args.tResCte)
         flags += ' --tResStoch '+str(args.tResStoch)
         flags += ' --tResNoise '+str(args.tResNoise) 
-    else:
-        flags += ' --tResCte 1e-6'
-        flags += ' --tResStoch 0'
-        flags += ' --tResNoise 0' 
 
     strategyMap = {}
     strategyMap["NlnN"] = 0
@@ -212,6 +221,8 @@ def main():
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW','Wgluon'])
     parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
     parser.add_argument('--nPU',help='turn on pileup for given # vertices',default='0')
+    parser.add_argument('--PFCand',help="run with ntuples with ~PF candidates",default=False,action='store_true')
+    parser.add_argument('--MTD',help="run with ntuples with MTD time resolution",default=False,action='store_true')
     parser.add_argument('--zeroSup',help='min rechit energy at ntuple level for reco (zero suppression)',default='0.5')
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
@@ -238,7 +249,6 @@ def main():
     parser.add_argument('--minRhE',help='min rechit energy',default=0.5)
     parser.add_argument('--smear',help="turn on spatial smearing",default=False,action='store_true')
     parser.add_argument('--noCheckMerges',help="turn off subcluster merging for BHC jets (default = true, on)",default=False,action='store_true')
-    parser.add_argument('--PFCand',help="run with ntuples with ~PF candidates",default=False,action='store_true')
     parser.add_argument('--zoomPUWindow',help="zoom in on particles from hard interaction",default=False,action='store_true')
     parser.add_argument('--timeSmear',help="turn on time smearing",default=False,action='store_true')
     parser.add_argument('--applyFrac',help="apply fractions from hitsAndFractions list to rh energies for photons",default=False,action='store_true')
