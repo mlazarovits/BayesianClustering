@@ -29,7 +29,7 @@ cmssw_setup sandbox-CMSSW_13_0_13.tar.bz2
 #ls
 #cd config
 mv config/info .
-mv config/json .
+#mv config/json .
 mv config/filelists .
 mv config/ecal_config .
 ###

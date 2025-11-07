@@ -56,6 +56,7 @@ lpc:   CXXFLAGS += -I$(CMSSW_BASE)/src/frugally-deep-master/include/
 
 
 
+
 #add to make lib ig?
 lpc: CXXFLAGS += -fPIC
 #make list of libraries for shared library
@@ -76,25 +77,26 @@ lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-stati
 
 #specify local paths
 INCLUDEDIR  = ./include/
-lpc: INCLUDEDIR += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCalibration/
-local: INCLUDEDIR += -I./KUCMSTimeCalibration/ 
 SRCDIR      = ./src/
 #make sure compiler knows where local include files are
-CXX        += -I$(INCLUDEDIR) -I.
-SRCDIR      = ./src/
+CXX	   += -I$(INCLUDEDIR) -I.
+local: CXX += -I/Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include
 OUTOBJ	    = ./obj/
 
 #specify local source, include, and object files
 CC_FILES        = $(wildcard src/*.cc)
 HH_FILES        = $(wildcard include/*.hh)
 OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
+#time calibration stuff
+
+local: TC_OBJ = /Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
+local: OBJ_FILES += $(TC_OBJ)
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o, $(OBJ_FILES))
 
 
 #specify what to make
-#all: GMM.x varGMM.x jetAlgo.x photonAlgo.x FullClusterSingle.x FullClusterSkim.x detectorSim.x 
-all: detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x #SpikeCheck.x
+all: FullClusterSkim.x#detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x
 local: all
 loca: loca.x
 lpc:   all configtar lpclib simconfigtar
@@ -103,28 +105,8 @@ lpclib: lib/libBayesCluster.so
 
 
 #executables
-GMM.x: $(SRCDIR)GMM.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o GMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch GMM.x
-
-varGMM.x: $(SRCDIR)varGMM.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o varGMM.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch varGMM.x
-
-jetAlgo.x: $(SRCDIR)jetAlgo.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o jetAlgo.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch jetAlgo.x
-
-photonAlgo.x: $(SRCDIR)photonAlgo.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o photonAlgo.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch photonAlgo.x
-
-FullClusterSingle.x: $(SRCDIR)FullClusterSingle.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch FullClusterSingle.x
-
 FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
 	touch FullClusterSkim.x
 
 detectorSimNtuples.x: $(SRCDIR)detectorSimNtuples.C $(OBJ_FILES) $(HH_FILES)
@@ -135,9 +117,10 @@ detectorSimSkimmer.x: $(SRCDIR)detectorSimSkimmer.C $(OBJ_FILES) $(HH_FILES)
 	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch detectorSimSkimmer.x
 
-SpikeCheck.x: $(SRCDIR)SpikeCheck.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o SpikeCheck.x $(OUTOBJ)/*.o $(GLIBS) $ $<
-	touch SpikeCheck.x
+FullClusterSingle.x: $(SRCDIR)FullClusterSingle.C $(OBJ_FILES) $(HH_FILES)
+	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	touch FullClusterSingle.x
+
 
 configtar:
 	cp FullCluster*.x config/
@@ -156,7 +139,7 @@ lib/libBayesCluster.so: $(SOBJ_FILES)
 	touch lib/libBayesianClustering.so
 
 
-#where to put object files
+#making object files
 $(OUTOBJ)%.o: src/%.cc include/%.hh
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

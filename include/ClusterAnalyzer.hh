@@ -3,7 +3,6 @@
 #include "BayesCluster.hh"
 #include "Jet.hh"
 #include "TSystem.h"
-#include "KUCMS_TimeCalibration.hh" //for detID struct
 #include <utility>
 #include <string>
 #include <math.h>

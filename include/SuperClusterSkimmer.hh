@@ -672,7 +672,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				break;
 			}
 		}
-		cout << "seed time " << tc << endl;
+		//if tc is -999 it means that the seed rh was removed in processing (due to either time req or eta req)
 		vFillBranch(tc,"seedTime");
 		vFillBranch(tsig,"seedTimeSignificance");
 		
@@ -684,12 +684,13 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		vFillBranch(bestdr,"dR_track");
 		vFillBranch(bestde_dr,"EovP_track");
 		
-		bool trksum, ecalrhsum, htowoverem, iso;	
+		bool trksum, ecalrhsum, htowoverem;
+		int iso;
 		//for BH definition
 		//phi center is either at ~0, ~pi, ~2pi (within ~10 xtals)
 		bool pcFilter = (pc < 0.1 || (acos(-1) - 0.1 < pc && pc < acos(-1) + 0.1) || 2*acos(-1) - 0.1 < pc );
 		bool pcFilter_wide = (pc < 0.3 || (acos(-1) - 0.3 < pc && pc < acos(-1) + 0.3) || 2*acos(-1) - 0.3 < pc );
-		bool spikeTime = (tc <= -10);
+		bool spikeTime = (tc <= -10 && tc != -999);
 		bool bhTime = (-7 < tc && tc <= -2);
 		bool physBkgTime = (-0.5 < tc && tc <= 0.5); 
 		bool detBkgTimeSig = (tsig < -3);
@@ -708,47 +709,41 @@ cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " <
 			//if subcl is spike
 //cout << "time center " << tc << " phi center " << pc << " dr to track " << bestdr << " pcfilter BH " << pcFilter << endl;
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
-			double pixseed = -1;
 			if(phoidx == -1){
 				//not not matched to an e/gamma candidate so cant be det bkg
 cout << "no photon match" << endl; 
 				label = -1;
-				iso = 0;
-				pixseed = -1;
+				iso = -1;
 			}
 			else{ //matched to e/gamma candidate
                 		trksum = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) < 6.0;
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
-				pixseed = _base->Photon_pixelSeed->at(phoidx);
-cout << "pass iso? " << iso << endl;
+cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " Photon_ecalRHSumEtConeDR04 " << _base->Photon_ecalRHSumEtConeDR04->at(phoidx) << " Photon_hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
                 		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
 cout << "pass pixel seed " << _base->Photon_pixelSeed->at(phoidx) << endl;
-				if(_base->Photon_pixelSeed->at(phoidx)){ //true if has tracker seed
-					//spike
-					//if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
-					if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && iso){
-						label = 3;
-					}
+				//spike
+				//if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
+				if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && iso){
+					label = 3;
 				}
-				else{ //no track pixel seed (no track)
-					//for physics bkg + BH match to photons + apply isolation criteria
-					//if subcl is BH - need to match to photon and apply isolation
-					//if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig && evtfilters){	
-					if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig){	
-						label = 2;
-					}
-					//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
-					if(physBkgTime && iso && physBkgTimeSig && !pcFilter_wide && notSpikeTrackVeto && _passGJetsEvtSel && passGJetsObjSel && evtfilters && bh_filter){
-						label = 1;
-					}
+				//for physics bkg + BH match to photons + apply isolation criteria
+				//if subcl is BH - need to match to photon and apply isolation
+				//if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig && evtfilters){	
+				if(bhTime && pcFilter && iso && notSpikeTrackVeto && detBkgTimeSig){	
+					label = 2;
+				}
+				//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
+				if(physBkgTime && iso && physBkgTimeSig && !pcFilter && notSpikeTrackVeto && _passGJetsEvtSel && passGJetsObjSel && evtfilters && bh_filter){
+					label = 1;
 				}
 
 			}
 			vFillBranch((double)iso,"isoPresel");
 			vFillBranch((double)passGJetsObjSel,"PassGJetsCR_Obj");
+			double pixseed = phoidx == -1 ? -1 : (double)_base->Photon_pixelSeed->at(phoidx); 
 			vFillBranch(pixseed,"passPixelSeed");
 		}
 		else // not data
