@@ -288,7 +288,7 @@ class BaseSkimmer{
 			cout << " dphi " << dphi_objjet << endl;
 			double pi = 4*atan(1);
 			Jet jet1, jet2; //jet2 is sublead system
-			if(jet_sys.e() > obj.e()){
+			if(jet_sys.pt() > obj.pt()){
 				jet1 = jet_sys;
 				jet2 = obj;
 			}
@@ -296,16 +296,16 @@ class BaseSkimmer{
 				jet1 = obj;
 				jet2 = jet_sys;
 			}
-			double easym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
+			double ptasym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
 			
-			bool minpt, easym;
-			double objpt;
+			bool minpt, ptasym;
+			double objpt = obj.pt();
 			if(objpt < _minPhoPt_isoBkg) minpt = false;
 			else minpt = true; 
-			if(jet2.e() / jet1.e() < easym_thresh) easym = false;
-			else easym = true;
+			if(jet2.pt() / jet1.pt() < ptasym_thresh) ptasym = false;
+			else ptasym = true;
 			vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
-			vFillBranch(jet2.e() / jet1.e(),"JetObjEnergyAsym");
+			vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
 			if(pho)
 				objpt = _base->Photon_pt->at(obj.GetUserIdx());
 			else{ //super cluster
@@ -320,7 +320,7 @@ class BaseSkimmer{
 			
 			if(dphi_objjet < pi-0.3) return false; //want dphi ~ phi - implies less MET in event
 
-			if(minpt && easym) return true;
+			if(minpt && ptasym) return true;
 			else return false;
 		}
 
@@ -419,7 +419,7 @@ class BaseSkimmer{
 			vAddBranch("passPixelSeed","if e/gamma candidate has seed in pixel tracker");
 			if(_obj == "SC")
 				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
-			vAddBranch("JetObjEnergyAsym","(as)symmetry of min(obj.e(), jet sys.e())/max(obj.e(), jet sys.e())");
+			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
 			//subobject level branches
 			for(int o = 0; o < _obsnames_subcl.size(); o++){
 				string units = "";
