@@ -73,10 +73,12 @@ PREFIX=root://cmseos.fnal.gov/
 
 #if multiple runs in sample, do all runs
 FILE1=$(eosls /store/user/lpcsusylep/jaking/KUCMSNtuple/kucmsntuple_${PD}_${SEL}/${NAME}/)
+echo "FILE1" $FILE1
 components1=($FILE1)
 for dir in "${components1[@]}"
 do
 	DIR1=$dir
+	echo "dir" $DIR1
 	outfile=filelists/${DIR1}_list.txt
 	if [ -f ${outfile} ]; then
 		echo "Recreating file" $outfile
