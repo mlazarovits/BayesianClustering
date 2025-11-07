@@ -1198,7 +1198,7 @@ class BaseSkimmer{
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
 		algo->SetSubclusterAlpha(_emAlpha);
-		algo->SetVerbosity(_verb);
+		algo->SetVerbosity(-1); //smaller log files
 		//using full BHC algorithm for subcluster regularization
 		vector<node*> trees = algo->NlnNCluster();
 		vector<Jet> bhc_jets;
