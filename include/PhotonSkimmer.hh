@@ -72,9 +72,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
-                        TChain* ch = MakeTChain(filelist);
-                        if(ch == nullptr) return;
-			_prod = new PhotonProducer(ch);
+                        if(_ch == nullptr) return;
+			_prod = new PhotonProducer(_ch);
 			_fname = filelist;
 			
 			_base = _prod->GetBase();

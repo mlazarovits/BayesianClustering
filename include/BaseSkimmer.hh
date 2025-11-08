@@ -203,7 +203,8 @@ class BaseSkimmer{
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 50;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-                        TChain* ch2 = MakeTChain(flist);
+			_ch = MakeTChain(flist);
+                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
 			_jetprod = new JetProducer(ch2);
 
 		}
@@ -516,39 +517,10 @@ class BaseSkimmer{
 		}
 
 
-		ReducedBase* _base = nullptr;
-		JetProducer* _jetprod = nullptr;
-		double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
-		vector<Jet> _jets;
-		Jet jet_sys;
-		int _nEvts;
-		BaseProducer* _prod;
-		bool _data;
-		bool _debug;
-		int _evti, _evtj;
-		string _cms_label, _oname;
-		double _gev, _thresh, _alpha, _emAlpha;
-		map<string, Matrix> _prior_params;
-		void SetThresh(double t){ _thresh = t; }
-		void SetBHCAlpha(double a){ _alpha = a; }
-		void SetEMAlpha(double a){ _emAlpha = a; }
-		void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
-		JSONTool _jsonTool;
-		string _jsonfile;
-		bool _applyLumiMask;
-
-		TTree* _tree;
-		vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
-		vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
-		map<string, double> _obs;
-		map<string, vector<double>> _vobs;
-		map<string, vector<vector<double>>> _vvobs;
-		string _obj;	
 
 		void TurnOffLumiMask(){ _applyLumiMask = false; cout << "Not applying lumi mask." << endl; }
 
 
-		double _c = 29.9792458; // speed of light in cm/ns
 		struct DetIDStruct {
 		        DetIDStruct() {}
 		        DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal, const double eta, const double phi) : i1(ni1), i2(ni2), TT(nTT), ecal(necal), deteta(eta), detphi(phi){}
@@ -911,13 +883,6 @@ class BaseSkimmer{
 
 
 
-		//create function to write photon subcluster variables to CSV file for MVA training
-		//include column for process?
-		string _csvname;
-		ofstream _csvfile;
-	
-		vector<string> _inputs;
-		int _ngrid;
 		virtual void SetObs() = 0;
 		virtual void WriteHeader() = 0;
 		virtual void FillBranches(const Jet& bhc_obj) = 0;
@@ -1218,11 +1183,13 @@ class BaseSkimmer{
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0].CleanOutPU(scores, true);
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
+		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		addVectors();
 		Jet subcl;
-		for(int k = 0; k < scores.size(); k++){
+		if(scores.size() != bhc_jets[0].GetNConstituents()) cout << "ERROR: # SCORES " << scores.size() << " DOES NOT MATCH # OF ORIGINAL SUBCLUSTERS " << bhc_jets[0].GetNConstituents() << endl;
+		for(int k = 0; k < bhc_jets[0].GetNConstituents(); k++){
 //cout << "subcl #" << k << " score " << scores[k] << endl;
 			vvFillBranch((double)scores[k],"PUscores",idx);
 			bhc_jets[0].GetConstituent(k, subcl);
@@ -1277,5 +1244,43 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 	void SetMinHt_IsoBkg(double p){ _minHt_isoBkg = p; }
 	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
 	void SetMaxMet_IsoBkg(double p){ _maxMet_isoBkg = p; }
+	
+	ReducedBase* _base = nullptr;
+	TChain* _ch = nullptr;
+	JetProducer* _jetprod = nullptr;
+	double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
+	vector<Jet> _jets;
+	Jet jet_sys;
+	int _nEvts;
+	BaseProducer* _prod;
+	bool _data;
+	bool _debug;
+	int _evti, _evtj;
+	string _cms_label, _oname;
+	double _gev, _thresh, _alpha, _emAlpha;
+	map<string, Matrix> _prior_params;
+	void SetThresh(double t){ _thresh = t; }
+	void SetBHCAlpha(double a){ _alpha = a; }
+	void SetEMAlpha(double a){ _emAlpha = a; }
+	void SetPriorParameters(map<string, Matrix> params){_prior_params = params;} 		
+	JSONTool _jsonTool;
+	string _jsonfile;
+	bool _applyLumiMask;
+
+	TTree* _tree;
+	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
+	vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
+	map<string, double> _obs;
+	map<string, vector<double>> _vobs;
+	map<string, vector<vector<double>>> _vvobs;
+	string _obj;	
+	double _c = 29.9792458; // speed of light in cm/ns
+	//create function to write photon subcluster variables to CSV file for MVA training
+	//include column for process?
+	string _csvname;
+	ofstream _csvfile;
+	
+	vector<string> _inputs;
+	int _ngrid;
 };
 #endif

@@ -89,13 +89,11 @@ class JetSkimmer : public BaseSkimmer{
 			//in ntuplizer, stored as rh time		
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		
-			TChain* ch = MakeTChain(filelist);
-                        if(ch == nullptr) return;	
+                        if(_ch == nullptr) return;	
 			_prod = new JetProducer(ch);
 			_prod->SetIsoCut();
 	
-			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-                        TChain* ch2 = MakeTChain(filelist);
+                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(filelist);
 			_scprod = new PhotonProducer(ch2);	
 			_scprod->SetMinPt(5);
 			_scprod->SetMinRhE(0.5);
