@@ -201,7 +201,6 @@ class BaseProducer{
 			cout << "Default energy transfer factor: " << _gev << endl;
 			cout << "Minimum pt: " << _minpt << endl;
 			cout << "Minimum ECAL energy: " << _mineme << endl;
-			cout << "Minimum object eta: " << _minobjeta << endl;
 			cout << "Minimum rh (barrel only) energy: " << _minrhE << endl;
 			if(_maxrhE != -999) cout << "Maximum rh (barrel only) energy: " << _maxrhE << endl;
         		cout << "Minimum # of in-time rhs: " << _minnrhs << endl;
