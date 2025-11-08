@@ -90,7 +90,7 @@ class JetSkimmer : public BaseSkimmer{
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		
                         if(_ch == nullptr) return;	
-			_prod = new JetProducer(ch);
+			_prod = new JetProducer(_ch);
 			_prod->SetIsoCut();
 	
                         TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(filelist);
