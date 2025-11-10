@@ -43,7 +43,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 		eme = et*(_base->Jet_neEmEF->at(j)+_base->Jet_chEmEF->at(j));
 		//Jet selection
                 if(_base->Jet_pt->at(j) < _minpt) continue;
-                if(fabs(_base->Jet_eta->at(j)) > _minobjeta) continue;
+                //if(fabs(_base->Jet_eta->at(j)) > _minobjeta) continue;
+		//skip crossover region
+		if(fabs(eta) >= 1.4442 && fabs(eta) <= 1.566) continue;
 		if(eme < _mineme) continue;
 
 		//create jet id (based on tight 2017 Run II recommendations)
@@ -71,7 +73,9 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
                         if(rhit != rhids.end()){
                                 rhidx = rhit - rhids.begin();
 				//if rh is in endcap, skip
-				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//skip crossover region
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) >= 1.4442 && fabs(_base->ECALRecHit_eta->at(rhidx)) <= 1.566) continue;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
@@ -238,6 +242,8 @@ cout << "producer evt " << evt << " ntuple evt " << _base->Evt_event << " run " 
 				if(jrhit != jrhids.end()) continue;
 				//if rh is in endcap, skip
 				//if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//skip crossover region
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) >= 1.4442 && fabs(_base->ECALRecHit_eta->at(rhidx)) <= 1.566) continue;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut
@@ -364,9 +370,12 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 //cout << "sc Et " << et << " eta " << eta << endl;
                 if(et < _minpt) continue;
 //cout << "sc passed et cut " << endl;
-		if(fabs(eta) > _minobjeta) continue;
-//cout << "sc passed eta cut " << eta << endl;
-                
+		//open up to endcap objects
+		//if(fabs(eta) > _minobjeta) continue;
+		//skip crossover region
+		if(fabs(eta) >= 1.4442 && fabs(eta) <= 1.566) continue;
+
+	
 		//set rec hits in sc
 		vector<unsigned int> rhs = _base->SuperCluster_rhIds->at(sc);
 		vector<float> fracs = _base->SuperCluster_rhFracs->at(sc);
@@ -389,8 +398,11 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
 //cout << "rh passed duplicate check with eta " << _base->ECALRecHit_eta->at(rhidx) << endl;
-				//if rh is in endcap, skip
-				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//open up to endcap objects
+				//if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//skip crossover region
+				if(fabs(_base->ECALRecHit_eta->at(rhidx)) >= 1.4442 && fabs(_base->ECALRecHit_eta->at(rhidx)) <= 1.566) continue;
+                
 //cout << "rh passed eta req" << endl;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
