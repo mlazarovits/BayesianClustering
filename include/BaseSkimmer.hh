@@ -23,6 +23,7 @@
 #include "JSONTool.hh"
 //frugally deep for loading NN model
 #include "fdeep/fdeep.hpp"
+#include "KUCMS_TimeCalibration.hh"
 
 using weights = SampleWeight::weights;
 using node = BaseTree::node;
@@ -141,6 +142,8 @@ class BaseSkimmer{
 			string fname = file->GetName();
 			TFile* f2 = TFile::Open(fname.c_str());
 			_jetprod = new JetProducer(f2);
+			_timecalib = new KUCMS_TimeCalibration();
+			_jetprod->SetTimeCalibrationTool(_timecalib);	
 			
 
 		}
@@ -205,7 +208,10 @@ class BaseSkimmer{
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
 			_ch = MakeTChain(flist);
                         TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
+			ch2->SetTitle(flist.c_str());
 			_jetprod = new JetProducer(ch2);
+			_timecalib = new KUCMS_TimeCalibration();
+			_jetprod->SetTimeCalibrationTool(_timecalib);	
 
 		}
 		virtual ~BaseSkimmer(){ 
@@ -346,6 +352,7 @@ class BaseSkimmer{
 				//std::cout << "--  adding file: " << file << std::endl;
 				ch->Add(file.c_str()); //skip non-recoverable files
 			}
+			cout << "TChain title " << ch->GetTitle() << endl;
 			return ch;
 		}
 	
@@ -1282,5 +1289,6 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 	
 	vector<string> _inputs;
 	int _ngrid;
+	KUCMS_TimeCalibration* _timecalib = nullptr;
 };
 #endif

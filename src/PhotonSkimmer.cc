@@ -122,7 +122,7 @@ void PhotonSkimmer::Skim(){
 				continue;
 			}
 		}
-		cout << "evt: " << e << " of " << _nEvts;
+		cout << "evt: " << e << " of " << _nEvts << " for run " << _base->Evt_run;
 		nEvts_tot++;
 		_prod->GetTruePhotons(phos, e, _gev);
 		if(phos.size() < 1){ cout << endl; continue; }

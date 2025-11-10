@@ -40,6 +40,7 @@ class JetSkimmer : public BaseSkimmer{
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 			
 			_prod = new JetProducer(file);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_prod->SetIsoCut();
 	
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
@@ -91,10 +92,12 @@ class JetSkimmer : public BaseSkimmer{
 		
                         if(_ch == nullptr) return;	
 			_prod = new JetProducer(_ch);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_prod->SetIsoCut();
 	
                         TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(filelist);
 			_scprod = new PhotonProducer(ch2);	
+			_scprod->SetTimeCalibrationTool(_timecalib);	
 			_scprod->SetMinPt(5);
 			_scprod->SetMinRhE(0.5);
 

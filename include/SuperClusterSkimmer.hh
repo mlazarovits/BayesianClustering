@@ -38,6 +38,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
 
 			_prod = new PhotonProducer(file);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -61,6 +62,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			TChain* ch = MakeTChain(filelist);
 			if(ch == nullptr) return;
 			_prod = new PhotonProducer(ch);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;

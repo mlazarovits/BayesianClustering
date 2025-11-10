@@ -44,6 +44,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
 			_prod = new PhotonProducer(file);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_fname = file->GetName();
 
 			
@@ -74,6 +75,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
                         if(_ch == nullptr) return;
 			_prod = new PhotonProducer(_ch);
+			_prod->SetTimeCalibrationTool(_timecalib);	
 			_fname = filelist;
 			
 			_base = _prod->GetBase();

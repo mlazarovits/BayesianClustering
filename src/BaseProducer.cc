@@ -156,6 +156,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         phos.clear();
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
+cout << "producer evt " << evt << " ntuple evt " << _base->Evt_event << " run " << _base->Evt_run << endl;
         int nPhos = (int)_base->Photon_energy->size();
 	//only take leading and subleading (if these exist)
 	int selPhoCount = 0; //shouldnt be incremented to >2
@@ -201,7 +202,9 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 
 		//Photon selection
                 if(_base->Photon_pt->at(p) < _minpt) continue;
-		if(fabs(_base->Photon_eta->at(p)) > _minobjeta) continue;
+		//if(fabs(_base->Photon_eta->at(p)) > _minobjeta) continue;
+		//skip crossover region
+		if(fabs(eta) >= 1.4442 && fabs(eta) <= 1.566) continue;
 		//isolation cuts
 		bool iso;
 		bool trksum;
@@ -234,7 +237,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
 				auto jrhit = std::find(jrhids.begin(), jrhids.end(), rhid);
 				if(jrhit != jrhids.end()) continue;
 				//if rh is in endcap, skip
-				if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
+				//if(fabs(_base->ECALRecHit_eta->at(rhidx)) > 1.479) continue;
 				//remove timing reco (ratio) failed fits
 				if(_base->ECALRecHit_time->at(rhidx) == 0.) continue;
 				//energy cut

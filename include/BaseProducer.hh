@@ -33,17 +33,10 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			_timecalibTool = new KUCMS_TimeCalibration();
+			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
 			_timecalibTag = "";
 			_mctype = -1;
 			_mistcuts = false;
-			//if(gSystem->AccessPathName("info/KUCMS_GJets_v14_met50_rhE5_Cali.root")){
-			//	cout << "Calibration map file " << "info/KUCMS_GJets_v14_met50_rhE5_Cali.root" << " does not exist." << endl;
-			//	return;
-			//}
-			//TFile* calibfile = TFile::Open("info/KUCMS_GJets_v14_met50_rhE5_Cali.root");
-			//SetTimeCalibrationMap(calibfile);
-			SetupDetIDsEB();
 		};
 		BaseProducer(TChain* ch){
 			_base = new ReducedBase(ch);
@@ -62,7 +55,7 @@ class BaseProducer{
 			_timesmear = false;
 			_spatial_corr = true;
 			_timecalibTag = "";
-			_timecalibTool = new KUCMS_TimeCalibration();
+			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
 			_mctype = -1;
 			_mistcuts = false;
 			
@@ -73,6 +66,7 @@ class BaseProducer{
 			else if(name.find("2022") != string::npos) _year = 2022;
 			
 			//set if data
+			cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
@@ -84,9 +78,7 @@ class BaseProducer{
 				_timecalibTag = "r2_ul18_mc";
 				_mctype = 0;
 			}
-				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
-			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
 
@@ -117,7 +109,7 @@ class BaseProducer{
 			_spikes = false;
 			_timesmear = false;
 			_spatial_corr = true;
-			_timecalibTool = new KUCMS_TimeCalibration();
+			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
 			_mctype = -1;
 			_mistcuts = false;
 			//set year
@@ -140,7 +132,6 @@ class BaseProducer{
 			}
 				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
-			SetupDetIDsEB();
 			
 			if(name.find("_v20_")) useFilters = true;
 
@@ -151,6 +142,10 @@ class BaseProducer{
 			delete _timecalibTool;
 		};
 
+
+		void SetTimeCalibrationTool(KUCMS_TimeCalibration* tc){
+			_timecalibTool = tc;
+		}
 
 		bool useFilters = false;
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
@@ -275,22 +270,6 @@ class BaseProducer{
                 };
 
 
-		map<UInt_t, DetIDStruct> _detIDMap;
-
-		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
-		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh	
-		void SetupDetIDsEB(){
-		    const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
-		    std::ifstream infile( detIDConfigEB, std::ios::in);
-		
-		    UInt_t cmsswId, dbID;
-		    int hashedId, iphi, ieta, absieta, FED, SM, TT25, iTT, strip5, Xtal, phiSM, etaSM;
-		    std::string pos;
-		
-		    while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM){
-		        _detIDMap[cmsswId] = {iphi,ieta,TT25,0};
-		    }
-		}
 
 };
 #endif
