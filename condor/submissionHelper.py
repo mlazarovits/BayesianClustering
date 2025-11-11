@@ -94,9 +94,75 @@ def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
     arr[0][0] = 0
     return arr
 
+#splits by files
+#TODO - add max # evts args that splits each file into jobs with max # evts
+#should return a dict of files : evt arr
+def filesSplit(infile, nevtsmax = -999):
+    arr = []
+    if nevtsmax == -999:
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line[:line.find("\n")]
+                arr.append(line)
+        print("Splitting each file into "+str(len(arr))+" jobs ")
+    else:
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            evtarr = []
+            for line in lines:
+                line = line[:line.find("\n")]
+                rfile = ROOT.TFile.Open(line)
+                tree = rfile.Get("tree/llpgtree")
+                nevts = tree.GetEntries()
+                if(nevts > nevtsmax):
+                    n = int(np.ceil(nevts / nevtsmax))
+                    chunks = np.array_split(np.arange(nevts),n)
+                    evtarr = [(c[0], c[-1] + 1) for c in chunks] #splits into even chunks of nchunk <= nevtsmax
+                else:
+                    evtarr = [(0,nevts)]
+                arr.append([line,evtarr])
+                i = 0
+                for a in arr:
+                    i += len(a[1])
+        print("Splitting each file into "+str(i)+" jobs ")
+    arr = np.array(arr,dtype=object)
+    return arr
+
+
+def writeQueueList( subf, ofilename, file_arr, flags ):
+    if len(file_arr) < 1:
+        print("No files found")
+        return
+    #.root is set in exe
+    outFileArg = ofilename+".$(Process)"
+
+    jobCtr=0
+    subf.write("\n\n\n")
+    subf.write("queue Arguments from (\n")
+    for f in file_arr:
+            if(file_arr.ndim == 1):
+                inFileArg = " -i "+f
+                #Args = "Arguments ="+inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+                #Args = inFileArg+" "+flags+" --evtFirst "+str(e[0])+" --evtLast "+str(e[1])+" -o "+outFileArg+"\n"
+                Args = inFileArg+" "+flags+" -o "+outFileArg+"\n"
+                subf.write("###### job"+str(jobCtr)+ "######\n")
+                subf.write(Args)
+                jobCtr=jobCtr+1
+            if(file_arr.ndim == 2):
+                inFileArg = " -i "+f[0]
+                for earr in f[1]:
+                    #print("file",f[0],"this evt range",earr)
+                    Args = inFileArg+" "+flags+" -o "+outFileArg+"\n"
+                    Args = inFileArg+" "+flags+" --evtFirst "+str(earr[0])+" --evtLast "+str(earr[1])+" -o "+outFileArg+"\n"
+                    subf.write("###### job"+str(jobCtr)+ "######\n")
+                    subf.write(Args)
+                    jobCtr=jobCtr+1
+
+    subf.write(")")
 
 # Write each job to the condor submit file.
-def writeQueueList( subf, inFile, ofilename, evts, flags ):
+def writeQueueListEvents( subf, inFile, ofilename, evts, flags ):
     if evts == 0 or evts is None:
         print("No events found")
         return

@@ -170,10 +170,7 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFileList, args.split,True, args.maxnevts)
-    if eventnums == 0 or eventnums is None:
-        print("eventnums",eventnums)
-        return
+    filearr = SH.filesSplit(inputFileList, args.maxnevts)
     flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
         flags += str(m)+' '
@@ -234,7 +231,8 @@ def generateSubmission(args):
     #need to remove local lpc path for actual args
     inputFileList = inputFileList[inputFileList.rfind("/",0,inputFileList.rfind("/"))+1:]
     print("inputfilelist",inputFileList)
-    SH.writeQueueList(subf, inputFileList, ofilename, eventnums, flags)
+    #SH.writeQueueList(subf, inputFileList, ofilename, eventnums, flags)
+    SH.writeQueueList(subf, ofilename, filearr, flags)
     
     print("------------------------------------------------------------")
     print("Submission ready, to run use:")
@@ -257,7 +255,7 @@ def main():
     #which object to analyze (jets or photons currently supported)
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
-    parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
+    #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
     parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--verbosity','-v',help="verbosity",default=0)
     
