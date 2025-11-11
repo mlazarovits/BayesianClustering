@@ -19,6 +19,7 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char *argv[]){
+	clock_t t = clock();
 	string oname = "";
 	string in_file = "";//rootfiles/GMSB_AOD_v9_GMSB_L-350TeV_Ctau-200cm_AODSIM_RunIIFall17DRPremix-PU2017_94X_output99.root";
 	bool hprint = false;
@@ -331,20 +332,21 @@ int main(int argc, char *argv[]){
 	prior_params["scalemat"] = W;
 	prior_params["mean"] = m;
 
-	//make sure input file is *list* (ie txt file) not a root file
-	if(in_file.find(".txt") == string::npos){
-		cout << "Please input list of ROOT files in .txt format. File given: " << in_file << endl;
+	//make sure input file is a root file
+	if(in_file.find(".root") == string::npos){
+		//cout << "Please input list of ROOT files in .txt format. File given: " << in_file << endl;
+		cout << "Please input name of single ROOT file. File given: " << in_file << endl;
 		return -1;
 	}
-	cout << "infile list " << in_file << endl;
+	cout << "infile " << in_file << endl;
 
 	string cmslab, version;	
-	//TFile* file = nullptr;
+	//TFile* file = TFile::Open(in_file.c_str());
 	/////GET DATA FROM NTUPLE LIST//////
 	if(!in_file.empty()){
 		//get version
 		std::smatch m;
-		std::regex re("_v[0-9]+_");
+		std::regex re("_v[0-9]+/");
 		version = "";
 		std::regex_search(in_file,m,re);
 		for(auto x : m) version += x;
@@ -587,6 +589,9 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetVerbosity(verb);
         	skimmer.Skim();
 	}
+	t = clock() - t;
+	
+	//cout << "total time taken to run over " << evtj - evti << " events " << (double)(t)/CLOCKS_PER_SEC << endl;
         return 0;
 
 }
