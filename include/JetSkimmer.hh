@@ -19,6 +19,8 @@ using procCat = BaseSkimmer::procCat;
 class JetSkimmer : public BaseSkimmer{
 	public:
 		JetSkimmer(){
+			SetObs();
+			InitMapTree();
 			_evti = 0;
 			_evtj = 0;
 			_gev = 1./10.;
@@ -33,23 +35,16 @@ class JetSkimmer : public BaseSkimmer{
 		virtual ~JetSkimmer(){ };
 
 		//get rechits from file to cluster
-		JetSkimmer(TFile* file) : BaseSkimmer(file){
-			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-			//tof = (d_rh-d_pv)/c
-			//in ntuplizer, stored as rh time		
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
-			
-			_prod = new JetProducer(file);
+		//JetSkimmer(TFile* file) : BaseSkimmer(file){
+		JetSkimmer(string filename) : BaseSkimmer(filename){
+			SetObs();
+			InitMapTree();	
+			_prod = new JetProducer(_ch);
 			_prod->SetTimeCalibrationTool(_timecalib);	
 			_prod->SetIsoCut();
 	
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-			string fname = file->GetName();
-			cout << "fname " << fname << endl;
-			TFile* f2 = TFile::Open(fname.c_str());
-			_scprod = new PhotonProducer(f2);	
-			_scprod->SetMinPt(5);
-			_scprod->SetMinRhE(0.5);
+			cout << "fname " << filename << endl;
 
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -69,7 +64,6 @@ class JetSkimmer : public BaseSkimmer{
 			//else{
 			//	ifstream weights("info/EventWeights.txt", std::ios::in);
 			//	string filein;
-			//	string filename = file->GetName();
 			//	double jet_weight, pho_weight;
 			//	while( weights >> filein >> jet_weight >> pho_weight){
 			//		if(filename.find(filein) == string::npos) continue;
@@ -82,25 +76,19 @@ class JetSkimmer : public BaseSkimmer{
 
 
 			
-			InitHists();
+			//InitHists();
 		}
+		
+		/*
 		JetSkimmer(string filelist) : BaseSkimmer(filelist){
-			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-			//tof = (d_rh-d_pv)/c
-			//in ntuplizer, stored as rh time		
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			SetObs();
+			InitMapTree();	
 		
                         if(_ch == nullptr) return;	
 			_prod = new JetProducer(_ch);
 			_prod->SetTimeCalibrationTool(_timecalib);	
 			_prod->SetIsoCut();
 	
-                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(filelist);
-			_scprod = new PhotonProducer(ch2);	
-			_scprod->SetTimeCalibrationTool(_timecalib);	
-			_scprod->SetMinPt(5);
-			_scprod->SetMinRhE(0.5);
-
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -130,14 +118,47 @@ class JetSkimmer : public BaseSkimmer{
 
 
 			
-			InitHists();
+			//InitHists();
 		}
+		*/
 
-		void SetObs(){ 
-			_obj = "jet";
+		void SetObs(){
+			JetAddBranches();
 		};
+		void JetAddBranches(){
+			_obj = "SC";
+			
+			//vAddBranch("nRHs_grid","# rhs in CNN input grid");
+			vAddBranch("Photon_TimeCenter","photon time at PV");
+			vAddBranch("Photon_PathLength","length from PV to photon center on detector face");
+
+			vvAddBranch("predScore_physBkg","subcluster phys bkg score"); //CNN prediction
+			vvAddBranch("predScore_BH","subcluster BH score"); //CNN prediction
+			vvAddBranch("predScore_spike","subcluster spike score"); //CNN prediction
+		}
 		void WriteHeader(){ };
 		void FillBranches(const Jet& bhc_obj){
+			double E_tot = bhc_obj.E();
+			vFillBranch(E_tot, "Energy");		
+
+
+			double ec = bhc_obj.eta();
+			double pc = bhc_obj.phi();
+			double tc = bhc_obj.t();
+			if(isnan(pc)) cout << "pc is nan" << endl;
+			if(isinf(pc)) cout << "pc is inf" << endl;
+			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
+			vFillBranch(ec, "EtaCenter");		
+			vFillBranch(pc, "PhiCenter");		
+			vFillBranch(tc, "TimeCenter");		
+			
+			Matrix cov = bhc_obj.GetCovariance();
+			vFillBranch(cov.at(0,0), "EtaVar");		
+			vFillBranch(cov.at(1,1), "PhiVar");		
+			vFillBranch(cov.at(2,2), "TimeVar");
+			vFillBranch(cov.at(0,1), "EtaPhiCov");
+			vFillBranch(cov.at(0,2), "EtaTimeCov");
+			vFillBranch(cov.at(1,2), "PhiTimeCov");
 
 		}
 
@@ -829,9 +850,6 @@ class JetSkimmer : public BaseSkimmer{
 				int n_k = jets[j].GetNConstituents();
 				trCats[0].procCats[0].hists2D[0][48]->Fill(nrhs, n_k, _weight);
 				trCats[0].procCats[1].hists2D[0][48]->Fill(nrhs, n_k, _weight);
-				int nscs = nSC_dRMatch(jets[j]);	
-				trCats[0].procCats[0].hists2D[0][49]->Fill(nscs, n_k, _weight);
-				trCats[0].procCats[1].hists2D[0][49]->Fill(nscs, n_k, _weight);
 				
 				trCats[TimeStrategy(1)].procCats[0].hists1D[0][70]->Fill(n_k, _weight);
 				trCats[TimeStrategy(1)].procCats[1].hists1D[0][70]->Fill(n_k, _weight);
@@ -847,18 +865,6 @@ class JetSkimmer : public BaseSkimmer{
 			}
 		}
 
-		int nSC_dRMatch(const Jet& jet){ //put in E ratio req?
-			double maxDr = 0.5;
-			int nsc_tot = _SCs.size();
-			int nsc = 0;
-			double dr;
-			for(int s = 0; s < nsc_tot; s++){
-				dr = dR(jet.eta(), jet.phi(), _SCs[s].eta(), _SCs[s].phi());
-				if(dr < maxDr)
-					nsc++;
-			} 
-			return nsc;
-		}
 		
 		//void FillModelHists(GaussianMixture* gmm, const Jet& jet){
 		void FillModelHists(Jet jet){
@@ -1000,8 +1006,6 @@ class JetSkimmer : public BaseSkimmer{
 
 					//fill subcl hists for dijet resolution
 					int nk = hardjets.first.GetNConstituents();
-					int nscs = nSC_dRMatch(hardjets.first);	
-					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
 					Jet constit;
 					for(int k = 0; k < nk; k++){
@@ -1009,8 +1013,6 @@ class JetSkimmer : public BaseSkimmer{
 						trCats[tr_idx].procCats[p].hists2D[0][51]->Fill(constit.t(), constit.E(), _weight);
 					}
 					nk = hardjets.second.GetNConstituents();
-					nscs = nSC_dRMatch(hardjets.second);	
-					trCats[tr_idx].procCats[p].hists2D[0][61]->Fill(nscs, nk, _weight);
 					trCats[tr_idx].procCats[p].hists1D[0][71]->Fill(nk, _weight);
 					for(int k = 0; k < nk; k++){
 						hardjets.second.GetConstituent(k, constit);
@@ -2454,10 +2456,8 @@ class JetSkimmer : public BaseSkimmer{
 		void SetCleanSubclusters(bool s){ _cleansubcls = s; }	
 		void SetMistClean(bool m){ _prod->SetMistClean(m); }
 		private:
-			vector<Jet> _SCs; //superclusters for event - for # subcluster matching
 			double _minRhE;
 			Matrix _smearMat;
-			PhotonProducer* _scprod;
 			bool _cleansubcls;
 };
 #endif

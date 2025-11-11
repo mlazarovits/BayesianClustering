@@ -38,8 +38,10 @@ class BaseProducer{
 			_mctype = -1;
 			_mistcuts = false;
 		};
-		BaseProducer(TChain* ch){
-			_base = new ReducedBase(ch);
+		//BaseProducer(TChain* ch){
+			//_base = new ReducedBase(ch);
+		BaseProducer(TTree* tree){
+			_base = new ReducedBase(tree);
 			_nEvts = _base->fChain->GetEntries();
 			//default to 1 GeV = 1 entry -> gev = 1
 			_gev = 1;
@@ -60,7 +62,7 @@ class BaseProducer{
 			_mistcuts = false;
 			
 			//set year
-			string name = ch->GetTitle();
+			string name = tree->GetTitle();
 			if(name.find("2017") != string::npos) _year = 2017;
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;

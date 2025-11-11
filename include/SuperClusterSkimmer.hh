@@ -28,7 +28,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		virtual ~SuperClusterSkimmer(){ };
 
 		//get rechits from file to cluster
-		SuperClusterSkimmer(TFile* file) : BaseSkimmer(file){
+		//SuperClusterSkimmer(TFile* file) : BaseSkimmer(file){
+		SuperClusterSkimmer(string filename) : BaseSkimmer(filename){
 			SetObs();
 			InitMapTree();
 			
@@ -36,8 +37,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
-
-			_prod = new PhotonProducer(file);
+				
+			_prod = new PhotonProducer(_ch);
 			_prod->SetTimeCalibrationTool(_timecalib);	
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
@@ -55,6 +56,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		}
+		/*
 		SuperClusterSkimmer(string filelist) : BaseSkimmer(filelist){
 			SetObs();
 			InitMapTree();
@@ -80,7 +82,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		}
-
+		*/
 
 		void SuperClusterAddBranches(){
 			_obj = "SC";

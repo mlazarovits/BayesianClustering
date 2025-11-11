@@ -73,7 +73,6 @@ void JetSkimmer::Skim(){
 			if(ret == -1) continue;
 			bhc_phos.push_back(bhc_pho);
 		}
-		_scprod->GetTrueSuperClusters(_SCs, i, phogev);
 		if(i % (_skip) == 0) cout << "evt: " << i << " of " << _nEvts;
 		//calc max time for photons
 		//cout << "lead photon pt " << _phos[0].pt() << " max time " << CalcMaxTime(_phos[0]) << endl;

@@ -37,15 +37,16 @@ class PhotonSkimmer : public BaseSkimmer{
 		virtual ~PhotonSkimmer(){ };
 
 		//get rechits from file to cluster
-		PhotonSkimmer(TFile* file) : BaseSkimmer(file){
+		//PhotonSkimmer(TFile* file) : BaseSkimmer(file){
+		PhotonSkimmer(string filename) : BaseSkimmer(filename){
 			SetObs();
 			InitMapTree();
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
-			_prod = new PhotonProducer(file);
+			_prod = new PhotonProducer(_ch);
 			_prod->SetTimeCalibrationTool(_timecalib);	
-			_fname = file->GetName();
+			_fname = filename;
 
 			
 			_base = _prod->GetBase();
@@ -64,7 +65,8 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		}
-		
+
+		/*		
 		//get rechits from file to cluster
 		PhotonSkimmer(string filelist) : BaseSkimmer(filelist){
 			SetObs();
@@ -95,6 +97,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 			SetupDetIDsEB( _detIDmap, _ietaiphiID );
 		}
+		*/
 
 
 		enum weightScheme{

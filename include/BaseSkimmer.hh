@@ -78,7 +78,8 @@ class BaseSkimmer{
 			_jetprod = nullptr;
 
 		};
-		BaseSkimmer(TFile* file){
+		//BaseSkimmer(TFile* file){
+		BaseSkimmer(string filename){
 			_gev = 1;
 			_debug = false;
 			_smear = true;
@@ -102,7 +103,6 @@ class BaseSkimmer{
 			_prior_params["mean"] = Matrix(3,1);
 			
 			
-			string filename = file->GetName();	
 			if(filename.find("SIM") != string::npos)
 				_data = false;
 			else
@@ -139,15 +139,16 @@ class BaseSkimmer{
 			_minJetPt_isoBkg = 50;
 			_maxMet_isoBkg = 50;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-			string fname = file->GetName();
-			TFile* f2 = TFile::Open(fname.c_str());
-			_jetprod = new JetProducer(f2);
+			_ch = MakeTChain(filename);
+                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
+			ch2->SetTitle(filename.c_str());
+			_jetprod = new JetProducer(ch2);
 			_timecalib = new KUCMS_TimeCalibration();
 			_jetprod->SetTimeCalibrationTool(_timecalib);	
 			
-
 		}
-		
+	
+		/*	
 		BaseSkimmer(string flist){
 			_gev = 1;
 			_debug = false;
@@ -214,6 +215,7 @@ class BaseSkimmer{
 			_jetprod->SetTimeCalibrationTool(_timecalib);	
 
 		}
+		*/
 		virtual ~BaseSkimmer(){ 
 			delete _base;
 			delete _jetprod;
@@ -332,6 +334,32 @@ class BaseSkimmer{
 		}
 
 
+		TTree* GetTTree(string f){
+			if(gSystem->AccessPathName(f.c_str())){ 
+				cout << "Error: file " << f << " doesn't exist." << endl; 
+				return nullptr; 
+			}
+			TFile* file = TFile::Open(f.c_str());
+			TTree* tree = (TTree*)file->Get("tree/llpgtree");
+			tree->SetTitle(f.c_str());
+			return tree;
+
+		}	
+
+		TChain* MakeTChain(string f){
+			if(gSystem->AccessPathName(f.c_str())){ 
+				cout << "Error: file " << f << " doesn't exist." << endl; 
+				return nullptr; 
+			}
+			TChain* ch = new TChain("tree/llpgtree");
+			ch->SetTitle(f.c_str());
+			ch->Add(f.c_str()); //skip non-recoverable files
+			return ch;
+
+
+		}
+
+		/*
 		//make tchain from filelist
 		TChain* MakeTChain(string flist){
 			if(gSystem->AccessPathName(flist.c_str())){ 
@@ -355,6 +383,7 @@ class BaseSkimmer{
 			cout << "TChain title " << ch->GetTitle() << endl;
 			return ch;
 		}
+		*/
 	
 		void AddBranch(string obs, string title){
 			_obs[obs] = -1;
@@ -424,7 +453,7 @@ class BaseSkimmer{
 			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
 			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
 			vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
-			vAddBranch("passPixelSeed","if e/gamma candidate has seed in pixel tracker");
+			//vAddBranch("passPixelSeed","if e/gamma candidate has seed in pixel tracker");
 			if(_obj == "SC")
 				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
 			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
@@ -1156,7 +1185,7 @@ class BaseSkimmer{
 	void SetVerbosity(int v){_verb = v;}
 
 
-	int RunClustering(Jet inputobj, Jet& result, bool remove = false, int idx = -1){
+	int RunClustering(const Jet& inputobj, Jet& result, bool remove = false, int idx = -1, string obj = ""){
 	//remove == false - downweight PU clusters
 	//remove == true - fully remove PU clusters
 		vector<Jet> rhs;
