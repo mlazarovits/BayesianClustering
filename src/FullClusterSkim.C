@@ -309,7 +309,6 @@ int main(int argc, char *argv[]){
    		cout << "   --rejectSpikes                       reject spikes based on swiss cross cut (default = false, off)" << endl;
    		cout << "   --noSpatCorr                         turn off spatial corrections for rechit times to put in PV frame (jets only, default = true, on)" << endl;
    		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
-   		cout << "   --isoBkg                             apply isolated background selection (photons only, default = false, off)" << endl;
    		cout << "   --minphopt_isobkg [minpt]            set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
    		cout << "   --minht_isobkg [minht]               set minimum jet ht for iso bkg selection (photons only, default = 50)" << endl;
    		cout << "   --minjetpt_isobkg [minjetpt]         set minimum jet pt for iso bkg selection (photons only, default = 50)" << endl;

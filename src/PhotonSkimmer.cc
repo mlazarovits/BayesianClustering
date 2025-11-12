@@ -231,7 +231,7 @@ void PhotonSkimmer::Skim(){
 				ptmin = 70;
 			else
 				ptmin = 40;
-			cout << "sc " << scidx << " pho " << phoidx << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << " trkSumPtHollowConeDR04 "  << _base->Photon_trkSumPtHollowConeDR04->at(phoidx) << " trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
+			//cout << "sc " << scidx << " pho " << phoidx << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << " trkSumPtHollowConeDR04 "  << _base->Photon_trkSumPtHollowConeDR04->at(phoidx) << " trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
 			//do 2017 preselection
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > ptmin){
                                		obs.at("2017_presel") = 1;
