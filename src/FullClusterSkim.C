@@ -517,10 +517,10 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetMistClean(cleanmist);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
-		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-		skimmer.SetMinHt_IsoBkg(minht_isobkg);
-		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
-		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetMinPt_CR(minpt_isobkg);
+		skimmer.SetMinHt_CR(minht_isobkg);
+		skimmer.SetMinJetPt_CR(minjetpt_isobkg);
+		skimmer.SetMaxMet_CR(maxmet_isobkg);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 		//do only mm/true jet pv times
 		skimmer.Skim();
@@ -551,10 +551,10 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetSpikeRejection(spikes); //if true, reject spikes
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetVerbosity(verb);
-		skimmer.SetMinPt_IsoBkg(minpt);
-		skimmer.SetMinHt_IsoBkg(minht_isobkg);
-		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
-		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetMinPt_CR(minpt);
+		skimmer.SetMinHt_CR(minht_isobkg);
+		skimmer.SetMinJetPt_CR(minjetpt_isobkg);
+		skimmer.SetMaxMet_CR(maxmet_isobkg);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
         	skimmer.Skim();
 	}
@@ -579,10 +579,10 @@ cout << "cmslab " << cmslab << " version " << version << endl;
 		skimmer.SetTimeSmear(timesmear);
 		if(!applyLumiMask) skimmer.TurnOffLumiMask();
 	
-		skimmer.SetMinPt_IsoBkg(minpt_isobkg);
-		skimmer.SetMinHt_IsoBkg(minht_isobkg);
-		skimmer.SetMinJetPt_IsoBkg(minjetpt_isobkg);
-		skimmer.SetMaxMet_IsoBkg(maxmet_isobkg);
+		skimmer.SetMinPt_CR(minpt_isobkg);
+		skimmer.SetMinHt_CR(minht_isobkg);
+		skimmer.SetMinJetPt_CR(minjetpt_isobkg);
+		skimmer.SetMaxMet_CR(maxmet_isobkg);
 		skimmer.SetMeasErrParams(acos(-1)/180, tres_cte, tres_stoch, tres_noise); 
 		skimmer.SetNNFeatures(nnfeatures);
 		skimmer.SetVerbosity(verb);

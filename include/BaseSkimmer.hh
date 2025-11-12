@@ -1327,10 +1327,10 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
 	}
-	void SetMinPt_IsoBkg(double p){ _minPhoPt_CRsel = p; _prod->SetMinPt(p); }
-	void SetMinHt_IsoBkg(double p){ _minHt_CRsel = p; }
-	void SetMinJetPt_IsoBkg(double p){ _minJetPt_CRsel = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
-	void SetMaxMet_IsoBkg(double p){ _maxMet_CRsel = p; }
+	void SetMinPt_CR(double p){ _minPhoPt_CRsel = p; _prod->SetMinPt(p); }
+	void SetMinHt_CR(double p){ _minHt_CRsel = p; }
+	void SetMinJetPt_CR(double p){ _minJetPt_CRsel = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
+	void SetMaxMet_CR(double p){ _maxMet_CRsel = p; }
 	
 	ReducedBase* _base = nullptr;
 	TChain* _ch = nullptr;
