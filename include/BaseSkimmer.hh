@@ -1194,7 +1194,7 @@ class BaseSkimmer{
 	
 		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
 		//grid maps int pair to vector of channels
-		void CNNPredict(map<string, double>& obs, vector<double>& ovalue){
+		void CNNPredict(map<string, double>& obs, vector<float>& ovalue){
 			ovalue.clear();
 			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
@@ -1212,7 +1212,7 @@ class BaseSkimmer{
 			for(int i = 0; i < result.size(); i++){
 				vector<float> reti = result[i].to_vector();
 				for(int j = 0; j < reti.size(); j++)
-					ovalue.push_back((double)reti[j]);
+					ovalue.push_back(reti[j]);
 			}
 			//for(int i = 0; i < ovalue.size(); i++)
 			//	cout << "class #" << i << " score " << ovalue[i] << endl;

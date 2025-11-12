@@ -880,7 +880,7 @@ class JetSkimmer : public BaseSkimmer{
 			double subcl_dist_time = 0;
 			double subcl_dist_etaphi = 0;
 			double ec1, ec2, pc1, pc2, tc1, tc2, Ek;
-			vector<pair<int, double>> subcl_predict;
+			vector<vector<float>> subcl_predict;
 			Jet subcl;
 			for(int k = 0; k < n_k; k++){
 				jet.GetConstituent(k, subcl);
@@ -905,36 +905,15 @@ class JetSkimmer : public BaseSkimmer{
 			
 				//predicting det bkg MVA score for subclusters in jets
 				//TODO - could change to grabbing rhs from SCs matched to jets 
-				pair<int, double> class_discr = PredictSubcluster(subcl);
-				subcl_predict.push_back(class_discr);
-				int nclass = class_discr.first;
-				if(nclass == 0)
-					t_physBkg->Fill(tc1);
-				if(nclass == 1)
-					t_BH->Fill(tc1);
-				if(nclass == 2)
-					t_spike->Fill(tc1);
+				vector<float> scores;
+				PredictSubcluster(subcl, scores);
+				subcl_predict.push_back(scores);
 
-				//for(int kk = k+1; kk < n_k; kk++){
-				//	params = gmm->GetLHPosteriorParameters(kk);
-				//	ec2 = params["mean"].at(0,0);
-				//	pc2 = params["mean"].at(1,0);
-				//	tc2 = params["mean"].at(2,0);
-				//	
-				//	subcl_dist_time = (tc1 - tc2);
-				//	subclDist_time->Fill(subcl_dist_time);
-				//	
-				//	double de = ec1 - ec2;
-				//	double dp = pc1 - pc2;
-				//	dp = acos(cos(dp)); //wraparound
-				//	subcl_dist_etaphi = sqrt(de*de + dp*dp);
-				//	subclDist_etaPhi->Fill(subcl_dist_etaphi);
-				//}
 			}
 			//using subcl_predict predictions (class, score), sigclass == 0, minscore == 0.9, fully remove subclusters
 			//TODO - verify signal class and minscore from ROC curve
 			Jet detBkgCleanedJet;
-			if(_cleansubcls) detBkgCleanedJet = jet.GenericClean(subcl_predict, 0, 0.9, true);
+			if(_cleansubcls) detBkgCleanedJet = jet.NeuralNetClean(subcl_predict, 0, 0.9, true);
 		}
 
 
@@ -2075,13 +2054,13 @@ class JetSkimmer : public BaseSkimmer{
 
 		//returns {class, max discr val}
 		//pair<int,double> PredictSubcluster(BasePDFMixture* model, int k, const Jet& jet){
-		pair<int,double> PredictSubcluster(const Jet& jet){
+		void PredictSubcluster(const Jet& jet, vector<float>& ovalues){
+			ovalues.clear();
 			//nclass options (index of predicted class)
 			//0 == 1 == phys bkg
 			//1 == 2 == BH
 			//2 == 3 == spike
 			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
-			vector<double> ovalues; //discriminator output value, pass-by-ref
 			map<string, double> obs; //k maps for k subclusters
 			//features = vector of strings of features to use - set with SetNNFeatures
 			//obs = map<string, double> observations for each feature per subcluster
@@ -2090,11 +2069,6 @@ class JetSkimmer : public BaseSkimmer{
 			//can apply CNN weights as an additional weight to rhs in SCs matched to jet
 			MakeCNNInputGrid(rhs, obs);
 			CNNPredict(obs,ovalues);
-			//TODO - update with discriminator score cut
-			auto max_el = max_element(ovalues.begin(), ovalues.end());
-			double ovalue = *max_el;
-			int nclass = std::distance(ovalues.begin(), max_el);
-			return make_pair(nclass, ovalue);
 		}	
 
 
@@ -2103,16 +2077,17 @@ class JetSkimmer : public BaseSkimmer{
 		//saves new prob-weight in jet
 		//if remove, probID = 0 for detector bkg
 		//NN json needs to have been set with SetNNModel(string jsonname)
+		/*
 		void CleanSubclusters(BasePDFMixture* model, Jet& jet){
 			int kmax = model->GetNClusters();
-			pair<int, double> class_discr;
+			vector<double> scores;
 			int nclass; double score;
 			//cout << kmax << " # subclusters " << endl;
 			Jet subcl;
 			for(int k = 0; k < kmax; k++){
 				//cout << "k " << k << " of " << kmax;
 				jet.GetConstituent(k, subcl);
-				class_discr = PredictSubcluster(subcl);
+				PredictSubcluster(subcl,scores);
 				nclass = class_discr.first;
 				score = class_discr.second;
 
@@ -2158,6 +2133,7 @@ class JetSkimmer : public BaseSkimmer{
 				}	
 			}
 		}
+		*/
 
 
 

@@ -36,7 +36,7 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 
 //should be run after all rechits for clustering have been added
-int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
+int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	_algo = new BayesCluster(_rhs);	
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
@@ -73,7 +73,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 	//do hierarchical clustering for subcluster constraints
 	vector<node*> trees = _algo->NlnNCluster();
 	vector<ClusterObj> objs;
-	_treesToObjs(trees, objs);
+	_treesToObjs(trees, objs, pho);
 	//safety for no trees found
 	if(objs.size() < 1){
 		if(_verb > -1) cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
@@ -86,11 +86,12 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
-	retobj.SetCNNModel(_nnmodel);
+	retobj.SetCNNModel(_detbkgmodel);
+	retobj.SetDNNModel(_photonidmodel);
 	return 0;
 }
 
-void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
+void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, bool pho){
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -102,6 +103,6 @@ void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& obj
 		if(pc->GetNPoints() < 2) continue;
 		Jet predJet(trees[i]->model, _PV, _gev, _radius);
 		//add Jet to jets	
-		objs.push_back(ClusterObj(predJet));	
+		objs.push_back(ClusterObj(predJet, pho));
 	}
 }

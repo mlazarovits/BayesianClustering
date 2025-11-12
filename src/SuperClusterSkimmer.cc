@@ -192,7 +192,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			mapobs["object"] = scidx;
 			mapobs["label"] = label;
 			
-			vector<double> ovalues; //discriminator output value, pass-by-ref
+			vector<float> ovalues; //discriminator output value, pass-by-ref
 			CNNPredict(mapobs,ovalues);
 			//TODO - update with discriminator score cut
 			auto max_el = max_element(ovalues.begin(), ovalues.end());

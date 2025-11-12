@@ -118,14 +118,16 @@ struct ClusterObj{
 	void GetRecHitWeights(map<unsigned int, float>& ws){
 		ws.clear();
 		Jet subcl;
-		JetPoint rh;
-		for(int r = 0; r < rhs.size(); r++){
-			ws[rhs[r].rhId()] = 0;
+		JetPoint rh, rrh;
+		for(int r = 0; r < _jet.GetNRecHits(); r++){
+			_jet.GetJetPointAt(r,rh);
+			unsigned int id = rh.rhId();
+			ws[id] = 0;
 			//sum over contributions of each subcluster to this rh
 			for(int k = 0; k < _jet.GetNConstituents(); k++){
 				_jet.GetConstituent(k, subcl);
-				subcl.GetJetPointAt(r,rh);
-				ws[rh[r].rhId()] += rh.GetWeight(); //weight = resp_rk*isPU_k
+				subcl.GetJetPointAt(r,rrh);
+				ws[rrh.rhId()] += rh.GetWeight(); //weight = resp_rk*isPU_k
 			}
 		}
 	}
@@ -136,6 +138,10 @@ struct ClusterObj{
 		scores.clear(); scores = _PUscores;
 	}
 	void GetDetBkgScores(vector<vector<float>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
+	void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
+	void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
+	void SetCNNModel(fdeep::model model){ _detbkgmodel = model; }
+	void SetDNNModel(fdeep::model model){ _photonidmodel = model; }
 	
 
 	
@@ -256,10 +262,6 @@ struct ClusterObj{
 		//TODO - UPDATE WITH DNN MODEL
 		fdeep::model _photonidmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
 		int _ngrid = 7;
-		void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
-		void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
-		void SetCNNModel(fdeep::model model){ _detbkgmodel = model; }
-		void SetDNNModel(fdeep::model model){ _photonidmodel = model; }
 		void GetCenterXtal(JetPoint& center){
 			//get center of pts in ieta, iphi -> max E point
 			vector<JetPoint> rhs;
@@ -368,13 +370,13 @@ class ClusterAnalyzer{
 
 		void SetVerbosity(int v){ _verb = v; }
 
-		int RunClustering(ClusterObj& retobj);
+		int RunClustering(ClusterObj& retobj, bool pho = true);
 
 		void SetDetIDs(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
 		void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model); }
-		void SetDNNModel(string model){ _photonidmodel = fdee::load_model(model); }
+		void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model); }
 
 	private:
 		vector<Jet> _rhs;
@@ -383,7 +385,7 @@ class ClusterAnalyzer{
 		BayesPoint _PV;
 		BayesPoint _detCenter;
 		BayesCluster* _algo;
-		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
+		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, bool pho);
 		std::map<UInt_t,pair<int,int>> _detIDmap;
 		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
 		//TODO - UPDATE WITH DNN MODEL

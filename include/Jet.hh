@@ -663,7 +663,7 @@ class Jet{
 				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 
 				//NN cleaning definition
-				if(class_score[k].first == sigclass && class_score[k].second > minscore)
+				if(class_score[k][sigclass] > minscore)
 					pass.push_back(true);
 				else
 					pass.push_back(false);
