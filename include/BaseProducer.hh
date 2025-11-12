@@ -72,14 +72,20 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
-			if(_data){
+			if(_year == 2018)
 				_timecalibTag = "r2_ul18";
+			else if(_year == 2017)
+				_timecalibTag = "r2_ul17";
+			else
+				_timecalibTag = "";
+			if(_data){
 				_mctype = 1;
 			}
 			else{
-				_timecalibTag = "r2_ul18_mc";
+				_timecalibTag += "_mc";
 				_mctype = 0;
 			}
+			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
 			if(name.find("_v20_")) useFilters = true;
@@ -124,15 +130,19 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
-			if(_data){
+			if(_year == 2018)
 				_timecalibTag = "r2_ul18";
+			else if(_year == 2017)
+				_timecalibTag = "r2_ul17";
+			else
+				_timecalibTag = "";
+			if(_data){
 				_mctype = 1;
 			}
 			else{
-				_timecalibTag = "r2_ul18_mc";
+				_timecalibTag += "_mc";
 				_mctype = 0;
 			}
-				//_timecalibTag = "RunIIFall17DRPremix";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
 			if(name.find("_v20_")) useFilters = true;

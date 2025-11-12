@@ -72,7 +72,7 @@ void PhotonSkimmer::Skim(){
 	double sumE;
 
 	_jetprod->SetTransferFactor(0.0333333);
-	_jetprod->SetMinPt(_minJetPt_isoBkg);
+	_jetprod->SetMinPt(_minJetPt_CRsel);
 	_jetprod->SetMinNrhs(15);
 	_jetprod->SetMinEmE(10);
 	_jetprod->SetMinRhE(0.5);
@@ -101,8 +101,8 @@ void PhotonSkimmer::Skim(){
 	_prod->PrintPreselection();
 	cout << "Jet preselection for isolation enforcement" << endl;
 	_jetprod->PrintPreselection();
-	cout << "Minimum ht: " << _minHt_isoBkg << endl;
-	cout << "Maximum met: " << _maxMet_isoBkg << endl;
+	cout << "Minimum ht: " << _minHt_CRsel << endl;
+	cout << "Maximum met: " << _maxMet_CRsel << endl;
 	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;
@@ -149,6 +149,8 @@ void PhotonSkimmer::Skim(){
 		FillBranch(_base->Met_pt,"MET");
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
+		SetDijetsCR_EvtSel(e);
+		FillBranch(_passDijetsEvtSel,"PassDijetsCR");	
 		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
 			if(!evtfilters){

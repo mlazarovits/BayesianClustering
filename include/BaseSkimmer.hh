@@ -71,10 +71,10 @@ class BaseSkimmer{
 			_tree = new TTree("tree","tree");
 			
 			//reqs on gjets CR sample
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
+			_minPhoPt_CRsel = 70;
+			_minHt_CRsel = 50;
+			_minJetPt_CRsel = 50;
+			_maxMet_CRsel = 50;
 			_jetprod = nullptr;
 
 		};
@@ -134,10 +134,10 @@ class BaseSkimmer{
 			}
 
 			//reqs on gjets CR sample
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
+			_minPhoPt_CRsel = 70;
+			_minHt_CRsel = 50;
+			_minJetPt_CRsel = 50;
+			_maxMet_CRsel = 50;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
 			_ch = MakeTChain(filename);
                         TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
@@ -202,10 +202,10 @@ class BaseSkimmer{
 
 			}
 			//reqs on gjets CR sample
-			_minPhoPt_isoBkg = 70;
-			_minHt_isoBkg = 50;
-			_minJetPt_isoBkg = 50;
-			_maxMet_isoBkg = 50;
+			_minPhoPt_CRsel = 70;
+			_minHt_CRsel = 50;
+			_minJetPt_CRsel = 50;
+			_maxMet_CRsel = 50;
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
 			_ch = MakeTChain(flist);
                         TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
@@ -228,9 +228,58 @@ class BaseSkimmer{
 		virtual void Skim() = 0;
 
 		bool _passGJetsEvtSel = false;
+		bool _passDijetsEvtSel = false;
 		void SetGJetsCR_EvtSel(int e){
 			_passGJetsEvtSel = GJetsCR_EvtSel(e);
 		}
+		void SetDijetsCR_EvtSel(int e){
+			_passDijetsEvtSel = DijetsCR_EvtSel(e);
+		}
+
+		bool DijetsCR_EvtSel(int e){
+			_jetprod->GetTrueJets(_jets, e);
+			FillBranch((double)_jets.size(),"nSelJets");
+			jet_sys = VectorSum(_jets);
+			cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+			//ht - scalar sum
+			double ht = 0;
+			for(auto j : _jets) ht += j.pt();
+			FillBranch(ht,"ht");
+			
+			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
+			//calculate dphi between two leading jets
+			sort(_jets.begin(), _jets.end(), ptsort);
+			double j1_phi = _jets[0].phi_02pi();
+			double j2_phi = _jets[1].phi_02pi();
+			double dphi_jet = j1_phi - j2_phi;
+			dphi_jet = acos(cos(dphi_jet)); //wraparound - will always be < pi
+			cout << " dphi " << dphi_jet << endl;
+			FillBranch(dphi_jet,"dPhi_DijetSys");
+			
+			double ptasym_thresh = 0.6;
+			FillBranch(_jets[1].pt() / _jets[0].pt(),"DijetsPtAsym");
+			double pi = 4*atan(1);
+
+
+			
+			if(_jets.size() < 2)
+				return false;
+			//min jet ht
+			if(ht < _minHt_CRsel)
+				return false; 
+			//MET upper limit - orthogonal to signal MET selection
+			if(_base->Met_pt > _maxMet_CRsel)
+				return false;
+			if(dphi_jet < pi-0.3)
+				return false; //want dphi ~ phi - implies less MET in event
+			if(_jets[1].pt() / _jets[0].pt() < ptasym_thresh)
+				return false;
+			return true;
+
+
+		}
+
+
 		bool GJetsCR_EvtSel(int e){
 			_jetprod->GetTrueJets(_jets, e);
 			if(_jets.size() < 1){
@@ -273,13 +322,12 @@ class BaseSkimmer{
 			if(_jets.size() < 1) return false;
 			//cout << "passed jet mult" << endl;	
 		
-			//dphi bw photon and jet systems (vector sum of objects)
-			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_isoBkg << " ht " << ht << " min ht " << _minHt_isoBkg << endl;	
+			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
 			//MET upper limit - orthogonal to signal MET selection
-			if(_base->Met_pt > _maxMet_isoBkg) return false;
+			if(_base->Met_pt > _maxMet_CRsel) return false;
 			//cout << "passed max met" << endl;	
 			//min jet ht
-			if(ht < _minHt_isoBkg) return false; 
+			if(ht < _minHt_CRsel) return false; 
 			//cout << "passed min ht" << endl;	
 			//az angle bw hardest presel photon + jet system
 			return true;
@@ -320,7 +368,7 @@ class BaseSkimmer{
 				objpt = _base->Photon_pt->at(phoidx);
 				vFillBranch(objpt,"Photon_Pt");
 			}
-			if(objpt < _minPhoPt_isoBkg) minpt = false;
+			if(objpt < _minPhoPt_CRsel) minpt = false;
 			else minpt = true; 
 			if(jet2.pt() / jet1.pt() < ptasym_thresh) ptasym = false;
 			else ptasym = true;
@@ -422,6 +470,7 @@ class BaseSkimmer{
 			AddBranch("Flag_goodVertices","goodVertices");
 			AddBranch("Flag_hfNoisyHitsFilter","hfNoisyHitsFilter");
 			AddBranch("PassGJetsCR","event passes GJets CR selection");
+			AddBranch("PassDijetsCR","event passes Dijets CR selection");
 			//AddBranch("Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS","");
 			//AddBranch("Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter","");
 			//AddBranch("Trigger_hltEG60EtFilter","");
@@ -429,6 +478,8 @@ class BaseSkimmer{
 			//AddBranch("Trigger_hltPFHT350Jet15","");
 			AddBranch("nSelJets","");
 			AddBranch("ht","jet ht, scalar sum of jet pts");
+			AddBranch("dPhi_DijetSys","delta phi between 2 leading jets");
+			AddBranch("DijetsPtAsym","(as)symmetry of min(jet1.pt(), jet2.pt())/max(jet1.pt(), jet2.pt())");
 
 			//object level branches
 			for(int o = 0; o < _obsnames.size(); o++){
@@ -1276,15 +1327,15 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
 		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
 	}
-	void SetMinPt_IsoBkg(double p){ _minPhoPt_isoBkg = p; _prod->SetMinPt(p); }
-	void SetMinHt_IsoBkg(double p){ _minHt_isoBkg = p; }
-	void SetMinJetPt_IsoBkg(double p){ _minJetPt_isoBkg = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
-	void SetMaxMet_IsoBkg(double p){ _maxMet_isoBkg = p; }
+	void SetMinPt_IsoBkg(double p){ _minPhoPt_CRsel = p; _prod->SetMinPt(p); }
+	void SetMinHt_IsoBkg(double p){ _minHt_CRsel = p; }
+	void SetMinJetPt_IsoBkg(double p){ _minJetPt_CRsel = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
+	void SetMaxMet_IsoBkg(double p){ _maxMet_CRsel = p; }
 	
 	ReducedBase* _base = nullptr;
 	TChain* _ch = nullptr;
 	JetProducer* _jetprod = nullptr;
-	double _minPhoPt_isoBkg, _minHt_isoBkg, _minJetPt_isoBkg, _maxMet_isoBkg;
+	double _minPhoPt_CRsel, _minHt_CRsel, _minJetPt_CRsel, _maxMet_CRsel;
 	vector<Jet> _jets;
 	Jet jet_sys;
 	int _nEvts;

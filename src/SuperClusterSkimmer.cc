@@ -51,8 +51,8 @@ void SuperClusterSkimmer::Skim(){
 	_prod->PrintPreselection();
 	cout << "Jet selection for GJets CR" << endl;
 	_jetprod->PrintPreselection();
-	cout << "Minimum ht: " << _minHt_isoBkg << endl;
-	cout << "Maximum met: " << _maxMet_isoBkg << endl;
+	cout << "Minimum ht: " << _minHt_CRsel << endl;
+	cout << "Maximum met: " << _maxMet_CRsel << endl;
 	//loop over events
 	if(_evti == _evtj){
 		_evti = 0;

@@ -385,6 +385,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		double rot = 0;
 		for(int i = 0; i < (int)eigenvals.size(); i++) rot += eigenvals[i];
 		rot = eigenvals[maxd]/rot;
+		if(isnan(rot))
+			cout << "rot is nan - eigenvals[0] " <<  eigenvals[0] << " eigenvals[1] " << eigenvals[1] << endl;
 		//if(rot < 0.5 || rot > 1) cout << "rot: " << rot << endl;
 		return rot;
 	}
@@ -555,6 +557,8 @@ class PhotonSkimmer : public BaseSkimmer{
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 		int label = -1;
 		bool isoBkgSel = GJetsCR_ObjSel(og_pho, true);
+		bool passMinPt = (og_pho.pt() > _minPhoPt_CRsel);
+
 		vFillBranch((double)isoBkgSel,"PassGJetsCR_Obj");
 		//MC
 		if(!_data){
@@ -582,7 +586,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//isolated bkg
 				if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
 					label = 4;
-				else if(!isoBkgSel && _oname.find("QCD") != string::npos && evtfilters)
+				else if(!isoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter)
 					label = 6;
 				else
 					label = -1;
@@ -600,7 +604,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//isolated bkg
 			if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
 				label = 4;
-			else if(!isoBkgSel && _oname.find("QCD") != string::npos && evtfilters)
+			else if(!isoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter && passMinPt)
 				label = 6;
 			else label = -1; 
 		}
