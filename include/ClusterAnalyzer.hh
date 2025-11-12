@@ -33,9 +33,15 @@ struct ClusterObj{
 
 	vector<bool> _PUscores;
 	//will fully remove PU clusters - ie set all w_nk = 0 for PU subcluster k
-	void CleanOutPU(){ _jet.CleanOutPU(_PUscores, true);}
+	void CleanOutPU(){
+		_jet.CleanOutPU(_PUscores, true);
+		//recalculate observables
+		CalculateObjTimes(); 
+	}
 	void CleanOutDetBkg(double minscore, int sigclass = 0, bool remove = false){
-	      //_jet.NeuralNetClean(_detBkgScores, sigclass, minscore, remove);
+		//_jet.NeuralNetClean(_detBkgScores, sigclass, minscore, remove);
+		//recalculate observables
+		//CalculateObjTimes(); 
 	} 
 
 
