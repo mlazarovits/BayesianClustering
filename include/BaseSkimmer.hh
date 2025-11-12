@@ -239,7 +239,12 @@ class BaseSkimmer{
 		bool DijetsCR_EvtSel(int e){
 			_jetprod->GetTrueJets(_jets, e);
 			FillBranch((double)_jets.size(),"nSelJets");
-			jet_sys = VectorSum(_jets);
+			if(_jets.size() < 2){
+				FillBranch(-999,"DijetsPtAsym");
+				FillBranch(-999,"dPhi_DijetSys");
+				FillBranch(-999,"ht");
+				return false;
+			}
 			cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
 			//ht - scalar sum
 			double ht = 0;
@@ -262,8 +267,6 @@ class BaseSkimmer{
 
 
 			
-			if(_jets.size() < 2)
-				return false;
 			//min jet ht
 			if(ht < _minHt_CRsel)
 				return false; 
