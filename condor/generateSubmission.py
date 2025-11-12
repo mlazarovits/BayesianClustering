@@ -42,7 +42,7 @@ def generateSubmission(args):
     elif "MET" in args.inputSample:
         inputFileList = "kucmsntuple_MET_R"+yr+"_"+sel+"_"+ver+"_MET_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "JetHT" in args.inputSample:
-    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year]+"_list.txt"
+    	inputFileList = "kucmsntuple_JetHT_R"+yr+"_"+sel+"_"+ver+"_JetHT_AOD_Run20"+yr+args.era+reco_date[args.year+"_MET"]+"_list.txt"
     elif "QCD" in args.inputSample:
     	inputFileList = "kucmsntuple_QCD_R"+yr+"_"+sel+"_"+ver+"_QCD_HT"+args.HT+"_TuneCP5_AODSIM_"+reco_date[args.year+"_MC"]+"RECO_list.txt"
     elif "EGamma" in args.inputSample:
@@ -87,7 +87,6 @@ def generateSubmission(args):
     #add emAlpha to output name
     emAlphastr = str(args.EMalpha)
     emAlphastr = emAlphastr.replace(".","p")
-    ofilename = ofilename+"_emAlpha"+emAlphastr
 
     betastr = str(args.beta0)
     betastr = betastr.replace(".","p")
@@ -150,8 +149,8 @@ def generateSubmission(args):
     if args.output is not None and objName not in args.output:
     	ofilename = ofilename+"_"+args.output 
     	dirname = dirname+"_"+args.output
-    dirname += priorname
-    ofilename += priorname
+    #dirname += priorname
+    #ofilename += priorname
     ofilename = "condor_"+ofilename
     
     print("Preparing sample directory: {0}".format(dirname))
@@ -193,9 +192,7 @@ def generateSubmission(args):
         flags += ' --rejectSpikes'
     if(args.noIso):
         flags += ' --noIso'
-    if(args.isoBkg):
-        flags += ' --isoBkg'
-        flags += ' --maxmet_isobkg '+str(args.maxmet_isobkg)+' --minphopt_isobkg '+str(args.minphopt_isobkg)+' --minht_isobkg '+str(args.minht_isobkg)+' --minjetpt_isobkg '+str(args.minjetpt_isobkg)
+        flags += ' --maxmet_cr '+str(args.maxmet_cr)+' --minphopt_cr '+str(args.minphopt_cr)+' --minht_cr '+str(args.minht_cr)+' --minjetpt_cr '+str(args.minjetpt_cr)
     if(args.maxRhE != -999):
         flags += ' --maxRhE '+str(args.maxRhE)
     if(args.noSpatCorr):
@@ -282,10 +279,10 @@ def main():
     parser.add_argument('--noIso',help='turn off isolation for photons in preselection',default=False,action='store_true')
     parser.add_argument('--noLumiMask',help='do not apply lumi mask',default=False,action='store_true')
     parser.add_argument('--isoBkg',help='turn on event selection for isolated background',default=False,action='store_true')
-    parser.add_argument('--maxmet_isobkg',help='max MET for isolated background event selection',default=100)
-    parser.add_argument('--minphopt_isobkg',help='min photon pt for isolated background event selection',default=50)
-    parser.add_argument('--minht_isobkg',help='min HT for isolated background event selection',default=50)
-    parser.add_argument('--minjetpt_isobkg',help='min jet pt for isolated background event selection',default=50)
+    parser.add_argument('--maxmet_cr',help='max MET for isolated background event selection',default=100)
+    parser.add_argument('--minphopt_cr',help='min photon pt for isolated background event selection',default=50)
+    parser.add_argument('--minht_cr',help='min HT for isolated background event selection',default=50)
+    parser.add_argument('--minjetpt_cr',help='min jet pt for isolated background event selection',default=50)
     parser.add_argument('--noSpatCorr',help='turn off spatial corrections for rechit times to put in PV frame (jets only)',default=False,action='store_true')
     parser.add_argument('--cleanSubclusters',help='clean subclusters from jet time (data, jets only)',default=False,action='store_true')
     parser.add_argument('--cleanMist',help='extreme \'mist\' cleaning in rh time + energy (data, jets only)',default=False,action='store_true')

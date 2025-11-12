@@ -95,7 +95,6 @@ def eventsSplit(infile, nChunk, filelist, nevtsmax = -999):
     return arr
 
 #splits by files
-#TODO - add max # evts args that splits each file into jobs with max # evts
 #should return a dict of files : evt arr
 def filesSplit(infile, nevtsmax = -999):
     arr = []
