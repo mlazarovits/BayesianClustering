@@ -4,7 +4,7 @@ ROOTGLIBS   = $(shell root-config --glibs)
 #include pythia cflags and libraries
 local: PYTHIACFLAGS = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --cflags)
 local: PYTHIAGLIBS  = $(shell /Users/margaretlazarovits/pythia8307/bin/pythia8-config --libs) 
-lpc%:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/include
+lpc:   PYTHIACFLAGS = -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/include
 lpc:   PYTHIAGLIBS  = -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/lib -Wl,-rpath,/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/pythia8/306-f6b598dfd1f80720b5bc812604c0ae3b/lib -lpythia8 -ldl
 
 #specify compiler
@@ -21,18 +21,18 @@ GLIBS      += $(PYTHIAGLIBS)
 
 #add eigen include path
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/eigen/3.4.0_1/include/eigen3/
-lpc%:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/eigen/82dd3710dac619448f50331c1d6a35da673f764a-f9c27fce684e89466e2ef07869cd264d/include/eigen3/
 #add digamma include path
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/boost/1.85.0/include/
-lpc%:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/include/ 
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0-f76596f4b83666ac3468f34a5f342677/include/ 
 #add jsoncpp flags
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/nlohmann-json/3.11.3/include/
-lpc%:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/json/3.10.2-a6d86565b09ec3d0e02bf7b52c31bbfc/include/ 
+lpc:   CXXFLAGS    += -I/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/json/3.10.2-a6d86565b09ec3d0e02bf7b52c31bbfc/include/ 
 #add CGAL flags and libraries
 local: CXXFLAGS    += -I/opt/homebrew/Cellar/cgal/5.6.1/include/
 #include necessary CGAL libraries BEFORE the include file so the compile knows about them
 lpc:   GLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-static/6.2.1-f4591b847fcbe5753bfc5d2b02f57089/lib/ -lgmp
-lpc%:   CXXFLAGS     += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include/
+lpc:   CXXFLAGS     += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/CGAL-5.6.1/include/
 #boost for CGAL
 #example from KUEWkinoAnalysis makefile #lpc:   GLIBS += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/cms/cmssw/CMSSW_10_6_5/external/slc7_amd64_gcc700/lib/ -lvdt -lboost_program_options -lboost_filesystem -lboost_regex -lboost_system
 #need to dynamically link the boost shared library so CGAL can use it
@@ -42,23 +42,23 @@ lpc:   GLIBS       += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/boost/1.80.0
 #include FastJet cxxflags and libraries
 local: CXXFLAGS  += $(shell ~/fastjet-install/bin/fastjet-config --cxxflags)
 local: GLIBS     += $(shell ~/fastjet-install/bin/fastjet-config --libs)
-lpc%: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config  --cxxflags)
+lpc: CXXFLAGS  += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config  --cxxflags)
 lpc: GLIBS     += $(shell /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/fastjet/3.4.1-b5a7b930eb5755ed2b2b87b323687b41/bin/fastjet-config --libs)
 
 #add functional plus to include path
 local: CXXFLAGS += -I/Users/margaretlazarovits/FunctionalPlus-master/include/
-lpc%:   CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include/
+lpc:   CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/FunctionalPlus-master/include/
 
 #add frugally deep include path
 local: CXXFLAGS += -I/Users/margaretlazarovits/frugally-deep-master/include/
-lpc%:   CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include/
+lpc:   CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_0_13/src/frugally-deep-master/include/
 
 #time calibration stuff
 local: CXX += -I/Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include
-lpc%:   CXX += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include
+lpc:   CXX += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include
 
 #add to make lib ig?
-lpc%: CXXFLAGS += -fPIC
+lpc: CXXFLAGS += -fPIC
 #make list of libraries for shared library
 lib: SGLIBS          = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
 lib: SGLIBS         += -lRooFit -lRooFitCore
@@ -89,7 +89,7 @@ OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 #time calibration stuff
 
 local: TC_OBJ = /Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.so
-lpc%: TC_OBJ = /uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
+lpc: TC_OBJ = /uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
 OBJ_FILES += $(TC_OBJ)
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skimmer.o, $(OBJ_FILES))
