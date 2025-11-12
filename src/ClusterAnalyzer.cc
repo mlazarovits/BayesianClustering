@@ -85,7 +85,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj){
 	if(_verb > -1 && _detIDmap.size() == 0){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
-	retobj.SetupDetIDsEB(_detIDmap);
+	retobj.SetupDetIDs(_detIDmap);
 	retobj.SetCNNModel(_nnmodel);
 	return 0;
 }
