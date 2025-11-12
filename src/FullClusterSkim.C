@@ -62,10 +62,10 @@ int main(int argc, char *argv[]){
 	bool cleanmist = false;
 	bool applyLumiMask = true;
 
-	double minpt_isobkg = 50;
-	double minht_isobkg = 50;
-	double minjetpt_isobkg = 50;
-	double maxmet_isobkg = 50;
+	double minpt_cr = 50;
+	double minht_cr = 50;
+	double minjetpt_cr = 50;
+	double maxmet_cr = 50;
 	double tres_cte = 0.1727;//0.133913;
 	double tres_stoch = 0.5109;//1.60666;
 	double tres_noise = 2.106;//0.00691415;
@@ -242,21 +242,21 @@ int main(int argc, char *argv[]){
 			applyLumiMask = false;
 			cout << "Not applying lumi mask." << endl;
    		}
-		if(strncmp(argv[i],"--minphopt_isobkg", 17) == 0){
+		if(strncmp(argv[i],"--minphopt_cr", 13) == 0){
 			i++;
-    	 		minpt_isobkg = std::stod(argv[i]);
+    	 		minpt_cr = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--minht_isobkg", 14) == 0){
+		if(strncmp(argv[i],"--minht_cr", 10) == 0){
 			i++;
-    	 		minht_isobkg = std::stod(argv[i]);
+    	 		minht_cr = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--minjetpt_isobkg", 17) == 0){
+		if(strncmp(argv[i],"--minjetpt_cr", 13) == 0){
 			i++;
-    	 		minjetpt_isobkg = std::stod(argv[i]);
+    	 		minjetpt_cr = std::stod(argv[i]);
    		}
-		if(strncmp(argv[i],"--maxmet_isobkg", 15) == 0){
+		if(strncmp(argv[i],"--maxmet_cr", 11) == 0){
 			i++;
-    	 		maxmet_isobkg = std::stod(argv[i]);
+    	 		maxmet_cr = std::stod(argv[i]);
    		}
 		if(strncmp(argv[i],"--tResCte", 9) == 0){
 			i++;
@@ -309,10 +309,10 @@ int main(int argc, char *argv[]){
    		cout << "   --rejectSpikes                       reject spikes based on swiss cross cut (default = false, off)" << endl;
    		cout << "   --noSpatCorr                         turn off spatial corrections for rechit times to put in PV frame (jets only, default = true, on)" << endl;
    		cout << "   --noIso                              turn off isolation in preselection (photons only, default = true, on)" << endl;
-   		cout << "   --minphopt_isobkg [minpt]            set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
-   		cout << "   --minht_isobkg [minht]               set minimum jet ht for iso bkg selection (photons only, default = 50)" << endl;
-   		cout << "   --minjetpt_isobkg [minjetpt]         set minimum jet pt for iso bkg selection (photons only, default = 50)" << endl;
-   		cout << "   --maxmet_isobkg [maxmet]             set maximum met for iso bkg selection (photons only, default = 150)" << endl;
+   		cout << "   --minphopt_cr [minpt]            set mininum photon pt for iso bkg selection (photons only, default = 70)" << endl;
+   		cout << "   --minht_cr [minht]               set minimum jet ht for iso bkg selection (photons only, default = 50)" << endl;
+   		cout << "   --minjetpt_cr [minjetpt]         set minimum jet pt for iso bkg selection (photons only, default = 50)" << endl;
+   		cout << "   --maxmet_cr [maxmet]             set maximum met for iso bkg selection (photons only, default = 150)" << endl;
    		cout << "Example: ./FullClusterSkim.x -a 0.5 -t 1.6 -o test" << endl;
 
    		return 0;
