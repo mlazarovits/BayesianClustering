@@ -308,13 +308,7 @@ class BaseSkimmer{
 			double ptasym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
 			
 			bool minpt, ptasym;
-			double objpt = obj.pt();
-			if(objpt < _minPhoPt_isoBkg) minpt = false;
-			else minpt = true; 
-			if(jet2.pt() / jet1.pt() < ptasym_thresh) ptasym = false;
-			else ptasym = true;
-			vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
-			vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
+			double objpt;
 			if(pho)
 				objpt = _base->Photon_pt->at(obj.GetUserIdx());
 			else{ //super cluster
@@ -326,6 +320,12 @@ class BaseSkimmer{
 				objpt = _base->Photon_pt->at(phoidx);
 				vFillBranch(objpt,"Photon_Pt");
 			}
+			if(objpt < _minPhoPt_isoBkg) minpt = false;
+			else minpt = true; 
+			if(jet2.pt() / jet1.pt() < ptasym_thresh) ptasym = false;
+			else ptasym = true;
+			vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
+			vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
 			
 			if(dphi_objjet < pi-0.3) return false; //want dphi ~ phi - implies less MET in event
 
