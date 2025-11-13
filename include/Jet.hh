@@ -634,12 +634,11 @@ class Jet{
 			return cleanedJet;
 		}
 		
-
-		//add PU cleaning method
+		//class_score = vector of scores for each rechit and each class s.t. class_score[subcl_idx] = {class1_score, class2_score, ..., classn_score} 
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
 		//sigclass = number that corresponds to signal class that want to keep
 		//minscore = min score val to qualify as "keep" 
-		Jet GenericClean(const vector<pair<int, double>>& class_score, int sigclass, double minscore, bool remove = false){
+		Jet NeuralNetClean(const vector<vector<float>>& class_score, int sigclass, double minscore, bool remove = false){
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
@@ -663,13 +662,14 @@ class Jet{
 				double relTimeVar = subcl_cov.at(2,2) / cov.at(2,2);
 				double relGeoAvg = pow( relEtaVar * relPhiVar * relTimeVar, 1./3.);
 
-				//PU cleaning definition
-				if(class_score[k].first == sigclass && class_score[k].second > minscore)
+				//NN cleaning definition
+				if(class_score[k][sigclass] > minscore)
 					pass.push_back(true);
 				else
 					pass.push_back(false);
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
+			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
 				Jet ret;

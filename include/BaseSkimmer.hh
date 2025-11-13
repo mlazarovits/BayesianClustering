@@ -688,23 +688,26 @@ class BaseSkimmer{
 			double t_tot = 0;
 			double norm = 0;
 			double res_tot = 0;
+			//timesig = wtime/sqrt(wvar/2) where wtime = (sum_i t_i*(1/sigma^2_i))/(sum_i (1/sigma^2_i)), wvar = 1/(sum_i (1/sigma^2_i)
 			for(int i = 0; i < pts->GetNPoints(); i++){
 				double res, w;
-				res = _rhIdToRes.at(pts->at(i).GetUserIdx());
+				res = _rhIdToRes.at(pts->at(i).GetUserIdx());//variance
 				if(seed_id != -1 && pts->at(i).GetUserIdx() == seed_id){
-					return pts->at(i).at(2) / (res) * sqrt(2.);
+					return pts->at(i).at(2) / sqrt((res)/2.);
 				}
 				//using inverse variances as optimal weights (adding in parallel)
-				w = (1/res);
+				w = (1/res); //1/variance = 1/sigma^2
+				if(pts->at(i).Skip()) //skip invalid rh times
+					w = 0;
 				t_tot += w*pts->at(i).at(2);
-//cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()/_gev << " res " << res << endl;
-				res_tot += w*res;
 				norm += w;
+//cout << "t " << pts->at(i).at(2) << " e " << e << " original e " << pts->at(i).w()/_gev << " res " << res << endl;
+				res_tot += w*res; //sum_i 1 = N
 			}
 			t_tot /= norm;
-			res_tot /= norm;
+			res_tot /= norm; 
 //cout << "t_tot " << t_tot << " res_tot " << res_tot << " norm " << norm << " tim sig " << t_tot / res_tot << endl;
-			return (t_tot / res_tot) * sqrt(2.);
+			return t_tot / sqrt(res_tot/2);
 		}
 
 
@@ -1191,7 +1194,7 @@ class BaseSkimmer{
 	
 		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
 		//grid maps int pair to vector of channels
-		void CNNPredict(map<string, double>& obs, vector<double>& ovalue){
+		void CNNPredict(map<string, double>& obs, vector<float>& ovalue){
 			ovalue.clear();
 			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
@@ -1209,7 +1212,7 @@ class BaseSkimmer{
 			for(int i = 0; i < result.size(); i++){
 				vector<float> reti = result[i].to_vector();
 				for(int j = 0; j < reti.size(); j++)
-					ovalue.push_back((double)reti[j]);
+					ovalue.push_back(reti[j]);
 			}
 			//for(int i = 0; i < ovalue.size(); i++)
 			//	cout << "class #" << i << " score " << ovalue[i] << endl;
