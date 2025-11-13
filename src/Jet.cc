@@ -349,7 +349,7 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 		//push back as jet point to _rhs	
 		_rhs.push_back(JetPoint(x,y,z,t));
 		_rhs[i].SetEnergy(rh.w()/gev);	
-		_rhs[i].SetWeight(rh.w());
+		_rhs[i].SetWeight(1.); //points are energy-weighted in GMM, but here for the jet the weight is 1 since the rh is in the jet, energy information can be accessed with the energy call
 		if(rh.Skip())
 			_rhs[i].SetInvalidTime();
 		_rhs[i].SetRecHitId(rh.GetUserIdx());
