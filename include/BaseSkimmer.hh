@@ -237,19 +237,15 @@ class BaseSkimmer{
 		}
 
 		bool DijetsCR_EvtSel(int e){
-			_jetprod->GetTrueJets(_jets, e);
-			FillBranch((double)_jets.size(),"nSelJets");
 			if(_jets.size() < 2){
 				FillBranch(-999,"DijetsPtAsym");
 				FillBranch(-999,"dPhi_DijetSys");
-				FillBranch(-999,"ht");
 				return false;
 			}
 			cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
 			//ht - scalar sum
 			double ht = 0;
 			for(auto j : _jets) ht += j.pt();
-			FillBranch(ht,"ht");
 			
 			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
 			//calculate dphi between two leading jets
@@ -284,7 +280,6 @@ class BaseSkimmer{
 
 
 		bool GJetsCR_EvtSel(int e){
-			_jetprod->GetTrueJets(_jets, e);
 			if(_jets.size() < 1){
 				jet_sys = Jet(0,0,0,0);
 				cout << "# jets " << _jets.size() << endl;
@@ -298,11 +293,9 @@ class BaseSkimmer{
 			//FillBranch((double)_base->Trigger_hltEG60EtFilter,"Trigger_hltEG60EtFilter");
 			//FillBranch((double)_base->Trigger_hltHT175Jet10,"Trigger_hltHT175Jet10");
 			//FillBranch((double)_base->Trigger_hltPFHT350Jet15,"Trigger_hltPFHT350Jet15");
-			FillBranch((double)_jets.size(),"nSelJets");
 			//ht - scalar sum
 			double ht = 0;
 			for(auto j : _jets) ht += j.pt();
-			FillBranch(ht,"ht");
 			//correct HLT paths are not saved in ntuples - skip triggers
 			//L1 seed
 			//if(!_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS) return false;
@@ -1087,6 +1080,28 @@ class BaseSkimmer{
                         applied = 1,
                         invApplied = 2
                 };
+		void Get2DMat(const Matrix& inmat, Matrix& outmat){
+			if(!outmat.square()) return;
+			if(outmat.nRows() != 2) return;
+			outmat.reset();
+			outmat.SetEntry(inmat.at(0,0),0,0);	
+			outmat.SetEntry(inmat.at(0,1),0,1);	
+			outmat.SetEntry(inmat.at(1,0),1,0);	
+			outmat.SetEntry(inmat.at(1,1),1,1);
+		}
+		void GetSpaceMajMinLens(const Jet& jet, double& minlen, double& majlen){
+			Matrix cov = jet.GetCovariance();
+			Matrix space_mat(2,2);
+			Get2DMat(cov,space_mat);
+			vector<Matrix> eigenvecs_space;
+			vector<double> eigenvals_space;
+			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			majlen = sqrt(eigenvals_space[1]);
+			if(eigenvals_space[1] < 0) cout << "negative eigenvalue " << eigenvals_space[1] << endl;
+			if(eigenvals_space[0] < 0) minlen = -sqrt(-eigenvals_space[0]);
+			else minlen = sqrt(eigenvals_space[0]);	
+
+		}
 
 		void GetCenterXtal(vector<JetPoint>& rhs, JetPoint& center){
 			//get center of pts in ieta, iphi -> max E point
@@ -1101,8 +1116,6 @@ class BaseSkimmer{
 
 
 		//write nxn grid of E, t, r_nk here
-		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, vector<map<string,double>>& mapobs){
-		//void MakeCNNInputGrid(BasePDFMixture* model, int k, vector<JetPoint>& rhs, JetPoint& center, map<string,double>& mapobs){
 		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
 		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1){
 			JetPoint center;
@@ -1177,10 +1190,41 @@ class BaseSkimmer{
 			_nnmodel = fdeep::load_model(fname);
 		}
 		//sets which features to use in NN prediction - make sure this matches with the given model (json)
-		vector<string> _nnfeatures;
+		vector<string> _nnfeatures = {"EtaSig", "PhiSig", "EtaPhiCov", "majorLength", "minorLength", "hcalTowerSumEtConeDR04OvPt", "trkSumPtSolidConeDR04OvPt", "trkSumPtHollowConeDR04OvPt", "hadTowOverEMOvPt", "ecalRHSumEtConeDR04OvPt"};
 		void SetNNFeatures(vector<string>& features){
 			_nnfeatures = features;
 		}
+
+
+		void MakeDNNInputs(const Jet& jet, int phoidx, map<string, double>& obs){
+			obs.clear();
+			for(auto n : _nnfeatures)
+				obs[n] = -999;
+			//get shape variables
+			Matrix cov = jet.GetCovariance();
+			obs["EtaSig"] = sqrt(cov.at(0,0));
+			obs["PhiSig"] = sqrt(cov.at(1,1));
+			double majlen, minlen;
+			GetSpaceMajMinLens(jet, minlen, majlen);
+			obs["majLength"] = majlen;
+			obs["minLength"] = minlen;
+
+			//get photon isolation
+			double pt = _base->Photon_pt->at(phoidx);
+			double hcaltow = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx) / pt;
+			obs["hcalTowerSumEtConeDR04OvPt"] = hcaltow;
+			double trksumsolid = _base->Photon_trkSumPtSolidConeDR04->at(phoidx) / pt;
+			obs["trkSumPtSolidConeDR04OvPt"] = trksumsolid;
+			double trksumhollow = _base->Photon_trkSumPtHollowConeDR04->at(phoidx) / pt;
+			obs["trkSumPtHollowConeDR04OvPt"] = trksumhollow;
+			double hadtow = _base->Photon_hadTowOverEM->at(phoidx) / pt;
+			obs["hadTowOverEMOvPt"] = hadtow;
+			double ecalrh = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) / pt;
+			obs["ecalRHSumEtConeDR04OvPt"] = ecalrh;
+		}
+
+
+
 		//returns predicted class, by reference the discriminator value - DNN
 		void DNNPredict(map<string,double>& obs, vector<double>& ovalue){
 			ovalue.clear();

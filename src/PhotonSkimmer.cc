@@ -147,6 +147,11 @@ void PhotonSkimmer::Skim(){
 		FillBranch((double)e,"evt");
 		FillBranch(_weight,"evt_wt");
 		FillBranch(_base->Met_pt,"MET");
+		_jetprod->GetTrueJets(_jets, e);
+		double ht = 0;
+		for(auto j : _jets) ht += j.pt();
+		FillBranch(ht,"ht");
+		FillBranch((double)_jets.size(),"nSelJets");
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 		SetDijetsCR_EvtSel(e);
@@ -254,7 +259,10 @@ void PhotonSkimmer::Skim(){
 
 			//do DNN prediction
 			vector<double> dnn_scores;
-			DNNPredict(obs, dnn_scores);
+			map<string, double> dnn_obs;
+			MakeDNNInputs(bhc_pho, phoidx, dnn_obs);
+
+			DNNPredict(dnn_obs, dnn_scores);
 			//TODO - update with discriminator score cut
 			auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
 			double predval = *max_el;

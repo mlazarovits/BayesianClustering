@@ -209,7 +209,7 @@ class PhotonSkimmer : public BaseSkimmer{
 
 		}
 
-		void FillJetObs(Jet bhc_obj, map<string, double>& obs){
+		void FillJetObs(const Jet& bhc_obj, map<string, double>& obs){
 			double E_tot = bhc_obj.E();
 			obs.at("Energy") = E_tot;
 			
@@ -432,35 +432,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		obs.push_back(sumNeighbors/wmax);
 
 	}
-
-
-	//potential BH variables
-	void BeamHaloObs(PointCollection* pc, vector<double>& obs){
-		obs.clear();	
-		//find seed crystal -> largest weight
-		pc->Sort();
-		//seed crystal is last one
-		BayesPoint seed = pc->at(pc->GetNPoints()-1);
-		//ie looking at neighbor eta energy ratio + neighbor phi energy ratio
-		
-			// double ratio
-		//ratio of center crystal to 2 neighbors in eta (smaller), phi (larger)
-		//ratio of eta strips to surrounding eta strips in phi
-		
-
-	}
-	
-
-	void Get2DMat(const Matrix& inmat, Matrix& outmat){
-		if(!outmat.square()) return;
-		if(outmat.nRows() != 2) return;
-		outmat.reset();
-		outmat.SetEntry(inmat.at(0,0),0,0);	
-		outmat.SetEntry(inmat.at(0,1),0,1);	
-		outmat.SetEntry(inmat.at(1,0),1,0);	
-		outmat.SetEntry(inmat.at(1,1),1,1);
-	}
-
 
 	double swissCross(const vector<Jet>& jets){
 		//find seed crystal (highest weight, E = w*_gev)

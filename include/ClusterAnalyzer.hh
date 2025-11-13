@@ -22,7 +22,7 @@ struct ClusterObj{
 		CalculateObjTimes(); 
 		CalculatePUScores();
 		CalculateDetBkgScores(pho); //if pho == true, calculate CNN grid over whole object, else calculate for each subcluster in object
-		CalculatePhotonIDScores(pho);
+		CalculatePhotonIDScores();
 	}
 
 
@@ -144,14 +144,24 @@ struct ClusterObj{
 		scores.clear(); scores = _PUscores;
 	}
 	void GetDetBkgScores(vector<vector<float>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
+	void GetPhotonIDScores(vector<float>& photonIDScores){ photonIDScores.clear(); photonIDScores = _photonIDScores; }
 	void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
 	void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
 	void SetCNNModel(fdeep::model model){ _detbkgmodel = model; }
 	void SetDNNModel(fdeep::model model){ _photonidmodel = model; }
 	
 
+	void SetPhotonPt(double p){ _phopt = p;}
+	void SetIsolationInfo(map<string, double> obs){
+		_isomap.clear();
+		_isomap = obs;
+	}
+
+
 	
 	private:
+		double _phopt = -1;
+		map<string, double> _isomap;
 		double _pvTime = -999; //time at PV
 		double _detTime = -999;
 		void CalculatePUScores(){
@@ -186,39 +196,32 @@ struct ClusterObj{
 			_pvTime = _detTime - d_rh_pv;
 		}
 
-		void CalculatePhotonIDScores(bool pho){
-			/*
-			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);
-			fdeep::tensor input_tensor(tensor_shape, 0.0f);
-			//make grid for each subclusters in jet
-			JetPoint center;
-			GetCenterXtal(center);
-			map<string, double> inputs;
-			if(pho){
-				MakeDNNInputs(inputs);
-				//transform vector to input_sample
-				for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
-					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-						double val = inputs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
-						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
-					}							
-				}
-				//predict_class returns predicted class number and value of max output neuron
-				fdeep::tensors result = _photonidmodel.predict({input_tensor});
-				cout << "n results " << result.size() << endl;
-        	                for(int i = 0; i < result.size(); i++){
-        	                        vector<float> reti = result[i].to_vector();
-        	                        _detBkgScores.push_back(reti);
-        	                }
+		void CalculatePhotonIDScores(){
+			_photonIDScores.clear();
+			map<string, double> input_map;
+			MakeDNNInputs(input_map);
+			vector<float> input_sample;
+			//put map into vector with same order as input features (which is the same order that the model sees)	
+			for(int f = 0; f < _nnfeatures.size(); f++){
+				input_sample.push_back((float)input_map[_nnfeatures[f]]);
 			}
-			*/
 
-
+			int size = input_sample.size();
+			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
+			
+			//predict_class returns predicted class number and value of max output neuron
+			fdeep::tensors result = _photonidmodel.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					_photonIDScores.push_back(reti[j]);
+			}
 		}
 
 
 
 		void CalculateDetBkgScores(bool pho){
+			_detBkgScores.clear();
 			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
 			//make grid for each subclusters in jet
@@ -263,11 +266,44 @@ struct ClusterObj{
 			}
 		}
 		vector<vector<float>> _detBkgScores; //is a vector of vectors s.t. _detBkgScores[subcl_idx] = {score_physbkg, score_bh, score_spike} 
-		vector<vector<float>> _photonIDScores; //is a vector of vectors s.t. _photonIDScores[subcl_idx] = {score_isobkg, score_nonisobkg} 
+		vector<float> _photonIDScores; //is a vector of vectors s.t. _photonIDScores[subcl_idx] = {score_isobkg, score_nonisobkg} 
 		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
-		//TODO - UPDATE WITH DNN MODEL
-		fdeep::model _photonidmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
+		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
 		int _ngrid = 7;
+		vector<string> _nnfeatures = {"EtaSig", "PhiSig", "EtaPhiCov", "majorLength", "minorLength", "hcalTowerSumEtConeDR04OvPt", "trkSumPtSolidConeDR04OvPt", "trkSumPtHollowConeDR04OvPt", "hadTowOverEMOvPt", "ecalRHSumEtConeDR04OvPt"};
+		
+		void MakeDNNInputs(map<string, double>& obs){
+			obs.clear();
+			
+			//get shape variables
+			Matrix cov = _jet.GetCovariance();
+			obs["EtaSig"] = sqrt(cov.at(0,0));
+			obs["PhiSig"] = sqrt(cov.at(1,1));
+			double majlen, minlen;
+			GetSpaceMajMinLens(minlen, majlen);
+			obs["majorLength"] = majlen;
+			obs["minorLength"] = minlen;
+
+			if(_phopt == -1){
+				cout << "Error: cannot make full photon ID DNN inputs with isolation because photon pt has not been set. Set with phoobj.SetPhotonPt(p)." << endl;
+				return;
+			}
+
+			//get photon isolation
+			double hcaltow = _isomap.at("hcalTowerSumEtConeDR04") / _phopt;
+			obs["hcalTowerSumEtConeDR04OvPt"] = hcaltow;
+			double trksumsolid = _isomap.at("trkSumPtSolidConeDR04") / _phopt;
+			obs["trkSumPtSolidConeDR04OvPt"] = trksumsolid;
+			double trksumhollow = _isomap.at("trkSumPtHollowConeDR04") / _phopt;
+			obs["trkSumPtHollowConeDR04OvPt"] = trksumhollow;
+			double hadtow = _isomap.at("hadTowOverEM") / _phopt;
+			obs["hadTowOverEMOvPt"] = hadtow;
+			double ecalrh = _isomap.at("ecalRHSumEtConeDR04") / _phopt;
+			obs["ecalRHSumEtConeDR04OvPt"] = ecalrh;
+			
+		}
+
+
 		void GetCenterXtal(JetPoint& center){
 			//get center of pts in ieta, iphi -> max E point
 			vector<JetPoint> rhs;
@@ -349,6 +385,19 @@ struct ClusterObj{
 			outmat.SetEntry(inmat.at(1,0),1,0);	
 			outmat.SetEntry(inmat.at(1,1),1,1);
 		}
+		void GetSpaceMajMinLens(double& minlen, double& majlen){
+			Matrix cov = _jet.GetCovariance();
+			Matrix space_mat(2,2);
+			Get2DMat(cov,space_mat);
+			vector<Matrix> eigenvecs_space;
+			vector<double> eigenvals_space;
+			space_mat.eigenCalc(eigenvals_space, eigenvecs_space);
+			majlen = sqrt(eigenvals_space[1]);
+			if(eigenvals_space[1] < 0) cout << "negative eigenvalue " << eigenvals_space[1] << endl;
+			if(eigenvals_space[0] < 0) minlen = -sqrt(-eigenvals_space[0]);
+			else minlen = sqrt(eigenvals_space[0]);	
+
+		}
 
 
 
@@ -394,8 +443,7 @@ class ClusterAnalyzer{
 		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, bool pho);
 		std::map<UInt_t,pair<int,int>> _detIDmap;
 		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
-		//TODO - UPDATE WITH DNN MODEL
-		fdeep::model _photonidmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
+		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
 		int _verb;
 
 };
