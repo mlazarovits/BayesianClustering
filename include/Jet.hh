@@ -611,12 +611,10 @@ class Jet{
 					effRh.SetWeight(totR);
 				}
 				effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
-				JetPoint jetrh = effRh;
-				jetrh.SetWeight(_rhs[n].E()*effRh.GetWeight()); //set jet rh to have weight e*w but subcluster rhs will just have weight w
 //cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << " totR " << totR << endl;
 				totE += effRh.e();
 
-				cleanedRhs.push_back(jetrh);
+				cleanedRhs.push_back(effRh);
 			}
 			if(totE == 0){
 				Jet ret;
@@ -674,6 +672,7 @@ class Jet{
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
 				Jet ret;
+				ret._nnCleaned = true;
 				return ret;
 			}
 
@@ -713,17 +712,14 @@ class Jet{
 			}
 			if(totE == 0){
 				Jet ret;
+				ret._nnCleaned = true;
 				return ret;
 			}
 			cleanedJet = Jet(cleanedRhs, _vtx);
+			cleanedJet._nnCleaned = true;
 			for(int k = 0; k < pass.size(); k++){
-				if(remove){
-					if(pass[k])
-						cleanedJet.AddConstituent(_constituents[k]);
-				}
-				else{
+				if(pass[k])
 					cleanedJet.AddConstituent(_constituents[k]);
-				}
 			}	
 //cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
 			return cleanedJet;
@@ -820,6 +816,7 @@ class Jet{
 		
 
 		bool _puCleaned = false;
+		bool _nnCleaned = false;	
 
 		double _maxRap = 1e5;
 		//default values - have yet to be calculated or set

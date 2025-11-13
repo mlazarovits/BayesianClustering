@@ -519,22 +519,22 @@ class BaseSkimmer{
 				if(_obsnames[o] == "TimeCenter")
 					units = " [ns]";
 				string key, title;
-				if(_obj == "SC" && _obsnames_subcl[o].find("rh_") != string::npos){
-					key = _obsnames_subcl[o];
-					title = _obsnames_subcl[o];
+				//subcluster	
+				key = "subcluster_"+_obsnames_subcl[o];
+				title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
+				//subcluster pre-PU cleaning	
+				if(_obsnames_subcl[o].find("Energy") != string::npos || _obsnames_subcl[o].find("Var") != string::npos || _obsnames_subcl[o].find("nSubclusters") != string::npos){
+					key += "_prePUcleaning";
+					title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
 				}
-				else{
-					//subcluster	
-					key = "subcluster_"+_obsnames_subcl[o];
-					title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
-					//subcluster pre-PU cleaning	
-					if(_obsnames_subcl[o].find("Energy") != string::npos || _obsnames_subcl[o].find("Var") != string::npos || _obsnames_subcl[o].find("nSubclusters") != string::npos){
-						key += "_prePUcleaning";
-						title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
-					}
-				}
+				
 				vvAddBranch(key,title);
 			}
+			//rh obs
+			vvAddBranch("rh_iEta","ieta coord of rh in 7x7 CNN grid");
+			vvAddBranch("rh_iPhi","iphi coord of rh in 7x7 CNN grid");
+			vvAddBranch("rh_Energy","energy of rh in 7x7 CNN grid");
+			vvAddBranch("rh_Weight","weight of rh in 7x7 CNN grid");
 
 			
 		}
@@ -1146,11 +1146,12 @@ class BaseSkimmer{
 					//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
 					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
-					grid[make_pair(deta, dphi)] = {rhs[j].E()};
+					grid[make_pair(deta, dphi)] = {rhs[j].E()*rhs[j].GetWeight()};
 					if(jet_scIdx != -1){	
 						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
 						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
-						vvFillBranch(rhs[j].E(), "rh_energy", jet_scIdx,false);
+						vvFillBranch(rhs[j].E(), "rh_Energy", jet_scIdx,false);
+						vvFillBranch(rhs[j].GetWeight(),"rh_Weight",jet_scIdx,false);
 						nrhs++;
 					}
 					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
