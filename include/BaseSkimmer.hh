@@ -672,9 +672,17 @@ class BaseSkimmer{
 		PointCollection* GetPointsFromJet(const Jet& jet){
 			PointCollection* points = new PointCollection();
 			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
+
+			int nsubcls = jet.GetNConstituents();
+			Jet subcl;
+			JetPoint rh;
 			for(int r = 0; r < rhs.size(); r++){
 				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
-				pt.SetWeight(rhs[r].E()*_gev);
+				//sum subcluster contributions to this rh for total weight (includes PU weights and any other cleaning applied to this jet)
+				//if no cleaning has been applied, this weight is energy*_gev 
+				pt.SetWeight(rhs[r].GetWeight());
+				if(rhs[r].InvalidTime())
+					pt.SetSkipDim(2);
 				pt.SetUserIdx(rhs[r].rhId());
 				points->AddPoint(pt);
 				
@@ -697,6 +705,7 @@ class BaseSkimmer{
 				}
 				//using inverse variances as optimal weights (adding in parallel)
 				w = (1/res); //1/variance = 1/sigma^2
+				w *= pts->at(i).w(); //subclustering weighting includes PU cleaning (not energy weighted)
 				if(pts->at(i).Skip()) //skip invalid rh times
 					w = 0;
 				t_tot += w*pts->at(i).at(2);
