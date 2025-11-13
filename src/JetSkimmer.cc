@@ -69,7 +69,7 @@ void JetSkimmer::Skim(){
 		_prod->GetTruePhotons(phos, i, phogev);
 		for(int p = 0; p < phos.size(); p++){
 			Jet bhc_pho;
-			int ret = RunClustering(phos[p], bhc_pho, true);
+			int ret = RunClustering(phos[p], bhc_pho, false); //downweighting rhs
 			if(ret == -1) continue;
 			bhc_phos.push_back(bhc_pho);
 		}

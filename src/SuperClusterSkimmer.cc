@@ -153,7 +153,7 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			}
 
 			Jet bhc_sc;
-			int ret = RunClustering(scs[s], bhc_sc, true, jet_scIdx); //fully remove PU clusters
+			int ret = RunClustering(scs[s], bhc_sc, false, jet_scIdx); //downweight rhs according to good PU clusters
 			if(ret < 0){
 				continue;
 			}
