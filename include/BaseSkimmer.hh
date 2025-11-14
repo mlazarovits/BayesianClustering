@@ -1236,7 +1236,6 @@ class BaseSkimmer{
 			}
 
 			int size = input_sample.size();
-			cout << "size " << size << " model name " << _photonidmodel.name() << endl;
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 			
 			//predict_class returns predicted class number and value of max output neuron
