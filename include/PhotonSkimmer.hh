@@ -528,6 +528,7 @@ class PhotonSkimmer : public BaseSkimmer{
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 		int label = -1;
 		bool isoBkgSel = GJetsCR_ObjSel(og_pho, true);
+		bool nonIsoBkgSel = DijetsCR_ObjSel(og_pho);
 		bool passMinPt = (og_pho.pt() > _minPhoPt_CRsel);
 
 		vFillBranch((double)isoBkgSel,"PassGJetsCR_Obj");
@@ -557,7 +558,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				//isolated bkg
 				if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
 					label = 4;
-				else if(!isoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter)
+				else if(!isoBkgSel && nonIsoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter)
 					label = 6;
 				else
 					label = -1;
