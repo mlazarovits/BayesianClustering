@@ -63,7 +63,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_gev = 1/30.;
 			_applyFrac = false;
 			
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			SetupDetIDs();
 		}
 
 		/*		
@@ -95,7 +95,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			_applyFrac = false;
 			
 
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			SetupDetIDs();
 		}
 		*/
 

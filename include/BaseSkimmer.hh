@@ -612,12 +612,13 @@ class BaseSkimmer{
 		        Int_t ecal; // EB, EM, EP
 		};//<<>>struct DetIDStruct
 	
-		std::map<UInt_t,DetIDStruct> _detIDmap;		
+		std::map<UInt_t,kucms_DetIDStruct> _detIDmap;		
 		std::map<pair<int, int>, UInt_t> _ietaiphiID;	
 		
 		//this function and the corresponding DetIDStruct (above) are courtesy of Jack King 
 		//https://github.com/jking79/LLPgammaAnalyzer/blob/master/macros/KUCMS_Skimmer/KUCMSHelperFunctions.hh  
-		void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap, std::map<pair<int,int>, UInt_t> &iEtaiPhiToDetID ){
+		void SetupDetIDsEB(){
+			//barrel
 		        const std::string detIDConfigEB("ecal_config/fullinfo_v2_detids_EB.txt");
 		        std::ifstream infile( detIDConfigEB, std::ios::in);
 		
@@ -629,15 +630,36 @@ class BaseSkimmer{
 		
 		        while (infile >> cmsswId >> dbID >> hashedId >> iphi >> ieta >> absieta >> pos >> FED >> SM >> TT25 >> iTT >> strip5 >> Xtal >> phiSM >> etaSM >> detphi >> deteta){
 		            //std::cout << "DetID Input Line: " << cmsswId << " " << iphi << " "  << ieta << " " << 0 << std::endl;
-		            DetIDMap[cmsswId] = DetIDStruct(iphi,ieta,TT25,0,deteta,detphi);
+		            _detIDmap[cmsswId] = {iphi,ieta,TT25,0,deteta,detphi,SM,iTT};
 		            ietaiphi = make_pair(ieta, iphi);
-		            iEtaiPhiToDetID[ietaiphi] = cmsswId;
-		            //auto idinfo = DetIDMap[cmsswId];
-		            //std::cout << "DetID set to : " << idinfo.i1 << " " << idinfo.i2 << " " << idinfo.ecal << std::endl;
+		            _ietaiphiID[ietaiphi] = cmsswId;
 		        }//while (infile >>
+		}//<<>>void SetupDetIDs_EB()
+		void SetupDetIDsEE(){
+		    std::ifstream infile( "ecal_config/fullinfo_v2_detids_EE.txt", std::ios::in);
+		    unsigned int cmsswId, dbID;
+		    int hashedId, side, ix, iy, SC, iSC, Fed, TTCCU, strip, Xtal, quadrant;
+		    float phi, eta;
+		    std::string EE;
+		    pair<int, int> iyix;
 		
-		}//<<>>void SetupDetIDsEB( std::map<UInt_t,DetIDStruct> &DetIDMap )
+		    while( infile >> cmsswId >> dbID >> hashedId >> side >> ix >> iy >> SC
+		                >> iSC >> Fed >> EE >> TTCCU >> strip >> Xtal >> quadrant >> phi >> eta ){
+		
+		        int ec = 1;
+		        if( side > 0 ) ec = 2;
+		        _detIDmap[cmsswId] = {ix,iy,TTCCU,ec,phi,eta,quadrant,SC};
+		        iyix = make_pair(iy, ix);
+		        _ietaiphiID[iyix] = cmsswId;
+		
+		    }//<<>>while (infile >>
+		
+		}//<<>>void SetupDetIDsEE( std::map<UInt_t,DetIDStruct> &DetIDMap )
 
+		void SetupDetIDs(){
+			SetupDetIDsEB();
+			SetupDetIDsEE();
+		}
 
 		void SetData(bool d){ _data = d; }
 		void SetDebug(bool d){ _debug = d; }
@@ -1031,13 +1053,13 @@ class BaseSkimmer{
 			else{
 				rh = rhs[r];
 			}
-			int rh_ieta = _detIDmap[rh.rhId()].i2;
-			int rh_iphi = _detIDmap[rh.rhId()].i1;
+			int rh_ieta = _detIDmap.at(rh.rhId()).i2;
+			int rh_iphi = _detIDmap.at(rh.rhId()).i1;
 			icoords.clear(); Es.clear();
 			int deta, dphi;
 			for(int j = 0; j < (int)rhs.size(); j++){
-				ieta = _detIDmap[rhs[j].rhId()].i2;
-				iphi = _detIDmap[rhs[j].rhId()].i1;
+				ieta = _detIDmap.at(rhs[j].rhId()).i2;
+				iphi = _detIDmap.at(rhs[j].rhId()).i1;
 				deta = ieta - rh_ieta;
 				dphi = iphi - rh_iphi;
 				//do wraparound
@@ -1135,14 +1157,14 @@ class BaseSkimmer{
 
 			//get ngrid x ngrid around center point 
 			int ieta, iphi;
-			int rh_ieta = _detIDmap[center.rhId()].i2;
-			int rh_iphi = _detIDmap[center.rhId()].i1;
+			int rh_ieta = _detIDmap.at(center.rhId()).i2;
+			int rh_iphi = _detIDmap.at(center.rhId()).i1;
 			int deta, dphi;
 			double nrhs = 0;
 			//Matrix post = model->GetPosterior();
 			for(int j = 0; j < rhs.size(); j++){
-				ieta = _detIDmap[rhs[j].rhId()].i2;
-				iphi = _detIDmap[rhs[j].rhId()].i1;
+				ieta = _detIDmap.at(rhs[j].rhId()).i2;
+				iphi = _detIDmap.at(rhs[j].rhId()).i1;
 //cout << "MakeCNNInputGrid - rh id " << rhs[j].rhId() << endl;
 				//do eta flip
 				if(rh_ieta < 0)
@@ -1161,6 +1183,7 @@ class BaseSkimmer{
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
 					grid[make_pair(deta, dphi)] = {rhs[j].E()*rhs[j].GetWeight()};
 					if(jet_scIdx != -1){	
+				cout << "rh #" << j << " rh_iEta " << deta << " rh_iPhi " << dphi << " e " << rhs[j].E() << " w " << rhs[j].GetWeight() << " ieta " << ieta << " iphi " << iphi << " center ieta " << rh_ieta << " center iphi " << rh_iphi << " rh eta " << rhs[j].eta() << " phi " << rhs[j].phi() << " id " << rhs[j].rhId() << endl;
 						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
 						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
 						vvFillBranch(rhs[j].E(), "rh_Energy", jet_scIdx,false);

@@ -54,7 +54,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_gev = 1/30.;
 			_applyFrac = false;
 
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			SetupDetIDs();
 		}
 		/*
 		SuperClusterSkimmer(string filelist) : BaseSkimmer(filelist){
@@ -80,7 +80,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_applyFrac = false;
 
 			
-			SetupDetIDsEB( _detIDmap, _ietaiphiID );
+			SetupDetIDs();
 		}
 		*/
 
