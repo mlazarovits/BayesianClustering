@@ -459,8 +459,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		double e1, e4;
 		e1 = sc.at(sc.GetNPoints()-1).w()/_gev;
 		int e1id = sc.at(sc.GetNPoints()-1).at(0);
-		int e1_iphi = _detIDmap[e1id].i1;
-		int e1_ieta = _detIDmap[e1id].i2;
+		int e1_iphi = _detIDmap.at(e1id).i1;
+		int e1_ieta = _detIDmap.at(e1id).i2;
 		
 		//find up, left, right, down crystals (e4)
 		//eta on x-axis - shift in eta = left/right
@@ -518,128 +518,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		return i != 0 && (std::abs(i) <= max_ieta) && (j >= min_iphi) && (j <= max_iphi);
 	}
 
-
-
-
-
-
-	//recreate R9 variable
-	double sc3x3E(vector<JetPoint>& rhs){
-		//find seed xtal
-		double maxE = 0;
-		JetPoint seed;
-		for(auto rh : rhs){
-			if(rh.E() > maxE){ seed = rh; maxE = seed.E(); } 
-		}
-		//find 3x3 grid centered on xmax
-		int detid = seed.rhId();
-		int ieta = _detIDmap[detid].i2;
-		int iphi = _detIDmap[detid].i1;
-		double gridE = 0;
-			
-		int id, ie, ip, ide, idp;
-		for(auto rh : rhs){
-			id = rh.rhId();
-			ie = _detIDmap[detid].i2;
-			ip = _detIDmap[detid].i1;
-			ide = ieta - ie;
-			idp = iphi - ip;
-			if(fabs(ide) < 2 && fabs(idp) < 2){
-				gridE += rh.E();
-			}
-		}
-		return gridE;	
-	}
-
-
-
-	//return BH cluster size, rhs to use in time discriminant
-	int MakeBHFilterCluster(Jet& sc, vector<JetPoint>& bh_rhs){
-		bh_rhs.clear();
-		//get rhs
-		vector<JetPoint> rhs; sc.GetJetPoints(rhs);
-		//find seed xtal
-		double maxE = 0;
-		pair<int, int> iSeed; //ieta, iphi of seed
-		unsigned int seedId;
-		for(int i = 0; i < rhs.size(); i++){
-			if(rhs[i].E() > maxE){
-				maxE = rhs[i].E();
-				iSeed = make_pair(_detIDmap[rhs[i].rhId()].i2, _detIDmap[rhs[i].rhId()].i1);
-				seedId = rhs[i].rhId();
-			}
-		}
-		//seed must be at least 5 GeV
-		if(maxE < 5) return -1;
-		//build SC band
-		double deta = acos(-1)/180;
-		double dphi = acos(-1)/180;
-		double maxEta = 0.4;
-		double maxPhi = 0.16;
-
-		int maxiEta = round(maxEta/deta);
-		int maxiPhi = round(maxPhi/dphi); 
-
-		unsigned int rhid;
-		int ieta, iphi;
-		int nRhs = 0;
-		for(int i = 0; i < rhs.size(); i++){
-			rhid = rhs[i].rhId();
-			//skip seed
-			if(rhid == seedId) continue;
-			//check if rh is in grid
-			ieta = _detIDmap[rhid].i2;
-			iphi = _detIDmap[rhid].i1;
-			if(fabs(ieta - iSeed.first) > maxiEta/2) continue;
-			if(fabs(iphi - iSeed.second) > maxiPhi/2) continue;
-			//if in grid, check that meets energy threshold
-			if(rhs[i].E() <= 1) continue;
-			//make sure no rhs with E too high is found on outer phi edges
-			if(fabs(iphi - iSeed.second) > 1){
-				if(rhs[i].E() > 2) continue;
-			}
-			//grab rhs in central and neighbor bands for time discriminant
-			if(fabs(iphi - iSeed.second < 2)) bh_rhs.push_back(rhs[i]);
-			//get cluster size from central band
-			if(fabs(iphi - iSeed.second == 0) && rhs[i].E() > 2) nRhs++;
-		}
-		return nRhs;
-	}	
-	double BHTimeDiscriminant(vector<JetPoint>& rhs){
-		double td = 0;
-		double fsep;
-		int ieta;
-		for(auto rh : rhs){
-			ieta = _detIDmap[rh.rhId()].i2;
-			fsep = -0.5 * (sqrt( 130*130 + 9*(double)ieta*(double)ieta) - 3*(double)ieta)/30;
-			td += (rh.t() - fsep)*log10(rh.E());
-		}
-		return td;
-	}
-
-	bool BHclusterIso(vector<JetPoint>& rhs){
-		unsigned int rhid, seedId;
-		int ieta, iphi;
-		//find seed xtal
-		double maxE = 0;
-		pair<int, int> iSeed; //ieta, iphi of seed
-		for(int i = 0; i < rhs.size(); i++){
-			if(rhs[i].E() > maxE){
-				maxE = rhs[i].E();
-				iSeed = make_pair(_detIDmap[rhs[i].rhId()].i2, _detIDmap[rhs[i].rhId()].i1);
-				seedId = rhs[i].rhId();
-			}
-		}
-		for(int i = 0; i < rhs.size(); i++){
-			rhid = rhs[i].rhId();
-			//check if rh is in grid
-			ieta = _detIDmap[rhid].i2;
-			iphi = _detIDmap[rhid].i1;
-			//if any rhs in neighbor bands, return false (failed isolation) 
-			if(fabs(iphi - iSeed.second == 1)) return false;
-		}
-		return true;
-	}
 	int GetTrainingLabel(int nobj, const Jet& bhc_sc, const Jet& og_sc){
 		//labels
 		//unmatched = -1

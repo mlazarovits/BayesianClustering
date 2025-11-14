@@ -599,7 +599,7 @@ class BaseSkimmer{
 
 		void TurnOffLumiMask(){ _applyLumiMask = false; cout << "Not applying lumi mask." << endl; }
 
-
+		/*
 		struct DetIDStruct {
 		        DetIDStruct() {}
 		        DetIDStruct(const int ni1, const int ni2, const Int_t nTT, const Int_t & necal, const double eta, const double phi) : i1(ni1), i2(ni2), TT(nTT), ecal(necal), deteta(eta), detphi(phi){}
@@ -611,7 +611,7 @@ class BaseSkimmer{
 		        Int_t TT; // trigger tower
 		        Int_t ecal; // EB, EM, EP
 		};//<<>>struct DetIDStruct
-	
+		*/
 		std::map<UInt_t,kucms_DetIDStruct> _detIDmap;		
 		std::map<pair<int, int>, UInt_t> _ietaiphiID;	
 		
@@ -1414,7 +1414,7 @@ cout << "TreesToJets - # jets " << jets.size() << endl;
 		sort(jets.begin(), jets.end(), ptsort);
 		cout << jets.size()  << " pred jets total" << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
-		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << endl;
+		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << " # rhs " << j.GetNPoints() << endl;
 	}
 	void SetMinPt_CR(double p){ _minPhoPt_CRsel = p; _prod->SetMinPt(p); }
 	void SetMinHt_CR(double p){ _minHt_CRsel = p; }
