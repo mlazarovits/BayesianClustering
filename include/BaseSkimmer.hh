@@ -559,18 +559,19 @@ class BaseSkimmer{
 			_vobs.at(key).push_back(obs);
 		}
 		
-		void vvFillBranch(double obs, string obsname, int idx, bool subcl = true){
+		void vvFillBranch(double obs, string obsname, int idx = -1, bool subcl = true){
 			string key = _obj+"_"+obsname;
 			if(subcl) key = _obj+"_subcluster_"+obsname;
 			if(_vvobs.find(key) == _vvobs.end()){
 				if(_verb > 1) cout << "vvobs key " << key << " not found in map" << endl;
 				return;
 			}
-			if(idx == -1) return;
 			if(idx >= _vvobs.at(key).size()){
 				cout << "idx " << idx << " out of bounds for branch " << key << endl;
 				return;
 			}
+			if(idx == -1) //fill last added vector
+				idx = _vvobs.size()-1;
 			_vvobs.at(key)[idx].push_back(obs);
 		}
 
