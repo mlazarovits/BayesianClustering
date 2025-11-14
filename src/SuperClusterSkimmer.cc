@@ -94,6 +94,7 @@ void SuperClusterSkimmer::Skim(){
 		FillBranch((double)e,"evt");
 		FillBranch(_weight,"evt_wt");
 		FillBranch(_base->Met_pt,"MET");
+		_jetprod->GetTrueJets(_jets, e);
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
