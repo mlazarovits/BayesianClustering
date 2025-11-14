@@ -1113,6 +1113,10 @@ class BaseSkimmer{
 		//write nxn grid of E, t, r_nk here
 		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
 		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1){
+			addVector("rh_iEta",false);
+			addVector("rh_iPhi",false);
+			addVector("rh_Energy",false);
+			addVector("rh_Weight",false);
 			JetPoint center;
 			GetCenterXtal(rhs, center);	
 			map<pair<int,int>, vector<double>> grid;

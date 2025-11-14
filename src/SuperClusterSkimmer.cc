@@ -180,7 +180,8 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			//make CNN training grid
 			addVector("rh_iEta",false);
 			addVector("rh_iPhi",false);
-			addVector("rh_energy",false);
+			addVector("rh_Energy",false);
+			addVector("rh_Weight",false);
 			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
 			PointCollection* points = GetPointsFromJet(scs[s]);
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));
