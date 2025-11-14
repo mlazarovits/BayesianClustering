@@ -100,11 +100,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vAddBranch("nRHs_ogSC","# of rhs in original SC");
 			vAddBranch("nRHs_bhcSC","# of rhs in BHC SC");
 			vAddBranch("seedTimeSignificance","time significance from seed rh in original SC");
+			vAddBranch("weightedTimeSignificance","time significance with inverse variance weights");
 			vAddBranch("seedTime","time from seed rh in original SC");
 
-			vvAddBranch("rh_iEta","local ieta for CNN input grid");
-			vvAddBranch("rh_iPhi","local iphi for CNN input grid");
-			vvAddBranch("rh_energy","rh energy for CNN input grid");
+			//rh obs
+			vvAddBranch("rh_iEta","ieta coord of rh in 7x7 CNN grid");
+			vvAddBranch("rh_iPhi","iphi coord of rh in 7x7 CNN grid");
+			vvAddBranch("rh_Energy","energy of rh in 7x7 CNN grid");
+			vvAddBranch("rh_Weight","weight of rh in 7x7 CNN grid");
 		}
 
 		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
@@ -668,7 +671,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//time significance to enhance purity of det bkg CRs
 		//using seed of original SC for time and time significance
 		PointCollection* points = GetPointsFromJet(og_sc);
-		double tsig = CalcTimeSignificance(points, seed_id);
+		double tsig_seed = CalcTimeSignificance(points, seed_id);
+		double tsig = CalcTimeSignificance(points);
 		tc = -999;
 		for(int n = 0; n < points->GetNPoints(); n++){
 			if(points->at(n).GetUserIdx() == seed_id){
@@ -678,8 +682,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 		//if tc is -999 it means that the seed rh was removed in processing (due to either time req or eta req)
 		vFillBranch(tc,"seedTime");
-		vFillBranch(tsig,"seedTimeSignificance");
-		
+		vFillBranch(tsig_seed,"seedTimeSignificance");
+		vFillBranch(tsig,"weightedTimeSignificance");	
+	
 		//do track matching for spikes
 		og_sc.GetClusterParams(mu, cov);
 		double bestdr, bestde_dr;

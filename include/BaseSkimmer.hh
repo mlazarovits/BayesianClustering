@@ -523,11 +523,6 @@ class BaseSkimmer{
 				
 				vvAddBranch(key,title);
 			}
-			//rh obs
-			vvAddBranch("rh_iEta","ieta coord of rh in 7x7 CNN grid");
-			vvAddBranch("rh_iPhi","iphi coord of rh in 7x7 CNN grid");
-			vvAddBranch("rh_Energy","energy of rh in 7x7 CNN grid");
-			vvAddBranch("rh_Weight","weight of rh in 7x7 CNN grid");
 
 			
 		}
@@ -1185,9 +1180,14 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _nnmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json");
-		void SetNNModel(string fname){
-			_nnmodel = fdeep::load_model(fname);
+		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json");
+		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json");
+		void SetCNNModel(string fname){
+			_detbkgmodel = fdeep::load_model(fname);
+		}
+		void SetDNNModel(string fname){
+			cout << "Setting photon ID model to " << fname << endl;
+			_photonidmodel = fdeep::load_model(fname);
 		}
 		//sets which features to use in NN prediction - make sure this matches with the given model (json)
 		vector<string> _nnfeatures = {"EtaSig", "PhiSig", "EtaPhiCov", "majorLength", "minorLength", "hcalTowerSumEtConeDR04OvPt", "trkSumPtSolidConeDR04OvPt", "trkSumPtHollowConeDR04OvPt", "hadTowOverEMOvPt", "ecalRHSumEtConeDR04OvPt"};
@@ -1204,10 +1204,11 @@ class BaseSkimmer{
 			Matrix cov = jet.GetCovariance();
 			obs["EtaSig"] = sqrt(cov.at(0,0));
 			obs["PhiSig"] = sqrt(cov.at(1,1));
+			obs["EtaPhiCov"] = cov.at(0,1);
 			double majlen, minlen;
 			GetSpaceMajMinLens(jet, minlen, majlen);
-			obs["majLength"] = majlen;
-			obs["minLength"] = minlen;
+			obs["majorLength"] = majlen;
+			obs["minorLength"] = minlen;
 
 			//get photon isolation
 			double pt = _base->Photon_pt->at(phoidx);
@@ -1235,10 +1236,11 @@ class BaseSkimmer{
 			}
 
 			int size = input_sample.size();
+			cout << "size " << size << " model name " << _photonidmodel.name() << endl;
 			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 			
 			//predict_class returns predicted class number and value of max output neuron
-			fdeep::tensors result = _nnmodel.predict({input_tensor});
+			fdeep::tensors result = _photonidmodel.predict({input_tensor});
 			for(int i = 0; i < result.size(); i++){
 				vector<float> reti = result[i].to_vector();
 				for(int j = 0; j < reti.size(); j++)
@@ -1262,7 +1264,7 @@ class BaseSkimmer{
 			}	
 	
 			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
-			fdeep::tensors result = _nnmodel.predict({input_tensor});
+			fdeep::tensors result = _detbkgmodel.predict({input_tensor});
 			for(int i = 0; i < result.size(); i++){
 				vector<float> reti = result[i].to_vector();
 				for(int j = 0; j < reti.size(); j++)

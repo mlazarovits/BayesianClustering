@@ -60,7 +60,6 @@ void PhotonSkimmer::Skim(){
 	_csvfile.open(_csvname);
 	//write header
 	WriteHeader();
-	SetNNModel("config/json/med16DNN_photonID.json");
 
 	int nPho;
 	

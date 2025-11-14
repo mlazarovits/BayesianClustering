@@ -157,7 +157,7 @@ class PhotonSkimmer : public BaseSkimmer{
                 	_obsnames.push_back("ecalRHSumEtConeDR04");
                 	//hadTowOverEM
                 	_obsnames.push_back("hadTowOverEM");
-
+			
 			vAddBranch("predScore_isoBkg","score for iso bkg designation from DNN"); //DNN prediction
 			vAddBranch("predScore_nonIsoBkg","score for non iso bkg designation from DNN"); //DNN prediction
 			vAddBranch("trueLabel","true DNN label of photon");

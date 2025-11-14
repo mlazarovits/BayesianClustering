@@ -30,8 +30,6 @@ void SuperClusterSkimmer::Skim(){
 	_csvfile.open(_csvname);
 	//write header
 	WriteHeader();
-	//set NN model + features - can move to .C for more flexibility
-	SetNNModel("config/json/small3CNN_EMultr_2017and2018.json");
 	
 	int nPho;
 	
