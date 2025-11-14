@@ -82,9 +82,14 @@ class BaseProducer{
 				_mctype = 1;
 			}
 			else{
-				_timecalibTag += "_mc";
 				_mctype = 0;
 			}
+			if(!_data){
+				if(_year == 2018)
+					_timecalibTag += "_mc";
+				else
+					cout << "Time calibration tag not set for " << year << " MC." << endl;
+			}	
 			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
@@ -140,9 +145,14 @@ class BaseProducer{
 				_mctype = 1;
 			}
 			else{
-				_timecalibTag += "_mc";
 				_mctype = 0;
 			}
+			if(!_data){
+				if(_year == 2018)
+					_timecalibTag += "_mc";
+				else
+					cout << "Time calibration tag not set for " << year << " MC." << endl;
+			}	
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
 			if(name.find("_v20_")) useFilters = true;
