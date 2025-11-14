@@ -73,7 +73,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	//do hierarchical clustering for subcluster constraints
 	vector<node*> trees = _algo->NlnNCluster();
 	vector<ClusterObj> objs;
-	_treesToObjs(trees, objs, pho);
+	_treesToObjs(trees, objs);
 	//safety for no trees found
 	if(objs.size() < 1){
 		if(_verb > -1) cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
@@ -94,7 +94,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 //does not run BHC and creates a clusterobj from given rhs (this clusterobj's jet will not have any subcluster info)
 int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
 	Jet jet = Jet(_rhs);
-	retobj = ClusterObj(jet,pho);
+	retobj = ClusterObj(jet);
 	if(_verb > -1 && _detIDmap.size() == 0){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
@@ -107,7 +107,7 @@ int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
 
 
 
-void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, bool pho){
+void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -119,6 +119,6 @@ void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& obj
 		if(pc->GetNPoints() < 2) continue;
 		Jet predJet(trees[i]->model, _PV, _gev, _radius);
 		//add Jet to jets	
-		objs.push_back(ClusterObj(predJet, pho));
+		objs.push_back(ClusterObj(predJet));
 	}
 }
