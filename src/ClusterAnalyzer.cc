@@ -91,6 +91,22 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	return 0;
 }
 
+//does not run BHC and creates a clusterobj from given rhs (this clusterobj's jet will not have any subcluster info)
+int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
+	Jet jet = Jet(_rhs);
+	retobj = ClusterObj(jet,pho);
+	if(_verb > -1 && _detIDmap.size() == 0){
+		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
+	}
+	retobj.SetupDetIDs(_detIDmap);
+	retobj.SetCNNModel(_detbkgmodel);
+	retobj.SetDNNModel(_photonidmodel);
+	return 0;
+}
+
+
+
+
 void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs, bool pho){
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;

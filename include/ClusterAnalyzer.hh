@@ -420,6 +420,7 @@ class ClusterAnalyzer{
 		void SetVerbosity(int v){ _verb = v; }
 
 		int RunClustering(ClusterObj& retobj, bool pho = true);
+		int NoClusteringRhs(ClusterObj& retobj, bool pho = true);
 
 		void SetDetIDs(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
