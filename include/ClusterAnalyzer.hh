@@ -239,7 +239,6 @@ struct ClusterObj{
 				}
 				//predict_class returns predicted class number and value of max output neuron
 				fdeep::tensors result = _detbkgmodel.predict({input_tensor});
-				cout << "n results " << result.size() << endl;
         	                for(int i = 0; i < result.size(); i++){
         	                        vector<float> reti = result[i].to_vector();
         	                        _detBkgScores.push_back(reti);
@@ -257,7 +256,6 @@ struct ClusterObj{
 					}
 					//predict_class returns predicted class number and value of max output neuron
 					fdeep::tensors result = _detbkgmodel.predict({input_tensor});
-					cout << "n results " << result.size() << endl;
         	                	for(int i = 0; i < result.size(); i++){
         	                	        vector<float> reti = result[i].to_vector();
         	                        	_detBkgScores.push_back(reti);
@@ -279,6 +277,7 @@ struct ClusterObj{
 			Matrix cov = _jet.GetCovariance();
 			obs["EtaSig"] = sqrt(cov.at(0,0));
 			obs["PhiSig"] = sqrt(cov.at(1,1));
+			obs["EtaPhiCov"] = cov.at(0,1);
 			double majlen, minlen;
 			GetSpaceMajMinLens(minlen, majlen);
 			obs["majorLength"] = majlen;
@@ -290,16 +289,11 @@ struct ClusterObj{
 			}
 
 			//get photon isolation
-			double hcaltow = _isomap.at("hcalTowerSumEtConeDR04") / _phopt;
-			obs["hcalTowerSumEtConeDR04OvPt"] = hcaltow;
-			double trksumsolid = _isomap.at("trkSumPtSolidConeDR04") / _phopt;
-			obs["trkSumPtSolidConeDR04OvPt"] = trksumsolid;
-			double trksumhollow = _isomap.at("trkSumPtHollowConeDR04") / _phopt;
-			obs["trkSumPtHollowConeDR04OvPt"] = trksumhollow;
-			double hadtow = _isomap.at("hadTowOverEM") / _phopt;
-			obs["hadTowOverEMOvPt"] = hadtow;
-			double ecalrh = _isomap.at("ecalRHSumEtConeDR04") / _phopt;
-			obs["ecalRHSumEtConeDR04OvPt"] = ecalrh;
+			obs["hcalTowerSumEtConeDR04OvPt"] = _isomap.at("hcalTowerSumEtConeDR04") / _phopt;
+			obs["trkSumPtSolidConeDR04OvPt"] = _isomap.at("trkSumPtSolidConeDR04") / _phopt;
+			obs["trkSumPtHollowConeDR04OvPt"] = _isomap.at("trkSumPtHollowConeDR04") / _phopt;
+			obs["hadTowOverEMOvPt"] = _isomap.at("hadTowOverEM") / _phopt;
+			obs["ecalRHSumEtConeDR04OvPt"] = _isomap.at("hadTowOverEM") / _phopt;
 			
 		}
 
@@ -430,8 +424,12 @@ class ClusterAnalyzer{
 		void SetDetIDs(std::map<UInt_t,pair<int,int>> detidmap){
 			_detIDmap = detidmap;
 		}
-		void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model); }
-		void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model); }
+		void SetCNNModel(string model){ 
+			if(_verb > -1) cout << "Using model " << model << " for instrumental background." << endl; 
+			_detbkgmodel = fdeep::load_model(model); }
+		void SetDNNModel(string model){
+			if(_verb > -1) cout << "Using model " << model << " for photon ID." << endl; 
+			_photonidmodel = fdeep::load_model(model); }
 
 	private:
 		vector<Jet> _rhs;
