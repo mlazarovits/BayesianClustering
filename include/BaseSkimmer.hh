@@ -278,6 +278,15 @@ class BaseSkimmer{
 
 		}
 
+		bool DijetsCR_ObjSel(const Jet& obj){
+			//do photon-leading jet disambig
+			double pho_jet0 = dR(obj.eta(), obj.phi(), _jets[0].eta(), _jets[1].phi());
+			double pho_jet1 = dR(obj.eta(), obj.phi(), _jets[1].eta(), _jets[1].phi());
+			double maxdR = 0.5;
+			if(pho_jet0 < 0.5 || pho_jet1 < 0.5) return false;
+			else return true;	
+		}
+
 
 		bool GJetsCR_EvtSel(int e){
 			if(_jets.size() < 1){
@@ -712,7 +721,7 @@ class BaseSkimmer{
 				double res, w;
 				res = _rhIdToRes.at(pts->at(i).GetUserIdx());//variance
 				if(seed_id != -1 && pts->at(i).GetUserIdx() == seed_id){
-					return pts->at(i).at(2) / sqrt((res)/2.);
+					return pts->at(i).at(2) / sqrt((res));
 				}
 				//using inverse variances as optimal weights (adding in parallel)
 				w = (1/res); //1/variance = 1/sigma^2
@@ -727,7 +736,7 @@ class BaseSkimmer{
 			t_tot /= norm;
 			res_tot /= norm; 
 //cout << "t_tot " << t_tot << " res_tot " << res_tot << " norm " << norm << " tim sig " << t_tot / res_tot << endl;
-			return t_tot / sqrt(res_tot/2);
+			return t_tot / sqrt(res_tot);
 		}
 
 
