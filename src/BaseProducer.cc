@@ -161,7 +161,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         phos.clear();
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
-cout << "producer evt " << evt << " ntuple evt " << _base->Evt_event << " run " << _base->Evt_run << endl;
+cout << "\nproducer evt " << evt << " ntuple evt " << _base->Evt_event << " run " << _base->Evt_run << endl;
         int nPhos = (int)_base->Photon_energy->size();
 	//only take leading and subleading (if these exist)
 	int selPhoCount = 0; //shouldnt be incremented to >2

@@ -712,7 +712,7 @@ class BaseSkimmer{
 
 
 		map<unsigned int, double> _rhIdToRes;
-		double CalcTimeSignificance(PointCollection* pts, unsigned int seed_id = -1){
+		double CalcTimeSignificance(PointCollection* pts, unsigned int seed_id = -1, bool applyClusterWeights = true){
 			double t_tot = 0;
 			double norm = 0;
 			double res_tot = 0;
@@ -725,7 +725,8 @@ class BaseSkimmer{
 				}
 				//using inverse variances as optimal weights (adding in parallel)
 				w = (1/res); //1/variance = 1/sigma^2
-				w *= pts->at(i).w(); //subclustering weighting includes PU cleaning (not energy weighted)
+				if(applyClusterWeights)
+					w *= pts->at(i).w(); //subclustering weighting includes PU cleaning (not energy weighted)
 				if(pts->at(i).Skip()) //skip invalid rh times
 					w = 0;
 				t_tot += w*pts->at(i).at(2);

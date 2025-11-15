@@ -100,7 +100,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vAddBranch("nRHs_ogSC","# of rhs in original SC");
 			vAddBranch("nRHs_bhcSC","# of rhs in BHC SC");
 			vAddBranch("seedTimeSignificance","time significance from seed rh in original SC");
-			vAddBranch("weightedTimeSignificance","time significance with inverse variance weights");
+			vAddBranch("weightedTimeSignificance","time significance with inverse variance weights and subcluster weights");
+			vAddBranch("weightedTimeSignificance_noSubclusterWeights","time significance with inverse variance weights only");
 			vAddBranch("seedTime","time from seed rh in original SC");
 
 			//rh obs
@@ -551,6 +552,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		PointCollection* points = GetPointsFromJet(og_sc);
 		double tsig_seed = CalcTimeSignificance(points, seed_id);
 		double tsig = CalcTimeSignificance(points);
+		double tsig_noClustW = CalcTimeSignificance(points, -1, false);
 		tc = -999;
 		for(int n = 0; n < points->GetNPoints(); n++){
 			if(points->at(n).GetUserIdx() == seed_id){
@@ -562,6 +564,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		vFillBranch(tc,"seedTime");
 		vFillBranch(tsig_seed,"seedTimeSignificance");
 		vFillBranch(tsig,"weightedTimeSignificance");	
+		vFillBranch(tsig,"weightedTimeSignificance_noSubclusterWeights");	
 	
 		//do track matching for spikes
 		og_sc.GetClusterParams(mu, cov);
