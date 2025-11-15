@@ -126,7 +126,6 @@ void SuperClusterSkimmer::Skim(){
 			
 		int nSC = scs.size();
 		int npho = _base->Photon_energy->size();
-cout << "event " << e << " has " << nSC << " scs" << endl;
 		//loop over selected scs
 		int jet_scIdx = 0;
 		int scidx;

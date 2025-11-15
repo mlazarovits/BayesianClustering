@@ -242,19 +242,19 @@ class BaseSkimmer{
 				FillBranch(-999,"dPhi_DijetSys");
 				return false;
 			}
-			cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+			if(_verb > 0) cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
 			//ht - scalar sum
 			double ht = 0;
 			for(auto j : _jets) ht += j.pt();
 			
-			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
+			if(_verb > 0) cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
 			//calculate dphi between two leading jets
 			sort(_jets.begin(), _jets.end(), ptsort);
 			double j1_phi = _jets[0].phi_02pi();
 			double j2_phi = _jets[1].phi_02pi();
 			double dphi_jet = j1_phi - j2_phi;
 			dphi_jet = acos(cos(dphi_jet)); //wraparound - will always be < pi
-			cout << " dphi " << dphi_jet << endl;
+			if(_verb > 0) cout << " dphi " << dphi_jet << endl;
 			FillBranch(dphi_jet,"dPhi_DijetSys");
 			
 			double ptasym_thresh = 0.6;
@@ -291,11 +291,11 @@ class BaseSkimmer{
 		bool GJetsCR_EvtSel(int e){
 			if(_jets.size() < 1){
 				jet_sys = Jet(0,0,0,0);
-				cout << "# jets " << _jets.size() << endl;
+				if(_verb > 0) cout << "# jets " << _jets.size() << endl;
 			}
 			else{
 				jet_sys = VectorSum(_jets);
-				cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
+				if(_verb > 0) cout << "jet sys pt " << jet_sys.pt() << " jet sys e " << jet_sys.e() << endl;
 			}
 			//FillBranch((double)_base->Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS,"Trigger_hltL1sSingleEGNonIsoOrWithJetAndTauNoPS");
 			//FillBranch((double)_base->Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter,"Trigger_hltEGL1SingleEGNonIsoOrWithJetAndTauNoPSFilter");
@@ -327,7 +327,7 @@ class BaseSkimmer{
 			if(_jets.size() < 1) return false;
 			//cout << "passed jet mult" << endl;	
 		
-			cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
+			if(_verb > 0) cout << "met " << _base->Met_pt << " maxMet " << _maxMet_CRsel << " ht " << ht << " min ht " << _minHt_CRsel << endl;	
 			//MET upper limit - orthogonal to signal MET selection
 			if(_base->Met_pt > _maxMet_CRsel) return false;
 			//cout << "passed max met" << endl;	
@@ -342,12 +342,12 @@ class BaseSkimmer{
 		bool GJetsCR_ObjSel(const Jet& obj, bool pho = true){
 			if(_jets.size() < 1) return false;
 			double obj_phi = obj.phi_02pi(); 
-			cout << "\nobj system E " << obj.E() << " phi " << obj.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
-			cout << "obj system pt " << obj.pt() << " phi " << obj.phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
+			if(_verb > 0) cout << "\nobj system E " << obj.E() << " phi " << obj.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+			if(_verb > 0) cout << "obj system pt " << obj.pt() << " phi " << obj.phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
 			double jet_phi = jet_sys.phi_02pi();
 			double dphi_objjet = obj_phi - jet_phi;
 			dphi_objjet = acos(cos(dphi_objjet)); //wraparound - will always be < pi
-			cout << " dphi " << dphi_objjet << endl;
+			if(_verb > 0) cout << " dphi " << dphi_objjet << endl;
 			double pi = 4*atan(1);
 			Jet jet1, jet2; //jet2 is sublead system
 			if(jet_sys.pt() > obj.pt()){
@@ -1193,7 +1193,7 @@ class BaseSkimmer{
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
 					grid[make_pair(deta, dphi)] = {rhs[j].E()*rhs[j].GetWeight()};
 					if(jet_scIdx != -1){	
-				cout << "rh #" << j << " rh_iEta " << deta << " rh_iPhi " << dphi << " e " << rhs[j].E() << " w " << rhs[j].GetWeight() << " ieta " << ieta << " iphi " << iphi << " center ieta " << rh_ieta << " center iphi " << rh_iphi << " rh eta " << rhs[j].eta() << " phi " << rhs[j].phi() << " id " << rhs[j].rhId() << endl;
+				//cout << "rh #" << j << " rh_iEta " << deta << " rh_iPhi " << dphi << " e " << rhs[j].E() << " w " << rhs[j].GetWeight() << " ieta " << ieta << " iphi " << iphi << " center ieta " << rh_ieta << " center iphi " << rh_iphi << " rh eta " << rhs[j].eta() << " phi " << rhs[j].phi() << " id " << rhs[j].rhId() << endl;
 						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
 						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
 						vvFillBranch(rhs[j].E(), "rh_Energy", jet_scIdx,false);
@@ -1419,12 +1419,10 @@ class BaseSkimmer{
 			//add Jet to jets	
 			jets.push_back(predJet);
 		}
-cout << "TreesToJets - # jets " << jets.size() << endl;
 		//sort predicted jets
 		sort(jets.begin(), jets.end(), ptsort);
-		cout << jets.size()  << " pred jets total" << endl;
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
-		for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << " # rhs " << j.GetNPoints() << endl;
+		if(_verb > 0) for(auto j : jets) cout << "pred jet px " << j.px() << " py " << j.py() << " pz " << j.pz() << " E " << j.E() << " m2 " << j.m2() << " mass " << j.mass() << " eta " << j.eta() << " phi " << j.phi() << " pt " << j.pt() << " # subclusters " << j.GetNConstituents() << " # rhs " << j.GetNPoints() << endl;
 	}
 	void SetMinPt_CR(double p){ _minPhoPt_CRsel = p; _prod->SetMinPt(p); }
 	void SetMinHt_CR(double p){ _minHt_CRsel = p; }
