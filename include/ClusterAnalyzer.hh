@@ -411,11 +411,8 @@ class ClusterAnalyzer{
 		int NoClusterRhs(ClusterObj& retobj, bool pho = true);
 
 		void SetDetIDs(std::map<UInt_t,pair<int,int>> detidmap){
-			cout << "1 - ClusterAnalyzer - input map size " << detidmap.size() << " class member size " << _detIDmap.size() << endl;
 			_detIDmap.clear();
-			cout << "2 - ClusterAnalyzer - input map size " << detidmap.size() << " class member size " << _detIDmap.size() << endl;
 			_detIDmap = detidmap;
-			cout << "3 - ClusterAnalyzer - input map size " << detidmap.size() << " class member size " << _detIDmap.size() << endl;
 		}
 		void SetCNNModel(string model){ 
 			if(_verb > -1) cout << "Using model " << model << " for instrumental background." << endl; 
