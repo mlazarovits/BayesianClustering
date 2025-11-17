@@ -94,6 +94,7 @@ void SuperClusterSkimmer::Skim(){
 		FillBranch((double)e,"evt");
 		FillBranch(_weight,"evt_wt");
 		FillBranch(_base->Met_pt,"MET");
+		_jetprod->GetTrueJets(_jets, e);
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
@@ -125,7 +126,6 @@ void SuperClusterSkimmer::Skim(){
 			
 		int nSC = scs.size();
 		int npho = _base->Photon_energy->size();
-cout << "event " << e << " has " << nSC << " scs" << endl;
 		//loop over selected scs
 		int jet_scIdx = 0;
 		int scidx;
@@ -177,9 +177,6 @@ cout << "event " << e << " has " << nSC << " scs" << endl;
 			FillBranches(bhc_sc);
 			int label = GetTrainingLabel(scidx, bhc_sc, scs[s]);
 			//make CNN training grid
-			addVector("rh_iEta",false);
-			addVector("rh_iPhi",false);
-			addVector("rh_energy",false);
 			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
 			PointCollection* points = GetPointsFromJet(scs[s]);
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));

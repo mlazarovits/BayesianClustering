@@ -106,6 +106,7 @@ void BaseProducer::GetTrueJets(vector<Jet>& jets, int evt, double gev){
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);
+				//returns variance with correct factor of 2 applied
 				_rhIdToRes[_base->ECALRecHit_ID->at(rhidx)] = (double)_timecalibTool->getTimeResoltuion( _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
 				/*
 				double time = _base->ECALRecHit_time->at(rhidx);
@@ -160,7 +161,7 @@ void BaseProducer::GetTruePhotons(vector<Jet>& phos, int evt, double gev){
         phos.clear();
         if(evt > _nEvts) return;
         _base->GetEntry(evt);
-cout << "producer evt " << evt << " ntuple evt " << _base->Evt_event << " run " << _base->Evt_run << endl;
+cout << "\nproducer evt " << evt << " ntuple evt " << _base->Evt_event << " run " << _base->Evt_run << endl;
         int nPhos = (int)_base->Photon_energy->size();
 	//only take leading and subleading (if these exist)
 	int selPhoCount = 0; //shouldnt be incremented to >2
@@ -261,6 +262,7 @@ cout << "producer evt " << evt << " ntuple evt " << _base->Evt_event << " run " 
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
+				//returns variance with correct factor of 2 applied
 				_rhIdToRes[_base->ECALRecHit_ID->at(rhidx)] = (double)_timecalibTool->getTimeResoltuion( _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
 				/*
 				double time = _base->ECALRecHit_time->at(rhidx);
@@ -430,6 +432,7 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
 				//t_meas = t_raw + TOF_0^rh - TOF_pv^rh
 				JetPoint rh;
 				float time = _timecalibTool->getCorrectedTime(_base->ECALRecHit_time->at(rhidx), _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);
+				//returns variance with correct factor of 2 applied
 				_rhIdToRes[_base->ECALRecHit_ID->at(rhidx)] = (double)_timecalibTool->getTimeResoltuion( _base->ECALRecHit_ampres->at(rhidx), _base->ECALRecHit_ID->at(rhidx), _base->Evt_run, _timecalibTag, _mctype);	
 				/*	
 				double time = _base->ECALRecHit_time->at(rhidx);
