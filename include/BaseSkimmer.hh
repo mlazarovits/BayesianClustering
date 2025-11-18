@@ -279,8 +279,9 @@ class BaseSkimmer{
 		}
 
 		bool DijetsCR_ObjSel(const Jet& obj){
+			if(_jets.size() < 2) return false; 
 			//do photon-leading jet disambig
-			double pho_jet0 = dR(obj.eta(), obj.phi(), _jets[0].eta(), _jets[1].phi());
+			double pho_jet0 = dR(obj.eta(), obj.phi(), _jets[0].eta(), _jets[0].phi());
 			double pho_jet1 = dR(obj.eta(), obj.phi(), _jets[1].eta(), _jets[1].phi());
 			double maxdR = 0.5;
 			if(pho_jet0 < 0.5 || pho_jet1 < 0.5) return false;

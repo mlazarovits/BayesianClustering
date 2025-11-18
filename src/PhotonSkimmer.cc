@@ -112,6 +112,7 @@ void PhotonSkimmer::Skim(){
 	int nEvts_tot = 0;
 	int nEvts_EvtFilterPass = 0;
 	int nEvts_GJetsPass = 0;
+	int nphoran = 0;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
@@ -244,7 +245,6 @@ void PhotonSkimmer::Skim(){
 			else{ //failed preselection
                                		obs.at("2017_presel") = 0;
 			}
-			
 			int label = GetTrainingLabel(phoidx,bhc_pho,phos[p]);
 		cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
 			//cout << "label: " << label << endl;
@@ -260,6 +260,7 @@ void PhotonSkimmer::Skim(){
 			vector<double> dnn_scores;
 			map<string, double> dnn_obs;
 			MakeDNNInputs(bhc_pho, phoidx, dnn_obs);
+			nphoran++;
 
 			DNNPredict(dnn_obs, dnn_scores);
 			//TODO - update with discriminator score cut
@@ -288,6 +289,7 @@ void PhotonSkimmer::Skim(){
 	ofile->cd();
 	_tree->Write();
 	ofile->Close();
+	cout << "Ran over " << nphoran << " photons" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
 	cout << "Wrote MVA inputs to " << _csvname << endl;
 	cout << "Total events ran over " << nEvts_tot << " events that passed event filters " << nEvts_EvtFilterPass << " events that pass event filters and GJets selection " << nEvts_GJetsPass << endl;
