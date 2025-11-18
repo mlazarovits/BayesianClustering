@@ -85,7 +85,7 @@ void GaussianMixture::InitParameters(const map<string, Matrix>& priors, const ve
 		}
 		//# of clusters should be set to be the sum of the given models (ie size of prev_posteriors)
 		if(m_k < n_starting_params){
-			cout << "Error: # of clusters initialized is " << m_k << " but given " << n_starting_params << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means" << endl;
+			if(_verb > 0) cout << "Warning: # of clusters initialized is " << m_k << " but given " << n_starting_params << " models to initialize posteriors with. The number of starting clusters must be the same as the number of given posterior models. Defaulting to randomly initialized k-means for " << m_n << " points" << endl;
 			kmeans = true;
 		}
 		if(!kmeans){

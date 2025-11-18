@@ -68,7 +68,7 @@ class BaseProducer{
 			else if(name.find("2022") != string::npos) _year = 2022;
 			
 			//set if data
-			cout << "name " << name << endl;
+			//cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 			_calib = true;
