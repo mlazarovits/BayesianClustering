@@ -575,6 +575,7 @@ class Jet{
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
 			scores = pass;
+cout << "cleanoutput - # constituents " << _constituents.size() << " # rhs " << _nRHs << " pass? " << scores[0] << endl;
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
@@ -588,7 +589,6 @@ class Jet{
 				int assignedK = -1;
 				JetPoint effRh;
 				double totR = 0;
-				//cout << "rh #" << n;
 				for(int k = 0; k < _constituents.size(); k++){
 					effRh = _constituents[k]._rhs[n];
 					if(effRh.GetWeight() > maxRnk){
