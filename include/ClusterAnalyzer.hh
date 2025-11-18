@@ -49,7 +49,7 @@ struct ClusterObj{
 
 
 	float GetEtaCenter(){ return (float)_jet.eta(); }
-	float GetPhiCenter(){ return (float)_jet.phi(); }
+	float GetPhiCenter(){ return (float)_jet.phi_std(); }
 	float GetEtaVar(){ return (float)_jet.GetCovariance().at(0,0); }
 	float GetPhiVar(){ return (float)_jet.GetCovariance().at(1,1); }
 	float GetTimeVar(){ return (float)_jet.GetCovariance().at(2,2); }
@@ -71,7 +71,8 @@ struct ClusterObj{
 		else minlen = sqrt(eigvals[0]);	
 	}
 	double GetEnergy(){ return _jet.E(); }	
-	
+	double GetPt(){ return _jet.pt(); }
+
 	int GetNSubclusters(){ return _jet.GetNConstituents(); }
 	void GetSubclusters(vector<Jet>& subcls){
 		_jet.GetConstituents(subcls);
@@ -132,13 +133,7 @@ struct ClusterObj{
 			_jet.GetJetPointAt(r,rh);
 			unsigned int id = rh.rhId();
 			ws[id] = rh.GetWeight(); //weight = resp_rk*isPU_k
-			cout << "rh # " << r << " has weight " << rh.GetWeight() << endl;
-			//sum over contributions of each subcluster to this rh
-			//for(int k = 0; k < _jet.GetNConstituents(); k++){
-			//	_jet.GetConstituent(k, subcl);
-			//	subcl.GetJetPointAt(r,rrh);
-			//	ws[rrh.rhId()] += rh.GetWeight(); //weight = resp_rk*isPU_k
-			//}
+			//cout << "rh # " << r << " has weight " << rh.GetWeight() << " and id " << id << " for " << _jet.GetNConstituents() << " subclusters" << endl;
 		}
 	}
 
@@ -440,4 +435,5 @@ class ClusterAnalyzer{
 
 };
 static bool Esort(ClusterObj j1, ClusterObj j2){ return (j1._jet.E() > j2._jet.E()); }
+static bool ptsort(ClusterObj j1, ClusterObj j2){ return (j1._jet.pt() > j2._jet.pt()); }
 #endif
