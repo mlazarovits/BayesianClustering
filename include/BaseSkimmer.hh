@@ -702,6 +702,7 @@ class BaseSkimmer{
 				//sum subcluster contributions to this rh for total weight (includes PU weights and any other cleaning applied to this jet)
 				//if no cleaning has been applied, this weight is energy*_gev 
 				pt.SetWeight(rhs[r].GetWeight());
+				cout << "get points from jet - rh # " << r << " rh w from cluster " << pt.w() << " energy " << rhs[r].E() << " # subcls " << jet.GetNConstituents() << endl;
 				if(rhs[r].InvalidTime())
 					pt.SetSkipDim(2);
 				pt.SetUserIdx(rhs[r].rhId());
@@ -726,8 +727,9 @@ class BaseSkimmer{
 				}
 				//using inverse variances as optimal weights (adding in parallel)
 				w = (1/res); //1/variance = 1/sigma^2
-				if(applyClusterWeights)
+				if(applyClusterWeights){
 					w *= pts->at(i).w(); //subclustering weighting includes PU cleaning (not energy weighted)
+				}
 				if(pts->at(i).Skip()) //skip invalid rh times
 					w = 0;
 				t_tot += w*pts->at(i).at(2);
@@ -1343,7 +1345,10 @@ class BaseSkimmer{
 		inputobj.GetJets(rhs);
 		BayesPoint PV = inputobj.GetVertex();
 		vector<JetPoint> jps;
-	
+		inputobj.GetJetPoints(jps);
+cout << "run clustering # input jps " << jps.size() << endl;
+for(int r = 0; r < jps.size(); r++)
+cout << "input rh # " << r << " e " << jps[r].E() << " w " << jps[r].GetWeight() << endl;	
 		BayesCluster *algo = new BayesCluster(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetPriorParameters(_prior_params);
@@ -1368,7 +1373,7 @@ class BaseSkimmer{
 		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
 		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
 		vector<bool> scores; //PU discriminator scores of subclusters
-		result = bhc_jets[0].CleanOutPU(scores, true);
+		result = bhc_jets[0].CleanOutPU(scores, false);
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
@@ -1414,12 +1419,14 @@ class BaseSkimmer{
 			PointCollection* pc = trees[i]->points;
 			//at least 2 points (rhs)
 			if(pc->GetNPoints() < 2) continue;
+cout << "treestojets - tree # " << i << endl;
 			Jet predJet(trees[i]->model, pv, _gev, radius);
 		//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
 			//if(predJet.pt() < 5) continue; 
 			//add Jet to jets	
 			jets.push_back(predJet);
 		}
+cout << "original trees " << trees.size() << " found " << jets.size() << " jets" << endl; 
 		//sort predicted jets
 		sort(jets.begin(), jets.end(), ptsort);
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
