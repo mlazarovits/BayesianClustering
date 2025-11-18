@@ -255,12 +255,10 @@ void PhotonSkimmer::Skim(){
                                 obs.at("label") = label;
 				BaseSkimmer::WriteObs(obs,"photons");
 				vFillBranch(label,"trueLabel");
-
 			//do DNN prediction
 			vector<double> dnn_scores;
 			map<string, double> dnn_obs;
 			MakeDNNInputs(bhc_pho, phoidx, dnn_obs);
-
 			DNNPredict(dnn_obs, dnn_scores);
 			//TODO - update with discriminator score cut
 			auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
