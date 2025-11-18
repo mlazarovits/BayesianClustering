@@ -16,11 +16,17 @@ constexpr static double _SOL = 29.9792458; //in cm/ns
 struct ClusterObj{
 	Jet _jet;
 	BayesPoint _PV;
-	ClusterObj(){ };
+	int _idx;
+	ClusterObj(){ 
+		_idx = -1;
+	};
 	ClusterObj(Jet jet){ 
 		_jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents();
 		CalculateObjTimes(); 
 	}
+
+	void SetUserIndex(int i){ _idx = i; }
+	int GetUserIndex(){ return _idx; }
 
         std::map<UInt_t,pair<int,int>> _detIDmap;
         void SetupDetIDs( std::map<UInt_t,pair<int,int>> DetIDMap){
@@ -30,7 +36,8 @@ struct ClusterObj{
 	vector<bool> _PUscores;
 	//will fully remove PU clusters - ie set all w_nk = 0 for PU subcluster k
 	void CleanOutPU(){
-		_jet.CleanOutPU(_PUscores, true);
+		Jet cleanedJet = _jet.CleanOutPU(_PUscores, false);
+		_jet = cleanedJet;
 		//recalculate observables
 		CalculateObjTimes(); 
 	}
@@ -124,13 +131,14 @@ struct ClusterObj{
 		for(int r = 0; r < _jet.GetNRecHits(); r++){
 			_jet.GetJetPointAt(r,rh);
 			unsigned int id = rh.rhId();
-			ws[id] = 0;
+			ws[id] = rh.GetWeight(); //weight = resp_rk*isPU_k
+			cout << "rh # " << r << " has weight " << rh.GetWeight() << endl;
 			//sum over contributions of each subcluster to this rh
-			for(int k = 0; k < _jet.GetNConstituents(); k++){
-				_jet.GetConstituent(k, subcl);
-				subcl.GetJetPointAt(r,rrh);
-				ws[rrh.rhId()] += rh.GetWeight(); //weight = resp_rk*isPU_k
-			}
+			//for(int k = 0; k < _jet.GetNConstituents(); k++){
+			//	_jet.GetConstituent(k, subcl);
+			//	subcl.GetJetPointAt(r,rrh);
+			//	ws[rrh.rhId()] += rh.GetWeight(); //weight = resp_rk*isPU_k
+			//}
 		}
 	}
 
@@ -154,8 +162,7 @@ struct ClusterObj{
 
 
 	void CalculatePUScores(){
-		Jet jet = Jet(_jet);
-		jet.CleanOutPU(_PUscores, true);
+		_jet.CleanOutPU(_PUscores, true);
 	}
 	void CalculatePhotonIDScores(double pt, const map<string, double>& isomap){
 		_photonIDScores.clear();
@@ -235,16 +242,13 @@ struct ClusterObj{
 			double norm = 0;
 			PointCollection locs;
 			Jet subcl;
-			vector<JetPoint> rhs;
-			for(int k = 0; k < _jet.GetNConstituents(); k++){
-				_jet.GetConstituent(k, subcl);
-				subcl.GetJetPoints(rhs);
-				for(int r = 0; r < rhs.size(); r++){
-					double w = rhs[r].GetWeight()*rhs[r].E(); //weight = r_nk*isPU_k
-					BayesPoint loc({rhs[r].x(), rhs[r].y(), rhs[r].z(), rhs[r].t()}); //time is at detector face
-					loc.SetWeight(w);
-					locs += loc;	
-				}
+			JetPoint jrh;
+			for(int r = 0; r < _jet.GetNPoints(); r++){
+				_jet.GetJetPointAt(r,jrh);
+				double w = jrh.GetWeight()*jrh.E(); //weight = r_nk*isPU_k
+				BayesPoint loc({jrh.x(), jrh.y(), jrh.z(), jrh.t()}); //time is at detector face
+				loc.SetWeight(w);
+				locs += loc;	
 			}
 			_detTime = locs.Centroid(3);
 			//include geo factor to PV for PV time
@@ -411,6 +415,7 @@ class ClusterAnalyzer{
 		int NoClusterRhs(ClusterObj& retobj, bool pho = true);
 
 		void SetDetIDs(std::map<UInt_t,pair<int,int>> detidmap){
+			_detIDmap.clear();
 			_detIDmap = detidmap;
 		}
 		void SetCNNModel(string model){ 

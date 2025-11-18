@@ -575,6 +575,7 @@ class Jet{
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
 			scores = pass;
+cout << "cleanoutput - # constituents " << _constituents.size() << " # rhs " << _nRHs << " pass? " << scores[0] << endl;
 			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
@@ -588,7 +589,6 @@ class Jet{
 				int assignedK = -1;
 				JetPoint effRh;
 				double totR = 0;
-				//cout << "rh #" << n;
 				for(int k = 0; k < _constituents.size(); k++){
 					effRh = _constituents[k]._rhs[n];
 					if(effRh.GetWeight() > maxRnk){
@@ -622,13 +622,14 @@ class Jet{
 				return ret;
 			}
 			cleanedJet = Jet(cleanedRhs, _vtx);
+//cout << "# subclusters cleaned jet has before adding " << cleanedJet.GetNConstituents() << endl;
 			cleanedJet._puCleaned = true;
 			//only add pass subclusters whether remove or downweight
 			for(int k = 0; k < pass.size(); k++){
 				if(pass[k])
 					cleanedJet.AddConstituent(_constituents[k]);
 			}
-//cout << "# subclusters cleaned jet has " << cleanedJet.GetNConstituents() << endl;
+//cout << "# subclusters cleaned jet has after adding " << cleanedJet.GetNConstituents() << endl;
 //cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
 			return cleanedJet;
 		}
