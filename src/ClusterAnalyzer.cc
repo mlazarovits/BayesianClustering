@@ -1,12 +1,14 @@
 #include "ClusterAnalyzer.hh"
 
 ClusterAnalyzer::ClusterAnalyzer(){
+	cout << "1 - ctor - detidmap size " << _detIDmap.size() << endl;
 	_algo = nullptr;
 	_gev = 1;
 	_radius = 129;
 	_detCenter = BayesPoint({0., 0., 0.});
 	_PV = BayesPoint({0., 0., 0.});
 	_verb = -1;
+	cout << "2 - ctor - detidmap size " << _detIDmap.size() << endl;
 }
 
 

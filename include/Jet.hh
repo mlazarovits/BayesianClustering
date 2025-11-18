@@ -622,13 +622,14 @@ cout << "cleanoutput - # constituents " << _constituents.size() << " # rhs " << 
 				return ret;
 			}
 			cleanedJet = Jet(cleanedRhs, _vtx);
+//cout << "# subclusters cleaned jet has before adding " << cleanedJet.GetNConstituents() << endl;
 			cleanedJet._puCleaned = true;
 			//only add pass subclusters whether remove or downweight
 			for(int k = 0; k < pass.size(); k++){
 				if(pass[k])
 					cleanedJet.AddConstituent(_constituents[k]);
 			}
-//cout << "# subclusters cleaned jet has " << cleanedJet.GetNConstituents() << endl;
+//cout << "# subclusters cleaned jet has after adding " << cleanedJet.GetNConstituents() << endl;
 //cout << "cleaned energy " << cleanedJet.E() << " pt " << cleanedJet.pt() << endl;
 			return cleanedJet;
 		}
