@@ -702,7 +702,7 @@ class BaseSkimmer{
 				//sum subcluster contributions to this rh for total weight (includes PU weights and any other cleaning applied to this jet)
 				//if no cleaning has been applied, this weight is energy*_gev 
 				pt.SetWeight(rhs[r].GetWeight());
-				cout << "get points from jet - rh # " << r << " rh w from cluster " << pt.w() << " energy " << rhs[r].E() << " # subcls " << jet.GetNConstituents() << endl;
+				//cout << "get points from jet - rh # " << r << " rh w from cluster " << pt.w() << " energy " << rhs[r].E() << " # subcls " << jet.GetNConstituents() << endl;
 				if(rhs[r].InvalidTime())
 					pt.SetSkipDim(2);
 				pt.SetUserIdx(rhs[r].rhId());
@@ -1346,9 +1346,6 @@ class BaseSkimmer{
 		BayesPoint PV = inputobj.GetVertex();
 		vector<JetPoint> jps;
 		inputobj.GetJetPoints(jps);
-cout << "run clustering # input jps " << jps.size() << endl;
-for(int r = 0; r < jps.size(); r++)
-cout << "input rh # " << r << " e " << jps[r].E() << " w " << jps[r].GetWeight() << endl;	
 		BayesCluster *algo = new BayesCluster(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetPriorParameters(_prior_params);
@@ -1419,14 +1416,12 @@ cout << "input rh # " << r << " e " << jps[r].E() << " w " << jps[r].GetWeight()
 			PointCollection* pc = trees[i]->points;
 			//at least 2 points (rhs)
 			if(pc->GetNPoints() < 2) continue;
-cout << "treestojets - tree # " << i << endl;
 			Jet predJet(trees[i]->model, pv, _gev, radius);
 		//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
 			//if(predJet.pt() < 5) continue; 
 			//add Jet to jets	
 			jets.push_back(predJet);
 		}
-cout << "original trees " << trees.size() << " found " << jets.size() << " jets" << endl; 
 		//sort predicted jets
 		sort(jets.begin(), jets.end(), ptsort);
 		//cout << _predJets.size() << " pred jets pt > 20 GeV" << endl;
