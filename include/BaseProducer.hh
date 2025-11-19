@@ -68,6 +68,7 @@ class BaseProducer{
 			else if(name.find("2022") != string::npos) _year = 2022;
 			
 			//set if data
+			cout << "name " << name << " year " << _year << " data " << _data << endl;
 			//cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
@@ -77,7 +78,7 @@ class BaseProducer{
 			else if(_year == 2017)
 				_timecalibTag = "r2_ul17";
 			else
-				_timecalibTag = "";
+				cout << "Time calibration tag not set for year " << _year << endl;
 			if(_data){
 				_mctype = 1;
 			}
@@ -93,7 +94,6 @@ class BaseProducer{
 			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
-			if(name.find("_v20_")) useFilters = true;
 
 
 		}
@@ -134,13 +134,14 @@ class BaseProducer{
 			//set if data
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
+
 			_calib = true;
 			if(_year == 2018)
 				_timecalibTag = "r2_ul18";
 			else if(_year == 2017)
 				_timecalibTag = "r2_ul17";
 			else
-				_timecalibTag = "";
+				cout << "Time calibration tag not set for year " << _year << endl;
 			if(_data){
 				_mctype = 1;
 			}
@@ -155,7 +156,6 @@ class BaseProducer{
 			}	
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 			
-			if(name.find("_v20_")) useFilters = true;
 
 
 		}
@@ -169,7 +169,6 @@ class BaseProducer{
 			_timecalibTool = tc;
 		}
 
-		bool useFilters = false;
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
 		virtual void GetRecHits(vector<JetPoint>& rhs, int evt) = 0;
 		virtual void GetRecHits(vector<Jet>& rhs, int evt){};
