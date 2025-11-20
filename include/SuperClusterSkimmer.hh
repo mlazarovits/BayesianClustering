@@ -598,7 +598,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		int label = -1;
 		bool passGJetsObjSel = GJetsCR_ObjSel(og_sc,false);
-cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " << bestdr << " gjets evt sel " << _passGJetsEvtSel << " gjets obj sel " << passGJetsObjSel << endl;	
+if(_verb > 0) cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " << bestdr << " gjets evt sel " << _passGJetsEvtSel << " gjets obj sel " << passGJetsObjSel << endl;	
 		//in data - could be spikes or BH
 		if(_data){
 			//early times, phi left/right for BH
@@ -607,7 +607,7 @@ cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " <
 			int phoidx = _base->SuperCluster_PhotonIndx->at(nobj);
 			if(phoidx == -1){
 				//not not matched to an e/gamma candidate so cant be det bkg
-cout << "no photon match" << endl; 
+if(_verb > 0) cout << "no photon match" << endl; 
 				label = -1;
 				iso = -1;
 			}
@@ -616,7 +616,7 @@ cout << "no photon match" << endl;
                 		ecalrhsum = _base->Photon_ecalRHSumEtConeDR04->at(phoidx) < 10.0;
                 		htowoverem = _base->Photon_hadTowOverEM->at(phoidx) < 0.02;
                 		iso = trksum && ecalrhsum && htowoverem;
-cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " Photon_ecalRHSumEtConeDR04 " << _base->Photon_ecalRHSumEtConeDR04->at(phoidx) << " Photon_hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
+if(_verb > 0) cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " Photon_ecalRHSumEtConeDR04 " << _base->Photon_ecalRHSumEtConeDR04->at(phoidx) << " Photon_hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
                 		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
 				//spike

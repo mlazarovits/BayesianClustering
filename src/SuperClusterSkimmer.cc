@@ -166,7 +166,7 @@ void SuperClusterSkimmer::Skim(){
 			for(auto jt = SCtypes_map.begin(); jt != SCtypes_map.end(); jt++){
 				Jet sc = jt->second;
 				string tag = jt->first;
-				cout << "SC type " << tag << endl;
+				if(_verb > 0) cout << "SC type " << tag << endl;
 				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 				int id_idx = -999;
 				//skip "total" procCat for always separated hists (id_idx == 1)
@@ -192,7 +192,7 @@ void SuperClusterSkimmer::Skim(){
 				double predval = *max_el;
 				//labeling starts from 1
 				int nclass = std::distance(ovalues.begin(), max_el) + 1;
-				cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
+				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
 				vFillBranch((double)label, "trueLabel_"+tag);
 				vFillBranch((double)nclass, "predLabel_"+tag);
 				vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
@@ -213,7 +213,6 @@ void SuperClusterSkimmer::Skim(){
 			for(int e = 0; e < (int)neighborEs.size(); e++){
 				ENeighbors->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 			}
-			cout << "cmssc_label " << cmssc_label << endl;
 			for(int r = 0; r < rh_pts.size(); r++){
 				GetNeighborE(rh_pts,r,icoords,Es);
 				GetNeighborE(rh_pts,r,icoords_nocenter,Es_nocenter,true);
