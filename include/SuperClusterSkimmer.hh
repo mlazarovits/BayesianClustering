@@ -84,31 +84,33 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 		*/
 
+		vector<string> SCtypes = {"BHC","BHCPUCleaned", "CMS"};
 		void SuperClusterAddBranches(){
 			_obj = "SC";
-			_obsnames.push_back("EovP_track");
-			_obsnames.push_back("dR_track");
-			_obsnames.push_back("trueLabel"); //CR designation
-			_obsnames.push_back("predLabel"); //CNN prediction
-			_obsnames.push_back("predScore_physBkg"); //CNN prediction
-			_obsnames.push_back("predScore_BH"); //CNN prediction
-			_obsnames.push_back("predScore_spike"); //CNN prediction
-			_obsnames.push_back("swCrossPrime");
-			_obsnames.push_back("swCrossCMS");
+			for(auto tag : SCtypes){
+				_obsnames.push_back("EovP_track_"+tag);
+				_obsnames.push_back("dR_track_"+tag);
+				_obsnames.push_back("trueLabel_"+tag); //CR designation
+				_obsnames.push_back("predLabel_"+tag); //CNN prediction
+				_obsnames.push_back("predScore_physBkg_"+tag); //CNN prediction
+				_obsnames.push_back("predScore_BH_"+tag); //CNN prediction
+				_obsnames.push_back("predScore_spike_"+tag); //CNN prediction
+				_obsnames.push_back("swCrossPrime_"+tag);
+				_obsnames.push_back("swCrossCMS_"+tag);
 
-			vAddBranch("nRHs_grid","# rhs in CNN input grid");
-			vAddBranch("nRHs_ogSC","# of rhs in original SC");
-			vAddBranch("nRHs_bhcSC","# of rhs in BHC SC");
-			vAddBranch("seedTimeSignificance","time significance from seed rh in original SC");
-			vAddBranch("weightedTimeSignificance","time significance with inverse variance weights and subcluster weights");
-			vAddBranch("weightedTimeSignificance_noSubclusterWeights","time significance with inverse variance weights only");
-			vAddBranch("seedTime","time from seed rh in original SC");
+				vAddBranch("nRHs_grid_"+tag,"# rhs in CNN input grid");
+				vAddBranch("nRHs_"+tag,"# of rhs in "+tag+" SC");
+				vAddBranch("seedTimeSignificance_"+tag,"time significance from seed rh in "+tag+" SC");
+				vAddBranch("weightedTimeSignificance_"+tag,"time significance with inverse variance weights and subcluster weights");
+				vAddBranch("weightedTimeSignificance_noSubclusterWeights_"+tag,"time significance with inverse variance weights only");
 
-			//rh obs
-			vvAddBranch("rh_iEta","ieta coord of rh in 7x7 CNN grid");
-			vvAddBranch("rh_iPhi","iphi coord of rh in 7x7 CNN grid");
-			vvAddBranch("rh_Energy","energy of rh in 7x7 CNN grid");
-			vvAddBranch("rh_Weight","weight of rh in 7x7 CNN grid");
+				//rh obs
+				vvAddBranch("rh_Weight_"+tag,"weight of rh in 7x7 CNN grid");
+				vvAddBranch("rh_iEta_"+tag,"ieta coord of rh in 7x7 CNN grid");
+				vvAddBranch("rh_iPhi_"+tag,"iphi coord of rh in 7x7 CNN grid");
+				vvAddBranch("rh_Energy_"+tag,"energy of rh in 7x7 CNN grid");
+			}
+			vAddBranch("seedTime_CMS","time from seed rh in original SC");
 		}
 
 		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
@@ -340,9 +342,14 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 		}
 
-		void FillBranches(const Jet& bhc_obj){
+		void FillBranches(const Jet& bhc_obj, string tag){
+			string comp = "_";
+			if(tag != "" and tag[0] != comp)
+				tag = "_"+tag;
+				
+
 			double E_tot = bhc_obj.E();
-			vFillBranch(E_tot, "Energy");		
+			vFillBranch(E_tot, "Energy"+tag);		
 
 
 			double ec = bhc_obj.eta();
@@ -351,35 +358,33 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			if(isnan(pc)) cout << "pc is nan" << endl;
 			if(isinf(pc)) cout << "pc is inf" << endl;
 			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
-			vFillBranch(ec, "EtaCenter");		
-			vFillBranch(pc, "PhiCenter");		
-			vFillBranch(tc, "TimeCenter");		
+			vFillBranch(ec, "EtaCenter"+tag);		
+			vFillBranch(pc, "PhiCenter"+tag);		
+			vFillBranch(tc, "TimeCenter"+tag);		
 			
 			Matrix cov = bhc_obj.GetCovariance();
-			vFillBranch(cov.at(0,0), "EtaVar");		
-			vFillBranch(cov.at(1,1), "PhiVar");		
-			vFillBranch(cov.at(2,2), "TimeVar");
-			vFillBranch(cov.at(0,1), "EtaPhiCov");
-			vFillBranch(cov.at(0,2), "EtaTimeCov");
-			vFillBranch(cov.at(1,2), "PhiTimeCov");
+			vFillBranch(cov.at(0,0), "EtaVar"+tag);		
+			vFillBranch(cov.at(1,1), "PhiVar"+tag);		
+			vFillBranch(cov.at(2,2), "TimeVar"+tag);
+			vFillBranch(cov.at(0,1), "EtaPhiCov"+tag);
+			vFillBranch(cov.at(0,2), "EtaTimeCov"+tag);
+			vFillBranch(cov.at(1,2), "PhiTimeCov"+tag);
 
 
 			
 			vector<double> spikeObs;
 			PointCollection* points = GetPointsFromJet(bhc_obj);
-			vFillBranch((double)points->GetNPoints(),"nRHs_bhcSC");
-
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
-			vFillBranch(swCP, "swCrossPrime");
+			vFillBranch(swCP, "swCrossPrime"+tag);
 			vector<Jet> rh_jets;
 			bhc_obj.GetJets(rh_jets);
 			double sw = swissCross(rh_jets);
-			vFillBranch(sw, "swCrossCMS");	
+			vFillBranch(sw, "swCrossCMS"+tag);	
 		
 			//time signifiance	
 			double timesig = CalcTimeSignificance(points);
-			vFillBranch(timesig, "timeSignificance");			
+			vFillBranch(timesig, "timeSignificance"+tag);
 	
 		}
 
@@ -445,7 +450,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 	double swissCross(const vector<Jet>& jets){
 		//find seed crystal (highest weight, E = w/_gev)
-		PointCollection sc(1); //save cmsswIds with associated weights for rec hit id
+		PointCollection sc; //save cmsswIds with associated weights for rec hit id
 		JetPoint rh;
 		for(int j = 0; j < jets.size(); j++){
 			//should only have 1 rh per jet
@@ -550,9 +555,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//time significance to enhance purity of det bkg CRs
 		//using seed of original SC for time and time significance
 		PointCollection* points = GetPointsFromJet(og_sc);
+		PointCollection* points_bhc = GetPointsFromJet(bhc_sc);
 		double tsig_seed = CalcTimeSignificance(points, seed_id);
-		double tsig = CalcTimeSignificance(points);
-		double tsig_noClustW = CalcTimeSignificance(points, -1, false);
+		double tsig = CalcTimeSignificance(points_bhc, -1);
+		double tsig_noClustW = CalcTimeSignificance(points_bhc, -1, false);
 		tc = -999;
 		for(int n = 0; n < points->GetNPoints(); n++){
 			if(points->at(n).GetUserIdx() == seed_id){
@@ -562,9 +568,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		}
 		//if tc is -999 it means that the seed rh was removed in processing (due to either time req or eta req)
 		vFillBranch(tc,"seedTime");
-		vFillBranch(tsig_seed,"seedTimeSignificance");
+		vFillBranch(tsig_seed,"seedTimeSignificance_bhcSC");
 		vFillBranch(tsig,"weightedTimeSignificance");	
-		vFillBranch(tsig,"weightedTimeSignificance_noSubclusterWeights");	
+		vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights");	
 	
 		//do track matching for spikes
 		og_sc.GetClusterParams(mu, cov);
@@ -613,7 +619,6 @@ cout << "no photon match" << endl;
 cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " Photon_ecalRHSumEtConeDR04 " << _base->Photon_ecalRHSumEtConeDR04->at(phoidx) << " Photon_hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
                 		if(!iso) label = -1; //not isolated photon - won't make it into analysis anyway
 				//do track seed matching for photon (bh, phys bkg) and e (spike) candidates
-cout << "pass pixel seed " << _base->Photon_pixelSeed->at(phoidx) << endl;
 				//spike
 				//if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && evtfilters && iso){
 				if(spikeTrackMatch && spikeTime && !pcFilter_wide && detBkgTimeSig && iso){

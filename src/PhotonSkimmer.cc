@@ -188,8 +188,8 @@ void PhotonSkimmer::Skim(){
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
-			Jet bhc_pho;
-			int ret = RunClustering(phos[p], bhc_pho, false, bhc_pho_idx); //downweighting rhs
+			Jet bhc_pho, bhc_pho_pucleaned;
+			int ret = RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false, bhc_pho_idx); //downweighting rhs
 			if(ret < 0){
 				continue;
 			}

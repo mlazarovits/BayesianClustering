@@ -62,8 +62,8 @@ void JetSkimmer::Skim(){
 		vector<Jet> phos, bhc_phos;
 		_prod->GetTruePhotons(phos, i, phogev);
 		for(int p = 0; p < phos.size(); p++){
-			Jet bhc_pho;
-			int ret = RunClustering(phos[p], bhc_pho, false); //downweighting rhs
+			Jet bhc_pho, bhc_pho_pucleaned;
+			int ret = RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false); //downweighting rhs
 			if(ret == -1) continue;
 			bhc_phos.push_back(bhc_pho);
 		}
@@ -83,8 +83,8 @@ void JetSkimmer::Skim(){
 		
 		//run BHC clustering
 		for(int j = 0; j < jets.size(); j++){	
-			Jet bhc_jet;
-			int ret = RunClustering(jets[j], bhc_jet, true); //fully remove PU subclusters
+			Jet bhc_jet, bhc_jet_pucleaned;
+			int ret = RunClustering(jets[j], bhc_jet, bhc_jet_pucleaned, true); //fully remove PU subclusters
 			if(ret == -1) continue;
 			bhc_jets.push_back(bhc_jet);
 		}

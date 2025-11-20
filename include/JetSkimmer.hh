@@ -137,7 +137,7 @@ class JetSkimmer : public BaseSkimmer{
 			vvAddBranch("predScore_spike","subcluster spike score"); //CNN prediction
 		}
 		void WriteHeader(){ };
-		void FillBranches(const Jet& bhc_obj){
+		void FillBranches(const Jet& bhc_obj, string tag = ""){
 			double E_tot = bhc_obj.E();
 			vFillBranch(E_tot, "Energy");		
 

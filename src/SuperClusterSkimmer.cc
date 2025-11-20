@@ -33,7 +33,6 @@ void SuperClusterSkimmer::Skim(){
 	
 	int nPho;
 	
-	vector<Jet> rhs;
 	vector<JetPoint> rh_pts;
 	vector<Jet> scs;
 	if(_debug){ _oskip = 1000; }
@@ -58,7 +57,6 @@ void SuperClusterSkimmer::Skim(){
 	}
 	double pvx, pvy, pvz;
 	_timeoffset = 0;
-	vector<JetPoint> bhRhs;
 	int nscran = 0;
 	vector<pair<int,int>> icoords, icoords_nocenter;
 	vector<double> Es, Es_nocenter;	
@@ -133,103 +131,107 @@ void SuperClusterSkimmer::Skim(){
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
-			scs[s].GetJets(rhs);
-
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
-			if(rhs.size() < 1){ cout << "sc #" << s << " has " << rhs.size() << " rhs " << endl; continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << rhs.size() << " E: " << scs[s].E() << endl;
+			if(scs[s].GetNPoints() < 1){ cout << "sc #" << s << " has " << scs[s].GetNPoints() << " rhs " << endl; continue; }
+			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 
+
+			Jet bhc_sc, bhc_sc_pucleaned;
+			int ret = RunClustering(scs[s], bhc_sc, bhc_sc_pucleaned, false, jet_scIdx); //downweight rhs according to good PU clusters
+			if(ret < 0){
+				continue;
+			}
+			//per event
+			_prod->GetRhIdResMap(_rhIdToRes);
+			
+			PointCollection* points = GetPointsFromJet(scs[s]);
+			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()),false);
+			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
+			nscran++;
+			
+			map<string,Jet> SCtypes_map; //keys need to match SCtypes member var
+			SCtypes_map[SCtypes[0]] = bhc_sc;
+			SCtypes_map[SCtypes[1]] = bhc_sc_pucleaned;
+			SCtypes_map[SCtypes[2]] = scs[s];
+			//TODO - add branches in include/ with tag
+			
+			map<string,double> mapobs;
+			mapobs["event"] = e;
+			mapobs["event_weight"] = 1.;
+			mapobs["object"] = scidx;
+	
+			int cmssc_label = -1;
+			for(auto jt = SCtypes_map.begin(); jt != SCtypes_map.end(); jt++){
+				Jet sc = jt->second;
+				string tag = jt->first;
+				cout << "SC type " << tag << endl;
+				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
+				int id_idx = -999;
+				//skip "total" procCat for always separated hists (id_idx == 1)
+			
+				//get SC points (rhs with IDs) for CNN grid
+				sc.GetJetPoints(rh_pts);
+				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
+
+				FillBranches(sc,tag);
+				int label = GetTrainingLabel(scidx, sc, scs[s]);
+				if(tag == "CMS")
+					cmssc_label = label;
+				//make CNN training grid
+				MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx, tag);
+				PointCollection* points = GetPointsFromJet(scs[s]);
+				
+				mapobs["label_"+tag] = label;
+				
+				vector<float> ovalues; //discriminator output value, pass-by-ref
+				CNNPredict(mapobs,ovalues);
+				//TODO - update with discriminator score cut
+				auto max_el = max_element(ovalues.begin(), ovalues.end());
+				double predval = *max_el;
+				//labeling starts from 1
+				int nclass = std::distance(ovalues.begin(), max_el) + 1;
+				cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
+				vFillBranch((double)label, "trueLabel_"+tag);
+				vFillBranch((double)nclass, "predLabel_"+tag);
+				vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
+				vFillBranch(ovalues[1], "predScore_BH_"+tag);
+				vFillBranch(ovalues[2], "predScore_spike_"+tag);
+				//write good SCs to CSV for training
+				if(label != -1 && tag == "BHC_PUCleaned"){
+					BaseSkimmer::WriteObs(mapobs,"superclusters");
+				}
+
+			}
+			//make rh maps for original SC
 			//fill eta phi map
 			vector<double> neighborEs; 
 			std::vector<std::pair<int, int>> icoords;
-			vector<JetPoint> rh_pts; scs[s].GetJetPoints(rh_pts);
+			scs[s].GetJetPoints(rh_pts);
 			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,61);
 			for(int e = 0; e < (int)neighborEs.size(); e++){
 				ENeighbors->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
 			}
-
-			Jet bhc_sc;
-			int ret = RunClustering(scs[s], bhc_sc, false, jet_scIdx); //downweight rhs according to good PU clusters
-			if(ret < 0){
-				continue;
-			}
-		
-			map<string,double> mapobs;
-			//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
-			int id_idx = -999;
-			//skip "total" procCat for always separated hists (id_idx == 1)
-			
-
-			vFillBranch((double)rhs.size(), "nRHs_ogSC");
-			_prod->GetRhIdResMap(_rhIdToRes);
-
-			nscran++;
-			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
-			//add CMS benchmark variable - isolation information
-			//need to find associated photon
-			//SuperCluster_photonIndx
-			int np = _base->SuperCluster_PhotonIndx->at(scidx);
-			//get jet points (rhs with IDs) for CNN grid
-			bhc_sc.GetJetPoints(rh_pts);
-			
-			FillBranches(bhc_sc);
-			int label = GetTrainingLabel(scidx, bhc_sc, scs[s]);
-			//make CNN training grid
-			MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx);
-			PointCollection* points = GetPointsFromJet(scs[s]);
-			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()));
-			vFillBranch(timesig_seed, "timeSignificanceSeed");			
-			
-			mapobs["event"] = e;
-			mapobs["event_weight"] = 1.;
-			mapobs["object"] = scidx;
-			mapobs["label"] = label;
-			
-			vector<float> ovalues; //discriminator output value, pass-by-ref
-			CNNPredict(mapobs,ovalues);
-			//TODO - update with discriminator score cut
-			auto max_el = max_element(ovalues.begin(), ovalues.end());
-			double predval = *max_el;
-			//labeling starts from 1
-			int nclass = std::distance(ovalues.begin(), max_el) + 1;
-			cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
-			vFillBranch((double)label, "trueLabel");
-			vFillBranch((double)nclass, "predLabel");
-			vFillBranch(ovalues[0], "predScore_physBkg");
-			vFillBranch(ovalues[1], "predScore_BH");
-			vFillBranch(ovalues[2], "predScore_spike");
-			//write good SCs to CSV for training
-			if(label != -1){
-				BaseSkimmer::WriteObs(mapobs,"superclusters");
-			}
-
-			//make rh maps
-			vector<JetPoint> rrhs; JetPoint rrh; 
-			for(int r = 0; r < rhs.size(); r++){
-				rhs[r].GetJetPointAt(0,rrh);
-				rrhs.push_back(rrh);
-			}
-			cout << "label " << label << endl;
-			for(int r = 0; r < rrhs.size(); r++){
-				GetNeighborE(rrhs,r,icoords,Es);
-				GetNeighborE(rrhs,r,icoords_nocenter,Es_nocenter,true);
+			cout << "cmssc_label " << cmssc_label << endl;
+			for(int r = 0; r < rh_pts.size(); r++){
+				GetNeighborE(rh_pts,r,icoords,Es);
+				GetNeighborE(rh_pts,r,icoords_nocenter,Es_nocenter,true);
 				for(int ee = 0; ee < Es.size(); ee++){
-					if(label == 1) //phys bkg
+					if(cmssc_label == 1) //phys bkg
 						ENeighbors_physBkg->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					else if(label == 2) //BH
+					else if(cmssc_label == 2) //BH
 						ENeighbors_BH->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					else if(label == 3) //spike
+					else if(cmssc_label == 3) //spike
 						ENeighbors_spikes->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
 					else{ }
 				}
 				for(int ee = 0; ee < Es_nocenter.size(); ee++){
-					if(label == 1) //phys bkg
+					if(cmssc_label == 1) //phys bkg
 						ENeighborsSkipCenter_physBkg->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-					else if(label == 2) //BH
+					else if(cmssc_label == 2) //BH
 						ENeighborsSkipCenter_BH->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-					else if(label == 3) //spike
+					else if(cmssc_label == 3) //spike
 						ENeighborsSkipCenter_spikes->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
 					else{ }
 				}

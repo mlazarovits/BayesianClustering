@@ -1011,7 +1011,7 @@ class BaseSkimmer{
 
 		virtual void SetObs() = 0;
 		virtual void WriteHeader() = 0;
-		virtual void FillBranches(const Jet& bhc_obj) = 0;
+		virtual void FillBranches(const Jet& bhc_obj, string tag = "") = 0;
 
 		void WriteObs(map<string,double> inputs, string object){
 			string samp = "";
@@ -1029,6 +1029,10 @@ class BaseSkimmer{
 					samp = _oname.substr(_oname.find("QCD"),_oname.find("_AODSIM") - _oname.find("QCD"));
 				else if(_oname.find("DEG") != string::npos)
 					samp = _oname.substr(_oname.find("DEG"),_oname.find("_AODSIM") - _oname.find("DEG"));
+				else if(_oname.find("DoubleEG") != string::npos)
+					samp = _oname.substr(_oname.find("DoubleEG"),_oname.find("_"+object) - _oname.find("DoubleEG"));
+				else if(_oname.find("EGamma") != string::npos)
+					samp = _oname.substr(_oname.find("EGamma"),_oname.find("_"+object) - _oname.find("EGamma"));
 				else samp = "notFound";
 			}
 			else{
@@ -1045,6 +1049,8 @@ class BaseSkimmer{
 					samp = _oname.substr(_oname.find("QCD"),_oname.find("_"+object) - _oname.find("QCD"));
 				else if(_oname.find("EGamma") != string::npos)
 					samp = _oname.substr(_oname.find("EGamma"),_oname.find("_"+object) - _oname.find("EGamma"));
+				else if(_oname.find("DoubleEG") != string::npos)
+					samp = _oname.substr(_oname.find("DoubleEG"),_oname.find("_"+object) - _oname.find("DoubleEG"));
 				else samp = "notFound";
 			}
 			_csvfile << samp;// << evt << "," << obj << "," << ncl;
@@ -1148,11 +1154,13 @@ class BaseSkimmer{
 
 		//write nxn grid of E, t, r_nk here
 		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
-		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1){
-			addVector("rh_iEta",false);
-			addVector("rh_iPhi",false);
-			addVector("rh_Energy",false);
-			addVector("rh_Weight",false);
+		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1, string tag = ""){
+			if(tag != "")
+				tag = "_"+tag;
+			addVector("rh_iEta"+tag,false);
+			addVector("rh_iPhi"+tag,false);
+			addVector("rh_Energy"+tag,false);
+			addVector("rh_Weight"+tag,false);
 			JetPoint center;
 			GetCenterXtal(rhs, center);	
 			map<pair<int,int>, vector<double>> grid;
@@ -1194,20 +1202,23 @@ class BaseSkimmer{
 					//posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
 					//r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
 					//grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};	
-					grid[make_pair(deta, dphi)] = {rhs[j].E()*rhs[j].GetWeight()};
+					double wt = rhs[j].GetWeight();
+					if(tag == "_CMS")
+						wt = 1;
+					grid[make_pair(deta, dphi)] = {rhs[j].E()*wt};
 					if(jet_scIdx != -1){	
 				//cout << "rh #" << j << " rh_iEta " << deta << " rh_iPhi " << dphi << " e " << rhs[j].E() << " w " << rhs[j].GetWeight() << " ieta " << ieta << " iphi " << iphi << " center ieta " << rh_ieta << " center iphi " << rh_iphi << " rh eta " << rhs[j].eta() << " phi " << rhs[j].phi() << " id " << rhs[j].rhId() << endl;
-						vvFillBranch(deta, "rh_iEta", jet_scIdx,false);
-						vvFillBranch(dphi, "rh_iPhi", jet_scIdx,false);
-						vvFillBranch(rhs[j].E(), "rh_Energy", jet_scIdx,false);
-						vvFillBranch(rhs[j].GetWeight(),"rh_Weight",jet_scIdx,false);
+						vvFillBranch(deta, "rh_iEta"+tag, jet_scIdx,false);
+						vvFillBranch(dphi, "rh_iPhi"+tag, jet_scIdx,false);
+						vvFillBranch(rhs[j].E(), "rh_Energy"+tag, jet_scIdx,false);
+						vvFillBranch(wt,"rh_Weight"+tag,jet_scIdx,false);
 						nrhs++;
 					}
 					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
 
 				}
 			}
-			vFillBranch(nrhs,"nRHs_grid");
+			vFillBranch(nrhs,"nRHs_grid"+tag);
 			pair<int, int> icoords_grid;
 			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
@@ -1338,7 +1349,7 @@ class BaseSkimmer{
 	void SetVerbosity(int v){_verb = v;}
 
 
-	int RunClustering(const Jet& inputobj, Jet& result, bool remove = false, int idx = -1, string obj = ""){
+	int RunClustering(const Jet& inputobj, Jet& result, Jet& pu_cleaned_result, bool remove = false, int idx = -1, string obj = ""){
 	//remove == false - downweight PU clusters
 	//remove == true - fully remove PU clusters
 		vector<Jet> rhs;
@@ -1370,7 +1381,8 @@ class BaseSkimmer{
 		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
 		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
 		vector<bool> scores; //PU discriminator scores of subclusters
-		result = bhc_jets[0].CleanOutPU(scores, false);
+		result = bhc_jets[0];
+		pu_cleaned_result = bhc_jets[0].CleanOutPU(scores, false);
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
 		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
