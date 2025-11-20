@@ -170,7 +170,6 @@ void SuperClusterSkimmer::Skim(){
 				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 				int id_idx = -999;
 				//skip "total" procCat for always separated hists (id_idx == 1)
-			
 				//get SC points (rhs with IDs) for CNN grid
 				sc.GetJetPoints(rh_pts);
 				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
@@ -181,8 +180,6 @@ void SuperClusterSkimmer::Skim(){
 					cmssc_label = label;
 				//make CNN training grid
 				MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx, tag);
-				PointCollection* points = GetPointsFromJet(scs[s]);
-				
 				mapobs["label_"+tag] = label;
 				
 				vector<float> ovalues; //discriminator output value, pass-by-ref

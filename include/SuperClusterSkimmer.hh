@@ -348,16 +348,24 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				tag = "_"+tag;
 				
 
+
 			double E_tot = bhc_obj.E();
-			vFillBranch(E_tot, "Energy"+tag);		
-
-
 			double ec = bhc_obj.eta();
 			double pc = bhc_obj.phi();
 			double tc = bhc_obj.t();
 			if(isnan(pc)) cout << "pc is nan" << endl;
 			if(isinf(pc)) cout << "pc is inf" << endl;
 			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
+			
+			if(bhc_obj.GetNPoints() < 1){
+				E_tot = -999;
+				ec = -999;
+				pc = -999;
+				tc = -999;
+			}
+
+			vFillBranch(E_tot, "Energy"+tag);		
+			
 			vFillBranch(ec, "EtaCenter"+tag);		
 			vFillBranch(pc, "PhiCenter"+tag);		
 			vFillBranch(tc, "TimeCenter"+tag);		
@@ -444,7 +452,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//distToMax[dist] = points->at(i);
 		}
 		//swCP
-		obs.push_back(sumNeighbors/wmax);
+		if(npts == 0)
+			obs.push_back(-999);
+		else
+			obs.push_back(sumNeighbors/wmax);
 
 	}
 
@@ -452,6 +463,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		//find seed crystal (highest weight, E = w/_gev)
 		PointCollection sc; //save cmsswIds with associated weights for rec hit id
 		JetPoint rh;
+		if(jets.size() < 1)
+			return -999;
 		for(int j = 0; j < jets.size(); j++){
 			//should only have 1 rh per jet
 			if(jets[j].GetNRecHits() > 1) continue;

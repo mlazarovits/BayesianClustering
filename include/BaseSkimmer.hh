@@ -1175,6 +1175,19 @@ class BaseSkimmer{
 				for(int j = -ngrid_boundary; j < ngrid_boundary+1; j++)
 					grid[make_pair(i,j)] = {0., 0., 0.};
 
+			//skip empty jets
+			if(rhs.size() < 1){
+				for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
+					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+						vvFillBranch(-999, "rh_iEta"+tag, jet_scIdx,false);
+						vvFillBranch(-999, "rh_iPhi"+tag, jet_scIdx,false);
+						vvFillBranch(0, "rh_Energy"+tag, jet_scIdx,false);
+						vvFillBranch(0,"rh_Weight"+tag,jet_scIdx,false);
+						mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = 0;
+					}
+				}
+				return;
+			}
 
 			//get ngrid x ngrid around center point 
 			int ieta, iphi;
