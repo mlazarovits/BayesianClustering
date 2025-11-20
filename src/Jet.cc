@@ -138,7 +138,6 @@ Jet::Jet(const vector<JetPoint>& rhs, const BayesPoint& vtx){
 		_py += pt*sin(phi);
 		_pz += pt*sinh(eta);
 	//cout << "rhs ctor - i " << i << " px " << pt*cos(phi) << " py " << pt*sin(phi) << " pz " << pt*sinh(eta) << " E " << _rhs[i].E() << " pt " << pt << " eta " << eta << " phi " << phi << endl;
-		
 		_E += rhs[i].E();
 
 	}
@@ -167,8 +166,9 @@ Jet::Jet(const vector<Jet>& jets){
 	for(int i = 0; i < (int)jets.size(); i++){
 		jets[i].GetJetPoints(rhs);
 		_rhs = rhs;
-		for(int j = 0; j < (int)rhs.size(); j++)
+		for(int j = 0; j < (int)rhs.size(); j++){
 			_rhs.push_back(rhs[j]);
+		}
 	}
 	_nRHs = (int)_rhs.size();	
 	double pt;
@@ -430,12 +430,10 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 		for(int n = 0; n < _nRHs; n++){
 			JetPoint effRh = _rhs[n];
 			subcl_norm += r_nk.at(n,k);	
-
+//cout << "jet ctor - rh # " << n << " subcl # " << k << " effRh nom weight " << r_nk.at(n,k)/(_rhs[n].E()*gev) << " r_nk " << r_nk.at(n,k) << " effrh e " << _rhs[n].E() << endl;
 			effRh.SetWeight(r_nk.at(n,k)/(_rhs[n].E()*gev));
 			effRh.SetEnergy(_rhs[n].E()*effRh.GetWeight());
 
-			BayesPoint effRh_pt({effRh.eta(), effRh.phi(), effRh.t()});
-			effRh_pt.SetWeight(_rhs[n].E()*effRh.GetWeight());
 			subcl.AddRecHit(effRh);
 			//recalculate momentum vector accordingly
 			//calculate momentum vector from PV
@@ -456,8 +454,6 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 			subcl_pz += pt*sinh(p_eta);
 		}
 		//set subcluster momentum three-vector and mass
-		//cov.mult(cov,1/totw);
-		//subcl.SetCovariance(cov);
 		subcl.CalculateCenter();
 		subcl.CalculateCovariance();
 		subcl.SetP(subcl_px, subcl_py, subcl_pz);
