@@ -59,6 +59,7 @@ lpc:   CXX += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/K
 
 #add to make lib ig?
 lpc: CXXFLAGS += -fPIC
+#local: CXXFLAGS += -fsanitize=address
 #make list of libraries for shared library
 lib: SGLIBS          = $(filter-out -stdlib=libc++ -pthread , $(ROOTGLIBS))
 lib: SGLIBS         += -lRooFit -lRooFitCore
@@ -94,11 +95,15 @@ OBJ_FILES += $(TC_OBJ)
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skimmer.o, $(OBJ_FILES))
 
+#debug symbols
+#CXXFLAGS += -g -fno-omit-frame-pointer -o0 -fno-optimize-sibling-calls
+
+
 
 #specify what to make
-all: FullClusterSkim.x#detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x
+all: FullClusterSkim.x detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x
 local: all
-loca: loca.x
+debug: all
 lpc:   all configtar #simconfigtar
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
@@ -110,15 +115,15 @@ FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
 	touch FullClusterSkim.x
 
 detectorSimNtuples.x: $(SRCDIR)detectorSimNtuples.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o detectorSimNtuples.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o detectorSimNtuples.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
 	touch detectorSimNtuples.x
 
 detectorSimSkimmer.x: $(SRCDIR)detectorSimSkimmer.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
 	touch detectorSimSkimmer.x
 
 FullClusterSingle.x: $(SRCDIR)FullClusterSingle.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
 	touch FullClusterSingle.x
 
 
@@ -150,6 +155,8 @@ clean:
 	rm -f AutoDict*
 	rm -f *.d
 	rm -f lib/libBayesCluster.so
+
+
 
 define JACOB
 *****########*********************************************++++++++++++++*********############################%%%%%##########%%####
@@ -226,5 +233,5 @@ define JACOB
 where the hell have you been loca??
 endef
 export JACOB
-loca.x: 
+loca: 
 	@echo "$$JACOB" 

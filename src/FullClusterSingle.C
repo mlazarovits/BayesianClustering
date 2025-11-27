@@ -392,7 +392,7 @@ int main(int argc, char *argv[]){
 	double tres_n = 30*sqrt(1 - tres_c*tres_c); //v1//ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
 
 	vector<Jet> rhs, jets, phos, jetsAK8, jetsAK15;
-	vector<node*> trees;
+	vector<std::shared_ptr<node>> trees;
 	//get rhs (as Jets) for event
 	if(obj == 0){
 		JetProducer prod(file);
@@ -489,12 +489,12 @@ int main(int argc, char *argv[]){
 			if(strat == 0){
 				cout << "Delauney (NlnN)" << endl;
 				//to track computation time from beginning of program
-				trees = algo->NlnNCluster();
+				algo->NlnNCluster(trees);
 			}
 			else if(strat == 1){
 				cout << "N^2 (naive)" << endl;
 				//to track computation time from beginning of program
-				if(obj == 0) trees = algo->N2Cluster();
+				//if(obj == 0) trees = algo->N2Cluster();
 			}
 			//cout << trees.size() << " true trees" << endl;
 			if(viz){
@@ -511,7 +511,7 @@ int main(int argc, char *argv[]){
 			cout << "mixture model with pre-clustered AK4 jets" << endl;
 			string oname = "";
 			if(viz) oname = fname;
-			GaussianMixture* gmm = algo->SubCluster(oname);
+			std::unique_ptr<GaussianMixture> gmm = algo->SubCluster(oname);
 			int nk = gmm->GetNClusters();
 			cout << nk << " clusters in model." << endl;
 			//check pis sum to 1
@@ -535,7 +535,7 @@ int main(int argc, char *argv[]){
 	else if(obj == 1){
 		string oname = "";
 		if(viz) oname = fname;
-		GaussianMixture* gmm = algo->SubCluster(oname);
+		std::unique_ptr<GaussianMixture> gmm = algo->SubCluster(oname);
 		int nk = gmm->GetNClusters();
 		cout << nk << " clusters in model." << endl;
 		map<string, Matrix> params;
