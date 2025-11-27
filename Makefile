@@ -104,7 +104,7 @@ SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skim
 all: FullClusterSkim.x detectorSimSkimmer.x detectorSimNtuples.x FullClusterSkim.x FullClusterSingle.x
 local: all
 debug: all
-lpc:   all configtar #simconfigtar
+lpc:   all configtar simconfigtar
 lib: lib/libBayesCluster.so
 lpclib: lib/libBayesCluster.so
 
