@@ -388,7 +388,6 @@ class ClusterAnalyzer{
 	public:
 		ClusterAnalyzer();
 		virtual ~ClusterAnalyzer(){
-			delete _algo;
 		};
 
 		//needs PV info for geometric corrections and correct momentum calculations of clustered elements
@@ -426,8 +425,7 @@ class ClusterAnalyzer{
 		double _radius; //detector radius in m
 		BayesPoint _PV;
 		BayesPoint _detCenter;
-		BayesCluster* _algo;
-		void _treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs);
+		void _treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs);
 		std::map<UInt_t,pair<int,int>> _detIDmap;
 		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
 		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);

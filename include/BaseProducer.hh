@@ -17,52 +17,56 @@
 
 class BaseProducer{
 	public:
-		BaseProducer(){ 
-			_gev = 1;
-			_isocut = false;
-			_minpt = 0;
-			_mineme = 0;
-			_minnrhs = 0;
-			_minrhE = 0.5;
-			_maxrhE = -999;
-			_minobjeta = 1.5;
-			_year = 2018;
-			_data = false;
-			_calib = true;
-			_applyFrac = false;
-			_spikes = false;
-			_timesmear = false;
-			_spatial_corr = true;
-			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
-			_timecalibTag = "";
-			_mctype = -1;
-			_mistcuts = false;
-		};
-		//BaseProducer(TChain* ch){
-			//_base = new ReducedBase(ch);
-		BaseProducer(TTree* tree){
-			_base = new ReducedBase(tree);
-			_nEvts = _base->fChain->GetEntries();
+		BaseProducer() :
+			_gev(1),
+			_isocut(false),
+			_minpt(0),
+			_mineme(0),
+			_minnrhs(0),
+			_minrhE(0.5),
+			_maxrhE(-999),
+			_minobjeta(3.),
+			_year(2018),
+			_data(false),
+			_calib(true),
+			_applyFrac(false),
+			_spikes(false),
+			_timesmear(false),
+			_spatial_corr(true),
+			_mctype(-1),
+			_mistcuts(false),
+			_nEvts(-1),
+			//pointers
+			_timecalibTool(make_unique<KUCMS_TimeCalibration>()),
+			_base(nullptr),
+			_ch(nullptr)
+		{  };
+		//BaseProducer(TTree* tree) :
+		BaseProducer(string file) :
 			//default to 1 GeV = 1 entry -> gev = 1
-			_gev = 1;
-			_isocut = false;
-			_minpt = 30;
-			_mineme = 30;
-			_minnrhs = 15;
-			_minrhE = 0.5;
-			_maxrhE = -999;
-			_minobjeta = 1.5;
-			_applyFrac = false;
-			_spikes = false;
-			_timesmear = false;
-			_spatial_corr = true;
-			_timecalibTag = "";
-			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
-			_mctype = -1;
-			_mistcuts = false;
+			_gev(1),
+			_isocut(false),
+			_minpt(30),
+			_mineme(30),
+			_minnrhs(15),
+			_minrhE(0.5),
+			_maxrhE(-999),
+			_minobjeta(3.),
+			_applyFrac(false),
+			_spikes(false),
+			_timesmear(false),
+			_spatial_corr(true),
+			_mctype(-1),
+			_mistcuts(false),
+			_calib(true),
+			//pointers
+			_timecalibTool(make_unique<KUCMS_TimeCalibration>())
+		{
+			MakeBase(file);	
+			_nEvts = _base->fChain->GetEntries();
 			
 			//set year
-			string name = tree->GetTitle();
+			string name = file;
 			if(name.find("2017") != string::npos) _year = 2017;
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;
@@ -72,7 +76,6 @@ class BaseProducer{
 			//cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
-			_calib = true;
 			if(_year == 2018)
 				_timecalibTag = "r2_ul18";
 			else if(_year == 2017)
@@ -93,12 +96,29 @@ class BaseProducer{
 			}	
 			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
-			
-
 
 		}
 
-		BaseProducer(TFile* file){
+		BaseProducer(TFile* file) : 
+			//default to 1 GeV = 1 entry -> gev = 1
+			_gev(1),
+			_isocut(false),
+			_minpt(30),
+			_mineme(30),
+			_minnrhs(15),
+			_minrhE(0.5),
+			_maxrhE(-999),
+			_minobjeta(1.5),
+			_applyFrac(false),
+			_spikes(false),
+			_timesmear(false),
+			_spatial_corr(true),
+			_mctype(-1),
+			_mistcuts(false),
+			_calib(true),
+			//pointers
+			_timecalibTool(make_unique<KUCMS_TimeCalibration>())
+		{	
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
@@ -109,22 +129,6 @@ class BaseProducer{
 			TTree* tree = (TTree*)file->Get("tree/llpgtree");
 			_base = new ReducedBase(tree);
 			_nEvts = _base->fChain->GetEntries();
-			//default to 1 GeV = 1 entry -> gev = 1
-			_gev = 1;
-			_isocut = false;
-			_minpt = 30;
-			_mineme = 30;
-			_minnrhs = 15;
-			_minrhE = 0.5;
-			_maxrhE = -999;
-			_minobjeta = 1.5;
-			_applyFrac = false;
-			_spikes = false;
-			_timesmear = false;
-			_spatial_corr = true;
-			_timecalibTool = nullptr;//new KUCMS_TimeCalibration();
-			_mctype = -1;
-			_mistcuts = false;
 			//set year
 			string name = file->GetName();
 			if(name.find("2017") != string::npos) _year = 2017;
@@ -135,7 +139,6 @@ class BaseProducer{
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
 
-			_calib = true;
 			if(_year == 2018)
 				_timecalibTag = "r2_ul18";
 			else if(_year == 2017)
@@ -155,18 +158,18 @@ class BaseProducer{
 					cout << "Time calibration tag not set for " << _year << " MC." << endl;
 			}	
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
-			
-
-
 		}
 		virtual ~BaseProducer(){ 
 			delete _base;
-			delete _timecalibTool;
 		};
-
-
-		void SetTimeCalibrationTool(KUCMS_TimeCalibration* tc){
-			_timecalibTool = tc;
+		void MakeBase(string f){
+			if(gSystem->AccessPathName(f.c_str())){ 
+				cout << "Error: file " << f << " doesn't exist." << endl; 
+			}
+			_ch = make_unique<TChain>("tree/llpgtree");
+			_ch->SetTitle(f.c_str());
+			_ch->Add(f.c_str()); //skip non-recoverable files
+			_base = new ReducedBase(_ch.get());
 		}
 
 		//returns vector of rec hits (as Jets) for each event (vector of vectors)
@@ -180,16 +183,6 @@ class BaseProducer{
 
 		//amp = ampeff = amp/sigma
 		double SmearRecHitTime(double amp, double time){
-			//double n = 14;
-			//double s = 0;
-			//double c = 0.1083;
-
-			////sigma^2
-			//double sigma = (n/amp)*(n/amp) + (s*s)/(amp) + 2*c*c;
-			//sigma = sqrt(sigma/2); //calculated for 2 rhs, need for 1
-			//RandomSample rs;
-			//rs.SetRange(time-5*sigma,time+5*sigma);
-			//double newtime = rs.SampleGaussian(time,sigma,1).at(0);
 			_timecalibTool->setSmearTag(_timecalibTag);
 			return _timecalibTool->getSmearedTime(time, amp);
 		}
@@ -209,7 +202,9 @@ class BaseProducer{
 
 		ReducedBase* GetBase(){ return _base; }
 
-		KUCMS_TimeCalibration* _timecalibTool;
+		unique_ptr<KUCMS_TimeCalibration> _timecalibTool;
+		unique_ptr<TChain> _ch;
+		ReducedBase* _base; //needs to be raw because ROOT
 		string _timecalibTag;
 		int _mctype;
 
@@ -230,7 +225,6 @@ class BaseProducer{
 			omap = _rhIdToRes;
 		}
 
-		ReducedBase* _base = nullptr;
 		int _nEvts;
 
 		//energy weight transfer factor

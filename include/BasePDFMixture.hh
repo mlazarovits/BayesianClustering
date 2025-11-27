@@ -24,21 +24,30 @@ class BasePDFMixture : public BasePDF{
 
 		}
 		//copy constructor
-		BasePDFMixture(const BasePDFMixture& pdfmix){
-			m_data = pdfmix.m_data;
-			m_n = pdfmix.m_n;
-			m_k = pdfmix.m_k;
-			m_model = pdfmix.m_model;
-			m_coeffs = pdfmix.m_coeffs;
-			m_alphas = pdfmix.m_alphas;
-			m_alpha0 = pdfmix.m_alpha0;
-			m_norms = pdfmix.m_norms;
-			m_post = pdfmix.m_post;
-
-			_verb = pdfmix._verb;
-			_data_cov = pdfmix._data_cov;
-			_smear = pdfmix._smear;
-			_lamStar = pdfmix._lamStar;
+		BasePDFMixture(const BasePDFMixture& pdfmix) :
+			m_n(pdfmix.m_n),
+			m_k(pdfmix.m_k),
+			m_alpha0(pdfmix.m_alpha0),
+			_verb(pdfmix._verb),
+			_smear(pdfmix._smear),
+			//vectors
+			m_coeffs(pdfmix.m_coeffs),
+			m_alphas(pdfmix.m_alphas),
+			m_norms(pdfmix.m_norms),
+			//matrices
+			m_post(pdfmix.m_post),	
+			_data_cov(pdfmix._data_cov),
+			_lamStar(pdfmix._lamStar),
+			//pointers - deep copy
+			m_data(pdfmix.m_data ? std::make_unique<PointCollection>(*pdfmix.m_data) : nullptr),
+			m_model{}
+		{
+			for(auto& m : pdfmix.m_model){
+				if(m)
+					m_model.push_back(m->clone());
+				else
+					m_model.push_back(nullptr);
+			}
 
 		}
 		BasePDFMixture(int k){ 
@@ -63,21 +72,20 @@ class BasePDFMixture : public BasePDF{
 			_tresStoch = 1.60666; 
 			_tresNoise = 0.00691415;
 		}
-		void SetDim(int d){
+		void SetDim(int d) override{
 			if(m_dim != 0) return;
 			BaseSetDim(d);
 		}
 
 
 		virtual void InitParameters(const map<string, Matrix>& priors = {}, const vector<std::map<string, Matrix>>& prev_posteriors = {}, unsigned long long seed = 111) = 0;
-		virtual ~BasePDFMixture(){ m_coeffs.clear(); m_alphas.clear();
-			for(auto& pointer : m_model)
-				delete pointer;
+		virtual ~BasePDFMixture(){ 
+			m_coeffs.clear(); m_alphas.clear();
 		}
 
 		void SetVerbosity(int v){ _verb = v; }
-		double Prob(const BayesPoint& x);
-		double Prob(const PointCollection& x);
+		double Prob(const BayesPoint& x) override;
+		double Prob(const PointCollection& x) override;
 
 		double _cell, _tresCte, _tresStoch, _tresNoise;
 		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){
@@ -87,21 +95,22 @@ class BasePDFMixture : public BasePDF{
 			_tresNoise = tresNoise;
 		}
 		
-		void SetData(PointCollection* data){
+		//void SetData(PointCollection* data){
+		void SetData(std::unique_ptr<PointCollection> data){
 			if(_verb > 6) cout << "Using tres_cte = " << _tresCte << " ns, tres_stoch = " << _tresStoch << " ns and tres_noise = " << _tresNoise << endl;
 			//if just resetting data (not setting for the first time) only reset data
 			if(m_data != nullptr){
-				m_data = data;
+				m_data = std::move(data);
 				return;
 			}
-			m_data = data; 
+			m_data = std::move(data); 
 			m_n = m_data->GetNPoints(); 
 			m_dim = m_data->Dim(); 
 			m_post.SetDims(m_n, m_k);
-			if(data->GetNPoints() < m_k){
+			if(m_data->GetNPoints() < m_k){
 				//remove extra models
 				for(int i = 0; i < m_k - data->GetNPoints(); i++) RemoveModel(i);
-				m_k = data->GetNPoints();
+				m_k = m_data->GetNPoints();
 			}
 
 			//set up lambda_n 
@@ -125,8 +134,6 @@ class BasePDFMixture : public BasePDF{
 				if(std::isnan(lamStar.at(2,2))){ 
 					cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();
 				}
-				//if(_verb > 3){ cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();}
-				// cout << "point " << n << " has weight " << m_data->at(n).w() << " and sigma_t " << sqrt(tresSq) << " ns " << endl; m_data->at(n).Print(); cout << "lamstar" << endl;lamStar.Print();
 				_lamStar.push_back(lamStar); //r = 1 for all k on init
 				
 			}
@@ -135,7 +142,7 @@ class BasePDFMixture : public BasePDF{
 				m_model[k]->GetPrior()->SetDim(m_dim);
 			}
 		}
-		PointCollection* GetData(){ return m_data; }
+		PointCollection* GetData(){ return m_data.get(); }
 		
 		void GetMeasErrs(vector<Matrix>& lamstars){
 			lamstars.clear();
@@ -147,7 +154,7 @@ class BasePDFMixture : public BasePDF{
 	
 		//for EM algorithm
 		virtual void CalculatePosterior() = 0;
-		virtual void UpdateParameters() = 0;
+		virtual void UpdateParameters() override = 0;
 		//returns mu, cov, and mixing coeffs for cluster k
 		virtual void GetLikelihoodParameters(int k, std::map<string, Matrix>& p) = 0; 
 		
@@ -171,14 +178,14 @@ class BasePDFMixture : public BasePDF{
 
 		int GetNGhosts(){
 			int ng = 0;
-			for(auto model : m_model){
+			for(auto& model : m_model){
 				if(model->IsGhost())
 					ng++;
 			}
 			return ng;
 		}
 
-		BasePDF* GetModel(int k){ return m_model[k]; }
+		BasePDF* GetModel(int k){ return m_model[k].get(); }
 		virtual void RemoveModel(int j) = 0; //needs to call BaseRemoveModel but also removes associated data stats
 		void BaseRemoveModel(int j){
 			//if this is removing the last cluster
@@ -187,16 +194,8 @@ class BasePDFMixture : public BasePDF{
 			//erase model
 			//m_model.erase(m_model.begin()+j); 
 			//for(int i = 0; i < m_model.size(); i++){
-			for(auto& pointer : m_model){
-				//avoid dangling pointers
-				if(pointer == m_model[j]){
-					delete pointer;
-					pointer = nullptr;
-					break;
-				}
-			}			
-			m_model.erase(std::remove(m_model.begin(), m_model.end(), nullptr), m_model.end());
-
+			//m_model.erase(std::remove(m_model.begin(), m_model.end(), nullptr), m_model.end());
+			m_model.erase(m_model.begin()+j);
 			//erase corresponding dirichlet param
 			m_alphas.erase(m_alphas.begin()+j);
 			//erase corresponding number of associated points (N_k)
@@ -420,7 +419,6 @@ class BasePDFMixture : public BasePDF{
 			m_data->GetSkipDims(skips);
 			m_data->GetUserIdxs(idxs);
 			x.MatToPoints(*m_data,ws,skips,idxs);
-			//m_data = new PointCollection(x.MatToPoints(ws,skips,idxs));
 
 			//also scale smear - if datacov is set
 			if(_smear){
@@ -458,13 +456,13 @@ class BasePDFMixture : public BasePDF{
 		//scale prior parameters 
 		virtual void ScalePriorParameters(const Matrix& sc) = 0;
 
-		PointCollection* m_data;
+		std::unique_ptr<PointCollection> m_data;
 		//number of data points
 		int m_n;
 		//number of components
 		int m_k;
 		//probabilistic model
-		vector<BasePDF*> m_model;
+		vector<std::unique_ptr<BasePDF>> m_model;
 		//mixture coeffs (probabilities sum to 1, multinomal dist.)
 		vector<double> m_coeffs;
 		//dirichlet (prior) parameters (on coeffs)

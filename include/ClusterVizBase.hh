@@ -18,7 +18,6 @@ class ClusterVizBase{
 		ClusterVizBase(){ 
 			_model = nullptr;
 			_post = Matrix();
-			_points = new PointCollection();	
 			_n = 0; //number of points
 			_k = 0; //number of clusters
 			_fname = "";	

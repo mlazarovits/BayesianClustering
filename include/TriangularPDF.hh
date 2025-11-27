@@ -15,19 +15,22 @@ class TriangularPDF : public BasePDF{
 			m_params["b"] = Matrix(BayesPoint(_b));
 		}
 		virtual ~TriangularPDF(){ };
+		std::unique_ptr<BasePDF> clone() const override{
+			return std::unique_ptr<BasePDF>(new TriangularPDF(*this));
+		}
 
-		double Prob(const BayesPoint& x);
+		double Prob(const BayesPoint& x) override;
 		double Prob(double x);
-		double Prob(const PointCollection& x);
+		double Prob(const PointCollection& x) override;
 
-		void InitParameters(unsigned long long seed = 123);
-		void UpdateParameters(){ _a = m_params["a"].at(0,0); _b = m_params["b"].at(0,0); _c = m_params["c"].at(0,0);
+		void InitParameters(unsigned long long seed = 123) override;
+		void UpdateParameters() override{ _a = m_params["a"].at(0,0); _b = m_params["b"].at(0,0); _c = m_params["c"].at(0,0);
 			m_params["a"] = Matrix(BayesPoint(_a));
 			m_params["b"] = Matrix(BayesPoint(_b));
 			m_params["c"] = Matrix(BayesPoint(_c));
 		 }	
 
-		void SetDim(int d){
+		void SetDim(int d) override{
 			if(m_dim != 0) return;
 			BaseSetDim(d);
 		}

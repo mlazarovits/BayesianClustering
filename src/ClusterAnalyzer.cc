@@ -1,7 +1,6 @@
 #include "ClusterAnalyzer.hh"
 
 ClusterAnalyzer::ClusterAnalyzer(){
-	_algo = nullptr;
 	_gev = 1;
 	_radius = 129;
 	_detCenter = BayesPoint({0., 0., 0.});
@@ -37,23 +36,23 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 //should be run after all rechits for clustering have been added
 int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
-	_algo = new BayesCluster(_rhs);	
+	std::unique_ptr<BayesCluster> algo = std::make_unique<BayesCluster>(_rhs);	
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
 	//time resolution parameters - set by detector time resolution
 	double tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
 	double tresStoch = 0.5109;//1.60666 * 1e-9; 
 	double tresNoise = 2.106;//0.00691415 * 1e-9;
-	_algo->SetMeasErrParams(cell, tresCte, tresStoch*_gev, tresNoise*_gev); 
+	algo->SetMeasErrParams(cell, tresCte, tresStoch*_gev, tresNoise*_gev); 
 	//set time resolution smearing
 	//if(_timesmear) algo->SetTimeResSmear(tres_c, tres_n);
 	double thresh = 0.1;
-	_algo->SetThresh(thresh);
+	algo->SetThresh(thresh);
 	double alpha = 1e-300;
-	_algo->SetAlpha(alpha);
+	algo->SetAlpha(alpha);
 	double emAlpha = 1e-5;
-	_algo->SetSubclusterAlpha(emAlpha);
-	_algo->SetVerbosity(_verb);
+	algo->SetSubclusterAlpha(emAlpha);
+	algo->SetVerbosity(_verb);
 	map<string, Matrix> prior_params;
 	//beta
 	prior_params["scale"] = Matrix(1e-3);
@@ -67,11 +66,12 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	prior_params["scalemat"] = W;
 	//m
 	prior_params["mean"] = Matrix(3,1);
-	_algo->SetPriorParameters(prior_params);
+	algo->SetPriorParameters(prior_params);
 
 
 	//do hierarchical clustering for subcluster constraints
-	vector<node*> trees = _algo->NlnNCluster();
+	vector<std::shared_ptr<BaseTree::node>> trees;
+	algo->NlnNCluster(trees);
 	vector<ClusterObj> objs;
 	_treesToObjs(trees, objs);
 	//safety for no trees found
@@ -107,17 +107,15 @@ int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
 
 
 
-void ClusterAnalyzer::_treesToObjs(vector<node*>& trees, vector<ClusterObj>& objs){
+void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs){
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
 	for(int i = 0; i < trees.size(); i++){
 		if(trees[i] == nullptr) continue;
-		//get points from tree
-		PointCollection* pc = trees[i]->points;
 		//at least 2 points (rhs)
-		if(pc->GetNPoints() < 2) continue;
-		Jet predJet(trees[i]->model, _PV, _gev, _radius);
+		if(trees[i]->points->GetNPoints() < 2) continue;
+		Jet predJet(trees[i].get(), _PV, _gev, _radius);
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));
 	}

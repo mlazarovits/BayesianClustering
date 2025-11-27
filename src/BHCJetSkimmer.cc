@@ -43,7 +43,6 @@ void BHCJetSkimmer::Skim(){
 	}
 	if(_evtj > _nEvts) _evtj = _nEvts;
 	int SKIP = 1;
-	BayesCluster* algo = nullptr;
 	clock_t t;
 	double phiwindow = acos(-1)/2;
 	//for event display
@@ -209,7 +208,7 @@ void BHCJetSkimmer::Skim(){
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK4 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
-			algo = new BayesCluster(rhs);
+			auto algo = make_unique<BayesCluster>(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
@@ -218,25 +217,15 @@ void BHCJetSkimmer::Skim(){
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 
-			GaussianMixture* gmm = algo->SubCluster();
+			unique_ptr<GaussianMixture> gmm = algo->SubCluster();
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
-			_recoAK4jets[j].SetModel(gmm, _gev);
+			_recoAK4jets[j].SetModel(gmm.get(), _gev);
 			
-			nsubcls_tot += gmm->GetNClusters();
-			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
-			for(int k = 0; k < gmm->GetNClusters(); k++){
-				map<string, Matrix> params;
-				gmm->GetDataStatistics(k, params);
-				Matrix mean = params["mean"];
-				Matrix cov = params["cov"];
-				//cout << "cluster #" << k << endl;
-				//cout << "mean" << endl; mean.Print();
-				//cout << "cov" << endl; cov.Print();
-			}
-		
+			nsubcls_tot += _recoAK4jets[j].GetNConstituents();
+			if(_strategy == gmmOnly) cout << " jet has " << _recoAK4jets[j].GetNConstituents() << " subclusters" << endl;// with parameters" << endl;
 			rhs.clear();
 		}
 		//do GMM for AK8
@@ -247,7 +236,7 @@ void BHCJetSkimmer::Skim(){
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK8 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
-			algo = new BayesCluster(rhs);
+			auto algo = make_unique<BayesCluster>(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
@@ -256,14 +245,14 @@ void BHCJetSkimmer::Skim(){
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 			
-			GaussianMixture* gmm = algo->SubCluster();
+			unique_ptr<GaussianMixture> gmm = algo->SubCluster();
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
-			_recoAK8jets[j].SetModel(gmm, _gev);
+			_recoAK8jets[j].SetModel(gmm.get(), _gev);
 			
-			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
+			if(_strategy == gmmOnly) cout << " jet has " << _recoAK8jets[j].GetNConstituents() << " subclusters" << endl;// with parameters" << endl;
 			rhs.clear();
 		}
 
@@ -275,7 +264,7 @@ void BHCJetSkimmer::Skim(){
 			x_nrhs_subcl.push_back((double)rhs.size());
 			
 			if(_strategy == gmmOnly) cout << "SubClustering reco AK15 jet #" << j << " with " << rhs.size() << " rec hits..." << endl;	
-			algo = new BayesCluster(rhs);
+			auto algo = make_unique<BayesCluster>(rhs);
 			algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 			algo->SetThresh(_thresh);
 			algo->SetAlpha(_alpha);
@@ -284,14 +273,14 @@ void BHCJetSkimmer::Skim(){
 			algo->SetPriorParameters(_prior_params);
 			algo->SetNGhosts(_nGhosts);			
 			
-			GaussianMixture* gmm = algo->SubCluster();
+			unique_ptr<GaussianMixture> gmm = algo->SubCluster();
 			//y_time_subcl.push_back((double)t/CLOCKS_PER_SEC);
 			//cout <<  "y time_subcl entry " << y_time_subcl[y_time_subcl.size()-1] << " " << (double)t/CLOCKS_PER_SEC << endl;	
 			//comptime_subcl->Fill((double)t/CLOCKS_PER_SEC);
 			
-			_recoAK15jets[j].SetModel(gmm, _gev);
+			_recoAK15jets[j].SetModel(gmm.get(), _gev);
 			
-			if(_strategy == gmmOnly) cout << " jet has " << gmm->GetNClusters() << " subclusters" << endl;// with parameters" << endl;
+			if(_strategy == gmmOnly) cout << " jet has " << _recoAK15jets[j].GetNConstituents() << " subclusters" << endl;// with parameters" << endl;
 			rhs.clear();
 		}
 
@@ -344,7 +333,7 @@ void BHCJetSkimmer::Skim(){
 		_radius = sqrt(rh.x()*rh.x() + rh.y()*rh.y());
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
-		BayesCluster* algo = new BayesCluster(rhs);
+		auto algo = std::make_unique<BayesCluster>(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
@@ -359,13 +348,13 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == NlnN || _strategy == NlnNonAK4){
 			//start clock
 			t = clock();
-			_trees = algo->NlnNCluster();
+			algo->NlnNCluster(_trees);
 		}
 		//N^2 version
 		else if(_strategy == N2){
 			//start clock
 			t = clock();
-			_trees = algo->N2Cluster();
+			algo->N2Cluster(_trees);
 		}
 		t = clock() - t;
 cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;

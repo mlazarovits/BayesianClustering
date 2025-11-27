@@ -18,6 +18,8 @@
 #include "GaussianMixture.hh"
 #include <iostream>
 #include <vector>
+#include <memory>
+
 using std::vector;
 using std::cout;
 using std::endl;
@@ -56,7 +58,6 @@ class BayesCluster{
 
 			_smear = Matrix();
 			_verb = 0;
-			_trees = {};
 
 			_nGhosts = 0;
 			_check_merges = false;
@@ -97,9 +98,6 @@ class BayesCluster{
 
 
 		virtual ~BayesCluster(){
-			////for(auto n : _trees) delete n;
-			for(auto n : _trees) n = nullptr;
-			//_trees.clear();
 			_jets.clear();
 			_points.clear();
 			_history.clear();
@@ -108,16 +106,18 @@ class BayesCluster{
 
 
 		//for jets - BHC for clusters + GMM EM for subclusters
-		const vector<node*>& NlnNCluster(){
-			return this->_delauney_cluster();
+		void NlnNCluster(vector<std::shared_ptr<BaseTree::node>>& trees){
+			trees.clear();
+			this->_delauney_cluster(trees);
 		}
 
-		const vector<node*>& N2Cluster(){
-			return this->_naive_cluster();
+		void N2Cluster(vector<std::shared_ptr<BaseTree::node>>& trees){
+			trees.clear();
+			//this->_naive_cluster(trees);
 		}
 
 		//for photons - subclusters only
-		GaussianMixture* SubCluster(string oname = ""){
+		unique_ptr<GaussianMixture> SubCluster(string oname = ""){
 			return this->_subcluster(oname);
 		}
 
@@ -342,7 +342,6 @@ class BayesCluster{
 	private:
 		vector<Jet> _jets;
 		vector<PointCollection> _points; //to pass to merge tree in cluster function
-		vector<node*> _trees;
 		vector<history_element> _history;
 		double _Qtot;
 		enum JetType {Invalid=-3, InexistentParent = -2, BeamJet = -1};
@@ -352,9 +351,9 @@ class BayesCluster{
 		Matrix _smear;
 		int _verb;
 
-		const vector<node*> & _delauney_cluster();
-		const vector<node*>& _naive_cluster();
-		GaussianMixture* _subcluster(string oname = "");
+		void _delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& trees);
+		//void _naive_cluster(vector<std::shared_ptr<BaseTree::node>>& trees);
+		unique_ptr<GaussianMixture> _subcluster(string oname = "");
 		int n_particles() const{ return _initial_n; }
 
 		double _bestRk;

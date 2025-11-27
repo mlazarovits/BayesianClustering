@@ -1,15 +1,5 @@
 #include "FullViz3D.hh"
 
-FullViz3D::FullViz3D(const vector<node*>& nodes){
-	for(int i = 0; i < (int)nodes.size(); i++){
-		if(nodes[i] == nullptr) continue;
-		_nodes.push_back(nullptr);
-		node* x = new node(*(nodes[i]));
-		_nodes[(int)_nodes.size() - 1] = nodes[i];
-	}
-		
-}
-
 
 
 json FullViz3D::WriteNode(node* n){
@@ -22,22 +12,21 @@ json FullViz3D::WriteNode(node* n){
 	
 	vector<double> eigenVec_0, eigenVec_1, eigenVec_2;
 	
-	BasePDFMixture* pdfmodel = n->model;
+	BasePDFMixture* pdfmodel = n->model.get();
 	int kmax = pdfmodel->GetNClusters();
-	PointCollection* points = n->points;
-	if(points->GetNPoints() == 0){
+	if(n->points->GetNPoints() == 0){
 		return cluster;
 	}
 
-	for(int i = 0; i < points->GetNPoints(); i++){
+	for(int i = 0; i < n->points->GetNPoints(); i++){
 		//eta
-		x.push_back(points->at(i).Value(0));
+		x.push_back(n->points->at(i).Value(0));
 		//phi
-		y.push_back(points->at(i).Value(1));
+		y.push_back(n->points->at(i).Value(1));
 		//time
-		z.push_back(points->at(i).Value(2));
+		z.push_back(n->points->at(i).Value(2));
 		//weight - untransfererd (in GeV (sum_n E_n*r_nk))
-		w.push_back(points->at(i).Weight()/_transf);
+		w.push_back(n->points->at(i).Weight()/_transf);
 
 	}
 	data["x"] = x;
@@ -109,7 +98,7 @@ void FullViz3D::orderTree(node* n, int level, map<int, NodeStack> &map){
 	if(n == nullptr) return;
 	//a mirror node
 	if(n->points->mean().at(1) < 0.0 || n->points->mean().at(1) >= 2*acos(-1)) return;
-	map[level].push(n);
+	map[level].push(std::make_shared<node>(*n));
 
 
 	orderTree(n->l, level + 1, map);
@@ -118,7 +107,7 @@ void FullViz3D::orderTree(node* n, int level, map<int, NodeStack> &map){
 }
 
 //level{ tree_0{ }, tree_1{ }, ...}
-json FullViz3D::WriteLevels(){
+json FullViz3D::WriteLevels(vector<std::shared_ptr<node>>& nodes){
 	json levels = json::object();
 	json trees = json::object();
 	json clusters = json::object();
@@ -127,13 +116,13 @@ json FullViz3D::WriteLevels(){
 	
 	//create a node - level map for each tree
 	vector<map<int, NodeStack>> tree_maps;
-	for(int i = 0; i < (int)_nodes.size(); i++){
+	for(int i = 0; i < (int)nodes.size(); i++){
 		map<int, NodeStack> tree_map;
-		if(_nodes[i] == nullptr){ continue; }
+		if(nodes[i] == nullptr){ continue; }
 		//a mirror node
-		if(_nodes[i]->points->mean().at(1) < 0.0 || _nodes[i]->points->mean().at(1) >= 2*acos(-1)) continue;
-		orderTree(_nodes[i], 0, tree_map);
-		tree_maps.push_back(tree_map);
+		if(nodes[i]->points->mean().at(1) < 0.0 || nodes[i]->points->mean().at(1) >= 2*acos(-1)) continue;
+		orderTree(nodes[i].get(), 0, tree_map);
+		tree_maps.push_back(std::move(tree_map));
 		nTrees++;	
 	}
 	if(tree_maps.empty()) return levels;
@@ -155,16 +144,16 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 				//loop through nodes (clusters) at this level for this tree
 				//can't set to empty because need to evaluate last node popped off below
 				while(!tree_maps[t][l].empty()){
-					node* n = tree_maps[t][l].pop();
+					std::shared_ptr<node> n = tree_maps[t][l].pop();
 					if(_verb > 2) cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
 					//a mirror node
 					if(n->points->mean().at(1) < 0.0 || n->points->mean().at(1) >= 2*acos(-1)) continue;
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
-						tree_maps[t][l+1].push(n);
+						tree_maps[t][l+1].push(std::move(n));
 					}
 					npts += n->points->GetNPoints();
-					clusters["cluster_"+std::to_string(j)] = WriteNode(n);
+					clusters["cluster_"+std::to_string(j)] = WriteNode(n.get());
 					j++;
 				}
 			}

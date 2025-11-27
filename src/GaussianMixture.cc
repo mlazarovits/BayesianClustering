@@ -40,8 +40,8 @@ GaussianMixture::GaussianMixture(){
 
 GaussianMixture::GaussianMixture(int k) : BasePDFMixture(k){
 	for(int k = 0; k < m_k; k++){
-		m_model[k] = new Gaussian();
-		m_model[k]->SetPrior(new NormalWishart());
+		m_model[k] = std::make_unique<Gaussian>();
+		m_model[k]->SetPrior(std::make_unique<NormalWishart>());
 		//init data stat matrices here bc m_dim has been set from data
 		_xbar.push_back(Matrix());
 		_Sbar.push_back(Matrix());
@@ -180,7 +180,7 @@ void GaussianMixture::InitParameters(const map<string, Matrix>& priors, const ve
 
 	//for(int k = 0; k < m_k; k++) cout << "k: " << k << " Nk: " << m_norms[k] << endl;
 	//init means
-	KMeansCluster kmc = KMeansCluster(m_data, m_k);
+	KMeansCluster kmc = KMeansCluster(m_data.get(), m_k);
 	//if have locations from previous models, use those to initialize kmeans
 	if(!prev_posteriors.empty()){
 		PointCollection start_means;
@@ -526,6 +526,10 @@ void GaussianMixture::CalculateExpectations(){
 		}
 		if(std::isinf(m_Elam[k])){ cout << "INF!!!!! k: " << k << " alpha: " << m_alphas[k] << " dof: " << dof << " Elam: " << m_Elam[k] << " Epi: " << m_Epi[k] << " detW[k]: " << det << " W[k]: " << endl;
 		scalemat.Print(); cout << "W0" << endl; m_W0.Print();}
+
+//cout << "expectations - k " << k << " Elam " << m_Elam[k] << " Epi " << m_Epi[k] << endl;
+
+
 	}	
 	//cout << "CALC EXPECTATIONS - end" << endl;
 	
@@ -786,6 +790,10 @@ void GaussianMixture::CalculateRStatistics(){
 		//m_model[k]->SetParameter("cov",S);
 		_Sbar[k] = S;
 //cout << "k " << k << " norm "<< m_norms[k] << " xbar" << endl; _xbar[k].Print(); cout << " Sk " << endl; _Sbar[k].Print();
+//cout << "prior scalemat" << endl;
+//Matrix scalemat;
+//m_model[k]->GetPrior()->GetParameter("scalemat",scalemat);
+//scalemat.Print();
 		//if(k == 1){ cout << "CalculateRStats - cov" << endl; m_model[k]->GetParameter("cov").Print();}
 	}
 
@@ -818,6 +826,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			continue;	
 		}
 
+//cout << "cluster # " << k << endl;
 		//already calculated - bar{x}k and Sk
 		Matrix mu = _xbar[k];//m_model[k]->GetParameter("mean");
 		Matrix cov = _Sbar[k];//m_model[k]->GetParameter("cov");
@@ -828,6 +837,7 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		//betas - eq. 10.60
 		double new_scale = m_beta0 + m_norms[k];
 		//cout << "beta0 " << m_beta0 << " Nk " << m_norms[k] << " new_scale " << new_scale << endl;	
+		//cout << "nu0 " << m_nu0 << " Nk " << m_norms[k] << " new_dof " << m_norms[k] + m_nu0 << endl;	
 		m_model[k]->GetPrior()->SetParameter("scale", Matrix(new_scale));
 		//means - eq. 10.61 - m_k = (Nk*bar{x}_k + beta0*m0)/beta_k
 		//N_k*bar{x}_k
@@ -868,10 +878,12 @@ void GaussianMixture::UpdatePosteriorParameters(){
 			//setting lam_k = nu_k*W_k (expected values of Wishart) with old parameters
 			Matrix lamExp;
 			m_model[k]->GetPrior()->GetParameter("scalemat", lamExp);
+//cout << "scalemat " << endl; lamExp.Print();
 //cout << "# models " << m_model.size() << endl;
 //cout << "model prior mean?" << endl; m_model[k]->GetPrior()->GetParameter("mean").Print();
 			Matrix dof_mat;
 			m_model[k]->GetPrior()->GetParameter("dof", dof_mat);
+//cout << "dof " << dof_mat.at(0,0) << endl;
 			lamExp.mult(lamExp,dof_mat.at(0,0));
 //cout << "lamExp (scalemat*nu)" << endl; lamExp.Print();
 //cout << "sum r_nk*lam_n" << endl; rLamStar.Print();
@@ -997,7 +1009,10 @@ void GaussianMixture::UpdatePosteriorParameters(){
 		//	cout << "cov " << endl; m_model[k]->GetParameter("cov").Print();
 		//}
 
-
+//cout << "update parameers - k " << k << " alpha " << m_alphas[k] << " beta " << new_scale << " nu " << new_dof << " m " << endl;
+//new_mean.Print();
+//cout << "scalemat" << endl;
+//new_scalemat.Print();
 	}
 //cout << "UPDATE PARAMETERS - M STEP - end" << endl;
 };
@@ -1083,7 +1098,7 @@ double GaussianMixture::EvalVariationalLogL(){
 		E_p_pi += m_Epi[k];
 	E_p_pi *= (m_alpha0 - 1);
 	vector<double> alpha0s(m_k, m_alpha0);
-	Dirichlet* dir = new Dirichlet(alpha0s);
+	auto dir = std::make_unique<Dirichlet>(alpha0s);
 	E_p_pi += dir->lnC();
 //	cout << "E_p_pi: " << E_p_pi << endl;
 
@@ -1132,7 +1147,7 @@ double GaussianMixture::EvalVariationalLogL(){
 	}
 //cout << "half sum " << half_sum << " lam sum "  << lam_sum << " trace sum " << tr_sum << endl;
 	E_p_muLam = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
-	Wishart* wish = new Wishart(m_W0, m_nu0);
+	auto wish = std::make_unique<Wishart>(m_W0, m_nu0);
 	E_p_muLam += m_k*wish->lnB();
 //cout << "nu0 " << m_nu0 << " W0" << endl; m_W0.Print();
 //cout << "wish lnB " << wish->lnB() << endl;
@@ -1153,7 +1168,7 @@ double GaussianMixture::EvalVariationalLogL(){
 	for(int k = 0; k < m_k; k++){
 		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
 	}
-	Dirichlet* dir_k = new Dirichlet(m_alphas);
+	auto dir_k = std::make_unique<Dirichlet>(m_alphas);
 	E_q_pi += dir_k->lnC();
 //	cout << "E_q_pi: " << E_q_pi << endl;
 	
@@ -1167,7 +1182,7 @@ double GaussianMixture::EvalVariationalLogL(){
 		m_model[k]->GetPrior()->GetParameter("scale", scale_mat);
 		double nu = nu_mat.at(0,0);
 		double scale = scale_mat.at(0,0);
-		Wishart* wish_k = new Wishart(scalemat, nu);
+		auto wish_k = std::make_unique<Wishart>(scalemat, nu);
 		H = wish_k->H();
 	//cout << "k " << k << " Elam " << m_Elam[k] << " betak " << scale << " H " << H << " nu " << nu << " scalemat " << endl; scalemat.Print();
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
@@ -1270,7 +1285,7 @@ double GaussianMixture::EvalNLLTerms(){
 		E_p_pi += m_Epi[k];
 	E_p_pi *= (m_alpha0 - 1);
 	vector<double> alpha0s(m_k, m_alpha0);
-	Dirichlet* dir = new Dirichlet(alpha0s);
+	auto dir = std::make_unique<Dirichlet>(alpha0s);
 	E_p_pi += dir->lnC();
 //	cout << "E_p_pi: " << E_p_pi << endl;
 
@@ -1308,7 +1323,7 @@ double GaussianMixture::EvalNLLTerms(){
 		tr_sum += nu*tr.trace();
 	}
 	E_p_muLam = 0.5*half_sum + ((m_nu0 - m_dim - 1)/2.)*lam_sum - 0.5*tr_sum;
-	Wishart* wish = new Wishart(m_W0, m_nu0);
+	auto wish = std::make_unique<Wishart>(m_W0, m_nu0);
 	E_p_muLam += m_k*wish->lnB();
 //	cout << "E_p_muLam: " << E_p_muLam << endl;
 
@@ -1340,7 +1355,7 @@ double GaussianMixture::EvalEntropyTerms(){
 	for(int k = 0; k < m_k; k++){
 		E_q_pi += (m_alphas[k] - 1)*m_Epi[k];
 	}
-	Dirichlet* dir_k = new Dirichlet(m_alphas);
+	auto dir_k = std::make_unique<Dirichlet>(m_alphas);
 	E_q_pi += dir_k->lnC();
 //	cout << "E_q_pi: " << E_q_pi << endl;
 	
@@ -1354,7 +1369,7 @@ double GaussianMixture::EvalEntropyTerms(){
 		m_model[k]->GetPrior()->GetParameter("dof", nu_mat);
 		double nu = nu_mat.at(0,0);
 		double scale = scale_mat.at(0,0);
-		Wishart* wish_k = new Wishart(scalemat, nu);
+		auto wish_k = std::make_unique<Wishart>(scalemat, nu);
 		H = wish_k->H();
 		E_q_muLam += 0.5*m_Elam[k] + m_dim/2.*log(scale/(2*acos(-1))) - m_dim/2. - H;
 

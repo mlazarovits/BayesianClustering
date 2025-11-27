@@ -80,7 +80,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   /// includes alpha for BHC (a) and GMM (suba)
   Dnn2piCylinder(
 	const std::vector<PointCollection>& input_points, 
-	const bool & ignore_nearest_is_mirror, MergeTree* mt,
+	const bool & ignore_nearest_is_mirror, std::unique_ptr<MergeTree> mt,
 	const bool & verbose);
   
 
@@ -98,7 +98,7 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
 
   /// Returns the index of  the nearest neighbour of point labelled
   /// by ii (assumes ii is valid)
-  node* NearestNeighbourProbNode(const int ii) const ;
+  BaseTree::node* NearestNeighbourProbNode(const int ii) const ;
   
 
   /// Returns the highest probability of merging point ii
@@ -122,6 +122,11 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   ~Dnn2piCylinder();
 
 
+
+  void GetValidNodes(vector<std::shared_ptr<BaseTree::node>>& nodes) const{
+	nodes.clear();
+	_DNN->GetValidNodes(nodes);
+  }
 
  private:
   double pi    = 3.14159265358;
@@ -197,6 +202,8 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
   //     a proper copy constructor.
   DnnPlane * _DNN;
 
+  std::unique_ptr<MergeTree> _merge_tree;
+
   /// given a phi value in the 0--pi range return one 
   /// in the 2pi--3pi range; whereas if it is in the pi-2pi range then
   /// remap it to be inthe range (-pi)--0.
@@ -206,7 +213,6 @@ class Dnn2piCylinder : public DynamicNearestNeighbours {
     return EtaPhi(point.first, phi);}
 
   inline PointCollection _remap_phi(const PointCollection& points) {
-//TODO: consider what it would mean to shift points according to their own phi (not the mean of the group)
     double phi = points.CircularMean(1);
     double shift;
     if (phi < pi) { shift = twopi ;} else {shift = -twopi;}
@@ -363,13 +369,13 @@ inline double Dnn2piCylinder::NearestNeighbourProb(const int current) const{
   }
 }
 
-inline node* Dnn2piCylinder::NearestNeighbourProbNode(const int current) const {
+inline BaseTree::node* Dnn2piCylinder::NearestNeighbourProbNode(const int current) const {
   int main_index = _mirror_info[current].main_index;
   int mirror_index = _mirror_info[current].mirror_index;
-if(_verbose) cout << "current: " << current << " main idx: " << main_index << " cyl index: " << _cylinder_index_of_plane_vertex[main_index] <<  " mirror_index: " << mirror_index << " # clusters in merge tree: " << _merge_tree->GetNClusters() << endl;
+if(_verbose) cout << "current: " << current << " main idx: " << main_index << " cyl index: " << _cylinder_index_of_plane_vertex[main_index] <<  " mirror_index: " << mirror_index << endl;
 if(_verbose)cout << "validity: main index - " << _DNN->Valid(main_index) << " mirror index: " << _DNN->Valid(mirror_index) << " cyl index: " << Valid(_cylinder_index_of_plane_vertex[main_index]) << endl;
   int plane_index;
-  node* x;
+  BaseTree::node* x = nullptr;
   if (mirror_index == INEXISTENT_VERTEX ) {
     //plane_index = _DNN->NearestNeighbourProbIndex(main_index);
     x = _DNN->NearestNeighbourProbNode(main_index);
@@ -391,7 +397,7 @@ if(_verbose)cout << "validity: main index - " << _DNN->Valid(main_index) << " mi
  //if mirrored points, may need to translate back or set points to points of main idx
  if(x == nullptr) cout << "x null" << endl;
 if(_verbose) cout << "phi of selected merge node: " << x->points->CircularMean(1) << endl;
-if(x->points->CircularMean(1) > twopi) x->points = _merge_tree->Get(main_index)->points;
+//if(x->points->CircularMean(1) > twopi) x->points = std::make_unique<PointCollection>(*_merge_tree->Get(main_index)->points);
   return x;
 /*
   //infinite vertex - defined in Triangulation

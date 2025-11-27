@@ -70,7 +70,7 @@ class BHCJetSkimmer{
 			if(gSystem->AccessPathName(file.c_str())){ cout << "Error: file " << file << " doesn't exist." << endl; return; }
 			InitHists();
 			_infile = TFile::Open(file.c_str());
-			_prod = new JetSimProducer(_infile);
+			_prod = std::make_unique<JetSimProducer>(_infile);
 			_strategy = NlnN;
 			_sel = def;
 			_tree = new TTree("tree","tree");
@@ -280,16 +280,16 @@ class BHCJetSkimmer{
 			int njets_tot = 0;
 			for(int i = 0; i < _trees.size(); i++){
 				//get points from tree
-				PointCollection* pc = _trees[i]->points;
 				//at least 2 points (rhs)
-				if(pc->GetNPoints() < 2) continue;
+				if(_trees[i]->points->GetNPoints() < 2) continue;
 				rhs.clear();
 				njets_tot++;
 				//loop over points
 				//cout << "TREE " << i << endl;
 				//cout << "tree points " << endl; pc->Print();
 				//create new Jet
-				Jet predJet(_trees[i]->model, BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
+				//Jet predJet(_trees[i]->model, BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
+				Jet predJet(_trees[i].get(), BayesPoint({_pvx, _pvy, _pvz}), _gev, _radius);
 			//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
 				//put pt cut in for predjets of 5 GeV to match reco AK4 definition
 				if(predJet.pt() < 5) continue; 
@@ -1137,7 +1137,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		TTree* _tree;
 
 		vector<Jet> _phos; //photons for event
-		vector<node*> _trees;
+		vector<std::shared_ptr<BaseTree::node>> _trees;
 		vector<Jet> _predJets, _genAK4jets, _recoAK4jets, _genparts, _genAK15jets, _genAK8jets, _recoAK8jets, _recoAK15jets;
 		double _minTopPt, _minTopE, _minWPt;
 		bool _smear;
@@ -1167,7 +1167,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		EvtSel _sel;
 		ReducedBaseSim* _base = nullptr;
 		int _nEvts;
-		JetSimProducer* _prod = nullptr;
+		std::unique_ptr<JetSimProducer> _prod;
 		bool _data, _debug, _zoom_window;
 		int _evti, _evtj;
 		double _gev;

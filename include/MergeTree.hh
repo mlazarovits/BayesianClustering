@@ -1,84 +1,87 @@
 #ifndef MergeTree_HH
 #define MergeTree_HH
-
+#include "BaseTree.hh"
 #include "VarEMCluster.hh"
 #include "GaussianMixture.hh"
 #include "MultivarT.hh"
 #include "RandomSample.hh"
-#include "NodeStack.hh"
 #include "Gaussian.hh"
 
 using std::map;
 
 class MergeTree : BaseTree{
 	public:
-		MergeTree(){ 
-			_alpha = 0; _thresh = 0.; _verb = 0;
-			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.133913;
-			_tresStoch = 1.60666; 
-			_tresNoise = 0.00691415;
+		MergeTree() :
+			BaseTree(), 
+			_alpha(0),
+			_thresh(0.), 
+			_verb(0),
+			_cell(acos(-1)/180), //default is CMS ECAL cell size
+			_tresCte(0.133913),
+			_tresStoch(1.60666), 
+			_tresNoise(0.00691415),
+			_check_merges(false),
+			_nGhosts(0),
+			_Rscale(3,3),
+			_RscaleInv(3,3)
+		{ 
 			//x'' = x'/b = (x-a)/b
 			//sets relative importance of dimensions
 			//decreasing cell -> eta/phi distance more important
 			//increasing entry (2,2) -> time distance more important
-			_Rscale = Matrix(3,3);
-			_RscaleInv = Matrix(3,3);
 			_Rscale.SetEntry(1/_cell,0,0);
 			_Rscale.SetEntry(1/_cell,1,1);
 			_Rscale.SetEntry(1,2,2); 
 			_RscaleInv.invert(_Rscale);
-
-			_check_merges = false;
-			_nGhosts = 0;
 		}
 
-		MergeTree(double alpha){
-			_alpha = alpha;
-			_thresh = 1.; _verb = 0;
-			_cell = acos(-1)/180; //default is CMS ECAL cell size
-			_tresCte = 0.133913;
-			_tresStoch = 1.60666; 
-			_tresNoise = 0.00691415;
+		MergeTree(double alpha) : 
+			BaseTree(), 
+			_alpha(alpha),
+			_thresh(0.1), 
+			_verb(0),
+			_cell(acos(-1)/180), //default is CMS ECAL cell size
+			_tresCte(0.133913),
+			_tresStoch(1.60666), 
+			_tresNoise(0.00691415),
+			_check_merges(false),
+			_nGhosts(0),
+			_Rscale(3,3),
+			_RscaleInv(3,3)
+		{
 			//x'' = x'/b = (x-a)/b
 			//sets relative importance of dimensions
 			//decreasing cell -> eta/phi distance more important
 			//increasing entry (2,2) -> time distance more important
-			_Rscale = Matrix(3,3);
-			_RscaleInv = Matrix(3,3);
 			_Rscale.SetEntry(1/_cell,0,0);
 			_Rscale.SetEntry(1/_cell,1,1);
 			_Rscale.SetEntry(1,2,2); 
 			_RscaleInv.invert(_Rscale);
-			
-			_check_merges = false;
-			_nGhosts = 0;
 		}
 
 		//copy constructor
-		MergeTree(const MergeTree& tree){
-			_head = tree._head;
-			_z = tree._z;
-			_t = tree._t;
-			_alpha = tree._alpha;
-			_clusters = tree._clusters;
-			_thresh = tree._thresh;
-			_verb = tree._verb;
-			_cell = tree._cell; //default is CMS ECAL cell size
-			_tresCte = tree._tresCte;
-			_tresStoch = tree._tresStoch; 
-			_tresNoise = tree._tresNoise; 
+		MergeTree(const MergeTree& tree) :
+			BaseTree(tree),
+			_alpha(tree._alpha),
+			_thresh(tree._thresh),
+			_verb(tree._verb),
+			_cell(tree._cell), //default is CMS ECAL cell size
+			_tresCte(tree._tresCte),
+			_tresStoch(tree._tresStoch), 
+			_tresNoise(tree._tresNoise), 
+			_check_merges(tree._check_merges),
+			_nGhosts(tree._nGhosts),
+			//matrices
+			_Rscale(tree._Rscale),
+			_RscaleInv(tree._RscaleInv),
+			//pointers
+			_clusters()	
+		{
+			for(auto& c : tree._clusters) _clusters.push_back(make_unique<node>(*c));
 			//above tres params are for gev = 1
-		
-			_Rscale = tree._Rscale;
-			_RscaleInv = tree._RscaleInv;
-			_check_merges = tree._check_merges;
-			_nGhosts = tree._nGhosts;
 		}
 
 		virtual ~MergeTree(){ 
-			for(auto n : _clusters) delete n;
-			_clusters.clear();
 		}
 		
 		void avg_time(){
@@ -98,24 +101,26 @@ class MergeTree : BaseTree{
 
 		void CheckMerges(bool t){ _check_merges = t; if(_check_merges) cout << "Checking merged models" << endl;}	
 	
-		node* Get(int i){ return _clusters[i]; }
+		node* Get(int i){ return _clusters[i].get(); }
 
-		const vector<node*>& GetClusters() const{ 
-			return _clusters;
+		//relinquishes ownership of nodes to caller
+		vector<std::shared_ptr<node>> GetClusters(){ 
+			return std::move(_clusters);
 		}
-		
-		void Insert(node* x){
+	
+		//make sure children of x are set before Insert	
+		void Insert(std::shared_ptr<node> x){
 		//cout << "inserting node with ismirror " << x->ismirror << " and pts " << endl; x->points->Print();
 			_clusters.push_back(nullptr);
 			x->idx = (int)_clusters.size() - 1;
-			_clusters[(int)_clusters.size() - 1] = x;
+			_clusters[(int)_clusters.size() - 1] = std::move(x);
 		}
 
 		//assuming Dirichlet Process Model (sets priors)
-		node* CalculateMerge(node *l, node* r);
+		std::shared_ptr<node> CalculateMerge(node *l, node* r);
 		double CalculateMerge(int i, int j);
 
-		void Remove(node *l){
+		void Remove(node* l){
 			//remove given node and associated mirror node if exists
 			//also remove mirror node
 			if(l->mirror != nullptr) _clusters[l->mirror->idx] = NULL;
@@ -155,17 +160,19 @@ class MergeTree : BaseTree{
 
 		void SetPriorParameters(const map<string, Matrix>& params){ _params = params; }
 
-		void AddLeaf(const BayesPoint& pt){
+
+		std::shared_ptr<node> MakeLeaf(const BayesPoint& pt){
+			//cout << "MergeTree::MakeLeaf - start" << endl;
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
-			_clusters.push_back(nullptr);
-			node* x = new node();
-			x->l = _z; x->r = _z;
+			//_clusters.push_back(nullptr);
+			std::shared_ptr<node> x = std::make_shared<node>();
+			x->l = nullptr; x->r = nullptr;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
 			//x->val = 1.;	
 			//x->d = _alpha;
 			x->log_d = log(_alpha);
 			x->model = nullptr;
-			x->points = new PointCollection(pt);//std::make_unique<PointCollection>(*pt);
+			x->points = std::make_unique<PointCollection>(pt);//std::make_unique<PointCollection>(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
 			int n = _clusters.size();
@@ -173,13 +180,44 @@ class MergeTree : BaseTree{
 			x->nndist = 1e300;
 			x->mirror = nullptr;
 			x->ismirror = false;
-			double elbo = Evidence(x);
+			double elbo = Evidence(x.get());
 			//cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
 			//x->prob_tk = exp(elbo);//p_dk_tk = p_dk_h1 since cannot be divided further
 			x->log_prob_tk = elbo;
 			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
 			//Evidence = ELBO \approx log(LH)
-			_clusters[n-1] = x;
+			//_clusters[n-1] = std::move(x);
+			//cout << "adding leaf with ismirror " << x->ismirror << endl;
+			//cout << "MergeTree::MakeLeaf - end" << endl;
+			return x;
+		}
+
+
+		void AddLeaf(const BayesPoint& pt){
+			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
+			_clusters.push_back(nullptr);
+			unique_ptr<node> x = make_unique<node>();
+			x->l = nullptr; x->r = nullptr;
+			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
+			//x->val = 1.;	
+			//x->d = _alpha;
+			x->log_d = log(_alpha);
+			x->model = nullptr;
+			x->points = std::make_unique<PointCollection>(pt);//std::make_unique<PointCollection>(*pt);
+			//initialize probability of subtree to be null hypothesis for leaf
+			//p(D_k | T_k) = p(D_k | H_1^k)		
+			int n = _clusters.size();
+			x->idx = n-1;
+			x->nndist = 1e300;
+			x->mirror = nullptr;
+			x->ismirror = false;
+			double elbo = Evidence(x.get());
+			//cpp_bin_float_100 elbo_100 = cpp_bin_float_100(elbo);
+			//x->prob_tk = exp(elbo);//p_dk_tk = p_dk_h1 since cannot be divided further
+			x->log_prob_tk = elbo;
+			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
+			//Evidence = ELBO \approx log(LH)
+			_clusters[n-1] = std::move(x);
 			//cout << "adding leaf with ismirror " << x->ismirror << endl;
 		}
 
@@ -187,7 +225,7 @@ class MergeTree : BaseTree{
 		//note: this ONLY gets called in the N^2 clustering
 		//for the delauney (NlnN) clustering this is taken care of
 		//by Dnn2piCylinder
-		void CreateMirrorNode(node* x);
+		void CreateMirrorNode(std::shared_ptr<node> x);
 
 		double _cell, _tresCte, _tresStoch, _tresNoise;
 		void SetMeasErrParams(double spatial, double tresCte, double tresStoch, double tresNoise){
@@ -227,12 +265,13 @@ class MergeTree : BaseTree{
 
 		//runs varEM to get Evidence (ELBO) for given GMM
 		double Evidence(node* x){
+			if(_verb > 5) cout << "MergeTree::Evidence - start" << endl;
 			clock_t t = clock();
 			int k;
 			vector<map<string,Matrix>> prev_posts = {};
 			map<int,int> left_post_indices, right_post_indices;	
-  			//if leaf node (ie r == _z && l == _z) -> set k = 1
-			if(x->l == _z && x->r == _z || x->points->Sumw() < _thresh){ 
+  			//if leaf node (ie r == nullptr && l == nullptr) -> set k = 1
+			if(x->points->GetNPoints() == 1 || x->points->Sumw() < _thresh){ 
 				//cout << "leaf nodes - setting max # clusters == 1" << endl;
 		 		k = 1;
 			}
@@ -240,8 +279,9 @@ class MergeTree : BaseTree{
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
 				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-				int npts = x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
+				int npts = x->points->GetNPoints();//x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
 				k = npts < mincls ? npts : mincls;
+				//cout << "not leaf nodes - mincls " << mincls << " npts " << npts << " k " << k << endl;
 				//k = npts;
 				//k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				//setting initial posterior parameters from models of previous steps
@@ -258,12 +298,12 @@ class MergeTree : BaseTree{
 
 			}
 			x->points->Sort();
-			PointCollection* newpts = new PointCollection(*x->points);
+			auto newpts = make_unique<PointCollection>(*x->points);
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
 		
 		
-			x->model = new GaussianMixture(k); //p(x | theta)
+			x->model = std::make_unique<GaussianMixture>(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
 			x->model->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
@@ -273,7 +313,7 @@ class MergeTree : BaseTree{
 			x->model->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
 		
 			//in local space, circular coordinates (like phi) can go negative
-			x->model->SetData(newpts); //may need to make copy of de-referenced object so as not to change the original points	
+			x->model->SetData(std::move(newpts)); //need to make copy of de-referenced object so as not to change the original point and maintain correct ownership	
 
 
 			//change eta to theta BEFORE calculating centroid
@@ -302,8 +342,7 @@ class MergeTree : BaseTree{
 			if(phiInf || thetaInf){
 				if(_verb > 5) cout << "found inf in pts, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
-				//x->model->SetData(x->points.get());
-				x->model->SetData(x->points);
+				x->model->SetData(std::move(make_unique<PointCollection>(*x->points)));
 				return -1e308;
 			}
 
@@ -339,7 +378,7 @@ class MergeTree : BaseTree{
 			//only do if for # subclusters in node l = n and # subclusters in node l = m
 			//n > 1 && m > 1 => n + m > 2
 			map<double, pair<int, int>, std::greater<double>> prodmap;
-			if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
+			if(_check_merges && x->l != nullptr && x->r != nullptr && x->model->GetNClusters() > 1){
 				//construct PDF inner product map to pairs of PDFs
 				//get vectors of PDFs from left (first) then right (second)
 				vector<BasePDF*> l_pdfs, r_pdfs;
@@ -353,7 +392,7 @@ class MergeTree : BaseTree{
 				_match_pdfs(l_pdfs, r_pdfs, prodmap);
 			}
 			//nominal GMM (no merges)
-			VarEMCluster* algo = new VarEMCluster(x->model, k);
+			auto algo = std::make_unique<VarEMCluster>(x->model.get(), k);
 			double thresh = 1e-1;//0.01*x->points->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
@@ -374,7 +413,7 @@ class MergeTree : BaseTree{
 			}
 			if(_verb > 5) cout << "EVIDENCE FOR NODE " << x->idx << " WITH " << x->model->GetData()->GetNPoints() << " POINTS AND " << k << " max clusters and " << x->model->GetNClusters() << " found clusters - evidence " << exp(newLogL) << " ELBO " << newLogL << endl;
 			//compare nominal model to merges IN ORDER and with memory (ie if merge1 > nom -> check merge1 & merge2)
-			if(_check_merges && x->l != _z && x->r != _z && x->model->GetNClusters() > 1){
+			if(_check_merges && x->l != nullptr && x->r != nullptr && x->model->GetNClusters() > 1){
 				double merge_elbo;
 				//compare merges in its respective projected data space
 				vector<map<string, Matrix>> merge_posteriors;
@@ -384,10 +423,10 @@ class MergeTree : BaseTree{
 					merge_pairs.push_back(std::make_pair(left_post_indices[prodit->second.first], right_post_indices[prodit->second.second]));
 				}
 				//this function compares all the "local" (ie projected) subcluster merges to not merging, then sets the starting params for the merged model from these merge decisions
-				GaussianMixture* merged_model = _merge_model(x, prev_posts, merge_pairs, merge_elbo);
+				unique_ptr<GaussianMixture> merged_model = _merge_model(x, prev_posts, merge_pairs, merge_elbo);
 				if(merge_elbo > newLogL){
 					if(_verb > 1) cout << "replacing nominal model with " << x->model->GetNClusters() << " subclusters and elbo = " << newLogL << " with merged model with " << merged_model->GetNClusters() << " subclusters and elbo = " << merge_elbo << endl;
-					x->model = merged_model;
+					x->model = std::move(merged_model);
 					newLogL = merge_elbo;	
 				}
 				if(_verb > 1) cout << endl;
@@ -439,10 +478,11 @@ class MergeTree : BaseTree{
 			}
 			//resets data to original points
 			//x->model->SetData(x->points.get());
-			x->model->SetData(x->points);
+			//x->model->SetData(x->points);
 			t = clock() - t;
 			_total_evidence_time += (double)t/CLOCKS_PER_SEC;
 			_n_evidence_calls++;
+			if(_verb > 5) cout << "MergeTree::Evidence - end" << endl;
 			return newLogL;
 		}
 
@@ -467,7 +507,7 @@ class MergeTree : BaseTree{
 		}
 		
 		double _euclidean_3d_fromCentroid(node* x){
-			if(x->l == _z && x->r == _z) return 0;
+			if(x->l == nullptr && x->r == nullptr) return 0;
 			BayesPoint center({x->points->Centroid(0), x->points->CircularCentroid(1), x->points->Centroid(2)});
 			double deta = x->l->points->mean().at(0) - center.at(0);
 			double dphi = x->l->points->CircularMean(1) - center.at(1);
@@ -484,7 +524,7 @@ class MergeTree : BaseTree{
 		}
 
 		void _run_model(GaussianMixture* model, double& elbo){
-			VarEMCluster* algo = new VarEMCluster(model, model->GetNClusters());
+			auto algo = std::make_unique<VarEMCluster>(model, model->GetNClusters());
 			double thresh = 1e-1;//0.01*model->GetData()->Sumw(); //1% of total weight
 			algo->SetThresh(thresh);
 			//cluster
@@ -508,7 +548,7 @@ class MergeTree : BaseTree{
 
 		//project points using nominal model responsibilities to isolate subcluster merges
 		//need to project data from each node for node subcluster
-		PointCollection* _project_data(node* x, int cl_left, int cl_right){
+		unique_ptr<PointCollection> _project_data(node* x, int cl_left, int cl_right){
 			Matrix r_nk_l; x->l->model->GetPosterior(r_nk_l);
 			if(cl_left >= r_nk_l.nCols() || cl_left < 0){
 				cout << "Error: accessing cluster " << cl_left << " with posterior of " << r_nk_l.nCols() << " # cols # clusters in this model " << x->l->model->GetNClusters() << endl;
@@ -519,7 +559,7 @@ class MergeTree : BaseTree{
 				cout << "Error: accessing cluster " << cl_right << " with posterior of " << r_nk_r.nCols() << " # cols # clusters in this model " << x->r->model->GetNClusters() << endl;
 				return nullptr;
 			}
-			PointCollection* newpts = new PointCollection();
+			auto newpts = make_unique<PointCollection>();
 			for(int i = 0; i < x->model->GetData()->GetNPoints(); i++){
 				double w_i = x->model->GetData()->at(i).w();
 				bool matched = false;
@@ -551,7 +591,7 @@ class MergeTree : BaseTree{
 
 
 		//if passing all starting params, then merge_pair idxs are in "global" frame, need in local
-		GaussianMixture* _compare_projected_models(node* x, const vector<map<string,Matrix>>& starting_params, const pair<int, int>& merge_pair){
+		std::unique_ptr<GaussianMixture> _compare_projected_models(node* x, const vector<map<string,Matrix>>& starting_params, const pair<int, int>& merge_pair){
 			//project data in x->l and x->r according to given merge pair (0: left, 1: right)
 			int cl1 = merge_pair.first;
 			int cl2 = merge_pair.second;
@@ -591,42 +631,42 @@ class MergeTree : BaseTree{
 			
 
 			//project_data needs cl1 and cl2 in their "local" values
-			PointCollection* mergepts = _project_data(x,cl1,cl2 - x->l->model->GetNClusters());
+			unique_ptr<PointCollection> mergepts = _project_data(x,cl1,cl2 - x->l->model->GetNClusters());
 			if(mergepts == nullptr) return nullptr;
 			//cout << "MergeTree::_compare_project_models - merge data" << endl; mergepts->Print();
 			//cout << "# total mergepts " << mergepts->GetNPoints() << endl;
-			PointCollection* seppts = new PointCollection(*mergepts);		
+			auto seppts = make_unique<PointCollection>(*mergepts);		
 			//cout << "MergeTree::_compare_project_models - sep data" << endl; seppts->Print();
 	
 			//do merge model
 			//run GMM with projected data with 2 initial starting subclusters (ie starting_params[merge_pair.first], starting_params[merge_pair.second])
-			GaussianMixture* mergemodel = new GaussianMixture(1);
+			auto mergemodel = std::make_unique<GaussianMixture>(1);
 			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
 			mergemodel->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
 				mergemodel->SetDataSmear(_data_smear);
 			}
 			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-			mergemodel->SetData(mergepts);
+			mergemodel->SetData(std::move(mergepts));
 			mergemodel->InitParameters(_params,{new_cl});
 				// save ELBO
 			double elbo_pair;
-			_run_model(mergemodel, elbo_pair);
+			_run_model(mergemodel.get(), elbo_pair);
 	//cout << "elbo for proj merge " << elbo_pair << " # final clusters " << mergemodel->GetNClusters() << endl;	
 	
 			//do separate (original) model
-			GaussianMixture* sepmodel = new GaussianMixture(2);
+			auto sepmodel = std::make_unique<GaussianMixture>(2);
 			if(_verb != 0) sepmodel->SetVerbosity(_verb-1);
 			sepmodel->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
 				sepmodel->SetDataSmear(_data_smear);
 			}
 			sepmodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-			sepmodel->SetData(seppts);
+			sepmodel->SetData(std::move(seppts));
 			sepmodel->InitParameters(_params,{starting_params[cl1], starting_params[cl2]});
 				// save ELBO
 			double elbo_sep;
-			_run_model(sepmodel, elbo_sep);
+			_run_model(sepmodel.get(), elbo_sep);
 	//cout << "elbo for proj sep " << elbo_sep << " # final clusters " << sepmodel->GetNClusters() << endl;	
 			//compare 2 subcluster to 1 subcluster model
 			//take ending subclusters of better model to end_params
@@ -652,13 +692,13 @@ class MergeTree : BaseTree{
 
 		//will run model seeded from projected merges
 		//need to pass full node so we can project the data from the potential merge (ie from the x->l and x->r nodes) by their own posterior responsibilities
-		GaussianMixture* _merge_model(node* x, const vector<map<string,Matrix>>& starting_params, const vector<pair<int, int>>& merge_pairs, double& merge_elbo){
+		std::unique_ptr<GaussianMixture> _merge_model(node* x, const vector<map<string,Matrix>>& starting_params, const vector<pair<int, int>>& merge_pairs, double& merge_elbo){
 			vector<map<string, Matrix>> merge_starting_params;
 			//for each merge 
 			for(int m = 0; m < merge_pairs.size(); m++){
 				//do projected merge - return better model (merge or separate)
 				//cout << "looking at merge for left subcl " << merge_pairs[m].first << " and right subcl " << merge_pairs[m].second << endl;
-				GaussianMixture* proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
+				std::unique_ptr<GaussianMixture> proj_model = _compare_projected_models(x, starting_params, merge_pairs[m]);
 				if(proj_model == nullptr){
 					cout << "Error: projected model null." << endl;
 					break;
@@ -694,15 +734,15 @@ class MergeTree : BaseTree{
 			int k = npts < mincls ? npts : mincls;
 
 			//cout << "# ghosts " << _nGhosts << " total k " << merge_starting_params.size()+_nGhosts << " # merge starting params " << merge_starting_params.size() << " # pts " << npts << " k " << k << endl; 
-			GaussianMixture* mergemodel = new GaussianMixture(k);
+			auto mergemodel = std::make_unique<GaussianMixture>(k);
 			if(_verb != 0) mergemodel->SetVerbosity(_verb-1);
 			mergemodel->SetAlpha(_emAlpha);
 			if(!_data_smear.empty()){
 				mergemodel->SetDataSmear(_data_smear);
 			}
 			mergemodel->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-			PointCollection* newpts = new PointCollection(*x->model->GetData());
-			mergemodel->SetData(newpts);
+			auto newpts = make_unique<PointCollection>(*x->model->GetData());
+			mergemodel->SetData(std::move(newpts));
 			mergemodel->InitParameters(_params,merge_starting_params);
 			int nghosts = 0;
 			int nreal = 0;
@@ -713,7 +753,7 @@ class MergeTree : BaseTree{
 				else nreal++;
 			}
 			//cout << "MergeTree::_merge_model - starting with " << nreal << " real models and " << nghosts << " ghost models" << endl;
-			_run_model(mergemodel,merge_elbo);
+			_run_model(mergemodel.get(),merge_elbo);
 			nghosts = 0;
 			nreal = 0;
 			for(int k = 0; k < mergemodel->GetNClusters(); k++){
@@ -899,7 +939,7 @@ class MergeTree : BaseTree{
 
 	private:
 		//keep list of nodes since tree is built bottom up
-		vector<node*> _clusters;
+		vector<std::shared_ptr<node>> _clusters;
 		//Dirichlet prior parameter
 		double _alpha, _emAlpha;
 		//threshold on variational EM

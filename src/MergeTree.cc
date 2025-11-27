@@ -12,7 +12,10 @@ double MergeTree::_log_sum_exp(vector<double>& terms){
 
 //BHC with varEM
 //assuming Dirichlet Process Model (sets priors)
-node* MergeTree::CalculateMerge(node *l, node* r){
+std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
+	//cout << "MergeTree::CalculateMerge - start" << endl;
+
+
 	clock_t t;
 	t = clock();
 	//get points from l and points from r
@@ -28,22 +31,17 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	double logd_LSE = _log_sum_exp(logd_terms);
 	double log_pi = log(_alpha) + lgamma(n) - logd_LSE;
 	
-	//PointCollection* points = new PointCollection();
-	//points->AddPoints(*l->points);
-	//points->AddPoints(*r->points);
-	struct node* x = new node();//(struct node*)malloc(sizeof *x);
-	//auto x = std::make_unique<node>();
-	x->points = new PointCollection();
+	auto x = make_unique<node>();
+	auto pts = std::make_unique<PointCollection>();
+	x->points = std::move(pts);
 	x->points->AddPoints(*l->points);
 	x->points->AddPoints(*r->points);
 
-	//x->d = d_100;
-	x->log_d = logd_LSE;
 	x->l = l;
 	x->r = r;
-	x->mirror = nullptr;
-	x->ismirror = false;//l->ismirror || r->ismirror;
-	x->idx = -1; //hasn't been added to merge tree yet
+
+	//x->d = d_100;
+	x->log_d = logd_LSE;
 	double nndist = 1e300;
 	//find nndist for x (should be O(n) operation)
 	for(int i = 0; i < (int)_clusters.size(); i++){
@@ -52,7 +50,14 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
-	double elbo = Evidence(x);
+	//TODO - NEED A BETTER CHECK IN EVIDENCE FOR LEAF NODES
+	//CURRENTLY CHECKING IF x->l && x->r are both null BUT they are not set here so THEY ARE ALWAYS NULL
+	//l and r children are set ONLY for true merges
+	//right now, node::l and node::r are shared_ptrs
+	//and want to avoid setting them here for many, many owners
+	//so could give l and r to Evidence
+	//or check if x is leaf based on # pts (leaves should only have 1 pt)
+	double elbo = Evidence(x.get());
 	//marginal prob of t_k = null + alterantive hypo (separate trees) - need to save for future recursions
 	//p_dk_tk = pi*p_dk_h1 + dr*dl*p_dl*p_dr/d
 	// = pi*p_dk_h1(1 + dr*dl*p_dl*p_dr/(d*pi*p_dk_h1))
@@ -95,7 +100,9 @@ node* MergeTree::CalculateMerge(node *l, node* r){
 	_total_calcmerge_time += (double)t/CLOCKS_PER_SEC;
 	_n_calcmerge_calls++;
 if(_verb > 1)cout << "log didj = log(p_dl) " << l->log_prob_tk << " + log(p_dr) " << r->log_prob_tk << " + log(dl) " << l->log_d  << " + log(dr) " << r->log_d << endl;
-if(_verb > 1) cout << "merge val = " << loga - logb << " for n pts " << x->points->GetNPoints() << endl;	
+if(_verb > 1) cout << "merge val = " << loga - logb << " for n pts " << x->points->GetNPoints() << endl;
+if(_verb > 1) cout << "calculatemerge pts " << endl;
+if(_verb > 1) x->points->Print();	
 	return x;
 }
 
@@ -105,7 +112,7 @@ double MergeTree::CalculateMerge(int i, int j){
 	node* n2 = Get(j);
 	if(n1 == nullptr) cout << "cluster for " << i << " null" << endl;
 	if(n2 == nullptr) cout << "cluster for " << j << " null" << endl;
-	node* x = CalculateMerge(n1, n2);
+	auto x = CalculateMerge(n1, n2);
 	return x->val;	
 }
 
@@ -129,7 +136,7 @@ double MergeTree::CalculateMerge(int i, int j){
 ///// return the list of plane points whose nearest neighbours have
 ///// changed (this will include the new neighbours that have just been
 ///// added)
-void MergeTree::CreateMirrorNode(node* x){
+void MergeTree::CreateMirrorNode(std::shared_ptr<node> x){
 	double phi = x->points->mean().at(1);
 	double twopi = 2*acos(-1);
 	//require absense of mirror
@@ -146,24 +153,24 @@ void MergeTree::CreateMirrorNode(node* x){
 	if(_verb > 1) cout << "creating mirror point for point " << x->idx << "  with phi center: " << phi << " with nndist: " << nndist << endl;
 
 	//copy node x into node y so it has all the same info
-	node* y = new node();//(node*)malloc(sizeof *y);
-	y->points = new PointCollection(*x->points);
-	y->l = new node(*x->l);
-	y->r = new node(*x->r);	
+	std::shared_ptr<node> y = std::make_shared<node>();
+	y->points = std::make_unique<PointCollection>(*x->points);
+	y->l = x->l;
+	y->r = x->r;	
 	y->val = x->val;
 	y->log_val = x->log_val;
 	y->log_d = x->log_d;
-	y->model = x->model;
+	y->model = std::make_unique<GaussianMixture>(*x->model);
 	y->log_prob_tk = x->log_prob_tk;
 	y->nndist = x->nndist;
 	//map points across 0-2pi boundary
 	_remap_phi(*y->points);
 
 	//set x's mirror node to y and vice versa
-	x->mirror = y;
-	y->mirror = x;
+	x->mirror = y.get();
+	y->mirror = x.get();
 
-	
+     	
 	//add mirror point to list of clusters
 	Insert(y);
 

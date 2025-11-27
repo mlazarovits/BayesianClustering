@@ -7,6 +7,7 @@
 #include "BasePDFMixture.hh"
 #include "BayesCluster.hh"
 #include "JetProducer.hh"
+#include "BaseProducer.hh"
 #include "PhotonProducer.hh"
 #include <TFile.h>
 #include <TGraph.h>
@@ -18,7 +19,7 @@ using procCat = BaseSkimmer::procCat;
 
 class JetSkimmer : public BaseSkimmer{
 	public:
-		JetSkimmer(){
+		JetSkimmer() : BaseSkimmer(){
 			SetObs();
 			InitMapTree();
 			_evti = 0;
@@ -39,8 +40,7 @@ class JetSkimmer : public BaseSkimmer{
 		JetSkimmer(string filename) : BaseSkimmer(filename){
 			SetObs();
 			InitMapTree();	
-			_prod = new JetProducer(_ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
+			_prod = make_unique<JetProducer>(filename);
 			_prod->SetIsoCut();
 	
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
@@ -79,48 +79,6 @@ class JetSkimmer : public BaseSkimmer{
 			//InitHists();
 		}
 		
-		/*
-		JetSkimmer(string filelist) : BaseSkimmer(filelist){
-			SetObs();
-			InitMapTree();	
-		
-                        if(_ch == nullptr) return;	
-			_prod = new JetProducer(_ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
-			_prod->SetIsoCut();
-	
-			_base = _prod->GetBase();
-			_nEvts = _base->fChain->GetEntries();
-			_evti = 0;
-			_evtj = _nEvts;
-			_oname = "plots/jet_skims_"+_cms_label+".root";
-			_gev = 1./10.;
-			_swts.Init();
-			_weight = 1;
-			_minRhE = 5;
-			//set histogram weights
-			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			//if(_data){ _weight = 1.; }
-			//if(_data || fname.find("QCD") != string::npos){ _weight = 1.; }
-			//else{
-			//	ifstream weights("info/EventWeights.txt", std::ios::in);
-			//	string filein;
-			//	string filename = file->GetName();
-			//	double jet_weight, pho_weight;
-			//	while( weights >> filein >> jet_weight >> pho_weight){
-			//		if(filelist.find(filein) == string::npos) continue;
-			//		else{
-			//			_weight = jet_weight;
-			//			break;
-			//		}
-			//	}
-			//} 
-
-
-			
-			//InitHists();
-		}
-		*/
 
 		void SetObs(){
 			JetAddBranches();
@@ -2017,13 +1975,13 @@ class JetSkimmer : public BaseSkimmer{
 
 
 
-		GaussianMixture* _subcluster(Jet& jet){
+		std::unique_ptr<GaussianMixture> _subcluster(Jet& jet){
 			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
 			vector<Jet> rhs_jet;
 			for(int r = 0; r < rhs.size(); r++){
 				rhs_jet.push_back( Jet(rhs[r], jet.GetVertex()) );
 			}
-			BayesCluster* algo = new BayesCluster(rhs_jet);
+			auto algo = std::make_unique<BayesCluster>(rhs_jet);
 			if(_smear && !_smearMat.empty()) algo->SetDataSmear(_smearMat);
 			//set time resolution smearing
 			//if(_timesmear) algo->SetTimeResSmear(_tres_c, _tres_n*_gev);
@@ -2033,7 +1991,7 @@ class JetSkimmer : public BaseSkimmer{
 			algo->SetSubclusterAlpha(_emAlpha);
 			algo->SetPriorParameters(_prior_params);
 			algo->SetVerbosity(0);
-			GaussianMixture* gmm = algo->SubCluster();
+			std::unique_ptr<GaussianMixture> gmm = algo->SubCluster();
 			//set constituents
 			vector<double> norms;
 			gmm->GetNorms(norms);

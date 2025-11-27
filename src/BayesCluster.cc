@@ -2,7 +2,7 @@
 #include "DynamicNearestNeighbours.hh"
 #include "FullViz3D.hh"
 #include "VarClusterViz3D.hh"
-
+ 
 // The structure of this method is respectfully repurposed from ClusterSequence_Delaunay in FastJet (Cacciari, Salam, Soyez).
 // This work was modified from its original form by Margaret Lazarovits on October 2, 2023. 
 // The original version of this work was released
@@ -17,12 +17,13 @@
 ///
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
-const vector<node*>& BayesCluster::_delauney_cluster(){
+void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& trees){
+	trees.clear();
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
 	//the 2D Delauney triangulation used in FastJet will be used to seed the 3D clustering
-	MergeTree* mt = new MergeTree(_alpha);
+	std::unique_ptr<MergeTree> mt = std::make_unique<MergeTree>(_alpha);
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
 	mt->CheckMerges(_check_merges);
@@ -52,25 +53,23 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	int n = _points.size();
 	if(n < 2){
 		cout << "ERROR: only have 1 pt for clustering - returning vector of nulls" << endl;
-		return _trees;
+		return;
 	}
 	if(_verb > -1) cout << "n starting pts " << n << endl;
 	for (int i = 0; i < n; i++) {
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
-			return _trees;
+			return;
 		}
 		if(_verb > 3){cout << i <<" "; _points[i].Print();}
 		//make sure phis are on [0,2pi] interval
 		_points[i].Put02pi(1);
-		mt->AddLeaf(_points[i].at(0));
+		//mt->AddLeaf(_points[i].at(0));
 	}
 	const bool verbose = false;
-	if(verbose) cout << "--------------------------------\nBayesCluster - # clusters: " << mt->GetNClusters() << endl;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
-	Dnn2piCylinder* DNN = new Dnn2piCylinder(_points, ignore_nearest_is_mirror, mt, verbose);
-	if(_verb > 1) cout << "# clusters in merge tree: " << mt->GetNClusters() << endl;
+	std::unique_ptr<Dnn2piCylinder> DNN = std::make_unique<Dnn2piCylinder>(_points, ignore_nearest_is_mirror, std::move(mt), verbose);
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
 	//all three dimensions will go into calculating the probabilityu
@@ -79,8 +78,8 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 	CompareMap ProbMap, DistMap;
 	//fill map with initial potential clusterings - including mirror pts added to MergeTree
 	for(int i = 0; i < n; i++){
-		_add_entry_to_maps(i, ProbMap, DNN);
-		_add_entry_to_maps(i, DistMap, DNN, false);	
+		_add_entry_to_maps(i, ProbMap, DNN.get());
+		_add_entry_to_maps(i, DistMap, DNN.get(), false);	
 	}
 	bool done = false;
 	std::pair<std::multimap<double,verts>::iterator, std::multimap<double,verts>::iterator> ret;	
@@ -176,7 +175,7 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
 			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
 	
-			return _trees;
+			return;
 		}
 		//if max rk < 0.0 (0.5 without computational/numerical trickery), can stop clustering
 		if(BestRk <= 0.){ 
@@ -267,70 +266,70 @@ const vector<node*>& BayesCluster::_delauney_cluster(){
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
 			int ii = *it;
-			_add_entry_to_maps(ii, ProbMap, DNN);
-			_add_entry_to_maps(ii, DistMap, DNN, false);	
+			_add_entry_to_maps(ii, ProbMap, DNN.get());
+			_add_entry_to_maps(ii, DistMap, DNN.get(), false);	
 		}
-		if(_verb > 0) cout << mt->GetNClusters() << " current clusters at iteration " << i << endl;
 		if(_verb > 0) cout << "\n" << endl;
 	}
 
-	vector<node*> trees = mt->GetClusters();
+	vector<std::shared_ptr<BaseTree::node>> mt_trees;
+	DNN->GetValidNodes(mt_trees);
 	double nmirror = 0;
 	double nnull = 0; 	
 	map<string,Matrix> params;
-	for(int i = 0; i < trees.size(); i++){
+	for(int i = 0; i < mt_trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
-		if(trees[i] == nullptr){ nnull++; continue; }
-		//if(trees[i]->points->mean().at(1) > 2*acos(-1) || trees[i]->points->mean().at(1) < 0){
-		if(trees[i]->ismirror){
+		if(mt_trees[i] == nullptr){ nnull++; continue; }
+		//if(mt_trees[i]->points->mean().at(1) > 2*acos(-1) || mt_trees[i]->points->mean().at(1) < 0){
+		if(mt_trees[i]->ismirror){
 			nmirror++;
 			continue; }
-		if(trees[i]->points->GetNPoints() < 2 || trees[i]->points->Sumw() < _thresh) continue;
-		_trees.push_back(trees[i]);
+		if(mt_trees[i]->points->GetNPoints() < 2 || mt_trees[i]->points->Sumw() < _thresh) continue;
 		if(_verb > -1){
 			cout << " tree has subclusters " << endl;
 			vector<double> norms;
-			trees[i]->model->GetNorms(norms);
-			for(int k = 0; k < trees[i]->model->GetNClusters(); k++){
+			mt_trees[i]->model->GetNorms(norms);
+			for(int k = 0; k < mt_trees[i]->model->GetNClusters(); k++){
 				std::map<string, Matrix> params;
-				trees[i]->model->GetLHPosteriorParameters(k, params);
+				mt_trees[i]->model->GetLHPosteriorParameters(k, params);
 				cout << " k " << k << " weight " << norms[k] << " center " << endl; params["mean"].Print();
 				cout << "cov " << endl; params["cov"].Print();
 			}
-			cout << trees[i]->points->GetNPoints() << " " << trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << trees[i]->model->GetNClusters() << " subclusters" << endl; trees[i]->model->GetData()->Print(); 
-			BayesPoint center({trees[i]->model->GetData()->Centroid(0), trees[i]->model->GetData()->CircularCentroid(1), trees[i]->model->GetData()->Centroid(2)});
+			cout << mt_trees[i]->points->GetNPoints() << " " << mt_trees[i]->model->GetData()->GetNPoints() << " points for jet " << i << " with " << mt_trees[i]->model->GetNClusters() << " subclusters" << endl; mt_trees[i]->points->Print(); 
+			BayesPoint center({mt_trees[i]->points->Centroid(0), mt_trees[i]->points->CircularCentroid(1), mt_trees[i]->points->Centroid(2)});
 			cout << "with centroid" << endl; center.Print();
 
-			if(trees[i]->mirror != nullptr){
+			if(mt_trees[i]->mirror != nullptr){
 				cout << " tree has mirror node with subclusters " << endl;
-				for(int k = 0; k < trees[i]->mirror->model->GetNClusters(); k++){
+				for(int k = 0; k < mt_trees[i]->mirror->model->GetNClusters(); k++){
 					std::map<string, Matrix> params;
-					trees[i]->mirror->model->GetLHPosteriorParameters(k, params);
+					mt_trees[i]->mirror->model->GetLHPosteriorParameters(k, params);
 					cout << " k " << k << " center " << endl; params["mean"].Print();
 				}
 			}
 			cout << endl;
 		}
+		trees.push_back(std::move(mt_trees[i]));
 	}
 	//mt->avg_time();
 	//cout << " all points" << endl;
 	//for (int i = 0; i < n; i++) {	_points[i].Print(); }
-	if(_verb > -1) cout << _trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
-	return _trees;
+	if(_verb > -1) cout << trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	
 	
 }
 
+/*
 
-
-const vector<node*>& BayesCluster::_naive_cluster(){
+void BayesCluster::_naive_cluster(vector<std::shared_ptr<BaseTree::node>>& trees){
+	trees.clear();
         node* di; node* dj;
         double rk;
         double rk_max;
 	NodeStack list; //for sorting nodes by merge probability and tracking potential merges
 	
 	//set up merge tree that will calculate merges and track nodes
-	MergeTree* mt = new MergeTree(_alpha); //keeps track of merges made + merge history
+	std::unique_ptr<MergeTree> mt = std::make_unique<MergeTree>(_alpha); //keeps track of merges made + merge history
 	mt->SetSubclusterAlpha(_subalpha);
 	mt->SetVerbosity(_verb);
 	//set data smear
@@ -357,7 +356,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//should only be one point per entry in points
 		if(_points[i].GetNPoints() != 1){
 			cerr << "BayesCluster - Error: multiple points in one collection of starting vector. " << _points[i].GetNPoints() << " points in collection " << i << "." << endl;
-			return _trees;
+			return;
 		} 
 		mt->AddLeaf(_points[i].at(0));
 	//experiment with not adding mirror points for leaves
@@ -375,7 +374,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		for(int j = i+1; j < n; j++){
 			di = mt->Get(i);
 			dj = mt->Get(j);
-			node* x = mt->CalculateMerge(di, dj);
+			std::shared_ptr<node> x = mt->CalculateMerge(di, dj);
 		if(_verb > 1){
 		cout << "checking nodes " << i << ": ";
 		di->points->Print();
@@ -383,7 +382,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		dj->points->Print();
 		cout << "this rk: " << x->val <<  "\n" << endl;
 		}	
-			list.insert(x);
+			list.insert(std::move(x));
 		}
 	}
 	//do clustering
@@ -395,35 +394,29 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		list.sort();
 	
 		//get node with maximum merge probability + remove impossible merges because of max node
-		node* max = list.fullpop();
+		shared_ptr<node> max = list.fullpop();
 		//check that popped node is not null
 		if(max == nullptr) break;
-		if(_verb > 1){ cout << "max merge is " << max->l->idx << " and " << max->r->idx << " rk: " << max->val << " " << endl;
-		max->l->points->Print();
-		cout << "and" << endl;
-		max->r->points->Print();
-	//	cout << "\n" << endl;
-		}
 		//if maximum merge probability is less than 0.5, stop clustering (not probabilistically favored merges left)
                 if(max->val < maxrk){
                         cout << "reached min rk = " << max->val << " <  " << maxrk << " - final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters" << endl;
                         break;
                 }
 	
-	
-	//	mt->Merge(max->l, max->r);		
-		//update merge tree with selected merge
-		mt->Insert(max);
-		//make new mirror node for max if necessary
-		mt->CreateMirrorNode(max);
-		mt->Remove(max->l);
-		mt->Remove(max->r);
-
 		//if this merge clusters all avaible points, stop clustering
 		if(max->points->GetNPoints() == n){
                         cout << "All points clustered. Exiting clustering..." << endl;
                         break;
 		}	
+	
+		//update merge tree with selected merge
+		mt->Remove(max->l.get());
+		mt->Remove(max->r.get());
+		//make new mirror node for max if necessary
+		mt->CreateMirrorNode(max.get());
+		mt->Insert(std::move(max));
+			
+
 		//print remaining possible merges
 		if(_verb > 1){
 		cout << "remaining possible merges" << endl;
@@ -433,15 +426,14 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 		//create new merges with the remaining nodes and the newly formed cluster
 		//this operation is O(N)
 		if(_verb > 1) cout << "new merges - " << mt->GetNClusters() << " remaining clusters" << endl;
-		for(int i = 0; i < mt->GetNAllClusters(); i++){
+		for(int i = 0; i < mt->GetNAllClusters()-1; i++){ //skip last inserted node (max)
 			node* dl = mt->Get(i);
 			//make sure this node exists
 			if(dl == nullptr) continue;
 			if(_verb > 2) cout << "checking pair " << i << " or " << dl->idx << " and max " << max->idx << endl;
 			//make sure this is not the max merge cluster - doesn't need to be paired with itself
-			if(dl == max) continue;
 			//calculate merge for node i and max node
-			node* x = mt->CalculateMerge(dl, max);
+			unique_ptr<node> x = mt->CalculateMerge(dl, mt->Get(mt->GetNAllClusters()-1));
 		if(_verb > 1){
 		cout << std::setprecision(10) << endl;
 		cout << "checking nodes " << dl->idx << ": ";
@@ -453,7 +445,7 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 			//make sure rk is not nan
 			if(isnan(x->val)) break;
 			//add new potential merge to list
-			list.insert(x); 
+			list.insert(std::move(x)); 
 		}
 
 
@@ -462,44 +454,45 @@ const vector<node*>& BayesCluster::_naive_cluster(){
 	}
 
 	if(_verb > 0) cout << "---------- final iteration: " << it <<  " - " << mt->GetNClusters() << " clusters ----------" << endl;
-        _trees = mt->GetClusters();
+        vector<unique_ptr<BaseTree::node>> mt_trees = mt->GetClusters();
 	cout << mt->GetNClusters() << " final clusters" << endl;
 	double nmirror = 0;
-	for(int i = 0; i < _trees.size(); i++){
+	for(int i = 0; i < mt_trees.size(); i++){
 		//ignore removed (clustered) points and don't plot mirror points
-		if(_trees[i] == nullptr) continue;
-		if(_trees[i]->points->mean().at(1) > 2*acos(-1) || _trees[i]->points->mean().at(1) < 0){
+		if(mt_trees[i] == nullptr) continue;
+		if(mt_trees[i]->points->mean().at(1) > 2*acos(-1) || mt_trees[i]->points->mean().at(1) < 0){
 			nmirror++; 
 			continue; }
 		if(_verb > 0){
-			cout << "getting " << _trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
-			_trees[i]->points->Print();
+			cout << "getting " << mt_trees[i]->points->GetNPoints() << " points in cluster #" << i << endl;
+			mt_trees[i]->points->Print();
 		}
+		trees.push_back(std::move(mt_trees[i]));
 	}
 	if(_verb > 0) cout << nmirror << " mirror points." << endl;
-	cout << mt->GetNClusters() - nmirror << " jets found." << endl;
-	return _trees;
-
+	cout << trees.size() << " jets found." << endl;
 }
+*/
 
 
 
-GaussianMixture* BayesCluster::_subcluster(string oname){
+std::unique_ptr<GaussianMixture> BayesCluster::_subcluster(string oname){
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
 	double gev = ws[0]/_jets[0].E();
 	//create GMM model
-	PointCollection* points = new PointCollection();
+	std::unique_ptr<PointCollection> points = std::make_unique<PointCollection>();
 	for(auto point : _points){
 		points->AddPoints(point);
 	}
+	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
 	//int npts = points->GetNPoints();
 	//int mcls = 10;
 	//int maxK = npts < mcls ? npts : mcls;
 	int maxK = points->GetNPoints();
 
 
-	GaussianMixture* gmm = new GaussianMixture(maxK);
+	std::unique_ptr<GaussianMixture> gmm = std::make_unique<GaussianMixture>(maxK);
 	//double tresCte = 0.2 * 1e-9; //time resolution for CMS ECAL (s) (200 ps)
 	//double tresStoch = 0.34641 * 1e-9; //rate of time res that gives 400 ps at E = 1 GeV (in [GeV*s])
 	//tresStoch = 2.4999200e-05; //rate of time res that gives 5 ns at E = 5 GeV (in [GeV*s])
@@ -507,21 +500,15 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	//needs to be before SetData bc thats when the measurement errors are set
 	if(_verb > 6) cout << "BayesCluster subcluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	gmm->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
-	gmm->SetData(points);
-//cout << "original points" << endl; points->Print();
+	gmm->SetData(std::move(points));
 
 	//set # ghosts by points with weight below a threshold - done automatically in InitParameters()
 	
-
-	//cout << "old points w/ wraparound" << endl;
-	//points->Print();
-
 	//transform points into local coordinates
 	//for GMM parameter estimation
 	//use weighted mean as center to be set to 0 point
 	//zero points by energy centroid
 	//x' = x - a
-	BayesPoint center({points->Centroid(0), points->CircularCentroid(1), points->Centroid(2)});
 	center.Put02pi(1);	
 	gmm->ShiftData(center);
 	//cout << "centroid " << endl; center.Print();
@@ -558,8 +545,9 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 
 	
 	//create EM algo
-	VarEMCluster* algo = new VarEMCluster(gmm,maxK);
-	algo->SetThresh(0.01*points->Sumw());
+	std::unique_ptr<VarEMCluster> algo = std::make_unique<VarEMCluster>(gmm.get(),maxK);
+	double totw = gmm->GetData()->Sumw();
+	algo->SetThresh(0.01*totw);
 
 
 
@@ -574,7 +562,7 @@ GaussianMixture* BayesCluster::_subcluster(string oname){
 	RscaleInv.invert(Rscale);
 	center.Scale(-1);
 	
-	VarClusterViz3D cv3D(algo);
+	VarClusterViz3D cv3D(algo.get());
 	cv3D.SetScale(RscaleInv);
 	cv3D.SetShift(center);
 	if(isnan(gev) || isinf(gev)){ cout << "Energy-weighting scale factor " << gev << " is not valid." << endl; return gmm; }

@@ -189,6 +189,7 @@ void PhotonSkimmer::Skim(){
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			Jet bhc_pho, bhc_pho_pucleaned;
+			addVectors();
 			int ret = RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false, bhc_pho_idx); //downweighting rhs
 			if(ret < 0){
 				continue;
