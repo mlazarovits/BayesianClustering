@@ -169,7 +169,7 @@ def generateSubmission(args):
     
 
     # grab relevant flags
-    filearr = SH.filesSplit(inputFileList, args.maxnevts)
+    filearr = SH.filesSplit(inputFileList, args.maxnevts, args.maxnfiles)
     flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
     for m in args.m0:
         flags += str(m)+' '
@@ -224,7 +224,7 @@ def generateSubmission(args):
     condorSubmitFile = dirname + "/src/submit.sh"
     subf = open(condorSubmitFile, "w")
     print("outputfile name "+ofilename)
-    SH.writeSubmissionBase(subf, dirname, ofilename)
+    SH.writeSubmissionBase(subf, dirname, ofilename, args.max_mat, args.max_idle, args.request_memory)
     #need to remove local lpc path for actual args
     inputFileList = inputFileList[inputFileList.rfind("/",0,inputFileList.rfind("/"))+1:]
     print("inputfilelist",inputFileList)
@@ -239,6 +239,11 @@ def main():
     # options
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    parser.add_argument("--max_mat",help='max_materialization condor option (default: off)',default=-1)
+    parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
+    parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
+    parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
+    parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
     #Ntuple file to run over
     parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','DoubleEG','GJets','QCD','MET','gogo','sqsq'])
     parser.add_argument('--mGl',help='gluino mass for signal',default='2000')
@@ -252,9 +257,7 @@ def main():
     #which object to analyze (jets or photons currently supported)
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
-    #parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
-    parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
-    parser.add_argument('--verbosity','-v',help="verbosity",default=0)
+    parser.add_argument('--verbosity','-v',help="verbosity",default=-1)
     
     #add algorithm parameters - emAlpha, priors, verbosity, thresh
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1e-5)
