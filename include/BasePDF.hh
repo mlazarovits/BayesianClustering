@@ -4,6 +4,7 @@
 #include "Point.hh"
 #include "Matrix.hh"
 #include <string>
+#include <memory>
 using std::string;
 
 class BasePDF{
