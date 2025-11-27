@@ -777,9 +777,7 @@ if(_verbose) cout << "SetNearest - start" << endl;
       //if(_verbose) cout << vc->point() << "; "<< dist << endl;
     
 	//do the same as above but with probability instead of geometric distance
-	//if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx, rk, maxrk)){
 	//compare merge j+vcindx and j+best_vtx
-	//if(_best_merge_prob(_supervertex[j], _supervertex[vcindx], best_vtx)){
 	node* r0 = _merge_tree->CalculateMerge(_supervertex[j].n, _supervertex[vcindx].n);
 	if(bestmerge == nullptr){ //hasnt been set yet
 		best_vtx = vc;
@@ -813,8 +811,8 @@ if(_verbose) cout << "SetNearest - start" << endl;
   else
   	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
-   if(_verbose) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
-   if(_verbose) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
+   if(true) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
+   if(true) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
 	if(_verbose){
 		//cout << std::setprecision(10) << "SetNearest - done for vertex " << j << " with best rk " << _supervertex[j].MaxRk  << " for node " << best_vtx->info().val() << " best merge has pts " << endl;
 		//_supervertex[j].n->points->Print();
@@ -982,8 +980,8 @@ if(_verbose) cout << "do neighbor update for vertex " << vcindx << " with candid
   	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val(); //defaults to infinite vertex if no neighbors
 
-   if(_verbose) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
-   if(_verbose) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
+   if(true) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
+   if(true) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
   if(_verbose) cout << "vertex " << j << " has nndist " << _supervertex[j].NNdistance << " now with neighbor " << _supervertex[j].NNindex << endl;
   if(_verbose) cout << "vertex " << j << " has best merge " << _supervertex[j].MaxRkindex << " now." << endl;
   if(_verbose) cout << "_SetAndUpdateNearest - end\n" << endl; 
