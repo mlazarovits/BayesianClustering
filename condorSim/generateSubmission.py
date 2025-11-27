@@ -142,9 +142,7 @@ def generateSubmission(args):
     SH.createWorkArea(dirname)
     
     # grab relevant flags
-    eventnums = SH.eventsSplit(inputFile, args.split)
-    if eventnums is None:
-        return
+    filearr = SH.filesSplit(inputFile, args.maxnevts)
     flags = '--alpha '+str(args.alpha)+' --EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+" --gev "+str(k)+' --minpt '+str(args.minpt)+' --minE '+str(args.minE)+' --minNrhs '+str(args.minnrhs)+' --minRhE '+str(args.minRhE)+' --minNconsts '+str(args.minNconsts)+" --nGhosts "+str(args.nGhosts)
 
     flags += ' --beta0 '+str(args.beta0)+' --m0 '
@@ -203,12 +201,9 @@ def generateSubmission(args):
     condorSubmitFile = dirname + "/src/submit.sh"
     subf = open(condorSubmitFile, "w")
     print("outputfile name "+ofilename)
-    SH.writeSubmissionBase(subf, dirname, ofilename)
-    SH.writeQueueList(subf, inputFile, ofilename, eventnums, flags)
-    #subf.close()
-    if eventnums == 0 or eventnums is None:
-    	return
-    
+    SH.writeSubmissionBase(subf, dirname, ofilename, args.max_mat, args.max_idle, args.request_memory)
+    SH.writeQueueList(subf, ofilename, filearr, flags)
+
     print("------------------------------------------------------------")
     print("Submission ready, to run use:")
     print("condor_submit "+condorSubmitFile)
@@ -217,6 +212,10 @@ def main():
     # options
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
+    parser.add_argument("--max_mat",help='max_materialization condor option (default: off)',default=-1)
+    parser.add_argument("--max_idle",help='max_idle condor option (default: off)',default=-1)
+    parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
+    parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     #Ntuple file to run over
     parser.add_argument('--inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['ttbar','QCD','singleW','Wgluon'])
     parser.add_argument('--ptHatMin',help='Ntuple pt hat min',default='200')
