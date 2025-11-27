@@ -89,7 +89,7 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// with any of its neighbors
   double NearestNeighbourProb(const int ii) const;
 
-  node* NearestNeighbourProbNode(const int ii) const;
+  BaseTree::node* NearestNeighbourProbNode(const int ii) const;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -106,11 +106,11 @@ class DnnPlane : public DynamicNearestNeighbours {
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours);
   
-  void AddMirrorNodes(const std::vector<int>& current_indices_to_mirror,
-                  const std::vector<node*> & nodes_to_add,
-		  std::vector<int> & indices_added,
-		  std::vector<int> & indices_of_updated_neighbours);
-
+  void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+			  std::vector<std::shared_ptr<BaseTree::node>> & nodes_to_add,
+			  std::vector<int> & indices_added,
+			  std::vector<int> & indices_of_updated_neighbours);
+  
 
   /// returns the EtaPhi of point with index i.
   EtaPhi etaphi(const int i) const;
@@ -121,7 +121,30 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// returns the phi point with index i.
   double phi(const int i) const;
 
+  int GetValidNNodes() const{
+	int nnodes = 0;
+  	for(int i = 0; i < _supervertex.size(); i++){
+		if(_supervertex[i].n == nullptr)
+			continue;
+		nnodes++;
+	}
+	return nnodes;
+   }
+
+  void GetValidNodes(vector<std::shared_ptr<BaseTree::node>>& nodes) const{
+	nodes.clear();
+
+  	for(int i = 0; i < _supervertex.size(); i++){
+		if(_supervertex[i].n == nullptr)
+			continue;
+		nodes.push_back(std::move(_supervertex[i].n));
+	}
+   }
+
+
 private:
+  MergeTree* _merge_tree;
+
   /// Structure containing a vertex_handle and cached information on
   /// the nearest neighbour.
   struct SuperVertex {
@@ -133,8 +156,8 @@ private:
     // later on for cylinder put a second vertex?
     double MaxRk = -1; //highest probability of merging, defaults to -1 (useful for mirror points)
     int MaxRkindex = -3; //index of vertex to merge with, defaults to inexistent vertex (defined as -3 in Dnn2piCylinder)
-    node* n; //node containing point collection, rk value (should match MaxRk), parents, etc.
-    node* bestmerge; //node containing bestmerge pair
+    std::shared_ptr<BaseTree::node> n; //node containing point collection, rk value (should match MaxRk), parents, etc.
+    std::shared_ptr<BaseTree::node> bestmerge; //node containing bestmerge pair
   };
 
   //map vertex (via vertex_handle) to 3D points at vertex
@@ -260,15 +283,10 @@ private:
   }
 
 
-  inline node* _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
-	node* n1 = v1.n;
-	node* n2 = v2.n;
-	node* x = _merge_tree->CalculateMerge(n1, n2);
-	//double rk = x->val; 
-//cout << "n1 has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
-//cout << "n2 has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
-//cout << "x has " << x->points->GetNPoints() << " pts" << endl; x->points->Print();
-	return x;
+  inline std::shared_ptr<BaseTree::node> _merge_prob(const SuperVertex& v1, const SuperVertex& v2) const{
+	BaseTree::node* n1 = v1.n.get();
+	BaseTree::node* n2 = v2.n.get();
+	return _merge_tree->CalculateMerge(n1, n2);
   }
   /// calculates merge probabilities for neighbor (candidate) of point (pref)
   /// compares to best current merge (pref and best)
@@ -279,8 +297,9 @@ private:
 			       //double& rk,
 			       //double& maxrk){
 //compare x + bestmerge
-    node* x = _merge_prob(pref, candidate);
-    node* bestnode = _supervertex[best->info().val()].n;
+    std::shared_ptr<BaseTree::node> xx = _merge_prob(pref, candidate);
+    BaseTree::node* x = xx.get();
+    BaseTree::node* bestnode = _supervertex[best->info().val()].n.get();
     if (x->log_h1_prior+bestnode->log_didj > x->log_didj+bestnode->log_h1_prior){
 	return true;
     }
@@ -293,14 +312,14 @@ private:
   inline bool _best_merge_prob_with_hint(const SuperVertex &pref,
 			       const SuperVertex& candidate,
 			       const Vertex_handle &best,
-			       node& x,
-      			       node& bestmerge){
+			       BaseTree::node& x,
+      			       BaseTree::node& bestmerge){
 			       //const double& rk,
       			       //double& maxrk){
       //if bestmerge hasn't been set yet, return true
       if(bestmerge.val == -999){
 //	cout << "bestmerge hasnt been set" << endl;
-	bestmerge = node(x);
+	bestmerge = x;
      //  cout << "set bestmerge to node with pts " << endl; bestmerge.points->Print();
      // cout << "bestmerge log_h1_prior " << bestmerge.log_h1_prior<< " log_didj " <<  bestmerge.log_didj << endl;
 	 return true;
@@ -315,7 +334,7 @@ private:
 //      cout << "(rearr) comparing " << x.log_h1_prior - x.log_didj << " to " <<  -bestmerge.log_didj+bestmerge.log_h1_prior << endl;
 //	cout << "current bestmerge pts" << endl; bestmerge.points->Print();
 	//maxrk = rk;
-	bestmerge = node(x);
+	bestmerge = x;
 //cout << "best merge for node updated " << endl;
 //	cout << "new bestmerge pts" << endl; bestmerge.points->Print();
 	return true;
@@ -365,9 +384,9 @@ inline double DnnPlane::NearestNeighbourProb(const int ii) const{
 //cout << "node " << ii << " has max rk " << _supervertex[ii].MaxRk << " and points " << endl; _supervertex[ii].n->model->GetData()->Print();
   return _supervertex[ii].MaxRk;}
 
-inline node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
+inline BaseTree::node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
 //cout << "nearest neighbourprobnode for index " << ii << " is " << endl; _supervertex[ii].n->points->Print();
-	return _supervertex[ii].n;}
+	return _supervertex[ii].n.get();}
 
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {

@@ -23,7 +23,6 @@
 #include "JSONTool.hh"
 //frugally deep for loading NN model
 #include "fdeep/fdeep.hpp"
-#include "KUCMS_TimeCalibration.hh"
 
 using weights = SampleWeight::weights;
 using node = BaseTree::node;
@@ -35,53 +34,61 @@ using std::string;
 
 class BaseSkimmer{
 	public:
-		BaseSkimmer(){ 
-			_gev = 1;
-			_data = false;
-			_debug = false;
-			_smear = true;
-			_skip = 1;
-			_weight = 1;
-			_ngrid = 7;
-			_thresh = 1.;
-			_alpha = 1e-300;
-			_emAlpha = 0.5;
-			_verb = 0;
-
-			//beta
-			_prior_params["scale"] = Matrix(1e-3);
-			//nu
-			_prior_params["dof"] = Matrix(3);
-			//W
-			Matrix W(3,3);
-			W.InitIdentity();
-			W.mult(W,1./3);
-			_prior_params["scalemat"] = W;
-			//m
-			_prior_params["mean"] = Matrix(3,1);
-
-			_cell = 0;
-			_tresCte = 0;
-			_tresNoise = 0;
-			_tresStoch = 0;
-			
-
-			_applyLumiMask = true;
-			cout << "Applying lumi mask." << endl;
-			_tree = new TTree("tree","tree");
-			
+		BaseSkimmer() :  
+			_gev(1),
+			_data(false),
+			_debug(false),
+			_smear(true),
+			_skip(1),
+			_weight(1),
+			_ngrid(7),
+			_thresh(1.),
+			_alpha(1e-300),
+			_emAlpha(0.5),
+			_verb(0),
+			_cell(0),
+			_tresCte(0),
+			_tresNoise(0),
+			_tresStoch(0),
+			_applyLumiMask(true),
 			//reqs on gjets CR sample
-			_minPhoPt_CRsel = 70;
-			_minHt_CRsel = 50;
-			_minJetPt_CRsel = 50;
-			_maxMet_CRsel = 50;
-			_jetprod = nullptr;
+			_minPhoPt_CRsel(70),
+			_minHt_CRsel(50),
+			_minJetPt_CRsel(50),
+			_maxMet_CRsel(50),
+			//prior parameters map	
+			_prior_params{
+				//beta
+				{"scale", Matrix(1e-3)},
+				//nu
+				{"dof", Matrix(3)},
+				{"scalemat", Matrix(3,3)},
+				{"mean", Matrix(3,1)}
+			},
+			//pointers
+			_tree(nullptr),
+			_base(nullptr),
+			_jetprod(nullptr),
+			_prod(nullptr)
+		{
+			//W
+			_prior_params["scalemat"].InitIdentity();
+			_prior_params["scalemat"].mult(_prior_params["scalemat"],1./3);
+			cout << "ctor scalemat " << endl; _prior_params["scalemat"].Print(); 
+			if(_applyLumiMask) cout << "Applying lumi mask." << endl;
+
+			//(eventual) ROOT ownership objects
+			_tree = new TTree("tree","tree");
 
 		};
 		//BaseSkimmer(TFile* file){
-		BaseSkimmer(string filename){
-			_gev = 1;
-			_debug = false;
+		BaseSkimmer(string filename) :
+			_gev(1),
+			_debug(false),
+			//prior parameters
+			//pointers
+			_prod(nullptr)
+		{
 			_smear = true;
 			_skip = 1;
 			_weight = 1;
@@ -113,7 +120,6 @@ class BaseSkimmer{
 			_tresStoch = 0.5109;//1.60666 * 1e-9; 
 			_tresNoise = 2.106;//0.00691415 * 1e-9;
 
-			_tree = new TTree("tree","tree");
 
 			_applyLumiMask = true;
 			//get year to apply lumi mask
@@ -138,87 +144,15 @@ class BaseSkimmer{
 			_minHt_CRsel = 50;
 			_minJetPt_CRsel = 50;
 			_maxMet_CRsel = 50;
+			
+			_tree = new TTree("tree","tree");
 			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-			_ch = MakeTChain(filename);
-                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
-			ch2->SetTitle(filename.c_str());
-			_jetprod = new JetProducer(ch2);
-			_timecalib = new KUCMS_TimeCalibration();
-			_jetprod->SetTimeCalibrationTool(_timecalib);	
+			_jetprod = make_unique<JetProducer>(filename);
 			
 		}
 	
-		/*	
-		BaseSkimmer(string flist){
-			_gev = 1;
-			_debug = false;
-			_smear = true;
-			_skip = 1;
-			_weight = 1;
-			_ngrid = 7;
-			_thresh = 1.;
-			_alpha = 1e-300;
-			_emAlpha = 0.5;
-			_verb = 0;
-			//beta
-			_prior_params["scale"] = Matrix(1e-3);
-			//nu
-			_prior_params["dof"] = Matrix(3);
-			//W
-			Matrix W(3,3);
-			W.InitIdentity();
-			W.mult(W,1./3);
-			_prior_params["scalemat"] = W;
-			//m
-			_prior_params["mean"] = Matrix(3,1);
-			
-			
-			if(flist.find("SIM") != string::npos)
-				_data = false;
-			else
-				_data = true;
-			
-			_cell = acos(-1)/180;
-			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
-			_tresStoch = 0.5109;//1.60666 * 1e-9; 
-			_tresNoise = 2.106;//0.00691415 * 1e-9;
-
-			_tree = new TTree("tree","tree");
-			_applyLumiMask = true;
-			//get year to apply lumi mask
-			_jsonfile = "";
-			if(_data){
-				if(flist.find("R17") != string::npos)
-					_jsonfile = "Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
-				else if(flist.find("R18") != string::npos)
-					_jsonfile = "Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
-				else if(flist.find("R22") != string::npos)
-					_jsonfile = "Cert_Collisions2022_355100_362760_Golden.json";
-				else if(flist.find("R23") != string::npos)
-					_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
-				else{
-					cout << "Golden JSON not specified for year of sample " << flist << endl;
-				}
-
-			}
-			//reqs on gjets CR sample
-			_minPhoPt_CRsel = 70;
-			_minHt_CRsel = 50;
-			_minJetPt_CRsel = 50;
-			_maxMet_CRsel = 50;
-			//set producer to get jets with different kin reqs - can't use same file pointer ig?
-			_ch = MakeTChain(flist);
-                        TChain* ch2 = (TChain*)_ch->CloneTree(-1);//MakeTChain(flist);
-			ch2->SetTitle(flist.c_str());
-			_jetprod = new JetProducer(ch2);
-			_timecalib = new KUCMS_TimeCalibration();
-			_jetprod->SetTimeCalibrationTool(_timecalib);	
-
-		}
-		*/
 		virtual ~BaseSkimmer(){ 
-			delete _base;
-			delete _jetprod;
+			//do NOT delete _tree since ROOT takes ownership when it is written to TFile - pointer to _tree is deleted when corresponding tfile is closed
 			_hists1D.clear();
 			_hists2D.clear();
 			_procCats.clear();
@@ -340,105 +274,65 @@ class BaseSkimmer{
 		}
 
 	
-		bool GJetsCR_ObjSel(const Jet& obj, bool pho = true){
-			if(_jets.size() < 1) return false;
-			double obj_phi = obj.phi_02pi(); 
-			if(_verb > 0) cout << "\nobj system E " << obj.E() << " phi " << obj.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
-			if(_verb > 0) cout << "obj system pt " << obj.pt() << " phi " << obj.phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
-			double jet_phi = jet_sys.phi_02pi();
-			double dphi_objjet = obj_phi - jet_phi;
-			dphi_objjet = acos(cos(dphi_objjet)); //wraparound - will always be < pi
-			if(_verb > 0) cout << " dphi " << dphi_objjet << endl;
+		bool GJetsCR_ObjSel(const Jet& obj, bool pho = true, string tag = ""){
 			double pi = 4*atan(1);
+			double jet_phi, dphi_objjet, objpt, ptratio;
+			double obj_phi = obj.phi_02pi(); 
 			Jet jet1, jet2; //jet2 is sublead system
-			if(jet_sys.pt() > obj.pt()){
-				jet1 = jet_sys;
-				jet2 = obj;
+			double ptasym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
+			bool minpt, ptasym;
+			
+			if(_verb > 0) cout << "\nobj system E " << obj.E() << " phi " << obj.phi_02pi() << " jet system E " << jet_sys.E() << " phi " << jet_sys.phi_02pi() << endl;
+
+			if(_jets.size() < 1){
+				jet_phi = -999;
+				dphi_objjet = -999;
+				ptratio = -999;
+				
 			}
 			else{
-				jet1 = obj;
-				jet2 = jet_sys;
+				if(_verb > 0) cout << "obj system pt " << obj.pt() << " phi " << obj.phi_02pi() << " jet system pt " << jet_sys.pt() << " phi " << jet_sys.phi_02pi() << endl;
+				jet_phi = jet_sys.phi_02pi();
+				dphi_objjet = obj_phi - jet_phi;
+				dphi_objjet = acos(cos(dphi_objjet)); //wraparound - will always be < pi
+				if(_verb > 0) cout << " dphi " << dphi_objjet << endl;
+				if(jet_sys.pt() > obj.pt()){
+					jet1 = jet_sys;
+					jet2 = obj;
+				}
+				else{
+					jet1 = obj;
+					jet2 = jet_sys;
+				}
+				ptratio = jet2.pt() / jet1.pt();
 			}
-			double ptasym_thresh = 0.6; //sublead system has to be at least 60% of the lead system
-			
-			bool minpt, ptasym;
-			double objpt;
 			if(pho)
 				objpt = _base->Photon_pt->at(obj.GetUserIdx());
 			else{ //super cluster
 				int phoidx = _base->SuperCluster_PhotonIndx->at(obj.GetUserIdx());
-				if(phoidx == -1){
-					vFillBranch(-999,"Photon_Pt");
-					return false;
-				}
-				objpt = _base->Photon_pt->at(phoidx);
-				vFillBranch(objpt,"Photon_Pt");
+				if(phoidx == -1)
+					objpt = -999;
+				else
+					objpt = _base->Photon_pt->at(phoidx);
 			}
 			if(objpt < _minPhoPt_CRsel) minpt = false;
 			else minpt = true; 
-			if(jet2.pt() / jet1.pt() < ptasym_thresh) ptasym = false;
+			if(ptratio < ptasym_thresh) ptasym = false;
 			else ptasym = true;
-			vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
-			vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
-			
+			//fill branches
+			if((tag == "CMS" && _obj == "SC") || (_obj != "SC")){
+				vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
+				vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
+				vFillBranch(objpt,"Photon_Pt");
+			}
+
+			if(_jets.size() < 1) return false;	
 			if(dphi_objjet < pi-0.3) return false; //want dphi ~ phi - implies less MET in event
 
 			if(minpt && ptasym) return true;
 			else return false;
 		}
 
-
-		TTree* GetTTree(string f){
-			if(gSystem->AccessPathName(f.c_str())){ 
-				cout << "Error: file " << f << " doesn't exist." << endl; 
-				return nullptr; 
-			}
-			TFile* file = TFile::Open(f.c_str());
-			TTree* tree = (TTree*)file->Get("tree/llpgtree");
-			tree->SetTitle(f.c_str());
-			return tree;
-
-		}	
-
-		TChain* MakeTChain(string f){
-			if(gSystem->AccessPathName(f.c_str())){ 
-				cout << "Error: file " << f << " doesn't exist." << endl; 
-				return nullptr; 
-			}
-			TChain* ch = new TChain("tree/llpgtree");
-			ch->SetTitle(f.c_str());
-			ch->Add(f.c_str()); //skip non-recoverable files
-			return ch;
-
-
-		}
-
-		/*
-		//make tchain from filelist
-		TChain* MakeTChain(string flist){
-			if(gSystem->AccessPathName(flist.c_str())){ 
-				cout << "Error: file " << flist << " doesn't exist." << endl; 
-				return nullptr; 
-			}	
-			std::ifstream infile(flist);
-			TChain* ch = new TChain("tree/llpgtree");
-			ch->SetTitle(flist.c_str());
-			string file;
-			cout << "TChaining files in " << flist << "..." << endl;
-			while(std::getline(infile,file)){
-				if( file[0] == '#' ) continue;
-				if(gSystem->AccessPathName(file.c_str())){
-					cout << "Skipping file " << file << " - not found." << endl;
-					continue;
-				}
-				//std::cout << "--  adding file: " << file << std::endl;
-				ch->Add(file.c_str()); //skip non-recoverable files
-			}
-			cout << "TChain title " << ch->GetTitle() << endl;
-			return ch;
-		}
-		*/
-	
 		void AddBranch(string obs, string title){
 			_obs[obs] = -1;
 			 //cout << "adding branch " << obs << endl;
@@ -448,7 +342,7 @@ class BaseSkimmer{
 		void vAddBranch(string obs, string title){
 			string key = _obj+"_"+obs;
 			_vobs[key] = {};
-			 //cout << "adding vbranch " << key << endl;
+			//cout << "adding vbranch " << key << endl;
 			_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
 		}
 		
@@ -501,16 +395,20 @@ class BaseSkimmer{
 					title += " for original SC";
 				vAddBranch(key,title);
 				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
-					//object pre-PU cleaning	
-					key += "_prePUcleaning";
-					title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
-					vAddBranch(key,title);
+					//only do for "BHCPUCleaned" branches of "SCs" but all of other objs
+					if((_obj == "SC" && _obsnames[o].find("BHCPUCleaned") != string::npos) || (_obj != "SC")){
+						//object pre-PU cleaning	
+						key += "_prePUcleaning";
+						title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
+						vAddBranch(key,title);
+					}
 				}
 			}
-			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
-			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
-			vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
-			//vAddBranch("passPixelSeed","if e/gamma candidate has seed in pixel tracker");
+			//if(_obj != "SC"){
+				vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
+				vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
+				vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
+			//}
 			if(_obj == "SC")
 				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
 			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
@@ -525,10 +423,10 @@ class BaseSkimmer{
 				//subcluster	
 				key = "subcluster_"+_obsnames_subcl[o];
 				title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
-				//subcluster pre-PU cleaning	
-				if(_obsnames_subcl[o].find("Energy") != string::npos || _obsnames_subcl[o].find("Var") != string::npos || _obsnames_subcl[o].find("nSubclusters") != string::npos){
+				//subcluster pre-PU cleaning
+				if(key.find("PUscores") == string::npos){	
 					key += "_prePUcleaning";
-					title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units+" no PU cleaning";
+					title += " no PU cleaning";
 				}
 				
 				vvAddBranch(key,title);
@@ -599,10 +497,13 @@ class BaseSkimmer{
 		}
 
 		void addVectors(){
-			for(int o = 0; o < _obsnames_subcl.size(); o++){
-				addVector(_obsnames_subcl[o],true);
-				addVector(_obsnames_subcl[o],true,"prePUcleaning");
+			for(auto it = _vvobs.begin(); it != _vvobs.end(); it++){
+				it->second.push_back({});
 			}
+			//for(int o = 0; o < _obsnames_subcl.size(); o++){
+			//	addVector(_obsnames_subcl[o],true);
+			//	addVector(_obsnames_subcl[o],true,"prePUcleaning");
+			//}
 		}
 
 
@@ -690,8 +591,8 @@ class BaseSkimmer{
 
 		void Profile2DHist(TH2D* inhist, TH1D* outhist, vector<TH1D*>& profs);
 
-		PointCollection* GetPointsFromJet(const Jet& jet){
-			PointCollection* points = new PointCollection();
+		unique_ptr<PointCollection> GetPointsFromJet(const Jet& jet){
+			auto points = make_unique<PointCollection>();
 			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
 
 			int nsubcls = jet.GetNConstituents();
@@ -714,7 +615,7 @@ class BaseSkimmer{
 
 
 		map<unsigned int, double> _rhIdToRes;
-		double CalcTimeSignificance(PointCollection* pts, unsigned int seed_id = -1, bool applyClusterWeights = true){
+		double CalcTimeSignificance(const unique_ptr<PointCollection>& pts, unsigned int seed_id = -1, bool applyClusterWeights = true){
 			double t_tot = 0;
 			double norm = 0;
 			double res_tot = 0;
@@ -1157,10 +1058,10 @@ class BaseSkimmer{
 		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1, string tag = ""){
 			if(tag != "")
 				tag = "_"+tag;
-			addVector("rh_iEta"+tag,false);
-			addVector("rh_iPhi"+tag,false);
-			addVector("rh_Energy"+tag,false);
-			addVector("rh_Weight"+tag,false);
+			//addVector("rh_iEta"+tag,false);
+			//addVector("rh_iPhi"+tag,false);
+			//addVector("rh_Energy"+tag,false);
+			//addVector("rh_Weight"+tag,false);
 			JetPoint center;
 			GetCenterXtal(rhs, center);	
 			map<pair<int,int>, vector<double>> grid;
@@ -1362,7 +1263,10 @@ class BaseSkimmer{
 	void SetVerbosity(int v){_verb = v;}
 
 
-	int RunClustering(const Jet& inputobj, Jet& result, Jet& pu_cleaned_result, bool remove = false, int idx = -1, string obj = ""){
+	int RunClustering(const Jet& inputobj, Jet& result, Jet& pu_cleaned_result, bool remove = false, int idx = -1, string tag = ""){
+		string comp = "_";
+		if(tag != "" and tag[0] != comp)
+			tag = "_"+tag;
 	//remove == false - downweight PU clusters
 	//remove == true - fully remove PU clusters
 		vector<Jet> rhs;
@@ -1370,37 +1274,46 @@ class BaseSkimmer{
 		BayesPoint PV = inputobj.GetVertex();
 		vector<JetPoint> jps;
 		inputobj.GetJetPoints(jps);
-		BayesCluster *algo = new BayesCluster(rhs);
+		unique_ptr<BayesCluster> algo = make_unique<BayesCluster>(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetPriorParameters(_prior_params);
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
 		algo->SetSubclusterAlpha(_emAlpha);
-		algo->SetVerbosity(-1); //smaller log files
+		algo->SetVerbosity(_verb); //smaller log files
 		//using full BHC algorithm for subcluster regularization
-		vector<node*> trees = algo->NlnNCluster();
+		vector<std::shared_ptr<BaseTree::node>> trees;
+		algo->NlnNCluster(trees);
+		for(int i = 0; i < trees.size(); i++){
+			//get points from tree
+			//at least 2 points (rhs)
+		}
 		vector<Jet> bhc_jets;
 		TreesToJets(trees, bhc_jets, PV);
 		if(bhc_jets.size() < 1)
 			return -2;
 		///fill pre PU cleaning branches
 		Matrix cov = bhc_jets[0].GetCovariance();
-		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters_prePUcleaning");
-		vFillBranch(cov.at(0,0),"EtaVar_prePUcleaning");
-		vFillBranch(cov.at(1,1),"PhiVar_prePUcleaning");
-		vFillBranch(cov.at(2,2),"TimeVar_prePUcleaning");
-		vFillBranch(bhc_jets[0].eta(),"EtaCenter_prePUcleaning");
-		vFillBranch(bhc_jets[0].phi(),"PhiCenter_prePUcleaning");
-		vFillBranch(bhc_jets[0].t(),"TimeCenter_prePUcleaning");
-		vFillBranch(bhc_jets[0].e(),"Energy_prePUcleaning");
+		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters"+tag+"_prePUcleaning");
+		vFillBranch(cov.at(0,0),"EtaVar"+tag+"_prePUcleaning");
+		vFillBranch(cov.at(1,1),"PhiVar"+tag+"_prePUcleaning");
+		vFillBranch(cov.at(2,2),"TimeVar"+tag+"_prePUcleaning");
+		if(_obj != "SC"){
+			vFillBranch(bhc_jets[0].eta(),"EtaCenter"+tag+"_prePUcleaning");
+			vFillBranch(bhc_jets[0].phi(),"PhiCenter"+tag+"_prePUcleaning");
+			vFillBranch(bhc_jets[0].t(),"TimeCenter"+tag+"_prePUcleaning");
+			vFillBranch(bhc_jets[0].e(),"Energy"+tag+"_prePUcleaning");
+		}
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0];
 		pu_cleaned_result = bhc_jets[0].CleanOutPU(scores, false);
-		vFillBranch((double)result.GetNConstituents(),"nSubclusters");
+		vFillBranch((double)result.GetNConstituents(),"nSubclusters"+tag);
+		if(_obj == "SC"){
+			vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
+		}
 		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
-		addVectors();
 		Jet subcl;
 		if(scores.size() != bhc_jets[0].GetNConstituents()) cout << "ERROR: # SCORES " << scores.size() << " DOES NOT MATCH # OF ORIGINAL SUBCLUSTERS " << bhc_jets[0].GetNConstituents() << endl;
 		for(int k = 0; k < bhc_jets[0].GetNConstituents(); k++){
@@ -1419,11 +1332,6 @@ class BaseSkimmer{
 			vvFillBranch(subcl.phi(),"PhiCenter_prePUcleaning",idx);
 			vvFillBranch(subcl.t(),"TimeCenter_prePUcleaning",idx);
 			vvFillBranch(subcl.e(),"Energy_prePUcleaning",idx);
-			if(scores[k]){
-				vvFillBranch(subcl.t(),"TimeCenter",idx);
-				vvFillBranch(subcl.eta(),"EtaCenter",idx);
-				vvFillBranch(subcl.phi(),"PhiCenter",idx);
-			}
 		}
 		//below returns empty jet if no subclusters pass PU cut - put in safety for this
 		if(result.GetNRecHits() < 1) return -1;
@@ -1432,16 +1340,16 @@ class BaseSkimmer{
 	}
 
 
-	void TreesToJets(vector<node*>& trees, vector<Jet>& jets, BayesPoint pv){
+	void TreesToJets(const vector<std::shared_ptr<node>>& trees, vector<Jet>& jets, BayesPoint pv){
 		jets.clear();
 		double radius = 1.29;
 		double x, y, z, eta, phi, t, theta, px, py, pz;
 		for(int i = 0; i < trees.size(); i++){
 			//get points from tree
-			PointCollection* pc = trees[i]->points;
 			//at least 2 points (rhs)
-			if(pc->GetNPoints() < 2) continue;
-			Jet predJet(trees[i]->model, pv, _gev, radius);
+			if(trees[i]->points->GetNPoints() < 2) continue;
+			//Jet predJet(trees[i]->model, pv, _gev, radius);
+			Jet predJet(trees[i].get(), pv, _gev, radius);
 		//cout << "pre pt cut - pred jet px " << predJet.px() << " py " << predJet.py() << " pz " << predJet.pz() << " pt " << predJet.pt() << " E " << predJet.E() << " m2 " << predJet.m2() << " mass " << predJet.mass() << " eta " << predJet.eta() << " phi " << predJet.phi() << endl;
 			//if(predJet.pt() < 5) continue; 
 			//add Jet to jets	
@@ -1457,14 +1365,14 @@ class BaseSkimmer{
 	void SetMinJetPt_CR(double p){ _minJetPt_CRsel = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
 	void SetMaxMet_CR(double p){ _maxMet_CRsel = p; }
 	
-	ReducedBase* _base = nullptr;
-	TChain* _ch = nullptr;
-	JetProducer* _jetprod = nullptr;
+	//needs to be a raw pointer because ROOT opens a TFile in ctor
+	ReducedBase* _base;
+	unique_ptr<JetProducer> _jetprod;
+	unique_ptr<BaseProducer> _prod;
 	double _minPhoPt_CRsel, _minHt_CRsel, _minJetPt_CRsel, _maxMet_CRsel;
 	vector<Jet> _jets;
 	Jet jet_sys;
 	int _nEvts;
-	BaseProducer* _prod;
 	bool _data;
 	bool _debug;
 	int _evti, _evtj;
@@ -1494,6 +1402,5 @@ class BaseSkimmer{
 	
 	vector<string> _inputs;
 	int _ngrid;
-	KUCMS_TimeCalibration* _timecalib = nullptr;
 };
 #endif

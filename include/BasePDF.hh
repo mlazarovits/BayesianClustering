@@ -10,7 +10,17 @@ class BasePDF{
 	public:
 		BasePDF(){ m_prefactor = 1; _isGhost = false;}
 		BasePDF(int d){ m_dim = d; m_prefactor = 1;  _isGhost = false;}
+		BasePDF(const BasePDF& pdf) :
+			m_prefactor(pdf.m_prefactor),
+			m_dim(pdf.m_dim),
+			_isGhost(pdf._isGhost)
+		{
+			m_params = pdf.m_params;
+			if(pdf.m_prior)
+				m_prior = pdf.m_prior->clone();
+		}
 		virtual ~BasePDF(){ }	
+		virtual std::unique_ptr<BasePDF> clone() const = 0;
 
 		virtual double Prob(const BayesPoint& x) = 0;
 		virtual double Prob(const PointCollection& x) = 0;
@@ -48,12 +58,12 @@ class BasePDF{
 		
 		void SetPrefactor(double p){ m_prefactor = p; }	
 
-		void SetPrior(BasePDF* p){ m_prior = p; }
-		BasePDF* GetPrior(){ return m_prior; }
+		void SetPrior(std::unique_ptr<BasePDF> p){ m_prior = std::move(p); }
+		BasePDF* GetPrior(){ return m_prior.get(); }
 
 		map<string, Matrix> m_params;
 
-		BasePDF* m_prior;
+		std::unique_ptr<BasePDF> m_prior;
 
 		double m_prefactor;
 
@@ -66,7 +76,6 @@ class BasePDF{
 		
 		void SetGhost(bool g){ _isGhost = g; }
 		bool IsGhost(){return _isGhost; }
-	private:
 		bool _isGhost; //use for studying IR safety of subcluster scale
 
 };

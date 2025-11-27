@@ -303,16 +303,18 @@ Jet::Jet(BasePDF* pdf, double E, double pi, const BayesPoint& vtx, double detR){
 }
 
 
-Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
+//Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
+Jet::Jet(BaseTree::node* node, const BayesPoint& vtx, double gev, double detR){
 	_vtx = vtx;
 	_mom = BayesPoint(4);
-	
+
+	GaussianMixture* model = node->model.get();
 	Matrix r_nk; model->GetPosterior(r_nk);
 	double Ek;
 	vector<double> norms;
 	model->GetNorms(norms);
 	int nsubcl = model->GetNClusters();
-	_nRHs = model->GetData()->GetNPoints();
+	_nRHs = node->points->GetNPoints();
 	_rhs.reserve(_nRHs);
 	double pt = 0;
 	_E = 0;
@@ -338,7 +340,7 @@ Jet::Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR){
 	_t = 0;
 	for(int i = 0; i < _nRHs; i++){
 		//add rhs to jet
-		BayesPoint rh = model->GetData()->at(i);
+		BayesPoint rh = node->points->at(i); //use untransformed points as rhs
 		eta = rh.at(0);
 		phi = rh.at(1);
 		t = rh.at(2);

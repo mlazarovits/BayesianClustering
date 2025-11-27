@@ -471,7 +471,7 @@ int main(int argc, char *argv[]){
 
 
 	
-	BayesCluster *algo = new BayesCluster(rhs);
+	auto algo = std::make_unique<BayesCluster>(rhs);
 	if(smeared) algo->SetDataSmear(smear);
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
@@ -499,12 +499,12 @@ int main(int argc, char *argv[]){
 			//cout << trees.size() << " true trees" << endl;
 			if(viz){
 				//plotting stuff here
-				FullViz3D plots = FullViz3D(trees);
+				FullViz3D plots;
 				plots.SetVerbosity(verb);
 				plots.SetTransfFactor(gev);
 				//add info of true jets
 				plots.AddTrueJets(jets);
-				plots.Write(fname);
+				plots.Write(trees,fname);
 			}
 		}
 		else if(strat == 2){

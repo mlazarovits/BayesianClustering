@@ -89,7 +89,7 @@ double Gaussian::Prob(const PointCollection& x){
 	m.mult(m,sqrt(n));
 
 	//N/2(mu - mean)*covinv*(mu - mean);
-	Gaussian* prob = new Gaussian(m,m_cov);
+	std::unique_ptr<Gaussian> prob = std::make_unique<Gaussian>(m,m_cov);
 	Matrix p = Matrix(m_dim, 1);
 	p.mult(m_mu,sqrt(n));
 	BayesPoint pt = BayesPoint(m_dim);
@@ -107,7 +107,7 @@ void Gaussian::InitParameters(unsigned long long seed){
 	m_mu.InitEmpty();
 }
 
-Gaussian* Gaussian::mult(Gaussian* p1){ 
+std::unique_ptr<Gaussian> Gaussian::mult(Gaussian* p1){ 
 	//check that p1 is a Gaussian by looking at parameters
 	Matrix mu2; p1->GetParameter("mean", mu2);
 	Matrix mu1 = m_mu;
@@ -118,7 +118,7 @@ Gaussian* Gaussian::mult(Gaussian* p1){
 	cov1.invert(m_cov);
 	
 
-	Gaussian* ret = new Gaussian(m_dim);
+	auto ret = std::make_unique<Gaussian>(m_dim);
 
 	//form from: https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf (Ch. 8.1.8)
 	Matrix new_cov = Matrix(m_dim, m_dim);
@@ -135,7 +135,7 @@ Gaussian* Gaussian::mult(Gaussian* p1){
 	new_mu.mult(new_cov,new_mu);
 
 	//use added covariances in this distribution
-	Gaussian* gaus_coeff = new Gaussian(mu2, new_cov);
+	auto gaus_coeff = std::make_unique<Gaussian>(mu2, new_cov);
 	//then invert added covariances for overall distribution
 	new_cov.invert(new_cov); 
 

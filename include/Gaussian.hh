@@ -11,18 +11,21 @@ class Gaussian : public BasePDF{
 		Gaussian(BayesPoint mu, Matrix cov);
 		Gaussian(Matrix mu, Matrix cov);
 		virtual ~Gaussian(){ };
+		
+		std::unique_ptr<BasePDF> clone() const override{
+			return std::unique_ptr<BasePDF>(new Gaussian(*this));
+		}
 
-
-		void InitParameters(unsigned long long seed = 123);
+		void InitParameters(unsigned long long seed = 123) override;
 		//returns a map from string name of parameter to vector (1 per cluster) of parameter value
-		void UpdateParameters(){ m_mu = m_params["mean"]; m_cov = m_params["cov"]; }	
-		double Prob(const BayesPoint& x);
-		double Prob(const PointCollection& x);
+		void UpdateParameters() override{ m_mu = m_params["mean"]; m_cov = m_params["cov"]; }	
+		double Prob(const BayesPoint& x) override;
+		double Prob(const PointCollection& x) override;
 		NormalWishart* Posterior();
 
-		Gaussian* mult(Gaussian* p1); 
+		std::unique_ptr<Gaussian> mult(Gaussian* p1); 
 
-		void SetDim(int d){
+		void SetDim(int d) override{
 			if(m_dim != 0) return;
 			BaseSetDim(d);
 			m_mu = Matrix(d, 1);

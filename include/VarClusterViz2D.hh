@@ -13,7 +13,7 @@ class VarClusterViz2D{
 		VarClusterViz2D(){
 			m_model = nullptr;
 			m_post = Matrix();
-			m_points = new PointCollection();	
+			m_points = nullptr;	
 			m_n = 0; //number of points
 			m_k = 0; //number of clusters
 			m_fname = "";	

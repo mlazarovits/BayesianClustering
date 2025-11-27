@@ -4,11 +4,25 @@
 #include "PointCollection.hh"
 #include "Matrix.hh"
 #include "BasePDFMixture.hh"
+#include <memory>
 
+using std::unique_ptr;
+using std::make_unique;
 class BaseCluster{
 	public:
-		BaseCluster(){ m_k = 0; m_dim = 0; m_n = 0; clustering_start = false;}
-		BaseCluster(PointCollection* pc, int k){ m_k = k; m_data = pc; m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); clustering_start = false;}
+		BaseCluster() :
+			m_k(0),
+			m_dim(0),
+			m_n(0), 
+			clustering_start(false)
+		{}
+		BaseCluster(PointCollection* pc, int k) : 
+			m_k(k),
+			m_data(pc), 
+			m_dim(pc->Dim()),
+			m_n(pc->GetNPoints()), 
+			clustering_start(false)
+		{ }
 		BaseCluster(BasePDFMixture* pdf, int k){ m_pdfmix = pdf; m_k = k; m_data = m_pdfmix->GetData(); m_dim = m_data->Dim(); m_n = m_data->GetNPoints(); clustering_start = false;}
 		virtual ~BaseCluster(){ };
 

@@ -17,10 +17,7 @@ using node = BaseTree::node;
 class FullViz3D : public ClusterVizBase{
 	public:
 		FullViz3D() : ClusterVizBase(){ };
-		FullViz3D(const vector<node*>& nodes);
-		virtual ~FullViz3D(){
-			_nodes.clear();
-		};
+		virtual ~FullViz3D(){ };
 
 		//writes individual node
 		json WriteNode(node *n);
@@ -28,10 +25,10 @@ class FullViz3D : public ClusterVizBase{
 		//json WriteTree(node* root);
 		void AddPlot(string filename = "test"){ };
 		void Write(){ };
-		json WriteLevels();
-		void Write(string filename){
+		json WriteLevels(vector<std::shared_ptr<node>>& nodes);
+		void Write(vector<std::shared_ptr<node>>& nodes, string filename){
 			//writing level{ tree{} }
-			WriteLevels();	
+			WriteLevels(nodes);	
 			std::ofstream file;
 			file.open(filename+".json");
 			////sets 4 space indent
@@ -57,7 +54,6 @@ class FullViz3D : public ClusterVizBase{
 		}
 
 	private:
-		vector<node*> _nodes;
 		//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
 		json _root = json::object();
 

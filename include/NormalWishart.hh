@@ -10,18 +10,21 @@ class NormalWishart : public BasePDF{
 		NormalWishart(int d);
 		NormalWishart(Matrix scalemat, Matrix mean, double dof, double scale);
 		virtual ~NormalWishart(){ };
+		std::unique_ptr<BasePDF> clone() const override{
+			return std::unique_ptr<BasePDF>(new NormalWishart(*this));
+		}
 
-		double Prob(const BayesPoint& x);
-		double Prob(const PointCollection& x){ return -1; }
-		double Prob(const Matrix& mu, const Matrix& precision);		
+		double Prob(const BayesPoint& x) override;
+		double Prob(const PointCollection& x) override{ return -1; }
+		double Prob(const Matrix& mu, const Matrix& precision);
 
 		BasePDF* mult(BasePDF* p1){ return nullptr; }
 		BasePDF* Posterior(){ return nullptr; }
-		void InitParameters(unsigned long long seed = 123);
+		void InitParameters(unsigned long long seed = 123) override;
 
-		void UpdateParameters();
+		void UpdateParameters() override;
 
-		void SetDim(int d){
+		void SetDim(int d) override{
 			if(m_dim != 0) return;
 			BaseSetDim(d);
 			m_mean = Matrix(d, 1);

@@ -42,8 +42,8 @@ double NormalWishart::Prob(const Matrix& mu, const Matrix& precision){
 	gaus_cov.mult(precision,m_scale);
 	gaus_cov.invert(gaus_cov);
 	
-	Gaussian* gaus = new Gaussian(m_mean, gaus_cov);
-	Wishart* wish = new Wishart(m_scalemat, m_dof);
+	auto gaus = std::make_unique<Gaussian>(m_mean, gaus_cov);
+	auto wish = std::make_unique<Wishart>(m_scalemat, m_dof);
 	BayesPoint x = BayesPoint(m_dim);
 	for(int i = 0; i < m_dim; i++) x.SetValue(mu.at(i,0), i);
 

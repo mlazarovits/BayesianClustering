@@ -12,7 +12,8 @@
 using procCat = BaseSkimmer::procCat;
 class SuperClusterSkimmer : public BaseSkimmer{
 	public:
-		SuperClusterSkimmer(){
+		SuperClusterSkimmer() : BaseSkimmer() 
+		{
 			SetObs();
 			InitMapTree();
 			_evti = 0;
@@ -25,7 +26,10 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			_gev = 1/30.;
 			_applyFrac = false;
 		};
-		virtual ~SuperClusterSkimmer(){ };
+
+		//need to use new and delete so ROOT owns the histogram and can write it to file
+		virtual ~SuperClusterSkimmer(){ 
+		};
 
 		//get rechits from file to cluster
 		//SuperClusterSkimmer(TFile* file) : BaseSkimmer(file){
@@ -38,8 +42,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			//in ntuplizer, stored as rh time
 			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
 				
-			_prod = new PhotonProducer(_ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
+			_prod = make_unique<PhotonProducer>(filename);
 			_base = _prod->GetBase();
 			_nEvts = _base->fChain->GetEntries();
 			_evti = 0;
@@ -56,47 +59,33 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			SetupDetIDs();
 		}
-		/*
-		SuperClusterSkimmer(string filelist) : BaseSkimmer(filelist){
-			SetObs();
-			InitMapTree();
-			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
-			TChain* ch = MakeTChain(filelist);
-			if(ch == nullptr) return;
-			_prod = new PhotonProducer(ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
-			_base = _prod->GetBase();
-			_nEvts = _base->fChain->GetEntries();
-			_evti = 0;
-			_evtj = _nEvts;
-			_oname = "plots/sc_skims_"+_cms_label+".root";
-			
-			_isocuts = false;
-			_oskip = 10;
-			_thresh = 1.;
-			_alpha = 0.1;
-			_emAlpha = 0.5;
-			_gev = 1/30.;
-			_applyFrac = false;
-
-			
-			SetupDetIDs();
-		}
-		*/
-
 		vector<string> SCtypes = {"BHC","BHCPUCleaned", "CMS"};
 		void SuperClusterAddBranches(){
 			_obj = "SC";
+			vector<string> sc_obsnames; //will write branches for different tags
+			_obsnames.push_back("EovP_track");
+			_obsnames.push_back("dR_track");
+			_obsnames.push_back("trueLabel"); //CR designation
+			_obsnames.push_back("predLabel"); //CNN prediction
+			_obsnames.push_back("predScore_physBkg"); //CNN prediction
+			_obsnames.push_back("predScore_BH"); //CNN prediction
+			_obsnames.push_back("predScore_spike"); //CNN prediction
+			_obsnames.push_back("swCrossPrime");
+			_obsnames.push_back("swCrossCMS");
+			//_obsnames.push_back("isoPresel");
+			//_obsnames.push_back("PassGJetsCR_Obj");
 			for(auto tag : SCtypes){
-				_obsnames.push_back("EovP_track_"+tag);
-				_obsnames.push_back("dR_track_"+tag);
-				_obsnames.push_back("trueLabel_"+tag); //CR designation
-				_obsnames.push_back("predLabel_"+tag); //CNN prediction
-				_obsnames.push_back("predScore_physBkg_"+tag); //CNN prediction
-				_obsnames.push_back("predScore_BH_"+tag); //CNN prediction
-				_obsnames.push_back("predScore_spike_"+tag); //CNN prediction
-				_obsnames.push_back("swCrossPrime_"+tag);
-				_obsnames.push_back("swCrossCMS_"+tag);
+
+				for(int o = 0; o < _obsnames.size(); o++){
+					string obs = _obsnames[o];
+					//only do track matched branches for original SCs
+					if(tag != "CMS"){
+						if(obs.find("_track") != string::npos)
+							continue;
+					}
+					sc_obsnames.push_back(obs+"_"+tag);
+				}
+
 
 				vAddBranch("nRHs_grid_"+tag,"# rhs in CNN input grid");
 				vAddBranch("nRHs_"+tag,"# of rhs in "+tag+" SC");
@@ -110,23 +99,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				vvAddBranch("rh_iPhi_"+tag,"iphi coord of rh in 7x7 CNN grid");
 				vvAddBranch("rh_Energy_"+tag,"energy of rh in 7x7 CNN grid");
 			}
+
 			vAddBranch("seedTime_CMS","time from seed rh in original SC");
+			_obsnames = sc_obsnames;
 		}
 
-		//302 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, phys bkg 
-		TH2D* ENeighbors_physBkg = new TH2D("ENeighbors_physBkg","ENeighbors_physBkg;local ieta;local iphi_physBkg",5,-2,3,5,-2,3);	
-		//303 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, BH 
-		TH2D* ENeighbors_BH = new TH2D("ENeighbors_BH","ENeighbors_BH;local ieta;local iphi_BH",5,-2,3,5,-2,3);	
-		//304 - eta vs phi grid, overlaid neighbors energy in 5x5 grid, spike 
-		TH2D* ENeighbors_spikes = new TH2D("ENeighbors_spikes","ENeighbors_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
-		//305 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, phys bkg 
-		TH2D* ENeighborsSkipCenter_physBkg = new TH2D("ENeighborsSkipCenter_physBkg","ENeighborsSkipCenter_physBkg;local ieta;local iphi_physBkg",5,-2,3,5,-2,3);	
-		//306 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, BH 
-		TH2D* ENeighborsSkipCenter_BH = new TH2D("ENeighborsSkipCenter_BH","ENeighborsSkipCenter_BH;local ieta;local iphi_BH",5,-2,3,5,-2,3);	
-		//307 - eta vs phi grid no center, overlaid neighbors energy in 5x5 grid, spike 
-		TH2D* ENeighborsSkipCenter_spikes = new TH2D("ENeighborsSkipCenter_spikes","ENeighborsSkipCenter_spikes;local ieta;local iphi_spikes",5,-2,3,5,-2,3);	
-		//308 - eta vs phi grid
-		TH2D* ENeighbors = new TH2D("ENeighbors","ENeighbors;local ieta;local iphi",61,-30,31,61,-30,31);
 
 		enum weightScheme{
 			noWeight = 0,
@@ -381,7 +358,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 
 			
 			vector<double> spikeObs;
-			PointCollection* points = GetPointsFromJet(bhc_obj);
+			unique_ptr<PointCollection> points = GetPointsFromJet(bhc_obj);
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
 			vFillBranch(swCP, "swCrossPrime"+tag);
@@ -420,7 +397,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 	}
 
 
-	void SpikeObs(PointCollection* pc, vector<double>& obs){
+	void SpikeObs(const unique_ptr<PointCollection>& pc, vector<double>& obs){
 		obs.clear();
 		int npts = pc->GetNPoints();
 		double wmax = 0;
@@ -537,7 +514,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		return i != 0 && (std::abs(i) <= max_ieta) && (j >= min_iphi) && (j <= max_iphi);
 	}
 
-	int GetTrainingLabel(int nobj, const Jet& bhc_sc, const Jet& og_sc){
+	int GetTrainingLabel(int nobj, const Jet& bhc_sc, const Jet& og_sc, string tag = ""){
 		//labels
 		//unmatched = -1
 
@@ -567,8 +544,8 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		unsigned int seed_id = _base->SuperCluster_XtalSeedID->at(og_sc.GetUserIdx());
 		//time significance to enhance purity of det bkg CRs
 		//using seed of original SC for time and time significance
-		PointCollection* points = GetPointsFromJet(og_sc);
-		PointCollection* points_bhc = GetPointsFromJet(bhc_sc);
+		unique_ptr<PointCollection> points = GetPointsFromJet(og_sc);
+		unique_ptr<PointCollection> points_bhc = GetPointsFromJet(bhc_sc);
 		double tsig_seed = CalcTimeSignificance(points, seed_id);
 		double tsig = CalcTimeSignificance(points_bhc, -1);
 		double tsig_noClustW = CalcTimeSignificance(points_bhc, -1, false);
@@ -580,19 +557,25 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			}
 		}
 		//if tc is -999 it means that the seed rh was removed in processing (due to either time req or eta req)
-		vFillBranch(tc,"seedTime");
-		vFillBranch(tsig_seed,"seedTimeSignificance_bhcSC");
-		vFillBranch(tsig,"weightedTimeSignificance");	
-		vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights");	
 	
 		//do track matching for spikes
 		og_sc.GetClusterParams(mu, cov);
 		double bestdr, bestde_dr;
 		TrackMatched(mu,bestdr, bestde_dr);
 		if(bestde_dr != 999) bestde_dr = og_sc.e()/bestde_dr;
-		vFillBranch(bestdr,"dR_track");
-		vFillBranch(bestde_dr,"EovP_track");
 		
+
+		vFillBranch(tc,"seedTime_"+tag);
+		vFillBranch(tsig,"weightedTimeSignificance_"+tag);	
+		vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights_"+tag);
+		if(tag == "CMS"){
+			vFillBranch(bestdr,"dR_track_"+tag);
+			vFillBranch(bestde_dr,"EovP_track_"+tag);
+		}
+		else{
+			vFillBranch(-999,"dR_track_"+tag);
+			vFillBranch(-999,"EovP_track_"+tag);
+		}
 		bool trksum, ecalrhsum, htowoverem;
 		int iso;
 		//for BH definition
@@ -610,7 +593,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 
 		int label = -1;
-		bool passGJetsObjSel = GJetsCR_ObjSel(og_sc,false);
+		bool passGJetsObjSel = GJetsCR_ObjSel(og_sc,false,tag);
 if(_verb > 0) cout << "time " << tc << " phi " << pc << " time sig " << tsig << " dr track " << bestdr << " gjets evt sel " << _passGJetsEvtSel << " gjets obj sel " << passGJetsObjSel << endl;	
 		//in data - could be spikes or BH
 		if(_data){
@@ -649,10 +632,10 @@ if(_verb > 0) cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " <<
 				}
 
 			}
-			vFillBranch((double)iso,"isoPresel");
-			vFillBranch((double)passGJetsObjSel,"PassGJetsCR_Obj");
-			double pixseed = phoidx == -1 ? -1 : (double)_base->Photon_pixelSeed->at(phoidx); 
-			vFillBranch(pixseed,"passPixelSeed");
+			if(tag == "CMS"){
+				vFillBranch((double)iso,"isoPresel");
+				vFillBranch((double)passGJetsObjSel,"PassGJetsCR_Obj");
+			}
 		}
 		else // not data
 			label = -1;

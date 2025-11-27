@@ -31,22 +31,26 @@ class GaussianMixture : public BasePDFMixture{
 			m_Elam.clear();
 			m_Epi.clear();
 		};
+
+		virtual std::unique_ptr<BasePDF> clone() const override{
+			return std::unique_ptr<BasePDF>(new GaussianMixture(*this));
+		}
 	
 		//has the option to take in posteriors of previous model(s) as starting point to avoid randomly-initialized kmeans
-		void InitParameters(const map<string, Matrix>& priors = {}, const vector<std::map<string, Matrix>>& prev_posteriors = {}, unsigned long long seed = 111);
+		void InitParameters(const map<string, Matrix>& priors = {}, const vector<std::map<string, Matrix>>& prev_posteriors = {}, unsigned long long seed = 111) override;
 		//E-step
-		void CalculatePosterior();
+		void CalculatePosterior() override;
 		//M-step
-		void UpdateParameters();
+		void UpdateParameters() override;
 		//eval - returns log-likelihood value at given iteration
-		double EvalLogL();
+		double EvalLogL() override;
 
 		//fill vectors with parameters
 		//returns mu, cov, and mixing coeffs for cluster k
-		void GetLikelihoodParameters(int k, std::map<string,Matrix>& p); 
+		void GetLikelihoodParameters(int k, std::map<string,Matrix>& p) override; 
 
 		//shift learned model parameters
-		void ShiftParameters(const BayesPoint& pt){
+		void ShiftParameters(const BayesPoint& pt) override{
 			//only need to shift Gaussian means + prior mean
 			Matrix mean, priormean;
 			Matrix shift;
@@ -78,7 +82,7 @@ class GaussianMixture : public BasePDFMixture{
 			}
 		}
 		
-		void EtaToTheta_params(){
+		void EtaToTheta_params() override{
 			Matrix mean, priormean;
 			double eta;
 			for(int k = 0; k < m_k; k++){
@@ -100,7 +104,7 @@ class GaussianMixture : public BasePDFMixture{
 			}
 		}
 		
-		void ThetaToEta_params(){
+		void ThetaToEta_params() override{
 			Matrix mean, priormean;
 			double theta;
 			for(int k = 0; k < m_k; k++){
@@ -123,7 +127,7 @@ class GaussianMixture : public BasePDFMixture{
 		}
 		
 		//add theta projection
-		void ProjectTheta_params(){
+		void ProjectTheta_params() override{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
@@ -175,7 +179,7 @@ class GaussianMixture : public BasePDFMixture{
 		
 		}
 		
-		void UnprojectTheta_params(){
+		void UnprojectTheta_params() override{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
@@ -200,7 +204,7 @@ class GaussianMixture : public BasePDFMixture{
 			}
 		}
 	
-		void UnprojectPhi_params(){
+		void UnprojectPhi_params() override{
 			Matrix mean, priormean;
 			PointCollection meanpts; 
 			for(int k = 0; k < m_k; k++){
@@ -226,7 +230,7 @@ class GaussianMixture : public BasePDFMixture{
 		}
 
 	
-		void PutPhi02pi_params(){
+		void PutPhi02pi_params() override{
 			//put means on [0,2pi]
 			Matrix mean, priormean;
 			PointCollection meanpts; 
@@ -252,7 +256,7 @@ class GaussianMixture : public BasePDFMixture{
 		}
 	
 		//scale prior parameters
-		void ScalePriorParameters(const Matrix& sc){
+		void ScalePriorParameters(const Matrix& sc) override{
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
 			Matrix scT, scInv, scTinv;
@@ -295,7 +299,7 @@ class GaussianMixture : public BasePDFMixture{
 
 	
 		//scale learned model parameters
-		void ScaleParameters(const Matrix& sc){
+		void ScaleParameters(const Matrix& sc) override{
 			//scale means + matrices
 			Matrix mean, priormean, cov, W;
 			Matrix scT, scInv, scTinv;
@@ -339,23 +343,23 @@ class GaussianMixture : public BasePDFMixture{
 		}
 
 			
-		void CalculateVariationalPosterior();
+		void CalculateVariationalPosterior() override;
 		void CalculateExpectations();
 		void CalculateRStatistics();
 
-		void UpdateVariationalParameters();
+		void UpdateVariationalParameters() override;
 		void UpdatePosteriorParameters();
-		double EvalVariationalLogL();
-		double EvalEntropyTerms();
-		double EvalNLLTerms();
+		double EvalVariationalLogL() override;
+		double EvalEntropyTerms() override;
+		double EvalNLLTerms() override;
 		//returns params on priors (alpha, W, nu, m, beta - dirichlet + normalWishart) for cluster k
-		void GetLHPosteriorParameters(int k, std::map<string,Matrix>& p) const; 
+		void GetLHPosteriorParameters(int k, std::map<string,Matrix>& p) const override; 
 		void GetOnlyPosteriorParameters(int k, std::map<string,Matrix>& p);
-		void GetDataStatistics(int k,std::map<string,Matrix>& p) const; 
+		void GetDataStatistics(int k,std::map<string,Matrix>& p) const override; 
 
 
 		
-		void RemoveModel(int j){
+		void RemoveModel(int j) override{
 			//if only one cluster, don't remove
 			if(m_k > 1 && _xbar.size() > 1){
 				_xbar.erase(_xbar.begin()+j);
@@ -372,7 +376,7 @@ class GaussianMixture : public BasePDFMixture{
 		//this needs to be called BEFORE init parameters because InitParameters can remove subclusters if the k-means algo
 		//finds nothing assigned to the subcluster BUT it relies on the priors still
 		//bc the UpdateMixture method also updates the posterior parameters (ie the dims of m_post, etc)
-		void InitPriorParameters(const map<string, Matrix>& params = {});
+		void InitPriorParameters(const map<string, Matrix>& params = {}) override;
 
 
 	private:
@@ -393,7 +397,7 @@ class GaussianMixture : public BasePDFMixture{
 		//E_pi = E[ln(pi_k)] (eq. 10.66)
 		vector<double> m_Elam, m_Epi;
 		
-		void InitParameters(unsigned long long seed){ };
+		void InitParameters(unsigned long long seed) override{ };
 
 		
 

@@ -27,9 +27,9 @@ void SuperClusterSkimmer::Skim(){
 		_csvname = _oname.substr(0,_oname.find(".root"));
 		_csvname = _csvname+".csv";
 	}
-	_csvfile.open(_csvname);
+	//_csvfile.open(_csvname);
 	//write header
-	WriteHeader();
+	//WriteHeader();
 	
 	int nPho;
 	
@@ -136,36 +136,38 @@ void SuperClusterSkimmer::Skim(){
 			if(scs[s].GetNPoints() < 1){ cout << "sc #" << s << " has " << scs[s].GetNPoints() << " rhs " << endl; continue; }
 			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
-
-
-			Jet bhc_sc, bhc_sc_pucleaned;
-			int ret = RunClustering(scs[s], bhc_sc, bhc_sc_pucleaned, false, jet_scIdx); //downweight rhs according to good PU clusters
-			if(ret < 0){
-				continue;
-			}
+			
 			//per event
 			_prod->GetRhIdResMap(_rhIdToRes);
 			
-			PointCollection* points = GetPointsFromJet(scs[s]);
-			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()),false);
-			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
 			nscran++;
 			
 			map<string,Jet> SCtypes_map; //keys need to match SCtypes member var
-			SCtypes_map[SCtypes[0]] = bhc_sc;
-			SCtypes_map[SCtypes[1]] = bhc_sc_pucleaned;
 			SCtypes_map[SCtypes[2]] = scs[s];
-			//TODO - add branches in include/ with tag
 			
 			map<string,double> mapobs;
 			mapobs["event"] = e;
 			mapobs["event_weight"] = 1.;
 			mapobs["object"] = scidx;
+
+			unique_ptr<PointCollection> points = GetPointsFromJet(scs[s]);
+			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()),false);
+			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
+			vFillBranch(0,"nSubclusters_CMS");
+
+			Jet bhc_sc, bhc_sc_pucleaned;
+			addVectors();
+			int ret = RunClustering(scs[s], bhc_sc, bhc_sc_pucleaned, false, jet_scIdx,"BHCPUCleaned"); //downweight rhs according to good PU clusters
+			SCtypes_map[SCtypes[0]] = bhc_sc;
+			SCtypes_map[SCtypes[1]] = bhc_sc_pucleaned;
 	
 			int cmssc_label = -1;
 			for(auto jt = SCtypes_map.begin(); jt != SCtypes_map.end(); jt++){
 				Jet sc = jt->second;
 				string tag = jt->first;
+				//don't save invalid BHC clusterings
+				if(tag != "CMS" && ret < 0)
+					continue;
 				if(_verb > 0) cout << "SC type " << tag << endl;
 				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 				int id_idx = -999;
@@ -175,9 +177,10 @@ void SuperClusterSkimmer::Skim(){
 				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
 
 				FillBranches(sc,tag);
-				int label = GetTrainingLabel(scidx, sc, scs[s]);
-				if(tag == "CMS")
+				int label = GetTrainingLabel(scidx, sc, scs[s], tag);
+				if(tag == "CMS"){
 					cmssc_label = label;
+				}
 				//make CNN training grid
 				MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx, tag);
 				mapobs["label_"+tag] = label;
@@ -196,65 +199,27 @@ void SuperClusterSkimmer::Skim(){
 				vFillBranch(ovalues[1], "predScore_BH_"+tag);
 				vFillBranch(ovalues[2], "predScore_spike_"+tag);
 				//write good SCs to CSV for training
-				if(label != -1 && tag == "BHC_PUCleaned"){
-					BaseSkimmer::WriteObs(mapobs,"superclusters");
-				}
+				//if(label != -1 && tag == "BHC_PUCleaned"){
+				//	BaseSkimmer::WriteObs(mapobs,"superclusters");
+				//}
 
 			}
-			//make rh maps for original SC
-			//fill eta phi map
-			vector<double> neighborEs; 
-			std::vector<std::pair<int, int>> icoords;
-			scs[s].GetJetPoints(rh_pts);
-			GetNeighborE(rh_pts, -1, icoords, neighborEs,false,61);
-			for(int e = 0; e < (int)neighborEs.size(); e++){
-				ENeighbors->Fill(icoords[e].first, icoords[e].second, neighborEs[e]);
-			}
-			for(int r = 0; r < rh_pts.size(); r++){
-				GetNeighborE(rh_pts,r,icoords,Es);
-				GetNeighborE(rh_pts,r,icoords_nocenter,Es_nocenter,true);
-				for(int ee = 0; ee < Es.size(); ee++){
-					if(cmssc_label == 1) //phys bkg
-						ENeighbors_physBkg->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					else if(cmssc_label == 2) //BH
-						ENeighbors_BH->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					else if(cmssc_label == 3) //spike
-						ENeighbors_spikes->Fill(icoords[ee].first,icoords[ee].second,Es[ee]);
-					else{ }
-				}
-				for(int ee = 0; ee < Es_nocenter.size(); ee++){
-					if(cmssc_label == 1) //phys bkg
-						ENeighborsSkipCenter_physBkg->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-					else if(cmssc_label == 2) //BH
-						ENeighborsSkipCenter_BH->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-					else if(cmssc_label == 3) //spike
-						ENeighborsSkipCenter_spikes->Fill(icoords_nocenter[ee].first,icoords_nocenter[ee].second,Es_nocenter[ee]);
-					else{ }
-				}
-			}
-	
 			jet_scIdx++;	
 		}
 		_tree->Fill();
 		_reset();
 	}
-	_csvfile.close();
+	//_csvfile.close();
 	cout << "\n" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	_tree->SetDirectory(ofile);
 	ofile->cd();
 	_tree->Write();
-	ofile->WriteTObject(ENeighbors_physBkg);	
-	ofile->WriteTObject(ENeighbors_BH);	
-	ofile->WriteTObject(ENeighbors_spikes);	
-	ofile->WriteTObject(ENeighborsSkipCenter_physBkg);	
-	ofile->WriteTObject(ENeighborsSkipCenter_BH);	
-	ofile->WriteTObject(ENeighborsSkipCenter_spikes);	
-	ofile->WriteTObject(ENeighbors);
 	ofile->Close();
+	delete ofile;
 	cout << "Ran over " << nscran << " superclusters" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
-	cout << "Wrote MVA inputs to " << _csvname << endl;
+	//cout << "Wrote MVA inputs to " << _csvname << endl;
 	cout << "Total events ran over " << nEvts_tot << " events that passed event filters " << nEvts_EvtFilterPass << " events that pass event filters and GJets selection " << nEvts_GJetsPass << endl;
 }
 

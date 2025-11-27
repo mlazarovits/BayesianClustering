@@ -44,8 +44,7 @@ class PhotonSkimmer : public BaseSkimmer{
 			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
 			//tof = (d_rh-d_pv)/c
 			//in ntuplizer, stored as rh time
-			_prod = new PhotonProducer(_ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
+			_prod = make_unique<PhotonProducer>(filename);
 			_fname = filename;
 
 			
@@ -65,40 +64,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			
 			SetupDetIDs();
 		}
-
-		/*		
-		//get rechits from file to cluster
-		PhotonSkimmer(string filelist) : BaseSkimmer(filelist){
-			SetObs();
-			InitMapTree();
-			//jack does rh_adjusted_time = rh_time - (d_rh - d_pv)/c = rh_time - d_rh/c + d_pv/c
-			//tof = (d_rh-d_pv)/c
-			//in ntuplizer, stored as rh time
-			//this is just the type of producer, there is a GetSuperCluster fcn in the base producer class
-                        if(_ch == nullptr) return;
-			_prod = new PhotonProducer(_ch);
-			_prod->SetTimeCalibrationTool(_timecalib);	
-			_fname = filelist;
-			
-			_base = _prod->GetBase();
-			_nEvts = _base->fChain->GetEntries();
-			_evti = 0;
-			_evtj = _nEvts;
-			_oname = "plots/photon_skims_"+_cms_label+".root";
-			
-			_isocuts = false;
-			_oskip = 10;
-			_thresh = 1.;
-			_alpha = 1e-300;
-			_emAlpha = 1e-5;
-			_gev = 1/30.;
-			_applyFrac = false;
-			
-
-			SetupDetIDs();
-		}
-		*/
-
 
 		enum weightScheme{
 			noWeight = 0,
@@ -252,19 +217,13 @@ class PhotonSkimmer : public BaseSkimmer{
 			obs.at("rot2D") = rot2D;
 			obs.at("phiE2D") = phi2D;
 
-			PointCollection* points = new PointCollection();
-			vector<JetPoint> rhs; bhc_obj.GetJetPoints(rhs);
-			for(int r = 0; r < rhs.size(); r++){
-				BayesPoint pt({rhs[r].eta(), rhs[r].phi(), rhs[r].t()});
-				pt.SetWeight(rhs[r].E()*_gev);
-				points->AddPoint(pt);
-			}
+			std::unique_ptr<PointCollection> points = GetPointsFromJet(bhc_obj);
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
 			obs.at("maxOvtotE") = maxE/E_tot;
 			
 			vector<double> spikeObs;
-			SpikeObs(points, spikeObs);
+			SpikeObs(points.get(), spikeObs);
 			double swCP = spikeObs[0];
 			obs.at("swCP") = swCP;
 

@@ -333,7 +333,7 @@ void BHCJetSkimmer::Skim(){
 		_radius = sqrt(rh.x()*rh.x() + rh.y()*rh.y());
 		if(i % SKIP == 0) cout << " and " << rhs.size() << " total rhs" << endl;
 		cout << "Clustering..." << endl;	
-		BayesCluster* algo = new BayesCluster(rhs);
+		auto algo = std::make_unique<BayesCluster>(rhs);
 		algo->SetMeasErrParams(_cell, _tresCte, _tresStoch*_gev, _tresNoise*_gev); 
 		algo->SetThresh(_thresh);
 		algo->SetAlpha(_alpha);
@@ -348,13 +348,13 @@ void BHCJetSkimmer::Skim(){
 		if(_strategy == NlnN || _strategy == NlnNonAK4){
 			//start clock
 			t = clock();
-			_trees = algo->NlnNCluster();
+			algo->NlnNCluster(_trees);
 		}
 		//N^2 version
 		else if(_strategy == N2){
 			//start clock
 			t = clock();
-			_trees = algo->N2Cluster();
+			algo->N2Cluster(_trees);
 		}
 		t = clock() - t;
 cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;

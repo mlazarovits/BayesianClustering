@@ -13,7 +13,8 @@ class JetProducer : public BaseProducer{
 
 		//get rechits from file to cluster
 		JetProducer(TFile* file);
-		JetProducer(TTree* tree) : BaseProducer(tree){ };
+		//JetProducer(TTree* tree) : BaseProducer(tree){ };
+		JetProducer(string filename) : BaseProducer(filename){ };
 		//ctor from rec hit collection - integrating into ntuplizer
 		
 		//make ctor that simulates rechits

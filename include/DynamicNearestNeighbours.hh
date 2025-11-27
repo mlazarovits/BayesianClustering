@@ -131,7 +131,7 @@ public:
   
   /// Returns the highest probability of merging point ii
   /// with any of its neighbors
-  virtual node* NearestNeighbourProbNode(const int ii) const = 0;
+  virtual BaseTree::node* NearestNeighbourProbNode(const int ii) const = 0;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -152,6 +152,7 @@ public:
 			  const std::vector<EtaPhi> & points_to_add,
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours) = 0;
+
   virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  const std::vector<PointCollection> & points_to_add,
 			  std::vector<int> & indices_added,
@@ -189,12 +190,17 @@ public:
     indices_to_remove[0] = index1;
     indices_to_remove[1] = index2;
     points_to_add[0] = newcluster;
-    node* n1 = NearestNeighbourProbNode(index1);
-    node* n2 = NearestNeighbourProbNode(index2);
+    //BaseTree::node* n1 = NearestNeighbourProbNode(index1);
+    //BaseTree::node* n2 = NearestNeighbourProbNode(index2);
 
     //update merge tree with selected merge
-    node* newnode = _merge_tree->CalculateMerge(n1, n2);
-    newnode->points = new PointCollection(newcluster);
+/*
+    shared_ptr<BaseTree::node> newnode = _merge_tree->CalculateMerge(n1, n2);
+    newnode->points = std::make_unique<PointCollection>(newcluster);
+    //set children of newnode - need to find original shared_ptrs in _merge_tree to avoid double delete
+    newnode->l = n1;
+    newnode->r = n2;
+*/
 		//cout << "newnode model pts" << endl;
 		//newnode->model->GetData()->Print();
 		//cout << "newnode pts" << endl;
@@ -203,10 +209,12 @@ public:
 //cout << "n1 for " << index1 << " has " << n1->points->GetNPoints() << " pts" << endl; n1->points->Print();
 //cout << "n2 for " << index2 << " has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
 //if(newnode->points->GetNPoints() == 3){ cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newnode->points->Print();}
-    _merge_tree->Insert(newnode);
+
+/*
+    _merge_tree->Insert(std::move(newnode));
     _merge_tree->Remove(n1);
     _merge_tree->Remove(n2);
-
+*/
     RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
 		       indices_of_updated_neighbours);
     index3 = indices_added[0];
@@ -243,12 +251,6 @@ public:
 
   /// destructor -- here it is now implemented
   virtual ~DynamicNearestNeighbours () {}
-
-  inline void SetMergeTree(MergeTree* mt){ _merge_tree = mt; }
-  inline MergeTree* GetMergeTree(){ return _merge_tree; }
-
-  //for calculating merges and bookkeeping merges
-  MergeTree* _merge_tree = nullptr;
 
 
 };

@@ -13,7 +13,8 @@
 #include <math.h>
 #include <cmath>
 #include "Matrix.hh"
-#include "BasePDFMixture.hh"
+#include "BasePDF.hh"
+#include "BaseTree.hh"
 #include "Point.hh"
 #include "JetPoint.hh"
 
@@ -30,7 +31,8 @@ class Jet{
 		Jet(const vector<Jet>& jets);
 		Jet(const Matrix& mu, const Matrix& cov, double E, double _pi = 1, const BayesPoint& vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
 		Jet(BasePDF* pdf, double E, double pi = 1, const BayesPoint& vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
-		Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
+		//Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
+		Jet(BaseTree::node* node, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
 		Jet(const Jet& j); //copy constructor
 		virtual ~Jet();		
 

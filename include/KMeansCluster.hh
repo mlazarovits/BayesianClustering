@@ -5,7 +5,6 @@
 #include "Matrix.hh"
 
 
-
 class KMeansCluster : public BaseCluster{
 	//inheriting constructors
 	using BaseCluster::BaseCluster;
