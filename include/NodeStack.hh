@@ -4,6 +4,7 @@
 #include "RandomSample.hh"
 #include "PointCollection.hh"
 #include "BaseTree.hh"
+#include <memory>
 
 using node = BaseTree::node;
 class NodeStack{
