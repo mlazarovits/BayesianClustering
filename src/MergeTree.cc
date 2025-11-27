@@ -32,8 +32,8 @@ std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
 	double log_pi = log(_alpha) + lgamma(n) - logd_LSE;
 	
 	auto x = make_unique<node>();
-	auto pts = std::make_unique<PointCollection>();
-	x->points = std::move(pts);
+	//auto pts = std::make_unique<PointCollection>();
+	x->points = std::make_unique<PointCollection>();//std::move(pts);
 	x->points->AddPoints(*l->points);
 	x->points->AddPoints(*r->points);
 
@@ -102,7 +102,8 @@ std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
 if(_verb > 1)cout << "log didj = log(p_dl) " << l->log_prob_tk << " + log(p_dr) " << r->log_prob_tk << " + log(dl) " << l->log_d  << " + log(dr) " << r->log_d << endl;
 if(_verb > 1) cout << "merge val = " << loga - logb << " for n pts " << x->points->GetNPoints() << endl;
 if(_verb > 1) cout << "calculatemerge pts " << endl;
-if(_verb > 1) x->points->Print();	
+if(_verb > 1) x->points->Print();
+	//cout << "MergeTree::CalculateMerge - end" << endl;
 	return x;
 }
 

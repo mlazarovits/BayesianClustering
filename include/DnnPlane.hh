@@ -304,9 +304,6 @@ private:
 	return true;
     }
     else return false;
-
-//    bool ret = _best_merge_prob_with_hint(pref, candidate, best, *x, bestmerge);
-//	return ret;
   }
   
   inline bool _best_merge_prob_with_hint(const SuperVertex &pref,

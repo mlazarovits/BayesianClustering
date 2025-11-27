@@ -588,7 +588,6 @@ void DnnPlane::RemoveAndAddPoints(
     kids.push_back(std::move(_supervertex[index].n));
     _supervertex[index].n = nullptr;
     //if (_verbose) cout << "                 value is " << (_is_not_null(_supervertex[index].vertex)) << endl;
-    //_merge_tree->Remove(index);
   }
 
 
@@ -707,10 +706,8 @@ void DnnPlane::RemoveAndAddPoints(
       // of the removed points
       if (indices_removed.count(_supervertex[j].MaxRkindex)) {
 	//if (_verbose) cout << "j " << j << endl;
-//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 	_SetNearest(j); //updates NN and MaxRk - if MaxRk changes, but NN doesn't, should not change NN
 	indices_of_updated_neighbours.push_back(j);
-//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 	//if (_verbose) cout << "MaxRk of " << j << " : " 
 			  //<< _supervertex[j].MaxRkindex
 	                  //<< ", dist = " << _supervertex[j].MaxRk <<endl;
@@ -808,6 +805,10 @@ void DnnPlane::RemoveAndAddPoints(
   // update set, triangulation and supervertex info
   for (size_t ir = 0; ir < indices_to_remove.size(); ir++) {
     int index = indices_to_remove[ir];
+//cout << "ir " << ir << " index " << index << endl;
+//cout << "vertex is null? " << (_supervertex[index].vertex == NULL) << endl;
+//cout << "index to remove " << index << " node ismirror? " << _supervertex[index].n->ismirror << " pts " << endl;
+//_supervertex[index].n->points->Print();
     ///if already removed, skip
     if(_supervertex[index].vertex == NULL) continue;
     //if (_verbose) cout << "  removing " << index << endl;
@@ -845,7 +846,9 @@ void DnnPlane::RemoveAndAddPoints(
       // as removed
       _supervertex[index].coincidence = index;
       _supervertex[index].vertex = NULL;
-      _supervertex[index].n = NULL;
+      if(!_supervertex[index].n->ismirror) kids.push_back(std::move(_supervertex[index].n));
+      _supervertex[index].n = nullptr;
+//cout << "coincidence - skipping" << endl;
       continue;
     }
 	//if(_verbose) cout << "vertex already null? " << (_supervertex[index].vertex == NULL) << endl;
@@ -858,7 +861,6 @@ void DnnPlane::RemoveAndAddPoints(
     if(!_supervertex[index].n->ismirror) kids.push_back(std::move(_supervertex[index].n));
     _supervertex[index].n = nullptr;
     //if (_verbose) cout << "                 value is " << (_is_not_null(_supervertex[index].vertex)) << endl;
-    //_merge_tree->Remove(index);
   }
 
 
@@ -909,10 +911,13 @@ void DnnPlane::RemoveAndAddPoints(
 				  phi_center));
     }
 //binary treee merges only
-   if(kids.size() > 2)
+   if(kids.size() != 2)
 	cout << "Error - combining " << kids.size() << " nodes" << endl;
-    //cout << "doing calculate merge for new node " << index << endl;
-    _supervertex[index].n = _merge_tree->CalculateMerge(kids[1].get(), kids[0].get());//_merge_tree->Get(index);
+//cout << "kids size " << kids.size() << endl;
+//cout << "doing calculate merge for new node " << index << endl;
+//cout << "points for kids 1 " << endl; kids[1].get()->points->Print();
+//cout << "points for kids 0"  << endl; kids[0].get()->points->Print();
+    _supervertex[index].n = _merge_tree->CalculateMerge(kids[1].get(), kids[0].get());
     _supervertex[index].n->idx = index;
    //_supervertex[index].n->l = std::move(kids[0]);
    //_supervertex[index].n->r = std::move(kids[1]);
@@ -981,10 +986,8 @@ void DnnPlane::RemoveAndAddPoints(
       // of the removed points
       if (indices_removed.count(_supervertex[j].MaxRkindex)) {
 	//if (_verbose) cout << "j " << j << endl;
-//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 	_SetNearest(j); //updates NN and MaxRk - if MaxRk changes, but NN doesn't, should not change NN
 	indices_of_updated_neighbours.push_back(j);
-//cout << "# clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 	//if (_verbose) cout << "MaxRk of " << j << " : " 
 			  //<< _supervertex[j].MaxRkindex
 	                  //<< ", dist = " << _supervertex[j].MaxRk <<endl;
@@ -1058,7 +1061,9 @@ if(_verbose) cout << "SetNearest - start for idx " << j << endl;
     
 	//do the same as above but with probability instead of geometric distance
 	//compare merge j+vcindx and j+best_vtx
-//cout << "doing calcmerge for potential merge " << j << " and " << vcindx << endl;
+//cout << "1 - doing calcmerge for potential merge " << j << " and " << vcindx << endl;
+//cout << "points for idx " << j << endl; _supervertex[j].n.get()->points->Print();
+//cout << "points for idx " << vcindx << endl; _supervertex[vcindx].n.get()->points->Print();
 	shared_ptr<BaseTree::node> r0 = _merge_tree->CalculateMerge(_supervertex[j].n.get(), _supervertex[vcindx].n.get());
 	if(bestmerge == nullptr){ //hasnt been set yet
       if(_verbose) cout << "this merge val " << r0->log_h1_prior - r0->log_didj << " set to begin for node " << j << " with node " << best_vtx->info().val() << endl; 
@@ -1079,7 +1084,6 @@ if(_verbose) cout << "SetNearest - start for idx " << j << endl;
        cout << "best merge pair so far " << best_vtx->info().val() <<endl; ///" with pts" << endl; _supervertex[best_vtx->info().val()].n->points->Print();
        cout << "this dist: " << dist << " best dist so far: " << mindist << "\n" << endl;
      }
- //cout << "# clusters: " << _merge_tree->GetNClusters() << " " <<  _merge_tree->Get(vc->info().val())->points->GetNPoints() << endl;
     }
   } while (++vc != done); // move on to next Voronoi neighbour
   
@@ -1091,13 +1095,12 @@ if(_verbose) cout << "SetNearest - start for idx " << j << endl;
   else
   	_supervertex[j].MaxRk = bestmerge->log_h1_prior-bestmerge->log_didj;
   _supervertex[j].MaxRkindex = best_vtx->info().val();
-   if(true) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
-   if(true) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; _supervertex[j].n->points->Print(); 
+   if(_verbose) cout << "this vertex's best NN distance is " << _supervertex[j].NNdistance << " with pair " << _supervertex[j].NNindex << " has eta " << _supervertex[_supervertex[j].NNindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].NNindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].NNindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
+   if(_verbose) cout << "this vertex's best rk is " << _supervertex[j].MaxRk << " with pair " << _supervertex[j].MaxRkindex << " has eta " << _supervertex[_supervertex[j].MaxRkindex].n->points->Centroid(0) << " phi " << _supervertex[_supervertex[j].MaxRkindex].n->points->CircularCentroid(1) << " # pts " << _supervertex[_supervertex[j].MaxRkindex].n->points->GetNPoints() << endl; //_supervertex[j].n->points->Print(); 
 	if(_verbose){
 		//cout << std::setprecision(10) << "SetNearest - done for vertex " << j << " with best rk " << _supervertex[j].MaxRk  << " for node " << best_vtx->info().val() << " best merge has pts " << endl;
 		//_supervertex[j].n->points->Print();
 		//_supervertex[best_vtx->info().val()].n->points->Print();
-		//cout << "SetNearest - # clusters: " << _merge_tree->GetNClusters() << " pts in node # " << j << ": "  << _merge_tree->Get(j)->points->GetNPoints() << endl;
 		//cout << " and best dist " << _supervertex[j].NNdistance << " " << mindist << " for node " << _supervertex[j].NNindex << "  - end\n\n" << endl;
 		cout << "SetNearest - end\n" << endl;
 	}
@@ -1181,6 +1184,9 @@ void DnnPlane::_SetAndUpdateNearest(
       	//if (_verbose) cout << "nearer ";
       } 
      //do the same as above but with probability instead of geometric distance
+//cout << "2 - doing calcmerge for potential merge " << j << " and " << vcindx << endl;
+//cout << "points for idx " << j << endl; _supervertex[j].n.get()->points->Print();
+//cout << "points for idx " << vcindx << endl; _supervertex[vcindx].n.get()->points->Print();
 	shared_ptr<BaseTree::node> r0 = _merge_tree->CalculateMerge(_supervertex[j].n.get(), _supervertex[vcindx].n.get());
 	double compval = r0->log_h1_prior - r0->log_didj;
 	if(bestmerge == nullptr){

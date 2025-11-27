@@ -68,7 +68,7 @@ Dnn2piCylinder::Dnn2piCylinder(
 	const std::vector<PointCollection>& input_points, 
 	const bool & ignore_nearest_is_mirror, std::unique_ptr<MergeTree> mt,
 	const bool & verbose) {
-  _verbose = false;
+  //_verbose = false;
   _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
   vector<PointCollection> plane_points;
   vector<int>    plane_point_indices(input_points.size());
@@ -189,7 +189,6 @@ if(_verbose) cout << "Dnn2pi - CreateNecesssaryMirrorPoints - start" << endl;
     //cout << "creating mirror point for " << ip << " with nndist: " << nndist << " and closest neighbor " << _DNN->NearestNeighbourIndex(ip) << " with phi distance to 0: " << phi << " and phi distance to offset " << phi-offset << endl;
 //cout << "point to mirror" << endl;
 //pts.Print();
-if(_verbose) cout << "og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //copy node
     auto x = std::make_shared<BaseTree::node>(*_DNN->NearestNeighbourProbNode(ip));
     auto newpts = std::make_unique<PointCollection>(_remap_phi(pts));
@@ -204,7 +203,6 @@ if(phi < 0 || phi > 8*atan(1)){
 	}
 	//see when phi < 0 node (should be mirror) is created
 	if(phi < 0){
-		cout << "Error: phi for mirrored pt is less than 0 - og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     		cout << "Dnn2pi this mirror info " << _mirror_info[ic].mirror_index << endl;
 		cout << "Dnn2piCylinder::_CreateNecessaryMirrorPoints - phi mean " << phi << " node pts " << endl;
 		pts.Print();
@@ -215,12 +213,10 @@ if(phi < 0 || phi > 8*atan(1)){
 //	newpts->Print();
     // now proceed to prepare the point for addition
     x->points = std::move(newpts);
-    x->ismirror = true;//!(_merge_tree->Get(ip)->ismirror);
+    x->ismirror = true;
     //make sure this node knows that its mirror exists (and vice versa)
     x->mirror = _DNN->NearestNeighbourProbNode(ip);
     _DNN->NearestNeighbourProbNode(ip)->mirror = x.get();
-    //_merge_tree->Get(ip)->mirror = x;
-if(_verbose) cout << "copied node is mirror? " << x->ismirror << " og node is mirror? " << _merge_tree->Get(ip)->ismirror << endl;
     //updated mirror index with newly created mirror point
     _mirror_info[ic].mirror_index = _cylinder_index_of_plane_vertex.size();
 if(_verbose) cout << "this node has main idx " << _mirror_info[ic].main_index << " and mirror idx " << _mirror_info[ic].mirror_index << endl;
@@ -319,6 +315,7 @@ void Dnn2piCylinder::RemoveAndAddPoints(const vector<int> & indices_to_remove,
   // translate from "cylinder" indices of points to remove to the
   // plane indices of points to remove, bearing in mind that sometimes
   // there are multple plane points to remove.
+//_verbose = true;
 if(_verbose) cout << "Dnn2pi - RemoveAndAddPoints start" << endl;  
 
 vector<int> plane_indices_to_remove;
@@ -342,7 +339,6 @@ for(int i = 0; i < plane_indices_to_remove.size(); i++) cout << "remove plane in
   vector<PointCollection> plane_points_to_add;
   indices_added.clear();
  
-  vector<std::shared_ptr<BaseTree::node>> new_plane_nodes;
 if(_verbose)
 cout << "adding points" << endl;
   for (unsigned int i=0; i < points_to_add.size(); i++) {
@@ -375,7 +371,6 @@ if(_verbose){
   }
   vector<int> extra_updated_plane_neighbours;
   //if this merge clusters all points (ie is the last clustering) do not create mirror points
-  //if(_merge_tree->GetNClusters() == 1) return;
   if(_DNN->GetValidNNodes() == 1) return;
 
 
