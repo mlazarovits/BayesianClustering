@@ -226,7 +226,7 @@ def main():
     parser.add_argument('--output','-o',help='output label')
     parser.add_argument('--strategy','-st',help='which strategy to use for BHC (default = NlnN)',default='NlnN',choices=['NlnN','N2','GMMonly','NlnNonAK4'])
     parser.add_argument('--split','-s',help="condor job split",default=0,type=int)
-    parser.add_argument('--verbosity','-v',help="verbosity",default=0)
+    parser.add_argument('--verbosity','-v',help="verbosity",default=-1)
     #add algorithm parameters - alpha, emAlpha, verbosity, thresh
     parser.add_argument('--alpha','-a',help="alpha for BHC",default=0.1)
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1.)
