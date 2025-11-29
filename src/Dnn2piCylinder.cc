@@ -68,6 +68,7 @@ Dnn2piCylinder::Dnn2piCylinder(
 	const std::vector<PointCollection>& input_points, 
 	const bool & ignore_nearest_is_mirror, std::unique_ptr<MergeTree> mt,
 	const bool & verbose) {
+  _verbose = verbose;
   //_verbose = false;
   _ignore_nearest_is_mirror = ignore_nearest_is_mirror;
   vector<PointCollection> plane_points;
