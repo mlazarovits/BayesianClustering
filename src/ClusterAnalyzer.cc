@@ -81,13 +81,13 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	}
 	sort(objs.begin(), objs.end(), Esort);
 	//returns lead (energy) cluster
-	retobj = std::move(objs[0]);
+	retobj = objs[0];
 	if(_verb > -1 && _detIDmap.size() == 0){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
-	retobj.SetCNNModel(_detbkgmodel.get());
-	retobj.SetDNNModel(_photonidmodel.get());
+	retobj.SetCNNModel(_detbkgmodel);
+	retobj.SetDNNModel(_photonidmodel);
 	return 0;
 }
 
@@ -99,8 +99,8 @@ int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
-	retobj.SetCNNModel(_detbkgmodel.get());
-	retobj.SetDNNModel(_photonidmodel.get());
+	retobj.SetCNNModel(_detbkgmodel);
+	retobj.SetDNNModel(_photonidmodel);
 	return 0;
 }
 
