@@ -7,6 +7,7 @@
 #include <string>
 #include <math.h>
 #include "fdeep/fdeep.hpp"
+#include <memory>
 
 using std::make_pair;
 using std::to_string;
@@ -20,7 +21,7 @@ struct ClusterObj{
 	ClusterObj(){ 
 		_idx = -1;
 	};
-	ClusterObj(Jet jet){ 
+	ClusterObj(const Jet& jet){ 
 		_jet = jet; _PV = _jet.GetVertex(); _jet.SortConstituents();
 		CalculateObjTimes(); 
 	}
@@ -144,10 +145,8 @@ struct ClusterObj{
 	}
 	void GetDetBkgScores(vector<vector<float>>& detBkgScores){ detBkgScores.clear(); detBkgScores = _detBkgScores; }
 	void GetPhotonIDScores(vector<float>& photonIDScores){ photonIDScores.clear(); photonIDScores = _photonIDScores; }
-	void SetCNNModel(string model){ _detbkgmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
-	void SetDNNModel(string model){ _photonidmodel = fdeep::load_model(model,true,fdeep::dev_null_logger); }
-	void SetCNNModel(fdeep::model model){ _detbkgmodel = model; }
-	void SetDNNModel(fdeep::model model){ _photonidmodel = model; }
+	void SetCNNModel(fdeep::model* model){ _detbkgmodel = model; }
+	void SetDNNModel(fdeep::model* model){ _photonidmodel = model; }
 	
 
 	void SetIsolationInfo(map<string, double> obs){
@@ -173,7 +172,7 @@ struct ClusterObj{
 		fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
 		
 		//predict_class returns predicted class number and value of max output neuron
-		fdeep::tensors result = _photonidmodel.predict({input_tensor});
+		fdeep::tensors result = _photonidmodel->predict({input_tensor});
 		for(int i = 0; i < result.size(); i++){
 			vector<float> reti = result[i].to_vector();
 			for(int j = 0; j < reti.size(); j++)
@@ -201,7 +200,7 @@ struct ClusterObj{
 				}							
 			}
 			//predict_class returns predicted class number and value of max output neuron
-			fdeep::tensors result = _detbkgmodel.predict({input_tensor});
+			fdeep::tensors result = _detbkgmodel->predict({input_tensor});
                         for(int i = 0; i < result.size(); i++){
                                 vector<float> reti = result[i].to_vector();
                                 _detBkgScores.push_back(reti);
@@ -218,7 +217,7 @@ struct ClusterObj{
 					}							
 				}
 				//predict_class returns predicted class number and value of max output neuron
-				fdeep::tensors result = _detbkgmodel.predict({input_tensor});
+				fdeep::tensors result = _detbkgmodel->predict({input_tensor});
                         	for(int i = 0; i < result.size(); i++){
                         	        vector<float> reti = result[i].to_vector();
                                 	_detBkgScores.push_back(reti);
@@ -258,8 +257,8 @@ struct ClusterObj{
 
 		vector<vector<float>> _detBkgScores; //is a vector of vectors s.t. _detBkgScores[subcl_idx] = {score_physbkg, score_bh, score_spike} 
 		vector<float> _photonIDScores; //is a vector of vectors s.t. _photonIDScores[subcl_idx] = {score_isobkg, score_nonisobkg} 
-		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
-		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
+		fdeep::model* _detbkgmodel = nullptr;//fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
+		fdeep::model* _photonidmodel = nullptr;//fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
 		int _ngrid = 7;
 		vector<string> _nnfeatures = {"EtaSig", "PhiSig", "EtaPhiCov", "majorLength", "minorLength", "hcalTowerSumEtConeDR04OvPt", "trkSumPtSolidConeDR04OvPt", "trkSumPtHollowConeDR04OvPt", "hadTowOverEMOvPt", "ecalRHSumEtConeDR04OvPt"};
 		
@@ -414,10 +413,12 @@ class ClusterAnalyzer{
 		}
 		void SetCNNModel(string model){ 
 			if(_verb > -1) cout << "Using model " << model << " for instrumental background." << endl; 
-			_detbkgmodel = fdeep::load_model(model); }
+			_detbkgmodel = std::make_unique<fdeep::model>(fdeep::load_model(model)); }
+			//_detbkgmodel = fdeep::load_model(model); }
 		void SetDNNModel(string model){
 			if(_verb > -1) cout << "Using model " << model << " for photon ID." << endl; 
-			_photonidmodel = fdeep::load_model(model); }
+			_photonidmodel = std::make_unique<fdeep::model>(fdeep::load_model(model)); }
+			//_photonidmodel = fdeep::load_model(model); }
 
 	private:
 		vector<Jet> _rhs;
@@ -427,11 +428,13 @@ class ClusterAnalyzer{
 		BayesPoint _detCenter;
 		void _treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs);
 		std::map<UInt_t,pair<int,int>> _detIDmap;
-		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
-		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
+		//fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
+		//fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
+		std::unique_ptr<fdeep::model> _detbkgmodel = nullptr;//fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json",true,fdeep::dev_null_logger);
+		std::unique_ptr<fdeep::model> _photonidmodel = nullptr;//fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json",true,fdeep::dev_null_logger);
 		int _verb;
 
 };
-static bool Esort(ClusterObj j1, ClusterObj j2){ return (j1._jet.E() > j2._jet.E()); }
-static bool ptsort(ClusterObj j1, ClusterObj j2){ return (j1._jet.pt() > j2._jet.pt()); }
+static bool Esort(const ClusterObj& j1, const ClusterObj& j2){ return (j1._jet.E() > j2._jet.E()); }
+static bool ptsort(const ClusterObj& j1, const ClusterObj& j2){ return (j1._jet.pt() > j2._jet.pt()); }
 #endif
