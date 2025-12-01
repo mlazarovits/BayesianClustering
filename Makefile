@@ -17,7 +17,10 @@ CXXFLAGS   += $(PYTHIACFLAGS)
 lpc_CXXFLAGS    = $(ROOTCFLAGS)
 lpc_CXXFLAGS   += $(PYTHIACFLAGS) 
 
-
+#optimization flags
+CXXFLAGS_COMMON = -O3 -march=native -ffast-math -funroll-loops -flto 
+lpc_CXXFLAGS += $(CXXFLAGS_COMMON)
+CXXFLAGS += $(CXXFLAGS_COMMON)
 #add libraries
 GLIBS       = $(ROOTGLIBS)
 GLIBS      += $(PYTHIAGLIBS)
@@ -85,6 +88,7 @@ lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-stati
 
 lpc_CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include/
 lpclib: CXXFLAGS = $(lpc_CXXFLAGS)
+lpclib: CXX += $(CXXFLAGS_COMMON)
 lpc: CXXFLAGS = $(lpc_CXXFLAGS)
 lpc: GLIBS = $(lpc_GLIBS)
 
@@ -99,6 +103,7 @@ OUTOBJ	    = ./obj/
 CC_FILES        = $(wildcard src/*.cc)
 HH_FILES        = $(wildcard include/*.hh)
 OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
+lpc_OBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/BHCJetSkimmer.o, $(OBJ_FILES))
 #time calibration stuff
 
 local: TC_OBJ = /Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.so
@@ -108,7 +113,7 @@ local: GLIBS += $(TC_OBJ)
 lpc: GLIBS += $(lpc_TC_OBJ)
 lpclib: OBJ_FILES += $(lpc_TC_OBJ)
 
-SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skimmer.o, $(OBJ_FILES))
+SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/BHCJetSkimmer.o, $(OBJ_FILES))
 
 #debug symbols
 #CXXFLAGS += -g -fno-omit-frame-pointer -o0 -fno-optimize-sibling-calls
@@ -121,7 +126,7 @@ local: all
 debug: all
 lpc:   all #configtar simconfigtar
 lib: $(OBJ_FILES) lib/libBayesCluster.so
-lpclib: $(OBJ_FIELS) lib/libBayesCluster.so
+lpclib: $(lpc_OBJ_FILES) lib/libBayesCluster.so
 
 
 #executables
