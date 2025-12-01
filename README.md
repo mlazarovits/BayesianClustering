@@ -177,6 +177,7 @@ I also include this line in the `rootlogon.C` script so it can be read by the in
 ### Troubleshooting
 - if experiencing undefined behavior, crashes on copy assignment operators, destructors, etc, make SURE the package you are linking BayesianClustering against is compiled with these flags:
 	`-O3 -march=native -ffast-math -funroll-loops -flto`
+Undefined behavior happens because if the vector<Matrix> or Matrix object was allocated without proper alignment, the destructor may try to free memory that is misaligned, which could cause a crash in `free()` in a compiler-generated destructor call
 
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
