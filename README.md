@@ -1,7 +1,7 @@
 # BayesianClustering
 Repository for generic EM/hierarchical clustering algorithm (to be used for jet and photon clustering at CMS).
 
-### Compiling
+### Compiling Executables
 - to run on LPC: `make lpc`
 	- because of the fact that this command makes (or updates) directories with condor tarballs, this command cannot be run with multithreading (ie `-j` flag not allowed)
 - to run on local machine:
@@ -44,6 +44,9 @@ All external packages below are header only:
 ### Use as an external package
 - make sure `lib/libBayesianClustering.so` exists
 	- if not, it can be made with `make lib` or `make lpclib` if on LPC
+- you MUST include the following flags in the compilation of the main executable that `libBayesianClustering` is being linked against
+	- `-O3 -march=native -ffast-math -funroll-loops -flto`
+	- this is to ensure that `Eigen::MatrixXd` objects are aligned properly
 - be sure to add the path to the repository to `$LD_LIBRARY_PATH` so the library can be dynamically found
 	```
 	export $LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/BayesianClustering/lib
@@ -79,34 +82,6 @@ A user can interface with the clustering algorithm through the API class `Cluste
 
 When all the relevant data points have been added, the user can call `RunClustering()` to run the clustering algorithm and produce a `ClusterObj`, returned by this method. This object will have methods to calculate and return various observables such as the object time at the detector face (`GetObjTime_Det()`), the object time at the primary vertex (`GetObjTime_PV()`), the object's time significance given a resolution map in the form `map<int rhId, double res>` (`GetObjTimeSig()`). Each of these methods must be called after the corresponding calculation method. So, for example, the `GetObjTime()` methods need to be called after `CalculateObjTime()` and the `GetObjTimeSig()` needs to be called after `CalculateObjTimeSig(map<rhId, res>)`. As default, the clustering algorithm run in the `RunClustering()` method is the NlnN version of the full hierarchical clustering algorithm. The priors and other hyperparameters for this algorithm are hard-coded into the `RunClustering()` method. 
 
-### Calling the algorithm - outdated
-The following information is kept here for completeness. Please review the previous section for information on how to interface with `BayesianClustering` via the API class`ClusterAnalyzer`.
-First, instantiate a BayesCluster class instance with a vector of Jets passed as the data to the constructor. Various hyperparameters can now be set with the respective methods of the BayesCluster class. Calling `algo->SubCluster()` will return a GaussianMixture pointer, which is the model that contains all the information on the subclusters, their means, and covariances. These observables can be accessed by `GetLHPosteriorParameters(k)` within the GaussianMixture class, where `k` is the index of the subcluster for which you want these parameters. To sum up,
-```
-BayesCluster* algo = new BayesCluster(data);
-GaussianMixture* gmm = algo->SubCluster();
-int nsubclusters = gmm->GetNClusters();
-for(int k = 0; k < nsubclusters; k++){
-	map<string, Matrix> params = gmm->GetLHPosteriorParameters(k);
-	//these would be the parameters of the Gaussian component
-	Matrix mean = params["mean"];
-	Matrix cov = params["cov"];
-	//these would be the parameters of the prior on this Gaussian component (a normal-inverse-Wishart prior)
-	Matrix m = params["m"];
-	Matrix beta = params["scale"];
-	Matrix nu = params["dof"];
-	Matrix W = params["scalemat"];
-	//these would be the parameter of the associated Dirichlet distribution and the probabilistic coeff
-	Matrix alpha = params["alpha"];
-	Matrix pi = params["pi"];
-
-	//to get effective energy of subcluster: N_k/gev where gev = transfer factor (1/GeV), N_k is the sum of responsibilities for subcluster k
-	vector<double> norms;
-	gmm->GetNorms(norms);
-	double E_k = norms[k]/gev;
-}
-	
-```
 
 ### Model Initialization
 - means of Gaussians are initialized via K-means while the covariance matrices are initialized to the identity matrix
@@ -171,6 +146,8 @@ There are muliple visualization classes:
 	- make sure to add sample to MakeIDHists() in `PhotonSkimmer.hh`
 	- because of this, for JetSkimming, the 1D profiles and time sigma plots are *not* filled (only the 2D diffDeltaTime plots and the other 1D variables are filled) so the user can hadd the 2D histograms together
 		- the user should hadd the skims together first then run `macros/Profile2D.C("file")` then `macros/HistFormatJets.C("file")` for the correct plots
+
+
 ### Condor
 - the skimmer can be run on condor (on the LPC) with the following steps:
 	- `python2 generateSubmission.py --inputFile [file]` generates the submission script for condor
@@ -194,6 +171,12 @@ After this step, I usually move the `libvecDict.so` and `libmydict_rdict.pcm` fi
 gSystem->Load("lib/libvecDict.so");
 ```
 I also include this line in the `rootlogon.C` script so it can be read by the interpreter.
+
+
+
+### Troubleshooting
+- if experiencing undefined behavior, crashes on copy assignment operators, destructors, etc, make SURE the package you are linking BayesianClustering against is compiled with these flags:
+	`-O3 -march=native -ffast-math -funroll-loops -flto`
 
 ### References and Acknowledgements
 - [Bayesian Hierarchical Clustering](https://www2.stat.duke.edu/~kheller/bhcnew.pdf)
