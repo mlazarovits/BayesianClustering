@@ -84,6 +84,7 @@ lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-stati
 #lpclib: SGLIBS       += -lCGAL -lCGAL_Core
 
 lpclib: CXXFLAGS = $(lpc_CXXFLAGS)
+lpclib: CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include/
 lpc: CXXFLAGS = $(lpc_CXXFLAGS)
 lpc: GLIBS = $(lpc_GLIBS)
 
@@ -101,8 +102,11 @@ OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 #time calibration stuff
 
 local: TC_OBJ = /Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.so
-lpc: TC_OBJ = /uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
-OBJ_FILES += $(TC_OBJ)
+lpc_TC_OBJ = /uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
+
+local: OBJ_FILES += $(TC_OBJ)
+lpc: OBJ_FILES += $(lpc_TC_OBJ)
+lpclib: OBJ_FILES += $(lpc_TC_OBJ)
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skimmer.o, $(OBJ_FILES))
 
