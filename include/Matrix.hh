@@ -8,6 +8,7 @@ using std::vector;
 
 class Matrix{
 	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW //to ensure proper alignment for heap allocation and STL containers
 		//set dimensionality
 		Matrix();
 		//x_dim = dim (rows), y_dim = # points (cols)
@@ -16,9 +17,14 @@ class Matrix{
 		Matrix(double pt);
 		Matrix(const BayesPoint& pt);
 		Matrix(const PointCollection& pts);
+		//rule of three
 		//copy constructor
-		Matrix(const Matrix& mat);
-		virtual ~Matrix();
+		Matrix(const Matrix& mat) = default;
+		//copy assignment operator
+		Matrix& operator=(const Matrix& mat) = default;
+		//destructor
+		virtual ~Matrix() = default;
+
 		void InitRandom(double min = 0, double max = 1., unsigned long long seed = 123);
 		//void InitRandomSym(double min = 0, double max = 1., unsigned long long seed = 123);
 		//void InitRandomSymPosDef(double min = 0, double max = 1., unsigned long long seed = 333);

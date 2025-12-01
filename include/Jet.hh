@@ -18,12 +18,14 @@
 #include "Point.hh"
 #include "JetPoint.hh"
 
+
 //pt, eta, phi, m
 //px, py, pz, E
 //x, y, z, t
 //point with more physics aspects - ecal cell
 class Jet{
 	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW //to ensure proper alignment for heap allocation and STL containers
 		Jet();
 		Jet(double px, double py, double pz, double E);
 		Jet(const JetPoint& rh, const BayesPoint& vtx);
@@ -33,34 +35,12 @@ class Jet{
 		Jet(BasePDF* pdf, double E, double pi = 1, const BayesPoint& vtx = BayesPoint({0., 0., 0.}), double detR = 129); //constructor from subcluster information - detR in cm
 		//Jet(BasePDFMixture* model, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
 		Jet(BaseTree::node* node, const BayesPoint& vtx, double gev, double detR = 129); //need detector radius to convert eta, phi to x, y, z - detR in cm
-		Jet(const Jet& j); //copy constructor
-		virtual ~Jet();		
+		Jet(const Jet& j) = default; //copy constructor
+		virtual ~Jet() = default;		
 
 		bool operator==(const Jet& j) const;
 		bool operator!=(const Jet& j) const;
-		void operator =(const Jet& j){
-				_px = j.px();
-				_py = j.py();
-				_pz = j.pz();
-				_E = j.E();
-				_mom = BayesPoint({_px, _py, _pz, _E});
-				_eta = j._eta;
-				_phi = j._phi;
-				_t = j._t;
-				
-				_kt2 = j._kt2;
-				_mass = j._mass;
-				
-				_idx = j.GetUserIdx();
-				_vtx = j.GetVertex();
-				j.GetJetPoints(_rhs);
-				_nRHs = (int)_rhs.size();
-				_constituents = j._constituents;
-				_mu = j._mu;
-				_cov = j._cov;
-				_pi = j._pi;
-		}
-
+		Jet& operator =(const Jet& j) = default;
 		//return four vector for clustering
 		BayesPoint four_mom() const{ return _mom; }
 		static bool Esort(Jet j1, Jet j2){ return (j1.E() > j2.E()); }
@@ -349,7 +329,7 @@ class Jet{
 			_constituents.push_back(jt);
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		void GetConstituents(vector<Jet>& consts) const{
+		void GetConstituents(std::vector<Jet, Eigen::aligned_allocator<Jet>>& consts) const{
 			consts.clear();
 			consts = _constituents;
 		}
@@ -550,6 +530,7 @@ class Jet{
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
 			vector<JetPoint> cleanedRhs;
+			cleanedRhs.reserve(_nRHs);
 			//loop through constituents and reset rh weights based on above
 			//loop through rhs - for rechit n
 			//DOWNWEIGHTING
@@ -616,14 +597,14 @@ class Jet{
 //cout << "remove? " << remove << " original rh energy " << _rhs[n].E() << " effective energy " << effRh.E() << " totR " << totR << endl;
 				totE += effRh.e();
 
-				cleanedRhs.push_back(effRh);
+				cleanedRhs.push_back(std::move(effRh));
 			}
 			if(totE == 0){
 				Jet ret;
 				ret._puCleaned = true;
 				return ret;
 			}
-			cleanedJet = Jet(cleanedRhs, _vtx);
+			cleanedJet = Jet(std::move(cleanedRhs), _vtx);
 //cout << "# subclusters cleaned jet has before adding " << cleanedJet.GetNConstituents() << endl;
 			cleanedJet._puCleaned = true;
 			//only add pass subclusters whether remove or downweight
@@ -809,7 +790,7 @@ class Jet{
 		double _pi;
 
 		//vector of subjets (NOT rhs)
-		vector<Jet> _constituents;	
+		std::vector<Jet, Eigen::aligned_allocator<Jet>> _constituents;	
 
 		
 		//user index	

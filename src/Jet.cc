@@ -463,36 +463,6 @@ Jet::Jet(BaseTree::node* node, const BayesPoint& vtx, double gev, double detR){
 	}
 }
 
-//copy ctor
-Jet::Jet(const Jet& j){
-	_px = j.px();
-	_py = j.py();
-	_pz = j.pz();
-	_E = j.E();
-	_mom = BayesPoint({_px, _py, _pz, _E});
-	_eta = j._eta;
-	_phi = j._phi;
-	_t = j._t;
-
-	_kt2 = j._kt2;
-	_mass = j._mass;
-	
-	_idx = j.GetUserIdx();
-	_vtx = j.GetVertex();
-	j.GetJetPoints(_rhs);
-	_nRHs = (int)_rhs.size();
-
-	_constituents = j._constituents;
-	_mu = j._mu;
-	_cov = j._cov;
-	_pi = j._pi;
-}
-
-Jet::~Jet(){
-	_rhs.clear();
-	_constituents.clear();
-}
-
 
 bool Jet::operator ==(const Jet& jet) const{
 	return _mom == jet.four_mom();

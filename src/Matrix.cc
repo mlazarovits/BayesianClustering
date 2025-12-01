@@ -51,7 +51,7 @@ Matrix::Matrix(const PointCollection& pts){
 }
 
 
-
+/*
 //copy constructor
 Matrix::Matrix(const Matrix& mat){
 	_square = mat._square;
@@ -61,7 +61,14 @@ Matrix::Matrix(const Matrix& mat){
 
 Matrix::~Matrix(){ }
 
-
+Matrix& Matrix::operator=(const Matrix& mat) {
+    if (this != &mat) {           // protect against self-assignment
+        _square = mat._square;
+        _mat = mat._mat;          // Eigen assignment is safe
+    }
+    return *this;
+}
+*/
 
 //creates a random matrix
 void Matrix::InitRandom(double min, double max, unsigned long long seed){

@@ -86,8 +86,8 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
-	retobj.SetCNNModel(_detbkgmodel);
-	retobj.SetDNNModel(_photonidmodel);
+	retobj.SetCNNModel(_detbkgmodel.get());
+	retobj.SetDNNModel(_photonidmodel.get());
 	return 0;
 }
 
@@ -99,10 +99,22 @@ int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
-	retobj.SetCNNModel(_detbkgmodel);
-	retobj.SetDNNModel(_photonidmodel);
+	retobj.SetCNNModel(_detbkgmodel.get());
+	retobj.SetDNNModel(_photonidmodel.get());
 	return 0;
 }
+
+
+void ClusterAnalyzer::SetCNNModel(string model){
+        if(_verb > -1) cout << "Using model " << model << " for instrumental background." << endl;
+        _detbkgmodel = std::make_unique<fdeep::model>(fdeep::load_model(model));
+}
+
+void ClusterAnalyzer::SetDNNModel(string model){
+        if(_verb > -1) cout << "Using model " << model << " for photon ID." << endl;
+        _photonidmodel = std::make_unique<fdeep::model>(fdeep::load_model(model));
+}
+
 
 
 
