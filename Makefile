@@ -83,8 +83,8 @@ lpclib: SGLIBS        += -L/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gmp-stati
 #lpclib: SGLIBS       += -L/cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cgal/4.2/lib/
 #lpclib: SGLIBS       += -lCGAL -lCGAL_Core
 
+lpc_CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include/
 lpclib: CXXFLAGS = $(lpc_CXXFLAGS)
-lpclib: CXXFLAGS += -I/uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMSTimeCaliFiles/include/
 lpc: CXXFLAGS = $(lpc_CXXFLAGS)
 lpc: GLIBS = $(lpc_GLIBS)
 
@@ -104,8 +104,8 @@ OBJ_FILES       = $(addprefix $(OUTOBJ),$(notdir $(CC_FILES:.cc=.o)))
 local: TC_OBJ = /Users/margaretlazarovits/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.so
 lpc_TC_OBJ = /uscms/home/mlazarov/nobackup/CMSSW_13_3_3/src/KUCMSNtupleizer/KUCMSNtupleizer/KUCMSSkimmer/KUCMS_TimeCalibration.o
 
-local: OBJ_FILES += $(TC_OBJ)
-lpc: OBJ_FILES += $(lpc_TC_OBJ)
+local: GLIBS += $(TC_OBJ)
+lpc: GLIBS += $(lpc_TC_OBJ)
 lpclib: OBJ_FILES += $(lpc_TC_OBJ)
 
 SOBJ_FILES = $(filter-out ./obj/BasicDetectorSim.o ./obj/*Producer.o ./obj/*Skimmer.o, $(OBJ_FILES))
@@ -126,19 +126,19 @@ lpclib: $(OBJ_FIELS) lib/libBayesCluster.so
 
 #executables
 FullClusterSkim.x: $(SRCDIR)FullClusterSkim.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o FullClusterSkim.x $(OUTOBJ)/*.o  $(GLIBS) $ $<
 	touch FullClusterSkim.x
 
 detectorSimNtuples.x: $(SRCDIR)detectorSimNtuples.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o detectorSimNtuples.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o detectorSimNtuples.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch detectorSimNtuples.x
 
 detectorSimSkimmer.x: $(SRCDIR)detectorSimSkimmer.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o detectorSimSkimmer.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch detectorSimSkimmer.x
 
 FullClusterSingle.x: $(SRCDIR)FullClusterSingle.C $(OBJ_FILES) $(HH_FILES)
-	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(TC_OBJ) $(GLIBS) $ $<
+	$(CXX) $(CXXFLAGS) -o FullClusterSingle.x $(OUTOBJ)/*.o $(GLIBS) $ $<
 	touch FullClusterSingle.x
 
 
