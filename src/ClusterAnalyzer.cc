@@ -35,6 +35,7 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 //should be run after all rechits for clustering have been added
 int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
+	//cout << "ClusterAnalyzer::RunClustering - start" << endl;
 	std::unique_ptr<BayesCluster> algo = std::make_unique<BayesCluster>(_rhs);
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
@@ -76,6 +77,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	//safety for no trees found
 	if(objs.size() < 1){
 		if(_verb > -1) cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
+	cout << "ClusterAnalyzer::RunClustering - end" << endl;
 		return -1;
 	}
 	sort(objs.begin(), objs.end(), Esort);
@@ -87,6 +89,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	retobj.SetupDetIDs(_detIDmap);
 	retobj.SetCNNModel(_detbkgmodel.get());
 	retobj.SetDNNModel(_photonidmodel.get());
+	//cout << "ClusterAnalyzer::RunClustering - end" << endl;
 	return 0;
 }
 
@@ -119,6 +122,7 @@ void ClusterAnalyzer::SetDNNModel(string model){
 
 
 void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs){
+	cout << "ClusterAnalyzer::_treesToObjs - start" << endl;
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -130,4 +134,5 @@ void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));
 	}
+	cout << "ClusterAnalyzer::_treesToObjs - end" << endl;
 }
