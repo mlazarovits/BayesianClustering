@@ -9,8 +9,8 @@ class JetPoint{
 	public:
 		JetPoint();
 		JetPoint(double x, double y, double z, double t);
-		JetPoint(const JetPoint& jp);
-		virtual ~JetPoint();
+		JetPoint(const JetPoint& jp) = default;
+		virtual ~JetPoint() = default;
 
 		bool operator==(JetPoint& j) const;
 		bool operator!=(JetPoint& j) const;

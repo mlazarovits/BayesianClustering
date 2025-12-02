@@ -40,7 +40,7 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 	_skipTime = false;
 }
 
-
+/*
 JetPoint::JetPoint(const JetPoint& jp){
 	_x = jp._x;
 	_y = jp._y;
@@ -63,6 +63,7 @@ JetPoint::JetPoint(const JetPoint& jp){
 
 JetPoint::~JetPoint(){
 }
+*/
 
 
 bool JetPoint::operator ==(JetPoint& jet) const{
