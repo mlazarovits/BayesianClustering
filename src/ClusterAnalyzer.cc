@@ -122,7 +122,7 @@ void ClusterAnalyzer::SetDNNModel(string model){
 
 
 void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs){
-	cout << "ClusterAnalyzer::_treesToObjs - start" << endl;
+	//cout << "ClusterAnalyzer::_treesToObjs - start" << endl;
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -134,5 +134,5 @@ void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));
 	}
-	cout << "ClusterAnalyzer::_treesToObjs - end" << endl;
+	//cout << "ClusterAnalyzer::_treesToObjs - end" << endl;
 }
