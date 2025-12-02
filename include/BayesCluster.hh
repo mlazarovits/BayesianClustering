@@ -97,12 +97,15 @@ class BayesCluster{
 		};
 
 
-		virtual ~BayesCluster(){
+		virtual ~BayesCluster() = default;
+		/*
+		{
 			_jets.clear();
 			_points.clear();
 			_history.clear();
 			_prior_params.clear();
 		};
+		*/
 
 
 		//for jets - BHC for clusters + GMM EM for subclusters
