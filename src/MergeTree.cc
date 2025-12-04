@@ -21,7 +21,6 @@ std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
 	//get points from l and points from r
 	//get number of points in merged tree
 	double n = l->points->Sumw() + r->points->Sumw();	
-	
 	//d = alpha*gam(n) + dl*dr 
 	//  = dr*dl*(alpha*gam(n)/(dl*dr) + 1)
 	//  = dr*dl*(exp( log(alpha*gam(n)/(dl*dr)) ) + 1)
@@ -32,32 +31,50 @@ std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
 	double log_pi = log(_alpha) + lgamma(n) - logd_LSE;
 	
 	auto x = make_unique<node>();
-	//auto pts = std::make_unique<PointCollection>();
-	x->points = std::make_unique<PointCollection>();//std::move(pts);
-	x->points->AddPoints(*l->points);
-	x->points->AddPoints(*r->points);
+	//x->points = std::make_unique<PointCollection>();
+	//if l is completely mirrored in r (ie all of l's points are mirrored in r) or vice versa, do NOT do merge
+	//this merge has already been done (and executed), leading to the current parent nodes
+	//merges should only be considered IF l contains unique info NOT in r (or vice versa)
+	PointCollection uniquepts;
+	uniquepts.GetUniquePoints({*l->points, *r->points});
+	if(false) cout << "unique pts - # pts " << uniquepts.GetNPoints() << " sumw " << uniquepts.Sumw() << endl;
+	x->points = std::make_unique<PointCollection>(uniquepts);
+	
 
+	//x->points->AddPoints(*l->points);
+	//x->points->AddPoints(*r->points);
+ if(false)cout << "set pts " << x->points->GetNPoints() << " from l pts " << l->points->GetNPoints() << " and r pts " << r->points->GetNPoints() << endl;
+ if(false)cout << "total sumw " << x->points->Sumw() << " l sumw " << l->points->Sumw() << " r sumw " << r->points->Sumw() << endl;
 	x->l = l;
 	x->r = r;
 
 	//x->d = d_100;
 	x->log_d = logd_LSE;
 	double nndist = 1e300;
+	x->nndist = _euclidean_2d(l, r);
 	//find nndist for x (should be O(n) operation)
-	for(int i = 0; i < (int)_clusters.size(); i++){
-		if(_clusters[i] == nullptr) continue;
-		if(_euclidean_2d(l, r) < nndist) x->nndist = _euclidean_2d(l, r);
-	}
+	//for(int i = 0; i < (int)_clusters.size(); i++){
+	//	if(_clusters[i] == nullptr) continue;
+	//	if(_euclidean_2d(l, r) < nndist) x->nndist = _euclidean_2d(l, r);
+	//}
 	//null hypothesis - all points in one cluster
 	//calculate p(dk | null) from exp(Evidence()) = exp(ELBO) \approx exp(log(LH)) from Variational EM algorithm
-	//TODO - NEED A BETTER CHECK IN EVIDENCE FOR LEAF NODES
-	//CURRENTLY CHECKING IF x->l && x->r are both null BUT they are not set here so THEY ARE ALWAYS NULL
-	//l and r children are set ONLY for true merges
-	//right now, node::l and node::r are shared_ptrs
-	//and want to avoid setting them here for many, many owners
-	//so could give l and r to Evidence
-	//or check if x is leaf based on # pts (leaves should only have 1 pt)
-	double elbo = Evidence(x.get());
+	
+
+
+if(false)cout << "doing evidence" << endl;
+	double elbo;
+	if(uniquepts.GetNPoints() < 1){ //all points are mirrored between both nodes - do not merge
+		elbo = -1e308;
+	}
+	else if(uniquepts.Sumw() == l->points->Sumw() || uniquepts.Sumw() == r->points->Sumw()){ //all points in l are mirrored in r or vice versa - do not merge (redudant info)
+		elbo = -1e308;
+	}
+	else{
+		elbo = Evidence(x.get());
+	}
+if(false) cout << "did evidence" << endl;
+
 	//marginal prob of t_k = null + alterantive hypo (separate trees) - need to save for future recursions
 	//p_dk_tk = pi*p_dk_h1 + dr*dl*p_dl*p_dr/d
 	// = pi*p_dk_h1(1 + dr*dl*p_dl*p_dr/(d*pi*p_dk_h1))
@@ -90,7 +107,6 @@ std::shared_ptr<BaseTree::node> MergeTree::CalculateMerge(node *l, node* r){
         }
 	double loga = elbo + log(_alpha) + lgamma(n);
 	double logb = l->log_prob_tk + r->log_prob_tk + l->log_d + r->log_d;
-
       x->val = rk;
       x->log_val = log_rk; 
       x->log_h1_prior = loga;
@@ -107,7 +123,7 @@ if(_verb > 1) x->points->Print();
 	return x;
 }
 
-
+/*
 double MergeTree::CalculateMerge(int i, int j){
 	node* n1 = Get(i);
 	node* n2 = Get(j);
@@ -116,7 +132,7 @@ double MergeTree::CalculateMerge(int i, int j){
 	auto x = CalculateMerge(n1, n2);
 	return x->val;	
 }
-
+*/
 
 //if node needs to be mirrored across 0-2pi boundary
 //create new node according to below and add it to _clusters
@@ -173,7 +189,7 @@ void MergeTree::CreateMirrorNode(std::shared_ptr<node> x){
 
      	
 	//add mirror point to list of clusters
-	Insert(y);
+	//Insert(y);
 
 	if(_verb > 1) cout << "created mirror point " << y->idx << " with mean phi: " <<  y->points->mean().at(1) << " for point " << x->idx << " with mean phi: " << x->points->mean().at(1) << endl;
 }

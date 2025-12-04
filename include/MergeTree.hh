@@ -11,6 +11,7 @@ using std::map;
 
 class MergeTree : BaseTree{
 	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW //to ensure proper alignment for heap allocation and STL containers
 		MergeTree() :
 			BaseTree(), 
 			_alpha(0),
@@ -73,11 +74,11 @@ class MergeTree : BaseTree{
 			_nGhosts(tree._nGhosts),
 			//matrices
 			_Rscale(tree._Rscale),
-			_RscaleInv(tree._RscaleInv),
+			_RscaleInv(tree._RscaleInv)
 			//pointers
-			_clusters()	
+			//_clusters()	
 		{
-			for(auto& c : tree._clusters) _clusters.push_back(make_unique<node>(*c));
+			//for(auto& c : tree._clusters) _clusters.push_back(make_unique<node>(*c));
 			//above tres params are for gev = 1
 		}
 
@@ -101,55 +102,55 @@ class MergeTree : BaseTree{
 
 		void CheckMerges(bool t){ _check_merges = t; if(_check_merges) cout << "Checking merged models" << endl;}	
 	
-		node* Get(int i){ return _clusters[i].get(); }
+		//node* Get(int i){ return _clusters[i].get(); }
 
 		//relinquishes ownership of nodes to caller
-		vector<std::shared_ptr<node>> GetClusters(){ 
-			return std::move(_clusters);
-		}
+		//vector<std::shared_ptr<node>> GetClusters(){ 
+		//	return std::move(_clusters);
+		//}
 	
 		//make sure children of x are set before Insert	
-		void Insert(std::shared_ptr<node> x){
-		//cout << "inserting node with ismirror " << x->ismirror << " and pts " << endl; x->points->Print();
-			_clusters.push_back(nullptr);
-			x->idx = (int)_clusters.size() - 1;
-			_clusters[(int)_clusters.size() - 1] = std::move(x);
-		}
+		//void Insert(std::shared_ptr<node> x){
+		////cout << "inserting node with ismirror " << x->ismirror << " and pts " << endl; x->points->Print();
+		//	_clusters.push_back(nullptr);
+		//	x->idx = (int)_clusters.size() - 1;
+		//	_clusters[(int)_clusters.size() - 1] = std::move(x);
+		//}
 
 		//assuming Dirichlet Process Model (sets priors)
 		std::shared_ptr<node> CalculateMerge(node *l, node* r);
 		double CalculateMerge(int i, int j);
 
-		void Remove(node* l){
-			//remove given node and associated mirror node if exists
-			//also remove mirror node
-			if(l->mirror != nullptr) _clusters[l->mirror->idx] = NULL;
-			//setting the node to null matches the implementation in the FastJet code (see DnnPlane)
-			_clusters[l->idx] = NULL;
-		}
+		//void Remove(node* l){
+		//	//remove given node and associated mirror node if exists
+		//	//also remove mirror node
+		//	if(l->mirror != nullptr) _clusters[l->mirror->idx] = NULL;
+		//	//setting the node to null matches the implementation in the FastJet code (see DnnPlane)
+		//	_clusters[l->idx] = NULL;
+		//}
 
-		void Remove(int i){ _clusters[i] = NULL; }
+		//void Remove(int i){ _clusters[i] = NULL; }
 
 		void SetAlpha(double alpha){ _alpha = alpha; }	
 
 		//counts clusters that have been removed
 		//use this function when looping over clusters s.t. the element indices line up
-		int GetNAllClusters(){ 			
-			return (int)_clusters.size();
-		}	
+		//int GetNAllClusters(){ 			
+		//	return (int)_clusters.size();
+		//}	
 
 		//this does not count removed clusters
 		//use this function to get number of actual clusters
 		//when no merges have been made (ie clusters are only leaves)
 		//this should match GetNAllClusters 
-		int GetNClusters(){ 			
-			int n = 0;
-			for(int i = 0; i < _clusters.size(); i++){
-				if(_clusters[i] == nullptr) continue;
-				n++;
-			}
-			return n;
-		}	
+		//int GetNClusters(){ 			
+		//	int n = 0;
+		//	for(int i = 0; i < _clusters.size(); i++){
+		//		if(_clusters[i] == nullptr) continue;
+		//		n++;
+		//	}
+		//	return n;
+		//}	
 			
 
 		void SetSubclusterAlpha(double a){ _emAlpha = a; }		
@@ -175,8 +176,8 @@ class MergeTree : BaseTree{
 			x->points = std::make_unique<PointCollection>(pt);//std::make_unique<PointCollection>(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
-			int n = _clusters.size();
-			x->idx = n-1;
+			//int n = _clusters.size();
+			x->idx = -1;
 			x->nndist = 1e300;
 			x->mirror = nullptr;
 			x->ismirror = false;
@@ -195,7 +196,7 @@ class MergeTree : BaseTree{
 
 		void AddLeaf(const BayesPoint& pt){
 			if(_alpha == 0) cout << "MergeTree - need to set alpha" << endl;
-			_clusters.push_back(nullptr);
+			//_clusters.push_back(nullptr);
 			unique_ptr<node> x = make_unique<node>();
 			x->l = nullptr; x->r = nullptr;
 			//////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
@@ -206,8 +207,8 @@ class MergeTree : BaseTree{
 			x->points = std::make_unique<PointCollection>(pt);//std::make_unique<PointCollection>(*pt);
 			//initialize probability of subtree to be null hypothesis for leaf
 			//p(D_k | T_k) = p(D_k | H_1^k)		
-			int n = _clusters.size();
-			x->idx = n-1;
+			//int n = _clusters.size();
+			x->idx = -1;
 			x->nndist = 1e300;
 			x->mirror = nullptr;
 			x->ismirror = false;
@@ -217,7 +218,7 @@ class MergeTree : BaseTree{
 			x->log_prob_tk = elbo;
 			//cout << "adding node with evidence " << Evidence(x) << " and weight " << pt->w() << endl;
 			//Evidence = ELBO \approx log(LH)
-			_clusters[n-1] = std::move(x);
+			//_clusters[n-1] = std::move(x);
 			//cout << "adding leaf with ismirror " << x->ismirror << endl;
 		}
 
@@ -236,31 +237,6 @@ class MergeTree : BaseTree{
 		}
 		void SetNGhosts(int n){ _nGhosts = n; }
 
-	protected:
-
-		void TransformMean(Matrix& mat, BayesPoint& center){
-				//eta to theta
-				double eta = mat.at(0,0);
-				mat.SetEntry(2*atan(exp(-eta)),0,0);
-				
-				//put 02pi
-				PointCollection mat_pt; mat.MatToPoints(mat_pt);
-				mat_pt.Put02pi(1);	
-
-				//shift
-				mat_pt.CircularTranslate(center.at(0),0);
-				mat_pt.CircularTranslate(center.at(1),1);
-				mat_pt.Translate(center.at(2),2);
-				//project phi
-				mat_pt.AngleToPlaneProject(1);	
-
-				//project eta
-				mat_pt.AngleToPlaneProject(0);	
-				mat = Matrix(mat_pt);
-
-				//scale
-				mat.mult(_Rscale,mat);	
-		}
 
 
 		//runs varEM to get Evidence (ELBO) for given GMM
@@ -285,14 +261,29 @@ class MergeTree : BaseTree{
 				//k = npts;
 				//k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				//setting initial posterior parameters from models of previous steps
+				vector<double> nnorms; x->l->model->GetNorms(nnorms);
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
 					prev_posts.emplace_back(map<string, Matrix>());
 					x->l->model->GetLHPosteriorParameters(kk,prev_posts[prev_posts.size()-1]);
+					if(nnorms[kk] == 0){
+						cout << "left node subcluster # " <<kk << endl;
+				       		cout << "left points " << x->l->points->GetNPoints() << " sumw " << x->l->points->Sumw() << endl;
+						cout << "with left mean " << endl;prev_posts[prev_posts.size()-1].at("mean").Print();
+						cout << "and left norm " << nnorms[kk] << endl;
+
+					}
 					left_post_indices[kk] = prev_posts.size()-1;
 				} 
+				x->r->model->GetNorms(nnorms);
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
 					prev_posts.emplace_back(map<string, Matrix>());
 					x->r->model->GetLHPosteriorParameters(kk, prev_posts[prev_posts.size()-1]);
+					if(nnorms[kk] == 0){
+						cout << "right node subcluster # " <<kk << endl; 
+				       		cout << "right points" << endl; x->l->points->Print();	
+						cout << "with right mean " << endl;prev_posts[prev_posts.size()-1].at("mean").Print();
+						cout << "and right norm " << nnorms[kk] << endl;
+					}
 					right_post_indices[kk] = prev_posts.size()-1;
 				}
 
@@ -301,7 +292,6 @@ class MergeTree : BaseTree{
 			auto newpts = make_unique<PointCollection>(*x->points);
 			if(_verb > 5){ cout << newpts->GetNPoints() << " original pts " << endl; newpts->Print();}
 			//sort points so random initialization is consistent based on seed
-		
 		
 			x->model = std::make_unique<GaussianMixture>(k); //p(x | theta)
 			if(_verb != 0) x->model->SetVerbosity(_verb-1);
@@ -314,6 +304,7 @@ class MergeTree : BaseTree{
 		
 			//in local space, circular coordinates (like phi) can go negative
 			x->model->SetData(std::move(newpts)); //need to make copy of de-referenced object so as not to change the original point and maintain correct ownership	
+			x->model->PutPhi02pi();		
 
 
 			//change eta to theta BEFORE calculating centroid
@@ -325,13 +316,13 @@ class MergeTree : BaseTree{
 			//it doesn't matter if this is done before or after centroid calculation
 			//bc of the way the centroid is calculated for phi (ie CircularCentroid)
 		
-			x->model->PutPhi02pi();		
-			
+
 			//since the first dimension is now an angle, its centroid needs to be circularly calculated
 			//but since eta is only defined for theta on [-pi/2,pi/2], it shouldn't make that much of a difference
 			BayesPoint center({x->model->GetData()->CircularCentroid(0), x->model->GetData()->CircularCentroid(1), x->model->GetData()->Centroid(2)});
 			if(_verb > 5){ cout << "center" << endl; center.Print();}
 			x->model->ShiftData(center);
+
 
 			if(_verb > 5){ cout << "translated pts" << endl; x->model->GetData()->Print(); }
 			//project phi onto plane
@@ -342,6 +333,7 @@ class MergeTree : BaseTree{
 			if(phiInf || thetaInf){
 				if(_verb > 5) cout << "found inf in pts, returning elbo as " << -1e308 << endl;
 				//reset model data for further merges
+				x->model->SetTestIndex(69);
 				x->model->SetData(std::move(make_unique<PointCollection>(*x->points)));
 				return -1e308;
 			}
@@ -484,6 +476,31 @@ class MergeTree : BaseTree{
 			_n_evidence_calls++;
 			if(_verb > 5) cout << "MergeTree::Evidence - end" << endl;
 			return newLogL;
+		}
+		
+	protected:
+		void TransformMean(Matrix& mat, BayesPoint& center){
+				//eta to theta
+				double eta = mat.at(0,0);
+				mat.SetEntry(2*atan(exp(-eta)),0,0);
+				
+				//put 02pi
+				PointCollection mat_pt; mat.MatToPoints(mat_pt);
+				mat_pt.Put02pi(1);	
+
+				//shift
+				mat_pt.CircularTranslate(center.at(0),0);
+				mat_pt.CircularTranslate(center.at(1),1);
+				mat_pt.Translate(center.at(2),2);
+				//project phi
+				mat_pt.AngleToPlaneProject(1);	
+
+				//project eta
+				mat_pt.AngleToPlaneProject(0);	
+				mat = Matrix(mat_pt);
+
+				//scale
+				mat.mult(_Rscale,mat);	
 		}
 
 
@@ -939,7 +956,7 @@ class MergeTree : BaseTree{
 
 	private:
 		//keep list of nodes since tree is built bottom up
-		vector<std::shared_ptr<node>> _clusters;
+		//vector<std::shared_ptr<node>> _clusters;
 		//Dirichlet prior parameter
 		double _alpha, _emAlpha;
 		//threshold on variational EM

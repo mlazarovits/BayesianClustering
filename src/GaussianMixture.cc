@@ -384,7 +384,6 @@ void GaussianMixture::GetLikelihoodParameters(int k,map<string, Matrix>& p){
 
 //returns posterior values of parameters, with Gaussian model parameters set by expected values
 void GaussianMixture::GetLHPosteriorParameters(int k, map<string, Matrix>& p) const{ 
-//cout << "GaussianMixture::GetLHPosteriorParameters - getting params for cluster " << k << " of " << m_k << " " << m_model.size() << " total" << " dim " << m_dim << endl;
 	p.clear();
 	if(k >= m_k) return;
 	if(k < 0) return;
@@ -579,19 +578,14 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//nu_k*(x_n - m_k)T*W_k*(x_n - m_k)
 			x_min_m = Matrix(m_dim,1);
 			x_mat = Matrix(m_data->at(n));
-			//if(n == 96 && m_n == 108){cout << "n: " << n << " k " << k << " x" << endl; x_mat.Print(); cout << "m[k]" << endl; mean.Print(); cout << "x_min_m" << endl; x_min_m.Print();}
 			x_min_m.minus(x_mat,mean);		
-			//if(n == 96 && m_n == 108){cout << "x - m[k]" << endl;x_min_m.Print();}
 			x_min_mT = Matrix(1, m_dim);
 			x_min_mT.transpose(x_min_m);
 			//full term
-			//if(n == 146){cout << "W[k]:" << endl; scalemat.Print();}
 			Matrix transp_W = Matrix(1,m_dim);
 			transp_W.mult(x_min_mT,scalemat);
-			//if(n == 146){cout << "(x - m[k])T*W[k]" << endl; transp_W.Print();}
 			Matrix full = Matrix(1,1);
 			full.mult(transp_W,x_min_m);
-			//if(n == 146){cout << "(x - m[k])T*W[k]*(x - m[k])" << endl; full.Print();}
 			E_mu_lam = m_dim/scale + dof*full.at(0,0);	
 			//gives ln(rho_nk)
 			post = m_Epi[k] + 0.5*m_Elam[k] - (m_dim/2.)*log(2*acos(-1)) - 0.5*E_mu_lam;
@@ -604,7 +598,6 @@ void GaussianMixture::CalculateVariationalPosterior(){
 			//post = exp(post);
 			norm += post;
 			//need to normalize - done after
-			//if(n == 146) cout << "n " << n << " k " << k << " pre norm post " << post << endl;
 			m_post.SetEntry(post, n, k);
 			//if(k == 1){ cout << std::setprecision(10) << "n: " << n << " k: " << k << " scale: " << scale << " dof: " << dof << " Elam: " << m_Elam[k] << " E_pi: " << m_Epi[k] << " E_mu_lam: " << E_mu_lam << " post: " << post << " mat post: " << m_post.at(n,k) << " full: " << full.at(0,0) << endl;}
 			//if(m_n == 108 && n == 96){

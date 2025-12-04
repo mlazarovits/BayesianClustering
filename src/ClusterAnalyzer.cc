@@ -52,7 +52,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	algo->SetAlpha(alpha);
 	double emAlpha = 1e-5;
 	algo->SetSubclusterAlpha(emAlpha);
-	algo->SetVerbosity(_verb);
+	algo->SetVerbosity(-1);
 	map<string, Matrix> prior_params;
 	//beta
 	prior_params["scale"] = Matrix(1e-3);
@@ -77,7 +77,6 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	//safety for no trees found
 	if(objs.size() < 1){
 		if(_verb > -1) cout << "No BHC clusters found. Returning initial ClusterObj." << endl;
-	cout << "ClusterAnalyzer::RunClustering - end" << endl;
 		return -1;
 	}
 	sort(objs.begin(), objs.end(), Esort);
@@ -134,5 +133,6 @@ void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));
 	}
+	//cout << "found " << objs.size() << " jets" << endl;
 	//cout << "ClusterAnalyzer::_treesToObjs - end" << endl;
 }

@@ -72,6 +72,7 @@ class DnnPlane : public DynamicNearestNeighbours {
   /// probabilistic merging
   /// includes alpha for BHC (a) and GMM (suba)
   DnnPlane(const std::vector<PointCollection>& pc, MergeTree* mt, const bool & verbose = false);
+  DnnPlane(const std::vector<std::shared_ptr<BaseTree::node>>& nodes, MergeTree* mt, const bool & verbose = false);
 
   /// Returns the index of neighbour jj of point labelled
   /// by ii (assumes ii is valid)
@@ -90,6 +91,8 @@ class DnnPlane : public DynamicNearestNeighbours {
   double NearestNeighbourProb(const int ii) const;
 
   BaseTree::node* NearestNeighbourProbNode(const int ii) const;
+  BaseTree::node* node(const int ii) const;
+  double nodephi(const int ii) const;
 
   /// Returns true iff the given index corresponds to a point that
   /// exists in the DNN structure (meaning that it has been added, and
@@ -101,10 +104,10 @@ class DnnPlane : public DynamicNearestNeighbours {
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours);
   
-  void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
-			  const std::vector<PointCollection> & points_to_add,
-			  std::vector<int> & indices_added,
-			  std::vector<int> & indices_of_updated_neighbours);
+//  void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+//			  const std::vector<PointCollection> & points_to_add,
+//			  std::vector<int> & indices_added,
+//			  std::vector<int> & indices_of_updated_neighbours);
   
   void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
 			  std::vector<std::shared_ptr<BaseTree::node>> & nodes_to_add,
@@ -143,8 +146,7 @@ class DnnPlane : public DynamicNearestNeighbours {
 
 
 private:
-  MergeTree* _merge_tree;
-
+	MergeTree* _merge_tree;
   /// Structure containing a vertex_handle and cached information on
   /// the nearest neighbour.
   struct SuperVertex {
@@ -385,6 +387,9 @@ inline BaseTree::node* DnnPlane::NearestNeighbourProbNode(const int ii) const{
 //cout << "nearest neighbourprobnode for index " << ii << " is " << endl; _supervertex[ii].n->points->Print();
 	return _supervertex[ii].n.get();}
 
+inline BaseTree::node* DnnPlane::node(const int ii) const{
+	return _supervertex[ii].n.get();}
+
 inline bool DnnPlane::Valid(const int index) const {
   if (index >= 0 && index < static_cast<int>(_supervertex.size())) {
     return _is_not_null(_supervertex[index].vertex);
@@ -402,6 +407,10 @@ inline EtaPhi DnnPlane::etaphi(const int i) const {
 inline PointCollection DnnPlane::points(const int i) const {
   PointCollection  p =  *(_supervertex[i].n->points);
   return p; }
+
+inline double DnnPlane::nodephi(const int i) const {
+	return _supervertex[i].n->points->CircularMean(1);
+}
 
 inline double DnnPlane::eta(const int i) const {
   return _supervertex[i].vertex->point().x(); }

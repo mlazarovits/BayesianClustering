@@ -113,8 +113,6 @@ class PointCollection{
 		
 		//check if point is in this collection
 		bool Has(const BayesPoint& pt) const{		
-		//cout << "PointCollection::Has" << endl;
-		//cout << "size for for loop:" << (int)_pts.size() << endl;
 			for(int p = 0; p < (int)_pts.size(); p++){
 				if(_pts[p] == pt){
 					return true;
@@ -742,6 +740,28 @@ class PointCollection{
 		ds.clear();
 		for(int n = 0; n < _pts.size(); n++){
 			ds.push_back(_pts[n].GetUserIdx());
+		}
+	}
+
+	//want to check points with wraparound but save points in original phi
+	void GetUniquePoints(const vector<PointCollection>& collections){
+		Clear();
+		PointCollection uniquepts;
+		for(int i = 0; i < collections.size(); i++){
+			//put phi on 02pi
+			if(false) cout << "collection #" << i << " has " << collections[i].GetNPoints() << " points" << endl;
+			for(int j = 0; j < collections[i].GetNPoints(); j++){
+				if(false) cout << "checking pt # " << j << " for collection # " << i << endl;
+				BayesPoint pt = collections[i]._pts[j];
+				pt.Put02pi(1);
+				bool has = uniquepts.Has(pt);
+				if(false){ cout << std::setprecision(20) << "Checking pt" << endl; pt.Print(); cout << "original pt" << endl; collections[i]._pts[j].Print(); }
+				if(false) cout << "uniquepts has pt? " << has << endl;
+				if(false) cout << "checking pt # " << j << " for collection # " << i << " has? " << has << endl;
+				if(uniquepts.Has(pt)) continue;
+				this->AddPoint(collections[i]._pts[j]);
+				uniquepts.AddPoint(pt);
+			}
 		}
 	}
 
