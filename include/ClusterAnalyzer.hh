@@ -79,7 +79,7 @@ struct ClusterObj{
 	double GetPt(){ return _jet.pt(); }
 
 	int GetNSubclusters(){ return _jet.GetNConstituents(); }
-	void GetSubclusters(std::vector<Jet, Eigen::aligned_allocator<Jet>>& subcls){
+	void GetSubclusters(std::vector<Jet>& subcls){
 		_jet.GetConstituents(subcls);
 	}
 	float GetSubclusterEtaCenter(int k){

@@ -434,6 +434,27 @@ class BaseSkimmer{
 
 			
 		}
+
+
+		void PrintTreeEntry(){
+			for(auto it = _obs.begin(); it != _obs.end(); it++){
+				cout << it->first << ": " << it->second << endl;
+			}
+			for(auto it = _vobs.begin(); it != _vobs.end(); it++){
+				cout << it->first << ": " << endl;
+				for(auto j : it->second) cout << " " << j << endl;
+			}
+			for(auto it = _vvobs.begin(); it != _vvobs.end(); it++){
+				cout << it->first << ": " << endl;
+				for(auto v : it->second){
+					cout << "vector size " << v.size() << endl;
+					for(auto vv : v) cout << "  " << vv << endl;
+				cout << endl;
+				}
+			}
+
+		}
+
 		void _reset(){
 			for(auto it = _obs.begin(); it != _obs.end(); it++){
 				it->second = -1;
@@ -1078,15 +1099,16 @@ class BaseSkimmer{
 
 			//skip empty jets
 			if(rhs.size() < 1){
-				for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
-					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+				vFillBranch(-999,"nRHs_grid"+tag);
+				//for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
+					//for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 						vvFillBranch(-999, "rh_iEta"+tag, jet_scIdx,false);
 						vvFillBranch(-999, "rh_iPhi"+tag, jet_scIdx,false);
-						vvFillBranch(0, "rh_Energy"+tag, jet_scIdx,false);
-						vvFillBranch(0,"rh_Weight"+tag,jet_scIdx,false);
-						mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = 0;
-					}
-				}
+						vvFillBranch(-999, "rh_Energy"+tag, jet_scIdx,false);
+						vvFillBranch(-999,"rh_Weight"+tag,jet_scIdx,false);
+						//mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = 0;
+					//}
+				//}
 				return;
 			}
 
@@ -1290,11 +1312,23 @@ class BaseSkimmer{
 		}
 		vector<Jet> bhc_jets;
 		TreesToJets(trees, bhc_jets, PV);
-		if(bhc_jets.size() < 1)
+		if(bhc_jets.size() < 1){
+			vFillBranch(-999,"nSubclusters_BHC");
+			vFillBranch(-999,"EtaVar"+tag+"_prePUcleaning");
+			vFillBranch(-999,"PhiVar"+tag+"_prePUcleaning");
+			vFillBranch(-999,"TimeVar"+tag+"_prePUcleaning");
+			vvFillBranch(-999,"PUscores",idx);
+			vvFillBranch(-999,"EtaVar_prePUcleaning",idx);
+			vvFillBranch(-999,"PhiVar_prePUcleaning",idx);
+			vvFillBranch(-999,"TimeVar_prePUcleaning",idx);
+			vvFillBranch(-999,"EtaCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"PhiCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"TimeCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"Energy_prePUcleaning",idx);
 			return -2;
+		}
 		///fill pre PU cleaning branches
 		Matrix cov = bhc_jets[0].GetCovariance();
-		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters"+tag+"_prePUcleaning");
 		vFillBranch(cov.at(0,0),"EtaVar"+tag+"_prePUcleaning");
 		vFillBranch(cov.at(1,1),"PhiVar"+tag+"_prePUcleaning");
 		vFillBranch(cov.at(2,2),"TimeVar"+tag+"_prePUcleaning");
@@ -1306,12 +1340,19 @@ class BaseSkimmer{
 		}
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0];
+		vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
 		pu_cleaned_result = bhc_jets[0].CleanOutPU(scores, false);
-		vFillBranch((double)result.GetNConstituents(),"nSubclusters"+tag);
-		if(_obj == "SC"){
-			vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
+		if(result.GetNConstituents() < 1){
+			vvFillBranch(-999,"PUscores",idx);
+			vvFillBranch(-999,"EtaVar_prePUcleaning",idx);
+			vvFillBranch(-999,"PhiVar_prePUcleaning",idx);
+			vvFillBranch(-999,"TimeVar_prePUcleaning",idx);
+			vvFillBranch(-999,"EtaCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"PhiCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"TimeCenter_prePUcleaning",idx);
+			vvFillBranch(-999,"Energy_prePUcleaning",idx);
+			return -1;
 		}
-		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		Jet subcl;
@@ -1388,7 +1429,7 @@ class BaseSkimmer{
 	bool _applyLumiMask;
 
 	TTree* _tree;
-	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
+	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance","CMSObjIdx","ObjIdx"};
 	vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
 	map<string, double> _obs;
 	map<string, vector<double>> _vobs;

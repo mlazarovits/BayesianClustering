@@ -127,7 +127,12 @@ void SuperClusterSkimmer::Skim(){
 		//loop over selected scs
 		int jet_scIdx = 0;
 		int scidx;
-		if(nSC < 1) continue;	
+		if(nSC < 1) continue;
+		map<string, int> nSCs_type;
+		nSCs_type[SCtypes[0]] = 0;
+		nSCs_type[SCtypes[1]] = 0;
+		nSCs_type[SCtypes[2]] = 0;
+			
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
@@ -155,6 +160,7 @@ void SuperClusterSkimmer::Skim(){
 			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
 			vFillBranch(0,"nSubclusters_CMS");
 
+
 			Jet bhc_sc, bhc_sc_pucleaned;
 			addVectors();
 			int ret = RunClustering(scs[s], bhc_sc, bhc_sc_pucleaned, false, jet_scIdx,"BHCPUCleaned"); //downweight rhs according to good PU clusters
@@ -166,16 +172,16 @@ void SuperClusterSkimmer::Skim(){
 				Jet sc = jt->second;
 				string tag = jt->first;
 				//don't save invalid BHC clusterings
-				if(tag != "CMS" && ret < 0)
-					continue;
 				if(_verb > 0) cout << "SC type " << tag << endl;
 				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 				int id_idx = -999;
 				//skip "total" procCat for always separated hists (id_idx == 1)
 				//get SC points (rhs with IDs) for CNN grid
 				sc.GetJetPoints(rh_pts);
-				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
-
+cout << "FILLING SC BRANCHES FOR TAG " << tag << endl;
+				nSCs_type[tag]++;
+				
+				
 				FillBranches(sc,tag);
 				int label = GetTrainingLabel(scidx, sc, scs[s], tag);
 				if(tag == "CMS"){
@@ -193,11 +199,28 @@ void SuperClusterSkimmer::Skim(){
 				//labeling starts from 1
 				int nclass = std::distance(ovalues.begin(), max_el) + 1;
 				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
-				vFillBranch((double)label, "trueLabel_"+tag);
-				vFillBranch((double)nclass, "predLabel_"+tag);
-				vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
-				vFillBranch(ovalues[1], "predScore_BH_"+tag);
-				vFillBranch(ovalues[2], "predScore_spike_"+tag);
+				
+				if(tag != "CMS" && ret < 0){
+cout << "SKIPPING SC #" << s << " FOR FAILED " << tag << " RECO" << endl;
+					vFillBranch(-999, "nRHs_"+tag);
+					vFillBranch(-999,"ObjIdx_"+tag);
+					vFillBranch(-999,"CMSObjIdx_"+tag);
+					vFillBranch(-999, "trueLabel_"+tag);
+					vFillBranch(-999, "predLabel_"+tag);
+					vFillBranch(-999, "predScore_physBkg_"+tag);
+					vFillBranch(-999, "predScore_BH_"+tag);
+					vFillBranch(-999, "predScore_spike_"+tag);
+				}
+				else{
+					vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
+					vFillBranch(jet_scIdx,"ObjIdx_"+tag);
+					vFillBranch(s,"CMSObjIdx_"+tag);
+					vFillBranch((double)label, "trueLabel_"+tag);
+					vFillBranch((double)nclass, "predLabel_"+tag);
+					vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
+					vFillBranch(ovalues[1], "predScore_BH_"+tag);
+					vFillBranch(ovalues[2], "predScore_spike_"+tag);
+				}
 				//write good SCs to CSV for training
 				//if(label != -1 && tag == "BHC_PUCleaned"){
 				//	BaseSkimmer::WriteObs(mapobs,"superclusters");
@@ -206,6 +229,15 @@ void SuperClusterSkimmer::Skim(){
 			}
 			jet_scIdx++;	
 		}
+		cout << "event " << e << " has amount of following types of SCs " << endl;
+		for(auto it = nSCs_type.begin(); it != nSCs_type.end(); it++)
+			cout << it->first << " " << it->second << endl;
+		if(e == 3){
+			PrintTreeEntry();
+		}
+
+		cout << "============================================================================" << endl;
+		cout << endl;
 		_tree->Fill();
 		_reset();
 	}

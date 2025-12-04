@@ -335,42 +335,52 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
 			
 			if(bhc_obj.GetNPoints() < 1){
-				E_tot = -999;
-				ec = -999;
-				pc = -999;
-				tc = -999;
+				vFillBranch(-999, "Energy"+tag);		
+				vFillBranch(-999, "EtaCenter"+tag);		
+				vFillBranch(-999, "PhiCenter"+tag);		
+				vFillBranch(-999, "TimeCenter"+tag);		
+				vFillBranch(-999, "EtaVar"+tag);		
+				vFillBranch(-999, "PhiVar"+tag);		
+				vFillBranch(-999, "TimeVar"+tag);
+				vFillBranch(-999, "EtaPhiCov"+tag);
+				vFillBranch(-999, "EtaTimeCov"+tag);
+				vFillBranch(-999, "PhiTimeCov"+tag);
+				vFillBranch(-999, "swCrossPrime"+tag);
+				vFillBranch(-999, "swCrossCMS"+tag);	
+				vFillBranch(-999, "timeSignificance"+tag);
+				return;
 			}
 
-			vFillBranch(E_tot, "Energy"+tag);		
-			
-			vFillBranch(ec, "EtaCenter"+tag);		
-			vFillBranch(pc, "PhiCenter"+tag);		
-			vFillBranch(tc, "TimeCenter"+tag);		
+
 			
 			Matrix cov = bhc_obj.GetCovariance();
-			vFillBranch(cov.at(0,0), "EtaVar"+tag);		
-			vFillBranch(cov.at(1,1), "PhiVar"+tag);		
-			vFillBranch(cov.at(2,2), "TimeVar"+tag);
-			vFillBranch(cov.at(0,1), "EtaPhiCov"+tag);
-			vFillBranch(cov.at(0,2), "EtaTimeCov"+tag);
-			vFillBranch(cov.at(1,2), "PhiTimeCov"+tag);
-
 
 			
 			vector<double> spikeObs;
 			unique_ptr<PointCollection> points = GetPointsFromJet(bhc_obj);
 			SpikeObs(points, spikeObs);
 			double swCP = spikeObs[0];
-			vFillBranch(swCP, "swCrossPrime"+tag);
 			vector<Jet> rh_jets;
 			bhc_obj.GetJets(rh_jets);
 			double sw = swissCross(rh_jets);
-			vFillBranch(sw, "swCrossCMS"+tag);	
 		
 			//time signifiance	
 			double timesig = CalcTimeSignificance(points);
+		
+			vFillBranch(E_tot, "Energy"+tag);		
+			vFillBranch(ec, "EtaCenter"+tag);		
+			vFillBranch(pc, "PhiCenter"+tag);		
+			vFillBranch(tc, "TimeCenter"+tag);		
+			vFillBranch(cov.at(0,0), "EtaVar"+tag);		
+			vFillBranch(cov.at(1,1), "PhiVar"+tag);		
+			vFillBranch(cov.at(2,2), "TimeVar"+tag);
+			vFillBranch(cov.at(0,1), "EtaPhiCov"+tag);
+			vFillBranch(cov.at(0,2), "EtaTimeCov"+tag);
+			vFillBranch(cov.at(1,2), "PhiTimeCov"+tag);
+			vFillBranch(swCP, "swCrossPrime"+tag);
+			vFillBranch(sw, "swCrossCMS"+tag);	
 			vFillBranch(timesig, "timeSignificance"+tag);
-	
+
 		}
 
 
@@ -566,8 +576,15 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		
 
 		vFillBranch(tc,"seedTime_"+tag);
-		vFillBranch(tsig,"weightedTimeSignificance_"+tag);	
-		vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights_"+tag);
+		if(bhc_sc.GetNRecHits() < 2){
+			vFillBranch(-999,"weightedTimeSignificance_"+tag);	
+			vFillBranch(-999,"weightedTimeSignificance_noSubclusterWeights_"+tag);
+
+		}
+		else{
+			vFillBranch(tsig,"weightedTimeSignificance_"+tag);	
+			vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights_"+tag);
+		}
 		if(tag == "CMS"){
 			vFillBranch(bestdr,"dR_track_"+tag);
 			vFillBranch(bestde_dr,"EovP_track_"+tag);

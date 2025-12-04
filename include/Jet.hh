@@ -329,7 +329,7 @@ class Jet{
 			_constituents.push_back(jt);
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		void GetConstituents(std::vector<Jet, Eigen::aligned_allocator<Jet>>& consts) const{
+		void GetConstituents(std::vector<Jet>& consts) const{
 			consts.clear();
 			consts = _constituents;
 		}
@@ -790,7 +790,7 @@ class Jet{
 		double _pi;
 
 		//vector of subjets (NOT rhs)
-		std::vector<Jet, Eigen::aligned_allocator<Jet>> _constituents;	
+		std::vector<Jet> _constituents;	
 
 		
 		//user index	
