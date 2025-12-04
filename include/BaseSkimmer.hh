@@ -74,7 +74,7 @@ class BaseSkimmer{
 			//W
 			_prior_params["scalemat"].InitIdentity();
 			_prior_params["scalemat"].mult(_prior_params["scalemat"],1./3);
-			cout << "ctor scalemat " << endl; _prior_params["scalemat"].Print(); 
+			//cout << "ctor scalemat " << endl; _prior_params["scalemat"].Print(); 
 			if(_applyLumiMask) cout << "Applying lumi mask." << endl;
 
 			//(eventual) ROOT ownership objects

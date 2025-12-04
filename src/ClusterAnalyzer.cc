@@ -17,12 +17,11 @@ void ClusterAnalyzer::AddRecHit(double rhx, double rhy, double rhz, double rhE, 
 	double dz = rhz - _detCenter.at(2);
 	double d_rh = sqrt(dx*dx + dy*dy + dz*dz)/_SOL;
 	rht += d_rh;	
-
 	JetPoint rh(rhx, rhy, rhz, rht);
 	rh.SetEnergy(rhE);
 	rh.SetWeight(rhE*_gev);
 	rh.SetRecHitId(rhId);
-	//cout << "adding rh with e " << rhE << " x " << rhx << " y " << rhy << " z " << rhz << " t " << rht << " time from 0 to rh " << d_rh << " eta " << rh.eta() << " phi " << rh.phi() << endl;
+	//cout << "adding rh with e " << rhE << " x " << rhx << " y " << rhy << " z " << rhz << " t " << rht << " time from 0 to rh " << d_rh << " eta " << rh.eta() << " phi " << rh.phi() << " id " << rh.rhId() << endl;
 	if(invalidTime) rh.SetInvalidTime();
 	Jet jet(rh, _PV);
 	//cout << "jet eta " << jet.eta() << " phi " << jet.phi() << " time " << jet.t() << " w " << rh.GetWeight() << " invalid time? " << invalidTime << " " << rh.InvalidTime() << endl;	
@@ -36,7 +35,8 @@ void ClusterAnalyzer::ClearRecHitList(){
 
 //should be run after all rechits for clustering have been added
 int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
-	std::unique_ptr<BayesCluster> algo = std::make_unique<BayesCluster>(_rhs);	
+	//cout << "ClusterAnalyzer::RunClustering - start" << endl;
+	std::unique_ptr<BayesCluster> algo = std::make_unique<BayesCluster>(_rhs);
 	//hard coding parameters that won't change
 	double cell = acos(-1)/180;
 	//time resolution parameters - set by detector time resolution
@@ -52,7 +52,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	algo->SetAlpha(alpha);
 	double emAlpha = 1e-5;
 	algo->SetSubclusterAlpha(emAlpha);
-	algo->SetVerbosity(_verb);
+	algo->SetVerbosity(-1);
 	map<string, Matrix> prior_params;
 	//beta
 	prior_params["scale"] = Matrix(1e-3);
@@ -88,6 +88,7 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 	retobj.SetupDetIDs(_detIDmap);
 	retobj.SetCNNModel(_detbkgmodel.get());
 	retobj.SetDNNModel(_photonidmodel.get());
+	//cout << "ClusterAnalyzer::RunClustering - end" << endl;
 	return 0;
 }
 
@@ -120,6 +121,7 @@ void ClusterAnalyzer::SetDNNModel(string model){
 
 
 void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>& trees, vector<ClusterObj>& objs){
+	//cout << "ClusterAnalyzer::_treesToObjs - start" << endl;
 	objs.clear();
 	double x, y, z, eta, phi, t, theta, px, py, pz;
 	int njets_tot = 0;
@@ -131,4 +133,6 @@ void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>
 		//add Jet to jets	
 		objs.push_back(ClusterObj(predJet));
 	}
+	//cout << "found " << objs.size() << " jets" << endl;
+	//cout << "ClusterAnalyzer::_treesToObjs - end" << endl;
 }

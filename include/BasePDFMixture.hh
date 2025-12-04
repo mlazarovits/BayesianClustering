@@ -21,7 +21,7 @@ class BasePDFMixture : public BasePDF{
 			_tresNoise = 0;
 			m_dim = 0;
 			m_data = nullptr;
-
+			_testidx = -1;
 		}
 		//copy constructor
 		BasePDFMixture(const BasePDFMixture& pdfmix) :
@@ -48,6 +48,7 @@ class BasePDFMixture : public BasePDF{
 				else
 					m_model.push_back(nullptr);
 			}
+			_testidx = pdfmix._testidx;
 
 		}
 		BasePDFMixture(int k){ 
@@ -71,6 +72,7 @@ class BasePDFMixture : public BasePDF{
 			_tresCte = 0.133913;
 			_tresStoch = 1.60666; 
 			_tresNoise = 0.00691415;
+			_testidx = -1;
 		}
 		void SetDim(int d) override{
 			if(m_dim != 0) return;
@@ -175,6 +177,9 @@ class BasePDFMixture : public BasePDF{
 		void SetDirichletParameter(double alpha){ m_alpha0 = alpha; }
 		void SetAlpha(double alpha){  m_alpha0 = alpha; }
 
+		int _testidx;
+		void SetTestIndex(int i){ _testidx = i; }
+		int GetTestIndex(){ return _testidx; }
 
 		int GetNGhosts(){
 			int ng = 0;
@@ -192,9 +197,6 @@ class BasePDFMixture : public BasePDF{
 			//break and do resetting of posterior in UpdateModel()
 			if(m_k - 1 == 0) return;
 			//erase model
-			//m_model.erase(m_model.begin()+j); 
-			//for(int i = 0; i < m_model.size(); i++){
-			//m_model.erase(std::remove(m_model.begin(), m_model.end(), nullptr), m_model.end());
 			m_model.erase(m_model.begin()+j);
 			//erase corresponding dirichlet param
 			m_alphas.erase(m_alphas.begin()+j);

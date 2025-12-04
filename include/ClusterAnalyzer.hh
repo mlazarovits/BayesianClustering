@@ -28,6 +28,7 @@ struct ClusterObj{
 		_PV = _jet.GetVertex(); 
 		_jet.SortConstituents();
 		CalculateObjTimes(); 
+		//cout << "ClusterObj::ctor - jet pt  "<< _jet.pt() << endl;
 	}
 
 	void SetUserIndex(int i){ _idx = i; }
@@ -192,7 +193,18 @@ struct ClusterObj{
 		fdeep::tensor input_tensor(tensor_shape, 0.0f);
 		//make grid for each subclusters in jet
 		JetPoint center;
-		GetCenterXtal(center);
+		int ret = GetCenterXtal(center);
+		if(ret < 0){
+			if(pho){
+				_detBkgScores = {{-1, -1, -1}};
+			}
+			else{
+				for(int k = 0; k < _jet.GetNConstituents(); k++){
+					_detBkgScores.push_back({-1, -1, -1});
+				}
+			}
+			return;
+		}
 		map<string, double> inputs;
 		if(pho){
 			MakeCNNGrid(-1, center, inputs);
@@ -288,17 +300,20 @@ struct ClusterObj{
 		}
 
 
-		void GetCenterXtal(JetPoint& center){
+		int GetCenterXtal(JetPoint& center){
 			//get center of pts in ieta, iphi -> max E point
 			vector<JetPoint> rhs;
 			_jet.GetJetPoints(rhs);
 			double maxE = 0;
+			if(rhs.size() < 1)
+				return -1;
 			for(int r = 0; r < rhs.size(); r++){
 				if(rhs[r].E() > maxE){
 					maxE = rhs[r].E();
 					center = rhs[r];
 				}
 			}
+			return 0;
 		}
 		void MakeCNNGrid(int k, JetPoint& center, map<string,double>& mapobs){
 			if(_detIDmap.size() == 0){

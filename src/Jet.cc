@@ -415,6 +415,8 @@ Jet::Jet(BaseTree::node* node, const BayesPoint& vtx, double gev, double detR){
 		map<string, Matrix> params;
 		model->GetLHPosteriorParameters(k, params);
 		Ek = norms[k]/gev;
+		//TODO - make sure subclusters are actually removed in VarEMCluster/BasePDFMixture
+		if(Ek < 1e-10) continue; //protect against (rare) threshold violators
 		Jet subcl(model->GetModel(k), Ek, model->GetPi(k), _vtx);
 	
 		//add rechits as "effective" crystals (ie weighted by their responsibility to this cluster)

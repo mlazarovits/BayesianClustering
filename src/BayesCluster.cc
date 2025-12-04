@@ -18,6 +18,7 @@
 /// There may be internally asserted assumptions about absence of
 /// points with coincident eta-phi coordinates.
 void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& trees){
+	//cout << "BayesCluster::_delauney_cluster - start" << endl;
 	trees.clear();
 	vector<double> ws;
 	_jets[0].GetWeights(ws);
@@ -48,28 +49,20 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 		cout << "BayesCluster delauney cluster - Using tresCte " << _tresCte << " _tresStoch " << _tresStoch << " _tresNoise " << _tresNoise << " gev " << gev << " _cell " << _cell << endl;
 	}
 	mt->SetMeasErrParams(_cell, _tresCte, _tresStoch, _tresNoise); 
- 
 	mt->SetPriorParameters(_prior_params);
-	int n = _points.size();
+	int n = _jets.size();
 	if(n < 2){
 		cout << "ERROR: only have 1 pt for clustering - returning vector of nulls" << endl;
 		return;
 	}
 	if(_verb > -1) cout << "n starting pts " << n << endl;
-	for (int i = 0; i < n; i++) {
-		//should only be one point per entry in points
-		if(_points[i].GetNPoints() != 1){
-			cerr << "BayesCluster - Error: multiple points in one collection of starting vector." << endl;
-			return;
-		}
-		if(_verb > 3){cout << i <<" "; _points[i].Print();}
-		//make sure phis are on [0,2pi] interval
-		_points[i].Put02pi(1);
-		//mt->AddLeaf(_points[i].at(0));
+	for(int j = 0; j < _jets.size(); j++){
+		std::shared_ptr<BaseTree::node> x = _jet_to_leaf_node(_jets[j], mt.get());
+		_nodes.push_back(std::move(x));
 	}
 	const bool verbose = false;
 	const bool ignore_nearest_is_mirror = true; //based on _Rparam < twopi, should always be true for this 
-	std::unique_ptr<Dnn2piCylinder> DNN = std::make_unique<Dnn2piCylinder>(_points, ignore_nearest_is_mirror, std::move(mt), verbose);
+	std::unique_ptr<Dnn2piCylinder> DNN = std::make_unique<Dnn2piCylinder>(_nodes, ignore_nearest_is_mirror, std::move(mt), verbose);
 	//need to make a distance map like in FastJet, but instead of clustering
 	//based on geometric distance, we are using merge probability (posterior) from BHC
 	//all three dimensions will go into calculating the probabilityu
@@ -131,7 +124,7 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 				jet_j = BestRkPair.second;
 			}
 
-			if(verbose){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
+			if(_verb > 1){ cout << "BayesCluster found recombination candidate: " << jet_i << " " << jet_j << " " << BestRk << " " << ProbMap.size() << endl;} // GPS debugging
  			//also need to erase any impossible merges from map too
 			if(_verb > 1)cout << "erasing from prob map pair " << jet_i << " " << jet_j << " from map it " << map_it->second.first << " " << map_it->second.second << endl;
 			if(map_it != ProbMap.end()){ if(_verb > 1) cout << "erasing it for jets " << map_it->second.first << " " << map_it->second.second << endl; ProbMap.erase(map_it);}
@@ -139,7 +132,7 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 			if(map_it_i != ProbMap.end()){ if(_verb > 1)cout << "erasing jet_i " << jet_i << " from prob map " << endl; ProbMap.erase(map_it_i);}
 			if(map_it_j != ProbMap.end()){ if(_verb > 1)cout << "erasing jet_j " << jet_j << " from prob map " << endl; ProbMap.erase(map_it_j);}
 			Valid2 = DNN->Valid(jet_j);
-			if(verbose) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
+			if(_verb > 1) cout << "BayesCluster validities i & j: " << DNN->Valid(jet_i) << " " << Valid2 << " prob map size " << ProbMap.size() << endl;
 		} while((!DNN->Valid(jet_i) || !Valid2) && ProbMap.size() > 0); //this is what checks to see if merges are still allowed or if they include points that have already been merged
 		//if point matches to itself (mirror point), find best geo match - this shouldn't happen...there is a safety in SetNearest and SetAndUpdateNearest in DnnPlane to skip calculating probabilties for points + their mirrors...
 		if((jet_i == jet_j) && (ProbMap.size() > 1)){
@@ -160,7 +153,7 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
 			//jeti_pts.Print();
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
-			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
+			if(_verb > 3){ cout << "with mean " << endl; jeti_mean.Print(); }
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
@@ -173,10 +166,11 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
 			//jetj_pts.Print();
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
-			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
+			if(_verb > 3){ cout << "with mean " << endl; jetj_mean.Print();}
 	
 			return;
 		}
+		if(_verb > 1) cout << "BayesCluster - current best rk " << BestRk << endl;
 		//if max rk < 0.0 (0.5 without computational/numerical trickery), can stop clustering
 		if(BestRk <= 0.){ 
 			done = true; 
@@ -190,13 +184,15 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 				}
 			} 
 
-		_bestRk = BestRk; break; }	
+		//_bestRk = BestRk; 
+		break; }	
 		//if either sides of best recombination candidate found is not valid - break
                 if((!DNN->Valid(jet_i) || !Valid2)){done = true; if(_verb > 0) cout << "best recomb candidate not valid + prob map exhausted - stop" << endl; break;}
 
 		int nn;
-		if(verbose){
-			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << endl << " with points " << endl;
+		if(_verb > 1){
+			cout << "BayesCluster call _do_ij_recomb: " << jet_i << " " << jet_j << " " << BestRk << " with points " << endl;
+			/*
 			vector<JetPoint> jps_i, jps_j;
 			_jets[jet_i].GetJetPoints(jps_i);
 			_jets[jet_j].GetJetPoints(jps_j);
@@ -210,10 +206,9 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 				_sanitize(pt);
 				jeti_pts += pt;
 			}
-			if(_verb > 3) cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl;
-			//jeti_pts.Print();
+			if(_verb > 1){ cout << "# jet_i pts " << jeti_pts.GetNPoints() << endl; jeti_pts.Print();}
 			BayesPoint jeti_mean = BayesPoint({jeti_pts.mean().at(0), jeti_pts.CircularMean(1), jeti_pts.mean().at(2)});
-			if(_verb > 3) cout << "with mean " << endl; jeti_mean.Print();
+			if(_verb > 3){ cout << "with mean " << endl; jeti_mean.Print();}
 			for(int i = 0; i < (int)jps_j.size(); i++){
 				BayesPoint pt = BayesPoint({jps_j[i].eta(), jps_j[i].phi_02pi(), jps_j[i].t()});
 				pt.SetWeight(jps_j[i].GetWeight());
@@ -223,14 +218,13 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 				_sanitize(pt);
 				jetj_pts += pt;
 			}
-			if(_verb > 3) cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl;
-			//jetj_pts.Print();
+			if(_verb > 1){ cout << "# jet_j pts " << jetj_pts.GetNPoints() << endl; jetj_pts.Print();}
 			BayesPoint jetj_mean = BayesPoint({jetj_pts.mean().at(0), jetj_pts.CircularMean(1), jetj_pts.mean().at(2)});
-			if(_verb > 3) cout << "with mean " << endl; jetj_mean.Print();
+			if(_verb > 3){cout << "with mean " << endl; jetj_mean.Print();}
+			*/
 		}
-
 		//do_ij_recomb - this should be the same as in the OG code (except rk instead of dij)
-      		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn);
+		_do_ij_recombination_step(jet_i, jet_j, BestRk, nn, DNN.get());
 		// exit the loop because we do not want to look for nearest neighbours
 		// etc. of zero partons
 		if(_verb > 1) cout << "BayesCluster - i " << i << " n " << n << endl;
@@ -241,6 +235,7 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 		vector<int> updated_neighbors;
 		//update DNN with RemoveCombinedAddCombination
 		//this should also update the merge tree - RemoveAndAddPoints in DnnPlane does
+		/*
 		vector<JetPoint> jps;
 		_jets[_jets.size() - 1].GetJetPoints(jps);
 		PointCollection newpts = PointCollection();
@@ -253,15 +248,16 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 			pt.SetWeight(jps[i].GetWeight());
 			newpts += pt;
 		}
-		if(newpts.HasInf(0) || newpts.HasInf(1)){
+		if(newnode->points->HasInf(0) || newnode->points->HasInf(1)){
 			cout << "BayesCluster - ERROR adding jet with inf" << endl;
 		}
+		*/
 		if(_verb > 1)cout <<"remove combined add combination start" << endl;
 		DNN->RemoveCombinedAddCombination(jet_i, jet_j,
-							newpts, pt3, updated_neighbors);
+							_nodes[nn], pt3, updated_neighbors);
 		if(_verb > 1)cout <<"remove combined add combination done\n" << endl;
 		if(_verb > 1)cout << "\n\n\n" << endl;
-		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << " with " << newpts.GetNPoints() << " newpts" << " centroid " << newpts.CircularCentroid(0) << " " << newpts.CircularCentroid(1) << " " << newpts.Centroid(2) << " current best rk " << BestRk << endl;
+		if(_verb > 1) cout << "updating map: adding new cluster " << pt3 << " = " << jet_i << " + " << jet_j << endl;
 		//update map
 		vector<int>::iterator it = updated_neighbors.begin();
 		for(; it != updated_neighbors.end(); ++it){
@@ -317,6 +313,7 @@ void BayesCluster::_delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& tr
 	if(_verb > -1) cout << trees.size() << " clustered trees " << trees.size() << " found trees " << nnull << " null trees " << nmirror << " mirror trees" << endl;
 	
 	
+	//cout << "BayesCluster::_delauney_cluster - end" << endl;
 }
 
 /*
@@ -703,9 +700,8 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 		int j, cyl_j;
 		if(prob){
 			comp = DNN->NearestNeighbourProb(i);
-			j = DNN->NearestNeighbourProbIndex(i,cyl_j);
-			if(i == j){ j = cyl_j;} //don't want to match to own (mirrored) point
-			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best probability " << comp << " pair " << j << " cyl index: " << cyl_j << std::setprecision(5) << " eta for this jet (i) " << _jets[i].eta() << " phi " << _jets[i].phi() << " # rhs " << _jets[i].GetNRecHits() << " eta for pair jet (j) " << _jets[j].eta() << " phi " << _jets[j].phi() << " # rhs " << _jets[j].GetNRecHits() << endl;
+			j = DNN->NearestNeighbourProbIndex(i);
+			if(_verb > 1) cout << std::setprecision(20) << "adding entry " << i << " with best probability " << comp << " pair " << j << std::setprecision(5) << " eta for this jet (i) " << _nodes[i]->points->mean().at(0) << " phi " << _nodes[i]->points->CircularMean(1) << " # rhs " << _nodes[i]->points->GetNPoints() << " eta for pair jet (j) " << _nodes[j]->points->mean().at(0) << " phi " << _nodes[j]->points->CircularMean(1) << " # rhs " << _nodes[j]->points->GetNPoints() << " and total sumw " << _nodes[j]->points->Sumw() + _nodes[i]->points->Sumw() << " sumw for i " << _nodes[i]->points->Sumw() << " sumw for j " << _nodes[j]->points->Sumw() << endl;
 		}
 		else{
 			comp = DNN->NearestNeighbourDistance(i);
@@ -716,19 +712,4 @@ void BayesCluster::_add_entry_to_maps(const int i, CompareMap& inmap, const Dnn2
 }
 
 
-/*
-void BayesCluster::_add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN){
-		double dist;
-		int j;
-		dist = DNN->NearestNeighbourDistance(i);
-		j = DNN->NearestNeighbourIndex(i);
-if(_verb > 1)cout << "adding entry " << i << " " << j << " with dist " << dist << " to inv map" << endl;
-		auto ret = inmap.insert(InvCompEntry(i,std::make_pair(j,dist)));
-		//ret = pair<iterator to new element or equivalent if exists, bool true if inserted false if already exists>
-		//if i already exists, update with new distance pair
-		if(ret.second == false){
-			inmap[i] = std::make_pair(j,dist);
-		}
-}
-*/
 

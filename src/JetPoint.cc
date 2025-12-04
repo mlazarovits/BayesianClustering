@@ -41,29 +41,6 @@ JetPoint::JetPoint(double x, double y, double z, double t){
 }
 
 
-JetPoint::JetPoint(const JetPoint& jp){
-	_x = jp._x;
-	_y = jp._y;
-	_z = jp._z;
-	_t = jp._t;
-	
-	_phi = jp._phi;
-	_eta = jp._eta;
-	_theta = jp._theta;
-	_E = jp._E;
-	
-
-	_idx = jp._idx;
-	_rhId = jp._rhId;
-	_w = jp._w;
-	_skipTime = jp._skipTime;
-}
-
-
-
-JetPoint::~JetPoint(){
-}
-
 
 bool JetPoint::operator ==(JetPoint& jet) const{
 	if(_rhId != -999) 

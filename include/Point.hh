@@ -68,7 +68,16 @@ class BayesPoint{
 			if(_skipDim != pt2.GetSkipDim()) return true;
 			if(_userIdx != pt2.GetUserIdx()) return true;
 			for(int i = 0; i < _nDim; i++){
-				if(_value[i] != pt2.Value(i)) return true;
+				//round within 10 places
+				double val = _value[i];
+				double val2 = pt2.Value(i);
+			        if(i == 1){ //account for small changes in phi due to 2pi modulo
+					if( fabs(val - val2) > 1e-10) return true;
+				}
+				else{
+					if( val != val2 ) return true;
+				}	
+				//if(val != val2) return true;
 			}
 			return false;
 		}
@@ -187,7 +196,7 @@ class BayesPoint{
 		
 
 	void Put02pi(int d){
-		double pi = acos(-1);
+		double pi = 4*atan(1);
 		int nit = 0;
 		double ogval = _value[d];
 		while(!(_value[d] >= 0 && _value[d] < 2*pi)){

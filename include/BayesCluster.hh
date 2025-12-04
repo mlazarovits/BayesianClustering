@@ -31,15 +31,16 @@ class BayesCluster{
 			// this will ensure that we can point to jets without difficulties
 			// arising.
 			_jets.reserve(pseudojets.size()*2);
+			_nodes.reserve(pseudojets.size()*2);
 
-			_bestRk = 0;			
+			_bestRk = -1e308;	
 			// insert initial jets this way so that any type L that can be
 			// converted to a pseudojet will work fine (basically PseudoJet
 			// and any type that has [] subscript access to the momentum
 			// components, such as CLHEP HepLorentzVector).
 			for (unsigned int i = 0; i < pseudojets.size(); i++) {
 			_jets.push_back(pseudojets[i]);}
-			
+		
 			_thresh = -999;
 			_alpha = 0.1;
 			_subalpha = 0.5;
@@ -97,12 +98,15 @@ class BayesCluster{
 		};
 
 
-		virtual ~BayesCluster(){
+		virtual ~BayesCluster() = default;
+		/*
+		{
 			_jets.clear();
 			_points.clear();
 			_history.clear();
 			_prior_params.clear();
 		};
+		*/
 
 
 		//for jets - BHC for clusters + GMM EM for subclusters
@@ -142,9 +146,7 @@ class BayesCluster{
 	protected:
 		//need to typedef some stuff to build probability map used for determining cluster pairs
 		typedef std::pair<int,int> verts;
-		typedef std::pair<double,verts> RkEntry;
 		typedef std::pair<double,verts> CompEntry;
-		typedef std::pair<int,pair<int,double>> InvCompEntry;
 		//use a multimap so multiple keys can have the same value
 		//also it's automatically sorted
 		typedef std::multimap<double,verts> CompareMap;
@@ -259,9 +261,9 @@ class BayesCluster{
 		void _do_ij_recombination_step(
 				const int jet_i, const int jet_j,
 				const double rk,
-				int& newjet_k){
+				int& newjet_k, Dnn2piCylinder* DNN){
 			Jet newjet;
-			if(_verb > 0){
+			if(_verb > 1){
 				cout << "recombining jets " << jet_i << ": ";
 				_jets[jet_i].Print(); cout << "eta " << _jets[jet_i].eta() << " phi " << _jets[jet_i].phi() << " time " << _jets[jet_i].time() << endl;
 				cout << "and " << jet_j << ": ";
@@ -270,7 +272,16 @@ class BayesCluster{
 
 			recombine(_jets[jet_i], _jets[jet_j], newjet);
 			_jets.push_back(newjet);
-			newjet_k = _jets.size() - 1;
+			//newjet_k = _jets.size() - 1;
+
+			//cout << "recombining nodes " << jet_i << ": ";
+			//cout << " npts " << _nodes[jet_i]->points->GetNPoints() << " sumw " << _nodes[jet_i]->points->Sumw() << " idx " << _nodes[jet_i]->idx << endl;
+			//cout << "and " << jet_j << ": ";
+			//cout << " npts " << _nodes[jet_j]->points->GetNPoints() << " sumw " << _nodes[jet_j]->points->Sumw() << " idx " << _nodes[jet_j]->idx << endl;
+			
+			auto x = recombine(_nodes[jet_i].get(), _nodes[jet_j].get(), DNN);
+			_nodes.push_back(std::move(x));
+			newjet_k = _nodes.size() - 1;
 
 			//do history stuff
 			int newstep_k = _history.size();
@@ -278,11 +289,16 @@ class BayesCluster{
 			_jets[newjet_k].SetHistoryIndex(newstep_k);
 
 			//sort history
-			int hist_i = _jets[jet_i].GetHistoryIndex();
-			int hist_j = _jets[jet_j].GetHistoryIndex();
+			//int hist_i = _jets[jet_i].GetHistoryIndex();
+			//int hist_j = _jets[jet_j].GetHistoryIndex();
 
 			//add_step_to_history(min(hist_i, hist_j), max(hist_i, hist_j), newjet_k, rk);
 			
+		}
+
+		std::shared_ptr<BaseTree::node> recombine(BaseTree::node* pa, BaseTree::node* pb, Dnn2piCylinder* DNN){
+			auto x = DNN->GetMergeTree()->CalculateMerge(pa, pb);
+			return x;	
 		}
 
 		//the straight up addition of 3-mom and E is the "E_scheme" recombination
@@ -339,8 +355,57 @@ class BayesCluster{
 		//void _add_entry_to_maps(const int i, InvCompareMap& inmap, const Dnn2piCylinder* DNN);
 		void _phi_wraparound(PointCollection& pc);
 
+
+		std::unique_ptr<PointCollection> _jet_to_pc(const Jet& jet){
+			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
+			std::unique_ptr<PointCollection> pc = std::make_unique<PointCollection>();
+			for(int i = 0; i < rhs.size(); i++){
+				BayesPoint pt(3);
+				pt.SetValue(rhs[i].rap(), 0);
+				pt.SetValue(rhs[i].phi_02pi(), 1);
+				pt.SetValue(rhs[i].time(), 2);
+				pt.SetWeight(rhs[i].GetWeight());
+				//check for invalid rechit times
+				if(rhs[i].InvalidTime()){
+					pt.SetSkipDim(2);
+				}
+				pt.SetUserIdx(rhs[i].rhId());
+			//	//make sure phi is in the right range - [0,2pi]
+				_sanitize(pt);
+				if(!(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1))) cout << "i: " << i << " bad phi: " << pt.at(1) << endl;
+				assert(pt.at(1) >= 0.0 && pt.at(1) < 2*acos(-1));
+				pc->AddPoint(pt);
+			}
+			return pc;	
+		}
+
+		std::shared_ptr<BaseTree::node> _jet_to_leaf_node(const Jet& jet, MergeTree* mt){
+			std::shared_ptr<BaseTree::node> x = std::make_shared<BaseTree::node>();
+			x->l = nullptr; x->r = nullptr;
+                        //////if leaf -> p(Dk | Tk) = p(Dk | H1k) => rk = 1
+                        //x->val = 1.;  
+                        //x->d = _alpha;
+                        x->log_d = log(_alpha);
+                        x->model = nullptr;
+			//get points in jet
+			std::unique_ptr<PointCollection> pc = _jet_to_pc(jet);
+			if(pc->GetNPoints() != 1) cout << "Error: input jet not a single rechit. Has " << pc->GetNPoints() << " rechits" << endl;
+                        x->points = std::move(pc);
+                        //initialize probability of subtree to be null hypothesis for leaf
+                        //p(D_k | T_k) = p(D_k | H_1^k)         
+                        //x->idx = n-1; let DnnPlane handle indexing
+			x->idx = -1;
+                        x->nndist = 1e300;
+                        x->mirror = nullptr;
+                        x->ismirror = false;
+                        double elbo = mt->Evidence(x.get());
+                        x->log_prob_tk = elbo;
+			return x;
+		}
+
 	private:
 		vector<Jet> _jets;
+		std::vector<std::shared_ptr<BaseTree::node>> _nodes;
 		vector<PointCollection> _points; //to pass to merge tree in cluster function
 		vector<history_element> _history;
 		double _Qtot;
@@ -350,6 +415,7 @@ class BayesCluster{
 		map<string, Matrix> _prior_params;
 		Matrix _smear;
 		int _verb;
+
 
 		void _delauney_cluster(vector<std::shared_ptr<BaseTree::node>>& trees);
 		//void _naive_cluster(vector<std::shared_ptr<BaseTree::node>>& trees);

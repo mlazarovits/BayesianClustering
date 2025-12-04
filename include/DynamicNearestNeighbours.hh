@@ -153,8 +153,13 @@ public:
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours) = 0;
 
+//  virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
+//			  const std::vector<PointCollection> & points_to_add,
+//			  std::vector<int> & indices_added,
+//			  std::vector<int> & indices_of_updated_neighbours) = 0;
+  
   virtual void RemoveAndAddPoints(const std::vector<int> & indices_to_remove,
-			  const std::vector<PointCollection> & points_to_add,
+			  std::vector<std::shared_ptr<BaseTree::node>> & nodes_to_add,
 			  std::vector<int> & indices_added,
 			  std::vector<int> & indices_of_updated_neighbours) = 0;
 
@@ -177,6 +182,7 @@ public:
   /// point (index 3) and a std::vector of indices of neighbours whose
   /// nearest neighbour has changed (the list includes index3, i.e. the new
   /// point).
+  /*
   inline void RemoveCombinedAddCombination(
 			const int index1, const int index2,
 			const PointCollection& newcluster,
@@ -194,13 +200,11 @@ public:
     //BaseTree::node* n2 = NearestNeighbourProbNode(index2);
 
     //update merge tree with selected merge
-/*
     shared_ptr<BaseTree::node> newnode = _merge_tree->CalculateMerge(n1, n2);
     newnode->points = std::make_unique<PointCollection>(newcluster);
     //set children of newnode - need to find original shared_ptrs in _merge_tree to avoid double delete
     newnode->l = n1;
     newnode->r = n2;
-*/
 		//cout << "newnode model pts" << endl;
 		//newnode->model->GetData()->Print();
 		//cout << "newnode pts" << endl;
@@ -210,11 +214,9 @@ public:
 //cout << "n2 for " << index2 << " has " << n2->points->GetNPoints() << " pts" << endl; n2->points->Print();
 //if(newnode->points->GetNPoints() == 3){ cout << "newnode has " << newnode->points->GetNPoints() << " pts" << endl; newnode->points->Print();}
 
-/*
     _merge_tree->Insert(std::move(newnode));
     _merge_tree->Remove(n1);
     _merge_tree->Remove(n2);
-*/
     RemoveAndAddPoints(indices_to_remove, points_to_add, indices_added,
 		       indices_of_updated_neighbours);
     index3 = indices_added[0];
@@ -225,6 +227,25 @@ public:
    }
 	if(_verbose)cout << "DynamicNearestNeighbor - RemoveCombinedAddCombination - end" << endl;
    };
+
+   */
+  inline void RemoveCombinedAddCombination(
+			const int index1, const int index2,
+			std::shared_ptr<BaseTree::node> & newnode,
+			int & index3,
+			std::vector<int> & indices_of_updated_neighbours) {
+    std::vector<int> indices_added(1);
+    std::vector<std::shared_ptr<BaseTree::node>> nodes_to_add(1);
+    std::vector<int> indices_to_remove(2);
+    indices_to_remove[0] = index1;
+    indices_to_remove[1] = index2;
+    nodes_to_add[0] = newnode;
+    RemoveAndAddPoints(indices_to_remove, nodes_to_add, indices_added,
+		       indices_of_updated_neighbours
+		       );
+    index3 = indices_added[0];
+  
+  };
   
   /// Removes the two points labelled by index1, index2 and adds in the
   /// a point with coordinates newpoint; it returns an index for the new 
