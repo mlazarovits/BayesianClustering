@@ -27,6 +27,7 @@ def generateSubmission(args):
     sel = args.selection#"MET100"
     yr = str(args.year)[-2:]
     reco_date = {}
+    reco_date["2016_MET"] = "-21Feb2020_UL2016_HIPM-v1" 
     reco_date["2017"] = "_17Nov2017"
     reco_date["2017_MET"] = "-09Aug2019_UL2017_rsb-v1"
     reco_date["2017_DEG"] = "-09Aug2019_UL2017-v1"
@@ -253,7 +254,7 @@ def main():
     parser.add_argument('--era',help='era (run) for PDs',default='RunF')
     parser.add_argument('--selection',help='ntuple preselection or gluino mass',required=True)#choices=['MET100','AL1IsoPho','AL1IsoPhoMET100','MRL_MET100','MRL_None'],required=True)
     parser.add_argument('--output','-o',help='output label')
-    parser.add_argument('--year',help='year of sample',default='2017',choices=['2017','2018','2022'])
+    parser.add_argument('--year',help='year of sample',default='2017',choices=['2016','2017','2018','2022'])
     #which object to analyze (jets or photons currently supported)
     parser.add_argument('--object',help='which object to skim',choices=["jets","superclusters","photons"],required=True)
     #parser.add_argument('--strategy','-st',help='if skimming jets, which strategy to use for BHC (NlnN = 0 default, N2 = 1, GMM only = 2)',default=0,type=int,choices=[2,1,0])
