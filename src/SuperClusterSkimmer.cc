@@ -178,7 +178,6 @@ void SuperClusterSkimmer::Skim(){
 				//skip "total" procCat for always separated hists (id_idx == 1)
 				//get SC points (rhs with IDs) for CNN grid
 				sc.GetJetPoints(rh_pts);
-cout << "FILLING SC BRANCHES FOR TAG " << tag << endl;
 				nSCs_type[tag]++;
 				
 				
@@ -201,7 +200,6 @@ cout << "FILLING SC BRANCHES FOR TAG " << tag << endl;
 				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
 				
 				if(tag != "CMS" && ret < 0){
-cout << "SKIPPING SC #" << s << " FOR FAILED " << tag << " RECO" << endl;
 					vFillBranch(-999, "nRHs_"+tag);
 					vFillBranch(-999,"ObjIdx_"+tag);
 					vFillBranch(-999,"CMSObjIdx_"+tag);
@@ -229,15 +227,15 @@ cout << "SKIPPING SC #" << s << " FOR FAILED " << tag << " RECO" << endl;
 			}
 			jet_scIdx++;	
 		}
-		cout << "event " << e << " has amount of following types of SCs " << endl;
-		for(auto it = nSCs_type.begin(); it != nSCs_type.end(); it++)
-			cout << it->first << " " << it->second << endl;
-		if(e == 3){
-			PrintTreeEntry();
-		}
+		//cout << "event " << e << " has amount of following types of SCs " << endl;
+		//for(auto it = nSCs_type.begin(); it != nSCs_type.end(); it++)
+		//	cout << it->first << " " << it->second << endl;
+		//if(e == 3){
+		//	PrintTreeEntry();
+		//}
 
-		cout << "============================================================================" << endl;
-		cout << endl;
+		//cout << "============================================================================" << endl;
+		//cout << endl;
 		_tree->Fill();
 		_reset();
 	}

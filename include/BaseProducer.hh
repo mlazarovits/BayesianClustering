@@ -94,7 +94,6 @@ class BaseProducer{
 				else
 					cout << "Time calibration tag not set for " << _year << " MC." << endl;
 			}	
-			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 
 		}
