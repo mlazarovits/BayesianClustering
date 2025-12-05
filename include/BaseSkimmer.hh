@@ -323,7 +323,7 @@ class BaseSkimmer{
 			if((tag == "CMS" && _obj == "SC") || (_obj != "SC")){
 				vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
 				vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
-				vFillBranch(objpt,"Photon_Pt");
+				if(_obj == "SC") vFillBranch(objpt,"Photon_Pt");
 			}
 
 			if(_jets.size() < 1) return false;	
@@ -333,20 +333,20 @@ class BaseSkimmer{
 			else return false;
 		}
 
-		void AddBranch(string obs, string title){
+		void AddBranch(string obs, string title = ""){
 			_obs[obs] = -1;
 			 //cout << "adding branch " << obs << endl;
 			_tree->Branch(obs.c_str(),&_obs.at(obs))->SetTitle(title.c_str());
 		}
 		
-		void vAddBranch(string obs, string title){
+		void vAddBranch(string obs, string title = ""){
 			string key = _obj+"_"+obs;
 			_vobs[key] = {};
 			//cout << "adding vbranch " << key << endl;
 			_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
 		}
 		
-		void vvAddBranch(string obs, string title, string extra = ""){
+		void vvAddBranch(string obs, string title = "", string extra = ""){
 			string key = _obj+"_"+obs;
 			if(extra != "") key += "_"+extra;
 			_vvobs[key] = {};
@@ -354,6 +354,7 @@ class BaseSkimmer{
 			_tree->Branch(key.c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 		}
 	
+		vector<string> _SCtypes = {"BHC","BHCPUCleaned", "CMS"};
 		void InitMapTree(){
 			//event level branches
 			AddBranch("evt","event");
@@ -383,35 +384,39 @@ class BaseSkimmer{
 
 			//object level branches
 			for(int o = 0; o < _obsnames.size(); o++){
-				string units = "";
-				if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
-					units = " [GeV]";
-				if(_obsnames[o] == "TimeCenter")
-					units = " [ns]";
-				
-				string key = _obsnames[o];
-				string title = _obj+" "+_obsnames[o]+" "+units;
-				if(key.find("_track") != string::npos)
-					title += " for original SC";
-				vAddBranch(key,title);
-				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
-					//only do for "BHCPUCleaned" branches of "SCs" but all of other objs
-					if((_obj == "SC" && _obsnames[o].find("BHCPUCleaned") != string::npos) || (_obj != "SC")){
-						//object pre-PU cleaning	
-						key += "_prePUcleaning";
-						title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
-						vAddBranch(key,title);
-					}
+				for(int t =  0; t < _SCtypes.size(); t++){
+					string tag = _SCtypes[t];
+					string units = "";
+					if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
+						units = " [GeV]";
+					if(_obsnames[o] == "TimeCenter")
+						units = " [ns]";
+					
+					string key = _obsnames[o]+"_"+tag;
+					string title = _obj+" "+_obsnames[o]+" "+units;
+					if(key.find("_track") != string::npos)
+						title += " for original SC";
+					vAddBranch(key,title);
+					//if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos || _obsnames[o].find("Center") != string::npos){
+					//	//only do for "BHCPUCleaned" branches of "SCs" but all of other objs
+					//	if((_obj == "SC" && _obsnames[o].find("BHCPUCleaned") != string::npos) || (_obj != "SC")){
+					//		//object pre-PU cleaning	
+					//		key += "_prePUcleaning";
+					//		title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
+					//		vAddBranch(key,title);
+					//	}
+					//}
 				}
 			}
 			//if(_obj != "SC"){
-				vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
-				vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
-				vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
-			//}
-			if(_obj == "SC")
-				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
+			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
+			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
 			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
+			//}
+			if(_obj == "SC"){
+				vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
+				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
+			}
 			//subobject level branches
 			for(int o = 0; o < _obsnames_subcl.size(); o++){
 				string units = "";
@@ -421,13 +426,13 @@ class BaseSkimmer{
 					units = " [ns]";
 				string key, title;
 				//subcluster	
-				key = "subcluster_"+_obsnames_subcl[o];
+				key = "subcluster_"+_obsnames_subcl[o]+"_BHC"; //only do for BHC tag
 				title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
 				//subcluster pre-PU cleaning
-				if(key.find("PUscores") == string::npos){	
-					key += "_prePUcleaning";
-					title += " no PU cleaning";
-				}
+				//if(key.find("PUscores") == string::npos){	
+				//	key += "_prePUcleaning";
+				//	title += " no PU cleaning";
+				//}
 				
 				vvAddBranch(key,title);
 			}
@@ -1313,44 +1318,23 @@ class BaseSkimmer{
 		vector<Jet> bhc_jets;
 		TreesToJets(trees, bhc_jets, PV);
 		if(bhc_jets.size() < 1){
-			vFillBranch(-999,"nSubclusters_BHC");
-			vFillBranch(-999,"EtaVar"+tag+"_prePUcleaning");
-			vFillBranch(-999,"PhiVar"+tag+"_prePUcleaning");
-			vFillBranch(-999,"TimeVar"+tag+"_prePUcleaning");
-			vvFillBranch(-999,"PUscores",idx);
-			vvFillBranch(-999,"EtaVar_prePUcleaning",idx);
-			vvFillBranch(-999,"PhiVar_prePUcleaning",idx);
-			vvFillBranch(-999,"TimeVar_prePUcleaning",idx);
-			vvFillBranch(-999,"EtaCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"PhiCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"TimeCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"Energy_prePUcleaning",idx);
 			return -2;
 		}
 		///fill pre PU cleaning branches
 		Matrix cov = bhc_jets[0].GetCovariance();
-		vFillBranch(cov.at(0,0),"EtaVar"+tag+"_prePUcleaning");
-		vFillBranch(cov.at(1,1),"PhiVar"+tag+"_prePUcleaning");
-		vFillBranch(cov.at(2,2),"TimeVar"+tag+"_prePUcleaning");
-		if(_obj != "SC"){
-			vFillBranch(bhc_jets[0].eta(),"EtaCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].phi(),"PhiCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].t(),"TimeCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].e(),"Energy"+tag+"_prePUcleaning");
-		}
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0];
 		vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
 		pu_cleaned_result = bhc_jets[0].CleanOutPU(scores, false);
 		if(result.GetNConstituents() < 1){
-			vvFillBranch(-999,"PUscores",idx);
-			vvFillBranch(-999,"EtaVar_prePUcleaning",idx);
-			vvFillBranch(-999,"PhiVar_prePUcleaning",idx);
-			vvFillBranch(-999,"TimeVar_prePUcleaning",idx);
-			vvFillBranch(-999,"EtaCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"PhiCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"TimeCenter_prePUcleaning",idx);
-			vvFillBranch(-999,"Energy_prePUcleaning",idx);
+			vvFillBranch(-999,"PUscores_BHC",idx);
+			vvFillBranch(-999,"EtaVar_BHC",idx);
+			vvFillBranch(-999,"PhiVar_BHC",idx);
+			vvFillBranch(-999,"TimeVar_BHC",idx);
+			vvFillBranch(-999,"EtaCenter_BHC",idx);
+			vvFillBranch(-999,"PhiCenter_BHC",idx);
+			vvFillBranch(-999,"TimeCenter_BHC",idx);
+			vvFillBranch(-999,"Energy_BHC",idx);
 			return -1;
 		}
 		if(idx == -1) return 0;
@@ -1359,20 +1343,20 @@ class BaseSkimmer{
 		if(scores.size() != bhc_jets[0].GetNConstituents()) cout << "ERROR: # SCORES " << scores.size() << " DOES NOT MATCH # OF ORIGINAL SUBCLUSTERS " << bhc_jets[0].GetNConstituents() << endl;
 		for(int k = 0; k < bhc_jets[0].GetNConstituents(); k++){
 //cout << "subcl #" << k << " score " << scores[k] << endl;
-			vvFillBranch((double)scores[k],"PUscores",idx);
+			vvFillBranch((double)scores[k],"PUscores_BHC",idx);
 			bhc_jets[0].GetConstituent(k, subcl);
 			Matrix subcl_cov = subcl.GetCovariance();
 			double relEta = subcl_cov.at(0,0) / cov.at(0,0);
 			double relPhi = subcl_cov.at(1,1) / cov.at(1,1);
 			double relTime = subcl_cov.at(2,2) / cov.at(2,2);
 			double rel_geoavg = pow( (relEta * relPhi * relTime), 1./3.);
-			vvFillBranch(subcl_cov.at(0,0),"EtaVar_prePUcleaning",idx);
-			vvFillBranch(subcl_cov.at(1,1),"PhiVar_prePUcleaning",idx);
-			vvFillBranch(subcl_cov.at(2,2),"TimeVar_prePUcleaning",idx);
-			vvFillBranch(subcl.eta(),"EtaCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.phi(),"PhiCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.t(),"TimeCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.e(),"Energy_prePUcleaning",idx);
+			vvFillBranch(subcl_cov.at(0,0),"EtaVar_BHC",idx);
+			vvFillBranch(subcl_cov.at(1,1),"PhiVar_BHC",idx);
+			vvFillBranch(subcl_cov.at(2,2),"TimeVar_BHC",idx);
+			vvFillBranch(subcl.eta(),"EtaCenter_BHC",idx);
+			vvFillBranch(subcl.phi(),"PhiCenter_BHC",idx);
+			vvFillBranch(subcl.t(),"TimeCenter_BHC",idx);
+			vvFillBranch(subcl.e(),"Energy_BHC",idx);
 		}
 		//below returns empty jet if no subclusters pass PU cut - put in safety for this
 		if(result.GetNRecHits() < 1) return -1;
@@ -1429,7 +1413,7 @@ class BaseSkimmer{
 	bool _applyLumiMask;
 
 	TTree* _tree;
-	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance","CMSObjIdx","ObjIdx"};
+	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance", "object"};
 	vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
 	map<string, double> _obs;
 	map<string, vector<double>> _vobs;
