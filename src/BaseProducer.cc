@@ -313,6 +313,7 @@ cout << "\nproducer evt " << evt << " ntuple evt " << _base->Evt_event << " run 
                 }
 		//cout << "pt " << _base->Photon_pt->at(p) << " eta " << _base->Photon_eta->at(p) << " # rechits " << pho.GetNRecHits() << endl;	
 		if(pho.GetNRecHits() < 2) continue;
+		pho.CalculateCovariance();
 		selPhoCount++;
 	//	cout << jrhids.size() << " nrhs in pho" << endl;
 	//	for(auto rh : jrhids) cout << "rh id  " << rh << " count " << count(jrhids.begin(), jrhids.end(), rh) << endl;

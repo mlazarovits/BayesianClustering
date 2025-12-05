@@ -45,6 +45,9 @@ Jet::Jet(double px, double py, double pz, double E){
 	_nRHs = 0;
 	_cov = Matrix(3,3);
 	_mu = Matrix(3,1);
+	_mu.SetEntry(_eta, 0, 0);
+	_mu.SetEntry(_phi, 1, 0);
+	_mu.SetEntry(_t, 2, 0);
 	_pi = 0;
 	
 	_idx = 999;	
