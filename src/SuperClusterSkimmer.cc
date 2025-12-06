@@ -68,13 +68,12 @@ void SuperClusterSkimmer::Skim(){
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
-		if(_applyLumiMask){
+		if(_applyLumiMask && _data){
 			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
 				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
 		}
-		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
 		nEvts_tot++;
 
 		//event filters - true is good event
@@ -96,9 +95,9 @@ void SuperClusterSkimmer::Skim(){
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
-			if(!evtfilters){
+			if(!_evtfilters){
 				cout << "skipping event - failed event filters" << endl; 
 				_tree->Fill();
 				_reset();
@@ -139,7 +138,7 @@ void SuperClusterSkimmer::Skim(){
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(scs[s].GetNPoints() < 1){ cout << "sc #" << s << " has " << scs[s].GetNPoints() << " rhs " << endl; continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
+			cout << "evt: " << e << " ntuple event " << _base->Evt_event << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			//per event
@@ -150,11 +149,6 @@ void SuperClusterSkimmer::Skim(){
 			map<string,Jet> SCtypes_map; //keys need to match SCtypes member var
 			SCtypes_map[SCtypes[2]] = scs[s];
 			
-			map<string,double> mapobs;
-			mapobs["event"] = e;
-			mapobs["event_weight"] = 1.;
-			mapobs["object"] = scidx;
-
 			unique_ptr<PointCollection> points = GetPointsFromJet(scs[s]);
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()),false);
 			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
@@ -179,7 +173,9 @@ void SuperClusterSkimmer::Skim(){
 				//get SC points (rhs with IDs) for CNN grid
 				sc.GetJetPoints(rh_pts);
 				nSCs_type[tag]++;
-				
+			
+				vFillBranch((double)s,"object_"+tag);	
+				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
 				
 				FillBranches(sc,tag);
 				int label = GetTrainingLabel(scidx, sc, scs[s], tag);
@@ -187,11 +183,11 @@ void SuperClusterSkimmer::Skim(){
 					cmssc_label = label;
 				}
 				//make CNN training grid
-				MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx, tag);
-				mapobs["label_"+tag] = label;
+				vector<vector<double>> rh_grid(_ngrid, vector<double>(_ngrid, 0.0));
+				MakeCNNInputGrid(rh_pts, rh_grid, jet_scIdx, tag);
 				
 				vector<float> ovalues; //discriminator output value, pass-by-ref
-				CNNPredict(mapobs,ovalues);
+				CNNPredict(rh_grid, ovalues);
 				//TODO - update with discriminator score cut
 				auto max_el = max_element(ovalues.begin(), ovalues.end());
 				double predval = *max_el;
@@ -200,30 +196,17 @@ void SuperClusterSkimmer::Skim(){
 				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
 				
 				if(tag != "CMS" && ret < 0){
-					vFillBranch(-999, "nRHs_"+tag);
-					vFillBranch(-999,"ObjIdx_"+tag);
-					vFillBranch(-999,"CMSObjIdx_"+tag);
 					vFillBranch(-999, "trueLabel_"+tag);
-					vFillBranch(-999, "predLabel_"+tag);
 					vFillBranch(-999, "predScore_physBkg_"+tag);
 					vFillBranch(-999, "predScore_BH_"+tag);
 					vFillBranch(-999, "predScore_spike_"+tag);
 				}
 				else{
-					vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
-					vFillBranch(jet_scIdx,"ObjIdx_"+tag);
-					vFillBranch(s,"CMSObjIdx_"+tag);
 					vFillBranch((double)label, "trueLabel_"+tag);
-					vFillBranch((double)nclass, "predLabel_"+tag);
 					vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
 					vFillBranch(ovalues[1], "predScore_BH_"+tag);
 					vFillBranch(ovalues[2], "predScore_spike_"+tag);
 				}
-				//write good SCs to CSV for training
-				//if(label != -1 && tag == "BHC_PUCleaned"){
-				//	BaseSkimmer::WriteObs(mapobs,"superclusters");
-				//}
-
 			}
 			jet_scIdx++;	
 		}

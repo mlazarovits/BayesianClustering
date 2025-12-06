@@ -122,10 +122,8 @@ void PhotonSkimmer::Skim(){
 				continue;
 			}
 		}
-		cout << "evt: " << e << " of " << _nEvts << " for run " << _base->Evt_run;
 		nEvts_tot++;
 		_prod->GetTruePhotons(phos, e, _gev);
-		if(phos.size() < 1){ cout << endl; continue; }
 		//PV info
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
@@ -156,9 +154,10 @@ void PhotonSkimmer::Skim(){
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 		SetDijetsCR_EvtSel(e);
 		FillBranch(_passDijetsEvtSel,"PassDijetsCR");	
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+
+		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
-			if(!evtfilters){
+			if(!_evtfilters){
 				cout << "skipping event - failed event filters" << endl; 
 				_tree->Fill();
 				_reset();
@@ -183,8 +182,7 @@ void PhotonSkimmer::Skim(){
 				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			if(rhs.size() < 1){ cout << endl; continue; }
-			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
@@ -212,15 +210,12 @@ void PhotonSkimmer::Skim(){
 
 				vFillBranch((double)p, "object_"+tag);
 				FillPhotonObs(pho_obj, tag);
-                        	if(tag != "CMS")
-					vFillBranch(pho_obj.pt(), "Pt_"+tag);
 				int label = GetTrainingLabel(phoidx,bhc_pho,phos[p]);
-				cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
+				//cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
 				//cout << "label: " << label << endl;
 				//only get lead subcluster -> ncl = 0
                         	       
 				//BaseSkimmer::WriteObs(obs,"photons");
-				vFillBranch(label,"trueLabel_"+tag);
 
 
 				//do DNN prediction
@@ -236,8 +231,18 @@ void PhotonSkimmer::Skim(){
 				//nclass = (nclass == 0) ? 4 : 6;
 				//cout << "class " << nclass << " predval " << predval << " for photon " << phoidx << " with label " << label << " and type " << tag << endl;
 				//vFillBranch(nclass,"predLabel_"+tag);
-				vFillBranch(dnn_scores[0],"predScore_isoBkg_"+tag);
-				vFillBranch(dnn_scores[1],"predScore_nonIsoBkg_"+tag);	
+                        	if(tag != "CMS" && ret < 0){
+					vFillBranch(-999, "Pt_"+tag);
+					vFillBranch(-999,"predScore_isoBkg_"+tag);
+					vFillBranch(-999,"predScore_nonIsoBkg_"+tag);	
+					vFillBranch(-999,"trueLabel_"+tag);
+				}
+				else{
+					vFillBranch(label,"trueLabel_"+tag);
+					vFillBranch(pho_obj.pt(), "Pt_"+tag);
+					vFillBranch(dnn_scores[0],"predScore_isoBkg_"+tag);
+					vFillBranch(dnn_scores[1],"predScore_nonIsoBkg_"+tag);	
+				}
 			}
 			nphoran++;
 			bhc_pho_idx++;
@@ -285,11 +290,9 @@ void PhotonSkimmer::Skim(){
 		_tree->Fill();
 		_reset();
 	}
-	cout << "\n" << endl;
 	//ofile->WriteTObject(objE_clusterE);
 	//WriteHists(ofile);
 	//_csvfile.close();
-	cout << "\n" << endl;
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	_tree->SetDirectory(ofile);
 	ofile->cd();

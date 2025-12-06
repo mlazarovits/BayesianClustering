@@ -114,7 +114,7 @@ class PhotonSkimmer : public BaseSkimmer{
 				vAddBranch("phiE2D_"+tag,"phiE2D for "+tag+" photon");
 				vAddBranch("maxOvtotE_"+tag,"maxOvtotE for "+tag+" photon");
 				vAddBranch("swCP_"+tag,"swCP for "+tag+" photon");
-				vAddBranch("nRHs_"+tag,"# of rhs for "+tag+" photon");
+				//vAddBranch("nRHs_"+tag,"# of rhs for "+tag+" photon");
 				vAddBranch("predScore_isoBkg_"+tag,"score for iso bkg designation from DNN for "+tag+" photon"); //DNN prediction
 				vAddBranch("predScore_nonIsoBkg_"+tag,"score for non iso bkg designation from DNN for "+tag+" photon"); //DNN prediction
 				vAddBranch("trueLabel_"+tag,"true DNN label of "+tag+" photon");
@@ -219,8 +219,6 @@ class PhotonSkimmer : public BaseSkimmer{
 			vFillBranch(tc,"TimeCenter_"+tag);	
 			
 			Matrix cov = bhc_obj.GetCovariance();
-			cout << "jet cov" << endl;
-			cov.Print();
 			vFillBranch(cov.at(0,0), "EtaVar_"+tag);		
 			vFillBranch(cov.at(1,1), "PhiVar_"+tag);		
 			vFillBranch(cov.at(2,2), "TimeVar_"+tag);		
@@ -514,7 +512,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		//spike = 3
 		
 		//bool trksum, ecalrhsum, htowoverem, iso;	
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 		int label = -1;
 		bool isoBkgSel = GJetsCR_ObjSel(og_pho, true);
@@ -546,9 +543,9 @@ class PhotonSkimmer : public BaseSkimmer{
 
 				}
 				//isolated bkg
-				if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+				if(isoBkgSel && _passGJetsEvtSel && _evtfilters && bh_filter)
 					label = 4;
-				else if(!isoBkgSel && nonIsoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter)
+				else if(!isoBkgSel && nonIsoBkgSel && _passDijetsEvtSel && _evtfilters && bh_filter)
 					label = 6;
 				else
 					label = -1;
@@ -564,9 +561,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			//non isolated bkg
 			//isolated bkg
 			//isolated bkg
-			if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+			if(isoBkgSel && _passGJetsEvtSel && _evtfilters && bh_filter)
 				label = 4;
-			else if(!isoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter && passMinPt)
+			else if(!isoBkgSel && _passDijetsEvtSel && _evtfilters && bh_filter && passMinPt)
 				label = 6;
 			else label = -1; 
 		}

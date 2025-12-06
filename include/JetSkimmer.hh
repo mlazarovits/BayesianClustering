@@ -2019,14 +2019,14 @@ class JetSkimmer : public BaseSkimmer{
 			//1 == 2 == BH
 			//2 == 3 == spike
 			vector<JetPoint> rhs; jet.GetJetPoints(rhs);
-			map<string, double> obs; //k maps for k subclusters
 			//features = vector of strings of features to use - set with SetNNFeatures
 			//obs = map<string, double> observations for each feature per subcluster
 			//makeDNNinputs too (if using later) 
 			//TODO - make sure bhc jet itself is PU cleaned (ie weights applied to rhs)
 			//can apply CNN weights as an additional weight to rhs in SCs matched to jet
-			MakeCNNInputGrid(rhs, obs);
-			CNNPredict(obs,ovalues);
+			vector<vector<double>> vecobs(_ngrid, vector<double>(_ngrid, 0));	
+			MakeCNNInputGrid(rhs, vecobs);
+			CNNPredict(vecobs, ovalues);
 		}	
 
 
