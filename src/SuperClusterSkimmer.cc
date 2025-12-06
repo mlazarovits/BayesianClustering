@@ -10,7 +10,6 @@ void SuperClusterSkimmer::Skim(){
 		_jsonfile = "config/json/"+_jsonfile;
 		cout << "Applying lumi mask " << _jsonfile << endl;
 		_jsonTool.BuildMap(_jsonfile);
-
 	}
 
 	cout << "Writing skim to: " << _oname << endl;
