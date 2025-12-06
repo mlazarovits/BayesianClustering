@@ -54,8 +54,8 @@ def main():
             		cmd = cmdHadd+" -f"
             	else:
             		print(oname+" exists ")
-            #print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
-            bashfile.write(cmd+" "+oname+" "+d.path+"/condor_*.root\n")	
+            #print(cmd+" "+oname+" "+d.path+"/condor_*.root")
+            bashfile.write(cmd+" "+oname+" "+oname[:oname.find(".root")]+"_*.root\n")	
             #if not args.dryRun:
             #    os.system(cmd+" "+oname+" "+d.path+"/condor_*.root")	
             #print("Wrote to "+oname)
