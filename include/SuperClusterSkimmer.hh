@@ -62,46 +62,44 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		vector<string> SCtypes = {"BHC","BHCPUCleaned", "CMS"};
 		void SuperClusterAddBranches(){
 			_obj = "SC";
-			vector<string> sc_obsnames; //will write branches for different tags
-			_obsnames.push_back("EovP_track");
-			_obsnames.push_back("dR_track");
-			_obsnames.push_back("trueLabel"); //CR designation
-			_obsnames.push_back("predLabel"); //CNN prediction
-			_obsnames.push_back("predScore_physBkg"); //CNN prediction
-			_obsnames.push_back("predScore_BH"); //CNN prediction
-			_obsnames.push_back("predScore_spike"); //CNN prediction
-			_obsnames.push_back("swCrossPrime");
-			_obsnames.push_back("swCrossCMS");
 			//_obsnames.push_back("isoPresel");
 			//_obsnames.push_back("PassGJetsCR_Obj");
 			for(auto tag : SCtypes){
 
-				for(int o = 0; o < _obsnames.size(); o++){
-					string obs = _obsnames[o];
-					//only do track matched branches for original SCs
-					if(tag != "CMS"){
-						if(obs.find("_track") != string::npos)
-							continue;
-					}
-					sc_obsnames.push_back(obs+"_"+tag);
-				}
+				//for(int o = 0; o < _obsnames.size(); o++){
+				//	string obs = _obsnames[o];
+				//	//only do track matched branches for original SCs
+				//	if(tag != "CMS"){
+				//		if(obs.find("_track") != string::npos)
+				//			continue;
+				//	}
+				//	sc_obsnames.push_back(obs+"_"+tag);
+				//}
 
 
 				vAddBranch("nRHs_grid_"+tag,"# rhs in CNN input grid");
-				vAddBranch("nRHs_"+tag,"# of rhs in "+tag+" SC");
+				vAddBranch("swCrossPrime_"+tag,"new swiss cross obs");
+				vAddBranch("swCrossCMS_"+tag,"swiss cross as traditionally calculated by CMS");
+				//vAddBranch("nRHs_"+tag,"# of rhs in "+tag+" SC");
 				vAddBranch("seedTimeSignificance_"+tag,"time significance from seed rh in "+tag+" SC");
 				vAddBranch("weightedTimeSignificance_"+tag,"time significance with inverse variance weights and subcluster weights");
 				vAddBranch("weightedTimeSignificance_noSubclusterWeights_"+tag,"time significance with inverse variance weights only");
 
+				vAddBranch("trueLabel_"+tag); //CR designation
+				vAddBranch("predScore_physBkg_"+tag); //CNN prediction
+				vAddBranch("predScore_BH_"+tag); //CNN prediction
+				vAddBranch("predScore_spike_"+tag); //CNN prediction
+				
 				//rh obs
 				vvAddBranch("rh_Weight_"+tag,"weight of rh in 7x7 CNN grid");
 				vvAddBranch("rh_iEta_"+tag,"ieta coord of rh in 7x7 CNN grid");
 				vvAddBranch("rh_iPhi_"+tag,"iphi coord of rh in 7x7 CNN grid");
 				vvAddBranch("rh_Energy_"+tag,"energy of rh in 7x7 CNN grid");
 			}
-
+			vAddBranch("EovP_track_CMS");
+			vAddBranch("dR_track_CMS");
 			vAddBranch("seedTime_CMS","time from seed rh in original SC");
-			_obsnames = sc_obsnames;
+			//_obsnames = sc_obsnames;
 		}
 
 
@@ -575,7 +573,6 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		if(bestde_dr != 999) bestde_dr = og_sc.e()/bestde_dr;
 		
 
-		vFillBranch(tc,"seedTime_"+tag);
 		if(bhc_sc.GetNRecHits() < 2){
 			vFillBranch(-999,"weightedTimeSignificance_"+tag);	
 			vFillBranch(-999,"weightedTimeSignificance_noSubclusterWeights_"+tag);
@@ -586,12 +583,9 @@ class SuperClusterSkimmer : public BaseSkimmer{
 			vFillBranch(tsig_noClustW,"weightedTimeSignificance_noSubclusterWeights_"+tag);
 		}
 		if(tag == "CMS"){
+			vFillBranch(tc,"seedTime_"+tag);
 			vFillBranch(bestdr,"dR_track_"+tag);
 			vFillBranch(bestde_dr,"EovP_track_"+tag);
-		}
-		else{
-			vFillBranch(-999,"dR_track_"+tag);
-			vFillBranch(-999,"EovP_track_"+tag);
 		}
 		bool trksum, ecalrhsum, htowoverem;
 		int iso;
