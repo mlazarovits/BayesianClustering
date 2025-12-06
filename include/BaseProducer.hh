@@ -72,11 +72,13 @@ class BaseProducer{
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;
 			
-			//set if data
-			cout << "name " << name << " year " << _year << " data " << _data << endl;
 			//cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
+			
+			//set if data
+			cout << "name " << name << " year " << _year << " data " << _data << endl;
+			
 			if(_year == 2016)
 				_timecalibTag = "r2_ul18"; //use 2017 time reco tag
 			else if(_year == 2017)
