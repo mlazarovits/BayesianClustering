@@ -182,7 +182,7 @@ void PhotonSkimmer::Skim(){
 				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			if(_verb > -1) cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
