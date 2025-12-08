@@ -137,7 +137,7 @@ void SuperClusterSkimmer::Skim(){
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(scs[s].GetNPoints() < 1){ cout << "sc #" << s << " has " << scs[s].GetNPoints() << " rhs " << endl; continue; }
-			cout << "evt: " << e << " ntuple event " << _base->Evt_event << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
+			if(_verb > -1) cout << "evt: " << e << " ntuple event " << _base->Evt_event << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			//per event
