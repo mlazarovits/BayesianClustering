@@ -600,7 +600,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 		bool physBkgTimeSig = (-1 < tsig && tsig < 1);
 		bool spikeTrackMatch = (bestdr <= 0.02);
 		bool notSpikeTrackVeto = (bestdr > 0.03);
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		//bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 
 		int label = -1;
@@ -638,7 +638,7 @@ if(_verb > 0) cout << "pass iso? " << iso << " Photon_trkSumPtSolidConeDR04 " <<
 					label = 2;
 				}
 				//if subcl is not BH or spike (ie prompt, 'physics' bkg) - need to match to photon and apply isolation
-				if(physBkgTime && iso && physBkgTimeSig && !pcFilter && notSpikeTrackVeto && _passGJetsEvtSel && passGJetsObjSel && evtfilters && bh_filter){
+				if(physBkgTime && iso && physBkgTimeSig && !pcFilter && notSpikeTrackVeto && _passGJetsEvtSel && passGJetsObjSel && _evtfilters && bh_filter){
 					label = 1;
 				}
 
