@@ -184,7 +184,8 @@ void SuperClusterSkimmer::Skim(){
 				//make CNN training grid
 				vector<vector<double>> rh_grid(_ngrid, vector<double>(_ngrid, 0.0));
 				MakeCNNInputGrid(rh_pts, rh_grid, jet_scIdx, tag);
-				
+			
+	
 				vector<float> ovalues; //discriminator output value, pass-by-ref
 				CNNPredict(rh_grid, ovalues);
 				//TODO - update with discriminator score cut
@@ -193,12 +194,18 @@ void SuperClusterSkimmer::Skim(){
 				//labeling starts from 1
 				int nclass = std::distance(ovalues.begin(), max_el) + 1;
 				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
+				//only do for CMS superclusters since that's what the network was trained on
 				
-				if(tag != "CMS" && ret < 0){
-					vFillBranch(-999, "trueLabel_"+tag);
+				if(tag != "CMS"){
 					vFillBranch(-999, "predScore_physBkg_"+tag);
 					vFillBranch(-999, "predScore_BH_"+tag);
 					vFillBranch(-999, "predScore_spike_"+tag);
+					if(ret < 0){
+						vFillBranch(-999, "trueLabel_"+tag);
+					}
+					else{
+						vFillBranch((double)label, "trueLabel_"+tag);
+					}
 				}
 				else{
 					vFillBranch((double)label, "trueLabel_"+tag);
