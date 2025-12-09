@@ -1208,7 +1208,8 @@ class BaseSkimmer{
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3_Energy_2017and2018_CMS.json");
+		//fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_Energy_2017and2018_CMS.json");
+		fdeep::model _detbkgmodel = fdeep::load_model("/Users/margaretlazarovits/CMSECAL-SubclusterMVA/test.json");
 		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json");
 		void SetCNNModel(string fname){
 			_detbkgmodel = fdeep::load_model(fname);
