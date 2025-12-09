@@ -118,7 +118,7 @@ void PhotonSkimmer::Skim(){
 		//apply lumi mask
 		if(_applyLumiMask){
 			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
-				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
+				//cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
 		}
@@ -158,14 +158,14 @@ void PhotonSkimmer::Skim(){
 		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
 			if(!_evtfilters){
-				cout << "skipping event - failed event filters" << endl; 
+				//cout << "skipping event - failed event filters" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
 			} else nEvts_EvtFilterPass++;
 
 			if(!_passGJetsEvtSel){
-				cout << "skipping event - failed GJets CR selection" << endl; 
+				//cout << "skipping event - failed GJets CR selection" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
@@ -182,7 +182,8 @@ void PhotonSkimmer::Skim(){
 				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			if(_verb > -1) cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			//cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
