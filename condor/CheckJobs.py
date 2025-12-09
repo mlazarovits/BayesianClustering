@@ -65,7 +65,11 @@ def checkJobs(outputDir,match_string,big):
         if big:
             bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job.0.err > "+folder+"/errcount.txt"
             for i in range(1,10):
-                bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job."+str(i)+"*.err >> "+folder+"/errcount.txt"
+                if i == 1:
+                    for j in range(1,10):
+                        bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job."+str(i)+str(j)+"*.err >> "+folder+"/errcount.txt"
+                else:
+                    bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job."+str(i)+"*.err >> "+folder+"/errcount.txt"
                 os.system(bash) 
         else:
             bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
