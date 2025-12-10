@@ -67,19 +67,26 @@ class BaseProducer{
 			
 			//set year
 			string name = file;
-			if(name.find("2017") != string::npos) _year = 2017;
+			if(name.find("2016") != string::npos) _year = 2016;
+			else if(name.find("2017") != string::npos) _year = 2017;
 			else if(name.find("2018") != string::npos) _year = 2018;
 			else if(name.find("2022") != string::npos) _year = 2022;
 			
-			//set if data
-			cout << "name " << name << " year " << _year << " data " << _data << endl;
 			//cout << "name " << name << endl;
 			if(name.find("SIM") == string::npos) _data = true;
 			else _data = false;
-			if(_year == 2018)
-				_timecalibTag = "r2_ul18";
+			
+			//set if data
+			cout << "name " << name << " year " << _year << " data " << _data << endl;
+			
+			if(_year == 2016)
+				_timecalibTag = "r2_ul18"; //use 2017 time reco tag
 			else if(_year == 2017)
 				_timecalibTag = "r2_ul17";
+			else if(_year == 2018)
+				_timecalibTag = "r2_ul18";
+			else if(_year == 2022)
+				_timecalibTag = "r2_ul18"; //use 2018 time reco tag
 			else
 				cout << "Time calibration tag not set for year " << _year << endl;
 			if(_data){
@@ -94,7 +101,6 @@ class BaseProducer{
 				else
 					cout << "Time calibration tag not set for " << _year << " MC." << endl;
 			}	
-			//_timecalibTag = "r2_ul17";
 			cout << "Using time calibration + smearing tag " << _timecalibTag << endl;
 
 		}

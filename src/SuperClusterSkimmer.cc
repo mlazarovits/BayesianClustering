@@ -10,7 +10,18 @@ void SuperClusterSkimmer::Skim(){
 		_jsonfile = "config/json/"+_jsonfile;
 		cout << "Applying lumi mask " << _jsonfile << endl;
 		_jsonTool.BuildMap(_jsonfile);
+	}
 
+
+	//testing networks
+	vector<fdeep::model> test_models;
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json"));
+	//add branches for test models
+	for(int m = 0; m < test_models.size(); m++){
+		//get model name
+		string model_name = GetModelName(test_models[m]);
+		vAddBranch(model_name+"_predScore_physBkg_CMS"); //CNN prediction
+		vAddBranch(model_name+"_predScore_BH_CMS"); //CNN prediction
 	}
 
 	cout << "Writing skim to: " << _oname << endl;
@@ -68,13 +79,12 @@ void SuperClusterSkimmer::Skim(){
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
-		if(_applyLumiMask){
+		if(_applyLumiMask && _data){
 			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
 				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
 		}
-		cout << "evt " << e << " ntuple event " << _base->Evt_event << endl;//" base is nullptr? " << (_base == nullptr) << endl;
 		nEvts_tot++;
 
 		//event filters - true is good event
@@ -96,9 +106,9 @@ void SuperClusterSkimmer::Skim(){
 		SetGJetsCR_EvtSel(e);
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
-			if(!evtfilters){
+			if(!_evtfilters){
 				cout << "skipping event - failed event filters" << endl; 
 				_tree->Fill();
 				_reset();
@@ -127,14 +137,19 @@ void SuperClusterSkimmer::Skim(){
 		//loop over selected scs
 		int jet_scIdx = 0;
 		int scidx;
-		if(nSC < 1) continue;	
+		if(nSC < 1) continue;
+		map<string, int> nSCs_type;
+		nSCs_type[SCtypes[0]] = 0;
+		nSCs_type[SCtypes[1]] = 0;
+		nSCs_type[SCtypes[2]] = 0;
+			
 		for(int s = 0; s < nSC; s++){
 			sumE = 0;
 			//if(e % _oskip == 0) cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nPho << " nrhs: " << rhs.size()  << endl;
 			//index in ntuples (before preselection)
 			scidx = scs[s].GetUserIdx();
 			if(scs[s].GetNPoints() < 1){ cout << "sc #" << s << " has " << scs[s].GetNPoints() << " rhs " << endl; continue; }
-			cout << "evt: " << e << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
+			if(_verb > -1) cout << "evt: " << e << " ntuple event " << _base->Evt_event << " of " << _nEvts << "  sc: " << s << " of " << nSC << " nrhs: " << scs[s].GetNPoints() << " E: " << scs[s].E() << endl;
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " sc: " << p << " nrhs: " << rhs.size()  << flush;
 			
 			//per event
@@ -145,15 +160,11 @@ void SuperClusterSkimmer::Skim(){
 			map<string,Jet> SCtypes_map; //keys need to match SCtypes member var
 			SCtypes_map[SCtypes[2]] = scs[s];
 			
-			map<string,double> mapobs;
-			mapobs["event"] = e;
-			mapobs["event_weight"] = 1.;
-			mapobs["object"] = scidx;
-
 			unique_ptr<PointCollection> points = GetPointsFromJet(scs[s]);
 			double timesig_seed = CalcTimeSignificance(points,_base->SuperCluster_XtalSeedID->at(scs[s].GetUserIdx()),false);
 			vFillBranch(timesig_seed, "seedTimeSignificance_CMS");
 			vFillBranch(0,"nSubclusters_CMS");
+
 
 			Jet bhc_sc, bhc_sc_pucleaned;
 			addVectors();
@@ -166,46 +177,77 @@ void SuperClusterSkimmer::Skim(){
 				Jet sc = jt->second;
 				string tag = jt->first;
 				//don't save invalid BHC clusterings
-				if(tag != "CMS" && ret < 0)
-					continue;
 				if(_verb > 0) cout << "SC type " << tag << endl;
 				//get id_idx of procCat that matches sample - still 1/sample but with correct labels now
 				int id_idx = -999;
 				//skip "total" procCat for always separated hists (id_idx == 1)
 				//get SC points (rhs with IDs) for CNN grid
 				sc.GetJetPoints(rh_pts);
+				nSCs_type[tag]++;
+			
+				vFillBranch((double)s,"object_"+tag);	
 				vFillBranch((double)rh_pts.size(), "nRHs_"+tag);
-
+				
 				FillBranches(sc,tag);
 				int label = GetTrainingLabel(scidx, sc, scs[s], tag);
 				if(tag == "CMS"){
 					cmssc_label = label;
 				}
 				//make CNN training grid
-				MakeCNNInputGrid(rh_pts, mapobs, jet_scIdx, tag);
-				mapobs["label_"+tag] = label;
-				
+				vector<vector<double>> rh_grid(_ngrid, vector<double>(_ngrid, 0.0));
+				MakeCNNInputGrid(rh_pts, rh_grid, jet_scIdx, tag);
+			
+	
+				//do predictions for test models
+				if(tag == "CMS"){
+					for(int m = 0; m < test_models.size(); m++){
+						vector<float> test_ovalues;
+						CNNPredict(test_models[m], rh_grid, test_ovalues);
+						string model_name = GetModelName(test_models[m]);
+						vFillBranch((double)test_ovalues[0], model_name+"_predScore_physBkg_"+tag);
+						vFillBranch((double)test_ovalues[1], model_name+"_predScore_BH_"+tag);
+					}
+				}
 				vector<float> ovalues; //discriminator output value, pass-by-ref
-				CNNPredict(mapobs,ovalues);
+				CNNPredict(rh_grid, ovalues);
+
 				//TODO - update with discriminator score cut
 				auto max_el = max_element(ovalues.begin(), ovalues.end());
 				double predval = *max_el;
 				//labeling starts from 1
 				int nclass = std::distance(ovalues.begin(), max_el) + 1;
 				if(_verb > 0) cout << "class " << nclass << " predval " << predval << " for SC " << scidx << " with label " << label << endl;	
-				vFillBranch((double)label, "trueLabel_"+tag);
-				vFillBranch((double)nclass, "predLabel_"+tag);
-				vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
-				vFillBranch(ovalues[1], "predScore_BH_"+tag);
-				vFillBranch(ovalues[2], "predScore_spike_"+tag);
-				//write good SCs to CSV for training
-				//if(label != -1 && tag == "BHC_PUCleaned"){
-				//	BaseSkimmer::WriteObs(mapobs,"superclusters");
-				//}
-
+				//only do for CMS superclusters since that's what the network was trained on
+				
+				if(tag != "CMS"){
+					vFillBranch(-999, "predScore_physBkg_"+tag);
+					vFillBranch(-999, "predScore_BH_"+tag);
+					//vFillBranch(-999, "predScore_spike_"+tag);
+					if(ret < 0){
+						vFillBranch(-999, "trueLabel_"+tag);
+					}
+					else{
+						vFillBranch((double)label, "trueLabel_"+tag);
+					}
+				}
+				else{
+					vFillBranch((double)label, "trueLabel_"+tag);
+					vFillBranch((double)ovalues[0], "predScore_physBkg_"+tag);
+					vFillBranch((double)ovalues[1], "predScore_BH_"+tag);
+					//vFillBranch(ovalues[2], "predScore_spike_"+tag);
+				}
 			}
 			jet_scIdx++;	
 		}
+		//cout << "event " << e << " has amount of following types of SCs " << endl;
+		//for(auto it = nSCs_type.begin(); it != nSCs_type.end(); it++)
+		//	cout << it->first << " " << it->second << endl;
+		//if(e == 3){
+		//	PrintTreeEntry();
+		//}
+
+		//cout << "============================================================================" << endl;
+		//cout << endl;
 		_tree->Fill();
 		_reset();
 	}

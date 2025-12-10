@@ -19,7 +19,7 @@ def scanOutDirs(outputDir, subfolders):
 				scanOutDirs(f, subfolders) 
 	return subfolders
 # Check condor jobs
-def checkJobs(outputDir,match_string):
+def checkJobs(outputDir,match_string,big):
     print("Running over the directory '{0}'.".format(outputDir))
     print("------------------------------------------------------------")
     # get list of directories
@@ -62,8 +62,18 @@ def checkJobs(outputDir,match_string):
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err > count.txt"
         #bash = "grep -c \"Warning\" -c \"WARNING\" -e \"TTree::SetBranchStatus\" -e \"libXrdSecztn.so\" "+ folder +"/log/*.err"
         #bash = "grep -v -e \"Warning\" -e \"WARNING\" " + folder +"/log/*.err > count.txt"
-        bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
-        os.system(bash)
+        if big:
+            bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job.0.err > "+folder+"/errcount.txt"
+            for i in range(1,10):
+                if i == 1:
+                    for j in range(1,10):
+                        bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job."+str(i)+str(j)+"*.err >> "+folder+"/errcount.txt"
+                else:
+                    bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/job."+str(i)+"*.err >> "+folder+"/errcount.txt"
+                os.system(bash) 
+        else:
+            bash = "grep -P \"ERROR|FATAL|Aborted|Break\" " + folder +"/log/*.err > "+folder+"/errcount.txt"
+            os.system(bash)
         with open(folder+"/errcount.txt","r") as f:
         	print(len(f.readlines()),"jobs with errors: see "+folder+"/errcount.txt for more")	
         #output4 = subprocess.check_output(['bash','-c',bash]).decode()
@@ -76,10 +86,11 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--directory", "-d", default="Output", help="working directory for condor submission")
     parser.add_argument("--matchString","-s",default="",help="string to match for directory scan")
+    parser.add_argument("--big",default=False,help="check for errors in dir with many jobs",action='store_true')
     options = parser.parse_args()
     directory = options.directory	
     
-    checkJobs(directory,options.matchString)
+    checkJobs(directory,options.matchString,options.big)
 
 if __name__ == "__main__":
     main()

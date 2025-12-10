@@ -88,44 +88,60 @@ class PhotonSkimmer : public BaseSkimmer{
 		void ApplyFractions(bool a){ _applyFrac = a; if(_applyFrac) cout << "Applying RH fractions" << endl; }
 		bool _applyFrac;
 
-
 		void PhotonAddBranches(){
 			_obj = "Photon";
-			_obsnames.push_back("Pt");
-			//sw+
-			_obsnames.push_back("swCP");
-			//subcl major length
-			_obsnames.push_back("majorLength");
-			//subcl minor length
-			_obsnames.push_back("minorLength");
-			_obsnames.push_back("rot2D");
-			_obsnames.push_back("phiE2D");
-			//subcl max pt / total E
-			_obsnames.push_back("maxOvtotE");
+			//_obsnames.push_back("nSubclusters_BHC");
+
+			for(auto tag : _SCtypes){
+			//	_obsnames.push_back("Pt_"+tag);
+			//	//sw+
+			//	_obsnames.push_back("swCP_"+tag);
+			//	//subcl major length
+			//	_obsnames.push_back("majorLength_"+tag);
+			//	//subcl minor length
+			//	_obsnames.push_back("minorLength_"+tag);
+			//	_obsnames.push_back("rot2D_"+tag);
+			//	_obsnames.push_back("phiE2D_"+tag);
+			//	//subcl max pt / total E
+			//	_obsnames.push_back("maxOvtotE_"+tag);
+			//	_obsnames.push_back("nRHs_"+tag);
+
+				//vAddBranch("object_"+tag,"object index for "+tag+" photon");
+				vAddBranch("Pt_"+tag,"pt for "+tag+" photon");
+				vAddBranch("majorLength_"+tag,"major length for "+tag+" photon");
+				vAddBranch("minorLength_"+tag,"minor length for "+tag+" photon");
+				vAddBranch("rot2D_"+tag,"rot2D for "+tag+" photon");
+				vAddBranch("phiE2D_"+tag,"phiE2D for "+tag+" photon");
+				vAddBranch("maxOvtotE_"+tag,"maxOvtotE for "+tag+" photon");
+				vAddBranch("swCP_"+tag,"swCP for "+tag+" photon");
+				//vAddBranch("nRHs_"+tag,"# of rhs for "+tag+" photon");
+				vAddBranch("predScore_isoBkg_"+tag,"score for iso bkg designation from DNN for "+tag+" photon"); //DNN prediction
+				vAddBranch("predScore_nonIsoBkg_"+tag,"score for non iso bkg designation from DNN for "+tag+" photon"); //DNN prediction
+				vAddBranch("trueLabel_"+tag,"true DNN label of "+tag+" photon");
+			}
 			//R9
-			_obsnames.push_back("R9");
+			vAddBranch("2017_presel","2017 isolation preselection");
+			//R9
+			vAddBranch("R9");
 			//Sietaieta
-			_obsnames.push_back("Sietaieta");
+			vAddBranch("Sietaieta");
 			//Siphiiphi
-			_obsnames.push_back("Siphiiphi");
+			vAddBranch("Siphiiphi");
 			//Smajor
-			_obsnames.push_back("Smajor");
+			vAddBranch("Smajor");
 			//Sminor
-			_obsnames.push_back("Sminor");
+			vAddBranch("Sminor");
 			//hcalTowerSumEtConeDR04
-			_obsnames.push_back("hcalTowerSumEtConeDR04");
+			vAddBranch("hcalTowerSumEtConeDR04");
 			//trkSumPtSolidConeDR04
-			_obsnames.push_back("trkSumPtSolidConeDR04");
+			vAddBranch("trkSumPtSolidConeDR04");
 			//trkSumPtHollowConeDR04
-			_obsnames.push_back("trkSumPtHollowConeDR04");
+			vAddBranch("trkSumPtHollowConeDR04");
                 	//ecalRHSumEtConeDR04
-                	_obsnames.push_back("ecalRHSumEtConeDR04");
+                	vAddBranch("ecalRHSumEtConeDR04");
                 	//hadTowOverEM
-                	_obsnames.push_back("hadTowOverEM");
+                	vAddBranch("hadTowOverEM");
 			
-			vAddBranch("predScore_isoBkg","score for iso bkg designation from DNN"); //DNN prediction
-			vAddBranch("predScore_nonIsoBkg","score for non iso bkg designation from DNN"); //DNN prediction
-			vAddBranch("trueLabel","true DNN label of photon");
 			
 		}
 		//obsnames will save as branches
@@ -135,19 +151,20 @@ class PhotonSkimmer : public BaseSkimmer{
 		void SetObs(){
 			PhotonAddBranches();
 			//sample
-			_inputs.push_back("sample");
-			//event
-			_inputs.push_back("event");
-			//event weight
-			_inputs.push_back("event_weight");
-			//supercl
-			_inputs.push_back("object");
-			for(int o = 0; o < _obsnames.size(); o++){
-				_inputs.push_back(_obsnames[o]);
-			}
-			_inputs.push_back("2017_presel");
-			//label
-			_inputs.push_back("label");
+			//_inputs.push_back("sample");
+			////event
+			//_inputs.push_back("event");
+			////event weight
+			//_inputs.push_back("event_weight");
+			////supercl
+			//_inputs.push_back("object");
+			//for(int o = 0; o < _obsnames.size(); o++){
+			//	if(_obsnames[o] == "ObjIdx") continue;
+			//	_inputs.push_back(_obsnames[o]);
+			//}
+			//_inputs.push_back("2017_presel");
+			////label
+			//_inputs.push_back("label");
 		}
 
 		void WriteHeader(){
@@ -156,27 +173,40 @@ class PhotonSkimmer : public BaseSkimmer{
 				else _csvfile << s << endl;
 			}
 		}
-
-
-		void InitObs(map<string, double>& obs){
-			for(int i = 0; i < _inputs.size(); i++)
-				obs[_inputs[i]] = -999;
-		}
+		
 
 
 		void FillBranches(const Jet& bhc_obj, string tag = ""){ }
 
-		void FillBranches(map<string, double> obs){
-			for(auto it = obs.begin(); it != obs.end(); it++){
-				if(it->second == -999) continue; //don't fill branches that haven't had their value updated
-				vFillBranch(it->second, it->first);
+
+		void FillPhotonObs(const Jet& bhc_obj, string tag){
+			int nrhs = bhc_obj.GetNRecHits();
+			vFillBranch((double)nrhs, "nRHs_"+tag);
+			if(nrhs < 2){
+				//obs.at("Energy_"+tag)      = -999;
+				vFillBranch(-999, "Energy_"+tag);
+				vFillBranch(-999, "EtaCenter_"+tag);		
+				vFillBranch(-999, "PhiCenter_"+tag);		
+				vFillBranch(-999, "TimeCenter_"+tag);		
+				vFillBranch(-999, "EtaVar_"+tag);		
+				vFillBranch(-999, "PhiVar_"+tag);		
+				vFillBranch(-999, "TimeVar_"+tag);		
+				vFillBranch(-999, "EtaPhiCov_"+tag);		
+				vFillBranch(-999, "EtaTimeCov_"+tag);		
+				vFillBranch(-999, "PhiTimeCov_"+tag);
+				vFillBranch(-999, "majorLength_"+tag);
+				vFillBranch(-999, "minorLength_"+tag);
+				vFillBranch(-999, "rot2D_"+tag);
+				vFillBranch(-999, "phiE2D_"+tag);
+				vFillBranch(-999, "swCP_"+tag); 
+				vFillBranch(-999, "maxOvtotE_"+tag);
+				return;
 			}
+	
 
-		}
-
-		void FillJetObs(const Jet& bhc_obj, map<string, double>& obs){
 			double E_tot = bhc_obj.E();
-			obs.at("Energy") = E_tot;
+			//obs.at("Energy_"+tag) = E_tot;
+			vFillBranch(E_tot,"Energy_"+tag);
 			
 			double ec = bhc_obj.eta();
 			double pc = bhc_obj.phi();
@@ -184,17 +214,18 @@ class PhotonSkimmer : public BaseSkimmer{
 			if(isnan(pc)) cout << "pc is nan" << endl;
 			if(isinf(pc)) cout << "pc is inf" << endl;
 			if(pc < 0 || pc > 2*acos(-1)) cout << "pc out of bounds " << pc << endl;
-			obs.at("EtaCenter") = ec;		
-			obs.at("PhiCenter") = pc;		
-			obs.at("TimeCenter") = tc;		
+			vFillBranch(ec,"EtaCenter_"+tag);		
+			vFillBranch(pc,"PhiCenter_"+tag);		
+			vFillBranch(tc,"TimeCenter_"+tag);	
 			
 			Matrix cov = bhc_obj.GetCovariance();
-			obs.at("EtaVar") = cov.at(0,0);		
-			obs.at("PhiVar") = cov.at(1,1);		
-			obs.at("TimeVar") = cov.at(2,2);		
-			obs.at("EtaPhiCov") = cov.at(0,1);		
-			obs.at("EtaTimeCov") = cov.at(0,2);		
-			obs.at("PhiTimeCov") = cov.at(1,2);
+			vFillBranch(cov.at(0,0), "EtaVar_"+tag);		
+			vFillBranch(cov.at(1,1), "PhiVar_"+tag);		
+			vFillBranch(cov.at(2,2), "TimeVar_"+tag);		
+			vFillBranch(cov.at(0,1), "EtaPhiCov_"+tag);		
+
+			vFillBranch(cov.at(0,2), "EtaTimeCov_"+tag);		
+			vFillBranch(cov.at(1,2), "PhiTimeCov_"+tag);
 
 
 			//rotundity - 2D
@@ -212,22 +243,20 @@ class PhotonSkimmer : public BaseSkimmer{
 			double phi2D = PhiEll(space_mat);
 			double rot2D = Rotundity(space_mat);
 			
-			obs.at("majorLength") = majLength_2D;
-			obs.at("minorLength") = minLength_2D;
-			obs.at("rot2D") = rot2D;
-			obs.at("phiE2D") = phi2D;
+			vFillBranch(majLength_2D, "majorLength_"+tag);
+			vFillBranch(minLength_2D, "minorLength_"+tag);
+			vFillBranch(rot2D, "rot2D_"+tag);
+			vFillBranch(phi2D, "phiE2D_"+tag);
 
 			std::unique_ptr<PointCollection> points = GetPointsFromJet(bhc_obj);
 			points->Sort();
 			double maxE = points->at(points->GetNPoints() - 1).w();
-			obs.at("maxOvtotE") = maxE/E_tot;
+			vFillBranch(maxE/E_tot, "maxOvtotE_"+tag);
 			
 			vector<double> spikeObs;
 			SpikeObs(points.get(), spikeObs);
 			double swCP = spikeObs[0];
-			obs.at("swCP") = swCP;
-
-			//time significance not set
+			vFillBranch(swCP,"swCP_"+tag);
 
 		}
 
@@ -483,7 +512,6 @@ class PhotonSkimmer : public BaseSkimmer{
 		//spike = 3
 		
 		//bool trksum, ecalrhsum, htowoverem, iso;	
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
 		bool bh_filter = _base->Flag_globalSuperTightHalo2016Filter;
 		int label = -1;
 		bool isoBkgSel = GJetsCR_ObjSel(og_pho, true);
@@ -515,9 +543,9 @@ class PhotonSkimmer : public BaseSkimmer{
 
 				}
 				//isolated bkg
-				if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+				if(isoBkgSel && _passGJetsEvtSel && _evtfilters && bh_filter)
 					label = 4;
-				else if(!isoBkgSel && nonIsoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter)
+				else if(!isoBkgSel && nonIsoBkgSel && _passDijetsEvtSel && _evtfilters && bh_filter)
 					label = 6;
 				else
 					label = -1;
@@ -533,9 +561,9 @@ class PhotonSkimmer : public BaseSkimmer{
 			//non isolated bkg
 			//isolated bkg
 			//isolated bkg
-			if(isoBkgSel && _passGJetsEvtSel && evtfilters && bh_filter)
+			if(isoBkgSel && _passGJetsEvtSel && _evtfilters && bh_filter)
 				label = 4;
-			else if(!isoBkgSel && _passDijetsEvtSel && evtfilters && bh_filter && passMinPt)
+			else if(!isoBkgSel && _passDijetsEvtSel && _evtfilters && bh_filter && passMinPt)
 				label = 6;
 			else label = -1; 
 		}

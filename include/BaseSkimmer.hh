@@ -37,6 +37,8 @@ class BaseSkimmer{
 		BaseSkimmer() :  
 			_gev(1),
 			_data(false),
+			_year(2018),
+			_evtfilters(true),
 			_debug(false),
 			_smear(true),
 			_skip(1),
@@ -75,7 +77,6 @@ class BaseSkimmer{
 			_prior_params["scalemat"].InitIdentity();
 			_prior_params["scalemat"].mult(_prior_params["scalemat"],1./3);
 			//cout << "ctor scalemat " << endl; _prior_params["scalemat"].Print(); 
-			if(_applyLumiMask) cout << "Applying lumi mask." << endl;
 
 			//(eventual) ROOT ownership objects
 			_tree = new TTree("tree","tree");
@@ -85,6 +86,7 @@ class BaseSkimmer{
 		BaseSkimmer(string filename) :
 			_gev(1),
 			_debug(false),
+			_evtfilters(true),
 			//prior parameters
 			//pointers
 			_prod(nullptr)
@@ -109,11 +111,12 @@ class BaseSkimmer{
 			//m
 			_prior_params["mean"] = Matrix(3,1);
 			
-			
 			if(filename.find("SIM") != string::npos)
 				_data = false;
 			else
 				_data = true;
+
+			_year = 2018;
 			
 			_cell = acos(-1)/180;
 			_tresCte = 0.1727;//times given in ns//0.133913 * 1e-9;
@@ -124,20 +127,30 @@ class BaseSkimmer{
 			_applyLumiMask = true;
 			//get year to apply lumi mask
 			_jsonfile = "";
-			if(_data){
-				if(filename.find("Run2017") != string::npos)
-					_jsonfile = "Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
-				else if(filename.find("Run2018") != string::npos)
-					_jsonfile = "Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
-				else if(filename.find("Run2022") != string::npos)
-					_jsonfile = "Cert_Collisions2022_355100_362760_Golden.json";
-				else if(filename.find("Run2023") != string::npos)
-					_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
-				else{
-					cout << "Golden JSON not specified for year of sample " << filename << endl;
-				}
-
+			if(filename.find("_R16_") != string::npos){
+				_jsonfile = "Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt";
+				_year = 2016;
 			}
+			else if(filename.find("_R17_") != string::npos){
+				_jsonfile = "Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt";
+				_year = 2017;
+			}
+			else if(filename.find("_R18_") != string::npos){
+				_jsonfile = "Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt";
+				_year = 2018;
+			}
+			else if(filename.find("_R22_") != string::npos){
+				_jsonfile = "Cert_Collisions2022_355100_362760_Golden.json";
+				_year = 2022;
+			}
+			else if(filename.find("_R23_") != string::npos){
+				_jsonfile = "Cert_Collisions2023_366442_370790_Golden.json";
+				_year = 2023;
+			}
+			else{
+				cout << "Golden JSON not specified for year of sample " << filename << endl;
+			}
+
 
 			//reqs on gjets CR sample
 			_minPhoPt_CRsel = 70;
@@ -323,7 +336,7 @@ class BaseSkimmer{
 			if((tag == "CMS" && _obj == "SC") || (_obj != "SC")){
 				vFillBranch(dphi_objjet,"dPhi_PhoJetSys");
 				vFillBranch(jet2.pt() / jet1.pt(),"JetObjPtAsym");
-				vFillBranch(objpt,"Photon_Pt");
+				if(_obj == "SC") vFillBranch(objpt,"Photon_Pt");
 			}
 
 			if(_jets.size() < 1) return false;	
@@ -333,20 +346,20 @@ class BaseSkimmer{
 			else return false;
 		}
 
-		void AddBranch(string obs, string title){
+		void AddBranch(string obs, string title = ""){
 			_obs[obs] = -1;
 			 //cout << "adding branch " << obs << endl;
 			_tree->Branch(obs.c_str(),&_obs.at(obs))->SetTitle(title.c_str());
 		}
 		
-		void vAddBranch(string obs, string title){
+		void vAddBranch(string obs, string title = ""){
 			string key = _obj+"_"+obs;
 			_vobs[key] = {};
 			//cout << "adding vbranch " << key << endl;
 			_tree->Branch((key).c_str(),&_vobs.at(key))->SetTitle(title.c_str());
 		}
 		
-		void vvAddBranch(string obs, string title, string extra = ""){
+		void vvAddBranch(string obs, string title = "", string extra = ""){
 			string key = _obj+"_"+obs;
 			if(extra != "") key += "_"+extra;
 			_vvobs[key] = {};
@@ -354,6 +367,7 @@ class BaseSkimmer{
 			_tree->Branch(key.c_str(),&_vvobs.at(key))->SetTitle(title.c_str());
 		}
 	
+		vector<string> _SCtypes = {"BHC","BHCPUCleaned", "CMS"};
 		void InitMapTree(){
 			//event level branches
 			AddBranch("evt","event");
@@ -383,35 +397,39 @@ class BaseSkimmer{
 
 			//object level branches
 			for(int o = 0; o < _obsnames.size(); o++){
-				string units = "";
-				if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
-					units = " [GeV]";
-				if(_obsnames[o] == "TimeCenter")
-					units = " [ns]";
-				
-				string key = _obsnames[o];
-				string title = _obj+" "+_obsnames[o]+" "+units;
-				if(key.find("_track") != string::npos)
-					title += " for original SC";
-				vAddBranch(key,title);
-				if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos){
-					//only do for "BHCPUCleaned" branches of "SCs" but all of other objs
-					if((_obj == "SC" && _obsnames[o].find("BHCPUCleaned") != string::npos) || (_obj != "SC")){
-						//object pre-PU cleaning	
-						key += "_prePUcleaning";
-						title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
-						vAddBranch(key,title);
-					}
+				for(int t =  0; t < _SCtypes.size(); t++){
+					string tag = _SCtypes[t];
+					string units = "";
+					if(_obsnames[o] == "Energy" || _obsnames[o] == "Mass")
+						units = " [GeV]";
+					if(_obsnames[o] == "TimeCenter")
+						units = " [ns]";
+					
+					string key = _obsnames[o]+"_"+tag;
+					string title = _obj+" "+_obsnames[o]+" "+units;
+					if(key.find("_track") != string::npos)
+						title += " for original SC";
+					vAddBranch(key,title);
+					//if(_obsnames[o].find("Energy") != string::npos || _obsnames[o].find("Var") != string::npos || _obsnames[o].find("nSubclusters") != string::npos || _obsnames[o].find("Center") != string::npos){
+					//	//only do for "BHCPUCleaned" branches of "SCs" but all of other objs
+					//	if((_obj == "SC" && _obsnames[o].find("BHCPUCleaned") != string::npos) || (_obj != "SC")){
+					//		//object pre-PU cleaning	
+					//		key += "_prePUcleaning";
+					//		title = _obj+" "+_obsnames[o]+" "+units+" no PU cleaning";
+					//		vAddBranch(key,title);
+					//	}
+					//}
 				}
 			}
 			//if(_obj != "SC"){
-				vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
-				vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
-				vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
-			//}
-			if(_obj == "SC")
-				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
+			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
+			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
 			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
+			//}
+			if(_obj == "SC"){
+				vAddBranch("isoPresel","if SC is matched to photon that passes isolation preselection");
+				vAddBranch("Photon_Pt","pt of photon that SC is matched to");
+			}
 			//subobject level branches
 			for(int o = 0; o < _obsnames_subcl.size(); o++){
 				string units = "";
@@ -421,19 +439,38 @@ class BaseSkimmer{
 					units = " [ns]";
 				string key, title;
 				//subcluster	
-				key = "subcluster_"+_obsnames_subcl[o];
+				key = "subcluster_"+_obsnames_subcl[o]+"_BHC"; //only do for BHC tag
 				title = "subcluster "+_obsnames_subcl[o]+" per "+_obj+units;
 				//subcluster pre-PU cleaning
-				if(key.find("PUscores") == string::npos){	
-					key += "_prePUcleaning";
-					title += " no PU cleaning";
-				}
+				//if(key.find("PUscores") == string::npos){	
+				//	key += "_prePUcleaning";
+				//	title += " no PU cleaning";
+				//}
 				
 				vvAddBranch(key,title);
 			}
 
 			
 		}
+
+
+		void PrintTreeEntry(){
+			for(auto it = _obs.begin(); it != _obs.end(); it++){
+				cout << it->first << ": " << it->second << endl;
+			}
+			for(auto it = _vobs.begin(); it != _vobs.end(); it++){
+				cout << it->first << ": " << endl;
+				for(auto j : it->second) cout << " " << j << endl;
+			}
+			for(auto it = _vvobs.begin(); it != _vvobs.end(); it++){
+				cout << it->first << ": " << endl;
+				for(auto v : it->second){
+					for(auto vv : v) cout << "  " << vv << endl;
+				}
+			}
+
+		}
+
 		void _reset(){
 			for(auto it = _obs.begin(); it != _obs.end(); it++){
 				it->second = -1;
@@ -1055,13 +1092,10 @@ class BaseSkimmer{
 
 		//write nxn grid of E, t, r_nk here
 		//if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
-		void MakeCNNInputGrid(vector<JetPoint>& rhs, map<string,double>& mapobs, int jet_scIdx = -1, string tag = ""){
+		void MakeCNNInputGrid(vector<JetPoint>& rhs, vector<vector<double>>& vecobs, int jet_scIdx = -1, string tag = ""){
 			if(tag != "")
 				tag = "_"+tag;
-			//addVector("rh_iEta"+tag,false);
-			//addVector("rh_iPhi"+tag,false);
-			//addVector("rh_Energy"+tag,false);
-			//addVector("rh_Weight"+tag,false);
+			vecobs.clear();
 			JetPoint center;
 			GetCenterXtal(rhs, center);	
 			map<pair<int,int>, vector<double>> grid;
@@ -1076,17 +1110,21 @@ class BaseSkimmer{
 				for(int j = -ngrid_boundary; j < ngrid_boundary+1; j++)
 					grid[make_pair(i,j)] = {0., 0., 0.};
 
+
+			vecobs.assign(_ngrid, vector<double>(_ngrid, 0.0));	
+
 			//skip empty jets
 			if(rhs.size() < 1){
-				for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
-					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+				vFillBranch(-999,"nRHs_grid"+tag);
+				//for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
+					//for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 						vvFillBranch(-999, "rh_iEta"+tag, jet_scIdx,false);
 						vvFillBranch(-999, "rh_iPhi"+tag, jet_scIdx,false);
-						vvFillBranch(0, "rh_Energy"+tag, jet_scIdx,false);
-						vvFillBranch(0,"rh_Weight"+tag,jet_scIdx,false);
-						mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = 0;
-					}
-				}
+						vvFillBranch(-999, "rh_Energy"+tag, jet_scIdx,false);
+						vvFillBranch(-999,"rh_Weight"+tag,jet_scIdx,false);
+						vecobs.assign(_ngrid, vector<double>(_ngrid, -999));	
+					//}
+				//}
 				return;
 			}
 
@@ -1126,27 +1164,90 @@ class BaseSkimmer{
 						vvFillBranch(dphi, "rh_iPhi"+tag, jet_scIdx,false);
 						vvFillBranch(rhs[j].E(), "rh_Energy"+tag, jet_scIdx,false);
 						vvFillBranch(wt,"rh_Weight"+tag,jet_scIdx,false);
+						int idx = deta + (_ngrid-1)/2;
+						int jidx = dphi + (_ngrid-1)/2;
+						vecobs[idx][jidx] = rhs[j].E();	
 						nrhs++;
 					}
-					//if(deta == 0 && dphi == -1) cout << "cell (" << deta << ", " << dphi << ") weights E = " << rhs[j].E() << ", t = " << rhs[j].t() - center.t() << ", r = " << mapobs[k]["CNNgrid_r_cell"+to_string(deta)+"_"+to_string(dphi)] << endl;
 
 				}
 			}
 			vFillBranch(nrhs,"nRHs_grid"+tag);
-			pair<int, int> icoords_grid;
-			for(int i = -(_ngrid-1)/2.; i < (_ngrid-1)/2+1; i++){
-				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					icoords_grid = make_pair(i,j);
-//cout << "MakeCNNInput - grid i " << i << " j " << j << " val " << grid[icoords_grid][0] << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
-					mapobs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)] = grid[icoords_grid][0];
-					//if(i == 0 && j == -1) cout << "cell (" << i << ", " << j << ") weights E = " << grid[icoords_grid][0] << ", t = " << grid[icoords_grid][1] << ", r = " << grid[icoords_grid][2] << endl; 
-				}
-			}
 		}
+	
+
+		string GetModelName(fdeep::model& model){
+			string model_name = model.name();
+			while(model_name.find("-") != string::npos){
+				model_name.replace(model_name.find("-"),1,"_");
+			}
+			return model_name;
+		}
+
+		//for model comparisons
+		void CNNPredict(fdeep::model& model, vector<vector<double>>& vecobs, vector<float>& ovalue){
+			ovalue.clear();
+			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
+			fdeep::tensor input_tensor(tensor_shape, 0.0f);
+			//transform grid to input_sample
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					int idx = i + (_ngrid-1)/2;
+					int jidx = j + (_ngrid-1)/2;
+					double val = vecobs[idx][jidx];
+					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+				}
+			}	
+
+	
+			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
+			fdeep::tensors result = model.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back(reti[j]);
+			}
+			//for(int i = 0; i < ovalue.size(); i++)
+			//	cout << "class #" << i << " score " << ovalue[i] << endl;
+			//cout << " pred class " << result.first << " with value " << result.second << endl;
+		}
+
+	
+		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
+		//grid maps int pair to vector of channels
+		void CNNPredict(vector<vector<double>>& vecobs, vector<float>& ovalue){
+			ovalue.clear();
+			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
+			fdeep::tensor input_tensor(tensor_shape, 0.0f);
+			//transform grid to input_sample
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					int idx = i + (_ngrid-1)/2;
+					int jidx = j + (_ngrid-1)/2;
+					double val = vecobs[idx][jidx];
+					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+				}
+			}	
+
+	
+			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
+			fdeep::tensors result = _detbkgmodel.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back(reti[j]);
+			}
+			//for(int i = 0; i < ovalue.size(); i++)
+			//	cout << "class #" << i << " score " << ovalue[i] << endl;
+			//cout << " pred class " << result.first << " with value " << result.second << endl;
+		}
+
 
 		//pass name of json from frugally-deep-master/keras_export/convert_model.py
 		//for DNN input
-		fdeep::model _detbkgmodel = fdeep::load_model("config/json/small3CNN_EMultr_2017and2018.json");
+		fdeep::model _detbkgmodel = fdeep::load_model("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json");
 		fdeep::model _photonidmodel = fdeep::load_model("config/json/med16DNN_MCtrained_photonID.json");
 		void SetCNNModel(string fname){
 			_detbkgmodel = fdeep::load_model(fname);
@@ -1213,33 +1314,6 @@ class BaseSkimmer{
 			}
 		}
 	
-		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
-		//grid maps int pair to vector of channels
-		void CNNPredict(map<string, double>& obs, vector<float>& ovalue){
-			ovalue.clear();
-			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
-			fdeep::tensor input_tensor(tensor_shape, 0.0f);
-			//transform grid to input_sample
-			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
-				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					double val = obs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
-					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
-					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
-				}
-			}	
-	
-			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
-			fdeep::tensors result = _detbkgmodel.predict({input_tensor});
-			for(int i = 0; i < result.size(); i++){
-				vector<float> reti = result[i].to_vector();
-				for(int j = 0; j < reti.size(); j++)
-					ovalue.push_back(reti[j]);
-			}
-			//for(int i = 0; i < ovalue.size(); i++)
-			//	cout << "class #" << i << " score " << ovalue[i] << endl;
-			//cout << " pred class " << result.first << " with value " << result.second << endl;
-		}
-
 	//returns vector sum of given objects
 	Jet VectorSum(vector<Jet>& jets){
 		Jet ret;
@@ -1290,48 +1364,46 @@ class BaseSkimmer{
 		}
 		vector<Jet> bhc_jets;
 		TreesToJets(trees, bhc_jets, PV);
-		if(bhc_jets.size() < 1)
+		if(bhc_jets.size() < 1){
 			return -2;
+		}
 		///fill pre PU cleaning branches
 		Matrix cov = bhc_jets[0].GetCovariance();
-		vFillBranch((double)bhc_jets[0].GetNConstituents(),"nSubclusters"+tag+"_prePUcleaning");
-		vFillBranch(cov.at(0,0),"EtaVar"+tag+"_prePUcleaning");
-		vFillBranch(cov.at(1,1),"PhiVar"+tag+"_prePUcleaning");
-		vFillBranch(cov.at(2,2),"TimeVar"+tag+"_prePUcleaning");
-		if(_obj != "SC"){
-			vFillBranch(bhc_jets[0].eta(),"EtaCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].phi(),"PhiCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].t(),"TimeCenter"+tag+"_prePUcleaning");
-			vFillBranch(bhc_jets[0].e(),"Energy"+tag+"_prePUcleaning");
-		}
 		vector<bool> scores; //PU discriminator scores of subclusters
 		result = bhc_jets[0];
+		vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
 		pu_cleaned_result = bhc_jets[0].CleanOutPU(scores, false);
-		vFillBranch((double)result.GetNConstituents(),"nSubclusters"+tag);
-		if(_obj == "SC"){
-			vFillBranch((double)result.GetNConstituents(),"nSubclusters_BHC");
+		if(result.GetNConstituents() < 1){
+			vvFillBranch(-999,"PUscores_BHC",idx);
+			vvFillBranch(-999,"EtaVar_BHC",idx);
+			vvFillBranch(-999,"PhiVar_BHC",idx);
+			vvFillBranch(-999,"TimeVar_BHC",idx);
+			vvFillBranch(-999,"EtaCenter_BHC",idx);
+			vvFillBranch(-999,"PhiCenter_BHC",idx);
+			vvFillBranch(-999,"TimeCenter_BHC",idx);
+			vvFillBranch(-999,"Energy_BHC",idx);
+			return -1;
 		}
-		if(result.GetNConstituents() < 1) return -1;
 		if(idx == -1) return 0;
 		//plot PU scores of subclusters
 		Jet subcl;
 		if(scores.size() != bhc_jets[0].GetNConstituents()) cout << "ERROR: # SCORES " << scores.size() << " DOES NOT MATCH # OF ORIGINAL SUBCLUSTERS " << bhc_jets[0].GetNConstituents() << endl;
 		for(int k = 0; k < bhc_jets[0].GetNConstituents(); k++){
 //cout << "subcl #" << k << " score " << scores[k] << endl;
-			vvFillBranch((double)scores[k],"PUscores",idx);
+			vvFillBranch((double)scores[k],"PUscores_BHC",idx);
 			bhc_jets[0].GetConstituent(k, subcl);
 			Matrix subcl_cov = subcl.GetCovariance();
 			double relEta = subcl_cov.at(0,0) / cov.at(0,0);
 			double relPhi = subcl_cov.at(1,1) / cov.at(1,1);
 			double relTime = subcl_cov.at(2,2) / cov.at(2,2);
 			double rel_geoavg = pow( (relEta * relPhi * relTime), 1./3.);
-			vvFillBranch(subcl_cov.at(0,0),"EtaVar_prePUcleaning",idx);
-			vvFillBranch(subcl_cov.at(1,1),"PhiVar_prePUcleaning",idx);
-			vvFillBranch(subcl_cov.at(2,2),"TimeVar_prePUcleaning",idx);
-			vvFillBranch(subcl.eta(),"EtaCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.phi(),"PhiCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.t(),"TimeCenter_prePUcleaning",idx);
-			vvFillBranch(subcl.e(),"Energy_prePUcleaning",idx);
+			vvFillBranch(subcl_cov.at(0,0),"EtaVar_BHC",idx);
+			vvFillBranch(subcl_cov.at(1,1),"PhiVar_BHC",idx);
+			vvFillBranch(subcl_cov.at(2,2),"TimeVar_BHC",idx);
+			vvFillBranch(subcl.eta(),"EtaCenter_BHC",idx);
+			vvFillBranch(subcl.phi(),"PhiCenter_BHC",idx);
+			vvFillBranch(subcl.t(),"TimeCenter_BHC",idx);
+			vvFillBranch(subcl.e(),"Energy_BHC",idx);
 		}
 		//below returns empty jet if no subclusters pass PU cut - put in safety for this
 		if(result.GetNRecHits() < 1) return -1;
@@ -1364,6 +1436,21 @@ class BaseSkimmer{
 	void SetMinHt_CR(double p){ _minHt_CRsel = p; }
 	void SetMinJetPt_CR(double p){ _minJetPt_CRsel = p; _jetprod->SetMinPt(p); _jetprod->SetTransferFactor(_gev); }
 	void SetMaxMet_CR(double p){ _maxMet_CRsel = p; }
+
+
+
+	void SetEventFilterPass(){
+		if(_year == 2017){ //some event filters are broken in 2017 ntuples
+			//broken filters
+			//Flag_BadPFMuonDzFilter
+			//Flag_hfNoisyHitsFilter
+			_evtfilters = _base->Flag_BadChargedCandidateFilter &&  _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices;
+		}
+		else{
+			_evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+
+		}
+	}
 	
 	//needs to be a raw pointer because ROOT opens a TFile in ctor
 	ReducedBase* _base;
@@ -1374,6 +1461,7 @@ class BaseSkimmer{
 	Jet jet_sys;
 	int _nEvts;
 	bool _data;
+	int _year;
 	bool _debug;
 	int _evti, _evtj;
 	string _cms_label, _oname;
@@ -1387,8 +1475,10 @@ class BaseSkimmer{
 	string _jsonfile;
 	bool _applyLumiMask;
 
+	bool _evtfilters;
+
 	TTree* _tree;
-	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance"};
+	vector<string> _obsnames = {"nSubclusters","Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "EtaPhiCov", "EtaTimeCov", "PhiTimeCov","timeSignificance", "nRHs", "object"};
 	vector<string> _obsnames_subcl = {"Energy","EtaCenter","PhiCenter","TimeCenter", "EtaVar", "PhiVar", "TimeVar", "PUscores"};
 	map<string, double> _obs;
 	map<string, vector<double>> _vobs;

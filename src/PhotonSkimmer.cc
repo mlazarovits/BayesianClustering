@@ -57,9 +57,9 @@ void PhotonSkimmer::Skim(){
 		_csvname = _oname.substr(0,_oname.find(".root"));
 		_csvname = _csvname+".csv";
 	}
-	_csvfile.open(_csvname);
+	//_csvfile.open(_csvname);
 	//write header
-	WriteHeader();
+	//WriteHeader();
 
 	int nPho;
 	
@@ -113,19 +113,18 @@ void PhotonSkimmer::Skim(){
 	int nEvts_EvtFilterPass = 0;
 	int nEvts_GJetsPass = 0;
 	int nphoran = 0;
+	cout << "total nevts in file " << _nEvts << endl;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
 		if(_applyLumiMask){
 			if(!_jsonTool.IsGood(_base->Evt_run, _base->Evt_luminosityBlock) && _jsonfile != "" && _data){
-				cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
+				//cout << "Skipping event " << e << " in run " << _base->Evt_run << " and lumi section " << _base->Evt_luminosityBlock << " due to lumi mask." << endl;
 				continue;
 			}
 		}
-		cout << "evt: " << e << " of " << _nEvts << " for run " << _base->Evt_run;
 		nEvts_tot++;
 		_prod->GetTruePhotons(phos, e, _gev);
-		if(phos.size() < 1){ cout << endl; continue; }
 		//PV info
 		pvx = _base->PV_x;
 		pvy = _base->PV_y;
@@ -156,17 +155,18 @@ void PhotonSkimmer::Skim(){
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 		SetDijetsCR_EvtSel(e);
 		FillBranch(_passDijetsEvtSel,"PassDijetsCR");	
-		bool evtfilters = _base->Flag_BadChargedCandidateFilter && _base->Flag_BadPFMuonDzFilter && _base->Flag_BadPFMuonFilter && _base->Flag_EcalDeadCellTriggerPrimitiveFilter && _base->Flag_HBHENoiseFilter && _base->Flag_HBHENoiseIsoFilter && _base->Flag_ecalBadCalibFilter && _base->Flag_goodVertices && _base->Flag_hfNoisyHitsFilter;
+
+		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
-			if(!evtfilters){
-				cout << "skipping event - failed event filters" << endl; 
+			if(!_evtfilters){
+				//cout << "skipping event - failed event filters" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
 			} else nEvts_EvtFilterPass++;
 
 			if(!_passGJetsEvtSel){
-				cout << "skipping event - failed GJets CR selection" << endl; 
+				//cout << "skipping event - failed GJets CR selection" << endl; 
 				_tree->Fill();
 				_reset();
 				continue;
@@ -183,30 +183,71 @@ void PhotonSkimmer::Skim(){
 				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			if(rhs.size() < 1){ cout << endl; continue; }
-			cout << "  pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			if(_verb > -1) cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			//cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			Jet bhc_pho, bhc_pho_pucleaned;
 			addVectors();
 			int ret = RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false, bhc_pho_idx); //downweighting rhs
-			if(ret < 0){
-				continue;
-			}
-			bhc_pho_idx++;
-			rhs.clear();
-			bhc_pho.GetJets(rhs);
-			//get parameters for model
-			
-			//vector<double> obs;				
-			map<string,double> obs; //init obs map
-			InitObs(obs);
-			obs.at("event") = e;
-			obs.at("event_weight") = _weight;
-			obs.at("object") = phoidx;
 
-			FillJetObs(bhc_pho, obs);
+
+			map<string,Jet> _SCtypes_map; //keys need to match _SCtypes member var
+			_SCtypes_map[_SCtypes[0]] = bhc_pho;
+			_SCtypes_map[_SCtypes[1]] = bhc_pho_pucleaned;
+			_SCtypes_map[_SCtypes[2]] = phos[p];
+		
+	
+			//map<string,double> obs; //init obs map
+			////InitObs(obs);
+			//obs.at("event") = e;
+			//obs.at("event_weight") = _weight;
+			//obs.at("object") = p;
+                        //obs.at("object") = phoidx;
+
+			for(auto jt = _SCtypes_map.begin(); jt != _SCtypes_map.end(); jt++){
+				string tag = jt->first;
+				Jet pho_obj = jt->second;
+
+				vFillBranch((double)p, "object_"+tag);
+				FillPhotonObs(pho_obj, tag);
+				int label = GetTrainingLabel(phoidx,bhc_pho,phos[p]);
+				//cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
+				//cout << "label: " << label << endl;
+				//only get lead subcluster -> ncl = 0
+                        	       
+				//BaseSkimmer::WriteObs(obs,"photons");
+
+
+				//do DNN prediction
+				vector<double> dnn_scores;
+				map<string, double> dnn_obs;
+				MakeDNNInputs(pho_obj, phoidx, dnn_obs);
+
+				DNNPredict(dnn_obs, dnn_scores);
+				//auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
+				//double predval = *max_el;
+				////labeling starts from 1
+				//int nclass = std::distance(dnn_scores.begin(), max_el) + 1;
+				//nclass = (nclass == 0) ? 4 : 6;
+				//cout << "class " << nclass << " predval " << predval << " for photon " << phoidx << " with label " << label << " and type " << tag << endl;
+				//vFillBranch(nclass,"predLabel_"+tag);
+                        	if(tag != "CMS" && ret < 0){
+					vFillBranch(-999, "Pt_"+tag);
+					vFillBranch(-999,"predScore_isoBkg_"+tag);
+					vFillBranch(-999,"predScore_nonIsoBkg_"+tag);	
+					vFillBranch(-999,"trueLabel_"+tag);
+				}
+				else{
+					if(tag != "CMS") vFillBranch(pho_obj.pt(), "Pt_"+tag);
+					vFillBranch(label,"trueLabel_"+tag);
+					vFillBranch(dnn_scores[0],"predScore_isoBkg_"+tag);
+					vFillBranch(dnn_scores[1],"predScore_nonIsoBkg_"+tag);	
+				}
+			}
+			nphoran++;
+			bhc_pho_idx++;
 			//add CMS benchmark variables - R9, Sietaieta, Siphiiphi, Smajor, Sminor
 			//add CMS benchmark variable - isolation information
 			//need to find associated photon
@@ -220,18 +261,18 @@ void PhotonSkimmer::Skim(){
 			double hIso = _base->Photon_hcalTowerSumEtConeDR04->at(phoidx);//_base->Photon_hcalPFClusterIso->at(phoidx);
 			double tIso = _base->Photon_trkSumPtHollowConeDR03->at(phoidx);
 			double pt = _base->Photon_pt->at(phoidx);
-			obs.at("R9") = r9;
-                        obs.at("Sietaieta") = Sieie;
-			obs.at("Siphiiphi") = Sipip;
-                        obs.at("Smajor") = _base->SuperCluster_smaj->at(scidx);
-                        obs.at("Sminor") = _base->SuperCluster_smin->at(scidx);
+			vFillBranch(r9, "R9");
+                        vFillBranch(Sieie, "Sietaieta");
+			vFillBranch(Sipip, "Siphiiphi");
+                        vFillBranch(_base->SuperCluster_smaj->at(scidx),"Smajor");
+                        vFillBranch(_base->SuperCluster_smin->at(scidx),"Sminor");
                         //iso/pT
-                        obs.at("Pt") = pt;
-                        obs.at("hcalTowerSumEtConeDR04") = hIso;
-                        obs.at("trkSumPtHollowConeDR04") = _base->Photon_trkSumPtHollowConeDR04->at(phoidx);
-                        obs.at("trkSumPtSolidConeDR04") = _base->Photon_trkSumPtSolidConeDR04->at(phoidx);
-                        obs.at("hadTowOverEM") = _base->Photon_hadTowOverEM->at(phoidx);
-                        obs.at("ecalRHSumEtConeDR04") = eIso;
+                        vFillBranch(pt, "Pt_CMS");
+                        vFillBranch(hIso,"hcalTowerSumEtConeDR04");
+                        vFillBranch(_base->Photon_trkSumPtHollowConeDR04->at(phoidx),"trkSumPtHollowConeDR04");
+                        vFillBranch(_base->Photon_trkSumPtSolidConeDR04->at(phoidx),"trkSumPtSolidConeDR04");
+                        vFillBranch(_base->Photon_hadTowOverEM->at(phoidx),"hadTowOverEM");
+                        vFillBranch(eIso,"ecalRHSumEtConeDR04");
 			double ptmin;
 			if(p == 0)
 				ptmin = 70;
@@ -240,50 +281,20 @@ void PhotonSkimmer::Skim(){
 			//cout << "sc " << scidx << " pho " << phoidx << " eIso " << eIso << " hIso " << hIso << " tIso " << tIso << " pt " << pt << " trkSumPtHollowConeDR04 "  << _base->Photon_trkSumPtHollowConeDR04->at(phoidx) << " trkSumPtSolidConeDR04 " << _base->Photon_trkSumPtSolidConeDR04->at(phoidx) << " hadTowOverEM " << _base->Photon_hadTowOverEM->at(phoidx) << endl;
 			//do 2017 preselection
 			if(r9 >= 0.9 && HoE <= 0.15 && Sieie <= 0.014 && eIso <= 5.0 + 0.01*pt && hIso <= 12.5 + 0.03*pt + 3.0e-5*pt*pt && tIso <= 6.0 + 0.002*pt && pt > ptmin){
-                               		obs.at("2017_presel") = 1;
+                               		vFillBranch(1,"2017_presel");
 			
 			}
 			else{ //failed preselection
-                               		obs.at("2017_presel") = 0;
+                               		vFillBranch(0,"2017_presel");
 			}
-			int label = GetTrainingLabel(phoidx,bhc_pho,phos[p]);
-		cout << " label for photon " << p << ", " << phoidx << " : " << label << endl; 
-			//cout << "label: " << label << endl;
-				obs.at("event") = e;
-                                obs.at("object") = phoidx;
-				obs.at("event_weight") = _weight;
-			//only get lead subcluster -> ncl = 0
-                                obs.at("label") = label;
-				BaseSkimmer::WriteObs(obs,"photons");
-				vFillBranch(label,"trueLabel");
-			//do DNN prediction
-			vector<double> dnn_scores;
-			map<string, double> dnn_obs;
-			MakeDNNInputs(bhc_pho, phoidx, dnn_obs);
-			nphoran++;
 
-			DNNPredict(dnn_obs, dnn_scores);
-			//TODO - update with discriminator score cut
-			auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
-			double predval = *max_el;
-			//labeling starts from 1
-			int nclass = std::distance(dnn_scores.begin(), max_el) + 1;
-			nclass = (nclass == 0) ? 4 : 6;
-			cout << "class " << nclass << " predval " << predval << " for photon " << phoidx << " with label " << label << endl;	
-			vFillBranch(nclass,"predLabel");
-			vFillBranch(dnn_scores[0],"predScore_isoBkg");
-			vFillBranch(dnn_scores[1],"predScore_nonIsoBkg");	
-
-			FillBranches(obs);	
 		}
 		_tree->Fill();
 		_reset();
 	}
-	cout << "\n" << endl;
 	//ofile->WriteTObject(objE_clusterE);
 	//WriteHists(ofile);
-	_csvfile.close();
-	cout << "\n" << endl;
+	//_csvfile.close();
 	TFile* ofile = new TFile(_oname.c_str(),"RECREATE");
 	_tree->SetDirectory(ofile);
 	ofile->cd();
@@ -291,7 +302,7 @@ void PhotonSkimmer::Skim(){
 	ofile->Close();
 	cout << "Ran over " << nphoran << " photons" << endl;
 	cout << "Wrote skim to: " << _oname << endl;
-	cout << "Wrote MVA inputs to " << _csvname << endl;
+	//cout << "Wrote MVA inputs to " << _csvname << endl;
 	cout << "Total events ran over " << nEvts_tot << " events that passed event filters " << nEvts_EvtFilterPass << " events that pass event filters and GJets selection " << nEvts_GJetsPass << endl;
 }
 

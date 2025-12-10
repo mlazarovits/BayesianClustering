@@ -9,8 +9,9 @@ def main():
     parser.add_argument("--dryRun",help="dry run, print commands without running",action="store_true")
     args = parser.parse_args()
 
+    scratch_path = "/uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/"
 	
-    cmdHadd = "hadd -k -d /uscmst1b_scratch/lpc1/3DayLifetime/mlazarov/ -j 4"
+    cmdHadd = "hadd -k -d "+scratch_path+" -j 4"
     for d in os.scandir(args.dir):
         print(d.path)
         if not os.path.exists(d.path+"/out"):
@@ -19,7 +20,7 @@ def main():
         proc = d.path[d.path.find("/")+1:]
         proc = proc[proc.find("/")+1:]
         proc = proc[:proc.find("/")]
-        proc = proc[:proc.rfind("_AOD")]
+        #proc = proc[:proc.rfind("_AOD")]
 
         bashfilename = "haddScripts/doHadd_"+proc+"_"+oname+".sh"
         bashfile = open(bashfilename,"w")
@@ -28,7 +29,7 @@ def main():
             for i in range(10):
                 oname = d.name+"_"+proc+"_"+str(i)+".root"
                 oname = "condor_"+oname
-                oname = d.path+"/"+oname
+                oname = scratch_path+"/"+oname
                 cmd = ""
                 #check if file exists
                 if os.path.exists(oname):
@@ -46,15 +47,15 @@ def main():
                 #print("Wrote to "+oname)
             oname = d.name+"_"+proc+".root"
             oname = "condor_"+oname
-            oname = d.path+"/"+oname
+            oname = scratch_path+"/"+oname
             #check if file exists
             if os.path.exists(oname):
             	if(args.force):
             		cmd = cmdHadd+" -f"
             	else:
             		print(oname+" exists ")
-            #print(cmd+" "+oname+" "+d.path+"/condor_*.root")	
-            bashfile.write(cmd+" "+oname+" "+d.path+"/condor_*.root\n")	
+            #print(cmd+" "+oname+" "+d.path+"/condor_*.root")
+            bashfile.write(cmd+" "+oname+" "+oname[:oname.find(".root")]+"_*.root\n")	
             #if not args.dryRun:
             #    os.system(cmd+" "+oname+" "+d.path+"/condor_*.root")	
             #print("Wrote to "+oname)
@@ -62,7 +63,7 @@ def main():
         else:
             oname += "_"+proc+".root"
             oname = "condor_"+oname
-            oname = d.path+"/"+oname
+            oname = do.path+"/"+oname
             cmd = cmdHadd
             #check if file exists
             if os.path.exists(oname):

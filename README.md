@@ -17,7 +17,8 @@ Once all of the below packages are downloaded, the corresponding paths in the Ma
 - ROOT for producers and skimmers
 - Python for macros for visualization
 	- at least v3.x
-- [KUCMSTimeCalibration code](https://github.com/jking79/KUCMSNtupleizer.git) (until skimmers are split out...)
+- [KUCMSTimeCalibration code](https://github.com/jking79/KUCMSNtupleizer/tree/master/KUCMSSkimmer)
+	- this object MUST be compiled in the same gcc version as the main framework 
 All external packages below are header only: 
 - [eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 - [boost](https://www.boost.org/doc/libs/1_82_0/libs/math/doc/html/special.html)

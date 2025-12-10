@@ -329,7 +329,6 @@ class Jet{
 			_constituents.push_back(jt);
 		}
 		//since the GMM has probabilistic assignment of points, these jets will be defined by their center and cov
-		//void GetConstituents(std::vector<Jet, Eigen::aligned_allocator<Jet>>& consts) const{
 		void GetConstituents(std::vector<Jet>& consts) const{
 			consts.clear();
 			consts = _constituents;
@@ -526,8 +525,8 @@ class Jet{
 
 		//add PU cleaning method
 		//if remove == false, rechits are downweighted by 1 - r_nk for each subcluster k that doesnt pass PU cleaning reqs
-		Jet CleanOutPU(vector<bool>& scores, bool remove = false){
-			scores.clear();
+		Jet CleanOutPU(vector<bool>& pass, bool remove = false){
+			pass.clear();
 			Matrix cov = GetCovariance();
 			Jet cleanedJet;
 			vector<JetPoint> cleanedRhs;
@@ -541,8 +540,11 @@ class Jet{
 			// if max(r_nk) belongs to subcluster k that FAILS PU cleaning criteria, weight energy by 0.
 			// if max(r_nk) belongs to subcluster k that PASSES PU cleaning criteria, weight energy by 1.
 			//(unweighted) r_nk's are saved as rh weights
-			vector<bool> pass; //true = pass, false = fail
 //cout << "original energy " << this->E() << " pt " << this->pt() << endl;
+			if(_constituents.size() < 2){ //force equality of relGeoAvg = relE to avoid floating point errors
+				pass.push_back(true);
+				return *this; //if no subclusters or only 1, return current jet
+			}
 			//sort constituents by energy
 			for(int k = 0; k < _constituents.size(); k++){
 				double relE = _constituents[k].e() / this->e();
@@ -558,9 +560,6 @@ class Jet{
 					pass.push_back(false);
 			//cout << "subcluster #" << k << " rel geo Avg " << relGeoAvg << " rel E " << relE << " pass? " << pass[k] << endl;	
 			}
-			scores = pass;
-//cout << "cleanoutput - # constituents " << _constituents.size() << " # rhs " << _nRHs << " pass? " << scores[0] << endl;
-			if(_constituents.size() < 2) return *this; //if no subclusters or only 1, return current jet
 			//return empty jet if no subclusters pass criteria
 			if(find(pass.begin(), pass.end(), true) == pass.end()){
 				Jet ret;
