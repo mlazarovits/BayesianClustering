@@ -113,6 +113,7 @@ void PhotonSkimmer::Skim(){
 	int nEvts_EvtFilterPass = 0;
 	int nEvts_GJetsPass = 0;
 	int nphoran = 0;
+	cout << "total nevts in file " << _nEvts << endl;
 	for(int e = _evti; e < _evtj; e++){
 		_base->GetEntry(e);
 		//apply lumi mask
@@ -182,7 +183,7 @@ void PhotonSkimmer::Skim(){
 				pho_rhE += rh.E();
 			phoidx = phos[p].GetUserIdx();
 			scidx = _base->Photon_scIndex->at(phoidx);
-			cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
+			if(_verb > -1) cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			//cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
 
@@ -239,8 +240,8 @@ void PhotonSkimmer::Skim(){
 					vFillBranch(-999,"trueLabel_"+tag);
 				}
 				else{
+					if(tag != "CMS") vFillBranch(pho_obj.pt(), "Pt_"+tag);
 					vFillBranch(label,"trueLabel_"+tag);
-					vFillBranch(pho_obj.pt(), "Pt_"+tag);
 					vFillBranch(dnn_scores[0],"predScore_isoBkg_"+tag);
 					vFillBranch(dnn_scores[1],"predScore_nonIsoBkg_"+tag);	
 				}
