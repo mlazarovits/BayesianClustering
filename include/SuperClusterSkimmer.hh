@@ -86,9 +86,11 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				vAddBranch("weightedTimeSignificance_noSubclusterWeights_"+tag,"time significance with inverse variance weights only");
 
 				vAddBranch("trueLabel_"+tag); //CR designation
+				//for main network
 				vAddBranch("predScore_physBkg_"+tag); //CNN prediction
 				vAddBranch("predScore_BH_"+tag); //CNN prediction
-				vAddBranch("predScore_spike_"+tag); //CNN prediction
+				//vAddBranch("predScore_spike_"+tag); //CNN prediction
+				
 				
 				//rh obs
 				vvAddBranch("rh_Weight_"+tag,"weight of rh in 7x7 CNN grid");

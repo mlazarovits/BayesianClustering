@@ -12,6 +12,18 @@ void SuperClusterSkimmer::Skim(){
 		_jsonTool.BuildMap(_jsonfile);
 	}
 
+
+	//testing networks
+	vector<fdeep::model> test_models;
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json"));
+	//add branches for test models
+	for(int m = 0; m < test_models.size(); m++){
+		//get model name
+		string model_name = GetModelName(test_models[m]);
+		vAddBranch(model_name+"_predScore_physBkg_CMS"); //CNN prediction
+		vAddBranch(model_name+"_predScore_BH_CMS"); //CNN prediction
+	}
+
 	cout << "Writing skim to: " << _oname << endl;
 	cout << "Using clustering strategy NlnN full BHC with supercluster objects" << endl;
 
@@ -186,8 +198,19 @@ void SuperClusterSkimmer::Skim(){
 				MakeCNNInputGrid(rh_pts, rh_grid, jet_scIdx, tag);
 			
 	
+				//do predictions for test models
+				if(tag == "CMS"){
+					for(int m = 0; m < test_models.size(); m++){
+						vector<float> test_ovalues;
+						CNNPredict(test_models[m], rh_grid, test_ovalues);
+						string model_name = GetModelName(test_models[m]);
+						vFillBranch((double)test_ovalues[0], model_name+"_predScore_physBkg_"+tag);
+						vFillBranch((double)test_ovalues[1], model_name+"_predScore_BH_"+tag);
+					}
+				}
 				vector<float> ovalues; //discriminator output value, pass-by-ref
 				CNNPredict(rh_grid, ovalues);
+
 				//TODO - update with discriminator score cut
 				auto max_el = max_element(ovalues.begin(), ovalues.end());
 				double predval = *max_el;
@@ -199,7 +222,7 @@ void SuperClusterSkimmer::Skim(){
 				if(tag != "CMS"){
 					vFillBranch(-999, "predScore_physBkg_"+tag);
 					vFillBranch(-999, "predScore_BH_"+tag);
-					vFillBranch(-999, "predScore_spike_"+tag);
+					//vFillBranch(-999, "predScore_spike_"+tag);
 					if(ret < 0){
 						vFillBranch(-999, "trueLabel_"+tag);
 					}
@@ -209,9 +232,9 @@ void SuperClusterSkimmer::Skim(){
 				}
 				else{
 					vFillBranch((double)label, "trueLabel_"+tag);
-					vFillBranch(ovalues[0], "predScore_physBkg_"+tag);
-					vFillBranch(ovalues[1], "predScore_BH_"+tag);
-					vFillBranch(ovalues[2], "predScore_spike_"+tag);
+					vFillBranch((double)ovalues[0], "predScore_physBkg_"+tag);
+					vFillBranch((double)ovalues[1], "predScore_BH_"+tag);
+					//vFillBranch(ovalues[2], "predScore_spike_"+tag);
 				}
 			}
 			jet_scIdx++;	

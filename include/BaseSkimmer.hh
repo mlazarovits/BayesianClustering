@@ -1174,7 +1174,46 @@ class BaseSkimmer{
 			}
 			vFillBranch(nrhs,"nRHs_grid"+tag);
 		}
-		
+	
+
+		string GetModelName(fdeep::model& model){
+			string model_name = model.name();
+			while(model_name.find("-") != string::npos){
+				model_name.replace(model_name.find("-"),1,"_");
+			}
+			return model_name;
+		}
+
+		//for model comparisons
+		void CNNPredict(fdeep::model& model, vector<vector<double>>& vecobs, vector<float>& ovalue){
+			ovalue.clear();
+			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
+			fdeep::tensor input_tensor(tensor_shape, 0.0f);
+			//transform grid to input_sample
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					int idx = i + (_ngrid-1)/2;
+					int jidx = j + (_ngrid-1)/2;
+					double val = vecobs[idx][jidx];
+					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+				}
+			}	
+
+	
+			//the ordering of the output classes is taken from Keras (ie class 0 = index 0, etc)
+			fdeep::tensors result = model.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back(reti[j]);
+			}
+			//for(int i = 0; i < ovalue.size(); i++)
+			//	cout << "class #" << i << " score " << ovalue[i] << endl;
+			//cout << " pred class " << result.first << " with value " << result.second << endl;
+		}
+
+	
 		//for CNN input - (ngrid, ngrid, nchannels) grid - CNN
 		//grid maps int pair to vector of channels
 		void CNNPredict(vector<vector<double>>& vecobs, vector<float>& ovalue){
