@@ -246,34 +246,31 @@ class MergeTree : BaseTree{
 			int k;
 			vector<map<string,Matrix>> prev_posts = {};
 			map<int,int> left_post_indices, right_post_indices;
-		cout << "point a" << endl;	
   			//if leaf node (ie r == nullptr && l == nullptr) -> set k = 1
 			if(x->points->GetNPoints() == 1 || x->points->Sumw() < _thresh){ 
-				cout << "leaf nodes - setting max # clusters == 1" << endl;
+				//cout << "leaf nodes - setting max # clusters == 1" << endl;
 		 		k = 1;
 			}
 			//if the sum of all weights is not enough for 1 subcluster to be "above threshold" they should not be able to be broken into multiple subclusters
 			//number of clusters in node x = k_l + k_r for left and right nodes
 			else{
-				cout << "point a1" << endl;
-				cout << "left null? " << (x->l == nullptr) << " right null? " << (x->r == nullptr) << endl;
-				cout << "left model null? " << (x->l->model == nullptr) << endl;
-				cout << "left points" << endl; x->l->points->Print();
-				cout << " right model null? " << (x->r->model == nullptr) << endl;
-				cout << "right points" << endl; x->r->points->Print();
-				cout << "total # pts " << x->points->GetNPoints() << endl; x->points->Print();	
+				//cout << "point a1" << endl;
+				//cout << "left null? " << (x->l == nullptr) << " right null? " << (x->r == nullptr) << endl;
+				//cout << "left model null? " << (x->l->model == nullptr) << endl;
+				//cout << "left points" << endl; x->l->points->Print();
+				//cout << " right model null? " << (x->r->model == nullptr) << endl;
+				//cout << "right points" << endl; x->r->points->Print();
+				//cout << "total # pts " << x->points->GetNPoints() << endl; x->points->Print();	
 				int mincls = x->l->model->GetNClusters() + x->r->model->GetNClusters();
-				cout << "point a2" << endl;
 				int npts = x->points->GetNPoints();//x->l->model->GetData()->GetNPoints() + x->r->model->GetData()->GetNPoints();
-				cout << "point a3" << endl;
 				k = npts < mincls ? npts : mincls;
-				cout << "not leaf nodes - mincls " << mincls << " npts " << npts << " k " << k << endl;
+				//cout << "not leaf nodes - mincls " << mincls << " npts " << npts << " k " << k << endl;
 				//k = npts;
 				//k = x->l->model->GetNClusters() + x->r->model->GetNClusters();
 				//setting initial posterior parameters from models of previous steps
 				vector<double> nnorms; x->l->model->GetNorms(nnorms);
 				for(int kk = 0; kk < x->l->model->GetNClusters(); kk++){
-					cout << "left cluster #" << kk << endl;
+					//cout << "left cluster #" << kk << endl;
 					prev_posts.emplace_back(map<string, Matrix>());
 					x->l->model->GetLHPosteriorParameters(kk,prev_posts[prev_posts.size()-1]);
 					if(_verb > 5){
@@ -287,7 +284,7 @@ class MergeTree : BaseTree{
 				} 
 				x->r->model->GetNorms(nnorms);
 				for(int kk = 0; kk < x->r->model->GetNClusters(); kk++){
-					cout << "right cluster #" << kk << endl;
+					//cout << "right cluster #" << kk << endl;
 					prev_posts.emplace_back(map<string, Matrix>());
 					x->r->model->GetLHPosteriorParameters(kk, prev_posts[prev_posts.size()-1]);
 					if(_verb > 5){
