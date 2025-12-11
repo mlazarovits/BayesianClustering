@@ -1189,12 +1189,25 @@ class BaseSkimmer{
 			ovalue.clear();
 			fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);//1 channel
 			fdeep::tensor input_tensor(tensor_shape, 0.0f);
-			//transform grid to input_sample
+			//need to normalize input samples
+			double norm = 0;
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
 					int idx = i + (_ngrid-1)/2;
 					int jidx = j + (_ngrid-1)/2;
 					double val = vecobs[idx][jidx];
+					norm += val;
+					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
+				}
+			}	
+			
+
+			//transform grid to input_sample
+			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
+				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
+					int idx = i + (_ngrid-1)/2;
+					int jidx = j + (_ngrid-1)/2;
+					double val = vecobs[idx][jidx] / norm;
 					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 					//cout << "CNNPredict - grid i " << i << " j " << j << " val " << val << " key " << "CNNgrid_cell"+to_string(i)+"_"+to_string(j) << endl;
 				}
@@ -1208,6 +1221,12 @@ class BaseSkimmer{
 				for(int j = 0; j < reti.size(); j++)
 					ovalue.push_back(reti[j]);
 			}
+			//if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
+			if(ovalue.size() == 1){
+				double oval = ovalue[0];
+				ovalue[0] = 1 - oval;
+				ovalue.push_back(oval);
+			}	
 			//for(int i = 0; i < ovalue.size(); i++)
 			//	cout << "class #" << i << " score " << ovalue[i] << endl;
 			//cout << " pred class " << result.first << " with value " << result.second << endl;
