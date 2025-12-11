@@ -196,11 +196,11 @@ struct ClusterObj{
 		int ret = GetCenterXtal(center);
 		if(ret < 0){
 			if(pho){
-				_detBkgScores = {{-1, -1, -1}};
+				_detBkgScores = {{-1, -1}};
 			}
 			else{
 				for(int k = 0; k < _jet.GetNConstituents(); k++){
-					_detBkgScores.push_back({-1, -1, -1});
+					_detBkgScores.push_back({-1, -1});
 				}
 			}
 			return;
@@ -211,8 +211,10 @@ struct ClusterObj{
 			//transform grid to input_sample
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-					double val = inputs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
-					input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+                                        int idx = i + (_ngrid-1)/2;
+                                        int jidx = j + (_ngrid-1)/2;
+                                        double val = vecobs[idx][jidx];
+                                        input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 				}							
 			}
 			//predict_class returns predicted class number and value of max output neuron
@@ -221,6 +223,12 @@ struct ClusterObj{
                                 vector<float> reti = result[i].to_vector();
                                 _detBkgScores.push_back(reti);
                         }
+                        //if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
+                        if(_detBkgScores.size() == 1){
+                                double oval = _detBkgScores[0];
+                                _detBkgScores[0] = 1 - oval;
+                                _detBkgScores.push_back(oval);
+                        }
 		}
 		else{
 			for(int k = 0; k < _jet.GetNConstituents(); k++){
@@ -228,8 +236,10 @@ struct ClusterObj{
 				//transform grid to input_sample
 				for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
-						double val = inputs["CNNgrid_cell"+to_string(i)+"_"+to_string(j)];
-						input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
+                                        	int idx = i + (_ngrid-1)/2;
+                                        	int jidx = j + (_ngrid-1)/2;
+                                        	double val = vecobs[idx][jidx];
+                                        	input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 					}							
 				}
 				//predict_class returns predicted class number and value of max output neuron
@@ -237,6 +247,12 @@ struct ClusterObj{
                         	for(int i = 0; i < result.size(); i++){
                         	        vector<float> reti = result[i].to_vector();
                                 	_detBkgScores.push_back(reti);
+                        	}
+                        	//if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
+                        	if(_detBkgScores.size() == 1){
+                        	        double oval = _detBkgScores[0];
+                        	        _detBkgScores[0] = 1 - oval;
+                        	        _detBkgScores.push_back(oval);
                         	}
 			}
 		}
@@ -315,6 +331,86 @@ struct ClusterObj{
 			}
 			return 0;
 		}
+		
+		int GetCenterXtal(vector<JetPoint>& rhs, JetPoint& center){
+			//get center of pts in ieta, iphi -> max E point
+			double maxE = 0;
+			if(rhs.size() < 1)
+				return -1;
+			for(int r = 0; r < rhs.size(); r++){
+				if(rhs[r].E() > maxE){
+					maxE = rhs[r].E();
+					center = rhs[r];
+				}
+			}
+			return 0;
+		}
+
+//write nxn grid of E, t, r_nk here
+                //if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
+                void MakeCNNGrid(int k, vector<vector<double>>& vecobs){
+                        vecobs.clear();
+			Jet subcl;
+			if(k == -1) //do over whole object
+				subcl = _jet;
+			else
+				_jet.GetConstituent(k, subcl);
+                        JetPoint center;
+			vector<JetPoint> rhs;
+			subcl.GetJetPoints(rhs)
+                        GetCenterXtal(rhs, center);
+                        //make sure ngrid is odd to include center crystal
+                        if(_ngrid % 2 == 0)
+                                _ngrid++;
+
+                        int ngrid_boundary = (_ngrid-1)/2;
+                        //set default channel values to 0
+                        vecobs.assign(_ngrid, vector<double>(_ngrid, 0.0));
+			//get ngrid x ngrid around center point 
+                        int ieta, iphi;
+                        int rh_ieta = _detIDmap.at(center.rhId()).i2;
+                        int rh_iphi = _detIDmap.at(center.rhId()).i1;
+                        int deta, dphi;
+                        double nrhs = 0;
+			double totE = 0;
+                        //Matrix post = model->GetPosterior();
+                        for(int j = 0; j < rhs.size(); j++){
+                                ieta = _detIDmap.at(rhs[j].rhId()).i2;
+                                iphi = _detIDmap.at(rhs[j].rhId()).i1;
+//cout << "MakeCNNInputGrid - rh id " << rhs[j].rhId() << endl;
+                                //do eta flip
+                                if(rh_ieta < 0)
+                                        deta = -(ieta - rh_ieta);
+                                else
+                                        deta = ieta - rh_ieta;
+                                dphi = iphi - rh_iphi;
+                                //needs wraparound
+                                if(dphi > 180)
+                                        dphi = 360 - dphi;
+                                else if(dphi < -180)
+                                        dphi = -(360 + dphi);
+                                if(fabs(deta) <= ngrid_boundary && fabs(dphi) <= ngrid_boundary){
+                                        //posterior is weighted s.t. sum_k post_nk = w_n = E*_gev, need to just have unweighted probs since E is already here
+                                        //r_nk = post_nk/w_n s.t. sum_k (post_nk/w_n) = w_n/w_n = 1
+                                        //grid[make_pair(deta, dphi)] = {rhs[j].E(), rhs[j].t() - center.t(), post.at(j,k)/model->GetData()->at(j).w()};        
+					int idx = deta + (_ngrid-1)/2;
+					int jidx = dphi + (_ngrid-1)/2;
+					vecobs[idx][jidx] = rhs[j].E();
+					totE += rhs[j].E();
+				}
+			}
+			//normalize input grid
+			for(int i = 0; i < vecobs.size(); i++){
+				for(int j = 0; j < vecobs[i].size(); j++){
+					if(vecobs[i][j] == 0) continue;
+					vecobs[i][j] /= totE;
+				}
+			}	
+		}
+
+
+
+
 		void MakeCNNGrid(int k, JetPoint& center, map<string,double>& mapobs){
 			if(_detIDmap.size() == 0){
 				cout << "ERROR: detIDmap not setup for this ClusterObj. Please use SetupDetIDs( std::map<UInt_t,pair<int,int>> DetIDMap) to set the detID map for the CNN grid creation. Not running CNN detector bkg classification." << endl;
