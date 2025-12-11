@@ -328,7 +328,8 @@ int BaseProducer::GetTrueSuperClusters(vector<Jet>& supercls, int evt, double ge
         if(gev == -1) gev = _gev;
 	double px, py, pz, pt, phi, eta, theta, et, E;
         supercls.clear();
-        if(evt > _nEvts){ cout << "evt " << evt << " of " << _nEvts << endl; return -1;}
+        if(evt > _nEvts){ //cout << "evt " << evt << " of " << _nEvts << endl; 
+		return -1;}
         _base->GetEntry(evt);
         int nSCs = (int)_base->SuperCluster_energy->size();
         int nrhs, rhidx;
