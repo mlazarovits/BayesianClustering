@@ -18,6 +18,8 @@ void SuperClusterSkimmer::Skim(){
 	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_arch8_4_2_CMS.json"));
 	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_arch3HalfTallHalfLong_CMS.json"));
 	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_archsmall3_CMS.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_archsmall3-2_CMS.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_archxsmall3_CMS.json"));
 	//test_models.push_back(fdeep::load_model("config/json/"));
 	//add branches for test models
 	for(int m = 0; m < test_models.size(); m++){
