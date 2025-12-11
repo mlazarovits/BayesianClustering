@@ -89,7 +89,7 @@ class SuperClusterSkimmer : public BaseSkimmer{
 				//for main network
 				vAddBranch("predScore_physBkg_"+tag); //CNN prediction
 				vAddBranch("predScore_BH_"+tag); //CNN prediction
-				//vAddBranch("predScore_spike_"+tag); //CNN prediction
+				vAddBranch("predScore_spike_"+tag); //CNN prediction
 				
 				
 				//rh obs

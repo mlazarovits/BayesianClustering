@@ -15,7 +15,10 @@ void SuperClusterSkimmer::Skim(){
 
 	//testing networks
 	vector<fdeep::model> test_models;
-	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_v9p1p4_tfv2p17p1_kerasv3p10p0_1500epochs_small3_CMS_2017and2018.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_arch8_4_2_CMS.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_arch3HalfTallHalfLong_CMS.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-CNN_detector_testArchesDualClass_1000epochs_archsmall3_CMS.json"));
+	//test_models.push_back(fdeep::load_model("config/json/"));
 	//add branches for test models
 	for(int m = 0; m < test_models.size(); m++){
 		//get model name
@@ -222,7 +225,7 @@ void SuperClusterSkimmer::Skim(){
 				if(tag != "CMS"){
 					vFillBranch(-999, "predScore_physBkg_"+tag);
 					vFillBranch(-999, "predScore_BH_"+tag);
-					//vFillBranch(-999, "predScore_spike_"+tag);
+					vFillBranch(-999, "predScore_spike_"+tag);
 					if(ret < 0){
 						vFillBranch(-999, "trueLabel_"+tag);
 					}
@@ -234,7 +237,7 @@ void SuperClusterSkimmer::Skim(){
 					vFillBranch((double)label, "trueLabel_"+tag);
 					vFillBranch((double)ovalues[0], "predScore_physBkg_"+tag);
 					vFillBranch((double)ovalues[1], "predScore_BH_"+tag);
-					//vFillBranch(ovalues[2], "predScore_spike_"+tag);
+					vFillBranch(ovalues[2], "predScore_spike_"+tag);
 				}
 			}
 			jet_scIdx++;	
