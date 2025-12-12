@@ -192,9 +192,7 @@ struct ClusterObj{
 		fdeep::tensor_shape tensor_shape(_ngrid, _ngrid, 1);
 		fdeep::tensor input_tensor(tensor_shape, 0.0f);
 		//make grid for each subclusters in jet
-		JetPoint center;
-		int ret = GetCenterXtal(center);
-		if(ret < 0){
+		if(_jet.GetNRecHits() < 1){
 			if(pho){
 				_detBkgScores = {{-1, -1}};
 			}
@@ -205,15 +203,15 @@ struct ClusterObj{
 			}
 			return;
 		}
-		map<string, double> inputs;
+		vector<vector<double>> grid;
 		if(pho){
-			MakeCNNGrid(-1, center, inputs);
+			MakeCNNGrid(-1, grid);
 			//transform grid to input_sample
 			for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 				for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
                                         int idx = i + (_ngrid-1)/2;
                                         int jidx = j + (_ngrid-1)/2;
-                                        double val = vecobs[idx][jidx];
+                                        double val = grid[idx][jidx];
                                         input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 				}							
 			}
@@ -225,20 +223,20 @@ struct ClusterObj{
                         }
                         //if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
                         if(_detBkgScores.size() == 1){
-                                double oval = _detBkgScores[0];
-                                _detBkgScores[0] = 1 - oval;
-                                _detBkgScores.push_back(oval);
+                                float oval = _detBkgScores[0][0];
+                                _detBkgScores[0][0] = 1 - oval;
+                                _detBkgScores[0].push_back(oval);
                         }
 		}
 		else{
 			for(int k = 0; k < _jet.GetNConstituents(); k++){
-				MakeCNNGrid(k, center, inputs);
+				MakeCNNGrid(k, grid);
 				//transform grid to input_sample
 				for(int i = -(_ngrid-1)/2; i < (_ngrid-1)/2+1; i++){
 					for(int j = -(_ngrid-1)/2; j < (_ngrid-1)/2+1; j++){
                                         	int idx = i + (_ngrid-1)/2;
                                         	int jidx = j + (_ngrid-1)/2;
-                                        	double val = vecobs[idx][jidx];
+                                        	double val = grid[idx][jidx];
                                         	input_tensor.set(fdeep::tensor_pos(i+(_ngrid-1)/2, j+(_ngrid-1)/2, 0), val);
 					}							
 				}
@@ -250,9 +248,9 @@ struct ClusterObj{
                         	}
                         	//if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
                         	if(_detBkgScores.size() == 1){
-                        	        double oval = _detBkgScores[0];
-                        	        _detBkgScores[0] = 1 - oval;
-                        	        _detBkgScores.push_back(oval);
+                        	        float oval = _detBkgScores[k][0];
+                        	        _detBkgScores[k][0] = 1 - oval;
+                        	        _detBkgScores[k].push_back(oval);
                         	}
 			}
 		}
@@ -357,7 +355,7 @@ struct ClusterObj{
 				_jet.GetConstituent(k, subcl);
                         JetPoint center;
 			vector<JetPoint> rhs;
-			subcl.GetJetPoints(rhs)
+			subcl.GetJetPoints(rhs);
                         GetCenterXtal(rhs, center);
                         //make sure ngrid is odd to include center crystal
                         if(_ngrid % 2 == 0)
@@ -368,16 +366,15 @@ struct ClusterObj{
                         vecobs.assign(_ngrid, vector<double>(_ngrid, 0.0));
 			//get ngrid x ngrid around center point 
                         int ieta, iphi;
-                        int rh_ieta = _detIDmap.at(center.rhId()).i2;
-                        int rh_iphi = _detIDmap.at(center.rhId()).i1;
+			int rh_ieta = _detIDmap.at(center.rhId()).first;
+			int rh_iphi = _detIDmap.at(center.rhId()).second;
                         int deta, dphi;
                         double nrhs = 0;
 			double totE = 0;
                         //Matrix post = model->GetPosterior();
                         for(int j = 0; j < rhs.size(); j++){
-                                ieta = _detIDmap.at(rhs[j].rhId()).i2;
-                                iphi = _detIDmap.at(rhs[j].rhId()).i1;
-//cout << "MakeCNNInputGrid - rh id " << rhs[j].rhId() << endl;
+                                ieta = _detIDmap.at(rhs[j].rhId()).first;
+                                iphi = _detIDmap.at(rhs[j].rhId()).second;
                                 //do eta flip
                                 if(rh_ieta < 0)
                                         deta = -(ieta - rh_ieta);
@@ -410,7 +407,7 @@ struct ClusterObj{
 
 
 
-
+	/*
 		void MakeCNNGrid(int k, JetPoint& center, map<string,double>& mapobs){
 			if(_detIDmap.size() == 0){
 				cout << "ERROR: detIDmap not setup for this ClusterObj. Please use SetupDetIDs( std::map<UInt_t,pair<int,int>> DetIDMap) to set the detID map for the CNN grid creation. Not running CNN detector bkg classification." << endl;
@@ -471,6 +468,8 @@ struct ClusterObj{
 				}
 			}
 		}
+		*/
+
 		void Get2DMat(const Matrix& inmat, Matrix& outmat){
 			if(!outmat.square()) return;
 			if(outmat.nRows() != 2) return;
