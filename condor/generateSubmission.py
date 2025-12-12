@@ -13,6 +13,10 @@ import submissionHelper as SH
 
 # Create workspace and condor submit files.
 def generateSubmission(args):
+    beta0 = 1e-5
+    m0 = [0, 0, 0]
+    W0diag = [0.33333333,0.33333333,33.333333e-5]
+    nu0 = 3
     # Ensure that the directory includes "/" at the end.
     odir = args.directory
     if odir[-1] != "/":
@@ -85,63 +89,12 @@ def generateSubmission(args):
    
     #prior parameters
     priorname = ""
-    #add emAlpha to output name
-    emAlphastr = str(args.EMalpha)
-    emAlphastr = emAlphastr.replace(".","p")
-
-    betastr = str(args.beta0)
-    betastr = betastr.replace(".","p")
-    priorname = priorname+"_beta0-"+betastr
-
-    #m0
-    #check dims
-    if len(args.m0) != 3:
-        print("Error: m0 must be a vector of length 3")
-        exit()
-    mstr = ""
-    for i, m in enumerate(args.m0):
-        m = float(m)
-        m = round(m,3)
-        m = str(m)
-        m = m.replace(".","p")
-        if i == len(args.m0)-1:
-            mstr += m
-        else:
-            mstr += m+"-"
-    priorname = priorname+"_m0-"+mstr
-
-    #W0
-    if len(args.W0diag) != 3:
-        print("Error: W0diag must be a vector of length 3")
-        exit()
-    Wstr = ""
-    for i, w in enumerate(args.W0diag):
-        w = float(w)
-        w = round(w,3)
-        w = str(w)
-        w = w.replace(".","p")
-        if i == len(args.W0diag)-1:
-            Wstr += w
-        else:
-            Wstr += w+"-"
-    priorname = priorname+"_W0diag-"+Wstr
     
-    #nu0
-    nustr = str(args.nu0)
-    nustr = nustr.replace(".","p")
-    priorname = priorname+"_nu0-"+nustr
-
-
     #add npergev to output name
     gevstr = str(args.gev)
     gevstr = gevstr.replace(".","p")
     priorname += "_NperGeV-"+gevstr
     
-    #add emalpha to output name
-    emalphastr = str(args.EMalpha)
-    emalphastr = emalphastr.replace(".","p")
-    priorname += "_emAlpha-"+emalphastr
-
     #if(objName == "jets"):
     #	dirname += "/"+strategyName
     #	ofilename += "_"+strategyName
@@ -171,13 +124,13 @@ def generateSubmission(args):
 
     # grab relevant flags
     filearr = SH.filesSplit(inputFileList, args.maxnevts, args.maxnfiles)
-    flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(args.beta0)+' --m0 '
-    for m in args.m0:
+    flags = '--EMalpha '+str(args.EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(beta0)+' --m0 '
+    for m in m0:
         flags += str(m)+' '
     flags += '--W0diag '
-    for w in args.W0diag:
+    for w in W0diag:
         flags += str(w)+' '
-    flags += '--nu0 '+str(args.nu0)
+    flags += '--nu0 '+str(nu0)
 
     if(args.smear):
     	flags += ' --smear'
@@ -262,10 +215,6 @@ def main():
     
     #add algorithm parameters - emAlpha, priors, verbosity, thresh
     parser.add_argument('--EMalpha','-EMa',help="alpha for GMM (EM algo)",default=1e-5)
-    parser.add_argument('--beta0',help="beta0 prior",default=1e-5)
-    parser.add_argument('--m0',help="m0 prior (must be n-dim entries)",default=[0,0,0],nargs="+")
-    parser.add_argument('--W0diag',help="diagonal elements of W0 prior (must be n-dim entries)",default=[0.33333333,0.33333333,33.333333e-5],nargs="+")
-    parser.add_argument('--nu0',help="nu0 prior",default=3)
     
     parser.add_argument('--thresh','-t',help='threshold for GMM clusters',default=1.)
     parser.add_argument('--gev',help='energy transfer factor (default = 1/10 for jets, 1/30 for photons + superclusters',default=1/10)
