@@ -191,3 +191,12 @@ def writeQueueListEvents( subf, inFile, ofilename, evts, flags ):
             jobCtr=jobCtr+1
 
     subf.write(")")
+
+
+
+def writeMultiSubScript(bashfile, subs):
+    for sub in subs:
+        sample = sub.split("/")[2]
+        bashfile.write("echo -e \"Submitting sample "+sample+"...\"\n")
+        bashfile.write("condor_submit "+sub+"\n")
+        bashfile.write("echo -e \"\\n\"\n")
