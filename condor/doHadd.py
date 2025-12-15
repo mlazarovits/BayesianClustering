@@ -27,21 +27,39 @@ def main():
         #write cmds to bash script
         if(args.big):
             for i in range(10):
-                oname = d.name+"_"+proc+"_"+str(i)+".root"
-                oname = "condor_"+oname
-                oname = scratch_path+"/"+oname
-                cmd = ""
-                #check if file exists
-                if os.path.exists(oname):
-                    if(args.force):
-                        cmd = cmdHadd+" -f"
-                    else:
-                        print(oname+" exists ")
-                        continue
+                if i == 1:
+                    for j in range(10):
+                        oname = d.name+"_"+proc+"_"+str(i)+str(j)+".root"
+                        oname = "condor_"+oname
+                        oname = scratch_path+"/"+oname
+                        cmd = ""
+                        #check if file exists
+                        if os.path.exists(oname):
+                            if(args.force):
+                                cmd = cmdHadd+" -f"
+                            else:
+                                print(oname+" exists ")
+                                continue
+                        else:
+                            cmd = cmdHadd
+                        #print(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")
+                        bashfile.write(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+str(j)+"*.root\n")
                 else:
-                    cmd = cmdHadd
-                #print(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")
-                bashfile.write(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root\n")
+                    oname = d.name+"_"+proc+"_"+str(i)+".root"
+                    oname = "condor_"+oname
+                    oname = scratch_path+"/"+oname
+                    cmd = ""
+                    #check if file exists
+                    if os.path.exists(oname):
+                        if(args.force):
+                            cmd = cmdHadd+" -f"
+                        else:
+                            print(oname+" exists ")
+                            continue
+                    else:
+                        cmd = cmdHadd
+                    #print(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")
+                    bashfile.write(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root\n")
                 #if not args.dryRun:
                 #    os.system(cmd+" "+oname+" "+d.path+"/out/*."+str(i)+"*.root")	
                 #print("Wrote to "+oname)
