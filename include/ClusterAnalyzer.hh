@@ -79,6 +79,7 @@ struct ClusterObj{
 	double GetEnergy(){ return _jet.E(); }	
 	double GetPt(){ return _jet.pt(); }
 
+	int GetNRecHits(){ return _jet.GetNRecHits(); }
 	int GetNSubclusters(){ return _jet.GetNConstituents(); }
 	void GetSubclusters(std::vector<Jet>& subcls){
 		_jet.GetConstituents(subcls);
@@ -347,6 +348,7 @@ struct ClusterObj{
 //write nxn grid of E, t, r_nk here
                 //if passing a BHC object created by RunClustering, this "Jet" should already have PU cleaning weights applied to rh energies
                 void MakeCNNGrid(int k, vector<vector<double>>& vecobs){
+			//cout << "MakeCNNGrid - start" << endl;
                         vecobs.clear();
 			Jet subcl;
 			if(k == -1) //do over whole object
@@ -371,8 +373,7 @@ struct ClusterObj{
                         int deta, dphi;
                         double nrhs = 0;
 			double totE = 0;
-                        //Matrix post = model->GetPosterior();
-                        for(int j = 0; j < rhs.size(); j++){
+			for(int j = 0; j < rhs.size(); j++){
                                 ieta = _detIDmap.at(rhs[j].rhId()).first;
                                 iphi = _detIDmap.at(rhs[j].rhId()).second;
                                 //do eta flip
@@ -393,6 +394,7 @@ struct ClusterObj{
 					int idx = deta + (_ngrid-1)/2;
 					int jidx = dphi + (_ngrid-1)/2;
 					vecobs[idx][jidx] = rhs[j].E();
+					//cout << "vecobs idx " << idx << " jidx " << jidx << " e " << rhs[j].E() << " totalE so far " << totE << endl;
 					totE += rhs[j].E();
 				}
 			}
@@ -402,7 +404,8 @@ struct ClusterObj{
 					if(vecobs[i][j] == 0) continue;
 					vecobs[i][j] /= totE;
 				}
-			}	
+			}
+		//cout << "MakeCNNGrid - end" << endl;	
 		}
 
 

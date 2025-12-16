@@ -94,14 +94,18 @@ int ClusterAnalyzer::RunClustering(ClusterObj& retobj, bool pho){
 
 //does not run BHC and creates a clusterobj from given rhs (this clusterobj's jet will not have any subcluster info)
 int ClusterAnalyzer::NoClusterRhs(ClusterObj& retobj, bool pho){
-	Jet jet = Jet(_rhs);
+	//cout << "NoClusterRhs - start - # rhs " << _rhs.size() << endl;
+	Jet jet(_rhs);
+	//cout << "Jet # rhs " << jet.GetNRecHits() << endl;
 	retobj = ClusterObj(jet);
+	//cout << "ClusterObj # rhs " << retobj.GetNRecHits() << endl;
 	if(_verb > -1 && _detIDmap.size() == 0){
 		cout << "Warning: detIDmap not set for this ClusterAnalyzer. This map will be empty for the resulting ClusterObj." << endl;
 	}
 	retobj.SetupDetIDs(_detIDmap);
 	retobj.SetCNNModel(_detbkgmodel.get());
 	retobj.SetDNNModel(_photonidmodel.get());
+	//cout << "NoClusterRhs - end" << endl;
 	return 0;
 }
 
@@ -127,6 +131,7 @@ void ClusterAnalyzer::_treesToObjs(const vector<std::shared_ptr<BaseTree::node>>
 	int njets_tot = 0;
 	for(int i = 0; i < trees.size(); i++){
 		if(trees[i] == nullptr) continue;
+		//cout << "tree #" << i << " points" << endl; trees[i]->points->Print();
 		//at least 2 points (rhs)
 		if(trees[i]->points->GetNPoints() < 2) continue;
 		Jet predJet(trees[i].get(), _PV, _gev, _radius);

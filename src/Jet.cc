@@ -109,7 +109,7 @@ Jet::Jet(const vector<JetPoint>& rhs, const BayesPoint& vtx){
 	_mom = BayesPoint(4);
 	//for(int i = 0; i < (int)rhs.size(); i++) _rhs.push_back(rhs[i]);
 	_rhs = rhs;
-	_nRHs = (int)_rhs.size();	
+	_nRHs = (int)_rhs.size();
 	double theta, pt, x, y, z;
 	_phi = _invalid_phi;
 	_eta = _invalid_eta;
@@ -168,7 +168,6 @@ Jet::Jet(const vector<Jet>& jets){
 	vector<JetPoint> rhs;
 	for(int i = 0; i < (int)jets.size(); i++){
 		jets[i].GetJetPoints(rhs);
-		_rhs = rhs;
 		for(int j = 0; j < (int)rhs.size(); j++){
 			_rhs.push_back(rhs[j]);
 		}
