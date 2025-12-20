@@ -11,9 +11,9 @@ enum JetType{
 	genAK4 = 2, 
 	recoAK8 = 3,
 	genAK8 = 4,
-	recoAK15 = 3,
-	genAK15 = 5,
-	bhc_noPU = 6
+	recoAK15 = 5,
+	genAK15 = 6,
+	bhc_noPU = 7
 };
 
 enum SelType{
@@ -104,9 +104,6 @@ void MakeHistsSim2(string file = "", string proc = ""){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	//do for each jet type
-	vector<int> jettypes = {0, 1, 2, 3, 4, 5 ,6};
-
 	string pt_thresh = "175";
 	vector<string> obs = {"Energy","Mass","Pt","EtaCenter","PhiCenter","TimeCenter","EtaVar","PhiVar","TimeVar"};
 
@@ -132,8 +129,8 @@ void MakeHistsSim2(string file = "", string proc = ""){
 	vector<ROOT::RDF::RResultPtr<TH1D>> hists1d;
 	vector<ROOT::RDF::RResultPtr<TH2D>> hists2d;
 
-	for(int jt = 0; jt < jettypes.size(); jt++){//jt < 1; jt++){//jettypes.size(); jt++){
-		string jetname = jetnames.at(JetType(jt))+"Jet"; 
+	for(int jt = 0; jt < 8; jt++){//jt < 1; jt++){//jettypes.size(); jt++){
+		string jetname = jetnames.at(JetType(jt))+"Jet";
 		//skip gen jets
 		if(jetname.find("gen") != string::npos)
 			continue;
@@ -213,7 +210,6 @@ void MakeHistsSim2(string file = "", string proc = ""){
 			string ptcut = pit->second;
 			string ptjetcut = ptcut + " && " + jetcut;
 			string ptname = pit->first;
-		
 			if(ptname != ""){
 				ptname = "_"+ptname;	
 				//njets hists
