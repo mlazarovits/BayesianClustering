@@ -39,7 +39,11 @@ void SetPalette(int k = 5){
 	red.push_back(178./255.);
 	green.push_back(236./255.);
 	blue.push_back(225./255.);
-	
+
+	//light light teal	
+	red.push_back(238./255.);
+	green.push_back(251./255.);
+	blue.push_back(249./255.);
 
 	/*
 	//[0,1] values are R, G or B/255.
