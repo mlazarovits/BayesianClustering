@@ -90,7 +90,7 @@ bool TTreeInterface::CheckIdxUniqueMap( std::string idxBranchName){
 		  	branchExists = true;
 		  }	   
 		}
-	std::cout<<"Checking if branch "<< idxBranchName <<" address is already assigned: branchExists="<<branchExists<<"\n";
+	//std::cout<<"Checking if branch "<< idxBranchName <<" address is already assigned: branchExists="<<branchExists<<"\n";
 	return branchExists;
 	
 }
@@ -103,7 +103,7 @@ bool TTreeInterface::CheckTargetUniqueMap( std::string targetBranchName){
 		  	branchExists = true;
 		  }	   
 		}
-	std::cout<<"Checking if branch "<< targetBranchName <<" address is already assigned: branchExists="<<branchExists<<"\n";
+	//std::cout<<"Checking if branch "<< targetBranchName <<" address is already assigned: branchExists="<<branchExists<<"\n";
 	return branchExists;
 	
 }
@@ -134,7 +134,7 @@ std::vector<std::vector<double>>* TTreeInterface::GetSubBranchAlreadyAssigned( s
 		{
 			std::string key = iter->first;
 		  if( _idxSubMaps[ key].first == idxBranchName ){
-cout << "found idx branch " << key << " for idxbranchname " << idxBranchName << endl;
+//cout << "found idx branch " << key << " for idxbranchname " << idxBranchName << endl;
 		  	return _branchSubMaps[key].first;
 		  }
 		}
@@ -146,7 +146,7 @@ void TTreeInterface::MapIdx( std::string idxBranchName, std::string targetBranch
 	std::vector<double>* v2 =0;
 	_branchMaps[ outLabel ] = std::make_pair( v1, v2 );//init pointers to 0
 	
-	std::cout<<"setting idx unroll branch address of: "<< outLabel <<"\n";
+	//std::cout<<"setting idx unroll branch address of: "<< outLabel <<"\n";
 	if( !CheckIdxUniqueMap( idxBranchName ) ){
 		_ttree->SetBranchAddress(idxBranchName.c_str(),&(_branchMaps[outLabel].first) );
 	}else{
