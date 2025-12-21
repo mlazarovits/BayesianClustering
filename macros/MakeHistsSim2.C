@@ -227,22 +227,21 @@ void MakeHistsSim2(string file = "", string proc = ""){
 				//skip covariance branches
 				if(obs.find("Var") != string::npos || obs.find("Cov") != string::npos) continue;
 				auto hist1d = df.Filter(ptcut)
-					.Histo1D({(branchlist[b]+ptname).c_str(),(branchlist[b]+ptname).c_str(),50,bins.at(obs).first, bins.at(obs).second},branchlist[b]);
+					.Histo1D({(branchlist[b]+ptname).c_str(),(branchlist[b]+ptname).c_str(),25,bins.at(obs).first, bins.at(obs).second},branchlist[b]);
 				hists1d.push_back(hist1d);
 			}
 			auto h_jet_etasig = df.Filter(ptcut)
-				.Histo1D({(jetname+"_EtaSig"+ptname).c_str(),(jetname+"_EtaSig"+ptname).c_str(),50,0,2.5},jetname+"_EtaSig");
+				.Histo1D({(jetname+"_EtaSig"+ptname).c_str(),(jetname+"_EtaSig"+ptname).c_str(),25,0,2.5},jetname+"_EtaSig");
 			hists1d.push_back(h_jet_etasig);
 			auto h_jet_phisig = df.Filter(ptcut)
-				.Histo1D({(jetname+"_PhiSig"+ptname).c_str(),(jetname+"_PhiSig"+ptname).c_str(),50,0,1.2},jetname+"_PhiSig");
+				.Histo1D({(jetname+"_PhiSig"+ptname).c_str(),(jetname+"_PhiSig"+ptname).c_str(),25,0,1.2},jetname+"_PhiSig");
 			hists1d.push_back(h_jet_phisig);
 			auto h_jet_timesig = df.Filter(ptcut)
-				.Histo1D({(jetname+"_TimeSig"+ptname).c_str(),(jetname+"_TimeSig"+ptname).c_str(),50,0, 10},jetname+"_TimeSig");
+				.Histo1D({(jetname+"_TimeSig"+ptname).c_str(),(jetname+"_TimeSig"+ptname).c_str(),25,0, 10},jetname+"_TimeSig");
 			hists1d.push_back(h_jet_timesig);
-
-			if(jetname.find("BHC") == string::npos)
-				continue;
-			//do subcluster and PU cleaning histograms
+			auto h_jet_nsubclusters = df.Filter(ptcut)
+				.Histo1D({(jetname+"_nSubclusters"+ptname).c_str(),(jetname+"_nSubclusters"+ptname).c_str(),10,0,10},jetname+"_nSubclustersJet");
+			hists1d.push_back(h_jet_nsubclusters);
 
 			//n subclusters hists
 			string highmassjetcut = jetname+"_Mass > 100 && "+jetcut+" && "+ptcut;
@@ -269,6 +268,9 @@ void MakeHistsSim2(string file = "", string proc = ""){
 			auto hist2d_jetpt_jetmass = df.Filter(ptcut)
 					.Histo2D({(jetname+"_Mass_JetPt"+ptname).c_str(), (jetname+"_Mass_JetPt"+ptname+";mass;pt;a.u.").c_str(), 50,0,250,50,0,std::stod(pt_thresh)+50}, jetname+"_Mass",jetname+"_Pt"); 
 			hists2d.push_back(hist2d_jetpt_jetmass);
+			
+			if(jetname.find("BHC") == string::npos)
+				continue;
 
 			//PU cleaning histograms
 			string matched_cut;
