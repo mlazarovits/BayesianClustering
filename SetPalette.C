@@ -1,4 +1,4 @@
-void SetPalette(int k = 5){
+void SetPalette(int k = 6){
 
 
 	//int k = 2;
