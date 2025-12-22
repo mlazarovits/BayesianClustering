@@ -239,6 +239,8 @@ void MakeHistsSim2(string file = "", string proc = ""){
 			auto h_jet_timesig = df.Filter(ptcut)
 				.Histo1D({(jetname+"_TimeSig"+ptname).c_str(),(jetname+"_TimeSig"+ptname).c_str(),25,0, 10},jetname+"_TimeSig");
 			hists1d.push_back(h_jet_timesig);
+
+cout << "making plot " << jetname+"_nSubclusters"+ptname << endl;
 			auto h_jet_nsubclusters = df.Filter(ptcut)
 				.Histo1D({(jetname+"_nSubclusters"+ptname).c_str(),(jetname+"_nSubclusters"+ptname).c_str(),10,0,10},jetname+"_nSubclustersJet");
 			hists1d.push_back(h_jet_nsubclusters);
