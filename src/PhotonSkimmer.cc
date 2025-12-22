@@ -12,6 +12,18 @@ void PhotonSkimmer::Skim(){
 		_jsonTool.BuildMap(_jsonfile);
 
 	}
+	//testing networks
+	vector<fdeep::model> test_models;
+	test_models.push_back(fdeep::load_model("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1000epochs_large8.json"));
+	test_models.push_back(fdeep::load_model("config/json/KU-DNN_photonID_balancingClasses_4kEGammaChunks_newPreprocessing_test_isoShape_1200epochs_large8.json"));
+	//add branches for test models
+	for(int m = 0; m < test_models.size(); m++){
+		//get model name
+		string model_name = GetModelName(test_models[m]);
+		vAddBranch(model_name+"_predScore_isoBkg_CMS"); //CNN prediction
+		vAddBranch(model_name+"_predScore_nonIsoBkg_CMS"); //CNN prediction
+	}
+
 	//set histogram weights for HT slices, etc
 	_weight = 1;
 	if(_data){ _weight = 1.; }
@@ -226,6 +238,17 @@ void PhotonSkimmer::Skim(){
 				MakeDNNInputs(pho_obj, phoidx, dnn_obs);
 
 				DNNPredict(dnn_obs, dnn_scores);
+				if(tag == "CMS"){
+					for(int m = 0; m < test_models.size(); m++){
+						vector<float> test_ovalues;
+						DNNPredict(test_models[m], dnn_obs, test_ovalues);
+						string model_name = GetModelName(test_models[m]);
+						vFillBranch((double)test_ovalues[0], model_name+"_predScore_isoBkg_"+tag);
+						vFillBranch((double)test_ovalues[1], model_name+"_predScore_nonIsoBkg_"+tag);
+					}
+
+				}
+
 				//auto max_el = max_element(dnn_scores.begin(), dnn_scores.end());
 				//double predval = *max_el;
 				////labeling starts from 1

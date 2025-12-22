@@ -1331,6 +1331,38 @@ class BaseSkimmer{
 				for(int j = 0; j < reti.size(); j++)
 					ovalue.push_back((double)reti[j]);
 			}
+			//if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
+			if(ovalue.size() == 1){
+				double oval = ovalue[0];
+				ovalue[0] = 1 - oval;
+				ovalue.push_back(oval);
+			}	
+		}
+		
+		void DNNPredict(fdeep::model& model, map<string,double>& obs, vector<float>& ovalue){
+			ovalue.clear();
+			vector<float> input_sample;
+			//transform obs to input_sample
+			for(int f = 0; f < _nnfeatures.size(); f++){
+				input_sample.push_back(obs[_nnfeatures[f]]);
+			}
+
+			int size = input_sample.size();
+			fdeep::tensor input_tensor = fdeep::tensor(fdeep::tensor_shape(static_cast<std::size_t>(size)), input_sample);
+			
+			//predict_class returns predicted class number and value of max output neuron
+			fdeep::tensors result = model.predict({input_tensor});
+			for(int i = 0; i < result.size(); i++){
+				vector<float> reti = result[i].to_vector();
+				for(int j = 0; j < reti.size(); j++)
+					ovalue.push_back(reti[j]);
+			}
+			//if only 1 output node (ie binary class) - save 1-sig class (ie class == 0) as well in order
+			if(ovalue.size() == 1){
+				double oval = ovalue[0];
+				ovalue[0] = 1 - oval;
+				ovalue.push_back(oval);
+			}	
 		}
 	
 	//returns vector sum of given objects
