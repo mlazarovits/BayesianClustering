@@ -91,6 +91,13 @@ void SetPalette(int k = 6){
 	for (int i=0;i<nColors;i++) palette[i] = fi+i;
 	
 
+	int customColorBase = 200;
+	while(gROOT->GetColor(customColorBase)) {
+		customColorBase++;
+	}
+	//TColor *myGreen = new TColor(customColorBase, 79./255., 107./255., 56./255.);
+	//TColor *myGreen = new TColor(customColorBase, 222./255., 239./255., 183./255.);
+	TColor *deepSaffron = new TColor(customColorBase, 255./255., 149./255., 5./255.);
 
 
 
