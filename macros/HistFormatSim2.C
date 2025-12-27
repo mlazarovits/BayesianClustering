@@ -206,6 +206,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//use hist names as labels
 		int nlabel = 70;
 		int ncolor = 3;
+		vector<string> ncolors = {"#3EB8F4","#0781C5","#25008B","#30B08E","#5CD6AB","#AEECCB"};
 		//TODO - pull colors from consistent color palette
 		for( int i = 0 ; i < int(hist.size()); i++){
 			if(legentries.size() == hist.size())
@@ -216,8 +217,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 					legentry = legentry.substr(0,legentry.find(xtit));
 				}
 			}
-			labelToMark[legentry] = nlabel+i;	
-			labelToColor[legentry] = ncolor+i;
+			int coloridx = i;
+			if(i >= ncolors.size())
+				coloridx = 0;
+			labelToMark[legentry] = nlabel+i;
+			labelToColor[legentry] = TColor::GetColor(ncolors[coloridx].c_str());
+cout << "color " << ncolors[coloridx] << " i " << i << " coloridx " << coloridx << " legentry " << legentry << " color " << labelToColor[legentry] << endl;	
 //cout << "legentry " << legentry << " title " << xtit << " title " << hist[i]->GetTitle() << " mark " << labelToMark[legentry] << " col " << labelToColor[legentry] << endl;
 		}
 		//for(auto leg : legentries) cout << "tdrmulti leg entries " << leg << endl;
@@ -235,6 +240,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
 //cout << "title " << xtit << " canname " << canname << " y title " << ytit << " histname " << hist[i]->GetName() << endl;
+	if(pf == 5) cout << "name " << hist[i]->GetName() << " legentry " << legentries[i] << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		//else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
@@ -307,7 +313,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
 			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
-			match += "Jet";
+			if(pf != 5) match += "Jet";
 			if(legentry.find(match) != string::npos){
 				col = it->second;
 				break;
@@ -341,13 +347,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(name.find("_lead") != string::npos){
 			type = "high p_{T}";
 			mark -= 4;
-			highpt = true;		
+			highpt = true;
+			col += 2;	
 		}
 		else if(name.find("_notlead") != string::npos){
 			type = "low p_{T}";
 			mark += 1;
 			lowpt = true;
-				
+			col -= 1;	
 		}
 		else{
 			lowpt = false;
@@ -357,7 +364,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(type != "") legentry += " "+type;
 
 		legentries2.push_back(legentry);
-//cout << "col " << col << " mark " << mark << endl;
+cout << "col " << col << " mark " << mark << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -429,7 +436,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.66,0.56,jetsel_str.c_str());
+		jetsel.DrawLatex(0.61,0.56,jetsel_str.c_str());
 		//adjust legend bounds
 		myleg->SetX1NDC(0.60);
 		myleg->SetY1NDC(0.65);
@@ -1006,27 +1013,43 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 
 
 //method in this case would be BHC vs reco
-void MethodStackHists(string file, string proc, vector<string> methods, string oname, string obs ="", string type = ""){
+void MethodStackHists(string file, string proc, vector<string> methods, string oname, string obs ="", vector<string> type = {}){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
 	TFile* f = TFile::Open(file.c_str(),"READ");
 	vector<TH1D*> hists;
+	string histname;
 	for(int m = 0; m < methods.size(); m++){
-		string histname = methods[m]+"Jet_"+obs;
-		if(type != "")
-			histname += "_"+type;
+		string hname = methods[m]+"Jet_"+obs;
+		if(type.size() > 0){
+			for(int t = 0; t < type.size(); t++){
+				histname = hname+"_"+type[t];
 cout << "histname " << histname << endl;
-		TH1D* h = (TH1D*)f->Get(histname.c_str());
-		if(h == nullptr) continue;
-		h->Scale(1./h->Integral());
-		hists.push_back(h);
+				TH1D* h = (TH1D*)f->Get(histname.c_str());
+				if(h == nullptr) continue;
+				h->Scale(1./h->Integral());
+				hists.push_back(h);
+			}
+		}
+		else{
+			histname = hname;
+			TH1D* h = (TH1D*)f->Get(histname.c_str());
+			if(h == nullptr) continue;
+			h->Scale(1./h->Integral());
+			hists.push_back(h);
+		}
 	}
 	double ymin, ymax;
 	string name = obs+"_"+proc+"_methodStack";
 	if(find(methods.begin(), methods.end(), "BHCnoPU") != methods.end()) name += "_puComp";
-	if(type != "") name += "_"+type;
+	//if(type != "") name += "_"+type;
+	if(type.size() > 0){
+		for(int t = 0; t < type.size(); t++){
+			name += "_"+type[t];
+		}
+	}
 	if(hists.size() < 1) return;
 	FindListHistBounds(hists, ymin, ymax);
 	if(ymin == 0 && ymax == 0) return;
@@ -1059,7 +1082,6 @@ void AnyStackHists(string file, string proc, string method, vector<string> obses
 	vector<TH1D*> hists;
 	for(int o = 0; o < obses.size(); o++){
 		string histname = method+"Jet_"+obses[o];
-cout << "obs " << obses[o] << endl;
 		if(types.size() > 0){
 			for(int t = 0; t < types.size(); t++){
 				string hname = histname+"_"+types[t];
@@ -1250,20 +1272,21 @@ void HistFormatSim2(string file){
 	vector<string> jettypes_BHCPU = {"BHC","BHCnoPU"};
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets","lead"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets",{"lead"}); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize","lead"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize",{"lead"}); 
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "EtaCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "PhiCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "TimeCenter"); 
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "TimeCenter",{"lead","notlead"});
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Energy"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Mass","lead");
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclusters","lead");
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Mass",{"lead"});
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclusters",{"lead"});
 
 		
-	MethodStackHists(file, proc, jettypes_BHCPU, oname, "Mass","lead");
-	MethodStackHists(file, proc, jettypes_BHCPU, oname, "nSubclusters","lead");
+	MethodStackHists(file, proc, jettypes_BHCPU, oname, "Mass",{"lead"});
+	MethodStackHists(file, proc, jettypes_BHCPU, oname, "nSubclusters",{"lead"});
 
 	Hist2D(file, proc, "BHC", oname, "Mass_JetSize");
 	Hist2D(file, proc, "recoAK4", oname, "Mass_JetSize");
@@ -1276,11 +1299,7 @@ void HistFormatSim2(string file){
 	Hist2D(file, proc, "BHC", oname, "Mass_JetPt");
 	Hist2D(file, proc, "recoAK4", oname, "Mass_JetPt");
 
-	vector<string> legentries = {"#sigma^{2*}_{#eta}","#sigma^{2*}_{#phi}","#sigma^{2*}_{time}"};
-	for(int l = 0; l < 3; l++){
-		legentries.push_back(legentries[l] + ", E* < 0.5");
-		legentries[l] += ", E* #geq 0.5";
-	}
+	vector<string> legentries = {"#sigma^{2*}_{#eta}, E* #geq 0.5","#sigma^{2*}_{#eta}, E* < 0.5","#sigma^{2*}_{#phi}, E* #geq 0.5", "#sigma^{2*}_{#phi}, E* < 0.5", "#sigma^{2*}_{time}, E* #geq 0.5","#sigma^{2*}_{time}, E* < 0.5"};
 
 	if(proc == "ttbar"){
 		AnyStackHists(file, proc, "BHC", relvars, oname, {"lead_TopMatched_ge2Subcls_subclRelEge0p5","lead_TopMatched_ge2Subcls_subclRelElt0p5"}, legentries);
