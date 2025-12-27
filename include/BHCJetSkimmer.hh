@@ -640,21 +640,20 @@ class BHCJetSkimmer{
 		//draw ellispes + tmarkers to canvas and write canvas to file
 		//center_coords = center of event display in [eta_c, phi_c] per gen object s.t. center_coords[i] = BayesPoint(eta_c, phi_c) for object i
 		//window_width = width of event display in [deta, dphi] per gen object s.t. window_width[i] = BayesPoint(deta, dphi) for object i
-		//void WriteEventDisplays(TFile* ofile, vector<BayesPoint> center_coords = {}, vector<BayesPoint> window_width = {}){
 		void WriteEventDisplays(TFile* ofile, const map<string,BayesPoint>& center_coords = {}, const map<string,BayesPoint>& window_width = {}){
 			if(EvtDisplay_etaCell_phiCell->Integral() == 0){ cout << "skipping all evt disps" << endl; return;} //don't write canvases if this event display isn't filled
 			string plot_title;
 			if(_sel == singW){
-				plot_title = "single W^{#pm}";
+				plot_title = "hadronic single W^{#pm}";
 				if(_oname.find("Wgluon") != string::npos){
-					plot_title = "single W^{#pm}+gluon";
+					plot_title = "hadronic single W^{#pm}+gluon";
 				}
 			}
 			if(_sel == QCDdijets){
 				plot_title = "QCD dijets";
 			}
 			if(_sel == boostTop){
-				plot_title = "t#bar{t}";
+				plot_title = "hadronic t#bar{t}";
 			}
 			cout << "writing event display hist" << endl;
 			ofile->cd();
@@ -691,10 +690,10 @@ class BHCJetSkimmer{
 				_jellipses[j].Draw();
 				_jcenters[j].Draw();
 				
-				for(int k = 0; k < _predJets[j].GetNConstituents(); k++){
-					_subclellipses[j][k].Draw();
-					_subclcenters[j][k].Draw();
-				}
+				//for(int k = 0; k < _predJets[j].GetNConstituents(); k++){
+				//	_subclellipses[j][k].Draw();
+				//	_subclcenters[j][k].Draw();
+				//}
 			}
 			//plot gen particles
 			for(int m = 0; m < _plot_particles.size(); m++){
@@ -712,7 +711,7 @@ class BHCJetSkimmer{
         		lat2.SetTextSize(0.04);
         		lat2.SetTextFont(42);
         		plot_title = "#font[132]{"+plot_title+"}";
-			lat2.DrawLatex(0.8,0.92,plot_title.c_str());
+			lat2.DrawLatex(0.74,0.92,plot_title.c_str());
 			cv->Write();
 		
 			vector<string> names;
@@ -738,17 +737,16 @@ cout << _evtdisps_obj.size() << " # of obj evtdisps" << endl;
 				BayesPoint width = BayesPoint({eta_max, phi_max});// - set by rhs drawn to get everything in frame = window_width[name];
 				BayesPoint max_width = BayesPoint({eta_max, phi_max});// - set by rhs drawn to get everything in frame = window_width[name];
 				BayesPoint min_width = BayesPoint({eta_min, phi_min});// - set by rhs drawn to get everything in frame = window_width[name];
-cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
+//cout << "drawing hist #" << h << " of " << _evtdisps_obj.size() << " with name " << name << endl;
 				for(int j = 0; j < _predJets.size(); j++){
 					//if(find(jet_idxs.begin(), jet_idxs.end(), j) == jet_idxs.end()) continue;
 					BayesPoint ell_center({_predJets[j].eta(), _predJets[j].phi()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
-					cout << "jet #" << j << " window width eta " << window_width.at(name).at(0) << " phi " << window_width.at(name).at(1) << " this jet center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
+					//cout << "jet #" << j << " window width eta " << window_width.at(name).at(0) << " phi " << window_width.at(name).at(1) << " this jet center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
 					if(fabs(ell_center.at(0)) > window_width.at(name).at(0)) continue; //out of frame in eta
 					if(fabs(ell_center.at(1)) > window_width.at(name).at(1)) continue; //out of frame in phi
 
-cout << "drawing rhs from jet #" << j << endl;
 
 					vector<JetPoint> rhs;
 					Jet subcl;
@@ -798,8 +796,6 @@ cout << "drawing rhs from jet #" << j << endl;
 						_evtdisps_obj[h]->Fill(rh_pt.at(0), rh_pt.at(1), rh_pt.w());
 					}
 				}
-//TODO - check eta/phi_max/min values (see drawn canvases)
-cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_max << " phi_min " << phi_min << endl;
 				if(_evt2disp_z == 1){ //time
 					_evtdisps_obj[h]->GetZaxis()->SetTitle("time [ns]");
 				}
@@ -835,7 +831,6 @@ cout << "eta_max " << eta_max << " eta_min " << eta_min << " phi_max " << phi_ma
 				_evtdisps_obj[h]->GetXaxis()->SetTitleSize(0.04);
 				_evtdisps_obj[h]->GetZaxis()->SetTitleSize(0.04);
 				_evtdisps_obj[h]->Draw("colz1");
-cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << " entries " << _evtdisps_obj[h]->GetEntries() << endl;
 				//do for gen particles too 
 				for(int m = 0; m < _plot_particles.size(); m++){
 					BayesPoint m_center({_plot_particles[m].GetX(), _plot_particles[m].GetY()});
@@ -854,7 +849,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
 					ell_center.Translate(center.at(0),0);
 					ell_center.CircularTranslate(center.at(1),1);
-					cout << "ellipse (jet) #" << j << " window width eta " << width.at(0) << " phi " << width.at(1) << " this ellipse center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
+					//cout << "ellipse (jet) #" << j << " window width eta " << width.at(0) << " phi " << width.at(1) << " this ellipse center eta " << ell_center.at(0) << " phi " << ell_center.at(1) << endl;
 					//make sure ellipse center is in window
 					if(ell_center.at(0) > max_width.at(0)) continue; //out of frame in eta
 					if(ell_center.at(1) > max_width.at(1)) continue; //out of frame in eta
@@ -882,11 +877,10 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 					//if(fabs(r_eta) > fabs(width.at(0))) continue;
 					//if(fabs(r_phi) > fabs(width.at(1))) continue;
 
-				cout << "drawing ellipse (jet) #" << j << endl; 
+					cout << "drawing ellipse (jet) #" << j << endl; 
 
 		
 					_jellipses[j].DrawEllipse(ell_center.at(0), ell_center.at(1), ell_maj_r, ell_min_r, 0, 360, _jellipses[j].GetTheta());
-				
 
 					
 					_jcenters[j].DrawMarker(ell_center.at(0), ell_center.at(1));
@@ -901,6 +895,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 						ell_min_r = _subclellipses[j][k].GetR2();
 						theta = _subclellipses[j][k].GetTheta();
 						
+						_subclellipses[j][k].SetFillStyle(0);	
 						_subclellipses[j][k].DrawEllipse(subcl_center.at(0), subcl_center.at(1), ell_maj_r, ell_min_r, 0, 360, theta);
 					
 						_subclcenters[j][k].DrawMarker(subcl_center.at(0), subcl_center.at(1));
@@ -925,6 +920,107 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 
 
 		}
+		void DrawJetEventDisplays(vector<TCanvas*>& cvs){
+			cvs.clear();
+			string plot_title;
+			if(_sel == singW){
+				plot_title = "hadronic single W^{#pm}";
+				if(_oname.find("Wgluon") != string::npos){
+					plot_title = "hadronic single W^{#pm}+gluon";
+				}
+			}
+			if(_sel == QCDdijets){
+				plot_title = "QCD dijets";
+			}
+			if(_sel == boostTop){
+				plot_title = "hadronic t#bar{t}";
+			}
+			string lat_cms = "#font[22]{Pythia 8} #font[132]{event generation, #sqrt{s} = 13 TeV}";
+        		plot_title = "#font[132]{"+plot_title+"}";
+
+			vector<Jet> rhs;
+			for(int j = 0; j < _predJets.size(); j++){
+cout << "jet #" << j << endl;
+				string canname = "jetcan_"+std::to_string(j);
+				TCanvas* cv_jet = new TCanvas(canname.c_str(), canname.c_str());
+				cv_jet->SetRightMargin(0.15);
+				cv_jet->cd();
+				BayesPoint center({_predJets[j].eta(), _predJets[j].phi()});
+				cout << "center " << center.at(0) << ", " << center.at(1) << endl;
+				TH2D* evtdisp = new TH2D((canname+"_rhs").c_str(),(canname+"_rh;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]").c_str(),344,-3,3,360,-4*atan(1),4*atan(1));
+				_predJets[j].GetJets(rhs);
+				for(auto rh : rhs){
+					double w = rh.E();
+					if(w == 0) continue;
+					BayesPoint rhpt({rh.eta(), rh.phi()});
+					rhpt.Translate(center.at(0),0);
+					rhpt.CircularTranslate(center.at(1),1);
+					evtdisp->Fill(rhpt.at(0), rhpt.at(1), w);
+				}
+				cout << "drawing hist for jet #" << j << endl;	
+				evtdisp->GetXaxis()->SetRangeUser(-0.6, 0.6);
+				evtdisp->GetYaxis()->SetRangeUser(-0.6, 0.6);
+				evtdisp->SetTitle("");
+				evtdisp->GetXaxis()->CenterTitle(true);
+				evtdisp->GetYaxis()->CenterTitle(true);
+				evtdisp->GetZaxis()->CenterTitle(true);
+				evtdisp->GetYaxis()->SetLabelFont(132);
+				evtdisp->GetXaxis()->SetLabelFont(132);
+				evtdisp->GetZaxis()->SetLabelFont(132);
+				evtdisp->GetYaxis()->SetTitleFont(132);
+				evtdisp->GetXaxis()->SetTitleFont(132);
+				evtdisp->GetZaxis()->SetTitleFont(132);
+				evtdisp->GetYaxis()->SetTitleSize(0.04);
+				evtdisp->GetXaxis()->SetTitleOffset(1.05);
+				evtdisp->GetXaxis()->SetTitleSize(0.04);
+				evtdisp->GetZaxis()->SetTitleSize(0.04);
+				evtdisp->Draw("colz1");
+				for(int k = 0; k < _predJets[j].GetNConstituents(); k++){
+					BayesPoint subcl_center({_subclellipses[j][k].GetX1(), _subclellipses[j][k].GetY1()});
+					subcl_center.Translate(center.at(0),0);
+					subcl_center.CircularTranslate(center.at(1),1);
+					double ell_center_eta = _subclellipses[j][k].GetX1(); 
+					double ell_center_phi = _subclellipses[j][k].GetY1();
+					double ell_maj_r = _subclellipses[j][k].GetR1();
+					double ell_min_r = _subclellipses[j][k].GetR2();
+					double theta = _subclellipses[j][k].GetTheta();
+			
+					_subclellipses[j][k].SetFillStyle(0);	
+					_subclellipses[j][k].DrawEllipse(subcl_center.at(0), subcl_center.at(1), ell_maj_r, ell_min_r, 0, 360, theta);
+			cout << " drawing ellipse for subcluster #" << k << " with center " << subcl_center.at(0) << ", " << subcl_center.at(1) << endl;	
+					_subclcenters[j][k].DrawMarker(subcl_center.at(0), subcl_center.at(1));
+				}
+
+
+			//	BayesPoint ell_center({_jellipses[j].GetX1(), _jellipses[j].GetY1()});
+			//	ell_center.Translate(center.at(0),0);
+			//	ell_center.CircularTranslate(center.at(1),1);
+			//	double ell_center_eta = ell_center.at(0);//_jellipses[j].GetX1(); 
+			//	double ell_center_phi = ell_center.at(1);//_jellipses[j].GetY1();
+			//	double ell_maj_r = _jellipses[j].GetR1();
+			//	double ell_min_r = _jellipses[j].GetR2();
+			//	double theta = _jellipses[j].GetTheta();
+			//	//put in rad
+			//	theta *= acos(-1)/180;
+			//cout << "drawing ellipse for jet #" << j << " with center " << ell_center.at(0) << ", " << ell_center.at(1) << " ell_maj_r" << ell_maj_r << " ell_min_r" << ell_min_r << " theta " << theta << endl;
+			//	_jellipses[j].DrawEllipse(ell_center.at(0), ell_center.at(1), ell_maj_r, ell_min_r, 0, 360, _jellipses[j].GetTheta());
+			//	_jcenters[j].DrawMarker(ell_center.at(0), ell_center.at(1));
+				cv_jet->SetTitle("");
+				//cv_jet->Write();
+        			TLatex lat1;
+        			lat1.SetNDC();
+        			lat1.SetTextSize(0.04);
+        			lat1.SetTextFont(42);
+        			lat1.DrawLatex(0.03,0.92,lat_cms.c_str());
+				TLatex lat3;
+        			lat3.SetNDC();
+        			lat3.SetTextSize(0.04);
+        			lat3.SetTextFont(42);
+        			lat3.DrawLatex(0.74,0.92,plot_title.c_str());
+				cvs.push_back(cv_jet);
+			}
+		}
+
 
 		void WriteOutput(TFile* ofile, const map<string,BayesPoint>& center_coords = {}, const map<string,BayesPoint>& window_width = {}){
 			ofile->cd();
@@ -935,7 +1031,7 @@ cout << "hist for " << name << " integral " << _evtdisps_obj[h]->Integral() << "
 		}	
 		
 		//44 - 129 - eta-phi event display of rechits for specified _evt2disp with cell energy on the z axis (overall event)
-		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,360,0,8*atan(1));
+		TH2D* EvtDisplay_etaCell_phiCell = new TH2D("EvtDisplay_etaCell_phiCell","EvtDisplay_etaCell_phiCell;Pseudorapidity (#eta);Azimuthal angle (#phi);Energy [GeV]",344,-3,3,450,-atan(1),9*atan(1));
 
 		//event display histograms (per gen object)
 		vector<TH2D*> _evtdisps_obj;
