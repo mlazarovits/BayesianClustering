@@ -8,7 +8,7 @@ void MakePDFs(string file, string odir, string histname, bool logy = false, bool
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
-	if(file.find("formatted") == string::npos){
+	if(file.find("formatted") == string::npos && (histname.find("jetcan") == string::npos) && histname.find("evtdisp") == string::npos){
 		cout << "Please give formatted file with TCanvases." << endl;
 		return;
 	}
