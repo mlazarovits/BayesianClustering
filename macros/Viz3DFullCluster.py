@@ -116,7 +116,7 @@ class JsonPlotter:
 	
 	
 	
-	def plotDataset(self, numlevels = 0, onlydata = False):
+	def plotDataset(self, numlevels = 0, onlydata = False, ntree = -1):
 		levels = self.json_obj['levels']
 		self.plot_trueJets()
 		self.makeOpacities()
@@ -133,13 +133,13 @@ class JsonPlotter:
 			nLevels = len(levels)
 			print("json has",nLevels,"levels")
 		for l in range(nLevels):
-			fig = self.plot_level(l, plotname+'_level'+str(l), onlydata)
+			fig = self.plot_level(l, plotname+'_level'+str(l), onlydata, ntree)
 			figs.append(fig)
 		return figs
 			
 	
 	
-	def plot_level(self, l, filename, onlydata = False):
+	def plot_level(self, l, filename, onlydata = False, ntree = -1):
 		#get level l for each tree -> will return clusters_level_l for each tree
 		#if tree has less levels than l, plot all data in tree as leaves
 		level = self.json_obj["levels"]["level_"+str(l)]
@@ -149,6 +149,8 @@ class JsonPlotter:
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
+			if ntree != -1 and t != ntree:
+				continue
 			gr_arr.append(self.plot_tree(l, t, onlydata))	
 		
 		
@@ -291,7 +293,7 @@ class JsonPlotter:
 		for i in range(nSubClusters):
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
-			op.append(subcluster['mixing_coeff'])
+			op.append(round(subcluster['mixing_coeff'],5))
 
 		for i in range(nSubClusters):
 			idx = str(i)
@@ -380,6 +382,7 @@ def main():
 	parser.add_argument('--json','-j',help='json file to plot')
 	parser.add_argument('--data',help='plot data only',action='store_true')
 	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0,type=int)
+	parser.add_argument('--ntree',help='which tree to plot',default=-1,type=int)
 	parser.add_argument('--verbosity','-v',help='verbosity',default=0,type=int)
 	parser.add_argument('--noViz',action='store_true',help='do not make plots',default=False)
 	args = parser.parse_args()
@@ -403,7 +406,7 @@ def main():
 	os.mkdir(name)
 	jp.setVerb(args.verbosity)
 	#draw all data - also plots individual clusters with GMM components
-	figs = jp.plotDataset(int(args.nlevels),args.data)
+	figs = jp.plotDataset(int(args.nlevels),args.data,args.ntree)
 	print("Writing to directory",name)
 	files = []
 	for f, fig in enumerate(figs):
