@@ -486,7 +486,7 @@ cout << "col " << col << " mark " << mark << endl;
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
 	plot_title = "#font[132]{"+plot_title+"}";
-	lat1.DrawLatex(0.75,0.92,plot_title.c_str());
+	lat1.DrawLatex(0.65,0.92,plot_title.c_str());
 	
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -560,7 +560,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.65,0.85,jetsel_str.c_str());
 	}
 	if(cms_label.find("notlead") != string::npos){
 		cms_label = cms_label.substr(0,cms_label.find("_notlead"));
@@ -569,7 +569,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.65,0.85,jetsel_str.c_str());
 	}
 	cms_label = "#font[132]{"+cms_label+"}";
 	
@@ -577,7 +577,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.69,0.92,cms_label.c_str());
+	lat1.DrawLatex(0.65,0.92,cms_label.c_str());
 
 	return;
 }

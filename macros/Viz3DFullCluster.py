@@ -180,7 +180,15 @@ class JsonPlotter:
 		formattedtitle = ""
 		if proc == "ttbar":
 			formattedtitle = "hadronic t<span style='text-decoration:overline'>t</span>"
+		elif proc == "singleW":
+			formattedtitle = "single hadronic W"
 		formattedtitle += ", event #"+evt 
+		if "nPU" in filename:
+			npu = filename[filename.find("nPU"):]
+			npu = npu[3:npu.find("_default")]
+			formattedtitle += ", nPU = "+npu
+		if "MTD" in filename:
+			formattedtitle += " with CMS MTD-like time resolution"
 			
 
 		print("title",formattedtitle)
@@ -332,8 +340,8 @@ class JsonPlotter:
 			op.append(round(subcluster['mixing_coeff'],5))
 
 		for i in range(nSubClusters):
-			if i == 1:
-				continue
+			#if i == 1:
+			#	continue
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
 			#should be subcluster_i	
