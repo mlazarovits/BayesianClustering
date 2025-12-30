@@ -958,8 +958,8 @@ cout << "jet #" << j << endl;
 					evtdisp->Fill(rhpt.at(0), rhpt.at(1), w);
 				}
 				cout << "drawing hist for jet #" << j << endl;	
-				evtdisp->GetXaxis()->SetRangeUser(-0.6, 0.6);
-				evtdisp->GetYaxis()->SetRangeUser(-0.6, 0.6);
+				evtdisp->GetXaxis()->SetRangeUser(-1, 1);
+				evtdisp->GetYaxis()->SetRangeUser(-1, 1);
 				evtdisp->SetTitle("");
 				evtdisp->GetXaxis()->CenterTitle(true);
 				evtdisp->GetYaxis()->CenterTitle(true);
