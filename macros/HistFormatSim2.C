@@ -1007,6 +1007,8 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 	if(methodname.find("reco") != string::npos)
 		methodname = methodname.substr(4); //remove reco
 	string cmslab = proc_titles[proc]+", "+methodname;
+	if(file.find("PFCand") != string::npos)
+		cmslab += ", PF-like reco";
 	//cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
 	TDR2DHist(h, cv, xlab, ylab, cmslab+"_"+type, "");
 	cv->SetRightMargin(0.15);
@@ -1068,6 +1070,9 @@ cout << "histname " << histname << endl;
 	string xlab = hist_titles[obs];
 	string ylab = "a.u."; 
 	string cmslab = proc_titles[proc];
+	if(file.find("PFCand") != string::npos)
+		cmslab += ", PF-like reco";
+
 	
 	//for(auto h : hists){ cout << "have hist " << h->GetName() << endl;  }
 	//cout << "xlab " << xlab << " name " << name << " proc " << proc << endl;
