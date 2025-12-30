@@ -32,6 +32,8 @@ void BuildMaps(){
 	hist_titles["nSubclustersJet"] = "Number of Subclusters";
 	hist_titles["nSubclusters"] = "Number of Subclusters";
 	hist_titles["JetSize"] = "Jet Size";
+	hist_titles["subclRelGeoAvgVar"] = "Geometric Average of Relative Variances (#sigma^{2*})";
+	hist_titles["subclRelEnergy"] = "Relative Energy (E*)";
 	
 	group_hist_titles[relvars] = "Relative Variances";
 
@@ -989,28 +991,32 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 	}
 	TFile* f = TFile::Open(file.c_str(),"READ");
 	string histname = method+"Jet_"+obs;
+	cout << "histname " << histname << endl;
 	if(type != "")
 		histname += "_"+type;
 	TH2D* h = (TH2D*)f->Get(histname.c_str());
 	if(h == nullptr) return;
 	h->Scale(1./h->Integral());
 	string name = obs+"_"+proc+"_"+method+"_2D";
-	if(type.size() > 0){
+	if(type != ""){
 		name += "_"+type;
 	}
 	string cvname = name;
 	TCanvas *cv = new TCanvas(cvname.c_str(), "");
 	//draw as tcanvases
-	string xlab = hist_titles[obs.substr(obs.find("_")+1)];
-	string ylab = hist_titles[obs.substr(0,obs.find("_"))];
+	cout << "obs " << obs << " xkey " << obs.substr(obs.find("_")+1) << " ykey " << obs.substr(obs.find("_")+1,obs.find("_",obs.find("_")+1) - obs.find("_")-1) << endl;
+	string xlab = hist_titles[obs.substr(0,obs.find("_"))];
+	string ylab = hist_titles[obs.substr(obs.find("_")+1,obs.find("_",obs.find("_")+1) - obs.find("_")-1)];
 	string methodname = method;
 	if(methodname.find("reco") != string::npos)
 		methodname = methodname.substr(4); //remove reco
 	string cmslab = proc_titles[proc]+", "+methodname;
 	if(file.find("PFCand") != string::npos)
 		cmslab += ", PF-like reco";
-	//cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
-	TDR2DHist(h, cv, xlab, ylab, cmslab+"_"+type, "");
+	if(type != "")
+		cmslab += "_"+type;
+	cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
+	TDR2DHist(h, cv, xlab, ylab, cmslab, "");
 	cv->SetRightMargin(0.15);
 	cout << "writing canvas (2D) " << cv->GetName() << endl;
 	
@@ -1319,6 +1325,11 @@ void HistFormatSim2(string file){
 
 	if(proc == "ttbar"){
 		AnyStackHists(file, proc, "BHC", relvars, oname, {"lead_TopMatched_ge2Subcls_subclRelEge0p5","lead_TopMatched_ge2Subcls_subclRelElt0p5"}, legentries);
+		Hist2D(file, proc, "BHC", oname, "subclRelGeoAvgVar_subclRelEnergy_TopMatched_ge2Subcls");
+	}
+	if(proc == "singleW"){
+		AnyStackHists(file, proc, "BHC", relvars, oname, {"lead_WMatched_ge2Subcls_subclRelEge0p5","lead_WMatched_ge2Subcls_subclRelElt0p5"}, legentries);
+		Hist2D(file, proc, "BHC", oname, "subclRelGeoAvgVar_subclRelEnergy_WMatched_ge2Subcls");
 	}
 	/*
 	if(proc.find("W") != string::npos){
