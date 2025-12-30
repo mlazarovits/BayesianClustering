@@ -543,10 +543,18 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat.DrawLatex(0.03,0.92,lat_cms.c_str());
 
 	string canname = can->GetName();
-	string proc = canname.substr(canname.find("_")+1, canname.find("_",canname.find("_")));
+	string proc;//canname.substr(canname.find("_")+1, canname.find("_",canname.find("_")));
+	if(canname.find("ttbar") != string::npos)
+		proc = "ttbar";
+	else if(canname.find("QCD") != string::npos)
+		proc = "QCD";
+	else if(canname.find("singleW") != string::npos)
+		proc = "singleW";
+	else if(canname.find("Wgluon") != string::npos)
+		proc = "Wgluon";
 	string pt_thresh = pt_threshes[proc];
-	if(cms_label.find("high pt") != string::npos){
-		cms_label = cms_label.substr(0,cms_label.find(" high pt"));
+	if(cms_label.find("lead") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find("_lead"));
 		string jetsel_str = "#font[132]{Jet p_{T} #geq "+pt_thresh+" GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
@@ -554,8 +562,8 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 		jetsel.SetTextFont(42);
 		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
 	}
-	if(cms_label.find("low pt") != string::npos){
-		cms_label = cms_label.substr(0,cms_label.find(" low pt"));
+	if(cms_label.find("notlead") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find("_notlead"));
 		string jetsel_str = "#font[132]{Jet p_{T} < "+pt_thresh+" GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
@@ -986,7 +994,10 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 	TH2D* h = (TH2D*)f->Get(histname.c_str());
 	if(h == nullptr) return;
 	h->Scale(1./h->Integral());
-	string name = h->GetName();
+	string name = obs+"_"+proc+"_"+method+"_2D";
+	if(type.size() > 0){
+		name += "_"+type;
+	}
 	string cvname = name;
 	TCanvas *cv = new TCanvas(cvname.c_str(), "");
 	//draw as tcanvases
@@ -997,7 +1008,7 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 		methodname = methodname.substr(4); //remove reco
 	string cmslab = proc_titles[proc]+", "+methodname;
 	//cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
-	TDR2DHist(h, cv, xlab, ylab, cmslab+type, "");
+	TDR2DHist(h, cv, xlab, ylab, cmslab+"_"+type, "");
 	cv->SetRightMargin(0.15);
 	cout << "writing canvas (2D) " << cv->GetName() << endl;
 	
