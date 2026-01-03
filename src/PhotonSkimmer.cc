@@ -124,6 +124,7 @@ void PhotonSkimmer::Skim(){
 	int nEvts_tot = 0;
 	int nEvts_EvtFilterPass = 0;
 	int nEvts_GJetsPass = 0;
+	int nEvts_DijetsPass = 0;
 	int nphoran = 0;
 	cout << "total nevts in file " << _nEvts << endl;
 	for(int e = _evti; e < _evtj; e++){
@@ -167,7 +168,7 @@ void PhotonSkimmer::Skim(){
 		FillBranch(_passGJetsEvtSel,"PassGJetsCR");	
 		SetDijetsCR_EvtSel(e);
 		FillBranch(_passDijetsEvtSel,"PassDijetsCR");	
-
+cout << "PassDijetsCR " << _passDijetsEvtSel << endl;
 		SetEventFilterPass();
 		if((_oname.find("EGamma") != string::npos || _oname.find("DoubleEG") != string::npos || _oname.find("GJets") != string::npos)){
 			if(!_evtfilters){
@@ -183,7 +184,22 @@ void PhotonSkimmer::Skim(){
 				_reset();
 				continue;
 			} else nEvts_GJetsPass++;
-		}	
+		}
+		if((_oname.find("JetHT") != string::npos || _oname.find("DisplacedJet") != string::npos)){
+			if(!_evtfilters){
+				//cout << "skipping event - failed event filters" << endl; 
+				_tree->Fill();
+				_reset();
+				continue;
+			} else nEvts_EvtFilterPass++;
+
+			if(!_passDijetsEvtSel){
+				//cout << "skipping event - failed GJets CR selection" << endl; 
+				_tree->Fill();
+				_reset();
+				continue;
+			} else nEvts_DijetsPass++;
+		}
 		int bhc_pho_idx = 0;
 		//loop over selected photons
 		for(int p = 0; p < nPho; p++){
@@ -198,11 +214,12 @@ void PhotonSkimmer::Skim(){
 			if(_verb > -1) cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			//cout << " event " << e << " pho: " << p << " of " << nPho << " nrhs: " << rhs.size()  << " pt " << phos[p].pt() << " E " << phos[p].E() << " rh E " << pho_rhE << endl;
 			vFillBranch(GJetsCR_ObjSel(phos[p]),"PassGJetsCR_Obj");
+			vFillBranch(DijetsCR_ObjSel(phos[p]),"PassDijetsCR_Obj");
 
 		//cout << "\33[2K\r"<< "evt: " << e << " of " << _nEvts << " pho: " << p << " nrhs: " << rhs.size()  << flush;
 			Jet bhc_pho, bhc_pho_pucleaned;
 			addVectors();
-			int ret = RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false, bhc_pho_idx); //downweighting rhs
+			int ret = -1;//RunClustering(phos[p], bhc_pho, bhc_pho_pucleaned, false, bhc_pho_idx); //downweighting rhs
 
 
 			map<string,Jet> _SCtypes_map; //keys need to match _SCtypes member var

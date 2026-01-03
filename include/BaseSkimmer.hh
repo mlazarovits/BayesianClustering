@@ -424,6 +424,7 @@ class BaseSkimmer{
 			//if(_obj != "SC"){
 			vAddBranch("dPhi_PhoJetSys","delta phi between photon (or photon matched to SC) and jet system");
 			vAddBranch("PassGJetsCR_Obj","object passes GJets CR selection");
+			vAddBranch("PassDijetsCR_Obj","object passes Dijets CR selection");
 			vAddBranch("JetObjPtAsym","(as)symmetry of min(obj.pt(), jet sys.pt())/max(obj.pt(), jet sys.pt())");
 			//}
 			if(_obj == "SC"){
