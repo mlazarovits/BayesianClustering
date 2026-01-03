@@ -31,17 +31,6 @@ def generateSubmission(args):
     ver = "v31"
     sel = args.selection#"MET100"
     yr = str(args.year)[-2:]
-    reco_date = {}
-    reco_date["2016_MET"] = "-21Feb2020_UL2016_HIPM-v1" 
-    reco_date["2017"] = "_17Nov2017"
-    reco_date["2017_MET"] = "-09Aug2019_UL2017_rsb-v1"
-    reco_date["2017_DEG"] = "-09Aug2019_UL2017-v1"
-    reco_date["2018_DEG"] = "-15Feb2022"
-    reco_date["2018_MET"] = "-15Feb2022_UL2018-v1"
-    reco_date["2022_MET"] = "-27Jun2023-v2"
-    reco_date["2018_MC"] = "RunIISummer20UL18"
-    reco_date["2017_MC"] = "RunIIFall17DRPremix"
-    reco_date["2018"] = ""
     inputFilterList = ""
 
     data = False
@@ -54,11 +43,13 @@ def generateSubmission(args):
     #loop through all files in filelist dir
     condor_subs = []
     for filelist in os.listdir(inputPathList):
-        if args.inputSample not in filelist:
+        if args.inputSample+"_" not in filelist:
             continue
         if sel not in filelist:
             continue
         if ver not in filelist:
+            continue
+        if data and "Run"+args.year+args.era not in filelist:
             continue
         if "SMS" in args.inputSample:
             if args.mGl is not None and args.mGl not in filelist:
@@ -76,7 +67,6 @@ def generateSubmission(args):
             if args.era not in filelist:
                 continue
         print("filelist",filelist)
-
         inputFileList = inputPathList+filelist
 
         objName = args.object
@@ -116,7 +106,11 @@ def generateSubmission(args):
         
 
         # grab relevant flags
-        filearr = SH.filesSplit(inputFileList, args.maxnevts, args.maxnfiles)
+        filearr = []
+        if args.nfilesfirst != -1 or args.nfileslast != -1:
+            filearr = SH.filesSplit(inputFileList, args.nfilesfirst, args.nfileslast, args.maxnevts)
+        else:
+            filearr = SH.filesSplit(inputFileList, args.maxnevts, args.maxnfiles)
         flags = '--EMalpha '+str(EMalpha)+' -v '+str(args.verbosity)+' -t '+str(args.thresh)+" --gev "+str(args.gev)+' --minpt '+str(args.minpt)+' --minNrhs '+str(args.minnrhs)+' --minemE '+str(args.minemE)+' --minRhE '+str(args.minRhE)+' --BHFilter '+str(args.beamHaloFilter)+' --beta0 '+str(beta0)+' --m0 '
         for m in m0:
             flags += str(m)+' '
@@ -207,8 +201,10 @@ def main():
     parser.add_argument("--request_memory",help='memory to request from condor scheduler in bits (default = 2048)',default=-1)
     parser.add_argument('--maxnevts',help="maximum number of events to run over",default=-999,type=int)
     parser.add_argument('--maxnfiles',help="maximum number of files total",default=-999,type=int)
+    parser.add_argument('--nfilesfirst',help='index of first file to process',default=-1,type=int)
+    parser.add_argument('--nfileslast',help='index of last file to process',default=-1,type=int)
     #Ntuple file to run over
-    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['JetHT','EGamma','DoubleEG','GJets','QCD','MET','SMS-GlGl','SMS-SqSq'])
+    parser.add_argument('-inputSample','-i',help='Ntuple sample to create skims from',required=True,choices=['DisplacedJet','JetHT','EGamma','DoubleEG','GJets','QCD','MET','SMS-GlGl','SMS-SqSq','SMS-GlGlZ'])
     parser.add_argument('--mGl',help='gluino mass for signal',default=None)
     parser.add_argument('--mN2',help='neutralino2 mass for signal',default=None)
     parser.add_argument('--mN1',help='neutralino1 mass for signal',default=None)

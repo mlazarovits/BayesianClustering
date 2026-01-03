@@ -137,6 +137,46 @@ def filesSplit(infile, nevtsmax = -999, nfilesmax = -999):
     arr = np.array(arr,dtype=object)
     return arr
 
+def filesSplit(infile, nfilesfirst, nfileslast, nevtsmax = -999):
+    arr = []
+    if nevtsmax == -999:
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            for lidx, line in enumerate(lines):
+                if(lidx < nfilesfirst):
+                    continue
+                if(lidx >= nfileslast):
+                    break
+                line = line[:line.find("\n")]
+                arr.append(line)
+        print("Splitting each file into "+str(len(arr))+" jobs ")
+    else:
+        with open(infile,"r") as f:
+            lines = f.readlines()
+            evtarr = []
+            for lidx, line in enumerate(lines):
+                if(lidx < nfilesfirst):
+                    continue
+                if(lidx >= nfileslast):
+                    break
+                line = line[:line.find("\n")]
+                rfile = ROOT.TFile.Open(line)
+                tree = rfile.Get("tree/llpgtree")
+                nevts = tree.GetEntries()
+                if(nevts > nevtsmax):
+                    n = int(np.ceil(nevts / nevtsmax))
+                    chunks = np.array_split(np.arange(nevts),n)
+                    evtarr = [(c[0], c[-1] + 1) for c in chunks] #splits into even chunks of nchunk <= nevtsmax
+                else:
+                    evtarr = [(0,nevts)]
+                arr.append([line,evtarr])
+                i = 0
+                for a in arr:
+                    i += len(a[1])
+        print("Splitting each file into "+str(i)+" jobs ")
+    arr = np.array(arr,dtype=object)
+    return arr
+
 
 def writeQueueList( subf, ofilename, file_arr, flags ):
     if len(file_arr) < 1:
