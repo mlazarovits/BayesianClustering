@@ -239,6 +239,7 @@ void MakeHistsSim2(string file = "", string proc = ""){
 			auto h_jet_timesig = df.Filter(ptcut)
 				.Histo1D({(jetname+"_TimeSig"+ptname).c_str(),(jetname+"_TimeSig"+ptname).c_str(),25,0, 10},jetname+"_TimeSig");
 			hists1d.push_back(h_jet_timesig);
+
 			auto h_jet_nsubclusters = df.Filter(ptcut)
 				.Histo1D({(jetname+"_nSubclusters"+ptname).c_str(),(jetname+"_nSubclusters"+ptname).c_str(),10,0,10},jetname+"_nSubclustersJet");
 			hists1d.push_back(h_jet_nsubclusters);
@@ -259,7 +260,6 @@ void MakeHistsSim2(string file = "", string proc = ""){
 				   		.Histo1D({(jetname+"_nSubclusters"+ptname+"_WMass").c_str(), (jetname+"_nSubclusters"+ptname+"_WMass").c_str(), 10,0,10},jetname+"_nSubclustersJet");
 				hists1d.push_back(nsubcls_Wmass);
 			}
-
 			//jet size vs jet mass
 			auto hist2d_jetsize_jetmass = df.Filter(ptcut)
 					.Histo2D({(jetname+"_Mass_JetSize"+ptname).c_str(), (jetname+"_Mass_JetSize"+ptname+";mass;jet size;a.u.").c_str(), 50,0,250, 50,0,2}, jetname+"_Mass",jetname+"_JetSize"); 
@@ -269,7 +269,7 @@ void MakeHistsSim2(string file = "", string proc = ""){
 					.Histo2D({(jetname+"_Mass_JetPt"+ptname).c_str(), (jetname+"_Mass_JetPt"+ptname+";mass;pt;a.u.").c_str(), 50,0,250,50,0,std::stod(pt_thresh)+50}, jetname+"_Mass",jetname+"_Pt"); 
 			hists2d.push_back(hist2d_jetpt_jetmass);
 			
-			if(jetname.find("BHC") == string::npos)
+			if(jetname.find("BHC") == string::npos || sel == QCDdijets)
 				continue;
 
 			//PU cleaning histograms

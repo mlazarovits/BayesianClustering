@@ -53,6 +53,9 @@ int main(int argc, char *argv[]){
 	//at least at 1 GeV but 1 GeV rh shouldn’t be able to seed a cluster so 1 GeV should be a fraction of entries
 	double gev = 1./30.;
 	double minRhE = 0.5;
+    	double tres_noise = 0;
+	double tres_stoch = 0; 
+	double tres_cte = 0;
 	for(int i = 0; i < argc; i++){
 		if(strncmp(argv[i],"--help", 6) == 0){
     	 		hprint = true;
@@ -191,6 +194,18 @@ int main(int argc, char *argv[]){
 			i++;
     	 		minRhE = std::stod(argv[i]);
    		}
+		if(strncmp(argv[i],"--tResCte", 9) == 0){
+			i++;
+    	 		tres_cte = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--tResStoch", 11) == 0){
+			i++;
+    	 		tres_stoch = std::stod(argv[i]);
+   		}
+		if(strncmp(argv[i],"--tResNoise", 11) == 0){
+			i++;
+    	 		tres_noise = std::stod(argv[i]);
+   		}
 		
 
 	}
@@ -219,6 +234,9 @@ int main(int argc, char *argv[]){
    		cout << "   --timeSmear                          turns on time smearing data according to preset covariance (default = false)" << endl;
    		cout << "   --noWeight                           turns off weighting data points (default = true)" << endl;
    		cout << "   --noDist                             turns off - clusters must be within pi/2 in phi (default = true)" << endl;
+   		cout << "   --tResCte [t]                        set time smearing constant parameter in ns (default = 0.1727 ns)" << endl;
+   		cout << "   --tResNoise [t]                      set time smearing noise (n*n/(e*e)) parameter in ns (default = 2.106 ns)" << endl;
+   		cout << "   --tResStoch [t]                      set time smearing stochastic (s*s/e) parameter in ns (default = 0.5109 ns)" << endl;
    		cout << "Example: ./FullClusterSingle.x -a 0.5 -t 1.6 --viz" << endl;
 
    		return 0;
@@ -262,99 +280,100 @@ int main(int argc, char *argv[]){
 
 	if(oname != "")
 		fname = "skims/"+fname+"Skim_"+oname;
-	else fname = "skims/"+fname+"Skim";
-	string a_string;
-	std::stringstream stream;
-	stream << alpha;
-	a_string = stream.str();
-	int idx = a_string.find(".");
-	if(idx != -1)
-		a_string.replace(idx,1,"p");	
-	if(strat != 2) fname += "_bhcAlpha-"+a_string;
+	else{
+		fname = "skims/"+fname+"Skim";
+		string a_string;
+		std::stringstream stream;
+		stream << alpha;
+		a_string = stream.str();
+		int idx = a_string.find(".");
+		if(idx != -1)
+			a_string.replace(idx,1,"p");	
+		if(strat != 2) fname += "_bhcAlpha-"+a_string;
 
-	string ema_string;
-	stream.str("");
-	stream << emAlpha;
-	ema_string = stream.str();
-	idx = ema_string.find(".");
-	if(idx != -1)
-		ema_string.replace(idx,1,"p");	
-	fname += "_emAlpha-"+ema_string+"_";
+		string ema_string;
+		stream.str("");
+		stream << emAlpha;
+		ema_string = stream.str();
+		idx = ema_string.find(".");
+		if(idx != -1)
+			ema_string.replace(idx,1,"p");	
+		fname += "_emAlpha-"+ema_string+"_";
+
+			
+		string scale_string;
+		stream.str("");
+		stream << scale.at(0,0);
+		scale_string = stream.str();
+		idx = scale_string.find(".");
+		if(idx != -1)
+			scale_string.replace(idx,1,"p");	
+		fname += "beta0-"+scale_string+"_";
+		
+		string mean_string;
+		stream.str("");
+		for(int i = 0; i < m.nRows(); i++){
+			stream << m.at(i,0);
+			if(i < m.nRows()-1) stream << "-";
+		}
+		mean_string = stream.str();
+		idx = 0;
+		while(idx != string::npos){
+			idx = mean_string.find(".");
+			if(idx == -1) break;
+			mean_string.replace(idx,1,"p");	
+			idx = mean_string.find(".");
+		}
+		fname += "m0-"+mean_string+"_";
+		
+		string W_string;
+		stream.str("");
+		for(int i = 0; i < W.nRows(); i++){
+			stream << W.at(i,i);
+			if(i < W.nRows()-1) stream << "-";
+		}
+		W_string = stream.str();
+		idx = 0;
+		while(idx != string::npos){
+			idx = W_string.find(".");
+			if(idx == -1) break;
+			W_string.replace(idx,1,"p");	
+			idx = W_string.find(".");
+		}
+		//do replacement of . to p
+		fname += "W0diag-"+W_string+"_";
+		
+		string dof_string;
+		stream.str("");
+		stream << dof.at(0,0);
+		dof_string = stream.str();
+		idx = dof_string.find(".");
+		if(idx != -1)
+			dof_string.replace(idx,1,"p");	
+		fname += "nu0-"+dof_string+"_";
+
+
+		string t_string;
+		stream.str("");
+		stream << thresh;
+		t_string = stream.str();
+		idx = t_string.find(".");
+		if(idx != -1)
+			t_string.replace(idx,1,"p");
+		fname += "thresh"+t_string+"_";
 
 		
-	string scale_string;
-	stream.str("");
-	stream << scale.at(0,0);
-	scale_string = stream.str();
-	idx = scale_string.find(".");
-	if(idx != -1)
-		scale_string.replace(idx,1,"p");	
-	fname += "beta0-"+scale_string+"_";
-	
-	string mean_string;
-	stream.str("");
-	for(int i = 0; i < m.nRows(); i++){
-		stream << m.at(i,0);
-		if(i < m.nRows()-1) stream << "-";
-	}
-	mean_string = stream.str();
-	idx = 0;
-	while(idx != string::npos){
-		idx = mean_string.find(".");
-		if(idx == -1) break;
-		mean_string.replace(idx,1,"p");	
-		idx = mean_string.find(".");
-	}
-	fname += "m0-"+mean_string+"_";
-	
-	string W_string;
-	stream.str("");
-	for(int i = 0; i < W.nRows(); i++){
-		stream << W.at(i,i);
-		if(i < W.nRows()-1) stream << "-";
-	}
-	W_string = stream.str();
-	idx = 0;
-	while(idx != string::npos){
-		idx = W_string.find(".");
-		if(idx == -1) break;
-		W_string.replace(idx,1,"p");	
-		idx = W_string.find(".");
-	}
-	//do replacement of . to p
-	fname += "W0diag-"+W_string+"_";
-	
-	string dof_string;
-	stream.str("");
-	stream << dof.at(0,0);
-	dof_string = stream.str();
-	idx = dof_string.find(".");
-	if(idx != -1)
-		dof_string.replace(idx,1,"p");	
-	fname += "nu0-"+dof_string+"_";
-
-
-	string t_string;
-	stream.str("");
-	stream << thresh;
-	t_string = stream.str();
-	idx = t_string.find(".");
-	if(idx != -1)
-		t_string.replace(idx,1,"p");
-	fname += "thresh"+t_string+"_";
-
-	
-	string gev_string;
-	stream.str("");
-	stream << gev;
-	gev_string = stream.str();
-	idx = gev_string.find(".");
-	if(idx != -1)
-		gev_string.replace(idx,1,"p");	
-	fname += "NperGeV"+gev_string+"_";
-	
+		string gev_string;
+		stream.str("");
+		stream << gev;
+		gev_string = stream.str();
+		idx = gev_string.find(".");
+		if(idx != -1)
+			gev_string.replace(idx,1,"p");	
+		fname += "NperGeV"+gev_string;
+	}	
 	fname += cmslab; //long sample name
-	fname += "evt"+to_string(evt);
+	fname += "_evt"+to_string(evt);
 
 	string root_fname = fname;
 	fname = "plots/"+fname;
@@ -383,16 +402,13 @@ int main(int argc, char *argv[]){
 	Matrix smear = Matrix(3,3);
 	double dphi = 2*acos(-1)/360.; //1 degree in radians
 	double deta = dphi; //-log( tan(1./2) ); //pseudorap of 1 degree
+	double cell = dphi;
 	//diagonal matrix
 	smear.SetEntry(deta*deta,0,0);
 	smear.SetEntry(dphi*dphi,1,1);
 	smear.SetEntry(0.,2,2); //no smear in time	
-	double tres_c = 0.2; //ns
-	//double tres_n = 30*sqrt(tres_c - tres_c*tres_c); //v1//ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
-	double tres_n = 30*sqrt(1 - tres_c*tres_c); //v1//ns*E (set s.t. 30 GeV gives sig_t = 1 ns)
 
 	vector<Jet> rhs, jets, phos, jetsAK8, jetsAK15;
-	vector<std::shared_ptr<node>> trees;
 	//get rhs (as Jets) for event
 	if(obj == 0){
 		JetProducer prod(file);
@@ -471,16 +487,19 @@ int main(int argc, char *argv[]){
 
 
 	
-	auto algo = std::make_unique<BayesCluster>(rhs);
-	if(smeared) algo->SetDataSmear(smear);
 	//set time resolution smear: c^2 + n^2/e^2
 	//remember time is already in ns
 	//e = w/gev
+	auto algo = std::make_unique<BayesCluster>(rhs);
+	algo->SetMeasErrParams(cell, tres_cte, tres_stoch*gev, tres_noise*gev); 
 	algo->SetThresh(thresh);
 	algo->SetAlpha(alpha);
 	algo->SetSubclusterAlpha(emAlpha);
 	algo->SetVerbosity(verb);
 	algo->SetPriorParameters(prior_params);
+	algo->CheckMerges(true);
+	algo->SetNGhosts(0);		
+	vector<std::shared_ptr<BaseTree::node>> trees;
 	clock_t t = clock();
 	//jets
 	if(obj == 0 || obj == 2){
@@ -550,9 +569,6 @@ int main(int argc, char *argv[]){
 	else{ cout << "Object undefined. Please use --object [obj] with options 0 for jets or 1 for photons." << endl; return -1; }
 
 
-	//causing crashes - //file->Close();
-	//delete file;
-	
 
 	t = clock() - t;
 	cout << "Total program time elapsed: " << (float)t/CLOCKS_PER_SEC << " seconds." << endl;

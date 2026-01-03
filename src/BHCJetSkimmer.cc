@@ -48,6 +48,7 @@ void BHCJetSkimmer::Skim(){
 	//for event display
 	map<string, BayesPoint> plot_centers; //plot_centers[i][j] is plot center in dim j for plot i (see above for different plot idxs)
 	map<string, BayesPoint> plot_widths;
+	vector<TCanvas*> jetcvs;
 	for(int i = _evti; i < _evtj; i+=SKIP){
 		//cout << "\33[2K\r"<< "evt: " << i << " of " << _nEvts << " with " << rhs.size() << " rhs" << flush;
 		//event level selection
@@ -407,6 +408,7 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			for(int g = 0; g < _genparts.size(); g++){
 				int genidx = _genparts[g].GetUserIdx();
 				int id = fabs(_base->genpart_id->at(genidx));
+cout << "genpart id " << id << endl;
 				string matchstring;
 				int gidx = -1;
 				//TODO: set to pretty colors with hex codes and make colors related ie for quarks (light vs b different but similar)
@@ -448,7 +450,7 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 					_plot_particles.push_back(TMarker(eta, phi, kOpenSquare));
 					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
 				}
-				else if(id == 1 || id == 2 || id == 3){ //light quarks
+				else if(id == 1 || id == 2 || id == 3 || id == 4){ //light quarks
 					//check if first q event display is already filled
 					if(_evtdisps_obj[3]->GetEntries() == 0){
 						//fill if not
@@ -463,6 +465,7 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 						eta = _genparts[g].eta();
 						phi = _genparts[g].phi_02pi();
 					}
+cout << " saving plot info for light quark" << endl;
 					_plot_particles.push_back(TMarker(eta, phi, 28));
 					//_plot_particles[_plot_particles.size()-1].SetMarkerColor(kAzure+4);
 					_plot_particles[_plot_particles.size()-1].SetMarkerColor(kBlack);
@@ -507,17 +510,31 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 			}
 			if(eta == -999 && phi == -999) continue; //no gen particles specified
 			//save BHC jets as ellipses
+			int coloridx;
+			int customColorBase = 200;
+			//TColor *teaGreen = new TColor(customColorBase, 79./255., 107./255., 56./255.);
+			//TColor *fernGreen = new TColor(customColorBase, 222./255., 239./255., 183./255.);
+			TColor *deepSaffron = new TColor(customColorBase, 255./255., 149./255., 5./255.);
 			for(int j = 0; j < _predJets.size(); j++){
 				TEllipse el = PlotEll(_predJets[j]);
-				el.SetLineColor(j+4);	
+				if(j == 0)
+					coloridx = customColorBase;//"#DEEFB7");//kGreen +4; 
+				else if(j == 1)
+					coloridx = 800;
+				else
+					coloridx = j+4;
+			if(j == 0) cout << "coloridx " << coloridx << endl;
+				el.SetLineColor(coloridx);	
 				el.SetFillStyle(0);	
+				//el.SetLineStyle(2);
+				el.SetLineStyle(1);
+				el.SetLineWidth(2);	
 				_ellipses.push_back(el);	
 				_jellipses[j] = el;			
 	
 				TMarker m(_predJets[j].eta(), _predJets[j].phi(), kOpenStar);
-				m.SetMarkerColor(j+4);
+				m.SetMarkerColor(coloridx);
 				//plot jet centers
-				//_plot_particles.push_back(m); //30 = open star may need to change if not rendering	
 				_jcenters[j] = m;			
 	
 				int nk = _predJets[j].GetNConstituents();
@@ -525,17 +542,21 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 				for(int k = 0; k < nk; k++){
 					_predJets[j].GetConstituent(k, subcl);
 					TEllipse sub_el = PlotEll(subcl);
-					sub_el.SetLineColor(j+4);	
+					sub_el.SetLineColor(coloridx);	
 					sub_el.SetFillStyle(0);	
-					sub_el.SetLineStyle(9);	
+					//sub_el.SetLineStyle(1);
+					sub_el.SetLineStyle(2);
+					sub_el.SetLineWidth(3);
 					//_plot jet centers
-					TMarker sub_m(subcl.eta(), subcl.phi(), kOpenDiamond); 
-					sub_m.SetMarkerColor(j+4);
+					TMarker sub_m(subcl.eta(), subcl.phi(), kFullCircle);
+					sub_m.SetMarkerSize(0.7); 
+					sub_m.SetMarkerColor(coloridx);
 					_subclellipses[j][k] = sub_el;
 					_subclcenters[j][k] = sub_m;
 	
 				}
 			}
+			DrawJetEventDisplays(jetcvs);
 		}
 		//fill pred jet hists with jets
 		FillPredJetHists();
@@ -559,6 +580,7 @@ cout << "BHC time " << (double)t/CLOCKS_PER_SEC << " secs" << endl;
 	_tree->SetDirectory(ofile);
 	ofile->cd();
 	_tree->Write();
+	for(auto cv : jetcvs) cv->Write();
 	WriteOutput(ofile, plot_centers, plot_widths);
 	ofile->Close();
 	_infile->Close();	

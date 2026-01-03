@@ -45,22 +45,22 @@ json FullViz3D::WriteNode(node* n){
 	double x0, y0, z0;	
 	map<string, Matrix> cluster_params;
 	for(int k = 0; k < kmax; k++){
-		map<string, Matrix> params;
-		pdfmodel->GetLHPosteriorParameters(k, params);
-		x0 = cluster_params["mean"].at(0,0);
-		y0 = cluster_params["mean"].at(1,0);
-		z0 = cluster_params["mean"].at(2,0);
+		pdfmodel->GetLikelihoodParameters(k, cluster_params);
 
-		cluster_params["cov"].eigenCalc(eigenVals, eigenVecs);
+		x0 = cluster_params.at("mean").at(0,0);
+		y0 = cluster_params.at("mean").at(1,0);
+		z0 = cluster_params.at("mean").at(2,0);
+
+		cluster_params.at("cov").eigenCalc(eigenVals, eigenVecs);
 		for(int i = 0; i < 3; i++){
-			eigenVec_0.push_back(eigenVecs[0].at(i,0));
-			eigenVec_1.push_back(eigenVecs[1].at(i,0));
-			eigenVec_2.push_back(eigenVecs[2].at(i,0));
+			eigenVec_0.push_back(eigenVecs[0].at(0,i));
+			eigenVec_1.push_back(eigenVecs[1].at(0,i));
+			eigenVec_2.push_back(eigenVecs[2].at(0,i));
 		}
 
 	//export: data (x, y, z) in dataframe, mu (x, y, z), cov eigenvals and eigenvectors, mixing coeffs
-		pisum += cluster_params["pi"].at(0,0);
-		subcluster["mixing_coeff"] = cluster_params["pi"].at(0,0);
+		pisum += cluster_params.at("pi").at(0,0);
+		subcluster["mixing_coeff"] = cluster_params.at("pi").at(0,0);
 		subcluster["mu_x"] = x0;
 		subcluster["mu_y"] = y0;
 		subcluster["mu_z"] = z0;
@@ -145,14 +145,18 @@ if(_verb > 1) cout << "max: " << nLevels << " levels with " << nTrees << " trees
 				//can't set to empty because need to evaluate last node popped off below
 				while(!tree_maps[t][l].empty()){
 					std::shared_ptr<node> n = tree_maps[t][l].pop();
-					if(_verb > 2) cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
+					//cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << endl; 
+					//cout << "# clusters " << n->model->GetNClusters() << endl;
 					//a mirror node
 					if(n->points->mean().at(1) < 0.0 || n->points->mean().at(1) >= 2*acos(-1)) continue;
 					//if there is a cluster with one point in tree_maps[t][l] (a leaf) add it to tree_maps[t][l+1]
+					npts += n->points->GetNPoints();
 					if(n->points->GetNPoints() == 1 && l <= tree_maps[t].rbegin()->first){
 						tree_maps[t][l+1].push(std::move(n));
+						continue;
 					}
-					npts += n->points->GetNPoints();
+					if(_verb > 2) cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << " - number of subclusters: " << n->model->GetNClusters() << " - mean of points " << n->points->mean().at(0) << ", " << n->points->mean().at(1) << endl; 
+					if(_verb > 2 && l == 0) cout << "    node " << j << " - number of points: " << n->points->GetNPoints() << " - number of subclusters: " << n->model->GetNClusters() << " - mean of points " << n->points->mean().at(0) << ", " << n->points->mean().at(1) << endl; 
 					clusters["cluster_"+std::to_string(j)] = WriteNode(n.get());
 					j++;
 				}

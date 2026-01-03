@@ -116,7 +116,7 @@ class JsonPlotter:
 	
 	
 	
-	def plotDataset(self, numlevels = 0, onlydata = False):
+	def plotDataset(self, numlevels = 0, onlydata = False, ntree = -1):
 		levels = self.json_obj['levels']
 		self.plot_trueJets()
 		self.makeOpacities()
@@ -133,13 +133,13 @@ class JsonPlotter:
 			nLevels = len(levels)
 			print("json has",nLevels,"levels")
 		for l in range(nLevels):
-			fig = self.plot_level(l, plotname+'_level'+str(l), onlydata)
+			fig = self.plot_level(l, plotname+'_level'+str(l), onlydata, ntree)
 			figs.append(fig)
 		return figs
 			
 	
 	
-	def plot_level(self, l, filename, onlydata = False):
+	def plot_level(self, l, filename, onlydata = False, ntree = -1):
 		#get level l for each tree -> will return clusters_level_l for each tree
 		#if tree has less levels than l, plot all data in tree as leaves
 		level = self.json_obj["levels"]["level_"+str(l)]
@@ -149,6 +149,8 @@ class JsonPlotter:
 		gr_arr = []
 		minLevel = 0
 		for t in range(nTrees):
+			if ntree != -1 and t != ntree:
+				continue
 			gr_arr.append(self.plot_tree(l, t, onlydata))	
 		
 		
@@ -158,13 +160,39 @@ class JsonPlotter:
 		gr_arr.append(self.jetsgr)	
 		#this level is one plot
 		fig = go.Figure(gr_arr)
-		fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
-		fig.update_layout(scene=dict(yaxis=dict(title="phi",range=[0,3*np.pi+0.2],),xaxis=dict(title="eta",range=[-3.5,3.5],),zaxis=dict(title="time (ns)",range=[-35,35],)))
+		title = self.make_title()
+		#fig.update_layout({"scene": {"aspectmode": "auto"}},title=title, template=None)
+		fig.update_layout({"scene": {"aspectmode": "auto"}},title=dict(text=title,font=dict(size=25)),template=None)
+		fig.update_layout(scene=dict(yaxis=dict(title=dict(text='Azimuthal Angle (φ)',font=dict(size=13)),range=[0,3*np.pi+0.2]),xaxis=dict(title=dict(text='Pseudorapidity (η)',font=dict(size=13)), range=[-3.5,3.5]),zaxis=dict(title=dict(text='Time [ns]',font=dict(size=13)), range=[-35,35])))
 	
 	
 		return fig
 	
-		
+	def make_title(self):
+		filename = self.jsonfile[self.jsonfile.rfind("/")+1:self.jsonfile.find(".json")]
+		evt = filename[filename.find("_evt"):]
+		title = filename[filename.find("condorSim_")+10:filename.rfind("_default")]+evt
+
+		proc = title[:title.find("_")]
+		pthatmin = title[title.find("_ptHat")+1:title.find("_evt")]
+		evt = title[title.find("_evt")+4:]
+
+		formattedtitle = ""
+		if proc == "ttbar":
+			formattedtitle = "hadronic t<span style='text-decoration:overline'>t</span>"
+		elif proc == "singleW":
+			formattedtitle = "single hadronic W"
+		formattedtitle += ", event #"+evt 
+		if "nPU" in filename:
+			npu = filename[filename.find("nPU"):]
+			npu = npu[3:npu.find("_default")]
+			formattedtitle += ", nPU = "+npu
+		if "MTD" in filename:
+			formattedtitle += " with CMS MTD-like time resolution"
+			
+
+		print("title",formattedtitle)
+		return formattedtitle
 	
 	def plot_tree(self, l, t, onlydata = False):
 		level = self.json_obj["levels"]["level_"+str(l)]
@@ -192,10 +220,27 @@ class JsonPlotter:
 				continue
 			#this level is one plot
 			fig = go.Figure(gr_cl)
-			filename = self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
-			fig.update_layout({"scene": {"aspectmode": "auto"}},title=filename, template=None)
-			fig.update_layout(title=dict(font=dict(size=13)))
-			fig.update_layout(scene=dict(yaxis=dict(title="phi local",),xaxis=dict(title="eta local",),zaxis=dict(title="time local (ns)",)))
+			title = self.make_title() 
+			title += "<br>cluster #"+str(t)+", level #"+str(l)
+			#self.jsonfile[:self.jsonfile.find(".json")]+"_cluster"+str(t)+"_level"+str(l)
+			fig.update_layout({"scene": {"aspectmode": "auto"}},title=title, template=None)
+			fig.update_layout(title=dict(font=dict(size=18)))
+			fig.update_layout(scene=dict(yaxis=dict(title=dict(text='Local Azimuthal Angle (φ)',font=dict(size=13))),xaxis=dict(title=dict(text='Local Pseudorapidity (η)',font=dict(size=13))),zaxis=dict(title=dict(text='Local Time [ns]',font=dict(size=13)))))
+			fig.update_layout(
+				coloraxis=dict(
+					colorscale="Plotly3",
+					colorbar=dict(
+						title="Energy [GeV]",
+						tickmode="array",
+						tickvals=[np.log10(v) for v in [0.1, 1, 10, 100]],
+						ticktext=["0.1", "1", "10", "100"],
+						x = 0.2
+					)
+				),
+				showlegend = False,
+			)
+
+
 			#write to file
 			#make sure cluster directory exists
 			if(os.path.exists(self.dirname+"/cluster"+str(t))):
@@ -242,10 +287,10 @@ class JsonPlotter:
 			cl = cl % 16	
 	
 		cols = [colors[cl] for i in range(len(w))]
-		name = "cluster "+str(c)
+		name = "cluster #"+str(c)
 		if(len(x) >= self.minPoints or nSubClusters > 1):
 			name += " has "+str(len(x))+" points ("+str(round(sum(w),2))+" GeV)"
-			name += " in "+str(nSubClusters)+" subclusters" 
+			name += "<br>    in "+str(nSubClusters)+" subclusters" 
 		
 		#if(min(w) != max(w)):
 		#	cols = [i.replace("1.",'{:8f}'.format(self.ops[w[idx]])) for idx, i in enumerate(cols)]
@@ -283,7 +328,8 @@ class JsonPlotter:
 			
 		#data in "local"/delta coordinates
 		gr_arr.append(go.Scatter3d(x=x,y=y,z=z,mode='markers',marker=dict(
-			size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
+			#size = 4, cmax = max(w), cmin = min(w), color = w, colorscale = 'Plotly3', colorbar=dict(title="Energy (GeV)", x=-0.2)),
+			size = 4, color = np.log10(w), colorscale = 'Plotly3',coloraxis="coloraxis"),
 			showlegend=True, name = name))
 
 	
@@ -291,17 +337,19 @@ class JsonPlotter:
 		for i in range(nSubClusters):
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
-			op.append(subcluster['mixing_coeff'])
+			op.append(round(subcluster['mixing_coeff'],5))
 
 		for i in range(nSubClusters):
+			#if i == 1:
+			#	continue
 			idx = str(i)
 			subcluster = cluster['subclusters']['subcluster_'+idx]
 			#should be subcluster_i	
 		
 	
-			arad = round(subcluster['eigenVal_0'], 20)
-			brad = round(subcluster['eigenVal_1'], 20)
-			crad = round(subcluster['eigenVal_2'], 20)
+			arad = 2*round(subcluster['eigenVal_0'], 20)
+			brad = 2*round(subcluster['eigenVal_1'], 20)
+			crad = 2*round(subcluster['eigenVal_2'], 20)
 
 			if arad < 1e-7:
 				arad = abs(arad)
@@ -350,7 +398,7 @@ class JsonPlotter:
 			z2 = new_points[2, :] + z0
 			x2, y2, z2 = [t.reshape(x1.shape) for t in [x2, y2, z2]]
 
-			#make ellipsoid color of average energy across points (responsibilities)
+			#make ellipsoid color of total energy across points (responsibilities)
 			if max(w) == min(w):
 				cl_w = [0,1]#(subcluster["color"])# - min(w))/(max(w) - min(w))
 			else:
@@ -358,9 +406,10 @@ class JsonPlotter:
 				scale = True
 			cl = sample_colorscale("Plotly3",cl_w)
 			cl = np.array([cl,cl]).flatten()
-		
-			ell_name = "subcluster "+str(i)+" ("+str(round(subcluster["color"],2))+" GeV) with MM coeff "+str(round(op[i],2))
-
+			
+			#ell_name = "subcluster #"+str(i+1)+" ("+str(round(subcluster["color"],2))+" GeV) with MM coeff "+str(round(op[i],2))
+			ell_name = "subcluster #"+str(i+1)+" ("+str(round(subcluster["color"],2))+" GeV)"
+			print(ell_name)
 			#if two eigenvalues are essentially zero, just plot a line
 			if (arad < 1e-7 and brad < 1e-7) or (arad < 1e-7 and crad < 1e-7) or (brad < 1e-7 and crad < 1e-7):
 				gr_arr.append(go.Scatter3d(x=x2.flatten(), y=y2.flatten(), z=z2.flatten(),mode='lines',line=dict(color = cl[0]), name = ell_name,showlegend=True))
@@ -368,7 +417,9 @@ class JsonPlotter:
 			
 	
 			#add ellipsoids
-			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op[i], colorscale=cl, showscale = False, name = ell_name,showlegend=True))
+			surfacecolor = np.full_like(x2, np.log10(subcluster['color']))
+			#gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=op[i], colorscale=cl, showscale = False, name = ell_name,showlegend=True))
+			gr_arr.append(go.Surface(x=x2, y=y2, z=z2, opacity=0.5, surfacecolor=surfacecolor, coloraxis="coloraxis", showscale = False, name = ell_name,showlegend=True))
 		return gr_arr
 
 
@@ -380,6 +431,7 @@ def main():
 	parser.add_argument('--json','-j',help='json file to plot')
 	parser.add_argument('--data',help='plot data only',action='store_true')
 	parser.add_argument('--nlevels',help='number of levels to plot (from top)',default=0,type=int)
+	parser.add_argument('--ntree',help='which tree to plot',default=-1,type=int)
 	parser.add_argument('--verbosity','-v',help='verbosity',default=0,type=int)
 	parser.add_argument('--noViz',action='store_true',help='do not make plots',default=False)
 	args = parser.parse_args()
@@ -403,7 +455,7 @@ def main():
 	os.mkdir(name)
 	jp.setVerb(args.verbosity)
 	#draw all data - also plots individual clusters with GMM components
-	figs = jp.plotDataset(int(args.nlevels),args.data)
+	figs = jp.plotDataset(int(args.nlevels),args.data,args.ntree)
 	print("Writing to directory",name)
 	files = []
 	for f, fig in enumerate(figs):

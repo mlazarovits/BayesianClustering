@@ -32,6 +32,8 @@ void BuildMaps(){
 	hist_titles["nSubclustersJet"] = "Number of Subclusters";
 	hist_titles["nSubclusters"] = "Number of Subclusters";
 	hist_titles["JetSize"] = "Jet Size";
+	hist_titles["subclRelGeoAvgVar"] = "Geometric Average of Relative Variances (#sigma^{2*})";
+	hist_titles["subclRelEnergy"] = "Relative Energy (E*)";
 	
 	group_hist_titles[relvars] = "Relative Variances";
 
@@ -206,6 +208,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		//use hist names as labels
 		int nlabel = 70;
 		int ncolor = 3;
+		vector<string> ncolors = {"#3EB8F4","#0781C5","#25008B","#30B08E","#5CD6AB","#AEECCB"};
 		//TODO - pull colors from consistent color palette
 		for( int i = 0 ; i < int(hist.size()); i++){
 			if(legentries.size() == hist.size())
@@ -216,8 +219,12 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 					legentry = legentry.substr(0,legentry.find(xtit));
 				}
 			}
-			labelToMark[legentry] = nlabel+i;	
-			labelToColor[legentry] = ncolor+i;
+			int coloridx = i;
+			if(i >= ncolors.size())
+				coloridx = 0;
+			labelToMark[legentry] = nlabel+i;
+			labelToColor[legentry] = TColor::GetColor(ncolors[coloridx].c_str());
+cout << "color " << ncolors[coloridx] << " i " << i << " coloridx " << coloridx << " legentry " << legentry << " color " << labelToColor[legentry] << endl;	
 //cout << "legentry " << legentry << " title " << xtit << " title " << hist[i]->GetTitle() << " mark " << labelToMark[legentry] << " col " << labelToColor[legentry] << endl;
 		}
 		//for(auto leg : legentries) cout << "tdrmulti leg entries " << leg << endl;
@@ -235,6 +242,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		hist[i]->GetXaxis()->CenterTitle(true);
 		hist[i]->GetXaxis()->SetTitle(xtit.c_str());
 //cout << "title " << xtit << " canname " << canname << " y title " << ytit << " histname " << hist[i]->GetName() << endl;
+	if(pf == 5) cout << "name " << hist[i]->GetName() << " legentry " << legentries[i] << endl;
 		hist[i]->GetYaxis()->CenterTitle(true);
 		hist[i]->GetYaxis()->SetTitle(ytit.c_str());
 		//else hist[i]->GetYaxis()->SetTitle("#sigma #Delta t (ns)");
@@ -307,7 +315,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		for(map<string, int>::iterator it = labelToColor.begin(); it != labelToColor.end(); it++){
 			string match = it->first;
 			if(match.find("!") != string::npos) match = match.substr(match.find("!")+1);
-			match += "Jet";
+			if(pf != 5) match += "Jet";
 			if(legentry.find(match) != string::npos){
 				col = it->second;
 				break;
@@ -341,13 +349,14 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(name.find("_lead") != string::npos){
 			type = "high p_{T}";
 			mark -= 4;
-			highpt = true;		
+			highpt = true;
+			col += 2;	
 		}
 		else if(name.find("_notlead") != string::npos){
 			type = "low p_{T}";
 			mark += 1;
 			lowpt = true;
-				
+			col -= 1;	
 		}
 		else{
 			lowpt = false;
@@ -357,7 +366,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		if(type != "") legentry += " "+type;
 
 		legentries2.push_back(legentry);
-//cout << "col " << col << " mark " << mark << endl;
+cout << "col " << col << " mark " << mark << endl;
 		hist[i]->SetLineColor(col);
 		//hist[i]->SetLineWidth(2);
 		hist[i]->SetMarkerStyle(mark);
@@ -429,7 +438,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.66,0.56,jetsel_str.c_str());
+		jetsel.DrawLatex(0.61,0.56,jetsel_str.c_str());
 		//adjust legend bounds
 		myleg->SetX1NDC(0.60);
 		myleg->SetY1NDC(0.65);
@@ -479,7 +488,7 @@ void TDRMultiHist(vector<TH1D*> hist, TCanvas* &can, string plot_title, string x
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
 	plot_title = "#font[132]{"+plot_title+"}";
-	lat1.DrawLatex(0.75,0.92,plot_title.c_str());
+	lat1.DrawLatex(0.65,0.92,plot_title.c_str());
 	
 	//draw sigma formula
 	if(canname.find("sigma") != string::npos){
@@ -536,25 +545,33 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat.DrawLatex(0.03,0.92,lat_cms.c_str());
 
 	string canname = can->GetName();
-	string proc = canname.substr(canname.find("_")+1, canname.find("_",canname.find("_")));
+	string proc;//canname.substr(canname.find("_")+1, canname.find("_",canname.find("_")));
+	if(canname.find("ttbar") != string::npos)
+		proc = "ttbar";
+	else if(canname.find("QCD") != string::npos)
+		proc = "QCD";
+	else if(canname.find("singleW") != string::npos)
+		proc = "singleW";
+	else if(canname.find("Wgluon") != string::npos)
+		proc = "Wgluon";
 	string pt_thresh = pt_threshes[proc];
-	if(cms_label.find("high pt") != string::npos){
-		cms_label = cms_label.substr(0,cms_label.find(" high pt"));
+	if(cms_label.find("lead") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find("_lead"));
 		string jetsel_str = "#font[132]{Jet p_{T} #geq "+pt_thresh+" GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.65,0.85,jetsel_str.c_str());
 	}
-	if(cms_label.find("low pt") != string::npos){
-		cms_label = cms_label.substr(0,cms_label.find(" low pt"));
+	if(cms_label.find("notlead") != string::npos){
+		cms_label = cms_label.substr(0,cms_label.find("_notlead"));
 		string jetsel_str = "#font[132]{Jet p_{T} < "+pt_thresh+" GeV}";
 		TLatex jetsel;	
 		jetsel.SetNDC();
 		jetsel.SetTextSize(0.04);
 		jetsel.SetTextFont(42);
-		jetsel.DrawLatex(0.67,0.85,jetsel_str.c_str());
+		jetsel.DrawLatex(0.65,0.85,jetsel_str.c_str());
 	}
 	cms_label = "#font[132]{"+cms_label+"}";
 	
@@ -562,7 +579,7 @@ void TDR2DHist(TH2D* hist, TCanvas* &can, string xtit, string ytit, string cms_l
 	lat1.SetNDC();
 	lat1.SetTextSize(0.04);
 	lat1.SetTextFont(42);
-	lat1.DrawLatex(0.69,0.92,cms_label.c_str());
+	lat1.DrawLatex(0.65,0.92,cms_label.c_str());
 
 	return;
 }
@@ -974,23 +991,32 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 	}
 	TFile* f = TFile::Open(file.c_str(),"READ");
 	string histname = method+"Jet_"+obs;
+	cout << "histname " << histname << endl;
 	if(type != "")
 		histname += "_"+type;
 	TH2D* h = (TH2D*)f->Get(histname.c_str());
 	if(h == nullptr) return;
 	h->Scale(1./h->Integral());
-	string name = h->GetName();
+	string name = obs+"_"+proc+"_"+method+"_2D";
+	if(type != ""){
+		name += "_"+type;
+	}
 	string cvname = name;
 	TCanvas *cv = new TCanvas(cvname.c_str(), "");
 	//draw as tcanvases
-	string xlab = hist_titles[obs.substr(obs.find("_")+1)];
-	string ylab = hist_titles[obs.substr(0,obs.find("_"))];
+	cout << "obs " << obs << " xkey " << obs.substr(obs.find("_")+1) << " ykey " << obs.substr(obs.find("_")+1,obs.find("_",obs.find("_")+1) - obs.find("_")-1) << endl;
+	string xlab = hist_titles[obs.substr(0,obs.find("_"))];
+	string ylab = hist_titles[obs.substr(obs.find("_")+1,obs.find("_",obs.find("_")+1) - obs.find("_")-1)];
 	string methodname = method;
 	if(methodname.find("reco") != string::npos)
 		methodname = methodname.substr(4); //remove reco
 	string cmslab = proc_titles[proc]+", "+methodname;
-	//cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
-	TDR2DHist(h, cv, xlab, ylab, cmslab+type, "");
+	if(file.find("PFCand") != string::npos)
+		cmslab += ", PF-like reco";
+	if(type != "")
+		cmslab += "_"+type;
+	cout << "x " << xlab << " y " << ylab << " name " << name << " cmslab " << cmslab+type << endl;
+	TDR2DHist(h, cv, xlab, ylab, cmslab, "");
 	cv->SetRightMargin(0.15);
 	cout << "writing canvas (2D) " << cv->GetName() << endl;
 	
@@ -1006,27 +1032,43 @@ void Hist2D(string file, string proc, string method, string oname, string obs, s
 
 
 //method in this case would be BHC vs reco
-void MethodStackHists(string file, string proc, vector<string> methods, string oname, string obs ="", string type = ""){
+void MethodStackHists(string file, string proc, vector<string> methods, string oname, string obs ="", vector<string> type = {}){
 	if(gSystem->AccessPathName(file.c_str())){
 		cout << "File " << file << " does not exist." << endl;
 		return;
 	}
 	TFile* f = TFile::Open(file.c_str(),"READ");
 	vector<TH1D*> hists;
+	string histname;
 	for(int m = 0; m < methods.size(); m++){
-		string histname = methods[m]+"Jet_"+obs;
-		if(type != "")
-			histname += "_"+type;
+		string hname = methods[m]+"Jet_"+obs;
+		if(type.size() > 0){
+			for(int t = 0; t < type.size(); t++){
+				histname = hname+"_"+type[t];
 cout << "histname " << histname << endl;
-		TH1D* h = (TH1D*)f->Get(histname.c_str());
-		if(h == nullptr) continue;
-		h->Scale(1./h->Integral());
-		hists.push_back(h);
+				TH1D* h = (TH1D*)f->Get(histname.c_str());
+				if(h == nullptr) continue;
+				h->Scale(1./h->Integral());
+				hists.push_back(h);
+			}
+		}
+		else{
+			histname = hname;
+			TH1D* h = (TH1D*)f->Get(histname.c_str());
+			if(h == nullptr) continue;
+			h->Scale(1./h->Integral());
+			hists.push_back(h);
+		}
 	}
 	double ymin, ymax;
 	string name = obs+"_"+proc+"_methodStack";
 	if(find(methods.begin(), methods.end(), "BHCnoPU") != methods.end()) name += "_puComp";
-	if(type != "") name += "_"+type;
+	//if(type != "") name += "_"+type;
+	if(type.size() > 0){
+		for(int t = 0; t < type.size(); t++){
+			name += "_"+type[t];
+		}
+	}
 	if(hists.size() < 1) return;
 	FindListHistBounds(hists, ymin, ymax);
 	if(ymin == 0 && ymax == 0) return;
@@ -1034,6 +1076,9 @@ cout << "histname " << histname << endl;
 	string xlab = hist_titles[obs];
 	string ylab = "a.u."; 
 	string cmslab = proc_titles[proc];
+	if(file.find("PFCand") != string::npos)
+		cmslab += ", PF-like reco";
+
 	
 	//for(auto h : hists){ cout << "have hist " << h->GetName() << endl;  }
 	//cout << "xlab " << xlab << " name " << name << " proc " << proc << endl;
@@ -1059,7 +1104,6 @@ void AnyStackHists(string file, string proc, string method, vector<string> obses
 	vector<TH1D*> hists;
 	for(int o = 0; o < obses.size(); o++){
 		string histname = method+"Jet_"+obses[o];
-cout << "obs " << obses[o] << endl;
 		if(types.size() > 0){
 			for(int t = 0; t < types.size(); t++){
 				string hname = histname+"_"+types[t];
@@ -1250,20 +1294,21 @@ void HistFormatSim2(string file){
 	vector<string> jettypes_BHCPU = {"BHC","BHCnoPU"};
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets","lead"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nJets",{"lead"}); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize","lead"); 
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "JetSize",{"lead"}); 
 	
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "EtaCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "PhiCenter"); 
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "TimeCenter"); 
+	MethodStackHists(file, proc, jettypes_recoAK8BHC, oname, "TimeCenter",{"lead","notlead"});
 	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Energy"); 
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Mass","lead");
-	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclusters","lead");
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "Mass",{"lead"});
+	MethodStackHists(file, proc, jettypes_recoBHC, oname, "nSubclusters",{"lead"});
 
 		
-	MethodStackHists(file, proc, jettypes_BHCPU, oname, "Mass","lead");
-	MethodStackHists(file, proc, jettypes_BHCPU, oname, "nSubclusters","lead");
+	MethodStackHists(file, proc, jettypes_BHCPU, oname, "Mass",{"lead"});
+	MethodStackHists(file, proc, jettypes_BHCPU, oname, "nSubclusters",{"lead"});
 
 	Hist2D(file, proc, "BHC", oname, "Mass_JetSize");
 	Hist2D(file, proc, "recoAK4", oname, "Mass_JetSize");
@@ -1276,14 +1321,15 @@ void HistFormatSim2(string file){
 	Hist2D(file, proc, "BHC", oname, "Mass_JetPt");
 	Hist2D(file, proc, "recoAK4", oname, "Mass_JetPt");
 
-	vector<string> legentries = {"#sigma^{2*}_{#eta}","#sigma^{2*}_{#phi}","#sigma^{2*}_{time}"};
-	for(int l = 0; l < 3; l++){
-		legentries.push_back(legentries[l] + ", E* < 0.5");
-		legentries[l] += ", E* #geq 0.5";
-	}
+	vector<string> legentries = {"#sigma^{2*}_{#eta}, E* #geq 0.5","#sigma^{2*}_{#eta}, E* < 0.5","#sigma^{2*}_{#phi}, E* #geq 0.5", "#sigma^{2*}_{#phi}, E* < 0.5", "#sigma^{2*}_{time}, E* #geq 0.5","#sigma^{2*}_{time}, E* < 0.5"};
 
 	if(proc == "ttbar"){
 		AnyStackHists(file, proc, "BHC", relvars, oname, {"lead_TopMatched_ge2Subcls_subclRelEge0p5","lead_TopMatched_ge2Subcls_subclRelElt0p5"}, legentries);
+		Hist2D(file, proc, "BHC", oname, "subclRelGeoAvgVar_subclRelEnergy_TopMatched_ge2Subcls");
+	}
+	if(proc == "singleW"){
+		AnyStackHists(file, proc, "BHC", relvars, oname, {"lead_WMatched_ge2Subcls_subclRelEge0p5","lead_WMatched_ge2Subcls_subclRelElt0p5"}, legentries);
+		Hist2D(file, proc, "BHC", oname, "subclRelGeoAvgVar_subclRelEnergy_WMatched_ge2Subcls");
 	}
 	/*
 	if(proc.find("W") != string::npos){

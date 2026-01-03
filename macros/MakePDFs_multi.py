@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 for obs in args.observable:
 	for f in args.files:
-		if f.find("formatted") == -1:
+		if f.find("formatted") == -1 and ("jetcan_0" not in args.observable and "evtdisp" not in args.observable):
 		        print("Skipping file",f,"not formatted (run macros/HistFormat.C on this sample)")
 		        continue
 		logstr = ""
