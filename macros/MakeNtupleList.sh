@@ -66,6 +66,9 @@ elif [ $PD = "gogoG_Sig" ]
 then
 	NAME=CRAB_UserFiles
 	SEL=$2
+elif [ $PD = "DisJet" ]
+then
+	NAME="DisplacedJet"
 else
 	NAME=${PD}_HT-$4_TuneCP5_13TeV-madgraph-pythia8
 fi
